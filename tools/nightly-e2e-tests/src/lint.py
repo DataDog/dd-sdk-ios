@@ -68,6 +68,7 @@ def lint_monitors(monitors: [MonitorConfiguration]):
     __have_unique_variable_values(monitors=monitors, variable_name='$monitor_id')
     __have_unique_variable_values(monitors=monitors, variable_name='$monitor_name')
     __have_unique_variable_values(monitors=monitors, variable_name='$monitor_query')
+    __feature_variable_has_allowed_value(monitors=monitors)
 
 
 def __have_unique_variable_values(monitors: [MonitorConfiguration], variable_name: str):
@@ -90,7 +91,19 @@ def __have_unique_variable_values(monitors: [MonitorConfiguration], variable_nam
                     Linter.shared.emit_error(f'{variable_name} must be unique - {occurrence.value} is already used.')
 
 
-def __find_monitor_variable(monitor: MonitorConfiguration, variable_name: str):
+def __feature_variable_has_allowed_value(monitors: [MonitorConfiguration]):
+    """
+    Checks if `$feature` variable is one of allowed values. Skips if this variable is not defined.
+    """
+    allowed_values = ['core', 'logs', 'trace', 'rum', 'crash']
+    for monitor in monitors:
+        if variable := __find_monitor_variable(monitor=monitor, variable_name='$feature'):
+            if variable.value not in allowed_values:
+                with linter_context(code_reference=variable.code_reference):
+                    Linter.shared.emit_error(f'$feature must be one of: {allowed_values}')
+
+
+def __find_monitor_variable(monitor: MonitorConfiguration, variable_name: str) -> MonitorVariable:
     return next((v for v in monitor.variables if v.name == variable_name), None)
 
 

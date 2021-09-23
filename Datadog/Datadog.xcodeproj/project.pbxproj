@@ -271,6 +271,7 @@
 		618715F724DC0CDE00FC0F69 /* RUMCommandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618715F624DC0CDE00FC0F69 /* RUMCommandTests.swift */; };
 		618715F924DC13A100FC0F69 /* RUMDataModelsMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618715F824DC13A100FC0F69 /* RUMDataModelsMapping.swift */; };
 		618715FC24DC5F0800FC0F69 /* RUMDataModelsMappingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618715FB24DC5F0800FC0F69 /* RUMDataModelsMappingTests.swift */; };
+		6187A53926FCBE240015D94A /* TracerE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6187A53826FCBE240015D94A /* TracerE2ETests.swift */; };
 		618C365F248E85B400520CDE /* DateFormattingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618C365E248E85B400520CDE /* DateFormattingTests.swift */; };
 		618D9DE7263AD78900A3FAD2 /* SpanEventMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618D9DE6263AD78900A3FAD2 /* SpanEventMapper.swift */; };
 		618DCFD724C7265300589570 /* RUMUUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFD624C7265300589570 /* RUMUUID.swift */; };
@@ -912,6 +913,7 @@
 		618715F624DC0CDE00FC0F69 /* RUMCommandTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMCommandTests.swift; sourceTree = "<group>"; };
 		618715F824DC13A100FC0F69 /* RUMDataModelsMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDataModelsMapping.swift; sourceTree = "<group>"; };
 		618715FB24DC5F0800FC0F69 /* RUMDataModelsMappingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDataModelsMappingTests.swift; sourceTree = "<group>"; };
+		6187A53826FCBE240015D94A /* TracerE2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracerE2ETests.swift; sourceTree = "<group>"; };
 		618C365E248E85B400520CDE /* DateFormattingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormattingTests.swift; sourceTree = "<group>"; };
 		618D9DE6263AD78900A3FAD2 /* SpanEventMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanEventMapper.swift; sourceTree = "<group>"; };
 		618DCFD624C7265300589570 /* RUMUUID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUUID.swift; sourceTree = "<group>"; };
@@ -2466,6 +2468,14 @@
 			path = DataModels;
 			sourceTree = "<group>";
 		};
+		6187A53726FCBDD00015D94A /* Tracing */ = {
+			isa = PBXGroup;
+			children = (
+				6187A53826FCBE240015D94A /* TracerE2ETests.swift */,
+			);
+			path = Tracing;
+			sourceTree = "<group>";
+		};
 		618C365D248E858200520CDE /* Utils */ = {
 			isa = PBXGroup;
 			children = (
@@ -2557,6 +2567,7 @@
 			isa = PBXGroup;
 			children = (
 				61B3BD502661224800A9BEF0 /* Logging */,
+				6187A53726FCBDD00015D94A /* Tracing */,
 				61993667265BBEDC009D7EA8 /* E2ETests.swift */,
 				6167C79226665D6900D4CF07 /* E2EUtils.swift */,
 				61216B812667CFC90089DCD1 /* Helpers */,
@@ -4264,6 +4275,7 @@
 				6167C791266636B300D4CF07 /* FoundationMocks.swift in Sources */,
 				618F984F265BC905009959F8 /* E2EConfig.swift in Sources */,
 				61216B7B2667A9AE0089DCD1 /* LoggingConfigurationE2ETests.swift in Sources */,
+				6187A53926FCBE240015D94A /* TracerE2ETests.swift in Sources */,
 				61993668265BBEDC009D7EA8 /* E2ETests.swift in Sources */,
 				61216B852667CFFE0089DCD1 /* RUME2EHelpers.swift in Sources */,
 				61216B762666DDA10089DCD1 /* LoggerBuilderE2ETests.swift in Sources */,
