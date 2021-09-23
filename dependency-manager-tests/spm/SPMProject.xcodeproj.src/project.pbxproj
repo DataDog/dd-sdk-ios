@@ -678,9 +678,9 @@
 /* Begin XCRemoteSwiftPackageReference section */
 		9E73373E26B0123500917C24 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/DataDog/dd-sdk-ios/";
+			repositoryURL = "GIT_REMOTE";
 			requirement = {
-				branch = REMOTE_GIT_REFERENCE;
+				branch = GIT_REFERENCE;
 				kind = branch;
 			};
 		};

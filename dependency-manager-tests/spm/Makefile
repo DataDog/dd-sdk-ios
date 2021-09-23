@@ -6,11 +6,17 @@ ifneq (${BITRISE_GIT_TAG},)
 	GIT_REFERENCE := ${BITRISE_GIT_TAG}
 endif
 
+GIT_REMOTE := "https://github.com/DataDog/dd-sdk-ios"
+ifneq (${BITRISEIO_PULL_REQUEST_REPOSITORY_URL},)
+	GIT_REMOTE := ${BITRISEIO_PULL_REQUEST_REPOSITORY_URL}
+endif
+
 test:
 		@echo "⚙️  Configuring SPMProject with remote branch: '${GIT_REFERENCE}'..."
 		@rm -rf SPMProject.xcodeproj
 		@cp -r SPMProject.xcodeproj.src SPMProject.xcodeproj
-		@sed "s|REMOTE_GIT_REFERENCE|${GIT_REFERENCE}|g" SPMProject.xcodeproj.src/project.pbxproj > SPMProject.xcodeproj/project.pbxproj
+		@sed "s|GIT_REFERENCE|${GIT_REFERENCE}|g" SPMProject.xcodeproj.src/project.pbxproj | \
+		sed "s|GIT_REMOTE|${GIT_REMOTE}|g" > SPMProject.xcodeproj/project.pbxproj
 		@echo "OK 👌"
 
 create-src-from-xcodeproj:
