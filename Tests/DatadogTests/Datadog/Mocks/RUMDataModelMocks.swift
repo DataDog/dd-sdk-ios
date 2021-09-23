@@ -143,7 +143,7 @@ extension RUMResourceEvent: RandomMockable {
                 size: .mockRandom(),
                 ssl: .init(duration: .mockRandom(), start: .mockRandom()),
                 statusCode: .mockRandom(),
-                type: [.xhr, .fetch, .image].randomElement()!,
+                type: [.native, .image].randomElement()!,
                 url: .mockRandom()
             ),
             service: .mockRandom(),

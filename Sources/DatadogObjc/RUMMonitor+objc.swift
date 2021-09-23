@@ -144,6 +144,7 @@ public enum DDRUMResourceType: Int {
     case js
     case media
     case other
+    case native
 
     internal var swiftType: RUMResourceType {
         switch self {
@@ -156,6 +157,7 @@ public enum DDRUMResourceType: Int {
         case .font: return .font
         case .js: return .js
         case .media: return .media
+        case .native: return .native
         default: return .other
         }
     }

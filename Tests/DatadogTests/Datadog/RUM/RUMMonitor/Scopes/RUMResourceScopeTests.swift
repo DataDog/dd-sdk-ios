@@ -356,7 +356,7 @@ class RUMResourceScopeTests: XCTestCase {
     }
 
     func testGivenResourceStartedWithKindBasedOnRequest_whenLoadingEndsWithDifferentKind_itSendsTheKindBasedOnRequest() throws {
-        let kinds: [RUMResourceType] = [.image, .xhr, .beacon, .css, .document, .fetch, .font, .js, .media, .other]
+        let kinds: [RUMResourceType] = [.image, .xhr, .beacon, .css, .document, .fetch, .font, .js, .media, .other, .native]
         let kindBasedOnRequest = kinds.randomElement()!
         let kindBasedOnResponse = kinds.randomElement()!
 

@@ -379,13 +379,14 @@ extension URLResponse {
 
     static func mockWith(
         statusCode: Int = 200,
-        mimeType: String = "application/json"
+        mimeType: String? = "application/json"
     ) -> HTTPURLResponse {
+        let headers: [String: String] = (mimeType == nil) ? [:] : ["Content-Type": "\(mimeType!)"]
         return HTTPURLResponse(
             url: .mockAny(),
             statusCode: statusCode,
             httpVersion: nil,
-            headerFields: ["Content-Type": "\(mimeType)"]
+            headerFields: headers
         )!
     }
 }
