@@ -136,6 +136,9 @@ class DDConfigurationTests: XCTestCase {
         objcBuilder.trackUIKitRUMActions()
         XCTAssertTrue(objcBuilder.build().sdkConfiguration.rumUIKitUserActionsPredicate is DefaultUIKitRUMUserActionsPredicate)
 
+        objcBuilder.trackRUMLongTasks(threshold: 999.0)
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.rumLongTaskDurationThreshold, 999.0)
+
         objcBuilder.trackUIKitRUMViews()
         XCTAssertTrue(objcBuilder.build().sdkConfiguration.rumUIKitViewsPredicate is DefaultUIKitRUMViewsPredicate)
 
@@ -167,6 +170,9 @@ class DDConfigurationTests: XCTestCase {
 
         objcBuilder.setRUMErrorEventMapper { _ in nil }
         XCTAssertNotNil(objcBuilder.build().sdkConfiguration.rumErrorEventMapper)
+
+        objcBuilder.setRUMLongTaskEventMapper { _ in nil }
+        XCTAssertNotNil(objcBuilder.build().sdkConfiguration.rumLongTaskEventMapper)
 
         objcBuilder.set(batchSize: .small)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.batchSize, .small)
@@ -203,6 +209,7 @@ class DDConfigurationTests: XCTestCase {
         let swiftResourceEvent: RUMResourceEvent = .mockRandom()
         let swiftActionEvent: RUMActionEvent = .mockRandom()
         let swiftErrorEvent: RUMErrorEvent = .mockRandom()
+        let swiftLongTaskEvent: RUMLongTaskEvent = .mockRandom()
 
         objcBuilder.setRUMViewEventMapper { objcViewEvent in
             XCTAssertEqual(objcViewEvent.swiftModel, swiftViewEvent)
@@ -232,12 +239,19 @@ class DDConfigurationTests: XCTestCase {
             return objcErrorEvent
         }
 
+        objcBuilder.setRUMLongTaskEventMapper { objcLongTaskEvent in
+            XCTAssertEqual(objcLongTaskEvent.swiftModel, swiftLongTaskEvent)
+            objcLongTaskEvent.view.url = "redacted view.url"
+            return objcLongTaskEvent
+        }
+
         let configuration = objcBuilder.build().sdkConfiguration
 
         let redactedSwiftViewEvent = configuration.rumViewEventMapper?(swiftViewEvent)
         let redactedSwiftResourceEvent = configuration.rumResourceEventMapper?(swiftResourceEvent)
         let redactedSwiftActionEvent = configuration.rumActionEventMapper?(swiftActionEvent)
         let redactedSwiftErrorEvent = configuration.rumErrorEventMapper?(swiftErrorEvent)
+        let redactedSwiftLongTaskEvent = configuration.rumLongTaskEventMapper?(swiftLongTaskEvent)
 
         XCTAssertEqual(redactedSwiftViewEvent?.view.url, "redacted view.url")
         XCTAssertEqual(redactedSwiftResourceEvent?.view.url, "redacted view.url")
@@ -247,6 +261,7 @@ class DDConfigurationTests: XCTestCase {
         XCTAssertEqual(redactedSwiftErrorEvent?.view.url, "redacted view.url")
         XCTAssertEqual(redactedSwiftErrorEvent?.error.message, "redacted error.message")
         XCTAssertEqual(redactedSwiftErrorEvent?.error.resource?.url, "redacted error.resource.url")
+        XCTAssertEqual(redactedSwiftLongTaskEvent?.view.url, "redacted view.url")
     }
 
     func testDroppingRUMEvents() {
@@ -259,12 +274,14 @@ class DDConfigurationTests: XCTestCase {
         objcBuilder.setRUMResourceEventMapper { _ in nil }
         objcBuilder.setRUMActionEventMapper { _ in nil }
         objcBuilder.setRUMErrorEventMapper { _ in nil }
+        objcBuilder.setRUMLongTaskEventMapper { _ in nil }
 
         let configuration = objcBuilder.build().sdkConfiguration
 
         XCTAssertNil(configuration.rumResourceEventMapper?(.mockRandom()))
         XCTAssertNil(configuration.rumActionEventMapper?(.mockRandom()))
         XCTAssertNil(configuration.rumErrorEventMapper?(.mockRandom()))
+        XCTAssertNil(configuration.rumLongTaskEventMapper?(.mockRandom()))
     }
 
     func testDeprecatedTrackUIActions() {

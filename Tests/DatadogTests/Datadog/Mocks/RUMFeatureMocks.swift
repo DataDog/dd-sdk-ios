@@ -137,13 +137,15 @@ extension RUMEventsMapper {
         viewEventMapper: RUMViewEventMapper? = nil,
         errorEventMapper: RUMErrorEventMapper? = nil,
         resourceEventMapper: RUMResourceEventMapper? = nil,
-        actionEventMapper: RUMActionEventMapper? = nil
+        actionEventMapper: RUMActionEventMapper? = nil,
+        longTaskEventMapper: RUMLongTaskEventMapper? = nil
     ) -> RUMEventsMapper {
         return RUMEventsMapper(
             viewEventMapper: viewEventMapper,
             errorEventMapper: errorEventMapper,
             resourceEventMapper: resourceEventMapper,
-            actionEventMapper: actionEventMapper
+            actionEventMapper: actionEventMapper,
+            longTaskEventMapper: longTaskEventMapper
         )
     }
 }

@@ -64,5 +64,9 @@ class HTTPClientTests: XCTestCase {
         XCTAssertEqual(actualProxy[kCFNetworkProxiesHTTPProxy] as? String, "www.example.com")
         XCTAssertEqual(actualProxy[kCFProxyUsernameKey] as? String, "proxyuser")
         XCTAssertEqual(actualProxy[kCFProxyPasswordKey] as? String, "proxypass")
+        XCTAssertEqual(
+            client.session.configuration.httpAdditionalHeaders?["Proxy-Authorization"] as? String,
+            "Basic cHJveHl1c2VyOnByb3h5cGFzcw==" // Base64.encode(proxyuser:proxypass)
+        )
     }
 }

@@ -28,7 +28,8 @@ class RUMAutoInstrumentationTests: XCTestCase {
         RUMAutoInstrumentation.instance = RUMAutoInstrumentation(
             configuration: .init(
                 uiKitRUMViewsPredicate: UIKitRUMViewsPredicateMock(),
-                uiKitRUMUserActionsPredicate: nil
+                uiKitRUMUserActionsPredicate: nil,
+                longTaskThreshold: nil
             ),
             dateProvider: SystemDateProvider()
         )
@@ -51,7 +52,8 @@ class RUMAutoInstrumentationTests: XCTestCase {
         RUMAutoInstrumentation.instance = RUMAutoInstrumentation(
             configuration: .init(
                 uiKitRUMViewsPredicate: nil,
-                uiKitRUMUserActionsPredicate: UIKitRUMUserActionsPredicateMock()
+                uiKitRUMUserActionsPredicate: UIKitRUMUserActionsPredicateMock(),
+                longTaskThreshold: nil
             ),
             dateProvider: SystemDateProvider()
         )
@@ -66,6 +68,29 @@ class RUMAutoInstrumentationTests: XCTestCase {
         XCTAssertTrue(userActionsHandler?.subscriber === Global.rum)
     }
 
+    func testGivenRUMLongTasksAutoInstrumentationEnabled_whenRUMMonitorIsRegistered_itSubscribesAsLongTaskObserver() throws {
+        // Given
+        RUMFeature.instance = .mockNoOp()
+        defer { RUMFeature.instance?.deinitialize() }
+
+        RUMAutoInstrumentation.instance = RUMAutoInstrumentation(
+            configuration: .init(
+                uiKitRUMViewsPredicate: nil,
+                uiKitRUMUserActionsPredicate: nil,
+                longTaskThreshold: 100.0
+            ),
+            dateProvider: SystemDateProvider()
+        )
+        defer { RUMAutoInstrumentation.instance?.deinitialize() }
+
+        // When
+        Global.rum = RUMMonitor.initialize()
+        defer { Global.rum = DDNoopRUMMonitor() }
+
+        // Then
+        XCTAssertTrue(RUMAutoInstrumentation.instance?.longTasks?.subscriber === Global.rum)
+    }
+
     /// Sanity check for not-allowed configuration.
     func testWhenAllRUMAutoInstrumentationsDisabled_itDoesNotCreateInstrumentationComponents() throws {
         // Given
@@ -75,7 +100,8 @@ class RUMAutoInstrumentationTests: XCTestCase {
         /// This configuration is not allowed by `FeaturesConfiguration` logic. We test it for sanity.
         let notAllowedConfiguration = FeaturesConfiguration.RUM.AutoInstrumentation(
             uiKitRUMViewsPredicate: nil,
-            uiKitRUMUserActionsPredicate: nil
+            uiKitRUMUserActionsPredicate: nil,
+            longTaskThreshold: nil
         )
 
         RUMAutoInstrumentation.instance = RUMAutoInstrumentation(

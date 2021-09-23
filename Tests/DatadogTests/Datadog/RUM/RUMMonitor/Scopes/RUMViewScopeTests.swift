@@ -630,6 +630,53 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(viewUpdate.model.view.error.count, 1, "Failed Resource should be counted as Error")
     }
 
+    // MARK: - Long tasks
+
+    func testWhenLongTaskIsAdded_itSendsLongTaskEventAndViewUpdateEvent() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            parent: parent,
+            dependencies: dependencies,
+            identity: mockView,
+            path: "UIViewController",
+            name: "ViewName",
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: ["foo": "bar"], identity: mockView, isInitialView: true)
+            )
+        )
+
+        currentTime.addTimeInterval(1)
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddLongTaskCommand(time: currentTime, attributes: ["foo": "bar"], duration: 1.0)
+            )
+        )
+
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMLongTaskEvent>.self).last)
+        let longTask = event.model
+
+        XCTAssertEqual(longTask.action?.id, scope.context.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(longTask.application.id, scope.context.rumApplicationID)
+        XCTAssertNil(longTask.connectivity)
+        XCTAssertEqual(longTask.context?.contextInfo as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(longTask.date, Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1).timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(longTask.dd.session?.plan, .plan1)
+        XCTAssertEqual(longTask.longTask.duration, (1.0).toInt64Nanoseconds)
+        XCTAssertTrue(longTask.longTask.isFrozenFrame == true)
+        XCTAssertEqual(longTask.view.id, scope.viewUUID.toRUMDataFormat)
+        XCTAssertNil(longTask.synthetics)
+
+        let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
+        XCTAssertEqual(viewUpdate.model.view.longTask?.count, 1)
+    }
+
     // MARK: - Custom Timings Tracking
 
     func testGivenActiveView_whenCustomTimingIsRegistered_itSendsViewUpdateEvent() throws {

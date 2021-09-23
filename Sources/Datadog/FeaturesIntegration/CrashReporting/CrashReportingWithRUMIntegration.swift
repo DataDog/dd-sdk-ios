@@ -120,6 +120,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 id: lastRUMView.session.id,
                 type: .user
             ),
+            synthetics: nil,
             usr: lastRUMView.usr,
             view: .init(
                 id: lastRUMView.view.id,
@@ -149,6 +150,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds,
             service: original.service,
             session: original.session,
+            synthetics: nil,
             usr: original.usr,
             view: .init(
                 action: original.view.action,
@@ -164,9 +166,11 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 firstContentfulPaint: original.view.firstContentfulPaint,
                 firstInputDelay: original.view.firstInputDelay,
                 firstInputTime: original.view.firstInputTime,
+                frozenFrame: nil,
                 id: original.view.id,
                 inForegroundPeriods: original.view.inForegroundPeriods,
                 isActive: false,
+                isSlowRendered: nil,
                 largestContentfulPaint: original.view.largestContentfulPaint,
                 loadEvent: original.view.loadEvent,
                 loadingTime: original.view.loadingTime,
