@@ -119,7 +119,7 @@ extension Date: AnyMockable {
     }
 
     static func mockRandomInThePast() -> Date {
-        return Date(timeIntervalSinceReferenceDate: TimeInterval.random(in: 0..<Date().timeIntervalSinceReferenceDate))
+        return Date(timeIntervalSinceReferenceDate: TimeInterval.mockRandomInThePast())
     }
 
     static func mockSpecificUTCGregorianDate(year: Int, month: Int, day: Int, hour: Int, minute: Int = 0, second: Int = 0) -> Date {
@@ -286,7 +286,7 @@ extension Float: AnyMockable {
 }
 
 extension Double: AnyMockable, RandomMockable {
-    static func mockAny() -> Float {
+    static func mockAny() -> Double {
         return 0
     }
 
@@ -300,11 +300,11 @@ extension Double: AnyMockable, RandomMockable {
 }
 
 extension TimeInterval {
-    static func mockAny() -> TimeInterval {
-        return 0
-    }
-
     static let distantFuture = TimeInterval(integerLiteral: .max)
+
+    static func mockRandomInThePast() -> TimeInterval {
+        return random(in: 0..<Date().timeIntervalSinceReferenceDate)
+    }
 }
 
 struct ErrorMock: Error, CustomStringConvertible {
