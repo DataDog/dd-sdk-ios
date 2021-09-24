@@ -27,11 +27,11 @@ internal extension RUMResourceType {
     /// - Parameters:
     ///   - request: the `URLRequest` for the resource.
     init?(request: URLRequest) {
-        let xhrHTTPMethods: Set<String> = ["POST", "PUT", "DELETE"]
+        let nativeHTTPMethods: Set<String> = ["POST", "PUT", "DELETE"]
 
         if let requestMethod = request.httpMethod?.uppercased(),
-           xhrHTTPMethods.contains(requestMethod) {
-            self = .xhr
+            nativeHTTPMethods.contains(requestMethod) {
+            self = .native
         } else {
             return nil
         }
@@ -54,10 +54,10 @@ internal extension RUMResourceType {
             case ("font", _): self = .font
             case ("text", "css"): self = .css
             case ("text", "javascript"): self = .js
-            default: self = .xhr
+            default: self = .native
             }
         } else {
-            self = .xhr
+            self = .native
         }
     }
 }

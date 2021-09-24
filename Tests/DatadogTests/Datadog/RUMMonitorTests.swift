@@ -117,7 +117,7 @@ class RUMMonitorTests: XCTestCase {
         }
     }
 
-    func testStartingView_thenLoadingXHRResourceWithRequestWithMetrics() throws {
+    func testStartingView_thenLoadingNativeResourceWithRequestWithMetrics() throws {
         guard #available(iOS 13, *) else {
             return // `URLSessionTaskMetrics` mocking doesn't work prior to iOS 13.0
         }
@@ -149,14 +149,14 @@ class RUMMonitorTests: XCTestCase {
 
         let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
         let resourceEvent = session.viewVisits[0].resourceEvents[0]
-        XCTAssertEqual(resourceEvent.resource.type, .xhr, "POST Resources should always have the `.xhr` kind")
+        XCTAssertEqual(resourceEvent.resource.type, .native, "POST Resources should always have the `.native` kind")
         XCTAssertEqual(resourceEvent.resource.statusCode, 200)
         XCTAssertEqual(resourceEvent.resource.duration, 4_000_000_000)
         XCTAssertEqual(resourceEvent.resource.dns!.start, 1_000_000_000)
         XCTAssertEqual(resourceEvent.resource.dns!.duration, 2_000_000_000)
     }
 
-    func testStartingView_thenLoadingXHRResourceWithRequestWithExternalMetrics() throws {
+    func testStartingView_thenLoadingNativeResourceWithRequestWithExternalMetrics() throws {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
         defer { RUMFeature.instance?.deinitialize() }
 
@@ -200,7 +200,7 @@ class RUMMonitorTests: XCTestCase {
 
         let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
         let resourceEvent = session.viewVisits[0].resourceEvents[0]
-        XCTAssertEqual(resourceEvent.resource.type, .xhr, "POST Resources should always have the `.xhr` kind")
+        XCTAssertEqual(resourceEvent.resource.type, .native, "POST Resources should always have the `.native` kind")
         XCTAssertEqual(resourceEvent.resource.statusCode, 200)
 
         XCTAssertEqual(resourceEvent.resource.duration, 12_000_000_000)
@@ -1373,15 +1373,15 @@ class RUMResourceKindTests: XCTestCase {
         }
     }
 
-    func testWhenInitializedWithPOSTorPUTorDELETErequest_itReturnsXHR() {
+    func testWhenInitialized_itDefaultsToNative() {
         XCTAssertEqual(
-            RUMResourceType(request: .mockWith(httpMethod: "POST".randomcased())), .xhr
+            RUMResourceType(request: .mockWith(httpMethod: "POST".randomcased())), .native
         )
         XCTAssertEqual(
-            RUMResourceType(request: .mockWith(httpMethod: "PUT".randomcased())), .xhr
+            RUMResourceType(request: .mockWith(httpMethod: "PUT".randomcased())), .native
         )
         XCTAssertEqual(
-            RUMResourceType(request: .mockWith(httpMethod: "DELETE".randomcased())), .xhr
+            RUMResourceType(request: .mockWith(httpMethod: "DELETE".randomcased())), .native
         )
     }
 
@@ -1397,9 +1397,15 @@ class RUMResourceKindTests: XCTestCase {
         )
     }
 
-    func testWhenInitializingFromHTTPURLResponse_itDefaultsToXhr() {
+    func testWhenInitializingFromHTTPURLResponseWithUnknownType_itDefaultsToNative() {
         XCTAssertEqual(
-            RUMResourceType(response: .mockWith(mimeType: "unknown/type")), .xhr
+            RUMResourceType(response: .mockWith(mimeType: "unknown/type")), .native
+        )
+    }
+
+    func testWhenInitializingFromHTTPURLResponseWithNoType_itDefaultsToNative() {
+        XCTAssertEqual(
+            RUMResourceType(response: .mockWith(mimeType: nil)), .native
         )
     }
 }

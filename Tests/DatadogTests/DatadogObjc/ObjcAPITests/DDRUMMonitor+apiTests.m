@@ -41,6 +41,7 @@
 - (void)testDDRUMResourceTypeAPI {
     DDRUMResourceTypeImage; DDRUMResourceTypeXhr; DDRUMResourceTypeBeacon; DDRUMResourceTypeCss; DDRUMResourceTypeDocument;
     DDRUMResourceTypeFetch; DDRUMResourceTypeFont; DDRUMResourceTypeJs; DDRUMResourceTypeMedia; DDRUMResourceTypeOther;
+    DDRUMResourceTypeNative;
 }
 
 - (void)testDDRUMMethodAPI {
