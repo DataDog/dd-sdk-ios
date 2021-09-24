@@ -39,6 +39,8 @@ internal final class VitalInfoSampler {
 
     var refreshRate: VitalInfo {
         let info = refreshRatePublisher.currentValue
+        // NOTE: RUMM-1278 refreshRate is normalized to 0...60 range
+        // assuming 60 is the industry standard.
         return info.scaledDown(by: maximumRefreshRate / 60.0)
     }
 
