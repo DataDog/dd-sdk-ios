@@ -39,7 +39,7 @@ internal final class VitalInfoSampler {
 
     var refreshRate: VitalInfo {
         let info = refreshRatePublisher.currentValue
-        return info.scaledDown(by: maximumRefreshRate)
+        return info.scaledDown(by: maximumRefreshRate / 60.0)
     }
 
     private var timer: Timer?
