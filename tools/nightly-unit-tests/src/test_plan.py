@@ -6,6 +6,7 @@
 
 import random
 from src.simulators_parser import Simulator
+from src.semver import Version
 
 # An estimated duration of installing simulator on Bitrise.
 # It includes ~3-5min margin over measured duration.
@@ -18,6 +19,9 @@ UNIT_TESTS_EXECUTION_TIME_IN_MINUTES = 10
 # The maximum time of running a build in Bitrise.
 # It includes ~10min margin for set-up and tear-down jobs.
 BITRISE_TIMEOUT_IN_MINUTES = 80
+
+# The minimal supported iOS version for running unit tests.
+MIN_SUPPORTED_IOS_VERSION = Version.parse('11.0.0')
 
 
 class TestPlanStep:
@@ -62,6 +66,8 @@ class TestPlan:
         :return: a `TestPlan` object
         """
         possible_steps = list(map(lambda s: TestPlanStep(simulator=s), simulators))
+        possible_steps = list(filter(lambda step: is_using_supported_ios_version(step), possible_steps))
+
         planned_steps: [TestPlanStep] = []
 
         random.shuffle(possible_steps)
@@ -90,3 +96,7 @@ def total_duration_in_minutes(steps: [TestPlanStep]):
     for step in steps:
         total += step.estimated_duration_in_minutes
     return total
+
+
+def is_using_supported_ios_version(step: TestPlanStep) -> bool:
+    return step.simulator.os_version.is_newer_than_or_equal(MIN_SUPPORTED_IOS_VERSION)

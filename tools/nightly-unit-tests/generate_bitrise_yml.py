@@ -23,6 +23,36 @@ from src.test_plan import TestPlan, TestPlanStep
 from src.semver import Version
 
 
+def get_environment() -> (Simulators, Runtimes, Devices):
+    """
+    Uses `xcversion simulators` and `xcrun simctl` CLIs to load available
+    simulators, runtimes and devices.
+    """
+    simulators = Simulators(
+        xcversion_simulators_output=shell_output('xcversion simulators')
+    )
+    runtimes = Runtimes(
+        xcrun_simctl_list_runtimes_json_output=shell_output('xcrun simctl list runtimes --json')
+    )
+    devices = Devices(
+        runtimes=runtimes,
+        xcrun_simctl_list_devices_json_output=shell_output('xcrun simctl list devices --json')
+    )
+    return simulators, runtimes, devices
+
+
+def dump_environment(simulators: Simulators, runtimes: Runtimes, devices: Devices):
+    """
+    Prints log listing all available simulators, runtimes and devices.
+    """
+    print('\n⚙️ All simulators:')
+    print_simulators(simulators=simulators.all)
+    print('\n⚙️ All runtimes:')
+    print_runtimes(runtimes=runtimes.all)
+    print('\n⚙️ All devices:')
+    print_devices(devices=devices.all)
+
+
 def generate_bitrise_yml(test_plan: TestPlan, dry_run: bool):
     """
     Generates `bitrise.yml` file for given Test Plan.
@@ -55,22 +85,8 @@ def generate_bitrise_yml(test_plan: TestPlan, dry_run: bool):
             print(f' → installed {simulator.os_name} {simulator.os_version} Simulator, in: {minutes_elapsed}')
 
     # After installing new simulators, load list of available devices:
-    simulators = Simulators(
-        xcversion_simulators_output=shell_output('xcversion simulators')
-    )
-    runtimes = Runtimes(
-        xcrun_simctl_list_runtimes_json_output=shell_output('xcrun simctl list runtimes --json')
-    )
-    devices = Devices(
-        runtimes=runtimes,
-        xcrun_simctl_list_devices_json_output=shell_output('xcrun simctl list devices --json')
-    )
-    print('\n⚙️ App simulators:')
-    print_simulators(simulators=simulators.all)
-    print('\n⚙️ All runtimes:')
-    print_runtimes(runtimes=runtimes.all)
-    print('\n⚙️ All devices:')
-    print_devices(devices=devices.all)
+    simulators, runtimes, devices = get_environment()
+    dump_environment(simulators=simulators, runtimes=runtimes, devices=devices)
 
     # Generate `bitrise.yml`
     print('\n⚙️ Creating `bitrise.yml`:')
@@ -189,6 +205,9 @@ if __name__ == "__main__":
         print('-' * 60)
         traceback.print_exc(file=sys.stdout)
         print('-' * 60)
+        print('Environment dump:')
+        simulators, runtimes, devices = get_environment()
+        dump_environment(simulators=simulators, runtimes=runtimes, devices=devices)
         sys.exit(1)
 
     sys.exit(0)
