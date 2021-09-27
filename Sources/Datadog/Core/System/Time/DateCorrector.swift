@@ -38,17 +38,17 @@ internal class DateCorrector: DateCorrectorType {
         self.serverDateProvider = serverDateProvider
         serverDateProvider.synchronize(
             with: DateCorrector.datadogNTPServers.randomElement()!, // swiftlint:disable:this force_unwrapping
-            completion: { serverTime in
-                let deviceTime = deviceDateProvider.currentDate()
-                if let serverTime = serverTime {
-                    let difference = (serverTime.timeIntervalSince(deviceTime) * 1_000).rounded() / 1_000
+            completion: { offset in
+                if let offset = offset {
+                    let difference = (offset * 1_000).rounded() / 1_000
                     userLogger.info(
                         """
                         NTP time synchronization completed.
-                        Server time will be used for signing events (current server time is \(serverTime); \(difference)s difference with device time).
+                        Server time will be used for signing events (\(difference)s difference with device time).
                         """
                     )
                 } else {
+                    let deviceTime = deviceDateProvider.currentDate()
                     userLogger.warn(
                         """
                         NTP time synchronization failed.
@@ -61,13 +61,10 @@ internal class DateCorrector: DateCorrectorType {
     }
 
     var currentCorrection: DateCorrection {
-        if let serverTime = serverDateProvider.currentDate() {
-            let deviceTime = deviceDateProvider.currentDate()
-            return DateCorrection(
-                serverTimeOffset: serverTime.timeIntervalSince(deviceTime)
-            )
-        } else {
+        guard let offset = serverDateProvider.offset else {
             return DateCorrection(serverTimeOffset: 0)
         }
+
+        return DateCorrection(serverTimeOffset: offset)
     }
 }
