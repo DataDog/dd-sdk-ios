@@ -65,10 +65,10 @@ Example:
 ```swift
 // in your `UIViewController`:
 
-@IBAction func didTapDownloadResourceButton(_ sender: Any) {
+@IBAction func didTapDownloadResourceButton(_ sender: UIButton) {
     Global.rum.addUserAction(
         type: .tap,
-        name: (sender as? UIButton).currentTitle ?? "",
+        name: sender.currentTitle ?? "",
     )
 }
 ```
@@ -214,6 +214,7 @@ Inside the `rumView(for:)` implementation, your app should decide if a given `UI
 For instance, you can configure the predicate to use explicit type check for each view controller in your app:
 ```swift
 class YourCustomPredicate: UIKitRUMViewsPredicate {
+
     func rumView(for viewController: UIViewController) -> RUMView? {
         switch viewController {
         case is HomeViewController:     return .init(name: "Home")
@@ -227,12 +228,13 @@ class YourCustomPredicate: UIKitRUMViewsPredicate {
 You can even come up with a more dynamic solution depending on your app's architecture. For example, if your view controllers use `accessibilityLabel` consistently, you can name views by the value of accessibility label:
 ```swift
 class YourCustomPredicate: UIKitRUMViewsPredicate {
+
     func rumView(for viewController: UIViewController) -> RUMView? {
-        if let accessibilityLabel = viewController.accessibilityLabel {
-            return .init(name: accessibilityLabel)
-        } else {
+        guard let accessibilityLabel = viewController.accessibilityLabel else {
             return nil
         }
+
+        return RUMView(name: accessibilityLabel)
     }
 }
 ```
