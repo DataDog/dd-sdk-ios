@@ -7,6 +7,7 @@
 import XCTest
 @testable import Datadog
 @testable import DatadogCrashReporting
+import CrashReporter
 
 class DDCrashReportExporterTests: XCTestCase {
     private let exporter = DDCrashReportExporter()
@@ -355,5 +356,73 @@ class DDCrashReportExporterTests: XCTestCase {
         let randomFlag: Bool = .random()
         crashReport.wasTruncated = randomFlag
         XCTAssertEqual(exporter.export(crashReport).wasTruncated, randomFlag)
+    }
+
+    // MARK: - Comparing with PLCR text format
+
+    func testExportedStacksHaveTheSameFormatAndValuesAsIfTheyWereExportedFromPLCR() throws {
+        let crashReporter = PLCrashReporter(configuration: .ddConfiguration())!
+
+        // Given
+        let plCrashReport = try PLCrashReport(
+            data: try crashReporter.generateLiveReportAndReturnError()
+        )
+
+        // When
+        let exporter = DDCrashReportExporter()
+        let ddCrashReport = exporter.export(try CrashReport(from: plCrashReport))
+
+        // Then
+        let plcrTextFormat = PLCrashReportTextFormatter.stringValue(for: plCrashReport, with: PLCrashReportTextFormatiOS)!
+
+        ddCrashReport.threads.forEach { thread in
+            XCTAssertTrue(
+                plcrTextFormat.contains(thread.stack),
+                """
+                Stack:
+                ```
+                \(thread.stack)
+                ```
+
+                does not appear in PLCR text format:
+                ```
+                \(plcrTextFormat)
+                ```
+                """
+            )
+        }
+    }
+
+    func testExportedBinaryImagesHaveTheSameValuesAsIfTheyWereExportedFromPLCR() throws {
+        let crashReporter = PLCrashReporter(configuration: .ddConfiguration())!
+
+        // Given
+        let plCrashReport = try PLCrashReport(
+            data: try crashReporter.generateLiveReportAndReturnError()
+        )
+
+        // When
+        let exporter = DDCrashReportExporter()
+        let ddCrashReport = exporter.export(try CrashReport(from: plCrashReport))
+
+        // Then
+        let plcrTextFormat = PLCrashReportTextFormatter.stringValue(for: plCrashReport, with: PLCrashReportTextFormatiOS)!
+        let plcrByLines = plcrTextFormat.split(separator: "\n").reversed() // matching in reversed report is 2x faster
+
+        ddCrashReport.binaryImages.forEach { binaryImage in
+            XCTAssertTrue(
+                plcrByLines.contains { line in
+                    // PLCR uses free-form text format, e.g.:
+                    // `       0x10ce2e000 -        0x10ced9fff +Example x86_64  <aaf339bd11e1347a91fcefdce2714ad7> /.../Example.app/Example`
+                    // Instead of matching the whole line, just checking if all values appear in the line should be enough:
+                    let matchLoadAddress = line.contains(binaryImage.loadAddress)
+                    let matchMaxAddress = line.contains(binaryImage.maxAddress)
+                    let matchArchitecture = line.contains(binaryImage.architecture)
+                    let matchLibraryName = line.contains(binaryImage.libraryName)
+                    let matchUUID = line.contains(binaryImage.uuid)
+                    return matchLoadAddress && matchMaxAddress && matchArchitecture && matchLibraryName && matchUUID
+                }
+            )
+        }
     }
 }

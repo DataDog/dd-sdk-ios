@@ -1,3 +1,19 @@
+# 1.7.0 / 09-27-2021
+
+### Changes
+
+* [BUGFIX] RUM: Fix `DDRUMView` API visibility for Objective-C. See [#583][]
+* [FEATURE] Crash Reporting: Add `DatadogCrashReporting`
+* [FEATURE] RUM: Add Mobile Vitals. See [#493][] [#514][] [#522][] [#495][]
+* [FEATURE] RUM: Add option for renaming instrumented actions. See [#539][]
+* [FEATURE] RUM: Add option for tracking events when app is in background. See [#504][] [#537][]
+* [FEATURE] Add support for `us3` site. See [#523][]
+* [IMPROVEMENT] RUM: Improve RUM <> APM integration. See [#524][] [#575][] [#531][] (Thanks [@jracollins][], [@marcusway][])
+* [IMPROVEMENT] RUM: Improve naming for views started with `key:`. See [#534][]
+* [IMPROVEMENT] RUM: Improve actions instrumentation. See [#509][] [#545][] [#547][]
+* [IMPROVEMENT] RUM: Sanitize custom timings for views. See [#525][]
+* [IMPROVEMENT] Do not retry uploading events if Client Token is invalid. See [#535][]
+
 # 1.6.0 / 06-09-2021
 
 ### Changes
@@ -200,6 +216,24 @@
 [#479]: https://github.com/DataDog/dd-sdk-ios/issues/479
 [#481]: https://github.com/DataDog/dd-sdk-ios/issues/481
 [#483]: https://github.com/DataDog/dd-sdk-ios/issues/483
+[#493]: https://github.com/DataDog/dd-sdk-ios/issues/493
+[#495]: https://github.com/DataDog/dd-sdk-ios/issues/495
+[#504]: https://github.com/DataDog/dd-sdk-ios/issues/504
+[#509]: https://github.com/DataDog/dd-sdk-ios/issues/509
+[#514]: https://github.com/DataDog/dd-sdk-ios/issues/514
+[#522]: https://github.com/DataDog/dd-sdk-ios/issues/522
+[#523]: https://github.com/DataDog/dd-sdk-ios/issues/523
+[#524]: https://github.com/DataDog/dd-sdk-ios/issues/524
+[#525]: https://github.com/DataDog/dd-sdk-ios/issues/525
+[#531]: https://github.com/DataDog/dd-sdk-ios/issues/531
+[#534]: https://github.com/DataDog/dd-sdk-ios/issues/534
+[#535]: https://github.com/DataDog/dd-sdk-ios/issues/535
+[#537]: https://github.com/DataDog/dd-sdk-ios/issues/537
+[#539]: https://github.com/DataDog/dd-sdk-ios/issues/539
+[#545]: https://github.com/DataDog/dd-sdk-ios/issues/545
+[#547]: https://github.com/DataDog/dd-sdk-ios/issues/547
+[#575]: https://github.com/DataDog/dd-sdk-ios/issues/575
+[#583]: https://github.com/DataDog/dd-sdk-ios/issues/583
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu
@@ -211,8 +245,10 @@
 [@hyling]: https://github.com/hyling
 [@jegnux]: https://github.com/jegnux
 [@joeydong]: https://github.com/joeydong
+[@jracollins]: https://github.com/jracollins
 [@lgaches]: https://github.com/lgaches
 [@lmramirez]: https://github.com/lmramirez
+[@marcusway]: https://github.com/marcusway
 [@philtre]: https://github.com/philtre
 [@provTheodoreNewell]: https://github.com/provTheodoreNewell
 [@sdejesusF]: https://github.com/sdejesusF

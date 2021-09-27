@@ -299,6 +299,7 @@
 		61993668265BBEDC009D7EA8 /* E2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61993667265BBEDC009D7EA8 /* E2ETests.swift */; };
 		61993673265BC371009D7EA8 /* Kronos.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */; };
 		61993674265BC371009D7EA8 /* Kronos.xcframework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		619A29F326E64910007D62A3 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 614ED36B260352DC00C8C519 /* CrashReporter.xcframework */; };
 		619E16D82577C1CB00B2516B /* DataProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16D72577C1CB00B2516B /* DataProcessor.swift */; };
 		619E16E92578E73E00B2516B /* DataMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16E82578E73E00B2516B /* DataMigrator.swift */; };
 		619E16F12578E89700B2516B /* DeleteAllDataMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16F02578E89700B2516B /* DeleteAllDataMigrator.swift */; };
@@ -444,6 +445,7 @@
 		61F3CDA72512144600C816E5 /* UIKitRUMViewsPredicate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3CDA62512144600C816E5 /* UIKitRUMViewsPredicate.swift */; };
 		61F3CDAB25121FB500C816E5 /* UIViewControllerSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3CDAA25121FB500C816E5 /* UIViewControllerSwizzlerTests.swift */; };
 		61F3CDAD25122C9200C816E5 /* UIKitRUMViewsHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3CDAC25122C9200C816E5 /* UIKitRUMViewsHandlerTests.swift */; };
+		61F74AF426F20E4600E5F5ED /* DebugCrashReportingWithRUMViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F74AF326F20E4600E5F5ED /* DebugCrashReportingWithRUMViewController.swift */; };
 		61F7F1DD266F9CB000F9F53B /* CodableValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA02423979B00786299 /* CodableValue.swift */; };
 		61F8CC092469295500FE2908 /* DatadogConfigurationBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F8CC082469295500FE2908 /* DatadogConfigurationBuilderTests.swift */; };
 		61F9CA712512450B000A5E61 /* RUMAutoInstrumentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F9CA702512450B000A5E61 /* RUMAutoInstrumentationTests.swift */; };
@@ -1087,6 +1089,7 @@
 		61F3CDA62512144600C816E5 /* UIKitRUMViewsPredicate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMViewsPredicate.swift; sourceTree = "<group>"; };
 		61F3CDAA25121FB500C816E5 /* UIViewControllerSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewControllerSwizzlerTests.swift; sourceTree = "<group>"; };
 		61F3CDAC25122C9200C816E5 /* UIKitRUMViewsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMViewsHandlerTests.swift; sourceTree = "<group>"; };
+		61F74AF326F20E4600E5F5ED /* DebugCrashReportingWithRUMViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugCrashReportingWithRUMViewController.swift; sourceTree = "<group>"; };
 		61F8CC082469295500FE2908 /* DatadogConfigurationBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogConfigurationBuilderTests.swift; sourceTree = "<group>"; };
 		61F9CA702512450B000A5E61 /* RUMAutoInstrumentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAutoInstrumentationTests.swift; sourceTree = "<group>"; };
 		61F9CA782512593A000A5E61 /* RUMNavigationControllerScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMNavigationControllerScenario.storyboard; sourceTree = "<group>"; };
@@ -1248,6 +1251,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				61B7885D25C180CB002675B5 /* DatadogCrashReporting.framework in Frameworks */,
+				619A29F326E64910007D62A3 /* CrashReporter.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2195,6 +2199,7 @@
 				61441C942461A649003D8BB8 /* DebugLoggingViewController.swift */,
 				61441C932461A649003D8BB8 /* DebugTracingViewController.swift */,
 				61E5333724B84EE2003D6C4E /* DebugRUMViewController.swift */,
+				61F74AF326F20E4600E5F5ED /* DebugCrashReportingWithRUMViewController.swift */,
 			);
 			path = Debugging;
 			sourceTree = "<group>";
@@ -4145,6 +4150,7 @@
 				61D50C5A2580EFF3006038A3 /* URLSessionScenarios.swift in Sources */,
 				614CADCE250FCA0200B93D2D /* TestScenarios.swift in Sources */,
 				6111542525C992F8007C84C9 /* CrashReportingScenarios.swift in Sources */,
+				61F74AF426F20E4600E5F5ED /* DebugCrashReportingWithRUMViewController.swift in Sources */,
 				61441C972461A649003D8BB8 /* UIViewController+KeyboardControlling.swift in Sources */,
 				61B9ED1C2461E12000C0DCFF /* SendLogsFixtureViewController.swift in Sources */,
 				6111543F25C996A5007C84C9 /* CrashReportingViewController.swift in Sources */,

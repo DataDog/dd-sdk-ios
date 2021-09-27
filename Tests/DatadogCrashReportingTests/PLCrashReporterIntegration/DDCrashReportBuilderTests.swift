@@ -43,7 +43,8 @@ class DDCrashReportBuilderTests: XCTestCase {
             "`DDCrashReport` should include the image for `DatadogCrashReportingTests`"
         )
         XCTAssertTrue(
-            ddCrashReport.binaryImages.contains(where: { $0.libraryName == "XCTest" }),
+            // Assert on prefix as it's `XCTestCore` on iOS 15+ and `XCTest` earlier:
+            ddCrashReport.binaryImages.contains(where: { $0.libraryName.hasPrefix("XCTest") }),
             "`DDCrashReport` should include the image for `XCTest`"
         )
     }
