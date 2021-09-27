@@ -28,22 +28,23 @@ internal class NTPServerDateProvider: ServerDateProvider {
     }
 
     func synchronize(with pool: String, completion: @escaping (TimeInterval?) -> Void) {
-        // Kronos only notifies for the first and last samples.
-        // In case, the last sample does not return an offset, we calculate the offset
-        // from `Clock.now`.
         Clock.sync(
             from: pool,
-            first: { _, offset in
-                self.publisher.publishAsync(offset)
+            first: { [weak self] _, offset in
+                self?.publisher.publishAsync(offset)
             },
-            completion: { now, offset in
+            completion: { [weak self] now, offset in
+                // Kronos only notifies for the first and last samples.
+                // In case, the last sample does not return an offset, we calculate the offset
+                // from the returned `now` parameter. The `now` parameter in this callback
+                // is `Clock.now`, so it is possible to have `now` but not `offset`.
                 if let offset = offset {
-                    self.publisher.publishAsync(offset)
+                    self?.publisher.publishAsync(offset)
                 } else if let now = now {
-                    self.publisher.publishAsync(now.timeIntervalSinceNow)
+                    self?.publisher.publishAsync(now.timeIntervalSinceNow)
                 }
 
-                completion(self.publisher.currentValue)
+                completion(self?.publisher.currentValue)
             }
         )
     }
