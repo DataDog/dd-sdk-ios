@@ -47,5 +47,9 @@ internal class NTPServerDateProvider: ServerDateProvider {
                 completion(self?.publisher.currentValue)
             }
         )
+
+        // `Kronos.sync` first loads the previous state from the `UserDefaults` if any.
+        // We can invoke `Clock.now` to retrieve the stored offset.
+        publisher.publishAsync(Clock.now?.timeIntervalSinceNow)
     }
 }
