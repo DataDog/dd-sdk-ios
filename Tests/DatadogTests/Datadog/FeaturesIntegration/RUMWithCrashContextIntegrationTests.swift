@@ -15,7 +15,7 @@ class RUMWithCrashContextIntegrationTests: XCTestCase {
 
         // Then
         let rumWithCrashContextIntegration = try XCTUnwrap(RUMWithCrashContextIntegration())
-        let randomRUMViewEvent: RUMEvent<RUMViewEvent> = .mockRandomWith(model: RUMViewEvent.mockRandom())
+        let randomRUMViewEvent: RUMEvent<RUMViewEvent> = .mockRandom()
         rumWithCrashContextIntegration.update(lastRUMViewEvent: randomRUMViewEvent)
 
         XCTAssertEqual(CrashReportingFeature.instance?.rumViewEventProvider.currentValue, randomRUMViewEvent)

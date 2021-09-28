@@ -10,26 +10,46 @@ import Foundation
 internal struct RUMEventSanitizer {
     private let attributesSanitizer = AttributesSanitizer(featureName: "RUM Event")
 
-    func sanitize<DM: RUMDataModel>(event: RUMEvent<DM>) -> RUMEvent<DM> {
-        // Sanitize attribute names
-        var sanitizedUserExtraInfo = attributesSanitizer.sanitizeKeys(for: event.userInfoAttributes, prefixLevels: 1)
-        var sanitizedAttributes = attributesSanitizer.sanitizeKeys(for: event.attributes, prefixLevels: 1)
+    func sanitize<Event>(event: Event) -> Event where Event: RUMSanitizableEvent {
+        var event = event
 
         // Limit to max number of attributes.
         // If any attributes need to be removed, we first reduce number of
         // event attributes, then user info extra attributes.
-        sanitizedUserExtraInfo = attributesSanitizer.limitNumberOf(
-            attributes: sanitizedUserExtraInfo,
-            to: AttributesSanitizer.Constraints.maxNumberOfAttributes
-        )
-        sanitizedAttributes = attributesSanitizer.limitNumberOf(
-            attributes: sanitizedAttributes,
-            to: AttributesSanitizer.Constraints.maxNumberOfAttributes - sanitizedUserExtraInfo.count
-        )
+        var limit = AttributesSanitizer.Constraints.maxNumberOfAttributes
+        event.usr = sanitize(usr: event.usr, limit: &limit)
+        event.context = sanitize(context: event.context, limit: &limit)
 
-        var sanitizedEvent = event
-        sanitizedEvent.attributes = sanitizedAttributes
-        sanitizedEvent.userInfoAttributes = sanitizedUserExtraInfo
-        return sanitizedEvent
+        return event
+    }
+
+    private func sanitize(usr: RUMUser?, limit: inout Int) -> RUMUser? {
+        guard var usr = usr else {
+            return nil
+        }
+
+        // Sanitize attribute names
+        let attributes = attributesSanitizer.sanitizeKeys(for: usr.usrInfo, prefixLevels: 1)
+
+        // Limit to max number of attributes.
+        usr.usrInfo = attributesSanitizer.limitNumberOf(attributes: attributes, to: limit)
+
+        limit -= usr.usrInfo.count
+        return usr
+    }
+
+    private func sanitize(context: RUMEventAttributes?, limit: inout Int) -> RUMEventAttributes? {
+        guard var context = context else {
+            return nil
+        }
+
+        // Sanitize attribute names
+        let attributes = attributesSanitizer.sanitizeKeys(for: context.contextInfo, prefixLevels: 1)
+
+        // Limit to max number of attributes.
+        context.contextInfo = attributesSanitizer.limitNumberOf(attributes: attributes, to: limit)
+
+        limit -= context.contextInfo.count
+        return context
     }
 }

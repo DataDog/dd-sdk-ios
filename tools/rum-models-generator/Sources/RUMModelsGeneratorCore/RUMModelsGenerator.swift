@@ -58,7 +58,8 @@ public class RUMModelsGenerator {
             schemaFiles.viewSchema,
             schemaFiles.resourceSchema,
             schemaFiles.actionSchema,
-            schemaFiles.errorSchema
+            schemaFiles.errorSchema,
+            schemaFiles.longTaskSchema,
         ]
 
         // Read ambiguous JSON schemas from `*.json` files

@@ -6,6 +6,7 @@
 
 import UIKit
 import Datadog
+import DatadogCrashReporting
 
 protocol AppConfiguration {
     /// The tracking consent value applied when initializing the SDK.
@@ -45,9 +46,16 @@ struct ExampleAppConfiguration: AppConfiguration {
             .enableInternalMonitoring(clientToken: Environment.readClientToken())
 #endif
 
-        // If the app was launched with test scenarion ENV, apply the scenario configuration
         if let testScenario = testScenario {
+            // If the `Example` app was launched with test scenario ENV, apply the scenario configuration
             testScenario.configureSDK(builder: configuration)
+        } else {
+            // Otherwise just enable all features so they can be tested with debug menu
+            _ = configuration
+                .enableLogging(true)
+                .enableTracing(true)
+                .enableRUM(true)
+                .enableCrashReporting(using: DDCrashReportingPlugin())
         }
 
         return configuration.build()

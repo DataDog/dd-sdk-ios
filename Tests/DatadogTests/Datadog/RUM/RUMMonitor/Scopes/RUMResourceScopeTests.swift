@@ -94,7 +94,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.model.resource.firstByte)
         XCTAssertNil(event.model.resource.download)
         XCTAssertEqual(try XCTUnwrap(event.model.action?.id), context.activeUserActionID?.toRUMDataFormat)
-        XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.model.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.model.dd.traceId, "100")
         XCTAssertEqual(event.model.dd.spanId, "200")
         XCTAssertEqual(event.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
@@ -158,7 +158,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.model.resource.firstByte)
         XCTAssertNil(event.model.resource.download)
         XCTAssertEqual(try XCTUnwrap(event.model.action?.id), context.activeUserActionID?.toRUMDataFormat)
-        XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.model.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.model.dd.traceId, "100")
         XCTAssertEqual(event.model.dd.spanId, "200")
     }
@@ -213,7 +213,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.error.resource?.statusCode, 500)
         XCTAssertEqual(event.model.error.resource?.url, "https://foo.com/resource/1")
         XCTAssertEqual(try XCTUnwrap(event.model.action?.id), context.activeUserActionID?.toRUMDataFormat)
-        XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.model.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
     }
 
@@ -320,7 +320,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.resource.download?.start, 9_000_000_000)
         XCTAssertEqual(event.model.resource.download?.duration, 1_000_000_000)
         XCTAssertEqual(try XCTUnwrap(event.model.action?.id), context.activeUserActionID?.toRUMDataFormat)
-        XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.model.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertNil(event.model.dd.traceId)
         XCTAssertNil(event.model.dd.spanId)
     }
@@ -356,7 +356,7 @@ class RUMResourceScopeTests: XCTestCase {
     }
 
     func testGivenResourceStartedWithKindBasedOnRequest_whenLoadingEndsWithDifferentKind_itSendsTheKindBasedOnRequest() throws {
-        let kinds: [RUMResourceType] = [.image, .xhr, .beacon, .css, .document, .fetch, .font, .js, .media, .other]
+        let kinds: [RUMResourceType] = [.image, .xhr, .beacon, .css, .document, .fetch, .font, .js, .media, .other, .native]
         let kindBasedOnRequest = kinds.randomElement()!
         let kindBasedOnResponse = kinds.randomElement()!
 
@@ -593,7 +593,6 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let eventBuilder = RUMEventBuilder(
-            userInfoProvider: UserInfoProvider.mockAny(),
             eventsMapper: RUMEventsMapper.mockWith(
                 errorEventMapper: { event in
                     nil

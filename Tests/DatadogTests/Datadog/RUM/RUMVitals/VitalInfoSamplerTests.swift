@@ -24,7 +24,7 @@ class VitalInfoSamplerTests: XCTestCase {
         mockMemoryReader.vitalData = 321.0
         mockRefreshRateReader.vitalInfo = {
             var info = VitalInfo()
-            info.addSample(666.0)
+            info.addSample(60.0)
             return info
         }()
 
@@ -38,8 +38,7 @@ class VitalInfoSamplerTests: XCTestCase {
             XCTAssertGreaterThan(sampler.cpu.sampleCount, 1)
             XCTAssertEqual(sampler.memory.meanValue, 321.0)
             XCTAssertGreaterThan(sampler.memory.sampleCount, 1)
-            let maxFPS = Double(UIScreen.main.maximumFramesPerSecond)
-            XCTAssertEqual(sampler.refreshRate.meanValue, 666.0 / maxFPS)
+            XCTAssertEqual(sampler.refreshRate.meanValue, 60.0)
         }
     }
 

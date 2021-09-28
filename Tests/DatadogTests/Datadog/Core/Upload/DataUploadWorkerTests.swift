@@ -86,7 +86,7 @@ class DataUploadWorkerTests: XCTestCase {
             fileReader: reader,
             dataUploader: mockDataUploader,
             uploadConditions: .alwaysUpload(),
-            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockAny()
         )
 
@@ -113,7 +113,7 @@ class DataUploadWorkerTests: XCTestCase {
             fileReader: reader,
             dataUploader: mockDataUploader,
             uploadConditions: .alwaysUpload(),
-            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockAny()
         )
 

@@ -65,10 +65,10 @@ Example:
 ```swift
 // in your `UIViewController`:
 
-@IBAction func didTapDownloadResourceButton(_ sender: Any) {
+@IBAction func didTapDownloadResourceButton(_ sender: UIButton) {
     Global.rum.addUserAction(
         type: .tap,
-        name: (sender as? UIButton).currentTitle ?? "",
+        name: sender.currentTitle ?? "",
     )
 }
 ```
@@ -198,7 +198,7 @@ You can use the following methods in `Datadog.Configuration.Builder` when creati
 
 `setSpanEventMapper(_ mapper: @escaping (SpanEvent) -> SpanEvent)`
 : Sets the data scrubbing callback for spans. This can be used to modify or drop span events before they are sent to Datadog.
- 
+
 ### Automatically track views
 
 To automatically track views (`UIViewControllers`), use the `.trackUIKitRUMViews()` option when configuring the SDK. By default, views are named with the view controller's class name. To customize it, use `.trackUIKitRUMViews(using: predicate)` and provide your own implementation of the `predicate` which conforms to `UIKitRUMViewsPredicate` protocol:
@@ -214,6 +214,7 @@ Inside the `rumView(for:)` implementation, your app should decide if a given `UI
 For instance, you can configure the predicate to use explicit type check for each view controller in your app:
 ```swift
 class YourCustomPredicate: UIKitRUMViewsPredicate {
+
     func rumView(for viewController: UIViewController) -> RUMView? {
         switch viewController {
         case is HomeViewController:     return .init(name: "Home")
@@ -227,17 +228,22 @@ class YourCustomPredicate: UIKitRUMViewsPredicate {
 You can even come up with a more dynamic solution depending on your app's architecture. For example, if your view controllers use `accessibilityLabel` consistently, you can name views by the value of accessibility label:
 ```swift
 class YourCustomPredicate: UIKitRUMViewsPredicate {
+
     func rumView(for viewController: UIViewController) -> RUMView? {
-        if let accessibilityLabel = viewController.accessibilityLabel {
-            return .init(name: accessibilityLabel)
-        } else {
+        guard let accessibilityLabel = viewController.accessibilityLabel else {
             return nil
         }
+
+        return RUMView(name: accessibilityLabel)
     }
 }
 ```
 
 **Note**: The SDK calls `rumView(for:)` many times while your app is running. It is recommended to keep its implementation fast and single-threaded.
+
+### Automatically track user actions
+
+To automatically track user tap actions, use the `.trackUIKitActions()` option when configuring the SDK.
 
 ### Automatically track network requests
 
@@ -287,7 +293,7 @@ For instance, you may want to add HTTP request and response headers to the RUM r
 
 ```
 
-### Automatically track RUM errors
+### Automatically track errors
 
 All "error" and "critical" logs sent with `Logger` are automatically reported as RUM errors and linked to the current RUM view:
 ```swift
@@ -391,6 +397,27 @@ This means that even if users open your application while offline, no data is lo
 
 **Note**: The data on the disk is automatically discarded if it gets too old to ensure the SDK doesn't use too much disk space.
 
+## Configuring a custom proxy for Datadog data upload
+
+If your app is running on devices behind a custom proxy, you can let the SDK's data uploader know about it to ensure all tracked data are uploaded with the relevant configuration. You can specify your proxy configuration (as described in the [URLSessionConfiguration.connectionProxyDictionary][12] documentation) when initializing the SDK.
+
+```swift
+Datadog.initialize(
+    // ...
+    configuration: Datadog.Configuration
+        .builderUsing(/* ... */)
+        .set(proxyConfiguration: [
+            kCFNetworkProxiesHTTPEnable: true, 
+            kCFNetworkProxiesHTTPPort: 123, 
+            kCFNetworkProxiesHTTPProxy: "www.example.com", 
+            kCFProxyUsernameKey: "proxyuser", 
+            kCFProxyPasswordKey: "proxypass" 
+        ])
+        // ...
+        .build()
+)
+```
+
 
 ## Further Reading
 
@@ -402,9 +429,10 @@ This means that even if users open your application while offline, no data is lo
 [3]: /real_user_monitoring/ios/data_collected
 [4]: #automatically-track-views
 [5]: https://docs.datadoghq.com/real_user_monitoring/explorer/?tab=measures#setup-facets-and-measures
-[6]: #automatically-track-actions
+[6]: #automatically-track-user-actions
 [7]: #automatically-track-network-requests
 [8]: /real_user_monitoring/ios/data_collected/?tab=error#error-attributes
 [9]: #modify-or-drop-rum-events
 [10]: https://docs.datadoghq.com/real_user_monitoring/connect_rum_and_traces?tab=browserrum
 [11]: /real_user_monitoring/ios/data_collected?tab=session#default-attributes
+[12]: https://developer.apple.com/documentation/foundation/urlsessionconfiguration/1411499-connectionproxydictionary

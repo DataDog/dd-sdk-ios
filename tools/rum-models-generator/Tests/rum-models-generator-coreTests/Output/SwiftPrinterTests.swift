@@ -25,7 +25,7 @@ final class SwiftPrinterTests: XCTestCase {
                                 comment: "Description of Bar's `property1`.",
                                 type: SwiftPrimitive<String>(),
                                 isOptional: true,
-                                isMutable: false,
+                                mutability: .immutable,
                                 defaultValue: nil,
                                 codingKey: .static(value: "property1")
                             ),
@@ -34,7 +34,7 @@ final class SwiftPrinterTests: XCTestCase {
                                 comment: "Description of Bar's `property2`.",
                                 type: SwiftPrimitive<String>(),
                                 isOptional: false,
-                                isMutable: true,
+                                mutability: .mutable,
                                 defaultValue: nil,
                                 codingKey: .static(value: "property2")
                             )
@@ -42,7 +42,7 @@ final class SwiftPrinterTests: XCTestCase {
                         conformance: [codableProtocol]
                     ),
                     isOptional: true,
-                    isMutable: false,
+                    mutability: .immutable,
                     defaultValue: nil,
                     codingKey: .static(value: "bar")
                 ),
@@ -61,7 +61,7 @@ final class SwiftPrinterTests: XCTestCase {
                         conformance: [codableProtocol]
                     ),
                     isOptional: false,
-                    isMutable: false,
+                    mutability: .immutable,
                     defaultValue: SwiftEnum.Case(label: "case2", rawValue: .string(value: "case2")),
                     codingKey: .static(value: "bizz")
                 ),
@@ -82,7 +82,7 @@ final class SwiftPrinterTests: XCTestCase {
                         )
                     ),
                     isOptional: true,
-                    isMutable: true,
+                    mutability: .mutable,
                     defaultValue: nil,
                     codingKey: .static(value: "buzz")
                 ),
@@ -91,7 +91,7 @@ final class SwiftPrinterTests: XCTestCase {
                     comment: "Description of FooBar's `propertiesByNames`.",
                     type: SwiftDictionary(value: SwiftPrimitive<String>()),
                     isOptional: true,
-                    isMutable: false,
+                    mutability: .immutable,
                     defaultValue: nil,
                     codingKey: .static(value: "propertiesByNames")
                 )
@@ -215,7 +215,7 @@ final class SwiftPrinterTests: XCTestCase {
                     comment: nil,
                     type: SwiftPrimitive<String>(),
                     isOptional: false,
-                    isMutable: false,
+                    mutability: .immutable,
                     defaultValue: nil,
                     codingKey: .static(value: "property_1")
                 ),
@@ -226,7 +226,7 @@ final class SwiftPrinterTests: XCTestCase {
                         value: SwiftPrimitive<Int>()
                     ),
                     isOptional: false,
-                    isMutable: false,
+                    mutability: .immutable,
                     defaultValue: nil,
                     codingKey: .static(value: "property_2")
                 )
@@ -264,10 +264,10 @@ final class SwiftPrinterTests: XCTestCase {
                     name: "context",
                     comment: nil,
                     type: SwiftDictionary(
-                        value: SwiftPrimitive<SwiftCodable>()
+                        value: SwiftCodable()
                     ),
                     isOptional: false,
-                    isMutable: false,
+                    mutability: .immutable,
                     defaultValue: nil,
                     codingKey: .dynamic
                 )
@@ -331,7 +331,7 @@ final class SwiftPrinterTests: XCTestCase {
                     comment: nil,
                     type: SwiftPrimitive<Int>(),
                     isOptional: false,
-                    isMutable: false,
+                    mutability: .immutable,
                     defaultValue: nil,
                     codingKey: .static(value: "property_1")
                 ),
@@ -339,10 +339,10 @@ final class SwiftPrinterTests: XCTestCase {
                     name: "context",
                     comment: nil,
                     type: SwiftDictionary(
-                        value: SwiftPrimitive<SwiftCodable>()
+                        value: SwiftEncodable()
                     ),
                     isOptional: false,
-                    isMutable: false,
+                    mutability: .mutableInternally,
                     defaultValue: nil,
                     codingKey: .dynamic
                 ),
@@ -351,7 +351,7 @@ final class SwiftPrinterTests: XCTestCase {
                     comment: nil,
                     type: SwiftPrimitive<Bool>(),
                     isOptional: true,
-                    isMutable: true,
+                    mutability: .mutable,
                     defaultValue: nil,
                     codingKey: .static(value: "property_2")
                 )
@@ -367,7 +367,7 @@ final class SwiftPrinterTests: XCTestCase {
         public struct Foo: Codable {
             public let property1: Int
 
-            public let context: [String: Codable]
+            public internal(set) var context: [String: Encodable]
 
             public var property2: Bool?
 

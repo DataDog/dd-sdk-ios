@@ -74,20 +74,23 @@ internal class JSONToSwiftTypeTransformer {
         if let additionalProperties = jsonObject.additionalProperties {
             if additionalProperties.type == .any {
                 // RUMM-1401: if schema declares `additionalProperties: true` or `additionalProperties: {type: object, ...}`
-                // we model it as a `struct` with nested `<var|let> <structName>Info: [String: Codable]` dictionary.
-                // In generated encoding code, this dictionary is erased but its keys and values are used as dynamic
+                // we model it as a `struct` with nested `<public|public internal(set)><var> <structName>Info: [String: Codable]`
+                // dictionary. In generated encoding code, this dictionary is erased but its keys and values are used as dynamic
                 // properties encoded in JSON.
                 let additionalPropertyName = jsonObject.name + "Info"
+                // RUMM-1420: we noticed that `additionalProperties` is used for custom user attributes which need to be
+                // sanitized by the SDK, hence it's very practical for us to generate `.mutableInternally` modifier for those.
+                let mutability: SwiftStruct.Property.Mutability = additionalProperties.isReadOnly ? .mutableInternally : .mutable
                 var `struct` = try transformJSONToStruct(jsonObject)
                 `struct`.properties.append(
                     SwiftStruct.Property(
                         name: additionalPropertyName,
                         comment: additionalProperties.comment,
                         type: SwiftDictionary(
-                            value: SwiftPrimitive<SwiftCodable>()
+                            value: SwiftEncodable()
                         ),
                         isOptional: false,
-                        isMutable: !additionalProperties.isReadOnly,
+                        mutability: mutability,
                         defaultValue: nil,
                         codingKey: .dynamic
                     )
@@ -125,12 +128,13 @@ internal class JSONToSwiftTypeTransformer {
             }
 
             return try objectProperties.map { jsonProperty in
+                let mutability: SwiftStruct.Property.Mutability = jsonProperty.isReadOnly ? .immutable : .mutable
                 return SwiftStruct.Property(
                     name: jsonProperty.name,
                     comment: jsonProperty.comment,
                     type: try transformJSONToAnyType(jsonProperty.type),
                     isOptional: !jsonProperty.isRequired,
-                    isMutable: !jsonProperty.isReadOnly,
+                    mutability: mutability,
                     defaultValue: try readDefaultValue(for: jsonProperty),
                     codingKey: .static(value: jsonProperty.name)
                 )
@@ -175,7 +179,7 @@ internal class JSONToSwiftTypeTransformer {
 
         `struct`.properties = `struct`.properties.map { property in
             var property = property
-            property.isMutable = property.isMutable || hasTransitiveMutableProperty(type: property.type)
+            property.mutability = transitiveMutability(of: property)
 
             if let nestedStruct = property.type as? SwiftStruct {
                 property.type = resolveTransitiveMutableProperties(in: nestedStruct)
@@ -187,17 +191,41 @@ internal class JSONToSwiftTypeTransformer {
         return `struct`
     }
 
-    /// Returns `true` if the given `SwiftType` contains a mutable property (`var`) or any of its nested types does.
-    private func hasTransitiveMutableProperty(type: SwiftType) -> Bool {
+    /// Returns the mutability level of the given `SwiftStruct.Property` by checking the mutability levels of its element or nested types.
+    ///
+    /// This stands for: _if the child is mutable, its parent must be mutable too_;
+    /// e.g.: in `foo.bar.property = 2` expression, not only `property` must be mutable, but also its parent `bar` accessor.
+    private func transitiveMutability(of property: SwiftStruct.Property) -> SwiftStruct.Property.Mutability {
+        resolve(parentMutability: property.mutability, childMutability: transitiveMutableProperty(of: property.type))
+    }
+
+    /// Returns the mutability level of the given `SwiftType` by checking the mutability levels of its element or nested types.
+    ///
+    /// This stands for: _if the child is mutable, its parent must be mutable too_;
+    /// e.g.: in `foo.bar.property = 2` expression, not only `property` must be mutable, but also its parent `bar` accessor.
+    private func transitiveMutableProperty(of type: SwiftType) -> SwiftStruct.Property.Mutability {
         switch type {
         case let array as SwiftArray:
-            return hasTransitiveMutableProperty(type: array.element)
+            return transitiveMutableProperty(of: array.element)
         case let `struct` as SwiftStruct:
-            return `struct`.properties.contains { property in
-                property.isMutable || hasTransitiveMutableProperty(type: property.type)
+            // Returns the highest level of mutability of the struct's inner properties
+            // .immutable < .mutableInternally < .mutable
+            return `struct`.properties.reduce(.immutable) {
+                self.resolve(parentMutability: $0, childMutability: transitiveMutability(of: $1))
             }
         default:
-            return false
+            return .immutable
         }
+    }
+
+    /// Returns new `Mutability` for parent type given its child `Mutability`.
+    ///
+    /// This stands for: _if the child is mutable, its parent must be mutable too_;
+    /// e.g.: in `foo.bar.property = 2` expression, not only `property` must be mutable, but also its parent `bar` accessor.
+    private func resolve(
+        parentMutability: SwiftStruct.Property.Mutability,
+        childMutability: SwiftStruct.Property.Mutability
+    ) -> SwiftStruct.Property.Mutability {
+        return parentMutability.rawValue > childMutability.rawValue ? parentMutability : childMutability
     }
 }

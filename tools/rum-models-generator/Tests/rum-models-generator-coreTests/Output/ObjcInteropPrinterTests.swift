@@ -35,25 +35,25 @@ final class ObjcInteropPrinterTests: XCTestCase {
                     propertyName: "immutableString",
                     type: SwiftPrimitive<String>(),
                     isOptional: false,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "optionalImmutableString",
                     type: SwiftPrimitive<String>(),
                     isOptional: true,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "mutableString",
                     type: SwiftPrimitive<String>(),
                     isOptional: false,
-                    isMutable: true
+                    mutability: .mutable
                 ),
                 .mock(
                     propertyName: "optionalMutableString",
                     type: SwiftPrimitive<String>(),
                     isOptional: true,
-                    isMutable: true
+                    mutability: .mutable
                 ),
             ],
             conformance: []
@@ -118,25 +118,25 @@ final class ObjcInteropPrinterTests: XCTestCase {
                     propertyName: "immutableInt",
                     type: SwiftPrimitive<Int>(),
                     isOptional: false,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "optionalImmutableInt",
                     type: SwiftPrimitive<Int>(),
                     isOptional: true,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "mutableInt",
                     type: SwiftPrimitive<Int>(),
                     isOptional: false,
-                    isMutable: true
+                    mutability: .mutable
                 ),
                 .mock(
                     propertyName: "optionalMutableInt",
                     type: SwiftPrimitive<Int>(),
                     isOptional: true,
-                    isMutable: true
+                    mutability: .mutable
                 ),
             ],
             conformance: []
@@ -201,25 +201,25 @@ final class ObjcInteropPrinterTests: XCTestCase {
                     propertyName: "immutableInt64",
                     type: SwiftPrimitive<Int64>(),
                     isOptional: false,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "optionalImmutableInt64",
                     type: SwiftPrimitive<Int64>(),
                     isOptional: true,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "mutableInt",
                     type: SwiftPrimitive<Int64>(),
                     isOptional: false,
-                    isMutable: true
+                    mutability: .mutable
                 ),
                 .mock(
                     propertyName: "optionalMutableInt64",
                     type: SwiftPrimitive<Int64>(),
                     isOptional: true,
-                    isMutable: true
+                    mutability: .mutable
                 ),
             ],
             conformance: []
@@ -284,25 +284,25 @@ final class ObjcInteropPrinterTests: XCTestCase {
                     propertyName: "immutableDouble",
                     type: SwiftPrimitive<Double>(),
                     isOptional: false,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "optionalImmutableDouble",
                     type: SwiftPrimitive<Double>(),
                     isOptional: true,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "mutableDouble",
                     type: SwiftPrimitive<Double>(),
                     isOptional: false,
-                    isMutable: true
+                    mutability: .mutable
                 ),
                 .mock(
                     propertyName: "optionalMutableDouble",
                     type: SwiftPrimitive<Double>(),
                     isOptional: true,
-                    isMutable: true
+                    mutability: .mutable
                 ),
             ],
             conformance: []
@@ -367,25 +367,25 @@ final class ObjcInteropPrinterTests: XCTestCase {
                     propertyName: "immutableBool",
                     type: SwiftPrimitive<Bool>(),
                     isOptional: false,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "optionalImmutableBool",
                     type: SwiftPrimitive<Bool>(),
                     isOptional: true,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "mutableBool",
                     type: SwiftPrimitive<Bool>(),
                     isOptional: false,
-                    isMutable: true
+                    mutability: .mutable
                 ),
                 .mock(
                     propertyName: "optionalMutableBool",
                     type: SwiftPrimitive<Bool>(),
                     isOptional: true,
-                    isMutable: true
+                    mutability: .mutable
                 ),
             ],
             conformance: []
@@ -463,25 +463,25 @@ final class ObjcInteropPrinterTests: XCTestCase {
                     propertyName: "immutableEnum",
                     type: mockEnumeration(named: "Enumeration1"),
                     isOptional: false,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "optionalImmutableEnum",
                     type: mockEnumeration(named: "Enumeration2"),
                     isOptional: true,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "mutableEnum",
                     type: mockEnumeration(named: "Enumeration3"),
                     isOptional: false,
-                    isMutable: true
+                    mutability: .mutable
                 ),
                 .mock(
                     propertyName: "optionalMutableEnum",
                     type: mockEnumeration(named: "Enumeration4"),
                     isOptional: true,
-                    isMutable: true
+                    mutability: .mutable
                 ),
             ],
             conformance: []
@@ -670,25 +670,25 @@ final class ObjcInteropPrinterTests: XCTestCase {
                     propertyName: "immutableStrings",
                     type: SwiftArray(element: SwiftPrimitive<String>()),
                     isOptional: false,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "optionalImmutableStrings",
                     type: SwiftArray(element: SwiftPrimitive<String>()),
                     isOptional: true,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "mutableStrings",
                     type: SwiftArray(element: SwiftPrimitive<String>()),
                     isOptional: false,
-                    isMutable: true
+                    mutability: .mutable
                 ),
                 .mock(
                     propertyName: "optionalMutableStrings",
                     type: SwiftArray(element: SwiftPrimitive<String>()),
                     isOptional: true,
-                    isMutable: true
+                    mutability: .mutable
                 ),
             ],
             conformance: []
@@ -753,25 +753,25 @@ final class ObjcInteropPrinterTests: XCTestCase {
                     propertyName: "immutableInt64s",
                     type: SwiftArray(element: SwiftPrimitive<Int64>()),
                     isOptional: false,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "optionalImmutableInt64s",
                     type: SwiftArray(element: SwiftPrimitive<Int64>()),
                     isOptional: true,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "mutableInt64s",
                     type: SwiftArray(element: SwiftPrimitive<Int64>()),
                     isOptional: false,
-                    isMutable: true
+                    mutability: .mutable
                 ),
                 .mock(
                     propertyName: "optionalMutableInt64s",
                     type: SwiftArray(element: SwiftPrimitive<Int64>()),
                     isOptional: true,
-                    isMutable: true
+                    mutability: .mutable
                 ),
             ],
             conformance: []
@@ -849,13 +849,13 @@ final class ObjcInteropPrinterTests: XCTestCase {
                     propertyName: "immutableEnums",
                     type: SwiftArray(element: mockEnumeration(named: "Options1")),
                     isOptional: false,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "optionalImmutableEnums",
                     type: SwiftArray(element: mockEnumeration(named: "Options2")),
                     isOptional: true,
-                    isMutable: false
+                    mutability: .immutable
                 ),
             ],
             conformance: []
@@ -969,7 +969,7 @@ final class ObjcInteropPrinterTests: XCTestCase {
                         comment: nil,
                         type: SwiftPrimitive<String>(),
                         isOptional: false,
-                        isMutable: false,
+                        mutability: .immutable,
                         defaultValue: nil,
                         codingKey: .static(value: "property")
                     )
@@ -986,13 +986,13 @@ final class ObjcInteropPrinterTests: XCTestCase {
                     propertyName: "immutableStructs",
                     type: SwiftArray(element: mockStruct(named: "Bar")),
                     isOptional: false,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "optionalImmutableStructs",
                     type: SwiftArray(element: mockStruct(named: "Bizz")),
                     isOptional: true,
-                    isMutable: false
+                    mutability: .immutable
                 ),
             ],
             conformance: []
@@ -1081,25 +1081,25 @@ final class ObjcInteropPrinterTests: XCTestCase {
                     propertyName: "immutableStrings",
                     type: SwiftDictionary(value: SwiftPrimitive<String>()),
                     isOptional: false,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "optionalImmutableStrings",
                     type: SwiftDictionary(value: SwiftPrimitive<String>()),
                     isOptional: true,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "mutableStrings",
                     type: SwiftDictionary(value: SwiftPrimitive<String>()),
                     isOptional: false,
-                    isMutable: true
+                    mutability: .mutable
                 ),
                 .mock(
                     propertyName: "optionalMutableStrings",
                     type: SwiftDictionary(value: SwiftPrimitive<String>()),
                     isOptional: true,
-                    isMutable: true
+                    mutability: .mutable
                 ),
             ],
             conformance: []
@@ -1164,25 +1164,25 @@ final class ObjcInteropPrinterTests: XCTestCase {
                     propertyName: "immutableInt64s",
                     type: SwiftDictionary(value: SwiftPrimitive<Int64>()),
                     isOptional: false,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "optionalImmutableInt64s",
                     type: SwiftDictionary(value: SwiftPrimitive<Int64>()),
                     isOptional: true,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "mutableInt64s",
                     type: SwiftDictionary(value: SwiftPrimitive<Int64>()),
                     isOptional: false,
-                    isMutable: true
+                    mutability: .mutable
                 ),
                 .mock(
                     propertyName: "optionalMutableInt64s",
                     type: SwiftDictionary(value: SwiftPrimitive<Int64>()),
                     isOptional: true,
-                    isMutable: true
+                    mutability: .mutable
                 ),
             ],
             conformance: []
@@ -1245,15 +1245,15 @@ final class ObjcInteropPrinterTests: XCTestCase {
             properties: [
                 .mock(
                     propertyName: "immutableCodables",
-                    type: SwiftDictionary(value: SwiftPrimitive<SwiftCodable>()),
+                    type: SwiftDictionary(value: SwiftCodable()),
                     isOptional: false,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "optionalImmutableCodables",
-                    type: SwiftDictionary(value: SwiftPrimitive<SwiftCodable>()),
+                    type: SwiftDictionary(value: SwiftCodable()),
                     isOptional: true,
-                    isMutable: false
+                    mutability: .immutable
                 ),
             ],
             conformance: []
@@ -1308,15 +1308,15 @@ final class ObjcInteropPrinterTests: XCTestCase {
                         name: "MutableBar",
                         comment: nil,
                         properties: [
-                            .mock(propertyName: "immutableString", type: SwiftPrimitive<String>(), isOptional: false, isMutable: false),
-                            .mock(propertyName: "optionalImmutableString", type: SwiftPrimitive<String>(), isOptional: true, isMutable: false),
-                            .mock(propertyName: "mutableString", type: SwiftPrimitive<String>(), isOptional: false, isMutable: true),
-                            .mock(propertyName: "optionalMutableString", type: SwiftPrimitive<String>(), isOptional: true, isMutable: true),
+                            .mock(propertyName: "immutableString", type: SwiftPrimitive<String>(), isOptional: false, mutability: .immutable),
+                            .mock(propertyName: "optionalImmutableString", type: SwiftPrimitive<String>(), isOptional: true, mutability: .immutable),
+                            .mock(propertyName: "mutableString", type: SwiftPrimitive<String>(), isOptional: false, mutability: .mutable),
+                            .mock(propertyName: "optionalMutableString", type: SwiftPrimitive<String>(), isOptional: true, mutability: .mutable),
                         ],
                         conformance: []
                     ),
                     isOptional: false,
-                    isMutable: true
+                    mutability: .mutable
                 ),
                 .mock(
                     propertyName: "immutableBar",
@@ -1324,13 +1324,13 @@ final class ObjcInteropPrinterTests: XCTestCase {
                         name: "ImmutableBar",
                         comment: nil,
                         properties: [
-                            .mock(propertyName: "immutableString", type: SwiftPrimitive<String>(), isOptional: false, isMutable: false),
-                            .mock(propertyName: "optionalImmutableString", type: SwiftPrimitive<String>(), isOptional: true, isMutable: false),
+                            .mock(propertyName: "immutableString", type: SwiftPrimitive<String>(), isOptional: false, mutability: .immutable),
+                            .mock(propertyName: "optionalImmutableString", type: SwiftPrimitive<String>(), isOptional: true, mutability: .immutable),
                         ],
                         conformance: []
                     ),
                     isOptional: false,
-                    isMutable: false
+                    mutability: .immutable
                 ),
                 .mock(
                     propertyName: "optionalMutableBar",
@@ -1338,13 +1338,13 @@ final class ObjcInteropPrinterTests: XCTestCase {
                         name: "OptionalMutableBar",
                         comment: nil,
                         properties: [
-                            .mock(propertyName: "immutableString", type: SwiftPrimitive<String>(), isOptional: false, isMutable: false),
-                            .mock(propertyName: "optionalImmutableString", type: SwiftPrimitive<String>(), isOptional: true, isMutable: false),
+                            .mock(propertyName: "immutableString", type: SwiftPrimitive<String>(), isOptional: false, mutability: .immutable),
+                            .mock(propertyName: "optionalImmutableString", type: SwiftPrimitive<String>(), isOptional: true, mutability: .immutable),
                         ],
                         conformance: []
                     ),
                     isOptional: true,
-                    isMutable: true
+                    mutability: .mutable
                 ),
                 .mock(
                     propertyName: "optionalImmutableBar",
@@ -1352,13 +1352,13 @@ final class ObjcInteropPrinterTests: XCTestCase {
                         name: "OptionalImmutableBar",
                         comment: nil,
                         properties: [
-                            .mock(propertyName: "immutableString", type: SwiftPrimitive<String>(), isOptional: false, isMutable: false),
-                            .mock(propertyName: "optionalImmutableString", type: SwiftPrimitive<String>(), isOptional: true, isMutable: false),
+                            .mock(propertyName: "immutableString", type: SwiftPrimitive<String>(), isOptional: false, mutability: .immutable),
+                            .mock(propertyName: "optionalImmutableString", type: SwiftPrimitive<String>(), isOptional: true, mutability: .immutable),
                         ],
                         conformance: []
                     ),
                     isOptional: true,
-                    isMutable: false
+                    mutability: .immutable
                 ),
             ],
             conformance: []
@@ -1542,13 +1542,13 @@ final class ObjcInteropPrinterTests: XCTestCase {
                                     conformance: []
                                 ),
                                 isOptional: false,
-                                isMutable: true
+                                mutability: .mutable
                             ),
                         ],
                         conformance: []
                     ),
                     isOptional: false,
-                    isMutable: true
+                    mutability: .mutable
                 ),
             ],
             conformance: []
@@ -1648,19 +1648,19 @@ final class ObjcInteropPrinterTests: XCTestCase {
                                 propertyName: "sharedStruct",
                                 type: SwiftTypeReference(referencedTypeName: "SharedStruct"),
                                 isOptional: false,
-                                isMutable: true
+                                mutability: .mutable
                             ),
                             .mock(
                                 propertyName: "sharedEnumeration",
                                 type: SwiftTypeReference(referencedTypeName: "SharedEnum"),
                                 isOptional: false,
-                                isMutable: true
+                                mutability: .mutable
                             ),
                         ],
                         conformance: []
                     ),
                     isOptional: false,
-                    isMutable: true
+                    mutability: .mutable
                 ),
             ],
             conformance: []
@@ -1680,19 +1680,19 @@ final class ObjcInteropPrinterTests: XCTestCase {
                                 propertyName: "sharedStruct",
                                 type: SwiftTypeReference(referencedTypeName: "SharedStruct"),
                                 isOptional: false,
-                                isMutable: true
+                                mutability: .mutable
                             ),
                             .mock(
                                 propertyName: "sharedEnumeration",
                                 type: SwiftTypeReference(referencedTypeName: "SharedEnum"),
                                 isOptional: false,
-                                isMutable: true
+                                mutability: .mutable
                             ),
                         ],
                         conformance: []
                     ),
                     isOptional: false,
-                    isMutable: true
+                    mutability: .mutable
                 ),
             ],
             conformance: []
@@ -1702,7 +1702,7 @@ final class ObjcInteropPrinterTests: XCTestCase {
             name: "SharedStruct",
             comment: nil,
             properties: [
-                .mock(propertyName: "integer", type: SwiftPrimitive<Int>(), isOptional: true, isMutable: true)
+                .mock(propertyName: "integer", type: SwiftPrimitive<Int>(), isOptional: true, mutability: .mutable)
             ],
             conformance: []
         )
@@ -1904,14 +1904,14 @@ extension SwiftStruct.Property {
         propertyName: String,
         type: SwiftType,
         isOptional: Bool,
-        isMutable: Bool
+        mutability: SwiftStruct.Property.Mutability
     ) -> SwiftStruct.Property {
         return SwiftStruct.Property(
             name: propertyName,
             comment: nil,
             type: type,
             isOptional: isOptional,
-            isMutable: isMutable,
+            mutability: mutability,
             defaultValue: nil,
             codingKey: .static(value: propertyName)
         )

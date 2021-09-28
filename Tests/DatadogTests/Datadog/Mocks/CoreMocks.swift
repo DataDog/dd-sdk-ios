@@ -57,6 +57,7 @@ extension Datadog.Configuration {
         batchSize: BatchSize = .medium,
         uploadFrequency: UploadFrequency = .average,
         additionalConfiguration: [String: Any] = [:],
+        proxyConfiguration: [AnyHashable: Any]? = nil,
         internalMonitoringClientToken: String? = nil
     ) -> Datadog.Configuration {
         return Datadog.Configuration(
@@ -84,6 +85,7 @@ extension Datadog.Configuration {
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
             additionalConfiguration: additionalConfiguration,
+            proxyConfiguration: proxyConfiguration,
             internalMonitoringClientToken: internalMonitoringClientToken
         )
     }
@@ -171,7 +173,8 @@ extension FeaturesConfiguration.Common {
         serviceName: String = .mockAny(),
         environment: String = .mockAny(),
         performance: PerformancePreset = .init(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
-        source: String = .mockAny()
+        source: String = .mockAny(),
+        proxyConfiguration: [AnyHashable: Any]? = nil
     ) -> Self {
         return .init(
             applicationName: applicationName,
@@ -180,7 +183,8 @@ extension FeaturesConfiguration.Common {
             serviceName: serviceName,
             environment: environment,
             performance: performance,
-            source: source
+            source: source,
+            proxyConfiguration: proxyConfiguration
         )
     }
 }
@@ -228,8 +232,10 @@ extension FeaturesConfiguration.RUM {
         resourceEventMapper: RUMResourceEventMapper? = nil,
         actionEventMapper: RUMActionEventMapper? = nil,
         errorEventMapper: RUMErrorEventMapper? = nil,
+        longTaskEventMapper: RUMLongTaskEventMapper? = nil,
         autoInstrumentation: FeaturesConfiguration.RUM.AutoInstrumentation? = nil,
-        backgroundEventTrackingEnabled: Bool = false
+        backgroundEventTrackingEnabled: Bool = false,
+        onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> Self {
         return .init(
             common: common,
@@ -241,8 +247,10 @@ extension FeaturesConfiguration.RUM {
             resourceEventMapper: resourceEventMapper,
             actionEventMapper: actionEventMapper,
             errorEventMapper: errorEventMapper,
+            longTaskEventMapper: longTaskEventMapper,
             autoInstrumentation: autoInstrumentation,
-            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
+            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
+            onSessionStart: onSessionStart
         )
     }
 }
@@ -367,25 +375,31 @@ struct StoragePerformanceMock: StoragePerformancePreset {
 
 struct UploadPerformanceMock: UploadPerformancePreset {
     let initialUploadDelay: TimeInterval
-    let defaultUploadDelay: TimeInterval
     let minUploadDelay: TimeInterval
     let maxUploadDelay: TimeInterval
     let uploadDelayChangeRate: Double
 
     static let noOp = UploadPerformanceMock(
         initialUploadDelay: .distantFuture,
-        defaultUploadDelay: .distantFuture,
         minUploadDelay: .distantFuture,
         maxUploadDelay: .distantFuture,
         uploadDelayChangeRate: 0
     )
 
+    /// Optimized for performing very fast uploads in unit tests.
     static let veryQuick = UploadPerformanceMock(
         initialUploadDelay: 0.05,
-        defaultUploadDelay: 0.05,
         minUploadDelay: 0.05,
         maxUploadDelay: 0.05,
         uploadDelayChangeRate: 0
+    )
+
+    /// Optimized for performing very fast first upload and then changing to unrealistically long intervals.
+    static let veryQuickInitialUpload = UploadPerformanceMock(
+        initialUploadDelay: 0.05,
+        minUploadDelay: 60,
+        maxUploadDelay: 60,
+        uploadDelayChangeRate: 60 / 0.05
     )
 }
 
@@ -400,7 +414,6 @@ extension PerformancePreset {
             maxObjectsInFile: storage.maxObjectsInFile,
             maxObjectSize: storage.maxObjectSize,
             initialUploadDelay: upload.initialUploadDelay,
-            defaultUploadDelay: upload.defaultUploadDelay,
             minUploadDelay: upload.minUploadDelay,
             maxUploadDelay: upload.maxUploadDelay,
             uploadDelayChangeRate: upload.uploadDelayChangeRate
@@ -957,9 +970,15 @@ extension CodableValue {
     }
 }
 
-extension ValuePublisher where Value: AnyMockable {
-    static func mockAny() -> ValuePublisher {
+extension ValuePublisher: AnyMockable where Value: AnyMockable {
+    static func mockAny() -> Self {
         return .init(initialValue: .mockAny())
+    }
+}
+
+extension ValuePublisher: RandomMockable where Value: RandomMockable {
+    static func mockRandom() -> Self {
+        return .init(initialValue: .mockRandom())
     }
 }
 

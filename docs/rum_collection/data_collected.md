@@ -79,7 +79,7 @@ You can enable [tracking user info][2] globally to collect and apply user attrib
 
 | Attribute name | Type   | Description             |
 |----------------|--------|-------------------------|
-| `user.id`      | string | Identifier of the user. |
+| `usr.id`      | string | Identifier of the user. |
 | `usr.name`     | string | Name of the user.       |
 | `usr.email`    | string | Email of the user.      |
 
@@ -152,7 +152,7 @@ RUM action, error, resource and long task events contain information about the a
 
 | Metric                         | Type           | Description                                                                                     |
 |--------------------------------|----------------|-------------------------------------------------------------------------------------------------|
-| `duration`                     | number         | Entire time spent loading the resource.                                                         |
+| `resource.duration`            | number         | Entire time spent loading the resource.                                                         |
 | `resource.size`                | number (bytes) | Resource size.                                                                                  |
 | `resource.connect.duration`    | number (ns)    | Time spent establishing a connection to the server (connectEnd - connectStart)                  |
 | `resource.ssl.duration`        | number (ns)    | Time spent for the TLS handshake.                                                               |

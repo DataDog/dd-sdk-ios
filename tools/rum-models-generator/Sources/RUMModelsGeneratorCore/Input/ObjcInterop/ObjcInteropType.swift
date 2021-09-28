@@ -149,10 +149,10 @@ internal class ObjcInteropNSString: ObjcInteropType {
 }
 
 internal class ObjcInteropAny: ObjcInteropType {
-    let swiftCodable: SwiftPrimitive<SwiftCodable>
+    let swiftType: SwiftPrimitiveNoObjcInteropType
 
-    init(swiftCodable: SwiftPrimitive<SwiftCodable>) {
-        self.swiftCodable = swiftCodable
+    init(swiftType: SwiftPrimitiveNoObjcInteropType) {
+        self.swiftType = swiftType
     }
 }
 
