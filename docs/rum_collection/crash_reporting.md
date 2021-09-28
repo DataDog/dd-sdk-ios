@@ -1,40 +1,48 @@
 ---
-title: Crash Reporting (beta)
+title: Crash Reporting and Error Tracking (beta)
 kind: documentation
+beta: true
 further_reading:
   - link: "https://github.com/DataDog/dd-sdk-ios"
-    tag: "Github"
-    text: "dd-sdk-ios Source code"
+    tag: "GitHub"
+    text: "dd-sdk-ios Source Code"
   - link: "/real_user_monitoring"
     tag: "Documentation"
-    text: "Datadog Real User Monitoring"
+    text: "Learn how to explore your RUM data"
 ---
+## Overview
 
-Enable iOS crash reporting and error tracking to get comprehensive crash reports, and error trends in RUM UI. With this beta feature, you get access to 
+<div class="alert alert-info"><p>Crash Reporting and Error Tracking is in beta.</p>
+</div>
+Enable iOS crash reporting and error tracking to get comprehensive crash reports and error trends in the RUM UI. With this beta feature, you have access to:
 
  - Aggregated iOS crash data and RUM crash attributes
  - Desymbolicated iOS error reports
  - Trend analysis with iOS error tracking
 
-This guide follows the setup for iOS crash reporting and error tracking in the following steps
- - Add crash reporting
+This guide follows the setup for iOS crash reporting and error tracking in the following steps:
+ - Crash reporting
  - Desymbolicate error reports
  - Verify setup
 
 ### Add crash reporting 
 
-If you have not set up the SDK yet, follow the [in-app setup instructions][1] or refer to the [iOS RUM setup documentation][2]. Upgrade to [dd-sdk-ios v1.7.0+][3] to get access to iOS crash reporting and error tracking. Update your initialization snippet to include crash reporting:
+If you have not set up the SDK yet, follow the [in-app setup instructions][1] or refer to the [iOS RUM setup documentation][2]. Upgrade to [dd-sdk-ios v1.7.0+][3] to get access to iOS crash reporting and error tracking. 
+
+Update your initialization snippet to include crash reporting:
 
 
 ```
+import DatadogCrashReporting
+
 Datadog.initialize(
     appContext: .init(),
     trackingConsent: .pending,
     configuration: Datadog.Configuration
     .builderUsing(
-        rumApplicationID: "APP_ID",
-        clientToken: "CLIENT_TOKEN",
-        environment: "ENVIRONMENT"
+        rumApplicationID: "<rum_application_id>",
+        clientToken: "<client_token>",
+        environment: "<environment_name>"
     )
     .trackUIKitActions()
     .trackUIKitRUMViews()
@@ -50,7 +58,7 @@ If your mobile iOS source code is symbolicated, upload your dSYM file to Datadog
 
 #### Install Datadog CI
 
-If you haven't already, install [Datadog CI][4] through NPM or Yarn. The package is under [@datadog/datadog-ci][5]. 
+If you haven't already, install the [Datadog CI][4] through NPM or Yarn. The package is under [@datadog/datadog-ci][5]. 
 
 ```sh
 # NPM
@@ -75,31 +83,31 @@ yarn global add @datadog/datadog-ci
 
 #### Upload dSYM files
 
-**This command runs only in macOS.**
+<div class="alert alert-warning"><p>This command runs only in macOS.</p></div>
 
-To begin with ensure you have `DATADOG_API_KEY` in your environment.
+First, ensure you have `DATADOG_API_KEY` in your environment.
 
 ```bash
 # Environment setup
 export DATADOG_API_KEY="<API KEY>"
 ```
 
-Note: To configure the tool to use EU endpoint define `DATADOG_SITE` environment variable to `datadoghq.eu`. To override the full URL for the intake endpoint define the `DATADOG_DSYM_INTAKE_URL` environment variable.
+**Note**: To configure the tool to use the EU endpoint, set the `DATADOG_SITE` environment variable to `datadoghq.eu`. To override the full URL for the intake endpoint, define the `DATADOG_DSYM_INTAKE_URL` environment variable.
 
-Use the `upload` command to upload dSYM files in your derived path
+Use the `upload` command to upload dSYM files in your derived path:
 
 ```bash
 datadog-ci dsyms upload ~/Library/Developer/Xcode/DerivedData/
 ```
 
-In addition, some optional parameters are available:
+Optional parameters include the following:
 
-* `--max-concurrency` (default: `20`): number of concurrent upload to the API.
-* `--dry-run` (default: `false`): it will run the command without the final step of upload. All other checks are performed.
+* `--max-concurrency` (default: `20`): Number of concurrent uploads to the API.
+* `--dry-run` (default: `false`): The command runs without the final upload step. All other checks are performed.
 
 
-If your app has bitcode enabled, download your app's dSYM files from [App Store Connect][7].
-They come in the form of a zip file, named `appDsyms.zip`. Run `datadog-ci` by pointing to the zip file.
+If your application has Bitcode enabled, download your app's dSYM files on [App Store Connect][7].
+These files come in `zip` format named `appDsyms.zip`. Point to the `zip` file to run `datadog-ci`.
 
 ```bash
 datadog-ci dsyms upload ~/Downloads/appDsyms.zip
@@ -107,18 +115,18 @@ datadog-ci dsyms upload ~/Downloads/appDsyms.zip
 
 ### Verify setup
 
-To verify this command works as expected, you can trigger a test run and verify it returns 0:
+To verify the command works as expected, trigger a test run and verify it returns 0:
 
 ```bash
 export DATADOG_API_KEY='<API key>'
 
-// at this point, build any project in Xcode so that it produces dSYM files in Derived Data path
-// assuming your Derived Data path is ~/Library/Developer/Xcode/DerivedData/
+// At this point, build any project in Xcode to produce dSYM files in Derived Data path,
+// assuming your Derived Data path is ~/Library/Developer/Xcode/DerivedData/.
 
 yarn launch dsyms upload ~/Library/Developer/Xcode/DerivedData/
 ```
 
-Successful output should look like this:
+Successful output resembles:
 
 ```bash
 Starting upload with concurrency 20. 
@@ -132,6 +140,10 @@ Command summary:
 ✅ Uploaded 5 dSYMs in 8.281 seconds.
 ✨  Done in 10.71s.
 ```
+
+## Further Reading
+
+{{< partial name="whats-next/whats-next.html" >}}
 
 [1]: https://app.datadoghq.com/rum/application/create
 [2]: /real_user_monitoring/ios
