@@ -24,13 +24,13 @@ Enable iOS crash reporting and error tracking to get comprehensive crash reports
 
 If you have not set up the SDK yet, follow the [in-app setup instructions][1] or refer to the [iOS RUM setup documentation][2]. Upgrade to [dd-sdk-ios v1.7.0+][3] to get access to iOS crash reporting and error tracking. 
 
-Add DatadogCrashReporting dependency to your project. If you use Cocoapods use `pod 'DatadogSDKCrashReporting'`. For SPM and Carthage DatadogCrashReporting is available with dd-sdk-ios.
+Add the `DatadogCrashReporting` dependency to your project. For Cocoapods, use `pod 'DatadogSDKCrashReporting'`. For SPM and Carthage, `DatadogCrashReporting` is available with `dd-sdk-ios`.
 
 | Package manager            | Installation method                                                                         |
 |----------------------------|-------------------------------------------------------|
 | CocoaPods                  | `pod 'DatadogSDKCrashReporting'`                      |
-| Swift Package Manager      | link `DatadogCrashReporting` module                   |
-| Carthage                   | use `DatadogCrashReporting.xcframework`               |
+| Swift Package Manager      | Link the `DatadogCrashReporting` module                   |
+| Carthage                   | Use `DatadogCrashReporting.xcframework`               |
 
 
 Update your initialization snippet to include crash reporting:
@@ -71,7 +71,7 @@ npx @datadog/datadog-ci dsyms upload /path/to/appDsyms/
 
 **Note**: To configure the tool to use the EU endpoint, set the `DATADOG_SITE` environment variable to `datadoghq.eu`. To override the full URL for the intake endpoint, define the `DATADOG_DSYM_INTAKE_URL` environment variable. 
 
-If your application has Bitcode enabled, download your app's dSYM files on [App Store Connect][7]. Read more about dSYM command at https://github.com/DataDog/datadog-ci/blob/master/src/commands/dsyms/README.md
+If your application has Bitcode enabled, download your app's dSYM files on [App Store Connect][7]. For more information, see [dSYMs commands][8].
 
 
 ## Further Reading
@@ -85,3 +85,4 @@ If your application has Bitcode enabled, download your app's dSYM files on [App 
 [5]: https://www.npmjs.com/package/@datadog/datadog-ci
 [6]: https://www.npmjs.com/package/npx
 [7]: https://appstoreconnect.apple.com/
+[8]: https://github.com/DataDog/datadog-ci/blob/master/src/commands/dsyms/README.md

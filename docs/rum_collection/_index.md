@@ -97,7 +97,7 @@ Datadog.initialize(
 
 The RUM SDK automatically tracks user sessions depending on options provided at the SDK initialization. To add GDPR compliance for your EU users and other [initialization parameters][9] to the SDK configuration, see the [Set tracking consent documentation][8].
 
-<div class="alert alert-info"><p>Crash Reporting and Error Tracking is available in beta. [Setup here][10] </p>
+<div class="alert alert-info"><p>Crash Reporting and Error Tracking is available in beta. To sign up, see <a href="https://docs.datadoghq.com/real_user_monitoring/ios/crash_reporting">Crash Reporting (beta)</a>.</p>
 </div>
 
 ### Initialize RUM Monitor and `DDURLSessionDelegate`
@@ -134,4 +134,3 @@ let session = URLSession(
 [7]: https://docs.datadoghq.com/account_management/api-app-keys/#client-tokens
 [8]: /real_user_monitoring/ios/advanced_configuration/#set-tracking-consent-gdpr-compliance
 [9]: /real_user_monitoring/ios/advanced_configuration/#initialization-parameters
-[10]: /real_user_monitoring/ios/crash_reporting
