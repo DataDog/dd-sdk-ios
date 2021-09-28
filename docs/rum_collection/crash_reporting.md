@@ -36,7 +36,7 @@ Add the `DatadogCrashReporting` dependency to your project. For Cocoapods, use `
 
 | Package manager            | Installation method                                                                         |
 |----------------------------|-------------------------------------------------------|
-| CocoaPods                  | `pod 'DatadogSDKCrashReporting'`                      |
+| CocoaPods                  | Use `pod 'DatadogSDKCrashReporting'`                      |
 | Swift Package Manager      | Link the `DatadogCrashReporting` module                   |
 | Carthage                   | Use `DatadogCrashReporting.xcframework`               |
 
