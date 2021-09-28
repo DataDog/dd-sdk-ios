@@ -49,7 +49,6 @@ For more information about setting up a client token, see the [Client token docu
 
 ### Initialize the library
 
-
 {{< tabs >}}
 {{% tab "US" %}}
 
@@ -98,6 +97,9 @@ Datadog.initialize(
 
 The RUM SDK automatically tracks user sessions depending on options provided at the SDK initialization. To add GDPR compliance for your EU users and other [initialization parameters][9] to the SDK configuration, see the [Set tracking consent documentation][8].
 
+<div class="alert alert-info"><p>Crash Reporting and Error Tracking is available in beta. [Setup here][10] </p>
+</div>
+
 ### Initialize RUM Monitor and `DDURLSessionDelegate`
 
 Configure and register the RUM Monitor. You only need to do it once, usually in your `AppDelegate` code:
@@ -132,4 +134,4 @@ let session = URLSession(
 [7]: https://docs.datadoghq.com/account_management/api-app-keys/#client-tokens
 [8]: /real_user_monitoring/ios/advanced_configuration/#set-tracking-consent-gdpr-compliance
 [9]: /real_user_monitoring/ios/advanced_configuration/#initialization-parameters
-[10]: /real_user_monitoring/ios/view_tracking/custom_views
+[10]: /real_user_monitoring/ios/crash_reporting
