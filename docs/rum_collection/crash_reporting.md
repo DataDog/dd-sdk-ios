@@ -14,11 +14,19 @@ further_reading:
 
 <div class="alert alert-info"><p>Crash Reporting and Error Tracking is in beta.</p>
 </div>
+
 Enable iOS crash reporting and error tracking to get comprehensive crash reports and error trends in the RUM UI. With this beta feature, you have access to:
 
  - Aggregated iOS crash data and RUM crash attributes
  - Symbolicated iOS error reports
  - Trend analysis with iOS error tracking
+
+This guide follows the setup for iOS crash reporting and error tracking in the following steps:
+ - Crash reporting
+ - Desymbolicate error reports
+ - Verify setup
+
+## Setup
 
 ### Add crash reporting 
 
