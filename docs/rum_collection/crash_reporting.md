@@ -65,7 +65,7 @@ Global.rum = RUMMonitor.initialize()
 
 ### Symbolicate reports using Datadog CI
 
-If your iOS error is unsymbolicated, upload your dSYM file using [Datadog CI][@datadog/datadog-ci][5] to symbolicate your different stack traces. For any given error, you have access to the file path, the line number, as well as a code snippet for each frame of the related stack trace. 
+If your iOS error is unsymbolicated, upload your dSYM file using [@datadog/datadog-ci][5] to symbolicate your different stack traces. For any given error, you have access to the file path, the line number, as well as a code snippet for each frame of the related stack trace. 
 
 ```sh
 export DATADOG_API_KEY="<API KEY>"
