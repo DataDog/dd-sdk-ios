@@ -101,13 +101,18 @@ internal class MobileDevice {
     }
 }
 
-private class LowPowerModeMonitor {
+private final class LowPowerModeMonitor {
     
-    var isLowPowerModeEnabled = false
+    var isLowPowerModeEnabled: Bool {
+        publisher.currentValue
+    }
+    
+    private var publisher: ValuePublisher<Bool>
     private var powerStateDidChangeObserver: Any?
     
     init(_ processInfo: ProcessInfo) {
-        isLowPowerModeEnabled = processInfo.isLowPowerModeEnabled
+        publisher = ValuePublisher(initialValue: processInfo.isLowPowerModeEnabled)
+        
         powerStateDidChangeObserver = NotificationCenter
             .default
             .addObserver(forName: .NSProcessInfoPowerStateDidChange,
@@ -116,7 +121,7 @@ private class LowPowerModeMonitor {
                 guard let processInfo = notification.object as? ProcessInfo else {
                     return
                 }
-                self?.isLowPowerModeEnabled = processInfo.isLowPowerModeEnabled
+                self?.publisher.publishAsync(processInfo.isLowPowerModeEnabled)
             }
     }
     
