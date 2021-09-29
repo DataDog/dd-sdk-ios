@@ -12,7 +12,7 @@ See the dedicated [Datadog iOS Log Collection](https://docs.datadoghq.com/logs/l
 
 ### Trace Collection
 
-See [Datadog iOS Trace Collection](https://docs.datadoghq.com/tracing/setup/ios/?tab=us) documentation to try it out.
+See [Datadog iOS Trace Collection](https://docs.datadoghq.com/tracing/setup_overview/setup/ios/?tab=us) documentation to try it out.
 
 ![Datadog iOS Log Collection](docs/images/tracing.png)
 

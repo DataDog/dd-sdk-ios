@@ -31,7 +31,7 @@ class DDNoopTracerTests: XCTestCase {
         let expectedWarningMessage = """
         The `Global.sharedTracer` was called but no `Tracer` is registered. Configure and register the `Tracer` globally before invoking the feature:
             Global.sharedTracer = Tracer.initialize()
-        See https://docs.datadoghq.com/tracing/setup/ios
+        See https://docs.datadoghq.com/tracing/setup_overview/setup/ios
         """
 
         XCTAssertEqual(output.allRecordedLogs.count, 4)
