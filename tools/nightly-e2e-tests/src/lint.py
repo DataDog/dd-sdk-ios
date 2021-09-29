@@ -21,7 +21,7 @@ def lint_test_methods(test_methods: [TestMethod]):
                         __monitor_id_has_method_name_prefix(
                             monitor=monitor, tested_method_name=tested_method_name
                         )
-                        __method_name_occurs_in_monitor_name_and_query(
+                        __method_name_occurs_in_monitor_name(
                             monitor=monitor, tested_method_name=tested_method_name
                         )
             elif not __is_excluded_from_lint(method=test_method):
@@ -48,9 +48,9 @@ def __monitor_id_has_method_name_prefix(monitor: MonitorConfiguration, tested_me
                 Linter.shared.emit_error(f'$monitor_id must start with method name ({tested_method_name})')
 
 
-def __method_name_occurs_in_monitor_name_and_query(monitor: MonitorConfiguration, tested_method_name: str):
+def __method_name_occurs_in_monitor_name(monitor: MonitorConfiguration, tested_method_name: str):
     """
-    The test method name must occur in $monitor_name and $monitor_query.
+    The test method name must occur in $monitor_name.
     """
     regex = re.compile(rf"^.*(\W+){tested_method_name}(\W+).*$")
 
@@ -58,10 +58,6 @@ def __method_name_occurs_in_monitor_name_and_query(monitor: MonitorConfiguration
         if not re.match(regex, monitor_name_variable.value):
             with linter_context(code_reference=monitor_name_variable.code_reference):
                 Linter.shared.emit_warning(f'$monitor_name must include method name ({tested_method_name})')
-    if monitor_query_variable := __find_monitor_variable(monitor=monitor, variable_name='$monitor_query'):
-        if not re.match(regex, monitor_query_variable.value):
-            with linter_context(code_reference=monitor_query_variable.code_reference):
-                Linter.shared.emit_warning(f'$monitor_query must include method name ({tested_method_name})')
 
 
 def lint_monitors(monitors: [MonitorConfiguration]):
