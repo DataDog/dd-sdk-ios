@@ -3,9 +3,9 @@ title: Crash Reporting and Error Tracking
 kind: documentation
 beta: true
 further_reading:
-  - link: "https://github.com/DataDog/dd-sdk-ios"
-    tag: "GitHub"
-    text: "dd-sdk-ios Source Code"
+  - link: "real_user_monitoring/error_tracking/ios"
+    tag: "Documentation"
+    text: "Track iOS errors"
   - link: "/real_user_monitoring"
     tag: "Documentation"
     text: "Learn how to explore your RUM data"
