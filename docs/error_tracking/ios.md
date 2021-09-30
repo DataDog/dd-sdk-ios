@@ -21,20 +21,8 @@ If your mobile iOS error is unsymbolicated, upload your dYSM file to Datadog to 
 
 For more information, see [Symbolicate reports using Datadog CI][2].
 
-## Troubleshoot errors
-
-An unsymbolicated stack trace is not helpful as you don't have access to the class name, file path and the line number. It's hard to know where something is happening in your code base. In addition, the code snippet is still minified (one long line of transformed code) which makes the troubleshooting process even harder. See below an example of an minified stack trace:
-
-[Insert unsymbolicated image here]
-
-On the contrary, a symbolicated stack trace gives you all the context you need for troubleshooting:
-
-![image_symbolicated][4]
-
 [1]: https://github.com/DataDog/dd-sdk-ios
-[2]: https:///real_user_monitoring/ios/crash_reporting/#symbolicate-reports-using-datadog-ci
-[3]: https://raw.githubusercontent.com/DataDog/dd-sdk-ios/master/docs/images/unsymbolicated_stacktrace.png
-[4]: https://raw.githubusercontent.com/DataDog/dd-sdk-ios/master/docs/images/symbolicated_stacktrace.png
+[2]: https://docs.datadoghq.com/real_user_monitoring/ios/crash_reporting/#symbolicate-reports-using-datadog-ci
 
 ## Further Reading
 
