@@ -1,5 +1,5 @@
 ---
-title: Crash Reporting and Error Tracking (beta)
+title: Crash Reporting and Error Tracking
 kind: documentation
 beta: true
 further_reading:
@@ -20,11 +20,6 @@ Enable iOS crash reporting and error tracking to get comprehensive crash reports
  - Aggregated iOS crash data and RUM crash attributes
  - Symbolicated iOS error reports
  - Trend analysis with iOS error tracking
-
-This guide follows the setup for iOS crash reporting and error tracking in the following steps:
- - Crash reporting
- - Desymbolicate error reports
- - Verify setup
 
 ## Setup
 
