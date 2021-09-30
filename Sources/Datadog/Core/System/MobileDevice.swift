@@ -70,7 +70,6 @@ internal class MobileDevice {
             }
         )
     }
-    
     /// Returns current mobile device  if `UIDevice` is available on this platform.
     /// On other platforms returns `nil`.
     static var current: MobileDevice {
@@ -102,29 +101,26 @@ internal class MobileDevice {
 }
 
 private final class LowPowerModeMonitor {
-    
     var isLowPowerModeEnabled: Bool {
         publisher.currentValue
     }
-    
     private var publisher: ValuePublisher<Bool>
     private var powerStateDidChangeObserver: Any?
-    
     init(_ processInfo: ProcessInfo) {
         publisher = ValuePublisher(initialValue: processInfo.isLowPowerModeEnabled)
-        
         powerStateDidChangeObserver = NotificationCenter
             .default
-            .addObserver(forName: .NSProcessInfoPowerStateDidChange,
-                         object: nil,
-                         queue: .main) { [weak self] notification in
+            .addObserver(
+                forName: .NSProcessInfoPowerStateDidChange,
+                object: nil,
+                queue: .main
+            ) { [weak self] notification in
                 guard let processInfo = notification.object as? ProcessInfo else {
                     return
                 }
                 self?.publisher.publishAsync(processInfo.isLowPowerModeEnabled)
             }
     }
-    
     deinit {
         if let observer = powerStateDidChangeObserver {
             NotificationCenter.default.removeObserver(observer)
