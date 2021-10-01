@@ -148,9 +148,8 @@ extension XCTestCase {
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        XCTAssertIdentical(
-            actualTask,
-            expectedTask,
+        XCTAssertTrue(
+            actualTask === expectedTask,
             """
             Both tasks must be identical ('===').
 
