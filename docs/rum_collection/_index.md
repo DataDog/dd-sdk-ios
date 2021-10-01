@@ -6,9 +6,6 @@ description: "Collect RUM data from your iOS applications."
 aliases:
     - /real_user_monitoring/ios/getting_started
 further_reading:
-  - link: "https://datadoghq.com/blog/ios-crash-reporting-datadog/"
-    tag: "Blog"
-    text: "Introducing iOS Crash Reporting and Error Tracking"
   - link: "https://github.com/DataDog/dd-sdk-ios"
     tag: "Github"
     text: "dd-sdk-ios Source Code"
