@@ -1,5 +1,5 @@
 ---
-title: Crash Reporting and Error Tracking
+title: iOS Crash Reporting
 kind: documentation
 beta: true
 further_reading:
@@ -12,20 +12,20 @@ further_reading:
 ---
 ## Overview
 
-<div class="alert alert-info"><p>Crash Reporting and Error Tracking is in beta.</p>
+<div class="alert alert-info"><p>iOS Crash Reporting and Error Tracking is in beta. Upgrade to [dd-sdk-ios v1.7.0+][3] to get access.</p>
 </div>
 
-Enable iOS crash reporting and error tracking to get comprehensive crash reports and error trends in the RUM UI. With this beta feature, you have access to:
+Enable iOS crash reporting and error tracking to get comprehensive crash reports and error trends with Real User Monitoring. With this feature, you get access to:
 
- - Aggregated iOS crash data and RUM crash attributes
- - Symbolicated iOS error reports
+ - Aggregated iOS crash dashboards and attributes
+ - Symbolicated iOS crash reports
  - Trend analysis with iOS error tracking
 
 ## Setup
 
 ### Add crash reporting 
 
-If you have not set up the SDK yet, follow the [in-app setup instructions][1] or refer to the [iOS RUM setup documentation][2]. Upgrade to [dd-sdk-ios v1.7.0+][3] to get access to iOS crash reporting and error tracking. 
+If you have not set up the SDK yet, follow the [in-app setup instructions][1] or refer to the [iOS RUM setup documentation][2]. 
 
 Add the `DatadogCrashReporting` dependency to your project. For Cocoapods, use `pod 'DatadogSDKCrashReporting'`. For SPM and Carthage, `DatadogCrashReporting` is available with `dd-sdk-ios`.
 
