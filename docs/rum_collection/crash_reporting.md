@@ -15,7 +15,7 @@ further_reading:
 <div class="alert alert-info"><p>iOS Crash Reporting and Error Tracking is in beta. Upgrade to <a href="https://github.com/DataDog/dd-sdk-ios/releases">dd-sdk-ios v1.7.0+</a> to get access.</p>
 </div>
 
-Enable iOS crash reporting and error tracking to get comprehensive crash reports and error trends with Real User Monitoring. With this feature, you get access to:
+Enable iOS Crash Reporting and Error Tracking to get comprehensive crash reports and error trends with Real User Monitoring. With this feature, you get access to:
 
  - Aggregated iOS crash dashboards and attributes
  - Symbolicated iOS crash reports
@@ -27,7 +27,7 @@ Enable iOS crash reporting and error tracking to get comprehensive crash reports
 
 If you have not set up the SDK yet, follow the [in-app setup instructions][1] or refer to the [iOS RUM setup documentation][2]. 
 
-Add the `DatadogCrashReporting` dependency to your project. For Cocoapods, use `pod 'DatadogSDKCrashReporting'`. For SPM and Carthage, `DatadogCrashReporting` is available with `dd-sdk-ios`.
+Add the `DatadogCrashReporting` dependency to your project. For CocoaPods, use `pod 'DatadogSDKCrashReporting'`. For SPM and Carthage, `DatadogCrashReporting` is available with `dd-sdk-ios`.
 
 | Package manager            | Installation method                                                                         |
 |----------------------------|-------------------------------------------------------|
@@ -60,7 +60,7 @@ Global.rum = RUMMonitor.initialize()
 
 ### Symbolicate reports using Datadog CI
 
-If your iOS error is unsymbolicated, upload your dSYM file using [@datadog/datadog-ci][5] to symbolicate your different stack traces. For any given error, you have access to the file path, the line number, as well as a code snippet for each frame of the related stack trace. 
+If your iOS error is unsymbolicated, upload your dSYM file using [@datadog/datadog-ci][5] to symbolicate your different stack traces. For any given error, you have access to the file path, the line number, and a code snippet for each frame of the related stack trace. 
 
 ```sh
 export DATADOG_API_KEY="<API KEY>"
