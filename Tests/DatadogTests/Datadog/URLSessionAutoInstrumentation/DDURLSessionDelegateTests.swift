@@ -94,9 +94,11 @@ class DDURLSessionDelegateTests: XCTestCase {
 
         // When
         let taskWithURL = session.dataTask(with: URL.mockAny())
+        taskWithURL.taskDescription = "taskWithURL"
         taskWithURL.resume()
 
         let taskWithURLRequest = session.dataTask(with: URLRequest(url: .mockAny()))
+        taskWithURLRequest.taskDescription = "taskWithURLRequest"
         taskWithURLRequest.resume()
 
         // Then
@@ -104,16 +106,16 @@ class DDURLSessionDelegateTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
 
         let dateAfterAllRequests = Date()
-        XCTAssertTrue(interceptor.taskMetrics[0].task === taskWithURL)
+        AssertURLSessionTasksIdentical(interceptor.taskMetrics[0].task, taskWithURL)
         XCTAssertGreaterThan(interceptor.taskMetrics[0].metrics.taskInterval.start, dateBeforeAnyRequests)
         XCTAssertLessThan(interceptor.taskMetrics[0].metrics.taskInterval.end, dateAfterAllRequests)
-        XCTAssertTrue(interceptor.tasksCompleted[0].task === taskWithURL)
+        AssertURLSessionTasksIdentical(interceptor.tasksCompleted[0].task, taskWithURL)
         XCTAssertEqual((interceptor.tasksCompleted[0].error! as NSError).localizedDescription, "some error")
 
-        XCTAssertTrue(interceptor.taskMetrics[1].task === taskWithURLRequest)
+        AssertURLSessionTasksIdentical(interceptor.taskMetrics[1].task, taskWithURLRequest)
         XCTAssertGreaterThan(interceptor.taskMetrics[1].metrics.taskInterval.start, dateBeforeAnyRequests)
         XCTAssertLessThan(interceptor.taskMetrics[1].metrics.taskInterval.end, dateAfterAllRequests)
-        XCTAssertTrue(interceptor.tasksCompleted[1].task === taskWithURLRequest)
+        AssertURLSessionTasksIdentical(interceptor.tasksCompleted[1].task, taskWithURLRequest)
         XCTAssertEqual((interceptor.tasksCompleted[1].error! as NSError).localizedDescription, "some error")
 
         XCTAssertEqual(interceptor.tasksReceivedData.count, 0, "When tasks complete with failure, they should not receive data")
@@ -141,9 +143,11 @@ class DDURLSessionDelegateTests: XCTestCase {
 
         // When
         let taskWithURL = session.dataTask(with: URL.mockAny())
+        taskWithURL.taskDescription = "taskWithURL"
         taskWithURL.resume()
 
         let taskWithURLRequest = session.dataTask(with: URLRequest(url: .mockAny()))
+        taskWithURLRequest.taskDescription = "taskWithURLRequest"
         taskWithURLRequest.resume()
 
         // Then
@@ -151,20 +155,20 @@ class DDURLSessionDelegateTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
 
         let dateAfterAllRequests = Date()
-        XCTAssertTrue(interceptor.taskMetrics[0].task === taskWithURL)
+        AssertURLSessionTasksIdentical(interceptor.taskMetrics[0].task, taskWithURL)
         XCTAssertGreaterThan(interceptor.taskMetrics[0].metrics.taskInterval.start, dateBeforeAnyRequests)
         XCTAssertLessThan(interceptor.taskMetrics[0].metrics.taskInterval.end, dateAfterAllRequests)
-        XCTAssertTrue(interceptor.tasksCompleted[0].task === taskWithURL)
+        AssertURLSessionTasksIdentical(interceptor.tasksCompleted[0].task, taskWithURL)
         XCTAssertNil(interceptor.tasksCompleted[0].error)
-        XCTAssertTrue(interceptor.tasksReceivedData[0].task === taskWithURL)
+        AssertURLSessionTasksIdentical(interceptor.tasksReceivedData[0].task, taskWithURL)
         XCTAssertEqual(interceptor.tasksReceivedData[0].data, randomData)
 
-        XCTAssertTrue(interceptor.taskMetrics[1].task === taskWithURLRequest)
+        AssertURLSessionTasksIdentical(interceptor.taskMetrics[1].task, taskWithURLRequest)
         XCTAssertGreaterThan(interceptor.taskMetrics[1].metrics.taskInterval.start, dateBeforeAnyRequests)
         XCTAssertLessThan(interceptor.taskMetrics[1].metrics.taskInterval.end, dateAfterAllRequests)
-        XCTAssertTrue(interceptor.tasksCompleted[1].task === taskWithURLRequest)
+        AssertURLSessionTasksIdentical(interceptor.tasksCompleted[1].task, taskWithURLRequest)
         XCTAssertNil(interceptor.tasksCompleted[1].error)
-        XCTAssertTrue(interceptor.tasksReceivedData[1].task === taskWithURLRequest)
+        AssertURLSessionTasksIdentical(interceptor.tasksReceivedData[1].task, taskWithURLRequest)
         XCTAssertEqual(interceptor.tasksReceivedData[1].data, randomData)
     }
 }

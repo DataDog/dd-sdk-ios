@@ -92,6 +92,76 @@ extension URLRequest {
         request.setValue(nil, forHTTPHeaderField: httpHeaderField)
         return request
     }
+
+    func dump() -> String {
+        var headersDump: String = ""
+        var bodyDump: String = ""
+
+        if let allHTTPHeaderFields = self.allHTTPHeaderFields {
+            if allHTTPHeaderFields.isEmpty {
+                headersDump = "[]"
+            } else {
+                headersDump = "\n"
+                allHTTPHeaderFields.forEach { field, value in
+                    headersDump += "'\(field): \(value)'\n"
+                }
+            }
+        } else {
+            headersDump = "<nil>"
+        }
+
+        if let httpBody = self.httpBody {
+            bodyDump = "'''"
+            bodyDump += String(data: httpBody, encoding: .utf8) ?? "<invalid>"
+            bodyDump += "\n'''"
+        } else {
+            bodyDump = "<nil>"
+        }
+
+        return """
+        URLRequest:
+        - url: '\(self.url?.absoluteString ?? "<nil>")'
+        - headers:
+        \(headersDump)
+        - body:
+        \(bodyDump)
+        """
+    }
+}
+
+extension URLSessionTask.State {
+    func dump() -> String {
+        switch self {
+        case .running: return "running"
+        case .suspended: return "suspended"
+        case .canceling: return "canceling"
+        case .completed: return "completed"
+        @unknown default: return "unknown"
+        }
+    }
+}
+
+extension URLSessionTask {
+    func dump() -> String {
+        func indent(string: String, by prefix: String) -> String {
+            return string
+                .split(separator: "\n")
+                .map { prefix + $0 }
+                .joined(separator: "\n")
+        }
+
+        return """
+        URLSessionTask:
+        - taskIdentifier: '\(self.taskIdentifier)'
+        - taskDescription: '\(self.taskDescription ?? "<nil>")'
+        - debugDescription: '\(self.debugDescription)'
+        - state: '\(self.state.dump())'
+        - originalRequest:
+        \(indent(string: self.originalRequest?.dump() ?? "<nil>", by: "   "))
+        - currentRequest:
+        \(indent(string: self.currentRequest?.dump() ?? "<nil>", by: "   "))
+        """
+    }
 }
 
 /// Combines two arrays together, e.g. `["a", "b"].combined(with: [1, 2, 3])` gives
