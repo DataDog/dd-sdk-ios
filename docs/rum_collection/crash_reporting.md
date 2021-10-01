@@ -3,16 +3,16 @@ title: iOS Crash Reporting
 kind: documentation
 beta: true
 further_reading:
-  - link: "real_user_monitoring/error_tracking/ios"
+  - link: "real_user_monitoring/error_tracking/"
     tag: "Documentation"
-    text: "Track iOS errors"
+    text: "Get started with Error Tracking"
   - link: "/real_user_monitoring"
     tag: "Documentation"
     text: "Learn how to explore your RUM data"
 ---
 ## Overview
 
-<div class="alert alert-info"><p>iOS Crash Reporting and Error Tracking is in beta. Upgrade to [dd-sdk-ios v1.7.0+][3] to get access.</p>
+<div class="alert alert-info"><p>iOS Crash Reporting and Error Tracking is in beta. Upgrade to <a href="https://github.com/DataDog/dd-sdk-ios/releases">dd-sdk-ios v1.7.0+</a> to get access.</p>
 </div>
 
 Enable iOS crash reporting and error tracking to get comprehensive crash reports and error trends with Real User Monitoring. With this feature, you get access to:
