@@ -3,9 +3,9 @@ title: iOS Crash Reporting
 kind: documentation
 beta: true
 further_reading:
-  - link: "real_user_monitoring/error_tracking/"
-    tag: "Documentation"
-    text: "Get started with Error Tracking"
+  - link: "https://datadoghq.com/blog/ios-crash-reporting-datadog/"
+    tag: "Blog"
+    text: "Introducing iOS Crash Reporting and Error Tracking"
   - link: "/real_user_monitoring"
     tag: "Documentation"
     text: "Learn how to explore your RUM data"
