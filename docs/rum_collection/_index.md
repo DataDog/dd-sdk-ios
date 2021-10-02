@@ -14,7 +14,7 @@ further_reading:
     text: "Learn how to explore your RUM data"
 ---
 
-Datadog Real User Monitoring (RUM) enables you to visualize and analyze the real-time performance and user journeys of your application's individual users.
+Datadog Real User Monitoring (RUM) enables you to visualize and analyze the real-time performance and user journeys of your application's individual users. 
 
 ## Setup
 
@@ -97,9 +97,6 @@ Datadog.initialize(
 
 The RUM SDK automatically tracks user sessions depending on options provided at the SDK initialization. To add GDPR compliance for your EU users and other [initialization parameters][9] to the SDK configuration, see the [Set tracking consent documentation][8].
 
-<div class="alert alert-info"><p>Crash Reporting and Error Tracking is available in beta. To sign up, see <a href="https://docs.datadoghq.com/real_user_monitoring/ios/crash_reporting">Crash Reporting (beta)</a>.</p>
-</div>
-
 ### Initialize RUM Monitor and `DDURLSessionDelegate`
 
 Configure and register the RUM Monitor. You only need to do it once, usually in your `AppDelegate` code:
@@ -119,6 +116,13 @@ let session = URLSession(
     delegateQueue: nil
 )
 ``` 
+
+## Crash reporting
+
+Crash Reporting and Error Tracking for iOS displays any issues and latest available errors. You can view error details and attributes including JSON in the RUM Explorer. 
+
+<div class="alert alert-info"><p>Crash Reporting and Error Tracking is available in beta. To sign up, see <a href="https://docs.datadoghq.com/real_user_monitoring/ios/crash_reporting">Crash Reporting (beta)</a>.</p>
+</div>
 
 ## Further Reading
 
