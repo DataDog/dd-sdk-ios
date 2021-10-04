@@ -52,13 +52,25 @@ class MobileDeviceTests: XCTestCase {
         )
     }
 
-    func testWhenRunningOnMobile_itUsesProcessInfoPowerMode() {
-        XCTAssertTrue(
-            MobileDevice(uiDevice: UIDeviceMock(), processInfo: ProcessInfoMock(isLowPowerModeEnabled: true)).currentBatteryStatus().isLowPowerModeEnabled
+    func testGivenInitialLowPowerModeSettingValue_whenSettingChanges_itUpdatesIsLowPowerModeEnabledValue() {
+        // Given
+        let isLowPowerModeEnabled: Bool = .random()
+
+        let mobileDevice = MobileDevice(
+            uiDevice: UIDeviceMock(),
+            processInfo: ProcessInfoMock(isLowPowerModeEnabled: isLowPowerModeEnabled)
         )
-        XCTAssertFalse(
-            MobileDevice(uiDevice: UIDeviceMock(), processInfo: ProcessInfoMock(isLowPowerModeEnabled: false)).currentBatteryStatus().isLowPowerModeEnabled
+
+        XCTAssertEqual(mobileDevice.currentBatteryStatus().isLowPowerModeEnabled, isLowPowerModeEnabled)
+
+        // When
+        NotificationCenter.default.post(
+            name: .NSProcessInfoPowerStateDidChange,
+            object: ProcessInfoMock(isLowPowerModeEnabled: !isLowPowerModeEnabled)
         )
+
+        // Then
+        XCTAssertEqual(mobileDevice.currentBatteryStatus().isLowPowerModeEnabled, !isLowPowerModeEnabled)
     }
 
     func testWhenRunningOnMobile_itTogglesBatteryMonitoring() {

@@ -54,7 +54,11 @@ internal class MobileDevice {
 
     convenience init(uiDevice: UIDevice, processInfo: ProcessInfo) {
         let wasBatteryMonitoringEnabled = uiDevice.isBatteryMonitoringEnabled
-        let lowPowerModeMonitor = LowPowerModeMonitor(processInfo)
+
+        // We capture this `lowPowerModeMonitor` in `currentBatteryStatus` closure so its lifecycle
+        // is owned and controlled by `MobileDevice` object.
+        let lowPowerModeMonitor = LowPowerModeMonitor(initialProcessInfo: processInfo)
+
         self.init(
             model: uiDevice.model,
             osName: uiDevice.systemName,
@@ -100,14 +104,24 @@ internal class MobileDevice {
     }
 }
 
+/// Observes "Low Power Mode" setting changes and provides `isLowPowerModeEnabled` value in a thread-safe manner.
+///
+/// Note: this was added in https://github.com/DataDog/dd-sdk-ios/issues/609 where `ProcessInfo.isLowPowerModeEnabled` was considered
+/// not thread-safe on iOS 15. With this monitor, we change from pulling to push model for reading this property. Now, it will never be read simultaneously
+/// by multiple SDK threads - instead it will be read only once after LMP setting change and bridged to other threads through thread-safe `ValuePublisher`.
+///
+/// This should mitigate the crash originating in our SDK. We can't however prevent other code (e.g. application code) from reading this value simultaneously
+/// and causing a deadlock with SDK reads - ref. radar raised with Apple: FB9661108.
 private final class LowPowerModeMonitor {
     var isLowPowerModeEnabled: Bool {
         publisher.currentValue
     }
-    private var publisher: ValuePublisher<Bool>
+
+    private let publisher: ValuePublisher<Bool>
     private var powerStateDidChangeObserver: Any?
-    init(_ processInfo: ProcessInfo) {
-        publisher = ValuePublisher(initialValue: processInfo.isLowPowerModeEnabled)
+
+    init(initialProcessInfo: ProcessInfo) {
+        publisher = ValuePublisher(initialValue: initialProcessInfo.isLowPowerModeEnabled)
         powerStateDidChangeObserver = NotificationCenter
             .default
             .addObserver(
@@ -121,6 +135,7 @@ private final class LowPowerModeMonitor {
                 self?.publisher.publishAsync(processInfo.isLowPowerModeEnabled)
             }
     }
+
     deinit {
         if let observer = powerStateDidChangeObserver {
             NotificationCenter.default.removeObserver(observer)
