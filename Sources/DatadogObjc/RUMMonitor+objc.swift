@@ -36,6 +36,7 @@ public class DDRUMView: NSObject {
     /// - Parameters:
     ///   - name: the RUM View name, appearing as `VIEW NAME` in RUM Explorer.
     ///   - attributes: additional attributes to associate with the RUM View.
+    @objc
     public init(name: String, attributes: [String: Any]) {
         swiftView = RUMView(
             name: name,
@@ -71,6 +72,7 @@ public class DDRUMAction: NSObject {
     /// - Parameters:
     ///   - name: the RUM Action name, appearing as `ACTION NAME` in RUM Explorer.
     ///   - attributes: additional attributes to associate with the RUM Action.
+    @objc
     public init(name: String, attributes: [String: Any]) {
         swiftAction = RUMAction(
             name: name,
@@ -142,6 +144,7 @@ public enum DDRUMResourceType: Int {
     case js
     case media
     case other
+    case native
 
     internal var swiftType: RUMResourceType {
         switch self {
@@ -154,6 +157,7 @@ public enum DDRUMResourceType: Int {
         case .font: return .font
         case .js: return .js
         case .media: return .media
+        case .native: return .native
         default: return .other
         }
     }

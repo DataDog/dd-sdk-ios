@@ -97,7 +97,6 @@ class TracingFeatureTests: XCTestCase {
                     ),
                     uploadPerformance: UploadPerformanceMock(
                         initialUploadDelay: 0.5, // wait enough until spans are written,
-                        defaultUploadDelay: 1,
                         minUploadDelay: 1,
                         maxUploadDelay: 1,
                         uploadDelayChangeRate: 0

@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogSDK"
   s.module_name  = "Datadog"
-  s.version      = "1.7.0-beta3"
+  s.version      = "1.8.0-beta1"
   s.summary      = "Official Datadog Swift SDK for iOS."
   
   s.homepage     = "https://www.datadoghq.com"
@@ -10,7 +10,8 @@ Pod::Spec.new do |s|
   s.license            = { :type => "Apache", :file => 'LICENSE' }
   s.authors            = { 
     "Maciek Grzybowski" => "maciek.grzybowski@datadoghq.com",
-    "Mert Buran" => "mert.buran@datadoghq.com"
+    "Mert Buran" => "mert.buran@datadoghq.com",
+    "Maxime Epain" => "maxime.epain@datadoghq.com"
   }
 
   s.swift_version      = '5.1'

@@ -65,6 +65,12 @@ extension Optional: AnyMockable where Wrapped: AnyMockable {
     }
 }
 
+extension Optional: RandomMockable where Wrapped: RandomMockable {
+    static func mockRandom() -> Self {
+        return .some(.mockRandom())
+    }
+}
+
 extension Array where Element == Data {
     /// Returns chunks of mocked data. Accumulative size of all chunks equals `totalSize`.
     static func mockChunksOf(totalSize: UInt64, maxChunkSize: UInt64) -> [Data] {
@@ -113,7 +119,7 @@ extension Date: AnyMockable {
     }
 
     static func mockRandomInThePast() -> Date {
-        return Date(timeIntervalSinceReferenceDate: TimeInterval.random(in: 0..<Date().timeIntervalSinceReferenceDate))
+        return Date(timeIntervalSinceReferenceDate: TimeInterval.mockRandomInThePast())
     }
 
     static func mockSpecificUTCGregorianDate(year: Int, month: Int, day: Int, hour: Int, minute: Int = 0, second: Int = 0) -> Date {
@@ -280,7 +286,7 @@ extension Float: AnyMockable {
 }
 
 extension Double: AnyMockable, RandomMockable {
-    static func mockAny() -> Float {
+    static func mockAny() -> Double {
         return 0
     }
 
@@ -294,11 +300,11 @@ extension Double: AnyMockable, RandomMockable {
 }
 
 extension TimeInterval {
-    static func mockAny() -> TimeInterval {
-        return 0
-    }
-
     static let distantFuture = TimeInterval(integerLiteral: .max)
+
+    static func mockRandomInThePast() -> TimeInterval {
+        return random(in: 0..<Date().timeIntervalSinceReferenceDate)
+    }
 }
 
 struct ErrorMock: Error, CustomStringConvertible {
@@ -373,13 +379,14 @@ extension URLResponse {
 
     static func mockWith(
         statusCode: Int = 200,
-        mimeType: String = "application/json"
+        mimeType: String? = "application/json"
     ) -> HTTPURLResponse {
+        let headers: [String: String] = (mimeType == nil) ? [:] : ["Content-Type": "\(mimeType!)"]
         return HTTPURLResponse(
             url: .mockAny(),
             statusCode: statusCode,
             httpVersion: nil,
-            headerFields: ["Content-Type": "\(mimeType)"]
+            headerFields: headers
         )!
     }
 }

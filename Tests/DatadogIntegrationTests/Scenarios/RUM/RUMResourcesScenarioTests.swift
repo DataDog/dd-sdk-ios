@@ -98,10 +98,17 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
             getSpanID(from: firstPartyPOSTRequest),
             "Tracing information should be propagated to `firstPartyPOSTResourceURL`."
         )
-        XCTAssertEqual(
-            getDatadogOrigin(from: firstPartyPOSTRequest),
-            "rum",
-            "Additional `x-datadog-origin: rum` header should be propagated to `firstPartyPOSTResourceURL`"
+        XCTAssertTrue(
+            firstPartyPOSTRequest.httpHeaders.contains("x-datadog-sampling-priority: 1"),
+            "`x-datadog-sampling-priority: 1` header must be set for `firstPartyPOSTResourceURL`"
+        )
+        XCTAssertTrue(
+            firstPartyPOSTRequest.httpHeaders.contains("x-datadog-sampled: 1"),
+            "`x-datadog-sampled: 1` header must be set for `firstPartyPOSTResourceURL`"
+        )
+        XCTAssertTrue(
+            firstPartyPOSTRequest.httpHeaders.contains("x-datadog-origin: rum"),
+            "`x-datadog-origin: rum` header must be set for `firstPartyPOSTResourceURL`"
         )
 
         // Get RUM Sessions with expected number of View visits and Resources
@@ -228,13 +235,6 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
 
     private func getSpanID(from request: Request) -> String? {
         let prefix = "x-datadog-parent-id: "
-        var header = request.httpHeaders.first { $0.hasPrefix(prefix) }
-        header?.removeFirst(prefix.count)
-        return header
-    }
-
-    private func getDatadogOrigin(from request: Request) -> String? {
-        let prefix = "x-datadog-origin: "
         var header = request.httpHeaders.first { $0.hasPrefix(prefix) }
         header?.removeFirst(prefix.count)
         return header

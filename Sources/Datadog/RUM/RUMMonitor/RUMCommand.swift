@@ -256,3 +256,12 @@ internal struct RUMAddUserActionCommand: RUMUserActionCommand {
     let actionType: RUMUserActionType
     let name: String
 }
+
+// MARK: - RUM Long Task related commands
+
+internal struct RUMAddLongTaskCommand: RUMCommand {
+    var time: Date
+    var attributes: [AttributeKey: AttributeValue]
+
+    let duration: TimeInterval
+}

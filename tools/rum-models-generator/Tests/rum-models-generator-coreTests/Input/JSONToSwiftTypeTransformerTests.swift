@@ -87,7 +87,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 comment: "Description of Bar's `property1`.",
                                 type: SwiftPrimitive<String>(),
                                 isOptional: true,
-                                isMutable: false,
+                                mutability: .immutable,
                                 defaultValue: nil,
                                 codingKey: .static(value: "property1")
                             ),
@@ -96,7 +96,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 comment: "Description of Bar's `property2`.",
                                 type: SwiftPrimitive<String>(),
                                 isOptional: false,
-                                isMutable: true,
+                                mutability: .mutable,
                                 defaultValue: nil,
                                 codingKey: .static(value: "property2")
                             )
@@ -104,7 +104,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         conformance: []
                     ),
                     isOptional: true,
-                    isMutable: true, // should be mutable as at least one of the `Bar's` properties is mutable
+                    mutability: .mutable, // should be mutable as at least one of the `Bar's` properties is mutable
                     defaultValue: nil,
                     codingKey: .static(value: "bar")
                 ),
@@ -123,7 +123,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         conformance: []
                     ),
                     isOptional: false,
-                    isMutable: false,
+                    mutability: .immutable,
                     defaultValue: SwiftEnum.Case(label: "case2", rawValue: .string(value: "case2")),
                     codingKey: .static(value: "property1")
                 ),
@@ -144,7 +144,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         )
                     ),
                     isOptional: true,
-                    isMutable: true,
+                    mutability: .mutable,
                     defaultValue: nil,
                     codingKey: .static(value: "property2")
                 )
@@ -193,7 +193,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                     comment: "Description of a property with nested additional Int properties.",
                     type: SwiftDictionary(value: SwiftPrimitive<Int>()),
                     isOptional: true,
-                    isMutable: false,
+                    mutability: .immutable,
                     defaultValue: nil,
                     codingKey: .static(value: "propertyWithAdditionalIntProperties")
                 )
@@ -248,10 +248,10 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 name: "propertyWithAdditionalAnyPropertiesInfo",
                                 comment: nil,
                                 type: SwiftDictionary(
-                                    value: SwiftPrimitive<SwiftCodable>()
+                                    value: SwiftEncodable()
                                 ),
                                 isOptional: false,
-                                isMutable: false,
+                                mutability: .mutableInternally,
                                 defaultValue: nil,
                                 codingKey: .dynamic
                             )
@@ -259,7 +259,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         conformance: []
                     ),
                     isOptional: true,
-                    isMutable: false,
+                    mutability: .mutableInternally,
                     defaultValue: nil,
                     codingKey: .static(value: "propertyWithAdditionalAnyProperties")
                 )
@@ -323,7 +323,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 comment: "Description of Foo.bar's `bazz`.",
                                 type: SwiftPrimitive<String>(),
                                 isOptional: true,
-                                isMutable: false,
+                                mutability: .immutable,
                                 defaultValue: nil,
                                 codingKey: .static(value: "bazz")
                             ),
@@ -331,10 +331,10 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 name: "barInfo",
                                 comment: "Additional properties of `bar`.",
                                 type: SwiftDictionary(
-                                    value: SwiftPrimitive<SwiftCodable>()
+                                    value: SwiftEncodable()
                                 ),
                                 isOptional: false,
-                                isMutable: false,
+                                mutability: .mutableInternally,
                                 defaultValue: nil,
                                 codingKey: .dynamic
                             ),
@@ -342,7 +342,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         conformance: []
                     ),
                     isOptional: true,
-                    isMutable: false,
+                    mutability: .mutableInternally,
                     defaultValue: nil,
                     codingKey: .static(value: "bar")
                 )
@@ -423,7 +423,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         value: SwiftPrimitive<Int>()
                     ),
                     isOptional: false,
-                    isMutable: false,
+                    mutability: .immutable,
                     defaultValue: nil,
                     codingKey: .static(value: "propertyWithAdditionalProperties")
                 )

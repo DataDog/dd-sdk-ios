@@ -31,23 +31,24 @@ class E2ETests: XCTestCase {
 
     /// - common performance monitor - measures `Datadog.initialize(...)` performance:
     /// ```apm
+    /// $feature = core
     /// $monitor_id = sdk_initialize_performance
     /// $monitor_name = "[RUM] [iOS] Nightly Performance - sdk_initialize: has a high average execution time"
-    /// $monitor_query = "avg(last_1d):avg:trace.sdk_initialize{env:instrumentation,resource_name:sdk_initialize,service:com.datadog.ios.nightly} > 0.016"
+    /// $monitor_query = "avg(last_1d):avg:trace.perf_measure{env:instrumentation,resource_name:sdk_initialize,service:com.datadog.ios.nightly} > 0.016"
     /// $monitor_threshold = 0.016
     /// ```
 
     // MARK: - Measuring Performance with APM
 
-    /// Measures time of execution for given `block` - sends it as a `Span` with a given name.
-    func measure(spanName: String, _ block: () -> Void) {
+    /// Measures time of execution for given `block` - sends it as a `"perf_measure"` `Span` with a given resource name.
+    func measure(resourceName: String, _ block: () -> Void) {
         let start = Date()
         block()
         let stop = Date()
 
-        Global.sharedTracer
-            .startRootSpan(operationName: spanName, startTime: start)
-            .finish(at: stop)
+        let performanceSpan = Global.sharedTracer.startRootSpan(operationName: "perf_measure", startTime: start)
+        performanceSpan.setTag(key: DDTags.resource, value: resourceName)
+        performanceSpan.finish(at: stop)
     }
 
     // MARK: - SDK Lifecycle

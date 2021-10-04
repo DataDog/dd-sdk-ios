@@ -156,6 +156,10 @@ class FeaturesConfigurationTests: XCTestCase {
             "https://logs.browser-intake-us3-datadoghq.com/api/v2/logs"
         )
         XCTAssertEqual(
+            try configuration(datadogEndpoint: .us5).logging?.uploadURL.absoluteString,
+            "https://logs.browser-intake-us5-datadoghq.com/api/v2/logs"
+        )
+        XCTAssertEqual(
             try configuration(datadogEndpoint: .eu1).logging?.uploadURL.absoluteString,
             "https://mobile-http-intake.logs.datadoghq.eu/api/v2/logs"
         )
@@ -185,6 +189,10 @@ class FeaturesConfigurationTests: XCTestCase {
             "https://trace.browser-intake-us3-datadoghq.com/api/v2/spans"
         )
         XCTAssertEqual(
+            try configuration(datadogEndpoint: .us5).tracing?.uploadURL.absoluteString,
+            "https://trace.browser-intake-us5-datadoghq.com/api/v2/spans"
+        )
+        XCTAssertEqual(
             try configuration(datadogEndpoint: .eu1).tracing?.uploadURL.absoluteString,
             "https:/public-trace-http-intake.logs.datadoghq.eu/api/v2/spans"
         )
@@ -212,6 +220,10 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(
             try configuration(datadogEndpoint: .us3).rum?.uploadURL.absoluteString,
             "https://rum.browser-intake-us3-datadoghq.com/api/v2/rum"
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .us5).rum?.uploadURL.absoluteString,
+            "https://rum.browser-intake-us5-datadoghq.com/api/v2/rum"
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: .eu1).rum?.uploadURL.absoluteString,
@@ -249,6 +261,23 @@ class FeaturesConfigurationTests: XCTestCase {
             randomRUMEndpoint.url,
             "When `DatadogEndpoint` is not set, it should default to `RUMEndpoint` value."
         )
+    }
+
+    func testCustomProxy() throws {
+        let proxyConfiguration: [AnyHashable: Any] = [
+            kCFNetworkProxiesHTTPEnable: true,
+            kCFNetworkProxiesHTTPPort: 123,
+            kCFNetworkProxiesHTTPProxy: "www.example.com",
+            kCFProxyUsernameKey: "proxyuser",
+            kCFProxyPasswordKey: "proxypass",
+        ]
+        let configuration = try createConfiguration(proxyConfiguration: proxyConfiguration)
+
+        XCTAssertEqual(configuration.common.proxyConfiguration?[kCFNetworkProxiesHTTPEnable] as? Bool, true)
+        XCTAssertEqual(configuration.common.proxyConfiguration?[kCFNetworkProxiesHTTPPort] as? Int, 123)
+        XCTAssertEqual(configuration.common.proxyConfiguration?[kCFNetworkProxiesHTTPProxy] as? String, "www.example.com")
+        XCTAssertEqual(configuration.common.proxyConfiguration?[kCFProxyUsernameKey] as? String, "proxyuser")
+        XCTAssertEqual(configuration.common.proxyConfiguration?[kCFProxyPasswordKey] as? String, "proxypass")
     }
 
     // MARK: - Logging Configuration Tests
@@ -752,7 +781,8 @@ class FeaturesConfigurationTests: XCTestCase {
         customRUMEndpoint: URL? = nil,
         logsEndpoint: Datadog.Configuration.LogsEndpoint = .us1,
         tracesEndpoint: Datadog.Configuration.TracesEndpoint = .us1,
-        rumEndpoint: Datadog.Configuration.RUMEndpoint = .us1
+        rumEndpoint: Datadog.Configuration.RUMEndpoint = .us1,
+        proxyConfiguration: [AnyHashable: Any]? = nil
     ) throws -> FeaturesConfiguration {
         return try FeaturesConfiguration(
             configuration: .mockWith(
@@ -766,7 +796,8 @@ class FeaturesConfigurationTests: XCTestCase {
                 customRUMEndpoint: customRUMEndpoint,
                 logsEndpoint: logsEndpoint,
                 tracesEndpoint: tracesEndpoint,
-                rumEndpoint: rumEndpoint
+                rumEndpoint: rumEndpoint,
+                proxyConfiguration: proxyConfiguration
             ),
             appContext: .mockAny()
         )

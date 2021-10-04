@@ -46,6 +46,11 @@ extension Directory {
         }
     }
 
+    /// Checks if directory exists.
+    func exists() -> Bool {
+        return FileManager.default.fileExists(atPath: url.path)
+    }
+
     func createMockFiles(count: Int, prefix: String = "file") {
         (0..<count).forEach { index in
             _ = try! createFile(named: "\(prefix)\(index)")

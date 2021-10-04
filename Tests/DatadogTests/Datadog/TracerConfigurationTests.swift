@@ -13,6 +13,8 @@ class TracerConfigurationTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+        temporaryFeatureDirectories.create()
+
         TracingFeature.instance = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(
@@ -32,6 +34,7 @@ class TracerConfigurationTests: XCTestCase {
 
     override func tearDown() {
         TracingFeature.instance?.deinitialize()
+        temporaryFeatureDirectories.delete()
         super.tearDown()
     }
 

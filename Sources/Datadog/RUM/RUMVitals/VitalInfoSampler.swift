@@ -17,6 +17,12 @@ internal protocol ContinuousVitalReader {
 }
 
 internal final class VitalInfoSampler {
+    struct Constants {
+        // We use normalized 0...60 range for refresh rate in Mobile Vitals,
+        // assuming 60 is the industry standard.
+        static let normalizedRefreshRate = 60.0
+    }
+
     private static let frequency: TimeInterval = 1.0
 
     let cpuReader: SamplingBasedVitalReader
@@ -39,7 +45,7 @@ internal final class VitalInfoSampler {
 
     var refreshRate: VitalInfo {
         let info = refreshRatePublisher.currentValue
-        return info.scaledDown(by: maximumRefreshRate)
+        return info.scaledDown(by: maximumRefreshRate / Constants.normalizedRefreshRate)
     }
 
     private var timer: Timer?
@@ -52,7 +58,9 @@ internal final class VitalInfoSampler {
         maximumRefreshRate: Double = Double(UIScreen.main.maximumFramesPerSecond)
     ) {
         self.cpuReader = cpuReader
+
         self.memoryReader = memoryReader
+
         self.refreshRateReader = refreshRateReader
         self.refreshRateReader.register(self.refreshRatePublisher)
         self.maximumRefreshRate = maximumRefreshRate

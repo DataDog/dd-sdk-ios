@@ -50,6 +50,8 @@ internal final class RUMAutoInstrumentation {
     let views: Views?
     /// RUM User Actions auto instrumentation, `nil` if not enabled.
     let userActions: UserActions?
+    /// RUM Long Tasks auto instrumentation, `nil` if not enabled.
+    let longTasks: LongTaskObserver?
 
     // MARK: - Initialization
 
@@ -68,6 +70,12 @@ internal final class RUMAutoInstrumentation {
             } else {
                 userActions = nil
             }
+
+            if let threshold = configuration.longTaskThreshold {
+                longTasks = LongTaskObserver(threshold: threshold, dateProvider: dateProvider)
+            } else {
+                longTasks = nil
+            }
         } catch {
             consolePrint(
                 "🔥 Datadog SDK error: RUM automatic tracking can't be set up due to error: \(error)"
@@ -79,11 +87,13 @@ internal final class RUMAutoInstrumentation {
     func enable() {
         views?.enable()
         userActions?.enable()
+        longTasks?.start()
     }
 
     func subscribe(commandSubscriber: RUMCommandSubscriber) {
         views?.handler.subscribe(commandsSubscriber: commandSubscriber)
         userActions?.handler.subscribe(commandsSubscriber: commandSubscriber)
+        longTasks?.subscribe(commandsSubscriber: commandSubscriber)
     }
 
 #if DD_SDK_COMPILED_FOR_TESTING

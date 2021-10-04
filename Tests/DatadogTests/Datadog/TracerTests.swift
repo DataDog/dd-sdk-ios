@@ -823,18 +823,35 @@ class TracerTests: XCTestCase {
 
     func testItInjectsSpanContextWithHTTPHeadersWriter() {
         let tracer: Tracer = .mockAny()
-        let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
+        let spanContext1 = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
+        let spanContext2 = DDSpanContext(traceID: 3, spanID: 4, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
         let httpHeadersWriter = HTTPHeadersWriter()
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, [:])
 
-        tracer.inject(spanContext: spanContext, writer: httpHeadersWriter)
+        // When
+        tracer.inject(spanContext: spanContext1, writer: httpHeadersWriter)
 
-        let expectedHTTPHeaders = [
+        // Then
+        let expectedHTTPHeaders1 = [
             "x-datadog-trace-id": "1",
             "x-datadog-parent-id": "2",
+            "x-datadog-sampling-priority": "1",
+            "x-datadog-sampled": "1",
         ]
-        XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
+        XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders1)
+
+        // When
+        tracer.inject(spanContext: spanContext2, writer: httpHeadersWriter)
+
+        // Then
+        let expectedHTTPHeaders2 = [
+            "x-datadog-trace-id": "3",
+            "x-datadog-parent-id": "4",
+            "x-datadog-sampling-priority": "1",
+            "x-datadog-sampled": "1",
+        ]
+        XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders2)
     }
 
     func testItExtractsSpanContextWithHTTPHeadersReader() {

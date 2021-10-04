@@ -1,31 +1,18 @@
-platform :ios, '12.0'
+platform :ios, '13.0'
 
-use_frameworks!
-
-target 'CPProject' do
-  pod 'DatadogSDK', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :REMOTE_GIT_REFERENCE
-  pod 'DatadogSDKAlamofireExtension', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :REMOTE_GIT_REFERENCE
-  pod 'DatadogSDKCrashReporting', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :REMOTE_GIT_REFERENCE
+abstract_target 'Common' do
+  pod 'DatadogSDK', :git => 'GIT_REMOTE', :GIT_REFERENCE
+  pod 'DatadogSDKAlamofireExtension', :git => 'GIT_REMOTE', :GIT_REFERENCE
+  pod 'DatadogSDKCrashReporting', :git => 'GIT_REMOTE', :GIT_REFERENCE
   pod 'Alamofire'
 
-  target 'CPProjectTests' do
-    inherit! :complete
+  target 'CPProjectUseFrameworks' do
+    use_frameworks!
   end
-  target 'CPProjectUITests' do
-    inherit! :complete
-  end
-end
 
-static_frameworks = ['DatadogSDKCrashReporting','PLCrashReporter']
-pre_install do |installer|
-  installer.pod_targets.each do |pod|
-    if static_frameworks.include?(pod.name)
-      def pod.static_framework?;
-        true
-      end
-      def pod.build_type;
-        Pod::BuildType.static_library
-      end
+  target 'CPProjectNoUseFrameworks' do
+    target 'CPProjectNoUseFrameworksTests' do
+      inherit! :search_paths
     end
   end
 end

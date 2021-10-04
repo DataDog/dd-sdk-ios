@@ -129,7 +129,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.error.count, 0)
         XCTAssertEqual(event.model.view.resource.count, 0)
         XCTAssertEqual(event.model.dd.documentVersion, 1)
-        XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.model.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
     }
 
@@ -167,7 +167,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.error.count, 0)
         XCTAssertEqual(event.model.view.resource.count, 0)
         XCTAssertEqual(event.model.dd.documentVersion, 1)
-        XCTAssertEqual(event.attributes as? [String: String], ["foo": "bar 2", "fizz": "buzz"])
+        XCTAssertEqual(event.model.context?.contextInfo as? [String: String], ["foo": "bar 2", "fizz": "buzz"])
     }
 
     func testWhenViewIsStopped_itSendsViewUpdateEvent_andEndsTheScope() throws {
@@ -178,7 +178,7 @@ class RUMViewScopeTests: XCTestCase {
             identity: mockView,
             path: "UIViewController",
             name: "ViewName",
-            attributes: [:],
+            attributes: ["foo": "bar"],
             customTimings: [:],
             startTime: currentTime
         )
@@ -217,7 +217,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.error.count, 0)
         XCTAssertEqual(event.model.view.resource.count, 0)
         XCTAssertEqual(event.model.dd.documentVersion, 2)
-        XCTAssertTrue(event.attributes.isEmpty)
+        XCTAssertEqual(event.model.context?.contextInfo as? [String: String], ["foo": "bar"])
     }
 
     func testWhenAnotherViewIsStarted_itEndsTheScope() throws {
@@ -436,6 +436,9 @@ class RUMViewScopeTests: XCTestCase {
             startTime: Date()
         )
 
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
+
         let logOutput = LogOutputMock()
         userLogger = .mockWith(logOutput: logOutput)
 
@@ -492,6 +495,9 @@ class RUMViewScopeTests: XCTestCase {
             customTimings: [:],
             startTime: currentTime
         )
+
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
 
         let logOutput = LogOutputMock()
         userLogger = .mockWith(logOutput: logOutput)
@@ -582,7 +588,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNil(error.model.error.isCrash)
         XCTAssertNil(error.model.error.resource)
         XCTAssertNil(error.model.action)
-        XCTAssertEqual(error.attributes as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(error.model.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(error.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
 
         let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
@@ -622,6 +628,53 @@ class RUMViewScopeTests: XCTestCase {
         let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
         XCTAssertEqual(viewUpdate.model.view.resource.count, 0, "Failed Resource should not be counted")
         XCTAssertEqual(viewUpdate.model.view.error.count, 1, "Failed Resource should be counted as Error")
+    }
+
+    // MARK: - Long tasks
+
+    func testWhenLongTaskIsAdded_itSendsLongTaskEventAndViewUpdateEvent() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            parent: parent,
+            dependencies: dependencies,
+            identity: mockView,
+            path: "UIViewController",
+            name: "ViewName",
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: ["foo": "bar"], identity: mockView, isInitialView: true)
+            )
+        )
+
+        currentTime.addTimeInterval(1)
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddLongTaskCommand(time: currentTime, attributes: ["foo": "bar"], duration: 1.0)
+            )
+        )
+
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMLongTaskEvent>.self).last)
+        let longTask = event.model
+
+        XCTAssertEqual(longTask.action?.id, scope.context.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(longTask.application.id, scope.context.rumApplicationID)
+        XCTAssertNil(longTask.connectivity)
+        XCTAssertEqual(longTask.context?.contextInfo as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(longTask.date, Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1).timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(longTask.dd.session?.plan, .plan1)
+        XCTAssertEqual(longTask.longTask.duration, (1.0).toInt64Nanoseconds)
+        XCTAssertTrue(longTask.longTask.isFrozenFrame == true)
+        XCTAssertEqual(longTask.view.id, scope.viewUUID.toRUMDataFormat)
+        XCTAssertNil(longTask.synthetics)
+
+        let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
+        XCTAssertEqual(viewUpdate.model.view.longTask?.count, 1)
     }
 
     // MARK: - Custom Timings Tracking
@@ -731,6 +784,9 @@ class RUMViewScopeTests: XCTestCase {
         // Given
         XCTAssertTrue(scope.isActiveView)
         XCTAssertEqual(scope.customTimings.count, 0)
+
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
 
         let logOutput = LogOutputMock()
         userLogger = .mockWith(logOutput: logOutput)
@@ -848,8 +904,7 @@ class RUMViewScopeTests: XCTestCase {
         // - discards `RUMErrorEvent` for `RUMAddCurrentViewErrorCommand`
         // - discards `RUMResourceEvent` from `RUMStartResourceCommand` /resource/1
         let eventBuilder = RUMEventBuilder(
-            userInfoProvider: UserInfoProvider.mockAny(),
-            eventsMapper: RUMEventsMapper.mockWith(
+            eventsMapper: .mockWith(
                 errorEventMapper: { event in
                     nil
                 },
@@ -935,8 +990,7 @@ class RUMViewScopeTests: XCTestCase {
 
     func testGivenViewScopeWithDroppingEventsMapper_whenProcessingApplicationStartAction_thenNoEventIsSent() throws {
         let eventBuilder = RUMEventBuilder(
-            userInfoProvider: UserInfoProvider.mockAny(),
-            eventsMapper: RUMEventsMapper.mockWith(
+            eventsMapper: .mockWith(
                 actionEventMapper: { event in
                     nil
                 }

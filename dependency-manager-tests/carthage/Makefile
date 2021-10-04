@@ -6,9 +6,16 @@ ifneq (${BITRISE_GIT_TAG},)
 	GIT_REFERENCE := ${BITRISE_GIT_TAG}
 endif
 
+GIT_REMOTE := "DataDog/dd-sdk-ios"
+ifneq (${BITRISEIO_PULL_REQUEST_REPOSITORY_URL},)
+	GIT_REMOTE := ${BITRISEIO_PULL_REQUEST_REPOSITORY_URL}
+endif
+
 test:
 		@echo "⚙️  Configuring CTProject with remote branch: '${GIT_REFERENCE}'..."
-		@sed "s|REMOTE_GIT_REFERENCE|${GIT_REFERENCE}|g" Cartfile.src > Cartfile
+		
+		@sed "s|GIT_REFERENCE|${GIT_REFERENCE}|g" Cartfile.src | \
+		sed "s|GIT_REMOTE|${GIT_REMOTE}|g" > Cartfile
 		@rm -rf Carthage/
 		@echo "🧪 Run 'carthage update'"
 		@carthage update --platform iOS --use-xcframeworks

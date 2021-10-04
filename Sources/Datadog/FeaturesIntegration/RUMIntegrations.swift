@@ -15,6 +15,7 @@ internal struct RUMContextIntegration {
         static let applicationID = "application_id"
         static let sessionID = "session_id"
         static let viewID = "view.id"
+        static let actionID = "user_action.id"
     }
 
     /// Returns attributes describing the current RUM context or `nil`if global `RUMMonitor` is not registered.
@@ -31,6 +32,7 @@ internal struct RUMContextIntegration {
             Attributes.applicationID: rumContext.rumApplicationID,
             Attributes.sessionID: rumContext.sessionID.rawValue.uuidString.lowercased(),
             Attributes.viewID: rumContext.activeViewID?.rawValue.uuidString.lowercased(),
+            Attributes.actionID: rumContext.activeUserActionID?.rawValue.uuidString.lowercased(),
         ]
     }
 }

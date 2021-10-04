@@ -187,7 +187,7 @@ public class Datadog {
         let commonDependencies = FeaturesCommonDependencies(
             consentProvider: consentProvider,
             performance: configuration.common.performance,
-            httpClient: HTTPClient(),
+            httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
             mobileDevice: MobileDevice.current,
             dateProvider: dateProvider,
             dateCorrector: dateCorrector,

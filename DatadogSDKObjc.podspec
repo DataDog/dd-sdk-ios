@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogSDKObjc"
   s.module_name  = "DatadogObjc"
-  s.version      = "1.7.0-beta3"
+  s.version      = "1.8.0-beta1"
   s.summary      = "Official Datadog Objective-C SDK for iOS."
   
   s.homepage     = "https://www.datadoghq.com"
@@ -10,7 +10,8 @@ Pod::Spec.new do |s|
   s.license            = { :type => "Apache", :file => 'LICENSE' }
   s.authors            = { 
     "Maciek Grzybowski" => "maciek.grzybowski@datadoghq.com",
-    "Mert Buran" => "mert.buran@datadoghq.com"
+    "Mert Buran" => "mert.buran@datadoghq.com",
+    "Maxime Epain" => "maxime.epain@datadoghq.com"
   }
 
   s.swift_version      = '5.1'
@@ -19,5 +20,5 @@ Pod::Spec.new do |s|
   s.source = { :git => 'https://github.com/DataDog/dd-sdk-ios.git', :tag => s.version.to_s }
 
   s.source_files = "Sources/DatadogObjc/**/*.swift"
-  s.dependency 'DatadogSDK', '1.7.0-beta3'
+  s.dependency 'DatadogSDK', '1.8.0-beta1'
 end

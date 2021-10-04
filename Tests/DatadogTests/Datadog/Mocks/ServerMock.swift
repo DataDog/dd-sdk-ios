@@ -231,6 +231,6 @@ class ServerMock {
         let uploadPerformanceForTests = UploadPerformanceMock.veryQuick
         // Set the timeout to 40 times more than expected.
         // In `RUMM-311` we observed 0.66% of flakiness for 150 test runs on CI with arbitrary value of `20`.
-        return uploadPerformanceForTests.defaultUploadDelay * Double(numberOfRequestsMade) * 40
+        return uploadPerformanceForTests.initialUploadDelay * Double(numberOfRequestsMade) * 40
     }
 }
