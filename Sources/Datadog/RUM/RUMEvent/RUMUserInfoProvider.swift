@@ -12,17 +12,18 @@ internal struct RUMUserInfoProvider {
     let userInfoProvider: UserInfoProvider
 
     var current: RUMUser? {
-        let userInfo = userInfoProvider.value
+        let user = userInfoProvider.value
 
-        if userInfo.id == nil && userInfo.name == nil && userInfo.email == nil {
+        // Returns nil if UserInfo has no data
+        if user.id == nil, user.name == nil, user.email == nil, user.extraInfo.isEmpty {
             return nil
-        } else {
-            return RUMUser(
-                email: userInfo.email,
-                id: userInfo.id,
-                name: userInfo.name,
-                usrInfo: [:]
-            )
         }
+
+        return RUMUser(
+            email: user.email,
+            id: user.id,
+            name: user.name,
+            usrInfo: user.extraInfo
+        )
     }
 }

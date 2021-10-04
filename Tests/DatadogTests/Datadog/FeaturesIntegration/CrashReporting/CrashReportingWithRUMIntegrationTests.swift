@@ -22,7 +22,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
             lastTrackingConsent: .granted,
-            lastRUMViewEvent: .mockRandomWith(model: RUMViewEvent.mockRandom())
+            lastRUMViewEvent: .mockRandom()
         )
 
         // When
@@ -49,7 +49,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
             lastTrackingConsent: .granted,
-            lastRUMViewEvent: .mockRandomWith(model: RUMViewEvent.mockRandom())
+            lastRUMViewEvent: .mockRandom()
         )
 
         // When
@@ -70,7 +70,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         let crashReport: DDCrashReport = .mockWith(date: .mockDecember15th2019At10AMUTC())
         let crashContext: CrashContext = .mockWith(
             lastTrackingConsent: [.pending, .notGranted].randomElement()!,
-            lastRUMViewEvent: .mockRandomWith(model: RUMViewEvent.mockRandom())
+            lastRUMViewEvent: .mockRandom()
         )
 
         // When
@@ -115,7 +115,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
             lastTrackingConsent: .granted,
-            lastRUMViewEvent: .mockRandomWith(model: lastRUMViewEvent)
+            lastRUMViewEvent: RUMEvent(model: lastRUMViewEvent)
         )
 
         // When
@@ -159,6 +159,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.toInt64Milliseconds,
             "The `RUMViewEvent` sent must include crash date corrected by current correction offset."
         )
+        XCTAssertEqual(sendRUMViewEvent.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
     }
 
     func testWhenSendingRUMErrorEvent_itIncludesCrashInformation() throws {
@@ -197,7 +198,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         )
         let crashContext: CrashContext = .mockWith(
             lastTrackingConsent: .granted,
-            lastRUMViewEvent: .mockRandomWith(model: lastRUMViewEvent)
+            lastRUMViewEvent: RUMEvent(model: lastRUMViewEvent)
         )
 
         // When
@@ -243,9 +244,10 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             2: stack-trace line 2
             """
         )
-        XCTAssertEqual(sendRUMEvent.attributes[DDError.threads] as? [DDCrashReport.Thread], crashReport.threads)
-        XCTAssertEqual(sendRUMEvent.attributes[DDError.binaryImages] as? [DDCrashReport.BinaryImage], crashReport.binaryImages)
-        XCTAssertEqual(sendRUMEvent.attributes[DDError.meta] as? DDCrashReport.Meta, crashReport.meta)
-        XCTAssertEqual(sendRUMEvent.attributes[DDError.wasTruncated] as? Bool, crashReport.wasTruncated)
+        XCTAssertEqual(sendRUMErrorEvent.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+        XCTAssertEqual(sendRUMEvent.errorAttributes?[DDError.threads] as? [DDCrashReport.Thread], crashReport.threads)
+        XCTAssertEqual(sendRUMEvent.errorAttributes?[DDError.binaryImages] as? [DDCrashReport.BinaryImage], crashReport.binaryImages)
+        XCTAssertEqual(sendRUMEvent.errorAttributes?[DDError.meta] as? DDCrashReport.Meta, crashReport.meta)
+        XCTAssertEqual(sendRUMEvent.errorAttributes?[DDError.wasTruncated] as? Bool, crashReport.wasTruncated)
     }
 }

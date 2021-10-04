@@ -71,17 +71,17 @@ internal class JSONSchema: Decodable {
             self.additionalProperties = try keyedContainer.decodeIfPresent(JSONSchema.self, forKey: .additionalProperties)
             self.required = try keyedContainer.decodeIfPresent([String].self, forKey: .required)
             self.type = try keyedContainer.decodeIfPresent(SchemaType.self, forKey: .type)
-            self.enum = try keyedContainer.decodeIfPresent([String].self, forKey: .enum)
+            self.enum = try keyedContainer.decodeIfPresent([EnumValue].self, forKey: .enum)
             self.const = try keyedContainer.decodeIfPresent(SchemaConstant.self, forKey: .const)
             self.items = try keyedContainer.decodeIfPresent(JSONSchema.self, forKey: .items)
             self.readOnly = try keyedContainer.decodeIfPresent(Bool.self, forKey: .readOnly)
             self.ref = try keyedContainer.decodeIfPresent(String.self, forKey: .ref)
             self.allOf = try keyedContainer.decodeIfPresent([JSONSchema].self, forKey: .allOf)
-        } catch let keyedContainerError {
+        } catch let keyedContainerError as DecodingError {
             // If data in this `decoder` cannot be represented as keyed container, perhaps it encodes
             // a single value. Check known schema values:
             do {
-                if decoder.codingPath.last as! JSONSchema.CodingKeys == .additionalProperties { // swiftlint:disable:this force_cast
+                if decoder.codingPath.last as? JSONSchema.CodingKeys == .additionalProperties {
                     // Handle `additionalProperties: true | false`
                     let singleValueContainer = try decoder.singleValueContainer()
                     let hasAdditionalProperties = try singleValueContainer.decode(Bool.self)
@@ -113,6 +113,22 @@ internal class JSONSchema: Decodable {
 
     // MARK: - Schema attributes
 
+    enum EnumValue: Decodable, Equatable {
+        case string(String)
+        case integer(Int)
+
+        init(from decoder: Decoder) throws {
+            let singleValueContainer = try decoder.singleValueContainer()
+            if let string = try? singleValueContainer.decode(String.self) {
+                self = .string(string)
+            } else if let integer = try? singleValueContainer.decode(Int.self) {
+                self = .integer(integer)
+            } else {
+                throw Exception.unimplemented("Trying to decode `EnumValue` but its none of supported values.")
+            }
+        }
+    }
+
     private(set) var id: String?
     private(set) var title: String?
     private(set) var description: String?
@@ -120,7 +136,7 @@ internal class JSONSchema: Decodable {
     private(set) var additionalProperties: JSONSchema?
     private(set) var required: [String]?
     private(set) var type: SchemaType?
-    private(set) var `enum`: [String]?
+    private(set) var `enum`: [EnumValue]?
     private(set) var const: SchemaConstant?
     private(set) var items: JSONSchema?
     private(set) var readOnly: Bool?

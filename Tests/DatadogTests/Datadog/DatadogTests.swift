@@ -18,7 +18,7 @@ class DatadogTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
         printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
     }
@@ -26,7 +26,7 @@ class DatadogTests: XCTestCase {
     override func tearDown() {
         consolePrint = { print($0) }
         printFunction = nil
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
         super.tearDown()
     }
 
@@ -38,7 +38,7 @@ class DatadogTests: XCTestCase {
             trackingConsent: .mockRandom(),
             configuration: defaultBuilder.build()
         )
-        XCTAssertNotNil(Datadog.instance)
+        XCTAssertTrue(Datadog.isInitialized)
         Datadog.flushAndDeinitialize()
     }
 
@@ -48,26 +48,26 @@ class DatadogTests: XCTestCase {
             trackingConsent: .mockRandom(),
             configuration: rumBuilder.build()
         )
-        XCTAssertNotNil(Datadog.instance)
+        XCTAssertTrue(Datadog.isInitialized)
         Datadog.flushAndDeinitialize()
     }
 
     func testGivenInvalidConfiguration_itPrintsError() {
-        let invalidConiguration = Datadog.Configuration
+        let invalidConfiguration = Datadog.Configuration
             .builderUsing(clientToken: "", environment: "tests")
             .build()
 
         Datadog.initialize(
             appContext: .mockAny(),
             trackingConsent: .mockRandom(),
-            configuration: invalidConiguration
+            configuration: invalidConfiguration
         )
 
         XCTAssertEqual(
             printFunction.printedMessage,
             "🔥 Datadog SDK usage error: `clientToken` cannot be empty."
         )
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
     }
 
     func testGivenValidConfiguration_whenInitializedMoreThanOnce_itPrintsError() {

@@ -29,6 +29,14 @@ workflows:
             set -e
             make dependencies ci=${CI}
 
+            # Patch for `dd-sdk-swift-testing` to disable network instrumentation which
+            # is causing some URLSession-related tests failures on iOS 11.x and 12.x.
+            #
+            # This issue is already reported to otel-swift:
+            # https://github.com/open-telemetry/opentelemetry-swift/issues/229
+            # and this patch can be removed after the fix is available in `dd-sdk-swift-testing`.
+            echo "DD_DISABLE_NETWORK_INSTRUMENTATION=1" >> xcconfigs/DatadogSDKTesting.local.xcconfig
+
   _run_unit_tests:
     steps:
     - script@1.1.6:
@@ -36,7 +44,7 @@ workflows:
         - content: |-
             #!/usr/bin/env bash
             echo "+------------------------------------------------------------------------------+"
-            printf '| %-78s |\n' "🧪 Runing unit tests for ${PROJECT_SCHEME} on ${SIMULATOR_DEVICE} (${SIMULATOR_OS_VERSION})"
+            printf '| %-78s |\n' "🧪 Running unit tests for ${PROJECT_SCHEME} on ${SIMULATOR_DEVICE} (${SIMULATOR_OS_VERSION})"
             echo "+------------------------------------------------------------------------------+"
     - xcode-test@2.4.5:
         title: Run unit tests for given platform
@@ -55,12 +63,13 @@ workflows:
 
   _send_slack_notification:
     description: |-
-        Sends Slack notification with the worklow status.
+        Sends Slack notification with the workflow status.
     steps:
     - slack:
         run_if: '{{(getenv "DD_SKIP_SLACK") | eq ""}}'
         inputs:
-        - channel: '#dd-sdk-ios'
+        - channel: '#mobile-ci-ios'
+        - channel_on_error: '#dd-sdk-ios'
         - fields: |-
             macOS|## <MACOS VERSION> ##
             Commit|${GIT_CLONE_COMMIT_HASH}
@@ -68,13 +77,13 @@ workflows:
         - buttons: |-
             See Bitrise log|${BITRISE_BUILD_URL}
         - pretext: |-
-            Nighly unit tests run: 🚀 all good
+            Nightly unit tests run: 🚀 all good
             ### <SLACK SIMULATORS LIST> ###
 
             Issues found:
             ### <SLACK ISSUES LIST> ###
         - pretext_on_error: |-
-            Nighly unit tests run: ⚠️ some tests did fail️
+            Nightly unit tests run: ⚠️ some tests did fail️
             ### <SLACK SIMULATORS LIST> ###
 
             Issues found:

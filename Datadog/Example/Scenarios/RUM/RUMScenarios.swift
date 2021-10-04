@@ -121,6 +121,20 @@ final class RUMTapActionScenario: TestScenario {
     }
 }
 
+/// Scenario which uses RUM only. Blocks the main thread and expects to have non-zero MobileVitals values
+final class RUMMobileVitalsScenario: TestScenario {
+    static var storyboardName: String = "RUMMobileVitalsScenario"
+
+    func configureSDK(builder: Datadog.Configuration.Builder) {
+        _ = builder
+            .trackUIKitRUMViews()
+            .trackUIKitRUMActions()
+            .trackRUMLongTasks(threshold: 2.5)
+            .enableLogging(false)
+            .enableTracing(false)
+    }
+}
+
 /// Scenario which uses RUM and Tracing auto instrumentation features to track bunch of network requests
 /// sent with `URLSession` from two VCs. The first VC calls first party resources, the second one calls third parties.
 final class RUMURLSessionResourcesScenario: URLSessionBaseScenario, TestScenario {

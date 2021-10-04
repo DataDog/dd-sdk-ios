@@ -102,6 +102,11 @@ public class Datadog {
         }
     }
 
+    /// Returns `true` if the Datadog SDK is already initialized, `false` otherwise.
+    public static var isInitialized: Bool {
+        return instance != nil
+    }
+
     /// Sets current user information.
     /// Those will be added to logs, traces and RUM events automatically.
     /// - Parameters:
@@ -182,7 +187,7 @@ public class Datadog {
         let commonDependencies = FeaturesCommonDependencies(
             consentProvider: consentProvider,
             performance: configuration.common.performance,
-            httpClient: HTTPClient(),
+            httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
             mobileDevice: MobileDevice.current,
             dateProvider: dateProvider,
             dateCorrector: dateCorrector,

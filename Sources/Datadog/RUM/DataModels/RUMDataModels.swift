@@ -20,7 +20,7 @@ public struct RUMViewEvent: RUMDataModel {
     public let connectivity: RUMConnectivity?
 
     /// User provided context
-    public let context: RUMEventAttributes?
+    public internal(set) var context: RUMEventAttributes?
 
     /// Start of the event in ms from epoch
     public let date: Int64
@@ -31,11 +31,14 @@ public struct RUMViewEvent: RUMDataModel {
     /// Session properties
     public let session: Session
 
+    /// Synthetics properties
+    public let synthetics: Synthetics?
+
     /// RUM event type
     public let type: String = "view"
 
     /// User properties
-    public let usr: RUMUser?
+    public internal(set) var usr: RUMUser?
 
     /// View properties
     public var view: View
@@ -48,6 +51,7 @@ public struct RUMViewEvent: RUMDataModel {
         case date = "date"
         case service = "service"
         case session = "session"
+        case synthetics = "synthetics"
         case type = "type"
         case usr = "usr"
         case view = "view"
@@ -61,9 +65,29 @@ public struct RUMViewEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// Session-related internal properties
+        public let session: Session?
+
         enum CodingKeys: String, CodingKey {
             case documentVersion = "document_version"
             case formatVersion = "format_version"
+            case session = "session"
+        }
+
+        /// Session-related internal properties
+        public struct Session: Codable {
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public let plan: Plan
+
+            enum CodingKeys: String, CodingKey {
+                case plan = "plan"
+            }
+
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public enum Plan: Int, Codable {
+                case plan1 = 1
+                case plan2 = 2
+            }
         }
     }
 
@@ -98,6 +122,20 @@ public struct RUMViewEvent: RUMDataModel {
         public enum SessionType: String, Codable {
             case user = "user"
             case synthetics = "synthetics"
+        }
+    }
+
+    /// Synthetics properties
+    public struct Synthetics: Codable {
+        /// The identifier of the current Synthetics test results
+        public let resultId: String
+
+        /// The identifier of the current Synthetics test
+        public let testId: String
+
+        enum CodingKeys: String, CodingKey {
+            case resultId = "result_id"
+            case testId = "test_id"
         }
     }
 
@@ -142,6 +180,9 @@ public struct RUMViewEvent: RUMDataModel {
         /// Duration in ns to the first input
         public let firstInputTime: Int64?
 
+        /// Properties of the frozen frames of the view
+        public let frozenFrame: FrozenFrame?
+
         /// UUID of the view
         public let id: String
 
@@ -150,6 +191,9 @@ public struct RUMViewEvent: RUMDataModel {
 
         /// Whether the View corresponding to this event is considered active
         public let isActive: Bool?
+
+        /// Whether the View had a low average refresh rate
+        public let isSlowRendered: Bool?
 
         /// Duration in ns to the largest contentful paint
         public let largestContentfulPaint: Int64?
@@ -207,9 +251,11 @@ public struct RUMViewEvent: RUMDataModel {
             case firstContentfulPaint = "first_contentful_paint"
             case firstInputDelay = "first_input_delay"
             case firstInputTime = "first_input_time"
+            case frozenFrame = "frozen_frame"
             case id = "id"
             case inForegroundPeriods = "in_foreground_periods"
             case isActive = "is_active"
+            case isSlowRendered = "is_slow_rendered"
             case largestContentfulPaint = "largest_contentful_paint"
             case loadEvent = "load_event"
             case loadingTime = "loading_time"
@@ -249,6 +295,16 @@ public struct RUMViewEvent: RUMDataModel {
         /// Properties of the errors of the view
         public struct Error: Codable {
             /// Number of errors that occurred on the view
+            public let count: Int64
+
+            enum CodingKeys: String, CodingKey {
+                case count = "count"
+            }
+        }
+
+        /// Properties of the frozen frames of the view
+        public struct FrozenFrame: Codable {
+            /// Number of frozen frames that occurred on the view
             public let count: Int64
 
             enum CodingKeys: String, CodingKey {
@@ -319,7 +375,7 @@ public struct RUMResourceEvent: RUMDataModel {
     public let connectivity: RUMConnectivity?
 
     /// User provided context
-    public let context: RUMEventAttributes?
+    public internal(set) var context: RUMEventAttributes?
 
     /// Start of the event in ms from epoch
     public let date: Int64
@@ -333,11 +389,14 @@ public struct RUMResourceEvent: RUMDataModel {
     /// Session properties
     public let session: Session
 
+    /// Synthetics properties
+    public let synthetics: Synthetics?
+
     /// RUM event type
     public let type: String = "resource"
 
     /// User properties
-    public let usr: RUMUser?
+    public internal(set) var usr: RUMUser?
 
     /// View properties
     public var view: View
@@ -352,6 +411,7 @@ public struct RUMResourceEvent: RUMDataModel {
         case resource = "resource"
         case service = "service"
         case session = "session"
+        case synthetics = "synthetics"
         case type = "type"
         case usr = "usr"
         case view = "view"
@@ -362,6 +422,9 @@ public struct RUMResourceEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// Session-related internal properties
+        public let session: Session?
+
         /// span identifier in decimal format
         public let spanId: String?
 
@@ -370,8 +433,25 @@ public struct RUMResourceEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case formatVersion = "format_version"
+            case session = "session"
             case spanId = "span_id"
             case traceId = "trace_id"
+        }
+
+        /// Session-related internal properties
+        public struct Session: Codable {
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public let plan: Plan
+
+            enum CodingKeys: String, CodingKey {
+                case plan = "plan"
+            }
+
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public enum Plan: Int, Codable {
+                case plan1 = 1
+                case plan2 = 2
+            }
         }
     }
 
@@ -588,6 +668,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case font = "font"
             case media = "media"
             case other = "other"
+            case native = "native"
         }
     }
 
@@ -612,6 +693,20 @@ public struct RUMResourceEvent: RUMDataModel {
         public enum SessionType: String, Codable {
             case user = "user"
             case synthetics = "synthetics"
+        }
+    }
+
+    /// Synthetics properties
+    public struct Synthetics: Codable {
+        /// The identifier of the current Synthetics test results
+        public let resultId: String
+
+        /// The identifier of the current Synthetics test
+        public let testId: String
+
+        enum CodingKeys: String, CodingKey {
+            case resultId = "result_id"
+            case testId = "test_id"
         }
     }
 
@@ -653,7 +748,7 @@ public struct RUMActionEvent: RUMDataModel {
     public let connectivity: RUMConnectivity?
 
     /// User provided context
-    public let context: RUMEventAttributes?
+    public internal(set) var context: RUMEventAttributes?
 
     /// Start of the event in ms from epoch
     public let date: Int64
@@ -664,11 +759,14 @@ public struct RUMActionEvent: RUMDataModel {
     /// Session properties
     public let session: Session
 
+    /// Synthetics properties
+    public let synthetics: Synthetics?
+
     /// RUM event type
     public let type: String = "action"
 
     /// User properties
-    public let usr: RUMUser?
+    public internal(set) var usr: RUMUser?
 
     /// View properties
     public var view: View
@@ -682,6 +780,7 @@ public struct RUMActionEvent: RUMDataModel {
         case date = "date"
         case service = "service"
         case session = "session"
+        case synthetics = "synthetics"
         case type = "type"
         case usr = "usr"
         case view = "view"
@@ -692,8 +791,28 @@ public struct RUMActionEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// Session-related internal properties
+        public let session: Session?
+
         enum CodingKeys: String, CodingKey {
             case formatVersion = "format_version"
+            case session = "session"
+        }
+
+        /// Session-related internal properties
+        public struct Session: Codable {
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public let plan: Plan
+
+            enum CodingKeys: String, CodingKey {
+                case plan = "plan"
+            }
+
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public enum Plan: Int, Codable {
+                case plan1 = 1
+                case plan2 = 2
+            }
         }
     }
 
@@ -830,6 +949,20 @@ public struct RUMActionEvent: RUMDataModel {
         }
     }
 
+    /// Synthetics properties
+    public struct Synthetics: Codable {
+        /// The identifier of the current Synthetics test results
+        public let resultId: String
+
+        /// The identifier of the current Synthetics test
+        public let testId: String
+
+        enum CodingKeys: String, CodingKey {
+            case resultId = "result_id"
+            case testId = "test_id"
+        }
+    }
+
     /// View properties
     public struct View: Codable {
         /// UUID of the view
@@ -872,7 +1005,7 @@ public struct RUMErrorEvent: RUMDataModel {
     public let connectivity: RUMConnectivity?
 
     /// User provided context
-    public let context: RUMEventAttributes?
+    public internal(set) var context: RUMEventAttributes?
 
     /// Start of the event in ms from epoch
     public let date: Int64
@@ -886,11 +1019,14 @@ public struct RUMErrorEvent: RUMDataModel {
     /// Session properties
     public let session: Session
 
+    /// Synthetics properties
+    public let synthetics: Synthetics?
+
     /// RUM event type
     public let type: String = "error"
 
     /// User properties
-    public let usr: RUMUser?
+    public internal(set) var usr: RUMUser?
 
     /// View properties
     public var view: View
@@ -905,6 +1041,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case error = "error"
         case service = "service"
         case session = "session"
+        case synthetics = "synthetics"
         case type = "type"
         case usr = "usr"
         case view = "view"
@@ -915,8 +1052,28 @@ public struct RUMErrorEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// Session-related internal properties
+        public let session: Session?
+
         enum CodingKeys: String, CodingKey {
             case formatVersion = "format_version"
+            case session = "session"
+        }
+
+        /// Session-related internal properties
+        public struct Session: Codable {
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public let plan: Plan
+
+            enum CodingKeys: String, CodingKey {
+                case plan = "plan"
+            }
+
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public enum Plan: Int, Codable {
+                case plan1 = 1
+                case plan2 = 2
+            }
         }
     }
 
@@ -942,6 +1099,12 @@ public struct RUMErrorEvent: RUMDataModel {
 
     /// Error properties
     public struct Error: Codable {
+        /// Whether the error has been handled manually in the source code or not
+        public let handling: Handling?
+
+        /// Handling call stack
+        public let handlingStack: String?
+
         /// UUID of the error
         public let id: String?
 
@@ -964,6 +1127,8 @@ public struct RUMErrorEvent: RUMDataModel {
         public let type: String?
 
         enum CodingKeys: String, CodingKey {
+            case handling = "handling"
+            case handlingStack = "handling_stack"
             case id = "id"
             case isCrash = "is_crash"
             case message = "message"
@@ -971,6 +1136,12 @@ public struct RUMErrorEvent: RUMDataModel {
             case source = "source"
             case stack = "stack"
             case type = "type"
+        }
+
+        /// Whether the error has been handled manually in the source code or not
+        public enum Handling: String, Codable {
+            case handled = "handled"
+            case unhandled = "unhandled"
         }
 
         /// Resource properties of the error
@@ -1067,6 +1238,20 @@ public struct RUMErrorEvent: RUMDataModel {
         }
     }
 
+    /// Synthetics properties
+    public struct Synthetics: Codable {
+        /// The identifier of the current Synthetics test results
+        public let resultId: String
+
+        /// The identifier of the current Synthetics test
+        public let testId: String
+
+        enum CodingKeys: String, CodingKey {
+            case resultId = "result_id"
+            case testId = "test_id"
+        }
+    }
+
     /// View properties
     public struct View: Codable {
         /// UUID of the view
@@ -1087,6 +1272,192 @@ public struct RUMErrorEvent: RUMDataModel {
         enum CodingKeys: String, CodingKey {
             case id = "id"
             case inForeground = "in_foreground"
+            case name = "name"
+            case referrer = "referrer"
+            case url = "url"
+        }
+    }
+}
+
+/// Schema of all properties of a Long Task event
+public struct RUMLongTaskEvent: RUMDataModel {
+    /// Internal properties
+    public let dd: DD
+
+    /// Action properties
+    public let action: Action?
+
+    /// Application properties
+    public let application: Application
+
+    /// Device connectivity properties
+    public let connectivity: RUMConnectivity?
+
+    /// User provided context
+    public internal(set) var context: RUMEventAttributes?
+
+    /// Start of the event in ms from epoch
+    public let date: Int64
+
+    /// Long Task properties
+    public let longTask: LongTask
+
+    /// The service name for this application
+    public let service: String?
+
+    /// Session properties
+    public let session: Session
+
+    /// Synthetics properties
+    public let synthetics: Synthetics?
+
+    /// RUM event type
+    public let type: String = "long_task"
+
+    /// User properties
+    public internal(set) var usr: RUMUser?
+
+    /// View properties
+    public var view: View
+
+    enum CodingKeys: String, CodingKey {
+        case dd = "_dd"
+        case action = "action"
+        case application = "application"
+        case connectivity = "connectivity"
+        case context = "context"
+        case date = "date"
+        case longTask = "long_task"
+        case service = "service"
+        case session = "session"
+        case synthetics = "synthetics"
+        case type = "type"
+        case usr = "usr"
+        case view = "view"
+    }
+
+    /// Internal properties
+    public struct DD: Codable {
+        /// Version of the RUM event format
+        public let formatVersion: Int64 = 2
+
+        /// Session-related internal properties
+        public let session: Session?
+
+        enum CodingKeys: String, CodingKey {
+            case formatVersion = "format_version"
+            case session = "session"
+        }
+
+        /// Session-related internal properties
+        public struct Session: Codable {
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public let plan: Plan
+
+            enum CodingKeys: String, CodingKey {
+                case plan = "plan"
+            }
+
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public enum Plan: Int, Codable {
+                case plan1 = 1
+                case plan2 = 2
+            }
+        }
+    }
+
+    /// Action properties
+    public struct Action: Codable {
+        /// UUID of the action
+        public let id: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+    }
+
+    /// Application properties
+    public struct Application: Codable {
+        /// UUID of the application
+        public let id: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+    }
+
+    /// Long Task properties
+    public struct LongTask: Codable {
+        /// Duration in ns of the long task
+        public let duration: Int64
+
+        /// UUID of the long task
+        public let id: String?
+
+        /// Whether this long task is considered a frozen frame
+        public let isFrozenFrame: Bool?
+
+        enum CodingKeys: String, CodingKey {
+            case duration = "duration"
+            case id = "id"
+            case isFrozenFrame = "is_frozen_frame"
+        }
+    }
+
+    /// Session properties
+    public struct Session: Codable {
+        /// Whether this session has a replay
+        public let hasReplay: Bool?
+
+        /// UUID of the session
+        public let id: String
+
+        /// Type of the session
+        public let type: SessionType
+
+        enum CodingKeys: String, CodingKey {
+            case hasReplay = "has_replay"
+            case id = "id"
+            case type = "type"
+        }
+
+        /// Type of the session
+        public enum SessionType: String, Codable {
+            case user = "user"
+            case synthetics = "synthetics"
+        }
+    }
+
+    /// Synthetics properties
+    public struct Synthetics: Codable {
+        /// The identifier of the current Synthetics test results
+        public let resultId: String
+
+        /// The identifier of the current Synthetics test
+        public let testId: String
+
+        enum CodingKeys: String, CodingKey {
+            case resultId = "result_id"
+            case testId = "test_id"
+        }
+    }
+
+    /// View properties
+    public struct View: Codable {
+        /// UUID of the view
+        public let id: String
+
+        /// User defined name of the view
+        public var name: String?
+
+        /// URL that linked to the initial view of the page
+        public var referrer: String?
+
+        /// URL of the view
+        public var url: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
             case name = "name"
             case referrer = "referrer"
             case url = "url"
@@ -1147,7 +1518,7 @@ public struct RUMConnectivity: Codable {
 
 /// User provided context
 public struct RUMEventAttributes: Codable {
-    public let contextInfo: [String: Codable]
+    public internal(set) var contextInfo: [String: Encodable]
 
     struct DynamicCodingKey: CodingKey {
         var stringValue: String
@@ -1193,7 +1564,7 @@ public struct RUMUser: Codable {
     /// Name of the user
     public let name: String?
 
-    public let usrInfo: [String: Codable]
+    public internal(set) var usrInfo: [String: Encodable]
 
     enum StaticCodingKeys: String, CodingKey {
         case email = "email"
@@ -1257,4 +1628,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/d40d93a607a2d4483c95bd000a4e8ebd96fdf1fd
+// Generated from https://github.com/DataDog/rum-events-format/tree/cdf9a70e6be9cfec5e9524c58abfe79a9fea1f64

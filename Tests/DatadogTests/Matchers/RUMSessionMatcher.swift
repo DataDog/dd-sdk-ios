@@ -68,6 +68,9 @@ internal class RUMSessionMatcher {
 
         /// `RUMError` events tracked during this visit.
         fileprivate(set) var errorEvents: [RUMErrorEvent] = []
+
+        /// `RUMLongTask` events tracked during this visit.
+        fileprivate(set) var longTaskEvents: [RUMLongTaskEvent] = []
     }
 
     /// An array of view visits tracked during this RUM Session.
@@ -78,6 +81,7 @@ internal class RUMSessionMatcher {
     let actionEventMatchers: [RUMEventMatcher]
     let resourceEventMatchers: [RUMEventMatcher]
     let errorEventMatchers: [RUMEventMatcher]
+    let longTaskEventMatchers: [RUMEventMatcher]
 
     private init(sessionEventMatchers: [RUMEventMatcher]) throws {
         // Sort events so they follow increasing time order
@@ -97,6 +101,7 @@ internal class RUMSessionMatcher {
         self.actionEventMatchers = eventsMatchersByType["action"] ?? []
         self.resourceEventMatchers = eventsMatchersByType["resource"] ?? []
         self.errorEventMatchers = eventsMatchersByType["error"] ?? []
+        self.longTaskEventMatchers = eventsMatchersByType["long_task"] ?? []
 
         let viewEvents: [RUMViewEvent] = try viewEventMatchers.map { matcher in try matcher.model() }
 
@@ -109,8 +114,15 @@ internal class RUMSessionMatcher {
         let errorEvents: [RUMErrorEvent] = try errorEventMatchers
             .map { matcher in try matcher.model() }
 
+        let longTaskEvents: [RUMLongTaskEvent] = try longTaskEventMatchers
+            .map { matcher in try matcher.model() }
+
         // Validate each group of events individually
+        try validate(rumViewEvents: viewEvents)
+        try validate(rumActionEvents: actionEvents)
         try validate(rumResourceEvents: resourceEvents)
+        try validate(rumErrorEvents: errorEvents)
+        try validate(rumLongTaskEvents: longTaskEvents)
 
         // Group RUMView events into ViewVisits:
         let uniqueViewIDs = Set(viewEvents.map { $0.view.id })
@@ -175,6 +187,16 @@ internal class RUMSessionMatcher {
             }
         }
 
+        try longTaskEvents.forEach { rumEvent in
+            if let visit = visitsByViewID[rumEvent.view.id] {
+                visit.longTaskEvents.append(rumEvent)
+            } else {
+                throw RUMSessionConsistencyException(
+                    description: "Cannot link RUM Event: \(rumEvent) to `RUMSessionMatcher.ViewVisit` by `view.id`."
+                )
+            }
+        }
+
         // Sort visits by time
         let visitsEventOrderedByTime = visits.sorted { firstVisit, secondVisit in
             let firstVisitTime = firstVisit.viewEvents[0].date
@@ -215,12 +237,65 @@ internal class RUMSessionMatcher {
     }
 }
 
+private func validate(rumViewEvents: [RUMViewEvent]) throws {
+    // All view events must use `session.plan` "lite"
+    try rumViewEvents.forEach { viewEvent in
+        if viewEvent.dd.session?.plan != .plan1 {
+            throw RUMSessionConsistencyException(
+                description: "All RUM events must use session plan `1` (RUM Lite). Bad view event: \(viewEvent)"
+            )
+        }
+    }
+}
+
+private func validate(rumActionEvents: [RUMActionEvent]) throws {
+    // All action events must use `session.plan` "lite"
+    try rumActionEvents.forEach { actionEvent in
+        if actionEvent.dd.session?.plan != .plan1 {
+            throw RUMSessionConsistencyException(
+                description: "All RUM events must use session plan `1` (RUM Lite). Bad action event: \(actionEvent)"
+            )
+        }
+    }
+}
+
 private func validate(rumResourceEvents: [RUMResourceEvent]) throws {
-    // Each `RUMResourceEvent` should have unique ID
+    // All resource events must have unique ID
     let ids = Set(rumResourceEvents.map { $0.resource.id })
     if ids.count != rumResourceEvents.count {
         throw RUMSessionConsistencyException(
             description: "`resource.id` should be unique - found at least two RUMResourceEvents with the same `resource.id`."
         )
+    }
+
+    // All resource events must use `session.plan` "lite"
+    try rumResourceEvents.forEach { resourceEvent in
+        if resourceEvent.dd.session?.plan != .plan1 {
+            throw RUMSessionConsistencyException(
+                description: "All RUM events must use session plan `1` (RUM Lite). Bad resource event: \(resourceEvent)"
+            )
+        }
+    }
+}
+
+private func validate(rumErrorEvents: [RUMErrorEvent]) throws {
+    // All error events must use `session.plan` "lite"
+    try rumErrorEvents.forEach { errorEvent in
+        if errorEvent.dd.session?.plan != .plan1 {
+            throw RUMSessionConsistencyException(
+                description: "All RUM events must use session plan `1` (RUM Lite). Bad error event: \(errorEvent)"
+            )
+        }
+    }
+}
+
+private func validate(rumLongTaskEvents: [RUMLongTaskEvent]) throws {
+    // All error events must use `session.plan` "lite"
+    try rumLongTaskEvents.forEach { longTaskEvent in
+        if longTaskEvent.dd.session?.plan != .plan1 {
+            throw RUMSessionConsistencyException(
+                description: "All RUM events must use session plan `1` (RUM Lite). Bad long task event: \(longTaskEvent)"
+            )
+        }
     }
 }

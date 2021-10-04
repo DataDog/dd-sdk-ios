@@ -961,7 +961,7 @@ class TracerTests: XCTestCase {
 
         queue.sync {} // wait for all spans in the array
 
-        /// Calls given closures on each span cuncurrently
+        /// Calls given closures on each span concurrently
         func testThreadSafety(closures: [(DDSpan) -> Void]) {
             DispatchQueue.concurrentPerform(iterations: 100) { iteration in
                 closures.forEach { closure in

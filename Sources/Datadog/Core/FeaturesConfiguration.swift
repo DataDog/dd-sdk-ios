@@ -19,16 +19,19 @@ internal struct FeaturesConfiguration {
         let environment: String
         let performance: PerformancePreset
         let source: String
+        let proxyConfiguration: [AnyHashable: Any]?
     }
 
     struct Logging {
         let common: Common
-        let uploadURLWithClientToken: URL
+        let uploadURL: URL
+        let clientToken: String
     }
 
     struct Tracing {
         let common: Common
-        let uploadURLWithClientToken: URL
+        let uploadURL: URL
+        let clientToken: String
         let spanEventMapper: SpanEventMapper?
     }
 
@@ -36,19 +39,23 @@ internal struct FeaturesConfiguration {
         struct AutoInstrumentation {
             let uiKitRUMViewsPredicate: UIKitRUMViewsPredicate?
             let uiKitRUMUserActionsPredicate: UIKitRUMUserActionsPredicate?
+            let longTaskThreshold: TimeInterval?
         }
 
         let common: Common
-        let uploadURLWithClientToken: URL
+        let uploadURL: URL
+        let clientToken: String
         let applicationID: String
         let sessionSamplingRate: Float
         let viewEventMapper: RUMViewEventMapper?
         let resourceEventMapper: RUMResourceEventMapper?
         let actionEventMapper: RUMActionEventMapper?
         let errorEventMapper: RUMErrorEventMapper?
+        let longTaskEventMapper: RUMLongTaskEventMapper?
         /// RUM auto instrumentation configuration, `nil` if not enabled.
         let autoInstrumentation: AutoInstrumentation?
         let backgroundEventTrackingEnabled: Bool
+        let onSessionStart: RUMSessionListener?
     }
 
     struct URLSessionAutoInstrumentation {
@@ -76,7 +83,9 @@ internal struct FeaturesConfiguration {
         let sdkEnvironment: String
         /// Internal monitoring logger's name.
         let loggerName = "im-logger"
-        let logsUploadURLWithClientToken: URL
+        let logsUploadURL: URL
+        /// The client token authorized for monitoring org (likely it's different than client token for other features).
+        let clientToken: String
     }
 
     /// Configuration common to all features.
@@ -151,26 +160,23 @@ extension FeaturesConfiguration {
                 uploadFrequency: configuration.uploadFrequency,
                 bundleType: appContext.bundleType
             ),
-            source: source
+            source: source,
+            proxyConfiguration: configuration.proxyConfiguration
         )
 
         if configuration.loggingEnabled {
             logging = Logging(
                 common: common,
-                uploadURLWithClientToken: try ifValid(
-                    endpointURLString: logsEndpoint.url,
-                    clientToken: configuration.clientToken
-                )
+                uploadURL: try ifValid(endpointURLString: logsEndpoint.url),
+                clientToken: try ifValid(clientToken: configuration.clientToken)
             )
         }
 
         if configuration.tracingEnabled {
             tracing = Tracing(
                 common: common,
-                uploadURLWithClientToken: try ifValid(
-                    endpointURLString: tracesEndpoint.url,
-                    clientToken: configuration.clientToken
-                ),
+                uploadURL: try ifValid(endpointURLString: tracesEndpoint.url),
+                clientToken: try ifValid(clientToken: configuration.clientToken),
                 spanEventMapper: configuration.spanEventMapper
             )
         }
@@ -178,28 +184,31 @@ extension FeaturesConfiguration {
         if configuration.rumEnabled {
             var autoInstrumentation: RUM.AutoInstrumentation?
 
-            if configuration.rumUIKitViewsPredicate != nil || configuration.rumUIKitUserActionsPredicate != nil {
+            if configuration.rumUIKitViewsPredicate != nil ||
+                configuration.rumUIKitUserActionsPredicate != nil ||
+                configuration.rumLongTaskDurationThreshold != nil {
                 autoInstrumentation = RUM.AutoInstrumentation(
                     uiKitRUMViewsPredicate: configuration.rumUIKitViewsPredicate,
-                    uiKitRUMUserActionsPredicate: configuration.rumUIKitUserActionsPredicate
+                    uiKitRUMUserActionsPredicate: configuration.rumUIKitUserActionsPredicate,
+                    longTaskThreshold: configuration.rumLongTaskDurationThreshold
                 )
             }
 
             if let rumApplicationID = configuration.rumApplicationID {
                 rum = RUM(
                     common: common,
-                    uploadURLWithClientToken: try ifValid(
-                        endpointURLString: rumEndpoint.url,
-                        clientToken: configuration.clientToken
-                    ),
+                    uploadURL: try ifValid(endpointURLString: rumEndpoint.url),
+                    clientToken: try ifValid(clientToken: configuration.clientToken),
                     applicationID: rumApplicationID,
                     sessionSamplingRate: configuration.rumSessionsSamplingRate,
                     viewEventMapper: configuration.rumViewEventMapper,
                     resourceEventMapper: configuration.rumResourceEventMapper,
                     actionEventMapper: configuration.rumActionEventMapper,
                     errorEventMapper: configuration.rumErrorEventMapper,
+                    longTaskEventMapper: configuration.rumLongTaskEventMapper,
                     autoInstrumentation: autoInstrumentation,
-                    backgroundEventTrackingEnabled: configuration.rumBackgroundEventTrackingEnabled
+                    backgroundEventTrackingEnabled: configuration.rumBackgroundEventTrackingEnabled,
+                    onSessionStart: configuration.rumSessionsListener
                 )
             } else {
                 let error = ProgrammerError(
@@ -263,10 +272,8 @@ extension FeaturesConfiguration {
                 common: common,
                 sdkServiceName: "dd-sdk-ios",
                 sdkEnvironment: "prod",
-                logsUploadURLWithClientToken: try ifValid(
-                    endpointURLString: Datadog.Configuration.DatadogEndpoint.us1.logsEndpoint.url,
-                    clientToken: internalMonitoringClientToken
-                )
+                logsUploadURL: try ifValid(endpointURLString: Datadog.Configuration.DatadogEndpoint.us1.logsEndpoint.url),
+                clientToken: try ifValid(clientToken: internalMonitoringClientToken)
             )
         }
 
@@ -291,18 +298,18 @@ private func ifValid(environment: String) throws -> String {
     return environment
 }
 
-private func ifValid(endpointURLString: String, clientToken: String) throws -> URL {
+private func ifValid(endpointURLString: String) throws -> URL {
     guard let endpointURL = URL(string: endpointURLString) else {
         throw ProgrammerError(description: "The `url` in `.custom(url:)` must be a valid URL string.")
     }
+    return endpointURL
+}
+
+private func ifValid(clientToken: String) throws -> String {
     if clientToken.isEmpty {
         throw ProgrammerError(description: "`clientToken` cannot be empty.")
     }
-    let endpointURLWithClientToken = endpointURL.appendingPathComponent(clientToken)
-    guard let url = URL(string: endpointURLWithClientToken.absoluteString) else {
-        throw ProgrammerError(description: "Cannot build upload URL.")
-    }
-    return url
+    return clientToken
 }
 
 private func sanitized(firstPartyHosts: Set<String>) -> Set<String> {

@@ -23,9 +23,14 @@ internal struct JSONArray: JSONType {
 }
 
 internal struct JSONEnumeration: JSONType {
+    enum Value {
+        case string(value: String)
+        case integer(value: Int)
+    }
+
     let name: String
     let comment: String?
-    let values: [String]
+    let values: [Value]
 }
 
 internal struct JSONObject: JSONType {

@@ -19,7 +19,7 @@ internal protocol ValueObserver: AnyObject {
 }
 
 /// Manages the `Value` in a thread safe manner and notifies subscribed `ValueObservers` on its change.
-internal class ValuePublisher<Value> {
+internal final class ValuePublisher<Value> {
     /// Type erasure for `ValueObserver` type.
     private struct AnyObserver<ObservedValue> {
         let notifyValueChanged: (ObservedValue, ObservedValue) -> Void
@@ -48,7 +48,7 @@ internal class ValuePublisher<Value> {
         }
     }
 
-    init(initialValue: Value) {
+    required init(initialValue: Value) {
         self.unsafeValue = initialValue
         self.unsafeObservers = []
     }

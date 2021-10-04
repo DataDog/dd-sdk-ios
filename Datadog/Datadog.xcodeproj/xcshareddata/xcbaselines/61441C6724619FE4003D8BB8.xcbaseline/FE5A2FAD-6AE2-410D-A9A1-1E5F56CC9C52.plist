@@ -57,7 +57,7 @@
 					<real>30</real>
 				</dict>
 			</dict>
-			<key>testWrittingLogsOnDisc()</key>
+			<key>testWritingLogsOnDisc()</key>
 			<dict>
 				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
 				<dict>
@@ -123,7 +123,7 @@
 					<real>30</real>
 				</dict>
 			</dict>
-			<key>testWrittingSpansOnDisc()</key>
+			<key>testWritingSpansOnDisc()</key>
 			<dict>
 				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
 				<dict>

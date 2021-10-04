@@ -1,9 +1,9 @@
 platform :ios, '13.0'
 
 abstract_target 'Common' do
-  pod 'DatadogSDK', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :REMOTE_GIT_REFERENCE
-  pod 'DatadogSDKAlamofireExtension', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :REMOTE_GIT_REFERENCE
-  pod 'DatadogSDKCrashReporting', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :REMOTE_GIT_REFERENCE
+  pod 'DatadogSDK', :git => 'GIT_REMOTE', :GIT_REFERENCE
+  pod 'DatadogSDKAlamofireExtension', :git => 'GIT_REMOTE', :GIT_REFERENCE
+  pod 'DatadogSDKCrashReporting', :git => 'GIT_REMOTE', :GIT_REFERENCE
   pod 'Alamofire'
 
   target 'CPProjectUseFrameworks' do

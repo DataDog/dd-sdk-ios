@@ -66,6 +66,10 @@ internal class MethodSwizzler<TypedIMP, TypedBlockIMP> {
             let newImp: IMP = imp_implementationWithBlock(newImpBlock)
 
             set(newIMP: newImp, for: foundMethod)
+
+            #if DD_SDK_COMPILED_FOR_TESTING
+            activeSwizzlingNames.append(foundMethod.swizzlingName)
+            #endif
         }
     }
 
@@ -76,6 +80,8 @@ internal class MethodSwizzler<TypedIMP, TypedBlockIMP> {
             let originalTypedIMP = originalImplementation(of: foundMethod)
             let originalIMP: IMP = unsafeBitCast(originalTypedIMP, to: IMP.self)
             method_setImplementation(foundMethod.method, originalIMP)
+
+            activeSwizzlingNames.removeAll { $0 == foundMethod.swizzlingName }
         }
     }
 #endif
@@ -114,3 +120,12 @@ internal class MethodSwizzler<TypedIMP, TypedBlockIMP> {
         method_setImplementation(found.method, newIMP)
     }
 }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+extension MethodSwizzler.FoundMethod {
+    var swizzlingName: String { "\(klass).\(method_getName(method))" }
+}
+
+/// The list of active swizzlings to ensure integrity in unit tests.
+internal var activeSwizzlingNames: [String] = []
+#endif

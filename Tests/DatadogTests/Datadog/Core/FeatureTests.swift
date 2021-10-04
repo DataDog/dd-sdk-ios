@@ -18,7 +18,7 @@ class FeatureStorageTests: XCTestCase {
         super.tearDown()
     }
 
-    func testWhenWrittingDataAndChangingConsent_thenOnlyAuthorizedDataCanBeRead() {
+    func testWhenWritingDataAndChangingConsent_thenOnlyAuthorizedDataCanBeRead() {
         let consentProvider = ConsentProvider(initialConsent: .mockRandom())
 
         // Given

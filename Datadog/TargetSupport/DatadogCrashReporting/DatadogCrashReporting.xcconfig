@@ -3,30 +3,3 @@
 
 // Include base config
 #include "../xcconfigs/Base.xcconfig"
-
-// This setting adjusts `DatadogCrashReporting.xcframework` simulator slices produced
-// by `carthage update --use-xcframeworks` when installing the SDK so it can link
-// its dependencies properly with `ld` (`CrashReporter.xcframework` and `Datadog.xcframework`).
-//
-// `CrashReporter.xcframework` built from sources produces `ios-i386_x86_64-simulator` slice.
-// As mentioned in its `1.8.0` release note, it does not contain the `arm64` architecture.
-//
-// To ensure that `carthage update --use-xcframeworks` links resultant xcframeworks with no error
-// for simulator builds, the resultant slice for `DatadogCrashReporting.xcframework` must be a subset of the
-// architectures defined for its dependencies:
-// - CrashReporter.xcframework - `ios_i386_x86_64-simulator`
-// - Datadog.xcframework - `ios-arm64_x86_64-simulator`
-// - Kronos.xcframework - `ios-arm64_i386_x86_64-simulator`
-// 
-// The only subset of dependant slices is `ios_x86_64-simulator` and this is what we're enforcing here.
-// 
-// Without this adjustment excluding `arm64-simulator` the `ld` will fail for `carthage update --use-xcframeworks` 
-// as it will not find the `arm64` architecture in `CrashReporter.xcframework` slice.
-//
-// Note: this is only problematic when `carthage update --use-xcframeworks` builds `CrashReporter.xcframework` from source
-// and should not be an issue once pre-build xcframeworks support is added to Carthage: https://github.com/Carthage/Carthage/pull/3123
-// However, carthage always falls back to build from source if it can't download pre-build binaries, so this adjustment
-// will be still required.
-//
-ARCHS[sdk=iphonesimulator*] = x86_64
-ARCHS[sdk=iphoneos*] = $(ARCHS_STANDARD)

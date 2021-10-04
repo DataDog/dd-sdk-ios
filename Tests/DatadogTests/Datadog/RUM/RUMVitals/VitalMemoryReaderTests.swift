@@ -7,58 +7,90 @@
 import XCTest
 @testable import Datadog
 
+private class Allocation {
+    fileprivate let numberOfBytes: Int
+    private var pointer: UnsafeMutablePointer<UInt8>! // swiftlint:disable:this implicitly_unwrapped_optional
+
+    init(numberOfBytes: Int) {
+        self.numberOfBytes = numberOfBytes
+    }
+
+    func allocate() {
+        pointer = UnsafeMutablePointer<UInt8>.allocate(capacity: numberOfBytes)
+        pointer.initialize(repeating: 0, count: numberOfBytes)
+    }
+
+    func deallocate() {
+        pointer.deallocate()
+    }
+}
+
 internal class VitalMemoryReaderTest: XCTestCase {
+    private let allocation = Allocation(
+        numberOfBytes: 8 * 1_024 * 1_024 // 8MB is significantly more than any other allocation in tests process
+    )
+
     func testReadMemory() throws {
         let reader = VitalMemoryReader()
-
         let result = reader.readVitalData()
-
         XCTAssertNotNil(result)
     }
 
-    func testWhenMemoryConsumptionGrows() {
+    func testWhenMemoryConsumptionGrows() throws {
         // Given
         let reader = VitalMemoryReader()
-        let threshold = reader.readVitalData()
-        let allocationSize = 128 * 1_024
 
         // When
-        let intPointer = UnsafeMutablePointer<Int>.allocate(capacity: allocationSize)
-        for i in 0..<allocationSize {
-            (intPointer + i).initialize(to: i)
+        var deltas: [Double] = []
+
+        try (0..<20).forEach { _ in // measure mean value to mitigate flakiness
+            let before = try XCTUnwrap(reader.readVitalData())
+            allocation.allocate()
+            let after = try XCTUnwrap(reader.readVitalData())
+            allocation.deallocate()
+            deltas.append(after - before)
         }
-        let measure = reader.readVitalData()
-        intPointer.deallocate()
 
         // Then
-        // Test that at least half the allocated size is accounted for to mitigate flakiness in memory readings
-        let expectedAllocatedSize = allocationSize * MemoryLayout<Int>.stride / 2
-        XCTAssertNotNil(threshold)
-        XCTAssertNotNil(measure)
-        let delta = measure! - threshold!
-        XCTAssertGreaterThanOrEqual(delta, Double(expectedAllocatedSize))
+        let meanDelta = deltas.reduce(0.0, +) / Double(deltas.count)
+        let expectedMeanDelta = Double(allocation.numberOfBytes) * 0.6 // only 60% to mitigate external deallocations in the process
+
+        XCTAssertGreaterThan(
+            meanDelta,
+            expectedMeanDelta,
+            "Mean delta \(toMB(meanDelta))MB is not greater than \(toMB(expectedMeanDelta))MB"
+        )
     }
 
-    func testWhenMemoryConsumptionShrinks() {
+    func testWhenMemoryConsumptionShrinks() throws {
         // Given
         let reader = VitalMemoryReader()
-        let allocationSize = 128 * 1_024
-        let intPointer = UnsafeMutablePointer<Int>.allocate(capacity: allocationSize)
-        for i in 0..<allocationSize {
-            (intPointer + i).initialize(to: i)
-        }
-        let threshold = reader.readVitalData()
 
         // When
-        intPointer.deallocate()
-        let measure = reader.readVitalData()
+        var deltas: [Double] = []
+
+        try (0..<20).forEach { _ in // measure mean value to mitigate flakiness
+            allocation.allocate()
+            let before = try XCTUnwrap(reader.readVitalData())
+            allocation.deallocate()
+            let after = try XCTUnwrap(reader.readVitalData())
+            deltas.append(after - before)
+        }
 
         // Then
-        // Test that at least half the allocated size is accounted for to mitigate flakiness in memory readings
-        let expectedAllocatedSize = allocationSize * MemoryLayout<Int>.stride / 2
-        XCTAssertNotNil(threshold)
-        XCTAssertNotNil(measure)
-        let delta = threshold! - measure!
-        XCTAssertGreaterThanOrEqual(delta, Double(expectedAllocatedSize))
+        let meanDelta = deltas.reduce(0.0, +) / Double(deltas.count)
+        let expectedMeanDelta = Double(allocation.numberOfBytes) * 0.6 // only 60% to mitigate external allocations in the process
+
+        XCTAssertLessThan(
+            meanDelta,
+            expectedMeanDelta,
+            "Mean delta \(toMB(meanDelta))MB is not less than \(toMB(expectedMeanDelta))MB"
+        )
+    }
+
+    // MARK: - Helpers
+
+    private func toMB(_ bytes: Double) -> Double {
+        return round(bytes / (1_024 * 1_024) * 100) / 100
     }
 }

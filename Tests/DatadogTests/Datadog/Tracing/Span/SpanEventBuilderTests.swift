@@ -139,7 +139,7 @@ class SpanEventBuilderTests: XCTestCase {
                 [
                     OTLogFields.errorKind: "Swift error",
                     OTLogFields.event: "error",
-                    OTLogFields.message: "Error occured",
+                    OTLogFields.message: "Error occurred",
                     OTLogFields.stack: "Foo.swift:42",
                 ]
             ]
@@ -151,7 +151,7 @@ class SpanEventBuilderTests: XCTestCase {
             span.tags,
             [
                 "error.type": "Swift error",    // remapped to `error.type`
-                "error.msg": "Error occured",   // remapped to `error.msg`
+                "error.msg": "Error occurred",   // remapped to `error.msg`
                 "error.stack": "Foo.swift:42",  // remapped to `error.stack`
             ]
         )

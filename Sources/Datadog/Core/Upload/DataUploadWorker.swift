@@ -20,16 +20,13 @@ internal class DataUploadWorker: DataUploadWorkerType {
     /// File reader providing data to upload.
     private let fileReader: Reader
     /// Data uploader sending data to server.
-    private let dataUploader: DataUploader
+    private let dataUploader: DataUploaderType
     /// Variable system conditions determining if upload should be performed.
     private let uploadConditions: DataUploadConditions
-    /// For each file upload, the status is checked against this list of acceptable statuses.
-    /// If it's there, the file will be deleted. If not, it will be retried in next upload.
-    private let acceptableUploadStatuses: Set<DataUploadStatus> = [
-        .success, .redirection, .clientError, .clientTokenError, .unknown
-    ]
     /// Name of the feature this worker is performing uploads for.
     private let featureName: String
+    /// A monitor reporting errors through Internal Monitoring feature (if enabled).
+    private let internalMonitor: InternalMonitor?
 
     /// Delay used to schedule consecutive uploads.
     private var delay: Delay
@@ -40,10 +37,11 @@ internal class DataUploadWorker: DataUploadWorkerType {
     init(
         queue: DispatchQueue,
         fileReader: Reader,
-        dataUploader: DataUploader,
+        dataUploader: DataUploaderType,
         uploadConditions: DataUploadConditions,
         delay: Delay,
-        featureName: String
+        featureName: String,
+        internalMonitor: InternalMonitor? = nil
     ) {
         self.queue = queue
         self.fileReader = fileReader
@@ -51,6 +49,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
         self.dataUploader = dataUploader
         self.delay = delay
         self.featureName = featureName
+        self.internalMonitor = internalMonitor
 
         let uploadWork = DispatchWorkItem { [weak self] in
             guard let self = self else {
@@ -58,23 +57,34 @@ internal class DataUploadWorker: DataUploadWorkerType {
             }
 
             let blockersForUpload = self.uploadConditions.blockersForUpload()
-            let isSystemReady = blockersForUpload.count == 0
+            let isSystemReady = blockersForUpload.isEmpty
             let nextBatch = isSystemReady ? self.fileReader.readNextBatch() : nil
             if let batch = nextBatch {
                 userLogger.debug("⏳ (\(self.featureName)) Uploading batch...")
 
+                // Upload batch
                 let uploadStatus = self.dataUploader.upload(data: batch.data)
-                let shouldBeAccepted = self.acceptableUploadStatuses.contains(uploadStatus)
 
-                if shouldBeAccepted {
+                // Delete or keep batch depending on the upload status
+                if uploadStatus.needsRetry {
+                    self.delay.increase()
+
+                    userLogger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus.userDebugDescription)")
+                } else {
                     self.fileReader.markBatchAsRead(batch)
                     self.delay.decrease()
 
-                    userLogger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus)")
-                } else {
-                    self.delay.increase()
+                    userLogger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus.userDebugDescription)")
+                }
 
-                    userLogger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus)")
+                // Print user error (if any)
+                if let userErrorMessage = uploadStatus.userErrorMessage {
+                    userLogger.error(userErrorMessage)
+                }
+
+                // Send internal monitoring error (if any and if Internal Monitoring is enabled)
+                if let sdkError = uploadStatus.internalMonitoringError {
+                    self.internalMonitor?.sdkLogger.error(sdkError.message, error: sdkError.error, attributes: sdkError.attributes)
                 }
             } else {
                 let batchLabel = nextBatch != nil ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")

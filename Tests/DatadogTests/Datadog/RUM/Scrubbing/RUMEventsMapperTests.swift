@@ -21,6 +21,9 @@ class RUMEventsMapperTests: XCTestCase {
         let originalActionEvent: RUMActionEvent = .mockRandom()
         let modifiedActionEvent: RUMActionEvent = .mockRandom()
 
+        let originalLongTaskEvent: RUMLongTaskEvent = .mockRandom()
+        let modifiedLongTaskEvent: RUMLongTaskEvent = .mockRandom()
+
         // Given
         let mapper = RUMEventsMapper(
             viewEventMapper: { viewEvent in
@@ -38,59 +41,33 @@ class RUMEventsMapperTests: XCTestCase {
             actionEventMapper: { actionEvent in
                 XCTAssertEqual(actionEvent, originalActionEvent, "Mapper should be called with the original event.")
                 return modifiedActionEvent
+            },
+            longTaskEventMapper: { longTaskEvent in
+                XCTAssertEqual(longTaskEvent, originalLongTaskEvent, "Mapper should be called with the original event.")
+                return modifiedLongTaskEvent
             }
         )
 
         // When
-        let mappedViewEvent = mapper.map(event: RUMEvent<RUMViewEvent>.mockWith(model: originalViewEvent))?.model
-        let mappedErrorEvent = mapper.map(event: RUMEvent<RUMErrorEvent>.mockWith(model: originalErrorEvent))?.model
-        let mappedResourceEvent = mapper.map(event: RUMEvent<RUMResourceEvent>.mockWith(model: originalResourceEvent))?.model
-        let mappedActionEvent = mapper.map(event: RUMEvent<RUMActionEvent>.mockWith(model: originalActionEvent))?.model
+        let mappedViewEvent = mapper.map(event: RUMEvent(model: originalViewEvent))?.model
+        let mappedErrorEvent = mapper.map(event: RUMEvent(model: originalErrorEvent))?.model
+        let mappedResourceEvent = mapper.map(event: RUMEvent(model: originalResourceEvent))?.model
+        let mappedActionEvent = mapper.map(event: RUMEvent(model: originalActionEvent))?.model
+        let mappedLongTaskEvent = mapper.map(event: RUMEvent(model: originalLongTaskEvent))?.model
 
         // Then
         XCTAssertEqual(try XCTUnwrap(mappedViewEvent), modifiedViewEvent, "Mapper should return modified event.")
         XCTAssertEqual(try XCTUnwrap(mappedErrorEvent), modifiedErrorEvent, "Mapper should return modified event.")
         XCTAssertEqual(try XCTUnwrap(mappedResourceEvent), modifiedResourceEvent, "Mapper should return modified event.")
         XCTAssertEqual(try XCTUnwrap(mappedActionEvent), modifiedActionEvent, "Mapper should return modified event.")
-    }
-
-    func testGivenMappersEnabled_whenModifyingEvents_itDoesNotModifyCustomAttributes() throws {
-        // Given
-        let mapper = RUMEventsMapper(
-            viewEventMapper: { _ in .mockRandom() },
-            errorEventMapper: { _ in .mockRandom() },
-            resourceEventMapper: { _ in .mockRandom() },
-            actionEventMapper: { _ in .mockRandom() }
-        )
-
-        // When
-        let rumEvent1: RUMEvent<RUMViewEvent> = .mockRandomWith(model: .mockRandom())
-        let rumEvent2: RUMEvent<RUMErrorEvent> = .mockRandomWith(model: .mockRandom())
-        let rumEvent3: RUMEvent<RUMResourceEvent> = .mockRandomWith(model: .mockRandom())
-        let rumEvent4: RUMEvent<RUMActionEvent> = .mockRandomWith(model: .mockRandom())
-        let mappedRUMEvent1 = try XCTUnwrap(mapper.map(event: rumEvent1))
-        let mappedRUMEvent2 = try XCTUnwrap(mapper.map(event: rumEvent2))
-        let mappedRUMEvent3 = try XCTUnwrap(mapper.map(event: rumEvent3))
-        let mappedRUMEvent4 = try XCTUnwrap(mapper.map(event: rumEvent4))
-
-        // Then
-        XCTAssertEqual(rumEvent1.attributes as! [String: String], mappedRUMEvent1.attributes as! [String: String])
-        XCTAssertEqual(rumEvent1.userInfoAttributes as! [String: String], mappedRUMEvent1.userInfoAttributes as! [String: String])
-
-        XCTAssertEqual(rumEvent2.attributes as! [String: String], mappedRUMEvent2.attributes as! [String: String])
-        XCTAssertEqual(rumEvent2.userInfoAttributes as! [String: String], mappedRUMEvent2.userInfoAttributes as! [String: String])
-
-        XCTAssertEqual(rumEvent3.attributes as! [String: String], mappedRUMEvent3.attributes as! [String: String])
-        XCTAssertEqual(rumEvent3.userInfoAttributes as! [String: String], mappedRUMEvent3.userInfoAttributes as! [String: String])
-
-        XCTAssertEqual(rumEvent4.attributes as! [String: String], mappedRUMEvent4.attributes as! [String: String])
-        XCTAssertEqual(rumEvent4.userInfoAttributes as! [String: String], mappedRUMEvent4.userInfoAttributes as! [String: String])
+        XCTAssertEqual(try XCTUnwrap(mappedLongTaskEvent), modifiedLongTaskEvent, "Mapper should return modified event.")
     }
 
     func testGivenMappersEnabled_whenDroppingEvents_itReturnsNil() {
         let originalErrorEvent: RUMErrorEvent = .mockRandom()
         let originalResourceEvent: RUMResourceEvent = .mockRandom()
         let originalActionEvent: RUMActionEvent = .mockRandom()
+        let originalLongTaskEvent: RUMLongTaskEvent = .mockRandom()
 
         // Given
         let mapper = RUMEventsMapper(
@@ -106,18 +83,24 @@ class RUMEventsMapperTests: XCTestCase {
             actionEventMapper: { actionEvent in
                 XCTAssertEqual(actionEvent, originalActionEvent, "Mapper should be called with the original event.")
                 return nil
+            },
+            longTaskEventMapper: { longTaskEvent in
+                XCTAssertEqual(longTaskEvent, originalLongTaskEvent, "Mapper should be called with the original event.")
+                return nil
             }
         )
 
         // When
-        let mappedErrorEvent = mapper.map(event: RUMEvent<RUMErrorEvent>.mockWith(model: originalErrorEvent))?.model
-        let mappedResourceEvent = mapper.map(event: RUMEvent<RUMResourceEvent>.mockWith(model: originalResourceEvent))?.model
-        let mappedActionEvent = mapper.map(event: RUMEvent<RUMActionEvent>.mockWith(model: originalActionEvent))?.model
+        let mappedErrorEvent = mapper.map(event: RUMEvent(model: originalErrorEvent))?.model
+        let mappedResourceEvent = mapper.map(event: RUMEvent(model: originalResourceEvent))?.model
+        let mappedActionEvent = mapper.map(event: RUMEvent(model: originalActionEvent))?.model
+        let mappedLongTaskEvent = mapper.map(event: RUMEvent(model: originalLongTaskEvent))?.model
 
         // Then
         XCTAssertNil(mappedErrorEvent, "Mapper should return nil.")
         XCTAssertNil(mappedResourceEvent, "Mapper should return nil.")
         XCTAssertNil(mappedActionEvent, "Mapper should return nil.")
+        XCTAssertNil(mappedLongTaskEvent, "Mapper should return nil.")
     }
 
     func testGivenMappersDisabled_whenMappingEvents_itReturnsTheirOriginalRepresentation() throws {
@@ -125,26 +108,30 @@ class RUMEventsMapperTests: XCTestCase {
         let originalErrorEvent: RUMErrorEvent = .mockRandom()
         let originalResourceEvent: RUMResourceEvent = .mockRandom()
         let originalActionEvent: RUMActionEvent = .mockRandom()
+        let originalLongTaskEvent: RUMLongTaskEvent = .mockRandom()
 
         // Given
         let mapper = RUMEventsMapper(
             viewEventMapper: nil,
             errorEventMapper: nil,
             resourceEventMapper: nil,
-            actionEventMapper: nil
+            actionEventMapper: nil,
+            longTaskEventMapper: nil
         )
 
         // When
-        let mappedViewEvent = mapper.map(event: RUMEvent<RUMViewEvent>.mockWith(model: originalViewEvent))?.model
-        let mappedErrorEvent = mapper.map(event: RUMEvent<RUMErrorEvent>.mockWith(model: originalErrorEvent))?.model
-        let mappedResourceEvent = mapper.map(event: RUMEvent<RUMResourceEvent>.mockWith(model: originalResourceEvent))?.model
-        let mappedActionEvent = mapper.map(event: RUMEvent<RUMActionEvent>.mockWith(model: originalActionEvent))?.model
+        let mappedViewEvent = mapper.map(event: RUMEvent(model: originalViewEvent))?.model
+        let mappedErrorEvent = mapper.map(event: RUMEvent(model: originalErrorEvent))?.model
+        let mappedResourceEvent = mapper.map(event: RUMEvent(model: originalResourceEvent))?.model
+        let mappedActionEvent = mapper.map(event: RUMEvent(model: originalActionEvent))?.model
+        let mappedLongTaskEvent = mapper.map(event: RUMEvent(model: originalLongTaskEvent))?.model
 
         // Then
         XCTAssertEqual(try XCTUnwrap(mappedViewEvent), originalViewEvent, "Mapper should return the original event.")
         XCTAssertEqual(try XCTUnwrap(mappedErrorEvent), originalErrorEvent, "Mapper should return the original event.")
         XCTAssertEqual(try XCTUnwrap(mappedResourceEvent), originalResourceEvent, "Mapper should return the original event.")
         XCTAssertEqual(try XCTUnwrap(mappedActionEvent), originalActionEvent, "Mapper should return the original event.")
+        XCTAssertEqual(try XCTUnwrap(mappedLongTaskEvent), originalLongTaskEvent, "Mapper should return the original event.")
     }
 
     func testGivenUnrecognizedEvent_whenMapping_itReturnsItsOriginalImplementation() throws {
@@ -160,7 +147,8 @@ class RUMEventsMapperTests: XCTestCase {
             viewEventMapper: nil,
             errorEventMapper: { _ in nil },
             resourceEventMapper: { _ in nil },
-            actionEventMapper: { _ in nil }
+            actionEventMapper: { _ in nil },
+            longTaskEventMapper: { _ in nil }
         )
 
         let mappedEvent = try XCTUnwrap(mapper.map(event: originalEvent))

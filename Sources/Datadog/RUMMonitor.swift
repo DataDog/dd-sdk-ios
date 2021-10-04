@@ -27,11 +27,11 @@ internal extension RUMResourceType {
     /// - Parameters:
     ///   - request: the `URLRequest` for the resource.
     init?(request: URLRequest) {
-        let xhrHTTPMethods: Set<String> = ["POST", "PUT", "DELETE"]
+        let nativeHTTPMethods: Set<String> = ["POST", "PUT", "DELETE"]
 
         if let requestMethod = request.httpMethod?.uppercased(),
-           xhrHTTPMethods.contains(requestMethod) {
-            self = .xhr
+            nativeHTTPMethods.contains(requestMethod) {
+            self = .native
         } else {
             return nil
         }
@@ -54,10 +54,10 @@ internal extension RUMResourceType {
             case ("font", _): self = .font
             case ("text", "css"): self = .css
             case ("text", "javascript"): self = .js
-            default: self = .xhr
+            default: self = .native
             }
         } else {
-            self = .xhr
+            self = .native
         }
     }
 }
@@ -180,7 +180,6 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                         carrierInfoProvider: rumFeature.carrierInfoProvider
                     ),
                     eventBuilder: RUMEventBuilder(
-                        userInfoProvider: rumFeature.userInfoProvider,
                         eventsMapper: rumFeature.eventsMapper
                     ),
                     eventOutput: RUMEventFileOutput(
@@ -190,7 +189,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     dateCorrector: rumFeature.dateCorrector,
                     vitalCPUReader: rumFeature.vitalCPUReader,
                     vitalMemoryReader: rumFeature.vitalMemoryReader,
-                    vitalRefreshRateReader: rumFeature.vitalRefreshRateReader
+                    vitalRefreshRateReader: rumFeature.vitalRefreshRateReader,
+                    onSessionStart: rumFeature.onSessionStart
                 ),
                 samplingRate: rumFeature.configuration.sessionSamplingRate,
                 backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled
@@ -626,7 +626,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         combinedUserAttributes.merge(rumCommandAttributes: command.attributes)
 
         if let customTimestampInMiliseconds = combinedUserAttributes.removeValue(forKey: RUMAttribute.internalTimestamp) as? Int64 {
-            let customTimeInterval = TimeInterval(fromMiliseconds: customTimestampInMiliseconds)
+            let customTimeInterval = TimeInterval(fromMilliseconds: customTimestampInMiliseconds)
             mutableCommand.time = Date(timeIntervalSince1970: customTimeInterval)
         }
         mutableCommand.attributes = combinedUserAttributes

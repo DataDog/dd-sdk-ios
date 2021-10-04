@@ -97,6 +97,7 @@ class DDRUMResourceKindTests: XCTestCase {
         XCTAssertEqual(DDRUMResourceType.js.swiftType, .js)
         XCTAssertEqual(DDRUMResourceType.media.swiftType, .media)
         XCTAssertEqual(DDRUMResourceType.other.swiftType, .other)
+        XCTAssertEqual(DDRUMResourceType.native.swiftType, .native)
     }
 }
 

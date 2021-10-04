@@ -8,8 +8,8 @@ import Foundation
 import XCTest
 
 /*
- Set of general extensions over standard types for writting more readable tests.
- Extensiosn using Datadog domain objects should be put in `DatadogExtensions.swift`.
+ Set of general extensions over standard types for writing more readable tests.
+ Extensions using Datadog domain objects should be put in `DatadogExtensions.swift`.
 */
 
 extension Optional {
@@ -46,6 +46,12 @@ extension String {
     func randomcased() -> String {
         return Bool.random() ? self.lowercased() : self.uppercased()
     }
+
+    static let uuidRegex = "^[0-9A-F]{8}(-[0-9A-F]{4}){3}-[0-9A-F]{12}$"
+
+    func matches(regex: String) -> Bool {
+        range(of: regex, options: .regularExpression, range: nil, locale: nil) != nil
+    }
 }
 
 extension Data {
@@ -63,7 +69,7 @@ extension InputStream {
             let bytesRead = self.read(buffer, maxLength: expectedSize)
 
             guard bytesRead >= 0 else {
-                fatalError("Stream error occured.")
+                fatalError("Stream error occurred.")
             }
 
             if bytesRead == 0 {

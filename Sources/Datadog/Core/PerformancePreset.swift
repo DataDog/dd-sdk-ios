@@ -34,13 +34,10 @@ internal protocol StoragePerformancePreset {
 }
 
 internal protocol UploadPerformancePreset {
-    /// First upload delay (in seconds).
-    /// It is used as a base value until no more files eligible for upload are found - then `defaultUploadDelay` is used as a new base.
-    var initialUploadDelay: TimeInterval { get }
-    /// Default uploads interval (in seconds).
-    /// At runtime, the upload interval ranges from `minUploadDelay` to `maxUploadDelay` depending
+    /// Initial upload delay (in seconds).
+    /// At runtime, the upload interval starts with `initialUploadDelay` and then ranges from `minUploadDelay` to `maxUploadDelay` depending
     /// on delivery success or failure.
-    var defaultUploadDelay: TimeInterval { get }
+    var initialUploadDelay: TimeInterval { get }
     /// Mininum  interval of data upload (in seconds).
     var minUploadDelay: TimeInterval { get }
     /// Maximum interval of data upload (in seconds).
@@ -64,7 +61,6 @@ internal struct PerformancePreset: Equatable, StoragePerformancePreset, UploadPe
     // MARK: - UploadPerformancePreset
 
     let initialUploadDelay: TimeInterval
-    let defaultUploadDelay: TimeInterval
     let minUploadDelay: TimeInterval
     let maxUploadDelay: TimeInterval
     let uploadDelayChangeRate: Double
@@ -139,7 +135,6 @@ internal extension PerformancePreset {
         self.maxObjectsInFile = 500
         self.maxObjectSize = 256 * 1_024 // 256KB
         self.initialUploadDelay = minUploadDelay * uploadDelayFactors.initial
-        self.defaultUploadDelay = minUploadDelay * uploadDelayFactors.default
         self.minUploadDelay = minUploadDelay * uploadDelayFactors.min
         self.maxUploadDelay = minUploadDelay * uploadDelayFactors.max
         self.uploadDelayChangeRate = uploadDelayFactors.changeRate

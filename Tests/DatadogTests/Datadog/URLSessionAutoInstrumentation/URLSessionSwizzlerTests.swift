@@ -147,7 +147,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         XCTAssertEqual(requestSent, interceptor.modifiedRequest, "The request should be modified.")
     }
 
-    func testGivenURLSessionWithDDURLSessionDelegate_whenUsingTaskWithURL_itNotifiesCreationAndCompletionAndDoesNotModifiyTheRequest() throws {
+    func testGivenURLSessionWithDDURLSessionDelegate_whenUsingTaskWithURL_itNotifiesCreationAndCompletionAndDoesNotModifyTheRequest() throws {
         let requestNotModified = expectation(description: "Do not modify request")
         requestNotModified.isInverted = true
         let notifyTaskCreated = expectation(description: "Notify task creation")
@@ -238,7 +238,7 @@ class URLSessionSwizzlerTests: XCTestCase {
 
     // MARK: - Interception Values
 
-    func testGivenSuccessfulTask_whenUsingSwizzledAPIs_itPassessAllValuesToTheInterceptor() {
+    func testGivenSuccessfulTask_whenUsingSwizzledAPIs_itPassesAllValuesToTheInterceptor() {
         let completionHandlersCalled = expectation(description: "Call 2 completion handlers")
         completionHandlersCalled.expectedFulfillmentCount = 2
         let notifyTaskReceivedData = expectation(description: "Notify 4 tasks received data")
@@ -306,7 +306,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         XCTAssertEqual(interceptor.tasksReceivedData[3].data, expectedData)
     }
 
-    func testGivenFailedTask_whenUsingSwizzledAPIs_itPassessAllValuesToTheInterceptor() {
+    func testGivenFailedTask_whenUsingSwizzledAPIs_itPassesAllValuesToTheInterceptor() {
         let completionHandlersCalled = expectation(description: "Call 2 completion handlers")
         completionHandlersCalled.expectedFulfillmentCount = 2
         let noTaskShouldReceiveData = expectation(description: "None of tasks should recieve data")

@@ -37,9 +37,11 @@ internal final class RUMFeature {
     let carrierInfoProvider: CarrierInfoProviderType
     let launchTimeProvider: LaunchTimeProviderType
 
-    let vitalCPUReader: SamplingBasedVitalReader // VitalCPUReader
-    let vitalMemoryReader: SamplingBasedVitalReader // VitalMemoryReader
-    let vitalRefreshRateReader: ContinuousVitalReader // VitalRefreshRateReader
+    let vitalCPUReader: SamplingBasedVitalReader
+    let vitalMemoryReader: SamplingBasedVitalReader
+    let vitalRefreshRateReader: ContinuousVitalReader
+
+    let onSessionStart: RUMSessionListener?
 
     // MARK: - Components
 
@@ -80,19 +82,9 @@ internal final class RUMFeature {
         return FeatureUpload(
             featureName: RUMFeature.featureName,
             storage: storage,
-            uploadHTTPHeaders: HTTPHeaders(
-                headers: [
-                    .contentTypeHeader(contentType: .textPlainUTF8),
-                    .userAgentHeader(
-                        appName: configuration.common.applicationName,
-                        appVersion: configuration.common.applicationVersion,
-                        device: commonDependencies.mobileDevice
-                    )
-                ]
-            ),
-            uploadURLProvider: UploadURLProvider(
-                urlWithClientToken: configuration.uploadURLWithClientToken,
-                queryItemProviders: [
+            requestBuilder: RequestBuilder(
+                url: configuration.uploadURL,
+                queryItems: [
                     .ddsource(source: configuration.common.source),
                     .ddtags(
                         tags: [
@@ -102,6 +94,18 @@ internal final class RUMFeature {
                             "env:\(configuration.common.environment)"
                         ]
                     )
+                ],
+                headers: [
+                    .contentTypeHeader(contentType: .textPlainUTF8),
+                    .userAgentHeader(
+                        appName: configuration.common.applicationName,
+                        appVersion: configuration.common.applicationVersion,
+                        device: commonDependencies.mobileDevice
+                    ),
+                    .ddAPIKeyHeader(clientToken: configuration.clientToken),
+                    .ddEVPOriginHeader(source: configuration.common.source),
+                    .ddEVPOriginVersionHeader(),
+                    .ddRequestIDHeader(),
                 ]
             ),
             commonDependencies: commonDependencies,
@@ -120,6 +124,7 @@ internal final class RUMFeature {
             errorEventMapper: configuration.errorEventMapper,
             resourceEventMapper: configuration.resourceEventMapper,
             actionEventMapper: configuration.actionEventMapper,
+            longTaskEventMapper: configuration.longTaskEventMapper,
             internalMonitor: internalMonitor
         )
         let storage = RUMFeature.createStorage(
@@ -141,7 +146,8 @@ internal final class RUMFeature {
             commonDependencies: commonDependencies,
             vitalCPUReader: VitalCPUReader(),
             vitalMemoryReader: VitalMemoryReader(),
-            vitalRefreshRateReader: VitalRefreshRateReader()
+            vitalRefreshRateReader: VitalRefreshRateReader(),
+            onSessionStart: configuration.onSessionStart
         )
     }
 
@@ -153,7 +159,8 @@ internal final class RUMFeature {
         commonDependencies: FeaturesCommonDependencies,
         vitalCPUReader: SamplingBasedVitalReader,
         vitalMemoryReader: SamplingBasedVitalReader,
-        vitalRefreshRateReader: ContinuousVitalReader
+        vitalRefreshRateReader: ContinuousVitalReader,
+        onSessionStart: RUMSessionListener? = nil
     ) {
         // Configuration
         self.configuration = configuration
@@ -174,6 +181,7 @@ internal final class RUMFeature {
         self.vitalCPUReader = vitalCPUReader
         self.vitalMemoryReader = vitalMemoryReader
         self.vitalRefreshRateReader = vitalRefreshRateReader
+        self.onSessionStart = onSessionStart
     }
 
 #if DD_SDK_COMPILED_FOR_TESTING

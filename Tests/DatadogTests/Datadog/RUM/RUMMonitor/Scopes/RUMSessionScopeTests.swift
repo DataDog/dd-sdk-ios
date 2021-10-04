@@ -85,8 +85,12 @@ class RUMSessionScopeTests: XCTestCase {
 
         let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date(), backgroundEventTrackingEnabled: true)
 
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
+
         let logOutput = LogOutputMock()
         userLogger = .mockWith(logOutput: logOutput)
+
         _ = scope.process(command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1", time: currentTime))
 
         XCTAssertEqual(scope.viewScopes.count, 1)
@@ -102,8 +106,12 @@ class RUMSessionScopeTests: XCTestCase {
 
         let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date(), backgroundEventTrackingEnabled: true)
 
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
+
         let logOutput = LogOutputMock()
         userLogger = .mockWith(logOutput: logOutput)
+
         _ = scope.process(command: RUMStartUserActionCommand.mockWith(time: currentTime))
 
         XCTAssertEqual(scope.viewScopes.count, 1)
@@ -119,8 +127,12 @@ class RUMSessionScopeTests: XCTestCase {
 
         let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date(), backgroundEventTrackingEnabled: true)
 
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
+
         let logOutput = LogOutputMock()
         userLogger = .mockWith(logOutput: logOutput)
+
         _ = scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime))
 
         XCTAssertEqual(scope.viewScopes.count, 1)
@@ -200,8 +212,12 @@ class RUMSessionScopeTests: XCTestCase {
         let scope = RUMSessionScope(parent: parent, dependencies: .mockAny(), samplingRate: 100, startTime: Date(), backgroundEventTrackingEnabled: .mockAny())
         XCTAssertEqual(scope.viewScopes.count, 0)
 
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
+
         let logOutput = LogOutputMock()
         userLogger = .mockWith(logOutput: logOutput)
+
         let command = generateRandomNotValidStartCommand()
 
         // When

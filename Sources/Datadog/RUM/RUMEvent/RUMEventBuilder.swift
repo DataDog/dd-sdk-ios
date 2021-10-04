@@ -7,27 +7,14 @@
 import Foundation
 
 internal class RUMEventBuilder {
-    let userInfoProvider: UserInfoProvider
     let eventsMapper: RUMEventsMapper
 
-    init(
-        userInfoProvider: UserInfoProvider,
-        eventsMapper: RUMEventsMapper
-    ) {
-        self.userInfoProvider = userInfoProvider
+    init(eventsMapper: RUMEventsMapper) {
         self.eventsMapper = eventsMapper
     }
 
-    func createRUMEvent<DM: RUMDataModel>(
-        with model: DM,
-        attributes: [String: Encodable]
-    ) -> RUMEvent<DM>? {
-        let event = RUMEvent(
-            model: model,
-            attributes: attributes,
-            userInfoAttributes: userInfoProvider.value.extraInfo
-        )
-        let mappedEvent = eventsMapper.map(event: event)
-        return mappedEvent
+    func createRUMEvent<DM: RUMDataModel>(with model: DM) -> RUMEvent<DM>? {
+        let event = RUMEvent(model: model)
+        return eventsMapper.map(event: event)
     }
 }

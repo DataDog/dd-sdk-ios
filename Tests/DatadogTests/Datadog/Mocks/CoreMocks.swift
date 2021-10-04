@@ -57,6 +57,7 @@ extension Datadog.Configuration {
         batchSize: BatchSize = .medium,
         uploadFrequency: UploadFrequency = .average,
         additionalConfiguration: [String: Any] = [:],
+        proxyConfiguration: [AnyHashable: Any]? = nil,
         internalMonitoringClientToken: String? = nil
     ) -> Datadog.Configuration {
         return Datadog.Configuration(
@@ -84,6 +85,7 @@ extension Datadog.Configuration {
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
             additionalConfiguration: additionalConfiguration,
+            proxyConfiguration: proxyConfiguration,
             internalMonitoringClientToken: internalMonitoringClientToken
         )
     }
@@ -171,7 +173,8 @@ extension FeaturesConfiguration.Common {
         serviceName: String = .mockAny(),
         environment: String = .mockAny(),
         performance: PerformancePreset = .init(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
-        source: String = .mockAny()
+        source: String = .mockAny(),
+        proxyConfiguration: [AnyHashable: Any]? = nil
     ) -> Self {
         return .init(
             applicationName: applicationName,
@@ -180,7 +183,8 @@ extension FeaturesConfiguration.Common {
             serviceName: serviceName,
             environment: environment,
             performance: performance,
-            source: source
+            source: source,
+            proxyConfiguration: proxyConfiguration
         )
     }
 }
@@ -190,9 +194,10 @@ extension FeaturesConfiguration.Logging {
 
     static func mockWith(
         common: FeaturesConfiguration.Common = .mockAny(),
-        uploadURLWithClientToken: URL = .mockAny()
+        uploadURL: URL = .mockAny(),
+        clientToken: String = .mockAny()
     ) -> Self {
-        return .init(common: common, uploadURLWithClientToken: uploadURLWithClientToken)
+        return .init(common: common, uploadURL: uploadURL, clientToken: clientToken)
     }
 }
 
@@ -201,12 +206,14 @@ extension FeaturesConfiguration.Tracing {
 
     static func mockWith(
         common: FeaturesConfiguration.Common = .mockAny(),
-        uploadURLWithClientToken: URL = .mockAny(),
-        spanEventMapper: SpanEventMapper? = nil
+        uploadURL: URL = .mockAny(),
+        spanEventMapper: SpanEventMapper? = nil,
+        clientToken: String = .mockAny()
     ) -> Self {
         return .init(
             common: common,
-            uploadURLWithClientToken: uploadURLWithClientToken,
+            uploadURL: uploadURL,
+            clientToken: clientToken,
             spanEventMapper: spanEventMapper
         )
     }
@@ -217,27 +224,33 @@ extension FeaturesConfiguration.RUM {
 
     static func mockWith(
         common: FeaturesConfiguration.Common = .mockAny(),
-        uploadURLWithClientToken: URL = .mockAny(),
+        uploadURL: URL = .mockAny(),
+        clientToken: String = .mockAny(),
         applicationID: String = .mockAny(),
         sessionSamplingRate: Float = 100.0,
         viewEventMapper: RUMViewEventMapper? = nil,
         resourceEventMapper: RUMResourceEventMapper? = nil,
         actionEventMapper: RUMActionEventMapper? = nil,
         errorEventMapper: RUMErrorEventMapper? = nil,
+        longTaskEventMapper: RUMLongTaskEventMapper? = nil,
         autoInstrumentation: FeaturesConfiguration.RUM.AutoInstrumentation? = nil,
-        backgroundEventTrackingEnabled: Bool = false
+        backgroundEventTrackingEnabled: Bool = false,
+        onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> Self {
         return .init(
             common: common,
-            uploadURLWithClientToken: uploadURLWithClientToken,
+            uploadURL: uploadURL,
+            clientToken: clientToken,
             applicationID: applicationID,
             sessionSamplingRate: sessionSamplingRate,
             viewEventMapper: viewEventMapper,
             resourceEventMapper: resourceEventMapper,
             actionEventMapper: actionEventMapper,
             errorEventMapper: errorEventMapper,
+            longTaskEventMapper: longTaskEventMapper,
             autoInstrumentation: autoInstrumentation,
-            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
+            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
+            onSessionStart: onSessionStart
         )
     }
 }
@@ -285,13 +298,15 @@ extension FeaturesConfiguration.InternalMonitoring {
         common: FeaturesConfiguration.Common = .mockAny(),
         sdkServiceName: String = .mockAny(),
         sdkEnvironment: String = .mockAny(),
-        logsUploadURLWithClientToken: URL = .mockAny()
+        logsUploadURL: URL = .mockAny(),
+        clientToken: String = .mockAny()
     ) -> Self {
         return .init(
             common: common,
             sdkServiceName: sdkServiceName,
             sdkEnvironment: sdkEnvironment,
-            logsUploadURLWithClientToken: logsUploadURLWithClientToken
+            logsUploadURL: logsUploadURL,
+            clientToken: clientToken
         )
     }
 }
@@ -350,7 +365,7 @@ struct StoragePerformanceMock: StoragePerformancePreset {
     static let writeEachObjectToNewFileAndReadAllFiles = StoragePerformanceMock(
         maxFileSize: .max,
         maxDirectorySize: .max,
-        maxFileAgeForWrite: 0, // always return new file for writting
+        maxFileAgeForWrite: 0, // always return new file for writing
         minFileAgeForRead: readAllFiles.minFileAgeForRead,
         maxFileAgeForRead: readAllFiles.maxFileAgeForRead,
         maxObjectsInFile: 1, // write each data to new file
@@ -360,25 +375,31 @@ struct StoragePerformanceMock: StoragePerformancePreset {
 
 struct UploadPerformanceMock: UploadPerformancePreset {
     let initialUploadDelay: TimeInterval
-    let defaultUploadDelay: TimeInterval
     let minUploadDelay: TimeInterval
     let maxUploadDelay: TimeInterval
     let uploadDelayChangeRate: Double
 
     static let noOp = UploadPerformanceMock(
         initialUploadDelay: .distantFuture,
-        defaultUploadDelay: .distantFuture,
         minUploadDelay: .distantFuture,
         maxUploadDelay: .distantFuture,
         uploadDelayChangeRate: 0
     )
 
+    /// Optimized for performing very fast uploads in unit tests.
     static let veryQuick = UploadPerformanceMock(
         initialUploadDelay: 0.05,
-        defaultUploadDelay: 0.05,
         minUploadDelay: 0.05,
         maxUploadDelay: 0.05,
         uploadDelayChangeRate: 0
+    )
+
+    /// Optimized for performing very fast first upload and then changing to unrealistically long intervals.
+    static let veryQuickInitialUpload = UploadPerformanceMock(
+        initialUploadDelay: 0.05,
+        minUploadDelay: 60,
+        maxUploadDelay: 60,
+        uploadDelayChangeRate: 60 / 0.05
     )
 }
 
@@ -393,7 +414,6 @@ extension PerformancePreset {
             maxObjectsInFile: storage.maxObjectsInFile,
             maxObjectSize: storage.maxObjectSize,
             initialUploadDelay: upload.initialUploadDelay,
-            defaultUploadDelay: upload.defaultUploadDelay,
             minUploadDelay: upload.minUploadDelay,
             maxUploadDelay: upload.maxUploadDelay,
             uploadDelayChangeRate: upload.uploadDelayChangeRate
@@ -522,11 +542,6 @@ class NoOpFileReader: SyncReader {
     func markAllFilesAsReadable() {}
 }
 
-class NoOpDataUploadWorker: DataUploadWorkerType {
-    func flushSynchronously() {}
-    func cancelSynchronously() {}
-}
-
 extension DataFormat {
     static func mockAny() -> DataFormat {
         return mockWith()
@@ -640,12 +655,49 @@ extension UserInfoProvider {
     }
 }
 
-extension UploadURLProvider {
-    static func mockAny() -> UploadURLProvider {
-        return UploadURLProvider(
-            urlWithClientToken: URL(string: "https://app.example.com/v2/api?abc-def-ghi")!,
-            queryItemProviders: []
-        )
+extension RequestBuilder.QueryItem: RandomMockable, AnyMockable {
+    static func mockRandom() -> RequestBuilder.QueryItem {
+        let all: [RequestBuilder.QueryItem] = [
+            .ddsource(source: .mockRandom()),
+            .ddtags(tags: .mockRandom()),
+        ]
+        return all.randomElement()!
+    }
+
+    static func mockAny() -> RequestBuilder.QueryItem {
+        return .ddsource(source: .mockRandom(among: .alphanumerics))
+    }
+}
+
+extension RequestBuilder.HTTPHeader: RandomMockable, AnyMockable {
+    static func mockRandom() -> RequestBuilder.HTTPHeader {
+        let all: [RequestBuilder.HTTPHeader] = [
+            .contentTypeHeader(contentType: Bool.random() ? .applicationJSON : .textPlainUTF8),
+            .userAgentHeader(appName: .mockRandom(among: .alphanumerics), appVersion: .alphanumerics, device: .mockAny()),
+            .ddAPIKeyHeader(clientToken: .mockRandom(among: .alphanumerics)),
+            .ddEVPOriginHeader(source: .mockRandom(among: .alphanumerics)),
+            .ddEVPOriginVersionHeader(),
+            .ddRequestIDHeader()
+        ]
+        return all.randomElement()!
+    }
+
+    static func mockAny() -> RequestBuilder.HTTPHeader {
+        return .ddEVPOriginVersionHeader()
+    }
+}
+
+extension RequestBuilder: AnyMockable {
+    static func mockAny() -> RequestBuilder {
+        return mockWith()
+    }
+
+    static func mockWith(
+        url: URL = .mockAny(),
+        queryItems: [QueryItem] = [],
+        headers: [HTTPHeader] = []
+    ) -> RequestBuilder {
+        return RequestBuilder(url: url, queryItems: queryItems, headers: headers)
     }
 }
 
@@ -655,9 +707,44 @@ extension HTTPClient {
     }
 }
 
-extension HTTPHeaders {
-    static func mockAny() -> HTTPHeaders {
-        return HTTPHeaders(headers: [])
+class NoOpDataUploadWorker: DataUploadWorkerType {
+    func flushSynchronously() {}
+    func cancelSynchronously() {}
+}
+
+struct DataUploaderMock: DataUploaderType {
+    let uploadStatus: DataUploadStatus
+
+    var onUpload: (() -> Void)? = nil
+
+    func upload(data: Data) -> DataUploadStatus {
+        onUpload?()
+        return uploadStatus
+    }
+}
+
+extension DataUploadStatus: RandomMockable {
+    static func mockRandom() -> DataUploadStatus {
+        return DataUploadStatus(
+            needsRetry: .random(),
+            userDebugDescription: .mockRandom(),
+            userErrorMessage: .mockRandom(),
+            internalMonitoringError: (.mockRandom(), ErrorMock(), .mockRandom())
+        )
+    }
+
+    static func mockWith(
+        needsRetry: Bool = .mockAny(),
+        userDebugDescription: String = .mockAny(),
+        userErrorMessage: String? = nil,
+        internalMonitoringError: (message: String, error: Error?, attributes: [String: String]?)? = nil
+    ) -> DataUploadStatus {
+        return DataUploadStatus(
+            needsRetry: needsRetry,
+            userDebugDescription: userDebugDescription,
+            userErrorMessage: userErrorMessage,
+            internalMonitoringError: internalMonitoringError
+        )
     }
 }
 
@@ -883,9 +970,15 @@ extension CodableValue {
     }
 }
 
-extension ValuePublisher where Value: AnyMockable {
-    static func mockAny() -> ValuePublisher {
+extension ValuePublisher: AnyMockable where Value: AnyMockable {
+    static func mockAny() -> Self {
         return .init(initialValue: .mockAny())
+    }
+}
+
+extension ValuePublisher: RandomMockable where Value: RandomMockable {
+    static func mockRandom() -> Self {
+        return .init(initialValue: .mockRandom())
     }
 }
 

@@ -111,19 +111,19 @@ class ResourceMetricsTests: XCTestCase {
             start: .mockDecember15th2019At10AMUTC(),
             end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 10)
         )
-        // Transaction 1 spreads from 0% to 30% of the overal task duration.
+        // Transaction 1 spreads from 0% to 30% of the overall task duration.
         let transaction1: URLSessionTaskTransactionMetrics = .mockBySpreadingDetailsBetween(
             start: taskInterval.start,
             end: taskInterval.start.addingTimeInterval(taskInterval.duration * 0.30),
             resourceFetchType: .networkLoad
         )
-        // Transaction 2 spreads from 35% to 60% of the overal task duration.
+        // Transaction 2 spreads from 35% to 60% of the overall task duration.
         let transaction2: URLSessionTaskTransactionMetrics = .mockBySpreadingDetailsBetween(
             start: taskInterval.start.addingTimeInterval(taskInterval.duration * 0.35),
             end: taskInterval.start.addingTimeInterval(taskInterval.duration * 0.60),
             resourceFetchType: .networkLoad
         )
-        // Transaction 3 spreads from 65% to 100% of the overal task duration.
+        // Transaction 3 spreads from 65% to 100% of the overall task duration.
         let transaction3: URLSessionTaskTransactionMetrics = .mockBySpreadingDetailsBetween(
             start: taskInterval.start.addingTimeInterval(taskInterval.duration * 0.65),
             end: taskInterval.start.addingTimeInterval(taskInterval.duration),

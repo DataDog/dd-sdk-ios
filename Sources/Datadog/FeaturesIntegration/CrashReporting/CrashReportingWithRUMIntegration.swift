@@ -88,20 +88,24 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         let errorMessage = crashReport.message
         let errorStackTrace = crashReport.stack
 
-        var errorEventAttributes = lastRUMViewEvent.attributes
-        errorEventAttributes[DDError.threads] = crashReport.threads
-        errorEventAttributes[DDError.binaryImages] = crashReport.binaryImages
-        errorEventAttributes[DDError.meta] = crashReport.meta
-        errorEventAttributes[DDError.wasTruncated] = crashReport.wasTruncated
+        var errorAttributes = lastRUMViewEvent.errorAttributes ?? [:]
+        errorAttributes[DDError.threads] = crashReport.threads
+        errorAttributes[DDError.binaryImages] = crashReport.binaryImages
+        errorAttributes[DDError.meta] = crashReport.meta
+        errorAttributes[DDError.wasTruncated] = crashReport.wasTruncated
 
         let rumError = RUMErrorEvent(
-            dd: .init(),
+            dd: .init(
+                session: .init(plan: .plan1)
+            ),
             action: nil,
             application: .init(id: lastRUMView.application.id),
             connectivity: lastRUMView.connectivity,
             context: nil,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds,
             error: .init(
+                handling: nil,
+                handlingStack: nil,
                 id: nil,
                 isCrash: true,
                 message: errorMessage,
@@ -116,6 +120,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 id: lastRUMView.session.id,
                 type: .user
             ),
+            synthetics: nil,
             usr: lastRUMView.usr,
             view: .init(
                 id: lastRUMView.view.id,
@@ -127,8 +132,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
 
         return RUMEvent(
             model: rumError,
-            attributes: errorEventAttributes,
-            userInfoAttributes: lastRUMViewEvent.userInfoAttributes
+            errorAttributes: errorAttributes
         )
     }
 
@@ -136,13 +140,17 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
     private func updateRUMViewWithNewError(_ rumViewEvent: RUMEvent<RUMViewEvent>, crashDate: Date) -> RUMEvent<RUMViewEvent> {
         let original = rumViewEvent.model
         let rumView = RUMViewEvent(
-            dd: .init(documentVersion: original.dd.documentVersion + 1),
+            dd: .init(
+                documentVersion: original.dd.documentVersion + 1,
+                session: .init(plan: .plan1)
+            ),
             application: original.application,
             connectivity: original.connectivity,
             context: original.context,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds,
             service: original.service,
             session: original.session,
+            synthetics: nil,
             usr: original.usr,
             view: .init(
                 action: original.view.action,
@@ -158,9 +166,11 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 firstContentfulPaint: original.view.firstContentfulPaint,
                 firstInputDelay: original.view.firstInputDelay,
                 firstInputTime: original.view.firstInputTime,
+                frozenFrame: nil,
                 id: original.view.id,
                 inForegroundPeriods: original.view.inForegroundPeriods,
                 isActive: false,
+                isSlowRendered: nil,
                 largestContentfulPaint: original.view.largestContentfulPaint,
                 loadEvent: original.view.loadEvent,
                 loadingTime: original.view.loadingTime,
@@ -178,10 +188,6 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             )
         )
 
-        return RUMEvent(
-            model: rumView,
-            attributes: rumViewEvent.attributes,
-            userInfoAttributes: rumViewEvent.userInfoAttributes
-        )
+        return RUMEvent(model: rumView)
     }
 }

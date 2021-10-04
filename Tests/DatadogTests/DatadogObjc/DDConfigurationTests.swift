@@ -11,7 +11,7 @@ import XCTest
 extension Datadog.Configuration.LogsEndpoint: Equatable {
     public static func == (_ lhs: Datadog.Configuration.LogsEndpoint, _ rhs: Datadog.Configuration.LogsEndpoint) -> Bool {
         switch (lhs, rhs) {
-        case (.us, .us), (.eu, .eu), (.gov, .gov), (.us1, .us1), (.us3, .us3), (.eu1, .eu1), (.us1_fed, .us1_fed): return true
+        case (.us, .us), (.eu, .eu), (.gov, .gov), (.us1, .us1), (.us3, .us3), (.us5, .us5), (.eu1, .eu1), (.us1_fed, .us1_fed): return true
         case let (.custom(lhsURL), .custom(rhsURL)): return lhsURL == rhsURL
         default: return false
         }
@@ -21,7 +21,7 @@ extension Datadog.Configuration.LogsEndpoint: Equatable {
 extension Datadog.Configuration.TracesEndpoint: Equatable {
     public static func == (_ lhs: Datadog.Configuration.TracesEndpoint, _ rhs: Datadog.Configuration.TracesEndpoint) -> Bool {
         switch (lhs, rhs) {
-        case (.us, .us), (.eu, .eu), (.gov, .gov), (.us1, .us1), (.us3, .us3), (.eu1, .eu1), (.us1_fed, .us1_fed): return true
+        case (.us, .us), (.eu, .eu), (.gov, .gov), (.us1, .us1), (.us3, .us3), (.us5, .us5), (.eu1, .eu1), (.us1_fed, .us1_fed): return true
         case let (.custom(lhsURL), .custom(rhsURL)): return lhsURL == rhsURL
         default: return false
         }
@@ -30,7 +30,7 @@ extension Datadog.Configuration.TracesEndpoint: Equatable {
 
 /// This tests verify that objc-compatible `DatadogObjc` wrapper properly interacts with`Datadog` public API (swift).
 class DDConfigurationTests: XCTestCase {
-    func testDefaultBuilderFowardsInitializationToSwift() throws {
+    func testDefaultBuilderForwardsInitializationToSwift() throws {
         let objcBuilder = DDConfiguration.builder(clientToken: "abc-123", environment: "tests")
         let objcRUMBuilder = DDConfiguration.builder(rumApplicationID: "rum-app-id", clientToken: "abc-123", environment: "tests")
 
@@ -67,7 +67,7 @@ class DDConfigurationTests: XCTestCase {
         }
     }
 
-    func testCustomizedBuilderFowardsInitializationToSwift() throws {
+    func testCustomizedBuilderForwardsInitializationToSwift() throws {
         let objcBuilder = [
             DDConfiguration.builder(clientToken: "abc-123", environment: "tests"),
             DDConfiguration.builder(rumApplicationID: "rum-app-id", clientToken: "abc-123", environment: "tests")
@@ -99,6 +99,9 @@ class DDConfigurationTests: XCTestCase {
 
         objcBuilder.set(endpoint: .us3())
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .us3)
+
+        objcBuilder.set(endpoint: .us5())
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .us5)
 
         objcBuilder.set(endpoint: .us1_fed())
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .us1_fed)
@@ -133,6 +136,9 @@ class DDConfigurationTests: XCTestCase {
         objcBuilder.trackUIKitRUMActions()
         XCTAssertTrue(objcBuilder.build().sdkConfiguration.rumUIKitUserActionsPredicate is DefaultUIKitRUMUserActionsPredicate)
 
+        objcBuilder.trackRUMLongTasks(threshold: 999.0)
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.rumLongTaskDurationThreshold, 999.0)
+
         objcBuilder.trackUIKitRUMViews()
         XCTAssertTrue(objcBuilder.build().sdkConfiguration.rumUIKitViewsPredicate is DefaultUIKitRUMViewsPredicate)
 
@@ -165,6 +171,9 @@ class DDConfigurationTests: XCTestCase {
         objcBuilder.setRUMErrorEventMapper { _ in nil }
         XCTAssertNotNil(objcBuilder.build().sdkConfiguration.rumErrorEventMapper)
 
+        objcBuilder.setRUMLongTaskEventMapper { _ in nil }
+        XCTAssertNotNil(objcBuilder.build().sdkConfiguration.rumLongTaskEventMapper)
+
         objcBuilder.set(batchSize: .small)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.batchSize, .small)
 
@@ -180,6 +189,13 @@ class DDConfigurationTests: XCTestCase {
         objcBuilder.set(additionalConfiguration: ["foo": 42, "bar": "something"])
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.additionalConfiguration["foo"] as? Int, 42)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.additionalConfiguration["bar"] as? String, "something")
+
+        objcBuilder.set(proxyConfiguration: [kCFNetworkProxiesHTTPEnable: true, kCFNetworkProxiesHTTPPort: 123, kCFNetworkProxiesHTTPProxy: "www.example.com", kCFProxyUsernameKey: "proxyuser", kCFProxyPasswordKey: "proxypass" ])
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.proxyConfiguration?[kCFNetworkProxiesHTTPEnable] as? Bool, true)
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.proxyConfiguration?[kCFNetworkProxiesHTTPPort] as? Int, 123)
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.proxyConfiguration?[kCFNetworkProxiesHTTPProxy] as? String, "www.example.com")
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.proxyConfiguration?[kCFProxyUsernameKey] as? String, "proxyuser")
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.proxyConfiguration?[kCFProxyPasswordKey] as? String, "proxypass")
     }
 
     func testScrubbingRUMEvents() {
@@ -193,6 +209,7 @@ class DDConfigurationTests: XCTestCase {
         let swiftResourceEvent: RUMResourceEvent = .mockRandom()
         let swiftActionEvent: RUMActionEvent = .mockRandom()
         let swiftErrorEvent: RUMErrorEvent = .mockRandom()
+        let swiftLongTaskEvent: RUMLongTaskEvent = .mockRandom()
 
         objcBuilder.setRUMViewEventMapper { objcViewEvent in
             XCTAssertEqual(objcViewEvent.swiftModel, swiftViewEvent)
@@ -222,12 +239,19 @@ class DDConfigurationTests: XCTestCase {
             return objcErrorEvent
         }
 
+        objcBuilder.setRUMLongTaskEventMapper { objcLongTaskEvent in
+            XCTAssertEqual(objcLongTaskEvent.swiftModel, swiftLongTaskEvent)
+            objcLongTaskEvent.view.url = "redacted view.url"
+            return objcLongTaskEvent
+        }
+
         let configuration = objcBuilder.build().sdkConfiguration
 
         let redactedSwiftViewEvent = configuration.rumViewEventMapper?(swiftViewEvent)
         let redactedSwiftResourceEvent = configuration.rumResourceEventMapper?(swiftResourceEvent)
         let redactedSwiftActionEvent = configuration.rumActionEventMapper?(swiftActionEvent)
         let redactedSwiftErrorEvent = configuration.rumErrorEventMapper?(swiftErrorEvent)
+        let redactedSwiftLongTaskEvent = configuration.rumLongTaskEventMapper?(swiftLongTaskEvent)
 
         XCTAssertEqual(redactedSwiftViewEvent?.view.url, "redacted view.url")
         XCTAssertEqual(redactedSwiftResourceEvent?.view.url, "redacted view.url")
@@ -237,6 +261,7 @@ class DDConfigurationTests: XCTestCase {
         XCTAssertEqual(redactedSwiftErrorEvent?.view.url, "redacted view.url")
         XCTAssertEqual(redactedSwiftErrorEvent?.error.message, "redacted error.message")
         XCTAssertEqual(redactedSwiftErrorEvent?.error.resource?.url, "redacted error.resource.url")
+        XCTAssertEqual(redactedSwiftLongTaskEvent?.view.url, "redacted view.url")
     }
 
     func testDroppingRUMEvents() {
@@ -249,12 +274,14 @@ class DDConfigurationTests: XCTestCase {
         objcBuilder.setRUMResourceEventMapper { _ in nil }
         objcBuilder.setRUMActionEventMapper { _ in nil }
         objcBuilder.setRUMErrorEventMapper { _ in nil }
+        objcBuilder.setRUMLongTaskEventMapper { _ in nil }
 
         let configuration = objcBuilder.build().sdkConfiguration
 
         XCTAssertNil(configuration.rumResourceEventMapper?(.mockRandom()))
         XCTAssertNil(configuration.rumActionEventMapper?(.mockRandom()))
         XCTAssertNil(configuration.rumErrorEventMapper?(.mockRandom()))
+        XCTAssertNil(configuration.rumLongTaskEventMapper?(.mockRandom()))
     }
 
     func testDeprecatedTrackUIActions() {

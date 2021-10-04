@@ -14,10 +14,35 @@ internal struct DDNoopGlobals {
 
 internal struct DDNoopTracer: OTTracer {
     var activeSpan: OTSpan? = nil
-    func extract(reader: OTFormatReader) -> OTSpanContext? { DDNoopGlobals.context }
-    func inject(spanContext: OTSpanContext, writer: OTFormatWriter) {}
-    func startSpan(operationName: String, references: [OTReference]?, tags: [String: Encodable]?, startTime: Date?) -> OTSpan { DDNoopGlobals.span }
-    func startRootSpan(operationName: String, tags: [String: Encodable]?, startTime: Date?) -> OTSpan { DDNoopGlobals.span }
+
+    private func warn() {
+        userLogger.warn(
+            """
+            The `Global.sharedTracer` was called but no `Tracer` is registered. Configure and register the `Tracer` globally before invoking the feature:
+                Global.sharedTracer = Tracer.initialize()
+            See https://docs.datadoghq.com/tracing/setup_overview/setup/ios
+            """
+        )
+    }
+
+    func extract(reader: OTFormatReader) -> OTSpanContext? {
+        warn()
+        return DDNoopGlobals.context
+    }
+
+    func inject(spanContext: OTSpanContext, writer: OTFormatWriter) {
+        warn()
+    }
+
+    func startSpan(operationName: String, references: [OTReference]?, tags: [String: Encodable]?, startTime: Date?) -> OTSpan {
+        warn()
+        return DDNoopGlobals.span
+    }
+
+    func startRootSpan(operationName: String, tags: [String: Encodable]?, startTime: Date?) -> OTSpan {
+        warn()
+        return DDNoopGlobals.span
+    }
 }
 
 internal struct DDNoopSpan: OTSpan {

@@ -117,7 +117,7 @@ class RUMMonitorTests: XCTestCase {
         }
     }
 
-    func testStartingView_thenLoadingXHRResourceWithRequestWithMetrics() throws {
+    func testStartingView_thenLoadingNativeResourceWithRequestWithMetrics() throws {
         guard #available(iOS 13, *) else {
             return // `URLSessionTaskMetrics` mocking doesn't work prior to iOS 13.0
         }
@@ -149,14 +149,14 @@ class RUMMonitorTests: XCTestCase {
 
         let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
         let resourceEvent = session.viewVisits[0].resourceEvents[0]
-        XCTAssertEqual(resourceEvent.resource.type, .xhr, "POST Resources should always have the `.xhr` kind")
+        XCTAssertEqual(resourceEvent.resource.type, .native, "POST Resources should always have the `.native` kind")
         XCTAssertEqual(resourceEvent.resource.statusCode, 200)
         XCTAssertEqual(resourceEvent.resource.duration, 4_000_000_000)
         XCTAssertEqual(resourceEvent.resource.dns!.start, 1_000_000_000)
         XCTAssertEqual(resourceEvent.resource.dns!.duration, 2_000_000_000)
     }
 
-    func testStartingView_thenLoadingXHRResourceWithRequestWithExternalMetrics() throws {
+    func testStartingView_thenLoadingNativeResourceWithRequestWithExternalMetrics() throws {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
         defer { RUMFeature.instance?.deinitialize() }
 
@@ -200,7 +200,7 @@ class RUMMonitorTests: XCTestCase {
 
         let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
         let resourceEvent = session.viewVisits[0].resourceEvents[0]
-        XCTAssertEqual(resourceEvent.resource.type, .xhr, "POST Resources should always have the `.xhr` kind")
+        XCTAssertEqual(resourceEvent.resource.type, .native, "POST Resources should always have the `.native` kind")
         XCTAssertEqual(resourceEvent.resource.statusCode, 200)
 
         XCTAssertEqual(resourceEvent.resource.duration, 12_000_000_000)
@@ -614,7 +614,11 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopView(viewController: mockView)
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 11)
-        let expectedUserInfo = RUMUser(email: "foo@bar.com", id: "abc-123", name: "Foo", usrInfo: [:])
+        let expectedUserInfo = RUMUser(email: "foo@bar.com", id: "abc-123", name: "Foo", usrInfo: [
+            "str": CodableValue("value"),
+            "int": CodableValue(11_235),
+            "bool": CodableValue(true)
+        ])
         try rumEventMatchers.forEach { event in
             XCTAssertEqual(try event.attribute(forKeyPath: "usr.str"), "value")
             XCTAssertEqual(try event.attribute(forKeyPath: "usr.int"), 11_235)
@@ -785,6 +789,36 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(try lastViewUpdate.timing(named: "timing3_.@$-______"), 3_000_000_000)
     }
 
+    // MARK: - RUM New Session
+
+    func testStartingViewCreatesNewSession() {
+        let keepAllSessions: Bool = .random()
+
+        let expectation = self.expectation(description: "onSessionStart is called")
+        let onSessionStart: RUMSessionListener = { sessionId, isDiscarded in
+            XCTAssertTrue(sessionId.matches(regex: .uuidRegex))
+            XCTAssertEqual(isDiscarded, !keepAllSessions)
+            expectation.fulfill()
+        }
+
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        RUMFeature.instance = .mockWith(
+            directories: temporaryFeatureDirectories,
+            configuration: .mockWith(
+                sessionSamplingRate: keepAllSessions ? 100 : 0,
+                onSessionStart: onSessionStart
+            )
+        )
+        defer { RUMFeature.instance?.deinitialize() }
+
+        let monitor = RUMMonitor.initialize()
+        monitor.startView(viewController: mockView)
+
+        waitForExpectations(timeout: 0.5)
+
+        _ = server.waitAndReturnRequests(count: keepAllSessions ? 1 : 0)
+    }
+
     // MARK: - RUM Events Dates Correction
 
     func testGivenTimeDifferenceBetweenDeviceAndServer_whenCollectingRUMEvents_thenEventsDateUseServerTime() throws {
@@ -924,6 +958,11 @@ class RUMMonitorTests: XCTestCase {
                     var errorEvent = errorEvent
                     errorEvent.error.message = "Modified error message"
                     return errorEvent
+                },
+                longTaskEventMapper: { longTaskEvent in
+                    var mutableLongTaskEvent = longTaskEvent
+                    mutableLongTaskEvent.view.name = "ModifiedLongTaskViewName"
+                    return mutableLongTaskEvent
                 }
             ),
             dependencies: .mockWith(
@@ -939,6 +978,9 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
         monitor.addUserAction(type: .tap, name: "Original tap action name")
         monitor.addError(message: "Original error message")
+
+        let cmdSubscriber = try XCTUnwrap(monitor as? RUMMonitor)
+        cmdSubscriber.process(command: RUMAddLongTaskCommand(time: Date(), attributes: [:], duration: 1.0))
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 5)
         let sessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)
@@ -956,6 +998,7 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(session.viewVisits[0].actionEvents[0].action.target?.name, "Modified tap action name")
         XCTAssertEqual(session.viewVisits[0].errorEvents.count, 1)
         XCTAssertEqual(session.viewVisits[0].errorEvents[0].error.message, "Modified error message")
+        XCTAssertEqual(session.viewVisits[0].longTaskEvents[0].view.name, "ModifiedLongTaskViewName")
     }
 
     func testDroppingEventsBeforeTheyGetSent() throws {
@@ -966,7 +1009,8 @@ class RUMMonitorTests: XCTestCase {
                 actionEventMapper: { event in
                     return event.action.type == .applicationStart ? event : nil
                 },
-                errorEventMapper: { _ in nil }
+                errorEventMapper: { _ in nil },
+                longTaskEventMapper: { _ in nil }
             )
         )
         defer { RUMFeature.instance?.deinitialize() }
@@ -978,6 +1022,9 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
         monitor.addUserAction(type: .tap, name: .mockAny())
         monitor.addError(message: .mockAny())
+
+        let cmdSubscriber = try XCTUnwrap(monitor as? RUMMonitor)
+        cmdSubscriber.process(command: RUMAddLongTaskCommand(time: Date(), attributes: [:], duration: 1.0))
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 2)
         let sessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)
@@ -993,13 +1040,14 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(session.viewVisits[0].resourceEvents.count, 0)
         XCTAssertEqual(session.viewVisits[0].actionEvents.count, 1)
         XCTAssertEqual(session.viewVisits[0].errorEvents.count, 0)
+        XCTAssertEqual(session.viewVisits[0].longTaskEvents.count, 0)
     }
 
     // MARK: - Integration with Crash Reporting
 
     func testGivenRegisteredCrashReporter_whenRUMViewEventIsSend_itIsUpdatedInCurrentCrashContext() throws {
-        let randomUserInfoAttributes: [String: String] = .mockRandom()
-        let randomViewEventAttributes: [String: String] = .mockRandom()
+        let randomUserInfoAttributes = mockRandomAttributes()
+        let randomViewEventAttributes = mockRandomAttributes()
 
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directories: temporaryFeatureDirectories,
@@ -1032,18 +1080,9 @@ class RUMMonitorTests: XCTestCase {
         let lastRUMViewEventSent: RUMViewEvent = try rumEventMatchers[1].model()
 
         let currentCrashContext = try XCTUnwrap(Global.crashReporter?.crashContextProvider.currentCrashContext)
-        XCTAssertEqual(
-            currentCrashContext.lastRUMViewEvent?.model,
-            lastRUMViewEventSent
-        )
-        XCTAssertEqual(
-            currentCrashContext.lastRUMViewEvent?.attributes as? [String: String],
-            randomViewEventAttributes
-        )
-        XCTAssertEqual(
-            currentCrashContext.lastRUMViewEvent?.userInfoAttributes as? [String: String],
-            randomUserInfoAttributes
-        )
+        let currentLastRUMViewEventSent = try XCTUnwrap(currentCrashContext.lastRUMViewEvent?.model)
+
+        try AssertEncodedRepresentationsEqual(value1: currentLastRUMViewEventSent, value2: lastRUMViewEventSent)
     }
 
     // MARK: - Thread safety
@@ -1254,7 +1293,7 @@ class RUMMonitorTests: XCTestCase {
 
         var mockCommand = RUMCommandMock()
         mockCommand.attributes = [
-            RUMAttribute.internalTimestamp: Int64(1_000) // 1000 in miliseconds
+            RUMAttribute.internalTimestamp: Int64(1_000) // 1000 in milliseconds
         ]
 
         let monitor = try XCTUnwrap(RUMMonitor.initialize() as? RUMMonitor)
@@ -1334,15 +1373,15 @@ class RUMResourceKindTests: XCTestCase {
         }
     }
 
-    func testWhenInitializedWithPOSTorPUTorDELETErequest_itReturnsXHR() {
+    func testWhenInitialized_itDefaultsToNative() {
         XCTAssertEqual(
-            RUMResourceType(request: .mockWith(httpMethod: "POST".randomcased())), .xhr
+            RUMResourceType(request: .mockWith(httpMethod: "POST".randomcased())), .native
         )
         XCTAssertEqual(
-            RUMResourceType(request: .mockWith(httpMethod: "PUT".randomcased())), .xhr
+            RUMResourceType(request: .mockWith(httpMethod: "PUT".randomcased())), .native
         )
         XCTAssertEqual(
-            RUMResourceType(request: .mockWith(httpMethod: "DELETE".randomcased())), .xhr
+            RUMResourceType(request: .mockWith(httpMethod: "DELETE".randomcased())), .native
         )
     }
 
@@ -1358,9 +1397,15 @@ class RUMResourceKindTests: XCTestCase {
         )
     }
 
-    func testWhenInitializingFromHTTPURLResponse_itDefaultsToXhr() {
+    func testWhenInitializingFromHTTPURLResponseWithUnknownType_itDefaultsToNative() {
         XCTAssertEqual(
-            RUMResourceType(response: .mockWith(mimeType: "unknown/type")), .xhr
+            RUMResourceType(response: .mockWith(mimeType: "unknown/type")), .native
+        )
+    }
+
+    func testWhenInitializingFromHTTPURLResponseWithNoType_itDefaultsToNative() {
+        XCTAssertEqual(
+            RUMResourceType(response: .mockWith(mimeType: nil)), .native
         )
     }
 }
