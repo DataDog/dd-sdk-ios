@@ -9,6 +9,8 @@ import UIKit
 @testable import Datadog
 
 class MobileDeviceTests: XCTestCase {
+    private let notificationCenter = NotificationCenter()
+
     func testWhenRunningOnMobile_itReturnsDevice() {
         XCTAssertNotNil(MobileDevice.current)
     }
@@ -19,7 +21,7 @@ class MobileDeviceTests: XCTestCase {
             systemName: "system name mock",
             systemVersion: "system version mock"
         )
-        let mobileDevice = MobileDevice(uiDevice: uiDevice, processInfo: ProcessInfoMock())
+        let mobileDevice = MobileDevice(uiDevice: uiDevice, processInfo: ProcessInfoMock(), notificationCenter: notificationCenter)
 
         XCTAssertEqual(mobileDevice.model, uiDevice.model)
         XCTAssertEqual(mobileDevice.osName, uiDevice.systemName)
@@ -27,29 +29,27 @@ class MobileDeviceTests: XCTestCase {
     }
 
     func testWhenRunningOnMobile_itUsesUIDeviceBatteryState() {
-        XCTAssertEqual(
-            MobileDevice(uiDevice: UIDeviceMock(batteryState: .full), processInfo: ProcessInfoMock()).currentBatteryStatus().state,
-            .full
-        )
-        XCTAssertEqual(
-            MobileDevice(uiDevice: UIDeviceMock(batteryState: .charging), processInfo: ProcessInfoMock()).currentBatteryStatus().state,
-            .charging
-        )
-        XCTAssertEqual(
-            MobileDevice(uiDevice: UIDeviceMock(batteryState: .unplugged), processInfo: ProcessInfoMock()).currentBatteryStatus().state,
-            .unplugged
-        )
-        XCTAssertEqual(
-            MobileDevice(uiDevice: UIDeviceMock(batteryState: .unknown), processInfo: ProcessInfoMock()).currentBatteryStatus().state,
-            .unknown
-        )
+        func mobileDevice(withBatteryState bateryState: UIDevice.BatteryState) -> MobileDevice {
+            return MobileDevice(
+                uiDevice: UIDeviceMock(batteryState: bateryState),
+                processInfo: ProcessInfoMock(),
+                notificationCenter: notificationCenter
+            )
+        }
+        XCTAssertEqual(mobileDevice(withBatteryState: .full).currentBatteryStatus().state, .full)
+        XCTAssertEqual(mobileDevice(withBatteryState: .charging).currentBatteryStatus().state, .charging)
+        XCTAssertEqual(mobileDevice(withBatteryState: .unplugged).currentBatteryStatus().state, .unplugged)
+        XCTAssertEqual(mobileDevice(withBatteryState: .unknown).currentBatteryStatus().state, .unknown)
     }
 
     func testWhenRunningOnMobile_itUsesUIDeviceBatteryLevel() {
-        XCTAssertEqual(
-            MobileDevice(uiDevice: UIDeviceMock(batteryLevel: 0.12), processInfo: ProcessInfoMock()).currentBatteryStatus().level,
-            0.12
+        let randomBatteryLevel: Float = .random(in: 0...1)
+        let mobileDevice = MobileDevice(
+            uiDevice: UIDeviceMock(batteryLevel: randomBatteryLevel),
+            processInfo: ProcessInfoMock(),
+            notificationCenter: notificationCenter
         )
+        XCTAssertEqual(mobileDevice.currentBatteryStatus().level, randomBatteryLevel)
     }
 
     func testGivenInitialLowPowerModeSettingValue_whenSettingChanges_itUpdatesIsLowPowerModeEnabledValue() {
@@ -58,13 +58,14 @@ class MobileDeviceTests: XCTestCase {
 
         let mobileDevice = MobileDevice(
             uiDevice: UIDeviceMock(),
-            processInfo: ProcessInfoMock(isLowPowerModeEnabled: isLowPowerModeEnabled)
+            processInfo: ProcessInfoMock(isLowPowerModeEnabled: isLowPowerModeEnabled),
+            notificationCenter: notificationCenter
         )
 
         XCTAssertEqual(mobileDevice.currentBatteryStatus().isLowPowerModeEnabled, isLowPowerModeEnabled)
 
         // When
-        NotificationCenter.default.post(
+        notificationCenter.post(
             name: .NSProcessInfoPowerStateDidChange,
             object: ProcessInfoMock(isLowPowerModeEnabled: !isLowPowerModeEnabled)
         )
@@ -75,7 +76,7 @@ class MobileDeviceTests: XCTestCase {
 
     func testWhenRunningOnMobile_itTogglesBatteryMonitoring() {
         let uiDevice = UIDeviceMock(isBatteryMonitoringEnabled: false)
-        let mobileDevice = MobileDevice(uiDevice: uiDevice, processInfo: ProcessInfoMock())
+        let mobileDevice = MobileDevice(uiDevice: uiDevice, processInfo: ProcessInfoMock(), notificationCenter: notificationCenter)
 
         XCTAssertFalse(uiDevice.isBatteryMonitoringEnabled)
         mobileDevice.enableBatteryStatusMonitoring()
