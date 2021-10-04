@@ -1,3 +1,10 @@
+# 1.7.1 / 10-4-2021
+
+### Changes
+
+* [BUGFIX] Fix iOS 15 crash in `MobileDevice.swift`. See #609 #613 (Thanks @arnauddorgans, @earltedly)
+* [BUGFIX] RUM: Fix bug with "Refresh Rate" Mobile Vital reporting very low values. #608
+
 # 1.7.0 / 09-27-2021
 
 ### Changes
