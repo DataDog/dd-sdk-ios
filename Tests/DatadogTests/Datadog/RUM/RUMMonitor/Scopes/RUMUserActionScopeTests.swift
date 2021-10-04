@@ -177,7 +177,7 @@ class RUMUserActionScopeTests: XCTestCase {
         )
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).last)
-        XCTAssertEqual(event.model.action.resource?.count, 1, "User Action should track first succesfull Resource")
+        XCTAssertEqual(event.model.action.resource?.count, 1, "User Action should track first successful Resource")
         XCTAssertEqual(event.model.action.error?.count, 1, "User Action should track second Resource failure as Error")
     }
 
@@ -323,7 +323,7 @@ class RUMUserActionScopeTests: XCTestCase {
         )
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).last)
-        XCTAssertEqual(event.model.action.resource?.count, 1, "User Action should track first succesfull Resource")
+        XCTAssertEqual(event.model.action.resource?.count, 1, "User Action should track first successful Resource")
         XCTAssertEqual(event.model.action.error?.count, 1, "User Action should track second Resource failure as Error")
     }
 

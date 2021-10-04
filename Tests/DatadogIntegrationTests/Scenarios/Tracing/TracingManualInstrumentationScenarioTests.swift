@@ -45,7 +45,7 @@ class TracingManualInstrumentationScenarioTests: IntegrationTests, TracingCommon
         XCTAssertEqual(try spanMatchers[0].traceID(), try spanMatchers[1].traceID())
         XCTAssertEqual(try spanMatchers[0].traceID(), try spanMatchers[2].traceID())
 
-        // "data downloading" and "data presentation" are childs of "view loading"
+        // "data downloading" and "data presentation" are children of "view loading"
         XCTAssertEqual(try spanMatchers[0].parentSpanID(), try spanMatchers[2].spanID())
         XCTAssertEqual(try spanMatchers[1].parentSpanID(), try spanMatchers[2].spanID())
 

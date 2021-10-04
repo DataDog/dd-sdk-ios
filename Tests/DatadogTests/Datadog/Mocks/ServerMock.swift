@@ -124,7 +124,7 @@ class ServerMock {
         /// Following precondition will fail when `ServerMock` instance was retained ONLY by existing HTTP request callback.
         /// Such case means a programmer error, because the existing callback can impact result of the next unit test, causing a flakiness.
         ///
-        /// If that happens, make sure the `ServerMock` processess all calbacks before it gets deallocated:
+        /// If that happens, make sure the `ServerMock` processes all callbacks before it gets deallocated:
         ///
         ///     func testXYZ() {
         ///        let server = ServerMock(...)
@@ -197,12 +197,12 @@ class ServerMock {
             fatalError("Can't happen.")
         case .timedOut:
             XCTFail("Exceeded timeout of \(timeout)s with receiving \(requests.count) out of \(count) expected requests.", file: file, line: line)
-            // Return array of dummy requests, so the crash will happen leter in the test code, properly
+            // Return array of dummy requests, so the crash will happen later in the test code, properly
             // printing the above error.
             return Array(repeating: .mockAny(), count: Int(count))
         case .invertedFulfillment:
             XCTFail("\(requests.count) requests were sent, but not expected.", file: file, line: line)
-            // Return array of dummy requests, so the crash will happen leter in the test code, properly
+            // Return array of dummy requests, so the crash will happen later in the test code, properly
             // printing the above error.
             return queue.sync { requests }
         @unknown default:

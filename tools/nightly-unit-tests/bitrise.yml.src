@@ -44,7 +44,7 @@ workflows:
         - content: |-
             #!/usr/bin/env bash
             echo "+------------------------------------------------------------------------------+"
-            printf '| %-78s |\n' "🧪 Runing unit tests for ${PROJECT_SCHEME} on ${SIMULATOR_DEVICE} (${SIMULATOR_OS_VERSION})"
+            printf '| %-78s |\n' "🧪 Running unit tests for ${PROJECT_SCHEME} on ${SIMULATOR_DEVICE} (${SIMULATOR_OS_VERSION})"
             echo "+------------------------------------------------------------------------------+"
     - xcode-test@2.4.5:
         title: Run unit tests for given platform
@@ -63,7 +63,7 @@ workflows:
 
   _send_slack_notification:
     description: |-
-        Sends Slack notification with the worklow status.
+        Sends Slack notification with the workflow status.
     steps:
     - slack:
         run_if: '{{(getenv "DD_SKIP_SLACK") | eq ""}}'
@@ -77,13 +77,13 @@ workflows:
         - buttons: |-
             See Bitrise log|${BITRISE_BUILD_URL}
         - pretext: |-
-            Nighly unit tests run: 🚀 all good
+            Nightly unit tests run: 🚀 all good
             ### <SLACK SIMULATORS LIST> ###
 
             Issues found:
             ### <SLACK ISSUES LIST> ###
         - pretext_on_error: |-
-            Nighly unit tests run: ⚠️ some tests did fail️
+            Nightly unit tests run: ⚠️ some tests did fail️
             ### <SLACK SIMULATORS LIST> ###
 
             Issues found:

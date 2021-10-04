@@ -29,7 +29,7 @@ class ConsentAwareDataWriterTests: XCTestCase {
         super.tearDown()
     }
 
-    // MARK: - Writting Data on Initial Consent
+    // MARK: - Writing Data on Initial Consent
 
     func testWhenInitializedWithConsentGranted_thenItWritesDataToAuthorizedFolder() {
         // When

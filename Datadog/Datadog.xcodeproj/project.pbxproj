@@ -1431,7 +1431,7 @@
 			children = (
 				61AD4E3724531500006E34EA /* DataFormat.swift */,
 				61133BA92423979B00786299 /* FilesOrchestrator.swift */,
-				613E79412577C08900DFCC17 /* Writting */,
+				613E79412577C08900DFCC17 /* Writing */,
 				613E79422577C09B00DFCC17 /* Reading */,
 				619E16EF2578E81900B2516B /* Migrating */,
 				6114FE0D257667AD0084E372 /* Privacy */,
@@ -1683,7 +1683,7 @@
 			isa = PBXGroup;
 			children = (
 				61133C2A2423990D00786299 /* FilesOrchestratorTests.swift */,
-				619E16D42577C11B00B2516B /* Writting */,
+				619E16D42577C11B00B2516B /* Writing */,
 				619E16D52577C12100B2516B /* Reading */,
 				61EF788E257E287B00EDCCB3 /* Migrating */,
 				6114FE21257671CB0084E372 /* Privacy */,
@@ -2016,7 +2016,7 @@
 			path = DataStorage;
 			sourceTree = "<group>";
 		};
-		613E79412577C08900DFCC17 /* Writting */ = {
+		613E79412577C08900DFCC17 /* Writing */ = {
 			isa = PBXGroup;
 			children = (
 				613E79272577B0EE00DFCC17 /* Writer.swift */,
@@ -2025,7 +2025,7 @@
 				61133BA72423979B00786299 /* FileWriter.swift */,
 				619E16D62577C19F00B2516B /* Processing */,
 			);
-			path = Writting;
+			path = Writing;
 			sourceTree = "<group>";
 		};
 		613E79422577C09B00DFCC17 /* Reading */ = {
@@ -2573,13 +2573,13 @@
 			path = E2ETests;
 			sourceTree = "<group>";
 		};
-		619E16D42577C11B00B2516B /* Writting */ = {
+		619E16D42577C11B00B2516B /* Writing */ = {
 			isa = PBXGroup;
 			children = (
 				6114FE22257671F00084E372 /* ConsentAwareDataWriterTests.swift */,
 				61133C292423990D00786299 /* FileWriterTests.swift */,
 			);
-			path = Writting;
+			path = Writing;
 			sourceTree = "<group>";
 		};
 		619E16D52577C12100B2516B /* Reading */ = {

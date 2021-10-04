@@ -9,7 +9,7 @@ import XCTest
 @testable import DatadogObjc
 
 class DDTracerConfigurationTests: XCTestCase {
-    func testItFowardsConfigurationToSwift() {
+    func testItForwardsConfigurationToSwift() {
         let objcConfiguration = DDTracerConfiguration()
         objcConfiguration.set(serviceName: "service-name")
         objcConfiguration.sendNetworkInfo(true)
