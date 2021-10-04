@@ -134,7 +134,7 @@ ship:
 		pod spec lint --allow-warnings DatadogSDK.podspec
 		pod trunk push --allow-warnings --synchronous DatadogSDK.podspec
 		./tools/distribution/make_distro_builds.sh
-ifeq ($$CI, true)
+ifeq (${ci}, true)
 		@curl -X POST "https://api.bitrise.io/v0.1/apps/$$BITRISE_APP_SLUG/builds" \
  			-H "accept: application/json" -H  "Content-Type: application/json" \
 			-H  "Authorization: $$BITRISE_PERSONAL_ACCESS_TOKEN" \
