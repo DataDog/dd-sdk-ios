@@ -117,7 +117,7 @@ let session = URLSession(
 )
 ``` 
 
-## Crash reporting
+## iOS Crash Reporting and Error Tracking
 
 Crash Reporting and Error Tracking for iOS displays any issues and latest available errors. You can view error details and attributes including JSON in the RUM Explorer. 
 

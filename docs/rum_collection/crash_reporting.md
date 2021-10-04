@@ -1,5 +1,5 @@
 ---
-title: iOS Crash Reporting
+title: iOS Crash Reporting and Error Tracking
 kind: documentation
 beta: true
 further_reading:
