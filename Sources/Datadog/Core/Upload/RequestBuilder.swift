@@ -31,6 +31,7 @@ internal struct RequestBuilder {
 
     struct HTTPHeader {
         static let contentTypeHeaderField = "Content-Type"
+        static let contentEncodingHeaderField = "Content-Encoding"
         static let userAgentHeaderField = "User-Agent"
         static let ddAPIKeyHeaderField = "DD-API-KEY"
         static let ddEVPOriginHeaderField = "DD-EVP-ORIGIN"
@@ -126,9 +127,15 @@ internal struct RequestBuilder {
         computedHeaders.forEach { field, value in headers[field] = value() }
 
         request.httpMethod = "POST"
-        request.allHTTPHeaderFields = headers
-        request.httpBody = data
 
+        if let body = zip(data) {
+            headers[HTTPHeader.contentEncodingHeaderField] = "deflate"
+            request.httpBody = body
+        } else {
+            request.httpBody = data
+        }
+
+        request.allHTTPHeaderFields = headers
         return request
     }
 }

@@ -50,12 +50,16 @@ extension Data: AnyMockable, RandomMockable {
         return Data(repeating: byte, count: count)
     }
 
-    static func mock(ofSize size: UInt64) -> Data {
+    static func mock<Size>(ofSize size: Size) -> Data where Size: BinaryInteger {
         return mockRepeating(byte: 0x41, times: Int(size))
     }
 
+    static func mockRandom<Size>(ofSize size: Size) -> Data where Size: BinaryInteger {
+        return mockRepeating(byte: .random(in: 0x00...0xFF), times: Int(size))
+    }
+
     static func mockRandom() -> Data {
-        return mockRepeating(byte: .random(in: 0x00...0xFF), times: 256)
+        return mockRandom(ofSize: 256)
     }
 }
 
