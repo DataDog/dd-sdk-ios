@@ -172,7 +172,7 @@ internal class iOS11NetworkConnectionInfoProvider: WrappedNetworkConnectionInfoP
     }
 }
 
-// MARK: Conversion helpers
+// MARK: - Conversion helpers
 
 extension NetworkConnectionInfo.Reachability {
     @available(iOS 12, *)

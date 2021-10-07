@@ -924,7 +924,7 @@ extension CarrierInfo: RandomMockable {
     }
 }
 
-class CarrierInfoProviderMock: CarrierInfoProviderType, WrappedCarrierInfoProvider {
+class CarrierInfoProviderMock: CarrierInfoProviderType {
     private let queue = DispatchQueue(label: "com.datadoghq.CarrierInfoProviderMock")
     private var _current: CarrierInfo?
 

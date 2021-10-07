@@ -9,37 +9,138 @@ import CoreTelephony
 @testable import Datadog
 
 class CarrierInfoProviderTests: XCTestCase {
+    /// Mock `CTTelephonyNetworkInfo` when user’s cellular service provider is available.
+    private let availableCTTelephonyNetworkInfo = CTTelephonyNetworkInfoMock(
+        serviceCurrentRadioAccessTechnology: ["000001": CTRadioAccessTechnologyLTE],
+        serviceSubscriberCellularProviders: ["000001": CTCarrierMock(carrierName: "Carrier", isoCountryCode: "US", allowsVOIP: true)]
+    )
+    /// Mock `CTTelephonyNetworkInfo` when user’s cellular service provider is unavailable.
+    private let unavailableCTTelephonyNetworkInfo = CTTelephonyNetworkInfoMock(
+        serviceCurrentRadioAccessTechnology: [:],
+        serviceSubscriberCellularProviders: [:]
+    )
+
     func testItIsAvailableOnMobile() {
         XCTAssertNotNil(CarrierInfoProvider())
     }
 
-    func testWhenCellularServiceIsAvailable_itReturnsCarrierInfo() {
-        let serviceID = "000001"
-        let telephonyNetworkInfo = CTTelephonyNetworkInfoMock(
-            serviceCurrentRadioAccessTechnology: [serviceID: CTRadioAccessTechnologyLTE],
-            serviceSubscriberCellularProviders: [serviceID: CTCarrierMock(carrierName: "Carrier", isoCountryCode: "US", allowsVOIP: true)]
-        )
+    func testGivenCellularServiceAvailableOnIOS11_whenReadingCurrentCarrierInfo_itReturnsValue() {
+        // Given
+        let iOS11Provider = iOS11CarrierInfoProvider(networkInfo: availableCTTelephonyNetworkInfo)
 
-        let provider = CarrierInfoProvider(
-            wrappedProvider: iOSCarrierInfoProvider(networkInfo: telephonyNetworkInfo)
-        )
+        // When
+        let iOS11CarrierInfo = CarrierInfoProvider(wrappedProvider: iOS11Provider).current
 
-        XCTAssertEqual(provider.current?.carrierName, "Carrier")
-        XCTAssertEqual(provider.current?.carrierISOCountryCode, "US")
-        XCTAssertEqual(provider.current?.carrierAllowsVOIP, true)
+        // Then
+        XCTAssertEqual(iOS11CarrierInfo?.carrierName, "Carrier")
+        XCTAssertEqual(iOS11CarrierInfo?.carrierISOCountryCode, "US")
+        XCTAssertEqual(iOS11CarrierInfo?.carrierAllowsVOIP, true)
     }
 
-    func testWhenCellularServiceIsUnavailable_itReturnsNoCarrierInfo() {
-        let telephonyNetworkInfo = CTTelephonyNetworkInfoMock(
-            serviceCurrentRadioAccessTechnology: [:],
-            serviceSubscriberCellularProviders: [:]
+    func testGivenCellularServiceAvailableOnIOS12AndAbove_whenReadingCurrentCarrierInfo_itReturnsValue() {
+        if #available(iOS 12, *) {
+            // Given
+            let iOS12Provider = iOS12CarrierInfoProvider(networkInfo: availableCTTelephonyNetworkInfo)
+
+            // When
+            let iOS12CarrierInfo = CarrierInfoProvider(wrappedProvider: iOS12Provider).current
+
+            // Then
+            XCTAssertEqual(iOS12CarrierInfo?.carrierName, "Carrier")
+            XCTAssertEqual(iOS12CarrierInfo?.carrierISOCountryCode, "US")
+            XCTAssertEqual(iOS12CarrierInfo?.carrierAllowsVOIP, true)
+        }
+    }
+
+    func testGivenCellularServiceUnavailableOnIOS11_whenReadingCurrentCarrierInfo_itReturnsNoValue() {
+        // Given
+        let iOS11Provider = iOS11CarrierInfoProvider(networkInfo: unavailableCTTelephonyNetworkInfo)
+
+        // When
+        let iOS11CarrierInfo = CarrierInfoProvider(wrappedProvider: iOS11Provider).current
+
+        // Then
+        XCTAssertNil(iOS11CarrierInfo)
+    }
+
+    func testGivenCellularServiceUnavailableOnIOS12AndAbove_whenReadingCurrentCarrierInfo_itReturnsNoValue() {
+        if #available(iOS 12, *) {
+            // Given
+            let iOS12Provider = iOS12CarrierInfoProvider(networkInfo: unavailableCTTelephonyNetworkInfo)
+
+            // When
+            let iOS12CarrierInfo = CarrierInfoProvider(wrappedProvider: iOS12Provider).current
+
+            // Then
+            XCTAssertNil(iOS12CarrierInfo)
+        }
+    }
+
+    func testGivenSubscribediOS11CarrierInfoProvider_whenCarrierInfoChanges_itNotifiesSubscribersAfterReadingValue() throws {
+        let notifyCarrierInfoChangeExpectation = expectation(description: "Notify `CarrierInfo` change")
+        var recordedChange: (old: CarrierInfo?, new: CarrierInfo?)? = nil
+
+        // Given
+        let subscriber = ValueObserverMock<CarrierInfo?> { oldValue, newValue in
+            recordedChange = (old: oldValue, new: newValue)
+            notifyCarrierInfoChangeExpectation.fulfill()
+        }
+
+        let iOS11Provider = iOS11CarrierInfoProvider(networkInfo: availableCTTelephonyNetworkInfo)
+        iOS11Provider.subscribe(subscriber)
+
+        let initialCarrierInfo = iOS11Provider.current
+
+        // When
+        availableCTTelephonyNetworkInfo.changeCarrier(
+            newCarrierName: .mockRandom(),
+            newISOCountryCode: .mockRandom(),
+            newAllowsVOIP: .mockRandom(),
+            newRadioAccessTechnology: [CTRadioAccessTechnologyGPRS, CTRadioAccessTechnologyEdge].randomElement()!
         )
 
-        let provider = CarrierInfoProvider(
-            wrappedProvider: iOSCarrierInfoProvider(networkInfo: telephonyNetworkInfo)
-        )
+        // Then
+        let newCarrierInfo = iOS11Provider.current
 
-        XCTAssertNil(provider.current)
+        waitForExpectations(timeout: 1, handler: nil)
+        let notifiedCarrierInfoChange = try XCTUnwrap(recordedChange)
+        XCTAssertEqual(notifiedCarrierInfoChange.old, initialCarrierInfo)
+        XCTAssertEqual(notifiedCarrierInfoChange.new, newCarrierInfo)
+    }
+
+    func testGivenSubscribediOS12CarrierInfoProvider_whenCarrierInfoChanges_itNotifiesSubscribers() throws {
+        if #available(iOS 12, *) {
+            let notifyCarrierInfoChangeExpectation = expectation(description: "Notify `CarrierInfo` change")
+            var recordedChange: (old: CarrierInfo?, new: CarrierInfo?)? = nil
+
+            // Given
+            let subscriber = ValueObserverMock<CarrierInfo?> { oldValue, newValue in
+                recordedChange = (old: oldValue, new: newValue)
+                notifyCarrierInfoChangeExpectation.fulfill()
+            }
+
+            let iOS12Provider = iOS12CarrierInfoProvider(networkInfo: availableCTTelephonyNetworkInfo)
+            iOS12Provider.subscribe(subscriber)
+
+            let initialCarrierInfo = iOS12Provider.current
+
+            // When
+            availableCTTelephonyNetworkInfo.changeCarrier(
+                newCarrierName: .mockRandom(),
+                newISOCountryCode: .mockRandom(),
+                newAllowsVOIP: .mockRandom(),
+                newRadioAccessTechnology: [CTRadioAccessTechnologyGPRS, CTRadioAccessTechnologyEdge].randomElement()!
+            )
+
+            // Then
+            waitForExpectations(timeout: 1, handler: nil)
+
+            let newCarrierInfo = iOS12Provider.current
+
+            let notifiedCarrierInfoChange = try XCTUnwrap(recordedChange)
+            XCTAssertEqual(notifiedCarrierInfoChange.old, initialCarrierInfo)
+            XCTAssertEqual(notifiedCarrierInfoChange.new, newCarrierInfo)
+        }
     }
 
     func testDifferentCarrierInfoRadioAccessTechnologies() {
