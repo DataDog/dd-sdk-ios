@@ -145,18 +145,17 @@ internal class iOS12CarrierInfoProvider: CarrierInfoProviderType {
     }
 
     private static func readCarrierInfo(from networkInfo: CTTelephonyNetworkInfo, cellularProviderKey: String?) -> CarrierInfo? {
-        if let cellularProviderKey = cellularProviderKey,
+        guard let cellularProviderKey = cellularProviderKey,
            let radioTechnology = networkInfo.serviceCurrentRadioAccessTechnology?[cellularProviderKey],
-           let carrier = networkInfo.serviceSubscriberCellularProviders?[cellularProviderKey] {
-            return CarrierInfo(
-                carrierName: carrier.carrierName,
-                carrierISOCountryCode: carrier.isoCountryCode,
-                carrierAllowsVOIP: carrier.allowsVOIP,
-                radioAccessTechnology: .init(ctRadioAccessTechnologyConstant: radioTechnology)
-            )
-        } else {
+           let carrier = networkInfo.serviceSubscriberCellularProviders?[cellularProviderKey] else {
             return nil // the service is not registered on any network
         }
+        return CarrierInfo(
+            carrierName: carrier.carrierName,
+            carrierISOCountryCode: carrier.isoCountryCode,
+            carrierAllowsVOIP: carrier.allowsVOIP,
+            radioAccessTechnology: .init(ctRadioAccessTechnologyConstant: radioTechnology)
+        )
     }
 
     var current: CarrierInfo? {
@@ -183,17 +182,16 @@ internal class iOS11CarrierInfoProvider: CarrierInfoProviderType {
     }
 
     private static func readCarrierInfo(from networkInfo: CTTelephonyNetworkInfo) -> CarrierInfo? {
-        if let radioTechnology = networkInfo.currentRadioAccessTechnology,
-           let carrier = networkInfo.subscriberCellularProvider {
-            return CarrierInfo(
-                carrierName: carrier.carrierName,
-                carrierISOCountryCode: carrier.isoCountryCode,
-                carrierAllowsVOIP: carrier.allowsVOIP,
-                radioAccessTechnology: .init(ctRadioAccessTechnologyConstant: radioTechnology)
-            )
-        } else {
-            return nil
+        guard let radioTechnology = networkInfo.currentRadioAccessTechnology,
+              let carrier = networkInfo.subscriberCellularProvider else {
+            return nil // the service is not registered on any network
         }
+        return CarrierInfo(
+            carrierName: carrier.carrierName,
+            carrierISOCountryCode: carrier.isoCountryCode,
+            carrierAllowsVOIP: carrier.allowsVOIP,
+            radioAccessTechnology: .init(ctRadioAccessTechnologyConstant: radioTechnology)
+        )
     }
 
     var current: CarrierInfo? {
