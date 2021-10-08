@@ -46,7 +46,10 @@ class DebugWebviewViewController: UIViewController {
     @IBOutlet weak var webviewURLTextField: UITextField!
 
     private var webviewURL: String {
-        webviewURLTextField.text!.isEmpty ? "https://www.datadoghq.com" : webviewURLTextField.text!
+        guard let text = webviewURLTextField.text, !text.isEmpty else {
+            return  "https://www.datadoghq.com"
+        }
+        return text
     }
 
     @IBAction func didTapOpenURLInWebview(_ sender: Any) {
