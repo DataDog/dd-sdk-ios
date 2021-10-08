@@ -130,13 +130,17 @@ internal class iOS12CarrierInfoProvider: CarrierInfoProviderType {
         // This occurs, for example, if a user swaps the device’s SIM card with one from another provider, while the app is running.
         // ref.: https://developer.apple.com/documentation/coretelephony/cttelephonynetworkinfo/3024512-servicesubscribercellularprovide
         networkInfo.serviceSubscriberCellularProvidersDidUpdateNotifier = { [weak self] cellularProviderKey in
+            guard let strongSelf = self else {
+                return
+            }
+
             let carrierInfo = iOS12CarrierInfoProvider.readCarrierInfo(
-                from: networkInfo,
-                cellularProviderKey: networkInfo.serviceCurrentRadioAccessTechnology?.keys.first
+                from: strongSelf.networkInfo,
+                cellularProviderKey: cellularProviderKey
             )
 
             // On iOS12+ `CarrierInfo` subscribers are notified on actual change to cellular provider.
-            self?.publisher.publishAsync(carrierInfo)
+            strongSelf.publisher.publishAsync(carrierInfo)
         }
     }
 
