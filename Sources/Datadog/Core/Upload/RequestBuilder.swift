@@ -128,7 +128,7 @@ internal struct RequestBuilder {
 
         request.httpMethod = "POST"
 
-        if let body = zip(data) {
+        if let body = Deflate.encode(data) {
             headers[HTTPHeader.contentEncodingHeaderField] = "deflate"
             request.httpBody = body
         } else {

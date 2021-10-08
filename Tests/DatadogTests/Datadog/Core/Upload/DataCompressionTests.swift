@@ -14,7 +14,7 @@ class DataCompressionTests: XCTestCase {
             let data: Data = .mock(ofSize: Int.mockRandom(min: 1, max: 10_000))
 
             // When
-            let checksum = adler32(data)
+            let checksum = Deflate.adler32(data)
 
             // Then
             XCTAssertEqual(checksum?.count, 4)
@@ -27,8 +27,8 @@ class DataCompressionTests: XCTestCase {
             let data: Data = .mock(ofSize: Int.mockRandom(min: 100, max: 10_000))
 
             // When
-            let compressed = try XCTUnwrap(deflate(data))
-            let decompressed = inflate(compressed)
+            let compressed = try XCTUnwrap(Deflate.compress(data))
+            let decompressed = Deflate.decompress(compressed)
 
             // Then
             XCTAssertEqual(decompressed, data)
@@ -41,8 +41,8 @@ class DataCompressionTests: XCTestCase {
             let data: Data = .mock(ofSize: Int.mockRandom(min: 100, max: 10_000))
 
             // When
-            let compressed = try XCTUnwrap(zip(data))
-            let decompressed = unzip(compressed)
+            let compressed = try XCTUnwrap(Deflate.encode(data))
+            let decompressed = Deflate.decode(compressed)
 
             // Then
             XCTAssertEqual(decompressed, data)
@@ -55,8 +55,8 @@ class DataCompressionTests: XCTestCase {
         let data: Data = .mock(ofSize: size)
 
         // When
-        let compressed = try XCTUnwrap(deflate(data))
-        let decompressed = inflate(compressed, capacity: size)
+        let compressed = try XCTUnwrap(Deflate.compress(data))
+        let decompressed = Deflate.decompress(compressed, capacity: size)
 
         // Then
         XCTAssertEqual(decompressed, data)
