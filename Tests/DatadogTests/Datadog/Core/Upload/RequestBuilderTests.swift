@@ -116,7 +116,7 @@ class RequestBuilderTests: XCTestCase {
             ]
         )
 
-        let request = builder.uploadRequest(with: .mockRandom())
+        let request = builder.uploadRequest(with: .mockAny())
         XCTAssertNotNil(request.allHTTPHeaderFields?["Content-Type"])
         XCTAssertNotNil(request.allHTTPHeaderFields?["Content-Encoding"])
         XCTAssertNotNil(request.allHTTPHeaderFields?["User-Agent"])
@@ -137,19 +137,21 @@ class RequestBuilderTests: XCTestCase {
 
     // MARK: - Request Data
 
-    func testWhenBuildingRequestWithData_thenItDeflatesHTTPBody() throws {
-        // When
-        let size = 256
-        let randomData: Data = .mock(ofSize: size)
+    func testWhenBuildingRequestWithData_thenItDeflateHTTPBody() throws {
+        // Given
         let builder = RequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: .mockRandom())
 
-        let request = builder.uploadRequest(with: randomData)
-        let body = try XCTUnwrap(request.httpBody)
+        for i in 2...8 { // Test from 100KB to 100MB
+            // When
+            let size = UInt64(pow(10, Double(i)))
+            let randomData: Data = .mock(ofSize: size)
+            let request = builder.uploadRequest(with: randomData)
+            let body = try XCTUnwrap(request.httpBody)
 
-        // Then
-        XCTAssertNotNil(request.allHTTPHeaderFields?["Content-Encoding"])
-        XCTAssertLessThan(body.count, Int(size), "HTTP body must be compressed")
-        XCTAssertEqual(unzip(body), randomData)
+            // Then
+            XCTAssertNotNil(request.allHTTPHeaderFields?["Content-Encoding"])
+            XCTAssertLessThan(body.count, Int(size), "HTTP body must be compressed")
+        }
     }
 
     func testWhenBuildingRequestWithSmallData_thenItDoesNotDeflateHTTPBody() throws {

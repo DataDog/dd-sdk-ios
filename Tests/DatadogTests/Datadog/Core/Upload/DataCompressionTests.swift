@@ -8,10 +8,10 @@ import XCTest
 @testable import Datadog
 
 class DataCompressionTests: XCTestCase {
-    func testFuzzy_Adler32() {
+    func testWhenComputingAdler32Checksum_itAlwaysHas4Bytes() {
         for _ in 1...500 {
             // Given
-            let data: Data = .mockRandom(ofSize: Int.mockRandom(min: 1, max: 10_000))
+            let data: Data = .mock(ofSize: Int.mockRandom(min: 1, max: 10_000))
 
             // When
             let checksum = adler32(data)
@@ -21,10 +21,10 @@ class DataCompressionTests: XCTestCase {
         }
     }
 
-    func testFuzzy_deflate_inflate() throws {
+    func testWhenDataIsDeflated_itInflateToOriginalData() throws {
         for _ in 1...500 {
             // Given
-            let data: Data = .mockRandom(ofSize: Int.mockRandom(min: 100, max: 10_000))
+            let data: Data = .mock(ofSize: Int.mockRandom(min: 100, max: 10_000))
 
             // When
             let compressed = try XCTUnwrap(deflate(data))
@@ -35,10 +35,10 @@ class DataCompressionTests: XCTestCase {
         }
     }
 
-    func testFuzzy_zip_unzip() throws {
+    func testWhenDataIsCompressed_itDecompressToOriginalData() throws {
         for _ in 1...500 {
             // Given
-            let data: Data = .mockRandom(ofSize: Int.mockRandom(min: 100, max: 10_000))
+            let data: Data = .mock(ofSize: Int.mockRandom(min: 100, max: 10_000))
 
             // When
             let compressed = try XCTUnwrap(zip(data))
@@ -49,10 +49,10 @@ class DataCompressionTests: XCTestCase {
         }
     }
 
-    func test8MB_deflate_inflate() throws {
+    func testWhen8MBIsDeflated_itInflateToOriginalData() throws {
         // Given
         let size = 1_024 * 1_024 * 8 // 8 MB
-        let data: Data = .mockRandom(ofSize: size)
+        let data: Data = .mock(ofSize: size)
 
         // When
         let compressed = try XCTUnwrap(deflate(data))
