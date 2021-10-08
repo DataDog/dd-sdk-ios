@@ -106,19 +106,27 @@ class DDURLSessionDelegateTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
 
         let dateAfterAllRequests = Date()
-        AssertURLSessionTasksIdentical(interceptor.taskMetrics[0].task, taskWithURL)
-        XCTAssertGreaterThan(interceptor.taskMetrics[0].metrics.taskInterval.start, dateBeforeAnyRequests)
-        XCTAssertLessThan(interceptor.taskMetrics[0].metrics.taskInterval.end, dateAfterAllRequests)
-        AssertURLSessionTasksIdentical(interceptor.tasksCompleted[0].task, taskWithURL)
-        XCTAssertEqual((interceptor.tasksCompleted[0].error! as NSError).localizedDescription, "some error")
 
-        AssertURLSessionTasksIdentical(interceptor.taskMetrics[1].task, taskWithURLRequest)
-        XCTAssertGreaterThan(interceptor.taskMetrics[1].metrics.taskInterval.start, dateBeforeAnyRequests)
-        XCTAssertLessThan(interceptor.taskMetrics[1].metrics.taskInterval.end, dateAfterAllRequests)
-        AssertURLSessionTasksIdentical(interceptor.tasksCompleted[1].task, taskWithURLRequest)
-        XCTAssertEqual((interceptor.tasksCompleted[1].error! as NSError).localizedDescription, "some error")
+        XCTAssertEqual(interceptor.taskMetrics.count, 2, "Interceptor should record metrics for 2 tasks")
+        XCTAssertEqual(interceptor.tasksReceivedData.count, 0, "Interceptor should not record data for any task")
+        XCTAssertEqual(interceptor.tasksCompleted.count, 2, "Interceptor should record completion for 2 tasks")
 
-        XCTAssertEqual(interceptor.tasksReceivedData.count, 0, "When tasks complete with failure, they should not receive data")
+        let originalTasks = [taskWithURL, taskWithURLRequest]
+        try originalTasks.forEach { originalTask in
+            let taskDescription = originalTask.taskDescription!
+
+            let interceptedTaskWithMetrics = try interceptor.interceptedTaskWithMetrics(by: taskDescription).unwrapOrThrow()
+            AssertURLSessionTasksIdentical(interceptedTaskWithMetrics.task, originalTask)
+            XCTAssertGreaterThan(interceptedTaskWithMetrics.metrics.taskInterval.start, dateBeforeAnyRequests)
+            XCTAssertLessThan(interceptedTaskWithMetrics.metrics.taskInterval.end, dateAfterAllRequests)
+
+            let interceptedTaskWithData = interceptor.interceptedTaskWithData(by: taskDescription)
+            XCTAssertNil(interceptedTaskWithData, "Data should not be recorded for \(originalTask) (\(taskDescription)")
+
+            let interceptedTaskWithCompletion = try interceptor.interceptedTaskWithCompletion(by: taskDescription).unwrapOrThrow()
+            AssertURLSessionTasksIdentical(interceptedTaskWithCompletion.task, originalTask)
+            XCTAssertEqual((interceptedTaskWithCompletion.error! as NSError).localizedDescription, "some error")
+        }
     }
 
     func testGivenURLSessionWithDatadogDelegate_whenTaskCompletesWithSuccess_itPassesAllValuesToTheInterceptor() throws {
@@ -155,20 +163,27 @@ class DDURLSessionDelegateTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
 
         let dateAfterAllRequests = Date()
-        AssertURLSessionTasksIdentical(interceptor.taskMetrics[0].task, taskWithURL)
-        XCTAssertGreaterThan(interceptor.taskMetrics[0].metrics.taskInterval.start, dateBeforeAnyRequests)
-        XCTAssertLessThan(interceptor.taskMetrics[0].metrics.taskInterval.end, dateAfterAllRequests)
-        AssertURLSessionTasksIdentical(interceptor.tasksCompleted[0].task, taskWithURL)
-        XCTAssertNil(interceptor.tasksCompleted[0].error)
-        AssertURLSessionTasksIdentical(interceptor.tasksReceivedData[0].task, taskWithURL)
-        XCTAssertEqual(interceptor.tasksReceivedData[0].data, randomData)
 
-        AssertURLSessionTasksIdentical(interceptor.taskMetrics[1].task, taskWithURLRequest)
-        XCTAssertGreaterThan(interceptor.taskMetrics[1].metrics.taskInterval.start, dateBeforeAnyRequests)
-        XCTAssertLessThan(interceptor.taskMetrics[1].metrics.taskInterval.end, dateAfterAllRequests)
-        AssertURLSessionTasksIdentical(interceptor.tasksCompleted[1].task, taskWithURLRequest)
-        XCTAssertNil(interceptor.tasksCompleted[1].error)
-        AssertURLSessionTasksIdentical(interceptor.tasksReceivedData[1].task, taskWithURLRequest)
-        XCTAssertEqual(interceptor.tasksReceivedData[1].data, randomData)
+        XCTAssertEqual(interceptor.taskMetrics.count, 2, "Interceptor should record metrics for 2 tasks.")
+        XCTAssertEqual(interceptor.tasksReceivedData.count, 2, "Interceptor should record data for 2 tasks")
+        XCTAssertEqual(interceptor.tasksCompleted.count, 2, "Interceptor should record completion for 2 tasks")
+
+        let originalTasks = [taskWithURL, taskWithURLRequest]
+        try originalTasks.forEach { originalTask in
+            let taskDescription = originalTask.taskDescription!
+
+            let interceptedTaskWithMetrics = try interceptor.interceptedTaskWithMetrics(by: taskDescription).unwrapOrThrow()
+            AssertURLSessionTasksIdentical(interceptedTaskWithMetrics.task, originalTask)
+            XCTAssertGreaterThan(interceptedTaskWithMetrics.metrics.taskInterval.start, dateBeforeAnyRequests)
+            XCTAssertLessThan(interceptedTaskWithMetrics.metrics.taskInterval.end, dateAfterAllRequests)
+
+            let interceptedTaskWithData = try interceptor.interceptedTaskWithData(by: taskDescription).unwrapOrThrow()
+            AssertURLSessionTasksIdentical(interceptedTaskWithData.task, originalTask)
+            XCTAssertEqual(interceptedTaskWithData.data, randomData)
+
+            let interceptedTaskWithCompletion = try interceptor.interceptedTaskWithCompletion(by: taskDescription).unwrapOrThrow()
+            AssertURLSessionTasksIdentical(interceptedTaskWithCompletion.task, originalTask)
+            XCTAssertNil(interceptedTaskWithCompletion.error)
+        }
     }
 }

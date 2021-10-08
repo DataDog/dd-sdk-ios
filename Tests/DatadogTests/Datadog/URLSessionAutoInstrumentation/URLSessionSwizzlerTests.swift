@@ -238,7 +238,7 @@ class URLSessionSwizzlerTests: XCTestCase {
 
     // MARK: - Interception Values
 
-    func testGivenSuccessfulTask_whenUsingSwizzledAPIs_itPassesAllValuesToTheInterceptor() {
+    func testGivenSuccessfulTask_whenUsingSwizzledAPIs_itPassesAllValuesToTheInterceptor() throws {
         let completionHandlersCalled = expectation(description: "Call 2 completion handlers")
         completionHandlersCalled.expectedFulfillmentCount = 2
         let notifyTaskReceivedData = expectation(description: "Notify 4 tasks received data")
@@ -286,31 +286,28 @@ class URLSessionSwizzlerTests: XCTestCase {
         waitForExpectations(timeout: 2, handler: nil)
 
         _ = server.waitAndReturnRequests(count: 4)
-        XCTAssertEqual(interceptor.tasksCreated.count, 4, "Interceptor should record all 4 tasks created.")
-        XCTAssertEqual(interceptor.tasksCompleted.count, 4, "Interceptor should record all 4 tasks completed.")
+        XCTAssertEqual(interceptor.tasksCreated.count, 4, "Interceptor should record creation of 4 tasks")
+        XCTAssertEqual(interceptor.tasksReceivedData.count, 4, "Interceptor should record data for all 4 tasks")
+        XCTAssertEqual(interceptor.tasksCompleted.count, 4, "Interceptor should record completion of 4 tasks")
 
-        AssertURLSessionTasksIdentical(interceptor.tasksCreated[0], taskWithURLRequestAndCompletion)
-        AssertURLSessionTasksIdentical(interceptor.tasksCompleted[0].task, taskWithURLRequestAndCompletion)
-        XCTAssertNil(interceptor.tasksCompleted[0].error)
-        XCTAssertEqual(interceptor.tasksReceivedData[0].data, expectedData)
+        let originalTasks = [taskWithURLRequestAndCompletion, taskWithURLAndCompletion, taskWithURLRequest, taskWithURL]
+        try originalTasks.forEach { originalTask in
+            let taskDescription = originalTask.taskDescription!
 
-        AssertURLSessionTasksIdentical(interceptor.tasksCreated[1], taskWithURLAndCompletion)
-        AssertURLSessionTasksIdentical(interceptor.tasksCompleted[1].task, taskWithURLAndCompletion)
-        XCTAssertNil(interceptor.tasksCompleted[1].error)
-        XCTAssertEqual(interceptor.tasksReceivedData[1].data, expectedData)
+            let interceptedTask = try interceptor.interceptedTask(by: taskDescription).unwrapOrThrow()
+            AssertURLSessionTasksIdentical(interceptedTask, originalTask)
 
-        AssertURLSessionTasksIdentical(interceptor.tasksCreated[2], taskWithURLRequest)
-        AssertURLSessionTasksIdentical(interceptor.tasksCompleted[2].task, taskWithURLRequest)
-        XCTAssertNil(interceptor.tasksCompleted[2].error)
-        XCTAssertEqual(interceptor.tasksReceivedData[2].data, expectedData)
+            let interceptedTaskWithData = try interceptor.interceptedTaskWithData(by: taskDescription).unwrapOrThrow()
+            AssertURLSessionTasksIdentical(interceptedTaskWithData.task, originalTask)
+            XCTAssertEqual(interceptedTaskWithData.data, expectedData)
 
-        AssertURLSessionTasksIdentical(interceptor.tasksCreated[3], taskWithURL)
-        AssertURLSessionTasksIdentical(interceptor.tasksCompleted[3].task, taskWithURL)
-        XCTAssertNil(interceptor.tasksCompleted[3].error)
-        XCTAssertEqual(interceptor.tasksReceivedData[3].data, expectedData)
+            let interceptedTaskWithCompletion = try interceptor.interceptedTaskWithCompletion(by: taskDescription).unwrapOrThrow()
+            AssertURLSessionTasksIdentical(interceptedTaskWithCompletion.task, originalTask)
+            XCTAssertNil(interceptedTaskWithCompletion.error)
+        }
     }
 
-    func testGivenFailedTask_whenUsingSwizzledAPIs_itPassesAllValuesToTheInterceptor() {
+    func testGivenFailedTask_whenUsingSwizzledAPIs_itPassesAllValuesToTheInterceptor() throws {
         let completionHandlersCalled = expectation(description: "Call 2 completion handlers")
         completionHandlersCalled.expectedFulfillmentCount = 2
         let noTaskShouldReceiveData = expectation(description: "None of tasks should recieve data")
@@ -357,25 +354,23 @@ class URLSessionSwizzlerTests: XCTestCase {
         waitForExpectations(timeout: 2, handler: nil)
 
         _ = server.waitAndReturnRequests(count: 4)
-        XCTAssertEqual(interceptor.tasksCreated.count, 4, "Interceptor should record all 4 tasks created.")
-        XCTAssertEqual(interceptor.tasksCompleted.count, 4, "Interceptor should record all 4 tasks completed.")
+        XCTAssertEqual(interceptor.tasksCreated.count, 4, "Interceptor should record creation of 4 tasks")
+        XCTAssertEqual(interceptor.tasksReceivedData.count, 0, "Interceptor should no record data for any task")
+        XCTAssertEqual(interceptor.tasksCompleted.count, 4, "Interceptor should record completion of 4 tasks")
 
-        AssertURLSessionTasksIdentical(interceptor.tasksCreated[0], taskWithURLRequestAndCompletion)
-        AssertURLSessionTasksIdentical(interceptor.tasksCompleted[0].task, taskWithURLRequestAndCompletion)
-        XCTAssertEqual((interceptor.tasksCompleted[0].error! as NSError).localizedDescription, "some error")
+        let originalTasks = [taskWithURLRequestAndCompletion, taskWithURLAndCompletion, taskWithURLRequest, taskWithURL]
+        try originalTasks.forEach { originalTask in
+            let taskDescription = originalTask.taskDescription!
 
-        AssertURLSessionTasksIdentical(interceptor.tasksCreated[1], taskWithURLAndCompletion)
-        AssertURLSessionTasksIdentical(interceptor.tasksCompleted[1].task, taskWithURLAndCompletion)
-        XCTAssertEqual((interceptor.tasksCompleted[1].error! as NSError).localizedDescription, "some error")
+            let interceptedTask = try interceptor.interceptedTask(by: taskDescription).unwrapOrThrow()
+            AssertURLSessionTasksIdentical(interceptedTask, originalTask)
 
-        AssertURLSessionTasksIdentical(interceptor.tasksCreated[2], taskWithURLRequest)
-        AssertURLSessionTasksIdentical(interceptor.tasksCompleted[2].task, taskWithURLRequest)
-        XCTAssertEqual((interceptor.tasksCompleted[2].error! as NSError).localizedDescription, "some error")
+            let interceptedTaskWithData = interceptor.interceptedTaskWithData(by: taskDescription)
+            XCTAssertNil(interceptedTaskWithData, "Data should not be recorded for \(originalTask) (\(taskDescription)")
 
-        AssertURLSessionTasksIdentical(interceptor.tasksCreated[3], taskWithURL)
-        AssertURLSessionTasksIdentical(interceptor.tasksCompleted[3].task, taskWithURL)
-        XCTAssertEqual((interceptor.tasksCompleted[3].error! as NSError).localizedDescription, "some error")
-
-        XCTAssertEqual(interceptor.tasksReceivedData.count, 0, "When tasks complete with failure, they should not receive data")
+            let interceptedTaskWithCompletion = try interceptor.interceptedTaskWithCompletion(by: taskDescription).unwrapOrThrow()
+            AssertURLSessionTasksIdentical(interceptedTaskWithCompletion.task, originalTask)
+            XCTAssertEqual((interceptedTaskWithCompletion.error! as NSError).localizedDescription, "some error")
+        }
     }
 }
