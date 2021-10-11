@@ -49,7 +49,8 @@ internal func createSDKUserLogger(
         userInfoProvider: configuration.userInfoProvider,
         networkConnectionInfoProvider: configuration.networkConnectionInfoProvider,
         carrierInfoProvider: configuration.carrierInfoProvider,
-        dateCorrector: nil
+        dateCorrector: nil,
+        logEventMapper: nil
     )
     let consoleOutput = LogConsoleOutput(
         format: .shortWith(prefix: "[DATADOG SDK] 🐶 → "),

@@ -283,7 +283,9 @@ public class Logger {
             tags: tags
         )
 
-        logOutput.write(log: log)
+        if let event = log {
+            logOutput.write(log: event)
+        }
     }
 
     // MARK: - Logger.Builder
@@ -430,7 +432,8 @@ public class Logger {
                 userInfoProvider: loggingFeature.userInfoProvider,
                 networkConnectionInfoProvider: sendNetworkInfo ? loggingFeature.networkConnectionInfoProvider : nil,
                 carrierInfoProvider: sendNetworkInfo ? loggingFeature.carrierInfoProvider : nil,
-                dateCorrector: loggingFeature.dateCorrector
+                dateCorrector: loggingFeature.dateCorrector,
+                logEventMapper: loggingFeature.configuration.logEventMapper
             )
 
             switch (useFileOutput, useConsoleLogFormat) {

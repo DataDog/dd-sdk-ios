@@ -249,6 +249,7 @@ extension Datadog {
 
         private(set) var serviceName: String?
         private(set) var firstPartyHosts: Set<String>?
+        private(set) var logEventMapper: LogEventMapper?
         private(set) var spanEventMapper: SpanEventMapper?
         private(set) var rumSessionsSamplingRate: Float
         private(set) var rumSessionsListener: RUMSessionListener?
@@ -401,6 +402,15 @@ extension Datadog {
                 return self
             }
 
+            /// Sets the custom mapper for `LogEvent`. This can be used to modify logs before they are send to Datadog.
+            /// - Parameter mapper: the closure taking `LogEvent` as input and expecting `LogEvent` as output.
+            /// The implementation should obtain a mutable version of the `LogEvent`, modify it and return it. Returning `nil` will result
+            /// with dropping the Log event entirely, so it won't be send to Datadog.
+            public func setLogEventMapper(_ mapper: @escaping (LogEvent) -> LogEvent) -> Builder {
+                configuration.logEventMapper = mapper
+                return self
+            }
+
             /// Sets the server endpoint to which logs are sent.
             /// - Parameter logsEndpoint: server endpoint (default value is `LogsEndpoint.us`)
             @available(*, deprecated, message: "This option is replaced by `set(endpoint:)`. Refer to the new API comment for details.")
@@ -483,7 +493,7 @@ extension Datadog {
             ///
             /// **NOTE** The mapper intentionally prevents from returning a `nil` to drop the `SpanEvent` entirely, this ensures that all spans are sent to Datadog.
             ///
-            /// Use the `trackURLSession(firstPartyHosts:)` API to confiture tracing only the hosts that you are interested in.
+            /// Use the `trackURLSession(firstPartyHosts:)` API to configure tracing only the hosts that you are interested in.
             public func setSpanEventMapper(_ mapper: @escaping (SpanEvent) -> SpanEvent) -> Builder {
                 configuration.spanEventMapper = mapper
                 return self

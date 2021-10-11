@@ -508,6 +508,7 @@
 		B3FC3C3C2653A97700DEED9E /* VitalInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FC3C3B2653A97700DEED9E /* VitalInfoTests.swift */; };
 		D2135330270CA722000315AD /* DataCompressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D213532F270CA722000315AD /* DataCompressionTests.swift */; };
 		D24C27EA270C8BEE005DE596 /* DataCompression.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24C27E9270C8BEE005DE596 /* DataCompression.swift */; };
+		D22C1F5C271484B400922024 /* LogEventMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22C1F5B271484B400922024 /* LogEventMapper.swift */; };
 		D2F1B81126D795F3009F3293 /* DDNoopRUMMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1B81026D795F3009F3293 /* DDNoopRUMMonitor.swift */; };
 		D2F1B81326D8DA68009F3293 /* DDNoopRUMMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1B81226D8DA68009F3293 /* DDNoopRUMMonitorTests.swift */; };
 		D2F1B81526D8E5FF009F3293 /* DDNoopTracerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1B81426D8E5FF009F3293 /* DDNoopTracerTests.swift */; };
@@ -1157,6 +1158,7 @@
 		B3FC3C3B2653A97700DEED9E /* VitalInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalInfoTests.swift; sourceTree = "<group>"; };
 		D213532F270CA722000315AD /* DataCompressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCompressionTests.swift; sourceTree = "<group>"; };
 		D24C27E9270C8BEE005DE596 /* DataCompression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCompression.swift; sourceTree = "<group>"; };
+		D22C1F5B271484B400922024 /* LogEventMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEventMapper.swift; sourceTree = "<group>"; };
 		D2F1B81026D795F3009F3293 /* DDNoopRUMMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNoopRUMMonitor.swift; sourceTree = "<group>"; };
 		D2F1B81226D8DA68009F3293 /* DDNoopRUMMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNoopRUMMonitorTests.swift; sourceTree = "<group>"; };
 		D2F1B81426D8E5FF009F3293 /* DDNoopTracerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNoopTracerTests.swift; sourceTree = "<group>"; };
@@ -1493,6 +1495,7 @@
 				612983CC2449E62E00D4424B /* LoggingFeature.swift */,
 				61133BC12423979B00786299 /* Log */,
 				61133BC52423979B00786299 /* LogOutputs */,
+				D22C1F5A2714849700922024 /* Scrubbing */,
 			);
 			path = Logging;
 			sourceTree = "<group>";
@@ -3249,6 +3252,14 @@
 			path = RUMVitals;
 			sourceTree = "<group>";
 		};
+		D22C1F5A2714849700922024 /* Scrubbing */ = {
+			isa = PBXGroup;
+			children = (
+				D22C1F5B271484B400922024 /* LogEventMapper.swift */,
+			);
+			path = Scrubbing;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -3938,6 +3949,7 @@
 				61FF281E24B8968D000B3D9B /* RUMEventBuilder.swift in Sources */,
 				E1D5AEA724B4D45B007F194B /* Versioning.swift in Sources */,
 				61133BD82423979B00786299 /* HTTPClient.swift in Sources */,
+				D22C1F5C271484B400922024 /* LogEventMapper.swift in Sources */,
 				61B038542527246D00518F3C /* URLSessionSwizzler.swift in Sources */,
 				B3BBBCB2265E71C700943419 /* VitalMemoryReader.swift in Sources */,
 				61133BDB2423979B00786299 /* DatadogConfiguration.swift in Sources */,

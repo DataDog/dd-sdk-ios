@@ -195,9 +195,15 @@ extension FeaturesConfiguration.Logging {
     static func mockWith(
         common: FeaturesConfiguration.Common = .mockAny(),
         uploadURL: URL = .mockAny(),
-        clientToken: String = .mockAny()
+        clientToken: String = .mockAny(),
+        logEventMapper: LogEventMapper? = nil
     ) -> Self {
-        return .init(common: common, uploadURL: uploadURL, clientToken: clientToken)
+        return .init(
+            common: common,
+            uploadURL: uploadURL,
+            clientToken: clientToken,
+            logEventMapper: logEventMapper
+        )
     }
 }
 
