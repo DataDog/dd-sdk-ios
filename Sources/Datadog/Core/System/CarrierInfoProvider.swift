@@ -66,87 +66,146 @@ extension CarrierInfo.RadioAccessTechnology {
     }
 }
 
-/// An interface for the target-specific carrier info provider.
-internal protocol WrappedCarrierInfoProvider {
-    var current: CarrierInfo? { get }
-}
-
+/// Platform-agnostic carrier info provider. It wraps the platform-specific provider inside.
 internal class CarrierInfoProvider: CarrierInfoProviderType {
     /// The `CarrierInfo` provider for the current platform.
-    private let wrappedProvider: WrappedCarrierInfoProvider
-    /// Publisher for notifying observers on `CarrierInfo` change.
-    private let publisher: ValuePublisher<CarrierInfo?>
+    private let wrappedProvider: CarrierInfoProviderType
 
     convenience init() {
         #if targetEnvironment(macCatalyst)
-            self.init(
-                wrappedProvider: MacCatalystCarrierInfoProvider()
-            )
+        self.init(
+            wrappedProvider: MacCatalystCarrierInfoProvider()
+        )
         #else
-            self.init(
-                wrappedProvider: iOSCarrierInfoProvider(
-                    networkInfo: CTTelephonyNetworkInfo()
-                )
-            )
+        if #available(iOS 12.0, *) {
+            self.init(wrappedProvider: iOS12CarrierInfoProvider(networkInfo: CTTelephonyNetworkInfo()))
+        } else {
+            self.init(wrappedProvider: iOS11CarrierInfoProvider(networkInfo: CTTelephonyNetworkInfo()))
+        }
         #endif
     }
 
-    init(wrappedProvider: WrappedCarrierInfoProvider) {
+    init(wrappedProvider: CarrierInfoProviderType) {
         self.wrappedProvider = wrappedProvider
-        self.publisher = ValuePublisher(initialValue: nil)
     }
 
     var current: CarrierInfo? {
-        let nextValue = wrappedProvider.current
-        // `CarrierInfo` subscribers are notified as a side-effect of retrieving the
-        // current `CarrierInfo` value.
-        publisher.publishAsync(nextValue)
-        return nextValue
+        wrappedProvider.current
     }
 
     func subscribe<Observer: CarrierInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == CarrierInfo? {
-        publisher.subscribe(subscriber)
+        wrappedProvider.subscribe(subscriber)
     }
 }
 
 #if targetEnvironment(macCatalyst)
 
-internal struct MacCatalystCarrierInfoProvider: WrappedCarrierInfoProvider {
-    /// Carrier info is not supported on macCatalyst
+/// Dummy provider for Mac Catalyst which doesn't support carrier info.
+internal struct MacCatalystCarrierInfoProvider: CarrierInfoProviderType {
     var current: CarrierInfo? { return nil }
+    func subscribe<Observer>(_ subscriber: Observer) where Observer: ValueObserver, Observer.ObservedValue == CarrierInfo? {}
 }
 
 #else
 
-internal struct iOSCarrierInfoProvider: WrappedCarrierInfoProvider {
-    let networkInfo: CTTelephonyNetworkInfo
+/// Carrier info provider for iOS 12 and above.
+/// It reads `CarrierInfo?` from `CTTelephonyNetworkInfo` only when `CTCarrier` has changed (e.g. when the SIM card was swapped).
+@available(iOS 12, *)
+internal class iOS12CarrierInfoProvider: CarrierInfoProviderType {
+    private let networkInfo: CTTelephonyNetworkInfo
+    /// Publisher for notifying observers on `CarrierInfo` change.
+    private let publisher: ValuePublisher<CarrierInfo?>
+
+    init(networkInfo: CTTelephonyNetworkInfo) {
+        self.networkInfo = networkInfo
+        self.publisher = ValuePublisher(
+            initialValue: iOS12CarrierInfoProvider.readCarrierInfo(
+                from: networkInfo,
+                cellularProviderKey: networkInfo.serviceCurrentRadioAccessTechnology?.keys.first
+            )
+        )
+
+        // The `serviceSubscriberCellularProvidersDidUpdateNotifier` block object executes on the default priority
+        // global dispatch queue when the user’s cellular provider information changes.
+        // This occurs, for example, if a user swaps the device’s SIM card with one from another provider, while the app is running.
+        // ref.: https://developer.apple.com/documentation/coretelephony/cttelephonynetworkinfo/3024512-servicesubscribercellularprovide
+        networkInfo.serviceSubscriberCellularProvidersDidUpdateNotifier = { [weak self] cellularProviderKey in
+            guard let strongSelf = self else {
+                return
+            }
+
+            let carrierInfo = iOS12CarrierInfoProvider.readCarrierInfo(
+                from: strongSelf.networkInfo,
+                cellularProviderKey: cellularProviderKey
+            )
+
+            // On iOS12+ `CarrierInfo` subscribers are notified on actual change to cellular provider.
+            strongSelf.publisher.publishAsync(carrierInfo)
+        }
+    }
+
+    private static func readCarrierInfo(from networkInfo: CTTelephonyNetworkInfo, cellularProviderKey: String?) -> CarrierInfo? {
+        guard let cellularProviderKey = cellularProviderKey,
+           let radioTechnology = networkInfo.serviceCurrentRadioAccessTechnology?[cellularProviderKey],
+           let carrier = networkInfo.serviceSubscriberCellularProviders?[cellularProviderKey] else {
+            return nil // the service is not registered on any network
+        }
+        return CarrierInfo(
+            carrierName: carrier.carrierName,
+            carrierISOCountryCode: carrier.isoCountryCode,
+            carrierAllowsVOIP: carrier.allowsVOIP,
+            radioAccessTechnology: .init(ctRadioAccessTechnologyConstant: radioTechnology)
+        )
+    }
 
     var current: CarrierInfo? {
-        let carrier: CTCarrier?
-        let radioTechnology: String?
+        publisher.currentValue
+    }
 
-        if #available(iOS 12, *) {
-            guard let cellularProviderKey = networkInfo.serviceCurrentRadioAccessTechnology?.keys.first else {
-                return nil
-            }
-            radioTechnology = networkInfo.serviceCurrentRadioAccessTechnology?[cellularProviderKey]
-            carrier = networkInfo.serviceSubscriberCellularProviders?[cellularProviderKey]
-        } else {
-            radioTechnology = networkInfo.currentRadioAccessTechnology
-            carrier = networkInfo.subscriberCellularProvider
-        }
+    func subscribe<Observer>(_ subscriber: Observer) where Observer: ValueObserver, Observer.ObservedValue == CarrierInfo? {
+        publisher.subscribe(subscriber)
+    }
+}
 
-        guard let radioAccessTechnology = radioTechnology,
-            let currentCTCarrier = carrier else {
-                return nil
-        }
+/// Carrier info provider for iOS 11.
+/// It reads `CarrierInfo?` from `CTTelephonyNetworkInfo` each time.
+internal class iOS11CarrierInfoProvider: CarrierInfoProviderType {
+    private let networkInfo: CTTelephonyNetworkInfo
+    /// Publisher for notifying observers on `CarrierInfo` change.
+    private let publisher: ValuePublisher<CarrierInfo?>
 
-        return CarrierInfo(
-            carrierName: currentCTCarrier.carrierName,
-            carrierISOCountryCode: currentCTCarrier.isoCountryCode,
-            carrierAllowsVOIP: currentCTCarrier.allowsVOIP,
-            radioAccessTechnology: .init(ctRadioAccessTechnologyConstant: radioAccessTechnology)
+    init(networkInfo: CTTelephonyNetworkInfo) {
+        self.networkInfo = networkInfo
+        self.publisher = ValuePublisher(
+            initialValue: iOS11CarrierInfoProvider.readCarrierInfo(from: networkInfo)
         )
+    }
+
+    private static func readCarrierInfo(from networkInfo: CTTelephonyNetworkInfo) -> CarrierInfo? {
+        guard let radioTechnology = networkInfo.currentRadioAccessTechnology,
+              let carrier = networkInfo.subscriberCellularProvider else {
+            return nil // the service is not registered on any network
+        }
+        return CarrierInfo(
+            carrierName: carrier.carrierName,
+            carrierISOCountryCode: carrier.isoCountryCode,
+            carrierAllowsVOIP: carrier.allowsVOIP,
+            radioAccessTechnology: .init(ctRadioAccessTechnologyConstant: radioTechnology)
+        )
+    }
+
+    var current: CarrierInfo? {
+        let carrierInfo = iOS11CarrierInfoProvider.readCarrierInfo(from: networkInfo)
+
+        // On iOS11 `CarrierInfo` subscribers are notified as a side-effect of pulling the
+        // current `CarrierInfo` value.
+        publisher.publishAsync(carrierInfo)
+
+        return carrierInfo
+    }
+
+    func subscribe<Observer>(_ subscriber: Observer) where Observer: ValueObserver, Observer.ObservedValue == CarrierInfo? {
+        publisher.subscribe(subscriber)
     }
 }
 

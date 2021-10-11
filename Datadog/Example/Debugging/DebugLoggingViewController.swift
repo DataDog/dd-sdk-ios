@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import Datadog
 
 class DebugLoggingViewController: UIViewController {
     @IBOutlet weak var logLevelSegmentedControl: UISegmentedControl!
@@ -12,6 +13,7 @@ class DebugLoggingViewController: UIViewController {
     @IBOutlet weak var logServiceNameTextField: UITextField!
     @IBOutlet weak var sendOnceButton: UIButton!
     @IBOutlet weak var send10xButton: UIButton!
+    @IBOutlet weak var stressTestButton: UIButton!
     @IBOutlet weak var consoleTextView: UITextView!
 
     struct StructError: Error {
@@ -77,5 +79,44 @@ class DebugLoggingViewController: UIViewController {
 
     private func repeat10x(block: () -> Void) {
         (0..<10).forEach { _ in block() }
+    }
+
+    // MARK: - Stress testing
+
+    var queues: [DispatchQueue] = []
+    var loggers: [Logger] = []
+
+    @IBAction func didTapStressTest(_ sender: Any) {
+        stressTestButton.disableFor(seconds: 10)
+
+        loggers = (0..<5).map { index in
+            return Logger.builder.set(loggerName: "stress-logger-\(index)")
+                .sendNetworkInfo(true)
+                .build()
+        }
+
+        queues = (0..<5).map { index in
+            return DispatchQueue(label: "com.datadoghq.example.stress-testing-queue\(index)")
+        }
+
+        let endDate = Date(timeIntervalSinceNow: 10) // 10s
+        zip(loggers, queues).forEach { logger, queue in
+            keepSendingLogs(on: queue, using: logger, every: 0.01, until: endDate)
+        }
+    }
+
+    private func keepSendingLogs(on queue: DispatchQueue, using logger: Logger, every timeInterval: TimeInterval, until endDate: Date) {
+        if Date() < endDate {
+            queue.asyncAfter(deadline: .now() + timeInterval) { [weak self] in
+                logger.debug(self?.randomLogMessage() ?? "")
+                self?.keepSendingLogs(on: queue, using: logger, every: timeInterval, until: endDate)
+            }
+        }
+    }
+
+    private let alphanumerics = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+    private func randomLogMessage() -> String {
+        return String((0..<20).map { _ in alphanumerics.randomElement()! })
     }
 }
