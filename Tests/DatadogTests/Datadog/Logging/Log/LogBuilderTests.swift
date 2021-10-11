@@ -9,7 +9,7 @@ import XCTest
 
 class LogBuilderTests: XCTestCase {
     func testItBuildsBasicLog() {
-        let builder: LogBuilder = .mockWith(
+        let builder: LogEventBuilder = .mockWith(
             applicationVersion: "1.2.3",
             serviceName: "test-service-name",
             loggerName: "test-logger-name"
@@ -52,7 +52,7 @@ class LogBuilderTests: XCTestCase {
     }
 
     func testItSetsThreadNameAttribute() {
-        let builder: LogBuilder = .mockAny()
+        let builder: LogEventBuilder = .mockAny()
         let expectation = self.expectation(description: "create all logs")
         expectation.expectedFulfillmentCount = 3
 

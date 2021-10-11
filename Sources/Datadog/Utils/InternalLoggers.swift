@@ -41,7 +41,7 @@ internal func createSDKUserLogger(
     dateProvider: DateProvider = SystemDateProvider(),
     timeZone: TimeZone = .current
 ) -> Logger {
-    let logBuilder = LogBuilder(
+    let logBuilder = LogEventBuilder(
         applicationVersion: configuration.applicationVersion,
         environment: configuration.environment,
         serviceName: "sdk-user",

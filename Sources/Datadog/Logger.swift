@@ -18,7 +18,7 @@ public enum LogLevel: Int, Codable {
 
     // MARK: - `LogLevel` <> `Log.Status` conversion
 
-    internal var asLogStatus: Log.Status {
+    internal var asLogStatus: LogEvent.Status {
         switch self {
         case .debug:    return .debug
         case .info:     return .info
@@ -29,7 +29,7 @@ public enum LogLevel: Int, Codable {
         }
     }
 
-    internal init?(from logStatus: Log.Status) {
+    internal init?(from logStatus: LogEvent.Status) {
         switch logStatus {
         case .debug:    self = .debug
         case .info:     self = .info
@@ -59,7 +59,7 @@ public typealias DDLogger = Logger
 
 public class Logger {
     /// Builds the `Log` from user input; `nil` for no-op logger.
-    internal let logBuilder: LogBuilder?
+    internal let logBuilder: LogEventBuilder?
     /// Writes the `Log` to file; `nil` for no-op logger.
     internal let logOutput: LogOutput?
     /// Provides date for log creation.
@@ -78,7 +78,7 @@ public class Logger {
     internal let environmentSpanIntegration = LoggingWithEnvironmentSpanIntegration()
 
     init(
-        logBuilder: LogBuilder?,
+        logBuilder: LogEventBuilder?,
         logOutput: LogOutput?,
         dateProvider: DateProvider,
         identifier: String,
@@ -421,8 +421,8 @@ public class Logger {
             )
         }
 
-        private func resolveLogBuilderAndOutput(for loggingFeature: LoggingFeature) -> (LogBuilder, LogOutput)? {
-            let logBuilder = LogBuilder(
+        private func resolveLogBuilderAndOutput(for loggingFeature: LoggingFeature) -> (LogEventBuilder, LogOutput)? {
+            let logBuilder = LogEventBuilder(
                 applicationVersion: loggingFeature.configuration.common.applicationVersion,
                 environment: loggingFeature.configuration.common.environment,
                 serviceName: serviceName ?? loggingFeature.configuration.common.serviceName,

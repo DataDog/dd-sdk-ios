@@ -67,14 +67,14 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
 
     // MARK: - Building Log
 
-    private func createLog(from crashReport: DDCrashReport, crashContext: CrashContext, crashDate: Date) -> Log {
+    private func createLog(from crashReport: DDCrashReport, crashContext: CrashContext, crashDate: Date) -> LogEvent {
         var errorAttributes: [AttributeKey: AttributeValue] = [:]
         errorAttributes[DDError.threads] = crashReport.threads
         errorAttributes[DDError.binaryImages] = crashReport.binaryImages
         errorAttributes[DDError.meta] = crashReport.meta
         errorAttributes[DDError.wasTruncated] = crashReport.wasTruncated
 
-        return Log(
+        return LogEvent(
             date: crashDate,
             status: .emergency,
             message: crashReport.message,

@@ -75,8 +75,8 @@ class LoggingStorageBenchmarkTests: XCTestCase {
 
     // MARK: - Helpers
 
-    private func createRandomizedLog() -> Log {
-        return Log(
+    private func createRandomizedLog() -> LogEvent {
+        return LogEvent(
             date: Date(),
             status: .info,
             message: "message \(Int.random(in: 0..<100))",

@@ -12,7 +12,7 @@ internal struct LogFileOutput: LogOutput {
     /// Integration with RUM Errors.
     let rumErrorsIntegration: LoggingWithRUMErrorsIntegration?
 
-    func write(log: Log) {
+    func write(log: LogEvent) {
         fileWriter.write(value: log)
 
         if log.status == .error || log.status == .critical {

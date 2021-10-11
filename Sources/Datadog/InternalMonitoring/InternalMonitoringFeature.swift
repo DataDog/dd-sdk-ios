@@ -121,7 +121,7 @@ internal final class InternalMonitoringFeature {
 
         // Initialize internal monitor
         let internalLogger = Logger(
-            logBuilder: LogBuilder(
+            logBuilder: LogEventBuilder(
                 applicationVersion: configuration.common.applicationVersion,
                 environment: configuration.sdkEnvironment,
                 serviceName: configuration.sdkServiceName,
