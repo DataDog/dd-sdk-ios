@@ -92,10 +92,17 @@ internal struct RequestBuilder {
     private let precomputedHeaders: [String: String]
     /// Computed HTTP headers (their value is different in succeeding requests).
     private let computedHeaders: [String: () -> String]
+    /// A monitor reporting errors through Internal Monitoring feature (if enabled).
+    private let internalMonitor: InternalMonitor?
 
     // MARK: - Initialization
 
-    init(url: URL, queryItems: [QueryItem], headers: [HTTPHeader]) {
+    init(
+        url: URL,
+        queryItems: [QueryItem],
+        headers: [HTTPHeader],
+        internalMonitor: InternalMonitor? = nil
+    ) {
         var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false)
 
         if !queryItems.isEmpty {
@@ -116,6 +123,7 @@ internal struct RequestBuilder {
         self.url = urlComponents?.url ?? url
         self.precomputedHeaders = precomputedHeaders
         self.computedHeaders = computedHeaders
+        self.internalMonitor = internalMonitor
     }
 
     /// Creates `URLRequest` for uploading given `data` to Datadog.
@@ -133,6 +141,13 @@ internal struct RequestBuilder {
             request.httpBody = body
         } else {
             request.httpBody = data
+            internalMonitor?.sdkLogger.warn(
+                "Failed to compress request payload",
+                attributes: [
+                    "url": url,
+                    "uncompressed-size": data.count
+                ]
+            )
         }
 
         request.allHTTPHeaderFields = headers

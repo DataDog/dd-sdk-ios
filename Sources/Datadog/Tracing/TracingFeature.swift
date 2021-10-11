@@ -93,7 +93,8 @@ internal final class TracingFeature {
                     .ddEVPOriginHeader(source: configuration.common.source),
                     .ddEVPOriginVersionHeader(),
                     .ddRequestIDHeader(),
-                ]
+                ],
+                internalMonitor: internalMonitor
             ),
             commonDependencies: commonDependencies,
             internalMonitor: internalMonitor
