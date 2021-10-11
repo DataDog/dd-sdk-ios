@@ -9,7 +9,7 @@ import XCTest
 
 class CombinedLogOutputTests: XCTestCase {
     func testCombinedLogOutput_writesLogToAllCombinedOutputs() {
-        let randomLog: Log = .mockRandom()
+        let randomLog: LogEvent = .mockRandom()
 
         let output1 = LogOutputMock()
         let output2 = LogOutputMock()
@@ -24,7 +24,7 @@ class CombinedLogOutputTests: XCTestCase {
     }
 
     func testConditionalLogOutput_writesLogToConditionedOutputOnlyIfConditionIsMet() {
-        let randomLog: Log = .mockRandom()
+        let randomLog: LogEvent = .mockRandom()
 
         let output1 = LogOutputMock()
         let conditionalOutput1 = ConditionalLogOutput(conditionedOutput: output1) { _ in true }

@@ -14,7 +14,7 @@ internal struct LogAttributes {
 }
 
 /// Builds `Log` representation (for later serialization) from data received from user.
-internal struct LogBuilder {
+internal struct LogEventBuilder {
     /// Application version to write in log.
     let applicationVersion: String
     /// Environment to write in log.
@@ -32,8 +32,8 @@ internal struct LogBuilder {
     /// Adjusts log's time (device time) to server time.
     let dateCorrector: DateCorrectorType?
 
-    func createLogWith(level: LogLevel, message: String, error: DDError?, date: Date, attributes: LogAttributes, tags: Set<String>) -> Log {
-        return Log(
+    func createLogWith(level: LogLevel, message: String, error: DDError?, date: Date, attributes: LogAttributes, tags: Set<String>) -> LogEvent {
+        return LogEvent(
             date: dateCorrector?.currentCorrection.applying(to: date) ?? date,
             status: level.asLogStatus,
             message: message,

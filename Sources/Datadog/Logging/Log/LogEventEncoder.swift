@@ -8,7 +8,7 @@ import Foundation
 
 /// `Encodable` representation of log. It gets sanitized before encoding.
 /// All mutable properties are subject of sanitization.
-internal struct Log: Encodable {
+internal struct LogEvent: Encodable {
     enum Status: String, Encodable, CaseIterable {
         case debug
         case info
@@ -36,13 +36,13 @@ internal struct Log: Encodable {
     var tags: [String]?
 
     func encode(to encoder: Encoder) throws {
-        let sanitizedLog = LogSanitizer().sanitize(log: self)
-        try LogEncoder().encode(sanitizedLog, to: encoder)
+        let sanitizedLog = LogEventSanitizer().sanitize(log: self)
+        try LogEventEncoder().encode(sanitizedLog, to: encoder)
     }
 }
 
 /// Encodes `Log` to given encoder.
-internal struct LogEncoder {
+internal struct LogEventEncoder {
     /// Coding keys for permanent `Log` attributes.
     enum StaticCodingKeys: String, CodingKey {
         case date
@@ -99,7 +99,7 @@ internal struct LogEncoder {
         init(_ string: String) { self.stringValue = string }
     }
 
-    func encode(_ log: Log, to encoder: Encoder) throws {
+    func encode(_ log: LogEvent, to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: StaticCodingKeys.self)
         try container.encode(log.date, forKey: .date)
         try container.encode(log.status, forKey: .status)

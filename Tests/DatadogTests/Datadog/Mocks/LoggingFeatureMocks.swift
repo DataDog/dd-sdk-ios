@@ -69,12 +69,12 @@ extension LoggingFeature {
 
 // MARK: - Log Mocks
 
-extension Log: EquatableInTests {}
+extension LogEvent: EquatableInTests {}
 
-extension Log: RandomMockable {
+extension LogEvent: RandomMockable {
     static func mockWith(
         date: Date = .mockAny(),
-        status: Log.Status = .mockAny(),
+        status: LogEvent.Status = .mockAny(),
         message: String = .mockAny(),
         error: DDError? = nil,
         serviceName: String = .mockAny(),
@@ -88,8 +88,8 @@ extension Log: RandomMockable {
         mobileCarrierInfo: CarrierInfo? = .mockAny(),
         attributes: LogAttributes = .mockAny(),
         tags: [String]? = nil
-    ) -> Log {
-        return Log(
+    ) -> LogEvent {
+        return LogEvent(
             date: date,
             status: status,
             message: message,
@@ -108,8 +108,8 @@ extension Log: RandomMockable {
         )
     }
 
-    static func mockRandom() -> Log {
-        return Log(
+    static func mockRandom() -> LogEvent {
+        return LogEvent(
             date: .mockRandomInThePast(),
             status: .mockRandom(),
             message: .mockRandom(),
@@ -129,12 +129,12 @@ extension Log: RandomMockable {
     }
 }
 
-extension Log.Status: RandomMockable {
-    static func mockAny() -> Log.Status {
+extension LogEvent.Status: RandomMockable {
+    static func mockAny() -> LogEvent.Status {
         return .info
     }
 
-    static func mockRandom() -> Log.Status {
+    static func mockRandom() -> LogEvent.Status {
         return allCases.randomElement()!
     }
 }
@@ -143,7 +143,7 @@ extension Log.Status: RandomMockable {
 
 extension Logger {
     static func mockWith(
-        logBuilder: LogBuilder = .mockAny(),
+        logBuilder: LogEventBuilder = .mockAny(),
         logOutput: LogOutput = LogOutputMock(),
         dateProvider: DateProvider = SystemDateProvider(),
         identifier: String = .mockAny(),
@@ -161,8 +161,8 @@ extension Logger {
     }
 }
 
-extension LogBuilder {
-    static func mockAny() -> LogBuilder {
+extension LogEventBuilder {
+    static func mockAny() -> LogEventBuilder {
         return mockWith()
     }
 
@@ -175,8 +175,8 @@ extension LogBuilder {
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
         dateCorrector: DateCorrectorType? = nil
-    ) -> LogBuilder {
-        return LogBuilder(
+    ) -> LogEventBuilder {
+        return LogEventBuilder(
             applicationVersion: applicationVersion,
             environment: environment,
             serviceName: serviceName,
@@ -225,12 +225,12 @@ extension LogAttributes: Equatable {
 
 /// `LogOutput` recording received logs.
 class LogOutputMock: LogOutput {
-    var onLogRecorded: ((Log) -> Void)?
+    var onLogRecorded: ((LogEvent) -> Void)?
 
-    var recordedLog: Log?
-    var allRecordedLogs: [Log] = []
+    var recordedLog: LogEvent?
+    var allRecordedLogs: [LogEvent] = []
 
-    func write(log: Log) {
+    func write(log: LogEvent) {
         recordedLog = log
         allRecordedLogs.append(log)
         onLogRecorded?(log)
