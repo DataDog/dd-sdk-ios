@@ -87,7 +87,7 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
 
         // Then
         let log = try XCTUnwrap(logOutput.recordedLog)
-        let expectedLog = Log(
+        let expectedLog = LogEvent(
             date: crashReport.date!.addingTimeInterval(dateCorrectionOffset),
             status: .emergency,
             message: crashReport.message,
