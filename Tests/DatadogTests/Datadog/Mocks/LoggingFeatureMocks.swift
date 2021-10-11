@@ -76,7 +76,7 @@ extension LogEvent: RandomMockable {
         date: Date = .mockAny(),
         status: LogEvent.Status = .mockAny(),
         message: String = .mockAny(),
-        error: DDError? = nil,
+        error: LogEvent.Error? = nil,
         serviceName: String = .mockAny(),
         environment: String = .mockAny(),
         loggerName: String = .mockAny(),
@@ -86,7 +86,7 @@ extension LogEvent: RandomMockable {
         userInfo: UserInfo = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo = .mockAny(),
         mobileCarrierInfo: CarrierInfo? = .mockAny(),
-        attributes: LogAttributes = .mockAny(),
+        attributes: LogEvent.Attributes = .mockAny(),
         tags: [String]? = nil
     ) -> LogEvent {
         return LogEvent(
@@ -136,6 +136,40 @@ extension LogEvent.Status: RandomMockable {
 
     static func mockRandom() -> LogEvent.Status {
         return allCases.randomElement()!
+    }
+}
+
+extension LogEvent.UserInfo: AnyMockable, RandomMockable {
+    static func mockAny() -> LogEvent.UserInfo {
+        return mockEmpty()
+    }
+
+    static func mockEmpty() -> LogEvent.UserInfo {
+        return LogEvent.UserInfo(
+            id: nil,
+            name: nil,
+            email: nil,
+            extraInfo: [:]
+        )
+    }
+
+    static func mockRandom() -> LogEvent.UserInfo {
+        return .init(
+            id: .mockRandom(),
+            name: .mockRandom(),
+            email: .mockRandom(),
+            extraInfo: mockRandomAttributes()
+        )
+    }
+}
+
+extension LogEvent.Error: RandomMockable {
+    static func mockRandom() -> Self {
+        return .init(
+            kind: .mockRandom(),
+            message: .mockRandom(),
+            stack: .mockRandom()
+        )
     }
 }
 
@@ -189,29 +223,29 @@ extension LogEventBuilder {
     }
 }
 
-extension LogAttributes: Equatable {
-    static func mockAny() -> LogAttributes {
+extension LogEvent.Attributes: Equatable {
+    static func mockAny() -> LogEvent.Attributes {
         return mockWith()
     }
 
     static func mockWith(
         userAttributes: [String: Encodable] = [:],
         internalAttributes: [String: Encodable]? = [:]
-    ) -> LogAttributes {
-        return LogAttributes(
+    ) -> LogEvent.Attributes {
+        return LogEvent.Attributes(
             userAttributes: userAttributes,
             internalAttributes: internalAttributes
         )
     }
 
-    static func mockRandom() -> LogAttributes {
+    static func mockRandom() -> LogEvent.Attributes {
         return .init(
             userAttributes: mockRandomAttributes(),
             internalAttributes: mockRandomAttributes()
         )
     }
 
-    public static func == (lhs: LogAttributes, rhs: LogAttributes) -> Bool {
+    public static func == (lhs: LogEvent.Attributes, rhs: LogEvent.Attributes) -> Bool {
         let lhsUserAttributesSorted = lhs.userAttributes.sorted { $0.key < $1.key }
         let rhsUserAttributesSorted = rhs.userAttributes.sorted { $0.key < $1.key }
 

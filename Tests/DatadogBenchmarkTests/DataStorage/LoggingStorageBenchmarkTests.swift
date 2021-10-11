@@ -80,7 +80,11 @@ class LoggingStorageBenchmarkTests: XCTestCase {
             date: Date(),
             status: .info,
             message: "message \(Int.random(in: 0..<100))",
-            error: DDError(error: ErrorMock("description")),
+            error: .init(
+                kind: nil,
+                message: "description",
+                stack: nil
+            ),
             serviceName: "service-name",
             environment: "benchmarks",
             loggerName: "logger-name",
@@ -97,7 +101,7 @@ class LoggingStorageBenchmarkTests: XCTestCase {
                 isConstrained: false
             ),
             mobileCarrierInfo: nil,
-            attributes: LogAttributes(
+            attributes: LogEvent.Attributes(
                 userAttributes: ["user.attribute": "value"],
                 internalAttributes: ["internal.attribute": "value"]
             ),

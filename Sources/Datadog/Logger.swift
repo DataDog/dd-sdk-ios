@@ -276,7 +276,7 @@ public class Logger {
             message: message,
             error: error.flatMap { DDError(error: $0) },
             date: dateProvider.currentDate(),
-            attributes: LogAttributes(
+            attributes: LogEvent.Attributes(
                 userAttributes: combinedUserAttributes,
                 internalAttributes: combinedInternalAttributes
             ),
