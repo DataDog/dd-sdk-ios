@@ -43,6 +43,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.rumEndpoint, .us1)
             XCTAssertNil(configuration.serviceName)
             XCTAssertNil(configuration.firstPartyHosts)
+            XCTAssertNil(configuration.logEventMapper)
             XCTAssertNil(configuration.spanEventMapper)
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 100.0)
             XCTAssertNil(configuration.rumSessionsListener)
@@ -62,6 +63,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
     }
 
     func testCustomizedBuilder() {
+        let mockLogEvent: LogEvent = .mockAny()
         let mockSpanEvent: SpanEvent = .mockAny()
         let mockRUMViewEvent: RUMViewEvent = .mockRandom()
         let mockRUMErrorEvent: RUMErrorEvent = .mockRandom()
@@ -83,6 +85,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .set(customRUMEndpoint: URL(string: "https://api.custom.rum/")!)
                 .set(rumSessionsSamplingRate: 42.5)
                 .onRUMSessionStart { _, _ in }
+                .setLogEventMapper { _ in mockLogEvent }
                 .setSpanEventMapper { _ in mockSpanEvent }
                 .trackURLSession(firstPartyHosts: ["example.com"])
                 .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock())
@@ -144,6 +147,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertTrue(configuration.rumUIKitViewsPredicate is UIKitRUMViewsPredicateMock)
             XCTAssertTrue(configuration.rumUIKitUserActionsPredicate is UIKitRUMUserActionsPredicateMock)
             XCTAssertEqual(configuration.rumLongTaskDurationThreshold, 100.0)
+            XCTAssertEqual(configuration.logEventMapper?(.mockRandom()), mockLogEvent)
             XCTAssertEqual(configuration.spanEventMapper?(.mockRandom()), mockSpanEvent)
             XCTAssertEqual(configuration.rumViewEventMapper?(.mockRandom()), mockRUMViewEvent)
             XCTAssertEqual(configuration.rumResourceEventMapper?(.mockRandom()), mockRUMResourceEvent)

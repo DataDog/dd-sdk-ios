@@ -430,7 +430,8 @@ public class Logger {
                 userInfoProvider: loggingFeature.userInfoProvider,
                 networkConnectionInfoProvider: sendNetworkInfo ? loggingFeature.networkConnectionInfoProvider : nil,
                 carrierInfoProvider: sendNetworkInfo ? loggingFeature.carrierInfoProvider : nil,
-                dateCorrector: loggingFeature.dateCorrector
+                dateCorrector: loggingFeature.dateCorrector,
+                logEventMapper: loggingFeature.configuration.logEventMapper
             )
 
             switch (useFileOutput, useConsoleLogFormat) {

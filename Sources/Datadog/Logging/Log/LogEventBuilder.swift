@@ -24,11 +24,13 @@ internal struct LogEventBuilder {
     let carrierInfoProvider: CarrierInfoProviderType?
     /// Adjusts log's time (device time) to server time.
     let dateCorrector: DateCorrectorType?
+    /// Log events mapper configured by the user, `nil` if not set.
+    let logEventMapper: LogEventMapper?
 
     func createLogWith(level: LogLevel, message: String, error: DDError?, date: Date, attributes: LogEvent.Attributes, tags: Set<String>) -> LogEvent {
         let user = userInfoProvider.value
 
-        return LogEvent(
+        let log = LogEvent(
             date: dateCorrector?.currentCorrection.applying(to: date) ?? date,
             status: level.asLogStatus,
             message: message,
@@ -56,6 +58,8 @@ internal struct LogEventBuilder {
             attributes: attributes,
             tags: !tags.isEmpty ? Array(tags) : nil
         )
+
+        return logEventMapper?(log) ?? log
     }
 
     private func getCurrentThreadName() -> String {

@@ -71,7 +71,11 @@ extension LoggingFeature {
 
 extension LogEvent: EquatableInTests {}
 
-extension LogEvent: RandomMockable {
+extension LogEvent: AnyMockable, RandomMockable {
+    static func mockAny() -> LogEvent {
+        return mockWith()
+    }
+
     static func mockWith(
         date: Date = .mockAny(),
         status: LogEvent.Status = .mockAny(),
@@ -208,7 +212,8 @@ extension LogEventBuilder {
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
-        dateCorrector: DateCorrectorType? = nil
+        dateCorrector: DateCorrectorType? = nil,
+        logEventMapper: LogEventMapper? = nil
     ) -> LogEventBuilder {
         return LogEventBuilder(
             applicationVersion: applicationVersion,
@@ -218,7 +223,8 @@ extension LogEventBuilder {
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider,
-            dateCorrector: dateCorrector
+            dateCorrector: dateCorrector,
+            logEventMapper: logEventMapper
         )
     }
 }

@@ -80,4 +80,27 @@ class LogBuilderTests: XCTestCase {
 
         waitForExpectations(timeout: 1, handler: nil)
     }
+
+    func testGivenBuilderWithEventMapper_whenEventIsModified_itBuildsModifiedEvent() throws {
+        let builder: LogEventBuilder = .mockWith(
+            logEventMapper: { log in
+                var mutableSpan = log
+                mutableSpan.message = "modified log message"
+                mutableSpan.tags = .mockRandom()
+                return mutableSpan
+            }
+        )
+
+        let log = builder.createLogWith(
+            level: .critical,
+            message: "original log message",
+            error: nil,
+            date: .mockAny(),
+            attributes: .mockAny(),
+            tags: []
+        )
+
+        XCTAssertEqual(log.message, "modified log message")
+        XCTAssertGreaterThan(log.tags!.count, 0)
+    }
 }

@@ -26,7 +26,8 @@ internal struct LoggingForTracingAdapter {
                 userInfoProvider: tracingFeature.userInfoProvider,
                 networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil,
                 carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil,
-                dateCorrector: loggingFeature.dateCorrector
+                dateCorrector: loggingFeature.dateCorrector,
+                logEventMapper: loggingFeature.configuration.logEventMapper
             ),
             loggingOutput: LogFileOutput(
                 fileWriter: loggingFeature.storage.writer,

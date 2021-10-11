@@ -126,7 +126,8 @@ internal final class InternalMonitoringFeature {
                 userInfoProvider: UserInfoProvider(), // no-op to not associate user info with internal logs
                 networkConnectionInfoProvider: commonDependencies.networkConnectionInfoProvider,
                 carrierInfoProvider: commonDependencies.carrierInfoProvider,
-                dateCorrector: commonDependencies.dateCorrector
+                dateCorrector: commonDependencies.dateCorrector,
+                logEventMapper: nil
             ),
             logOutput: LogFileOutput(
                 fileWriter: storage.writer,
