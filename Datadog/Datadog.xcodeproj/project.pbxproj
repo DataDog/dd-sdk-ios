@@ -486,6 +486,10 @@
 		9E55407C25812D1C00F6E3AD /* RUMMonitor+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E55407B25812D1C00F6E3AD /* RUMMonitor+objc.swift */; };
 		9E58E8E124615C75008E5063 /* JSONEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8E024615C75008E5063 /* JSONEncoder.swift */; };
 		9E58E8E324615EDA008E5063 /* JSONEncoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8E224615EDA008E5063 /* JSONEncoderTests.swift */; };
+		9E5B6D2E270C84B4002499B8 /* RUMMonitorE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5B6D2D270C84B4002499B8 /* RUMMonitorE2ETests.swift */; };
+		9E5B6D30270C85AB002499B8 /* RUMUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5B6D2F270C85AB002499B8 /* RUMUtils.swift */; };
+		9E5B6D32270DE9E5002499B8 /* RUMTrackingConsentE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5B6D31270DE9E5002499B8 /* RUMTrackingConsentE2ETests.swift */; };
+		9E64849D27031071007CCD7B /* RUMGlobalE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E64849C27031071007CCD7B /* RUMGlobalE2ETests.swift */; };
 		9E68FB55244707FD0013A8AA /* ObjcExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */; };
 		9E68FB56244707FD0013A8AA /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9E986C302677B91400D62490 /* VitalRefreshRateReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E986C2F2677B91400D62490 /* VitalRefreshRateReaderTests.swift */; };
@@ -1133,6 +1137,10 @@
 		9E55407B25812D1C00F6E3AD /* RUMMonitor+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMMonitor+objc.swift"; sourceTree = "<group>"; };
 		9E58E8E024615C75008E5063 /* JSONEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONEncoder.swift; sourceTree = "<group>"; };
 		9E58E8E224615EDA008E5063 /* JSONEncoderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONEncoderTests.swift; sourceTree = "<group>"; };
+		9E5B6D2D270C84B4002499B8 /* RUMMonitorE2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMMonitorE2ETests.swift; sourceTree = "<group>"; };
+		9E5B6D2F270C85AB002499B8 /* RUMUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUtils.swift; sourceTree = "<group>"; };
+		9E5B6D31270DE9E5002499B8 /* RUMTrackingConsentE2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTrackingConsentE2ETests.swift; sourceTree = "<group>"; };
+		9E64849C27031071007CCD7B /* RUMGlobalE2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMGlobalE2ETests.swift; sourceTree = "<group>"; };
 		9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ObjcExceptionHandler.m; sourceTree = "<group>"; };
 		9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjcExceptionHandler.h; sourceTree = "<group>"; };
 		9E986C2F2677B91400D62490 /* VitalRefreshRateReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalRefreshRateReaderTests.swift; sourceTree = "<group>"; };
@@ -2584,6 +2592,7 @@
 		61993666265BBEDC009D7EA8 /* E2ETests */ = {
 			isa = PBXGroup;
 			children = (
+				9E64849B27031050007CCD7B /* RUM */,
 				61B3BD502661224800A9BEF0 /* Logging */,
 				6187A53726FCBDD00015D94A /* Tracing */,
 				61993667265BBEDC009D7EA8 /* E2ETests.swift */,
@@ -3195,6 +3204,17 @@
 				9E544A5024753DDE00E83072 /* MethodSwizzlerTests.swift */,
 			);
 			path = Swizzling;
+			sourceTree = "<group>";
+		};
+		9E64849B27031050007CCD7B /* RUM */ = {
+			isa = PBXGroup;
+			children = (
+				9E5B6D2F270C85AB002499B8 /* RUMUtils.swift */,
+				9E64849C27031071007CCD7B /* RUMGlobalE2ETests.swift */,
+				9E5B6D2D270C84B4002499B8 /* RUMMonitorE2ETests.swift */,
+				9E5B6D31270DE9E5002499B8 /* RUMTrackingConsentE2ETests.swift */,
+			);
+			path = RUM;
 			sourceTree = "<group>";
 		};
 		9E68FB52244707FD0013A8AA /* _Datadog_Private */ = {
@@ -4301,15 +4321,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E5B6D30270C85AB002499B8 /* RUMUtils.swift in Sources */,
 				6167C7952666622800D4CF07 /* LoggingE2EHelpers.swift in Sources */,
 				6167C791266636B300D4CF07 /* FoundationMocks.swift in Sources */,
 				618F984F265BC905009959F8 /* E2EConfig.swift in Sources */,
 				61216B7B2667A9AE0089DCD1 /* LoggingConfigurationE2ETests.swift in Sources */,
+				9E5B6D32270DE9E5002499B8 /* RUMTrackingConsentE2ETests.swift in Sources */,
 				6187A53926FCBE240015D94A /* TracerE2ETests.swift in Sources */,
 				61993668265BBEDC009D7EA8 /* E2ETests.swift in Sources */,
 				61216B852667CFFE0089DCD1 /* RUME2EHelpers.swift in Sources */,
+				9E5B6D2E270C84B4002499B8 /* RUMMonitorE2ETests.swift in Sources */,
 				61216B762666DDA10089DCD1 /* LoggerBuilderE2ETests.swift in Sources */,
 				61B3BD52266128D300A9BEF0 /* LoggerE2ETests.swift in Sources */,
+				9E64849D27031071007CCD7B /* RUMGlobalE2ETests.swift in Sources */,
 				61216B842667CFF70089DCD1 /* DatadogE2EHelpers.swift in Sources */,
 				6167C79326665D6900D4CF07 /* E2EUtils.swift in Sources */,
 				610DE00E26613E990042763D /* PersistenceHelper.swift in Sources */,
