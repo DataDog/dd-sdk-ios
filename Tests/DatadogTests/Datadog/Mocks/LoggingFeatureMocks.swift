@@ -86,7 +86,7 @@ extension LogEvent: RandomMockable {
         userInfo: UserInfo = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo = .mockAny(),
         mobileCarrierInfo: CarrierInfo? = .mockAny(),
-        attributes: LogAttributes = .mockAny(),
+        attributes: LogEvent.Attributes = .mockAny(),
         tags: [String]? = nil
     ) -> LogEvent {
         return LogEvent(
@@ -189,29 +189,29 @@ extension LogEventBuilder {
     }
 }
 
-extension LogAttributes: Equatable {
-    static func mockAny() -> LogAttributes {
+extension LogEvent.Attributes: Equatable {
+    static func mockAny() -> LogEvent.Attributes {
         return mockWith()
     }
 
     static func mockWith(
         userAttributes: [String: Encodable] = [:],
         internalAttributes: [String: Encodable]? = [:]
-    ) -> LogAttributes {
-        return LogAttributes(
+    ) -> LogEvent.Attributes {
+        return LogEvent.Attributes(
             userAttributes: userAttributes,
             internalAttributes: internalAttributes
         )
     }
 
-    static func mockRandom() -> LogAttributes {
+    static func mockRandom() -> LogEvent.Attributes {
         return .init(
             userAttributes: mockRandomAttributes(),
             internalAttributes: mockRandomAttributes()
         )
     }
 
-    public static func == (lhs: LogAttributes, rhs: LogAttributes) -> Bool {
+    public static func == (lhs: LogEvent.Attributes, rhs: LogEvent.Attributes) -> Bool {
         let lhsUserAttributesSorted = lhs.userAttributes.sorted { $0.key < $1.key }
         let rhsUserAttributesSorted = rhs.userAttributes.sorted { $0.key < $1.key }
 

@@ -6,13 +6,6 @@
 
 import Foundation
 
-internal struct LogAttributes {
-    /// Log attributes received from the user. They are subject for sanitization.
-    let userAttributes: [String: Encodable]
-    /// Log attributes added internally by the SDK. They are not a subject for sanitization.
-    let internalAttributes: [String: Encodable]?
-}
-
 /// Builds `Log` representation (for later serialization) from data received from user.
 internal struct LogEventBuilder {
     /// Application version to write in log.
@@ -32,7 +25,7 @@ internal struct LogEventBuilder {
     /// Adjusts log's time (device time) to server time.
     let dateCorrector: DateCorrectorType?
 
-    func createLogWith(level: LogLevel, message: String, error: DDError?, date: Date, attributes: LogAttributes, tags: Set<String>) -> LogEvent {
+    func createLogWith(level: LogLevel, message: String, error: DDError?, date: Date, attributes: LogEvent.Attributes, tags: Set<String>) -> LogEvent {
         return LogEvent(
             date: dateCorrector?.currentCorrection.applying(to: date) ?? date,
             status: level.asLogStatus,

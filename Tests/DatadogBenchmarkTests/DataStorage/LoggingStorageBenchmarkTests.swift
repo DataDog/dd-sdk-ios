@@ -97,7 +97,7 @@ class LoggingStorageBenchmarkTests: XCTestCase {
                 isConstrained: false
             ),
             mobileCarrierInfo: nil,
-            attributes: LogAttributes(
+            attributes: LogEvent.Attributes(
                 userAttributes: ["user.attribute": "value"],
                 internalAttributes: ["internal.attribute": "value"]
             ),

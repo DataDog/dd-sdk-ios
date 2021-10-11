@@ -35,12 +35,24 @@ internal class UserInfoProvider {
     }
 }
 
-/// Information about the user.
-internal struct UserInfo {
-    let id: String?
-    let name: String?
-    let email: String?
-    let extraInfo: [AttributeKey: AttributeValue]
+public struct UserInfo {
+    /// User ID, if any.
+    public let id: String?
+    /// Name representing the user, if any.
+    public let name: String?
+    /// User email, if any.
+    public let email: String?
+    /// User custom attributes, if any.
+    public var extraInfo: [AttributeKey: AttributeValue]
+}
 
-    internal static var empty: UserInfo { UserInfo(id: nil, name: nil, email: nil, extraInfo: [:]) }
+extension UserInfo {
+    internal static var empty: Self {
+        .init(
+            id: nil,
+            name: nil,
+            email: nil,
+            extraInfo: [:]
+        )
+    }
 }

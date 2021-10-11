@@ -8,8 +8,9 @@ import Foundation
 
 /// `Encodable` representation of log. It gets sanitized before encoding.
 /// All mutable properties are subject of sanitization.
-internal struct LogEvent: Encodable {
-    enum Status: String, Encodable, CaseIterable {
+public struct LogEvent: Encodable {
+    /// The Log event status definitions.
+    public enum Status: String, Encodable, CaseIterable {
         case debug
         case info
         case notice
@@ -18,24 +19,45 @@ internal struct LogEvent: Encodable {
         case critical
         case emergency
     }
+    public struct Attributes {
+        /// Log custom attributes, They are subject for sanitization.
+        public var userAttributes: [String: Encodable]
+        /// Log attributes added internally by the SDK. They are not a subject for sanitization.
+        internal let internalAttributes: [String: Encodable]?
+    }
 
-    let date: Date
-    let status: Status
-    let message: String
-    let error: DDError?
-    let serviceName: String
-    let environment: String
-    let loggerName: String
-    let loggerVersion: String
-    let threadName: String?
-    let applicationVersion: String
-    let userInfo: UserInfo
-    let networkConnectionInfo: NetworkConnectionInfo?
-    let mobileCarrierInfo: CarrierInfo?
-    var attributes: LogAttributes
-    var tags: [String]?
+    /// The log's timestamp
+    public let date: Date
+    /// The log status
+    public let status: Status
+    /// The log message
+    public var message: String
+    /// The associated log error
+    internal let error: DDError?
+    /// The service name configured for Logs.
+    public let serviceName: String
+    /// The current log environement.
+    public let environment: String
+    /// The configured logger name.
+    public let loggerName: String
+    /// The current logger version.
+    public let loggerVersion: String
+    /// The thread's name this log event has been sent from.
+    public let threadName: String?
+    /// The current application version.
+    public let applicationVersion: String
+    /// Custom user information configured globally for the SDK.
+    public var userInfo: UserInfo
+    /// The network connection information from the moment the log was sent.
+    public let networkConnectionInfo: NetworkConnectionInfo?
+    /// The mobile carrier information from the moment the log was sent.
+    public let mobileCarrierInfo: CarrierInfo?
+    /// The attributes associated with this log.
+    public var attributes: LogEvent.Attributes
+    /// Tags associated with this log.
+    public var tags: [String]?
 
-    func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         let sanitizedLog = LogEventSanitizer().sanitize(log: self)
         try LogEventEncoder().encode(sanitizedLog, to: encoder)
     }
