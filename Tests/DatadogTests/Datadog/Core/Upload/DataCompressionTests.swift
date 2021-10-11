@@ -8,10 +8,25 @@ import XCTest
 @testable import Datadog
 
 class DataCompressionTests: XCTestCase {
-    func testWhenComputingAdler32Checksum_itAlwaysHas4Bytes() {
-        for _ in 1...500 {
+    let encoder = JSONEncoder()
+
+    struct Foo: Codable {
+        let bar: String
+        let baz: Int
+        let qux: URL
+
+        init() {
+            let length: Int = .mockRandom(min: 100, max: 10_000)
+            bar = .mockRandom(length: length)
+            baz = .mockRandom()
+            qux = .mockRandom()
+        }
+    }
+
+    func testWhenComputingAdler32Checksum_itAlwaysHas4Bytes() throws {
+        for _ in 1...100 {
             // Given
-            let data: Data = .mock(ofSize: Int.mockRandom(min: 1, max: 10_000))
+            let data = try encoder.encode(Foo())
 
             // When
             let checksum = Deflate.adler32(data)
@@ -22,9 +37,9 @@ class DataCompressionTests: XCTestCase {
     }
 
     func testWhenDataIsDeflated_itInflateToOriginalData() throws {
-        for _ in 1...500 {
+        for _ in 1...100 {
             // Given
-            let data: Data = .mock(ofSize: Int.mockRandom(min: 100, max: 10_000))
+            let data = try encoder.encode(Foo())
 
             // When
             let compressed = try XCTUnwrap(Deflate.compress(data))
@@ -36,9 +51,9 @@ class DataCompressionTests: XCTestCase {
     }
 
     func testWhenDataIsCompressed_itDecompressToOriginalData() throws {
-        for _ in 1...500 {
+        for _ in 1...100 {
             // Given
-            let data: Data = .mock(ofSize: Int.mockRandom(min: 100, max: 10_000))
+            let data = try encoder.encode(Foo())
 
             // When
             let compressed = try XCTUnwrap(Deflate.encode(data))
@@ -47,18 +62,5 @@ class DataCompressionTests: XCTestCase {
             // Then
             XCTAssertEqual(decompressed, data)
         }
-    }
-
-    func testWhen8MBIsDeflated_itInflateToOriginalData() throws {
-        // Given
-        let size = 1_024 * 1_024 * 8 // 8 MB
-        let data: Data = .mock(ofSize: size)
-
-        // When
-        let compressed = try XCTUnwrap(Deflate.compress(data))
-        let decompressed = Deflate.decompress(compressed, capacity: size)
-
-        // Then
-        XCTAssertEqual(decompressed, data)
     }
 }
