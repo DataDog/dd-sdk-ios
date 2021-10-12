@@ -141,6 +141,7 @@ public class Datadog
    public func set(customTracesEndpoint: URL) -> Builder
    public func set(customRUMEndpoint: URL) -> Builder
    public func enableLogging(_ enabled: Bool) -> Builder
+   public func setLogEventMapper(_ mapper: @escaping (LogEvent) -> LogEvent) -> Builder
    public func set(logsEndpoint: LogsEndpoint) -> Builder
    public func enableTracing(_ enabled: Bool) -> Builder
    public func set(tracesEndpoint: TracesEndpoint) -> Builder
