@@ -43,19 +43,32 @@ protocol RandomMockable {
 
 extension Data: AnyMockable, RandomMockable {
     static func mockAny() -> Data {
-        return Data()
+        return .mock(ofSize: 256)
     }
 
     static func mockRepeating(byte: UInt8, times count: Int) -> Data {
         return Data(repeating: byte, count: count)
     }
 
-    static func mock(ofSize size: UInt64) -> Data {
-        return mockRepeating(byte: 0x41, times: Int(size))
+    static func mock<Size>(ofSize size: Size) -> Data where Size: BinaryInteger {
+        return mockRepeating(byte: .mockRandom(), times: Int(size))
+    }
+
+    static func mockRandom<Size>(ofSize size: Size) -> Data where Size: BinaryInteger {
+        let count = Int(size)
+        let bytes = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
+        defer { bytes.deallocate() }
+        let status = SecRandomCopyBytes(kSecRandomDefault, count, bytes)
+
+        guard status == errSecSuccess else {
+            fatalError("Failed to generate random data")
+        }
+
+        return Data(bytes: bytes, count: count)
     }
 
     static func mockRandom() -> Data {
-        return mockRepeating(byte: .random(in: 0x00...0xFF), times: 256)
+        return mockRandom(ofSize: Int.mockRandom(min: 16, max: 512))
     }
 }
 
@@ -214,20 +227,6 @@ extension String: AnyMockable, RandomMockable {
     static let decimalDigits = "0123456789"
 }
 
-extension Int: AnyMockable, RandomMockable {
-    static func mockAny() -> Int {
-        return 0
-    }
-
-    static func mockRandom() -> Int {
-        return mockRandom(min: .min, max: .max)
-    }
-
-    static func mockRandom(min: Int, max: Int) -> Int {
-        return .random(in: min...max)
-    }
-}
-
 extension Bool: RandomMockable {
     static func mockRandom() -> Bool {
         return .random()
@@ -242,30 +241,32 @@ extension Range where Bound == Int {
     }
 }
 
-extension Int64: AnyMockable, RandomMockable {
-    static func mockAny() -> Int64 { 0 }
-    static func mockRandom() -> Int64 { Int64.random(in: Int64.min..<Int64.max) }
-}
-
-extension UInt: RandomMockable {
-    static func mockRandom() -> UInt {
-        return .random(in: UInt.min...UInt.max)
-    }
-}
-
-extension UInt64: AnyMockable, RandomMockable {
-    static func mockAny() -> UInt64 {
-        return 0
-    }
-
-    static func mockRandom() -> UInt64 {
-        return .mockRandom(min: .min, max: .max)
-    }
-
-    static func mockRandom(min: UInt64 = .min, max: UInt64 = .max) -> UInt64 {
+extension FixedWidthInteger where Self: RandomMockable {
+    static func mockRandom() -> Self {
         return .random(in: min...max)
     }
 
+    static func mockRandom(min: Self = .min, max: Self = .max) -> Self {
+        return .random(in: min...max)
+    }
+}
+
+extension ExpressibleByIntegerLiteral where Self: AnyMockable {
+    static func mockAny() -> Self { 0 }
+}
+
+extension UInt: AnyMockable, RandomMockable { }
+extension UInt8: AnyMockable, RandomMockable { }
+extension UInt16: AnyMockable, RandomMockable { }
+extension UInt32: AnyMockable, RandomMockable { }
+extension UInt64: AnyMockable, RandomMockable { }
+extension Int: AnyMockable, RandomMockable { }
+extension Int8: AnyMockable, RandomMockable { }
+extension Int16: AnyMockable, RandomMockable { }
+extension Int32: AnyMockable, RandomMockable { }
+extension Int64: AnyMockable, RandomMockable { }
+
+extension UInt64 {
     static func mockRandom(otherThan value: UInt64) -> UInt64 {
         var random: UInt64 = .mockRandom()
         while random == value { random = .mockRandom() }

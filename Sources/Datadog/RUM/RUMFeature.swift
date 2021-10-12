@@ -106,7 +106,8 @@ internal final class RUMFeature {
                     .ddEVPOriginHeader(source: configuration.common.source),
                     .ddEVPOriginVersionHeader(),
                     .ddRequestIDHeader(),
-                ]
+                ],
+                internalMonitor: internalMonitor
             ),
             commonDependencies: commonDependencies,
             internalMonitor: internalMonitor

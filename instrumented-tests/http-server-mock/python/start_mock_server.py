@@ -14,6 +14,7 @@ import os
 import sys
 import time
 import base64
+import zlib
 
 # If `--prefer-localhost` argument is set, the server will listen on http://127.0.0.1:8000.
 # By default it tries to discover private IP address on local network and uses localhost as fallback.
@@ -55,6 +56,11 @@ class HTTPMockServer(BaseHTTPRequestHandler):
         global history
         request_path = parameters[0]
         request_body = self.rfile.read(int(self.headers['Content-Length']))
+
+        # Decompress 'deflate' encoded body 
+        if 'Content-Encoding' in self.headers and self.headers['Content-Encoding'] == 'deflate':
+            request_body = zlib.decompress(request_body)
+        
         request = GenericRequest("POST", request_path, self.headers, request_body)
         history.add_request(request)
         return "{}"

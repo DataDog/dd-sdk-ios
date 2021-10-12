@@ -82,7 +82,10 @@ internal final class InternalMonitoringFeature {
                     .ddEVPOriginHeader(source: configuration.common.source),
                     .ddEVPOriginVersionHeader(),
                     .ddRequestIDHeader(),
-                ]
+                ],
+                // (!) Do not inject monitoring bundle, otherwise the feature will be monitoring itself
+                // leading to infinite processing loops.
+                internalMonitor: nil
             ),
             commonDependencies: commonDependencies,
             // (!) Do not inject monitoring bundle, otherwise the feature will be monitoring itself

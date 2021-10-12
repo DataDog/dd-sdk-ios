@@ -80,6 +80,7 @@ class RUMFeatureTests: XCTestCase {
             """
         )
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "text/plain;charset=UTF-8")
+        XCTAssertEqual(request.allHTTPHeaderFields?["Content-Encoding"], "deflate")
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-API-KEY"], randomClientToken)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN"], randomSource)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN-VERSION"], sdkVersion)
@@ -119,7 +120,7 @@ class RUMFeatureTests: XCTestCase {
         fileWriter.write(value: RUMDataModelMock(attribute: "2nd event"))
         fileWriter.write(value: RUMDataModelMock(attribute: "3rd event"))
 
-        let payload = server.waitAndReturnRequests(count: 1)[0].httpBody!
+        let payload = try XCTUnwrap(server.waitAndReturnRequests(count: 1)[0].httpBody)
 
         // Expected payload format:
         // ```
