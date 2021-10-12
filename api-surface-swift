@@ -227,9 +227,14 @@ public struct LogEvent: Encodable
   public let name: String?
   public let email: String?
   public var extraInfo: [String: Encodable]
+ public struct Error
+  public let kind: String?
+  public let message: String?
+  public let stack: String?
  public let date: Date
  public let status: Status
  public var message: String
+ public let error: Error?
  public let serviceName: String
  public let environment: String
  public let loggerName: String
