@@ -89,7 +89,7 @@ internal struct LoggingForTracingAdapter {
                 message: message,
                 error: extractedError,
                 date: date,
-                attributes: LogAttributes(
+                attributes: LogEvent.Attributes(
                     userAttributes: userAttributes,
                     internalAttributes: internalAttributes
                 ),

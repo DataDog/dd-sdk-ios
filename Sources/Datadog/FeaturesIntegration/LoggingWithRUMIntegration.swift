@@ -29,7 +29,7 @@ internal struct LoggingWithRUMErrorsIntegration {
     func addError(for log: LogEvent) {
         rumErrorsIntegration.addError(
             with: log.error?.message ?? log.message,
-            type: log.error?.type,
+            type: log.error?.kind,
             stack: log.error?.stack,
             source: .logger
         )

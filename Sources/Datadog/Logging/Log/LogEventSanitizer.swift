@@ -51,7 +51,7 @@ internal struct LogEventSanitizer {
 
     // MARK: - Attributes sanitization
 
-    private func sanitize(attributes rawAttributes: LogAttributes) -> LogAttributes {
+    private func sanitize(attributes rawAttributes: LogEvent.Attributes) -> LogEvent.Attributes {
         // Sanitizes only `userAttributes`, `internalAttributes` remain untouched
         var userAttributes = rawAttributes.userAttributes
         userAttributes = removeInvalidAttributes(userAttributes)
@@ -60,7 +60,7 @@ internal struct LogEventSanitizer {
         let userAttributesLimit = AttributesSanitizer.Constraints.maxNumberOfAttributes - (rawAttributes.internalAttributes?.count ?? 0)
         userAttributes = attributesSanitizer.limitNumberOf(attributes: userAttributes, to: userAttributesLimit)
 
-        return LogAttributes(
+        return LogEvent.Attributes(
             userAttributes: userAttributes,
             internalAttributes: rawAttributes.internalAttributes
         )
