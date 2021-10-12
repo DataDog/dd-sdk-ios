@@ -80,8 +80,8 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
             date: crashDate,
             status: .emergency,
             message: crashReport.message,
-            error: DDError(
-                type: crashReport.type,
+            error: .init(
+                kind: crashReport.type,
                 message: crashReport.message,
                 stack: crashReport.stack
             ),

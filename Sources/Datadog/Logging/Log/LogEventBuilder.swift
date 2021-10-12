@@ -27,11 +27,18 @@ internal struct LogEventBuilder {
 
     func createLogWith(level: LogLevel, message: String, error: DDError?, date: Date, attributes: LogEvent.Attributes, tags: Set<String>) -> LogEvent {
         let user = userInfoProvider.value
+
         return LogEvent(
             date: dateCorrector?.currentCorrection.applying(to: date) ?? date,
             status: level.asLogStatus,
             message: message,
-            error: error,
+            error: error.map {
+                .init(
+                    kind: $0.type,
+                    message: $0.message,
+                    stack: $0.stack
+                )
+            },
             serviceName: serviceName,
             environment: environment,
             loggerName: loggerName,

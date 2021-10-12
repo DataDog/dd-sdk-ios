@@ -28,7 +28,7 @@ class LogBuilderTests: XCTestCase {
         XCTAssertEqual(log.applicationVersion, "1.2.3")
         XCTAssertEqual(log.status, .debug)
         XCTAssertEqual(log.message, "debug message")
-        XCTAssertEqual(log.error, error)
+        XCTAssertEqual(log.error?.message, "description")
         XCTAssertEqual(log.serviceName, "test-service-name")
         XCTAssertEqual(log.loggerName, "test-logger-name")
         XCTAssertEqual(log.tags, ["tag"])

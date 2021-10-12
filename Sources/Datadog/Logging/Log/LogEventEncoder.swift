@@ -35,6 +35,14 @@ public struct LogEvent: Encodable {
         /// User custom attributes, if any.
         public var extraInfo: [String: Encodable]
     }
+    public struct Error {
+        // The Log error kind
+        public let kind: String?
+        // The Log error message
+        public let message: String?
+        // The Log error stack
+        public let stack: String?
+    }
 
     /// The log's timestamp
     public let date: Date
@@ -43,7 +51,7 @@ public struct LogEvent: Encodable {
     /// The log message
     public var message: String
     /// The associated log error
-    internal let error: DDError?
+    public let error: Error?
     /// The service name configured for Logs.
     public let serviceName: String
     /// The current log environement.
@@ -140,7 +148,7 @@ internal struct LogEventEncoder {
 
         // Encode log.error properties
         if let someError = log.error {
-            try container.encode(someError.type, forKey: .errorKind)
+            try container.encode(someError.kind, forKey: .errorKind)
             try container.encode(someError.message, forKey: .errorMessage)
             try container.encode(someError.stack, forKey: .errorStack)
         }

@@ -76,7 +76,7 @@ extension LogEvent: RandomMockable {
         date: Date = .mockAny(),
         status: LogEvent.Status = .mockAny(),
         message: String = .mockAny(),
-        error: DDError? = nil,
+        error: LogEvent.Error? = nil,
         serviceName: String = .mockAny(),
         environment: String = .mockAny(),
         loggerName: String = .mockAny(),
@@ -159,6 +159,16 @@ extension LogEvent.UserInfo: AnyMockable, RandomMockable {
             name: .mockRandom(),
             email: .mockRandom(),
             extraInfo: mockRandomAttributes()
+        )
+    }
+}
+
+extension LogEvent.Error: RandomMockable {
+    static func mockRandom() -> Self {
+        return .init(
+            kind: .mockRandom(),
+            message: .mockRandom(),
+            stack: .mockRandom()
         )
     }
 }
