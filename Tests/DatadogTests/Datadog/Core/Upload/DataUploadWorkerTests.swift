@@ -252,7 +252,7 @@ class DataUploadWorkerTests: XCTestCase {
             fileReader: reader,
             dataUploader: mockDataUploader,
             uploadConditions: .alwaysUpload(),
-            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: randomFeatureName,
             internalMonitor: InternalMonitor(
                 sdkLogger: .mockWith(logOutput: mockSDKLoggerOutput)
@@ -265,27 +265,29 @@ class DataUploadWorkerTests: XCTestCase {
         // Then
         let expectedSummary = randomUploadStatus.needsRetry ? "not delivered, will be retransmitted" : "accepted, won't be retransmitted"
         XCTAssertEqual(mockUserLoggerOutput.allRecordedLogs.count, 3)
+
         XCTAssertEqual(
             mockUserLoggerOutput.allRecordedLogs[0].message,
             "⏳ (\(randomFeatureName)) Uploading batch...",
-            "Batch start information should be printed to `userLogger`"
+            "Batch start information should be printed to `userLogger`. All captured logs:\n\(mockUserLoggerOutput.dumpAllRecordedLogs())"
         )
+
         XCTAssertEqual(
             mockUserLoggerOutput.allRecordedLogs[1].message,
             "   → (\(randomFeatureName)) \(expectedSummary): \(randomUploadStatus.userDebugDescription)",
-            "Batch completion information should be printed to `userLogger`"
+            "Batch completion information should be printed to `userLogger`. All captured logs:\n\(mockUserLoggerOutput.dumpAllRecordedLogs())"
         )
         XCTAssertEqual(
             mockUserLoggerOutput.allRecordedLogs[2].message,
             randomUploadStatus.userErrorMessage,
-            "An error should be printed to `userLogger`"
+            "An error should be printed to `userLogger`. All captured logs:\n\(mockUserLoggerOutput.dumpAllRecordedLogs())"
         )
 
         XCTAssertEqual(mockSDKLoggerOutput.allRecordedLogs.count, 1)
         XCTAssertEqual(
             mockSDKLoggerOutput.allRecordedLogs[0].message,
             randomUploadStatus.internalMonitoringError?.message,
-            "An error should be send to `sdkLogger` for internal monitoring"
+            "An error should be send to `sdkLogger` for internal monitoring. All captured logs:\n\(mockSDKLoggerOutput.dumpAllRecordedLogs())"
         )
     }
 
