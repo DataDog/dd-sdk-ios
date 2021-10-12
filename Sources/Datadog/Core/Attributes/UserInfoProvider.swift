@@ -35,15 +35,15 @@ internal class UserInfoProvider {
     }
 }
 
-public struct UserInfo {
+internal struct UserInfo {
     /// User ID, if any.
-    public let id: String?
+    internal let id: String?
     /// Name representing the user, if any.
-    public let name: String?
+    internal let name: String?
     /// User email, if any.
-    public let email: String?
+    internal let email: String?
     /// User custom attributes, if any.
-    public var extraInfo: [AttributeKey: AttributeValue]
+    internal var extraInfo: [AttributeKey: AttributeValue]
 }
 
 extension UserInfo {

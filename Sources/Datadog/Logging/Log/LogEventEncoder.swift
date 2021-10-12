@@ -25,6 +25,16 @@ public struct LogEvent: Encodable {
         /// Log attributes added internally by the SDK. They are not a subject for sanitization.
         internal let internalAttributes: [String: Encodable]?
     }
+    public struct UserInfo {
+        /// User ID, if any.
+        public let id: String?
+        /// Name representing the user, if any.
+        public let name: String?
+        /// User email, if any.
+        public let email: String?
+        /// User custom attributes, if any.
+        public var extraInfo: [String: Encodable]
+    }
 
     /// The log's timestamp
     public let date: Date

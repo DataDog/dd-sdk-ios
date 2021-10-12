@@ -26,6 +26,7 @@ internal struct LogEventBuilder {
     let dateCorrector: DateCorrectorType?
 
     func createLogWith(level: LogLevel, message: String, error: DDError?, date: Date, attributes: LogEvent.Attributes, tags: Set<String>) -> LogEvent {
+        let user = userInfoProvider.value
         return LogEvent(
             date: dateCorrector?.currentCorrection.applying(to: date) ?? date,
             status: level.asLogStatus,
@@ -37,7 +38,12 @@ internal struct LogEventBuilder {
             loggerVersion: sdkVersion,
             threadName: getCurrentThreadName(),
             applicationVersion: applicationVersion,
-            userInfo: userInfoProvider.value,
+            userInfo: .init(
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                extraInfo: user.extraInfo
+            ),
             networkConnectionInfo: networkConnectionInfoProvider?.current,
             mobileCarrierInfo: carrierInfoProvider?.current,
             attributes: attributes,

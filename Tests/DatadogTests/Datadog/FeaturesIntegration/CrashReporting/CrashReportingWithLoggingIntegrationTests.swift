@@ -87,6 +87,8 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
 
         // Then
         let log = try XCTUnwrap(logOutput.recordedLog)
+        let user = try XCTUnwrap(crashContext.lastUserInfo)
+
         let expectedLog = LogEvent(
             date: crashReport.date!.addingTimeInterval(dateCorrectionOffset),
             status: .emergency,
@@ -102,7 +104,12 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
             loggerVersion: sdkVersion,
             threadName: nil,
             applicationVersion: configuration.applicationVersion,
-            userInfo: crashContext.lastUserInfo!,
+            userInfo: .init(
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                extraInfo: user.extraInfo
+            ),
             networkConnectionInfo: crashContext.lastNetworkConnectionInfo,
             mobileCarrierInfo: crashContext.lastCarrierInfo,
             attributes: .init(

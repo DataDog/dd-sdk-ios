@@ -139,6 +139,30 @@ extension LogEvent.Status: RandomMockable {
     }
 }
 
+extension LogEvent.UserInfo: AnyMockable, RandomMockable {
+    static func mockAny() -> LogEvent.UserInfo {
+        return mockEmpty()
+    }
+
+    static func mockEmpty() -> LogEvent.UserInfo {
+        return LogEvent.UserInfo(
+            id: nil,
+            name: nil,
+            email: nil,
+            extraInfo: [:]
+        )
+    }
+
+    static func mockRandom() -> LogEvent.UserInfo {
+        return .init(
+            id: .mockRandom(),
+            name: .mockRandom(),
+            email: .mockRandom(),
+            extraInfo: mockRandomAttributes()
+        )
+    }
+}
+
 // MARK: - Component Mocks
 
 extension Logger {

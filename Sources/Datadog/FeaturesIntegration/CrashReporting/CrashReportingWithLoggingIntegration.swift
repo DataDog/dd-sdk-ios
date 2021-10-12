@@ -74,6 +74,8 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
         errorAttributes[DDError.meta] = crashReport.meta
         errorAttributes[DDError.wasTruncated] = crashReport.wasTruncated
 
+        let user = crashContext.lastUserInfo
+
         return LogEvent(
             date: crashDate,
             status: .emergency,
@@ -89,7 +91,12 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
             loggerVersion: sdkVersion,
             threadName: nil,
             applicationVersion: configuration.applicationVersion,
-            userInfo: crashContext.lastUserInfo ?? .empty,
+            userInfo: .init(
+                id: user?.id,
+                name: user?.name,
+                email: user?.email,
+                extraInfo: user?.extraInfo ?? [:]
+            ),
             networkConnectionInfo: crashContext.lastNetworkConnectionInfo,
             mobileCarrierInfo: crashContext.lastCarrierInfo,
             attributes: .init(userAttributes: [:], internalAttributes: errorAttributes),
