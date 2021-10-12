@@ -10,7 +10,7 @@ import Foundation
 
 private struct RootCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
-        abstract: "Generates rum models from `rum-events-format` schema files and pritns it to the standard output.",
+        abstract: "Generates rum models from `rum-events-format` schema files and prints it to the standard output.",
         subcommands: [
             GenerateSwift.self,
             GenerateObjc.self

@@ -30,7 +30,7 @@ extension Datadog.Configuration.TracesEndpoint: Equatable {
 
 /// This tests verify that objc-compatible `DatadogObjc` wrapper properly interacts with`Datadog` public API (swift).
 class DDConfigurationTests: XCTestCase {
-    func testDefaultBuilderFowardsInitializationToSwift() throws {
+    func testDefaultBuilderForwardsInitializationToSwift() throws {
         let objcBuilder = DDConfiguration.builder(clientToken: "abc-123", environment: "tests")
         let objcRUMBuilder = DDConfiguration.builder(rumApplicationID: "rum-app-id", clientToken: "abc-123", environment: "tests")
 
@@ -67,7 +67,7 @@ class DDConfigurationTests: XCTestCase {
         }
     }
 
-    func testCustomizedBuilderFowardsInitializationToSwift() throws {
+    func testCustomizedBuilderForwardsInitializationToSwift() throws {
         let objcBuilder = [
             DDConfiguration.builder(clientToken: "abc-123", environment: "tests"),
             DDConfiguration.builder(rumApplicationID: "rum-app-id", clientToken: "abc-123", environment: "tests")

@@ -18,7 +18,7 @@ class URLSessionAutoInstrumentationTests: XCTestCase {
         super.tearDown()
     }
 
-    func testWhenURLSessionAutoInstrumentationIsEnabled_thenSharedIntrceptorIsAvailable() {
+    func testWhenURLSessionAutoInstrumentationIsEnabled_thenSharedInterceptorIsAvailable() {
         XCTAssertNil(URLSessionInterceptor.shared)
 
         // When

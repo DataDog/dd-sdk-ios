@@ -71,6 +71,7 @@ class LoggingFeatureTests: XCTestCase {
             """
         )
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "application/json")
+        XCTAssertEqual(request.allHTTPHeaderFields?["Content-Encoding"], "deflate")
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-API-KEY"], randomClientToken)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN"], randomSource)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN-VERSION"], sdkVersion)
@@ -110,7 +111,7 @@ class LoggingFeatureTests: XCTestCase {
         logger.debug("log 2")
         logger.debug("log 3")
 
-        let payload = server.waitAndReturnRequests(count: 1)[0].httpBody!
+        let payload = try XCTUnwrap(server.waitAndReturnRequests(count: 1)[0].httpBody)
 
         // Expected payload format:
         // `[log1JSON,log2JSON,log3JSON]`

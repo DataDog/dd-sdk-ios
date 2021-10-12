@@ -8,12 +8,12 @@ import Foundation
 @testable import Datadog
 
 /*
- Set of Datadog domain extensions over standard types for writting more readable tests.
+ Set of Datadog domain extensions over standard types for writing more readable tests.
  Domain agnostic extensions should be put in `SwiftExtensions.swift`.
 */
 
 extension Date {
-    /// Returns name of the logs file createde at this date.
+    /// Returns name of the logs file created at this date.
     var toFileName: String {
         return fileNameFrom(fileCreationDate: self)
     }

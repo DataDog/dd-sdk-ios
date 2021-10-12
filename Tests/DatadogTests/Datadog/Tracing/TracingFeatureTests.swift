@@ -72,6 +72,7 @@ class TracingFeatureTests: XCTestCase {
             """
         )
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "text/plain;charset=UTF-8")
+        XCTAssertEqual(request.allHTTPHeaderFields?["Content-Encoding"], "deflate")
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-API-KEY"], randomClientToken)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN"], randomSource)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN-VERSION"], sdkVersion)
@@ -112,7 +113,7 @@ class TracingFeatureTests: XCTestCase {
         tracer.startSpan(operationName: "operation 2").finish()
         tracer.startSpan(operationName: "operation 3").finish()
 
-        let payload = server.waitAndReturnRequests(count: 1)[0].httpBody!
+        let payload = try XCTUnwrap(server.waitAndReturnRequests(count: 1)[0].httpBody)
 
         // Expected payload format:
         // ```

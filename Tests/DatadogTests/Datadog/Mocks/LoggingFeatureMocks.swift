@@ -44,7 +44,7 @@ extension LoggingFeature {
         )
         let uploadWorker = DataUploadWorkerMock()
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
-        // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
+        // Replace by mocking the `FeatureUpload` and observing the `FeatureStorage`:
         let mockedUpload = FeatureUpload(uploader: uploadWorker)
         // Tear down the original upload
         fullFeature.upload.flushAndTearDown()
@@ -234,5 +234,12 @@ class LogOutputMock: LogOutput {
         recordedLog = log
         allRecordedLogs.append(log)
         onLogRecorded?(log)
+    }
+
+    /// Returns newline-separated `String` description of all recorded logs.
+    func dumpAllRecordedLogs() -> String {
+        return allRecordedLogs
+            .map { "- \($0)" }
+            .joined(separator: "\n")
     }
 }

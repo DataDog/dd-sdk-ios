@@ -141,4 +141,26 @@ extension XCTestCase {
         let value2JSONString = encodedValue2.utf8String
         XCTAssertEqual(value1JSONString, value2JSONString, file: file, line: line)
     }
+
+    func AssertURLSessionTasksIdentical(
+        _ actualTask: URLSessionTask,
+        _ expectedTask: URLSessionTask,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertTrue(
+            actualTask === expectedTask,
+            """
+            Both tasks must be identical ('===').
+
+            Actual task:
+            \(actualTask.dump())
+
+            Expected task:
+            \(expectedTask.dump())
+            """,
+            file: file,
+            line: line
+        )
+    }
 }

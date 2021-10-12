@@ -38,7 +38,7 @@ extension InternalMonitoringFeature {
         )
         let uploadWorker = DataUploadWorkerMock()
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.logsStorage)
-        // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
+        // Replace by mocking the `FeatureUpload` and observing the `FeatureStorage`:
         let mockedUpload = FeatureUpload(uploader: uploadWorker)
         // Tear down the original upload
         fullFeature.logsUpload.flushAndTearDown()

@@ -1,7 +1,7 @@
 resource "datadog_monitor" ${{monitor_id}} {
   name               = ${{monitor_name}}
   type               = "log alert"
-  tags               = ["service:com.datadog.ios.nightly", "env:instrumentation", "team:rumm", "source:ios", "feature:logs", "monitor:behavior"]
+  tags               = ["service:com.datadog.ios.nightly", "env:instrumentation", "team:rumm", "source:ios", "feature:${{feature:-logs}}", "monitor:behavior"]
   message            = <<EOT
 @maciek.grzybowski@datadoghq.com
 @mert.buran@datadoghq.com

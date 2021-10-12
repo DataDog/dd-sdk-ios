@@ -61,7 +61,7 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         XCTAssertEqual(view1.viewEvents.last?.view.error.count, 1)
         XCTAssertEqual(view1.actionEvents[0].action.type, .applicationStart)
         XCTAssertEqual(view1.actionEvents[1].action.type, .tap)
-        XCTAssertEqual(view1.actionEvents[1].action.resource?.count, 1, "Action should track one succesfull Resource")
+        XCTAssertEqual(view1.actionEvents[1].action.resource?.count, 1, "Action should track one successful Resource")
         XCTAssertEqual(view1.actionEvents[1].action.error?.count, 1, "Action should track second Resource failure as Error")
         XCTAssertEqual(view1.resourceEvents[0].resource.url, "https://foo.com/resource/1")
         XCTAssertEqual(view1.resourceEvents[0].resource.statusCode, 200)

@@ -1293,7 +1293,7 @@ class RUMMonitorTests: XCTestCase {
 
         var mockCommand = RUMCommandMock()
         mockCommand.attributes = [
-            RUMAttribute.internalTimestamp: Int64(1_000) // 1000 in miliseconds
+            RUMAttribute.internalTimestamp: Int64(1_000) // 1000 in milliseconds
         ]
 
         let monitor = try XCTUnwrap(RUMMonitor.initialize() as? RUMMonitor)

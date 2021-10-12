@@ -21,7 +21,7 @@ def lint_test_methods(test_methods: [TestMethod]):
                         __monitor_id_has_method_name_prefix(
                             monitor=monitor, tested_method_name=tested_method_name
                         )
-                        __method_name_occurs_in_monitor_name_and_query(
+                        __method_name_occurs_in_monitor_name(
                             monitor=monitor, tested_method_name=tested_method_name
                         )
             elif not __is_excluded_from_lint(method=test_method):
@@ -48,9 +48,9 @@ def __monitor_id_has_method_name_prefix(monitor: MonitorConfiguration, tested_me
                 Linter.shared.emit_error(f'$monitor_id must start with method name ({tested_method_name})')
 
 
-def __method_name_occurs_in_monitor_name_and_query(monitor: MonitorConfiguration, tested_method_name: str):
+def __method_name_occurs_in_monitor_name(monitor: MonitorConfiguration, tested_method_name: str):
     """
-    The test method name must occur in $monitor_name and $monitor_query.
+    The test method name must occur in $monitor_name.
     """
     regex = re.compile(rf"^.*(\W+){tested_method_name}(\W+).*$")
 
@@ -58,16 +58,13 @@ def __method_name_occurs_in_monitor_name_and_query(monitor: MonitorConfiguration
         if not re.match(regex, monitor_name_variable.value):
             with linter_context(code_reference=monitor_name_variable.code_reference):
                 Linter.shared.emit_warning(f'$monitor_name must include method name ({tested_method_name})')
-    if monitor_query_variable := __find_monitor_variable(monitor=monitor, variable_name='$monitor_query'):
-        if not re.match(regex, monitor_query_variable.value):
-            with linter_context(code_reference=monitor_query_variable.code_reference):
-                Linter.shared.emit_warning(f'$monitor_query must include method name ({tested_method_name})')
 
 
 def lint_monitors(monitors: [MonitorConfiguration]):
     __have_unique_variable_values(monitors=monitors, variable_name='$monitor_id')
     __have_unique_variable_values(monitors=monitors, variable_name='$monitor_name')
     __have_unique_variable_values(monitors=monitors, variable_name='$monitor_query')
+    __feature_variable_has_allowed_value(monitors=monitors)
 
 
 def __have_unique_variable_values(monitors: [MonitorConfiguration], variable_name: str):
@@ -90,7 +87,19 @@ def __have_unique_variable_values(monitors: [MonitorConfiguration], variable_nam
                     Linter.shared.emit_error(f'{variable_name} must be unique - {occurrence.value} is already used.')
 
 
-def __find_monitor_variable(monitor: MonitorConfiguration, variable_name: str):
+def __feature_variable_has_allowed_value(monitors: [MonitorConfiguration]):
+    """
+    Checks if `$feature` variable is one of allowed values. Skips if this variable is not defined.
+    """
+    allowed_values = ['core', 'logs', 'trace', 'rum', 'crash']
+    for monitor in monitors:
+        if variable := __find_monitor_variable(monitor=monitor, variable_name='$feature'):
+            if variable.value not in allowed_values:
+                with linter_context(code_reference=variable.code_reference):
+                    Linter.shared.emit_error(f'$feature must be one of: {allowed_values}')
+
+
+def __find_monitor_variable(monitor: MonitorConfiguration, variable_name: str) -> MonitorVariable:
     return next((v for v in monitor.variables if v.name == variable_name), None)
 
 

@@ -133,7 +133,7 @@ internal class DDSpan: OTSpan {
         }
     }
 
-    // MARK: - Writting SpanEvent
+    // MARK: - Writing SpanEvent
 
     /// Sends span event for given `DDSpan`.
     private func sendSpan(finishTime: Date) {

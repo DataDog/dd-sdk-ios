@@ -54,9 +54,9 @@ class RUMScopeTests: XCTestCase {
 
     func testMergingRUMAttributes() {
         var attributes: [AttributeKey: AttributeValue] = ["foo": "bar", "fizz": "buzz"]
-        let additionalAttribtues: [AttributeKey: AttributeValue] = ["foo": "bar 2", "baz": "qux"]
+        let additionalAttributes: [AttributeKey: AttributeValue] = ["foo": "bar 2", "baz": "qux"]
 
-        attributes.merge(rumCommandAttributes: additionalAttribtues)
+        attributes.merge(rumCommandAttributes: additionalAttributes)
         XCTAssertEqual(attributes as? [String: String], ["foo": "bar 2", "fizz": "buzz", "baz": "qux"], "`bar` should be overwritten")
 
         attributes.merge(rumCommandAttributes: nil)

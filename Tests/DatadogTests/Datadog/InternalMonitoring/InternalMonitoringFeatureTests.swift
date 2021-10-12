@@ -71,6 +71,7 @@ class InternalMonitoringFeatureTests: XCTestCase {
             """
         )
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "application/json")
+        XCTAssertEqual(request.allHTTPHeaderFields?["Content-Encoding"], "deflate")
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-API-KEY"], randomClientToken)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN"], randomSource)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN-VERSION"], sdkVersion)

@@ -42,7 +42,7 @@ class TracingStorageBenchmarkTests: XCTestCase {
         super.tearDown()
     }
 
-    func testWrittingSpansOnDisc() throws {
+    func testWritingSpansOnDisc() throws {
         let log = createRandomizedSpan()
 
         measure {

@@ -47,5 +47,5 @@ Pull requests are welcome. First, open an issue to discuss what you would like t
 [1]: https://github.com/Alamofire/Alamofire
 [2]: https://github.com/Carthage/Carthage
 [3]: https://swift.org/package-manager/
-[4]: https://docs.datadoghq.com/tracing/setup/ios/
+[4]: https://docs.datadoghq.com/tracing/setup_overview/setup/ios/
 [5]: https://docs.datadoghq.com/real_user_monitoring/ios

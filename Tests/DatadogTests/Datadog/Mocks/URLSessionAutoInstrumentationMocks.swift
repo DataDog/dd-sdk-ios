@@ -22,10 +22,28 @@ class URLSessionInterceptorMock: URLSessionInterceptorType {
     var onTaskCompleted: ((URLSessionTask, Error?) -> Void)?
     var onTaskMetricsCollected: ((URLSessionTask, URLSessionTaskMetrics) -> Void)?
 
-    var tasksCreated: [URLSessionTask] = []
-    var tasksReceivedData: [(task: URLSessionTask, data: Data)] = []
-    var tasksCompleted: [(task: URLSessionTask, error: Error?)] = []
-    var taskMetrics: [(task: URLSessionTask, metrics: URLSessionTaskMetrics)] = []
+    private(set) var tasksCreated: [URLSessionTask] = []
+    private(set) var tasksReceivedData: [(task: URLSessionTask, data: Data)] = []
+    private(set) var tasksCompleted: [(task: URLSessionTask, error: Error?)] = []
+    private(set) var taskMetrics: [(task: URLSessionTask, metrics: URLSessionTaskMetrics)] = []
+
+    func interceptedTask(by taskDescription: String) -> URLSessionTask? {
+        return tasksCreated.first(where: { $0.taskDescription == taskDescription })
+    }
+
+    func interceptedTaskWithData(by taskDescription: String) -> (task: URLSessionTask, data: Data)? {
+        return tasksReceivedData.first(where: { $0.task.taskDescription == taskDescription })
+    }
+
+    func interceptedTaskWithCompletion(by taskDescription: String) -> (task: URLSessionTask, error: Error?)? {
+        return tasksCompleted.first(where: { $0.task.taskDescription == taskDescription })
+    }
+
+    func interceptedTaskWithMetrics(by taskDescription: String) -> (task: URLSessionTask, metrics: URLSessionTaskMetrics)? {
+        return taskMetrics.first(where: { $0.task.taskDescription == taskDescription })
+    }
+
+    // MARK: - URLSessionInterceptorType conformance
 
     func modify(request: URLRequest, session: URLSession?) -> URLRequest {
         onRequestModified?(request, session)

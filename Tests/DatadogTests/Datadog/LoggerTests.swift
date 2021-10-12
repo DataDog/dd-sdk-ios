@@ -506,6 +506,7 @@ class LoggerTests: XCTestCase {
         let logger = Logger.builder.build()
         Global.rum = RUMMonitor.initialize()
         Global.rum.startView(viewController: mockView)
+        Global.rum.startUserAction(type: .tap, name: .mockAny())
         defer { Global.rum = DDNoopRUMMonitor() }
 
         // when
@@ -523,6 +524,10 @@ class LoggerTests: XCTestCase {
         )
         logMatcher.assertValue(
             forKeyPath: RUMContextIntegration.Attributes.viewID,
+            isTypeOf: String.self
+        )
+        logMatcher.assertValue(
+            forKeyPath: RUMContextIntegration.Attributes.actionID,
             isTypeOf: String.self
         )
     }
@@ -561,6 +566,7 @@ class LoggerTests: XCTestCase {
         logMatcher.assertNoValue(forKeyPath: RUMContextIntegration.Attributes.applicationID)
         logMatcher.assertNoValue(forKeyPath: RUMContextIntegration.Attributes.sessionID)
         logMatcher.assertNoValue(forKeyPath: RUMContextIntegration.Attributes.viewID)
+        logMatcher.assertNoValue(forKeyPath: RUMContextIntegration.Attributes.actionID)
     }
 
     func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorForCurrentView() throws {

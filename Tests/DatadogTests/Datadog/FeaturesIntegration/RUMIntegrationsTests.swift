@@ -17,18 +17,20 @@ class RUMIntegrationsTests: XCTestCase {
         // given
         Global.rum = RUMMonitor.initialize()
         Global.rum.startView(viewController: mockView)
+        Global.rum.startUserAction(type: .tap, name: .mockAny())
         defer { Global.rum = DDNoopRUMMonitor() }
 
         // then
         let attributes = try XCTUnwrap(integration.currentRUMContextAttributes)
 
-        XCTAssertEqual(attributes.count, 3)
+        XCTAssertEqual(attributes.count, 4)
         XCTAssertEqual(
             attributes["application_id"] as? String,
             try XCTUnwrap(RUMFeature.instance?.configuration.applicationID)
         )
         XCTAssertValidRumUUID(attributes["session_id"] as? String)
         XCTAssertValidRumUUID(attributes["view.id"] as? String)
+        XCTAssertValidRumUUID(attributes["user_action.id"] as? String)
     }
 
     func testGivenRUMMonitorRegistered_whenSessionIsSampled_itProvidesEmptyRUMContextAttributes() throws {

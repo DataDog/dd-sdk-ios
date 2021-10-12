@@ -28,8 +28,8 @@ class CTCarrierMock: CTCarrier {
 }
 
 class CTTelephonyNetworkInfoMock: CTTelephonyNetworkInfo {
-    private let _serviceCurrentRadioAccessTechnology: [String: String]?
-    private let _serviceSubscriberCellularProviders: [String: CTCarrier]?
+    private var _serviceCurrentRadioAccessTechnology: [String: String]?
+    private var _serviceSubscriberCellularProviders: [String: CTCarrier]?
 
     init(
         serviceCurrentRadioAccessTechnology: [String: String],
@@ -37,6 +37,24 @@ class CTTelephonyNetworkInfoMock: CTTelephonyNetworkInfo {
     ) {
         _serviceCurrentRadioAccessTechnology = serviceCurrentRadioAccessTechnology
         _serviceSubscriberCellularProviders = serviceSubscriberCellularProviders
+    }
+
+    func changeCarrier(
+        newCarrierName: String,
+        newISOCountryCode: String,
+        newAllowsVOIP: Bool,
+        newRadioAccessTechnology: String
+    ) {
+        _serviceCurrentRadioAccessTechnology = [
+            "000001": newRadioAccessTechnology
+        ]
+        _serviceSubscriberCellularProviders = [
+            "000001": CTCarrierMock(carrierName: newCarrierName, isoCountryCode: newISOCountryCode, allowsVOIP: newAllowsVOIP)
+        ]
+
+        if #available(iOS 12.0, *) {
+            serviceSubscriberCellularProvidersDidUpdateNotifier?("000001")
+        }
     }
 
     // MARK: - iOS 12+
