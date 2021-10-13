@@ -283,7 +283,9 @@ public class Logger {
             tags: tags
         )
 
-        logOutput.write(log: log)
+        if let event = log {
+            logOutput.write(log: event)
+        }
     }
 
     // MARK: - Logger.Builder

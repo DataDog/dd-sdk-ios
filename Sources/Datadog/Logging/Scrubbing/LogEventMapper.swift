@@ -7,5 +7,5 @@
 import Foundation
 
 /// Data scrubbing interface.
-/// It takes `LogEvent` and returns modified `LogEvent`.
-internal typealias LogEventMapper = (LogEvent) -> LogEvent
+/// It takes `LogEvent` and returns modified `LogEvent`, or `nil` to drop the event.
+internal typealias LogEventMapper = (LogEvent) -> LogEvent?

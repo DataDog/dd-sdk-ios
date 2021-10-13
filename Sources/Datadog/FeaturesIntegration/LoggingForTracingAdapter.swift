@@ -96,7 +96,10 @@ internal struct LoggingForTracingAdapter {
                 ),
                 tags: []
             )
-            loggingOutput.write(log: log)
+
+            if let event = log {
+                loggingOutput.write(log: event)
+            }
         }
     }
 }

@@ -27,7 +27,7 @@ internal struct LogEventBuilder {
     /// Log events mapper configured by the user, `nil` if not set.
     let logEventMapper: LogEventMapper?
 
-    func createLogWith(level: LogLevel, message: String, error: DDError?, date: Date, attributes: LogEvent.Attributes, tags: Set<String>) -> LogEvent {
+    func createLogWith(level: LogLevel, message: String, error: DDError?, date: Date, attributes: LogEvent.Attributes, tags: Set<String>) -> LogEvent? {
         let user = userInfoProvider.value
 
         let log = LogEvent(
@@ -59,7 +59,11 @@ internal struct LogEventBuilder {
             tags: !tags.isEmpty ? Array(tags) : nil
         )
 
-        return logEventMapper?(log) ?? log
+        if let mapper = logEventMapper {
+            return mapper(log)
+        }
+
+        return log
     }
 
     private func getCurrentThreadName() -> String {
