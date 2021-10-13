@@ -402,9 +402,9 @@ extension Datadog {
                 return self
             }
 
-            /// Sets the custom mapper for `logEvent`. This can be used to modify logs before they are send to Datadog.
-            /// - Parameter mapper: the closure taking `logEvent` as input and expecting `logEvent` as output.
-            /// The implementation should obtain a mutable version of the `logEvent`, modify it and return it.
+            /// Sets the custom mapper for `LogEvent`. This can be used to modify logs before they are send to Datadog.
+            /// - Parameter mapper: the closure taking `LogEvent` as input and expecting `LogEvent` as output.
+            /// The implementation should obtain a mutable version of the `LogEvent`, modify it and return it.
             ///
             /// **NOTE** The mapper intentionally prevents from returning a `nil` to drop the `logEvent` entirely, this ensures that all logs are sent to Datadog.
             ///
