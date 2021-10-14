@@ -468,7 +468,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             application: .init(id: context.rumApplicationID),
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
-            date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
+            date: dateCorrection.applying(to: command.time - command.duration).timeIntervalSince1970.toInt64Milliseconds,
             longTask: .init(duration: taskDurationInNs, id: nil, isFrozenFrame: isFrozenFrame),
             service: nil,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
