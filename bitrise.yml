@@ -29,20 +29,14 @@ workflows:
 
   tagged_commit:
     after_run:
-    - _make_dependencies
-    - run_linter
-    - run_unit_tests
-    - run_integration_tests
-    - check_dependency_managers
-    - ship
-    - _deploy_artifacts
-    - _notify_failure_on_slack
-
-  tagged_commit_part_2:
-    after_run:
-    - ship_part_2
-    - _deploy_artifacts
-    - _notify_failure_on_slack
+    # - _make_dependencies
+    # - run_linter
+    # - run_unit_tests
+    # - run_integration_tests
+    # - check_dependency_managers
+    # - _deploy_artifacts
+    - start_async_release_jobs
+    # - _notify_failure_on_slack
 
   _make_dependencies:
     description: |-
@@ -79,7 +73,7 @@ workflows:
         - color_on_error: '#FF0000'
         - author_name: ''
         - message: ''
-        - message_on_error: ''
+        - message_on_error: 'Failed to run "${BITRISE_TRIGGERED_WORKFLOW_ID}"'
         - icon_url: 'https://avatars.githubusercontent.com/t/3555052?s=128&v=4'
         - webhook_url: '${SLACK_INCOMING_WEBHOOK_MOBILE_CI}'
 
@@ -302,26 +296,57 @@ workflows:
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/E2E-instrumentation-tests.html"
 
-  ship:
+  start_async_release_jobs:
     description: |-
-        Ships the tagged version to Cocoapods trunk and uploads binaries to Github.
+        Spins off two parallel CI jobs for releasing the actual artifacts.
+    steps:
+    - build-router-start:
+        title: Start new CI jobs for running 'publish_github_asset' and 'publish_cocoapods_podspecs'.
+        inputs:
+        - access_token: "$BITRISE_PERSONAL_ACCESS_TOKEN"
+        - workflows: |-
+            publish_github_asset
+            publish_cocoapods_podspecs
+        - environment_key_list: |-
+            DD_RELEASE_GIT_TAG
+            DD_RELEASE_DRY_RUN
+        
+  publish_github_asset:
+    before_run:
+    - _make_dependencies  # install tooling
+    # after_run:
+    # - _notify_failure_on_slack
+    description: |-
+        Uploads binaries to Github.
     steps:
     - script:
-        title: Ship tagged version
+        title: Publish GH Asset.
         inputs:
         - content: |-
             #!/usr/bin/env zsh
             set -e
-            make ship
 
-  ship_part_2:
+            # Use 'DD_RELEASE_GIT_TAG' ENV if available, otherwise 'BITRISE_GIT_TAG' ENV
+            GIT_TAG="${DD_RELEASE_GIT_TAG:-$(echo "${BITRISE_GIT_TAG}")}"
+
+            ./tools/distribution/release.py "$GIT_TAG" --only-github
+
+  publish_cocoapods_podspecs:
+    before_run:
+    - _make_dependencies  # install tooling
+    # after_run:
+    # - _notify_failure_on_slack
     description: |-
-        Ships the tagged version of DatadogSDKObjc and AlamofireExtension to Cocoapods trunk.
+        Submits all podspecs to Cocoapods.
     steps:
     - script:
-        title: Ship tagged version of DatadogSDKObjc and AlamofireExtension
+        title: Submit podspecs to Cocoapods.
         inputs:
         - content: |-
             #!/usr/bin/env zsh
             set -e
-            make ship_part_2
+
+            # Use 'DD_RELEASE_GIT_TAG' ENV if available, otherwise 'BITRISE_GIT_TAG' ENV
+            GIT_TAG="${DD_RELEASE_GIT_TAG:-$(echo "${BITRISE_GIT_TAG}")}"
+
+            ./tools/distribution/release.py "$GIT_TAG" --only-cocoapods

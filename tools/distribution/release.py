@@ -68,12 +68,20 @@ if __name__ == "__main__":
         if not re.match(tag_regex, git_tag):
             raise Exception(f'Given git tag ("{git_tag}") seems invalid (it must match "{tag_regex}")')
 
-        print(f'🛠️️ Running with:\n'
-              f'- git_tag = {git_tag}\n'
-              f'- only_github = {only_github}\n'
-              f'- only_cocoapods = {only_cocoapods}\n'
-              f'- overwrite_github = {overwrite_github}\n'
-              f'- dry_run = {dry_run}.')
+        print(f'🛠️️ ENV:\n'
+              f'- BITRISE_GIT_TAG                = {os.environ.get("BITRISE_GIT_TAG")}\n'
+              f'- DD_RELEASE_GIT_TAG             = {os.environ.get("DD_RELEASE_GIT_TAG")}\n'
+              f'- DD_RELEASE_ONLY_GITHUB         = {os.environ.get("DD_RELEASE_ONLY_GITHUB")}\n'
+              f'- DD_RELEASE_ONLY_COCOAPODS      = {os.environ.get("DD_RELEASE_ONLY_COCOAPODS")}\n'
+              f'- DD_RELEASE_OVERWRITE_GITHUB    = {os.environ.get("DD_RELEASE_OVERWRITE_GITHUB")}\n'
+              f'- DD_RELEASE_DRY_RUN             = {os.environ.get("DD_RELEASE_DRY_RUN")}')
+
+        print(f'🛠️️ ENV and CLI arguments resolved to:\n'
+              f'- git_tag           = {git_tag}\n'
+              f'- only_github       = {only_github}\n'
+              f'- only_cocoapods    = {only_cocoapods}\n'
+              f'- overwrite_github  = {overwrite_github}\n'
+              f'- dry_run           = {dry_run}.')
 
         publish_to_gh = not only_cocoapods
         publish_to_cp = not only_github
