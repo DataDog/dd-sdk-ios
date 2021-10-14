@@ -29,14 +29,14 @@ workflows:
 
   tagged_commit:
     after_run:
-    # - _make_dependencies
-    # - run_linter
-    # - run_unit_tests
-    # - run_integration_tests
-    # - check_dependency_managers
-    # - _deploy_artifacts
+    - _make_dependencies
+    - run_linter
+    - run_unit_tests
+    - run_integration_tests
+    - check_dependency_managers
+    - _deploy_artifacts
     - start_async_release_jobs
-    # - _notify_failure_on_slack
+    - _notify_failure_on_slack
 
   _make_dependencies:
     description: |-
@@ -314,8 +314,8 @@ workflows:
   publish_github_asset:
     before_run:
     - _make_dependencies  # install tooling
-    # after_run:
-    # - _notify_failure_on_slack
+    after_run:
+    - _notify_failure_on_slack
     description: |-
         Uploads binaries to Github.
     steps:
@@ -334,8 +334,8 @@ workflows:
   publish_cocoapods_podspecs:
     before_run:
     - _make_dependencies  # install tooling
-    # after_run:
-    # - _notify_failure_on_slack
+    after_run:
+    - _notify_failure_on_slack
     description: |-
         Submits all podspecs to Cocoapods.
     steps:
