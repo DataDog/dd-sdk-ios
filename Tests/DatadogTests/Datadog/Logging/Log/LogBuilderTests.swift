@@ -84,10 +84,10 @@ class LogBuilderTests: XCTestCase {
     func testGivenBuilderWithEventMapper_whenEventIsModified_itBuildsModifiedEvent() throws {
         let builder: LogEventBuilder = .mockWith(
             logEventMapper: { log in
-                var mutableSpan = log
-                mutableSpan.message = "modified log message"
-                mutableSpan.tags = .mockRandom()
-                return mutableSpan
+                var mutableLog = log
+                mutableLog.message = "modified log message"
+                mutableLog.tags = .mockRandom()
+                return mutableLog
             }
         )
 
