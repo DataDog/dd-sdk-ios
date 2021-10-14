@@ -105,4 +105,23 @@ class LogBuilderTests: XCTestCase {
         XCTAssertEqual(log.message, "modified log message")
         XCTAssertGreaterThan(log.tags!.count, 0)
     }
+
+    func testGivenBuilderWithEventMapper_whenEventIsDropped_itReturnsNil() throws {
+        let builder: LogEventBuilder = .mockWith(
+            logEventMapper: { _ in
+                return nil
+            }
+        )
+
+        let log = builder.createLogWith(
+            level: .critical,
+            message: "original log message",
+            error: nil,
+            date: .mockAny(),
+            attributes: .mockAny(),
+            tags: []
+        )
+
+        XCTAssertNil(log)
+    }
 }
