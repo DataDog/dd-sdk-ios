@@ -176,7 +176,7 @@ internal class RUMResourceScope: RUMScope {
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
                     )
                 },
-                size: size ?? 0,
+                size: size,
                 ssl: resourceMetrics?.ssl.flatMap { metric in
                     .init(
                         duration: metric.duration.toInt64Nanoseconds,
