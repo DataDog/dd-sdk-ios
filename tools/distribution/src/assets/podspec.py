@@ -65,7 +65,7 @@ class CPPodspec:
         # but this is also limited by the CI job timeout.
         retry_time = 30  # seconds
         attempt = 0
-        while True or attempt > 100:  # as trunk may not yet
+        while attempt < 100:
             attempt += 1
             try:
                 if attempt == 1:
@@ -93,7 +93,7 @@ class CPPodspec:
         """
         Reads pod version from podspec file.
         """
-        version_regex = r'^.*\.version.*=.*\"([0-9]\.[0-9]\.[0-9][\-a-z0-9]*)\"'  # e.g. ' s.version   = "1.7.1-alpha1"'
+        version_regex = r'^.*\.version.*=.*\"([0-9]+\.[0-9]+\.[0-9]+[\-a-z0-9]*)\"'  # e.g. 's.version = "1.7.1-alpha1"'
 
         versions: [str] = []
         with open(self.__path) as podspec_file:
