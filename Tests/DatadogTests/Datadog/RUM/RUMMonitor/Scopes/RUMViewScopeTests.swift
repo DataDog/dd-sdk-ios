@@ -633,7 +633,8 @@ class RUMViewScopeTests: XCTestCase {
     // MARK: - Long tasks
 
     func testWhenLongTaskIsAdded_itSendsLongTaskEventAndViewUpdateEvent() throws {
-        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let startViewDate: Date = .mockDecember15th2019At10AMUTC()
+
         let scope = RUMViewScope(
             parent: parent,
             dependencies: dependencies,
@@ -642,31 +643,34 @@ class RUMViewScopeTests: XCTestCase {
             name: "ViewName",
             attributes: [:],
             customTimings: [:],
-            startTime: currentTime
+            startTime: startViewDate
         )
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: ["foo": "bar"], identity: mockView, isInitialView: true)
+                command: RUMStartViewCommand.mockWith(time: startViewDate, attributes: ["foo": "bar"], identity: mockView, isInitialView: true)
             )
         )
 
-        currentTime.addTimeInterval(1)
+        let addLongTaskDate = startViewDate + 1.0
+        let duration: TimeInterval = 1.0
 
         XCTAssertTrue(
             scope.process(
-                command: RUMAddLongTaskCommand(time: currentTime, attributes: ["foo": "bar"], duration: 1.0)
+                command: RUMAddLongTaskCommand(time: addLongTaskDate, attributes: ["foo": "bar"], duration: duration)
             )
         )
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMLongTaskEvent>.self).last)
         let longTask = event.model
 
+        let longTaskStartingDate = addLongTaskDate - duration
+
         XCTAssertEqual(longTask.action?.id, scope.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(longTask.application.id, scope.context.rumApplicationID)
         XCTAssertNil(longTask.connectivity)
         XCTAssertEqual(longTask.context?.contextInfo as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(longTask.date, Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1).timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(longTask.date, longTaskStartingDate.timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(longTask.dd.session?.plan, .plan1)
         XCTAssertEqual(longTask.longTask.duration, (1.0).toInt64Nanoseconds)
         XCTAssertTrue(longTask.longTask.isFrozenFrame == true)
