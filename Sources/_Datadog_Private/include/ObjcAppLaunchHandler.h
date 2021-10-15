@@ -6,4 +6,9 @@
 
 #import <CoreFoundation/CFDate.h>
 
+/// Returns the time interval between startup of the application process and the
+/// `UIApplicationDidBecomeActiveNotification`.
+///
+/// If the `UIApplicationDidBecomeActiveNotification` has not been reached yet,
+/// it returns  time interval between startup of the application process and now.
 CFTimeInterval __dd_private_AppLaunchTime(void);
