@@ -9,7 +9,7 @@ import XCTest
 
 // swiftlint:disable multiline_arguments_brackets trailing_closure
 class LogConsoleOutputTests: XCTestCase {
-    private let log: Log = .mockWith(date: .mockDecember15th2019At10AMUTC(), status: .info, message: "Info message.")
+    private let log: LogEvent = .mockWith(date: .mockDecember15th2019At10AMUTC(), status: .info, message: "Info message.")
 
     func testItPrintsLogsUsingShortFormat() {
         var messagePrinted: String = ""

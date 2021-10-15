@@ -26,6 +26,7 @@ internal struct FeaturesConfiguration {
         let common: Common
         let uploadURL: URL
         let clientToken: String
+        let logEventMapper: LogEventMapper?
     }
 
     struct Tracing {
@@ -168,7 +169,8 @@ extension FeaturesConfiguration {
             logging = Logging(
                 common: common,
                 uploadURL: try ifValid(endpointURLString: logsEndpoint.url),
-                clientToken: try ifValid(clientToken: configuration.clientToken)
+                clientToken: try ifValid(clientToken: configuration.clientToken),
+                logEventMapper: configuration.logEventMapper
             )
         }
 

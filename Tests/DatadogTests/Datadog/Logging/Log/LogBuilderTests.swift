@@ -8,8 +8,8 @@ import XCTest
 @testable import Datadog
 
 class LogBuilderTests: XCTestCase {
-    func testItBuildsBasicLog() {
-        let builder: LogBuilder = .mockWith(
+    func testItBuildsBasicLog() throws {
+        let builder: LogEventBuilder = .mockWith(
             applicationVersion: "1.2.3",
             serviceName: "test-service-name",
             loggerName: "test-logger-name"
@@ -24,47 +24,47 @@ class LogBuilderTests: XCTestCase {
             tags: ["tag"]
         )
 
-        XCTAssertEqual(log.date, .mockDecember15th2019At10AMUTC())
-        XCTAssertEqual(log.applicationVersion, "1.2.3")
-        XCTAssertEqual(log.status, .debug)
-        XCTAssertEqual(log.message, "debug message")
-        XCTAssertEqual(log.error, error)
-        XCTAssertEqual(log.serviceName, "test-service-name")
-        XCTAssertEqual(log.loggerName, "test-logger-name")
-        XCTAssertEqual(log.tags, ["tag"])
-        XCTAssertEqual(log.attributes.userAttributes as? [String: String], ["attribute": "value"])
+        XCTAssertEqual(log?.date, .mockDecember15th2019At10AMUTC())
+        XCTAssertEqual(log?.applicationVersion, "1.2.3")
+        XCTAssertEqual(log?.status, .debug)
+        XCTAssertEqual(log?.message, "debug message")
+        XCTAssertEqual(log?.error?.message, "description")
+        XCTAssertEqual(log?.serviceName, "test-service-name")
+        XCTAssertEqual(log?.loggerName, "test-logger-name")
+        XCTAssertEqual(log?.tags, ["tag"])
+        XCTAssertEqual(log?.attributes.userAttributes as? [String: String], ["attribute": "value"])
 
         XCTAssertEqual(
-            builder.createLogWith(level: .info, message: "", error: nil, date: .mockAny(), attributes: .mockAny(), tags: []).status, .info
+            builder.createLogWith(level: .info, message: "", error: nil, date: .mockAny(), attributes: .mockAny(), tags: [])?.status, .info
         )
         XCTAssertEqual(
-            builder.createLogWith(level: .notice, message: "", error: nil, date: .mockAny(), attributes: .mockAny(), tags: []).status, .notice
+            builder.createLogWith(level: .notice, message: "", error: nil, date: .mockAny(), attributes: .mockAny(), tags: [])?.status, .notice
         )
         XCTAssertEqual(
-            builder.createLogWith(level: .warn, message: "", error: nil, date: .mockAny(), attributes: .mockAny(), tags: []).status, .warn
+            builder.createLogWith(level: .warn, message: "", error: nil, date: .mockAny(), attributes: .mockAny(), tags: [])?.status, .warn
         )
         XCTAssertEqual(
-            builder.createLogWith(level: .error, message: "", error: nil, date: .mockAny(), attributes: .mockAny(), tags: []).status, .error
+            builder.createLogWith(level: .error, message: "", error: nil, date: .mockAny(), attributes: .mockAny(), tags: [])?.status, .error
         )
         XCTAssertEqual(
-            builder.createLogWith(level: .critical, message: "", error: nil, date: .mockAny(), attributes: .mockAny(), tags: []).status, .critical
+            builder.createLogWith(level: .critical, message: "", error: nil, date: .mockAny(), attributes: .mockAny(), tags: [])?.status, .critical
         )
     }
 
     func testItSetsThreadNameAttribute() {
-        let builder: LogBuilder = .mockAny()
+        let builder: LogEventBuilder = .mockAny()
         let expectation = self.expectation(description: "create all logs")
         expectation.expectedFulfillmentCount = 3
 
         DispatchQueue.main.async {
             let log = builder.createLogWith(level: .debug, message: "", error: nil, date: .mockAny(), attributes: .mockAny(), tags: [])
-            XCTAssertEqual(log.threadName, "main")
+            XCTAssertEqual(log?.threadName, "main")
             expectation.fulfill()
         }
 
         DispatchQueue.global(qos: .default).async {
             let log = builder.createLogWith(level: .debug, message: "", error: nil, date: .mockAny(), attributes: .mockAny(), tags: [])
-            XCTAssertEqual(log.threadName, "background")
+            XCTAssertEqual(log?.threadName, "background")
             expectation.fulfill()
         }
 
@@ -74,10 +74,54 @@ class LogBuilderTests: XCTestCase {
 
             Thread.current.name = "custom-thread-name"
             let log = builder.createLogWith(level: .debug, message: "", error: nil, date: .mockAny(), attributes: .mockAny(), tags: [])
-            XCTAssertEqual(log.threadName, "custom-thread-name")
+            XCTAssertEqual(log?.threadName, "custom-thread-name")
             expectation.fulfill()
         }
 
         waitForExpectations(timeout: 1, handler: nil)
+    }
+
+    func testGivenBuilderWithEventMapper_whenEventIsModified_itBuildsModifiedEvent() throws {
+        let builder: LogEventBuilder = .mockWith(
+            logEventMapper: { log in
+                var mutableLog = log
+                mutableLog.message = "modified log message"
+                mutableLog.tags = .mockRandom()
+                return mutableLog
+            }
+        )
+
+        let log = try XCTUnwrap(
+            builder.createLogWith(
+                level: .critical,
+                message: "original log message",
+                error: nil,
+                date: .mockAny(),
+                attributes: .mockAny(),
+                tags: []
+            )
+        )
+
+        XCTAssertEqual(log.message, "modified log message")
+        XCTAssertGreaterThan(log.tags!.count, 0)
+    }
+
+    func testGivenBuilderWithEventMapper_whenEventIsDropped_itReturnsNil() throws {
+        let builder: LogEventBuilder = .mockWith(
+            logEventMapper: { _ in
+                return nil
+            }
+        )
+
+        let log = builder.createLogWith(
+            level: .critical,
+            message: "original log message",
+            error: nil,
+            date: .mockAny(),
+            attributes: .mockAny(),
+            tags: []
+        )
+
+        XCTAssertNil(log)
     }
 }

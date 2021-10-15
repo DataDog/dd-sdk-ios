@@ -6,7 +6,6 @@
 
 import Foundation
 
-/// An interface for writing logs to some destination.
-internal protocol LogOutput {
-    func write(log: LogEvent)
-}
+/// Data scrubbing interface.
+/// It takes `LogEvent` and returns modified `LogEvent`, or `nil` to drop the event.
+internal typealias LogEventMapper = (LogEvent) -> LogEvent?

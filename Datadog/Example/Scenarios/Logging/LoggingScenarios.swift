@@ -4,7 +4,21 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+import Datadog
+
 /// Scenario which starts a view controller that sends bunch of logs to the server.
 final class LoggingManualInstrumentationScenario: TestScenario {
     static let storyboardName = "LoggingManualInstrumentationScenario"
+
+    func configureSDK(builder: Datadog.Configuration.Builder) {
+        _ = builder
+            .setLogEventMapper {
+                var log = $0
+                log.tags?.append("tag3:added")
+                if log.attributes.userAttributes["some-url"] != nil {
+                    log.attributes.userAttributes["some-url"] = "redacted"
+                }
+                return log
+            }
+    }
 }

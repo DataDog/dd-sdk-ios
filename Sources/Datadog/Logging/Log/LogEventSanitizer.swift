@@ -7,7 +7,7 @@
 import Foundation
 
 /// Sanitizes `Log` representation received from the user, so it can match Datadog log constraints.
-internal struct LogSanitizer {
+internal struct LogEventSanitizer {
     struct Constraints {
         /// Attribute names reserved for Datadog.
         /// If any of those is used by the user, the attribute will be ignored.
@@ -39,7 +39,7 @@ internal struct LogSanitizer {
 
     private let attributesSanitizer = AttributesSanitizer(featureName: "Log")
 
-    func sanitize(log: Log) -> Log {
+    func sanitize(log: LogEvent) -> LogEvent {
         let sanitizedAttributes = sanitize(attributes: log.attributes)
         let sanitizedTags = sanitize(tags: log.tags)
 
@@ -51,7 +51,7 @@ internal struct LogSanitizer {
 
     // MARK: - Attributes sanitization
 
-    private func sanitize(attributes rawAttributes: LogAttributes) -> LogAttributes {
+    private func sanitize(attributes rawAttributes: LogEvent.Attributes) -> LogEvent.Attributes {
         // Sanitizes only `userAttributes`, `internalAttributes` remain untouched
         var userAttributes = rawAttributes.userAttributes
         userAttributes = removeInvalidAttributes(userAttributes)
@@ -60,7 +60,7 @@ internal struct LogSanitizer {
         let userAttributesLimit = AttributesSanitizer.Constraints.maxNumberOfAttributes - (rawAttributes.internalAttributes?.count ?? 0)
         userAttributes = attributesSanitizer.limitNumberOf(attributes: userAttributes, to: userAttributesLimit)
 
-        return LogAttributes(
+        return LogEvent.Attributes(
             userAttributes: userAttributes,
             internalAttributes: rawAttributes.internalAttributes
         )
