@@ -51,19 +51,21 @@ class FilesOrchestratorTests: XCTestCase {
 
     func testGivenDefaultWriteConditions_whenFileCanNotBeUsedMoreTimes_itCreatesNewFile() throws {
         let orchestrator = configureOrchestrator(using: RelativeDateProvider(advancingBySeconds: 0.001))
-        var previousFile: WritableFile = try orchestrator.getWritableFile(writeSize: 1) // first use
+
+        var previousFile: WritableFile = try orchestrator.getWritableFile(writeSize: 1) // first use of a new file
         var nextFile: WritableFile
 
-        // use file maximum number of times
-        for _ in (0 ..< performance.maxObjectsInFile).dropLast() { // skip first use
-            nextFile = try orchestrator.getWritableFile(writeSize: 1)
-            XCTAssertEqual(nextFile.name, previousFile.name) // assert it uses same file
+        for _ in (0..<5) {
+            for _ in (0 ..< performance.maxObjectsInFile).dropLast() { // skip first use
+                nextFile = try orchestrator.getWritableFile(writeSize: 1)
+                XCTAssertEqual(nextFile.name, previousFile.name, "It must reuse the file when number of events is below the limit")
+                previousFile = nextFile
+            }
+
+            nextFile = try orchestrator.getWritableFile(writeSize: 1) // first use of a new file
+            XCTAssertNotEqual(nextFile.name, previousFile.name, "It must obtain a new file when number of events exceeds the limit")
             previousFile = nextFile
         }
-
-        // next time it returns different file
-        nextFile = try orchestrator.getWritableFile(writeSize: 1)
-        XCTAssertNotEqual(nextFile.name, previousFile.name)
     }
 
     func testGivenDefaultWriteConditions_whenFileHasNoRoomForMore_itCreatesNewFile() throws {
