@@ -14,15 +14,15 @@ import _Datadog_Private
 internal protocol LaunchTimeProviderType {
     /// The app process launch duration (in seconds) measured as the time from loading the first SDK object into memory
     /// to receiving `UIApplication.didBecomeActiveNotification` notification.
-    var launchTime: TimeInterval? { get }
+    var launchTime: TimeInterval { get }
 }
 
 internal class LaunchTimeProvider: LaunchTimeProviderType {
-    var launchTime: TimeInterval? {
+    var launchTime: TimeInterval {
         // Even if __dd_private_AppLaunchTime() is using a lock behind the scenes, TSAN will report a data race if there are no synchronizations at this level.
         objc_sync_enter(self)
         let time = __dd_private_AppLaunchTime()
         objc_sync_exit(self)
-        return time > 0 ? time : nil
+        return time
     }
 }

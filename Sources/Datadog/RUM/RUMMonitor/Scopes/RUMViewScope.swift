@@ -311,7 +311,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 crash: nil,
                 error: nil,
                 id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
-                loadingTime: dependencies.launchTimeProvider.launchTime?.toInt64Nanoseconds,
+                loadingTime: dependencies.launchTimeProvider.launchTime.toInt64Nanoseconds,
                 longTask: nil,
                 resource: nil,
                 target: nil,
