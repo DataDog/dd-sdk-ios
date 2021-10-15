@@ -182,7 +182,7 @@ class DDCrashReportExporterTests: XCTestCase {
         )
     }
 
-    func testWhenSomeSucceedingFramesInTheStackAreMissing_itPrintsTruncationMark() {
+    func testWhenSomeSucceedingFramesInTheStackAreMissing_itPrintsNonconsecutiveFrameNumbers() {
         let stackFrames: [StackFrame] = [
             .init(number: 0, libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 102),
             .init(number: 1, libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 112),
@@ -193,16 +193,15 @@ class DDCrashReportExporterTests: XCTestCase {
         ]
 
         crashReport.exceptionInfo = .init(name: .mockAny(), reason: .mockAny(), stackFrames: stackFrames)
+        let actualStack = exporter.export(crashReport).stack
         let expectedStack = """
         0   Foo                                 0x0000000000000066 0x64 + 2
         1   Foo                                 0x0000000000000070 0x64 + 12
-        ...
         3   Bizz                                0x00000000000001b0 0x190 + 32
-        ...
         5   Bizz                                0x00000000000001b0 0x190 + 32
         """
 
-        XCTAssertEqual(exporter.export(crashReport).stack, expectedStack)
+        XCTAssertEqual(actualStack, expectedStack)
     }
 
     // MARK: - Formatting threads

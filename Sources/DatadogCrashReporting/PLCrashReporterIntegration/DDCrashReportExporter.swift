@@ -20,8 +20,6 @@ import Datadog
 internal struct DDCrashReportExporter {
     private let unknown = "<unknown>"
     private let unavailable = "???"
-    /// Truncation mark printed in a stack trace in the place of stack frames that were removed.
-    private let stackTraceTruncationMark = "..."
 
     /// Different signals and their descriptions available in OS.
     private let knownSignalDescriptionByName = [
@@ -192,10 +190,7 @@ internal struct DDCrashReportExporter {
 
     /// Converts stack frames to newline-separated text format.
     private func string(from stackFrames: [StackFrame]) -> String {
-        var lines: [String] = []
-        var previousFrameNumber: Int? = nil
-
-        stackFrames.forEach { frame in
+        let lines: [String] = stackFrames.map { frame in
             let frameNumber = "\(frame.number)".addSuffix(repeating: " ", targetLength: 3)
             let libraryName = (frame.libraryName ?? unavailable).addSuffix(repeating: " ", targetLength: 35)
 
@@ -210,16 +205,7 @@ internal struct DDCrashReportExporter {
                 instructionOffsetDec = "\(frame.instructionPointer.subtractIfNoOverflow(libraryBaseAddress) ?? 0)"
             }
 
-            if let previousFrameNumber = previousFrameNumber {
-                let isSucceedingLine = frame.number == previousFrameNumber + 1
-                if !isSucceedingLine {
-                    // If some frames were reduced, insert truncation symbol:
-                    lines.append(stackTraceTruncationMark)
-                }
-            }
-
-            lines.append("\(frameNumber) \(libraryName) \(instructionAddressHex) \(imageBaseAddressHex) + \(instructionOffsetDec)")
-            previousFrameNumber = frame.number
+            return "\(frameNumber) \(libraryName) \(instructionAddressHex) \(imageBaseAddressHex) + \(instructionOffsetDec)"
         }
 
         return lines.joined(separator: "\n")
