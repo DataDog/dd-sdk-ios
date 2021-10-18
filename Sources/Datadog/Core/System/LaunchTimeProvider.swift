@@ -12,8 +12,12 @@ import _Datadog_Private
 
 /// Provides the application launch time.
 internal protocol LaunchTimeProviderType {
-    /// The app process launch duration (in seconds) measured as the time from loading the first SDK object into memory
+    /// The app process launch duration (in seconds) measured as the time from process start time
     /// to receiving `UIApplication.didBecomeActiveNotification` notification.
+    ///
+    /// If the `UIApplication.didBecomeActiveNotification` has not yet been received by the
+    /// time this variable is requested, the value should represent the time interval between now and the
+    /// process start time.
     var launchTime: TimeInterval { get }
 }
 
