@@ -8,6 +8,7 @@
 # -----------------------------------------------------------
 
 import os
+import glob
 from tempfile import TemporaryDirectory
 from src.utils import remember_cwd, shell, read_sdk_version
 
@@ -32,8 +33,10 @@ class GHAsset:
         print(f'⌛️️️ Creating the GH release asset from {os.getcwd()}')
 
         # Produce XCFrameworks with carthage:
-        shell('carthage bootstrap --no-build')
-        shell('carthage build --platform iOS --use-xcframeworks --no-skip-current')
+        # - only checkout and `--no-build` as it will build in the next command:
+        shell('carthage bootstrap --platform iOS --no-build')
+        # - `--no-build` as it will build in the next command:
+        shell('carthage build --platform iOS --use-xcframeworks --no-use-binaries --no-skip-current')
 
         # Create `.zip` archive:
         zip_archive_name = f'Datadog-{read_sdk_version()}.zip'
@@ -73,6 +76,10 @@ class GHAsset:
             print(f'   → the content of `.zip` archive is correct: \n'
                   f'       - actual: {actual_files}\n'
                   f'       - expected: {expected_files}')
+
+            print(f'   → details on bundled `XCFrameworks`:')
+            for file_path in glob.iglob(f'{unzip_dir}/*.xcframework/*', recursive=True):
+                print(f'      - {file_path.removeprefix(unzip_dir)}')
 
     def publish(self, git_tag: str, overwrite_existing: bool, dry_run: bool):
         """
