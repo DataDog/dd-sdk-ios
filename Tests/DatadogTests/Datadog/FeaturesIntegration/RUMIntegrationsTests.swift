@@ -36,12 +36,8 @@ class RUMIntegrationsTests: XCTestCase {
     func testGivenRUMMonitorRegistered_whenSessionIsSampled_itProvidesEmptyRUMContextAttributes() throws {
         RUMFeature.instance = RUMFeature(
             eventsMapper: .mockNoOp(),
-            storage: FeatureStorage(
-                writer: NoOpFileWriter(),
-                reader: NoOpFileReader(),
-                arbitraryAuthorizedWriter: NoOpFileWriter()
-            ),
-            upload: FeatureUpload(uploader: NoOpDataUploadWorker()),
+            storage: .mockNoOp(),
+            upload: .mockNoOp(),
             configuration: .mockWith(sessionSamplingRate: 0.0),
             commonDependencies: .mockAny(),
             vitalCPUReader: SamplingBasedVitalReaderMock(),

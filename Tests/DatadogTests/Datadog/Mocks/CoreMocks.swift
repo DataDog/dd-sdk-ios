@@ -521,12 +521,33 @@ extension FeaturesCommonDependencies {
     }
 }
 
+extension FeatureStorage {
+    static func mockNoOp() -> FeatureStorage {
+        return FeatureStorage(
+            writer: NoOpFileWriter(),
+            reader: NoOpFileReader(),
+            arbitraryAuthorizedWriter: NoOpFileWriter(),
+            dataOrchestrator: NoOpDataOrchestrator()
+        )
+    }
+}
+
+extension FeatureUpload {
+    static func mockNoOp() -> FeatureUpload {
+        return FeatureUpload(uploader: NoOpDataUploadWorker())
+    }
+}
+
 class FileWriterMock: Writer {
     var dataWritten: Encodable?
 
     func write<T>(value: T) where T: Encodable {
         dataWritten = value
     }
+}
+
+struct NoOpDataOrchestrator: DataOrchestratorType {
+    func deleteAllData() {}
 }
 
 class NoOpFileWriter: AsyncWriter {

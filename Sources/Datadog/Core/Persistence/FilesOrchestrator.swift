@@ -6,6 +6,7 @@
 
 import Foundation
 
+/// Orchestrates files in a single directory.
 internal class FilesOrchestrator {
     /// Directory where files are stored.
     private let directory: Directory
