@@ -625,7 +625,7 @@ class DateCorrectorMock: DateCorrectorType {
 }
 
 struct LaunchTimeProviderMock: LaunchTimeProviderType {
-    var launchTime: TimeInterval? = nil
+    var launchTime: TimeInterval = 0
 }
 
 extension UserInfo: AnyMockable, RandomMockable {
