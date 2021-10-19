@@ -151,7 +151,7 @@ internal struct FeatureStorage {
     func flushAndTearDown() {
         writer.flushAndCancelSynchronously()
         arbitraryAuthorizedWriter.flushAndCancelSynchronously()
-        reader.markAllFilesAsReadable()
+        (dataOrchestrator as? DataOrchestrator)?.markAllFilesAsReadable()
     }
 #endif
 }

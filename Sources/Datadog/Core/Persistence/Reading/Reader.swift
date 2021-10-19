@@ -22,8 +22,4 @@ internal protocol Reader {
 internal protocol SyncReader: Reader {
     /// Queue used for synchronous reads.
     var queue: DispatchQueue { get }
-
-#if DD_SDK_COMPILED_FOR_TESTING
-    func markAllFilesAsReadable()
-#endif
 }

@@ -25,4 +25,13 @@ internal struct DataOrchestrator: DataOrchestratorType {
             unauthorizedFilesOrchestrator.deleteAllReadableFiles()
         }
     }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    func markAllFilesAsReadable() {
+        queue.sync {
+            authorizedFilesOrchestrator.ignoreFilesAgeWhenReading = true
+            unauthorizedFilesOrchestrator.ignoreFilesAgeWhenReading = true
+        }
+    }
+#endif
 }
