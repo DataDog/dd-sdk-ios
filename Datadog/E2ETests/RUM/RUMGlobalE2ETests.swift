@@ -117,7 +117,7 @@ class RUMGlobalE2ETests: E2ETests {
         rum.removeAttribute(forKey: RUMConstants.customAttribute_Int)
     }
 
-    /// - api-surface: DDRUMMonitor.addAttribute(forKey key: AttributeKey, value: AttributeValue)
+    /// - api-surface: DDRUMMonitor.removeAttribute(forKey key: AttributeKey)
     ///
     /// - data monitor:
     /// ```rum
@@ -189,7 +189,7 @@ class RUMGlobalE2ETests: E2ETests {
         rum.removeAttribute(forKey: RUMConstants.customAttribute_Int)
     }
 
-    /// - api-surface: DDRUMMonitor.addAttribute(forKey key: AttributeKey, value: AttributeValue)
+    /// - api-surface: DDRUMMonitor.removeAttribute(forKey key: AttributeKey)
     ///
     /// - data monitor:
     /// ```rum
@@ -267,7 +267,7 @@ class RUMGlobalE2ETests: E2ETests {
         rum.removeAttribute(forKey: RUMConstants.customAttribute_Int)
     }
 
-    /// - api-surface: DDRUMMonitor.addAttribute(forKey key: AttributeKey, value: AttributeValue)
+    /// - api-surface: DDRUMMonitor.removeAttribute(forKey key: AttributeKey)
     ///
     /// - data monitor:
     /// ```rum

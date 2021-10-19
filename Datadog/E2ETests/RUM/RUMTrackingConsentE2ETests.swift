@@ -15,6 +15,8 @@ class RUMTrackingConsentE2ETests: E2ETests {
         super.setUp()
     }
 
+    /// - api-surface: DDRUMMonitor.initialize() -> DDRUMMonitor
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_config_consent_pending
@@ -28,6 +30,8 @@ class RUMTrackingConsentE2ETests: E2ETests {
         rum.dd.sendRandomRUMEvent()
     }
 
+    /// - api-surface: DDRUMMonitor.initialize() -> DDRUMMonitor
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_config_consent_granted
@@ -41,6 +45,8 @@ class RUMTrackingConsentE2ETests: E2ETests {
         rum.dd.sendRandomRUMEvent()
     }
 
+    /// - api-surface: DDRUMMonitor.initialize() -> DDRUMMonitor
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_config_consent_not_granted
@@ -54,6 +60,9 @@ class RUMTrackingConsentE2ETests: E2ETests {
         rum.dd.sendRandomRUMEvent()
     }
 
+    /// - api-surface: DDRUMMonitor.initialize() -> DDRUMMonitor
+    /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_config_consent_pending_to_granted
@@ -70,6 +79,9 @@ class RUMTrackingConsentE2ETests: E2ETests {
         }
     }
 
+    /// - api-surface: DDRUMMonitor.initialize() -> DDRUMMonitor
+    /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_config_consent_pending_to_not_granted
@@ -86,6 +98,9 @@ class RUMTrackingConsentE2ETests: E2ETests {
         }
     }
 
+    /// - api-surface: DDRUMMonitor.initialize() -> DDRUMMonitor
+    /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_config_consent_granted_to_not_granted
@@ -102,6 +117,9 @@ class RUMTrackingConsentE2ETests: E2ETests {
         }
     }
 
+    /// - api-surface: DDRUMMonitor.initialize() -> DDRUMMonitor
+    /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_config_consent_granted_to_pending
@@ -118,6 +136,9 @@ class RUMTrackingConsentE2ETests: E2ETests {
         }
     }
 
+    /// - api-surface: DDRUMMonitor.initialize() -> DDRUMMonitor
+    /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_config_consent_not_granted_to_granted
@@ -134,6 +155,9 @@ class RUMTrackingConsentE2ETests: E2ETests {
         }
     }
 
+    /// - api-surface: DDRUMMonitor.initialize() -> DDRUMMonitor
+    /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_config_consent_not_granted_to_pending

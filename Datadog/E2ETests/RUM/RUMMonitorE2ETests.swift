@@ -13,6 +13,8 @@ class RUMMonitorE2ETests: E2ETests {
     let actionTypePool = [RUMUserActionType.swipe, .scroll, .tap, .custom]
     let nonCustomActionTypePool = [RUMUserActionType.swipe, .scroll, .tap]
 
+    /// - api-surface: DDRUMMonitor.startView(key: String,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_start_view
@@ -39,6 +41,8 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
+    /// - api-surface: DDRUMMonitor.stopView(key: String,attributes: [AttributeKey: AttributeValue])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_stop_view
@@ -65,6 +69,8 @@ class RUMMonitorE2ETests: E2ETests {
         }
     }
 
+    /// - api-surface: DDRUMMonitor.stopView(key: String,attributes: [AttributeKey: AttributeValue])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_stop_view_with_pending_resource
@@ -95,6 +101,8 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopResourceLoading(resourceKey: resourceKey, statusCode: (200...500).randomElement()!, kind: .other)
     }
 
+    /// - api-surface: DDRUMMonitor.stopView(key: String,attributes: [AttributeKey: AttributeValue])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_stop_view_with_pending_action
@@ -126,6 +134,8 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopUserAction(type: actionType, name: actionName, attributes: [:])
     }
 
+    /// - api-surface: DDRUMMonitor.addTiming(name: String)
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_add_timing
@@ -168,6 +178,8 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
+    /// - api-surface: DDRUMMonitor.startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_start_non_custom_action_with_no_outcome
@@ -199,6 +211,8 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
+    /// - api-surface: DDRUMMonitor.startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_start_custom_action_with_no_outcome
@@ -229,6 +243,8 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
+    /// - api-surface: DDRUMMonitor.startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_start_action_with_outcome
@@ -260,6 +276,9 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
+    /// - api-surface: DDRUMMonitor.startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: DDRUMMonitor.stopUserAction(type: RUMUserActionType, name: String?, attributes: [AttributeKey: AttributeValue])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_stop_non_custom_action_with_no_outcome
@@ -293,6 +312,9 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
+    /// - api-surface: DDRUMMonitor.startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: DDRUMMonitor.stopUserAction(type: RUMUserActionType, name: String?, attributes: [AttributeKey: AttributeValue])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_stop_custom_action_with_no_outcome
@@ -326,6 +348,9 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
+    /// - api-surface: DDRUMMonitor.startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: DDRUMMonitor.stopUserAction(type: RUMUserActionType, name: String?, attributes: [AttributeKey: AttributeValue])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_stop_action_with_outcome
@@ -359,6 +384,8 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
+    /// - api-surface: DDRUMMonitor.addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_add_non_custom_action_with_no_outcome
@@ -391,6 +418,8 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
+    /// - api-surface: DDRUMMonitor.addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_add_custom_action_with_no_outcome
@@ -422,6 +451,8 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
+    /// - api-surface: DDRUMMonitor.addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_add_action_with_outcome
@@ -454,6 +485,10 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
+    /// - api-surface: DDRUMMonitor.addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: DDRUMMonitor.startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: DDRUMMonitor.stopUserAction(type: RUMUserActionType, name: String?, attributes: [AttributeKey: AttributeValue])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_add_custom_action_while_active_action
@@ -489,6 +524,9 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
+    /// - api-surface: DDRUMMonitor.startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: DDRUMMonitor.stopUserAction(type: RUMUserActionType, name: String?, attributes: [AttributeKey: AttributeValue])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_ignore_stop_background_action_with_outcome
@@ -518,6 +556,8 @@ class RUMMonitorE2ETests: E2ETests {
         }
     }
 
+    /// - api-surface: DDRUMMonitor.addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_ignore_add_background_non_custom_action_with_no_outcome
@@ -543,6 +583,8 @@ class RUMMonitorE2ETests: E2ETests {
         }
     }
 
+    /// - api-surface: DDRUMMonitor.addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_ignore_add_background_custom_action_with_no_outcome
@@ -569,6 +611,8 @@ class RUMMonitorE2ETests: E2ETests {
         Thread.sleep(forTimeInterval: RUMConstants.actionInactivityThreshold)
     }
 
+    /// - api-surface: DDRUMMonitor.addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_ignore_add_background_custom_action_with_outcome
@@ -596,6 +640,8 @@ class RUMMonitorE2ETests: E2ETests {
         rum.sendRandomActionOutcomeEvent()
     }
 
+    /// - api-surface: DDRUMMonitor.addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_ignore_add_background_non_custom_action_with_outcome
@@ -623,6 +669,8 @@ class RUMMonitorE2ETests: E2ETests {
         rum.sendRandomActionOutcomeEvent()
     }
 
+    /// - api-surface: DDRUMMonitor.startResourceLoading(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_start_resource
@@ -657,6 +705,9 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
+    /// - api-surface: DDRUMMonitor.startResourceLoading(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
+    /// - api-surface: DDRUMMonitor.stopResourceLoading(resourceKey: String,statusCode: Int?,kind: RUMResourceType,size: Int64? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_stop_resource
@@ -692,6 +743,9 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
+    /// - api-surface: DDRUMMonitor.startResourceLoading(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
+    /// - api-surface: DDRUMMonitor.stopResourceLoadingWithError(resourceKey: String,errorMessage: String,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_stop_resource_with_error
@@ -737,6 +791,9 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
+    /// - api-surface: DDRUMMonitor.startResourceLoading(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
+    /// - api-surface: DDRUMMonitor.stopResourceLoadingWithError(resourceKey: String,errorMessage: String,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_stop_resource_with_error_without_status_code
@@ -777,6 +834,9 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
+    /// - api-surface: DDRUMMonitor.startResourceLoading(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
+    /// - api-surface: DDRUMMonitor.stopResourceLoading(resourceKey: String,statusCode: Int?,kind: RUMResourceType,size: Int64? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_ignore_stop_background_resource
@@ -807,6 +867,9 @@ class RUMMonitorE2ETests: E2ETests {
         }
     }
 
+    /// - api-surface: DDRUMMonitor.startResourceLoading(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
+    /// - api-surface: DDRUMMonitor.stopResourceLoadingWithError(resourceKey: String,errorMessage: String,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_ignore_stop_background_resource_with_error
@@ -847,6 +910,8 @@ class RUMMonitorE2ETests: E2ETests {
         }
     }
 
+    /// - api-surface: DDRUMMonitor.addError(message: String,source: RUMErrorSource,stack: String?,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_add_error
@@ -876,6 +941,8 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
+    /// - api-surface: DDRUMMonitor.addError(message: String,source: RUMErrorSource,stack: String?,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_add_error_with_stacktrace
@@ -912,6 +979,8 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
+    /// - api-surface: DDRUMMonitor.addError(message: String,source: RUMErrorSource,stack: String?,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_ignore_add_background_error
@@ -936,6 +1005,8 @@ class RUMMonitorE2ETests: E2ETests {
         }
     }
 
+    /// - api-surface: DDRUMMonitor.addError(message: String,source: RUMErrorSource,stack: String?,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
+    ///
     /// - data monitor:
     /// ```rum
     /// $monitor_id = rum_rummonitor_ignore_add_background_error_with_stacktrace
