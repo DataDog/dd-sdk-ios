@@ -329,7 +329,7 @@ class DatadogTests: XCTestCase {
         }
     }
 
-    // MARK: - Global Values
+    // MARK: - Public APIs
 
     func testTrackingConsent() {
         let initialConsent: TrackingConsent = .mockRandom()
@@ -397,6 +397,48 @@ class DatadogTests: XCTestCase {
             .granted,
             "When using deprecated Datadog initialization API the consent should be set to `.granted`"
         )
+
+        Datadog.flushAndDeinitialize()
+    }
+
+    func testGivenDataStoredInAllFeatureDirectories_whenClearAllDataIsUsed_allFilesAreRemoved() throws {
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: rumBuilder
+                .enableLogging(true)
+                .enableTracing(true)
+                .enableRUM(true)
+                .enableInternalMonitoring(clientToken: "abc")
+                .build()
+        )
+
+        let featureDirectories: [FeatureDirectories] = [
+            try obtainLoggingFeatureDirectories(),
+            try obtainTracingFeatureDirectories(),
+            try obtainRUMFeatureDirectories(),
+            try obtainInternalMonitoringFeatureLogDirectories()
+        ]
+
+        let allDirectories: [Directory] = featureDirectories.flatMap { [$0.authorized, $0.unauthorized] }
+        try allDirectories.forEach { directory in _ = try directory.createFile(named: .mockRandom()) }
+
+        // Given
+        let numberOfFiles = try allDirectories.reduce(0, { acc, nextDirectory in return try acc + nextDirectory.files().count })
+        XCTAssertEqual(numberOfFiles, 8, "Each feature stores 2 files - one authorised and one unauthorised")
+
+        // When
+        Datadog.clearAllData()
+
+        // Wait for async clear completion in all features:
+        (LoggingFeature.instance?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
+        (TracingFeature.instance?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
+        (RUMFeature.instance?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
+        (InternalMonitoringFeature.instance?.logsStorage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
+
+        // Then
+        let newNumberOfFiles = try allDirectories.reduce(0, { acc, nextDirectory in return try acc + nextDirectory.files().count })
+        XCTAssertEqual(newNumberOfFiles, 0, "All files must be removed")
 
         Datadog.flushAndDeinitialize()
     }
