@@ -15,6 +15,7 @@ public class DDDatadog: NSObject
  public static func verbosityLevel() -> DDSDKVerbosityLevel
  public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:])
  public static func setTrackingConsent(consent: DDTrackingConsent)
+ public static func clearAllData()
  public static func flushAndDeinitialize()
 public class DDEndpoint: NSObject
  public static func us1() -> DDEndpoint

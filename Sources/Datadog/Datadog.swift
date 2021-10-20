@@ -134,6 +134,11 @@ public class Datadog {
         instance?.consentProvider.changeConsent(to: trackingConsent)
     }
 
+    /// Clears all data that has not already been sent to Datadog servers.
+    public static func clearAllData() {
+        instance?.clearAllData()
+    }
+
     // MARK: - Internal
 
     internal static var instance: Datadog?
@@ -291,6 +296,13 @@ public class Datadog {
         self.consentProvider = consentProvider
         self.userInfoProvider = userInfoProvider
         self.launchTimeProvider = launchTimeProvider
+    }
+
+    internal func clearAllData() {
+        LoggingFeature.instance?.storage.clearAllData()
+        TracingFeature.instance?.storage.clearAllData()
+        RUMFeature.instance?.storage.clearAllData()
+        InternalMonitoringFeature.instance?.logsStorage.clearAllData()
     }
 
 #if DD_SDK_COMPILED_FOR_TESTING

@@ -51,19 +51,21 @@ class FilesOrchestratorTests: XCTestCase {
 
     func testGivenDefaultWriteConditions_whenFileCanNotBeUsedMoreTimes_itCreatesNewFile() throws {
         let orchestrator = configureOrchestrator(using: RelativeDateProvider(advancingBySeconds: 0.001))
-        var previousFile: WritableFile = try orchestrator.getWritableFile(writeSize: 1) // first use
+
+        var previousFile: WritableFile = try orchestrator.getWritableFile(writeSize: 1) // first use of a new file
         var nextFile: WritableFile
 
-        // use file maximum number of times
-        for _ in (0 ..< performance.maxObjectsInFile).dropLast() { // skip first use
-            nextFile = try orchestrator.getWritableFile(writeSize: 1)
-            XCTAssertEqual(nextFile.name, previousFile.name) // assert it uses same file
+        for _ in (0..<5) {
+            for _ in (0 ..< performance.maxObjectsInFile).dropLast() { // skip first use
+                nextFile = try orchestrator.getWritableFile(writeSize: 1)
+                XCTAssertEqual(nextFile.name, previousFile.name, "It must reuse the file when number of events is below the limit")
+                previousFile = nextFile
+            }
+
+            nextFile = try orchestrator.getWritableFile(writeSize: 1) // first use of a new file
+            XCTAssertNotEqual(nextFile.name, previousFile.name, "It must obtain a new file when number of events exceeds the limit")
             previousFile = nextFile
         }
-
-        // next time it returns different file
-        nextFile = try orchestrator.getWritableFile(writeSize: 1)
-        XCTAssertNotEqual(nextFile.name, previousFile.name)
     }
 
     func testGivenDefaultWriteConditions_whenFileHasNoRoomForMore_itCreatesNewFile() throws {
@@ -240,6 +242,21 @@ class FilesOrchestratorTests: XCTestCase {
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
         orchestrator.delete(readableFile: readableFile)
         XCTAssertEqual(try temporaryDirectory.files().count, 0)
+    }
+
+    func testItDeletesAllFiles() throws {
+        let numberOfFiles: Int = .mockRandom(min: 10, max: 100)
+        let dateProvider = RelativeDateProvider()
+        let orchestrator = configureOrchestrator(using: dateProvider)
+
+        try (0..<numberOfFiles).forEach { _ in
+            dateProvider.advance(bySeconds: 1 + performance.minFileAgeForRead)
+            _ = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
+        }
+
+        XCTAssertEqual(try temporaryDirectory.files().count, numberOfFiles, "Directory should contain \(numberOfFiles) before deletion")
+        orchestrator.deleteAllReadableFiles()
+        XCTAssertEqual(try temporaryDirectory.files().count, 0, "Directory should have no files after deletion")
     }
 
     // MARK: - File names tests

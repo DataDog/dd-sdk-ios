@@ -10,8 +10,8 @@ extension LoggingFeature {
     /// Mocks the feature instance which performs no writes and no uploads.
     static func mockNoOp() -> LoggingFeature {
         return LoggingFeature(
-            storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader(), arbitraryAuthorizedWriter: NoOpFileWriter()),
-            upload: .init(uploader: NoOpDataUploadWorker()),
+            storage: .mockNoOp(),
+            upload: .mockNoOp(),
             configuration: .mockAny(),
             commonDependencies: .mockAny()
         )

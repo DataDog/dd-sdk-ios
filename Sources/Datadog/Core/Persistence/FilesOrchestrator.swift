@@ -6,6 +6,7 @@
 
 import Foundation
 
+/// Orchestrates files in a single directory.
 internal class FilesOrchestrator {
     /// Directory where files are stored.
     private let directory: Directory
@@ -62,7 +63,7 @@ internal class FilesOrchestrator {
     private func reuseLastWritableFileIfPossible(writeSize: UInt64) -> WritableFile? {
         if let lastFileName = lastWritableFileName {
             if !directory.hasFile(named: lastFileName) {
-                return nil // this is expected if the last writable file was deleted after upload
+                return nil // this is expected if the last writable file was deleted
             }
 
             do {
@@ -122,6 +123,14 @@ internal class FilesOrchestrator {
             try readableFile.delete()
         } catch {
             internalMonitor?.sdkLogger.error("Failed to delete file", error: error)
+        }
+    }
+
+    func deleteAllReadableFiles() {
+        do {
+            try directory.deleteAllFiles()
+        } catch {
+            internalMonitor?.sdkLogger.error("Failed to delete all readable file", error: error)
         }
     }
 

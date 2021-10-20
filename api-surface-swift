@@ -84,6 +84,7 @@ public class Datadog
  public static var isInitialized: Bool
  public static func setUserInfo(id: String? = nil,name: String? = nil,email: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:])
  public static func set(trackingConsent: TrackingConsent)
+ public static func clearAllData()
  public static func flushAndDeinitialize()
  public struct Configuration
   public enum BatchSize
