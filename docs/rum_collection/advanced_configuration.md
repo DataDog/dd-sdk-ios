@@ -123,12 +123,11 @@ Custom attributes allow you to slice and dice information about observed user be
 
 ### Set a custom global attribute
 
-To set a custom global attribute, use `Global.rum.addAttribute()`.
+To set a custom global attribute, use `Global.rum.addAttribute(forKey:value:)`.
 
-* To add an attribute, set `rumMonitor.setAttribute(forKey: "some key", value: "some value")`.
-* To update the value, set `rumMonitor.setAttribute(forKey: "some key", value: "some other value")`.
-* To remove the key, set `rumMonitor.setAttribute(forKey: "some key", value: nil)`.
-* To return global attributes and add to events, set `let globalAttrs = rumMonitor.attributes`.
+* To add an attribute, use `Global.rum.setAttribute(forKey: "some key", value: "some value")`.
+* To update the value, use `Global.rum.setAttribute(forKey: "some key", value: "some other value")`.
+* To remove the key, use `Global.rum.removeAttribute(forKey: "some key")`.
 
 ### Track user sessions
 
