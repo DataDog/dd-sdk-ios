@@ -65,6 +65,14 @@ public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate {
             return nil
         }
 
+        guard !isSwiftUI(class: type(of: viewController)) else {
+            // `SwiftUI` requires manual instrumentation in views. Therefore, all SwiftUI
+            // `UIKit` containers (e.g. `UIHostingController`) will be ignored from
+            // auto-intrumentation.
+            // This condition is wider and it ignores all view controllers defined in `SwiftUI` bundle.
+            return nil
+        }
+
         let canonicalClassName = viewController.canonicalClassName
         var view = RUMView(name: canonicalClassName)
         view.path = canonicalClassName
@@ -74,5 +82,10 @@ public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate {
     /// If given `class` comes from UIKit framework.
     private func isUIKit(`class`: AnyClass) -> Bool {
         return Bundle(for: `class`).isUIKit
+    }
+
+    /// If given `class` comes from SwiftUI framework.
+    private func isSwiftUI(`class`: AnyClass) -> Bool {
+        return Bundle(for: `class`).isSwiftUI
     }
 }
