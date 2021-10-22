@@ -8,7 +8,7 @@ import Foundation
 
 internal typealias URLSessionRUMAttributesProvider = (URLRequest, URLResponse?, Data?, Error?) -> [AttributeKey: AttributeValue]?
 
-internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler {
+internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler, RUMCommandPublisher {
     private let dateProvider: DateProvider
     /// Attributes-providing callback.
     /// It is configured by the user and should be used to associate additional RUM attributes with intercepted RUM Resource.
@@ -25,8 +25,8 @@ internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler {
 
     weak var subscriber: RUMCommandSubscriber?
 
-    func subscribe(commandsSubscriber: RUMCommandSubscriber) {
-        self.subscriber = commandsSubscriber
+    func publish(to subscriber: RUMCommandSubscriber) {
+        self.subscriber = subscriber
     }
 
     // MARK: - URLSessionInterceptionHandler

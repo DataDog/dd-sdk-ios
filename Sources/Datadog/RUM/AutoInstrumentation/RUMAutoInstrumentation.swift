@@ -7,7 +7,7 @@
 import Foundation
 
 /// RUM Auto Instrumentation feature.
-internal final class RUMAutoInstrumentation {
+internal final class RUMAutoInstrumentation: RUMCommandPublisher {
     static var instance: RUMAutoInstrumentation?
 
     /// RUM Views auto instrumentation.
@@ -90,10 +90,10 @@ internal final class RUMAutoInstrumentation {
         longTasks?.start()
     }
 
-    func subscribe(commandSubscriber: RUMCommandSubscriber) {
-        views?.handler.subscribe(commandsSubscriber: commandSubscriber)
-        userActions?.handler.subscribe(commandsSubscriber: commandSubscriber)
-        longTasks?.subscribe(commandsSubscriber: commandSubscriber)
+    func publish(to subscriber: RUMCommandSubscriber) {
+        views?.handler.publish(to: subscriber)
+        userActions?.handler.publish(to: subscriber)
+        longTasks?.publish(to: subscriber)
     }
 
 #if DD_SDK_COMPILED_FOR_TESTING
