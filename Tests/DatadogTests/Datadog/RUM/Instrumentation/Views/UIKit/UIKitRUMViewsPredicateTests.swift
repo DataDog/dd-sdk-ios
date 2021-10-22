@@ -7,6 +7,10 @@
 import XCTest
 import Datadog
 
+#if canImport(SwiftUI)
+import SwiftUI
+#endif
+
 class UIKitRUMViewsPredicateTests: XCTestCase {
     func testGivenDefaultPredicate_whenAskingForCustomSwiftViewController_itNamesTheViewByItsClassName() {
         // Given
@@ -47,4 +51,21 @@ class UIKitRUMViewsPredicateTests: XCTestCase {
         // Then
         XCTAssertNil(rumView)
     }
+
+#if canImport(SwiftUI)
+    func testGivenDefaultPredicate_whenAskingSwiftUIViewController_itReturnsNoView() {
+        guard #available(iOS 13, *) else {
+            return
+        }
+        // Given
+        let predicate = DefaultUIKitRUMViewsPredicate()
+
+        // When
+        let swiftUIHostingController = UIHostingController<EmptyView>(rootView: EmptyView())
+        let rumView = predicate.rumView(for: swiftUIHostingController)
+
+        // Then
+        XCTAssertNil(rumView)
+    }
+#endif
 }

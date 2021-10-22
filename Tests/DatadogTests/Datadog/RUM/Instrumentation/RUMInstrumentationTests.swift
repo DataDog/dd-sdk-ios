@@ -7,7 +7,7 @@
 import XCTest
 @testable import Datadog
 
-class RUMAutoInstrumentationTests: XCTestCase {
+class RUMInstrumentationTests: XCTestCase {
     override func setUp() {
         super.setUp()
         XCTAssertNil(RUMFeature.instance)

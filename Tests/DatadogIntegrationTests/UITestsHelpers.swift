@@ -78,3 +78,11 @@ extension String {
 struct Exception: Error, CustomStringConvertible {
     let description: String
 }
+
+extension XCUIElement {
+    func safeTap(within timeout: TimeInterval = 0) {
+        if waitForExistence(timeout: timeout) && isHittable {
+            tap()
+        }
+    }
+}

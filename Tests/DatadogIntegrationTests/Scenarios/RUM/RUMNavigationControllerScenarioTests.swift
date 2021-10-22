@@ -9,20 +9,20 @@ import XCTest
 
 private extension ExampleApplication {
     func tapPushNextScreenButton() {
-        buttons["Push Next Screen"].tap()
+        buttons["Push Next Screen"].safeTap(within: 5)
     }
 
     func tapBackButton() {
-        navigationBars["Screen 4"].buttons["Screen 3"].tap()
+        navigationBars["Screen 4"].buttons["Screen 3"].safeTap()
     }
 
     func tapPopToTheFirstScreenButton() {
-        buttons["Pop To The First Screen"].tap()
+        buttons["Pop To The First Screen"].safeTap()
     }
 
     func swipeInteractiveBackGesture() {
         let coordinate1 = coordinate(withNormalizedOffset: .init(dx: 0, dy: 0.5))
-        let coordinate2 = coordinate(withNormalizedOffset: .init(dx: 0.75, dy: 0.5))
+        let coordinate2 = coordinate(withNormalizedOffset: .init(dx: 0.80, dy: 0.5))
         coordinate1.press(forDuration: 0.5, thenDragTo: coordinate2)
     }
 }

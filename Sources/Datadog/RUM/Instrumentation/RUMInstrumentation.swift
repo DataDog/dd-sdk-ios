@@ -48,6 +48,8 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
 
     /// RUM Views auto instrumentation, `nil` if not enabled.
     let viewsAutoInstrumentation: ViewsAutoInstrumentation?
+    /// `SwiftUI.View` RUM instrumentation
+    let swiftUIViewInstrumentation: SwiftUIViewHandler
     /// RUM User Actions auto instrumentation, `nil` if not enabled.
     let userActionsAutoInstrumentation: UserActionsAutoInstrumentation?
     /// RUM Long Tasks auto instrumentation, `nil` if not enabled.
@@ -84,6 +86,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         self.viewsAutoInstrumentation = viewsAutoInstrumentation
         self.userActionsAutoInstrumentation = userActionsAutoInstrumentation
         self.longTasks = longTasks
+        self.swiftUIViewInstrumentation = SwiftUIRUMViewsHandler(dateProvider: dateProvider)
     }
 
     func enable() {
@@ -96,6 +99,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         viewsAutoInstrumentation?.handler.publish(to: subscriber)
         userActionsAutoInstrumentation?.handler.publish(to: subscriber)
         longTasks?.publish(to: subscriber)
+        swiftUIViewInstrumentation.publish(to: subscriber)
     }
 
 #if DD_SDK_COMPILED_FOR_TESTING
@@ -106,4 +110,14 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         RUMInstrumentation.instance = nil
     }
 #endif
+}
+
+extension RUMInstrumentation: SwiftUIViewHandler {
+    func onAppear(identity: String, name: String, path: String, attributes: [AttributeKey: AttributeValue]) {
+        swiftUIViewInstrumentation.onAppear(identity: identity, name: name, path: path, attributes: attributes)
+    }
+
+    func onDisappear(identity: String) {
+        swiftUIViewInstrumentation.onDisappear(identity: identity)
+    }
 }

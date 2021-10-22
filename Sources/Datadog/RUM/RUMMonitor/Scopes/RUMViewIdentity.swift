@@ -63,6 +63,10 @@ extension String: RUMViewIdentifiable {
     var defaultViewPath: String { self }
 }
 
+internal func == (lhs: RUMViewIdentifiable?, rhs: RUMViewIdentifiable) -> Bool {
+    return lhs?.equals(rhs) ?? false
+}
+
 // MARK: - `RUMViewIdentity`
 
 /// Manages the `RUMViewIdentifiable` by using either reference or value semantic.
