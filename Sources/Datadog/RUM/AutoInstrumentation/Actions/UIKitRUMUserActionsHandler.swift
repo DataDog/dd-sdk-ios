@@ -6,8 +6,7 @@
 
 import UIKit
 
-internal protocol UIKitRUMUserActionsHandlerType: AnyObject {
-    func subscribe(commandsSubscriber: RUMCommandSubscriber)
+internal protocol UIKitRUMUserActionsHandlerType: RUMCommandPublisher {
     func notify_sendEvent(application: UIApplication, event: UIEvent)
 }
 
@@ -24,8 +23,8 @@ internal class UIKitRUMUserActionsHandler: UIKitRUMUserActionsHandlerType {
 
     weak var subscriber: RUMCommandSubscriber?
 
-    func subscribe(commandsSubscriber: RUMCommandSubscriber) {
-        self.subscriber = commandsSubscriber
+    func publish(to subscriber: RUMCommandSubscriber) {
+        self.subscriber = subscriber
     }
 
     func notify_sendEvent(application: UIApplication, event: UIEvent) {

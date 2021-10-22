@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal class LongTaskObserver {
+internal class LongTaskObserver: RUMCommandPublisher {
     private let longTaskDurationThreshold: TimeInterval
     private let dateProvider: DateProvider
 
@@ -15,8 +15,9 @@ internal class LongTaskObserver {
     private var lastActivity: (kind: CFRunLoopActivity, date: Date)?
 
     weak var subscriber: RUMCommandSubscriber?
-    func subscribe(commandsSubscriber: RUMCommandSubscriber) {
-        self.subscriber = commandsSubscriber
+
+    func publish(to subscriber: RUMCommandSubscriber) {
+        self.subscriber = subscriber
     }
 
     init(threshold: TimeInterval, dateProvider: DateProvider) {
