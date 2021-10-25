@@ -90,6 +90,16 @@ internal struct DDCrashReportExporter {
             let exceptionReason = exception.reason ?? unknown // e.g. `-[NSObject objectForKey:]: unrecognized selector sent to instance 0x...`
             return "Terminating app due to uncaught exception '\(exceptionName)', reason: '\(exceptionReason)'."
         } else {
+            if let crashedThread = crashReport.threads.first(where: { $0.crashed }) {
+                let symbolicator = CrashReportSymbolicator(crashReport: crashReport)
+                let symbolicatedFrames = symbolicator.symbolicate(stackFrames: crashedThread.stackFrames)
+
+                if let firstCrashedUserFrame = symbolicatedFrames.first(where: { $0.isUserFrame }) {
+                    // Build message from crashed symbol
+                    return "Crash in \(firstCrashedUserFrame.symbol)"
+                }
+            }
+
             // Use signal description available in OS
             guard let signalName = crashReport.signalInfo?.name else { // e.g. SIGILL
                 return "Application crash: \(unknown)"
