@@ -74,8 +74,10 @@ internal struct CrashReportSymbolicator {
             let result = dladdr(pointer, &info)
             if result != 0 {
                 var symbolName = info.dli_sname != nil ? String(cString: info.dli_sname) : ""
-                if symbolName != "" {
-                    symbolName = demangleName(symbolName)
+                if DDCrashReportingPlugin.useDemangling {
+                    if symbolName != "" {
+                        symbolName = demangleName(symbolName)
+                    }
                 }
                 return SymbolicatedStackFrame(
                     symbol: symbolName,

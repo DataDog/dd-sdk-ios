@@ -13,6 +13,8 @@ import Foundation
 public class DDCrashReportingPlugin: NSObject, DDCrashReportingPluginType {
     static var thirdPartyCrashReporter: ThirdPartyCrashReporter?
 
+    public static var useDemangling = false
+
     // MARK: - Initialization
 
     override public convenience init() {
