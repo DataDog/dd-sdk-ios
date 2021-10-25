@@ -424,4 +424,21 @@ class DDCrashReportExporterTests: XCTestCase {
             )
         }
     }
+
+    func testOndeviceSymbolication() throws {
+        let crashReporter = PLCrashReporter(configuration: .ddConfiguration())!
+
+        // Given
+        let plCrashReport = try PLCrashReport(
+            data: try crashReporter.generateLiveReportAndReturnError()
+        )
+
+        // When
+        let crashReport = try CrashReport(from: plCrashReport)
+        let crashedThread = try XCTUnwrap(crashReport.threads.first(where: { $0.crashed }))
+
+        // Then
+        let symbolicator = CrashReportSymbolicator(crashReport: crashReport)
+        print(symbolicator.symbolicate(stackFrames: crashedThread.stackFrames))
+    }
 }
