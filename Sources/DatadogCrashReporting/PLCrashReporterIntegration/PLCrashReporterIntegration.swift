@@ -13,7 +13,7 @@ internal extension PLCrashReporterConfig {
         return PLCrashReporterConfig(
             // The choice of `.BSD` over `.mach` is well discussed here:
             // https://github.com/ChatSecure/PLCrashReporter/blob/7f27b272d5ff0d6650fc41317127bb2378ed6e88/Source/CrashReporter.h#L238-L363
-            signalHandlerType: .BSD,
+            signalHandlerType: DDCrashReportingPlugin.useMachExceptions ? .mach : .BSD,
             // We don't symbolicate on device. All symbolication will happen backend-side.
             symbolicationStrategy: []
         )

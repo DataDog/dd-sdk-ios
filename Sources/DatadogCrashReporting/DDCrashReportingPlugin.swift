@@ -14,6 +14,7 @@ public class DDCrashReportingPlugin: NSObject, DDCrashReportingPluginType {
     static var thirdPartyCrashReporter: ThirdPartyCrashReporter?
 
     public static var useDemangling = false
+    public static var useMachExceptions = false
 
     // MARK: - Initialization
 
