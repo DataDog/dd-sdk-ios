@@ -15,7 +15,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
     private func createHandler(rumAttributesProvider: URLSessionRUMAttributesProvider? = nil) -> URLSessionRUMResourcesHandler {
         let handler = URLSessionRUMResourcesHandler(dateProvider: dateProvider, rumAttributesProvider: rumAttributesProvider)
-        handler.subscribe(commandsSubscriber: commandSubscriber)
+        handler.publish(to: commandSubscriber)
         return handler
     }
     private lazy var handler = createHandler(rumAttributesProvider: nil)

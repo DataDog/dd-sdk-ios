@@ -13,7 +13,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
 
     private func createHandler(userActionsPredicate: UIKitRUMUserActionsPredicate = DefaultUIKitRUMUserActionsPredicate()) -> UIKitRUMUserActionsHandler {
         let handler = UIKitRUMUserActionsHandler(dateProvider: dateProvider, userActionsPredicate: userActionsPredicate)
-        handler.subscribe(commandsSubscriber: commandSubscriber)
+        handler.publish(to: commandSubscriber)
         return handler
     }
 

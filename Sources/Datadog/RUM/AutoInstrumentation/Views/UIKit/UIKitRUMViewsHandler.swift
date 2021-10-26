@@ -6,8 +6,7 @@
 
 import UIKit
 
-internal protocol UIKitRUMViewsHandlerType: AnyObject {
-    func subscribe(commandsSubscriber: RUMCommandSubscriber)
+internal protocol UIKitRUMViewsHandlerType: RUMCommandPublisher {
     /// Gets called on `super.viewDidAppear()`.
     func notify_viewDidAppear(viewController: UIViewController, animated: Bool)
     /// Gets called on `super.viewDidDisappear()`.
@@ -37,8 +36,8 @@ internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
 
     weak var subscriber: RUMCommandSubscriber?
 
-    func subscribe(commandsSubscriber: RUMCommandSubscriber) {
-        self.subscriber = commandsSubscriber
+    func publish(to subscriber: RUMCommandSubscriber) {
+        self.subscriber = subscriber
     }
 
     func notify_viewDidAppear(viewController: UIViewController, animated: Bool) {

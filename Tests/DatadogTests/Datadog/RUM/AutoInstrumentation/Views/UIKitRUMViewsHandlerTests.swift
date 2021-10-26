@@ -27,7 +27,7 @@ class UIKitRUMViewsHandlerTests: XCTestCase {
             inspector: uiKitHierarchyInspector,
             notificationCenter: notificationCenter
         )
-        handler.subscribe(commandsSubscriber: commandSubscriber)
+        handler.publish(to: commandSubscriber)
         return handler
     }()
 

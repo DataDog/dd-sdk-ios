@@ -654,8 +654,8 @@ class UIKitRUMViewsHandlerMock: UIKitRUMViewsHandlerType {
     var notifyViewDidAppear: ((UIViewController, Bool) -> Void)?
     var notifyViewDidDisappear: ((UIViewController, Bool) -> Void)?
 
-    func subscribe(commandsSubscriber: RUMCommandSubscriber) {
-        onSubscribe?(commandsSubscriber)
+    func publish(to subscriber: RUMCommandSubscriber) {
+        onSubscribe?(subscriber)
     }
 
     func notify_viewDidAppear(viewController: UIViewController, animated: Bool) {
@@ -684,8 +684,8 @@ class UIKitRUMUserActionsHandlerMock: UIKitRUMUserActionsHandlerType {
     var onSubscribe: ((RUMCommandSubscriber) -> Void)?
     var onSendEvent: ((UIApplication, UIEvent) -> Void)?
 
-    func subscribe(commandsSubscriber: RUMCommandSubscriber) {
-        onSubscribe?(commandsSubscriber)
+    func publish(to subscriber: RUMCommandSubscriber) {
+        onSubscribe?(subscriber)
     }
 
     func notify_sendEvent(application: UIApplication, event: UIEvent) {

@@ -3018,14 +3018,6 @@
 			path = PLCrashReporterIntegration;
 			sourceTree = "<group>";
 		};
-		61F3C96F2535AC7600E2F8C4 /* UIKitHierarchyInspection */ = {
-			isa = PBXGroup;
-			children = (
-				61F3C9702535AE9400E2F8C4 /* UIKitHierarchyInspector.swift */,
-			);
-			path = UIKitHierarchyInspection;
-			sourceTree = "<group>";
-		};
 		61F3CD9C251106EB00C816E5 /* Scenarios */ = {
 			isa = PBXGroup;
 			children = (
@@ -3076,10 +3068,7 @@
 		61F3CDA1251118DD00C816E5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				61F3C96F2535AC7600E2F8C4 /* UIKitHierarchyInspection */,
-				61F3CDA62512144600C816E5 /* UIKitRUMViewsPredicate.swift */,
-				61F3CDA2251118FB00C816E5 /* UIKitRUMViewsHandler.swift */,
-				61F3CDA42511190E00C816E5 /* UIViewControllerSwizzler.swift */,
+				D249859B2727FF1D00B4F72D /* UIKit */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -3258,6 +3247,17 @@
 				D22C1F5B271484B400922024 /* LogEventMapper.swift */,
 			);
 			path = Scrubbing;
+			sourceTree = "<group>";
+		};
+		D249859B2727FF1D00B4F72D /* UIKit */ = {
+			isa = PBXGroup;
+			children = (
+				61F3CDA62512144600C816E5 /* UIKitRUMViewsPredicate.swift */,
+				61F3CDA2251118FB00C816E5 /* UIKitRUMViewsHandler.swift */,
+				61F3CDA42511190E00C816E5 /* UIViewControllerSwizzler.swift */,
+				61F3C9702535AE9400E2F8C4 /* UIKitHierarchyInspector.swift */,
+			);
+			path = UIKit;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
