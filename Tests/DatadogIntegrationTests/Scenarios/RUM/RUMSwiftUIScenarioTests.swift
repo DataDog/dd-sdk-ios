@@ -30,7 +30,7 @@ private extension ExampleApplication {
     }
 
     func swipeDownInteraction() {
-        let coordinate1 = coordinate(withNormalizedOffset: .init(dx: 0.5, dy: 0.1))
+        let coordinate1 = coordinate(withNormalizedOffset: .init(dx: 0.5, dy: 0.2))
         let coordinate2 = coordinate(withNormalizedOffset: .init(dx: 0.5, dy: 0.8))
         coordinate1.press(forDuration: 0.5, thenDragTo: coordinate2)
     }
