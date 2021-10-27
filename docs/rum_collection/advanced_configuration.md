@@ -117,10 +117,22 @@ For more details and available options, refer to the code documentation comments
 
 ## Track custom global attributes
 
-In addition to the [default RUM attributes][11] captured by the mobile SDK automatically, you can choose to add additional contextual information, such as custom attributes, to your RUM events to enrich your observability within Datadog. Custom attributes allow you to slice and dice information about observed user behavior (such as cart value, merchant tier, or ad campaign) with code-level information (such as backend services, session timeline, error logs, and network health).
+In addition to the [default RUM attributes][11] captured by the mobile SDK automatically, you can choose to add additional contextual information, such as custom attributes, to your RUM events to enrich your observability within Datadog. 
 
-### Track User Sessions
+Custom attributes allow you to filter and group information about observed user behavior (such as cart value, merchant tier, or ad campaign) with code-level information (such as backend services, session timeline, error logs, and network health).
+
+### Set a custom global attribute
+
+To set a custom global attribute, use `Global.rum.addAttribute(forKey:value:)`.
+
+* To add an attribute, use `Global.rum.setAttribute(forKey: "some key", value: "some value")`.
+* To update the value, use `Global.rum.setAttribute(forKey: "some key", value: "some other value")`.
+* To remove the key, use `Global.rum.removeAttribute(forKey: "some key")`.
+
+### Track user sessions
+
 Adding user information to your RUM sessions makes it easy to:
+
 * Follow the journey of a given user
 * Know which users are the most impacted by errors
 * Monitor performance for your most important users
