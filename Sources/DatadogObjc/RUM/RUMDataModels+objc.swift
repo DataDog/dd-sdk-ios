@@ -2092,6 +2092,10 @@ public class DDRUMErrorEventError: NSObject {
         .init(swift: root.swiftModel.error.source)
     }
 
+    @objc public var sourceType: DDRUMErrorEventErrorSourceType {
+        .init(swift: root.swiftModel.error.sourceType)
+    }
+
     @objc public var stack: String? {
         set { root.swiftModel.error.stack = newValue }
         get { root.swiftModel.error.stack }
@@ -2296,6 +2300,35 @@ public enum DDRUMErrorEventErrorSource: Int {
     case agent
     case webview
     case custom
+}
+
+@objc
+public enum DDRUMErrorEventErrorSourceType: Int {
+    internal init(swift: RUMErrorEvent.Error.SourceType?) {
+        switch swift {
+        case nil: self = .none
+        case .android?: self = .android
+        case .browser?: self = .browser
+        case .ios?: self = .ios
+        case .reactNative?: self = .reactNative
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.Error.SourceType? {
+        switch self {
+        case .none: return nil
+        case .android: return .android
+        case .browser: return .browser
+        case .ios: return .ios
+        case .reactNative: return .reactNative
+        }
+    }
+
+    case none
+    case android
+    case browser
+    case ios
+    case reactNative
 }
 
 @objc
@@ -2800,4 +2833,4 @@ public class DDRUMLongTaskEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/cdf9a70e6be9cfec5e9524c58abfe79a9fea1f64
+// Generated from https://github.com/DataDog/rum-events-format/tree/9c135e77bb1da61ebbb6b2fb3b39e156d5120a8e

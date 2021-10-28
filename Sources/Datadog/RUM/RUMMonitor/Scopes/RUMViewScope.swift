@@ -433,6 +433,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 message: command.message,
                 resource: nil,
                 source: command.source.toRUMDataFormat,
+                sourceType: .ios,
                 stack: command.stack,
                 type: command.type
             ),
