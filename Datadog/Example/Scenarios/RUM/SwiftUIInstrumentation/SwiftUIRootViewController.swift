@@ -26,20 +26,58 @@ class SwiftUIRootViewController: UIHostingController<RootView> {
 struct RootView: View {
     var body: some View {
         TabView {
+            tabNavigationView
+                .tabItem {
+                    Text("Navigation View")
+                }
+
+            tabScreenView
+                .tabItem {
+                    Text("Screen 100")
+                }
+        }
+    }
+
+    @ViewBuilder
+    var tabNavigationView: some View {
+        // An issue was introduced in iOS 14.2 (FB8907671) which makes
+        // `TabView` items to be loaded twice, once when the `TabView`
+        // appears` and once when the Tab item itself appears. This
+        // lead to RUM views being reported twice. This issue was fixed
+        // in iOS 14.5, see https://developer.apple.com/documentation/ios-ipados-release-notes/ios-ipados-14_5-release-notes
+        // As a workaround, the tab view items can be embedded in a
+        // `LazyVStack` or `LazyHStack` to lazily load its content when
+        // it needs to render them onscreen.
+        if #available(iOS 14.5, *) {
             NavigationView {
                 ScreenView(index: 1)
-            }.tabItem {
-                Text("Navigation View")
             }
-
-            ScreenView(index: 100)
-            .tabItem {
-                Text("Screen 100")
+        } else if #available(iOS 14.2, *) {
+            NavigationView {
+                LazyVStack {
+                    ScreenView(index: 1)
+                }
+            }
+        } else {
+            NavigationView {
+                ScreenView(index: 1)
             }
         }
     }
-}
 
+    @ViewBuilder
+    var tabScreenView: some View {
+        if #available(iOS 14.5, *) {
+            ScreenView(index: 100)
+        } else if #available(iOS 14.2, *) {
+            LazyVStack {
+                ScreenView(index: 100)
+            }
+        } else {
+            ScreenView(index: 100)
+        }
+    }
+}
 
 @available(iOS 13, *)
 /// A basic Screen View at a given index in the stack.
