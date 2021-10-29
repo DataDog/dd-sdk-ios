@@ -6,17 +6,17 @@
 
 import UIKit
 
-internal protocol UIKitRUMUserActionsHandlerType: RUMCommandPublisher {
+internal protocol UIEventHandler: RUMCommandPublisher {
     func notify_sendEvent(application: UIApplication, event: UIEvent)
 }
 
-internal class UIKitRUMUserActionsHandler: UIKitRUMUserActionsHandlerType {
+internal class UIKitRUMUserActionsHandler: UIEventHandler {
     private let dateProvider: DateProvider
-    let userActionsPredicate: UIKitRUMUserActionsPredicate
+    let predicate: UIKitRUMUserActionsPredicate
 
-    init(dateProvider: DateProvider, userActionsPredicate: UIKitRUMUserActionsPredicate) {
+    init(dateProvider: DateProvider, predicate: UIKitRUMUserActionsPredicate) {
         self.dateProvider = dateProvider
-        self.userActionsPredicate = userActionsPredicate
+        self.predicate = predicate
     }
 
     // MARK: - UIKitRUMUserActionsHandlerType
@@ -48,7 +48,7 @@ internal class UIKitRUMUserActionsHandler: UIKitRUMUserActionsHandlerType {
             return
         }
 
-        if let rumAction = userActionsPredicate.rumAction(targetView: actionTargetView) {
+        if let rumAction = predicate.rumAction(targetView: actionTargetView) {
             subscriber?.process(
                 command: RUMAddUserActionCommand(
                     time: dateProvider.currentDate(),

@@ -1235,8 +1235,8 @@ class RUMMonitorTests: XCTestCase {
 
         // Given
         let resourcesHandler = try XCTUnwrap(URLSessionAutoInstrumentation.instance?.interceptor.handler)
-        let viewsHandler = try XCTUnwrap(RUMAutoInstrumentation.instance?.views?.handler)
-        let userActionsHandler = try XCTUnwrap(RUMAutoInstrumentation.instance?.userActions?.handler)
+        let viewsHandler = try XCTUnwrap(RUMInstrumentation.instance?.viewsAutoInstrumentation?.handler)
+        let userActionsHandler = try XCTUnwrap(RUMInstrumentation.instance?.userActionsAutoInstrumentation?.handler)
 
         // When
         XCTAssertTrue(Global.rum is DDNoopRUMMonitor)
@@ -1279,8 +1279,8 @@ class RUMMonitorTests: XCTestCase {
         )
 
         URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
-        RUMAutoInstrumentation.instance?.views?.swizzler.unswizzle()
-        RUMAutoInstrumentation.instance?.userActions?.swizzler.unswizzle()
+        RUMInstrumentation.instance?.viewsAutoInstrumentation?.swizzler.unswizzle()
+        RUMInstrumentation.instance?.userActionsAutoInstrumentation?.swizzler.unswizzle()
 
         Datadog.flushAndDeinitialize()
     }

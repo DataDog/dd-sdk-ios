@@ -403,37 +403,42 @@ class FeaturesConfigurationTests: XCTestCase {
             configuration: .mockWith(
                 rumEnabled: true,
                 rumUIKitViewsPredicate: UIKitRUMViewsPredicateMock(),
-                rumUIKitUserActionsPredicate: nil
+                rumUIKitUserActionsPredicate: nil,
+                rumLongTaskDurationThreshold: nil
             ),
             appContext: .mockAny()
         )
-        XCTAssertNotNil(viewsConfigured.rum!.autoInstrumentation!.uiKitRUMViewsPredicate)
-        XCTAssertNil(viewsConfigured.rum!.autoInstrumentation!.uiKitRUMUserActionsPredicate)
+        XCTAssertNotNil(viewsConfigured.rum!.instrumentation!.uiKitRUMViewsPredicate)
+        XCTAssertNil(viewsConfigured.rum!.instrumentation!.uiKitRUMUserActionsPredicate)
+        XCTAssertNil(viewsConfigured.rum!.instrumentation!.longTaskThreshold)
 
         let actionsConfigured = try FeaturesConfiguration(
             configuration: .mockWith(
                 rumEnabled: true,
                 rumUIKitViewsPredicate: nil,
-                rumUIKitUserActionsPredicate: UIKitRUMUserActionsPredicateMock()
+                rumUIKitUserActionsPredicate: UIKitRUMUserActionsPredicateMock(),
+                rumLongTaskDurationThreshold: nil
             ),
             appContext: .mockAny()
         )
 
-        XCTAssertNotNil(actionsConfigured.rum!.autoInstrumentation!.uiKitRUMUserActionsPredicate)
-        XCTAssertNil(actionsConfigured.rum!.autoInstrumentation!.uiKitRUMViewsPredicate)
+        XCTAssertNotNil(actionsConfigured.rum!.instrumentation!.uiKitRUMUserActionsPredicate)
+        XCTAssertNil(actionsConfigured.rum!.instrumentation!.uiKitRUMViewsPredicate)
+        XCTAssertNil(actionsConfigured.rum!.instrumentation!.longTaskThreshold)
 
-        let viewsAndActionsNotConfigured = try FeaturesConfiguration(
+        let longTaskConfigured = try FeaturesConfiguration(
             configuration: .mockWith(
                 rumEnabled: true,
                 rumUIKitViewsPredicate: nil,
-                rumUIKitUserActionsPredicate: nil
+                rumUIKitUserActionsPredicate: nil,
+                rumLongTaskDurationThreshold: 0.25
             ),
             appContext: .mockAny()
         )
-        XCTAssertNil(
-            viewsAndActionsNotConfigured.rum!.autoInstrumentation,
-            "When neither Views nor Actions are configured, the auto instrumentation config should be `nil`"
-        )
+
+        XCTAssertNotNil(longTaskConfigured.rum!.instrumentation!.longTaskThreshold)
+        XCTAssertNil(longTaskConfigured.rum!.instrumentation!.uiKitRUMViewsPredicate)
+        XCTAssertNil(longTaskConfigured.rum!.instrumentation!.uiKitRUMUserActionsPredicate)
     }
 
     // MARK: - Crash Reporting Configuration Tests

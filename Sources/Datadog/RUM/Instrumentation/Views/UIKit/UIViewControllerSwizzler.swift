@@ -10,7 +10,7 @@ internal class UIViewControllerSwizzler {
     let viewDidAppear: ViewDidAppear
     let viewDidDisappear: ViewDidDisappear
 
-    init(handler: UIKitRUMViewsHandlerType) throws {
+    init(handler: UIViewControllerHandler) throws {
         self.viewDidAppear = try ViewDidAppear(handler: handler)
         self.viewDidDisappear = try ViewDidDisappear(handler: handler)
     }
@@ -36,9 +36,9 @@ internal class UIViewControllerSwizzler {
     > {
         private static let selector = #selector(UIViewController.viewDidAppear(_:))
         private let method: FoundMethod
-        private let handler: UIKitRUMViewsHandlerType
+        private let handler: UIViewControllerHandler
 
-        init(handler: UIKitRUMViewsHandlerType) throws {
+        init(handler: UIViewControllerHandler) throws {
             self.method = try Self.findMethod(with: Self.selector, in: UIViewController.self)
             self.handler = handler
         }
@@ -61,9 +61,9 @@ internal class UIViewControllerSwizzler {
     > {
         private static let selector = #selector(UIViewController.viewDidDisappear(_:))
         private let method: FoundMethod
-        private let handler: UIKitRUMViewsHandlerType
+        private let handler: UIViewControllerHandler
 
-        init(handler: UIKitRUMViewsHandlerType) throws {
+        init(handler: UIViewControllerHandler) throws {
             self.method = try Self.findMethod(with: Self.selector, in: UIViewController.self)
             self.handler = handler
         }
