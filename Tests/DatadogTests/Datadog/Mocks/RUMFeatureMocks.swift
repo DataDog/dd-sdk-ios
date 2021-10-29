@@ -649,7 +649,7 @@ class UIKitRUMViewsPredicateMock: UIKitRUMViewsPredicate {
     }
 }
 
-class UIKitRUMViewsHandlerMock: UIKitRUMViewsHandlerType {
+class UIKitRUMViewsHandlerMock: UIViewControllerHandler {
     var onSubscribe: ((RUMCommandSubscriber) -> Void)?
     var notifyViewDidAppear: ((UIViewController, Bool) -> Void)?
     var notifyViewDidDisappear: ((UIViewController, Bool) -> Void)?
@@ -680,7 +680,7 @@ class UIKitRUMUserActionsPredicateMock: UIKitRUMUserActionsPredicate {
     }
 }
 
-class UIKitRUMUserActionsHandlerMock: UIKitRUMUserActionsHandlerType {
+class UIKitRUMUserActionsHandlerMock: UIEventHandler {
     var onSubscribe: ((RUMCommandSubscriber) -> Void)?
     var onSendEvent: ((UIApplication, UIEvent) -> Void)?
 

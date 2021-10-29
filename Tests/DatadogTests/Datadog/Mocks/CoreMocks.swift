@@ -52,6 +52,7 @@ extension Datadog.Configuration {
         rumSessionsSamplingRate: Float = 100.0,
         rumUIKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
         rumUIKitUserActionsPredicate: UIKitRUMUserActionsPredicate? = nil,
+        rumLongTaskDurationThreshold: TimeInterval? = nil,
         rumResourceAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         rumBackgroundEventTrackingEnabled: Bool = false,
         batchSize: BatchSize = .medium,
@@ -80,6 +81,7 @@ extension Datadog.Configuration {
             rumSessionsSamplingRate: rumSessionsSamplingRate,
             rumUIKitViewsPredicate: rumUIKitViewsPredicate,
             rumUIKitUserActionsPredicate: rumUIKitUserActionsPredicate,
+            rumLongTaskDurationThreshold: rumLongTaskDurationThreshold,
             rumResourceAttributesProvider: rumResourceAttributesProvider,
             rumBackgroundEventTrackingEnabled: rumBackgroundEventTrackingEnabled,
             batchSize: batchSize,
@@ -239,7 +241,7 @@ extension FeaturesConfiguration.RUM {
         actionEventMapper: RUMActionEventMapper? = nil,
         errorEventMapper: RUMErrorEventMapper? = nil,
         longTaskEventMapper: RUMLongTaskEventMapper? = nil,
-        autoInstrumentation: FeaturesConfiguration.RUM.AutoInstrumentation? = nil,
+        instrumentation: FeaturesConfiguration.RUM.Instrumentation? = nil,
         backgroundEventTrackingEnabled: Bool = false,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> Self {
@@ -254,7 +256,7 @@ extension FeaturesConfiguration.RUM {
             actionEventMapper: actionEventMapper,
             errorEventMapper: errorEventMapper,
             longTaskEventMapper: longTaskEventMapper,
-            autoInstrumentation: autoInstrumentation,
+            instrumentation: instrumentation,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
             onSessionStart: onSessionStart
         )
