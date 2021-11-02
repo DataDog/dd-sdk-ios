@@ -182,7 +182,7 @@ public class Datadog {
         var crashReporting: CrashReportingFeature?
 
         var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
-        var rumAutoInstrumentation: RUMAutoInstrumentation?
+        var rumInstrumentation: RUMInstrumentation?
 
         let commonDependencies = FeaturesCommonDependencies(
             consentProvider: consentProvider,
@@ -232,9 +232,9 @@ public class Datadog {
                 commonDependencies: commonDependencies,
                 internalMonitor: internalMonitoring?.monitor
             )
-            if let autoInstrumentationConfiguration = rumConfiguration.autoInstrumentation {
-                rumAutoInstrumentation = RUMAutoInstrumentation(
-                    configuration: autoInstrumentationConfiguration,
+            if let instrumentationConfiguration = rumConfiguration.instrumentation {
+                rumInstrumentation = RUMInstrumentation(
+                    configuration: instrumentationConfiguration,
                     dateProvider: dateProvider
                 )
             }
@@ -262,8 +262,8 @@ public class Datadog {
         RUMFeature.instance = rum
         CrashReportingFeature.instance = crashReporting
 
-        RUMAutoInstrumentation.instance = rumAutoInstrumentation
-        RUMAutoInstrumentation.instance?.enable()
+        RUMInstrumentation.instance = rumInstrumentation
+        RUMInstrumentation.instance?.enable()
 
         URLSessionAutoInstrumentation.instance = urlSessionAutoInstrumentation
         URLSessionAutoInstrumentation.instance?.enable()
@@ -313,7 +313,7 @@ public class Datadog {
         InternalMonitoringFeature.instance?.deinitialize()
         CrashReportingFeature.instance?.deinitialize()
 
-        RUMAutoInstrumentation.instance?.deinitialize()
+        RUMInstrumentation.instance?.deinitialize()
         URLSessionAutoInstrumentation.instance?.deinitialize()
 
         // Reset Globals:

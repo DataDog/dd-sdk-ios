@@ -9,7 +9,7 @@ import UIKit
 internal class UIApplicationSwizzler {
     let sendEvent: SendEvent
 
-    init(handler: UIKitRUMUserActionsHandlerType) throws {
+    init(handler: UIEventHandler) throws {
         sendEvent = try SendEvent(handler: handler)
     }
 
@@ -32,9 +32,9 @@ internal class UIApplicationSwizzler {
     > {
         private static let selector = #selector(UIApplication.sendEvent(_:))
         private let method: FoundMethod
-        private let handler: UIKitRUMUserActionsHandlerType
+        private let handler: UIEventHandler
 
-        init(handler: UIKitRUMUserActionsHandlerType) throws {
+        init(handler: UIEventHandler) throws {
             self.method = try Self.findMethod(with: Self.selector, in: UIApplication.self)
             self.handler = handler
         }

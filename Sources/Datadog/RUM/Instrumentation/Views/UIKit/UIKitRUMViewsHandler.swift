@@ -6,17 +6,19 @@
 
 import UIKit
 
-internal protocol UIKitRUMViewsHandlerType: RUMCommandPublisher {
+internal protocol UIViewControllerHandler: RUMCommandPublisher {
     /// Gets called on `super.viewDidAppear()`.
     func notify_viewDidAppear(viewController: UIViewController, animated: Bool)
     /// Gets called on `super.viewDidDisappear()`.
     func notify_viewDidDisappear(viewController: UIViewController, animated: Bool)
 }
 
-internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
+internal class UIKitRUMViewsHandler: UIViewControllerHandler {
     private let predicate: UIKitRUMViewsPredicate
     private let dateProvider: DateProvider
     private let inspector: UIKitHierarchyInspectorType
+
+    private weak var notificationCenter: NotificationCenter?
 
     init(
         predicate: UIKitRUMViewsPredicate,
@@ -27,9 +29,33 @@ internal class UIKitRUMViewsHandler: UIKitRUMViewsHandlerType {
         self.predicate = predicate
         self.dateProvider = dateProvider
         self.inspector = inspector
+        self.notificationCenter = notificationCenter
 
-        notificationCenter.addObserver(self, selector: #selector(appWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(appWillResignActive),
+            name: UIApplication.willResignActiveNotification,
+            object: nil
+        )
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(appDidBecomeActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
+    }
+
+    deinit {
+        notificationCenter?.removeObserver(
+            self,
+            name: UIApplication.willResignActiveNotification,
+            object: nil
+        )
+        notificationCenter?.removeObserver(
+            self,
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
     }
 
     // MARK: - UIKitRUMViewsHandlerType

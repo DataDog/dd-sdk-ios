@@ -11,11 +11,11 @@ class RUMAutoInstrumentationTests: XCTestCase {
     override func setUp() {
         super.setUp()
         XCTAssertNil(RUMFeature.instance)
-        XCTAssertNil(RUMAutoInstrumentation.instance)
+        XCTAssertNil(RUMInstrumentation.instance)
     }
 
     override func tearDown() {
-        XCTAssertNil(RUMAutoInstrumentation.instance)
+        XCTAssertNil(RUMInstrumentation.instance)
         XCTAssertNil(RUMFeature.instance)
         super.tearDown()
     }
@@ -25,7 +25,7 @@ class RUMAutoInstrumentationTests: XCTestCase {
         RUMFeature.instance = .mockNoOp()
         defer { RUMFeature.instance?.deinitialize() }
 
-        RUMAutoInstrumentation.instance = RUMAutoInstrumentation(
+        RUMInstrumentation.instance = RUMInstrumentation(
             configuration: .init(
                 uiKitRUMViewsPredicate: UIKitRUMViewsPredicateMock(),
                 uiKitRUMUserActionsPredicate: nil,
@@ -33,14 +33,14 @@ class RUMAutoInstrumentationTests: XCTestCase {
             ),
             dateProvider: SystemDateProvider()
         )
-        defer { RUMAutoInstrumentation.instance?.deinitialize() }
+        defer { RUMInstrumentation.instance?.deinitialize() }
 
         // When
         Global.rum = RUMMonitor.initialize()
         defer { Global.rum = DDNoopRUMMonitor() }
 
         // Then
-        let viewsHandler = RUMAutoInstrumentation.instance?.views?.handler as? UIKitRUMViewsHandler
+        let viewsHandler = RUMInstrumentation.instance?.viewsAutoInstrumentation?.handler as? UIKitRUMViewsHandler
         XCTAssertTrue(viewsHandler?.subscriber === Global.rum)
     }
 
@@ -49,7 +49,7 @@ class RUMAutoInstrumentationTests: XCTestCase {
         RUMFeature.instance = .mockNoOp()
         defer { RUMFeature.instance?.deinitialize() }
 
-        RUMAutoInstrumentation.instance = RUMAutoInstrumentation(
+        RUMInstrumentation.instance = RUMInstrumentation(
             configuration: .init(
                 uiKitRUMViewsPredicate: nil,
                 uiKitRUMUserActionsPredicate: UIKitRUMUserActionsPredicateMock(),
@@ -57,14 +57,14 @@ class RUMAutoInstrumentationTests: XCTestCase {
             ),
             dateProvider: SystemDateProvider()
         )
-        defer { RUMAutoInstrumentation.instance?.deinitialize() }
+        defer { RUMInstrumentation.instance?.deinitialize() }
 
         // When
         Global.rum = RUMMonitor.initialize()
         defer { Global.rum = DDNoopRUMMonitor() }
 
         // Then
-        let userActionsHandler = RUMAutoInstrumentation.instance?.userActions?.handler as? UIKitRUMUserActionsHandler
+        let userActionsHandler = RUMInstrumentation.instance?.userActionsAutoInstrumentation?.handler as? UIKitRUMUserActionsHandler
         XCTAssertTrue(userActionsHandler?.subscriber === Global.rum)
     }
 
@@ -73,7 +73,7 @@ class RUMAutoInstrumentationTests: XCTestCase {
         RUMFeature.instance = .mockNoOp()
         defer { RUMFeature.instance?.deinitialize() }
 
-        RUMAutoInstrumentation.instance = RUMAutoInstrumentation(
+        RUMInstrumentation.instance = RUMInstrumentation(
             configuration: .init(
                 uiKitRUMViewsPredicate: nil,
                 uiKitRUMUserActionsPredicate: nil,
@@ -81,14 +81,14 @@ class RUMAutoInstrumentationTests: XCTestCase {
             ),
             dateProvider: SystemDateProvider()
         )
-        defer { RUMAutoInstrumentation.instance?.deinitialize() }
+        defer { RUMInstrumentation.instance?.deinitialize() }
 
         // When
         Global.rum = RUMMonitor.initialize()
         defer { Global.rum = DDNoopRUMMonitor() }
 
         // Then
-        XCTAssertTrue(RUMAutoInstrumentation.instance?.longTasks?.subscriber === Global.rum)
+        XCTAssertTrue(RUMInstrumentation.instance?.longTasks?.subscriber === Global.rum)
     }
 
     /// Sanity check for not-allowed configuration.
@@ -98,20 +98,20 @@ class RUMAutoInstrumentationTests: XCTestCase {
         defer { RUMFeature.instance?.deinitialize() }
 
         /// This configuration is not allowed by `FeaturesConfiguration` logic. We test it for sanity.
-        let notAllowedConfiguration = FeaturesConfiguration.RUM.AutoInstrumentation(
+        let notAllowedConfiguration = FeaturesConfiguration.RUM.Instrumentation(
             uiKitRUMViewsPredicate: nil,
             uiKitRUMUserActionsPredicate: nil,
             longTaskThreshold: nil
         )
 
-        RUMAutoInstrumentation.instance = RUMAutoInstrumentation(
+        RUMInstrumentation.instance = RUMInstrumentation(
             configuration: notAllowedConfiguration,
             dateProvider: SystemDateProvider()
         )
-        defer { RUMAutoInstrumentation.instance?.deinitialize() }
+        defer { RUMInstrumentation.instance?.deinitialize() }
 
         // Then
-        XCTAssertNil(RUMAutoInstrumentation.instance?.views)
-        XCTAssertNil(RUMAutoInstrumentation.instance?.userActions)
+        XCTAssertNil(RUMInstrumentation.instance?.viewsAutoInstrumentation)
+        XCTAssertNil(RUMInstrumentation.instance?.userActionsAutoInstrumentation)
     }
 }
