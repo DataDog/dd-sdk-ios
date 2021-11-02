@@ -40,7 +40,7 @@ class RUMInstrumentationTests: XCTestCase {
         defer { Global.rum = DDNoopRUMMonitor() }
 
         // Then
-        let viewsHandler = RUMInstrumentation.instance?.viewsAutoInstrumentation?.handler as? UIKitRUMViewsHandler
+        let viewsHandler = RUMInstrumentation.instance?.viewsInstrumentation
         XCTAssertTrue(viewsHandler?.subscriber === Global.rum)
     }
 

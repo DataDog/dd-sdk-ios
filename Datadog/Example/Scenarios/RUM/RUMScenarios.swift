@@ -234,6 +234,10 @@ final class RUMSwiftUIInstrumentationScenario: TestScenario {
                 return nil
             }
 
+            if let viewController = viewController as? UIScreenViewController {
+                return .init(name: "UIKit View \(viewController.index)")
+            }
+
             return `default`.rumView(for: viewController)
         }
     }

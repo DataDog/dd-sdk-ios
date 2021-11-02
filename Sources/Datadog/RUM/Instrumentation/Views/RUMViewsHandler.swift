@@ -7,26 +7,17 @@
 import Foundation
 import UIKit
 
-/// Publisher generating RUM Commands on `SwiftUI.View` events.
-internal protocol SwiftUIViewHandler: RUMCommandPublisher {
-    /// Respond to a `SwiftUI.View.onAppear` event.
-    func onAppear(identity: String, name: String, path: String, attributes: [AttributeKey: AttributeValue])
-
-    /// Respond to a `SwiftUI.View.onDisappear` event.
-    func onDisappear(identity: String)
-}
-
-internal final class SwiftUIRUMViewsHandler: SwiftUIViewHandler {
-    /// RUM representation of a `SwiftUI.View`.
+internal final class RUMViewsHandler {
+    /// RUM representation of a View.
     private struct View {
         /// The RUM View identity.
-        let identity: String
+        let identity: RUMViewIdentifiable
 
         /// View name used for RUM Explorer.
         let name: String
 
         /// View path used for RUM Explorer.
-        let path: String
+        let path: String?
 
         /// Custom attributes to attach to the View.
         let attributes: [AttributeKey: AttributeValue]
@@ -35,6 +26,10 @@ internal final class SwiftUIRUMViewsHandler: SwiftUIViewHandler {
     /// The current date provider.
     private let dateProvider: DateProvider
 
+    /// `UIKit` view predicate. `nil`, if `UIKit` auto-instrumentations is
+    /// disabled.
+    internal var predicate: UIKitRUMViewsPredicate?
+
     /// The notification center where this handler observe the following notifications:
     /// - `UIApplicationDidEnterBackgroundNotification`
     /// - `UIApplicationWillEnterForegroundNotification`
@@ -42,7 +37,7 @@ internal final class SwiftUIRUMViewsHandler: SwiftUIViewHandler {
 
     /// The RUM Command subscriber responsible for processing
     /// this publisher's commands.
-    private weak var subscriber: RUMCommandSubscriber?
+    internal weak var subscriber: RUMCommandSubscriber?
 
     /// The appearing views stack.
     ///
@@ -85,7 +80,6 @@ internal final class SwiftUIRUMViewsHandler: SwiftUIViewHandler {
             name: UIApplication.didEnterBackgroundNotification,
             object: nil
         )
-
         notificationCenter?.removeObserver(
             self,
             name: UIApplication.willEnterForegroundNotification,
@@ -97,15 +91,9 @@ internal final class SwiftUIRUMViewsHandler: SwiftUIViewHandler {
         self.subscriber = subscriber
     }
 
-    /// Respond to a `SwiftUI.View.onAppear` event.
-    ///
-    /// - Parameters:
-    ///   - identity: The appearing `SwiftUI.View` identity.
-    ///   - name: The appearing `SwiftUI.View` name.
-    ///   - attributes: The appearing `SwiftUI.View` attributes.
-    func onAppear(identity: String, name: String, path: String, attributes: [AttributeKey: AttributeValue]) {
+    private func add(view: View) {
         // Ignore the view if it's already visible
-        if stack.last?.identity == identity {
+        if view.identity.equals(stack.last?.identity) {
             return
         }
 
@@ -114,28 +102,18 @@ internal final class SwiftUIRUMViewsHandler: SwiftUIViewHandler {
             stop(view: current)
         }
 
-        let view = View(
-            identity: identity,
-            name: name,
-            path: path,
-            attributes: attributes
-        )
-
         // Start the new appearing view
         start(view: view)
         // Add/Move the appearing view to the top
-        stack.removeAll(where: { $0.identity == identity })
+        stack.removeAll(where: { $0.identity.equals(view.identity) })
         stack.append(view)
     }
 
-    /// Respond to a `SwiftUI.View.onDisappear` event.
-    ///
-    /// - Parameter identity: The disappearing `SwiftUI.View` identity.
-    func onDisappear(identity: String) {
-        guard stack.last?.identity == identity else {
+    private func remove(identity: RUMViewIdentifiable) {
+        guard identity.equals(stack.last?.identity) else {
             // Remove any disappearing view from the stack if
             // it's not visible.
-            return stack.removeAll(where: { $0.identity == identity })
+            return stack.removeAll(where: { $0.identity.equals(identity) })
         }
 
         // Stop and remove the visible view from the stack
@@ -153,7 +131,7 @@ internal final class SwiftUIRUMViewsHandler: SwiftUIViewHandler {
             return userLogger.warn(
                 """
                 RUM View was started, but no `RUMMonitor` is registered on `Global.rum`. RUM instrumentation will not work.
-                Make sure `Global.rum = RUMMonitor.initialize()` is called before any `SwiftUI.View` appears.
+                Make sure `Global.rum = RUMMonitor.initialize()` is called before any view appears.
                 """
             )
         }
@@ -191,5 +169,58 @@ internal final class SwiftUIRUMViewsHandler: SwiftUIViewHandler {
         if let current = stack.last {
             start(view: current)
         }
+    }
+}
+
+extension RUMViewsHandler: UIViewControllerHandler {
+    func notify_viewDidAppear(viewController: UIViewController, animated: Bool) {
+        if let view = stack.first(where: { $0.identity.equals(viewController) }) {
+            // If the stack already contains the view controller, just restarts the view.
+            // This prevent from calling the predicate when unnecessary.
+            add(view: view)
+        } else if let rumView = predicate?.rumView(for: viewController) {
+            add(
+                view: .init(
+                    identity: viewController,
+                    name: rumView.name,
+                    path: rumView.path,
+                    attributes: rumView.attributes
+                )
+            )
+        }
+    }
+
+    func notify_viewDidDisappear(viewController: UIViewController, animated: Bool) {
+        guard stack.contains(where: { $0.identity.equals(viewController) }) else {
+            return
+        }
+
+        remove(identity: viewController)
+    }
+}
+
+extension RUMViewsHandler: SwiftUIViewHandler {
+    /// Respond to a `SwiftUI.View.onAppear` event.
+    ///
+    /// - Parameters:
+    ///   - key: The appearing `SwiftUI.View` key.
+    ///   - name: The appearing `SwiftUI.View` name.
+    ///   - attributes: The appearing `SwiftUI.View` attributes.
+    func onAppear(identity: String, name: String, path: String, attributes: [AttributeKey: AttributeValue]) {
+        add(
+            view: .init(
+                identity: identity,
+                name: name,
+                path: path,
+                attributes: attributes
+            )
+        )
+    }
+
+    /// Respond to a `SwiftUI.View.onDisappear` event.
+    ///
+    /// - Parameter key: The disappearing `SwiftUI.View` key.
+    func onDisappear(identity: String) {
+        remove(identity: identity)
     }
 }

@@ -9,7 +9,7 @@ import XCTest
 
 private extension ExampleApplication {
     func tapButton(titled buttonTitle: String) {
-        buttons[buttonTitle].tap()
+        buttons[buttonTitle].safeTap(within: 5)
     }
 
     func swipeToPullModalDown() {

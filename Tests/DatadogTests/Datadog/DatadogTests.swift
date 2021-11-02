@@ -101,13 +101,13 @@ class DatadogTests: XCTestCase {
             )
             verificationBlock()
 
-            RUMInstrumentation.instance?.viewsAutoInstrumentation?.swizzler.unswizzle()
+            RUMInstrumentation.instance?.viewsAutoInstrumentation?.unswizzle()
             URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
             Datadog.flushAndDeinitialize()
         }
 
         defer {
-            RUMInstrumentation.instance?.viewsAutoInstrumentation?.swizzler.unswizzle()
+            RUMInstrumentation.instance?.viewsAutoInstrumentation?.unswizzle()
             URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
         }
 

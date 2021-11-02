@@ -87,8 +87,8 @@ class RUMSwiftUIScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertTrue(visits[2].path.matches(regex: "SwiftUI View 3\\/[0-9]*"))
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[2])// go to "Screen 4"
 
-        XCTAssertEqual(visits[3].name, "SwiftUI View 4")
-        XCTAssertTrue(visits[3].path.matches(regex: "SwiftUI View 4\\/[0-9]*"))
+        XCTAssertEqual(visits[3].name, "UIKit View 4")
+        XCTAssertEqual(visits[3].path, "Example.UIScreenViewController")
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[3])// go to "Screen 3"
 
         XCTAssertEqual(visits[4].name, "SwiftUI View 3")

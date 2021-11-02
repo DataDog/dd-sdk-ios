@@ -26,7 +26,7 @@ internal struct RUMViewModifier: SwiftUI.ViewModifier {
 
     func body(content: Content) -> some View {
         content.onAppear {
-            RUMInstrumentation.instance?.swiftUIViewInstrumentation
+            RUMInstrumentation.instance?.viewsInstrumentation
                 .onAppear(
                     identity: identity,
                     name: name,
@@ -35,7 +35,7 @@ internal struct RUMViewModifier: SwiftUI.ViewModifier {
                 )
         }
         .onDisappear {
-            RUMInstrumentation.instance?.swiftUIViewInstrumentation
+            RUMInstrumentation.instance?.viewsInstrumentation
                 .onDisappear(identity: identity)
         }
     }
