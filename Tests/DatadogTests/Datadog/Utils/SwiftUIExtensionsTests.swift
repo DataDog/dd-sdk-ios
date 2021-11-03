@@ -24,8 +24,8 @@ class SwiftUIExtensionsTests: XCTestCase {
             return
         }
 
-        let view = TestView().trackRUMView(name: "test")
-        XCTAssertEqual(view.typeDescription, "ModifiedContent<TestView, RUMViewModifier>")
+        let view = TestView().cornerRadius(8)
+        XCTAssertEqual(view.typeDescription, "ModifiedContent<TestView, _ClipEffect<RoundedRectangle>>")
     }
 
     func testBundleIsSwiftUI() {
