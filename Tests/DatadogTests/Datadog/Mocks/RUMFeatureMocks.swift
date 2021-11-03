@@ -693,6 +693,24 @@ class UIKitRUMUserActionsHandlerMock: UIEventHandler {
     }
 }
 
+class SwiftUIViewHandlerMock: SwiftUIViewHandler {
+    var onSubscribe: ((RUMCommandSubscriber) -> Void)?
+    var notifyOnAppear: ((String, String, String, [AttributeKey: AttributeValue]) -> Void)?
+    var notifyOnDisappear: ((String) -> Void)?
+
+    func publish(to subscriber: RUMCommandSubscriber) {
+        onSubscribe?(subscriber)
+    }
+
+    func onAppear(identity: String, name: String, path: String, attributes: [AttributeKey: AttributeValue]) {
+        notifyOnAppear?(identity, name, path, attributes)
+    }
+
+    func onDisappear(identity: String) {
+        notifyOnDisappear?(identity)
+    }
+}
+
 class SamplingBasedVitalReaderMock: SamplingBasedVitalReader {
     var vitalData: Double?
 
