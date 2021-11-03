@@ -107,6 +107,7 @@ internal enum RUMInternalErrorSource {
 
 internal enum RUMAttribute {
     static let internalTimestamp = "_dd.timestamp"
+    static let internalErrorSourceType = "_dd.error.source_type"
 }
 
 /// A class enabling Datadog RUM features.

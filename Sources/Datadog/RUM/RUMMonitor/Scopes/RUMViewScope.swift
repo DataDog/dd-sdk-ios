@@ -413,6 +413,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     private func sendErrorEvent(on command: RUMAddCurrentViewErrorCommand) -> Bool {
         attributes.merge(rumCommandAttributes: command.attributes)
+        let sourceType = (attributes.removeValue(forKey: RUMAttribute.internalErrorSourceType) as? String)
+            .flatMap {
+                return RUMErrorEvent.Error.SourceType(rawValue: $0)
+            } ?? .ios
 
         let eventData = RUMErrorEvent(
             dd: .init(
@@ -433,7 +437,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 message: command.message,
                 resource: nil,
                 source: command.source.toRUMDataFormat,
-                sourceType: .ios,
+                sourceType: sourceType,
                 stack: command.stack,
                 type: command.type
             ),

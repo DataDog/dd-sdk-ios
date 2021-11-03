@@ -631,6 +631,44 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(viewUpdate.model.view.error.count, 1, "Failed Resource should be counted as Error")
     }
 
+    func testWhenErrorSourceTypeIsPassed_itSendsNonDefaultErrorSourceType() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            parent: parent,
+            dependencies: dependencies,
+            identity: mockView,
+            path: "UIViewController",
+            name: "ViewName",
+            attributes: ["_dd.error.source_type": "react-native"],
+            customTimings: [:],
+            startTime: currentTime
+        )
+
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: currentTime, attributes: ["foo": "bar"], identity: mockView, isInitialView: true)
+        )
+
+        currentTime.addTimeInterval(1)
+
+        _ = scope.process(
+            command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentTime, message: "view error", source: .source, stack: nil)
+        )
+
+        let error = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMErrorEvent>.self).last)
+        XCTAssertValidRumUUID(error.model.view.id)
+        XCTAssertEqual(error.model.error.type, "abc")
+        XCTAssertEqual(error.model.error.message, "view error")
+        XCTAssertEqual(error.model.error.source, .source)
+        XCTAssertEqual(error.model.error.sourceType, .reactNative)
+        XCTAssertNil(error.model.error.stack)
+        XCTAssertNil(error.model.error.isCrash)
+        XCTAssertNil(error.model.error.resource)
+        XCTAssertNil(error.model.action)
+
+        let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
+        XCTAssertEqual(viewUpdate.model.view.error.count, 1)
+    }
+
     // MARK: - Long tasks
 
     func testWhenLongTaskIsAdded_itSendsLongTaskEventAndViewUpdateEvent() throws {
