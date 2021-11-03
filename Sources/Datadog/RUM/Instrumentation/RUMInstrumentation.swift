@@ -57,7 +57,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
 
     // MARK: - Initialization
 
-    init(
+    convenience init(
         configuration: FeaturesConfiguration.RUM.Instrumentation,
         dateProvider: DateProvider
     ) {
@@ -83,10 +83,24 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             longTasks = LongTaskObserver(threshold: threshold, dateProvider: dateProvider)
         }
 
+        self.init(
+            viewsAutoInstrumentation: viewsAutoInstrumentation,
+            swiftUIViewInstrumentation: SwiftUIRUMViewsHandler(dateProvider: dateProvider),
+            userActionsAutoInstrumentation: userActionsAutoInstrumentation,
+            longTasks: longTasks
+        )
+    }
+
+    init(
+        viewsAutoInstrumentation: ViewsAutoInstrumentation?,
+        swiftUIViewInstrumentation: SwiftUIViewHandler,
+        userActionsAutoInstrumentation: UserActionsAutoInstrumentation?,
+        longTasks: LongTaskObserver?
+    ) {
         self.viewsAutoInstrumentation = viewsAutoInstrumentation
         self.userActionsAutoInstrumentation = userActionsAutoInstrumentation
         self.longTasks = longTasks
-        self.swiftUIViewInstrumentation = SwiftUIRUMViewsHandler(dateProvider: dateProvider)
+        self.swiftUIViewInstrumentation = swiftUIViewInstrumentation
     }
 
     func enable() {

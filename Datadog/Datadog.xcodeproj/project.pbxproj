@@ -521,6 +521,7 @@
 		D24985A727292FCC00B4F72D /* SwiftUIRUMViewsHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24985A627292FCC00B4F72D /* SwiftUIRUMViewsHandlerTests.swift */; };
 		D24C27EA270C8BEE005DE596 /* DataCompression.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24C27E9270C8BEE005DE596 /* DataCompression.swift */; };
 		D2791EF927170A760046E07A /* RUMSwiftUIScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2791EF827170A760046E07A /* RUMSwiftUIScenarioTests.swift */; };
+		D2EFF3D52732D48800D09F33 /* RUMViewModifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFF3D42732D48800D09F33 /* RUMViewModifierTests.swift */; };
 		D2F1B81126D795F3009F3293 /* DDNoopRUMMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1B81026D795F3009F3293 /* DDNoopRUMMonitor.swift */; };
 		D2F1B81326D8DA68009F3293 /* DDNoopRUMMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1B81226D8DA68009F3293 /* DDNoopRUMMonitorTests.swift */; };
 		D2F1B81526D8E5FF009F3293 /* DDNoopTracerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1B81426D8E5FF009F3293 /* DDNoopTracerTests.swift */; };
@@ -1186,6 +1187,7 @@
 		D24985A627292FCC00B4F72D /* SwiftUIRUMViewsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIRUMViewsHandlerTests.swift; sourceTree = "<group>"; };
 		D24C27E9270C8BEE005DE596 /* DataCompression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCompression.swift; sourceTree = "<group>"; };
 		D2791EF827170A760046E07A /* RUMSwiftUIScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIScenarioTests.swift; sourceTree = "<group>"; };
+		D2EFF3D42732D48800D09F33 /* RUMViewModifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewModifierTests.swift; sourceTree = "<group>"; };
 		D2F1B81026D795F3009F3293 /* DDNoopRUMMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNoopRUMMonitor.swift; sourceTree = "<group>"; };
 		D2F1B81226D8DA68009F3293 /* DDNoopRUMMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNoopRUMMonitorTests.swift; sourceTree = "<group>"; };
 		D2F1B81426D8E5FF009F3293 /* DDNoopTracerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNoopTracerTests.swift; sourceTree = "<group>"; };
@@ -3332,6 +3334,7 @@
 			isa = PBXGroup;
 			children = (
 				D24985A627292FCC00B4F72D /* SwiftUIRUMViewsHandlerTests.swift */,
+				D2EFF3D42732D48800D09F33 /* RUMViewModifierTests.swift */,
 			);
 			path = SwiftUI;
 			sourceTree = "<group>";
@@ -4099,6 +4102,7 @@
 				61D980BC24E293F600E03345 /* RUMIntegrationsTests.swift in Sources */,
 				61363D9F24D99BAA0084CD6F /* DDErrorTests.swift in Sources */,
 				61411B1024EC15AC0012EAB2 /* Casting+RUM.swift in Sources */,
+				D2EFF3D52732D48800D09F33 /* RUMViewModifierTests.swift in Sources */,
 				61133C622423990D00786299 /* InternalLoggersTests.swift in Sources */,
 				61FF283024BC5E2D000B3D9B /* RUMEventFileOutputTests.swift in Sources */,
 				9E986C302677B91400D62490 /* VitalRefreshRateReaderTests.swift in Sources */,
