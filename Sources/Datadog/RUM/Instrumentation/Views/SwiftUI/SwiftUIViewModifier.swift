@@ -26,15 +26,17 @@ internal struct RUMViewModifier: SwiftUI.ViewModifier {
 
     func body(content: Content) -> some View {
         content.onAppear {
-            RUMInstrumentation.instance?.onAppear(
-                identity: id,
-                name: name,
-                path: path,
-                attributes: attributes
-            )
+            RUMInstrumentation.instance?.swiftUIViewInstrumentation
+                .onAppear(
+                    identity: id,
+                    name: name,
+                    path: path,
+                    attributes: attributes
+                )
         }
         .onDisappear {
-            RUMInstrumentation.instance?.onDisappear(identity: id)
+            RUMInstrumentation.instance?.swiftUIViewInstrumentation
+                .onDisappear(identity: id)
         }
     }
 }

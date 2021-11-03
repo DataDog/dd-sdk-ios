@@ -125,13 +125,3 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     }
 #endif
 }
-
-extension RUMInstrumentation: SwiftUIViewHandler {
-    func onAppear(identity: String, name: String, path: String, attributes: [AttributeKey: AttributeValue]) {
-        swiftUIViewInstrumentation.onAppear(identity: identity, name: name, path: path, attributes: attributes)
-    }
-
-    func onDisappear(identity: String) {
-        swiftUIViewInstrumentation.onDisappear(identity: identity)
-    }
-}
