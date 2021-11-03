@@ -6,8 +6,15 @@
 
 import Foundation
 
+/// Casts `[String: Any]` attributes to their `Encodable` representation by wrapping each `Any` into `AnyEncodable`.
 internal func castAttributesToSwift(_ attributes: [String: Any]) -> [String: Encodable] {
     return attributes.mapValues { AnyEncodable($0) }
+}
+
+/// Casts `[String: Encodable]` attributes to their `Any` representation by unwrapping each `AnyEncodable` into `Any`.
+internal func castAttributesToObjectiveC(_ attributes: [String: Encodable]) -> [String: Any] {
+    return attributes
+        .compactMapValues { value in (value as? AnyEncodable)?.value }
 }
 
 /// Type erasing `Encodable` wrapper to bridge Objective-C's `Any` to Swift `Encodable`.
