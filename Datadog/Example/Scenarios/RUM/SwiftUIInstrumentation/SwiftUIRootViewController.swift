@@ -8,21 +8,22 @@ import Foundation
 import SwiftUI
 import Datadog
 
-@available(iOS 13, *)
 /// A custom SwiftUI Hosting controller for `RootView`.
 ///
 /// This definition only exist to allow instantiation from `RUMSwiftUIInstrumentationScenario`
 /// storyboard and should be ignored from RUM instrumentation.
+@available(iOS 13, *)
 class SwiftUIRootViewController: UIHostingController<RootView> {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder, rootView: RootView())
     }
 }
 
-@available(iOS 13, *)
 /// The root view of the SwiftUI instrumentation test.
 ///
-/// This view creates a navigation stack and present a`ScreenView` as fist view.
+/// This view creates a  `SwiftUI.TabView` to present
+/// navigation contexts..
+@available(iOS 13, *)
 struct RootView: View {
     var body: some View {
         TabView {
@@ -79,11 +80,11 @@ struct RootView: View {
     }
 }
 
-@available(iOS 13, *)
 /// A basic Screen View at a given index in the stack.
 ///
-/// This view presents a single navigation button to push a
-/// `UIScreenView` onto the stack.
+/// This view presents a button to push a new view onto the
+/// navigation stack, and a button to present a modal page sheet.
+@available(iOS 13, *)
 struct ScreenView: View {
 
     /// The view index in the stack.

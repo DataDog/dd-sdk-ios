@@ -100,7 +100,7 @@ internal final class SwiftUIRUMViewsHandler: SwiftUIViewHandler {
     /// Respond to a `SwiftUI.View.onAppear` event.
     ///
     /// - Parameters:
-    ///   - key: The appearing `SwiftUI.View` key.
+    ///   - identity: The appearing `SwiftUI.View` identity.
     ///   - name: The appearing `SwiftUI.View` name.
     ///   - attributes: The appearing `SwiftUI.View` attributes.
     func onAppear(identity: String, name: String, path: String, attributes: [AttributeKey: AttributeValue]) {
@@ -130,7 +130,7 @@ internal final class SwiftUIRUMViewsHandler: SwiftUIViewHandler {
 
     /// Respond to a `SwiftUI.View.onDisappear` event.
     ///
-    /// - Parameter key: The disappearing `SwiftUI.View` key.
+    /// - Parameter identity: The disappearing `SwiftUI.View` identity.
     func onDisappear(identity: String) {
         guard stack.last?.identity == identity else {
             // Remove any disappearing view from the stack if

@@ -25,14 +25,14 @@ class SwiftUIRUMViewsHandlerTests: XCTestCase {
 
     func testWhenOnAppear_itStartsRUMView() throws {
         // Given
-        let viewKey: String = UUID().uuidString
+        let viewIdentity: String = UUID().uuidString
         let viewName: String = .mockRandom()
         let viewPath: String = .mockRandom()
         let viewAttributes = mockRandomAttributes()
 
         // When
         handler.onAppear(
-            identity: viewKey,
+            identity: viewIdentity,
             name: viewName,
             path: viewPath,
             attributes: viewAttributes
@@ -43,7 +43,7 @@ class SwiftUIRUMViewsHandlerTests: XCTestCase {
 
         let command = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
         XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
-        XCTAssertTrue(command.identity.equals(viewKey))
+        XCTAssertTrue(command.identity.equals(viewIdentity))
         XCTAssertEqual(command.name, viewName)
         XCTAssertEqual(command.path, viewPath)
         AssertDictionariesEqual(command.attributes, viewAttributes)
@@ -51,26 +51,26 @@ class SwiftUIRUMViewsHandlerTests: XCTestCase {
 
     func testWhenOnAppear_itStopsPreviousRUMView() throws {
         // Given
-        let view1Key: String = UUID().uuidString
+        let view1Identity: String = UUID().uuidString
         let view1Name: String = .mockRandom()
         let view1Path: String = .mockRandom()
         let view1Attributes = mockRandomAttributes()
 
-        let view2Key: String = UUID().uuidString
+        let view2Identity: String = UUID().uuidString
         let view2Name: String = .mockRandom()
         let view2Path: String = .mockRandom()
         let view2Attributes = mockRandomAttributes()
 
         // When
         handler.onAppear(
-            identity: view1Key,
+            identity: view1Identity,
             name: view1Name,
             path: view1Path,
             attributes: view1Attributes
         )
 
         handler.onAppear(
-            identity: view2Key,
+            identity: view2Identity,
             name: view2Name,
             path: view2Path,
             attributes: view2Attributes
@@ -83,31 +83,31 @@ class SwiftUIRUMViewsHandlerTests: XCTestCase {
         let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
         let startCommand2 = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
 
-        XCTAssertTrue(startCommand1.identity.equals(view1Key))
+        XCTAssertTrue(startCommand1.identity.equals(view1Identity))
         AssertDictionariesEqual(startCommand1.attributes, view1Attributes)
-        XCTAssertTrue(stopCommand.identity.equals(view1Key))
+        XCTAssertTrue(stopCommand.identity.equals(view1Identity))
         XCTAssertEqual(stopCommand.attributes.count, 0)
-        XCTAssertTrue(startCommand2.identity.equals(view2Key))
+        XCTAssertTrue(startCommand2.identity.equals(view2Identity))
         AssertDictionariesEqual(startCommand2.attributes, view2Attributes)
     }
 
     func testWhenOnAppear_itDoesNotStartTheSameRUMViewTwice() throws {
         // Given
-        let viewKey: String = UUID().uuidString
+        let viewIdentity: String = UUID().uuidString
         let viewName: String = .mockRandom()
         let viewPath: String = .mockRandom()
         let viewAttributes = mockRandomAttributes()
 
         // When
         handler.onAppear(
-            identity: viewKey,
+            identity: viewIdentity,
             name: viewName,
             path: viewPath,
             attributes: viewAttributes
         )
 
         handler.onAppear(
-            identity: viewKey,
+            identity: viewIdentity,
             name: viewName,
             path: viewPath,
             attributes: viewAttributes
@@ -122,10 +122,10 @@ class SwiftUIRUMViewsHandlerTests: XCTestCase {
 
     func testWhenOnDisappear_itDoesNotSendAnyCommand() {
         // Given
-        let viewKey: String = UUID().uuidString
+        let viewIdentity: String = UUID().uuidString
 
         // When
-        handler.onDisappear(identity: viewKey)
+        handler.onDisappear(identity: viewIdentity)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)
@@ -133,20 +133,20 @@ class SwiftUIRUMViewsHandlerTests: XCTestCase {
 
     func testGivenAppearedView_whenOnDisappear_itSopsTheRUMView() throws {
         // Given
-        let viewKey: String = UUID().uuidString
+        let viewIdentity: String = UUID().uuidString
         let viewName: String = .mockRandom()
         let viewPath: String = .mockRandom()
         let viewAttributes = mockRandomAttributes()
 
         // When
         handler.onAppear(
-            identity: viewKey,
+            identity: viewIdentity,
             name: viewName,
             path: viewPath,
             attributes: viewAttributes
         )
 
-        handler.onDisappear(identity: viewKey)
+        handler.onDisappear(identity: viewIdentity)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
@@ -154,40 +154,40 @@ class SwiftUIRUMViewsHandlerTests: XCTestCase {
         let startCommand = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
         let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
 
-        XCTAssertTrue(startCommand.identity.equals(viewKey))
+        XCTAssertTrue(startCommand.identity.equals(viewIdentity))
         AssertDictionariesEqual(startCommand.attributes, viewAttributes)
-        XCTAssertTrue(stopCommand.identity.equals(viewKey))
+        XCTAssertTrue(stopCommand.identity.equals(viewIdentity))
         XCTAssertEqual(stopCommand.attributes.count, 0)
     }
 
     func testGiven2AppearedView_whenTheFirstDisappears_itDoesNotStopItTwice() throws {
         // Given
-        let view1Key: String = UUID().uuidString
+        let view1Identity: String = UUID().uuidString
         let view1Name: String = .mockRandom()
         let view1Path: String = .mockRandom()
         let view1Attributes = mockRandomAttributes()
 
-        let view2Key: String = UUID().uuidString
+        let view2Identity: String = UUID().uuidString
         let view2Name: String = .mockRandom()
         let view2Path: String = .mockRandom()
         let view2Attributes = mockRandomAttributes()
 
         // When
         handler.onAppear(
-            identity: view1Key,
+            identity: view1Identity,
             name: view1Name,
             path: view1Path,
             attributes: view1Attributes
         )
 
         handler.onAppear(
-            identity: view2Key,
+            identity: view2Identity,
             name: view2Name,
             path: view2Path,
             attributes: view2Attributes
         )
 
-        handler.onDisappear(identity: view1Key)
+        handler.onDisappear(identity: view1Identity)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
@@ -196,41 +196,41 @@ class SwiftUIRUMViewsHandlerTests: XCTestCase {
         let stopCommand1 = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
         let startCommand2 = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
 
-        XCTAssertTrue(startCommand1.identity.equals(view1Key))
+        XCTAssertTrue(startCommand1.identity.equals(view1Identity))
         AssertDictionariesEqual(startCommand1.attributes, view1Attributes)
-        XCTAssertTrue(stopCommand1.identity.equals(view1Key))
-        XCTAssertTrue(startCommand2.identity.equals(view2Key))
+        XCTAssertTrue(stopCommand1.identity.equals(view1Identity))
+        XCTAssertTrue(startCommand2.identity.equals(view2Identity))
         AssertDictionariesEqual(startCommand2.attributes, view2Attributes)
     }
 
     func testGiven2AppearedView_whenTheLastDisappears_itRestartsThePreviousRUMView() throws {
         // Given
-        let view1Key: String = UUID().uuidString
+        let view1Identity: String = UUID().uuidString
         let view1Name: String = .mockRandom()
         let view1Path: String = .mockRandom()
         let view1Attributes = mockRandomAttributes()
 
-        let view2Key: String = UUID().uuidString
+        let view2Identity: String = UUID().uuidString
         let view2Name: String = .mockRandom()
         let view2Path: String = .mockRandom()
         let view2Attributes = mockRandomAttributes()
 
         // When
         handler.onAppear(
-            identity: view1Key,
+            identity: view1Identity,
             name: view1Name,
             path: view1Path,
             attributes: view1Attributes
         )
 
         handler.onAppear(
-            identity: view2Key,
+            identity: view2Identity,
             name: view2Name,
             path: view2Path,
             attributes: view2Attributes
         )
 
-        handler.onDisappear(identity: view2Key)
+        handler.onDisappear(identity: view2Identity)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
@@ -241,13 +241,13 @@ class SwiftUIRUMViewsHandlerTests: XCTestCase {
         let stopCommand2 = try XCTUnwrap(commandSubscriber.receivedCommands[3] as? RUMStopViewCommand)
         let startCommand3 = try XCTUnwrap(commandSubscriber.receivedCommands[4] as? RUMStartViewCommand)
 
-        XCTAssertTrue(startCommand1.identity.equals(view1Key))
+        XCTAssertTrue(startCommand1.identity.equals(view1Identity))
         AssertDictionariesEqual(startCommand1.attributes, view1Attributes)
-        XCTAssertTrue(stopCommand1.identity.equals(view1Key))
-        XCTAssertTrue(startCommand2.identity.equals(view2Key))
+        XCTAssertTrue(stopCommand1.identity.equals(view1Identity))
+        XCTAssertTrue(startCommand2.identity.equals(view2Identity))
         AssertDictionariesEqual(startCommand2.attributes, view2Attributes)
-        XCTAssertTrue(stopCommand2.identity.equals(view2Key))
-        XCTAssertTrue(startCommand3.identity.equals(view1Key))
+        XCTAssertTrue(stopCommand2.identity.equals(view2Identity))
+        XCTAssertTrue(startCommand3.identity.equals(view1Identity))
         AssertDictionariesEqual(startCommand1.attributes, view1Attributes)
     }
 
@@ -255,14 +255,14 @@ class SwiftUIRUMViewsHandlerTests: XCTestCase {
 
     func testGivenRUMViewStarted_whenAppStateChanges_itStopsAndRestartsRUMView() throws {
         // Given
-        let viewKey: String = UUID().uuidString
+        let viewIdentity: String = UUID().uuidString
         let viewName: String = .mockRandom()
         let viewPath: String = .mockRandom()
         let viewAttributes = mockRandomAttributes()
 
         // When
         handler.onAppear(
-            identity: viewKey,
+            identity: viewIdentity,
             name: viewName,
             path: viewPath,
             attributes: viewAttributes
@@ -277,10 +277,10 @@ class SwiftUIRUMViewsHandlerTests: XCTestCase {
 
         let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
         let startCommand = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
-        XCTAssertTrue(stopCommand.identity.equals(viewKey))
+        XCTAssertTrue(stopCommand.identity.equals(viewIdentity))
         XCTAssertEqual(stopCommand.attributes.count, 0)
         XCTAssertEqual(stopCommand.time, .mockDecember15th2019At10AMUTC())
-        XCTAssertTrue(startCommand.identity.equals(viewKey))
+        XCTAssertTrue(startCommand.identity.equals(viewIdentity))
         XCTAssertEqual(startCommand.path, viewPath)
         XCTAssertEqual(startCommand.name, viewName)
         AssertDictionariesEqual(startCommand.attributes, viewAttributes)
@@ -289,10 +289,10 @@ class SwiftUIRUMViewsHandlerTests: XCTestCase {
 
     func testGivenRUMViewDidNotStart_whenAppStateChanges_itDoesNothing() throws {
         // Given
-        let viewKey: String = UUID().uuidString
+        let viewIdentity: String = UUID().uuidString
 
         // When
-        handler.onDisappear(identity: viewKey)
+        handler.onDisappear(identity: viewIdentity)
 
         notificationCenter.post(name: UIApplication.willResignActiveNotification, object: nil)
         dateProvider.advance(bySeconds: 1)
