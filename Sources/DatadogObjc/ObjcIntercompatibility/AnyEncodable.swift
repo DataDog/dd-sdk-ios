@@ -17,6 +17,14 @@ internal func castAttributesToObjectiveC(_ attributes: [String: Encodable]) -> [
         .compactMapValues { value in (value as? AnyEncodable)?.value }
 }
 
+/// Helper extension to use `castAttributesToObjectiveC(_:)` in auto generated ObjC interop `RUMDataModels`.
+/// Unlike the function it wraps, it has postfix notation which makes it easier to use in generated code.
+internal extension Dictionary where Key == String, Value == Encodable {
+    func castToObjectiveC() -> [String: Any] {
+        return castAttributesToObjectiveC(self)
+    }
+}
+
 /// Type erasing `Encodable` wrapper to bridge Objective-C's `Any` to Swift `Encodable`.
 ///
 /// Inspired by `AnyCodable` by Flight-School (MIT):
