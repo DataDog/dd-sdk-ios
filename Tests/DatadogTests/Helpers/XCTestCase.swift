@@ -36,6 +36,18 @@ extension XCTestCase {
         }
     }
 
+    /// Waits until given `condition` returns `true` and then fulfills the `expectation`.
+    /// It executes `condition()` block on the main thread, in every run loop.
+    func wait(until condition: @escaping () -> Bool, andThenFulfill expectation: XCTestExpectation) {
+        if condition() {
+            expectation.fulfill()
+        } else {
+            OperationQueue.main.addOperation { [weak self] in
+                self?.wait(until: condition, andThenFulfill: expectation)
+            }
+        }
+    }
+
     /// Asserts that two dictionaries are equal.
     /// It uses debug string representation of values to check equality of `Any` values.
     func AssertDictionariesEqual(

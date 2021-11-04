@@ -71,7 +71,12 @@ class MobileDeviceTests: XCTestCase {
         )
 
         // Then
-        XCTAssertEqual(mobileDevice.currentBatteryStatus().isLowPowerModeEnabled, !isLowPowerModeEnabled)
+        let expectation = self.expectation(description: "Update `isLowPowerModeEnabled` in `BatteryStatus`")
+        wait(
+            until: { mobileDevice.currentBatteryStatus().isLowPowerModeEnabled == !isLowPowerModeEnabled },
+            andThenFulfill: expectation
+        )
+        waitForExpectations(timeout: 0.5, handler: nil)
     }
 
     func testWhenRunningOnMobile_itTogglesBatteryMonitoring() {
