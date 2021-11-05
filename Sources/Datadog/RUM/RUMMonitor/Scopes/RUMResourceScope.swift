@@ -208,10 +208,6 @@ internal class RUMResourceScope: RUMScope {
 
     private func sendErrorEvent(on command: RUMStopResourceWithErrorCommand) -> Bool {
         attributes.merge(rumCommandAttributes: command.attributes)
-        let sourceType = (attributes.removeValue(forKey: RUMAttribute.internalErrorSourceType) as? String)
-            .flatMap {
-                return RUMErrorEvent.Error.SourceType(rawValue: $0)
-            } ?? .ios
 
         let eventData = RUMErrorEvent(
             dd: .init(
@@ -237,7 +233,7 @@ internal class RUMResourceScope: RUMScope {
                     url: resourceURL
                 ),
                 source: command.errorSource.toRUMDataFormat,
-                sourceType: sourceType,
+                sourceType: command.errorSourceType,
                 stack: command.stack,
                 type: command.errorType
             ),

@@ -62,6 +62,17 @@ internal extension RUMResourceType {
     }
 }
 
+internal typealias RUMErrorSourceType = RUMErrorEvent.Error.SourceType
+
+internal extension RUMErrorSourceType {
+    static func extract(from attributes: inout [AttributeKey: AttributeValue]) -> Self {
+        return (attributes.removeValue(forKey: RUMAttribute.internalErrorSourceType) as? String)
+            .flatMap {
+                return RUMErrorEvent.Error.SourceType(rawValue: $0)
+            } ?? .ios
+    }
+}
+
 /// Describes the type of a RUM Action.
 public enum RUMUserActionType {
     case tap
