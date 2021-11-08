@@ -229,7 +229,7 @@ extension RUMErrorEvent: RandomMockable {
                     url: .mockRandom()
                 ),
                 source: [.source, .network, .custom].randomElement()!,
-                sourceType: .ios,
+                sourceType: [.android, .browser, .ios, .reactNative].randomElement()!,
                 stack: .mockRandom(),
                 type: .mockRandom()
             ),

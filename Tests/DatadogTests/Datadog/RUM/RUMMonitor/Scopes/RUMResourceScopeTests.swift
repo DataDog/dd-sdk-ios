@@ -487,6 +487,7 @@ class RUMResourceScopeTests: XCTestCase {
         let providerDomain = try XCTUnwrap(event.model.error.resource?.provider?.domain)
         XCTAssertEqual(providerType, .firstParty)
         XCTAssertEqual(providerDomain, "foo.com")
+        XCTAssertEqual(event.model.error.sourceType, .ios)
     }
 
     func testGivenStartedThirdPartyResource_whenResourceLoadingEndsWithError_itSendsErrorEventWithoutResourceProvider() throws {
@@ -517,6 +518,37 @@ class RUMResourceScopeTests: XCTestCase {
         // Then
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMErrorEvent>.self).first)
         XCTAssertNil(event.model.error.resource?.provider)
+        XCTAssertEqual(event.model.error.sourceType, .ios)
+    }
+
+    func testGivenStartedResource_whenResourceLoadingEndsWithErrorWithCustomSourceType_itSendsErrorEventWithCustomSourceType() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let resourceKey = "/resource/1"
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            context: context,
+            dependencies: dependencies,
+            resourceKey: resourceKey,
+            attributes: [:],
+            startTime: currentTime,
+            dateCorrection: .zero,
+            url: "https://foo.com/resource/1",
+            httpMethod: .post,
+            isFirstPartyResource: false
+        )
+
+        currentTime.addTimeInterval(2)
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceWithErrorCommand(resourceKey: resourceKey, time: currentTime, message: .mockAny(), type: .mockAny(), source: .source, httpStatusCode: .mockAny(), attributes: [RUMAttribute.internalErrorSourceType: "react-native"])
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMErrorEvent>.self).first)
+        XCTAssertEqual(event.model.error.sourceType, .reactNative)
     }
 
     // MARK: - Events sending callbacks

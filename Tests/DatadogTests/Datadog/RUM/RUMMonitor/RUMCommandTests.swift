@@ -57,6 +57,10 @@ class RUMCommandTests: XCTestCase {
 
         XCTAssertEqual(command2.errorSourceType, .reactNative)
         XCTAssertTrue(command2.attributes.isEmpty)
+
+        let defaultCommand = RUMAddCurrentViewErrorCommand(time: .mockAny(), message: .mockAny(), type: .mockAny(), stack: .mockAny(), source: .source, attributes: [:])
+
+        XCTAssertEqual(defaultCommand.errorSourceType, .ios)
     }
 
     func testWhenRUMStopResourceWithErrorCommand_isPassedErrorSourceTypeAttribute() {
@@ -69,5 +73,9 @@ class RUMCommandTests: XCTestCase {
 
         XCTAssertEqual(command2.errorSourceType, .reactNative)
         XCTAssertTrue(command2.attributes.isEmpty)
+
+        let defaultCommand = RUMStopResourceWithErrorCommand(resourceKey: .mockAny(), time: .mockAny(), message: .mockAny(), type: .mockAny(), source: .source, httpStatusCode: .mockAny(), attributes: [:])
+
+        XCTAssertEqual(defaultCommand.errorSourceType, .ios)
     }
 }
