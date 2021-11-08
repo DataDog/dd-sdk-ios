@@ -243,7 +243,7 @@ public class DDRUMViewEventRUMEventAttributes: NSObject {
     }
 
     @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo
+        root.swiftModel.context!.contextInfo.castToObjectiveC()
     }
 }
 
@@ -326,7 +326,7 @@ public class DDRUMViewEventRUMUser: NSObject {
     }
 
     @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo
+        root.swiftModel.usr!.usrInfo.castToObjectiveC()
     }
 }
 
@@ -864,7 +864,7 @@ public class DDRUMResourceEventRUMEventAttributes: NSObject {
     }
 
     @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo
+        root.swiftModel.context!.contextInfo.castToObjectiveC()
     }
 }
 
@@ -1277,7 +1277,7 @@ public class DDRUMResourceEventRUMUser: NSObject {
     }
 
     @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo
+        root.swiftModel.usr!.usrInfo.castToObjectiveC()
     }
 }
 
@@ -1683,7 +1683,7 @@ public class DDRUMActionEventRUMEventAttributes: NSObject {
     }
 
     @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo
+        root.swiftModel.context!.contextInfo.castToObjectiveC()
     }
 }
 
@@ -1766,7 +1766,7 @@ public class DDRUMActionEventRUMUser: NSObject {
     }
 
     @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo
+        root.swiftModel.usr!.usrInfo.castToObjectiveC()
     }
 }
 
@@ -2051,7 +2051,7 @@ public class DDRUMErrorEventRUMEventAttributes: NSObject {
     }
 
     @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo
+        root.swiftModel.context!.contextInfo.castToObjectiveC()
     }
 }
 
@@ -2377,7 +2377,7 @@ public class DDRUMErrorEventRUMUser: NSObject {
     }
 
     @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo
+        root.swiftModel.usr!.usrInfo.castToObjectiveC()
     }
 }
 
@@ -2662,7 +2662,7 @@ public class DDRUMLongTaskEventRUMEventAttributes: NSObject {
     }
 
     @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo
+        root.swiftModel.context!.contextInfo.castToObjectiveC()
     }
 }
 
@@ -2766,7 +2766,7 @@ public class DDRUMLongTaskEventRUMUser: NSObject {
     }
 
     @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo
+        root.swiftModel.usr!.usrInfo.castToObjectiveC()
     }
 }
 

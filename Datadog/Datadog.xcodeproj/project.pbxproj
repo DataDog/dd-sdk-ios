@@ -387,6 +387,7 @@
 		61C5A8A024509C1100DA608C /* Casting+Tracing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A89C24509C1100DA608C /* Casting+Tracing.swift */; };
 		61C5A8A624509FAA00DA608C /* SpanEventEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A8A424509FAA00DA608C /* SpanEventEncoder.swift */; };
 		61C5A8A724509FAA00DA608C /* SpanEventBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A8A524509FAA00DA608C /* SpanEventBuilder.swift */; };
+		61D03BE0273404E700367DE0 /* RUMDataModels+objcTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D03BDF273404E700367DE0 /* RUMDataModels+objcTests.swift */; };
 		61D447E224917F8F00649287 /* DateFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D447E124917F8F00649287 /* DateFormatting.swift */; };
 		61D50C3C2580EEF8006038A3 /* LoggingScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D50C3B2580EEF8006038A3 /* LoggingScenarios.swift */; };
 		61D50C462580EF19006038A3 /* TracingScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D50C452580EF19006038A3 /* TracingScenarios.swift */; };
@@ -513,8 +514,8 @@
 		B3FC3C0926526F0000DEED9E /* VitalInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FC3C0626526EFF00DEED9E /* VitalInfo.swift */; };
 		B3FC3C3C2653A97700DEED9E /* VitalInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FC3C3B2653A97700DEED9E /* VitalInfoTests.swift */; };
 		D2135330270CA722000315AD /* DataCompressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D213532F270CA722000315AD /* DataCompressionTests.swift */; };
-		D24C27EA270C8BEE005DE596 /* DataCompression.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24C27E9270C8BEE005DE596 /* DataCompression.swift */; };
 		D22C1F5C271484B400922024 /* LogEventMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22C1F5B271484B400922024 /* LogEventMapper.swift */; };
+		D24C27EA270C8BEE005DE596 /* DataCompression.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24C27E9270C8BEE005DE596 /* DataCompression.swift */; };
 		D2F1B81126D795F3009F3293 /* DDNoopRUMMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1B81026D795F3009F3293 /* DDNoopRUMMonitor.swift */; };
 		D2F1B81326D8DA68009F3293 /* DDNoopRUMMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1B81226D8DA68009F3293 /* DDNoopRUMMonitorTests.swift */; };
 		D2F1B81526D8E5FF009F3293 /* DDNoopTracerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1B81426D8E5FF009F3293 /* DDNoopTracerTests.swift */; };
@@ -1043,6 +1044,7 @@
 		61C5A89C24509C1100DA608C /* Casting+Tracing.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Casting+Tracing.swift"; sourceTree = "<group>"; };
 		61C5A8A424509FAA00DA608C /* SpanEventEncoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpanEventEncoder.swift; sourceTree = "<group>"; };
 		61C5A8A524509FAA00DA608C /* SpanEventBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpanEventBuilder.swift; sourceTree = "<group>"; };
+		61D03BDF273404E700367DE0 /* RUMDataModels+objcTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMDataModels+objcTests.swift"; sourceTree = "<group>"; };
 		61D447E124917F8F00649287 /* DateFormatting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DateFormatting.swift; sourceTree = "<group>"; };
 		61D50C3B2580EEF8006038A3 /* LoggingScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingScenarios.swift; sourceTree = "<group>"; };
 		61D50C452580EF19006038A3 /* TracingScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingScenarios.swift; sourceTree = "<group>"; };
@@ -1169,8 +1171,8 @@
 		B3FC3C0626526EFF00DEED9E /* VitalInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VitalInfo.swift; sourceTree = "<group>"; };
 		B3FC3C3B2653A97700DEED9E /* VitalInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalInfoTests.swift; sourceTree = "<group>"; };
 		D213532F270CA722000315AD /* DataCompressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCompressionTests.swift; sourceTree = "<group>"; };
-		D24C27E9270C8BEE005DE596 /* DataCompression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCompression.swift; sourceTree = "<group>"; };
 		D22C1F5B271484B400922024 /* LogEventMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEventMapper.swift; sourceTree = "<group>"; };
+		D24C27E9270C8BEE005DE596 /* DataCompression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCompression.swift; sourceTree = "<group>"; };
 		D2F1B81026D795F3009F3293 /* DDNoopRUMMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNoopRUMMonitor.swift; sourceTree = "<group>"; };
 		D2F1B81226D8DA68009F3293 /* DDNoopRUMMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNoopRUMMonitorTests.swift; sourceTree = "<group>"; };
 		D2F1B81426D8E5FF009F3293 /* DDNoopTracerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNoopTracerTests.swift; sourceTree = "<group>"; };
@@ -1627,6 +1629,7 @@
 				615A4A8624A3452800233986 /* DDTracerConfigurationTests.swift */,
 				616B668D259CC28E00968EE8 /* DDRUMMonitorTests.swift */,
 				9EE5AD8126205B82001E699E /* DDNSURLSessionDelegateTests.swift */,
+				61D03BDE273404BB00367DE0 /* RUM */,
 			);
 			path = DatadogObjc;
 			sourceTree = "<group>";
@@ -2858,6 +2861,14 @@
 			path = Span;
 			sourceTree = "<group>";
 		};
+		61D03BDE273404BB00367DE0 /* RUM */ = {
+			isa = PBXGroup;
+			children = (
+				61D03BDF273404E700367DE0 /* RUMDataModels+objcTests.swift */,
+			);
+			path = RUM;
+			sourceTree = "<group>";
+		};
 		61D50C3A2580EED5006038A3 /* ManualInstrumentation */ = {
 			isa = PBXGroup;
 			children = (
@@ -4058,6 +4069,7 @@
 				613E81F725A743600084B751 /* RUMEventsMapperTests.swift in Sources */,
 				61EF78B7257E37D500EDCCB3 /* MoveDataMigratorTests.swift in Sources */,
 				61F1A621249A45E400075390 /* DDSpanContextTests.swift in Sources */,
+				61D03BE0273404E700367DE0 /* RUMDataModels+objcTests.swift in Sources */,
 				615C3196251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift in Sources */,
 				61E917CF2464270500E6C631 /* CodableValueTests.swift in Sources */,
 				61133C542423990D00786299 /* NetworkConnectionInfoProviderTests.swift in Sources */,

@@ -30,7 +30,7 @@ public class DDRUMView: NSObject {
     let swiftView: RUMView
 
     @objc public var name: String { swiftView.name }
-    @objc public var attributes: [String: Any] { swiftView.attributes }
+    @objc public var attributes: [String: Any] { castAttributesToObjectiveC(swiftView.attributes) }
 
     /// Initializes the RUM View description.
     /// - Parameters:
@@ -66,7 +66,7 @@ public class DDRUMAction: NSObject {
     let swiftAction: RUMAction
 
     @objc public var name: String { swiftAction.name }
-    @objc public var attributes: [String: Any] { swiftAction.attributes }
+    @objc public var attributes: [String: Any] { castAttributesToObjectiveC(swiftAction.attributes) }
 
     /// Initializes the RUM Action description.
     /// - Parameters:
