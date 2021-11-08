@@ -233,6 +233,7 @@ internal class RUMResourceScope: RUMScope {
                     url: resourceURL
                 ),
                 source: command.errorSource.toRUMDataFormat,
+                sourceType: command.errorSourceType,
                 stack: command.stack,
                 type: command.errorType
             ),

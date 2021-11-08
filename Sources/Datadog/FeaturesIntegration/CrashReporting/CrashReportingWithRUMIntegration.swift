@@ -111,6 +111,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 message: errorMessage,
                 resource: nil,
                 source: .source,
+                sourceType: .ios,
                 stack: errorStackTrace,
                 type: errorType
             ),
