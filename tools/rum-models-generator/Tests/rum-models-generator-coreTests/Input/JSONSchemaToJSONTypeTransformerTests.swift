@@ -60,15 +60,21 @@ final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
                 { "$ref": "referenced-schema2.json" },
                 {
                     "properties": {
-                        "property1": {
+                        "stringEnumProperty": {
                             "type": "string",
-                            "description": "Description of Foo's `property1`.",
+                            "description": "Description of Foo's `stringEnumProperty`.",
                             "enum": ["case1", "case2", "case3", "case4"],
                             "const": "case2"
                         },
-                        "property2": {
+                        "integerEnumProperty": {
+                            "type": "number",
+                            "description": "Description of Foo's `integerEnumProperty`.",
+                            "enum": [1, 2, 3, 4],
+                            "const": 3
+                        },
+                        "arrayProperty": {
                             "type": "array",
-                            "description": "Description of Foo's `property2`.",
+                            "description": "Description of Foo's `arrayProperty`.",
                             "items": {
                                 "type": "string",
                                 "enum": ["option1", "option2", "option3", "option4"]
@@ -91,7 +97,7 @@ final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
                         "description": "Additional properties of Foo.",
                         "readOnly": true
                     },
-                    "required": ["property1"],
+                    "required": ["stringEnumProperty"],
                 }
             ]
         }
@@ -131,25 +137,37 @@ final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
                     isReadOnly: true
                 ),
                 JSONObject.Property(
-                    name: "property1",
-                    comment: "Description of Foo's `property1`.",
+                    name: "stringEnumProperty",
+                    comment: "Description of Foo's `stringEnumProperty`.",
                     type: JSONEnumeration(
-                        name: "property1",
-                        comment: "Description of Foo's `property1`.",
-                        values: ["case1", "case2", "case3", "case4"]
+                        name: "stringEnumProperty",
+                        comment: "Description of Foo's `stringEnumProperty`.",
+                        values: [.string(value: "case1"), .string(value: "case2"), .string(value: "case3"), .string(value: "case4")]
                     ),
                     defaultValue: JSONObject.Property.DefaultValue.string(value: "case2"),
                     isRequired: true,
                     isReadOnly: true
                 ),
                 JSONObject.Property(
-                    name: "property2",
-                    comment: "Description of Foo's `property2`.",
+                    name: "integerEnumProperty",
+                    comment: "Description of Foo's `integerEnumProperty`.",
+                    type: JSONEnumeration(
+                        name: "integerEnumProperty",
+                        comment: "Description of Foo's `integerEnumProperty`.",
+                        values: [.integer(value: 1), .integer(value: 2), .integer(value: 3), .integer(value: 4)]
+                    ),
+                    defaultValue: JSONObject.Property.DefaultValue.integer(value: 3),
+                    isRequired: false,
+                    isReadOnly: true
+                ),
+                JSONObject.Property(
+                    name: "arrayProperty",
+                    comment: "Description of Foo's `arrayProperty`.",
                     type: JSONArray(
                         element: JSONEnumeration(
-                            name: "property2",
+                            name: "arrayProperty",
                             comment: nil,
-                            values: ["option1", "option2", "option3", "option4"]
+                            values: [.string(value: "option1"), .string(value: "option2"), .string(value: "option3"), .string(value: "option4")]
                         )
                     ),
                     defaultValue: nil,

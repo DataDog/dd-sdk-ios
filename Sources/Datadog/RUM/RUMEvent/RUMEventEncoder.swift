@@ -8,22 +8,41 @@ import Foundation
 
 /// `Encodable` representation of RUM event.
 /// Mutable properties are subject of sanitization or data scrubbing.
-internal struct RUMEvent<DM: RUMDataModel>: Encodable {
+/// TODO: RUMM-1584 - Remove `RUMEvent` container.
+internal struct RUMEvent<DM>: Encodable where DM: RUMDataModel, DM: RUMSanitizableEvent {
     /// The actual RUM event model created by `RUMMonitor`
     var model: DM
 
-    /// Custom attributes set by the user
-    var attributes: [String: Encodable]
-    var userInfoAttributes: [String: Encodable]
+    /// Error attributes. Only set when `DM == RUMErrorEvent` and error describes a crash.
+    /// Can be entirely removed when RUMM-1463 is resolved and error values are part of the `RUMErrorEvent`.
+    let errorAttributes: [String: Encodable]?
+
+    /// Creates a RUM Event object object based on the given sanitizable model.
+    ///
+    /// The error attributes keys must be prefixed by `error.*`.
+    ///
+    /// - Parameters:
+    ///   - model: The sanitizable event model.
+    ///   - errorAttributes: The optional error attributes.
+    init(model: DM, errorAttributes: [String: Encodable]? = nil) {
+        self.model = model
+        self.errorAttributes = errorAttributes
+    }
 
     func encode(to encoder: Encoder) throws {
-        let sanitizedEvent = RUMEventSanitizer().sanitize(event: self)
-        try RUMEventEncoder().encode(sanitizedEvent, to: encoder)
-    }
-}
+        // Encode attributes
+        var container = encoder.container(keyedBy: DynamicCodingKey.self)
 
-/// Encodes `RUMEvent` to given encoder.
-internal struct RUMEventEncoder {
+        // TODO: RUMM-1463 Remove this `errorAttributes` property once new error format is managed through `RUMDataModels`
+        try errorAttributes?.forEach { attribute in
+            try container.encode(CodableValue(attribute.value), forKey: DynamicCodingKey(attribute.key))
+        }
+
+        // Encode the sanitized `RUMDataModel`.
+        let sanitizedModel = RUMEventSanitizer().sanitize(event: model)
+        try sanitizedModel.encode(to: encoder)
+    }
+
     /// Coding keys for dynamic `RUMEvent` attributes specified by user.
     private struct DynamicCodingKey: CodingKey {
         var stringValue: String
@@ -32,23 +51,23 @@ internal struct RUMEventEncoder {
         init?(intValue: Int) { return nil }
         init(_ string: String) { self.stringValue = string }
     }
-
-    func encode<DM: RUMDataModel>(_ event: RUMEvent<DM>, to encoder: Encoder) throws {
-        // Encode attributes
-        var attributesContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try event.attributes.forEach { attributeName, attributeValue in
-            // TODO: RUMM-1463 Remove this condition once new error format is managed through `RUMDataModels`
-            if attributeName == DDError.threads || attributeName == DDError.binaryImages || attributeName == DDError.meta || attributeName == DDError.wasTruncated {
-                try attributesContainer.encode(CodableValue(attributeValue), forKey: DynamicCodingKey(attributeName))
-            } else {
-                try attributesContainer.encode(CodableValue(attributeValue), forKey: DynamicCodingKey("context.\(attributeName)"))
-            }
-        }
-        try event.userInfoAttributes.forEach { attributeName, attributeValue in
-            try attributesContainer.encode(CodableValue(attributeValue), forKey: DynamicCodingKey("usr.\(attributeName)"))
-        }
-
-        // Encode `RUMDataModel`
-        try event.model.encode(to: encoder)
-    }
 }
+
+/// Constraint on RUM event types that require sanitization before encoding.
+internal protocol RUMSanitizableEvent {
+    /// Mutable user property.
+    var usr: RUMUser? { get set }
+
+    /// Mutable event contect.
+    var context: RUMEventAttributes? { get set }
+}
+
+extension RUMViewEvent: RUMSanitizableEvent {}
+
+extension RUMActionEvent: RUMSanitizableEvent {}
+
+extension RUMResourceEvent: RUMSanitizableEvent {}
+
+extension RUMErrorEvent: RUMSanitizableEvent {}
+
+extension RUMLongTaskEvent: RUMSanitizableEvent {}

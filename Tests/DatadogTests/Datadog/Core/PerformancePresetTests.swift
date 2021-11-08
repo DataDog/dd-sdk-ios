@@ -26,7 +26,6 @@ class PerformancePresetTests: XCTestCase {
 
         let frequentUploadAnyBatch = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .frequent, bundleType: .iOSApp)
         XCTAssertEqual(frequentUploadAnyBatch.initialUploadDelay, 5.0)
-        XCTAssertEqual(frequentUploadAnyBatch.defaultUploadDelay, 5.0)
         XCTAssertEqual(frequentUploadAnyBatch.minUploadDelay, 1.0)
         XCTAssertEqual(frequentUploadAnyBatch.maxUploadDelay, 10.0)
         XCTAssertEqual(frequentUploadAnyBatch.uploadDelayChangeRate, 0.1)
@@ -34,7 +33,6 @@ class PerformancePresetTests: XCTestCase {
 
         let averageUploadAnyBatch = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .average, bundleType: .iOSApp)
         XCTAssertEqual(averageUploadAnyBatch.initialUploadDelay, 25.0)
-        XCTAssertEqual(averageUploadAnyBatch.defaultUploadDelay, 25.0)
         XCTAssertEqual(averageUploadAnyBatch.minUploadDelay, 5.0)
         XCTAssertEqual(averageUploadAnyBatch.maxUploadDelay, 50.0)
         XCTAssertEqual(averageUploadAnyBatch.uploadDelayChangeRate, 0.1)
@@ -42,7 +40,6 @@ class PerformancePresetTests: XCTestCase {
 
         let rareUploadAnyBatch = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .rare, bundleType: .iOSApp)
         XCTAssertEqual(rareUploadAnyBatch.initialUploadDelay, 50.0)
-        XCTAssertEqual(rareUploadAnyBatch.defaultUploadDelay, 50.0)
         XCTAssertEqual(rareUploadAnyBatch.minUploadDelay, 10.0)
         XCTAssertEqual(rareUploadAnyBatch.maxUploadDelay, 100.0)
         XCTAssertEqual(rareUploadAnyBatch.uploadDelayChangeRate, 0.1)
@@ -67,7 +64,6 @@ class PerformancePresetTests: XCTestCase {
 
         let frequentUploadAnyBatch = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .frequent, bundleType: .iOSAppExtension)
         XCTAssertEqual(frequentUploadAnyBatch.initialUploadDelay, 0.25)
-        XCTAssertEqual(frequentUploadAnyBatch.defaultUploadDelay, 1.5)
         XCTAssertEqual(frequentUploadAnyBatch.minUploadDelay, 0.5)
         XCTAssertEqual(frequentUploadAnyBatch.maxUploadDelay, 2.5)
         XCTAssertEqual(frequentUploadAnyBatch.uploadDelayChangeRate, 0.5)
@@ -75,7 +71,6 @@ class PerformancePresetTests: XCTestCase {
 
         let averageUploadAnyBatch = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .average, bundleType: .iOSAppExtension)
         XCTAssertEqual(averageUploadAnyBatch.initialUploadDelay, 0.5)
-        XCTAssertEqual(averageUploadAnyBatch.defaultUploadDelay, 3.0)
         XCTAssertEqual(averageUploadAnyBatch.minUploadDelay, 1.0)
         XCTAssertEqual(averageUploadAnyBatch.maxUploadDelay, 5.0)
         XCTAssertEqual(averageUploadAnyBatch.uploadDelayChangeRate, 0.5)
@@ -83,7 +78,6 @@ class PerformancePresetTests: XCTestCase {
 
         let rareUploadAnyBatch = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .rare, bundleType: .iOSAppExtension)
         XCTAssertEqual(rareUploadAnyBatch.initialUploadDelay, 2.5)
-        XCTAssertEqual(rareUploadAnyBatch.defaultUploadDelay, 15.0)
         XCTAssertEqual(rareUploadAnyBatch.minUploadDelay, 5.0)
         XCTAssertEqual(rareUploadAnyBatch.maxUploadDelay, 25.0)
         XCTAssertEqual(rareUploadAnyBatch.uploadDelayChangeRate, 0.5)

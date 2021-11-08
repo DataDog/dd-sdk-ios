@@ -5,7 +5,7 @@
 # -----------------------------------------------------------
 
 import re
-from src.test_file_parser import MonitorConfiguration, MonitorVariable, MONITOR_TYPE_LOGS, MONITOR_TYPE_APM
+from src.test_file_parser import MonitorConfiguration, MonitorVariable, MONITOR_TYPE_LOGS, MONITOR_TYPE_APM, MONITOR_TYPE_RUM
 from src.linter import Linter, linter_context
 
 
@@ -17,18 +17,21 @@ class MainTF:
             self,
             template_content: str,
             logs_monitor_template: 'MonitorTemplate',
-            apm_monitor_template: 'MonitorTemplate'
+            apm_monitor_template: 'MonitorTemplate',
+            rum_monitor_template: 'MonitorTemplate'
     ):
         self.monitors: [MonitorConfiguration] = []
         self.template_content = template_content
         self.logs_monitor_template = logs_monitor_template
         self.apm_monitor_template = apm_monitor_template
+        self.rum_monitor_template = rum_monitor_template
 
     @staticmethod
     def load_from_templates(
             main_template_path: str,
             logs_monitor_template_path: str,
-            apm_monitor_template_path: str
+            apm_monitor_template_path: str,
+            rum_monitor_template_path: str
     ):
         with open(logs_monitor_template_path, 'r') as monitor_tf_src:
             logs_monitor_template = MonitorTemplate(template_content=monitor_tf_src.read())
@@ -36,11 +39,15 @@ class MainTF:
         with open(apm_monitor_template_path, 'r') as monitor_tf_src:
             apm_monitor_template = MonitorTemplate(template_content=monitor_tf_src.read())
 
+        with open(rum_monitor_template_path, 'r') as monitor_tf_src:
+            rum_monitor_template = MonitorTemplate(template_content=monitor_tf_src.read())
+
         with open(main_template_path, 'r') as main_tf_src:
             return MainTF(
                 template_content=main_tf_src.read(),
                 logs_monitor_template=logs_monitor_template,
-                apm_monitor_template=apm_monitor_template
+                apm_monitor_template=apm_monitor_template,
+                rum_monitor_template=rum_monitor_template
             )
 
     def render(self, monitors: [MonitorConfiguration]) -> str:
@@ -52,9 +59,11 @@ class MainTF:
 
             if monitor.type == MONITOR_TYPE_LOGS:
                 monitor_template = self.logs_monitor_template
-            else:
-                assert monitor.type == MONITOR_TYPE_APM, f'Unrecognized monitor type {monitor.type}'
+            elif monitor.type == MONITOR_TYPE_APM:
                 monitor_template = self.apm_monitor_template
+            else:
+                assert monitor.type == MONITOR_TYPE_RUM, f'Unrecognized monitor type {monitor.type}'
+                monitor_template = self.rum_monitor_template
 
             output += monitor_template.render(monitor=monitor)
             output += '\n'
@@ -73,6 +82,7 @@ class MonitorTemplate:
         result = ''
         result += self.template_content
         result = MonitorTemplate.render_template_variables(template=result, monitor=monitor)
+        result = MonitorTemplate.render_monitor_code(template=result, monitor=monitor)
         return result
 
     @staticmethod
@@ -131,3 +141,10 @@ class MonitorTemplate:
                     )
 
         return '\n'.join(rendered_lines)
+
+    @staticmethod
+    def render_monitor_code(template: str, monitor: MonitorConfiguration) -> str:
+        """
+        Replaces '## MONITOR_CODE ##' anchor in the template with the code associated to this monitor.
+        """
+        return template.replace("## MONITOR_CODE ##", monitor.code)

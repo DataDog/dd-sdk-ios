@@ -24,6 +24,9 @@ public class DDEndpoint: NSObject {
     public static func us3() -> DDEndpoint { .init(sdkEndpoint: .us3) }
 
     @objc
+    public static func us5() -> DDEndpoint { .init(sdkEndpoint: .us5) }
+
+    @objc
     public static func eu1() -> DDEndpoint { .init(sdkEndpoint: .eu1) }
 
     @objc
@@ -255,6 +258,11 @@ public class DDConfigurationBuilder: NSObject {
     }
 
     @objc
+    public func set(onRUMSessionStart handler: @escaping (String, Bool) -> Void) {
+        _ = sdkBuilder.onRUMSessionStart(handler)
+    }
+
+    @objc
     public func trackUIKitRUMViews() {
         let defaultPredicate = DefaultUIKitRUMViewsPredicate()
         _ = sdkBuilder.trackUIKitRUMViews(using: defaultPredicate)
@@ -282,6 +290,16 @@ public class DDConfigurationBuilder: NSObject {
     public func trackUIKitRUMActions(using predicate: DDUIKitRUMUserActionsPredicate) {
         let predicateBridge = UIKitRUMUserActionsPredicateBridge(objcPredicate: predicate)
         _ = sdkBuilder.trackUIKitRUMActions(using: predicateBridge)
+    }
+
+    @objc
+    public func trackRUMLongTasks() {
+        _ = sdkBuilder.trackRUMLongTasks()
+    }
+
+    @objc
+    public func trackRUMLongTasks(threshold: TimeInterval) {
+        _ = sdkBuilder.trackRUMLongTasks(threshold: threshold)
     }
 
     @objc
@@ -317,6 +335,14 @@ public class DDConfigurationBuilder: NSObject {
     }
 
     @objc
+    public func setRUMLongTaskEventMapper(_ mapper: @escaping (DDRUMLongTaskEvent) -> DDRUMLongTaskEvent?) {
+        _ = sdkBuilder.setRUMLongTaskEventMapper { swiftEvent in
+            let objcEvent = DDRUMLongTaskEvent(swiftModel: swiftEvent)
+            return mapper(objcEvent)?.swiftModel
+        }
+    }
+
+    @objc
     public func set(batchSize: DDBatchSize) {
         _ = sdkBuilder.set(batchSize: batchSize.swiftType)
     }
@@ -329,6 +355,11 @@ public class DDConfigurationBuilder: NSObject {
     @objc
     public func set(additionalConfiguration: [String: Any]) {
         _ = sdkBuilder.set(additionalConfiguration: additionalConfiguration)
+    }
+
+    @objc
+    public func set(proxyConfiguration: [AnyHashable: Any]) {
+        _ = sdkBuilder.set(proxyConfiguration: proxyConfiguration)
     }
 
     @objc

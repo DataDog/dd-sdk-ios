@@ -30,7 +30,7 @@ class TracingStorageBenchmarkTests: XCTestCase {
         self.reader = storage.reader
         self.queue = (storage.writer as! ConsentAwareDataWriter).queue
 
-        XCTAssertTrue(try directory.files().count == 0)
+        XCTAssertTrue(try directory.files().isEmpty)
     }
 
     override func tearDown() {
@@ -42,7 +42,7 @@ class TracingStorageBenchmarkTests: XCTestCase {
         super.tearDown()
     }
 
-    func testWrittingSpansOnDisc() throws {
+    func testWritingSpansOnDisc() throws {
         let log = createRandomizedSpan()
 
         measure {

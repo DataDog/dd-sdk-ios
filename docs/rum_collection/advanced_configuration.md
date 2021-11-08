@@ -65,15 +65,15 @@ Example:
 ```swift
 // in your `UIViewController`:
 
-@IBAction func didTapDownloadResourceButton(_ sender: Any) {
+@IBAction func didTapDownloadResourceButton(_ sender: UIButton) {
     Global.rum.addUserAction(
         type: .tap,
-        name: (sender as? UIButton).currentTitle ?? "",
+        name: sender.currentTitle ?? "",
     )
 }
 ```
 
-**Note**: When using `.startUserAction(type:name:)` and `.stopUserAction(type:)`, the action `type` must be the same. This is necessary for the SDK to match a action start with its completion. 
+**Note**: When using `.startUserAction(type:name:)` and `.stopUserAction(type:)`, the action `type` must be the same. This is necessary for the SDK to match an action start with its completion. 
 
 Find more details and available options in `DDRUMMonitor` class.
 
@@ -117,10 +117,22 @@ For more details and available options, refer to the code documentation comments
 
 ## Track custom global attributes
 
-In addition to the [default RUM attributes][11] captured by the mobile SDK automatically, you can choose to add additional contextual information, such as custom attributes, to your RUM events to enrich your observability within Datadog. Custom attributes allow you to slice and dice information about observed user behavior (such as cart value, merchant tier, or ad campaign) with code-level information (such as backend services, session timeline, error logs, and network health).
+In addition to the [default RUM attributes][11] captured by the mobile SDK automatically, you can choose to add additional contextual information, such as custom attributes, to your RUM events to enrich your observability within Datadog. 
 
-### Track User Sessions
+Custom attributes allow you to filter and group information about observed user behavior (such as cart value, merchant tier, or ad campaign) with code-level information (such as backend services, session timeline, error logs, and network health).
+
+### Set a custom global attribute
+
+To set a custom global attribute, use `Global.rum.addAttribute(forKey:value:)`.
+
+* To add an attribute, use `Global.rum.setAttribute(forKey: "some key", value: "some value")`.
+* To update the value, use `Global.rum.setAttribute(forKey: "some key", value: "some other value")`.
+* To remove the key, use `Global.rum.removeAttribute(forKey: "some key")`.
+
+### Track user sessions
+
 Adding user information to your RUM sessions makes it easy to:
+
 * Follow the journey of a given user
 * Know which users are the most impacted by errors
 * Monitor performance for your most important users
@@ -169,19 +181,19 @@ You can use the following methods in `Datadog.Configuration.Builder` when creati
 : Enables tracking user interactions (taps) as RUM actions.
 
 `trackURLSession(firstPartyHosts: Set<String>)`
-: Enables tracking `URLSession` tasks (network requests) as RUM resources. The `firstPartyHosts` parameter defines hosts that will be categorized as `first-party` resources (if RUM feature is enabled) and will have tracing information injected (if tracing feature is enabled).
+: Enables tracking `URLSession` tasks (network requests) as RUM resources. The `firstPartyHosts` parameter defines hosts that are categorized as `first-party` resources (if RUM is enabled) and have tracing information injected (if tracing feature is enabled).
 
 `setRUMViewEventMapper(_ mapper: @escaping (RUMViewEvent) -> RUMViewEvent)`
-: Sets the data scrubbing callback for views. This can be used to modify view events before they are send to Datadog - see [Modify or drop RUM events][9] for more.
+: Sets the data scrubbing callback for views. This can be used to modify view events before they are sent to Datadog - see [Modify or drop RUM events][9] for more.
 
 `setRUMResourceEventMapper(_ mapper: @escaping (RUMResourceEvent) -> RUMResourceEvent?)`
-: Sets the data scrubbing callback for resources. This can be used to modify or drop resource events before they are send to Datadog - see [Modify or drop RUM events][9] for more.
+: Sets the data scrubbing callback for resources. This can be used to modify or drop resource events before they are sent to Datadog - see [Modify or drop RUM events][9] for more.
 
 `setRUMActionEventMapper(_ mapper: @escaping (RUMActionEvent) -> RUMActionEvent?)`
-: Sets the data scrubbing callback for actions. This can be used to modify or drop action events before they are send to Datadog - see [Modify or drop RUM events][9] for more.
+: Sets the data scrubbing callback for actions. This can be used to modify or drop action events before they are sent to Datadog - see [Modify or drop RUM events][9] for more.
 
 `setRUMErrorEventMapper(_ mapper: @escaping (RUMErrorEvent) -> RUMErrorEvent?)`
-: Sets the data scrubbing callback for errors. This can be used to modify or drop error events before they are send to Datadog - see [Modify or drop RUM events][9] for more.
+: Sets the data scrubbing callback for errors. This can be used to modify or drop error events before they are sent to Datadog - see [Modify or drop RUM events][9] for more.
 
 `setRUMResourceAttributesProvider(_ provider: @escaping (URLRequest, URLResponse?, Data?, Error?) -> [AttributeKey: AttributeValue]?)`
 : Sets a closure to provide custom attributes for intercepted resources. The `provider` closure is called for each resource collected by the SDK. This closure is called with task information and may return custom resource attributes or `nil` if no attributes should be attached.
@@ -197,11 +209,11 @@ You can use the following methods in `Datadog.Configuration.Builder` when creati
 : Enables or disables the Tracing feature.
 
 `setSpanEventMapper(_ mapper: @escaping (SpanEvent) -> SpanEvent)`
-: Sets the data scrubbing callback for spans. This can be used to modify or drop span events before they are send to Datadog.
- 
+: Sets the data scrubbing callback for spans. This can be used to modify or drop span events before they are sent to Datadog.
+
 ### Automatically track views
 
-To automatically track views (`UIViewControllers`), use the `.trackUIKitRUMViews()` option when configuring the SDK. By default views will be named with the view controller's class name. To customize it use `.trackUIKitRUMViews(using: predicate)` and provide your own implementation of the `predicate` which conforms to `UIKitRUMViewsPredicate` protocol:
+To automatically track views (`UIViewControllers`), use the `.trackUIKitRUMViews()` option when configuring the SDK. By default, views are named with the view controller's class name. To customize it, use `.trackUIKitRUMViews(using: predicate)` and provide your own implementation of the `predicate` which conforms to `UIKitRUMViewsPredicate` protocol:
 
 ```swift
 public protocol UIKitRUMViewsPredicate {
@@ -214,6 +226,7 @@ Inside the `rumView(for:)` implementation, your app should decide if a given `UI
 For instance, you can configure the predicate to use explicit type check for each view controller in your app:
 ```swift
 class YourCustomPredicate: UIKitRUMViewsPredicate {
+
     func rumView(for viewController: UIViewController) -> RUMView? {
         switch viewController {
         case is HomeViewController:     return .init(name: "Home")
@@ -227,17 +240,22 @@ class YourCustomPredicate: UIKitRUMViewsPredicate {
 You can even come up with a more dynamic solution depending on your app's architecture. For example, if your view controllers use `accessibilityLabel` consistently, you can name views by the value of accessibility label:
 ```swift
 class YourCustomPredicate: UIKitRUMViewsPredicate {
+
     func rumView(for viewController: UIViewController) -> RUMView? {
-        if let accessibilityLabel = viewController.accessibilityLabel {
-            return .init(name: accessibilityLabel)
-        } else {
+        guard let accessibilityLabel = viewController.accessibilityLabel else {
             return nil
         }
+
+        return RUMView(name: accessibilityLabel)
     }
 }
 ```
 
 **Note**: The SDK calls `rumView(for:)` many times while your app is running. It is recommended to keep its implementation fast and single-threaded.
+
+### Automatically track user actions
+
+To automatically track user tap actions, use the `.trackUIKitActions()` option when configuring the SDK.
 
 ### Automatically track network requests
 
@@ -272,9 +290,9 @@ let session = URLSession(
     delegateQueue: nil
 )
 ```
-This will track all requests sent with the instrumented `session`. Requests matching `example.com` domain will be marked as "first party" and tracing information will be send to your backend to [connect the RUM resource with its Trace][10].
+This tracks all requests sent with the instrumented `session`. Requests matching the `example.com` domain are marked as "first party" and tracing information is sent to your backend to [connect the RUM resource with its Trace][10].
 
-To add custom attributes to resources, use the `.setRUMResourceAttributesProvider(_ :)` option when configuring SDK. By setting attributes provider closure you can return additional attributes to be attached to tracked resource. 
+To add custom attributes to resources, use the `.setRUMResourceAttributesProvider(_ :)` option when configuring SDK. By setting attributes provider closure, you can return additional attributes to be attached to tracked resource. 
 
 For instance, you may want to add HTTP request and response headers to the RUM resource:
 ```swift
@@ -287,7 +305,7 @@ For instance, you may want to add HTTP request and response headers to the RUM r
 
 ```
 
-### Automatically track RUM errors
+### Automatically track errors
 
 All "error" and "critical" logs sent with `Logger` are automatically reported as RUM errors and linked to the current RUM view:
 ```swift
@@ -391,6 +409,27 @@ This means that even if users open your application while offline, no data is lo
 
 **Note**: The data on the disk is automatically discarded if it gets too old to ensure the SDK doesn't use too much disk space.
 
+## Configuring a custom proxy for Datadog data upload
+
+If your app is running on devices behind a custom proxy, you can let the SDK's data uploader know about it to ensure all tracked data are uploaded with the relevant configuration. You can specify your proxy configuration (as described in the [URLSessionConfiguration.connectionProxyDictionary][12] documentation) when initializing the SDK.
+
+```swift
+Datadog.initialize(
+    // ...
+    configuration: Datadog.Configuration
+        .builderUsing(/* ... */)
+        .set(proxyConfiguration: [
+            kCFNetworkProxiesHTTPEnable: true, 
+            kCFNetworkProxiesHTTPPort: 123, 
+            kCFNetworkProxiesHTTPProxy: "www.example.com", 
+            kCFProxyUsernameKey: "proxyuser", 
+            kCFProxyPasswordKey: "proxypass" 
+        ])
+        // ...
+        .build()
+)
+```
+
 
 ## Further Reading
 
@@ -402,9 +441,10 @@ This means that even if users open your application while offline, no data is lo
 [3]: /real_user_monitoring/ios/data_collected
 [4]: #automatically-track-views
 [5]: https://docs.datadoghq.com/real_user_monitoring/explorer/?tab=measures#setup-facets-and-measures
-[6]: #automatically-track-actions
+[6]: #automatically-track-user-actions
 [7]: #automatically-track-network-requests
 [8]: /real_user_monitoring/ios/data_collected/?tab=error#error-attributes
 [9]: #modify-or-drop-rum-events
 [10]: https://docs.datadoghq.com/real_user_monitoring/connect_rum_and_traces?tab=browserrum
 [11]: /real_user_monitoring/ios/data_collected?tab=session#default-attributes
+[12]: https://developer.apple.com/documentation/foundation/urlsessionconfiguration/1411499-connectionproxydictionary

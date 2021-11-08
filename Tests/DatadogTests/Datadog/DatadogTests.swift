@@ -18,7 +18,7 @@ class DatadogTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
         printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
     }
@@ -26,7 +26,7 @@ class DatadogTests: XCTestCase {
     override func tearDown() {
         consolePrint = { print($0) }
         printFunction = nil
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
         super.tearDown()
     }
 
@@ -38,7 +38,7 @@ class DatadogTests: XCTestCase {
             trackingConsent: .mockRandom(),
             configuration: defaultBuilder.build()
         )
-        XCTAssertNotNil(Datadog.instance)
+        XCTAssertTrue(Datadog.isInitialized)
         Datadog.flushAndDeinitialize()
     }
 
@@ -48,26 +48,26 @@ class DatadogTests: XCTestCase {
             trackingConsent: .mockRandom(),
             configuration: rumBuilder.build()
         )
-        XCTAssertNotNil(Datadog.instance)
+        XCTAssertTrue(Datadog.isInitialized)
         Datadog.flushAndDeinitialize()
     }
 
     func testGivenInvalidConfiguration_itPrintsError() {
-        let invalidConiguration = Datadog.Configuration
+        let invalidConfiguration = Datadog.Configuration
             .builderUsing(clientToken: "", environment: "tests")
             .build()
 
         Datadog.initialize(
             appContext: .mockAny(),
             trackingConsent: .mockRandom(),
-            configuration: invalidConiguration
+            configuration: invalidConfiguration
         )
 
         XCTAssertEqual(
             printFunction.printedMessage,
             "🔥 Datadog SDK usage error: `clientToken` cannot be empty."
         )
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
     }
 
     func testGivenValidConfiguration_whenInitializedMoreThanOnce_itPrintsError() {
@@ -329,7 +329,7 @@ class DatadogTests: XCTestCase {
         }
     }
 
-    // MARK: - Global Values
+    // MARK: - Public APIs
 
     func testTrackingConsent() {
         let initialConsent: TrackingConsent = .mockRandom()
@@ -397,6 +397,48 @@ class DatadogTests: XCTestCase {
             .granted,
             "When using deprecated Datadog initialization API the consent should be set to `.granted`"
         )
+
+        Datadog.flushAndDeinitialize()
+    }
+
+    func testGivenDataStoredInAllFeatureDirectories_whenClearAllDataIsUsed_allFilesAreRemoved() throws {
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: rumBuilder
+                .enableLogging(true)
+                .enableTracing(true)
+                .enableRUM(true)
+                .enableInternalMonitoring(clientToken: "abc")
+                .build()
+        )
+
+        let featureDirectories: [FeatureDirectories] = [
+            try obtainLoggingFeatureDirectories(),
+            try obtainTracingFeatureDirectories(),
+            try obtainRUMFeatureDirectories(),
+            try obtainInternalMonitoringFeatureLogDirectories()
+        ]
+
+        let allDirectories: [Directory] = featureDirectories.flatMap { [$0.authorized, $0.unauthorized] }
+        try allDirectories.forEach { directory in _ = try directory.createFile(named: .mockRandom()) }
+
+        // Given
+        let numberOfFiles = try allDirectories.reduce(0, { acc, nextDirectory in return try acc + nextDirectory.files().count })
+        XCTAssertEqual(numberOfFiles, 8, "Each feature stores 2 files - one authorised and one unauthorised")
+
+        // When
+        Datadog.clearAllData()
+
+        // Wait for async clear completion in all features:
+        (LoggingFeature.instance?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
+        (TracingFeature.instance?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
+        (RUMFeature.instance?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
+        (InternalMonitoringFeature.instance?.logsStorage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
+
+        // Then
+        let newNumberOfFiles = try allDirectories.reduce(0, { acc, nextDirectory in return try acc + nextDirectory.files().count })
+        XCTAssertEqual(newNumberOfFiles, 0, "All files must be removed")
 
         Datadog.flushAndDeinitialize()
     }

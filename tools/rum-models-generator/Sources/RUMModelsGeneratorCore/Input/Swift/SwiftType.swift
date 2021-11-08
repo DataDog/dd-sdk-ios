@@ -15,6 +15,8 @@ internal protocol SwiftPrimitiveType: SwiftType {}
 internal protocol SwiftPrimitiveValue {}
 /// An allowed default value of Swift property.
 internal protocol SwiftPropertyDefaultValue {}
+/// An allowed value of Swift with no obj-c interoperability.
+internal protocol SwiftPrimitiveNoObjcInteropType: SwiftPrimitiveType {}
 
 extension Bool: SwiftPrimitiveValue, SwiftPropertyDefaultValue {}
 extension Int: SwiftPrimitiveValue, SwiftPropertyDefaultValue {}
@@ -23,7 +25,10 @@ extension String: SwiftPrimitiveValue, SwiftPropertyDefaultValue {}
 extension Double: SwiftPrimitiveValue, SwiftPropertyDefaultValue {}
 
 /// Represents `Swift.Codable` - we need to define utility type because it cannot be declared as `extension` to `Codable`.
-internal struct SwiftCodable: SwiftPrimitiveValue, SwiftPropertyDefaultValue {}
+internal struct SwiftCodable: SwiftPrimitiveNoObjcInteropType {}
+
+/// Represents `Swift.Encodable` - we need to define utility type because it cannot be declared as `extension` to `Encodable`.
+internal struct SwiftEncodable: SwiftPrimitiveNoObjcInteropType {}
 
 internal struct SwiftPrimitive<T: SwiftPrimitiveValue>: SwiftPrimitiveType {}
 
@@ -38,8 +43,12 @@ internal struct SwiftDictionary: SwiftType {
 
 internal struct SwiftEnum: SwiftType {
     struct Case: SwiftType, SwiftPropertyDefaultValue {
+        enum RawValue {
+            case string(value: String)
+            case integer(value: Int)
+        }
         var label: String
-        var rawValue: String
+        var rawValue: RawValue
     }
 
     var name: String
@@ -50,6 +59,14 @@ internal struct SwiftEnum: SwiftType {
 
 internal struct SwiftStruct: SwiftType {
     struct Property: SwiftType {
+        /// Mutability levels of a property.
+        /// From the lowest `immutable` to the highest `mutable`.
+        enum Mutability: Int {
+            case immutable
+            case mutableInternally
+            case mutable
+        }
+
         enum CodingKey {
             /// Static coding key with fixed value.
             case `static`(value: String)
@@ -68,7 +85,7 @@ internal struct SwiftStruct: SwiftType {
         var comment: String?
         var type: SwiftType
         var isOptional: Bool
-        var isMutable: Bool
+        var mutability: Mutability
         var defaultValue: SwiftPropertyDefaultValue?
         var codingKey: CodingKey
     }

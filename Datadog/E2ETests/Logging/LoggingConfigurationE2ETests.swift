@@ -29,7 +29,7 @@ class LoggingConfigurationE2ETests: E2ETests {
     /// $monitor_query = "logs(\"service:com.datadog.ios.nightly @test_method_name:logs_config_feature_enabled\").index(\"*\").rollup(\"count\").last(\"1d\") < 1"
     /// ```
     func test_logs_config_feature_enabled() {
-        measure(spanName: DD.PerfSpanName.sdkInitialize) {
+        measure(resourceName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(
                 trackingConsent: .granted,
                 configuration: Datadog.Configuration.builderUsingE2EConfig()
@@ -41,7 +41,7 @@ class LoggingConfigurationE2ETests: E2ETests {
             )
         }
 
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.build()
         }
 
@@ -59,7 +59,7 @@ class LoggingConfigurationE2ETests: E2ETests {
     /// $notify_no_data = false
     /// ```
     func test_logs_config_feature_disabled() {
-        measure(spanName: DD.PerfSpanName.sdkInitialize) {
+        measure(resourceName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(
                 trackingConsent: .granted,
                 configuration: Datadog.Configuration.builderUsingE2EConfig()
@@ -71,7 +71,7 @@ class LoggingConfigurationE2ETests: E2ETests {
             )
         }
 
-        measure(spanName: DD.PerfSpanName.loggerInitialize) {
+        measure(resourceName: DD.PerfSpanName.loggerInitialize) {
             logger = Logger.builder.build()
         }
 

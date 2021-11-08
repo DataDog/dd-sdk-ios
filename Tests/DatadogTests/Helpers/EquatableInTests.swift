@@ -7,7 +7,7 @@
 import Foundation
 
 /// Utility protocol adding `Equatable` conformance to any arbitrary type.
-/// The equatabiliity is determined based on comparing type mirrors and values.
+/// The equatability is determined based on comparing type mirrors and values.
 protocol EquatableInTests: Equatable {}
 
 extension EquatableInTests {
@@ -32,8 +32,8 @@ private func equalsAny(lhs: Any, rhs: Any) -> Bool {
         return false // different number of children
     }
 
-    if lhsMirror.children.count == 0, rhsMirror.children.count == 0 {
-        return String(describing: lhs) == String(describing: rhs) // plain values, comopare debug strings
+    if lhsMirror.children.isEmpty, rhsMirror.children.isEmpty {
+        return String(describing: lhs) == String(describing: rhs) // plain values, compare debug strings
     }
 
     switch (lhsMirror.displayStyle, rhsMirror.displayStyle) {

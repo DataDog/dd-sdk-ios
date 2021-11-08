@@ -28,14 +28,4 @@ internal final class DataReader: SyncReader {
             self.fileReader.markBatchAsRead(batch)
         }
     }
-
-#if DD_SDK_COMPILED_FOR_TESTING
-    func markAllFilesAsReadable() {
-        queue.sync {
-            let filesOrchestrator = (self.fileReader as? FileReader)?.orchestrator
-            assert(filesOrchestrator != nil)
-            filesOrchestrator?.ignoreFilesAgeWhenReading = true
-        }
-    }
-#endif
 }

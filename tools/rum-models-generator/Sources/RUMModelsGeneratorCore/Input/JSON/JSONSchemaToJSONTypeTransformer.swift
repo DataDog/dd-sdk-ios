@@ -42,7 +42,11 @@ internal class JSONSchemaToJSONTypeTransformer {
         case .array:
             return try transformSchemaToArray(schema, named: name)
         case .boolean, .integer, .number:
-            return try transformSchemaToPrimitive(schema)
+            if schema.enum != nil {
+                return try transformSchemaToEnumeration(schema, named: name)
+            } else {
+                return try transformSchemaToPrimitive(schema)
+            }
         case .string:
             if schema.enum != nil {
                 return try transformSchemaToEnumeration(schema, named: name)
@@ -89,6 +93,12 @@ internal class JSONSchemaToJSONTypeTransformer {
             comment: schema.description,
             values: try schema.enum
                 .unwrapOrThrow(.inconsistency("`JSONEnumeration` schema must define `enum`."))
+                .map { schemaValue in
+                    switch schemaValue {
+                    case .string(let value): return .string(value: value)
+                    case .integer(let value): return .integer(value: value)
+                    }
+                }
         )
     }
 

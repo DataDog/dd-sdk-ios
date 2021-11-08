@@ -10,8 +10,8 @@ extension TracingFeature {
     /// Mocks feature instance which performs no writes and no uploads.
     static func mockNoOp() -> TracingFeature {
         return TracingFeature(
-            storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader(), arbitraryAuthorizedWriter: NoOpFileWriter()),
-            upload: .init(uploader: NoOpDataUploadWorker()),
+            storage: .mockNoOp(),
+            upload: .mockNoOp(),
             configuration: .mockAny(),
             commonDependencies: .mockAny(),
             loggingFeatureAdapter: nil,
@@ -58,7 +58,7 @@ extension TracingFeature {
         )
         let uploadWorker = DataUploadWorkerMock()
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
-        // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
+        // Replace by mocking the `FeatureUpload` and observing the `FeatureStorage`:
         let mockedUpload = FeatureUpload(uploader: uploadWorker)
         // Tear down the original upload
         fullFeature.upload.flushAndTearDown()

@@ -54,6 +54,7 @@
     [DDEndpoint us1];
     [DDEndpoint us1_fed];
     [DDEndpoint us3];
+    [DDEndpoint us5];
 }
 
 - (void)testDDBatchSizeAPI {
@@ -82,6 +83,7 @@
     [builder trackURLSessionWithFirstPartyHosts:[NSSet setWithArray:@[]]];
     [builder setWithServiceName:@""];
     [builder setWithRumSessionsSamplingRate:50];
+    [builder setOnRUMSessionStart:^(NSString * _Nonnull sessionId, BOOL isDiscarded) {}];
     [builder trackUIKitRUMViews];
     [builder trackUIKitRUMViewsUsing:[CustomDDUIKitRUMViewsPredicate new]];
     [builder trackUIKitRUMActions];
@@ -90,6 +92,8 @@
         viewEvent.view.url = @"";
         return viewEvent;
     }];
+    [builder trackRUMLongTasks];
+    [builder trackRUMLongTasksWithThreshold:10.0];
     [builder setRUMResourceEventMapper:^DDRUMResourceEvent * _Nullable(DDRUMResourceEvent * _Nonnull resourceEvent) {
         resourceEvent.resource.url = @"";
         return resourceEvent;
@@ -98,6 +102,9 @@
         return nil;
     }];
     [builder setRUMErrorEventMapper:^DDRUMErrorEvent * _Nullable(DDRUMErrorEvent * _Nonnull errorEvent) {
+        return nil;
+    }];
+    [builder setRUMLongTaskEventMapper:^DDRUMLongTaskEvent * _Nullable(DDRUMLongTaskEvent * _Nonnull longTaskEvent) {
         return nil;
     }];
     [builder setWithBatchSize:DDBatchSizeMedium];

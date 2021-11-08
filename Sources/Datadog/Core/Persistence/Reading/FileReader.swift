@@ -11,7 +11,7 @@ internal final class FileReader: Reader {
     /// Data reading format.
     private let dataFormat: DataFormat
     /// Orchestrator producing reference to readable file.
-    internal let orchestrator: FilesOrchestrator
+    private let orchestrator: FilesOrchestrator
     private let internalMonitor: InternalMonitor?
 
     /// Files marked as read.

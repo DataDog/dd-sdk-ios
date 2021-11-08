@@ -30,7 +30,7 @@ class RUMStorageBenchmarkTests: XCTestCase {
         self.reader = storage.reader
         self.queue = (storage.writer as! ConsentAwareDataWriter).queue
 
-        XCTAssertTrue(try directory.files().count == 0)
+        XCTAssertTrue(try directory.files().isEmpty)
     }
 
     override func tearDown() {
@@ -42,8 +42,8 @@ class RUMStorageBenchmarkTests: XCTestCase {
         super.tearDown()
     }
 
-    func testWrittingRUMEventsOnDisc() throws {
-        let event = createRandomizedRUMEvent()
+    func testWritingRUMEventsOnDisc() throws {
+        let event = RUMEvent(model: RUMViewEvent.mockRandom())
 
         measure {
             writer.write(value: event)
@@ -53,7 +53,7 @@ class RUMStorageBenchmarkTests: XCTestCase {
 
     func testReadingRUMEventsFromDisc() throws {
         while try directory.files().count < 10 { // `measureMetrics {}` is fired 10 times so 10 batch files are required
-            writer.write(value: createRandomizedRUMEvent())
+            writer.write(value: RUMEvent(model: RUMViewEvent.mockRandom()))
             queue.sync {} // wait to complete async write
         }
 
@@ -71,15 +71,5 @@ class RUMStorageBenchmarkTests: XCTestCase {
                 reader.markBatchAsRead(batch)
             }
         }
-    }
-
-    // MARK: - Helpers
-
-    private func createRandomizedRUMEvent() -> RUMEvent<RUMViewEvent> {
-        return RUMEvent(
-            model: .mockRandom(),
-            attributes: mockRandomAttributes(),
-            userInfoAttributes: mockRandomAttributes()
-        )
     }
 }

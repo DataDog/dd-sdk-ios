@@ -6,6 +6,7 @@
 
 import XCTest
 @testable import Datadog
+import CoreTelephony
 
 /// This suite tests if `CrashContextProvider` gets updated by different SDK components, each updating
 /// separate part of the `CrashContext` information.
@@ -23,7 +24,7 @@ class CrashContextProviderTests: XCTestCase {
             userInfoProvider: .mockAny(),
             networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny(),
             carrierInfoProvider: CarrierInfoProviderMock.mockAny(),
-            rumViewEventProvider: .mockAny()
+            rumViewEventProvider: .mockRandom()
         )
 
         let initialContext = crashContextProvider.currentCrashContext
@@ -46,7 +47,7 @@ class CrashContextProviderTests: XCTestCase {
 
     func testWhenRUMWithCrashContextIntegrationIsUpdated_thenCrashContextProviderNotifiesNewContext() {
         let expectation = self.expectation(description: "Notify new crash context")
-        let randomRUMViewEvent: RUMEvent<RUMViewEvent> = .mockRandomWith(model: RUMViewEvent.mockRandom())
+        let randomRUMViewEvent: RUMEvent<RUMViewEvent> = RUMEvent(model: RUMViewEvent.mockRandom())
 
         let rumViewEventProvider = ValuePublisher<RUMEvent<RUMViewEvent>?>(initialValue: randomRUMViewEvent)
         let crashContextProvider = CrashContextProvider(
@@ -89,7 +90,7 @@ class CrashContextProviderTests: XCTestCase {
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny(),
             carrierInfoProvider: CarrierInfoProviderMock.mockAny(),
-            rumViewEventProvider: .mockAny()
+            rumViewEventProvider: .mockRandom()
         )
 
         let initialContext = crashContextProvider.currentCrashContext
@@ -121,7 +122,7 @@ class CrashContextProviderTests: XCTestCase {
             userInfoProvider: .mockAny(),
             networkConnectionInfoProvider: mainProvider,
             carrierInfoProvider: CarrierInfoProviderMock.mockAny(),
-            rumViewEventProvider: .mockAny()
+            rumViewEventProvider: .mockRandom()
         )
 
         let initialContext = crashContextProvider.currentCrashContext
@@ -143,18 +144,23 @@ class CrashContextProviderTests: XCTestCase {
 
     // MARK: - `CarrierInfo` Integration
 
-    func testWhenCurrentValueIsObtainedFromCarrierInfoProvider_thenCrashContextProviderNotifiesNewContext() {
+    private let ctTelephonyNetworkInfoMock = CTTelephonyNetworkInfoMock(
+        serviceCurrentRadioAccessTechnology: ["000001": CTRadioAccessTechnologyLTE],
+        serviceSubscriberCellularProviders: ["000001": CTCarrierMock(carrierName: "Carrier", isoCountryCode: "US", allowsVOIP: true)]
+    )
+
+    func testGivenRunningOniOS11_whenCurrentValueIsObtainedFromCarrierInfoProvider_thenCrashContextProviderNotifiesNewContext() throws {
         let expectation = self.expectation(description: "Notify new crash context")
-        let initialCarrierInfo: CarrierInfo = .mockRandom()
-        let wrappedProvider = CarrierInfoProviderMock(carrierInfo: initialCarrierInfo)
-        let mainProvider = CarrierInfoProvider(wrappedProvider: wrappedProvider)
+        let carrierInfoProvider = CarrierInfoProvider(
+            wrappedProvider: iOS11CarrierInfoProvider(networkInfo: ctTelephonyNetworkInfoMock)
+        )
 
         let crashContextProvider = CrashContextProvider(
             consentProvider: .mockAny(),
             userInfoProvider: .mockAny(),
             networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny(),
-            carrierInfoProvider: mainProvider,
-            rumViewEventProvider: .mockAny()
+            carrierInfoProvider: carrierInfoProvider,
+            rumViewEventProvider: .mockRandom()
         )
 
         let initialContext = crashContextProvider.currentCrashContext
@@ -165,20 +171,64 @@ class CrashContextProviderTests: XCTestCase {
             updatedContext = newContext
             expectation.fulfill()
         }
-        wrappedProvider.set(current: .mockRandom()) // change `CarrierInfo` in wrapped provider
-        let currentCarrierInfo = mainProvider.current // obtain new info through the main provider
+        ctTelephonyNetworkInfoMock.changeCarrier(
+            newCarrierName: .mockRandom(),
+            newISOCountryCode: .mockRandom(),
+            newAllowsVOIP: .mockRandom(),
+            newRadioAccessTechnology: [CTRadioAccessTechnologyLTE, CTRadioAccessTechnologyEdge].randomElement()!
+        ) // change `CTCarrier` info
+        _ = carrierInfoProvider.current // obtain `CarrierInfo` from provider
 
         // Then
         waitForExpectations(timeout: 1, handler: nil)
-        XCTAssertEqual(initialContext.lastCarrierInfo, initialCarrierInfo)
-        XCTAssertEqual(updatedContext?.lastCarrierInfo, currentCarrierInfo)
+        let carrierInfoInInitialContext = try XCTUnwrap(initialContext.lastCarrierInfo)
+        let carrierInfoInUpdatedContext = try XCTUnwrap(updatedContext?.lastCarrierInfo)
+        XCTAssertNotEqual(carrierInfoInInitialContext, carrierInfoInUpdatedContext)
+    }
+
+    func testGivenRunningOniOS12AndAbove_whenCTCarrierChanges_thenCrashContextProviderNotifiesNewContext() throws {
+        if #available(iOS 12, *) {
+            let expectation = self.expectation(description: "Notify new crash context")
+            let carrierInfoProvider = CarrierInfoProvider(
+                wrappedProvider: iOS12CarrierInfoProvider(networkInfo: ctTelephonyNetworkInfoMock)
+            )
+
+            let crashContextProvider = CrashContextProvider(
+                consentProvider: .mockAny(),
+                userInfoProvider: .mockAny(),
+                networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny(),
+                carrierInfoProvider: carrierInfoProvider,
+                rumViewEventProvider: .mockRandom()
+            )
+
+            let initialContext = crashContextProvider.currentCrashContext
+            var updatedContext: CrashContext?
+
+            // When
+            crashContextProvider.onCrashContextChange = { newContext in
+                updatedContext = newContext
+                expectation.fulfill()
+            }
+            ctTelephonyNetworkInfoMock.changeCarrier(
+                newCarrierName: .mockRandom(),
+                newISOCountryCode: .mockRandom(),
+                newAllowsVOIP: .mockRandom(),
+                newRadioAccessTechnology: [CTRadioAccessTechnologyLTE, CTRadioAccessTechnologyEdge].randomElement()!
+            ) // change `CTCarrier` info
+
+            // Then
+            waitForExpectations(timeout: 1, handler: nil)
+            let carrierInfoInInitialContext = try XCTUnwrap(initialContext.lastCarrierInfo)
+            let carrierInfoInUpdatedContext = try XCTUnwrap(updatedContext?.lastCarrierInfo)
+            XCTAssertNotEqual(carrierInfoInInitialContext, carrierInfoInUpdatedContext)
+        }
     }
 
     // MARK: - Thread safety
 
     func testWhenContextIsWrittenAndReadFromDifferentThreads_itRunsAllOperationsSafely() {
         let consentProvider: ConsentProvider = .mockAny()
-        let rumViewEventProvider: ValuePublisher<RUMEvent<RUMViewEvent>?> = .mockAny()
+        let rumViewEventProvider: ValuePublisher<RUMEvent<RUMViewEvent>?> = .mockRandom()
         let userInfoProvider: UserInfoProvider = .mockAny()
         let networkInfoWrappedProvider = NetworkConnectionInfoProviderMock(networkConnectionInfo: .mockRandom())
         let networkInfoMainProvider = NetworkConnectionInfoProvider(wrappedProvider: networkInfoWrappedProvider)
@@ -190,7 +240,7 @@ class CrashContextProviderTests: XCTestCase {
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkInfoMainProvider,
             carrierInfoProvider: carrierInfoMainProvider,
-            rumViewEventProvider: .mockAny()
+            rumViewEventProvider: .mockRandom()
         )
 
         withExtendedLifetime(provider) {
@@ -208,7 +258,7 @@ class CrashContextProviderTests: XCTestCase {
                         carrierInfoWrappedProvider.set(current: .mockRandom())
                         _ = carrierInfoMainProvider.current
                     },
-                    { rumViewEventProvider.publishSyncOrAsync(.mockRandomWith(model: RUMViewEvent.mockRandom())) },
+                    { rumViewEventProvider.publishSyncOrAsync(.mockRandom()) },
                 ],
                 iterations: 50
             )

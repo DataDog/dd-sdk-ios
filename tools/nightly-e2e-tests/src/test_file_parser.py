@@ -11,6 +11,7 @@ from src.linter import Linter, CodeReference, linter_context
 
 MONITOR_TYPE_LOGS = 'logs'
 MONITOR_TYPE_APM = 'apm'
+MONITOR_TYPE_RUM = 'rum'
 
 
 @dataclass
@@ -25,6 +26,7 @@ class MonitorConfiguration:
     type: str  # a type of monitor (allowed values: 'apm' | 'logs'), used to select monitor template
     variables: [MonitorVariable]  # list of monitor variables
     code_reference: CodeReference
+    code: str = ''  # monitor code (monitor definition from comment and the entire test method declaration)
 
 
 @dataclass
@@ -32,6 +34,7 @@ class TestMethod:
     method_name: str  # the name of this test method
     monitors: [MonitorConfiguration]  # monitors defined in method comment
     code_reference: CodeReference
+    code: str  # the entire test method declaration code
 
 
 @dataclass()
@@ -47,38 +50,64 @@ def read_test_file(path: str):
     """
     with open(path, 'r') as file:
         comment_regex = r'^[\t ]*(\/\/\/.*)'  # e.g. '    /// Sample comment'
-        method_signature_regex = r'^[\s ]+func (test\w*)\(\)( throws)? {'  # e.g. '    func test_sample() throws {'
+        method_signature_regex = r'^[\t ]+func (test\w*)\(\)( throws)? {'  # e.g. '    func test_sample() throws {'
 
         test_methods: [TestMethod] = []
         independent_monitors: [MonitorConfiguration] = []
-        comment_lines_buffer: [(int, str)] = []
+        comment_lines_buffer: [(int, str, str)] = []  # (line number, comment with no indent, original line)
 
-        for line_no, line_text in enumerate(file.readlines()):
+        lines_in_file = file.readlines()
+
+        for line_no, line_text in enumerate(lines_in_file):
             if comment_match := re.match(comment_regex, line_text):  # matched comment `///`
-                comment_lines_buffer.append((line_no, comment_match.groups()[0]))
+                comment_lines_buffer.append((line_no, comment_match.groups()[0], line_text))
 
             elif method_signature_match := re.match(method_signature_regex, line_text):  # matched test method signature
                 method_name = method_signature_match.groups()[0]
-                method = TestMethod(
-                    method_name=method_name,
-                    monitors=read_monitor_configuration(
+
+                method_code_reference = CodeReference(
+                    file_path=path,
+                    line_no=line_no + 1,
+                    line_text=line_text
+                )
+
+                with linter_context(code_reference=method_code_reference):
+                    method_monitors = read_monitors_configuration(  # read monitors defined in this method comment
                         comment_lines=comment_lines_buffer,
                         file_path=path
-                    ),
-                    code_reference=CodeReference(
-                        file_path=path,
-                        line_no=line_no + 1,
-                        line_text=line_text
                     )
-                )
+                    method_code = read_method_body(  # read method body
+                        lines_in_file=lines_in_file,
+                        method_signature_line_no=line_no
+                    )
+
+                    # Link code declaration to each monitor in this test method:
+                    for method_monitor in method_monitors:
+                        comment_lines = list(map(lambda buffered_line: buffered_line[2], comment_lines_buffer))
+                        method_monitor.code = ''.join(comment_lines) + method_code
+
+                    method = TestMethod(
+                        method_name=method_name,
+                        monitors=method_monitors,
+                        code_reference=method_code_reference,
+                        code=method_code
+                    )
+
                 test_methods.append(method)
                 comment_lines_buffer = []
             else:  # matched some other line in the file
-                # Check if buffered comments define any additional monitors:
-                additional_monitors = read_monitor_configuration(
+                # Check if buffered comments define any additional monitors (independent monitors defined
+                # in the test file, but not linked to any test method):
+                additional_monitors = read_monitors_configuration(
                     comment_lines=comment_lines_buffer,
                     file_path=path
                 )
+
+                # Link code declaration to each additional monitor:
+                for additional_monitor in additional_monitors:
+                    comment_lines = list(map(lambda buffered_line: buffered_line[2], comment_lines_buffer))
+                    additional_monitor.code = ''.join(comment_lines)
+
                 # Add to the list of independent monitors for this file:
                 independent_monitors += additional_monitors
 
@@ -93,11 +122,11 @@ def read_test_file(path: str):
             return None
 
 
-def read_monitor_configuration(comment_lines: [(int, str)], file_path: str) -> [MonitorConfiguration]:
+def read_monitors_configuration(comment_lines: [(int, str, str)], file_path: str) -> [MonitorConfiguration]:
     """
-    Parses method comment lines and produces one or more `MonitorConfiguration` objects.
+    Parses comment lines and returns zero to many `MonitorConfiguration` objects.
 
-    The expected method comment has following structure:
+    The expected monitor comment has following structure:
 
     /// ... anything before
     /// ```logs
@@ -113,18 +142,18 @@ def read_monitor_configuration(comment_lines: [(int, str)], file_path: str) -> [
     The "```" token indicates the beginning and end of the monitor definition. There can be more than one
     monitor defined in each comment.
 
-    :return: returns list of `MonitorConfiguration` objects (0 to many) recognized in the method comment.
+    :return: returns list of `MonitorConfiguration` objects (0 to many) recognized in the comment.
     """
     monitor_region_start_regex = r'^\/\/\/[\s ]+```([a-zA-Z0-9]+)[\s ]*$'  # e.g. '/// ```apm'
     monitor_region_end_regex = r'^\/\/\/[\s ]+```[\s ]*$'  # e.g. '/// ```'
     in_monitor_region = False  # if iterating through monitor variables
     monitor_type = None  # one of allowed monitor types (used later to pick the monitor template)
-    allowed_monitor_types = [MONITOR_TYPE_LOGS, MONITOR_TYPE_APM]
+    allowed_monitor_types = [MONITOR_TYPE_LOGS, MONITOR_TYPE_APM, MONITOR_TYPE_RUM]
 
     monitors: [MonitorConfiguration] = []
     variables_buffer: [MonitorVariable] = []
 
-    for line_no, line_text in comment_lines:
+    for line_no, line_text, _ in comment_lines:
         comment_line_code_reference = CodeReference(
             file_path=file_path,
             line_no=(line_no + 1),
@@ -182,7 +211,7 @@ def read_variable(line_text: str, comment_line_code_reference: CodeReference):
 
     :return: the `MonitorVariable` object if recognized in this line; `None` otherwise.
     """
-    variable_regex = r'^\/\/\/[\s ]+(\$.+)\s*=\s*(.+)$'
+    variable_regex = r'^\/\/\/[\s ]+(\$[a-zA-Z0-9_]+)\s*=\s*(.+)$'
     variable_match = re.match(variable_regex, line_text)
 
     if variable_match:
@@ -198,3 +227,36 @@ def read_variable(line_text: str, comment_line_code_reference: CodeReference):
         with linter_context(code_reference=comment_line_code_reference):
             Linter.shared.emit_error('Incorrect variable definitions - variable must follow `$name = value` syntax.')
             return None
+
+
+def read_method_body(lines_in_file: [str], method_signature_line_no: int) -> str:
+    """
+    Parses method body.
+
+    It starts from `method_signature_line` and accepts lines until all opening brackets "{" are matched
+    with enclosing "}" brackets.
+
+    :return: the body of test method, including its signature and enclosing `}` bracket.
+    """
+
+    method_body = ''
+    line_no = method_signature_line_no
+    brackets_matched = 0
+
+    while line_no < len(lines_in_file):
+        line_text = lines_in_file[line_no]
+        brackets_matched += line_text.count('{')
+        brackets_matched -= line_text.count('}')
+
+        method_body += line_text
+
+        if brackets_matched == 0:
+            break
+        else:
+            line_no += 1
+
+    if line_no == (len(lines_in_file) - 1):
+        Linter.shared.emit_warning('E2E monitors parser cannot read this method body. Make sure that all opening'
+                                   ' brackets "{" are matched with their closing bracket "}".')
+
+    return method_body

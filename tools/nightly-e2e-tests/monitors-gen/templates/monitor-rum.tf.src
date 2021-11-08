@@ -1,0 +1,31 @@
+resource "datadog_monitor" ${{monitor_id}} {
+  name               = ${{monitor_name}}
+  type               = "rum alert"
+  tags               = ["service:com.datadog.ios.nightly", "env:instrumentation", "team:rumm", "source:ios", "feature:rum", "monitor:behavior"]
+  message            = <<EOT
+@maciek.grzybowski@datadoghq.com
+@mert.buran@datadoghq.com
+@maxime.epain@datadoghq.com
+
+## E2E test code:
+```
+## MONITOR_CODE ##
+```
+EOT
+  escalation_message = <<EOT
+<nil>
+EOT
+
+  query             = ${{monitor_query}}
+  notify_no_data    = ${{notify_no_data:-true}}
+  no_data_timeframe = 1440
+  renotify_interval = 0
+  notify_audit      = false
+  timeout_h         = 0
+  include_tags      = true
+  new_host_delay    = 300
+  monitor_thresholds {
+    critical = ${{monitor_threshold:-1.0}}
+  }
+
+}

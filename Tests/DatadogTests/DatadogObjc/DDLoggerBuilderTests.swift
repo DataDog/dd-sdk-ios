@@ -9,7 +9,7 @@ import XCTest
 @testable import DatadogObjc
 
 class DDLoggerBuilderTests: XCTestCase {
-    func testItFowardsConfigurationToSwift() {
+    func testItForwardsConfigurationToSwift() {
         let swiftBuilder = Logger.builder
         let objcBuilder = DDLoggerBuilder(sdkBuilder: swiftBuilder)
         objcBuilder.set(loggerName: "logger-name")

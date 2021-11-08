@@ -53,7 +53,12 @@ public class SwiftPrinter: BasePrinter {
     private func printPropertiesList(_ properties: [SwiftStruct.Property]) throws {
         try properties.enumerated().forEach { index, property in
             let accessLevel = "public"
-            let kind = property.isMutable ? "var" : "let"
+            let kind: String
+            switch property.mutability {
+            case .mutable: kind = "var"
+            case .mutableInternally: kind = "internal(set) var"
+            case .immutable: kind = "let"
+            }
             let name = property.name
             let type = try typeDeclaration(property.type)
             let optionality = property.isOptional ? "?" : ""
@@ -292,12 +297,24 @@ public class SwiftPrinter: BasePrinter {
     private func printEnum(_ enumeration: SwiftEnum) throws {
         let implementedProtocols = enumeration.conformance.map { $0.name }
         let conformance = implementedProtocols.isEmpty ? "" : ", \(implementedProtocols.joined(separator: ", "))"
+        let rawValueType: String = try {
+            let firstCase = try enumeration.cases.first.unwrapOrThrow(.illegal("\(enumeration.name) enum has 0 cases"))
+            switch firstCase.rawValue {
+            case .string: return "String"
+            case .integer: return "Int"
+            }
+        }()
 
         printComment(enumeration.comment)
-        writeLine("public enum \(enumeration.name): String\(conformance) {")
+        writeLine("public enum \(enumeration.name): \(rawValueType)\(conformance) {")
         indentRight()
         enumeration.cases.forEach { `case` in
-            writeLine("case \(`case`.label) = \"\(`case`.rawValue)\"")
+            switch `case`.rawValue {
+            case .string(let value):
+                writeLine("case \(`case`.label) = \"\(value)\"")
+            case .integer(let value):
+                writeLine("case \(`case`.label) = \(value)")
+            }
         }
         indentLeft()
         writeLine("}")
@@ -307,18 +324,20 @@ public class SwiftPrinter: BasePrinter {
 
     private func typeDeclaration(_ type: SwiftType) throws -> String {
         switch type {
-        case _ as SwiftPrimitive<Bool>:
+        case is SwiftPrimitive<Bool>:
             return "Bool"
-        case _ as SwiftPrimitive<Double>:
+        case is SwiftPrimitive<Double>:
             return "Double"
-        case _ as SwiftPrimitive<Int>:
+        case is SwiftPrimitive<Int>:
             return "Int"
-        case _ as SwiftPrimitive<Int64>:
+        case is SwiftPrimitive<Int64>:
             return "Int64"
-        case _ as SwiftPrimitive<String>:
+        case is SwiftPrimitive<String>:
             return "String"
-        case _ as SwiftPrimitive<SwiftCodable>:
+        case is SwiftCodable:
             return "Codable"
+        case is SwiftEncodable:
+            return "Encodable"
         case let swiftArray as SwiftArray:
             return "[\(try typeDeclaration(swiftArray.element))]"
         case let swiftDictionary as SwiftDictionary:

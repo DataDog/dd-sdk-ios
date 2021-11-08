@@ -15,9 +15,12 @@ public class DDDatadog: NSObject
  public static func verbosityLevel() -> DDSDKVerbosityLevel
  public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:])
  public static func setTrackingConsent(consent: DDTrackingConsent)
+ public static func clearAllData()
+ public static func flushAndDeinitialize()
 public class DDEndpoint: NSObject
  public static func us1() -> DDEndpoint
  public static func us3() -> DDEndpoint
+ public static func us5() -> DDEndpoint
  public static func eu1() -> DDEndpoint
  public static func us1_fed() -> DDEndpoint
  public static func eu() -> DDEndpoint
@@ -68,18 +71,23 @@ public class DDConfigurationBuilder: NSObject
  public func trackURLSession(firstPartyHosts: Set<String>)
  public func set(serviceName: String)
  public func set(rumSessionsSamplingRate: Float)
+ public func set(onRUMSessionStart handler: @escaping (String, Bool) -> Void)
  public func trackUIKitRUMViews()
  public func trackUIKitRUMViews(using predicate: DDUIKitRUMViewsPredicate)
  public func trackUIKitActions()
  public func trackUIKitRUMActions()
  public func trackUIKitRUMActions(using predicate: DDUIKitRUMUserActionsPredicate)
+ public func trackRUMLongTasks()
+ public func trackRUMLongTasks(threshold: TimeInterval)
  public func setRUMViewEventMapper(_ mapper: @escaping (DDRUMViewEvent) -> DDRUMViewEvent)
  public func setRUMResourceEventMapper(_ mapper: @escaping (DDRUMResourceEvent) -> DDRUMResourceEvent?)
  public func setRUMActionEventMapper(_ mapper: @escaping (DDRUMActionEvent) -> DDRUMActionEvent?)
  public func setRUMErrorEventMapper(_ mapper: @escaping (DDRUMErrorEvent) -> DDRUMErrorEvent?)
+ public func setRUMLongTaskEventMapper(_ mapper: @escaping (DDRUMLongTaskEvent) -> DDRUMLongTaskEvent?)
  public func set(batchSize: DDBatchSize)
  public func set(uploadFrequency: DDUploadFrequency)
  public func set(additionalConfiguration: [String: Any])
+ public func set(proxyConfiguration: [AnyHashable: Any])
  public func build() -> DDConfiguration
 public class DDGlobal: NSObject
  @objc public static var sharedTracer = DatadogObjc.DDTracer(swiftTracer: Datadog.Global.sharedTracer)
@@ -161,12 +169,19 @@ public class DDRUMViewEvent: NSObject
  @objc public var date: NSNumber
  @objc public var service: String?
  @objc public var session: DDRUMViewEventSession
+ @objc public var synthetics: DDRUMViewEventSynthetics?
  @objc public var type: String
  @objc public var usr: DDRUMViewEventRUMUser?
  @objc public var view: DDRUMViewEventView
 public class DDRUMViewEventDD: NSObject
  @objc public var documentVersion: NSNumber
  @objc public var formatVersion: NSNumber
+ @objc public var session: DDRUMViewEventDDSession?
+public class DDRUMViewEventDDSession: NSObject
+ @objc public var plan: DDRUMViewEventDDSessionPlan
+public enum DDRUMViewEventDDSessionPlan: Int
+ case plan1
+ case plan2
 public class DDRUMViewEventApplication: NSObject
  @objc public var id: String
 public class DDRUMViewEventRUMConnectivity: NSObject
@@ -199,6 +214,9 @@ public class DDRUMViewEventSession: NSObject
 public enum DDRUMViewEventSessionSessionType: Int
  case user
  case synthetics
+public class DDRUMViewEventSynthetics: NSObject
+ @objc public var resultId: String
+ @objc public var testId: String
 public class DDRUMViewEventRUMUser: NSObject
  @objc public var email: String?
  @objc public var id: String?
@@ -218,9 +236,11 @@ public class DDRUMViewEventView: NSObject
  @objc public var firstContentfulPaint: NSNumber?
  @objc public var firstInputDelay: NSNumber?
  @objc public var firstInputTime: NSNumber?
+ @objc public var frozenFrame: DDRUMViewEventViewFrozenFrame?
  @objc public var id: String
  @objc public var inForegroundPeriods: [DDRUMViewEventViewInForegroundPeriods]?
  @objc public var isActive: NSNumber?
+ @objc public var isSlowRendered: NSNumber?
  @objc public var largestContentfulPaint: NSNumber?
  @objc public var loadEvent: NSNumber?
  @objc public var loadingTime: NSNumber?
@@ -240,6 +260,8 @@ public class DDRUMViewEventViewAction: NSObject
 public class DDRUMViewEventViewCrash: NSObject
  @objc public var count: NSNumber
 public class DDRUMViewEventViewError: NSObject
+ @objc public var count: NSNumber
+public class DDRUMViewEventViewFrozenFrame: NSObject
  @objc public var count: NSNumber
 public class DDRUMViewEventViewInForegroundPeriods: NSObject
  @objc public var duration: NSNumber
@@ -268,13 +290,20 @@ public class DDRUMResourceEvent: NSObject
  @objc public var resource: DDRUMResourceEventResource
  @objc public var service: String?
  @objc public var session: DDRUMResourceEventSession
+ @objc public var synthetics: DDRUMResourceEventSynthetics?
  @objc public var type: String
  @objc public var usr: DDRUMResourceEventRUMUser?
  @objc public var view: DDRUMResourceEventView
 public class DDRUMResourceEventDD: NSObject
  @objc public var formatVersion: NSNumber
+ @objc public var session: DDRUMResourceEventDDSession?
  @objc public var spanId: String?
  @objc public var traceId: String?
+public class DDRUMResourceEventDDSession: NSObject
+ @objc public var plan: DDRUMResourceEventDDSessionPlan
+public enum DDRUMResourceEventDDSessionPlan: Int
+ case plan1
+ case plan2
 public class DDRUMResourceEventAction: NSObject
  @objc public var id: String
 public class DDRUMResourceEventApplication: NSObject
@@ -374,6 +403,7 @@ public enum DDRUMResourceEventResourceResourceType: Int
  case font
  case media
  case other
+ case native
 public class DDRUMResourceEventSession: NSObject
  @objc public var hasReplay: NSNumber?
  @objc public var id: String
@@ -381,6 +411,9 @@ public class DDRUMResourceEventSession: NSObject
 public enum DDRUMResourceEventSessionSessionType: Int
  case user
  case synthetics
+public class DDRUMResourceEventSynthetics: NSObject
+ @objc public var resultId: String
+ @objc public var testId: String
 public class DDRUMResourceEventRUMUser: NSObject
  @objc public var email: String?
  @objc public var id: String?
@@ -400,11 +433,18 @@ public class DDRUMActionEvent: NSObject
  @objc public var date: NSNumber
  @objc public var service: String?
  @objc public var session: DDRUMActionEventSession
+ @objc public var synthetics: DDRUMActionEventSynthetics?
  @objc public var type: String
  @objc public var usr: DDRUMActionEventRUMUser?
  @objc public var view: DDRUMActionEventView
 public class DDRUMActionEventDD: NSObject
  @objc public var formatVersion: NSNumber
+ @objc public var session: DDRUMActionEventDDSession?
+public class DDRUMActionEventDDSession: NSObject
+ @objc public var plan: DDRUMActionEventDDSessionPlan
+public enum DDRUMActionEventDDSessionPlan: Int
+ case plan1
+ case plan2
 public class DDRUMActionEventAction: NSObject
  @objc public var crash: DDRUMActionEventActionCrash?
  @objc public var error: DDRUMActionEventActionError?
@@ -464,6 +504,9 @@ public class DDRUMActionEventSession: NSObject
 public enum DDRUMActionEventSessionSessionType: Int
  case user
  case synthetics
+public class DDRUMActionEventSynthetics: NSObject
+ @objc public var resultId: String
+ @objc public var testId: String
 public class DDRUMActionEventRUMUser: NSObject
  @objc public var email: String?
  @objc public var id: String?
@@ -485,11 +528,18 @@ public class DDRUMErrorEvent: NSObject
  @objc public var error: DDRUMErrorEventError
  @objc public var service: String?
  @objc public var session: DDRUMErrorEventSession
+ @objc public var synthetics: DDRUMErrorEventSynthetics?
  @objc public var type: String
  @objc public var usr: DDRUMErrorEventRUMUser?
  @objc public var view: DDRUMErrorEventView
 public class DDRUMErrorEventDD: NSObject
  @objc public var formatVersion: NSNumber
+ @objc public var session: DDRUMErrorEventDDSession?
+public class DDRUMErrorEventDDSession: NSObject
+ @objc public var plan: DDRUMErrorEventDDSessionPlan
+public enum DDRUMErrorEventDDSessionPlan: Int
+ case plan1
+ case plan2
 public class DDRUMErrorEventAction: NSObject
  @objc public var id: String
 public class DDRUMErrorEventApplication: NSObject
@@ -518,6 +568,8 @@ public enum DDRUMErrorEventRUMConnectivityStatus: Int
 public class DDRUMErrorEventRUMEventAttributes: NSObject
  @objc public var contextInfo: [String: Any]
 public class DDRUMErrorEventError: NSObject
+ @objc public var handling: DDRUMErrorEventErrorHandling
+ @objc public var handlingStack: String?
  @objc public var id: String?
  @objc public var isCrash: NSNumber?
  @objc public var message: String
@@ -525,6 +577,10 @@ public class DDRUMErrorEventError: NSObject
  @objc public var source: DDRUMErrorEventErrorSource
  @objc public var stack: String?
  @objc public var type: String?
+public enum DDRUMErrorEventErrorHandling: Int
+ case none
+ case handled
+ case unhandled
 public class DDRUMErrorEventErrorResource: NSObject
  @objc public var method: DDRUMErrorEventErrorResourceRUMMethod
  @objc public var provider: DDRUMErrorEventErrorResourceProvider?
@@ -572,6 +628,9 @@ public class DDRUMErrorEventSession: NSObject
 public enum DDRUMErrorEventSessionSessionType: Int
  case user
  case synthetics
+public class DDRUMErrorEventSynthetics: NSObject
+ @objc public var resultId: String
+ @objc public var testId: String
 public class DDRUMErrorEventRUMUser: NSObject
  @objc public var email: String?
  @objc public var id: String?
@@ -580,6 +639,79 @@ public class DDRUMErrorEventRUMUser: NSObject
 public class DDRUMErrorEventView: NSObject
  @objc public var id: String
  @objc public var inForeground: NSNumber?
+ @objc public var name: String?
+ @objc public var referrer: String?
+ @objc public var url: String
+public class DDRUMLongTaskEvent: NSObject
+ @objc public var dd: DDRUMLongTaskEventDD
+ @objc public var action: DDRUMLongTaskEventAction?
+ @objc public var application: DDRUMLongTaskEventApplication
+ @objc public var connectivity: DDRUMLongTaskEventRUMConnectivity?
+ @objc public var context: DDRUMLongTaskEventRUMEventAttributes?
+ @objc public var date: NSNumber
+ @objc public var longTask: DDRUMLongTaskEventLongTask
+ @objc public var service: String?
+ @objc public var session: DDRUMLongTaskEventSession
+ @objc public var synthetics: DDRUMLongTaskEventSynthetics?
+ @objc public var type: String
+ @objc public var usr: DDRUMLongTaskEventRUMUser?
+ @objc public var view: DDRUMLongTaskEventView
+public class DDRUMLongTaskEventDD: NSObject
+ @objc public var formatVersion: NSNumber
+ @objc public var session: DDRUMLongTaskEventDDSession?
+public class DDRUMLongTaskEventDDSession: NSObject
+ @objc public var plan: DDRUMLongTaskEventDDSessionPlan
+public enum DDRUMLongTaskEventDDSessionPlan: Int
+ case plan1
+ case plan2
+public class DDRUMLongTaskEventAction: NSObject
+ @objc public var id: String
+public class DDRUMLongTaskEventApplication: NSObject
+ @objc public var id: String
+public class DDRUMLongTaskEventRUMConnectivity: NSObject
+ @objc public var cellular: DDRUMLongTaskEventRUMConnectivityCellular?
+ @objc public var interfaces: [Int]
+ @objc public var status: DDRUMLongTaskEventRUMConnectivityStatus
+public class DDRUMLongTaskEventRUMConnectivityCellular: NSObject
+ @objc public var carrierName: String?
+ @objc public var technology: String?
+public enum DDRUMLongTaskEventRUMConnectivityInterfaces: Int
+ case bluetooth
+ case cellular
+ case ethernet
+ case wifi
+ case wimax
+ case mixed
+ case other
+ case unknown
+ case none
+public enum DDRUMLongTaskEventRUMConnectivityStatus: Int
+ case connected
+ case notConnected
+ case maybe
+public class DDRUMLongTaskEventRUMEventAttributes: NSObject
+ @objc public var contextInfo: [String: Any]
+public class DDRUMLongTaskEventLongTask: NSObject
+ @objc public var duration: NSNumber
+ @objc public var id: String?
+ @objc public var isFrozenFrame: NSNumber?
+public class DDRUMLongTaskEventSession: NSObject
+ @objc public var hasReplay: NSNumber?
+ @objc public var id: String
+ @objc public var type: DDRUMLongTaskEventSessionSessionType
+public enum DDRUMLongTaskEventSessionSessionType: Int
+ case user
+ case synthetics
+public class DDRUMLongTaskEventSynthetics: NSObject
+ @objc public var resultId: String
+ @objc public var testId: String
+public class DDRUMLongTaskEventRUMUser: NSObject
+ @objc public var email: String?
+ @objc public var id: String?
+ @objc public var name: String?
+ @objc public var usrInfo: [String: Any]
+public class DDRUMLongTaskEventView: NSObject
+ @objc public var id: String
  @objc public var name: String?
  @objc public var referrer: String?
  @objc public var url: String
@@ -617,6 +749,7 @@ public enum DDRUMResourceType: Int
  case js
  case media
  case other
+ case native
 public enum DDRUMMethod: Int
  case post
  case get

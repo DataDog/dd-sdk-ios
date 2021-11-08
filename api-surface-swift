@@ -81,8 +81,10 @@ public class Datadog
  public static func initialize(appContext: AppContext,trackingConsent: TrackingConsent,configuration: Configuration)
  public static var verbosityLevel: LogLevel? = nil
  public static var debugRUM = false
+ public static var isInitialized: Bool
  public static func setUserInfo(id: String? = nil,name: String? = nil,email: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:])
  public static func set(trackingConsent: TrackingConsent)
+ public static func clearAllData()
  public static func flushAndDeinitialize()
  public struct Configuration
   public enum BatchSize
@@ -96,6 +98,7 @@ public class Datadog
   public enum DatadogEndpoint
    case us1
    case us3
+   case us5
    case eu1
    case us1_fed
    public static let us: DatadogEndpoint = .us1
@@ -104,6 +107,7 @@ public class Datadog
   public enum LogsEndpoint
    case us1
    case us3
+   case us5
    case eu1
    case us1_fed
    case us
@@ -113,6 +117,7 @@ public class Datadog
   public enum TracesEndpoint
    case us1
    case us3
+   case us5
    case eu1
    case us1_fed
    case us
@@ -122,6 +127,7 @@ public class Datadog
   public enum RUMEndpoint
    case us1
    case us3
+   case us5
    case eu1
    case us1_fed
    case us
@@ -136,6 +142,7 @@ public class Datadog
    public func set(customTracesEndpoint: URL) -> Builder
    public func set(customRUMEndpoint: URL) -> Builder
    public func enableLogging(_ enabled: Bool) -> Builder
+   public func setLogEventMapper(_ mapper: @escaping (LogEvent) -> LogEvent) -> Builder
    public func set(logsEndpoint: LogsEndpoint) -> Builder
    public func enableTracing(_ enabled: Bool) -> Builder
    public func set(tracesEndpoint: TracesEndpoint) -> Builder
@@ -146,13 +153,16 @@ public class Datadog
    public func enableRUM(_ enabled: Bool) -> Builder
    public func set(rumEndpoint: RUMEndpoint) -> Builder
    public func set(rumSessionsSamplingRate: Float) -> Builder
+   public func onRUMSessionStart(_ handler: @escaping (String, Bool) -> Void) -> Builder
    public func trackUIKitRUMViews(using predicate: UIKitRUMViewsPredicate = DefaultUIKitRUMViewsPredicate()) -> Builder
    public func trackUIKitActions(_ enabled: Bool = true) -> Builder
    public func trackUIKitRUMActions(using predicate: UIKitRUMUserActionsPredicate = DefaultUIKitRUMUserActionsPredicate()) -> Builder
+   public func trackRUMLongTasks(threshold: TimeInterval = 0.1) -> Builder
    public func setRUMViewEventMapper(_ mapper: @escaping (RUMViewEvent) -> RUMViewEvent) -> Builder
    public func setRUMResourceEventMapper(_ mapper: @escaping (RUMResourceEvent) -> RUMResourceEvent?) -> Builder
    public func setRUMActionEventMapper(_ mapper: @escaping (RUMActionEvent) -> RUMActionEvent?) -> Builder
    public func setRUMErrorEventMapper(_ mapper: @escaping (RUMErrorEvent) -> RUMErrorEvent?) -> Builder
+   public func setRUMLongTaskEventMapper(_ mapper: @escaping (RUMLongTaskEvent) -> RUMLongTaskEvent?) -> Builder
    public func setRUMResourceAttributesProvider(_ provider: @escaping (URLRequest, URLResponse?, Data?, Error?) -> [AttributeKey: AttributeValue]?) -> Builder
    public func trackBackgroundEvents(_ enabled: Bool = true) -> Builder
    public func enableCrashReporting(using crashReportingPlugin: DDCrashReportingPluginType) -> Builder
@@ -160,6 +170,7 @@ public class Datadog
    public func set(serviceName: String) -> Builder
    public func set(batchSize: BatchSize) -> Builder
    public func set(uploadFrequency: UploadFrequency) -> Builder
+   public func set(proxyConfiguration: [AnyHashable: Any]?) -> Builder
    public func set(additionalConfiguration: [String: Any]) -> Builder
    public func build() -> Configuration
 public typealias DDGlobal = Global
@@ -202,6 +213,42 @@ public class Logger
    case jsonWith(prefix: String)
   public func printLogsToConsole(_ enabled: Bool, usingFormat format: ConsoleLogFormat = .short) -> Builder
   public func build() -> Logger
+public struct LogEvent: Encodable
+ public enum Status: String, Encodable, CaseIterable
+  case debug
+  case info
+  case notice
+  case warn
+  case error
+  case critical
+  case emergency
+ public struct Attributes
+  public var userAttributes: [String: Encodable]
+ public struct UserInfo
+  public let id: String?
+  public let name: String?
+  public let email: String?
+  public var extraInfo: [String: Encodable]
+ public struct Error
+  public let kind: String?
+  public let message: String?
+  public let stack: String?
+ public let date: Date
+ public let status: Status
+ public var message: String
+ public let error: Error?
+ public let serviceName: String
+ public let environment: String
+ public let loggerName: String
+ public let loggerVersion: String
+ public let threadName: String?
+ public let applicationVersion: String
+ public var userInfo: UserInfo
+ public let networkConnectionInfo: NetworkConnectionInfo?
+ public let mobileCarrierInfo: CarrierInfo?
+ public var attributes: LogEvent.Attributes
+ public var tags: [String]?
+ public func encode(to encoder: Encoder) throws
 public struct OTTags
  public static let component = "component"
  public static let dbInstance = "db.instance"
@@ -295,16 +342,23 @@ public struct RUMViewEvent: RUMDataModel
  public let dd: DD
  public let application: Application
  public let connectivity: RUMConnectivity?
- public let context: RUMEventAttributes?
+ public internal(set) var context: RUMEventAttributes?
  public let date: Int64
  public let service: String?
  public let session: Session
+ public let synthetics: Synthetics?
  public let type: String = "view"
- public let usr: RUMUser?
+ public internal(set) var usr: RUMUser?
  public var view: View
  public struct DD: Codable
   public let documentVersion: Int64
   public let formatVersion: Int64 = 2
+  public let session: Session?
+  public struct Session: Codable
+   public let plan: Plan
+   public enum Plan: Int, Codable
+    case plan1 = 1
+    case plan2 = 2
  public struct Application: Codable
   public let id: String
  public struct Session: Codable
@@ -314,6 +368,9 @@ public struct RUMViewEvent: RUMDataModel
   public enum SessionType: String, Codable
    case user = "user"
    case synthetics = "synthetics"
+ public struct Synthetics: Codable
+  public let resultId: String
+  public let testId: String
  public struct View: Codable
   public let action: Action
   public let cpuTicksCount: Double?
@@ -328,9 +385,11 @@ public struct RUMViewEvent: RUMDataModel
   public let firstContentfulPaint: Int64?
   public let firstInputDelay: Int64?
   public let firstInputTime: Int64?
+  public let frozenFrame: FrozenFrame?
   public let id: String
   public let inForegroundPeriods: [InForegroundPeriods]?
   public let isActive: Bool?
+  public let isSlowRendered: Bool?
   public let largestContentfulPaint: Int64?
   public let loadEvent: Int64?
   public let loadingTime: Int64?
@@ -350,6 +409,8 @@ public struct RUMViewEvent: RUMDataModel
   public struct Crash: Codable
    public let count: Int64
   public struct Error: Codable
+   public let count: Int64
+  public struct FrozenFrame: Codable
    public let count: Int64
   public struct InForegroundPeriods: Codable
    public let duration: Int64
@@ -372,18 +433,25 @@ public struct RUMResourceEvent: RUMDataModel
  public let action: Action?
  public let application: Application
  public let connectivity: RUMConnectivity?
- public let context: RUMEventAttributes?
+ public internal(set) var context: RUMEventAttributes?
  public let date: Int64
  public var resource: Resource
  public let service: String?
  public let session: Session
+ public let synthetics: Synthetics?
  public let type: String = "resource"
- public let usr: RUMUser?
+ public internal(set) var usr: RUMUser?
  public var view: View
  public struct DD: Codable
   public let formatVersion: Int64 = 2
+  public let session: Session?
   public let spanId: String?
   public let traceId: String?
+  public struct Session: Codable
+   public let plan: Plan
+   public enum Plan: Int, Codable
+    case plan1 = 1
+    case plan2 = 2
  public struct Action: Codable
   public let id: String
  public struct Application: Codable
@@ -451,6 +519,7 @@ public struct RUMResourceEvent: RUMDataModel
    case font = "font"
    case media = "media"
    case other = "other"
+   case native = "native"
  public struct Session: Codable
   public let hasReplay: Bool?
   public let id: String
@@ -458,6 +527,9 @@ public struct RUMResourceEvent: RUMDataModel
   public enum SessionType: String, Codable
    case user = "user"
    case synthetics = "synthetics"
+ public struct Synthetics: Codable
+  public let resultId: String
+  public let testId: String
  public struct View: Codable
   public let id: String
   public var name: String?
@@ -468,15 +540,22 @@ public struct RUMActionEvent: RUMDataModel
  public var action: Action
  public let application: Application
  public let connectivity: RUMConnectivity?
- public let context: RUMEventAttributes?
+ public internal(set) var context: RUMEventAttributes?
  public let date: Int64
  public let service: String?
  public let session: Session
+ public let synthetics: Synthetics?
  public let type: String = "action"
- public let usr: RUMUser?
+ public internal(set) var usr: RUMUser?
  public var view: View
  public struct DD: Codable
   public let formatVersion: Int64 = 2
+  public let session: Session?
+  public struct Session: Codable
+   public let plan: Plan
+   public enum Plan: Int, Codable
+    case plan1 = 1
+    case plan2 = 2
  public struct Action: Codable
   public let crash: Crash?
   public let error: Error?
@@ -513,6 +592,9 @@ public struct RUMActionEvent: RUMDataModel
   public enum SessionType: String, Codable
    case user = "user"
    case synthetics = "synthetics"
+ public struct Synthetics: Codable
+  public let resultId: String
+  public let testId: String
  public struct View: Codable
   public let id: String
   public let inForeground: Bool?
@@ -524,21 +606,30 @@ public struct RUMErrorEvent: RUMDataModel
  public let action: Action?
  public let application: Application
  public let connectivity: RUMConnectivity?
- public let context: RUMEventAttributes?
+ public internal(set) var context: RUMEventAttributes?
  public let date: Int64
  public var error: Error
  public let service: String?
  public let session: Session
+ public let synthetics: Synthetics?
  public let type: String = "error"
- public let usr: RUMUser?
+ public internal(set) var usr: RUMUser?
  public var view: View
  public struct DD: Codable
   public let formatVersion: Int64 = 2
+  public let session: Session?
+  public struct Session: Codable
+   public let plan: Plan
+   public enum Plan: Int, Codable
+    case plan1 = 1
+    case plan2 = 2
  public struct Action: Codable
   public let id: String
  public struct Application: Codable
   public let id: String
  public struct Error: Codable
+  public let handling: Handling?
+  public let handlingStack: String?
   public let id: String?
   public let isCrash: Bool?
   public var message: String
@@ -546,6 +637,9 @@ public struct RUMErrorEvent: RUMDataModel
   public let source: Source
   public var stack: String?
   public let type: String?
+  public enum Handling: String, Codable
+   case handled = "handled"
+   case unhandled = "unhandled"
   public struct Resource: Codable
    public let method: RUMMethod
    public let provider: Provider?
@@ -585,9 +679,57 @@ public struct RUMErrorEvent: RUMDataModel
   public enum SessionType: String, Codable
    case user = "user"
    case synthetics = "synthetics"
+ public struct Synthetics: Codable
+  public let resultId: String
+  public let testId: String
  public struct View: Codable
   public let id: String
   public let inForeground: Bool?
+  public var name: String?
+  public var referrer: String?
+  public var url: String
+public struct RUMLongTaskEvent: RUMDataModel
+ public let dd: DD
+ public let action: Action?
+ public let application: Application
+ public let connectivity: RUMConnectivity?
+ public internal(set) var context: RUMEventAttributes?
+ public let date: Int64
+ public let longTask: LongTask
+ public let service: String?
+ public let session: Session
+ public let synthetics: Synthetics?
+ public let type: String = "long_task"
+ public internal(set) var usr: RUMUser?
+ public var view: View
+ public struct DD: Codable
+  public let formatVersion: Int64 = 2
+  public let session: Session?
+  public struct Session: Codable
+   public let plan: Plan
+   public enum Plan: Int, Codable
+    case plan1 = 1
+    case plan2 = 2
+ public struct Action: Codable
+  public let id: String
+ public struct Application: Codable
+  public let id: String
+ public struct LongTask: Codable
+  public let duration: Int64
+  public let id: String?
+  public let isFrozenFrame: Bool?
+ public struct Session: Codable
+  public let hasReplay: Bool?
+  public let id: String
+  public let type: SessionType
+  public enum SessionType: String, Codable
+   case user = "user"
+   case synthetics = "synthetics"
+ public struct Synthetics: Codable
+  public let resultId: String
+  public let testId: String
+ public struct View: Codable
+  public let id: String
   public var name: String?
   public var referrer: String?
   public var url: String
@@ -613,14 +755,14 @@ public struct RUMConnectivity: Codable
   case notConnected = "not_connected"
   case maybe = "maybe"
 public struct RUMEventAttributes: Codable
- public let contextInfo: [String: Codable]
+ public internal(set) var contextInfo: [String: Encodable]
  public func encode(to encoder: Encoder) throws
  public init(from decoder: Decoder) throws
 public struct RUMUser: Codable
  public let email: String?
  public let id: String?
  public let name: String?
- public let usrInfo: [String: Codable]
+ public internal(set) var usrInfo: [String: Encodable]
  public func encode(to encoder: Encoder) throws
  public init(from decoder: Decoder) throws
 public enum RUMMethod: String, Codable
@@ -684,8 +826,8 @@ public class Tracer: OTTracer
   public var bundleWithRUM: Bool
   public init(serviceName: String? = nil,sendNetworkInfo: Bool = false,bundleWithRUM: Bool = true,globalTags: [String: Encodable]? = nil)
 public class HTTPHeadersWriter: OTHTTPHeadersWriter
- public init()
  public private(set) var tracePropagationHTTPHeaders: [String: String] = [:]
+ public init()
  public func inject(spanContext: OTSpanContext)
 public struct SpanEvent: Encodable
  public var operationName: String

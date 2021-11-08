@@ -8,7 +8,7 @@ import Foundation
 
 /// Formats logs printed to console.
 internal protocol ConsoleLogFormatter {
-    func format(log: Log) -> String
+    func format(log: LogEvent) -> String
 }
 
 /// `LogOutput` which prints logs to console.
@@ -34,7 +34,7 @@ internal struct LogConsoleOutput: LogOutput {
         self.printingFunction = printingFunction
     }
 
-    func write(log: Log) {
+    func write(log: LogEvent) {
         printingFunction(formatter.format(log: log))
     }
 }
@@ -53,7 +53,7 @@ private struct JSONLogFormatter: ConsoleLogFormatter {
         self.prefix = prefix
     }
 
-    func format(log: Log) -> String {
+    func format(log: LogEvent) -> String {
         do {
             let logJSON = String(data: try encoder.encode(log), encoding: .utf8) ?? ""
             return prefix + logJSON
@@ -73,7 +73,7 @@ private struct ShortLogFormatter: ConsoleLogFormatter {
         self.prefix = prefix
     }
 
-    func format(log: Log) -> String {
+    func format(log: LogEvent) -> String {
         let time = timeFormatter.string(from: log.date)
         let status = log.status.rawValue.uppercased()
         return "\(prefix)\(time) [\(status)] \(log.message)"

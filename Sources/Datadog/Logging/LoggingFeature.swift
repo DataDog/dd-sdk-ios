@@ -72,21 +72,24 @@ internal final class LoggingFeature {
         return FeatureUpload(
             featureName: LoggingFeature.featureName,
             storage: storage,
-            uploadHTTPHeaders: HTTPHeaders(
+            requestBuilder: RequestBuilder(
+                url: configuration.uploadURL,
+                queryItems: [
+                    .ddsource(source: configuration.common.source)
+                ],
                 headers: [
                     .contentTypeHeader(contentType: .applicationJSON),
                     .userAgentHeader(
                         appName: configuration.common.applicationName,
                         appVersion: configuration.common.applicationVersion,
                         device: commonDependencies.mobileDevice
-                    )
-                ]
-            ),
-            uploadURLProvider: UploadURLProvider(
-                urlWithClientToken: configuration.uploadURLWithClientToken,
-                queryItemProviders: [
-                    .ddsource(source: configuration.common.source)
-                ]
+                    ),
+                    .ddAPIKeyHeader(clientToken: configuration.clientToken),
+                    .ddEVPOriginHeader(source: configuration.common.source),
+                    .ddEVPOriginVersionHeader(),
+                    .ddRequestIDHeader(),
+                ],
+                internalMonitor: internalMonitor
             ),
             commonDependencies: commonDependencies,
             internalMonitor: internalMonitor

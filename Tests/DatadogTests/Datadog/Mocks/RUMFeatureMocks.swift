@@ -12,8 +12,8 @@ extension RUMFeature {
     static func mockNoOp() -> RUMFeature {
         return RUMFeature(
             eventsMapper: .mockNoOp(),
-            storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader(), arbitraryAuthorizedWriter: NoOpFileWriter()),
-            upload: .init(uploader: NoOpDataUploadWorker()),
+            storage: .mockNoOp(),
+            upload: .mockNoOp(),
             configuration: .mockAny(),
             commonDependencies: .mockAny(),
             vitalCPUReader: SamplingBasedVitalReaderMock(),
@@ -49,7 +49,7 @@ extension RUMFeature {
         )
         let uploadWorker = DataUploadWorkerMock()
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
-        // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
+        // Replace by mocking the `FeatureUpload` and observing the `FeatureStorage`:
         let mockedUpload = FeatureUpload(uploader: uploadWorker)
         // Tear down the original upload
         fullFeature.upload.flushAndTearDown()
@@ -88,49 +88,29 @@ extension RUMResourceType {
 
 // MARK: - RUMDataModel Mocks
 
-struct RUMDataModelMock: RUMDataModel, Equatable {
+struct RUMDataModelMock: RUMDataModel, RUMSanitizableEvent, EquatableInTests {
     let attribute: String
+    var usr: RUMUser?
+    var context: RUMEventAttributes?
 }
 
 // MARK: - Component Mocks
 
-extension RUMEvent: AnyMockable where DM == RUMViewEvent {
-    static func mockAny() -> RUMEvent<RUMViewEvent> {
-        return .mockWith(model: RUMViewEvent.mockRandom())
+extension RUMEvent: AnyMockable where DM: AnyMockable {
+    static func mockAny() -> RUMEvent<DM> {
+        return RUMEvent(model: .mockAny())
     }
 }
 
-extension RUMEvent {
-    static func mockWith<DM: RUMDataModel>(
-        model: DM,
-        attributes: [String: Encodable] = [:],
-        userInfoAttributes: [String: Encodable] = [:]
-    ) -> RUMEvent<DM> {
-        return RUMEvent<DM>(
-            model: model,
-            attributes: attributes,
-            userInfoAttributes: userInfoAttributes
-        )
-    }
-
-    static func mockRandomWith<DM: RUMDataModel>(model: DM) -> RUMEvent<DM> {
-        func randomAttributes(prefixed prefix: String) -> [String: Encodable] {
-            var attributes: [String: String] = [:]
-            (0..<10).forEach { index in attributes["\(prefix)\(index)"] = "value\(index)" }
-            return attributes
-        }
-
-        return RUMEvent<DM>(
-            model: model,
-            attributes: randomAttributes(prefixed: "event-attribute"),
-            userInfoAttributes: randomAttributes(prefixed: "user-attribute")
-        )
+extension RUMEvent: RandomMockable where DM: RandomMockable {
+    static func mockRandom() -> RUMEvent<DM> {
+        return RUMEvent(model: .mockRandom())
     }
 }
 
 extension RUMEventBuilder {
     static func mockAny() -> RUMEventBuilder {
-        return RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny(), eventsMapper: RUMEventsMapper.mockNoOp())
+        return RUMEventBuilder(eventsMapper: .mockNoOp())
     }
 }
 
@@ -157,13 +137,15 @@ extension RUMEventsMapper {
         viewEventMapper: RUMViewEventMapper? = nil,
         errorEventMapper: RUMErrorEventMapper? = nil,
         resourceEventMapper: RUMResourceEventMapper? = nil,
-        actionEventMapper: RUMActionEventMapper? = nil
+        actionEventMapper: RUMActionEventMapper? = nil,
+        longTaskEventMapper: RUMLongTaskEventMapper? = nil
     ) -> RUMEventsMapper {
         return RUMEventsMapper(
             viewEventMapper: viewEventMapper,
             errorEventMapper: errorEventMapper,
             resourceEventMapper: resourceEventMapper,
-            actionEventMapper: actionEventMapper
+            actionEventMapper: actionEventMapper,
+            longTaskEventMapper: longTaskEventMapper
         )
     }
 }
@@ -401,6 +383,10 @@ extension RUMContext {
 
 // MARK: - RUMScope Mocks
 
+func mockNoOpSessionListerner() -> RUMSessionListener {
+    return { _, _ in }
+}
+
 extension RUMScopeDependencies {
     static func mockAny() -> RUMScopeDependencies {
         return mockWith()
@@ -413,10 +399,11 @@ extension RUMScopeDependencies {
             networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: nil),
             carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: nil)
         ),
-        eventBuilder: RUMEventBuilder = RUMEventBuilder(userInfoProvider: UserInfoProvider.mockAny(), eventsMapper: RUMEventsMapper.mockNoOp()),
+        eventBuilder: RUMEventBuilder = RUMEventBuilder(eventsMapper: .mockNoOp()),
         eventOutput: RUMEventOutput = RUMEventOutputMock(),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
-        dateCorrector: DateCorrectorType = DateCorrectorMock()
+        dateCorrector: DateCorrectorType = DateCorrectorMock(),
+        onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             userInfoProvider: userInfoProvider,
@@ -428,7 +415,8 @@ extension RUMScopeDependencies {
             dateCorrector: dateCorrector,
             vitalCPUReader: SamplingBasedVitalReaderMock(),
             vitalMemoryReader: SamplingBasedVitalReaderMock(),
-            vitalRefreshRateReader: ContinuousVitalReaderMock()
+            vitalRefreshRateReader: ContinuousVitalReaderMock(),
+            onSessionStart: onSessionStart
         )
     }
 
@@ -440,7 +428,8 @@ extension RUMScopeDependencies {
         eventBuilder: RUMEventBuilder? = nil,
         eventOutput: RUMEventOutput? = nil,
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
-        dateCorrector: DateCorrectorType? = nil
+        dateCorrector: DateCorrectorType? = nil,
+        onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             userInfoProvider: userInfoProvider ?? self.userInfoProvider,
@@ -452,7 +441,8 @@ extension RUMScopeDependencies {
             dateCorrector: dateCorrector ?? self.dateCorrector,
             vitalCPUReader: SamplingBasedVitalReaderMock(),
             vitalMemoryReader: SamplingBasedVitalReaderMock(),
-            vitalRefreshRateReader: ContinuousVitalReaderMock()
+            vitalRefreshRateReader: ContinuousVitalReaderMock(),
+            onSessionStart: onSessionStart
         )
     }
 }
@@ -526,7 +516,7 @@ func createMockView(viewControllerClassName: String) -> UIViewController {
     return viewController
 }
 
-/// Holds the `mockView` object so it can be weakily referenced by `RUMViewScope` mocks.
+/// Holds the `mockView` object so it can be weakly referenced by `RUMViewScope` mocks.
 let mockView: UIViewController = createMockViewInWindow()
 
 extension RUMViewScope {

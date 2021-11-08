@@ -43,6 +43,9 @@ internal struct FeatureStorage {
     /// associated with data written (e.g. crash reporting integration which saves the consent value along with the crash report).
     let arbitraryAuthorizedWriter: AsyncWriter
 
+    /// Orchestrates contents of both `.pending` and `.granted` directories.
+    let dataOrchestrator: DataOrchestratorType
+
     init(
         featureName: String,
         dataFormat: DataFormat,
@@ -65,6 +68,12 @@ internal struct FeatureStorage {
             performance: commonDependencies.performance,
             dateProvider: commonDependencies.dateProvider,
             internalMonitor: internalMonitor
+        )
+
+        let dataOrchestrator = DataOrchestrator(
+            queue: readWriteQueue,
+            authorizedFilesOrchestrator: authorizedFilesOrchestrator,
+            unauthorizedFilesOrchestrator: unauthorizedFilesOrchestrator
         )
 
         let unauthorizedFileWriter = FileWriter(
@@ -111,14 +120,25 @@ internal struct FeatureStorage {
         self.init(
             writer: consentAwareDataWriter,
             reader: authorisedDataReader,
-            arbitraryAuthorizedWriter: arbitraryDataWriter
+            arbitraryAuthorizedWriter: arbitraryDataWriter,
+            dataOrchestrator: dataOrchestrator
         )
     }
 
-    init(writer: AsyncWriter, reader: SyncReader, arbitraryAuthorizedWriter: AsyncWriter) {
+    init(
+        writer: AsyncWriter,
+        reader: SyncReader,
+        arbitraryAuthorizedWriter: AsyncWriter,
+        dataOrchestrator: DataOrchestratorType
+    ) {
         self.writer = writer
         self.reader = reader
         self.arbitraryAuthorizedWriter = arbitraryAuthorizedWriter
+        self.dataOrchestrator = dataOrchestrator
+    }
+
+    func clearAllData() {
+        dataOrchestrator.deleteAllData()
     }
 
 #if DD_SDK_COMPILED_FOR_TESTING
@@ -131,7 +151,7 @@ internal struct FeatureStorage {
     func flushAndTearDown() {
         writer.flushAndCancelSynchronously()
         arbitraryAuthorizedWriter.flushAndCancelSynchronously()
-        reader.markAllFilesAsReadable()
+        (dataOrchestrator as? DataOrchestrator)?.markAllFilesAsReadable()
     }
 #endif
 }
@@ -143,8 +163,7 @@ internal struct FeatureUpload {
     init(
         featureName: String,
         storage: FeatureStorage,
-        uploadHTTPHeaders: HTTPHeaders,
-        uploadURLProvider: UploadURLProvider,
+        requestBuilder: RequestBuilder,
         commonDependencies: FeaturesCommonDependencies,
         internalMonitor: InternalMonitor? = nil
     ) {
@@ -159,10 +178,8 @@ internal struct FeatureUpload {
         )
 
         let dataUploader = DataUploader(
-            urlProvider: uploadURLProvider,
             httpClient: commonDependencies.httpClient,
-            httpHeaders: uploadHTTPHeaders,
-            internalMonitor: internalMonitor
+            requestBuilder: requestBuilder
         )
 
         self.init(
@@ -172,7 +189,8 @@ internal struct FeatureUpload {
                 dataUploader: dataUploader,
                 uploadConditions: uploadConditions,
                 delay: DataUploadDelay(performance: commonDependencies.performance),
-                featureName: featureName
+                featureName: featureName,
+                internalMonitor: internalMonitor
             )
         )
     }

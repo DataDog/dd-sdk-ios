@@ -36,6 +36,7 @@ internal class CrashReportingViewController: UIViewController {
             button.layer.masksToBounds = true
             button.layer.cornerRadius = 7
             button.addTarget(nil, action: selector, for: .touchUpInside)
+            button.showsTouchWhenHighlighted = true
             verticalStackView.addArrangedSubview(button)
         }
 
@@ -46,6 +47,7 @@ internal class CrashReportingViewController: UIViewController {
         addButton(titled: "Implicitly unwrap `nil` optional", action: #selector(implicitlyUnwrapOptionalNil))
         addButton(titled: "Access array outside its bounds", action: #selector(accessArrayOutsideItsBounds))
         addButton(titled: "Dereference null pointer", action: #selector(dereferenceNullPointer))
+        addButton(titled: "Infinite recursive call", action: #selector(infiniteRecursiveCall))
     }
 
     @objc func callFatalError() {
@@ -81,5 +83,23 @@ internal class CrashReportingViewController: UIViewController {
 
     @objc func dereferenceNullPointer() {
         objc.dereferenceNullPointer()
+    }
+
+    @objc func infiniteRecursiveCall() {
+        _ = recursiveCall(parameter: 0)
+    }
+
+    private var heap: [String] = []
+
+    func recursiveCall(parameter: Int) -> Int {
+        if parameter > 1_000_000 {
+            heap.append("abcdefghijkl")
+            return recursiveCall(parameter: parameter - 1)
+        } else if parameter <= 1_000_000 {
+            heap.append("abcdefghijkl")
+            return recursiveCall(parameter: parameter + 1)
+        } else {
+            return 0 // not reachable, but mutes compiler warning
+        }
     }
 }

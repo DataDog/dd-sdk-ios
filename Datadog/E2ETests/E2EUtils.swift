@@ -27,6 +27,11 @@ struct DD {
         // MARK: - Logging-specific
 
         static let loggerInitialize = "logs_logger_initialize"
+
+        // MARK: - RUM-specific
+
+        static let rumAttributeAddAttribute = "rum_globalrum_add_attribute"
+        static let rumAttributeRemoveAttribute = "rum_globalrum_remove_attribute"
     }
 
     // MARK: - Special Attributes

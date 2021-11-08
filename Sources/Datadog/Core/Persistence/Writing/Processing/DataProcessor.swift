@@ -7,9 +7,9 @@
 import Foundation
 
 internal struct DataProcessorFactory {
-    /// File writer writting unauthorized data when consent is `.pending`.
+    /// File writer writing unauthorized data when consent is `.pending`.
     let unauthorizedFileWriter: Writer
-    /// File writer writting authorized data when consent is `.granted`.
+    /// File writer writing authorized data when consent is `.granted`.
     let authorizedFileWriter: Writer
 
     func resolveProcessor(for consent: TrackingConsent) -> DataProcessor? {

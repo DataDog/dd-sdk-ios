@@ -55,9 +55,21 @@ class TestFileTestCase(unittest.TestCase):
                                 )
                             ],
                             code_reference=CodeReference(
-                            file_path=file.name,
-                            line_no=3,
-                            line_text='/// ```'
+                                file_path=file.name,
+                                line_no=3,
+                                line_text='/// ```'
+                            ),
+                            code='\n'.join(
+                                [
+                                    '        /// Monitor definition assigned to the test method:',
+                                    '        /// ```apm',
+                                    '        /// $foo = <foo value>',
+                                    '        /// $bar = <bar value>',
+                                    '        /// ```',
+                                    '        func test_method_name() {',
+                                    '        }',
+                                    ''
+                                ]
                             )
                         )
                     ],
@@ -65,6 +77,13 @@ class TestFileTestCase(unittest.TestCase):
                         file_path=file.name,
                         line_no=7,
                         line_text='        func test_method_name() {\n'
+                    ),
+                    code='\n'.join(
+                        [
+                            '        func test_method_name() {',
+                            '        }',
+                            ''
+                        ]
                     )
                 )
             ],
@@ -116,6 +135,16 @@ class TestFileTestCase(unittest.TestCase):
                         file_path=file.name,
                         line_no=4,
                         line_text='/// ```'
+                    ),
+                    code='\n'.join(
+                        [
+                            '            /// Monitor definition not assigned to any test method:',
+                            '            /// ```apm',
+                            '            /// $foo = <foo value>',
+                            '            /// $bar = <bar value>',
+                            '            /// ```',
+                            ''
+                        ]
                     )
                 )
             ]

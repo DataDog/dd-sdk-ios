@@ -105,7 +105,7 @@ extension CrashContext {
         return CrashContext(
             lastTrackingConsent: .mockRandom(),
             lastUserInfo: .mockRandom(),
-            lastRUMViewEvent: .mockRandomWith(model: RUMViewEvent.mockRandom()),
+            lastRUMViewEvent: .mockRandom(),
             lastNetworkConnectionInfo: .mockRandom(),
             lastCarrierInfo: .mockRandom()
         )

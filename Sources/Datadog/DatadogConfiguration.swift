@@ -42,6 +42,9 @@ extension Datadog {
             /// US based servers.
             /// Sends data to [app.datadoghq.com](https://us3.datadoghq.com/).
             case us3
+            /// US based servers.
+            /// Sends data to [app.datadoghq.com](https://us5.datadoghq.com/).
+            case us5
             /// Europe based servers.
             /// Sends data to [app.datadoghq.eu](https://app.datadoghq.eu/).
             case eu1
@@ -65,6 +68,7 @@ extension Datadog {
                 switch self {
                 case .us1: return .us1
                 case .us3: return .us3
+                case .us5: return .us5
                 case .eu1: return .eu1
                 case .us1_fed: return .us1_fed
                 }
@@ -74,6 +78,7 @@ extension Datadog {
                 switch self {
                 case .us1: return .us1
                 case .us3: return .us3
+                case .us5: return .us5
                 case .eu1: return .eu1
                 case .us1_fed: return .us1_fed
                 }
@@ -83,6 +88,7 @@ extension Datadog {
                 switch self {
                 case .us1: return .us1
                 case .us3: return .us3
+                case .us5: return .us5
                 case .eu1: return .eu1
                 case .us1_fed: return .us1_fed
                 }
@@ -97,6 +103,9 @@ extension Datadog {
             /// US based servers.
             /// Sends logs to [app.datadoghq.com](https://us3.datadoghq.com/).
             case us3
+            /// US based servers.
+            /// Sends logs to [app.datadoghq.com](https://us5.datadoghq.com/).
+            case us5
             /// Europe based servers.
             /// Sends logs to [app.datadoghq.eu](https://app.datadoghq.eu/).
             case eu1
@@ -116,11 +125,13 @@ extension Datadog {
             case custom(url: String)
 
             internal var url: String {
+                let endpoint = "api/v2/logs"
                 switch self {
-                case .us1, .us: return "https://logs.browser-intake-datadoghq.com/v1/input/"
-                case .us3: return "https://logs.browser-intake-us3-datadoghq.com/v1/input/"
-                case .eu1, .eu: return "https://mobile-http-intake.logs.datadoghq.eu/v1/input/"
-                case .us1_fed, .gov: return "https://logs.browser-intake-ddog-gov.com/v1/input/"
+                case .us1, .us: return "https://logs.browser-intake-datadoghq.com/" + endpoint
+                case .us3: return "https://logs.browser-intake-us3-datadoghq.com/" + endpoint
+                case .us5: return "https://logs.browser-intake-us5-datadoghq.com/" + endpoint
+                case .eu1, .eu: return "https://mobile-http-intake.logs.datadoghq.eu/" + endpoint
+                case .us1_fed, .gov: return "https://logs.browser-intake-ddog-gov.com/" + endpoint
                 case let .custom(url: url): return url
                 }
             }
@@ -134,6 +145,9 @@ extension Datadog {
             /// US based servers.
             /// Sends traces to [app.datadoghq.com](https://us3.datadoghq.com/).
             case us3
+            /// US based servers.
+            /// Sends traces to [app.datadoghq.com](https://us5.datadoghq.com/).
+            case us5
             /// Europe based servers.
             /// Sends traces to [app.datadoghq.eu](https://app.datadoghq.eu/).
             case eu1
@@ -153,11 +167,13 @@ extension Datadog {
             case custom(url: String)
 
             internal var url: String {
+                let endpoint = "api/v2/spans"
                 switch self {
-                case .us1, .us: return "https://trace.browser-intake-datadoghq.com/v1/input/"
-                case .us3: return "https://trace.browser-intake-us3-datadoghq.com/v1/input/"
-                case .eu1, .eu: return "https:/public-trace-http-intake.logs.datadoghq.eu/v1/input/"
-                case .us1_fed, .gov: return "https://trace.browser-intake-ddog-gov.com/v1/input/"
+                case .us1, .us: return "https://trace.browser-intake-datadoghq.com/" + endpoint
+                case .us3: return "https://trace.browser-intake-us3-datadoghq.com/" + endpoint
+                case .us5: return "https://trace.browser-intake-us5-datadoghq.com/" + endpoint
+                case .eu1, .eu: return "https:/public-trace-http-intake.logs.datadoghq.eu/" + endpoint
+                case .us1_fed, .gov: return "https://trace.browser-intake-ddog-gov.com/" + endpoint
                 case let .custom(url: url): return url
                 }
             }
@@ -171,6 +187,9 @@ extension Datadog {
             /// US based servers.
             /// Sends RUM events to [app.datadoghq.com](https://us3.datadoghq.com/).
             case us3
+            /// US based servers.
+            /// Sends RUM events to [app.datadoghq.com](https://us5.datadoghq.com/).
+            case us5
             /// Europe based servers.
             /// Sends RUM events to [app.datadoghq.eu](https://app.datadoghq.eu/).
             case eu1
@@ -190,11 +209,13 @@ extension Datadog {
             case custom(url: String)
 
             internal var url: String {
+                let endpoint = "api/v2/rum"
                 switch self {
-                case .us1, .us: return "https://rum.browser-intake-datadoghq.com/v1/input/"
-                case .us3: return "https://rum.browser-intake-us3-datadoghq.com/v1/input/"
-                case .eu1, .eu: return "https://rum-http-intake.logs.datadoghq.eu/v1/input/"
-                case .us1_fed, .gov: return "https://rum.browser-intake-ddog-gov.com/v1/input/"
+                case .us1, .us: return "https://rum.browser-intake-datadoghq.com/" + endpoint
+                case .us3: return "https://rum.browser-intake-us3-datadoghq.com/" + endpoint
+                case .us5: return "https://rum.browser-intake-us5-datadoghq.com/" + endpoint
+                case .eu1, .eu: return "https://rum-http-intake.logs.datadoghq.eu/" + endpoint
+                case .us1_fed, .gov: return "https://rum.browser-intake-ddog-gov.com/" + endpoint
                 case let .custom(url: url): return url
                 }
             }
@@ -228,19 +249,24 @@ extension Datadog {
 
         private(set) var serviceName: String?
         private(set) var firstPartyHosts: Set<String>?
+        private(set) var logEventMapper: LogEventMapper?
         private(set) var spanEventMapper: SpanEventMapper?
         private(set) var rumSessionsSamplingRate: Float
+        private(set) var rumSessionsListener: RUMSessionListener?
         private(set) var rumUIKitViewsPredicate: UIKitRUMViewsPredicate?
         private(set) var rumUIKitUserActionsPredicate: UIKitRUMUserActionsPredicate?
+        private(set) var rumLongTaskDurationThreshold: TimeInterval?
         private(set) var rumViewEventMapper: RUMViewEventMapper?
         private(set) var rumResourceEventMapper: RUMResourceEventMapper?
         private(set) var rumActionEventMapper: RUMActionEventMapper?
         private(set) var rumErrorEventMapper: RUMErrorEventMapper?
+        private(set) var rumLongTaskEventMapper: RUMLongTaskEventMapper?
         private(set) var rumResourceAttributesProvider: URLSessionRUMAttributesProvider?
         private(set) var rumBackgroundEventTrackingEnabled: Bool
         private(set) var batchSize: BatchSize
         private(set) var uploadFrequency: UploadFrequency
         private(set) var additionalConfiguration: [String: Any]
+        private(set) var proxyConfiguration: [AnyHashable: Any]?
 
         /// The client token autorizing internal monitoring data to be sent to Datadog org.
         private(set) var internalMonitoringClientToken: String?
@@ -302,6 +328,7 @@ extension Datadog {
                     firstPartyHosts: nil,
                     spanEventMapper: nil,
                     rumSessionsSamplingRate: 100.0,
+                    rumSessionsListener: nil,
                     rumUIKitViewsPredicate: nil,
                     rumUIKitUserActionsPredicate: nil,
                     rumViewEventMapper: nil,
@@ -313,6 +340,7 @@ extension Datadog {
                     batchSize: .medium,
                     uploadFrequency: .average,
                     additionalConfiguration: [:],
+                    proxyConfiguration: nil,
                     internalMonitoringClientToken: nil
                 )
             }
@@ -371,6 +399,15 @@ extension Datadog {
             /// - Parameter enabled: `true` by default
             public func enableLogging(_ enabled: Bool) -> Builder {
                 configuration.loggingEnabled = enabled
+                return self
+            }
+
+            /// Sets the custom mapper for `LogEvent`. This can be used to modify logs before they are send to Datadog.
+            /// - Parameter mapper: the closure taking `LogEvent` as input and expecting `LogEvent` as output.
+            /// The implementation should obtain a mutable version of the `LogEvent`, modify it and return it. Returning `nil` will result
+            /// with dropping the Log event entirely, so it won't be send to Datadog.
+            public func setLogEventMapper(_ mapper: @escaping (LogEvent) -> LogEvent) -> Builder {
+                configuration.logEventMapper = mapper
                 return self
             }
 
@@ -456,7 +493,7 @@ extension Datadog {
             ///
             /// **NOTE** The mapper intentionally prevents from returning a `nil` to drop the `SpanEvent` entirely, this ensures that all spans are sent to Datadog.
             ///
-            /// Use the `trackURLSession(firstPartyHosts:)` API to confiture tracing only the hosts that you are interested in.
+            /// Use the `trackURLSession(firstPartyHosts:)` API to configure tracing only the hosts that you are interested in.
             public func setSpanEventMapper(_ mapper: @escaping (SpanEvent) -> SpanEvent) -> Builder {
                 configuration.spanEventMapper = mapper
                 return self
@@ -497,6 +534,17 @@ extension Datadog {
             /// means no RUM events will be sent, `100.0` means all sessions will be kept (default value is `100.0`).
             public func set(rumSessionsSamplingRate: Float) -> Builder {
                 configuration.rumSessionsSamplingRate = rumSessionsSamplingRate
+                return self
+            }
+
+            /// Sets the RUM Session start callback.
+            ///
+            /// The callback takes 2 arguments: the newly started Session ID and a boolean indicating whether or not the session is discarded by the sampling rate
+            /// (when `true` it means no event in this session will be kept).
+            ///
+            /// - Parameter handler: the callback handler to notify whenever a new Session starts.
+            public func onRUMSessionStart(_ handler: @escaping (String, Bool) -> Void) -> Builder {
+                configuration.rumSessionsListener = handler
                 return self
             }
 
@@ -558,6 +606,14 @@ extension Datadog {
                 return self
             }
 
+            /// Enable long operations on the main thread to be tracked automatically.
+            /// Any long running operation on the main thread will appear as Long Tasks in Datadog RUM Explorer.
+            /// - Parameter threshold: the threshold in seconds above which a task running on the Main thread is considered as a long task (default 0.1 second)
+            public func trackRUMLongTasks(threshold: TimeInterval = 0.1) -> Builder {
+                configuration.rumLongTaskDurationThreshold = threshold
+                return self
+            }
+
             /// Sets the custom mapper for `RUMViewEvent`. This can be used to modify RUM View events before they are send to Datadog.
             /// - Parameter mapper: the closure taking `RUMViewEvent` as input and expecting `RUMViewEvent` as output.
             /// The implementation should obtain a mutable version of the `RUMViewEvent`, modify it and return it.
@@ -594,6 +650,15 @@ extension Datadog {
             /// with dropping the RUM Error event entirely, so it won't be send to Datadog.
             public func setRUMErrorEventMapper(_ mapper: @escaping (RUMErrorEvent) -> RUMErrorEvent?) -> Builder {
                 configuration.rumErrorEventMapper = mapper
+                return self
+            }
+
+            /// Sets the custom mapper for `RUMLongTaskEvent`. This can be used to modify RUM Long Task events before they are send to Datadog.
+            /// - Parameter mapper: the closure taking `RUMLongTaskEvent` as input and expecting `RUMLongTaskEvent` or `nil` as output.
+            /// The implementation should obtain a mutable version of the `RUMLongTaskEvent`, modify it and return. Returning `nil` will result
+            /// with dropping the RUM Long Task event entirely, so it won't be send to Datadog.
+            public func setRUMLongTaskEventMapper(_ mapper: @escaping (RUMLongTaskEvent) -> RUMLongTaskEvent?) -> Builder {
+                configuration.rumLongTaskEventMapper = mapper
                 return self
             }
 
@@ -686,6 +751,14 @@ extension Datadog {
             /// - Parameter uploadFrequency: `.average` by default.
             public func set(uploadFrequency: UploadFrequency) -> Builder {
                 configuration.uploadFrequency = uploadFrequency
+                return self
+            }
+
+            /// Sets proxy configuration attributes.
+            /// This can be used to a enable a custom proxy for uploading tracked data to Datadog's intake.
+            /// - Parameter proxyConfiguration: `nil` by default.
+            public func set(proxyConfiguration: [AnyHashable: Any]?) -> Builder {
+                configuration.proxyConfiguration = proxyConfiguration
                 return self
             }
 

@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import Compression
 import XCTest
 @testable import Datadog
 
@@ -124,7 +125,7 @@ class ServerMock {
         /// Following precondition will fail when `ServerMock` instance was retained ONLY by existing HTTP request callback.
         /// Such case means a programmer error, because the existing callback can impact result of the next unit test, causing a flakiness.
         ///
-        /// If that happens, make sure the `ServerMock` processess all calbacks before it gets deallocated:
+        /// If that happens, make sure the `ServerMock` processes all callbacks before it gets deallocated:
         ///
         ///     func testXYZ() {
         ///        let server = ServerMock(...)
@@ -197,19 +198,19 @@ class ServerMock {
             fatalError("Can't happen.")
         case .timedOut:
             XCTFail("Exceeded timeout of \(timeout)s with receiving \(requests.count) out of \(count) expected requests.", file: file, line: line)
-            // Return array of dummy requests, so the crash will happen leter in the test code, properly
+            // Return array of dummy requests, so the crash will happen later in the test code, properly
             // printing the above error.
             return Array(repeating: .mockAny(), count: Int(count))
         case .invertedFulfillment:
             XCTFail("\(requests.count) requests were sent, but not expected.", file: file, line: line)
-            // Return array of dummy requests, so the crash will happen leter in the test code, properly
+            // Return array of dummy requests, so the crash will happen later in the test code, properly
             // printing the above error.
-            return queue.sync { requests }
+            return queue.sync { requests.map(decompress) }
         @unknown default:
             fatalError()
         }
 
-        return queue.sync { requests }
+        return queue.sync { requests.map(decompress) }
     }
 
     /// Waits until given number of request callbacks is completed (in total for this instance of `ServerMock`).
@@ -231,6 +232,74 @@ class ServerMock {
         let uploadPerformanceForTests = UploadPerformanceMock.veryQuick
         // Set the timeout to 40 times more than expected.
         // In `RUMM-311` we observed 0.66% of flakiness for 150 test runs on CI with arbitrary value of `20`.
-        return uploadPerformanceForTests.defaultUploadDelay * Double(numberOfRequestsMade) * 40
+        return uploadPerformanceForTests.initialUploadDelay * Double(numberOfRequestsMade) * 40
+    }
+
+    private func decompress(_ request: URLRequest) -> URLRequest {
+        guard
+            let body = request.httpBody,
+            request.allHTTPHeaderFields?["Content-Encoding"] == "deflate",
+            let data = Deflate.decode(body)
+        else {
+            // Returns the untouched request if the request body is not compressed
+            // using `deflate` algorithm, or if decompressing the body fails.
+            return request
+        }
+
+        var request = request
+        request.httpBody = data
+        return request
+    }
+}
+
+extension Deflate {
+    /// Decompresses the data format using the `ZLIB` compression algorithm.
+    ///
+    /// The provided data format must be ZLIB Compressed Data Format as described in IETF RFC 1950
+    /// https://datatracker.ietf.org/doc/html/rfc1950
+    ///
+    /// - Parameters:
+    ///   - data: The compressed data.
+    ///   - capacity: Capacity of the allocated memory to contain the decoded data. 1MB by default.
+    /// - Returns: Decompressed data.
+    static func decode(_ data: Data, capacity: Int = 1_000_000) -> Data? {
+        // Skip `deflate` header (2 bytes) and checksum (4 bytes)
+        // validations and inflate raw deflated data.
+        let range = 2..<data.count - 4
+        return decompress(data.subdata(in: range), capacity: capacity)
+    }
+
+    /// Decompresses the data using the `ZLIB` compression algorithm.
+    ///
+    /// The `Compression` library implements the zlib encoder at level 5 only. This compression level
+    /// provides a good balance between compression speed and compression ratio.
+    ///
+    /// This inflate implementation uses `compression_decode_buffer(_:_:_:_:_:_:)`
+    /// from the `Compression` framework by allocating a destination buffer of size `capacity`
+    /// and copying the result into a `Data` structure
+    ///
+    /// ref. https://developer.apple.com/documentation/compression/1481000-compression_decode_buffer
+    ///
+    /// - Parameters:
+    ///   - data: Raw deflated data stream.
+    ///   - capacity: Capacity of the allocated memory to contain the decoded data. 1MB by default.
+    /// - Returns: Decompressed data.
+    static func decompress(_ data: Data, capacity: Int = 1_000_000) -> Data? {
+        data.withUnsafeBytes {
+            guard let ptr = $0.bindMemory(to: UInt8.self).baseAddress else {
+                return nil
+            }
+
+            let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: capacity)
+            defer { buffer.deallocate() }
+
+            // Returns the number of bytes written to the destination buffer after
+            // decompressing the input. If there is not enough space in the destination
+            // buffer to hold the entire decompressed output, the function writes the
+            // first dst_size bytes to the buffer and returns dst_size. Note that this
+            // behavior differs from that of `compression_encode_buffer(_:_:_:_:_:_:)`.
+            let size = compression_decode_buffer(buffer, capacity, ptr, data.count, nil, COMPRESSION_ZLIB)
+            return Data(bytes: buffer, count: size)
+        }
     }
 }

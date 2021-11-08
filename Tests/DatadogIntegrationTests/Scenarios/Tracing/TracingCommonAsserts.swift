@@ -33,29 +33,37 @@ extension TracingCommonAsserts {
         requests.forEach { request in
             XCTAssertEqual(request.httpMethod, "POST")
 
-            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309/ui-tests-client-token`
-            let pathRegex = #"^(.*)(/ui-tests-client-token)$"#
-            XCTAssertTrue(
-                request.path.matches(regex: pathRegex),
+            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309`
+            XCTAssertFalse(
+                request.path.contains("?"),
                 """
-                Request path doesn't match the expected regex.
+                Request path must contain no query parameters.
                 ✉️ path: \(request.path)
-                🧪 expected regex:  \(pathRegex)
                 """,
                 file: file,
                 line: line
             )
-            let expectedHeader = "Content-Type: text/plain;charset=UTF-8"
-            XCTAssertTrue(
-                request.httpHeaders.contains(expectedHeader),
-                """
-                Request doesn't contain expected header.
-                ✉️ request headers: \(request.httpHeaders.joined(separator: "\n"))
-                🧪 expected header:  \(expectedHeader)
-                """,
-                file: file,
-                line: line
-            )
+
+            let expectedHeadersRegexes = [
+                #"^Content-Type: text/plain;charset=UTF-8$"#,
+                #"^User-Agent: Example/1.0 CFNetwork \([a-zA-Z ]+; iOS/[0-9.]+\)$"#, // e.g. "User-Agent: Example/1.0 CFNetwork (iPhone; iOS/14.5)"
+                #"^DD-API-KEY: ui-tests-client-token$"#,
+                #"^DD-EVP-ORIGIN: ios$"#,
+                #"^DD-EVP-ORIGIN-VERSION: [0-9].[0-9].[0-9]([-a-z0-9])*$"#, // e.g. "DD-EVP-ORIGIN-VERSION: 1.7.0-beta2"
+                #"^DD-REQUEST-ID: [0-9A-F]{8}(-[0-9A-F]{4}){3}-[0-9A-F]{12}$"# // e.g. "DD-REQUEST-ID: 524A2616-D2AA-4FE5-BBD9-898D173BE658"
+            ]
+            expectedHeadersRegexes.forEach { expectedHeaderRegex in
+                XCTAssertTrue(
+                    request.httpHeaders.contains { $0.matches(regex: expectedHeaderRegex) },
+                    """
+                    Request doesn't contain header matching expected regex.
+                    ✉️ request headers: \(request.httpHeaders.joined(separator: "\n"))
+                    🧪 expected regex: '\(expectedHeaderRegex)'
+                    """,
+                    file: file,
+                    line: line
+                )
+            }
         }
     }
 

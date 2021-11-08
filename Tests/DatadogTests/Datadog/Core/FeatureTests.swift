@@ -18,7 +18,7 @@ class FeatureStorageTests: XCTestCase {
         super.tearDown()
     }
 
-    func testWhenWrittingDataAndChangingConsent_thenOnlyAuthorizedDataCanBeRead() {
+    func testWhenWritingDataAndChangingConsent_thenOnlyAuthorizedDataCanBeRead() {
         let consentProvider = ConsentProvider(initialConsent: .mockRandom())
 
         // Given
@@ -85,6 +85,36 @@ class FeatureStorageTests: XCTestCase {
             .map { $0.utf8String }
         XCTAssertEqual(dataWritten.filter { $0 == "[\"regular write\"]" }.count, 25)
         XCTAssertEqual(dataWritten.filter { $0 == "[\"arbitrary write\"]" }.count, 25)
+    }
+
+    func testItClearsAllDataInAThreadSafeManner() {
+        let numberOfFilesWritten: Int = .mockRandom(min: 10, max: 50)
+
+        // Given
+        let storage = FeatureStorage(
+            featureName: .mockAny(),
+            dataFormat: DataFormat(prefix: "", suffix: "", separator: "#"),
+            directories: temporaryFeatureDirectories,
+            commonDependencies: .mockWith(consentProvider: .init(initialConsent: .granted))
+        )
+
+        // When
+        // swiftlint:disable opening_brace
+        callConcurrently(
+            closures: [
+                // We write arrays because prior to iOS 13 the top-level element passed to JSON encoder must be array or object
+                { storage.writer.write(value: [String.mockRandom()]) },
+                { storage.clearAllData() }
+            ],
+            iterations: numberOfFilesWritten
+        )
+        // swiftlint:enable opening_brace
+
+        // Then
+        let dataWritten = readAllAuthorizedDataWritten(to: storage, limit: numberOfFilesWritten)
+            .map { $0.utf8String }
+
+        XCTAssertLessThan(dataWritten.count, numberOfFilesWritten)
     }
 
     // MARK: - Helpers

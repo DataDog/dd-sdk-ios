@@ -65,7 +65,8 @@ def lint(args):
     renderer = MainTF.load_from_templates(
         main_template_path='monitors-gen/templates/main.tf.src',
         logs_monitor_template_path='monitors-gen/templates/monitor-logs.tf.src',
-        apm_monitor_template_path='monitors-gen/templates/monitor-apm.tf.src'
+        apm_monitor_template_path='monitors-gen/templates/monitor-apm.tf.src',
+        rum_monitor_template_path='monitors-gen/templates/monitor-rum.tf.src'
     )
     _ = renderer.render(monitors=all_monitors)
 
@@ -83,7 +84,8 @@ def generate_terraform_file(args):
     renderer = MainTF.load_from_templates(
         main_template_path='monitors-gen/templates/main.tf.src',
         logs_monitor_template_path='monitors-gen/templates/monitor-logs.tf.src',
-        apm_monitor_template_path='monitors-gen/templates/monitor-apm.tf.src'
+        apm_monitor_template_path='monitors-gen/templates/monitor-apm.tf.src',
+        rum_monitor_template_path='monitors-gen/templates/monitor-rum.tf.src'
     )
     rendered = renderer.render(monitors=all_monitors)
 

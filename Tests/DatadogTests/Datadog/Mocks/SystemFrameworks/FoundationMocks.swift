@@ -43,25 +43,44 @@ protocol RandomMockable {
 
 extension Data: AnyMockable, RandomMockable {
     static func mockAny() -> Data {
-        return Data()
+        return .mock(ofSize: 256)
     }
 
     static func mockRepeating(byte: UInt8, times count: Int) -> Data {
         return Data(repeating: byte, count: count)
     }
 
-    static func mock(ofSize size: UInt64) -> Data {
-        return mockRepeating(byte: 0x41, times: Int(size))
+    static func mock<Size>(ofSize size: Size) -> Data where Size: BinaryInteger {
+        return mockRepeating(byte: .mockRandom(), times: Int(size))
+    }
+
+    static func mockRandom<Size>(ofSize size: Size) -> Data where Size: BinaryInteger {
+        let count = Int(size)
+        let bytes = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
+        defer { bytes.deallocate() }
+        let status = SecRandomCopyBytes(kSecRandomDefault, count, bytes)
+
+        guard status == errSecSuccess else {
+            fatalError("Failed to generate random data")
+        }
+
+        return Data(bytes: bytes, count: count)
     }
 
     static func mockRandom() -> Data {
-        return mockRepeating(byte: .random(in: 0x00...0xFF), times: 256)
+        return mockRandom(ofSize: Int.mockRandom(min: 16, max: 512))
     }
 }
 
 extension Optional: AnyMockable where Wrapped: AnyMockable {
     static func mockAny() -> Self {
         return .some(.mockAny())
+    }
+}
+
+extension Optional: RandomMockable where Wrapped: RandomMockable {
+    static func mockRandom() -> Self {
+        return .some(.mockRandom())
     }
 }
 
@@ -113,7 +132,7 @@ extension Date: AnyMockable {
     }
 
     static func mockRandomInThePast() -> Date {
-        return Date(timeIntervalSinceReferenceDate: TimeInterval.random(in: 0..<Date().timeIntervalSinceReferenceDate))
+        return Date(timeIntervalSinceReferenceDate: TimeInterval.mockRandomInThePast())
     }
 
     static func mockSpecificUTCGregorianDate(year: Int, month: Int, day: Int, hour: Int, minute: Int = 0, second: Int = 0) -> Date {
@@ -160,7 +179,7 @@ extension URL: AnyMockable, RandomMockable {
         return URL(string: "https://www.foo.com/")!
             .appendingPathComponent(
                 .mockRandom(
-                    among: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+                    among: .alphanumerics,
                     length: 32
                 )
             )
@@ -170,7 +189,7 @@ extension URL: AnyMockable, RandomMockable {
         let count: Int = .mockRandom(min: 2, max: 10)
         var components: [String] = (0..<count).map { _ in
             .mockRandom(
-                among: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+                among: .alphanumerics,
                 length: .mockRandom(min: 3, max: 10)
             )
         }
@@ -190,7 +209,7 @@ extension String: AnyMockable, RandomMockable {
 
     static func mockRandom(length: Int) -> String {
         return mockRandom(
-            among: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ",
+            among: .alphanumerics + " ",
             length: length
         )
     }
@@ -203,20 +222,9 @@ extension String: AnyMockable, RandomMockable {
         let characters = (0..<times).map { _ in character }
         return String(characters)
     }
-}
 
-extension Int: AnyMockable, RandomMockable {
-    static func mockAny() -> Int {
-        return 0
-    }
-
-    static func mockRandom() -> Int {
-        return mockRandom(min: .min, max: .max)
-    }
-
-    static func mockRandom(min: Int, max: Int) -> Int {
-        return .random(in: min...max)
-    }
+    static let alphanumerics = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    static let decimalDigits = "0123456789"
 }
 
 extension Bool: RandomMockable {
@@ -233,30 +241,32 @@ extension Range where Bound == Int {
     }
 }
 
-extension Int64: AnyMockable, RandomMockable {
-    static func mockAny() -> Int64 { 0 }
-    static func mockRandom() -> Int64 { Int64.random(in: Int64.min..<Int64.max) }
-}
-
-extension UInt: RandomMockable {
-    static func mockRandom() -> UInt {
-        return .random(in: UInt.min...UInt.max)
-    }
-}
-
-extension UInt64: AnyMockable, RandomMockable {
-    static func mockAny() -> UInt64 {
-        return 0
-    }
-
-    static func mockRandom() -> UInt64 {
-        return .mockRandom(min: .min, max: .max)
-    }
-
-    static func mockRandom(min: UInt64 = .min, max: UInt64 = .max) -> UInt64 {
+extension FixedWidthInteger where Self: RandomMockable {
+    static func mockRandom() -> Self {
         return .random(in: min...max)
     }
 
+    static func mockRandom(min: Self = .min, max: Self = .max) -> Self {
+        return .random(in: min...max)
+    }
+}
+
+extension ExpressibleByIntegerLiteral where Self: AnyMockable {
+    static func mockAny() -> Self { 0 }
+}
+
+extension UInt: AnyMockable, RandomMockable { }
+extension UInt8: AnyMockable, RandomMockable { }
+extension UInt16: AnyMockable, RandomMockable { }
+extension UInt32: AnyMockable, RandomMockable { }
+extension UInt64: AnyMockable, RandomMockable { }
+extension Int: AnyMockable, RandomMockable { }
+extension Int8: AnyMockable, RandomMockable { }
+extension Int16: AnyMockable, RandomMockable { }
+extension Int32: AnyMockable, RandomMockable { }
+extension Int64: AnyMockable, RandomMockable { }
+
+extension UInt64 {
     static func mockRandom(otherThan value: UInt64) -> UInt64 {
         var random: UInt64 = .mockRandom()
         while random == value { random = .mockRandom() }
@@ -277,7 +287,7 @@ extension Float: AnyMockable {
 }
 
 extension Double: AnyMockable, RandomMockable {
-    static func mockAny() -> Float {
+    static func mockAny() -> Double {
         return 0
     }
 
@@ -291,11 +301,11 @@ extension Double: AnyMockable, RandomMockable {
 }
 
 extension TimeInterval {
-    static func mockAny() -> TimeInterval {
-        return 0
-    }
-
     static let distantFuture = TimeInterval(integerLiteral: .max)
+
+    static func mockRandomInThePast() -> TimeInterval {
+        return random(in: 0..<Date().timeIntervalSinceReferenceDate)
+    }
 }
 
 struct ErrorMock: Error, CustomStringConvertible {
@@ -370,13 +380,14 @@ extension URLResponse {
 
     static func mockWith(
         statusCode: Int = 200,
-        mimeType: String = "application/json"
+        mimeType: String? = "application/json"
     ) -> HTTPURLResponse {
+        let headers: [String: String] = (mimeType == nil) ? [:] : ["Content-Type": "\(mimeType!)"]
         return HTTPURLResponse(
             url: .mockAny(),
             statusCode: statusCode,
             httpVersion: nil,
-            headerFields: ["Content-Type": "\(mimeType)"]
+            headerFields: headers
         )!
     }
 }

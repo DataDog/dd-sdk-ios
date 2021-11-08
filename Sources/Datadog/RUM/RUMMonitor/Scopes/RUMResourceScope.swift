@@ -130,6 +130,7 @@ internal class RUMResourceScope: RUMScope {
 
         let eventData = RUMResourceEvent(
             dd: .init(
+                session: .init(plan: .plan1),
                 spanId: spanId,
                 traceId: traceId
             ),
@@ -138,7 +139,7 @@ internal class RUMResourceScope: RUMScope {
             },
             application: .init(id: context.rumApplicationID),
             connectivity: dependencies.connectivityInfoProvider.current,
-            context: nil,
+            context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: resourceStartTime).timeIntervalSince1970.toInt64Milliseconds,
             resource: .init(
                 connect: resourceMetrics?.connect.flatMap { metric in
@@ -175,7 +176,7 @@ internal class RUMResourceScope: RUMScope {
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
                     )
                 },
-                size: size ?? 0,
+                size: size,
                 ssl: resourceMetrics?.ssl.flatMap { metric in
                     .init(
                         duration: metric.duration.toInt64Nanoseconds,
@@ -188,6 +189,7 @@ internal class RUMResourceScope: RUMScope {
             ),
             service: nil,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
@@ -197,7 +199,7 @@ internal class RUMResourceScope: RUMScope {
             )
         )
 
-        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes) {
+        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData) {
             dependencies.eventOutput.write(rumEvent: event)
             return true
         }
@@ -208,15 +210,19 @@ internal class RUMResourceScope: RUMScope {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let eventData = RUMErrorEvent(
-            dd: .init(),
+            dd: .init(
+                session: .init(plan: .plan1)
+            ),
             action: context.activeUserActionID.flatMap { rumUUID in
                 .init(id: rumUUID.toRUMDataFormat)
             },
             application: .init(id: context.rumApplicationID),
             connectivity: dependencies.connectivityInfoProvider.current,
-            context: nil,
+            context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
             error: .init(
+                handling: nil,
+                handlingStack: nil,
                 id: nil,
                 isCrash: false,
                 message: command.errorMessage,
@@ -232,6 +238,7 @@ internal class RUMResourceScope: RUMScope {
             ),
             service: nil,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
@@ -242,7 +249,7 @@ internal class RUMResourceScope: RUMScope {
             )
         )
 
-        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData, attributes: attributes) {
+        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData) {
             dependencies.eventOutput.write(rumEvent: event)
             return true
         }

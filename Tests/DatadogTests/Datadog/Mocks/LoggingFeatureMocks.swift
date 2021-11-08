@@ -10,8 +10,8 @@ extension LoggingFeature {
     /// Mocks the feature instance which performs no writes and no uploads.
     static func mockNoOp() -> LoggingFeature {
         return LoggingFeature(
-            storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader(), arbitraryAuthorizedWriter: NoOpFileWriter()),
-            upload: .init(uploader: NoOpDataUploadWorker()),
+            storage: .mockNoOp(),
+            upload: .mockNoOp(),
             configuration: .mockAny(),
             commonDependencies: .mockAny()
         )
@@ -44,7 +44,7 @@ extension LoggingFeature {
         )
         let uploadWorker = DataUploadWorkerMock()
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
-        // Replace by mocking the `FeatureUpload` and observing the `FatureStorage`:
+        // Replace by mocking the `FeatureUpload` and observing the `FeatureStorage`:
         let mockedUpload = FeatureUpload(uploader: uploadWorker)
         // Tear down the original upload
         fullFeature.upload.flushAndTearDown()
@@ -69,14 +69,18 @@ extension LoggingFeature {
 
 // MARK: - Log Mocks
 
-extension Log: EquatableInTests {}
+extension LogEvent: EquatableInTests {}
 
-extension Log: RandomMockable {
+extension LogEvent: AnyMockable, RandomMockable {
+    static func mockAny() -> LogEvent {
+        return mockWith()
+    }
+
     static func mockWith(
         date: Date = .mockAny(),
-        status: Log.Status = .mockAny(),
+        status: LogEvent.Status = .mockAny(),
         message: String = .mockAny(),
-        error: DDError? = nil,
+        error: LogEvent.Error? = nil,
         serviceName: String = .mockAny(),
         environment: String = .mockAny(),
         loggerName: String = .mockAny(),
@@ -86,10 +90,10 @@ extension Log: RandomMockable {
         userInfo: UserInfo = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo = .mockAny(),
         mobileCarrierInfo: CarrierInfo? = .mockAny(),
-        attributes: LogAttributes = .mockAny(),
+        attributes: LogEvent.Attributes = .mockAny(),
         tags: [String]? = nil
-    ) -> Log {
-        return Log(
+    ) -> LogEvent {
+        return LogEvent(
             date: date,
             status: status,
             message: message,
@@ -108,8 +112,8 @@ extension Log: RandomMockable {
         )
     }
 
-    static func mockRandom() -> Log {
-        return Log(
+    static func mockRandom() -> LogEvent {
+        return LogEvent(
             date: .mockRandomInThePast(),
             status: .mockRandom(),
             message: .mockRandom(),
@@ -129,13 +133,47 @@ extension Log: RandomMockable {
     }
 }
 
-extension Log.Status: RandomMockable {
-    static func mockAny() -> Log.Status {
+extension LogEvent.Status: RandomMockable {
+    static func mockAny() -> LogEvent.Status {
         return .info
     }
 
-    static func mockRandom() -> Log.Status {
+    static func mockRandom() -> LogEvent.Status {
         return allCases.randomElement()!
+    }
+}
+
+extension LogEvent.UserInfo: AnyMockable, RandomMockable {
+    static func mockAny() -> LogEvent.UserInfo {
+        return mockEmpty()
+    }
+
+    static func mockEmpty() -> LogEvent.UserInfo {
+        return LogEvent.UserInfo(
+            id: nil,
+            name: nil,
+            email: nil,
+            extraInfo: [:]
+        )
+    }
+
+    static func mockRandom() -> LogEvent.UserInfo {
+        return .init(
+            id: .mockRandom(),
+            name: .mockRandom(),
+            email: .mockRandom(),
+            extraInfo: mockRandomAttributes()
+        )
+    }
+}
+
+extension LogEvent.Error: RandomMockable {
+    static func mockRandom() -> Self {
+        return .init(
+            kind: .mockRandom(),
+            message: .mockRandom(),
+            stack: .mockRandom()
+        )
     }
 }
 
@@ -143,7 +181,7 @@ extension Log.Status: RandomMockable {
 
 extension Logger {
     static func mockWith(
-        logBuilder: LogBuilder = .mockAny(),
+        logBuilder: LogEventBuilder = .mockAny(),
         logOutput: LogOutput = LogOutputMock(),
         dateProvider: DateProvider = SystemDateProvider(),
         identifier: String = .mockAny(),
@@ -161,8 +199,8 @@ extension Logger {
     }
 }
 
-extension LogBuilder {
-    static func mockAny() -> LogBuilder {
+extension LogEventBuilder {
+    static func mockAny() -> LogEventBuilder {
         return mockWith()
     }
 
@@ -174,9 +212,10 @@ extension LogBuilder {
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
-        dateCorrector: DateCorrectorType? = nil
-    ) -> LogBuilder {
-        return LogBuilder(
+        dateCorrector: DateCorrectorType? = nil,
+        logEventMapper: LogEventMapper? = nil
+    ) -> LogEventBuilder {
+        return LogEventBuilder(
             applicationVersion: applicationVersion,
             environment: environment,
             serviceName: serviceName,
@@ -184,34 +223,35 @@ extension LogBuilder {
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider,
-            dateCorrector: dateCorrector
+            dateCorrector: dateCorrector,
+            logEventMapper: logEventMapper
         )
     }
 }
 
-extension LogAttributes: Equatable {
-    static func mockAny() -> LogAttributes {
+extension LogEvent.Attributes: Equatable {
+    static func mockAny() -> LogEvent.Attributes {
         return mockWith()
     }
 
     static func mockWith(
         userAttributes: [String: Encodable] = [:],
         internalAttributes: [String: Encodable]? = [:]
-    ) -> LogAttributes {
-        return LogAttributes(
+    ) -> LogEvent.Attributes {
+        return LogEvent.Attributes(
             userAttributes: userAttributes,
             internalAttributes: internalAttributes
         )
     }
 
-    static func mockRandom() -> LogAttributes {
+    static func mockRandom() -> LogEvent.Attributes {
         return .init(
             userAttributes: mockRandomAttributes(),
             internalAttributes: mockRandomAttributes()
         )
     }
 
-    public static func == (lhs: LogAttributes, rhs: LogAttributes) -> Bool {
+    public static func == (lhs: LogEvent.Attributes, rhs: LogEvent.Attributes) -> Bool {
         let lhsUserAttributesSorted = lhs.userAttributes.sorted { $0.key < $1.key }
         let rhsUserAttributesSorted = rhs.userAttributes.sorted { $0.key < $1.key }
 
@@ -225,14 +265,21 @@ extension LogAttributes: Equatable {
 
 /// `LogOutput` recording received logs.
 class LogOutputMock: LogOutput {
-    var onLogRecorded: ((Log) -> Void)?
+    var onLogRecorded: ((LogEvent) -> Void)?
 
-    var recordedLog: Log?
-    var allRecordedLogs: [Log] = []
+    var recordedLog: LogEvent?
+    var allRecordedLogs: [LogEvent] = []
 
-    func write(log: Log) {
+    func write(log: LogEvent) {
         recordedLog = log
         allRecordedLogs.append(log)
         onLogRecorded?(log)
+    }
+
+    /// Returns newline-separated `String` description of all recorded logs.
+    func dumpAllRecordedLogs() -> String {
+        return allRecordedLogs
+            .map { "- \($0)" }
+            .joined(separator: "\n")
     }
 }

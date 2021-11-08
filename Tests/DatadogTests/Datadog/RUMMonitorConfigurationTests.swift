@@ -12,6 +12,9 @@ class RUMMonitorConfigurationTests: XCTestCase {
     private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
 
     func testRUMMonitorConfiguration() throws {
+        temporaryFeatureDirectories.create()
+        defer { temporaryFeatureDirectories.delete() }
+
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(

@@ -71,7 +71,7 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
         )
         let crashContext: CrashContext = .mockWith(
             lastUserInfo: Bool.random() ? .mockRandom() : .empty,
-            lastRUMViewEvent: .mockRandomWith(model: RUMViewEvent.mockRandom()),
+            lastRUMViewEvent: .mockRandom(),
             lastNetworkConnectionInfo: .mockRandom(),
             lastCarrierInfo: .mockRandom()
         )
@@ -87,12 +87,14 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
 
         // Then
         let log = try XCTUnwrap(logOutput.recordedLog)
-        let expectedLog = Log(
+        let user = try XCTUnwrap(crashContext.lastUserInfo)
+
+        let expectedLog = LogEvent(
             date: crashReport.date!.addingTimeInterval(dateCorrectionOffset),
             status: .emergency,
             message: crashReport.message,
-            error: DDError(
-                type: crashReport.type,
+            error: .init(
+                kind: crashReport.type,
                 message: crashReport.message,
                 stack: crashReport.stack
             ),
@@ -102,7 +104,12 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
             loggerVersion: sdkVersion,
             threadName: nil,
             applicationVersion: configuration.applicationVersion,
-            userInfo: crashContext.lastUserInfo!,
+            userInfo: .init(
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                extraInfo: user.extraInfo
+            ),
             networkConnectionInfo: crashContext.lastNetworkConnectionInfo,
             mobileCarrierInfo: crashContext.lastCarrierInfo,
             attributes: .init(

@@ -8,7 +8,7 @@ import Foundation
 import XCTest
 @testable import Datadog
 
-/// Observers the `Writer` and notifies when data was written, so `DataUploaderMock` can read it immediatelly.
+/// Observers the `Writer` and notifies when data was written, so `DataUploaderMock` can read it immediately.
 private class WriterObserver: AsyncWriter {
     let observedWriter: ConsentAwareDataWriter
     let writeCallback: (() -> Void)
@@ -41,7 +41,7 @@ class DataUploadWorkerMock: DataUploadWorkerType {
     // MARK: - Observing FeatureStorage
 
     /// Observes the `FeatureStorage` to immediately capture written data.
-    /// Returns new instance of the `FeatureStorage` which shuold be used instead of the original one.
+    /// Returns new instance of the `FeatureStorage` which should be used instead of the original one.
     func observe(featureStorage: FeatureStorage) -> FeatureStorage {
         let originalWriter = featureStorage.writer as! ConsentAwareDataWriter
         let observedWriter = WriterObserver(originalWriter) { [weak self] in
@@ -49,11 +49,13 @@ class DataUploadWorkerMock: DataUploadWorkerType {
         }
         let originalReader = featureStorage.reader
         let originalArbitraryWriter = featureStorage.arbitraryAuthorizedWriter
+        let originalDataOrchestrator = featureStorage.dataOrchestrator
         reader = originalReader
         return FeatureStorage(
             writer: observedWriter,
             reader: originalReader,
-            arbitraryAuthorizedWriter: originalArbitraryWriter
+            arbitraryAuthorizedWriter: originalArbitraryWriter,
+            dataOrchestrator: originalDataOrchestrator
         )
     }
 
@@ -104,12 +106,12 @@ class DataUploadWorkerMock: DataUploadWorkerType {
             fatalError("Can't happen.")
         case .timedOut:
             XCTFail("Exceeded timeout of \(timeout)s with receiving \(batches.count) out of \(count) expected batches.", file: file, line: line)
-            // Return array of dummy batches, so the crash will happen leter in the test code, properly
+            // Return array of dummy batches, so the crash will happen later in the test code, properly
             // printing the above error.
             return Array(repeating: .mockAny(), count: Int(count))
         case .invertedFulfillment:
             XCTFail("\(batches.count) batches were read, but not expected.", file: file, line: line)
-            // Return array of dummy requests, so the crash will happen leter in the test code, properly
+            // Return array of dummy requests, so the crash will happen later in the test code, properly
             // printing the above error.
             return queue.sync { batches.map { $0.data } }
         @unknown default:
@@ -135,7 +137,7 @@ class DataUploadWorkerMock: DataUploadWorkerType {
     /// Returns recommended timeout for receiving given number of batches.
     private func recommendedTimeoutFor(numberOfBatches: UInt) -> TimeInterval {
         // One batch timeout is arbitrary. It stands for the time interval from receiving the data
-        // to writting it to the file. Needs to be relatively big as the CI is very slow. Higher value
+        // to writing it to the file. Needs to be relatively big as the CI is very slow. Higher value
         // doesn't impact the execution time of tests.
         let arbitraryTimeoutForOneBatch = 2.0
         return Double(numberOfBatches) * arbitraryTimeoutForOneBatch

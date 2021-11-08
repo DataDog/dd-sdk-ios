@@ -24,16 +24,48 @@ class RUMApplicationScopeTests: XCTestCase {
     }
 
     func testWhenFirstViewIsStarted_itStartsNewSession() {
-        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny(), samplingRate: 100, backgroundEventTrackingEnabled: .mockAny())
+        let expectation = self.expectation(description: "onSessionStart is called")
+        let onSessionStart: RUMSessionListener = { sessionId, isDiscarded in
+            XCTAssertTrue(sessionId.matches(regex: .uuidRegex))
+            XCTAssertTrue(isDiscarded)
+            expectation.fulfill()
+        }
+
+        let scope = RUMApplicationScope(
+            rumApplicationID: .mockAny(),
+            dependencies: .mockWith(
+                onSessionStart: onSessionStart
+            ),
+            samplingRate: 0,
+            backgroundEventTrackingEnabled: .mockAny()
+        )
 
         XCTAssertNil(scope.sessionScope)
         XCTAssertTrue(scope.process(command: RUMStartViewCommand.mockAny()))
+        waitForExpectations(timeout: 0.5)
         XCTAssertNotNil(scope.sessionScope)
         XCTAssertEqual(scope.sessionScope?.backgroundEventTrackingEnabled, scope.backgroundEventTrackingEnabled)
     }
 
     func testWhenSessionExpires_itStartsANewOneAndTransfersActiveViews() throws {
-        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny(), samplingRate: 100, backgroundEventTrackingEnabled: .mockAny())
+        let expectation = self.expectation(description: "onSessionStart is called twice")
+        expectation.expectedFulfillmentCount = 2
+
+        let onSessionStart: RUMSessionListener = { sessionId, isDiscarded in
+            XCTAssertTrue(sessionId.matches(regex: .uuidRegex))
+            XCTAssertFalse(isDiscarded)
+            expectation.fulfill()
+        }
+
+        let scope = RUMApplicationScope(
+            rumApplicationID: .mockAny(),
+            dependencies: .mockWith(
+                onSessionStart: onSessionStart
+            ),
+            samplingRate: 100,
+            backgroundEventTrackingEnabled: .mockAny()
+        )
+
         var currentTime = Date()
 
         let view = createMockViewInWindow()
@@ -49,6 +81,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let secondSessionViewScopes = try XCTUnwrap(scope.sessionScope?.viewScopes)
         let secondSessionViewScope = try XCTUnwrap(secondSessionViewScopes.first)
 
+        waitForExpectations(timeout: 0.5)
         XCTAssertNotEqual(firstSessionUUID, secondSessionUUID)
         XCTAssertEqual(firstsSessionViewScopes.count, secondSessionViewScopes.count)
         XCTAssertTrue(secondSessionViewScope.identity.equals(view))

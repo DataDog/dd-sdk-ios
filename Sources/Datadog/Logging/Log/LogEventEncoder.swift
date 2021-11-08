@@ -8,8 +8,9 @@ import Foundation
 
 /// `Encodable` representation of log. It gets sanitized before encoding.
 /// All mutable properties are subject of sanitization.
-internal struct Log: Encodable {
-    enum Status: String, Encodable, CaseIterable {
+public struct LogEvent: Encodable {
+    /// The Log event status definitions.
+    public enum Status: String, Encodable, CaseIterable {
         case debug
         case info
         case notice
@@ -18,31 +19,70 @@ internal struct Log: Encodable {
         case critical
         case emergency
     }
+    public struct Attributes {
+        /// Log custom attributes, They are subject for sanitization.
+        public var userAttributes: [String: Encodable]
+        /// Log attributes added internally by the SDK. They are not a subject for sanitization.
+        internal let internalAttributes: [String: Encodable]?
+    }
+    public struct UserInfo {
+        /// User ID, if any.
+        public let id: String?
+        /// Name representing the user, if any.
+        public let name: String?
+        /// User email, if any.
+        public let email: String?
+        /// User custom attributes, if any.
+        public var extraInfo: [String: Encodable]
+    }
+    public struct Error {
+        // The Log error kind
+        public let kind: String?
+        // The Log error message
+        public let message: String?
+        // The Log error stack
+        public let stack: String?
+    }
 
-    let date: Date
-    let status: Status
-    let message: String
-    let error: DDError?
-    let serviceName: String
-    let environment: String
-    let loggerName: String
-    let loggerVersion: String
-    let threadName: String?
-    let applicationVersion: String
-    let userInfo: UserInfo
-    let networkConnectionInfo: NetworkConnectionInfo?
-    let mobileCarrierInfo: CarrierInfo?
-    var attributes: LogAttributes
-    var tags: [String]?
+    /// The log's timestamp
+    public let date: Date
+    /// The log status
+    public let status: Status
+    /// The log message
+    public var message: String
+    /// The associated log error
+    public let error: Error?
+    /// The service name configured for Logs.
+    public let serviceName: String
+    /// The current log environement.
+    public let environment: String
+    /// The configured logger name.
+    public let loggerName: String
+    /// The current logger version.
+    public let loggerVersion: String
+    /// The thread's name this log event has been sent from.
+    public let threadName: String?
+    /// The current application version.
+    public let applicationVersion: String
+    /// Custom user information configured globally for the SDK.
+    public var userInfo: UserInfo
+    /// The network connection information from the moment the log was sent.
+    public let networkConnectionInfo: NetworkConnectionInfo?
+    /// The mobile carrier information from the moment the log was sent.
+    public let mobileCarrierInfo: CarrierInfo?
+    /// The attributes associated with this log.
+    public var attributes: LogEvent.Attributes
+    /// Tags associated with this log.
+    public var tags: [String]?
 
-    func encode(to encoder: Encoder) throws {
-        let sanitizedLog = LogSanitizer().sanitize(log: self)
-        try LogEncoder().encode(sanitizedLog, to: encoder)
+    public func encode(to encoder: Encoder) throws {
+        let sanitizedLog = LogEventSanitizer().sanitize(log: self)
+        try LogEventEncoder().encode(sanitizedLog, to: encoder)
     }
 }
 
 /// Encodes `Log` to given encoder.
-internal struct LogEncoder {
+internal struct LogEventEncoder {
     /// Coding keys for permanent `Log` attributes.
     enum StaticCodingKeys: String, CodingKey {
         case date
@@ -99,7 +139,7 @@ internal struct LogEncoder {
         init(_ string: String) { self.stringValue = string }
     }
 
-    func encode(_ log: Log, to encoder: Encoder) throws {
+    func encode(_ log: LogEvent, to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: StaticCodingKeys.self)
         try container.encode(log.date, forKey: .date)
         try container.encode(log.status, forKey: .status)
@@ -108,7 +148,7 @@ internal struct LogEncoder {
 
         // Encode log.error properties
         if let someError = log.error {
-            try container.encode(someError.type, forKey: .errorKind)
+            try container.encode(someError.kind, forKey: .errorKind)
             try container.encode(someError.message, forKey: .errorMessage)
             try container.encode(someError.stack, forKey: .errorStack)
         }

@@ -65,7 +65,7 @@ extension Array where Element == RUMEventMatcher {
         let bestMatcherEntry = allPossibleMatchers
             .first { _, matcherPredicate in matcherPredicate(matcher) }
 
-        return bestMatcherEntry?.key ?? "unkonwn / unimplemented"
+        return bestMatcherEntry?.key ?? "unknown / unimplemented"
     }
 }
 

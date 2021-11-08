@@ -42,6 +42,7 @@
     [DDDatadog setUserInfoWithId:@"" name:@"" email:@"" extraInfo:@{}];
     [DDDatadog setTrackingConsentWithConsent:[DDTrackingConsent notGranted]];
 
+    [DDDatadog clearAllData];
     [DDDatadog flushAndDeinitialize];
 }
 

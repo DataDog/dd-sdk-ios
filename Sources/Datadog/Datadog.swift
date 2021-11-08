@@ -102,6 +102,11 @@ public class Datadog {
         }
     }
 
+    /// Returns `true` if the Datadog SDK is already initialized, `false` otherwise.
+    public static var isInitialized: Bool {
+        return instance != nil
+    }
+
     /// Sets current user information.
     /// Those will be added to logs, traces and RUM events automatically.
     /// - Parameters:
@@ -127,6 +132,11 @@ public class Datadog {
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     public static func set(trackingConsent: TrackingConsent) {
         instance?.consentProvider.changeConsent(to: trackingConsent)
+    }
+
+    /// Clears all data that has not already been sent to Datadog servers.
+    public static func clearAllData() {
+        instance?.clearAllData()
     }
 
     // MARK: - Internal
@@ -182,7 +192,7 @@ public class Datadog {
         let commonDependencies = FeaturesCommonDependencies(
             consentProvider: consentProvider,
             performance: configuration.common.performance,
-            httpClient: HTTPClient(),
+            httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
             mobileDevice: MobileDevice.current,
             dateProvider: dateProvider,
             dateCorrector: dateCorrector,
@@ -286,6 +296,13 @@ public class Datadog {
         self.consentProvider = consentProvider
         self.userInfoProvider = userInfoProvider
         self.launchTimeProvider = launchTimeProvider
+    }
+
+    internal func clearAllData() {
+        LoggingFeature.instance?.storage.clearAllData()
+        TracingFeature.instance?.storage.clearAllData()
+        RUMFeature.instance?.storage.clearAllData()
+        InternalMonitoringFeature.instance?.logsStorage.clearAllData()
     }
 
 #if DD_SDK_COMPILED_FOR_TESTING

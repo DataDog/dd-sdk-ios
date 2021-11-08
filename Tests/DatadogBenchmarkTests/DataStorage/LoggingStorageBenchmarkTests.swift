@@ -30,7 +30,7 @@ class LoggingStorageBenchmarkTests: XCTestCase {
         self.reader = storage.reader
         self.queue = (storage.writer as! ConsentAwareDataWriter).queue
 
-        XCTAssertTrue(try directory.files().count == 0)
+        XCTAssertTrue(try directory.files().isEmpty)
     }
 
     override func tearDown() {
@@ -42,7 +42,7 @@ class LoggingStorageBenchmarkTests: XCTestCase {
         super.tearDown()
     }
 
-    func testWrittingLogsOnDisc() throws {
+    func testWritingLogsOnDisc() throws {
         let log = createRandomizedLog()
 
         measure {
@@ -75,12 +75,16 @@ class LoggingStorageBenchmarkTests: XCTestCase {
 
     // MARK: - Helpers
 
-    private func createRandomizedLog() -> Log {
-        return Log(
+    private func createRandomizedLog() -> LogEvent {
+        return LogEvent(
             date: Date(),
             status: .info,
             message: "message \(Int.random(in: 0..<100))",
-            error: DDError(error: ErrorMock("description")),
+            error: .init(
+                kind: nil,
+                message: "description",
+                stack: nil
+            ),
             serviceName: "service-name",
             environment: "benchmarks",
             loggerName: "logger-name",
@@ -97,7 +101,7 @@ class LoggingStorageBenchmarkTests: XCTestCase {
                 isConstrained: false
             ),
             mobileCarrierInfo: nil,
-            attributes: LogAttributes(
+            attributes: LogEvent.Attributes(
                 userAttributes: ["user.attribute": "value"],
                 internalAttributes: ["internal.attribute": "value"]
             ),

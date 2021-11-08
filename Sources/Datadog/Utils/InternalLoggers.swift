@@ -41,7 +41,7 @@ internal func createSDKUserLogger(
     dateProvider: DateProvider = SystemDateProvider(),
     timeZone: TimeZone = .current
 ) -> Logger {
-    let logBuilder = LogBuilder(
+    let logBuilder = LogEventBuilder(
         applicationVersion: configuration.applicationVersion,
         environment: configuration.environment,
         serviceName: "sdk-user",
@@ -49,7 +49,8 @@ internal func createSDKUserLogger(
         userInfoProvider: configuration.userInfoProvider,
         networkConnectionInfoProvider: configuration.networkConnectionInfoProvider,
         carrierInfoProvider: configuration.carrierInfoProvider,
-        dateCorrector: nil
+        dateCorrector: nil,
+        logEventMapper: nil
     )
     let consoleOutput = LogConsoleOutput(
         format: .shortWith(prefix: "[DATADOG SDK] 🐶 → "),

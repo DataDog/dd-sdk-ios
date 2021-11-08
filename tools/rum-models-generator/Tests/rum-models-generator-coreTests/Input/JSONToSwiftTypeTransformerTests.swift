@@ -48,7 +48,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                     type: JSONEnumeration(
                         name: "property1",
                         comment: "Description of Foo's `property1`.",
-                        values: ["case1", "case2", "case3", "case4"]
+                        values: [.string(value: "case1"), .string(value: "case2"), .string(value: "case3"), .string(value: "case4")]
                     ),
                     defaultValue: JSONObject.Property.DefaultValue.string(value: "case2"),
                     isRequired: true,
@@ -61,7 +61,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         element: JSONEnumeration(
                             name: "property2",
                             comment: nil,
-                            values: ["option1", "option2", "option3", "option4"]
+                            values: [.string(value: "option1"), .string(value: "option2"), .string(value: "option3"), .string(value: "option4")]
                         )
                     ),
                     defaultValue: nil,
@@ -87,7 +87,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 comment: "Description of Bar's `property1`.",
                                 type: SwiftPrimitive<String>(),
                                 isOptional: true,
-                                isMutable: false,
+                                mutability: .immutable,
                                 defaultValue: nil,
                                 codingKey: .static(value: "property1")
                             ),
@@ -96,7 +96,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 comment: "Description of Bar's `property2`.",
                                 type: SwiftPrimitive<String>(),
                                 isOptional: false,
-                                isMutable: true,
+                                mutability: .mutable,
                                 defaultValue: nil,
                                 codingKey: .static(value: "property2")
                             )
@@ -104,7 +104,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         conformance: []
                     ),
                     isOptional: true,
-                    isMutable: true, // should be mutable as at least one of the `Bar's` properties is mutable
+                    mutability: .mutable, // should be mutable as at least one of the `Bar's` properties is mutable
                     defaultValue: nil,
                     codingKey: .static(value: "bar")
                 ),
@@ -115,16 +115,16 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         name: "property1",
                         comment: "Description of Foo's `property1`.",
                         cases: [
-                            SwiftEnum.Case(label: "case1", rawValue: "case1"),
-                            SwiftEnum.Case(label: "case2", rawValue: "case2"),
-                            SwiftEnum.Case(label: "case3", rawValue: "case3"),
-                            SwiftEnum.Case(label: "case4", rawValue: "case4"),
+                            SwiftEnum.Case(label: "case1", rawValue: .string(value: "case1")),
+                            SwiftEnum.Case(label: "case2", rawValue: .string(value: "case2")),
+                            SwiftEnum.Case(label: "case3", rawValue: .string(value: "case3")),
+                            SwiftEnum.Case(label: "case4", rawValue: .string(value: "case4")),
                         ],
                         conformance: []
                     ),
                     isOptional: false,
-                    isMutable: false,
-                    defaultValue: SwiftEnum.Case(label: "case2", rawValue: "case2"),
+                    mutability: .immutable,
+                    defaultValue: SwiftEnum.Case(label: "case2", rawValue: .string(value: "case2")),
                     codingKey: .static(value: "property1")
                 ),
                 SwiftStruct.Property(
@@ -135,16 +135,16 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                             name: "property2",
                             comment: nil,
                             cases: [
-                                SwiftEnum.Case(label: "option1", rawValue: "option1"),
-                                SwiftEnum.Case(label: "option2", rawValue: "option2"),
-                                SwiftEnum.Case(label: "option3", rawValue: "option3"),
-                                SwiftEnum.Case(label: "option4", rawValue: "option4"),
+                                SwiftEnum.Case(label: "option1", rawValue: .string(value: "option1")),
+                                SwiftEnum.Case(label: "option2", rawValue: .string(value: "option2")),
+                                SwiftEnum.Case(label: "option3", rawValue: .string(value: "option3")),
+                                SwiftEnum.Case(label: "option4", rawValue: .string(value: "option4")),
                             ],
                             conformance: []
                         )
                     ),
                     isOptional: true,
-                    isMutable: true,
+                    mutability: .mutable,
                     defaultValue: nil,
                     codingKey: .static(value: "property2")
                 )
@@ -193,7 +193,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                     comment: "Description of a property with nested additional Int properties.",
                     type: SwiftDictionary(value: SwiftPrimitive<Int>()),
                     isOptional: true,
-                    isMutable: false,
+                    mutability: .immutable,
                     defaultValue: nil,
                     codingKey: .static(value: "propertyWithAdditionalIntProperties")
                 )
@@ -248,10 +248,10 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 name: "propertyWithAdditionalAnyPropertiesInfo",
                                 comment: nil,
                                 type: SwiftDictionary(
-                                    value: SwiftPrimitive<SwiftCodable>()
+                                    value: SwiftEncodable()
                                 ),
                                 isOptional: false,
-                                isMutable: false,
+                                mutability: .mutableInternally,
                                 defaultValue: nil,
                                 codingKey: .dynamic
                             )
@@ -259,7 +259,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         conformance: []
                     ),
                     isOptional: true,
-                    isMutable: false,
+                    mutability: .mutableInternally,
                     defaultValue: nil,
                     codingKey: .static(value: "propertyWithAdditionalAnyProperties")
                 )
@@ -323,7 +323,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 comment: "Description of Foo.bar's `bazz`.",
                                 type: SwiftPrimitive<String>(),
                                 isOptional: true,
-                                isMutable: false,
+                                mutability: .immutable,
                                 defaultValue: nil,
                                 codingKey: .static(value: "bazz")
                             ),
@@ -331,10 +331,10 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                 name: "barInfo",
                                 comment: "Additional properties of `bar`.",
                                 type: SwiftDictionary(
-                                    value: SwiftPrimitive<SwiftCodable>()
+                                    value: SwiftEncodable()
                                 ),
                                 isOptional: false,
-                                isMutable: false,
+                                mutability: .mutableInternally,
                                 defaultValue: nil,
                                 codingKey: .dynamic
                             ),
@@ -342,7 +342,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         conformance: []
                     ),
                     isOptional: true,
-                    isMutable: false,
+                    mutability: .mutableInternally,
                     defaultValue: nil,
                     codingKey: .static(value: "bar")
                 )
@@ -423,7 +423,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         value: SwiftPrimitive<Int>()
                     ),
                     isOptional: false,
-                    isMutable: false,
+                    mutability: .immutable,
                     defaultValue: nil,
                     codingKey: .static(value: "propertyWithAdditionalProperties")
                 )
