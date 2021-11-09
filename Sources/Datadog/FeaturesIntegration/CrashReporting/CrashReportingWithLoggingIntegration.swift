@@ -88,7 +88,7 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
             serviceName: configuration.serviceName,
             environment: configuration.environment,
             loggerName: Constants.loggerName,
-            loggerVersion: sdkVersion,
+            loggerVersion: configuration.sdkVersion,
             threadName: nil,
             applicationVersion: configuration.applicationVersion,
             userInfo: .init(

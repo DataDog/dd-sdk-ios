@@ -8,6 +8,8 @@ import Foundation
 
 /// Builds `Log` representation (for later serialization) from data received from user.
 internal struct LogEventBuilder {
+    /// SDK version to encode in the log.
+    let sdkVersion: String
     /// Application version to write in log.
     let applicationVersion: String
     /// Environment to write in log.

@@ -38,7 +38,8 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
         let configuration: FeaturesConfiguration.Common = .mockWith(
             applicationVersion: .mockRandom(),
             serviceName: .mockRandom(),
-            environment: .mockRandom()
+            environment: .mockRandom(),
+            sdkVersion: .mockRandom()
         )
         let dateCorrectionOffset: TimeInterval = .mockRandom()
 
@@ -101,7 +102,7 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
             serviceName: configuration.serviceName,
             environment: configuration.environment,
             loggerName: CrashReportingWithLoggingIntegration.Constants.loggerName,
-            loggerVersion: sdkVersion,
+            loggerVersion: configuration.sdkVersion,
             threadName: nil,
             applicationVersion: configuration.applicationVersion,
             userInfo: .init(

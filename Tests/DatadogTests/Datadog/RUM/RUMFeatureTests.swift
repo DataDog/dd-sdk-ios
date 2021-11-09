@@ -30,6 +30,7 @@ class RUMFeatureTests: XCTestCase {
         let randomServiceName: String = .mockRandom(among: .alphanumerics)
         let randomEnvironmentName: String = .mockRandom(among: .alphanumerics)
         let randomSource: String = .mockRandom(among: .alphanumerics)
+        let randomSDKVersion: String = .mockRandom(among: .alphanumerics)
         let randomUploadURL: URL = .mockRandom()
         let randomClientToken: String = .mockRandom()
         let randomDeviceModel: String = .mockRandom()
@@ -47,7 +48,8 @@ class RUMFeatureTests: XCTestCase {
                     applicationVersion: randomApplicationVersion,
                     serviceName: randomServiceName,
                     environment: randomEnvironmentName,
-                    source: randomSource
+                    source: randomSource,
+                    sdkVersion: randomSDKVersion
                 ),
                 uploadURL: randomUploadURL,
                 clientToken: randomClientToken
@@ -70,7 +72,7 @@ class RUMFeatureTests: XCTestCase {
         XCTAssertEqual(
             requestURL.query,
             """
-            ddsource=\(randomSource)&ddtags=service:\(randomServiceName),version:\(randomApplicationVersion),sdk_version:\(sdkVersion),env:\(randomEnvironmentName)
+            ddsource=\(randomSource)&ddtags=service:\(randomServiceName),version:\(randomApplicationVersion),sdk_version:\(randomSDKVersion),env:\(randomEnvironmentName)
             """
         )
         XCTAssertEqual(
@@ -83,7 +85,7 @@ class RUMFeatureTests: XCTestCase {
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Encoding"], "deflate")
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-API-KEY"], randomClientToken)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN"], randomSource)
-        XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN-VERSION"], sdkVersion)
+        XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN-VERSION"], randomSDKVersion)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-REQUEST-ID"]?.matches(regex: .uuidRegex), true)
     }
 

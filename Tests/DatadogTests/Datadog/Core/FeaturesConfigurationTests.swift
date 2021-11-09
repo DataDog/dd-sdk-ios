@@ -121,6 +121,36 @@ class FeaturesConfigurationTests: XCTestCase {
             }
     }
 
+    func testSource() throws {
+        var configuration = try FeaturesConfiguration(
+            configuration: .mockWith(additionalConfiguration: [:]),
+            appContext: .mockAny()
+        )
+        XCTAssertEqual(configuration.common.source, "ios", "Default `source` must be `ios`")
+
+        let randomSource: String = .mockRandom()
+        configuration = try FeaturesConfiguration(
+            configuration: .mockWith(additionalConfiguration: [CrossPlatformAttributes.ddsource: randomSource]),
+            appContext: .mockAny()
+        )
+        XCTAssertEqual(configuration.common.source, randomSource, "Source can be customized through additional configuration")
+    }
+
+    func testSDKVersion() throws {
+        var configuration = try FeaturesConfiguration(
+            configuration: .mockWith(additionalConfiguration: [:]),
+            appContext: .mockAny()
+        )
+        XCTAssertEqual(configuration.common.sdkVersion, __sdkVersion, "Default `sdkVersion` must be equal to `__sdkVersion`")
+
+        let randomSDKVersion: String = .mockRandom()
+        configuration = try FeaturesConfiguration(
+            configuration: .mockWith(additionalConfiguration: [CrossPlatformAttributes.sdkVersion: randomSDKVersion]),
+            appContext: .mockAny()
+        )
+        XCTAssertEqual(configuration.common.sdkVersion, randomSDKVersion, "SDK version can be customized through additional configuration")
+    }
+
     func testClientToken() throws {
         let clientToken: String = .mockRandom(among: "abcdefgh")
         let configuration = try createConfiguration(clientToken: clientToken)

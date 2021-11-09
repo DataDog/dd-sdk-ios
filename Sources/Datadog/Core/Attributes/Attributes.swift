@@ -67,6 +67,11 @@ public typealias AttributeValue = Encodable
 /// Internal attributes, passed from cross-platform bridge.
 /// Used to configure or override SDK internal features and attributes for the need of cross-platform SDKs (e.g. React Native SDK).
 internal struct CrossPlatformAttributes {
+    /// Custom SDK version passed from bridge SDK. Used for all events issued by the SDK (both coming from cross-platform SDK and produced internally, like RUM long tasks).
+    /// It should replace the default native `sdkVersion`.
+    /// Expects `String` value (semantic version).
+    static let sdkVersion: String = "_dd.sdk_version"
+
     /// Custom SDK `source` passed from bridge SDK. Used for all events issued by the SDK (both coming from cross-platform SDK and produced internally, like RUM long tasks).
     /// It should replace the default native `ddsource` value (`"ios"`).
     /// Expects `String` value.

@@ -425,6 +425,7 @@ public class Logger {
 
         private func resolveLogBuilderAndOutput(for loggingFeature: LoggingFeature) -> (LogEventBuilder, LogOutput)? {
             let logBuilder = LogEventBuilder(
+                sdkVersion: loggingFeature.configuration.common.sdkVersion,
                 applicationVersion: loggingFeature.configuration.common.applicationVersion,
                 environment: loggingFeature.configuration.common.environment,
                 serviceName: serviceName ?? loggingFeature.configuration.common.serviceName,

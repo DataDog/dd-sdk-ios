@@ -76,7 +76,7 @@ internal struct RequestBuilder {
         }
 
         /// An observability and troubleshooting Datadog header for tracking the origin which is sending the request.
-        static func ddEVPOriginVersionHeader() -> HTTPHeader {
+        static func ddEVPOriginVersionHeader(sdkVersion: String) -> HTTPHeader {
             return HTTPHeader(field: ddEVPOriginVersionHeaderField, value: .constant(sdkVersion))
         }
 
