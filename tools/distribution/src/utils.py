@@ -44,7 +44,7 @@ def read_sdk_version() -> str:
     Reads SDK version from 'Sources/Datadog/Versioning.swift'.
     """
     file = 'Sources/Datadog/Versioning.swift'
-    version_regex = r'^.+\"([0-9]+\.[0-9]+\.[0-9]+[\-a-z0-9]*)\"'  # e.g. 'internal let sdkVersion = "1.8.0-beta1"'
+    version_regex = r'^.+\"([0-9]+\.[0-9]+\.[0-9]+[\-a-z0-9]*)\"'  # e.g. 'internal let __sdkVersion = "1.8.0-beta1"'
 
     versions: [str] = []
     with open(file) as version_file:
