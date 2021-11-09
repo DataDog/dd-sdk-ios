@@ -125,7 +125,7 @@ extension FeaturesConfiguration {
         var tracesEndpoint = configuration.tracesEndpoint
         var rumEndpoint = configuration.rumEndpoint
 
-        let source = (configuration.additionalConfiguration["_dd.source"] as? String) ?? Datadog.Constants.ddsource
+        let source = (configuration.additionalConfiguration[CrossPlatformAttributes.ddsource] as? String) ?? Datadog.Constants.ddsource
 
         if let datadogEndpoint = configuration.datadogEndpoint {
             // If `.set(endpoint:)` API was used, it should override the values

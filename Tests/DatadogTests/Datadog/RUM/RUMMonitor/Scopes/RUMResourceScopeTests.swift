@@ -108,7 +108,7 @@ class RUMResourceScopeTests: XCTestCase {
             context: context,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: ["_dd.trace_id": "100", "_dd.span_id": "200"],
+            attributes: [CrossPlatformAttributes.traceID: "100", CrossPlatformAttributes.spanID: "200"],
             startTime: currentTime,
             dateCorrection: .zero,
             url: "https://foo.com/resource/1",
@@ -542,7 +542,11 @@ class RUMResourceScopeTests: XCTestCase {
         // When
         XCTAssertFalse(
             scope.process(
-                command: RUMStopResourceWithErrorCommand(resourceKey: resourceKey, time: currentTime, message: .mockAny(), type: .mockAny(), source: .source, httpStatusCode: .mockAny(), attributes: [RUMAttribute.internalErrorSourceType: "react-native"])
+                command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(
+                    resourceKey: resourceKey,
+                    time: currentTime,
+                    attributes: [CrossPlatformAttributes.errorSourceType: "react-native"]
+                )
             )
         )
 

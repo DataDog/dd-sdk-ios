@@ -113,8 +113,8 @@ internal class RUMResourceScope: RUMScope {
         let size: Int64?
 
         // Check trace attributes
-        let traceId = (attributes.removeValue(forKey: "_dd.trace_id") as? String) ?? spanContext?.traceID
-        let spanId = (attributes.removeValue(forKey: "_dd.span_id") as? String) ?? spanContext?.spanID
+        let traceId = (attributes.removeValue(forKey: CrossPlatformAttributes.traceID) as? String) ?? spanContext?.traceID
+        let spanId = (attributes.removeValue(forKey: CrossPlatformAttributes.spanID) as? String) ?? spanContext?.spanID
 
         /// Metrics values take precedence over other values.
         if let metrics = resourceMetrics {
