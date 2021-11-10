@@ -413,6 +413,18 @@ class DatadogTests: XCTestCase {
                 .build()
         )
 
+        // On SDK init, underlying `ConsentAwareDataWriter` performs data migration for each feature, which includes
+        // data removal in `unauthorised` (`.pending`) directory. To not cause test flakiness, we must ensure that
+        // mock data is written only after this operation completes - otherwise, migration may delete mocked files.
+        let loggingWriter = try XCTUnwrap(LoggingFeature.instance?.storage.writer as? ConsentAwareDataWriter)
+        let tracingWriter = try XCTUnwrap(TracingFeature.instance?.storage.writer as? ConsentAwareDataWriter)
+        let rumWriter = try XCTUnwrap(RUMFeature.instance?.storage.writer as? ConsentAwareDataWriter)
+        let internalMonitoringWriter = try XCTUnwrap(InternalMonitoringFeature.instance?.logsStorage.writer as? ConsentAwareDataWriter)
+        loggingWriter.queue.sync {}
+        tracingWriter.queue.sync {}
+        rumWriter.queue.sync {}
+        internalMonitoringWriter.queue.sync {}
+
         let featureDirectories: [FeatureDirectories] = [
             try obtainLoggingFeatureDirectories(),
             try obtainTracingFeatureDirectories(),
