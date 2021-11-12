@@ -1235,7 +1235,7 @@ class RUMMonitorTests: XCTestCase {
 
         // Given
         let resourcesHandler = try XCTUnwrap(URLSessionAutoInstrumentation.instance?.interceptor.handler)
-        let viewsHandler = try XCTUnwrap(RUMInstrumentation.instance?.viewsInstrumentation)
+        let viewsHandler = try XCTUnwrap(RUMInstrumentation.instance?.viewsHandler)
         let userActionsHandler = try XCTUnwrap(RUMInstrumentation.instance?.userActionsAutoInstrumentation?.handler)
 
         // When
@@ -1279,7 +1279,7 @@ class RUMMonitorTests: XCTestCase {
         )
 
         URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
-        RUMInstrumentation.instance?.viewsAutoInstrumentation?.unswizzle()
+        RUMInstrumentation.instance?.viewControllerSwizzler?.unswizzle()
         RUMInstrumentation.instance?.userActionsAutoInstrumentation?.swizzler.unswizzle()
 
         Datadog.flushAndDeinitialize()

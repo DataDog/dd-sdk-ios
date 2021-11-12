@@ -101,13 +101,13 @@ class DatadogTests: XCTestCase {
             )
             verificationBlock()
 
-            RUMInstrumentation.instance?.viewsAutoInstrumentation?.unswizzle()
+            RUMInstrumentation.instance?.viewControllerSwizzler?.unswizzle()
             URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
             Datadog.flushAndDeinitialize()
         }
 
         defer {
-            RUMInstrumentation.instance?.viewsAutoInstrumentation?.unswizzle()
+            RUMInstrumentation.instance?.viewControllerSwizzler?.unswizzle()
             URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
         }
 
@@ -209,27 +209,27 @@ class DatadogTests: XCTestCase {
 
         verify(configuration: rumBuilder.trackUIKitRUMViews().build()) {
             XCTAssertTrue(RUMFeature.isEnabled)
-            XCTAssertNotNil(RUMInstrumentation.instance?.viewsAutoInstrumentation)
+            XCTAssertNotNil(RUMInstrumentation.instance?.viewControllerSwizzler)
             XCTAssertNil(RUMInstrumentation.instance?.userActionsAutoInstrumentation)
         }
         verify(
             configuration: rumBuilder.enableRUM(false).trackUIKitRUMViews().build()
         ) {
             XCTAssertFalse(RUMFeature.isEnabled)
-            XCTAssertNil(RUMInstrumentation.instance?.viewsAutoInstrumentation)
+            XCTAssertNil(RUMInstrumentation.instance?.viewControllerSwizzler)
             XCTAssertNil(RUMInstrumentation.instance?.userActionsAutoInstrumentation)
         }
 
         verify(configuration: rumBuilder.trackUIKitRUMActions().build()) {
             XCTAssertTrue(RUMFeature.isEnabled)
-            XCTAssertNil(RUMInstrumentation.instance?.viewsAutoInstrumentation)
+            XCTAssertNil(RUMInstrumentation.instance?.viewControllerSwizzler)
             XCTAssertNotNil(RUMInstrumentation.instance?.userActionsAutoInstrumentation)
         }
         verify(
             configuration: rumBuilder.enableRUM(false).trackUIKitRUMActions().build()
         ) {
             XCTAssertFalse(RUMFeature.isEnabled)
-            XCTAssertNil(RUMInstrumentation.instance?.viewsAutoInstrumentation)
+            XCTAssertNil(RUMInstrumentation.instance?.viewControllerSwizzler)
             XCTAssertNil(RUMInstrumentation.instance?.userActionsAutoInstrumentation)
         }
 

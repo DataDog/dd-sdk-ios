@@ -25,9 +25,9 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         }
     }
 
-    let viewsInstrumentation: RUMViewsHandler
+    let viewsHandler: RUMViewsHandler
     /// RUM Views auto instrumentation, `nil` if not enabled.
-    let viewsAutoInstrumentation: UIViewControllerSwizzler?
+    let viewControllerSwizzler: UIViewControllerSwizzler?
     /// RUM User Actions auto instrumentation, `nil` if not enabled.
     let userActionsAutoInstrumentation: UserActionsAutoInstrumentation?
     /// RUM Long Tasks auto instrumentation, `nil` if not enabled.
@@ -39,15 +39,15 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         configuration: FeaturesConfiguration.RUM.Instrumentation,
         dateProvider: DateProvider
     ) {
-        viewsInstrumentation = RUMViewsHandler(dateProvider: dateProvider)
+        viewsHandler = RUMViewsHandler(dateProvider: dateProvider)
         var viewsAutoInstrumentation: UIViewControllerSwizzler?
         var userActionsAutoInstrumentation: UserActionsAutoInstrumentation?
         var longTasks: LongTaskObserver?
 
         do {
             if let predicate = configuration.uiKitRUMViewsPredicate {
-                viewsInstrumentation.predicate = predicate
-                viewsAutoInstrumentation = try UIViewControllerSwizzler(handler: viewsInstrumentation)
+                viewsHandler.predicate = predicate
+                viewsAutoInstrumentation = try UIViewControllerSwizzler(handler: viewsHandler)
             }
 
             if let predicate = configuration.uiKitRUMUserActionsPredicate {
@@ -63,19 +63,19 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             longTasks = LongTaskObserver(threshold: threshold, dateProvider: dateProvider)
         }
 
-        self.viewsAutoInstrumentation = viewsAutoInstrumentation
+        self.viewControllerSwizzler = viewsAutoInstrumentation
         self.userActionsAutoInstrumentation = userActionsAutoInstrumentation
         self.longTasks = longTasks
     }
 
     func enable() {
-        viewsAutoInstrumentation?.swizzle()
+        viewControllerSwizzler?.swizzle()
         userActionsAutoInstrumentation?.enable()
         longTasks?.start()
     }
 
     func publish(to subscriber: RUMCommandSubscriber) {
-        viewsInstrumentation.publish(to: subscriber)
+        viewsHandler.publish(to: subscriber)
         userActionsAutoInstrumentation?.handler.publish(to: subscriber)
         longTasks?.publish(to: subscriber)
     }
@@ -83,7 +83,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
 #if DD_SDK_COMPILED_FOR_TESTING
     /// Removes RUM instrumentation swizzlings and deinitializes this component.
     func deinitialize() {
-        viewsAutoInstrumentation?.unswizzle()
+        viewControllerSwizzler?.unswizzle()
         userActionsAutoInstrumentation?.swizzler.unswizzle()
         RUMInstrumentation.instance = nil
     }
