@@ -248,7 +248,7 @@ class RUMViewsHandlerTests: XCTestCase {
         let viewAttributes = mockRandomAttributes()
 
         // When
-        handler.onAppear(
+        handler.notify_onAppear(
             identity: viewIdentity,
             name: viewName,
             path: viewPath,
@@ -279,14 +279,14 @@ class RUMViewsHandlerTests: XCTestCase {
         let view2Attributes = mockRandomAttributes()
 
         // When
-        handler.onAppear(
+        handler.notify_onAppear(
             identity: view1Identity,
             name: view1Name,
             path: view1Path,
             attributes: view1Attributes
         )
 
-        handler.onAppear(
+        handler.notify_onAppear(
             identity: view2Identity,
             name: view2Name,
             path: view2Path,
@@ -316,14 +316,14 @@ class RUMViewsHandlerTests: XCTestCase {
         let viewAttributes = mockRandomAttributes()
 
         // When
-        handler.onAppear(
+        handler.notify_onAppear(
             identity: viewIdentity,
             name: viewName,
             path: viewPath,
             attributes: viewAttributes
         )
 
-        handler.onAppear(
+        handler.notify_onAppear(
             identity: viewIdentity,
             name: viewName,
             path: viewPath,
@@ -342,7 +342,7 @@ class RUMViewsHandlerTests: XCTestCase {
         let viewIdentity: String = UUID().uuidString
 
         // When
-        handler.onDisappear(identity: viewIdentity)
+        handler.notify_onDisappear(identity: viewIdentity)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)
@@ -356,14 +356,14 @@ class RUMViewsHandlerTests: XCTestCase {
         let viewAttributes = mockRandomAttributes()
 
         // When
-        handler.onAppear(
+        handler.notify_onAppear(
             identity: viewIdentity,
             name: viewName,
             path: viewPath,
             attributes: viewAttributes
         )
 
-        handler.onDisappear(identity: viewIdentity)
+        handler.notify_onDisappear(identity: viewIdentity)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
@@ -390,21 +390,21 @@ class RUMViewsHandlerTests: XCTestCase {
         let view2Attributes = mockRandomAttributes()
 
         // When
-        handler.onAppear(
+        handler.notify_onAppear(
             identity: view1Identity,
             name: view1Name,
             path: view1Path,
             attributes: view1Attributes
         )
 
-        handler.onAppear(
+        handler.notify_onAppear(
             identity: view2Identity,
             name: view2Name,
             path: view2Path,
             attributes: view2Attributes
         )
 
-        handler.onDisappear(identity: view1Identity)
+        handler.notify_onDisappear(identity: view1Identity)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
@@ -433,21 +433,21 @@ class RUMViewsHandlerTests: XCTestCase {
         let view2Attributes = mockRandomAttributes()
 
         // When
-        handler.onAppear(
+        handler.notify_onAppear(
             identity: view1Identity,
             name: view1Name,
             path: view1Path,
             attributes: view1Attributes
         )
 
-        handler.onAppear(
+        handler.notify_onAppear(
             identity: view2Identity,
             name: view2Name,
             path: view2Path,
             attributes: view2Attributes
         )
 
-        handler.onDisappear(identity: view2Identity)
+        handler.notify_onDisappear(identity: view2Identity)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
@@ -478,7 +478,7 @@ class RUMViewsHandlerTests: XCTestCase {
         let viewAttributes = mockRandomAttributes()
 
         // When
-        handler.onAppear(
+        handler.notify_onAppear(
             identity: viewIdentity,
             name: viewName,
             path: viewPath,
@@ -509,7 +509,7 @@ class RUMViewsHandlerTests: XCTestCase {
         let viewIdentity: String = UUID().uuidString
 
         // When
-        handler.onDisappear(identity: viewIdentity)
+        handler.notify_onDisappear(identity: viewIdentity)
 
         notificationCenter.post(name: UIApplication.willResignActiveNotification, object: nil)
         dateProvider.advance(bySeconds: 1)

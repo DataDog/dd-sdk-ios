@@ -10,8 +10,8 @@ import UIKit
 /// Publisher generating RUM Commands on `SwiftUI.View` events.
 internal protocol SwiftUIViewHandler: RUMCommandPublisher {
     /// Respond to a `SwiftUI.View.onAppear` event.
-    func onAppear(identity: String, name: String, path: String, attributes: [AttributeKey: AttributeValue])
+    func notify_onAppear(identity: String, name: String, path: String, attributes: [AttributeKey: AttributeValue])
 
     /// Respond to a `SwiftUI.View.onDisappear` event.
-    func onDisappear(identity: String)
+    func notify_onDisappear(identity: String)
 }

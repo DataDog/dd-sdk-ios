@@ -206,7 +206,7 @@ extension RUMViewsHandler: SwiftUIViewHandler {
     ///   - key: The appearing `SwiftUI.View` key.
     ///   - name: The appearing `SwiftUI.View` name.
     ///   - attributes: The appearing `SwiftUI.View` attributes.
-    func onAppear(identity: String, name: String, path: String, attributes: [AttributeKey: AttributeValue]) {
+    func notify_onAppear(identity: String, name: String, path: String, attributes: [AttributeKey: AttributeValue]) {
         add(
             view: .init(
                 identity: identity,
@@ -220,7 +220,7 @@ extension RUMViewsHandler: SwiftUIViewHandler {
     /// Respond to a `SwiftUI.View.onDisappear` event.
     ///
     /// - Parameter key: The disappearing `SwiftUI.View` key.
-    func onDisappear(identity: String) {
+    func notify_onDisappear(identity: String) {
         remove(identity: identity)
     }
 }
