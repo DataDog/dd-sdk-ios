@@ -245,6 +245,7 @@ final class RUMSwiftUIInstrumentationScenario: TestScenario {
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
             .trackUIKitRUMViews(using: Predicate())
+            .trackUIKitRUMActions()
             .enableLogging(false)
             .enableTracing(false)
     }

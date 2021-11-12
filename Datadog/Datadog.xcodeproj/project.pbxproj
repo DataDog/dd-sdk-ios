@@ -519,6 +519,7 @@
 		D2791EF927170A760046E07A /* RUMSwiftUIScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2791EF827170A760046E07A /* RUMSwiftUIScenarioTests.swift */; };
 		D29889C9273413ED00A4D1A9 /* RUMViewsHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29889C72734136200A4D1A9 /* RUMViewsHandlerTests.swift */; };
 		D2EFF3D32731822A00D09F33 /* RUMViewsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFF3D22731822A00D09F33 /* RUMViewsHandler.swift */; };
+		D29D5A4D273BF8B400A687C1 /* SwiftUIActionModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */; };
 		D2F1B81126D795F3009F3293 /* DDNoopRUMMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1B81026D795F3009F3293 /* DDNoopRUMMonitor.swift */; };
 		D2F1B81326D8DA68009F3293 /* DDNoopRUMMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1B81226D8DA68009F3293 /* DDNoopRUMMonitorTests.swift */; };
 		D2F1B81526D8E5FF009F3293 /* DDNoopTracerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1B81426D8E5FF009F3293 /* DDNoopTracerTests.swift */; };
@@ -1182,6 +1183,7 @@
 		D2791EF827170A760046E07A /* RUMSwiftUIScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIScenarioTests.swift; sourceTree = "<group>"; };
 		D29889C72734136200A4D1A9 /* RUMViewsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewsHandlerTests.swift; sourceTree = "<group>"; };
 		D2EFF3D22731822A00D09F33 /* RUMViewsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewsHandler.swift; sourceTree = "<group>"; };
+		D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIActionModifier.swift; sourceTree = "<group>"; };
 		D2F1B81026D795F3009F3293 /* DDNoopRUMMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNoopRUMMonitor.swift; sourceTree = "<group>"; };
 		D2F1B81226D8DA68009F3293 /* DDNoopRUMMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNoopRUMMonitorTests.swift; sourceTree = "<group>"; };
 		D2F1B81426D8E5FF009F3293 /* DDNoopTracerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNoopTracerTests.swift; sourceTree = "<group>"; };
@@ -2148,8 +2150,8 @@
 		6141014C251A577D00E3C2D9 /* Actions */ = {
 			isa = PBXGroup;
 			children = (
-				61410166251A661D00E3C2D9 /* UIApplicationSwizzlerTests.swift */,
-				615C3195251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift */,
+				D29D5A48273BF7E100A687C1 /* UIKit */,
+				D29D5A49273BF7F300A687C1 /* SwiftUI */,
 			);
 			path = Actions;
 			sourceTree = "<group>";
@@ -2157,9 +2159,8 @@
 		6141014D251A578D00E3C2D9 /* Actions */ = {
 			isa = PBXGroup;
 			children = (
-				6141015A251A601D00E3C2D9 /* UIKitRUMUserActionsHandler.swift */,
-				6141014E251A57AF00E3C2D9 /* UIApplicationSwizzler.swift */,
-				F637AED12697404200516F32 /* UIKitRUMUserActionsPredicate.swift */,
+				D29D5A4A273BF81500A687C1 /* UIKit */,
+				D29D5A4B273BF82200A687C1 /* SwiftUI */,
 			);
 			path = Actions;
 			sourceTree = "<group>";
@@ -3331,6 +3332,40 @@
 			path = SwiftUIInstrumentation;
 			sourceTree = "<group>";
 		};
+		D29D5A48273BF7E100A687C1 /* UIKit */ = {
+			isa = PBXGroup;
+			children = (
+				61410166251A661D00E3C2D9 /* UIApplicationSwizzlerTests.swift */,
+				615C3195251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift */,
+			);
+			path = UIKit;
+			sourceTree = "<group>";
+		};
+		D29D5A49273BF7F300A687C1 /* SwiftUI */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = SwiftUI;
+			sourceTree = "<group>";
+		};
+		D29D5A4A273BF81500A687C1 /* UIKit */ = {
+			isa = PBXGroup;
+			children = (
+				6141015A251A601D00E3C2D9 /* UIKitRUMUserActionsHandler.swift */,
+				6141014E251A57AF00E3C2D9 /* UIApplicationSwizzler.swift */,
+				F637AED12697404200516F32 /* UIKitRUMUserActionsPredicate.swift */,
+			);
+			path = UIKit;
+			sourceTree = "<group>";
+		};
+		D29D5A4B273BF82200A687C1 /* SwiftUI */ = {
+			isa = PBXGroup;
+			children = (
+				D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */,
+			);
+			path = SwiftUI;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -3916,6 +3951,7 @@
 				614872772485067300E3EBDB /* SpanTagsReducer.swift in Sources */,
 				61C3E63E24BF1B91008053F2 /* RUMApplicationScope.swift in Sources */,
 				61133BCF2423979B00786299 /* FileWriter.swift in Sources */,
+				D29D5A4D273BF8B400A687C1 /* SwiftUIActionModifier.swift in Sources */,
 				61E909F224A24DD3005EA2DE /* OTConstants.swift in Sources */,
 				61133BCC2423979B00786299 /* MobileDevice.swift in Sources */,
 				61C5A8A724509FAA00DA608C /* SpanEventBuilder.swift in Sources */,
