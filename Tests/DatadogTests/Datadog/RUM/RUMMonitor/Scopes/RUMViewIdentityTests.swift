@@ -23,8 +23,10 @@ class RUMViewIdentityTests: XCTestCase {
         // Then
         XCTAssertTrue(identity1.equals(vc1))
         XCTAssertTrue(identity2.equals(vc2))
+        XCTAssertTrue(identity1.equals(identity1))
         XCTAssertFalse(identity1.equals(vc2))
         XCTAssertFalse(identity2.equals(vc1))
+        XCTAssertFalse(identity1.equals(identity2))
     }
 
     func testGivenTwoStringKeys_whenComparingTheirRUMViewIdentity_itEqualsOnlyForTheSameInstance() {
@@ -39,8 +41,10 @@ class RUMViewIdentityTests: XCTestCase {
         // Then
         XCTAssertTrue(identity1.equals(key1))
         XCTAssertTrue(identity2.equals(key2))
+        XCTAssertTrue(identity1.equals(identity1))
         XCTAssertFalse(identity1.equals(key2))
         XCTAssertFalse(identity2.equals(key1))
+        XCTAssertFalse(identity1.equals(identity2))
     }
 
     func testGivenTwoRUMViewIdentitiesOfDifferentKind_whenComparing_theyDoNotEqual() {

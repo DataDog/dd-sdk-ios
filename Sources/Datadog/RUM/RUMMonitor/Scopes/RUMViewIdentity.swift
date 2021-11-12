@@ -95,6 +95,11 @@ internal struct RUMViewIdentity {
         }
     }
 
+    /// Returns `true` if a given identity indicates the same RUM View as the identifiable managed internally.
+    func equals(_ identity: RUMViewIdentity?) -> Bool {
+        return equals(identity?.identifiable)
+    }
+
     /// Returns the managed identifiable.
     var identifiable: RUMViewIdentifiable? {
         return (object as? RUMViewIdentifiable) ?? (value as? RUMViewIdentifiable)

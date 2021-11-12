@@ -11,7 +11,7 @@ internal final class RUMViewsHandler {
     /// RUM representation of a View.
     private struct View {
         /// The RUM View identity.
-        let identity: RUMViewIdentifiable
+        let identity: RUMViewIdentity
 
         /// View name used for RUM Explorer.
         let name: String
@@ -109,7 +109,7 @@ internal final class RUMViewsHandler {
         stack.append(view)
     }
 
-    private func remove(identity: RUMViewIdentifiable) {
+    private func remove(identity: RUMViewIdentity) {
         guard identity.equals(stack.last?.identity) else {
             // Remove any disappearing view from the stack if
             // it's not visible.
@@ -136,10 +136,14 @@ internal final class RUMViewsHandler {
             )
         }
 
+        guard let identity = view.identity.identifiable else {
+            return
+        }
+
         subscriber.process(
             command: RUMStartViewCommand(
                 time: dateProvider.currentDate(),
-                identity: view.identity,
+                identity: identity,
                 name: view.name,
                 path: view.path,
                 attributes: view.attributes
@@ -148,11 +152,15 @@ internal final class RUMViewsHandler {
     }
 
     private func stop(view: View) {
+        guard let identity = view.identity.identifiable else {
+            return
+        }
+
         subscriber?.process(
             command: RUMStopViewCommand(
                 time: dateProvider.currentDate(),
                 attributes: [:],
-                identity: view.identity
+                identity: identity
             )
         )
     }
@@ -181,7 +189,7 @@ extension RUMViewsHandler: UIViewControllerHandler {
         } else if let rumView = predicate?.rumView(for: viewController) {
             add(
                 view: .init(
-                    identity: viewController,
+                    identity: viewController.asRUMViewIdentity(),
                     name: rumView.name,
                     path: rumView.path,
                     attributes: rumView.attributes
@@ -195,7 +203,7 @@ extension RUMViewsHandler: UIViewControllerHandler {
             return
         }
 
-        remove(identity: viewController)
+        remove(identity: viewController.asRUMViewIdentity())
     }
 }
 
@@ -209,7 +217,7 @@ extension RUMViewsHandler: SwiftUIViewHandler {
     func notify_onAppear(identity: String, name: String, path: String, attributes: [AttributeKey: AttributeValue]) {
         add(
             view: .init(
-                identity: identity,
+                identity: identity.asRUMViewIdentity(),
                 name: name,
                 path: path,
                 attributes: attributes
@@ -221,6 +229,6 @@ extension RUMViewsHandler: SwiftUIViewHandler {
     ///
     /// - Parameter key: The disappearing `SwiftUI.View` key.
     func notify_onDisappear(identity: String) {
-        remove(identity: identity)
+        remove(identity: identity.asRUMViewIdentity())
     }
 }
