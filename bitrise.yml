@@ -132,7 +132,8 @@ workflows:
         - scheme: Datadog
         - simulator_device: iPhone 11
         - is_clean_build: 'yes'
-        - should_retry_test_on_fail: 'yes' # temporarily mutes flakiness until we collect more info (in RUMM-839) then fix it
+        - test_repetition_mode: 'retry_on_failure'
+        - maximum_test_repetitions: 2
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Datadog-unit-tests.html"
