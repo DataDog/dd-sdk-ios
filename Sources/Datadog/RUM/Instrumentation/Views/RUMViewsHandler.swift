@@ -199,10 +199,6 @@ extension RUMViewsHandler: UIViewControllerHandler {
     }
 
     func notify_viewDidDisappear(viewController: UIViewController, animated: Bool) {
-        guard stack.contains(where: { $0.identity.equals(viewController) }) else {
-            return
-        }
-
         remove(identity: viewController.asRUMViewIdentity())
     }
 }
