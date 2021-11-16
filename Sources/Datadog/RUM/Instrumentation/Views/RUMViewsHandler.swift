@@ -184,7 +184,7 @@ extension RUMViewsHandler: UIViewControllerHandler {
     func notify_viewDidAppear(viewController: UIViewController, animated: Bool) {
         if let view = stack.first(where: { $0.identity.equals(viewController) }) {
             // If the stack already contains the view controller, just restarts the view.
-            // This prevent from calling the predicate when unnecessary.
+            // This prevents from calling the predicate when unnecessary.
             add(view: view)
         } else if let rumView = predicate?.rumView(for: viewController) {
             add(
