@@ -67,6 +67,8 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
     let type: String?
     /// Error stacktrace.
     let stack: String?
+    /// Whether this error crashed the host application
+    let isCrash: Bool?
     /// The origin of this error.
     let source: RUMInternalErrorSource
     /// The platform type of the error (iOS, React Native, ...)
@@ -88,6 +90,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
         self.stack = stack
 
         self.errorSourceType = RUMErrorSourceType.extract(from: &self.attributes)
+        self.isCrash = self.attributes.removeValue(forKey: CrossPlatformAttributes.errorIsCrash) as? Bool
     }
 
     init(
@@ -106,6 +109,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
         self.stack = dderror.stack
 
         self.errorSourceType = RUMErrorSourceType.extract(from: &self.attributes)
+        self.isCrash = self.attributes.removeValue(forKey: CrossPlatformAttributes.errorIsCrash) as? Bool
     }
 }
 

@@ -87,6 +87,11 @@ internal struct CrossPlatformAttributes {
     /// Expects `String` value.
     static let errorSourceType = "_dd.error.source_type"
 
+    /// Custom attribute of the error passed from bridge SDK. Used in RUM errors reported by cross platform SDK.
+    /// It flags the error has being fatal for the host application.
+    /// Expects `Bool` value.
+    static let errorIsCrash = "_dd.error.is_crash"
+
     /// Trace ID passed from bridge SDK. Used in RUM resources created by cross platform SDK.
     /// When cross-platform SDK injects tracing headers to intercepted resource, we pass tracing information through this attribute
     /// and send it within the RUM resource, so the RUM backend can issue corresponding APM span on behalf of the mobile app.
