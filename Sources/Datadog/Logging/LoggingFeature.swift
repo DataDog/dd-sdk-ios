@@ -86,7 +86,7 @@ internal final class LoggingFeature {
                     ),
                     .ddAPIKeyHeader(clientToken: configuration.clientToken),
                     .ddEVPOriginHeader(source: configuration.common.source),
-                    .ddEVPOriginVersionHeader(),
+                    .ddEVPOriginVersionHeader(sdkVersion: configuration.common.sdkVersion),
                     .ddRequestIDHeader(),
                 ],
                 internalMonitor: internalMonitor

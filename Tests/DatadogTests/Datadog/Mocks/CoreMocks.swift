@@ -174,6 +174,7 @@ extension FeaturesConfiguration.Common {
         environment: String = .mockAny(),
         performance: PerformancePreset = .init(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
         source: String = .mockAny(),
+        sdkVersion: String = .mockAny(),
         proxyConfiguration: [AnyHashable: Any]? = nil
     ) -> Self {
         return .init(
@@ -184,6 +185,7 @@ extension FeaturesConfiguration.Common {
             environment: environment,
             performance: performance,
             source: source,
+            sdkVersion: sdkVersion,
             proxyConfiguration: proxyConfiguration
         )
     }
@@ -703,14 +705,14 @@ extension RequestBuilder.HTTPHeader: RandomMockable, AnyMockable {
             .userAgentHeader(appName: .mockRandom(among: .alphanumerics), appVersion: .alphanumerics, device: .mockAny()),
             .ddAPIKeyHeader(clientToken: .mockRandom(among: .alphanumerics)),
             .ddEVPOriginHeader(source: .mockRandom(among: .alphanumerics)),
-            .ddEVPOriginVersionHeader(),
+            .ddEVPOriginVersionHeader(sdkVersion: .mockRandom(among: .alphanumerics)),
             .ddRequestIDHeader()
         ]
         return all.randomElement()!
     }
 
     static func mockAny() -> RequestBuilder.HTTPHeader {
-        return .ddEVPOriginVersionHeader()
+        return .ddEVPOriginVersionHeader(sdkVersion: "1.2.3")
     }
 }
 

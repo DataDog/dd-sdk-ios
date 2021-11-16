@@ -205,6 +205,7 @@ extension LogEventBuilder {
     }
 
     static func mockWith(
+        sdkVersion: String = .mockAny(),
         applicationVersion: String = .mockAny(),
         environment: String = .mockAny(),
         serviceName: String = .mockAny(),
@@ -216,6 +217,7 @@ extension LogEventBuilder {
         logEventMapper: LogEventMapper? = nil
     ) -> LogEventBuilder {
         return LogEventBuilder(
+            sdkVersion: sdkVersion,
             applicationVersion: applicationVersion,
             environment: environment,
             serviceName: serviceName,

@@ -8,6 +8,7 @@ import Foundation
 
 /// Necessary configuration to instantiate `developerLogger` and `userLogger`.
 internal struct InternalLoggerConfiguration {
+    let sdkVersion: String
     let applicationVersion: String
     let environment: String
     let userInfoProvider: UserInfoProvider
@@ -42,6 +43,7 @@ internal func createSDKUserLogger(
     timeZone: TimeZone = .current
 ) -> Logger {
     let logBuilder = LogEventBuilder(
+        sdkVersion: configuration.sdkVersion,
         applicationVersion: configuration.applicationVersion,
         environment: configuration.environment,
         serviceName: "sdk-user",

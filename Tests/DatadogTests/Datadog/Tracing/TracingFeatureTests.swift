@@ -28,6 +28,7 @@ class TracingFeatureTests: XCTestCase {
         let randomApplicationName: String = .mockRandom()
         let randomApplicationVersion: String = .mockRandom()
         let randomSource: String = .mockRandom()
+        let randomSDKVersion: String = .mockRandom(among: .alphanumerics)
         let randomUploadURL: URL = .mockRandom()
         let randomClientToken: String = .mockRandom()
         let randomDeviceModel: String = .mockRandom()
@@ -43,7 +44,8 @@ class TracingFeatureTests: XCTestCase {
                 common: .mockWith(
                     applicationName: randomApplicationName,
                     applicationVersion: randomApplicationVersion,
-                    source: randomSource
+                    source: randomSource,
+                    sdkVersion: randomSDKVersion
                 ),
                 uploadURL: randomUploadURL,
                 clientToken: randomClientToken
@@ -75,7 +77,7 @@ class TracingFeatureTests: XCTestCase {
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Encoding"], "deflate")
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-API-KEY"], randomClientToken)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN"], randomSource)
-        XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN-VERSION"], sdkVersion)
+        XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN-VERSION"], randomSDKVersion)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-REQUEST-ID"]?.matches(regex: .uuidRegex), true)
     }
 

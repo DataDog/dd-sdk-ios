@@ -300,9 +300,11 @@ extension SpanEventBuilder {
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
         dateCorrector: DateCorrectorType = DateCorrectorMock(),
         source: String = .mockAny(),
+        sdkVersion: String = .mockAny(),
         eventsMapper: SpanEventMapper? = nil
     ) -> SpanEventBuilder {
         return SpanEventBuilder(
+            sdkVersion: sdkVersion,
             applicationVersion: applicationVersion,
             serviceName: serviceName,
             userInfoProvider: userInfoProvider,

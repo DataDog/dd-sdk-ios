@@ -169,6 +169,7 @@ public class Datadog {
         // First, initialize internal loggers:
 
         let internalLoggerConfiguration = InternalLoggerConfiguration(
+            sdkVersion: configuration.common.sdkVersion,
             applicationVersion: configuration.common.applicationVersion,
             environment: configuration.common.environment,
             userInfoProvider: userInfoProvider,

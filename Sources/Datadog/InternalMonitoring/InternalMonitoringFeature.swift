@@ -80,7 +80,7 @@ internal final class InternalMonitoringFeature {
                     ),
                     .ddAPIKeyHeader(clientToken: configuration.clientToken),
                     .ddEVPOriginHeader(source: configuration.common.source),
-                    .ddEVPOriginVersionHeader(),
+                    .ddEVPOriginVersionHeader(sdkVersion: configuration.common.sdkVersion),
                     .ddRequestIDHeader(),
                 ],
                 // (!) Do not inject monitoring bundle, otherwise the feature will be monitoring itself
@@ -122,6 +122,7 @@ internal final class InternalMonitoringFeature {
         // Initialize internal monitor
         let internalLogger = Logger(
             logBuilder: LogEventBuilder(
+                sdkVersion: configuration.common.sdkVersion,
                 applicationVersion: configuration.common.applicationVersion,
                 environment: configuration.sdkEnvironment,
                 serviceName: configuration.sdkServiceName,

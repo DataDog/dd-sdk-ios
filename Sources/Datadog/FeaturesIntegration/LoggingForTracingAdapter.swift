@@ -19,6 +19,7 @@ internal struct LoggingForTracingAdapter {
     func resolveLogOutput(usingTracingFeature tracingFeature: TracingFeature, tracerConfiguration: Tracer.Configuration) -> AdaptedLogOutput {
         return AdaptedLogOutput(
             logBuilder: LogEventBuilder(
+                sdkVersion: tracingFeature.configuration.common.sdkVersion,
                 applicationVersion: tracingFeature.configuration.common.applicationVersion,
                 environment: tracingFeature.configuration.common.environment,
                 serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.common.serviceName,

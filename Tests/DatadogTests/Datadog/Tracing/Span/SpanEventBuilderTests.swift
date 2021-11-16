@@ -9,7 +9,7 @@ import XCTest
 
 class SpanEventBuilderTests: XCTestCase {
     func testBuildingBasicSpan() {
-        let builder: SpanEventBuilder = .mockWith(serviceName: "test-service-name")
+        let builder: SpanEventBuilder = .mockWith(serviceName: "test-service-name", sdkVersion: "1.2.3")
 
         let span = builder.createSpanEvent(
             traceID: 1,
@@ -35,7 +35,7 @@ class SpanEventBuilderTests: XCTestCase {
         XCTAssertEqual(span.startTime, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(span.duration, 0.50, accuracy: 0.01)
         XCTAssertFalse(span.isError)
-        XCTAssertEqual(span.tracerVersion, sdkVersion)
+        XCTAssertEqual(span.tracerVersion, "1.2.3")
         XCTAssertEqual(span.tags, ["foo": "bar", "bizz": "123"])
     }
 

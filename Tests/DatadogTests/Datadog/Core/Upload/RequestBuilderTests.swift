@@ -79,9 +79,10 @@ class RequestBuilderTests: XCTestCase {
     }
 
     func testBuildingRequestWithDDEVPOriginVersionHeader() {
-        let builder = RequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: [.ddEVPOriginVersionHeader()])
+        let randomSDKVersion: String = .mockRandom()
+        let builder = RequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: [.ddEVPOriginVersionHeader(sdkVersion: randomSDKVersion)])
         let request = builder.uploadRequest(with: .mockRandom())
-        XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN-VERSION"], sdkVersion)
+        XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN-VERSION"], randomSDKVersion)
     }
 
     func testBuildingRequestWithDDRequestIDHeader() throws {
@@ -111,7 +112,7 @@ class RequestBuilderTests: XCTestCase {
                 .userAgentHeader(appName: .mockAny(), appVersion: .mockAny(), device: .mockAny()),
                 .ddAPIKeyHeader(clientToken: .mockAny()),
                 .ddEVPOriginHeader(source: .mockAny()),
-                .ddEVPOriginVersionHeader(),
+                .ddEVPOriginVersionHeader(sdkVersion: .mockAny()),
                 .ddRequestIDHeader(),
             ]
         )
