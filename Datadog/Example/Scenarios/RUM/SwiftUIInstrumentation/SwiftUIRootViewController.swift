@@ -112,7 +112,7 @@ struct ScreenView: View {
     var destination: some View {
         if index % 3 == 0  {
             UIScreenView(index: index + 1)
-                .navigationBarTitle("Screen \(index)")
+                .navigationBarTitle("Screen \(index + 1)")
         } else {
             ScreenView(index: index + 1)
         }
@@ -177,7 +177,7 @@ class UIScreenViewController: UIViewController {
         NavigationView {
             if index % 3 == 0  {
                 UIScreenView(index: index + 1)
-                    .navigationBarTitle("Screen \(index)")
+                    .navigationBarTitle("Screen \(index + 1)")
             } else {
                 ScreenView(index: index + 1)
             }
