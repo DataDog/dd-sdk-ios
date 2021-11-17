@@ -39,14 +39,18 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         configuration: FeaturesConfiguration.RUM.Instrumentation,
         dateProvider: DateProvider
     ) {
-        viewsHandler = RUMViewsHandler(dateProvider: dateProvider)
+        viewsHandler = RUMViewsHandler(
+           dateProvider: dateProvider,
+           predicate: configuration.uiKitRUMViewsPredicate
+        )
+
         var viewsAutoInstrumentation: UIViewControllerSwizzler?
         var userActionsAutoInstrumentation: UserActionsAutoInstrumentation?
         var longTasks: LongTaskObserver?
 
         do {
-            if let predicate = configuration.uiKitRUMViewsPredicate {
-                viewsHandler.predicate = predicate
+            if configuration.uiKitRUMViewsPredicate != nil {
+                // UIKit auto instrumentation is enabled, so we need to install swizzler
                 viewsAutoInstrumentation = try UIViewControllerSwizzler(handler: viewsHandler)
             }
 

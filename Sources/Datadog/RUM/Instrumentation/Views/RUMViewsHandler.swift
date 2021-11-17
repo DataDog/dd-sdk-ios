@@ -28,7 +28,7 @@ internal final class RUMViewsHandler {
 
     /// `UIKit` view predicate. `nil`, if `UIKit` auto-instrumentations is
     /// disabled.
-    internal var predicate: UIKitRUMViewsPredicate?
+    private let predicate: UIKitRUMViewsPredicate?
 
     /// The notification center where this handler observe the following notifications:
     /// - `UIApplicationDidEnterBackgroundNotification`
@@ -51,13 +51,17 @@ internal final class RUMViewsHandler {
     /// Creates a new `SwiftUI.View` handler to publish RUM view commands.
     /// - Parameters:
     ///   - dateProvider: The current date provider.
+    ///   - predicate: `UIKit` view predicate. `nil`, if `UIKit`
+    ///     auto-instrumentations is disabled.
     ///   - notificationCenter: The notification center where this handler
     ///    a set of `UIApplication` notifications.
     init(
         dateProvider: DateProvider,
+        predicate: UIKitRUMViewsPredicate?,
         notificationCenter: NotificationCenter = .default
     ) {
         self.dateProvider = dateProvider
+        self.predicate = predicate
         self.notificationCenter = notificationCenter
 
         notificationCenter.addObserver(

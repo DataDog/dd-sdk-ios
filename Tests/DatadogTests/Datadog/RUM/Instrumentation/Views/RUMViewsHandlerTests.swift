@@ -16,9 +16,9 @@ class RUMViewsHandlerTests: XCTestCase {
     private lazy var handler: RUMViewsHandler = {
         let handler = RUMViewsHandler(
             dateProvider: dateProvider,
+            predicate: predicate,
             notificationCenter: notificationCenter
         )
-        handler.predicate = predicate
         handler.publish(to: commandSubscriber)
         return handler
     }()
@@ -220,8 +220,7 @@ class RUMViewsHandlerTests: XCTestCase {
             }
         }
         let predicate = Predicate()
-        let handler = RUMViewsHandler(dateProvider: dateProvider)
-        handler.predicate = predicate
+        let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate)
 
         // Given
         let someView = createMockViewInWindow()
