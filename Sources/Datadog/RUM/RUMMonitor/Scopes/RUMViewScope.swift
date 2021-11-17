@@ -429,7 +429,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 handling: nil,
                 handlingStack: nil,
                 id: nil,
-                isCrash: nil,
+                isCrash: command.isCrash,
                 message: command.message,
                 resource: nil,
                 source: command.source.toRUMDataFormat,

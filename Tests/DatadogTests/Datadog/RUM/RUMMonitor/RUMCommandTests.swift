@@ -65,6 +65,24 @@ class RUMCommandTests: XCTestCase {
         XCTAssertEqual(defaultCommand2.errorSourceType, .ios)
     }
 
+    func testWhenRUMAddCurrentViewErrorCommand_isPassedErrorIsCrashAttribute() {
+        let command1: RUMAddCurrentViewErrorCommand = .mockWithErrorObject(attributes: [CrossPlatformAttributes.errorIsCrash: true])
+
+        XCTAssertTrue(command1.isCrash ?? false)
+        XCTAssertTrue(command1.attributes.isEmpty)
+
+        let command2: RUMAddCurrentViewErrorCommand = .mockWithErrorMessage(attributes: [CrossPlatformAttributes.errorIsCrash: false])
+
+        XCTAssertFalse(command2.isCrash ?? true)
+        XCTAssertTrue(command2.attributes.isEmpty)
+
+        let defaultCommand1: RUMAddCurrentViewErrorCommand = .mockWithErrorObject(attributes: [:])
+        let defaultCommand2: RUMAddCurrentViewErrorCommand = .mockWithErrorMessage(attributes: [:])
+
+        XCTAssertNil(defaultCommand1.isCrash)
+        XCTAssertNil(defaultCommand2.isCrash)
+    }
+
     func testWhenRUMStopResourceWithErrorCommand_isPassedErrorSourceTypeAttribute() {
         let command1: RUMStopResourceWithErrorCommand = .mockWithErrorObject(attributes: [CrossPlatformAttributes.errorSourceType: "react-native"])
 
