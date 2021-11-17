@@ -44,12 +44,12 @@ struct RootView: View {
         // An issue was introduced in iOS 14.2 (FB8907671) which makes
         // `TabView` items to be loaded twice, once when the `TabView`
         // appears` and once when the Tab item itself appears. This
-        // lead to RUM views being reported twice. This issue was fixed
-        // in iOS 14.5, see https://developer.apple.com/documentation/ios-ipados-release-notes/ios-ipados-14_5-release-notes
+        // lead to RUM views being reported twice. This issue seems to
+        // have been fixed in iOS 15.
         // As a workaround, the tab view items can be embedded in a
         // `LazyVStack` or `LazyHStack` to lazily load its content when
         // it needs to render them onscreen.
-        if #available(iOS 14.5, *) {
+        if #available(iOS 15, *) {
             NavigationView {
                 ScreenView(index: 1)
             }
@@ -68,7 +68,7 @@ struct RootView: View {
 
     @ViewBuilder
     var tabScreenView: some View {
-        if #available(iOS 14.5, *) {
+        if #available(iOS 15, *) {
             ScreenView(index: 100)
         } else if #available(iOS 14.2, *) {
             LazyVStack {
