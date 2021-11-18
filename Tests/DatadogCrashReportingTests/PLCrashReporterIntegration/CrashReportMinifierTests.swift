@@ -186,7 +186,7 @@ class CrashReportMinifierTests: XCTestCase {
         imageNamesFromStackFrames.formUnion(crashReport.threads.flatMap { $0.stackFrames.map { $0.libraryName! } })
 
         var imageNamesFromBinaryImages: Set<String> = []
-        imageNamesFromBinaryImages.formUnion(crashReport.binaryImages.map { $0.imageName! })
+        imageNamesFromBinaryImages.formUnion(crashReport.binaryImages.map { $0.imageName })
 
         XCTAssertEqual(
             imageNamesFromStackFrames,
