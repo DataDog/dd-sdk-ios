@@ -521,10 +521,9 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.error.sourceType, .ios)
     }
 
-    func testGivenStartedResource_whenResourceLoadingEndsWithCrossPlatformError_itSendsCorrectErrorEvent() throws {
+    func testGivenStartedResource_whenResourceLoadingEndsWithErrorWithCustomSourceType_itSendsErrorEventWithCustomSourceType() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let resourceKey = "/resource/1"
-        let isCrash: Bool = .random()
         // Given
         let scope = RUMResourceScope.mockWith(
             context: context,
@@ -546,10 +545,7 @@ class RUMResourceScopeTests: XCTestCase {
                 command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(
                     resourceKey: resourceKey,
                     time: currentTime,
-                    attributes: [
-                        CrossPlatformAttributes.errorSourceType: "react-native",
-                        CrossPlatformAttributes.errorIsCrash: isCrash
-                    ]
+                    attributes: [CrossPlatformAttributes.errorSourceType: "react-native"]
                 )
             )
         )
@@ -557,7 +553,6 @@ class RUMResourceScopeTests: XCTestCase {
         // Then
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMErrorEvent>.self).first)
         XCTAssertEqual(event.model.error.sourceType, .reactNative)
-        XCTAssertEqual(event.model.error.isCrash, isCrash)
     }
 
     // MARK: - Events sending callbacks

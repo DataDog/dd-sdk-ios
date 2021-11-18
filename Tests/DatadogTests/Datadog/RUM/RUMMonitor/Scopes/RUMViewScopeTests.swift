@@ -596,6 +596,37 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(viewUpdate.model.view.error.count, 1)
     }
 
+    func testGivenStartedView_whenCrossPlatformErrorIsAdded_itSendsCorrectErrorEvent() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        let scope: RUMViewScope = .mockWith(parent: parent, dependencies: dependencies)
+
+        XCTAssertTrue(
+            scope.process(command: RUMStartViewCommand.mockAny())
+        )
+
+        currentTime.addTimeInterval(1)
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(
+                    attributes: [
+                        CrossPlatformAttributes.errorSourceType: "react-native",
+                        CrossPlatformAttributes.errorIsCrash: true
+                    ]
+                )
+            )
+        )
+
+        let error = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMErrorEvent>.self).last)
+
+        XCTAssertEqual(error.model.error.sourceType, .reactNative)
+        XCTAssertTrue(error.model.error.isCrash ?? false)
+
+        let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
+        XCTAssertEqual(viewUpdate.model.view.error.count, 1)
+    }
+
     func testWhenResourceIsFinishedWithError_itSendsViewUpdateEvent() throws {
         let scope = RUMViewScope(
             parent: parent,
