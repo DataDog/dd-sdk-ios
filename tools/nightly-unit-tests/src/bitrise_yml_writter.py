@@ -91,6 +91,11 @@ class BitriseYML:
 
         template = template.replace('## <MACOS VERSION> ##', self.host_os_version)
 
+        if self.host_os_version.startswith('11'): # macOS 11.X Big Sur
+            template = template.replace('## <RETRY_ON_FAIL> ##', "test_repetition_mode: 'retry_on_failure'")
+        else:
+            template = template.replace('## <RETRY_ON_FAIL> ##', "should_retry_test_on_fail: 'yes'")
+
         return template
 
     @staticmethod

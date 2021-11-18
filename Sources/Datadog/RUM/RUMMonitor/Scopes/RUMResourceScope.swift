@@ -113,8 +113,8 @@ internal class RUMResourceScope: RUMScope {
         let size: Int64?
 
         // Check trace attributes
-        let traceId = (attributes.removeValue(forKey: "_dd.trace_id") as? String) ?? spanContext?.traceID
-        let spanId = (attributes.removeValue(forKey: "_dd.span_id") as? String) ?? spanContext?.spanID
+        let traceId = (attributes.removeValue(forKey: CrossPlatformAttributes.traceID) as? String) ?? spanContext?.traceID
+        let spanId = (attributes.removeValue(forKey: CrossPlatformAttributes.spanID) as? String) ?? spanContext?.spanID
 
         /// Metrics values take precedence over other values.
         if let metrics = resourceMetrics {
@@ -176,7 +176,7 @@ internal class RUMResourceScope: RUMScope {
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
                     )
                 },
-                size: size ?? 0,
+                size: size,
                 ssl: resourceMetrics?.ssl.flatMap { metric in
                     .init(
                         duration: metric.duration.toInt64Nanoseconds,
@@ -233,6 +233,7 @@ internal class RUMResourceScope: RUMScope {
                     url: resourceURL
                 ),
                 source: command.errorSource.toRUMDataFormat,
+                sourceType: command.errorSourceType,
                 stack: command.stack,
                 type: command.errorType
             ),

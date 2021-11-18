@@ -1,9 +1,15 @@
+# 1.7.2 / 11-8-2021
+
+### Changes
+
+* [BUGFIX] Fix iOS 15 crash related to `ProcessInfo.isLowPowerModeEnabled`. See [#609][] #655 (Thanks [@pingd][])
+
 # 1.7.1 / 10-4-2021
 
 ### Changes
 
-* [BUGFIX] Fix iOS 15 crash in `MobileDevice.swift`. See #609 #613 (Thanks @arnauddorgans, @earltedly)
-* [BUGFIX] RUM: Fix bug with "Refresh Rate" Mobile Vital reporting very low values. #608
+* [BUGFIX] Fix iOS 15 crash in `MobileDevice.swift`. See [#609][] #613 (Thanks [@arnauddorgans][], [@earltedly][])
+* [BUGFIX] RUM: Fix bug with "Refresh Rate" Mobile Vital reporting very low values. [#608][]
 
 # 1.7.0 / 09-27-2021
 
@@ -241,13 +247,19 @@
 [#547]: https://github.com/DataDog/dd-sdk-ios/issues/547
 [#575]: https://github.com/DataDog/dd-sdk-ios/issues/575
 [#583]: https://github.com/DataDog/dd-sdk-ios/issues/583
+[#608]: https://github.com/DataDog/dd-sdk-ios/issues/608
+[#609]: https://github.com/DataDog/dd-sdk-ios/issues/609
+[#613]: https://github.com/DataDog/dd-sdk-ios/issues/613
+[#655]: https://github.com/DataDog/dd-sdk-ios/issues/655
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu
 [@LeffelMania]: https://github.com/LeffelMania
 [@SimpleApp]: https://github.com/SimpleApp
 [@TsvetelinVladimirov]: https://github.com/TsvetelinVladimirov
+[@arnauddorgans]: https://github.com/arnauddorgans
 [@ben-yolabs]: https://github.com/ben-yolabs
+[@earltedly]: https://github.com/earltedly
 [@flobories]: https://github.com/flobories
 [@hyling]: https://github.com/hyling
 [@jegnux]: https://github.com/jegnux
@@ -257,5 +269,6 @@
 [@lmramirez]: https://github.com/lmramirez
 [@marcusway]: https://github.com/marcusway
 [@philtre]: https://github.com/philtre
+[@pingd]: https://github.com/pingd
 [@provTheodoreNewell]: https://github.com/provTheodoreNewell
 [@sdejesusF]: https://github.com/sdejesusF

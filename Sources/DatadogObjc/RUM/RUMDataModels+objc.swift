@@ -243,7 +243,7 @@ public class DDRUMViewEventRUMEventAttributes: NSObject {
     }
 
     @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo
+        root.swiftModel.context!.contextInfo.castToObjectiveC()
     }
 }
 
@@ -326,7 +326,7 @@ public class DDRUMViewEventRUMUser: NSObject {
     }
 
     @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo
+        root.swiftModel.usr!.usrInfo.castToObjectiveC()
     }
 }
 
@@ -864,7 +864,7 @@ public class DDRUMResourceEventRUMEventAttributes: NSObject {
     }
 
     @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo
+        root.swiftModel.context!.contextInfo.castToObjectiveC()
     }
 }
 
@@ -1277,7 +1277,7 @@ public class DDRUMResourceEventRUMUser: NSObject {
     }
 
     @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo
+        root.swiftModel.usr!.usrInfo.castToObjectiveC()
     }
 }
 
@@ -1683,7 +1683,7 @@ public class DDRUMActionEventRUMEventAttributes: NSObject {
     }
 
     @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo
+        root.swiftModel.context!.contextInfo.castToObjectiveC()
     }
 }
 
@@ -1766,7 +1766,7 @@ public class DDRUMActionEventRUMUser: NSObject {
     }
 
     @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo
+        root.swiftModel.usr!.usrInfo.castToObjectiveC()
     }
 }
 
@@ -2051,7 +2051,7 @@ public class DDRUMErrorEventRUMEventAttributes: NSObject {
     }
 
     @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo
+        root.swiftModel.context!.contextInfo.castToObjectiveC()
     }
 }
 
@@ -2090,6 +2090,10 @@ public class DDRUMErrorEventError: NSObject {
 
     @objc public var source: DDRUMErrorEventErrorSource {
         .init(swift: root.swiftModel.error.source)
+    }
+
+    @objc public var sourceType: DDRUMErrorEventErrorSourceType {
+        .init(swift: root.swiftModel.error.sourceType)
     }
 
     @objc public var stack: String? {
@@ -2299,6 +2303,35 @@ public enum DDRUMErrorEventErrorSource: Int {
 }
 
 @objc
+public enum DDRUMErrorEventErrorSourceType: Int {
+    internal init(swift: RUMErrorEvent.Error.SourceType?) {
+        switch swift {
+        case nil: self = .none
+        case .android?: self = .android
+        case .browser?: self = .browser
+        case .ios?: self = .ios
+        case .reactNative?: self = .reactNative
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.Error.SourceType? {
+        switch self {
+        case .none: return nil
+        case .android: return .android
+        case .browser: return .browser
+        case .ios: return .ios
+        case .reactNative: return .reactNative
+        }
+    }
+
+    case none
+    case android
+    case browser
+    case ios
+    case reactNative
+}
+
+@objc
 public class DDRUMErrorEventSession: NSObject {
     internal let root: DDRUMErrorEvent
 
@@ -2377,7 +2410,7 @@ public class DDRUMErrorEventRUMUser: NSObject {
     }
 
     @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo
+        root.swiftModel.usr!.usrInfo.castToObjectiveC()
     }
 }
 
@@ -2662,7 +2695,7 @@ public class DDRUMLongTaskEventRUMEventAttributes: NSObject {
     }
 
     @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo
+        root.swiftModel.context!.contextInfo.castToObjectiveC()
     }
 }
 
@@ -2766,7 +2799,7 @@ public class DDRUMLongTaskEventRUMUser: NSObject {
     }
 
     @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo
+        root.swiftModel.usr!.usrInfo.castToObjectiveC()
     }
 }
 
@@ -2800,4 +2833,4 @@ public class DDRUMLongTaskEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/cdf9a70e6be9cfec5e9524c58abfe79a9fea1f64
+// Generated from https://github.com/DataDog/rum-events-format/tree/9c135e77bb1da61ebbb6b2fb3b39e156d5120a8e

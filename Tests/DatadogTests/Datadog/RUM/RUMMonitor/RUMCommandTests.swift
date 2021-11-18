@@ -8,30 +8,33 @@ import XCTest
 @testable import Datadog
 
 class RUMCommandTests: XCTestCase {
+    struct SwiftError: Error, CustomDebugStringConvertible {
+        let debugDescription = "error description"
+    }
+
+    enum SwiftEnumeratedError: Error {
+        case errorLabel
+    }
+
+    let nsError = NSError(
+        domain: "custom-domain",
+        code: 10,
+        userInfo: [NSLocalizedDescriptionKey: "error description"]
+    )
+
     func testWhenRUMAddCurrentViewErrorCommand_isBuildWithErrorObject() {
-        struct SwiftError: Error, CustomDebugStringConvertible {
-            let debugDescription = "error description"
-        }
         var command = RUMAddCurrentViewErrorCommand(time: .mockAny(), error: SwiftError(), source: .source, attributes: [:])
 
         XCTAssertEqual(command.type, "SwiftError")
         XCTAssertEqual(command.message, "error description")
         XCTAssertEqual(command.stack, "error description")
 
-        enum SwiftEnumeratedError: Error {
-            case errorLabel
-        }
         command = RUMAddCurrentViewErrorCommand(time: .mockAny(), error: SwiftEnumeratedError.errorLabel, source: .source, attributes: [:])
 
         XCTAssertEqual(command.type, "SwiftEnumeratedError")
         XCTAssertEqual(command.message, "errorLabel")
         XCTAssertEqual(command.stack, "errorLabel")
 
-        let nsError = NSError(
-            domain: "custom-domain",
-            code: 10,
-            userInfo: [NSLocalizedDescriptionKey: "error description"]
-        )
         command = RUMAddCurrentViewErrorCommand(time: .mockAny(), error: nsError, source: .source, attributes: [:])
 
         XCTAssertEqual(command.type, "custom-domain - 10")
@@ -42,5 +45,59 @@ class RUMCommandTests: XCTestCase {
             Error Domain=custom-domain Code=10 "error description" UserInfo={NSLocalizedDescription=error description}
             """
         )
+    }
+
+    func testWhenRUMAddCurrentViewErrorCommand_isPassedErrorSourceTypeAttribute() {
+        let command1: RUMAddCurrentViewErrorCommand = .mockWithErrorObject(attributes: [CrossPlatformAttributes.errorSourceType: "react-native"])
+
+        XCTAssertEqual(command1.errorSourceType, .reactNative)
+        XCTAssertTrue(command1.attributes.isEmpty)
+
+        let command2: RUMAddCurrentViewErrorCommand = .mockWithErrorMessage(attributes: [CrossPlatformAttributes.errorSourceType: "react-native"])
+
+        XCTAssertEqual(command2.errorSourceType, .reactNative)
+        XCTAssertTrue(command2.attributes.isEmpty)
+
+        let defaultCommand1: RUMAddCurrentViewErrorCommand = .mockWithErrorObject(attributes: [:])
+        let defaultCommand2: RUMAddCurrentViewErrorCommand = .mockWithErrorMessage(attributes: [:])
+
+        XCTAssertEqual(defaultCommand1.errorSourceType, .ios)
+        XCTAssertEqual(defaultCommand2.errorSourceType, .ios)
+    }
+
+    func testWhenRUMAddCurrentViewErrorCommand_isPassedErrorIsCrashAttribute() {
+        let command1: RUMAddCurrentViewErrorCommand = .mockWithErrorObject(attributes: [CrossPlatformAttributes.errorIsCrash: true])
+
+        XCTAssertTrue(command1.isCrash ?? false)
+        XCTAssertTrue(command1.attributes.isEmpty)
+
+        let command2: RUMAddCurrentViewErrorCommand = .mockWithErrorMessage(attributes: [CrossPlatformAttributes.errorIsCrash: false])
+
+        XCTAssertFalse(command2.isCrash ?? true)
+        XCTAssertTrue(command2.attributes.isEmpty)
+
+        let defaultCommand1: RUMAddCurrentViewErrorCommand = .mockWithErrorObject(attributes: [:])
+        let defaultCommand2: RUMAddCurrentViewErrorCommand = .mockWithErrorMessage(attributes: [:])
+
+        XCTAssertNil(defaultCommand1.isCrash)
+        XCTAssertNil(defaultCommand2.isCrash)
+    }
+
+    func testWhenRUMStopResourceWithErrorCommand_isPassedErrorSourceTypeAttribute() {
+        let command1: RUMStopResourceWithErrorCommand = .mockWithErrorObject(attributes: [CrossPlatformAttributes.errorSourceType: "react-native"])
+
+        XCTAssertEqual(command1.errorSourceType, .reactNative)
+        XCTAssertTrue(command1.attributes.isEmpty)
+
+        let command2: RUMStopResourceWithErrorCommand = .mockWithErrorMessage(attributes: [CrossPlatformAttributes.errorSourceType: "react-native"])
+
+        XCTAssertEqual(command2.errorSourceType, .reactNative)
+        XCTAssertTrue(command2.attributes.isEmpty)
+
+        let defaultCommand1: RUMStopResourceWithErrorCommand = .mockWithErrorObject(attributes: [:])
+        let defaultCommand2: RUMStopResourceWithErrorCommand = .mockWithErrorMessage(attributes: [:])
+
+        XCTAssertEqual(defaultCommand1.errorSourceType, .ios)
+        XCTAssertEqual(defaultCommand2.errorSourceType, .ios)
     }
 }

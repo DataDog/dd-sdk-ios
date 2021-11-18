@@ -90,7 +90,7 @@ internal final class RUMFeature {
                         tags: [
                             "service:\(configuration.common.serviceName)",
                             "version:\(configuration.common.applicationVersion)",
-                            "sdk_version:\(sdkVersion)",
+                            "sdk_version:\(configuration.common.sdkVersion)",
                             "env:\(configuration.common.environment)"
                         ]
                     )
@@ -104,7 +104,7 @@ internal final class RUMFeature {
                     ),
                     .ddAPIKeyHeader(clientToken: configuration.clientToken),
                     .ddEVPOriginHeader(source: configuration.common.source),
-                    .ddEVPOriginVersionHeader(),
+                    .ddEVPOriginVersionHeader(sdkVersion: configuration.common.sdkVersion),
                     .ddRequestIDHeader(),
                 ],
                 internalMonitor: internalMonitor

@@ -9,6 +9,7 @@ import XCTest
 
 class InternalLoggersTests: XCTestCase {
     private let internalLoggerConfigurationMock = InternalLoggerConfiguration(
+        sdkVersion: .mockAny(),
         applicationVersion: .mockAny(),
         environment: .mockAny(),
         userInfoProvider: UserInfoProvider.mockAny(),

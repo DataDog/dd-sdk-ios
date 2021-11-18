@@ -100,6 +100,7 @@ public class Tracer: OTTracer {
     internal convenience init(tracingFeature: TracingFeature, tracerConfiguration: Configuration) {
         self.init(
             spanBuilder: SpanEventBuilder(
+                sdkVersion: tracingFeature.configuration.common.sdkVersion,
                 applicationVersion: tracingFeature.configuration.common.applicationVersion,
                 serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.common.serviceName,
                 userInfoProvider: tracingFeature.userInfoProvider,

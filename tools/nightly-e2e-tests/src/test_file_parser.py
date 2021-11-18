@@ -11,6 +11,7 @@ from src.linter import Linter, CodeReference, linter_context
 
 MONITOR_TYPE_LOGS = 'logs'
 MONITOR_TYPE_APM = 'apm'
+MONITOR_TYPE_RUM = 'rum'
 
 
 @dataclass
@@ -147,7 +148,7 @@ def read_monitors_configuration(comment_lines: [(int, str, str)], file_path: str
     monitor_region_end_regex = r'^\/\/\/[\s ]+```[\s ]*$'  # e.g. '/// ```'
     in_monitor_region = False  # if iterating through monitor variables
     monitor_type = None  # one of allowed monitor types (used later to pick the monitor template)
-    allowed_monitor_types = [MONITOR_TYPE_LOGS, MONITOR_TYPE_APM]
+    allowed_monitor_types = [MONITOR_TYPE_LOGS, MONITOR_TYPE_APM, MONITOR_TYPE_RUM]
 
     monitors: [MonitorConfiguration] = []
     variables_buffer: [MonitorVariable] = []
@@ -210,7 +211,7 @@ def read_variable(line_text: str, comment_line_code_reference: CodeReference):
 
     :return: the `MonitorVariable` object if recognized in this line; `None` otherwise.
     """
-    variable_regex = r'^\/\/\/[\s ]+(\$.+)\s*=\s*(.+)$'
+    variable_regex = r'^\/\/\/[\s ]+(\$[a-zA-Z0-9_]+)\s*=\s*(.+)$'
     variable_match = re.match(variable_regex, line_text)
 
     if variable_match:

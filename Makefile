@@ -1,7 +1,7 @@
 all: dependencies xcodeproj-httpservermock templates
 
 # The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
-DD_SDK_SWIFT_TESTING_VERSION = 0.9.5
+DD_SDK_SWIFT_TESTING_VERSION = 1.0.1
 
 define DD_SDK_TESTING_XCCONFIG_CI
 FRAMEWORK_SEARCH_PATHS=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
@@ -118,7 +118,7 @@ e2e-monitors-generate:
 
 bump:
 		@read -p "Enter version number: " version;  \
-		echo "// GENERATED FILE: Do not edit directly\n\ninternal let sdkVersion = \"$$version\"" > Sources/Datadog/Versioning.swift; \
+		echo "// GENERATED FILE: Do not edit directly\n\ninternal let __sdkVersion = \"$$version\"" > Sources/Datadog/Versioning.swift; \
 		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDK.podspec.src > DatadogSDK.podspec; \
 		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKObjc.podspec.src > DatadogSDKObjc.podspec; \
 		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKAlamofireExtension.podspec.src > DatadogSDKAlamofireExtension.podspec; \
@@ -126,20 +126,6 @@ bump:
 		git add . ; \
 		git commit -m "Bumped version to $$version"; \
 		echo Bumped version to $$version
-
-ship:
-		pod spec lint --allow-warnings DatadogSDK.podspec
-		pod trunk push --allow-warnings --synchronous DatadogSDK.podspec
-		./tools/distribution/make_distro_builds.sh
-ifeq (${ci}, true)
-		@curl -X POST "https://api.bitrise.io/v0.1/apps/$$BITRISE_APP_SLUG/builds" \
- 			-H "accept: application/json" -H  "Content-Type: application/json" \
-			-H  "Authorization: $$BITRISE_PERSONAL_ACCESS_TOKEN" \
- 			-d "{\"build_params\":{\"tag\":\"$$BITRISE_GIT_TAG\",\"workflow_id\":\"tagged_commit_part_2\"},\"hook_info\":{\"type\":\"bitrise\"}}"
-endif
-
-ship_part_2:
-		@./tools/distribution/push_podspecs.sh
 
 dogfood:
 		@cd tools/dogfooding && $(MAKE)

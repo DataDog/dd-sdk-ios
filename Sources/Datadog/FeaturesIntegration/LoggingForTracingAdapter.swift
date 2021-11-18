@@ -18,7 +18,8 @@ internal struct LoggingForTracingAdapter {
 
     func resolveLogOutput(usingTracingFeature tracingFeature: TracingFeature, tracerConfiguration: Tracer.Configuration) -> AdaptedLogOutput {
         return AdaptedLogOutput(
-            logBuilder: LogBuilder(
+            logBuilder: LogEventBuilder(
+                sdkVersion: tracingFeature.configuration.common.sdkVersion,
                 applicationVersion: tracingFeature.configuration.common.applicationVersion,
                 environment: tracingFeature.configuration.common.environment,
                 serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.common.serviceName,
@@ -26,7 +27,8 @@ internal struct LoggingForTracingAdapter {
                 userInfoProvider: tracingFeature.userInfoProvider,
                 networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil,
                 carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil,
-                dateCorrector: loggingFeature.dateCorrector
+                dateCorrector: loggingFeature.dateCorrector,
+                logEventMapper: loggingFeature.configuration.logEventMapper
             ),
             loggingOutput: LogFileOutput(
                 fileWriter: loggingFeature.storage.writer,
@@ -52,7 +54,7 @@ internal struct LoggingForTracingAdapter {
         }
 
         /// Log builder using Tracing configuration.
-        let logBuilder: LogBuilder
+        let logBuilder: LogEventBuilder
         /// Actual `LogOutput` bridged to `LoggingFeature`.
         let loggingOutput: LogOutput
 
@@ -89,13 +91,16 @@ internal struct LoggingForTracingAdapter {
                 message: message,
                 error: extractedError,
                 date: date,
-                attributes: LogAttributes(
+                attributes: LogEvent.Attributes(
                     userAttributes: userAttributes,
                     internalAttributes: internalAttributes
                 ),
                 tags: []
             )
-            loggingOutput.write(log: log)
+
+            if let event = log {
+                loggingOutput.write(log: event)
+            }
         }
     }
 }

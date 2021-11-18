@@ -62,6 +62,17 @@ internal extension RUMResourceType {
     }
 }
 
+internal typealias RUMErrorSourceType = RUMErrorEvent.Error.SourceType
+
+internal extension RUMErrorSourceType {
+    static func extract(from attributes: inout [AttributeKey: AttributeValue]) -> Self {
+        return (attributes.removeValue(forKey: CrossPlatformAttributes.errorSourceType) as? String)
+            .flatMap {
+                return RUMErrorEvent.Error.SourceType(rawValue: $0)
+            } ?? .ios
+    }
+}
+
 /// Describes the type of a RUM Action.
 public enum RUMUserActionType {
     case tap
@@ -101,12 +112,6 @@ internal enum RUMInternalErrorSource {
         case .console: self = .console
         }
     }
-}
-
-// MARK: - Special attributes
-
-internal enum RUMAttribute {
-    static let internalTimestamp = "_dd.timestamp"
 }
 
 /// A class enabling Datadog RUM features.
@@ -625,7 +630,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         var combinedUserAttributes = self.rumAttributes
         combinedUserAttributes.merge(rumCommandAttributes: command.attributes)
 
-        if let customTimestampInMiliseconds = combinedUserAttributes.removeValue(forKey: RUMAttribute.internalTimestamp) as? Int64 {
+        if let customTimestampInMiliseconds = combinedUserAttributes.removeValue(forKey: CrossPlatformAttributes.timestampInMilliseconds) as? Int64 {
             let customTimeInterval = TimeInterval(fromMilliseconds: customTimestampInMiliseconds)
             mutableCommand.time = Date(timeIntervalSince1970: customTimeInterval)
         }

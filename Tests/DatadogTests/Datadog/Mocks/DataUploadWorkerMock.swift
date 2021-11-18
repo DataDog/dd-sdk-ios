@@ -49,11 +49,13 @@ class DataUploadWorkerMock: DataUploadWorkerType {
         }
         let originalReader = featureStorage.reader
         let originalArbitraryWriter = featureStorage.arbitraryAuthorizedWriter
+        let originalDataOrchestrator = featureStorage.dataOrchestrator
         reader = originalReader
         return FeatureStorage(
             writer: observedWriter,
             reader: originalReader,
-            arbitraryAuthorizedWriter: originalArbitraryWriter
+            arbitraryAuthorizedWriter: originalArbitraryWriter,
+            dataOrchestrator: originalDataOrchestrator
         )
     }
 

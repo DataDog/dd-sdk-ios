@@ -13,7 +13,7 @@ internal struct CombinedLogOutput: LogOutput {
         self.combinedOutputs = outputs
     }
 
-    func write(log: Log) {
+    func write(log: LogEvent) {
         combinedOutputs.forEach { $0.write(log: log) }
     }
 }
@@ -21,9 +21,9 @@ internal struct CombinedLogOutput: LogOutput {
 /// Sends the log to `conditionedOutput` only if the `condition` is met.
 internal struct ConditionalLogOutput: LogOutput {
     let conditionedOutput: LogOutput
-    let condition: (Log) -> Bool
+    let condition: (LogEvent) -> Bool
 
-    func write(log: Log) {
+    func write(log: LogEvent) {
         if condition(log) {
             conditionedOutput.write(log: log)
         }

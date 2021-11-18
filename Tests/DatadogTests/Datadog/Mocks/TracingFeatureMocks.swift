@@ -10,8 +10,8 @@ extension TracingFeature {
     /// Mocks feature instance which performs no writes and no uploads.
     static func mockNoOp() -> TracingFeature {
         return TracingFeature(
-            storage: .init(writer: NoOpFileWriter(), reader: NoOpFileReader(), arbitraryAuthorizedWriter: NoOpFileWriter()),
-            upload: .init(uploader: NoOpDataUploadWorker()),
+            storage: .mockNoOp(),
+            upload: .mockNoOp(),
             configuration: .mockAny(),
             commonDependencies: .mockAny(),
             loggingFeatureAdapter: nil,
@@ -300,9 +300,11 @@ extension SpanEventBuilder {
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
         dateCorrector: DateCorrectorType = DateCorrectorMock(),
         source: String = .mockAny(),
+        sdkVersion: String = .mockAny(),
         eventsMapper: SpanEventMapper? = nil
     ) -> SpanEventBuilder {
         return SpanEventBuilder(
+            sdkVersion: sdkVersion,
             applicationVersion: applicationVersion,
             serviceName: serviceName,
             userInfoProvider: userInfoProvider,

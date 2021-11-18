@@ -158,7 +158,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
             log.attributes.internalAttributes?[LoggingForTracingAdapter.TracingAttributes.spanID] as? String,
             "\(span.spanID.rawValue)"
         )
-        XCTAssertEqual(log.error?.type, "domain - 123")
+        XCTAssertEqual(log.error?.kind, "domain - 123")
         XCTAssertEqual(log.attributes.internalAttributes?.count, 2)
         XCTAssertEqual(
             log.attributes.userAttributes[OTLogFields.event] as? String,
@@ -221,7 +221,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
             log.attributes.internalAttributes?[LoggingForTracingAdapter.TracingAttributes.spanID] as? String,
             "\(span.spanID.rawValue)"
         )
-        XCTAssertEqual(log.error?.type, "HTTPURLResponse - 404")
+        XCTAssertEqual(log.error?.kind, "HTTPURLResponse - 404")
         XCTAssertEqual(log.attributes.internalAttributes?.count, 2)
         XCTAssertEqual(
             log.attributes.userAttributes[OTLogFields.event] as? String,

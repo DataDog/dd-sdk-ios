@@ -174,6 +174,7 @@ extension FeaturesConfiguration.Common {
         environment: String = .mockAny(),
         performance: PerformancePreset = .init(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
         source: String = .mockAny(),
+        sdkVersion: String = .mockAny(),
         proxyConfiguration: [AnyHashable: Any]? = nil
     ) -> Self {
         return .init(
@@ -184,6 +185,7 @@ extension FeaturesConfiguration.Common {
             environment: environment,
             performance: performance,
             source: source,
+            sdkVersion: sdkVersion,
             proxyConfiguration: proxyConfiguration
         )
     }
@@ -195,9 +197,15 @@ extension FeaturesConfiguration.Logging {
     static func mockWith(
         common: FeaturesConfiguration.Common = .mockAny(),
         uploadURL: URL = .mockAny(),
-        clientToken: String = .mockAny()
+        clientToken: String = .mockAny(),
+        logEventMapper: LogEventMapper? = nil
     ) -> Self {
-        return .init(common: common, uploadURL: uploadURL, clientToken: clientToken)
+        return .init(
+            common: common,
+            uploadURL: uploadURL,
+            clientToken: clientToken,
+            logEventMapper: logEventMapper
+        )
     }
 }
 
@@ -521,12 +529,33 @@ extension FeaturesCommonDependencies {
     }
 }
 
+extension FeatureStorage {
+    static func mockNoOp() -> FeatureStorage {
+        return FeatureStorage(
+            writer: NoOpFileWriter(),
+            reader: NoOpFileReader(),
+            arbitraryAuthorizedWriter: NoOpFileWriter(),
+            dataOrchestrator: NoOpDataOrchestrator()
+        )
+    }
+}
+
+extension FeatureUpload {
+    static func mockNoOp() -> FeatureUpload {
+        return FeatureUpload(uploader: NoOpDataUploadWorker())
+    }
+}
+
 class FileWriterMock: Writer {
     var dataWritten: Encodable?
 
     func write<T>(value: T) where T: Encodable {
         dataWritten = value
     }
+}
+
+struct NoOpDataOrchestrator: DataOrchestratorType {
+    func deleteAllData() {}
 }
 
 class NoOpFileWriter: AsyncWriter {
@@ -676,14 +705,14 @@ extension RequestBuilder.HTTPHeader: RandomMockable, AnyMockable {
             .userAgentHeader(appName: .mockRandom(among: .alphanumerics), appVersion: .alphanumerics, device: .mockAny()),
             .ddAPIKeyHeader(clientToken: .mockRandom(among: .alphanumerics)),
             .ddEVPOriginHeader(source: .mockRandom(among: .alphanumerics)),
-            .ddEVPOriginVersionHeader(),
+            .ddEVPOriginVersionHeader(sdkVersion: .mockRandom(among: .alphanumerics)),
             .ddRequestIDHeader()
         ]
         return all.randomElement()!
     }
 
     static func mockAny() -> RequestBuilder.HTTPHeader {
-        return .ddEVPOriginVersionHeader()
+        return .ddEVPOriginVersionHeader(sdkVersion: "1.2.3")
     }
 }
 

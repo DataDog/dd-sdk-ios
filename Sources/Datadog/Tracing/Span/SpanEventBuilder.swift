@@ -8,6 +8,8 @@ import Foundation
 
 /// Builds `SpanEvent` representation (for later serialization) from span information recorded in `DDSpan` and values received from global configuration.
 internal struct SpanEventBuilder {
+    /// SDK version to encode in the span.
+    let sdkVersion: String
     /// Application version to encode in span.
     let applicationVersion: String
     /// Service name to encode in span.

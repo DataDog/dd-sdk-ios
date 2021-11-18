@@ -35,12 +35,12 @@ class LogFileOutputTests: XCTestCase {
             rumErrorsIntegration: nil
         )
 
-        let log1: Log = .mockWith(status: .info, message: "log message 1")
+        let log1: LogEvent = .mockWith(status: .info, message: "log message 1")
         output.write(log: log1)
 
         fileCreationDateProvider.advance(bySeconds: 1)
 
-        let log2: Log = .mockWith(status: .warn, message: "log message 2")
+        let log2: LogEvent = .mockWith(status: .warn, message: "log message 2")
         output.write(log: log2)
 
         let log1FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC())

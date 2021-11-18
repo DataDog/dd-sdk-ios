@@ -324,9 +324,7 @@ internal class ObjcInteropPrinter: BasePrinter {
         let objcPropertyName = swiftProperty.name
         let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
         let objcTypeName = try objcInteropTypeName(for: propertyWrapper.objcInteropType)
-        let asObjcCast = try swiftToObjcCast(for: propertyWrapper.objcInteropType).ifNotNil { asObjcCast in
-            asObjcCast + objcPropertyOptionality
-        } ?? ""
+        let asObjcCast = try swiftToObjcCast(for: propertyWrapper.objcInteropType, isOptional: swiftProperty.isOptional) ?? ""
 
         if swiftProperty.mutability == .mutable {
             // Generate getter and setter for the managed value, e.g.:
@@ -381,14 +379,15 @@ internal class ObjcInteropPrinter: BasePrinter {
         }
     }
 
-    private func swiftToObjcCast(for objcType: ObjcInteropType) throws -> String? {
+    private func swiftToObjcCast(for objcType: ObjcInteropType, isOptional: Bool) throws -> String? {
+        let optionality = isOptional ? "?" : ""
         switch objcType {
         case is ObjcInteropNSNumber:
-            return " as NSNumber"
+            return " as NSNumber" + optionality
         case let nsArray as ObjcInteropNSArray where nsArray.element is ObjcInteropNSNumber:
-            return " as [NSNumber]"
+            return " as [NSNumber]" + optionality
         case let nsDictionary as ObjcInteropNSDictionary where nsDictionary.value is ObjcInteropNSNumber:
-            return " as [\(try objcInteropTypeName(for: nsDictionary.key)): NSNumber]"
+            return " as [\(try objcInteropTypeName(for: nsDictionary.key)): NSNumber]" + optionality
         case is ObjcInteropNSString:
             return nil // `String` <> `NSString` interoperability doesn't require casting
         case let nsArray as ObjcInteropNSArray where nsArray.element is ObjcInteropNSString:
@@ -396,7 +395,12 @@ internal class ObjcInteropPrinter: BasePrinter {
         case let nsDictionary as ObjcInteropNSDictionary where nsDictionary.value is ObjcInteropNSString:
             return nil // `[Key: String]` <> `[Key: NSString]` interoperability doesn't require casting
         case let nsDictionary as ObjcInteropNSDictionary where nsDictionary.value is ObjcInteropAny:
-            return nil // `[Key: Any]` <> `[Key: Any]` interoperability doesn't require casting
+            // Normally, `[Key: Any]` <> `[Key: Any]` interoperability wouldn't require casting.
+            // However our SDK bridges `[String: Any]` attributes passed in Objective-C API to their `[String: Encodable]` representation
+            // in underlying Swift SDK. This is done with `AnyEncodable` type erasure. To return these attributes back
+            // to the user, `AnyEncodable` must be unpacked to its original `Any` value. This is done in `.castToObjectiveC()` extension
+            // defined in `DatadogObjc` module. Here we just emit its invocation:
+            return optionality + ".castToObjectiveC()"
         default:
             throw Exception.unimplemented("Cannot print `swiftToObjcCast()` for \(type(of: objcType)).")
         }

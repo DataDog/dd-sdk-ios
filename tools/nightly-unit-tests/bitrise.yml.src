@@ -56,7 +56,7 @@ workflows:
         - simulator_device: $SIMULATOR_DEVICE
         - simulator_os_version: $SIMULATOR_OS_VERSION
         - is_clean_build: 'no'
-        - should_retry_test_on_fail: 'yes' # retry once to mitigate flakiness
+        - ## <RETRY_ON_FAIL> ##
         - generate_code_coverage_files: 'yes'
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Unit-tests-${PROJECT_SCHEME}-${SIMULATOR_DEVICE} (${SIMULATOR_OS_VERSION}).html"
     - deploy-to-bitrise-io: {}

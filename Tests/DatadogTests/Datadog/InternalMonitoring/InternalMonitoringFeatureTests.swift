@@ -28,6 +28,7 @@ class InternalMonitoringFeatureTests: XCTestCase {
         let randomApplicationName: String = .mockRandom()
         let randomApplicationVersion: String = .mockRandom()
         let randomSource: String = .mockRandom(among: .alphanumerics)
+        let randomSDKVersion: String = .mockRandom(among: .alphanumerics)
         let randomUploadURL: URL = .mockRandom()
         let randomClientToken: String = .mockRandom()
         let randomDeviceModel: String = .mockRandom()
@@ -43,7 +44,8 @@ class InternalMonitoringFeatureTests: XCTestCase {
                 common: .mockWith(
                     applicationName: randomApplicationName,
                     applicationVersion: randomApplicationVersion,
-                    source: randomSource
+                    source: randomSource,
+                    sdkVersion: randomSDKVersion
                 ),
                 logsUploadURL: randomUploadURL,
                 clientToken: randomClientToken
@@ -74,7 +76,7 @@ class InternalMonitoringFeatureTests: XCTestCase {
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Encoding"], "deflate")
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-API-KEY"], randomClientToken)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN"], randomSource)
-        XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN-VERSION"], sdkVersion)
+        XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN-VERSION"], randomSDKVersion)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-REQUEST-ID"]?.matches(regex: .uuidRegex), true)
     }
 
@@ -89,7 +91,8 @@ class InternalMonitoringFeatureTests: XCTestCase {
                     applicationVersion: "2.0.0",
                     applicationBundleIdentifier: "com.application.bundle.id",
                     serviceName: .mockRandom(),
-                    environment: .mockRandom()
+                    environment: .mockRandom(),
+                    sdkVersion: "1.2.3"
                 ),
                 sdkServiceName: "sdk-service-name",
                 sdkEnvironment: "sdk-environment"
@@ -110,7 +113,7 @@ class InternalMonitoringFeatureTests: XCTestCase {
         logMatcher.assertValue(forKeyPath: Attribute.message, equals: "internal error message")
         logMatcher.assertValue(forKeyPath: Attribute.serviceName, equals: "sdk-service-name")
         logMatcher.assertValue(forKeyPath: Attribute.loggerName, equals: "im-logger")
-        logMatcher.assertValue(forKeyPath: Attribute.loggerVersion, equals: sdkVersion)
+        logMatcher.assertValue(forKeyPath: Attribute.loggerVersion, equals: "1.2.3")
         logMatcher.assertTags(equal: ["env:sdk-environment"])
         logMatcher.assertValue(forKeyPath: Attribute.applicationVersion, equals: "2.0.0")
         logMatcher.assertValue(forKeyPath: "application.name", equals: "ApplicationName")

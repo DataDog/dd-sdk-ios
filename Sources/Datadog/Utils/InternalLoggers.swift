@@ -8,6 +8,7 @@ import Foundation
 
 /// Necessary configuration to instantiate `developerLogger` and `userLogger`.
 internal struct InternalLoggerConfiguration {
+    let sdkVersion: String
     let applicationVersion: String
     let environment: String
     let userInfoProvider: UserInfoProvider
@@ -41,7 +42,8 @@ internal func createSDKUserLogger(
     dateProvider: DateProvider = SystemDateProvider(),
     timeZone: TimeZone = .current
 ) -> Logger {
-    let logBuilder = LogBuilder(
+    let logBuilder = LogEventBuilder(
+        sdkVersion: configuration.sdkVersion,
         applicationVersion: configuration.applicationVersion,
         environment: configuration.environment,
         serviceName: "sdk-user",
@@ -49,7 +51,8 @@ internal func createSDKUserLogger(
         userInfoProvider: configuration.userInfoProvider,
         networkConnectionInfoProvider: configuration.networkConnectionInfoProvider,
         carrierInfoProvider: configuration.carrierInfoProvider,
-        dateCorrector: nil
+        dateCorrector: nil,
+        logEventMapper: nil
     )
     let consoleOutput = LogConsoleOutput(
         format: .shortWith(prefix: "[DATADOG SDK] 🐶 → "),

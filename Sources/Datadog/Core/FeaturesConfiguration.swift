@@ -19,6 +19,7 @@ internal struct FeaturesConfiguration {
         let environment: String
         let performance: PerformancePreset
         let source: String
+        let sdkVersion: String
         let proxyConfiguration: [AnyHashable: Any]?
     }
 
@@ -26,6 +27,7 @@ internal struct FeaturesConfiguration {
         let common: Common
         let uploadURL: URL
         let clientToken: String
+        let logEventMapper: LogEventMapper?
     }
 
     struct Tracing {
@@ -124,8 +126,6 @@ extension FeaturesConfiguration {
         var tracesEndpoint = configuration.tracesEndpoint
         var rumEndpoint = configuration.rumEndpoint
 
-        let source = (configuration.additionalConfiguration["_dd.source"] as? String) ?? Datadog.Constants.ddsource
-
         if let datadogEndpoint = configuration.datadogEndpoint {
             // If `.set(endpoint:)` API was used, it should override the values
             // set by deprecated `.set(<feature>Endpoint:)` APIs.
@@ -149,6 +149,9 @@ extension FeaturesConfiguration {
             rumEndpoint = .custom(url: customRUMEndpoint.absoluteString)
         }
 
+        let source = (configuration.additionalConfiguration[CrossPlatformAttributes.ddsource] as? String) ?? Datadog.Constants.ddsource
+        let sdkVersion = (configuration.additionalConfiguration[CrossPlatformAttributes.sdkVersion] as? String) ?? __sdkVersion
+
         let common = Common(
             applicationName: appContext.bundleName ?? appContext.bundleType.rawValue,
             applicationVersion: appContext.bundleVersion ?? "0.0.0",
@@ -161,6 +164,7 @@ extension FeaturesConfiguration {
                 bundleType: appContext.bundleType
             ),
             source: source,
+            sdkVersion: sdkVersion,
             proxyConfiguration: configuration.proxyConfiguration
         )
 
@@ -168,7 +172,8 @@ extension FeaturesConfiguration {
             logging = Logging(
                 common: common,
                 uploadURL: try ifValid(endpointURLString: logsEndpoint.url),
-                clientToken: try ifValid(clientToken: configuration.clientToken)
+                clientToken: try ifValid(clientToken: configuration.clientToken),
+                logEventMapper: configuration.logEventMapper
             )
         }
 

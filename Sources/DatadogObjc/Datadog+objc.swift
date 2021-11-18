@@ -111,6 +111,11 @@ public class DDDatadog: NSObject {
         Datadog.set(trackingConsent: consent.sdkConsent)
     }
 
+    @objc
+    public static func clearAllData() {
+        Datadog.clearAllData()
+    }
+
 #if DD_SDK_COMPILED_FOR_TESTING
     @objc
     public static func flushAndDeinitialize() {

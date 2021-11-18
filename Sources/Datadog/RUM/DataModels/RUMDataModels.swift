@@ -1120,6 +1120,9 @@ public struct RUMErrorEvent: RUMDataModel {
         /// Source of the error
         public let source: Source
 
+        /// Source type of the error (the language or platform impacting the error stacktrace format)
+        public let sourceType: SourceType?
+
         /// Stacktrace of the error
         public var stack: String?
 
@@ -1134,6 +1137,7 @@ public struct RUMErrorEvent: RUMDataModel {
             case message = "message"
             case resource = "resource"
             case source = "source"
+            case sourceType = "source_type"
             case stack = "stack"
             case type = "type"
         }
@@ -1211,6 +1215,14 @@ public struct RUMErrorEvent: RUMDataModel {
             case agent = "agent"
             case webview = "webview"
             case custom = "custom"
+        }
+
+        /// Source type of the error (the language or platform impacting the error stacktrace format)
+        public enum SourceType: String, Codable {
+            case android = "android"
+            case browser = "browser"
+            case ios = "ios"
+            case reactNative = "react-native"
         }
     }
 
@@ -1628,4 +1640,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/cdf9a70e6be9cfec5e9524c58abfe79a9fea1f64
+// Generated from https://github.com/DataDog/rum-events-format/tree/9c135e77bb1da61ebbb6b2fb3b39e156d5120a8e

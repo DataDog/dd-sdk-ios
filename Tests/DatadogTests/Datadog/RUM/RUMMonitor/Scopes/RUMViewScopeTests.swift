@@ -584,12 +584,44 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(error.model.error.type, "abc")
         XCTAssertEqual(error.model.error.message, "view error")
         XCTAssertEqual(error.model.error.source, .source)
+        XCTAssertEqual(error.model.error.sourceType, .ios)
         XCTAssertNil(error.model.error.stack)
         XCTAssertNil(error.model.error.isCrash)
         XCTAssertNil(error.model.error.resource)
         XCTAssertNil(error.model.action)
         XCTAssertEqual(error.model.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(error.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+
+        let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
+        XCTAssertEqual(viewUpdate.model.view.error.count, 1)
+    }
+
+    func testGivenStartedView_whenCrossPlatformErrorIsAdded_itSendsCorrectErrorEvent() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        let scope: RUMViewScope = .mockWith(parent: parent, dependencies: dependencies)
+
+        XCTAssertTrue(
+            scope.process(command: RUMStartViewCommand.mockAny())
+        )
+
+        currentTime.addTimeInterval(1)
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(
+                    attributes: [
+                        CrossPlatformAttributes.errorSourceType: "react-native",
+                        CrossPlatformAttributes.errorIsCrash: true
+                    ]
+                )
+            )
+        )
+
+        let error = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMErrorEvent>.self).last)
+
+        XCTAssertEqual(error.model.error.sourceType, .reactNative)
+        XCTAssertTrue(error.model.error.isCrash ?? false)
 
         let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
         XCTAssertEqual(viewUpdate.model.view.error.count, 1)
@@ -633,7 +665,8 @@ class RUMViewScopeTests: XCTestCase {
     // MARK: - Long tasks
 
     func testWhenLongTaskIsAdded_itSendsLongTaskEventAndViewUpdateEvent() throws {
-        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let startViewDate: Date = .mockDecember15th2019At10AMUTC()
+
         let scope = RUMViewScope(
             parent: parent,
             dependencies: dependencies,
@@ -642,31 +675,34 @@ class RUMViewScopeTests: XCTestCase {
             name: "ViewName",
             attributes: [:],
             customTimings: [:],
-            startTime: currentTime
+            startTime: startViewDate
         )
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: ["foo": "bar"], identity: mockView, isInitialView: true)
+                command: RUMStartViewCommand.mockWith(time: startViewDate, attributes: ["foo": "bar"], identity: mockView, isInitialView: true)
             )
         )
 
-        currentTime.addTimeInterval(1)
+        let addLongTaskDate = startViewDate + 1.0
+        let duration: TimeInterval = 1.0
 
         XCTAssertTrue(
             scope.process(
-                command: RUMAddLongTaskCommand(time: currentTime, attributes: ["foo": "bar"], duration: 1.0)
+                command: RUMAddLongTaskCommand(time: addLongTaskDate, attributes: ["foo": "bar"], duration: duration)
             )
         )
 
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMLongTaskEvent>.self).last)
         let longTask = event.model
 
+        let longTaskStartingDate = addLongTaskDate - duration
+
         XCTAssertEqual(longTask.action?.id, scope.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(longTask.application.id, scope.context.rumApplicationID)
         XCTAssertNil(longTask.connectivity)
         XCTAssertEqual(longTask.context?.contextInfo as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(longTask.date, Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1).timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(longTask.date, longTaskStartingDate.timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(longTask.dd.session?.plan, .plan1)
         XCTAssertEqual(longTask.longTask.duration, (1.0).toInt64Nanoseconds)
         XCTAssertTrue(longTask.longTask.isFrozenFrame == true)

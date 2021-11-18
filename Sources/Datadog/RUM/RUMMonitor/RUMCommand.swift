@@ -67,8 +67,12 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
     let type: String?
     /// Error stacktrace.
     let stack: String?
+    /// Whether this error crashed the host application
+    let isCrash: Bool?
     /// The origin of this error.
     let source: RUMInternalErrorSource
+    /// The platform type of the error (iOS, React Native, ...)
+    let errorSourceType: RUMErrorEvent.Error.SourceType
 
     init(
         time: Date,
@@ -84,6 +88,9 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
         self.message = message
         self.type = type
         self.stack = stack
+
+        self.errorSourceType = RUMErrorSourceType.extract(from: &self.attributes)
+        self.isCrash = self.attributes.removeValue(forKey: CrossPlatformAttributes.errorIsCrash) as? Bool
     }
 
     init(
@@ -100,6 +107,9 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
         self.message = dderror.message
         self.type = dderror.type
         self.stack = dderror.stack
+
+        self.errorSourceType = RUMErrorSourceType.extract(from: &self.attributes)
+        self.isCrash = self.attributes.removeValue(forKey: CrossPlatformAttributes.errorIsCrash) as? Bool
     }
 }
 
@@ -176,6 +186,8 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
     let errorType: String?
     /// The origin of the error (network, webview, ...)
     let errorSource: RUMInternalErrorSource
+    /// The platform type of the error (iOS, React Native, ...)
+    let errorSourceType: RUMErrorEvent.Error.SourceType
     /// Error stacktrace.
     let stack: String?
     /// HTTP status code of the Ressource error.
@@ -199,6 +211,8 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
         self.httpStatusCode = httpStatusCode
         // The stack will be meaningless in most cases as it will go down to the networking code:
         self.stack = nil
+
+        self.errorSourceType = RUMErrorSourceType.extract(from: &self.attributes)
     }
 
     init(
@@ -220,6 +234,8 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
         self.errorType = dderror.type
         // The stack will give the networking error (`NSError`) description in most cases:
         self.stack = dderror.stack
+
+        self.errorSourceType = RUMErrorSourceType.extract(from: &self.attributes)
     }
 }
 

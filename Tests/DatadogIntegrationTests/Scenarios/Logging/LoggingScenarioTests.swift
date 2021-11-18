@@ -58,14 +58,14 @@ class LoggingScenarioTests: IntegrationTests, LoggingCommonAsserts {
                     "logger-attribute1": "string value",
                     "logger-attribute2": 1_000,
                     "attribute": "value",
-                    "some-url": "https://example.com/image.png"
+                    "some-url": "redacted",
                 ]
             )
 
             #if DEBUG
-            matcher.assertTags(equal: ["env:integration", "build_configuration:debug", "tag1:tag-value", "tag2"])
+            matcher.assertTags(equal: ["env:integration", "build_configuration:debug", "tag1:tag-value", "tag2", "tag3:added"])
             #else
-            matcher.assertTags(equal: ["env:integration", "build_configuration:release", "tag1:tag-value", "tag2"])
+            matcher.assertTags(equal: ["env:integration", "build_configuration:release", "tag1:tag-value", "tag2", "tag3:added"])
             #endif
 
             matcher.assertValue(

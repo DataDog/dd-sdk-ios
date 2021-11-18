@@ -26,7 +26,7 @@ import Foundation
 ///
 public typealias AttributeKey = String
 
-/// Any `Ecodable` value of the attribute (`String`, `Int`, `Bool`, `Date` etc.).
+/// Any `Encodable` value of the attribute (`String`, `Int`, `Bool`, `Date` etc.).
 ///
 /// Custom `Encodable` types are supported as well with nested encoding containers:
 ///
@@ -61,3 +61,46 @@ public typealias AttributeKey = String
 /// defined as sum of key levels and value levels exceeds 10, the data may not be delivered.
 ///
 public typealias AttributeValue = Encodable
+
+// MARK: - Internal attributes
+
+/// Internal attributes, passed from cross-platform bridge.
+/// Used to configure or override SDK internal features and attributes for the need of cross-platform SDKs (e.g. React Native SDK).
+internal struct CrossPlatformAttributes {
+    /// Custom SDK version passed from bridge SDK. Used for all events issued by the SDK (both coming from cross-platform SDK and produced internally, like RUM long tasks).
+    /// It should replace the default native `sdkVersion`.
+    /// Expects `String` value (semantic version).
+    static let sdkVersion: String = "_dd.sdk_version"
+
+    /// Custom SDK `source` passed from bridge SDK. Used for all events issued by the SDK (both coming from cross-platform SDK and produced internally, like RUM long tasks).
+    /// It should replace the default native `ddsource` value (`"ios"`).
+    /// Expects `String` value.
+    static let ddsource: String = "_dd.source"
+
+    /// Event timestamp passed from bridge SDK. Used for all RUM events issued by cross platform SDK.
+    /// It should replace event time obtained from `DateProvider` to ensure that events are not skewed due to time difference in native and cross-platform SDKs.
+    /// Expects `Int64` value (milliseconds).
+    static let timestampInMilliseconds = "_dd.timestamp"
+
+    /// Custom "source type" of the error passed from bridge SDK. Used in RUM errors reported by cross platform SDK.
+    /// It names the language or platform of the RUM error stack trace, so the SCI backend knows how to symbolicate it.
+    /// Expects `String` value.
+    static let errorSourceType = "_dd.error.source_type"
+
+    /// Custom attribute of the error passed from bridge SDK. Used in RUM errors reported by cross platform SDK.
+    /// It flags the error has being fatal for the host application.
+    /// Expects `Bool` value.
+    static let errorIsCrash = "_dd.error.is_crash"
+
+    /// Trace ID passed from bridge SDK. Used in RUM resources created by cross platform SDK.
+    /// When cross-platform SDK injects tracing headers to intercepted resource, we pass tracing information through this attribute
+    /// and send it within the RUM resource, so the RUM backend can issue corresponding APM span on behalf of the mobile app.
+    /// Expects `String` value.
+    static let traceID = "_dd.trace_id"
+
+    /// Span ID passed from bridge SDK. Used in RUM resources created by cross platform SDK.
+    /// When cross-platform SDK injects tracing headers to intercepted resource, we pass tracing information through this attribute
+    /// and send it within the RUM resource, so the RUM backend can issue corresponding APM span on behalf of the mobile app.
+    /// Expects `String` value.
+    static let spanID = "_dd.span_id"
+}

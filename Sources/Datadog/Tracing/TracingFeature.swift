@@ -91,7 +91,7 @@ internal final class TracingFeature {
                     ),
                     .ddAPIKeyHeader(clientToken: configuration.clientToken),
                     .ddEVPOriginHeader(source: configuration.common.source),
-                    .ddEVPOriginVersionHeader(),
+                    .ddEVPOriginVersionHeader(sdkVersion: configuration.common.sdkVersion),
                     .ddRequestIDHeader(),
                 ],
                 internalMonitor: internalMonitor
