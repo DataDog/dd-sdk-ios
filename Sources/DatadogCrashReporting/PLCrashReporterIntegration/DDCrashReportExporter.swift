@@ -149,7 +149,7 @@ internal struct DDCrashReportExporter {
             let maxAddressHex = "0x\(maxAddress.toHex)"
 
             return DDCrashReport.BinaryImage(
-                libraryName: image.imageName ?? unavailable,
+                libraryName: image.imageName,
                 uuid: image.uuid,
                 architecture: image.codeType?.architectureName ?? unavailable,
                 isSystemLibrary: image.isSystemImage,

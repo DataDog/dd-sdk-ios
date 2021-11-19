@@ -88,11 +88,7 @@ internal struct CrashReportMinifier {
         }
 
         return binaryImages.filter { image in
-            if let imageName = image.imageName {
-                return imageNamesFromStackFrames.contains(imageName) // it is referenced, keep the image
-            } else {
-                return false // image has no name, we can drop it
-            }
+            return imageNamesFromStackFrames.contains(image.imageName) // if it's referenced in the stack trace
         }
     }
 }
