@@ -110,7 +110,6 @@ struct ScreenView: View {
         }
         .navigationBarTitle("Screen \(index)")
         .trackRUMView(name: "SwiftUI View \(index)")
-        .trackRUMSwipeAction(name: "Swipe Action")
     }
 
     @ViewBuilder
