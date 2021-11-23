@@ -1,14 +1,35 @@
+# 1.8.0 / 11-23-2021
+
+### Changes
+
+* [BUGFIX] Fix rare crash in `CarrierInfoProvider`. See [#627][] [#623][], [#619][] (Thanks [@safa-ads][], [@matcartmill][])
+* [BUGFIX] Crash Reporting: Fix issue with some truncated stack traces not being displayed. See [#641][]
+* [BUGFIX] Fix reading SDK attributes in Objective-C. See [#654][]
+* [FEATURE] RUM: Track slow UI renders with RUM Long Tasks. See [#567][]
+* [FEATURE] RUM: Add API to notify RUM session start: `.onRUMSessionStart(_: (String, Bool) -> Void)`. See [#590][]
+* [FEATURE] Logs: Add logs scrubbing API: `.setLogEventMapper(_: (LogEvent) -> LogEvent)`. See [#640][]
+* [FEATURE] Add `Datadog.isInitialized` API. See [#566][]
+* [FEATURE] Add API for clearing out all SDK data: `Datadog.clearAllData()`. See [#644][]
+* [FEATURE] Add support for `us5` site. See [#576][]
+* [FEATURE] Support `URLSession` proxy configuration with `.connectionProxyDictionary`. See [#582][]
+* [IMPROVEMENT] Compress HTTP body in SDK uploads. See [#626][]
+* [IMPROVEMENT] Change type of `.xhr` RUM Resources to `.native`. See [#605][]
+* [IMPROVEMENT] Link logs and traces to RUM Actions. See [#615][]
+* [IMPROVEMENT] Crash Reporting: Fix symbolication issue for iOS Simulator crashes. See [#563][]
+* [IMPROVEMENT] Fix various typos in docs. See [#569][] (Thanks [@michalsrutek][])
+* [IMPROVEMENT] Use Intake API V2 for SDK data uploads. See [#562][]
+
 # 1.7.2 / 11-8-2021
 
 ### Changes
 
-* [BUGFIX] Fix iOS 15 crash related to `ProcessInfo.isLowPowerModeEnabled`. See [#609][] #655 (Thanks [@pingd][])
+* [BUGFIX] Fix iOS 15 crash related to `ProcessInfo.isLowPowerModeEnabled`. See [#609][] [#655][] (Thanks [@pingd][])
 
 # 1.7.1 / 10-4-2021
 
 ### Changes
 
-* [BUGFIX] Fix iOS 15 crash in `MobileDevice.swift`. See [#609][] #613 (Thanks [@arnauddorgans][], [@earltedly][])
+* [BUGFIX] Fix iOS 15 crash in `MobileDevice.swift`. See [#609][] [#613][] (Thanks [@arnauddorgans][], [@earltedly][])
 * [BUGFIX] RUM: Fix bug with "Refresh Rate" Mobile Vital reporting very low values. [#608][]
 
 # 1.7.0 / 09-27-2021
@@ -245,11 +266,29 @@
 [#539]: https://github.com/DataDog/dd-sdk-ios/issues/539
 [#545]: https://github.com/DataDog/dd-sdk-ios/issues/545
 [#547]: https://github.com/DataDog/dd-sdk-ios/issues/547
+[#562]: https://github.com/DataDog/dd-sdk-ios/issues/562
+[#563]: https://github.com/DataDog/dd-sdk-ios/issues/563
+[#566]: https://github.com/DataDog/dd-sdk-ios/issues/566
+[#567]: https://github.com/DataDog/dd-sdk-ios/issues/567
+[#569]: https://github.com/DataDog/dd-sdk-ios/issues/569
 [#575]: https://github.com/DataDog/dd-sdk-ios/issues/575
+[#576]: https://github.com/DataDog/dd-sdk-ios/issues/576
+[#582]: https://github.com/DataDog/dd-sdk-ios/issues/582
 [#583]: https://github.com/DataDog/dd-sdk-ios/issues/583
+[#590]: https://github.com/DataDog/dd-sdk-ios/issues/590
+[#605]: https://github.com/DataDog/dd-sdk-ios/issues/605
 [#608]: https://github.com/DataDog/dd-sdk-ios/issues/608
 [#609]: https://github.com/DataDog/dd-sdk-ios/issues/609
 [#613]: https://github.com/DataDog/dd-sdk-ios/issues/613
+[#615]: https://github.com/DataDog/dd-sdk-ios/issues/615
+[#619]: https://github.com/DataDog/dd-sdk-ios/issues/619
+[#623]: https://github.com/DataDog/dd-sdk-ios/issues/623
+[#626]: https://github.com/DataDog/dd-sdk-ios/issues/626
+[#627]: https://github.com/DataDog/dd-sdk-ios/issues/627
+[#640]: https://github.com/DataDog/dd-sdk-ios/issues/640
+[#641]: https://github.com/DataDog/dd-sdk-ios/issues/641
+[#644]: https://github.com/DataDog/dd-sdk-ios/issues/644
+[#654]: https://github.com/DataDog/dd-sdk-ios/issues/654
 [#655]: https://github.com/DataDog/dd-sdk-ios/issues/655
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
@@ -268,7 +307,10 @@
 [@lgaches]: https://github.com/lgaches
 [@lmramirez]: https://github.com/lmramirez
 [@marcusway]: https://github.com/marcusway
+[@matcartmill]: https://github.com/matcartmill
+[@michalsrutek]: https://github.com/michalsrutek
 [@philtre]: https://github.com/philtre
 [@pingd]: https://github.com/pingd
 [@provTheodoreNewell]: https://github.com/provTheodoreNewell
+[@safa-ads]: https://github.com/safa-ads
 [@sdejesusF]: https://github.com/sdejesusF
