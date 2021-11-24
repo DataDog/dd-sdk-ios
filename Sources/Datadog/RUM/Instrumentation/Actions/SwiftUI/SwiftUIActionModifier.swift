@@ -32,7 +32,7 @@ internal struct RUMTapActionModifier: SwiftUI.ViewModifier {
 @available(iOS 13, *)
 public extension SwiftUI.View {
     /// Monitor this view tap actions with Datadog RUM. An Action event will be logged after a number
-    /// of required tap.
+    /// of required taps.
     ///
     /// - Parameters:
     ///   - name: The action name.
