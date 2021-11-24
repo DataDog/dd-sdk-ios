@@ -44,23 +44,23 @@ private class DebugRUMSessionViewModel: ObservableObject {
             return
         }
 
-        let viewKey = viewKey
+        let key = viewKey
         sessionItems.append(
             SessionItem(
-                label: viewKey,
+                label: key,
                 type: .view,
                 isPending: true,
                 stopAction: { [weak self] in
-                    self?.modifySessionItem(type: .view, label: viewKey) { mutableSessionItem in
+                    self?.modifySessionItem(type: .view, label: key) { mutableSessionItem in
                         mutableSessionItem.isPending = false
                         mutableSessionItem.stopAction = nil
-                        Global.rum.stopView(key: viewKey)
+                        Global.rum.stopView(key: key)
                     }
                 }
             )
         )
 
-        Global.rum.startView(key: viewKey)
+        Global.rum.startView(key: key)
         self.viewKey = ""
     }
 
@@ -95,23 +95,23 @@ private class DebugRUMSessionViewModel: ObservableObject {
             return
         }
 
-        let resourceKey = self.resourceKey
+        let key = self.resourceKey
         sessionItems.append(
             SessionItem(
-                label: resourceKey,
+                label: key,
                 type: .resource,
                 isPending: true,
                 stopAction: { [weak self] in
-                    self?.modifySessionItem(type: .resource, label: resourceKey) { mutableSessionItem in
+                    self?.modifySessionItem(type: .resource, label: key) { mutableSessionItem in
                         mutableSessionItem.isPending = false
                         mutableSessionItem.stopAction = nil
-                        Global.rum.stopResourceLoading(resourceKey: resourceKey, statusCode: nil, kind: .other)
+                        Global.rum.stopResourceLoading(resourceKey: key, statusCode: nil, kind: .other)
                     }
                 }
             )
         )
 
-        Global.rum.startResourceLoading(resourceKey: resourceKey, url: mockURL())
+        Global.rum.startResourceLoading(resourceKey: key, url: mockURL())
         self.resourceKey = ""
     }
 
@@ -171,7 +171,7 @@ internal struct DebugRUMSessionView: View {
                     .listRowInsets(EdgeInsets())
                     .padding(4)
             }
-            .listStyle(.plain)
+            .listStyle(PlainListStyle())
         }
         .buttonStyle(DatadogButtonStyle())
         .padding()
