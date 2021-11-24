@@ -47,7 +47,7 @@ class DebugWebviewViewController: UIViewController {
 
     private var webviewURL: String {
         guard let text = webviewURLTextField.text, !text.isEmpty else {
-            return  "https://www.datadoghq.com"
+            return "https://datadoghq.dev/browser-sdk-test-playground/webview.html"
         }
         return text
     }
@@ -81,11 +81,30 @@ class WebviewViewController: UIViewController {
 
     private var webView: WKWebView!
 
+    class MessageHandler: NSObject, WKScriptMessageHandler {
+        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+            print(message.name + String(describing: message.body))
+        }
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let configuration = WKWebViewConfiguration()
-        webView = WKWebView(frame: UIScreen.main.bounds, configuration: configuration)
+        // WKScriptMessageHandler can be called only with `window.webkit.messageHandlers.{Handler name}` syntax
+        // the code below translates `window.DatadogEventBridge` into that format
+        let js = """
+            window.DatadogEventBridge = { send(msg) { window.webkit.messageHandlers.DatadogEventBridge.postMessage(msg) } }
+            """
+        let script = WKUserScript(source: js, injectionTime: .atDocumentStart, forMainFrameOnly: false)
+
+        let controller = WKUserContentController()
+        controller.addUserScript(script)
+        controller.add(MessageHandler(), name: "DatadogEventBridge")
+
+        let config = WKWebViewConfiguration()
+        config.userContentController = controller
+
+        webView = WKWebView(frame: UIScreen.main.bounds, configuration: config)
         view.addSubview(webView)
     }
 
