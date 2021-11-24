@@ -10,27 +10,6 @@ import Foundation
 internal final class RUMInstrumentation: RUMCommandPublisher {
     static var instance: RUMInstrumentation?
 
-    /// RUM Views auto instrumentation.
-    class ViewsAutoInstrumentation {
-        let swizzler: UIViewControllerSwizzler
-        let handler: UIViewControllerHandler
-
-        init(
-            predicate: UIKitRUMViewsPredicate,
-            dateProvider: DateProvider
-        ) throws {
-            handler = UIKitRUMViewsHandler(
-                predicate: predicate,
-                dateProvider: dateProvider
-            )
-            swizzler = try UIViewControllerSwizzler(handler: handler)
-        }
-
-        func enable() {
-            swizzler.swizzle()
-        }
-    }
-
     /// RUM User Actions auto instrumentation.
     class UserActionsAutoInstrumentation {
         let swizzler: UIApplicationSwizzler
@@ -46,10 +25,9 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         }
     }
 
+    let viewsHandler: RUMViewsHandler
     /// RUM Views auto instrumentation, `nil` if not enabled.
-    let viewsAutoInstrumentation: ViewsAutoInstrumentation?
-    /// `SwiftUI.View` RUM instrumentation
-    let swiftUIViewInstrumentation: SwiftUIViewHandler
+    let viewControllerSwizzler: UIViewControllerSwizzler?
     /// RUM User Actions auto instrumentation, `nil` if not enabled.
     let userActionsAutoInstrumentation: UserActionsAutoInstrumentation?
     /// RUM Long Tasks auto instrumentation, `nil` if not enabled.
@@ -61,13 +39,19 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         configuration: FeaturesConfiguration.RUM.Instrumentation,
         dateProvider: DateProvider
     ) {
-        var viewsAutoInstrumentation: ViewsAutoInstrumentation?
+        viewsHandler = RUMViewsHandler(
+           dateProvider: dateProvider,
+           predicate: configuration.uiKitRUMViewsPredicate
+        )
+
+        var viewsAutoInstrumentation: UIViewControllerSwizzler?
         var userActionsAutoInstrumentation: UserActionsAutoInstrumentation?
         var longTasks: LongTaskObserver?
 
         do {
-            if let predicate = configuration.uiKitRUMViewsPredicate {
-                viewsAutoInstrumentation = try ViewsAutoInstrumentation(predicate: predicate, dateProvider: dateProvider)
+            if configuration.uiKitRUMViewsPredicate != nil {
+                // UIKit auto instrumentation is enabled, so we need to install swizzler
+                viewsAutoInstrumentation = try UIViewControllerSwizzler(handler: viewsHandler)
             }
 
             if let predicate = configuration.uiKitRUMUserActionsPredicate {
@@ -83,29 +67,27 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             longTasks = LongTaskObserver(threshold: threshold, dateProvider: dateProvider)
         }
 
-        self.viewsAutoInstrumentation = viewsAutoInstrumentation
+        self.viewControllerSwizzler = viewsAutoInstrumentation
         self.userActionsAutoInstrumentation = userActionsAutoInstrumentation
         self.longTasks = longTasks
-        self.swiftUIViewInstrumentation = SwiftUIRUMViewsHandler(dateProvider: dateProvider)
     }
 
     func enable() {
-        viewsAutoInstrumentation?.enable()
+        viewControllerSwizzler?.swizzle()
         userActionsAutoInstrumentation?.enable()
         longTasks?.start()
     }
 
     func publish(to subscriber: RUMCommandSubscriber) {
-        viewsAutoInstrumentation?.handler.publish(to: subscriber)
+        viewsHandler.publish(to: subscriber)
         userActionsAutoInstrumentation?.handler.publish(to: subscriber)
         longTasks?.publish(to: subscriber)
-        swiftUIViewInstrumentation.publish(to: subscriber)
     }
 
 #if DD_SDK_COMPILED_FOR_TESTING
     /// Removes RUM instrumentation swizzlings and deinitializes this component.
     func deinitialize() {
-        viewsAutoInstrumentation?.swizzler.unswizzle()
+        viewControllerSwizzler?.unswizzle()
         userActionsAutoInstrumentation?.swizzler.unswizzle()
         RUMInstrumentation.instance = nil
     }

@@ -1235,7 +1235,7 @@ class RUMMonitorTests: XCTestCase {
 
         // Given
         let resourcesHandler = try XCTUnwrap(URLSessionAutoInstrumentation.instance?.interceptor.handler)
-        let viewsHandler = try XCTUnwrap(RUMInstrumentation.instance?.viewsAutoInstrumentation?.handler)
+        let viewsHandler = try XCTUnwrap(RUMInstrumentation.instance?.viewsHandler)
         let userActionsHandler = try XCTUnwrap(RUMInstrumentation.instance?.userActionsAutoInstrumentation?.handler)
 
         // When
@@ -1257,8 +1257,8 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(
             output.recordedLog?.message,
             """
-            RUM View was started, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work.
-            Make sure `Global.rum = RUMMonitor.initialize()` is called before any `UIViewController` is presented.
+            RUM View was started, but no `RUMMonitor` is registered on `Global.rum`. RUM instrumentation will not work.
+            Make sure `Global.rum = RUMMonitor.initialize()` is called before any view appears.
             """
         )
 
@@ -1279,7 +1279,7 @@ class RUMMonitorTests: XCTestCase {
         )
 
         URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
-        RUMInstrumentation.instance?.viewsAutoInstrumentation?.swizzler.unswizzle()
+        RUMInstrumentation.instance?.viewControllerSwizzler?.unswizzle()
         RUMInstrumentation.instance?.userActionsAutoInstrumentation?.swizzler.unswizzle()
 
         Datadog.flushAndDeinitialize()

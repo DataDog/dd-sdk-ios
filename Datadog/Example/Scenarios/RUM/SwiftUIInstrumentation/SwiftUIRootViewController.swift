@@ -94,9 +94,7 @@ struct ScreenView: View {
 
     var body: some View {
         VStack(spacing: 32) {
-            NavigationLink("Push to Next View", destination:
-                ScreenView(index: index + 1)
-            )
+            NavigationLink("Push to Next View", destination: destination)
             Button("Present Modal View") {
                 presentSheet.toggle()
             }
@@ -112,6 +110,78 @@ struct ScreenView: View {
 
     @ViewBuilder
     var destination: some View {
-        ScreenView(index: index + 1)
+        if index % 3 == 0  {
+            UIScreenView(index: index + 1)
+                .navigationBarTitle("Screen \(index + 1)")
+        } else {
+            ScreenView(index: index + 1)
+        }
     }
 }
+
+/// The `UIScreenView` is a `UIScreenViewController` respresentable
+/// for SwiftUI.
+@available(iOS 13, *)
+struct UIScreenView: UIViewControllerRepresentable {
+
+    /// The screen index in the stack
+    let index: Int
+
+    func makeUIViewController(context: Context) -> UIScreenViewController {
+        UIScreenViewController.create(at: index)
+    }
+
+    func updateUIViewController(_ uiViewController: UIScreenViewController, context: Context) { }
+}
+
+/// A basic Screen View Controller at a given index in the stack.
+///
+/// This view controller present a single button to push a
+/// `ScreenView` onto the stack.
+@available(iOS 13, *)
+class UIScreenViewController: UIViewController {
+
+    var index: Int = 0
+
+    /// Creates a `UIScreenViewController` instance from `RUMSwiftUIInstrumentationScenario` storyboard.
+    ///
+    /// - Parameter index: The Screen index in the stack.
+    /// - Returns: An instance of `UIScreenViewController`.
+    static func create(at index: Int) -> UIScreenViewController {
+        let storyboard = UIStoryboard(name: "RUMSwiftUIInstrumentationScenario", bundle: .main)
+
+        if let vc = storyboard.instantiateViewController(withIdentifier: "UIScreenViewController") as? UIScreenViewController {
+            vc.index = index
+            return vc
+        }
+
+        fatalError("Unable to instantiate `UIScreenViewController` from stroyboard `RUMSwiftUIInstrumentationScenario`")
+    }
+
+    /// Pushes a `ScreenView` onto the stack.
+    @IBAction func pushToSwiftUIView(_ sender: Any?) {
+        let view = ScreenView(index: index + 1)
+        let host = UIHostingController(rootView: view)
+        navigationController?.show(host, sender: sender)
+    }
+
+    /// Pushes a `ScreenView` onto the stack.
+    @IBAction func presentSheet(_ sender: Any?) {
+        let host = UIHostingController(rootView: sheetView)
+        host.modalPresentationStyle = .pageSheet
+        present(host, animated: true)
+    }
+
+    @ViewBuilder
+    var sheetView: some View {
+        NavigationView {
+            if index % 3 == 0  {
+                UIScreenView(index: index + 1)
+                    .navigationBarTitle("Screen \(index + 1)")
+            } else {
+                ScreenView(index: index + 1)
+            }
+        }
+    }
+}
+
