@@ -17,7 +17,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         /// receive any updates for a long time, then sending some significantly later may lead to inconsistency.
         static let viewEventAvailabilityThreshold: TimeInterval = 14_400 // 4 hours
         /// The name of a view sent in dummy RUM session created when crash occurred before starting a real session.
-        static let dummyViewName = "ApplictionLaunch"
+        static let dummyViewName = "ApplicationLaunch"
         /// The url of a view sent in dummy RUM session created when crash occurred before starting a real session.
         static let dummyViewURL = "com/datadog/application-launch/view"
     }
@@ -68,11 +68,9 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
 
         if let lastRUMViewEvent = crashContext.lastRUMViewEvent {
             sendCrashReportToPreviousSession(crashReport, rumViewEventFromPreviousSession: lastRUMViewEvent, using: currentTimeCorrection)
-        } else {
+        } else if rumFeatureConfiguration.sessionSampler.isSampled() {
             // As this will create a new RUM session, we must respect the user sampling configuration
-            if rumFeatureConfiguration.sessionSampler.isSampled() {
-                sendCrashReportToNewDummySession(crashReport, using: currentTimeCorrection)
-            }
+            sendCrashReportToNewDummySession(crashReport, using: currentTimeCorrection)
         }
     }
 
