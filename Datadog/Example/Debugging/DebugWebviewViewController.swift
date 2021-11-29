@@ -6,9 +6,7 @@
 
 import UIKit
 import WebKit
-
-// TODO: RUMM-1794 remove @testable and use public API
-@testable import Datadog
+import Datadog
 
 class DebugWebviewViewController: UIViewController {
     @IBOutlet weak var rumServiceNameTextField: UITextField!

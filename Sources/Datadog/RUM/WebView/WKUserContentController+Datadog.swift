@@ -7,8 +7,8 @@
 import Foundation
 import WebKit
 
-internal extension WKUserContentController {
-    // TODO: RUMM-1794 rename the method
+// TODO: RUMM-1794 rename the method
+public extension WKUserContentController {
     func addDatadogMessageHandler(allowedWebViewHosts: [String]) {
         let bridgeName = DatadogMessageHandler.name
 

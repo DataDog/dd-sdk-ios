@@ -12,11 +12,11 @@ internal protocol WebEventConsumer {
     func consume(event: JSON, eventType: String)
 }
 
-internal enum WebEventError: Error {
+internal enum WebEventError: Error, Equatable {
     case dataSerialization(message: String)
-    case JSONSerialization(rawJSON: Any)
-    case invalidMessage(message: Any)
-    case missingKey(key: String, json: JSON)
+    case JSONSerialization(rawJSONDescription: String)
+    case invalidMessage(description: String)
+    case missingKey(key: String)
 }
 
 internal class DatadogEventBridge {
@@ -36,14 +36,14 @@ internal class DatadogEventBridge {
 
     func consume(_ message: Any) throws {
         guard let message = message as? String else {
-            throw WebEventError.invalidMessage(message: message)
+            throw WebEventError.invalidMessage(description: String(describing: message))
         }
         let eventJSON = try Self.parse(message)
         guard let eventType = eventJSON[Constants.eventTypeKey] as? String else {
-            throw WebEventError.missingKey(key: Constants.eventTypeKey, json: eventJSON)
+            throw WebEventError.missingKey(key: Constants.eventTypeKey)
         }
         guard let wrappedEvent = eventJSON[Constants.eventKey] as? JSON else {
-            throw WebEventError.missingKey(key: Constants.eventKey, json: eventJSON)
+            throw WebEventError.missingKey(key: Constants.eventKey)
         }
 
         if eventType == Constants.eventTypeLog {
@@ -59,7 +59,7 @@ internal class DatadogEventBridge {
         }
         let rawJSON = try JSONSerialization.jsonObject(with: data, options: [])
         guard let json = rawJSON as? JSON else {
-            throw WebEventError.JSONSerialization(rawJSON: rawJSON)
+            throw WebEventError.JSONSerialization(rawJSONDescription: String(describing: rawJSON))
         }
         return json
     }

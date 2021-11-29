@@ -505,6 +505,7 @@
 		9EB4B864274FAB410041CD03 /* WebLogEventConsumer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB4B863274FAB410041CD03 /* WebLogEventConsumer.swift */; };
 		9EB4B866274FAB4C0041CD03 /* WebRUMEventConsumer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB4B865274FAB4C0041CD03 /* WebRUMEventConsumer.swift */; };
 		9EB4B868275103E40041CD03 /* DatadogEventBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB4B867275103E40041CD03 /* DatadogEventBridge.swift */; };
+		9EB4B86C27510AF90041CD03 /* DatadogEventBridgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB4B86B27510AF90041CD03 /* DatadogEventBridgeTests.swift */; };
 		9EC2835A26CFEE0B00FACF1C /* RUMMobileVitalsScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC2835926CFEE0B00FACF1C /* RUMMobileVitalsScenarioTests.swift */; };
 		9EC2835E26CFF57A00FACF1C /* RUMMobileVitalsScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9EC2835D26CFF57A00FACF1C /* RUMMobileVitalsScenario.storyboard */; };
 		9EC2836026CFF59400FACF1C /* RUMMobileVitalsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC2835F26CFF59400FACF1C /* RUMMobileVitalsViewController.swift */; };
@@ -1166,6 +1167,7 @@
 		9EB4B863274FAB410041CD03 /* WebLogEventConsumer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebLogEventConsumer.swift; sourceTree = "<group>"; };
 		9EB4B865274FAB4C0041CD03 /* WebRUMEventConsumer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRUMEventConsumer.swift; sourceTree = "<group>"; };
 		9EB4B867275103E40041CD03 /* DatadogEventBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogEventBridge.swift; sourceTree = "<group>"; };
+		9EB4B86B27510AF90041CD03 /* DatadogEventBridgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogEventBridgeTests.swift; sourceTree = "<group>"; };
 		9EC2835926CFEE0B00FACF1C /* RUMMobileVitalsScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMMobileVitalsScenarioTests.swift; sourceTree = "<group>"; };
 		9EC2835D26CFF57A00FACF1C /* RUMMobileVitalsScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMMobileVitalsScenario.storyboard; sourceTree = "<group>"; };
 		9EC2835F26CFF59400FACF1C /* RUMMobileVitalsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMMobileVitalsViewController.swift; sourceTree = "<group>"; };
@@ -2950,6 +2952,7 @@
 		61E5332D24B75DC7003D6C4E /* RUM */ = {
 			isa = PBXGroup;
 			children = (
+				9EB4B86A27510AC80041CD03 /* WebView */,
 				B3FC3C1226526F4100DEED9E /* RUMVitals */,
 				61E5332E24B75DE2003D6C4E /* RUMFeatureTests.swift */,
 				618715FA24DC5EE700FC0F69 /* DataModels */,
@@ -3275,6 +3278,14 @@
 				9EB4B867275103E40041CD03 /* DatadogEventBridge.swift */,
 				9EB4B863274FAB410041CD03 /* WebLogEventConsumer.swift */,
 				9EB4B865274FAB4C0041CD03 /* WebRUMEventConsumer.swift */,
+			);
+			path = WebView;
+			sourceTree = "<group>";
+		};
+		9EB4B86A27510AC80041CD03 /* WebView */ = {
+			isa = PBXGroup;
+			children = (
+				9EB4B86B27510AF90041CD03 /* DatadogEventBridgeTests.swift */,
 			);
 			path = WebView;
 			sourceTree = "<group>";
@@ -4131,6 +4142,7 @@
 				61BBD19724ED50040023E65F /* FeaturesConfigurationTests.swift in Sources */,
 				61133C612423990D00786299 /* HTTPClientTests.swift in Sources */,
 				61133C6A2423990D00786299 /* DatadogTests.swift in Sources */,
+				9EB4B86C27510AF90041CD03 /* DatadogEventBridgeTests.swift in Sources */,
 				61B0387C252724AB00518F3C /* DDURLSessionDelegateTests.swift in Sources */,
 				61AADBDD263C7ECF008ABC6F /* EquatableInTests.swift in Sources */,
 				61133C5E2423990D00786299 /* DataUploadDelayTests.swift in Sources */,
