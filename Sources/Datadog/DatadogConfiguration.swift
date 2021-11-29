@@ -675,7 +675,7 @@ extension Datadog {
                 return self
             }
 
-            /// Enables or disables automatic tracking of background events (events hapenning when no UIViewController is active).
+            /// Enables or disables automatic tracking of background events (events hapenning when no `UIViewController` is active).
             ///
             /// When enabled, the SDK will track RUM Events into an automatically created Background RUM View (named `Background`)
             ///
