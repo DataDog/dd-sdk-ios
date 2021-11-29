@@ -77,14 +77,17 @@ class RUMSwiftUIScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertTrue(visits[0].path.matches(regex: "SwiftUI View 1\\/[0-9]*"))
         XCTAssertEqual(visits[0].actionEvents[0].action.type, .applicationStart)
         XCTAssertGreaterThan(visits[0].actionEvents[0].action.loadingTime!, 0)
+        XCTAssertEqual(visits[0].actionEvents[1].action.target?.name, "Tap Push to Next View")
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[0]) // go to "Screen 2"
 
         XCTAssertEqual(visits[1].name, "SwiftUI View 2")
         XCTAssertTrue(visits[1].path.matches(regex: "SwiftUI View 2\\/[0-9]*"))
+        XCTAssertEqual(visits[1].actionEvents[0].action.target?.name, "Tap Push to Next View")
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[1])// go to "Screen 3"
 
         XCTAssertEqual(visits[2].name, "SwiftUI View 3")
         XCTAssertTrue(visits[2].path.matches(regex: "SwiftUI View 3\\/[0-9]*"))
+        XCTAssertEqual(visits[2].actionEvents[0].action.target?.name, "Tap Modal View")
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[2])// go to "Screen 4"
 
         XCTAssertEqual(visits[3].name, "UIKit View 4")
@@ -97,6 +100,7 @@ class RUMSwiftUIScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         XCTAssertEqual(visits[5].name, "SwiftUI View 100")
         XCTAssertTrue(visits[5].path.matches(regex: "SwiftUI View 100\\/[0-9]*"))
+        XCTAssertEqual(visits[5].actionEvents[0].action.target?.name, "Tap Modal View")
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[5])// go to "Screen 101"
 
         XCTAssertEqual(visits[6].name, "SwiftUI View 101")

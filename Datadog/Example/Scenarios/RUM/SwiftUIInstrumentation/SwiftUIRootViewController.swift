@@ -95,9 +95,13 @@ struct ScreenView: View {
     var body: some View {
         VStack(spacing: 32) {
             NavigationLink("Push to Next View", destination: destination)
+                .trackRUMTapAction(name: "Tap Push to Next View")
+
+            Text("This is a Label")
+
             Button("Present Modal View") {
                 presentSheet.toggle()
-            }
+            }.trackRUMTapAction(name: "Tap Modal View")
         }
         .sheet(isPresented: $presentSheet) {
             NavigationView {
