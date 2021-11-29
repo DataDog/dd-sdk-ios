@@ -23,7 +23,7 @@ class RUMApplicationScopeTests: XCTestCase {
         XCTAssertNil(scope.context.activeUserActionID)
     }
 
-    func testWhenFirstViewIsStarted_itStartsNewSession() {
+    func testWhenFirstViewIsStarted_itStartsNewSession() throws {
         let expectation = self.expectation(description: "onSessionStart is called")
         let onSessionStart: RUMSessionListener = { sessionId, isDiscarded in
             XCTAssertTrue(sessionId.matches(regex: .uuidRegex))
@@ -37,14 +37,16 @@ class RUMApplicationScopeTests: XCTestCase {
                 onSessionStart: onSessionStart
             ),
             samplingRate: 0,
-            backgroundEventTrackingEnabled: .mockAny()
+            backgroundEventTrackingEnabled: .mockRandom()
         )
 
         XCTAssertNil(scope.sessionScope)
         XCTAssertTrue(scope.process(command: RUMStartViewCommand.mockAny()))
         waitForExpectations(timeout: 0.5)
-        XCTAssertNotNil(scope.sessionScope)
-        XCTAssertEqual(scope.sessionScope?.backgroundEventTrackingEnabled, scope.backgroundEventTrackingEnabled)
+
+        let sessionScope = try XCTUnwrap(scope.sessionScope)
+        XCTAssertEqual(sessionScope.backgroundEventTrackingEnabled, scope.backgroundEventTrackingEnabled)
+        XCTAssertTrue(sessionScope.isInitialSession, "Starting the very first view in application must create initial session")
     }
 
     func testWhenSessionExpires_itStartsANewOneAndTransfersActiveViews() throws {
@@ -57,6 +59,7 @@ class RUMApplicationScopeTests: XCTestCase {
             expectation.fulfill()
         }
 
+        // Given
         let scope = RUMApplicationScope(
             rumApplicationID: .mockAny(),
             dependencies: .mockWith(
@@ -70,21 +73,26 @@ class RUMApplicationScopeTests: XCTestCase {
 
         let view = createMockViewInWindow()
         _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: view))
-        let firstSessionUUID = try XCTUnwrap(scope.sessionScope?.context.sessionID)
-        let firstsSessionViewScopes = try XCTUnwrap(scope.sessionScope?.viewScopes)
 
+        let initialSession = try XCTUnwrap(scope.sessionScope)
+
+        // When
         // Push time forward by the max session duration:
         currentTime.addTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
-
         _ = scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime))
-        let secondSessionUUID = try XCTUnwrap(scope.sessionScope?.context.sessionID)
-        let secondSessionViewScopes = try XCTUnwrap(scope.sessionScope?.viewScopes)
-        let secondSessionViewScope = try XCTUnwrap(secondSessionViewScopes.first)
 
+        // Then
         waitForExpectations(timeout: 0.5)
-        XCTAssertNotEqual(firstSessionUUID, secondSessionUUID)
-        XCTAssertEqual(firstsSessionViewScopes.count, secondSessionViewScopes.count)
-        XCTAssertTrue(secondSessionViewScope.identity.equals(view))
+
+        let nextSession = try XCTUnwrap(scope.sessionScope)
+        XCTAssertNotEqual(initialSession.sessionUUID, nextSession.sessionUUID, "New session must have different id")
+        XCTAssertEqual(initialSession.viewScopes.count, nextSession.viewScopes.count, "All view scopes must be transferred to the new session")
+
+        let initialViewScope = try XCTUnwrap(initialSession.viewScopes.first)
+        let transferredViewScope = try XCTUnwrap(nextSession.viewScopes.first)
+        XCTAssertNotEqual(initialViewScope.viewUUID, transferredViewScope.viewUUID, "Transferred view scope must have different view id")
+        XCTAssertTrue(transferredViewScope.identity.equals(view), "Transferred view scope must track the same view")
+        XCTAssertFalse(nextSession.isInitialSession, "Any next session in the application must be marked as 'not initial'")
     }
 
     func testUntilSessionIsStarted_itIgnoresOtherCommands() {

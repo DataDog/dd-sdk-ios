@@ -36,6 +36,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     let sessionUUID: RUMUUID
     /// Tells if events from this Session should be sampled-out (not send).
     let shouldBeSampledOut: Bool
+    /// If this is the very first session created in the current app process (`false` for session created upon expiration of a previous one).
+    let isInitialSession: Bool
     /// RUM Session sampling rate.
     private let samplingRate: Float
     /// The start time of this Session.
@@ -44,6 +46,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     private var lastInteractionTime: Date
 
     init(
+        isInitialSession: Bool,
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
         samplingRate: Float,
@@ -55,6 +58,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.samplingRate = samplingRate
         self.shouldBeSampledOut = RUMSessionScope.randomizeSampling(using: samplingRate)
         self.sessionUUID = shouldBeSampledOut ? .nullUUID : dependencies.rumUUIDGenerator.generateUnique()
+        self.isInitialSession = isInitialSession
         self.sessionStartTime = startTime
         self.lastInteractionTime = startTime
         self.backgroundEventTrackingEnabled = backgroundEventTrackingEnabled
@@ -66,6 +70,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         startTime: Date
     ) {
         self.init(
+            isInitialSession: false,
             parent: expiredSession.parent,
             dependencies: expiredSession.dependencies,
             samplingRate: expiredSession.samplingRate,

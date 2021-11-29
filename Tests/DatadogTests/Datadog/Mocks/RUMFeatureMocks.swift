@@ -474,13 +474,15 @@ extension RUMSessionScope {
     }
 
     static func mockWith(
-        parent: RUMApplicationScope = .mockAny(),
+        isInitialSession: Bool = .mockAny(),
+        parent: RUMContextProvider = RUMContextProviderMock(),
         dependencies: RUMScopeDependencies = .mockAny(),
         samplingRate: Float = 100,
         startTime: Date = .mockAny(),
         backgroundEventTrackingEnabled: Bool = .mockAny()
     ) -> RUMSessionScope {
         return RUMSessionScope(
+            isInitialSession: isInitialSession,
             parent: parent,
             dependencies: dependencies,
             samplingRate: samplingRate,
