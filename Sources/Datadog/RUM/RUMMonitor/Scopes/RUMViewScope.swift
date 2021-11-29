@@ -8,9 +8,6 @@ import Foundation
 
 internal class RUMViewScope: RUMScope, RUMContextProvider {
     struct Constants {
-        static let backgroundViewURL = "com/datadog/background/view"
-        static let backgroundViewName = "Background"
-
         static let frozenFrameThresholdInNs = (0.07).toInt64Nanoseconds // 70ms
         static let slowRenderingThresholdFPS = 55.0
     }

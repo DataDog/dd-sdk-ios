@@ -155,6 +155,7 @@ extension RUMEventsMapper {
 struct RUMCommandMock: RUMCommand {
     var time = Date()
     var attributes: [AttributeKey: AttributeValue] = [:]
+    var canStartBackgroundView = false
 }
 
 extension RUMStartViewCommand {
