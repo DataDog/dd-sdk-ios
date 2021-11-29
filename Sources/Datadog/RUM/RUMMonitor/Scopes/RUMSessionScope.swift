@@ -13,6 +13,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         static let sessionTimeoutDuration: TimeInterval = 15 * 60 // 15 minutes
         /// Maximum duration of a session. If it gets exceeded, a new session is started.
         static let sessionMaxDuration: TimeInterval = 4 * 60 * 60 // 4 hours
+        /// The name of a view created when receiving an event while there is no active view and background events tracking  is enabled.
+        static let backgroundViewName = "Background"
+        /// The url of a view created when receiving an event while there is no active view and background events tracking is enabled.
+        static let backgroundViewURL = "com/datadog/background/view"
     }
 
     // MARK: - Child Scopes
@@ -25,7 +29,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     unowned let parent: RUMContextProvider
     private let dependencies: RUMScopeDependencies
 
-    /// Automatically detect background events
+    /// Automatically detect background events by creating "Background" view if no other view is active
     internal let backgroundEventTrackingEnabled: Bool
 
     /// This Session UUID. Equals `.nullUUID` if the Session is sampled.
@@ -107,14 +111,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             return true
         }
 
-        // Apply side effects
-        switch command {
-        case let command as RUMStartViewCommand:
-            startView(on: command)
-        case is RUMStartResourceCommand, is RUMAddUserActionCommand, is RUMStartUserActionCommand:
-            handleOrphanStartCommand(command: command)
-        default:
-            break
+        // Start an active view if necessary
+        if let startViewCommand = command as? RUMStartViewCommand {
+            startView(on: startViewCommand)
+        } else if !hasActiveView {
+            if backgroundEventTrackingEnabled && command.canStartBackgroundView {
+                startBackgroundView(on: command)
+            }
         }
 
         // Propagate command
@@ -131,6 +134,11 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
 
         return true
+    }
+
+    /// If there is an active view, which can receive commands.
+    private var hasActiveView: Bool {
+        return viewScopes.last?.isActiveView ?? false
     }
 
     // MARK: - RUMCommands Processing
@@ -150,22 +158,19 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         )
     }
 
-    // MARK: - Private    
-    private func handleOrphanStartCommand(command: RUMCommand) {
-        if viewScopes.isEmpty && backgroundEventTrackingEnabled {
-            viewScopes.append(
-                RUMViewScope(
-                    parent: self,
-                    dependencies: dependencies,
-                    identity: RUMViewScope.Constants.backgroundViewURL,
-                    path: RUMViewScope.Constants.backgroundViewURL,
-                    name: RUMViewScope.Constants.backgroundViewName,
-                    attributes: command.attributes,
-                    customTimings: [:],
-                    startTime: command.time
-                )
+    private func startBackgroundView(on command: RUMCommand) {
+        viewScopes.append(
+            RUMViewScope(
+                parent: self,
+                dependencies: dependencies,
+                identity: Constants.backgroundViewURL,
+                path: Constants.backgroundViewURL,
+                name: Constants.backgroundViewName,
+                attributes: command.attributes,
+                customTimings: [:],
+                startTime: command.time
             )
-        }
+        )
     }
 
     private func timedOutOrExpired(currentTime: Date) -> Bool {
