@@ -101,6 +101,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         startInitialViewCommand.isInitialView = true
 
         let initialSession = RUMSessionScope(
+            isInitialSession: true,
             parent: self,
             dependencies: dependencies,
             samplingRate: samplingRate,
