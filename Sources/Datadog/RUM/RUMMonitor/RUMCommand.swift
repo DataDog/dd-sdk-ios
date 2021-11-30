@@ -36,11 +36,6 @@ internal struct RUMStartViewCommand: RUMCommand {
     /// The path of this View, rendered in RUM Explorer as `VIEW URL`.
     let path: String
 
-    /// Used to indicate if this command starts the very first View in the app.
-    /// * default `false` means _it's not yet known_,
-    /// * it can be set to `true` by the `RUMApplicationScope` which tracks this state.
-    var isInitialView = false
-
     init(
         time: Date,
         identity: RUMViewIdentifiable,

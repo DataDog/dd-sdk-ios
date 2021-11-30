@@ -93,6 +93,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 return nil // if the underlying identifiable (`UIVIewController`) no longer exists, skip transferring its scope
             }
             return RUMViewScope(
+                isInitialView: false,
                 parent: self,
                 dependencies: dependencies,
                 identity: expiredViewIdentifiable,
@@ -158,8 +159,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     // MARK: - RUMCommands Processing
 
     private func startView(on command: RUMStartViewCommand) {
+        let isStartingInitialView = isInitialSession && !hasTrackedAnyView
         viewScopes.append(
             RUMViewScope(
+                isInitialView: isStartingInitialView,
                 parent: self,
                 dependencies: dependencies,
                 identity: command.identity,
@@ -175,6 +178,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     private func startApplicationLaunchView(on command: RUMCommand) {
         viewScopes.append(
             RUMViewScope(
+                isInitialView: true,
                 parent: self,
                 dependencies: dependencies,
                 identity: Constants.applicationLaunchViewURL,
@@ -188,8 +192,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     }
 
     private func startBackgroundView(on command: RUMCommand) {
+        let isStartingInitialView = isInitialSession && !hasTrackedAnyView
         viewScopes.append(
             RUMViewScope(
+                isInitialView: isStartingInitialView,
                 parent: self,
                 dependencies: dependencies,
                 identity: Constants.backgroundViewURL,
