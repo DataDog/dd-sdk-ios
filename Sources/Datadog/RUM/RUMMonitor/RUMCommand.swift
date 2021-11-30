@@ -12,10 +12,11 @@ internal protocol RUMCommand {
     var time: Date { set get }
     /// Attributes associated with the command.
     var attributes: [AttributeKey: AttributeValue] { set get }
-
     /// Whether or not receiving this command should start the "Background" view if no view is active
     /// and ``Datadog.Configuration.Builder.trackBackgroundEvents(_:)`` is enabled.
     var canStartBackgroundView: Bool { get }
+    /// Whether or not receiving this command should start the "ApplicationLaunch" view if no view was yet started in current app process.
+    var canStartApplicationLaunchView: Bool { get }
 }
 
 // MARK: - RUM View related commands
@@ -24,6 +25,7 @@ internal struct RUMStartViewCommand: RUMCommand {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, it should start its own view, not the "Background"
+    let canStartApplicationLaunchView = false // no, it should start its own view, not the "ApplicationLaunch"
 
     /// The value holding stable identity of the RUM View.
     let identity: RUMViewIdentifiable
@@ -58,6 +60,7 @@ internal struct RUMStopViewCommand: RUMCommand {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't expect receiving it without an active view
+    let canStartApplicationLaunchView = false // no, we don't expect receiving it without an active view
 
     /// The value holding stable identity of the RUM View.
     let identity: RUMViewIdentifiable
@@ -67,6 +70,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we want to track errors in "Background" view
+    let canStartApplicationLaunchView = true // yes, we want to track errors in "ApplicationLaunch" view
 
     /// The error message.
     let message: String
@@ -124,6 +128,7 @@ internal struct RUMAddViewTimingCommand: RUMCommand {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, it doesn't make sense to start "Background" view on receiving custom timing, as it will be `0ns` timing
+    let canStartApplicationLaunchView = false // no, it doesn't make sense to start "ApplicationLaunch" view on receiving custom timing, as it will be `0ns` timing
 
     /// The name of the timing. It will be used as a JSON key, whereas the value will be the timing duration,
     /// measured since the start of the View.
@@ -149,6 +154,7 @@ internal struct RUMStartResourceCommand: RUMResourceCommand {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we want to track resources in "Background" view
+    let canStartApplicationLaunchView = true // yes, we want to track resources in "ApplicationLaunch" view
 
     /// Resource url
     let url: String
@@ -167,6 +173,7 @@ internal struct RUMAddResourceMetricsCommand: RUMResourceCommand {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartResourceCommand`)
+    let canStartApplicationLaunchView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartResourceCommand`)
 
     /// Resource metrics.
     let metrics: ResourceMetrics
@@ -177,6 +184,7 @@ internal struct RUMStopResourceCommand: RUMResourceCommand {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartResourceCommand`)
+    let canStartApplicationLaunchView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartResourceCommand`)
 
     /// A type of the Resource
     let kind: RUMResourceType
@@ -191,6 +199,7 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartResourceCommand`)
+    let canStartApplicationLaunchView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartResourceCommand`)
 
     /// The error message.
     let errorMessage: String
@@ -263,6 +272,7 @@ internal struct RUMStartUserActionCommand: RUMUserActionCommand {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we want to track actions in "Background" view (e.g. it makes sense for custom actions)
+    let canStartApplicationLaunchView = true // yes, we want to track actions in "ApplicationLaunch" view (e.g. it makes sense for custom actions)
 
     let actionType: RUMUserActionType
     let name: String
@@ -273,6 +283,7 @@ internal struct RUMStopUserActionCommand: RUMUserActionCommand {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartUserActionCommand`)
+    let canStartApplicationLaunchView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartUserActionCommand`)
 
     let actionType: RUMUserActionType
     let name: String?
@@ -283,6 +294,7 @@ internal struct RUMAddUserActionCommand: RUMUserActionCommand {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we want to track actions in "Background" view (e.g. it makes sense for custom actions)
+    let canStartApplicationLaunchView = true // yes, we want to track actions in "ApplicationLaunch" view (e.g. it makes sense for custom actions)
 
     let actionType: RUMUserActionType
     let name: String
@@ -294,6 +306,7 @@ internal struct RUMAddLongTaskCommand: RUMCommand {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't expect receiving long tasks in "Background" view
+    let canStartApplicationLaunchView = true // yes, we want to track long tasks in "ApplicationLaunch" view (e.g. any hitches before presenting first UI)
 
     let duration: TimeInterval
 }
