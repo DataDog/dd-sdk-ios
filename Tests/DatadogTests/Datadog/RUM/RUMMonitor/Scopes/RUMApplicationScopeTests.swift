@@ -95,15 +95,6 @@ class RUMApplicationScopeTests: XCTestCase {
         XCTAssertFalse(nextSession.isInitialSession, "Any next session in the application must be marked as 'not initial'")
     }
 
-    func testUntilSessionIsStarted_itIgnoresOtherCommands() {
-        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: .mockAny(), samplingRate: 100, backgroundEventTrackingEnabled: .mockAny())
-
-        XCTAssertTrue(scope.process(command: RUMStopViewCommand.mockAny()))
-        XCTAssertTrue(scope.process(command: RUMAddUserActionCommand.mockAny()))
-        XCTAssertTrue(scope.process(command: RUMStopResourceCommand.mockAny()))
-        XCTAssertNil(scope.sessionScope)
-    }
-
     // MARK: - RUM Session Sampling
 
     func testWhenSamplingRateIs100_allEventsAreSent() {

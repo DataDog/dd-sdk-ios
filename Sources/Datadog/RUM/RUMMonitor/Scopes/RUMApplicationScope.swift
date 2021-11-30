@@ -29,7 +29,7 @@ internal struct RUMScopeDependencies {
 internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     // MARK: - Child Scopes
 
-    /// Session scope. It gets created with the first `.startView` event.
+    /// Session scope. It gets created with the first event.
     /// Might be re-created later according to session duration constraints.
     private(set) var sessionScope: RUMSessionScope?
 
@@ -69,18 +69,15 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     // MARK: - RUMScope
 
     func process(command: RUMCommand) -> Bool {
+        if sessionScope == nil {
+            startInitialSession(on: command)
+        }
+
         if let currentSession = sessionScope {
             sessionScope = manage(childScope: sessionScope, byPropagatingCommand: command)
 
             if sessionScope == nil { // if session expired
                 refresh(expiredSession: currentSession, on: command)
-            }
-        } else {
-            switch command {
-            case let command as RUMStartViewCommand:
-                startInitialSession(on: command)
-            default:
-                break
             }
         }
 
@@ -96,10 +93,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         _ = refreshedSession.process(command: command)
     }
 
-    private func startInitialSession(on command: RUMStartViewCommand) {
-        var startInitialViewCommand = command
-        startInitialViewCommand.isInitialView = true
-
+    private func startInitialSession(on command: RUMCommand) {
         let initialSession = RUMSessionScope(
             isInitialSession: true,
             parent: self,
@@ -108,10 +102,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             startTime: command.time,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
         )
-
         sessionScope = initialSession
         sessionScopeDidUpdate(initialSession)
-        _ = initialSession.process(command: startInitialViewCommand)
     }
 
     private func sessionScopeDidUpdate(_ sessionScope: RUMSessionScope) {
