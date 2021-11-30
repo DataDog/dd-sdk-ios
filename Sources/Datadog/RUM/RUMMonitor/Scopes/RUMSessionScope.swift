@@ -17,12 +17,22 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         static let backgroundViewName = "Background"
         /// The url of a view created when receiving an event while there is no active view and background events tracking is enabled.
         static let backgroundViewURL = "com/datadog/background/view"
+        /// The name of a view created when receiving an event before any view was started in the initial session.
+        static let applicationLaunchViewName = "ApplicationLaunch"
+        /// The url of a view created when receiving an event before any view was started in the initial session.
+        static let applicationLaunchViewURL = "com/datadog/application-launch/view"
     }
 
     // MARK: - Child Scopes
 
     /// Active View scopes. Scopes are added / removed when the View starts / stops displaying.
-    private(set) var viewScopes: [RUMViewScope] = []
+    private(set) var viewScopes: [RUMViewScope] = [] {
+        didSet {
+            hasTrackedAnyView = hasTrackedAnyView || !viewScopes.isEmpty
+        }
+    }
+    /// If this session has ever tracked any view.
+    private var hasTrackedAnyView = false
 
     // MARK: - Initialization
 
@@ -116,13 +126,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             return true
         }
 
-        // Start an active view if necessary
+        // Consider starting an active view, "ApplicationLaunch" view or "Background" view
         if let startViewCommand = command as? RUMStartViewCommand {
             startView(on: startViewCommand)
-        } else if !hasActiveView {
-            if backgroundEventTrackingEnabled && command.canStartBackgroundView {
-                startBackgroundView(on: command)
-            }
+        } else if isInitialSession && !hasTrackedAnyView && command.canStartApplicationLaunchView {
+            startApplicationLaunchView(on: command)
+        } else if backgroundEventTrackingEnabled && !hasActiveView && command.canStartBackgroundView {
+            startBackgroundView(on: command)
         }
 
         // Propagate command
@@ -141,9 +151,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         return true
     }
 
-    /// If there is an active view, which can receive commands.
+    /// If there is an active view.
     private var hasActiveView: Bool {
-        return viewScopes.last?.isActiveView ?? false
+        return viewScopes.contains { $0.isActiveView }
     }
 
     // MARK: - RUMCommands Processing
@@ -156,6 +166,21 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 identity: command.identity,
                 path: command.path,
                 name: command.name,
+                attributes: command.attributes,
+                customTimings: [:],
+                startTime: command.time
+            )
+        )
+    }
+
+    private func startApplicationLaunchView(on command: RUMCommand) {
+        viewScopes.append(
+            RUMViewScope(
+                parent: self,
+                dependencies: dependencies,
+                identity: Constants.applicationLaunchViewURL,
+                path: Constants.applicationLaunchViewURL,
+                name: Constants.applicationLaunchViewName,
                 attributes: command.attributes,
                 customTimings: [:],
                 startTime: command.time

@@ -156,6 +156,7 @@ struct RUMCommandMock: RUMCommand {
     var time = Date()
     var attributes: [AttributeKey: AttributeValue] = [:]
     var canStartBackgroundView = false
+    var canStartApplicationLaunchView = false
 }
 
 extension RUMStartViewCommand {
