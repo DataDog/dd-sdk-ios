@@ -1895,6 +1895,7 @@
 				6156CB9B24E18224008CB2B2 /* TracingWithRUMIntegration.swift */,
 				61FC5F4425CC23C9006BB4DE /* RUMWithCrashContextIntegration.swift */,
 				E13A880B257922EC004FB174 /* EnvironmentSpanIntegration.swift */,
+				9EB4B860274E79620041CD03 /* WebView */,
 				6112B11C25C84E7F00B37771 /* CrashReporting */,
 			);
 			path = FeaturesIntegration;
@@ -2944,7 +2945,6 @@
 				616CCE11250A181C009FED46 /* AutoInstrumentation */,
 				618DCFD524C7264100589570 /* UUIDs */,
 				61B22E5824F3E6A700DC26D2 /* Debugging */,
-				9EB4B860274E79620041CD03 /* WebView */,
 			);
 			path = RUM;
 			sourceTree = "<group>";

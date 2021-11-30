@@ -52,6 +52,10 @@ public extension WKUserContentController {
 private class DatadogMessageHandler: NSObject, WKScriptMessageHandler {
     static let name = "DatadogEventBridge"
     private let eventBridge: DatadogEventBridge
+    private let queue = DispatchQueue(
+        label: "com.datadoghq.JSEventBridge",
+        target: .global(qos: .userInteractive)
+    )
 
     init(eventBridge: DatadogEventBridge) {
         self.eventBridge = eventBridge
@@ -61,11 +65,12 @@ private class DatadogMessageHandler: NSObject, WKScriptMessageHandler {
         _ userContentController: WKUserContentController,
         didReceive message: WKScriptMessage
     ) {
-        print(message.name + String(describing: message.body))
-        do {
-            try eventBridge.consume(message.body)
-        } catch {
-            userLogger.error("Web Event Error", error: error)
+        queue.async {
+            do {
+                try self.eventBridge.consume(message.body)
+            } catch {
+                userLogger.error("🔥 Web Event Error: \(error)")
+            }
         }
     }
 }
