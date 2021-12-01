@@ -23,7 +23,7 @@ class RUMApplicationScopeTests: XCTestCase {
         XCTAssertNil(scope.context.activeUserActionID)
     }
 
-    func testWhenFirstViewIsStarted_itStartsNewSession() throws {
+    func testWhenFirstEventIsReceived_itStartsNewSession() throws {
         let expectation = self.expectation(description: "onSessionStart is called")
         let onSessionStart: RUMSessionListener = { sessionId, isDiscarded in
             XCTAssertTrue(sessionId.matches(regex: .uuidRegex))
@@ -41,7 +41,7 @@ class RUMApplicationScopeTests: XCTestCase {
         )
 
         XCTAssertNil(scope.sessionScope)
-        XCTAssertTrue(scope.process(command: RUMStartViewCommand.mockAny()))
+        XCTAssertTrue(scope.process(command: mockRandomRUMCommand()))
         waitForExpectations(timeout: 0.5)
 
         let sessionScope = try XCTUnwrap(scope.sessionScope)
