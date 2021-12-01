@@ -201,6 +201,12 @@ extension RUMActionEvent: RandomMockable {
     }
 }
 
+extension RUMErrorEvent.Error.SourceType: RandomMockable {
+    static func mockRandom() -> RUMErrorEvent.Error.SourceType {
+        return [.android, .browser, .ios, .reactNative].randomElement()!
+    }
+}
+
 extension RUMErrorEvent: RandomMockable {
     static func mockRandom() -> RUMErrorEvent {
         return RUMErrorEvent(
@@ -229,7 +235,7 @@ extension RUMErrorEvent: RandomMockable {
                     url: .mockRandom()
                 ),
                 source: [.source, .network, .custom].randomElement()!,
-                sourceType: [.android, .browser, .ios, .reactNative].randomElement()!,
+                sourceType: .mockRandom(),
                 stack: .mockRandom(),
                 type: .mockRandom()
             ),
