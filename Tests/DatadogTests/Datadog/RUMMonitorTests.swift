@@ -928,6 +928,53 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(session.viewVisits[2].name, "another view in `.granted` consent")
     }
 
+    // MARK: - Tracking App Launch Events
+
+    func testWhenCollectingEventsBeforeStartingFirstView_itTracksThemWithinApplicationLaunchView() throws {
+        // Given
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(
+                dateProvider: RelativeDateProvider(
+                    startingFrom: Date(),
+                    advancingBySeconds: 1
+                )
+            )
+        )
+        defer { RUMFeature.instance?.deinitialize() }
+
+        let monitor = RUMMonitor.initialize()
+
+        // When
+        monitor.addUserAction(type: .custom, name: "A1")
+        monitor.addError(message: "E1")
+        monitor.startResourceLoading(resourceKey: "R1", url: URL(string: "https://foo.com/R1")!)
+        monitor.startView(key: "FirstView")
+        monitor.addUserAction(type: .tap, name: "A2")
+        monitor.stopResourceLoading(resourceKey: "R1", statusCode: 200, kind: .native)
+
+        // Then
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 11)
+        let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)[0]
+
+        XCTAssertEqual(session.viewVisits.count, 2, "It should track 2 views")
+
+        let appLaunchView = session.viewVisits[0]
+        XCTAssertEqual(appLaunchView.name, "ApplicationLaunch", "It should track 'ApplicationLaunch' view")
+        XCTAssertEqual(appLaunchView.actionEvents.count, 2, "'ApplicationLaunch' should track 2 actions")
+        XCTAssertEqual(appLaunchView.actionEvents[0].action.type, .applicationStart, "'ApplicationLaunch' should track 'application start' action")
+        XCTAssertEqual(appLaunchView.actionEvents[1].action.target?.name, "A1", "'ApplicationLaunch' should track 'A1' action")
+        XCTAssertEqual(appLaunchView.errorEvents.count, 1, "'ApplicationLaunch' should track 1 error")
+        XCTAssertEqual(appLaunchView.errorEvents[0].error.message, "E1", "'ApplicationLaunch' should track 'E1' error")
+        XCTAssertEqual(appLaunchView.resourceEvents.count, 1, "'ApplicationLaunch' should track 1 resource")
+        XCTAssertEqual(appLaunchView.resourceEvents[0].resource.url, "https://foo.com/R1", "'ApplicationLaunch' should track 'R1' resource")
+
+        let userView = session.viewVisits[1]
+        XCTAssertEqual(userView.name, "FirstView", "It should track user view")
+        XCTAssertEqual(userView.actionEvents.count, 1, "User view should track 1 action")
+        XCTAssertEqual(userView.actionEvents[0].action.target?.name, "A2", "User view should track 'A2' action")
+    }
+
     // MARK: - Data Scrubbing
 
     func testModifyingEventsBeforeTheyGetSend() throws {
