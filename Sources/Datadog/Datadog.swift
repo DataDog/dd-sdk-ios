@@ -70,18 +70,40 @@ public class Datadog {
         trackingConsent: TrackingConsent,
         configuration: Configuration
     ) {
+        var mutableConfiguration = configuration
+
         // TODO: RUMM-511 remove this warning
         #if targetEnvironment(macCatalyst)
         consolePrint("⚠️ Catalyst is not officially supported by Datadog SDK: some features may NOT be functional!")
         #endif
+
+        let mobileDevice = MobileDevice.current
+        let debugOverride = mobileDevice.processInfo.arguments.contains(LaunchArguments.Debug)
+        if debugOverride {
+            consolePrint("⚠️ Overriding sampling, verbosity, and upload frequency due to \(LaunchArguments.Debug) launch argument")
+            let rebuilder = Configuration.Builder(configuration: mutableConfiguration)
+                .set(rumSessionsSamplingRate: 100)
+                .set(batchSize: .small)
+                .set(uploadFrequency: .frequent)
+            mutableConfiguration = rebuilder.build()
+            Datadog.verbosityLevel = .debug
+        }
+
         do {
             try initializeOrThrow(
                 initialTrackingConsent: trackingConsent,
                 configuration: try FeaturesConfiguration(
-                    configuration: configuration,
+                    configuration: mutableConfiguration,
                     appContext: appContext
                 )
             )
+
+            // Now that RUM is potentially initialized, override the debugRUM value
+            let debugRumOverride = mobileDevice.processInfo.arguments.contains(LaunchArguments.DebugRUM)
+            if debugRumOverride {
+                consolePrint("⚠️ Overriding RUM debugging due to \(LaunchArguments.DebugRUM) launch argument")
+                Datadog.debugRUM = true
+            }
         } catch {
             consolePrint("\(error)")
         }
@@ -140,6 +162,10 @@ public class Datadog {
     }
 
     // MARK: - Internal
+    internal struct LaunchArguments {
+        static let Debug = "DD_DEBUG"
+        static let DebugRUM = "DD_DEBUG_RUM"
+    }
 
     internal static var instance: Datadog?
 

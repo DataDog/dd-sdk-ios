@@ -786,6 +786,7 @@ extension MobileDevice {
         model: String = .mockAny(),
         osName: String = .mockAny(),
         osVersion: String = .mockAny(),
+        processInfo: ProcessInfo = ProcessInfoMock(),
         enableBatteryStatusMonitoring: @escaping () -> Void = {},
         resetBatteryStatusMonitoring: @escaping () -> Void = {},
         currentBatteryStatus: @escaping () -> BatteryStatus = { .mockAny() }
@@ -794,6 +795,7 @@ extension MobileDevice {
             model: model,
             osName: osName,
             osVersion: osVersion,
+            processInfo: processInfo,
             enableBatteryStatusMonitoring: enableBatteryStatusMonitoring,
             resetBatteryStatusMonitoring: resetBatteryStatusMonitoring,
             currentBatteryStatus: currentBatteryStatus

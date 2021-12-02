@@ -345,6 +345,11 @@ extension Datadog {
                 )
             }
 
+            /// Used internally to rebuild a configuration based on launch arguments
+            internal init(configuration: Configuration) {
+                self.configuration = configuration
+            }
+
             /// Sets the Datadog server endpoint where data is sent.
             ///
             /// If set, it will override values set by any of these deprecated APIs:

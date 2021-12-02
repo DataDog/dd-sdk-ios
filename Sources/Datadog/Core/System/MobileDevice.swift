@@ -13,6 +13,7 @@ internal class MobileDevice {
     let model: String
     let osName: String
     let osVersion: String
+    let processInfo: ProcessInfo
 
     // MARK: - Battery status monitoring
 
@@ -40,6 +41,7 @@ internal class MobileDevice {
         model: String,
         osName: String,
         osVersion: String,
+        processInfo: ProcessInfo,
         enableBatteryStatusMonitoring: @escaping () -> Void,
         resetBatteryStatusMonitoring: @escaping () -> Void,
         currentBatteryStatus: @escaping () -> BatteryStatus
@@ -47,6 +49,7 @@ internal class MobileDevice {
         self.model = model
         self.osName = osName
         self.osVersion = osVersion
+        self.processInfo = processInfo
         self.enableBatteryStatusMonitoring = enableBatteryStatusMonitoring
         self.resetBatteryStatusMonitoring = resetBatteryStatusMonitoring
         self.currentBatteryStatus = currentBatteryStatus
@@ -63,6 +66,7 @@ internal class MobileDevice {
             model: uiDevice.model,
             osName: uiDevice.systemName,
             osVersion: uiDevice.systemVersion,
+            processInfo: processInfo,
             enableBatteryStatusMonitoring: { uiDevice.isBatteryMonitoringEnabled = true },
             resetBatteryStatusMonitoring: { uiDevice.isBatteryMonitoringEnabled = wasBatteryMonitoringEnabled },
             currentBatteryStatus: {
@@ -74,28 +78,51 @@ internal class MobileDevice {
             }
         )
     }
+
+    // MARK: - Singleton
+    private static var _instance: MobileDevice?
+
     /// Returns current mobile device  if `UIDevice` is available on this platform.
     /// On other platforms returns `nil`.
     static var current: MobileDevice {
-        #if !targetEnvironment(simulator)
-        // Real device
-        return MobileDevice(
-            uiDevice: UIDevice.current,
-            processInfo: ProcessInfo.processInfo,
-            notificationCenter: .default
-        )
-        #else
-        // iOS Simulator - battery monitoring doesn't work on Simulator, so return "always OK" value
-        return MobileDevice(
-            model: UIDevice.current.model,
-            osName: UIDevice.current.systemName,
-            osVersion: UIDevice.current.systemVersion,
-            enableBatteryStatusMonitoring: {},
-            resetBatteryStatusMonitoring: {},
-            currentBatteryStatus: { BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false) }
-        )
-        #endif
+        get {
+            if let instance = _instance {
+                return instance
+            }
+
+            #if !targetEnvironment(simulator)
+            // Real device
+            _instance = MobileDevice(
+                uiDevice: UIDevice.current,
+                processInfo: ProcessInfo.processInfo,
+                notificationCenter: .default
+            )
+            #else
+            // iOS Simulator - battery monitoring doesn't work on Simulator, so return "always OK" value
+            _instance = MobileDevice(
+                model: UIDevice.current.model,
+                osName: UIDevice.current.systemName,
+                osVersion: UIDevice.current.systemVersion,
+                processInfo: ProcessInfo.processInfo,
+                enableBatteryStatusMonitoring: {},
+                resetBatteryStatusMonitoring: {},
+                currentBatteryStatus: { BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false) }
+            )
+            #endif
+
+            // swiftlint:disable:next force_unwrapping
+            return _instance!
+        }
+        set(newInstance) {
+            _instance = newInstance
+        }
     }
+
+    #if DD_SDK_COMPILED_FOR_TESTING
+    static func clearForTesting() {
+        _instance = nil
+    }
+    #endif
 
     private static func toBatteryState(_ uiDeviceBatteryState: UIDevice.BatteryState) -> BatteryStatus.State {
         switch uiDeviceBatteryState {
