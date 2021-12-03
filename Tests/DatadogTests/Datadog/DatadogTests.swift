@@ -25,6 +25,8 @@ class DatadogTests: XCTestCase {
     }
 
     override func tearDown() {
+        MobileDevice.current = .init()
+
         consolePrint = { print($0) }
         printFunction = nil
         XCTAssertFalse(Datadog.isInitialized)
@@ -338,7 +340,6 @@ class DatadogTests: XCTestCase {
         MobileDevice.current = MobileDevice.mockWith(
             processInfo: mockProcessInfo
         )
-        defer { MobileDevice.current = .init() }
 
         let configuration = rumBuilder
             .set(uploadFrequency: .rare)
@@ -375,7 +376,6 @@ class DatadogTests: XCTestCase {
         MobileDevice.current = MobileDevice.mockWith(
             processInfo: mockProcessInfo
         )
-        defer { MobileDevice.current = .init() }
 
         let configuration = rumBuilder
             .build()
