@@ -309,6 +309,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
 
     override public func addError(
         message: String,
+        type: String?,
         source: RUMErrorSource,
         stack: String?,
         attributes: [AttributeKey: AttributeValue],
@@ -323,7 +324,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             }
             return nil
         }()
-        addError(message: message, type: nil, stack: stack, source: RUMInternalErrorSource(source), attributes: attributes)
+        addError(message: message, type: type, stack: stack, source: RUMInternalErrorSource(source), attributes: attributes)
     }
 
     internal func addError(
