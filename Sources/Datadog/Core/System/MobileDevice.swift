@@ -79,50 +79,29 @@ internal class MobileDevice {
         )
     }
 
-    // MARK: - Singleton
-    private static var _instance: MobileDevice?
-
-    /// Returns current mobile device  if `UIDevice` is available on this platform.
-    /// On other platforms returns `nil`.
-    static var current: MobileDevice {
-        get {
-            if let instance = _instance {
-                return instance
-            }
-
-            #if !targetEnvironment(simulator)
-            // Real device
-            _instance = MobileDevice(
-                uiDevice: UIDevice.current,
-                processInfo: ProcessInfo.processInfo,
-                notificationCenter: .default
-            )
-            #else
-            // iOS Simulator - battery monitoring doesn't work on Simulator, so return "always OK" value
-            _instance = MobileDevice(
-                model: UIDevice.current.model,
-                osName: UIDevice.current.systemName,
-                osVersion: UIDevice.current.systemVersion,
-                processInfo: ProcessInfo.processInfo,
-                enableBatteryStatusMonitoring: {},
-                resetBatteryStatusMonitoring: {},
-                currentBatteryStatus: { BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false) }
-            )
-            #endif
-
-            // swiftlint:disable:next force_unwrapping
-            return _instance!
-        }
-        set(newInstance) {
-            _instance = newInstance
-        }
+    convenience init() {
+        #if !targetEnvironment(simulator)
+        // Real device
+        self.init(
+            uiDevice: UIDevice.current,
+            processInfo: ProcessInfo.processInfo,
+            notificationCenter: .default
+        )
+        #else
+        // iOS Simulator - battery monitoring doesn't work on Simulator, so return "always OK" value
+        self.init(
+            model: UIDevice.current.model,
+            osName: UIDevice.current.systemName,
+            osVersion: UIDevice.current.systemVersion,
+            processInfo: ProcessInfo.processInfo,
+            enableBatteryStatusMonitoring: {},
+            resetBatteryStatusMonitoring: {},
+            currentBatteryStatus: { BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false) }
+        )
+        #endif
     }
 
-    #if DD_SDK_COMPILED_FOR_TESTING
-    static func clearForTesting() {
-        _instance = nil
-    }
-    #endif
+    static var current = MobileDevice()
 
     private static func toBatteryState(_ uiDeviceBatteryState: UIDevice.BatteryState) -> BatteryStatus.State {
         switch uiDeviceBatteryState {

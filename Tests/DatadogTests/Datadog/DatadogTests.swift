@@ -18,7 +18,6 @@ class DatadogTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        MobileDevice.clearForTesting()
 
         XCTAssertFalse(Datadog.isInitialized)
         printFunction = PrintFunctionMock()
@@ -339,6 +338,7 @@ class DatadogTests: XCTestCase {
         MobileDevice.current = MobileDevice.mockWith(
             processInfo: mockProcessInfo
         )
+        defer { MobileDevice.current = .init() }
 
         let configuration = rumBuilder
             .set(uploadFrequency: .rare)
@@ -375,6 +375,7 @@ class DatadogTests: XCTestCase {
         MobileDevice.current = MobileDevice.mockWith(
             processInfo: mockProcessInfo
         )
+        defer { MobileDevice.current = .init() }
 
         let configuration = rumBuilder
             .build()
