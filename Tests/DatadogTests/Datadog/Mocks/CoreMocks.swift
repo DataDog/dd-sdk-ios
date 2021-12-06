@@ -328,13 +328,15 @@ extension AppContext {
         bundleType: BundleType = .iOSApp,
         bundleIdentifier: String? = .mockAny(),
         bundleVersion: String? = .mockAny(),
-        bundleName: String? = .mockAny()
+        bundleName: String? = .mockAny(),
+        processInfo: ProcessInfo = ProcessInfoMock()
     ) -> AppContext {
         return AppContext(
             bundleType: bundleType,
             bundleIdentifier: bundleIdentifier,
             bundleVersion: bundleVersion,
-            bundleName: bundleName
+            bundleName: bundleName,
+            processInfo: processInfo
         )
     }
 }
@@ -786,7 +788,6 @@ extension MobileDevice {
         model: String = .mockAny(),
         osName: String = .mockAny(),
         osVersion: String = .mockAny(),
-        processInfo: ProcessInfo = ProcessInfoMock(),
         enableBatteryStatusMonitoring: @escaping () -> Void = {},
         resetBatteryStatusMonitoring: @escaping () -> Void = {},
         currentBatteryStatus: @escaping () -> BatteryStatus = { .mockAny() }
@@ -795,7 +796,6 @@ extension MobileDevice {
             model: model,
             osName: osName,
             osVersion: osVersion,
-            processInfo: processInfo,
             enableBatteryStatusMonitoring: enableBatteryStatusMonitoring,
             resetBatteryStatusMonitoring: resetBatteryStatusMonitoring,
             currentBatteryStatus: currentBatteryStatus

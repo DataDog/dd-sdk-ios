@@ -13,7 +13,6 @@ internal class MobileDevice {
     let model: String
     let osName: String
     let osVersion: String
-    let processInfo: ProcessInfo
 
     // MARK: - Battery status monitoring
 
@@ -41,7 +40,6 @@ internal class MobileDevice {
         model: String,
         osName: String,
         osVersion: String,
-        processInfo: ProcessInfo,
         enableBatteryStatusMonitoring: @escaping () -> Void,
         resetBatteryStatusMonitoring: @escaping () -> Void,
         currentBatteryStatus: @escaping () -> BatteryStatus
@@ -49,7 +47,6 @@ internal class MobileDevice {
         self.model = model
         self.osName = osName
         self.osVersion = osVersion
-        self.processInfo = processInfo
         self.enableBatteryStatusMonitoring = enableBatteryStatusMonitoring
         self.resetBatteryStatusMonitoring = resetBatteryStatusMonitoring
         self.currentBatteryStatus = currentBatteryStatus
@@ -66,7 +63,6 @@ internal class MobileDevice {
             model: uiDevice.model,
             osName: uiDevice.systemName,
             osVersion: uiDevice.systemVersion,
-            processInfo: processInfo,
             enableBatteryStatusMonitoring: { uiDevice.isBatteryMonitoringEnabled = true },
             resetBatteryStatusMonitoring: { uiDevice.isBatteryMonitoringEnabled = wasBatteryMonitoringEnabled },
             currentBatteryStatus: {
@@ -93,15 +89,12 @@ internal class MobileDevice {
             model: UIDevice.current.model,
             osName: UIDevice.current.systemName,
             osVersion: UIDevice.current.systemVersion,
-            processInfo: ProcessInfo.processInfo,
             enableBatteryStatusMonitoring: {},
             resetBatteryStatusMonitoring: {},
             currentBatteryStatus: { BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false) }
         )
         #endif
     }
-
-    static var current = MobileDevice()
 
     private static func toBatteryState(_ uiDeviceBatteryState: UIDevice.BatteryState) -> BatteryStatus.State {
         switch uiDeviceBatteryState {

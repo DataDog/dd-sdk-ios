@@ -16,8 +16,10 @@ public class Datadog {
         internal let bundleVersion: String?
         /// Executable name (i.e. application name or app extension name)
         internal let bundleName: String?
+        /// Process info
+        internal let processInfo: ProcessInfo
 
-        public init(mainBundle: Bundle = Bundle.main) {
+        public init(mainBundle: Bundle = Bundle.main, processInfo: ProcessInfo = ProcessInfo.processInfo) {
             let bundleVersion = mainBundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
             let bundleShortVersion = mainBundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
 
@@ -25,7 +27,8 @@ public class Datadog {
                 bundleType: mainBundle.bundlePath.hasSuffix(".appex") ? .iOSAppExtension : .iOSApp,
                 bundleIdentifier: mainBundle.bundleIdentifier,
                 bundleVersion: bundleShortVersion ?? bundleVersion,
-                bundleName: mainBundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String
+                bundleName: mainBundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String,
+                processInfo: processInfo
             )
         }
 
@@ -33,12 +36,14 @@ public class Datadog {
             bundleType: BundleType,
             bundleIdentifier: String?,
             bundleVersion: String?,
-            bundleName: String?
+            bundleName: String?,
+            processInfo: ProcessInfo
         ) {
             self.bundleType = bundleType
             self.bundleIdentifier = bundleIdentifier
             self.bundleVersion = bundleVersion
             self.bundleName = bundleName
+            self.processInfo = processInfo
         }
     }
 
@@ -70,36 +75,22 @@ public class Datadog {
         trackingConsent: TrackingConsent,
         configuration: Configuration
     ) {
-        var mutableConfiguration = configuration
-
         // TODO: RUMM-511 remove this warning
         #if targetEnvironment(macCatalyst)
         consolePrint("⚠️ Catalyst is not officially supported by Datadog SDK: some features may NOT be functional!")
         #endif
 
-        let mobileDevice = MobileDevice.current
-        let debugOverride = mobileDevice.processInfo.arguments.contains(LaunchArguments.Debug)
-        if debugOverride {
-            consolePrint("⚠️ Overriding sampling, verbosity, and upload frequency due to \(LaunchArguments.Debug) launch argument")
-            let rebuilder = Configuration.Builder(configuration: mutableConfiguration)
-                .set(rumSessionsSamplingRate: 100)
-                .set(batchSize: .small)
-                .set(uploadFrequency: .frequent)
-            mutableConfiguration = rebuilder.build()
-            Datadog.verbosityLevel = .debug
-        }
-
         do {
             try initializeOrThrow(
                 initialTrackingConsent: trackingConsent,
                 configuration: try FeaturesConfiguration(
-                    configuration: mutableConfiguration,
+                    configuration: configuration,
                     appContext: appContext
                 )
             )
 
             // Now that RUM is potentially initialized, override the debugRUM value
-            let debugRumOverride = mobileDevice.processInfo.arguments.contains(LaunchArguments.DebugRUM)
+            let debugRumOverride = appContext.processInfo.arguments.contains(LaunchArguments.DebugRUM)
             if debugRumOverride {
                 consolePrint("⚠️ Overriding RUM debugging due to \(LaunchArguments.DebugRUM) launch argument")
                 Datadog.debugRUM = true
@@ -220,7 +211,7 @@ public class Datadog {
             consentProvider: consentProvider,
             performance: configuration.common.performance,
             httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
-            mobileDevice: MobileDevice.current,
+            mobileDevice: MobileDevice(),
             dateProvider: dateProvider,
             dateCorrector: dateCorrector,
             userInfoProvider: userInfoProvider,

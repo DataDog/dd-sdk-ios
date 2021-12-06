@@ -152,6 +152,12 @@ extension FeaturesConfiguration {
         let source = (configuration.additionalConfiguration[CrossPlatformAttributes.ddsource] as? String) ?? Datadog.Constants.ddsource
         let sdkVersion = (configuration.additionalConfiguration[CrossPlatformAttributes.sdkVersion] as? String) ?? __sdkVersion
 
+        let debugOverride = appContext.processInfo.arguments.contains(Datadog.LaunchArguments.Debug)
+        if debugOverride {
+            consolePrint("⚠️ Overriding sampling, verbosity, and upload frequency due to \(Datadog.LaunchArguments.Debug) launch argument")
+            Datadog.verbosityLevel = .debug
+        }
+
         let common = Common(
             applicationName: appContext.bundleName ?? appContext.bundleType.rawValue,
             applicationVersion: appContext.bundleVersion ?? "0.0.0",
@@ -159,8 +165,8 @@ extension FeaturesConfiguration {
             serviceName: configuration.serviceName ?? appContext.bundleIdentifier ?? "ios",
             environment: try ifValid(environment: configuration.environment),
             performance: PerformancePreset(
-                batchSize: configuration.batchSize,
-                uploadFrequency: configuration.uploadFrequency,
+                batchSize: debugOverride ? .small : configuration.batchSize,
+                uploadFrequency: debugOverride ? .frequent : configuration.uploadFrequency,
                 bundleType: appContext.bundleType
             ),
             source: source,
@@ -205,7 +211,7 @@ extension FeaturesConfiguration {
                     uploadURL: try ifValid(endpointURLString: rumEndpoint.url),
                     clientToken: try ifValid(clientToken: configuration.clientToken),
                     applicationID: rumApplicationID,
-                    sessionSamplingRate: configuration.rumSessionsSamplingRate,
+                    sessionSamplingRate: debugOverride ? 100.0 : configuration.rumSessionsSamplingRate,
                     viewEventMapper: configuration.rumViewEventMapper,
                     resourceEventMapper: configuration.rumResourceEventMapper,
                     actionEventMapper: configuration.rumActionEventMapper,
