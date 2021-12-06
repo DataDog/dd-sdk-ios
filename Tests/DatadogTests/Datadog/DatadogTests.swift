@@ -18,6 +18,7 @@ class DatadogTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+
         XCTAssertFalse(Datadog.isInitialized)
         printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
@@ -327,6 +328,63 @@ class DatadogTests: XCTestCase {
                 "When client token for internal monitoring is NOT set, the Internal Monitoring feature should be disabled"
             )
         }
+    }
+
+    func testSupplyingDebugLaunchArgument_itOverridesUserSettings() {
+        let mockProcessInfo = ProcessInfoMock(
+            arguments: [Datadog.LaunchArguments.Debug]
+        )
+
+        let configuration = rumBuilder
+            .set(uploadFrequency: .rare)
+            .set(rumSessionsSamplingRate: 20.0)
+            .set(batchSize: .medium)
+            .build()
+
+        Datadog.initialize(
+            appContext: .mockWith(
+                processInfo: mockProcessInfo
+            ),
+            trackingConsent: .pending,
+            configuration: configuration
+        )
+
+        let expectedPerformancePreset = PerformancePreset(
+            batchSize: .small,
+            uploadFrequency: .frequent,
+            bundleType: .iOSApp
+        )
+        XCTAssertEqual(RUMFeature.instance?.configuration.sessionSamplingRate, 100)
+        XCTAssertEqual(TracingFeature.instance?.configuration.common.performance, expectedPerformancePreset)
+        XCTAssertEqual(LoggingFeature.instance?.configuration.common.performance, expectedPerformancePreset)
+        XCTAssertEqual(Datadog.verbosityLevel, .debug)
+
+        // Clear default verbosity after this test
+        Datadog.verbosityLevel = nil
+        Datadog.flushAndDeinitialize()
+    }
+
+    func testSupplyingRumDebugLaunchArgument_itSetsRumDebug() {
+        let mockProcessInfo = ProcessInfoMock(
+            arguments: [Datadog.LaunchArguments.DebugRUM]
+        )
+
+        let configuration = rumBuilder
+            .build()
+
+        Datadog.initialize(
+            appContext: .mockWith(
+                processInfo: mockProcessInfo
+            ),
+            trackingConsent: .pending,
+            configuration: configuration
+        )
+
+        XCTAssertTrue(Datadog.debugRUM)
+
+        // Clear debug after test
+        Datadog.debugRUM = false
+        Datadog.flushAndDeinitialize()
     }
 
     // MARK: - Public APIs

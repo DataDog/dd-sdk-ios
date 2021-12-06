@@ -330,13 +330,15 @@ extension AppContext {
         bundleType: BundleType = .iOSApp,
         bundleIdentifier: String? = .mockAny(),
         bundleVersion: String? = .mockAny(),
-        bundleName: String? = .mockAny()
+        bundleName: String? = .mockAny(),
+        processInfo: ProcessInfo = ProcessInfoMock()
     ) -> AppContext {
         return AppContext(
             bundleType: bundleType,
             bundleIdentifier: bundleIdentifier,
             bundleVersion: bundleVersion,
-            bundleName: bundleName
+            bundleName: bundleName,
+            processInfo: processInfo
         )
     }
 }

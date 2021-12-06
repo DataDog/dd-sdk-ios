@@ -16,8 +16,10 @@ public class Datadog {
         internal let bundleVersion: String?
         /// Executable name (i.e. application name or app extension name)
         internal let bundleName: String?
+        /// Process info
+        internal let processInfo: ProcessInfo
 
-        public init(mainBundle: Bundle = Bundle.main) {
+        public init(mainBundle: Bundle = Bundle.main, processInfo: ProcessInfo = ProcessInfo.processInfo) {
             let bundleVersion = mainBundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
             let bundleShortVersion = mainBundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
 
@@ -25,7 +27,8 @@ public class Datadog {
                 bundleType: mainBundle.bundlePath.hasSuffix(".appex") ? .iOSAppExtension : .iOSApp,
                 bundleIdentifier: mainBundle.bundleIdentifier,
                 bundleVersion: bundleShortVersion ?? bundleVersion,
-                bundleName: mainBundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String
+                bundleName: mainBundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String,
+                processInfo: processInfo
             )
         }
 
@@ -33,12 +36,14 @@ public class Datadog {
             bundleType: BundleType,
             bundleIdentifier: String?,
             bundleVersion: String?,
-            bundleName: String?
+            bundleName: String?,
+            processInfo: ProcessInfo
         ) {
             self.bundleType = bundleType
             self.bundleIdentifier = bundleIdentifier
             self.bundleVersion = bundleVersion
             self.bundleName = bundleName
+            self.processInfo = processInfo
         }
     }
 
@@ -74,6 +79,7 @@ public class Datadog {
         #if targetEnvironment(macCatalyst)
         consolePrint("⚠️ Catalyst is not officially supported by Datadog SDK: some features may NOT be functional!")
         #endif
+
         do {
             try initializeOrThrow(
                 initialTrackingConsent: trackingConsent,
@@ -82,6 +88,13 @@ public class Datadog {
                     appContext: appContext
                 )
             )
+
+            // Now that RUM is potentially initialized, override the debugRUM value
+            let debugRumOverride = appContext.processInfo.arguments.contains(LaunchArguments.DebugRUM)
+            if debugRumOverride {
+                consolePrint("⚠️ Overriding RUM debugging due to \(LaunchArguments.DebugRUM) launch argument")
+                Datadog.debugRUM = true
+            }
         } catch {
             consolePrint("\(error)")
         }
@@ -140,6 +153,10 @@ public class Datadog {
     }
 
     // MARK: - Internal
+    internal struct LaunchArguments {
+        static let Debug = "DD_DEBUG"
+        static let DebugRUM = "DD_DEBUG_RUM"
+    }
 
     internal static var instance: Datadog?
 
@@ -194,7 +211,7 @@ public class Datadog {
             consentProvider: consentProvider,
             performance: configuration.common.performance,
             httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
-            mobileDevice: MobileDevice.current,
+            mobileDevice: MobileDevice(),
             dateProvider: dateProvider,
             dateCorrector: dateCorrector,
             userInfoProvider: userInfoProvider,

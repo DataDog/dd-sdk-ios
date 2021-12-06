@@ -22,7 +22,7 @@ extension FeaturesCommonDependencies {
             consentProvider: ConsentProvider(initialConsent: .granted),
             performance: .benchmarksPreset,
             httpClient: HTTPClient(),
-            mobileDevice: .current,
+            mobileDevice: MobileDevice(),
             dateProvider: SystemDateProvider(),
             dateCorrector: DateCorrectorMock(),
             userInfoProvider: UserInfoProvider(),
