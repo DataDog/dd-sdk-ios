@@ -15,10 +15,10 @@ fileprivate class MockEventConsumer: WebEventConsumer {
     }
 }
 
-class DatadogEventBridgeTests: XCTestCase {
+class WebEventBridgeTests: XCTestCase {
     private let mockLogEventConsumer = MockEventConsumer()
     private let mockRUMEventConsumer = MockEventConsumer()
-    lazy var eventBridge = DatadogEventBridge(
+    lazy var eventBridge = WebEventBridge(
         logEventConsumer: mockLogEventConsumer,
         rumEventConsumer: mockRUMEventConsumer
     )
@@ -47,7 +47,7 @@ class DatadogEventBridgeTests: XCTestCase {
         ) { error in
             XCTAssertEqual(
                 error as? WebEventError,
-                WebEventError.missingKey(key: DatadogEventBridge.Constants.eventTypeKey)
+                WebEventError.missingKey(key: WebEventBridge.Constants.eventTypeKey)
             )
         }
     }

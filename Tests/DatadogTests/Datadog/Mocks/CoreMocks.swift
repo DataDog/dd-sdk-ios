@@ -1048,6 +1048,14 @@ extension DDError: RandomMockable {
     }
 }
 
+class MockHostsSanitizer: HostsSanitizing {
+    private(set) var sanitizations = [(hosts: Set<String>, warningMessage: String)]()
+    func sanitized(hosts: Set<String>, warningMessage: String) -> Set<String> {
+        sanitizations.append((hosts: hosts, warningMessage: warningMessage))
+        return hosts
+    }
+}
+
 // MARK: - Global Dependencies Mocks
 
 /// Mock which can be used to intercept messages printed by `developerLogger` or

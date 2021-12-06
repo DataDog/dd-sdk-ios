@@ -7,13 +7,17 @@
 import Foundation
 import WebKit
 
-// TODO: RUMM-1794 rename the method
+// TODO: RUMM-1794 rename the methods
 public extension WKUserContentController {
-    func addDatadogMessageHandler(allowedWebViewHosts: [String]) {
+    func addDatadogMessageHandler(allowedWebViewHosts: Set<String>) {
+        __addDatadogMessageHandler(allowedWebViewHosts: allowedWebViewHosts, hostsSanitizer: HostsSanitizer())
+    }
+
+    internal func __addDatadogMessageHandler(allowedWebViewHosts: Set<String>, hostsSanitizer: HostsSanitizing) {
         let bridgeName = DatadogMessageHandler.name
 
         let messageHandler = DatadogMessageHandler(
-            eventBridge: DatadogEventBridge(
+            eventBridge: WebEventBridge(
                 logEventConsumer: WebLogEventConsumer(),
                 rumEventConsumer: WebRUMEventConsumer()
             )
@@ -25,7 +29,11 @@ public extension WKUserContentController {
         let webkitMethodName = "window.webkit.messageHandlers.\(bridgeName).postMessage"
         // `WKScriptMessageHandlerWithReply` returns `Promise` and `browser-sdk` expects immediate values.
         // We inject a user script to return `allowedWebViewHosts` instead of using `WKScriptMessageHandlerWithReply`
-        let allowedWebViewHostsString = allowedWebViewHosts
+        let sanitizedHosts = hostsSanitizer.sanitized(
+            hosts: allowedWebViewHosts,
+            warningMessage: "The allowed WebView host configured for Datadog SDK is not valid"
+        )
+        let allowedWebViewHostsString = sanitizedHosts
             .map { return "\"\($0)\"" }
             .joined(separator: ",")
 
@@ -51,13 +59,13 @@ public extension WKUserContentController {
 
 private class DatadogMessageHandler: NSObject, WKScriptMessageHandler {
     static let name = "DatadogEventBridge"
-    private let eventBridge: DatadogEventBridge
+    private let eventBridge: WebEventBridge
     private let queue = DispatchQueue(
         label: "com.datadoghq.JSEventBridge",
         target: .global(qos: .userInteractive)
     )
 
-    init(eventBridge: DatadogEventBridge) {
+    init(eventBridge: WebEventBridge) {
         self.eventBridge = eventBridge
     }
 

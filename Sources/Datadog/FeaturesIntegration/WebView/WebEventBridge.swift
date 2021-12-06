@@ -19,7 +19,7 @@ internal enum WebEventError: Error, Equatable {
     case missingKey(key: String)
 }
 
-internal class DatadogEventBridge {
+internal class WebEventBridge {
     struct Constants {
         static let eventTypeKey = "eventType"
         static let eventKey = "event"
