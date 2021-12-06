@@ -101,13 +101,13 @@ class DatadogTests: XCTestCase {
             )
             verificationBlock()
 
-            RUMAutoInstrumentation.instance?.views?.swizzler.unswizzle()
+            RUMInstrumentation.instance?.viewControllerSwizzler?.unswizzle()
             URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
             Datadog.flushAndDeinitialize()
         }
 
         defer {
-            RUMAutoInstrumentation.instance?.views?.swizzler.unswizzle()
+            RUMInstrumentation.instance?.viewControllerSwizzler?.unswizzle()
             URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
         }
 
@@ -117,7 +117,7 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
             XCTAssertFalse(CrashReportingFeature.isEnabled)
-            XCTAssertNil(RUMAutoInstrumentation.instance)
+            XCTAssertNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
             XCTAssertNil(InternalMonitoringFeature.instance)
             // verify integrations:
@@ -129,7 +129,7 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
             XCTAssertFalse(CrashReportingFeature.isEnabled)
-            XCTAssertNil(RUMAutoInstrumentation.instance)
+            XCTAssertNotNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
             XCTAssertNil(InternalMonitoringFeature.instance)
             // verify integrations:
@@ -142,7 +142,7 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
             XCTAssertFalse(CrashReportingFeature.isEnabled)
-            XCTAssertNil(RUMAutoInstrumentation.instance)
+            XCTAssertNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
             XCTAssertNil(InternalMonitoringFeature.instance)
             // verify integrations:
@@ -154,7 +154,7 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
             XCTAssertFalse(CrashReportingFeature.isEnabled)
-            XCTAssertNil(RUMAutoInstrumentation.instance)
+            XCTAssertNotNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
             XCTAssertNil(InternalMonitoringFeature.instance)
             // verify integrations:
@@ -167,7 +167,7 @@ class DatadogTests: XCTestCase {
             XCTAssertFalse(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
             XCTAssertFalse(CrashReportingFeature.isEnabled)
-            XCTAssertNil(RUMAutoInstrumentation.instance)
+            XCTAssertNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
             XCTAssertNil(InternalMonitoringFeature.instance)
         }
@@ -177,7 +177,7 @@ class DatadogTests: XCTestCase {
             XCTAssertFalse(TracingFeature.isEnabled)
             XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
             XCTAssertFalse(CrashReportingFeature.isEnabled)
-            XCTAssertNil(RUMAutoInstrumentation.instance)
+            XCTAssertNotNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
             XCTAssertNil(InternalMonitoringFeature.instance)
         }
@@ -188,7 +188,7 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature cannot be enabled")
             XCTAssertFalse(CrashReportingFeature.isEnabled)
-            XCTAssertNil(RUMAutoInstrumentation.instance)
+            XCTAssertNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
             XCTAssertNil(InternalMonitoringFeature.instance)
             // verify integrations:
@@ -200,7 +200,7 @@ class DatadogTests: XCTestCase {
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled)
             XCTAssertFalse(CrashReportingFeature.isEnabled)
-            XCTAssertNil(RUMAutoInstrumentation.instance)
+            XCTAssertNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
             XCTAssertNil(InternalMonitoringFeature.instance)
             // verify integrations:
@@ -209,28 +209,28 @@ class DatadogTests: XCTestCase {
 
         verify(configuration: rumBuilder.trackUIKitRUMViews().build()) {
             XCTAssertTrue(RUMFeature.isEnabled)
-            XCTAssertNotNil(RUMAutoInstrumentation.instance?.views)
-            XCTAssertNil(RUMAutoInstrumentation.instance?.userActions)
+            XCTAssertNotNil(RUMInstrumentation.instance?.viewControllerSwizzler)
+            XCTAssertNil(RUMInstrumentation.instance?.userActionsAutoInstrumentation)
         }
         verify(
             configuration: rumBuilder.enableRUM(false).trackUIKitRUMViews().build()
         ) {
             XCTAssertFalse(RUMFeature.isEnabled)
-            XCTAssertNil(RUMAutoInstrumentation.instance?.views)
-            XCTAssertNil(RUMAutoInstrumentation.instance?.userActions)
+            XCTAssertNil(RUMInstrumentation.instance?.viewControllerSwizzler)
+            XCTAssertNil(RUMInstrumentation.instance?.userActionsAutoInstrumentation)
         }
 
         verify(configuration: rumBuilder.trackUIKitRUMActions().build()) {
             XCTAssertTrue(RUMFeature.isEnabled)
-            XCTAssertNil(RUMAutoInstrumentation.instance?.views)
-            XCTAssertNotNil(RUMAutoInstrumentation.instance?.userActions)
+            XCTAssertNil(RUMInstrumentation.instance?.viewControllerSwizzler)
+            XCTAssertNotNil(RUMInstrumentation.instance?.userActionsAutoInstrumentation)
         }
         verify(
             configuration: rumBuilder.enableRUM(false).trackUIKitRUMActions().build()
         ) {
             XCTAssertFalse(RUMFeature.isEnabled)
-            XCTAssertNil(RUMAutoInstrumentation.instance?.views)
-            XCTAssertNil(RUMAutoInstrumentation.instance?.userActions)
+            XCTAssertNil(RUMInstrumentation.instance?.viewControllerSwizzler)
+            XCTAssertNil(RUMInstrumentation.instance?.userActionsAutoInstrumentation)
         }
 
         verify(configuration: defaultBuilder.trackURLSession(firstPartyHosts: ["example.com"]).build()) {

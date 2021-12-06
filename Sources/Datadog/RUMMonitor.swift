@@ -164,8 +164,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 )
             }
             let monitor = RUMMonitor(rumFeature: rumFeature)
-            RUMAutoInstrumentation.instance?.subscribe(commandSubscriber: monitor)
-            URLSessionAutoInstrumentation.instance?.subscribe(commandSubscriber: monitor)
+            RUMInstrumentation.instance?.publish(to: monitor)
+            URLSessionAutoInstrumentation.instance?.publish(to: monitor)
             return monitor
         } catch {
             consolePrint("\(error)")
