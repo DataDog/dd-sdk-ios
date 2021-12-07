@@ -5,8 +5,8 @@
  */
 
 import UIKit
-import Datadog
 import WebKit
+import Datadog
 
 class DebugWebviewViewController: UIViewController {
     @IBOutlet weak var rumServiceNameTextField: UITextField!
@@ -81,26 +81,12 @@ class WebviewViewController: UIViewController {
 
     private var webView: WKWebView!
 
-    class MessageHandler: NSObject, WKScriptMessageHandler {
-        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-            print(message.name + String(describing: message.body))
-        }
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // WKScriptMessageHandler can be called only with `window.webkit.messageHandlers.{Handler name}` syntax
-        // the code below translates `window.DatadogEventBridge` into that format
-        let js = """
-            window.DatadogEventBridge = { send(msg) { window.webkit.messageHandlers.DatadogEventBridge.postMessage(msg) } }
-            """
-        let script = WKUserScript(source: js, injectionTime: .atDocumentStart, forMainFrameOnly: false)
-
         let controller = WKUserContentController()
-        controller.addUserScript(script)
-        controller.add(MessageHandler(), name: "DatadogEventBridge")
-
+        // TODO: RUMM-1794 remove internal method call and use public API
+        controller.addDatadogMessageHandler(allowedWebViewHosts: ["datadoghq.dev"])
         let config = WKWebViewConfiguration()
         config.userContentController = controller
 
