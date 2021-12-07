@@ -23,7 +23,7 @@ internal class BackgroundLocationMonitor: NSObject, CLLocationManagerDelegate {
     ///
     /// Note: `BackgroundLocationMonitor` can be started independently from receiving location monitoring authorization status.
     /// Even if this value is `true`, location updates might not be delivered due to restricted or denied status.
-    var isStarted: Bool {
+    private(set) var isStarted: Bool {
         get { UserDefaults.standard.bool(forKey: Constants.locationMonitoringUserDefaultsKey) }
         set { UserDefaults.standard.set(newValue, forKey: Constants.locationMonitoringUserDefaultsKey) }
     }
