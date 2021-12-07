@@ -533,7 +533,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     override public func stopResourceLoadingWithError(
         resourceKey: String,
         errorMessage: String,
-        type: String? = nil
+        type: String? = nil,
         response: URLResponse?,
         attributes: [AttributeKey: AttributeValue]
     ) {
