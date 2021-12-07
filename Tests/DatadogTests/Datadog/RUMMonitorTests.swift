@@ -379,6 +379,8 @@ class RUMMonitorTests: XCTestCase {
         monitor.addError(message: "View error message", source: .source)
         #sourceLocation()
         monitor.addError(message: "Another error message", source: .webview, stack: "Error stack")
+        let customType = UUID().uuidString
+        monitor.addError(message: "Another error message", type: customType, source: .webview, stack: "Error stack")
         monitor.stopUserAction(type: .scroll)
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 8)
@@ -407,16 +409,23 @@ class RUMMonitorTests: XCTestCase {
             XCTAssertEqual(rumModel.error.source, .webview)
             XCTAssertNil(rumModel.error.type)
         }
-        try rumEventMatchers[5].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[5].model(ofType: RUMErrorEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.error.message, "Another error message")
+            XCTAssertEqual(rumModel.error.stack, "Error stack")
+            XCTAssertEqual(rumModel.error.source, .webview)
+            XCTAssertEqual(rumModel.error.type, customType)
+            XCTAssertNil(rumModel.error.type)
+        }
+        try rumEventMatchers[6].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 0)
             XCTAssertEqual(rumModel.view.error.count, 2)
         }
-        try rumEventMatchers[6].model(ofType: RUMActionEvent.self) { rumModel in
+        try rumEventMatchers[7].model(ofType: RUMActionEvent.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .scroll)
             XCTAssertEqual(rumModel.action.error?.count, 2)
         }
-        try rumEventMatchers[7].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[8].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 2)
             XCTAssertEqual(rumModel.view.resource.count, 0)
             XCTAssertEqual(rumModel.view.error.count, 2)
@@ -503,6 +512,8 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopResourceLoadingWithError(resourceKey: "/resource/2", errorMessage: .mockAny())
         monitor.stopResourceLoading(resourceKey: "/resource/3", response: .mockAny())
         monitor.stopResourceLoading(resourceKey: "/resource/4", response: .mockAny())
+        let customType = UUID().uuidString
+        monitor.stopResourceLoadingWithError(resourceKey: "/resource/5", errorMessage: .mockAny(), type: customType)
         monitor.stopView(viewController: view2)
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 13)
@@ -545,6 +556,11 @@ class RUMMonitorTests: XCTestCase {
             .model(ofType: RUMResourceEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.url, "SecondViewController", "Resource should be associated with the second View")
                 XCTAssertEqual(rumModel.view.name, "SecondViewController", "Resource should be associated with the second View")
+            }
+        try rumEventMatchers
+            .lastRUMEvent(ofType: RUMResourceEvent.self) { rumModel in rumModel.resource.url.contains("/resource/5") }
+            .model(ofType: RUMErrorEvent.self) { rumModel in
+                XCTAssertEqual(rumModel.error.type, customType, "Custom types should be correctly set")
             }
     }
 
