@@ -223,11 +223,13 @@ public class DDRUMMonitor {
     /// - Parameters:
     ///   - resourceKey: the key representing the Resource - must match the one used in `startResourceLoading(...)`.
     ///   - errorMessage: the message explaining the Resource failure.
+    ///   - type: the type of Error. Defaults to `nil`.
     ///   - response: an optional `URLResepone` received for the Resource.
     ///   - attributes: custom attributes to attach to the Resource.
     public func stopResourceLoadingWithError(
         resourceKey: String,
         errorMessage: String,
+        type: String? = nil,
         response: URLResponse? = nil,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {}
