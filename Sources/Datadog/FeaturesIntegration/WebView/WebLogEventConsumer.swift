@@ -7,7 +7,7 @@
 import Foundation
 
 internal class WebLogEventConsumer: WebEventConsumer {
-    func consume(event: [String: Any], eventType: String) {
-        // TODO: RUMM-1791 implement event consumers
+    func consume(event: JSON, eventType: String) throws {
+        // TODO: RUMM-1791 implement log event consumer
     }
 }

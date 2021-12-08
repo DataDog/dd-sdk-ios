@@ -9,7 +9,7 @@ import Foundation
 internal typealias JSON = [String: Any]
 
 internal protocol WebEventConsumer {
-    func consume(event: JSON, eventType: String)
+    func consume(event: JSON, eventType: String) throws
 }
 
 internal enum WebEventError: Error, Equatable {
@@ -47,9 +47,9 @@ internal class WebEventBridge {
         }
 
         if eventType == Constants.eventTypeLog {
-            logEventConsumer.consume(event: wrappedEvent, eventType: eventType)
+            try logEventConsumer.consume(event: wrappedEvent, eventType: eventType)
         } else {
-            rumEventConsumer.consume(event: wrappedEvent, eventType: eventType)
+            try rumEventConsumer.consume(event: wrappedEvent, eventType: eventType)
         }
     }
 

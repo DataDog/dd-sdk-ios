@@ -7,6 +7,17 @@
 import Foundation
 import WebKit
 
+internal protocol WebRUMEventContextProviding {
+    var context: RUMContext? { get }
+}
+
+internal class WebRUMEventContextProvider: WebRUMEventContextProviding {
+    var context: RUMContext? {
+        // TODO: RUMM-1786 implement web event context provider
+        return nil
+    }
+}
+
 // TODO: RUMM-1794 rename the methods
 public extension WKUserContentController {
     func addDatadogMessageHandler(allowedWebViewHosts: Set<String>) {
@@ -16,10 +27,19 @@ public extension WKUserContentController {
     internal func __addDatadogMessageHandler(allowedWebViewHosts: Set<String>, hostsSanitizer: HostsSanitizing) {
         let bridgeName = DatadogMessageHandler.name
 
+        let contextProvider = WebRUMEventContextProvider()
+        let logEventConsumer = WebLogEventConsumer()
+        let rumEventConsumer = WebRUMEventConsumer(
+            dataWriter: RUMFeature.instance?.storage.writer,
+            dateCorrector: RUMFeature.instance?.dateCorrector,
+            webRUMEventMapper: WebRUMEventMapper(),
+            contextProvider: contextProvider
+        )
+
         let messageHandler = DatadogMessageHandler(
             eventBridge: WebEventBridge(
-                logEventConsumer: WebLogEventConsumer(),
-                rumEventConsumer: WebRUMEventConsumer()
+                logEventConsumer: logEventConsumer,
+                rumEventConsumer: rumEventConsumer
             )
         )
         add(messageHandler, name: bridgeName)
@@ -73,9 +93,11 @@ private class DatadogMessageHandler: NSObject, WKScriptMessageHandler {
         _ userContentController: WKUserContentController,
         didReceive message: WKScriptMessage
     ) {
+        // message.body must be called within UI thread
+        let messageBody = message.body
         queue.async {
             do {
-                try self.eventBridge.consume(message.body)
+                try self.eventBridge.consume(messageBody)
             } catch {
                 userLogger.error("🔥 Web Event Error: \(error)")
             }
