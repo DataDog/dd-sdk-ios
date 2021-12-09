@@ -299,3 +299,87 @@ private func validate(rumLongTaskEvents: [RUMLongTaskEvent]) throws {
         }
     }
 }
+
+// MARK: - Debugging
+
+extension RUMSessionMatcher: CustomStringConvertible {
+    var description: String {
+        let firstViewEvent = viewVisits.first?.viewEvents.first
+        guard let sessionID = firstViewEvent?.session.id else {
+            return "[⛔️ Invalid RUM session - it has no views]"
+        }
+
+        var description = "[🎞 RUM session (id: \(sessionID), number of views: \(viewVisits.count))]"
+        viewVisits.forEach { view in
+            description += "\n\(describe(viewVisit: view))"
+        }
+        return description
+    }
+
+    private func describe(viewVisit: ViewVisit) -> String {
+        guard let lastViewEvent = viewVisit.viewEvents.last else {
+            return "    → [⛔️ Invalid View - it has no view events]"
+        }
+
+        var description = "    → [📸 View (name: '\(viewVisit.name)', id: \(viewVisit.viewID), duration: \(seconds(from: lastViewEvent.view.timeSpent)) actions.count: \(lastViewEvent.view.action.count), resources.count: \(lastViewEvent.view.resource.count), errors.count: \(lastViewEvent.view.error.count), longTask.count: \(lastViewEvent.view.longTask?.count ?? 0), frozenFrames.count: \(lastViewEvent.view.frozenFrame?.count ?? 0)]"
+
+        if !viewVisit.actionEvents.isEmpty {
+            description += "\n        → action events:"
+            description += "\n\(describe(actionEvents: viewVisit.actionEvents))"
+        }
+
+        if !viewVisit.resourceEvents.isEmpty {
+            description += "\n        → resource events:"
+            description += "\n\(describe(resourceEvents: viewVisit.resourceEvents))"
+        }
+
+        if !viewVisit.errorEvents.isEmpty {
+            description += "\n        → error events:"
+            description += "\n\(describe(errorEvents: viewVisit.errorEvents))"
+        }
+
+        if !viewVisit.longTaskEvents.isEmpty {
+            description += "\n        → long task events:"
+            description += "\n\(describe(longTaskEvents: viewVisit.longTaskEvents))"
+        }
+
+        return description
+    }
+
+    private func describe(actionEvents: [RUMActionEvent]) -> String {
+        return actionEvents
+            .map { event in
+                "           → [▶️ Action (name: \(event.action.target?.name ?? "(null)"), type: \(event.action.type)]"
+            }
+            .joined(separator: "\n")
+    }
+
+    private func describe(resourceEvents: [RUMResourceEvent]) -> String {
+        return resourceEvents
+            .map { event in
+                "           → [🌎 Resource (url: \(event.resource.url), method: \(event.resource.method.flatMap({ "\($0.rawValue)" }) ?? "(null)"), statusCode: \(event.resource.statusCode.flatMap({ "\($0)" }) ?? "(null)")]"
+            }
+            .joined(separator: "\n")
+    }
+
+    private func describe(errorEvents: [RUMErrorEvent]) -> String {
+        return errorEvents
+            .map { event in
+                "           → [🧯 Error (message: \(event.error.message), type: \(event.error.type ?? "(null)"), resource: \(event.error.resource.flatMap({ "\($0.url)" }) ?? "(null)")]"
+            }
+            .joined(separator: "\n")
+    }
+
+    private func describe(longTaskEvents: [RUMLongTaskEvent]) -> String {
+        return longTaskEvents
+            .map { event in
+                "           → [🐌 LongTask (duration: \(seconds(from: event.longTask.duration)), isFrozenFrame: \(event.longTask.isFrozenFrame.flatMap({ "\($0)" }) ?? "(null)")]"
+            }
+            .joined(separator: "\n")
+    }
+
+    private func seconds(from nanoseconds: Int64) -> String {
+        let prettySeconds = (round((Double(nanoseconds) / 1_000_000_000) * 100)) / 100
+        return "\(prettySeconds)s"
+    }
+}

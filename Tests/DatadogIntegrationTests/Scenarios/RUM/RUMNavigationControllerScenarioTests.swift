@@ -56,8 +56,9 @@ class RUMNavigationControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
         assertRUM(requests: recordedRUMRequests)
 
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
-        let visits = session.viewVisits
+        sendCIAppLog(session)
 
+        let visits = session.viewVisits
         XCTAssertEqual(visits[0].name, "Screen1")
         XCTAssertEqual(visits[0].path, "UIViewController")
         XCTAssertEqual(visits[0].actionEvents[0].action.type, .applicationStart)
