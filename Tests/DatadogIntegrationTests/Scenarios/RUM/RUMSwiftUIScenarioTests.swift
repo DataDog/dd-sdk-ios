@@ -71,8 +71,9 @@ class RUMSwiftUIScenarioTests: IntegrationTests, RUMCommonAsserts {
         assertRUM(requests: requests)
 
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: requests))
-        let visits = session.viewVisits
+        sendCIAppLog(session)
 
+        let visits = session.viewVisits
         XCTAssertEqual(visits[0].name, "SwiftUI View 1")
         XCTAssertTrue(visits[0].path.matches(regex: "SwiftUI View 1\\/[0-9]*"))
         XCTAssertEqual(visits[0].actionEvents[0].action.type, .applicationStart)

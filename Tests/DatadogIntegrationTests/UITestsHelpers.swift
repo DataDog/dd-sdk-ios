@@ -86,3 +86,9 @@ extension XCUIElement {
         }
     }
 }
+
+/// Prints given value to `STDOUT`, which is captured by CI App instrumentation.
+/// This is an oportunity to associate additional logs to UI test execution.
+func sendCIAppLog(_ value: CustomStringConvertible) {
+    print(value.description)
+}

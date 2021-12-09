@@ -114,6 +114,7 @@ class RUMTapActionScenarioTests: IntegrationTests, RUMCommonAsserts {
         assertRUM(requests: recordedRUMRequests)
 
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
+        sendCIAppLog(session)
 
         XCTAssertEqual(session.viewVisits[0].name, "MenuView")
         XCTAssertEqual(session.viewVisits[0].path, "Example.RUMTASScreen1ViewController")

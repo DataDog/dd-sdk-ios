@@ -123,7 +123,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         assertRUM(requests: rumRequests)
 
         let session = try XCTUnwrap(try RUMSessionMatcher.singleSession(from: rumRequests))
-        XCTAssertEqual(session.viewVisits.count, 2)
+        sendCIAppLog(session)
 
         // Asserts in `SendFirstPartyRequestsVC` RUM View
         XCTAssertEqual(session.viewVisits[0].name, expectations.expectedFirstPartyRequestsViewControllerName)
