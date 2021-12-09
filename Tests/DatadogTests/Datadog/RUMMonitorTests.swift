@@ -361,7 +361,7 @@ class RUMMonitorTests: XCTestCase {
         }
     }
 
-    func testStartingView_thenIssuingAnError_whileScrolling() throws {
+    func testStartingView_thenIssuingErrors_whileScrolling() throws {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
@@ -379,48 +379,48 @@ class RUMMonitorTests: XCTestCase {
         monitor.addError(message: "View error message", source: .source)
         #sourceLocation()
         monitor.addError(message: "Another error message", source: .webview, stack: "Error stack")
+        let customType: String = .mockRandom(among: .alphanumerics)
+        monitor.addError(message: "Another error message", type: customType, source: .webview, stack: "Error stack")
         monitor.stopUserAction(type: .scroll)
 
-        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 8)
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 10)
         verifyGlobalAttributes(in: rumEventMatchers)
-        try rumEventMatchers[0].model(ofType: RUMActionEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.action.type, .applicationStart)
-        }
-        try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.view.action.count, 1)
-            XCTAssertEqual(rumModel.view.resource.count, 0)
-        }
-        try rumEventMatchers[2].model(ofType: RUMErrorEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.error.message, "View error message")
-            XCTAssertEqual(rumModel.error.stack, "Foo.swift:100")
-            XCTAssertEqual(rumModel.error.source, .source)
-            XCTAssertNil(rumModel.error.type)
-        }
-        try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.view.action.count, 1)
-            XCTAssertEqual(rumModel.view.resource.count, 0)
-            XCTAssertEqual(rumModel.view.error.count, 1)
-        }
-        try rumEventMatchers[4].model(ofType: RUMErrorEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.error.message, "Another error message")
-            XCTAssertEqual(rumModel.error.stack, "Error stack")
-            XCTAssertEqual(rumModel.error.source, .webview)
-            XCTAssertNil(rumModel.error.type)
-        }
-        try rumEventMatchers[5].model(ofType: RUMViewEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.view.action.count, 1)
-            XCTAssertEqual(rumModel.view.resource.count, 0)
-            XCTAssertEqual(rumModel.view.error.count, 2)
-        }
-        try rumEventMatchers[6].model(ofType: RUMActionEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.action.type, .scroll)
-            XCTAssertEqual(rumModel.action.error?.count, 2)
-        }
-        try rumEventMatchers[7].model(ofType: RUMViewEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.view.action.count, 2)
-            XCTAssertEqual(rumModel.view.resource.count, 0)
-            XCTAssertEqual(rumModel.view.error.count, 2)
-        }
+
+        let rumSession = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first.unwrapOrThrow()
+        XCTAssertEqual(rumSession.viewVisits.count, 1, "Session should track one view")
+
+        let firstView = rumSession.viewVisits[0]
+        XCTAssertEqual(firstView.viewEvents.last?.view.action.count, 2, "View must track 2 actions")
+        XCTAssertEqual(firstView.viewEvents.last?.view.resource.count, 0, "View must track no resources")
+        XCTAssertEqual(firstView.viewEvents.last?.view.error.count, 3, "View must track 3 errors")
+
+        let firstAction = firstView.actionEvents[0]
+        let secondAction = firstView.actionEvents[1]
+        XCTAssertEqual(firstAction.action.type, .applicationStart, "First action must be 'application start'")
+        XCTAssertEqual(secondAction.action.type, .scroll, "Second action must be 'scroll'")
+        XCTAssertEqual(secondAction.action.error?.count, 3, "Second action must link 3 errors")
+
+        let firstError = firstView.errorEvents[0]
+        let secondError = firstView.errorEvents[1]
+        let thirdError = firstView.errorEvents[2]
+        XCTAssertEqual(firstError.error.message, "View error message")
+        XCTAssertEqual(firstError.error.stack, "Foo.swift:100")
+        XCTAssertEqual(firstError.error.source, .source)
+        XCTAssertNil(firstError.error.type)
+        XCTAssertEqual(secondError.error.message, "Another error message")
+        XCTAssertEqual(secondError.error.stack, "Error stack")
+        XCTAssertEqual(secondError.error.source, .webview)
+        XCTAssertNil(secondError.error.type)
+        XCTAssertEqual(thirdError.error.message, "Another error message")
+        XCTAssertEqual(thirdError.error.stack, "Error stack")
+        XCTAssertEqual(thirdError.error.source, .webview)
+        XCTAssertEqual(thirdError.error.type, customType)
+
+        XCTAssertEqual(firstAction.view.id, firstView.viewID, "Events must be linked to the view")
+        XCTAssertEqual(secondAction.view.id, firstView.viewID, "Events must be linked to the view")
+        XCTAssertEqual(firstError.view.id, firstView.viewID, "Events must be linked to the view")
+        XCTAssertEqual(secondError.view.id, firstView.viewID, "Events must be linked to the view")
+        XCTAssertEqual(thirdError.view.id, firstView.viewID, "Events must be linked to the view")
     }
 
     func testStartingAnotherViewBeforeFirstIsStopped_thenLoadingResourcesAfterTapingButton() throws {
@@ -499,53 +499,50 @@ class RUMMonitorTests: XCTestCase {
         monitor.startView(viewController: view2)
         monitor.startResourceLoading(resourceKey: "/resource/3", request: URLRequest(url: .mockWith(pathComponent: "/resource/3")))
         monitor.startResourceLoading(resourceKey: "/resource/4", request: URLRequest(url: .mockWith(pathComponent: "/resource/4")))
+        monitor.startResourceLoading(resourceKey: "/resource/5", request: URLRequest(url: .mockWith(pathComponent: "/resource/5")))
         monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
         monitor.stopResourceLoadingWithError(resourceKey: "/resource/2", errorMessage: .mockAny())
         monitor.stopResourceLoading(resourceKey: "/resource/3", response: .mockAny())
         monitor.stopResourceLoading(resourceKey: "/resource/4", response: .mockAny())
+        let customType: String = .mockRandom(among: .alphanumerics)
+        monitor.stopResourceLoadingWithError(resourceKey: "/resource/5", errorMessage: .mockAny(), type: customType)
         monitor.stopView(viewController: view2)
 
-        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 13)
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 14)
         verifyGlobalAttributes(in: rumEventMatchers)
-        try rumEventMatchers
-            .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "FirstViewController" }
-            .model(ofType: RUMViewEvent.self) { rumModel in
-                XCTAssertEqual(rumModel.view.url, "FirstViewController")
-                XCTAssertEqual(rumModel.view.name, "FirstViewController")
-                XCTAssertEqual(rumModel.view.resource.count, 1, "First View should track 1 Resource")
-                XCTAssertEqual(rumModel.view.error.count, 1, "First View should track 1 Resource Error")
-            }
-        try rumEventMatchers
-            .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "SecondViewController" }
-            .model(ofType: RUMViewEvent.self) { rumModel in
-                XCTAssertEqual(rumModel.view.url, "SecondViewController")
-                XCTAssertEqual(rumModel.view.name, "SecondViewController")
-                XCTAssertEqual(rumModel.view.resource.count, 2, "Second View should track 2 Resources")
-            }
-        try rumEventMatchers
-            .lastRUMEvent(ofType: RUMResourceEvent.self) { rumModel in rumModel.resource.url.contains("/resource/1") }
-            .model(ofType: RUMResourceEvent.self) { rumModel in
-                XCTAssertEqual(rumModel.view.url, "FirstViewController", "Resource should be associated with the first View")
-                XCTAssertEqual(rumModel.view.name, "FirstViewController", "Resource should be associated with the first View")
-            }
-        try rumEventMatchers
-            .lastRUMEvent(ofType: RUMErrorEvent.self) { rumModel in rumModel.error.resource?.url.contains("/resource/2") ?? false }
-            .model(ofType: RUMErrorEvent.self) { rumModel in
-                XCTAssertEqual(rumModel.view.url, "FirstViewController", "Resource should be associated with the first View")
-                XCTAssertEqual(rumModel.view.name, "FirstViewController", "Resource should be associated with the first View")
-            }
-        try rumEventMatchers
-            .lastRUMEvent(ofType: RUMResourceEvent.self) { rumModel in rumModel.resource.url.contains("/resource/3") }
-            .model(ofType: RUMResourceEvent.self) { rumModel in
-                XCTAssertEqual(rumModel.view.url, "SecondViewController", "Resource should be associated with the second View")
-                XCTAssertEqual(rumModel.view.name, "SecondViewController", "Resource should be associated with the second View")
-            }
-        try rumEventMatchers
-            .lastRUMEvent(ofType: RUMResourceEvent.self) { rumModel in rumModel.resource.url.contains("/resource/4") }
-            .model(ofType: RUMResourceEvent.self) { rumModel in
-                XCTAssertEqual(rumModel.view.url, "SecondViewController", "Resource should be associated with the second View")
-                XCTAssertEqual(rumModel.view.name, "SecondViewController", "Resource should be associated with the second View")
-            }
+
+        let rumSession = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first.unwrapOrThrow()
+        XCTAssertEqual(rumSession.viewVisits.count, 2, "Session should track two views")
+
+        let firstView = rumSession.viewVisits[0]
+        let secondView = rumSession.viewVisits[1]
+        XCTAssertEqual(firstView.viewEvents.last?.view.url, "FirstViewController")
+        XCTAssertEqual(firstView.viewEvents.last?.view.name, "FirstViewController")
+        XCTAssertEqual(firstView.viewEvents.last?.view.resource.count, 1, "First view must track 1 resource")
+        XCTAssertEqual(firstView.viewEvents.last?.view.error.count, 1, "First view must track 1 resource error")
+        XCTAssertEqual(secondView.viewEvents.last?.view.url, "SecondViewController")
+        XCTAssertEqual(secondView.viewEvents.last?.view.name, "SecondViewController")
+        XCTAssertEqual(secondView.viewEvents.last?.view.resource.count, 2, "Second view must track 2 resources")
+        XCTAssertEqual(secondView.viewEvents.last?.view.error.count, 1, "Second view must track 1 resource error")
+
+        let firstResource = firstView.resourceEvents[0]
+        let secondResourceError = firstView.errorEvents[0]
+        let thirdResource = secondView.resourceEvents[0]
+        let fourthResource = secondView.resourceEvents[1]
+        let fifthResourceError = secondView.errorEvents[0]
+        XCTAssertTrue(firstResource.resource.url.hasSuffix("/resource/1"))
+        XCTAssertTrue(secondResourceError.error.resource?.url.hasSuffix("/resource/2") ?? false)
+        XCTAssertTrue(thirdResource.resource.url.hasSuffix("/resource/3"))
+        XCTAssertTrue(fourthResource.resource.url.hasSuffix("/resource/4"))
+        XCTAssertTrue(fifthResourceError.error.resource?.url.hasSuffix("/resource/5") ?? false)
+        XCTAssertEqual(firstResource.view.id, firstView.viewID, "Events must be linked to their views")
+        XCTAssertEqual(secondResourceError.view.id, firstView.viewID, "Events must be linked to their views")
+        XCTAssertEqual(thirdResource.view.id, secondView.viewID, "Events must be linked to their views")
+        XCTAssertEqual(fourthResource.view.id, secondView.viewID, "Events must be linked to their views")
+        XCTAssertEqual(fifthResourceError.view.id, secondView.viewID, "Events must be linked to their views")
+
+        XCTAssertNil(secondResourceError.error.type, "Second resource's error must have no type")
+        XCTAssertEqual(fifthResourceError.error.type, customType, "Second resource's error must have custom type")
     }
 
     func testStartingView_thenTappingButton_thenTappingAnotherButton() throws {
