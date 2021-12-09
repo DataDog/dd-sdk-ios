@@ -182,7 +182,7 @@ workflows:
         - is_clean_build: 'no'
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
-        - xcodebuild_test_options: -testPlan DatadogIntegrationTests
+        - xcodebuild_options: -testPlan DatadogIntegrationTests
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogIntegration-tests.html"
     - xcode-test:
         title: Run integration tests for Crash Reporting (on iOS Simulator)
@@ -193,7 +193,7 @@ workflows:
         - is_clean_build: 'no'
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
-        - xcodebuild_test_options: -testPlan DatadogCrashReportingIntegrationTests
+        - xcodebuild_options: -testPlan DatadogCrashReportingIntegrationTests
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReportingIntegration-tests.html"
 
   check_dependency_managers:
