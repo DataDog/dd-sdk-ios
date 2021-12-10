@@ -129,9 +129,14 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         // Consider starting an active view, "ApplicationLaunch" view or "Background" view
         if let startViewCommand = command as? RUMStartViewCommand {
             startView(on: startViewCommand)
-        } else if isInitialSession && !hasTrackedAnyView && command.canStartApplicationLaunchView {
-            startApplicationLaunchView(on: command)
-        } else if backgroundEventTrackingEnabled && !hasActiveView && command.canStartBackgroundView {
+        } else if isInitialSession && !hasTrackedAnyView { // if initial session with no views history
+            let appInForeground = dependencies.appStateListener.history.currentState.isActive
+            if appInForeground && command.canStartApplicationLaunchView { // when app is in foreground, start "ApplicationLaunch" view
+                startApplicationLaunchView(on: command)
+            } else if backgroundEventTrackingEnabled && command.canStartBackgroundView { // when app is in background and BET is enabled, start "Background" view
+                startBackgroundView(on: command)
+            }
+        } else if backgroundEventTrackingEnabled && !hasActiveView && command.canStartBackgroundView { // if existing session with views history and BET is enabled
             startBackgroundView(on: command)
         }
 

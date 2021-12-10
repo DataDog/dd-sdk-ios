@@ -241,6 +241,11 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             isInitialSession: true, // initial session
             parent: parent,
+            dependencies: .mockWith(
+                appStateListener: AppStateListenerMock(
+                    history: .init(initialState: .init(isActive: true, date: currentTime), recentDate: currentTime) // app in foreground
+                )
+            ),
             samplingRate: 100,
             startTime: currentTime,
             backgroundEventTrackingEnabled: true // BET enabled
@@ -264,6 +269,11 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             isInitialSession: true, // initial session
             parent: parent,
+            dependencies: .mockWith(
+                appStateListener: AppStateListenerMock(
+                    history: .init(initialState: .init(isActive: false, date: currentTime), recentDate: currentTime) // app in background
+                )
+            ),
             samplingRate: 100,
             startTime: currentTime,
             backgroundEventTrackingEnabled: true // BET enabled
@@ -287,6 +297,11 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             isInitialSession: true, // initial session
             parent: parent,
+            dependencies: .mockWith(
+                appStateListener: AppStateListenerMock(
+                    history: .init(initialState: .init(isActive: false, date: currentTime), recentDate: currentTime) // app in background
+                )
+            ),
             samplingRate: 100,
             startTime: currentTime,
             backgroundEventTrackingEnabled: false // BET disabled
