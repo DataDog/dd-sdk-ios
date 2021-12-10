@@ -596,6 +596,7 @@ extension RUMScopeDependencies {
     }
 
     static func mockWith(
+        appStateListener: AppStateListening = AppStateListenerMock.mockAny(),
         userInfoProvider: RUMUserInfoProvider = RUMUserInfoProvider(userInfoProvider: .mockAny()),
         launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock(),
         connectivityInfoProvider: RUMConnectivityInfoProvider = RUMConnectivityInfoProvider(
@@ -609,6 +610,7 @@ extension RUMScopeDependencies {
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
+            appStateListener: appStateListener,
             userInfoProvider: userInfoProvider,
             launchTimeProvider: launchTimeProvider,
             connectivityInfoProvider: connectivityInfoProvider,
@@ -625,6 +627,7 @@ extension RUMScopeDependencies {
 
     /// Creates new instance of `RUMScopeDependencies` by replacing individual dependencies.
     func replacing(
+        appStateListener: AppStateListening? = nil,
         userInfoProvider: RUMUserInfoProvider? = nil,
         launchTimeProvider: LaunchTimeProviderType? = nil,
         connectivityInfoProvider: RUMConnectivityInfoProvider? = nil,
@@ -635,6 +638,7 @@ extension RUMScopeDependencies {
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
+            appStateListener: appStateListener ?? self.appStateListener,
             userInfoProvider: userInfoProvider ?? self.userInfoProvider,
             launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider,
             connectivityInfoProvider: connectivityInfoProvider ?? self.connectivityInfoProvider,

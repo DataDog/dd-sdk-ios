@@ -178,6 +178,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             applicationScope: RUMApplicationScope(
                 rumApplicationID: rumFeature.configuration.applicationID,
                 dependencies: RUMScopeDependencies(
+                    appStateListener: rumFeature.appStateListener,
                     userInfoProvider: RUMUserInfoProvider(userInfoProvider: rumFeature.userInfoProvider),
                     launchTimeProvider: rumFeature.launchTimeProvider,
                     connectivityInfoProvider: RUMConnectivityInfoProvider(

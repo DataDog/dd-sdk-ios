@@ -29,6 +29,7 @@ internal struct FeaturesCommonDependencies {
     let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
     let carrierInfoProvider: CarrierInfoProviderType
     let launchTimeProvider: LaunchTimeProviderType
+    let appStateListener: AppStateListening
 }
 
 internal struct FeatureStorage {

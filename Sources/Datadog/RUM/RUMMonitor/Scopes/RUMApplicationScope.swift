@@ -10,6 +10,7 @@ internal typealias RUMSessionListener = (String, Bool) -> Void
 
 /// Injection container for common dependencies used by all `RUMScopes`.
 internal struct RUMScopeDependencies {
+    let appStateListener: AppStateListening
     let userInfoProvider: RUMUserInfoProvider
     let launchTimeProvider: LaunchTimeProviderType
     let connectivityInfoProvider: RUMConnectivityInfoProvider

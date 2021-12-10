@@ -217,7 +217,8 @@ public class Datadog {
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider,
-            launchTimeProvider: launchTimeProvider
+            launchTimeProvider: launchTimeProvider,
+            appStateListener: AppStateListener(dateProvider: dateProvider)
         )
 
         if let internalMonitoringConfiguration = configuration.internalMonitoring {
@@ -273,8 +274,7 @@ public class Datadog {
         if let urlSessionAutoInstrumentationConfiguration = configuration.urlSessionAutoInstrumentation {
             urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
                 configuration: urlSessionAutoInstrumentationConfiguration,
-                dateProvider: dateProvider,
-                appStateListener: AppStateListener(dateProvider: dateProvider)
+                commonDependencies: commonDependencies
             )
         }
 
