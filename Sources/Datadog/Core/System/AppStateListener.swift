@@ -11,17 +11,23 @@ import class UIKit.UIApplication
 internal struct AppStateHistory: Equatable {
     /// Snapshot of the app state at `date`
     struct Snapshot: Equatable {
+        /// If the app is running in the foreground and currently receiving events.
         let isActive: Bool
+        /// Date of recording this snapshot.
         let date: Date
     }
 
-    var initialState: Snapshot
-    var changes = [Snapshot]()
-    var finalDate: Date
-    var finalState: Snapshot {
+    fileprivate(set) var initialState: Snapshot
+    fileprivate(set) var changes = [Snapshot]()
+
+    /// Date of last the update to `AppStateHistory`.
+    fileprivate(set) var recentDate: Date
+
+    /// The most recent app state `Snapshot`.
+    var currentState: Snapshot {
         return Snapshot(
             isActive: (changes.last ?? initialState).isActive,
-            date: finalDate
+            date: recentDate
         )
     }
 
@@ -37,7 +43,7 @@ internal struct AppStateHistory: Equatable {
             date: range.lowerBound
         )
         // move final state to upperBound
-        taken.finalDate = range.upperBound
+        taken.recentDate = range.upperBound
         // filter changes outside of the range
         taken.changes = taken.changes.filter { range.contains($0.date) }
         return taken
@@ -46,7 +52,7 @@ internal struct AppStateHistory: Equatable {
     var foregroundDuration: TimeInterval {
         var duration: TimeInterval = 0.0
         var lastActiveStartDate: Date?
-        let allEvents = [initialState] + changes + [finalState]
+        let allEvents = [initialState] + changes + [currentState]
         for event in allEvents {
             if let startDate = lastActiveStartDate {
                 duration += event.date.timeIntervalSince(startDate)
@@ -61,16 +67,16 @@ internal struct AppStateHistory: Equatable {
     }
 
     var didRunInBackground: Bool {
-        return !initialState.isActive || !finalState.isActive
+        return !initialState.isActive || !currentState.isActive
     }
 
     private func isActive(at date: Date) -> Bool {
         if date <= initialState.date {
             // we assume there was no change before initial state
             return initialState.isActive
-        } else if finalState.date <= date {
+        } else if currentState.date <= date {
             // and no change after final state
-            return finalState.isActive
+            return currentState.isActive
         }
         var active = initialState
         for change in changes {
@@ -83,6 +89,7 @@ internal struct AppStateHistory: Equatable {
     }
 }
 
+/// Provides history of app foreground / background states.
 internal protocol AppStateListening: AnyObject {
     var history: AppStateHistory { get }
 }
@@ -95,7 +102,7 @@ internal class AppStateListener: AppStateListening {
 
     var history: AppStateHistory {
         var current = publisher.currentValue
-        current.finalDate = dateProvider.currentDate()
+        current.recentDate = dateProvider.currentDate()
         return current
     }
 
@@ -115,7 +122,7 @@ internal class AppStateListener: AppStateListening {
         self.publisher = ValuePublisher(
             initialValue: AppStateHistory(
                 initialState: currentState,
-                finalDate: currentState.date
+                recentDate: currentState.date
             )
         )
 
