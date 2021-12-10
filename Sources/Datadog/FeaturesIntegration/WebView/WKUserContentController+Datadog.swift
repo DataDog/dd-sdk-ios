@@ -7,17 +7,6 @@
 import Foundation
 import WebKit
 
-internal protocol WebRUMEventContextProviding {
-    var context: RUMContext? { get }
-}
-
-internal class WebRUMEventContextProvider: WebRUMEventContextProviding {
-    var context: RUMContext? {
-        // TODO: RUMM-1786 implement web event context provider
-        return nil
-    }
-}
-
 // TODO: RUMM-1794 rename the methods
 public extension WKUserContentController {
     func addDatadogMessageHandler(allowedWebViewHosts: Set<String>) {
@@ -27,8 +16,13 @@ public extension WKUserContentController {
     internal func __addDatadogMessageHandler(allowedWebViewHosts: Set<String>, hostsSanitizer: HostsSanitizing) {
         let bridgeName = DatadogMessageHandler.name
 
-        let contextProvider = WebRUMEventContextProvider()
-        let logEventConsumer = WebLogEventConsumer()
+        let contextProvider = (Global.rum as? RUMMonitor)?.contextProvider
+        let logEventConsumer = WebLogEventConsumer(
+            userLogsWriter: LoggingFeature.instance?.storage.writer,
+            internalLogsWriter: InternalMonitoringFeature.instance?.logsStorage.writer,
+            dateCorrector: LoggingFeature.instance?.dateCorrector,
+            rumContextProvider: contextProvider
+        )
         let rumEventConsumer = WebRUMEventConsumer(
             dataWriter: RUMFeature.instance?.storage.writer,
             dateCorrector: RUMFeature.instance?.dateCorrector,

@@ -502,6 +502,7 @@
 		9E9973F1268DF69500D8059B /* VitalInfoSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9973F0268DF69500D8059B /* VitalInfoSampler.swift */; };
 		9EA3CA6926775A3500B16871 /* VitalRefreshRateReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EA3CA6826775A3500B16871 /* VitalRefreshRateReader.swift */; };
 		9EA8A7F1275E1518007D6FDB /* HostsSanitizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EA8A7F0275E1518007D6FDB /* HostsSanitizerTests.swift */; };
+		9EA8A7F82768A72B007D6FDB /* WebLogEventConsumerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EA8A7F72768A72B007D6FDB /* WebLogEventConsumerTests.swift */; };
 		9EAF0CF6275A21100044E8CA /* WKUserContentController+DatadogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAF0CF5275A21100044E8CA /* WKUserContentController+DatadogTests.swift */; };
 		9EAF0CF8275A2FDC0044E8CA /* HostsSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAF0CF7275A2FDC0044E8CA /* HostsSanitizer.swift */; };
 		9EB4B862274E79D50041CD03 /* WKUserContentController+Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB4B861274E79D50041CD03 /* WKUserContentController+Datadog.swift */; };
@@ -1167,6 +1168,7 @@
 		9E9EB37624468CE90002C80B /* Datadog.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = Datadog.modulemap; sourceTree = "<group>"; };
 		9EA3CA6826775A3500B16871 /* VitalRefreshRateReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalRefreshRateReader.swift; sourceTree = "<group>"; };
 		9EA8A7F0275E1518007D6FDB /* HostsSanitizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostsSanitizerTests.swift; sourceTree = "<group>"; };
+		9EA8A7F72768A72B007D6FDB /* WebLogEventConsumerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebLogEventConsumerTests.swift; sourceTree = "<group>"; };
 		9EAF0CF5275A21100044E8CA /* WKUserContentController+DatadogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WKUserContentController+DatadogTests.swift"; sourceTree = "<group>"; };
 		9EAF0CF7275A2FDC0044E8CA /* HostsSanitizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostsSanitizer.swift; sourceTree = "<group>"; };
 		9EB4B861274E79D50041CD03 /* WKUserContentController+Datadog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WKUserContentController+Datadog.swift"; sourceTree = "<group>"; };
@@ -3295,6 +3297,7 @@
 			children = (
 				9EB4B86B27510AF90041CD03 /* WebEventBridgeTests.swift */,
 				9EAF0CF5275A21100044E8CA /* WKUserContentController+DatadogTests.swift */,
+				9EA8A7F72768A72B007D6FDB /* WebLogEventConsumerTests.swift */,
 			);
 			path = WebView;
 			sourceTree = "<group>";
@@ -4216,6 +4219,7 @@
 				61B5E42B26DFC433000B0A5F /* DDNSURLSessionDelegate+apiTests.m in Sources */,
 				61F8CC092469295500FE2908 /* DatadogConfigurationBuilderTests.swift in Sources */,
 				61F1A623249B811200075390 /* Encoding.swift in Sources */,
+				9EA8A7F82768A72B007D6FDB /* WebLogEventConsumerTests.swift in Sources */,
 				6114FE3B25768AA90084E372 /* ConsentProviderTests.swift in Sources */,
 				61133C642423990D00786299 /* LoggerTests.swift in Sources */,
 				617B953D24BF4D8F00E6F443 /* RUMMonitorTests.swift in Sources */,
