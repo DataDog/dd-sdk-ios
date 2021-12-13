@@ -37,8 +37,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// RUM Sessions sampling rate.
     internal let samplingRate: Float
 
-    /// Time of SDK initialization, measured in device date.
-    internal let sdkInitDate: Date
+    /// The start time of the application, measured in device date. It equals the time of SDK init.
+    private let applicationStartTime: Date
 
     /// Automatically detect background events
     internal let backgroundEventTrackingEnabled: Bool
@@ -51,12 +51,12 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         rumApplicationID: String,
         dependencies: RUMScopeDependencies,
         samplingRate: Float,
-        sdkInitDate: Date,
+        applicationStartTime: Date,
         backgroundEventTrackingEnabled: Bool
     ) {
         self.dependencies = dependencies
         self.samplingRate = samplingRate
-        self.sdkInitDate = sdkInitDate
+        self.applicationStartTime = applicationStartTime
         self.backgroundEventTrackingEnabled = backgroundEventTrackingEnabled
         self.context = RUMContext(
             rumApplicationID: rumApplicationID,
@@ -76,7 +76,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     func process(command: RUMCommand) -> Bool {
         if sessionScope == nil {
-            startInitialSession(on: command)
+            startInitialSession()
         }
 
         if let currentSession = sessionScope {
@@ -99,13 +99,13 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         _ = refreshedSession.process(command: command)
     }
 
-    private func startInitialSession(on command: RUMCommand) {
+    private func startInitialSession() {
         let initialSession = RUMSessionScope(
             isInitialSession: true,
             parent: self,
             dependencies: dependencies,
             samplingRate: samplingRate,
-            startTime: command.time,
+            startTime: applicationStartTime,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
         )
         sessionScope = initialSession

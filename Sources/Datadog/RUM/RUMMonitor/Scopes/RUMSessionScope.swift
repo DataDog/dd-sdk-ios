@@ -49,7 +49,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     let isInitialSession: Bool
     /// RUM Session sampling rate.
     private let samplingRate: Float
-    /// The start time of this Session.
+    /// The start time of this Session, measured in device date. In initial session this is the time of SDK init.
     private let sessionStartTime: Date
     /// Time of the last RUM interaction noticed by this Session.
     private var lastInteractionTime: Date
@@ -191,7 +191,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 name: Constants.applicationLaunchViewName,
                 attributes: command.attributes,
                 customTimings: [:],
-                startTime: command.time
+                startTime: sessionStartTime
             )
         )
     }

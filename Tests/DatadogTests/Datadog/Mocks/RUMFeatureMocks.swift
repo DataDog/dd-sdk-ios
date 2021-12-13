@@ -178,6 +178,15 @@ func mockRandomRUMCommand(where predicate: (RUMCommand) -> Bool = { _ in true })
     return allCommands.filter(predicate).randomElement()!
 }
 
+extension RUMCommand {
+    func replacing(time: Date? = nil, attributes: [AttributeKey: AttributeValue]? = nil) -> RUMCommand {
+        var command = self
+        command.time = time ?? command.time
+        command.attributes = attributes ?? command.attributes
+        return command
+    }
+}
+
 extension RUMStartViewCommand: AnyMockable, RandomMockable {
     static func mockAny() -> RUMStartViewCommand { mockWith() }
 
@@ -663,14 +672,14 @@ extension RUMApplicationScope {
         rumApplicationID: String = .mockAny(),
         dependencies: RUMScopeDependencies = .mockAny(),
         samplingRate: Float = .mockAny(),
-        sdkInitDate: Date = .mockAny(),
+        applicationStartTime: Date = .mockAny(),
         backgroundEventTrackingEnabled: Bool = .mockAny()
     ) -> RUMApplicationScope {
         return RUMApplicationScope(
             rumApplicationID: rumApplicationID,
             dependencies: dependencies,
             samplingRate: samplingRate,
-            sdkInitDate: sdkInitDate,
+            applicationStartTime: applicationStartTime,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
         )
     }
