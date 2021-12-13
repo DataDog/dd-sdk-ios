@@ -548,6 +548,74 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.action.count, 2, "View should record 2 actions: non-custom + instant custom")
     }
 
+    func testGivenViewWithPendingAction_whenCustomActionIsAdded_itSendsItInstantly() throws {
+        var currentTime = Date()
+        let scope = RUMViewScope(
+            isInitialView: false,
+            parent: parent,
+            dependencies: dependencies,
+            identity: mockView,
+            path: .mockAny(),
+            name: .mockAny(),
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime
+        )
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView))
+
+        // Given
+        currentTime.addTimeInterval(0.5)
+
+        let pendingActionName: String = .mockRandom()
+        _ = scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: .tap, name: pendingActionName))
+        XCTAssertEqual(scope.userActionScope?.name, pendingActionName)
+
+        // When
+        let customActionName: String = .mockRandom()
+        _ = scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: .custom, name: customActionName))
+
+        // Then
+        XCTAssertEqual(scope.userActionScope?.name, pendingActionName, "It should not alter pending action")
+
+        let lastViewEvent = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
+        let firstActionEvent = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).first)
+        XCTAssertEqual(lastViewEvent.model.view.action.count, 1, "View should record 1 only custom action (pending action is not yet finished)")
+        XCTAssertEqual(firstActionEvent.model.action.target?.name, customActionName)
+    }
+
+    func testGivenViewWithNoPendingAction_whenCustomActionIsAdded_itSendsItInstantly() throws {
+        var currentTime = Date()
+        let scope = RUMViewScope(
+            isInitialView: false,
+            parent: parent,
+            dependencies: dependencies,
+            identity: mockView,
+            path: .mockAny(),
+            name: .mockAny(),
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime
+        )
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView))
+
+        // Given
+        currentTime.addTimeInterval(0.5)
+
+        XCTAssertNil(scope.userActionScope)
+
+        // When
+        let customActionName: String = .mockRandom()
+        _ = scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: .custom, name: customActionName))
+
+        // Then
+        XCTAssertNil(scope.userActionScope, "It should not count custom action as pending")
+
+        let lastViewEvent = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
+        let firstActionEvent = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).first)
+        XCTAssertEqual(lastViewEvent.model.view.action.count, 1, "View should record custom action")
+        XCTAssertEqual(firstActionEvent.model.action.target?.name, customActionName)
+    }
+
     // MARK: - Error Tracking
 
     func testWhenViewErrorIsAdded_itSendsErrorEventAndViewUpdateEvent() throws {

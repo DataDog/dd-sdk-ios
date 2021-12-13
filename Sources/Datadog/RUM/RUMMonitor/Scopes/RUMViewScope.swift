@@ -171,9 +171,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             }
         case let command as RUMAddUserActionCommand where isActiveView:
             if userActionScope == nil {
-                addDiscreteUserAction(on: command)
+                if command.actionType == .custom {
+                    // send it instantly without waiting for child events (e.g. resource associated to this action)
+                    sendDiscreteCustomUserAction(on: command)
+                } else {
+                    addDiscreteUserAction(on: command)
+                }
             } else if command.actionType == .custom {
-                // still let it go, just instantly without any dependencies
+                // still let it go, just instantly without waiting for child events (e.g. resource associated to this action)
                 sendDiscreteCustomUserAction(on: command)
             } else {
                 reportActionDropped(type: command.actionType, name: command.name)
