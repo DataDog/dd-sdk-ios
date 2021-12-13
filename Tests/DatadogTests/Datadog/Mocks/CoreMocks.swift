@@ -454,6 +454,7 @@ extension FeaturesCommonDependencies {
                 return BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false)
             }
         ),
+        sdkInitDate: Date = Date(),
         dateProvider: DateProvider = SystemDateProvider(),
         dateCorrector: DateCorrectorType = DateCorrectorMock(),
         userInfoProvider: UserInfoProvider = .mockAny(),
@@ -497,6 +498,7 @@ extension FeaturesCommonDependencies {
             performance: performance,
             httpClient: httpClient,
             mobileDevice: mobileDevice,
+            sdkInitDate: sdkInitDate,
             dateProvider: dateProvider,
             dateCorrector: dateCorrector,
             userInfoProvider: userInfoProvider,
@@ -513,6 +515,7 @@ extension FeaturesCommonDependencies {
         performance: PerformancePreset? = nil,
         httpClient: HTTPClient? = nil,
         mobileDevice: MobileDevice? = nil,
+        sdkInitDate: Date? = nil,
         dateProvider: DateProvider? = nil,
         dateCorrector: DateCorrectorType? = nil,
         userInfoProvider: UserInfoProvider? = nil,
@@ -526,6 +529,7 @@ extension FeaturesCommonDependencies {
             performance: performance ?? self.performance,
             httpClient: httpClient ?? self.httpClient,
             mobileDevice: mobileDevice ?? self.mobileDevice,
+            sdkInitDate: sdkInitDate ?? self.sdkInitDate,
             dateProvider: dateProvider ?? self.dateProvider,
             dateCorrector: dateCorrector ?? self.dateCorrector,
             userInfoProvider: userInfoProvider ?? self.userInfoProvider,

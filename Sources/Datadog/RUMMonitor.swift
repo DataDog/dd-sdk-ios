@@ -199,6 +199,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     onSessionStart: rumFeature.onSessionStart
                 ),
                 samplingRate: rumFeature.configuration.sessionSamplingRate,
+                sdkInitDate: rumFeature.sdkInitDate,
                 backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled
             ),
             dateProvider: rumFeature.dateProvider

@@ -13,12 +13,7 @@ class RUMDebuggingTests: XCTestCase {
         let expectation = self.expectation(description: "Render RUMDebugging")
 
         // when
-        let applicationScope = RUMApplicationScope(
-            rumApplicationID: "abc-123",
-            dependencies: .mockAny(),
-            samplingRate: 100,
-            backgroundEventTrackingEnabled: .mockAny()
-        )
+        let applicationScope: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123", samplingRate: 100)
         _ = applicationScope.process(
             command: RUMStartViewCommand.mockWith(identity: mockView, name: "FirstView")
         )
@@ -45,12 +40,7 @@ class RUMDebuggingTests: XCTestCase {
         let expectation = self.expectation(description: "Render RUMDebugging")
 
         // when
-        let applicationScope = RUMApplicationScope(
-            rumApplicationID: "abc-123",
-            dependencies: .mockAny(),
-            samplingRate: 100,
-            backgroundEventTrackingEnabled: .mockAny()
-        )
+        let applicationScope: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123", samplingRate: 100)
         _ = applicationScope.process(
             command: RUMStartViewCommand.mockWith(identity: mockView, name: "FirstView")
         )

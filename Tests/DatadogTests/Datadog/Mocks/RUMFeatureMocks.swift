@@ -662,13 +662,15 @@ extension RUMApplicationScope {
     static func mockWith(
         rumApplicationID: String = .mockAny(),
         dependencies: RUMScopeDependencies = .mockAny(),
-        samplingRate: Float = 100,
+        samplingRate: Float = .mockAny(),
+        sdkInitDate: Date = .mockAny(),
         backgroundEventTrackingEnabled: Bool = .mockAny()
     ) -> RUMApplicationScope {
         return RUMApplicationScope(
             rumApplicationID: rumApplicationID,
             dependencies: dependencies,
             samplingRate: samplingRate,
+            sdkInitDate: sdkInitDate,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
         )
     }

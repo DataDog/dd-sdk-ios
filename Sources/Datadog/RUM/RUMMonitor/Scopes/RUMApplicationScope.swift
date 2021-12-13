@@ -37,6 +37,9 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// RUM Sessions sampling rate.
     internal let samplingRate: Float
 
+    /// Time of SDK initialization, measured in device date.
+    internal let sdkInitDate: Date
+
     /// Automatically detect background events
     internal let backgroundEventTrackingEnabled: Bool
 
@@ -48,10 +51,12 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         rumApplicationID: String,
         dependencies: RUMScopeDependencies,
         samplingRate: Float,
+        sdkInitDate: Date,
         backgroundEventTrackingEnabled: Bool
     ) {
         self.dependencies = dependencies
         self.samplingRate = samplingRate
+        self.sdkInitDate = sdkInitDate
         self.backgroundEventTrackingEnabled = backgroundEventTrackingEnabled
         self.context = RUMContext(
             rumApplicationID: rumApplicationID,

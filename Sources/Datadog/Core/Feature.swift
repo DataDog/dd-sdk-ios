@@ -23,6 +23,8 @@ internal struct FeaturesCommonDependencies {
     let performance: PerformancePreset
     let httpClient: HTTPClient
     let mobileDevice: MobileDevice
+    /// Time of SDK initialization, measured in device date.
+    let sdkInitDate: Date
     let dateProvider: DateProvider
     let dateCorrector: DateCorrectorType
     let userInfoProvider: UserInfoProvider

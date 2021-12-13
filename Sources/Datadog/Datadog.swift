@@ -212,6 +212,7 @@ public class Datadog {
             performance: configuration.common.performance,
             httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
             mobileDevice: MobileDevice(),
+            sdkInitDate: dateProvider.currentDate(),
             dateProvider: dateProvider,
             dateCorrector: dateCorrector,
             userInfoProvider: userInfoProvider,
