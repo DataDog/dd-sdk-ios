@@ -23,6 +23,7 @@ extension FeaturesCommonDependencies {
             performance: .benchmarksPreset,
             httpClient: HTTPClient(),
             mobileDevice: MobileDevice(),
+            sdkInitDate: Date(),
             dateProvider: SystemDateProvider(),
             dateCorrector: DateCorrectorMock(),
             userInfoProvider: UserInfoProvider(),
