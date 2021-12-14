@@ -593,6 +593,16 @@ extension RUMContext {
     }
 }
 
+extension RUMSessionState: AnyMockable, RandomMockable {
+    static func mockAny() -> RUMSessionState {
+        return .init(sessionUUID: .mockAny(), isInitialSession: .mockAny(), hasTrackedAnyView: .mockAny())
+    }
+
+    static func mockRandom() -> RUMSessionState {
+        return .init(sessionUUID: .mockRandom(), isInitialSession: .mockRandom(), hasTrackedAnyView: .mockRandom())
+    }
+}
+
 // MARK: - RUMScope Mocks
 
 func mockNoOpSessionListerner() -> RUMSessionListener {
@@ -616,6 +626,7 @@ extension RUMScopeDependencies {
         eventOutput: RUMEventOutput = RUMEventOutputMock(),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         dateCorrector: DateCorrectorType = DateCorrectorMock(),
+        crashContextIntegration: RUMWithCrashContextIntegration? = nil,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
@@ -627,6 +638,7 @@ extension RUMScopeDependencies {
             eventOutput: eventOutput,
             rumUUIDGenerator: rumUUIDGenerator,
             dateCorrector: dateCorrector,
+            crashContextIntegration: crashContextIntegration,
             vitalCPUReader: SamplingBasedVitalReaderMock(),
             vitalMemoryReader: SamplingBasedVitalReaderMock(),
             vitalRefreshRateReader: ContinuousVitalReaderMock(),
@@ -644,6 +656,7 @@ extension RUMScopeDependencies {
         eventOutput: RUMEventOutput? = nil,
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
         dateCorrector: DateCorrectorType? = nil,
+        crashContextIntegration: RUMWithCrashContextIntegration? = nil,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
@@ -655,6 +668,7 @@ extension RUMScopeDependencies {
             eventOutput: eventOutput ?? self.eventOutput,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
             dateCorrector: dateCorrector ?? self.dateCorrector,
+            crashContextIntegration: crashContextIntegration ?? self.crashContextIntegration,
             vitalCPUReader: SamplingBasedVitalReaderMock(),
             vitalMemoryReader: SamplingBasedVitalReaderMock(),
             vitalRefreshRateReader: ContinuousVitalReaderMock(),

@@ -63,6 +63,16 @@ internal class CrashContextProvider: CrashContextProviderType {
         self.unsafeCrashContext.lastRUMViewEvent = newValue
     }
 
+    /// Updates `CrashContext` with last RUM session state.
+    private lazy var rumSessionStateUpdater = ContextValueUpdater<RUMSessionState?>(queue: queue) { newValue in
+        self.unsafeCrashContext.lastRUMSessionState = newValue
+    }
+
+    /// Updates `CrashContext` with last app foreground / background state information.
+    private lazy var isAppInForegroundUpdater = ContextValueUpdater<AppStateHistory>(queue: queue) { newValue in
+        self.unsafeCrashContext.lastIsAppInForeground = newValue.currentState.isActive
+    }
+
     // MARK: - Initializer
 
     init(
@@ -70,7 +80,9 @@ internal class CrashContextProvider: CrashContextProviderType {
         userInfoProvider: UserInfoProvider,
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
         carrierInfoProvider: CarrierInfoProviderType,
-        rumViewEventProvider: ValuePublisher<RUMEvent<RUMViewEvent>?>
+        rumViewEventProvider: ValuePublisher<RUMEvent<RUMViewEvent>?>,
+        rumSessionStateProvider: ValuePublisher<RUMSessionState?>,
+        appStateListener: AppStateListening
     ) {
         self.queue = DispatchQueue(
             label: "com.datadoghq.crash-context",
@@ -80,9 +92,11 @@ internal class CrashContextProvider: CrashContextProviderType {
         self.unsafeCrashContext = CrashContext(
             lastTrackingConsent: consentProvider.currentValue,
             lastUserInfo: userInfoProvider.value,
-            lastRUMViewEvent: nil,
+            lastRUMViewEvent: rumViewEventProvider.currentValue,
             lastNetworkConnectionInfo: networkConnectionInfoProvider.current,
-            lastCarrierInfo: carrierInfoProvider.current
+            lastCarrierInfo: carrierInfoProvider.current,
+            lastRUMSessionState: rumSessionStateProvider.currentValue,
+            lastIsAppInForeground: appStateListener.history.currentState.isActive
         )
 
         // Subscribe for context updates
@@ -91,6 +105,8 @@ internal class CrashContextProvider: CrashContextProviderType {
         networkConnectionInfoProvider.subscribe(networkConnectionInfoUpdater)
         carrierInfoProvider.subscribe(carrierInfoUpdater)
         rumViewEventProvider.subscribe(rumViewEventUpdater)
+        rumSessionStateProvider.subscribe(rumSessionStateUpdater)
+        appStateListener.subscribe(isAppInForegroundUpdater)
     }
 
     // MARK: - CrashContextProviderType

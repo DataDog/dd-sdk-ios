@@ -193,6 +193,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     ),
                     rumUUIDGenerator: DefaultRUMUUIDGenerator(),
                     dateCorrector: rumFeature.dateCorrector,
+                    crashContextIntegration: RUMWithCrashContextIntegration(),
                     vitalCPUReader: rumFeature.vitalCPUReader,
                     vitalMemoryReader: rumFeature.vitalMemoryReader,
                     vitalRefreshRateReader: rumFeature.vitalRefreshRateReader,

@@ -1008,7 +1008,7 @@ class RUMViewScopeTests: XCTestCase {
         }
     }
 
-    // MARK: ViewScope counts Correction
+    // MARK: ViewScope Counts Correction
 
     func testGivenViewScopeWithDependentActionsResourcesErrors_whenDroppingEvents_thenCountsAreAdjusted() throws {
         struct ResourceMapperHolder {
@@ -1138,5 +1138,39 @@ class RUMViewScopeTests: XCTestCase {
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
         XCTAssertEqual(event.model.view.action.count, 0, "All actions, including ApplicationStart action should be dropped")
         XCTAssertEqual(event.model.dd.documentVersion, 1, "It should record only one view update")
+    }
+
+    // MARK: Integration with Crash Context
+
+    func testWhenViewIsStarted_thenItUpdatesLastRUMViewEventInCrashContext() throws {
+        let rumViewEventProvider = ValuePublisher<RUMEvent<RUMViewEvent>?>(initialValue: nil)
+
+        // Given
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: dependencies.replacing(
+                crashContextIntegration: RUMWithCrashContextIntegration(
+                    rumViewEventProvider: rumViewEventProvider,
+                    rumSessionStateProvider: .mockAny()
+                )
+            ),
+            identity: mockView,
+            path: "UIViewController",
+            name: "ViewController",
+            attributes: [:],
+            customTimings: [:],
+            startTime: Date()
+        )
+
+        // When
+        XCTAssertTrue(
+            scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
+        )
+
+        // Then
+        let rumViewSent = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last, "It should send view event")
+        let rumViewInjectedToCrashContext = try XCTUnwrap(rumViewEventProvider.currentValue, "It must inject view event to crash context")
+        XCTAssertEqual(rumViewSent, rumViewInjectedToCrashContext, "It must inject sent event to crash context")
     }
 }

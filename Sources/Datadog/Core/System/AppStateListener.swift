@@ -89,9 +89,16 @@ internal struct AppStateHistory: Equatable {
     }
 }
 
+/// An observer of `AppStateHistory` value.
+internal typealias AppStateHistoryObserver = ValueObserver
+
 /// Provides history of app foreground / background states.
 internal protocol AppStateListening: AnyObject {
+    /// Last published `AppStateHistory`.
     var history: AppStateHistory { get }
+
+    /// Subscribers observer to be notified on `AppStateHistory` changes.
+    func subscribe<Observer: AppStateHistoryObserver>(_ subscriber: Observer) where Observer.ObservedValue == AppStateHistory
 }
 
 internal class AppStateListener: AppStateListening {
@@ -143,5 +150,11 @@ internal class AppStateListener: AppStateListening {
         var value = publisher.currentValue
         value.changes.append(Snapshot(isActive: true, date: now))
         publisher.publishAsync(value)
+    }
+
+    // MARK: - Managing Subscribers
+
+    func subscribe<Observer: AppStateHistoryObserver>(_ subscriber: Observer) where Observer.ObservedValue == AppStateHistory {
+        publisher.subscribe(subscriber)
     }
 }
