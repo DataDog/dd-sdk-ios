@@ -12,7 +12,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let scope = RUMApplicationScope(
             rumApplicationID: "abc-123",
             dependencies: .mockAny(),
-            samplingRate: .mockAny(),
+            sampler: .mockAny(),
             applicationStartTime: .mockAny(),
             backgroundEventTrackingEnabled: .mockAny()
         )
@@ -37,7 +37,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let scope = RUMApplicationScope(
             rumApplicationID: .mockAny(),
             dependencies: .mockWith(onSessionStart: onSessionStart),
-            samplingRate: 0,
+            sampler: .mockRejectAll(),
             applicationStartTime: currentTime,
             backgroundEventTrackingEnabled: .mockRandom()
         )
@@ -69,7 +69,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let scope = RUMApplicationScope(
             rumApplicationID: .mockAny(),
             dependencies: .mockWith(onSessionStart: onSessionStart),
-            samplingRate: 100,
+            sampler: .mockKeepAll(),
             applicationStartTime: currentTime,
             backgroundEventTrackingEnabled: .mockAny()
         )
@@ -108,7 +108,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let scope = RUMApplicationScope(
             rumApplicationID: .mockAny(),
             dependencies: dependencies,
-            samplingRate: 100,
+            sampler: Sampler(samplingRate: 100),
             applicationStartTime: currentTime,
             backgroundEventTrackingEnabled: .mockAny()
         )
@@ -127,7 +127,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let scope = RUMApplicationScope(
             rumApplicationID: .mockAny(),
             dependencies: dependencies,
-            samplingRate: 0,
+            sampler: Sampler(samplingRate: 0),
             applicationStartTime: currentTime,
             backgroundEventTrackingEnabled: .mockAny()
         )
@@ -146,7 +146,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let scope = RUMApplicationScope(
             rumApplicationID: .mockAny(),
             dependencies: dependencies,
-            samplingRate: 50,
+            sampler: Sampler(samplingRate: 50),
             applicationStartTime: currentTime,
             backgroundEventTrackingEnabled: .mockAny()
         )

@@ -37,8 +37,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Might be re-created later according to session duration constraints.
     private(set) var sessionScope: RUMSessionScope?
 
-    /// RUM Sessions sampling rate.
-    internal let samplingRate: Float
+    /// RUM Sessions sampler.
+    internal let sampler: Sampler
 
     /// The start time of the application, measured in device date. It equals the time of SDK init.
     private let applicationStartTime: Date
@@ -53,12 +53,12 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     init(
         rumApplicationID: String,
         dependencies: RUMScopeDependencies,
-        samplingRate: Float,
+        sampler: Sampler,
         applicationStartTime: Date,
         backgroundEventTrackingEnabled: Bool
     ) {
         self.dependencies = dependencies
-        self.samplingRate = samplingRate
+        self.sampler = sampler
         self.applicationStartTime = applicationStartTime
         self.backgroundEventTrackingEnabled = backgroundEventTrackingEnabled
         self.context = RUMContext(
@@ -107,7 +107,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             isInitialSession: true,
             parent: self,
             dependencies: dependencies,
-            samplingRate: samplingRate,
+            sampler: sampler,
             startTime: applicationStartTime,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
         )
@@ -117,6 +117,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     private func sessionScopeDidUpdate(_ sessionScope: RUMSessionScope) {
         let sessionID = sessionScope.sessionUUID.rawValue.uuidString
-        dependencies.onSessionStart?(sessionID, sessionScope.shouldBeSampledOut)
+        let isDiscarded = !sessionScope.isSampled
+        dependencies.onSessionStart?(sessionID, isDiscarded)
     }
 }

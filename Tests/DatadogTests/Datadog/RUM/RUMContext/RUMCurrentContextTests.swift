@@ -30,7 +30,7 @@ class RUMCurrentContextTests: XCTestCase {
     }
 
     func testContextAfterStartingView() throws {
-        let applicationScope: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123", samplingRate: 100)
+        let applicationScope: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123")
         let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
         _ = applicationScope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
@@ -49,7 +49,7 @@ class RUMCurrentContextTests: XCTestCase {
     }
 
     func testContextWhilePendingUserAction() throws {
-        let applicationScope: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123", samplingRate: 100)
+        let applicationScope: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123")
         let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
         _ = applicationScope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
@@ -69,7 +69,7 @@ class RUMCurrentContextTests: XCTestCase {
     }
 
     func testContextChangeWhenNavigatingBetweenViews() throws {
-        let applicationScope: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123", samplingRate: 100)
+        let applicationScope: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123")
         let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
         let firstView = createMockViewInWindow()
@@ -97,7 +97,7 @@ class RUMCurrentContextTests: XCTestCase {
 
     func testContextChangeWhenSessionIsRenewed() throws {
         var currentTime = Date()
-        let applicationScope: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123", samplingRate: 100)
+        let applicationScope: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123")
         let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
         let view = createMockViewInWindow()
@@ -139,8 +139,8 @@ class RUMCurrentContextTests: XCTestCase {
         )
     }
 
-    func testContextWhenSessionIsSampled() throws {
-        let applicationScope: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123", samplingRate: 0)
+    func testContextWhenSessionIsRejectedBySampler() throws {
+        let applicationScope: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123", sampler: .mockRejectAll())
         let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
         _ = applicationScope.process(command: RUMStartViewCommand.mockWith(identity: mockView))

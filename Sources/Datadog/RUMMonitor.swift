@@ -191,7 +191,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     eventOutput: RUMEventFileOutput(
                         fileWriter: rumFeature.storage.writer
                     ),
-                    rumUUIDGenerator: DefaultRUMUUIDGenerator(),
+                    rumUUIDGenerator: rumFeature.configuration.uuidGenerator,
                     dateCorrector: rumFeature.dateCorrector,
                     crashContextIntegration: RUMWithCrashContextIntegration(),
                     vitalCPUReader: rumFeature.vitalCPUReader,
@@ -199,7 +199,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     vitalRefreshRateReader: rumFeature.vitalRefreshRateReader,
                     onSessionStart: rumFeature.onSessionStart
                 ),
-                samplingRate: rumFeature.configuration.sessionSamplingRate,
+                sampler: rumFeature.configuration.sessionSampler,
                 applicationStartTime: rumFeature.sdkInitDate,
                 backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled
             ),
