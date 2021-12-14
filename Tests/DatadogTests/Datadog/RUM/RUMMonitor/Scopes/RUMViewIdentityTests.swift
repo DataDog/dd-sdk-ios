@@ -15,6 +15,7 @@ class RUMViewIdentityTests: XCTestCase {
         // Given
         let vc1 = createMockView(viewControllerClassName: .mockRandom(among: "abcdefghijklmnopqrstuvwxyz"))
         let vc2 = createMockView(viewControllerClassName: .mockRandom(among: "abcdefghijklmnopqrstuvwxyz"))
+        let vc3: UIViewController? = nil
 
         // When
         let identity1 = vc1.asRUMViewIdentity()
@@ -23,14 +24,18 @@ class RUMViewIdentityTests: XCTestCase {
         // Then
         XCTAssertTrue(identity1.equals(vc1))
         XCTAssertTrue(identity2.equals(vc2))
+        XCTAssertTrue(identity1.equals(identity1))
         XCTAssertFalse(identity1.equals(vc2))
         XCTAssertFalse(identity2.equals(vc1))
+        XCTAssertFalse(identity1.equals(identity2))
+        XCTAssertFalse(identity1.equals(vc3))
     }
 
     func testGivenTwoStringKeys_whenComparingTheirRUMViewIdentity_itEqualsOnlyForTheSameInstance() {
         // Given
         let key1: String = .mockRandom()
         let key2: String = .mockRandom()
+        let key3: String? = nil
 
         // When
         let identity1 = key1.asRUMViewIdentity()
@@ -39,8 +44,11 @@ class RUMViewIdentityTests: XCTestCase {
         // Then
         XCTAssertTrue(identity1.equals(key1))
         XCTAssertTrue(identity2.equals(key2))
+        XCTAssertTrue(identity1.equals(identity1))
         XCTAssertFalse(identity1.equals(key2))
         XCTAssertFalse(identity2.equals(key1))
+        XCTAssertFalse(identity1.equals(identity2))
+        XCTAssertFalse(identity1.equals(key3))
     }
 
     func testGivenTwoRUMViewIdentitiesOfDifferentKind_whenComparing_theyDoNotEqual() {

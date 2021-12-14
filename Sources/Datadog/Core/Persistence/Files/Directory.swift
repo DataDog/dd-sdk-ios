@@ -59,7 +59,9 @@ internal struct Directory {
         try retry(times: 3, delay: 0.001) {
             _ = try FileManager.default.replaceItemAt(url, withItemAt: temporaryDirectory.url)
         }
-        try? FileManager.default.removeItem(at: temporaryDirectory.url)
+        if FileManager.default.fileExists(atPath: temporaryDirectory.url.path) {
+            try FileManager.default.removeItem(at: temporaryDirectory.url)
+        }
     }
 
     /// Moves all files from this directory to `destinationDirectory`.

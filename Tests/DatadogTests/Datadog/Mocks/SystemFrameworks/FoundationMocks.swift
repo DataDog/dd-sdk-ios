@@ -408,12 +408,16 @@ extension URLRequest: AnyMockable {
 
 class ProcessInfoMock: ProcessInfo {
     private var _isLowPowerModeEnabled: Bool
+    private var _arguments: [String]
 
-    init(isLowPowerModeEnabled: Bool = .mockAny()) {
+    init(isLowPowerModeEnabled: Bool = .mockAny(), arguments: [String] = []) {
         _isLowPowerModeEnabled = isLowPowerModeEnabled
+        _arguments = arguments
     }
 
     override var isLowPowerModeEnabled: Bool { _isLowPowerModeEnabled }
+
+    override var arguments: [String] { _arguments }
 }
 
 // MARK: - URLSession

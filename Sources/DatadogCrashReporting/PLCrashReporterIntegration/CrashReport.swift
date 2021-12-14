@@ -93,7 +93,7 @@ internal struct BinaryImageInfo {
     /// The UUID of this image.
     var uuid: String
     /// The name of this image (referenced by "library name" in the stack frame).
-    var imageName: String?
+    var imageName: String
     /// If its a system library image.
     var isSystemImage: Bool
     /// Image code type (code architecture information).
@@ -240,7 +240,7 @@ extension BinaryImageInfo {
         }
 
         self.uuid = imageUUID
-        self.imageName = URL(string: imagePath)?.lastPathComponent
+        self.imageName = URL(fileURLWithPath: imagePath).lastPathComponent
 
         #if targetEnvironment(simulator)
         self.isSystemImage = Self.isPathSystemImageInSimulator(imagePath)
@@ -309,7 +309,7 @@ extension StackFrame {
             self.libraryBaseAddress = imageInfo.imageBaseAddress
         } else {
             // Without "library name" and its "base address" symbolication will not be possible,
-            // but the presence of this frame int the stack will be still relevant.
+            // but the presence of this frame in the stack will be still relevant.
             self.libraryName = nil
             self.libraryBaseAddress = nil
         }

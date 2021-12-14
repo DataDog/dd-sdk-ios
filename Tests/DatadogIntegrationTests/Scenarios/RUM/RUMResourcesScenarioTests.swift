@@ -61,9 +61,9 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         let firstPartyBadResourceURL = URL(string: "https://foo.bar")!
 
         // Requesting this third party by the app should create the RUM Resource.
-        let thirdPartyGETResourceURL = URL(string: "https://bitrise.io")!
+        let thirdPartyGETResourceURL = URL(string: "https://httpbin.org/get")!
         // Requesting this third party by the app should create the RUM Resource.
-        let thirdPartyPOSTResourceURL = URL(string: "https://bitrise.io/about")!
+        let thirdPartyPOSTResourceURL = URL(string: "https://httpbin.org/post")!
 
         let app = ExampleApplication()
         app.launchWith(
@@ -113,13 +113,17 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         // Get RUM Sessions with expected number of View visits and Resources
         let rumRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.singleSession(from: requests)?.viewVisits.count == 2
+            let session = try RUMSessionMatcher.singleSession(from: requests)
+            let hasAllViews = session?.viewVisits.count == 2
+            let hasAllResources = session?.resourceEventMatchers.count == 4
+            let hasAllErrors = session?.errorEventMatchers.count == 1
+            return hasAllViews && hasAllResources && hasAllErrors
         }
 
         assertRUM(requests: rumRequests)
 
         let session = try XCTUnwrap(try RUMSessionMatcher.singleSession(from: rumRequests))
-        XCTAssertEqual(session.viewVisits.count, 2)
+        sendCIAppLog(session)
 
         // Asserts in `SendFirstPartyRequestsVC` RUM View
         XCTAssertEqual(session.viewVisits[0].name, expectations.expectedFirstPartyRequestsViewControllerName)

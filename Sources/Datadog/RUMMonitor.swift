@@ -164,8 +164,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 )
             }
             let monitor = RUMMonitor(rumFeature: rumFeature)
-            RUMAutoInstrumentation.instance?.subscribe(commandSubscriber: monitor)
-            URLSessionAutoInstrumentation.instance?.subscribe(commandSubscriber: monitor)
+            RUMInstrumentation.instance?.publish(to: monitor)
+            URLSessionAutoInstrumentation.instance?.publish(to: monitor)
             return monitor
         } catch {
             consolePrint("\(error)")
@@ -309,6 +309,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
 
     override public func addError(
         message: String,
+        type: String? = nil,
         source: RUMErrorSource,
         stack: String?,
         attributes: [AttributeKey: AttributeValue],
@@ -323,7 +324,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             }
             return nil
         }()
-        addError(message: message, type: nil, stack: stack, source: RUMInternalErrorSource(source), attributes: attributes)
+        addError(message: message, type: type, stack: stack, source: RUMInternalErrorSource(source), attributes: attributes)
     }
 
     internal func addError(
@@ -532,6 +533,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     override public func stopResourceLoadingWithError(
         resourceKey: String,
         errorMessage: String,
+        type: String? = nil,
         response: URLResponse?,
         attributes: [AttributeKey: AttributeValue]
     ) {
@@ -540,7 +542,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 resourceKey: resourceKey,
                 time: dateProvider.currentDate(),
                 message: errorMessage,
-                type: nil,
+                type: type,
                 source: .network,
                 httpStatusCode: (response as? HTTPURLResponse)?.statusCode,
                 attributes: attributes

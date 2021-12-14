@@ -78,3 +78,17 @@ extension String {
 struct Exception: Error, CustomStringConvertible {
     let description: String
 }
+
+extension XCUIElement {
+    func safeTap(within timeout: TimeInterval = 0) {
+        if waitForExistence(timeout: timeout) && isHittable {
+            tap()
+        }
+    }
+}
+
+/// Prints given value to `STDOUT`, which is captured by CI App instrumentation.
+/// This is an oportunity to associate additional logs to UI test execution.
+func sendCIAppLog(_ value: CustomStringConvertible) {
+    print(value)
+}

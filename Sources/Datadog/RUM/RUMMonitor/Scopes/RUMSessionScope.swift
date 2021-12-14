@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import class UIKit.UIViewController
 
 internal class RUMSessionScope: RUMScope, RUMContextProvider {
     struct Constants {
