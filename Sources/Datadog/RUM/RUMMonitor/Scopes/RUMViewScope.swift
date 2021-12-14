@@ -334,6 +334,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         )
 
+#if DD_SDK_ENABLE_INTERNAL_MONITORING
+        if #available(iOS 15, *) {
+            MetricMonitor.shared.monitorMetricKit(launchTime: dependencies.launchTimeProvider.launchTime)
+        }
+#endif
+
         if let event = dependencies.eventBuilder.createRUMEvent(with: eventData) {
             dependencies.eventOutput.write(rumEvent: event)
             return true
@@ -504,3 +510,59 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         return sanitized
     }
 }
+
+#if DD_SDK_ENABLE_INTERNAL_MONITORING
+import MetricKit
+
+/// The MetricMonitor only exists for internal testing, it will log the MetricKit payloads at reception to
+/// Internal Monitoring Feature.
+///
+/// TODO: This monitor shall be removed once MetricKit has been evaluated.
+private class MetricMonitor: NSObject, MXMetricManagerSubscriber {
+    static var shared = MetricMonitor()
+
+    /// The launch time reported by the sdk.
+    private var launchTime: TimeInterval = 0
+
+    /// Request MetricKit payload by subscribing to MXMetricManager.
+    ///
+    /// - Parameter launchTime: The launch time reported by the sdk.
+    @available(iOS 13.0, *)
+    func monitorMetricKit(launchTime: TimeInterval) {
+        self.launchTime = launchTime
+        MXMetricManager.shared.add(self)
+    }
+
+    @available(iOS 13.0, *)
+    func didReceive(_ payloads: [MXMetricPayload]) {
+        let decoder = JSONDecoder()
+
+        let attributes = payloads
+            .map { $0.jsonRepresentation() }
+            .compactMap { try? decoder.decode(CodableValue.self, from: $0) }
+
+        InternalMonitoringFeature.instance?.monitor.sdkLogger.info(
+            "Did receive MetricKit metrics",
+            attributes: [
+                "application_launch_time": launchTime,
+                "payloads": attributes
+            ]
+        )
+    }
+
+    @available(iOS 14.0, *)
+    func didReceive(_ payloads: [MXDiagnosticPayload]) {
+        let decoder = JSONDecoder()
+
+        let attributes = payloads
+            .map { $0.jsonRepresentation() }
+            .compactMap { try? decoder.decode(CodableValue.self, from: $0) }
+
+        InternalMonitoringFeature.instance?.monitor.sdkLogger.info(
+            "Did receive MetricKit diagnostics",
+            attributes: ["payloads": attributes]
+        )
+    }
+}
+
+#endif
