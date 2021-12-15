@@ -336,6 +336,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
 #if DD_SDK_ENABLE_INTERNAL_MONITORING
         if #available(iOS 15, *) {
+            // Starting MetricKit monitor from here, to ensure that our launch time was already reported
+            // in `.applicationStart` action and we could compare both measurements.
             MetricMonitor.shared.monitorMetricKit(launchTime: dependencies.launchTimeProvider.launchTime)
         }
 #endif
