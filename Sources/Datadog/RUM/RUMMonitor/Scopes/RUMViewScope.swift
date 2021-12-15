@@ -526,12 +526,16 @@ private class MetricMonitor: NSObject, MXMetricManagerSubscriber {
     /// The launch time reported by the sdk.
     private var launchTime: TimeInterval = 0
 
+    /// The time when this monitor starts.
+    private var timestamp: Date = .distantPast
+
     /// Request MetricKit payload by subscribing to MXMetricManager.
     ///
     /// - Parameter launchTime: The launch time reported by the sdk.
     @available(iOS 13.0, *)
     func monitorMetricKit(launchTime: TimeInterval) {
         self.launchTime = launchTime
+        self.timestamp = Date()
         MXMetricManager.shared.add(self)
     }
 
@@ -545,6 +549,7 @@ private class MetricMonitor: NSObject, MXMetricManagerSubscriber {
             "Did receive MetricKit metrics",
             attributes: [
                 "application_launch_time": launchTime,
+                "delay": Date().timeIntervalSince(timestamp),
                 "payloads": MetricEncodable(metrics)
             ]
         )
@@ -558,7 +563,10 @@ private class MetricMonitor: NSObject, MXMetricManagerSubscriber {
 
         InternalMonitoringFeature.instance?.monitor.sdkLogger.info(
             "Did receive MetricKit diagnostics",
-            attributes: ["payloads": MetricEncodable(diagnostics)]
+            attributes: [
+                "delay": Date().timeIntervalSince(timestamp),
+                "payloads": MetricEncodable(diagnostics)
+            ]
         )
     }
 }
