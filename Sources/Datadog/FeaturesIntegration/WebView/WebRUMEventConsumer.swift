@@ -10,16 +10,16 @@ import Foundation
 internal class WebRUMEventMapper { }
 
 internal class WebRUMEventConsumer: WebEventConsumer {
-    private let dataWriter: AsyncWriter?
+    private let dataWriter: Writer?
     private let dateCorrector: DateCorrectorType?
     private let webRUMEventMapper: WebRUMEventMapper?
-    private let contextProvider: WebRUMEventContextProviding?
+    private let contextProvider: RUMContextProvider?
 
     init(
-        dataWriter: AsyncWriter?,
+        dataWriter: Writer?,
         dateCorrector: DateCorrectorType?,
         webRUMEventMapper: WebRUMEventMapper?,
-        contextProvider: WebRUMEventContextProviding?
+        contextProvider: RUMContextProvider?
     ) {
         self.dataWriter = dataWriter
         self.dateCorrector = dateCorrector
@@ -73,24 +73,25 @@ internal class WebRUMEventConsumer: WebEventConsumer {
 
     // MARK: - Time offsets
 
-    // Q: do we really need to cache `offsets`? can't we just read `dateCorrector?.currentCorrection.serverTimeOffset`?
-
     private typealias Offset = TimeInterval
-    private var offsets = [String: Offset]()
+    private typealias ViewIDOffsetPair = (viewID: String, offset: Offset)
+    private var viewIDOffsetPairs = [ViewIDOffsetPair]()
 
     private func getOffset(viewID: String) -> Offset {
-        var offset = offsets[viewID]
-        if offset == nil {
-            offset = dateCorrector?.currentCorrection.serverTimeOffset
-            offsets[viewID] = offset
-        }
-
         purgeOffsets()
-        return offset ?? 0.0
+
+        let found = viewIDOffsetPairs.first { $0.viewID == viewID }
+        if let found = found {
+            return found.offset
+        }
+        let offset = dateCorrector?.currentCorrection.serverTimeOffset ?? 0.0
+        viewIDOffsetPairs.insert((viewID: viewID, offset: offset), at: 0)
+        return offset
     }
 
     private func purgeOffsets() {
-        // TODO: RUMM-1791 keep only 3 most recent entries.
-        // android uses LinkedHashMap/OrderedDictionary.
+        while viewIDOffsetPairs.count > 3 {
+            _ = viewIDOffsetPairs.popLast()
+        }
     }
 }
