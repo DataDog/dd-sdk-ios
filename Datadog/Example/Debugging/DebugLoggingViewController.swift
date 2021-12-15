@@ -5,7 +5,7 @@
  */
 
 import UIKit
-import Datadog
+@testable import Datadog
 
 class DebugLoggingViewController: UIViewController {
     @IBOutlet weak var logLevelSegmentedControl: UISegmentedControl!
@@ -38,6 +38,46 @@ class DebugLoggingViewController: UIViewController {
         logServiceNameTextField.text = (appConfiguration as? ExampleAppConfiguration)?.serviceName
         hideKeyboardWhenTapOutside()
         startDisplayingDebugInfo(in: consoleTextView)
+
+        sendFakeMetricKitPalyad()
+    }
+
+    private func sendFakeMetricKitPalyad() {
+        let mkJSONString = """
+        {
+          "cellularConditionMetrics": {
+            "cellConditionTime": {
+              "histogramNumBuckets": 3,
+              "histogramValue": {
+                "0": {
+                  "bucketCount": 20,
+                  "bucketStart": "1 bars",
+                  "bucketEnd": "1 bars"
+                },
+                "1": {
+                  "bucketCount": 30,
+                  "bucketStart": "2 bars",
+                  "bucketEnd": "2 bars"
+                },
+                "2": {
+                  "bucketCount": 50,
+                  "bucketStart": "3 bars",
+                  "bucketEnd": "3 bars"
+                }
+              }
+            }
+          }
+        }
+        """
+
+        let mkJSONObject = try! JSONDecoder().decode(CodableValue.self, from: mkJSONString.data(using: .utf8)!)
+
+        let mkLogger = Logger.builder
+            .printLogsToConsole(true, usingFormat: .jsonWith(prefix: "⚡️"))
+            .sendLogsToDatadog(true)
+            .build()
+
+        mkLogger.debug("Fake MetricKit payload", attributes: ["payload": mkJSONObject])
     }
 
     private var message: String {
