@@ -23,6 +23,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
     private let rumEventOutput: RUMEventOutput
     private let dateProvider: DateProvider
     private let dateCorrector: DateCorrectorType
+    private let rumConfiguration: FeaturesConfiguration.RUM
 
     // MARK: - Initialization
 
@@ -32,18 +33,21 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 fileWriter: rumFeature.storage.arbitraryAuthorizedWriter
             ),
             dateProvider: rumFeature.dateProvider,
-            dateCorrector: rumFeature.dateCorrector
+            dateCorrector: rumFeature.dateCorrector,
+            rumConfiguration: rumFeature.configuration
         )
     }
 
     init(
         rumEventOutput: RUMEventOutput,
         dateProvider: DateProvider,
-        dateCorrector: DateCorrectorType
+        dateCorrector: DateCorrectorType,
+        rumConfiguration: FeaturesConfiguration.RUM
     ) {
         self.rumEventOutput = rumEventOutput
         self.dateProvider = dateProvider
         self.dateCorrector = dateCorrector
+        self.rumConfiguration = rumConfiguration
     }
 
     // MARK: - CrashReportingIntegration
@@ -53,16 +57,27 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             return // Only authorized crash reports can be send
         }
 
-        guard let lastRUMViewEvent = crashContext.lastRUMViewEvent else {
-            InternalMonitoringFeature.instance?.monitor.sdkLogger.error("Attempt to send crash report through RUM integration, but last `RUMViewEvent` is missing")
-            return // This integration requires crash report with associated `RUMViewEvent`
-        }
-
         // The `crashReport.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
-        // to the server time before processing. Following use of the current correction is not ideal, but this is the best
-        // approximation we can get.
+        // to the server time before processing. Following use of the current correction is not ideal (it's not the correction
+        // from the moment of crash), but this is the best approximation we can get.
         let currentTimeCorrection = dateCorrector.currentCorrection
 
+        if let lastRUMViewEvent = crashContext.lastRUMViewEvent {
+            sendCrashReportToPreviousSession(crashReport, rumViewEventFromPreviousSession: lastRUMViewEvent, using: currentTimeCorrection)
+        } else if rumConfiguration.sessionSampler.sample() { // before producing a new RUM session, we must consider sampling
+            sendCrashReportToNewSession(crashReport, crashContext: crashContext, using: currentTimeCorrection)
+        } else {
+            userLogger.info("There was a crash in previous session, but it is ignored due to sampling.")
+        }
+    }
+
+    /// If the crash occured in an existing RUM session and we know its `lastRUMViewEvent` we send the error using that session UUID.
+    /// The error event can be preceded with a view update based on `Constants.viewEventAvailabilityThreshold` condition.
+    private func sendCrashReportToPreviousSession(
+        _ crashReport: DDCrashReport,
+        rumViewEventFromPreviousSession lastRUMViewEvent: RUMEvent<RUMViewEvent>,
+        using currentTimeCorrection: DateCorrection
+    ) {
         let crashDate = crashReport.date ?? dateProvider.currentDate()
         let realCrashDate = currentTimeCorrection.applying(to: crashDate)
         let realDateNow = currentTimeCorrection.applying(to: dateProvider.currentDate())
@@ -73,14 +88,63 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             rumEventOutput.write(rumEvent: rumError)
             rumEventOutput.write(rumEvent: rumView)
         } else {
+            // We know it is too late for sending RUM view to previous RUM session as it is now stale on backend.
+            // To avoid inconsistency, we only send the RUM error.
             let rumError = createRUMError(from: crashReport, and: lastRUMViewEvent, crashDate: realCrashDate)
             rumEventOutput.write(rumEvent: rumError)
         }
     }
 
+    /// If the crash occurred before starting RUM session (after initializing SDK, but before starting the first view) we don't have any session UUID to associate the error with.
+    /// In that case, we consider sending this crash within a new, single-view session: either "ApplicationLaunch" view or "Background" view.
+    private func sendCrashReportToNewSession(
+        _ crashReport: DDCrashReport,
+        crashContext: CrashContext,
+        using currentTimeCorrection: DateCorrection
+    ) {
+        // We can ignore `sessionState` for building the rule as we can assume there was no session sent - otherwise,
+        // the `lastRUMViewEvent` would have been set in `CrashContext` and we could be sending the crash to previous session
+        // through `sendCrashReportToPreviousSession()`.
+        let handlingRule = RUMOffViewEventsHandlingRule(
+            sessionState: nil,
+            isAppInForeground: crashContext.lastIsAppInForeground,
+            isBETEnabled: rumConfiguration.backgroundEventTrackingEnabled
+        )
+
+        let crashDate = crashReport.date ?? dateProvider.currentDate()
+        let realCrashDate = currentTimeCorrection.applying(to: crashDate)
+        let newRUMView: RUMEvent<RUMViewEvent>?
+
+        switch handlingRule {
+        case .handleInApplicationLaunchView:
+            newRUMView = createNewRUMViewEvent(
+                named: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName,
+                url: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
+                startDate: realCrashDate,
+                crashContext: crashContext
+            )
+        case .handleInBackgroundView:
+            newRUMView = createNewRUMViewEvent(
+                named: RUMOffViewEventsHandlingRule.Constants.backgroundViewName,
+                url: RUMOffViewEventsHandlingRule.Constants.backgroundViewURL,
+                startDate: realCrashDate,
+                crashContext: crashContext
+            )
+        case .doNotHandle:
+            newRUMView = nil // could mean that the crash happened in background with and BET is disabled
+        }
+
+        if var newRUMView = newRUMView {
+            newRUMView = updateRUMViewWithNewError(newRUMView, crashDate: realCrashDate)
+            let rumError = createRUMError(from: crashReport, and: newRUMView, crashDate: realCrashDate)
+            rumEventOutput.write(rumEvent: rumError)
+            rumEventOutput.write(rumEvent: newRUMView)
+        }
+    }
+
     // MARK: - Building RUM events
 
-    /// Creates the `RUMEvent<RUMErrorEvent>` based on the session information from `lastRUMViewEvent` and `DDCrashReport` details.
+    /// Creates RUM error based on the session information from `lastRUMViewEvent` and `DDCrashReport` details.
     private func createRUMError(from crashReport: DDCrashReport, and lastRUMViewEvent: RUMEvent<RUMViewEvent>, crashDate: Date) -> RUMEvent<RUMErrorEvent> {
         let lastRUMView = lastRUMViewEvent.model
 
@@ -137,7 +201,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         )
     }
 
-    /// Creates RUM View event which updates given `lastRUMViewEvent` with crash information.
+    /// Updates given RUM view event with crash information.
     private func updateRUMViewWithNewError(_ rumViewEvent: RUMEvent<RUMViewEvent>, crashDate: Date) -> RUMEvent<RUMViewEvent> {
         let original = rumViewEvent.model
         let rumView = RUMViewEvent(
@@ -186,6 +250,72 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 resource: original.view.resource,
                 timeSpent: original.view.timeSpent,
                 url: original.view.url
+            )
+        )
+
+        return RUMEvent(model: rumView)
+    }
+
+    /// Creates new RUM view event.
+    private func createNewRUMViewEvent(named viewName: String, url viewURL: String, startDate: Date, crashContext: CrashContext) -> RUMEvent<RUMViewEvent> {
+        let newSessionUUID = rumConfiguration.uuidGenerator.generateUnique()
+        let viewUUID = rumConfiguration.uuidGenerator.generateUnique()
+
+        let rumView = RUMViewEvent(
+            dd: .init(
+                documentVersion: 1,
+                session: .init(plan: .plan1)
+            ),
+            application: .init(
+                id: rumConfiguration.applicationID
+            ),
+            connectivity: RUMConnectivity(
+                networkInfo: crashContext.lastNetworkConnectionInfo,
+                carrierInfo: crashContext.lastCarrierInfo
+            ),
+            context: nil,
+            date: startDate.timeIntervalSince1970.toInt64Milliseconds,
+            service: nil,
+            session: .init(
+                hasReplay: nil,
+                id: newSessionUUID.toRUMDataFormat,
+                type: .user
+            ),
+            synthetics: nil,
+            usr: crashContext.lastUserInfo.flatMap { RUMUser(userInfo: $0) },
+            view: .init(
+                action: .init(count: 0),
+                cpuTicksCount: nil,
+                cpuTicksPerSecond: nil,
+                crash: .init(count: 0),
+                cumulativeLayoutShift: nil,
+                customTimings: nil,
+                domComplete: nil,
+                domContentLoaded: nil,
+                domInteractive: nil,
+                error: .init(count: 0),
+                firstContentfulPaint: nil,
+                firstInputDelay: nil,
+                firstInputTime: nil,
+                frozenFrame: nil,
+                id: viewUUID.toRUMDataFormat,
+                inForegroundPeriods: nil,
+                isActive: false, // we know it won't receive updates
+                isSlowRendered: nil,
+                largestContentfulPaint: nil,
+                loadEvent: nil,
+                loadingTime: nil,
+                loadingType: nil,
+                longTask: nil,
+                memoryAverage: nil,
+                memoryMax: nil,
+                name: viewName,
+                referrer: nil,
+                refreshRateAverage: nil,
+                refreshRateMin: nil,
+                resource: .init(count: 0),
+                timeSpent: 1, // arbitrary, 1ns duration
+                url: viewURL
             )
         )
 
