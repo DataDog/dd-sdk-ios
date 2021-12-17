@@ -9,13 +9,18 @@ import Datadog
 
 internal extension PLCrashReporterConfig {
     /// `PLCR` configuration used for `DatadogCrashReporting`
-    static func ddConfiguration() -> PLCrashReporterConfig {
+    static func ddConfiguration() throws -> PLCrashReporterConfig {
+        let version = "v1"
+        let path = try createCache(subdirectory: "com.datadoghq.crash-reporting/\(version)")
+
         return PLCrashReporterConfig(
             // The choice of `.BSD` over `.mach` is well discussed here:
-            // https://github.com/ChatSecure/PLCrashReporter/blob/7f27b272d5ff0d6650fc41317127bb2378ed6e88/Source/CrashReporter.h#L238-L363
+            // https://github.com/microsoft/PLCrashReporter/blob/7f27b272d5ff0d6650fc41317127bb2378ed6e88/Source/CrashReporter.h#L238-L363
             signalHandlerType: .BSD,
             // We don't symbolicate on device. All symbolication will happen backend-side.
-            symbolicationStrategy: []
+            symbolicationStrategy: [],
+            // Set a custom path to avoid conflicts with other PLC instances
+            basePath: path
         )
     }
 }
@@ -25,7 +30,7 @@ internal final class PLCrashReporterIntegration: ThirdPartyCrashReporter {
     private let builder = DDCrashReportBuilder()
 
     init() throws {
-        self.crashReporter = PLCrashReporter(configuration: .ddConfiguration())
+        self.crashReporter = try PLCrashReporter(configuration: .ddConfiguration())
         try crashReporter.enableAndReturnError()
     }
 
@@ -51,6 +56,28 @@ internal final class PLCrashReporterIntegration: ThirdPartyCrashReporter {
 
     func purgePendingCrashReport() throws {
         try crashReporter.purgePendingCrashReportAndReturnError()
+    }
+}
+
+/// Creates subdirectory at given path in `/Library/Caches` if it does not exist.
+///
+/// `/Library/Caches` is exclduded from iTunes and iCloud backups by default.
+/// System may delete data in `/Library/Cache` to free up disk space which reduces the impact on devices working under heavy space pressure.
+///
+/// - Parameter path: The subdirectory path.
+/// - Throws: `CrashReportException` when it's not possible.
+/// - Returns: The absolute string of the subdirectory path
+private func createCache(subdirectory path: String) throws -> String {
+    guard let cache = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+        throw CrashReportException(description: "Cannot obtain `/Library/Caches/` url.")
+    }
+
+    do {
+        let url = cache.appendingPathComponent(path, isDirectory: true)
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
+        return url.absoluteString
+    } catch {
+        throw CrashReportException(description: "Cannot create subdirectory in `/Library/Caches/` folder.")
     }
 }
 
@@ -102,4 +129,5 @@ private struct PLCrashReportDiagnosticInfo: Encodable {
         self.numberOfStackFramesInCrashedThread = numberOfStackFramesInCrashedThread
     }
 }
+
 #endif
