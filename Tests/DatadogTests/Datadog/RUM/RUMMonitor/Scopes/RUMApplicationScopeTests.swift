@@ -13,6 +13,7 @@ class RUMApplicationScopeTests: XCTestCase {
             rumApplicationID: "abc-123",
             dependencies: .mockAny(),
             samplingRate: .mockAny(),
+            applicationStartTime: .mockAny(),
             backgroundEventTrackingEnabled: .mockAny()
         )
 
@@ -31,19 +32,23 @@ class RUMApplicationScopeTests: XCTestCase {
             expectation.fulfill()
         }
 
+        // Given
+        let currentTime = Date()
         let scope = RUMApplicationScope(
             rumApplicationID: .mockAny(),
-            dependencies: .mockWith(
-                onSessionStart: onSessionStart
-            ),
+            dependencies: .mockWith(onSessionStart: onSessionStart),
             samplingRate: 0,
+            applicationStartTime: currentTime,
             backgroundEventTrackingEnabled: .mockRandom()
         )
-
         XCTAssertNil(scope.sessionScope)
-        XCTAssertTrue(scope.process(command: mockRandomRUMCommand()))
+
+        // When
+        let command = mockRandomRUMCommand().replacing(time: currentTime.addingTimeInterval(1))
+        XCTAssertTrue(scope.process(command: command))
         waitForExpectations(timeout: 0.5)
 
+        // Then
         let sessionScope = try XCTUnwrap(scope.sessionScope)
         XCTAssertEqual(sessionScope.backgroundEventTrackingEnabled, scope.backgroundEventTrackingEnabled)
         XCTAssertTrue(sessionScope.isInitialSession, "Starting the very first view in application must create initial session")
@@ -60,16 +65,14 @@ class RUMApplicationScopeTests: XCTestCase {
         }
 
         // Given
+        var currentTime = Date()
         let scope = RUMApplicationScope(
             rumApplicationID: .mockAny(),
-            dependencies: .mockWith(
-                onSessionStart: onSessionStart
-            ),
+            dependencies: .mockWith(onSessionStart: onSessionStart),
             samplingRate: 100,
+            applicationStartTime: currentTime,
             backgroundEventTrackingEnabled: .mockAny()
         )
-
-        var currentTime = Date()
 
         let view = createMockViewInWindow()
         _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: view))
@@ -101,10 +104,17 @@ class RUMApplicationScopeTests: XCTestCase {
         let output = RUMEventOutputMock()
         let dependencies: RUMScopeDependencies = .mockWith(eventOutput: output)
 
-        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: dependencies, samplingRate: 100, backgroundEventTrackingEnabled: .mockAny())
+        let currentTime = Date()
+        let scope = RUMApplicationScope(
+            rumApplicationID: .mockAny(),
+            dependencies: dependencies,
+            samplingRate: 100,
+            applicationStartTime: currentTime,
+            backgroundEventTrackingEnabled: .mockAny()
+        )
 
-        _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
-        _ = scope.process(command: RUMStopViewCommand.mockWith(identity: mockView))
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView))
+        _ = scope.process(command: RUMStopViewCommand.mockWith(time: currentTime, identity: mockView))
 
         XCTAssertEqual(try output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).count, 2)
     }
@@ -113,10 +123,17 @@ class RUMApplicationScopeTests: XCTestCase {
         let output = RUMEventOutputMock()
         let dependencies: RUMScopeDependencies = .mockWith(eventOutput: output)
 
-        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: dependencies, samplingRate: 0, backgroundEventTrackingEnabled: .mockAny())
+        let currentTime = Date()
+        let scope = RUMApplicationScope(
+            rumApplicationID: .mockAny(),
+            dependencies: dependencies,
+            samplingRate: 0,
+            applicationStartTime: currentTime,
+            backgroundEventTrackingEnabled: .mockAny()
+        )
 
-        _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
-        _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView))
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView))
 
         XCTAssertEqual(try output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).count, 0)
     }
@@ -125,9 +142,15 @@ class RUMApplicationScopeTests: XCTestCase {
         let output = RUMEventOutputMock()
         let dependencies: RUMScopeDependencies = .mockWith(eventOutput: output)
 
-        let scope = RUMApplicationScope(rumApplicationID: .mockAny(), dependencies: dependencies, samplingRate: 50, backgroundEventTrackingEnabled: .mockAny())
-
         var currentTime = Date()
+        let scope = RUMApplicationScope(
+            rumApplicationID: .mockAny(),
+            dependencies: dependencies,
+            samplingRate: 50,
+            applicationStartTime: currentTime,
+            backgroundEventTrackingEnabled: .mockAny()
+        )
+
         let simulatedSessionsCount = 200
         (0..<simulatedSessionsCount).forEach { _ in
             _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView))

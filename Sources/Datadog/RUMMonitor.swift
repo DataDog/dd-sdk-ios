@@ -178,6 +178,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             applicationScope: RUMApplicationScope(
                 rumApplicationID: rumFeature.configuration.applicationID,
                 dependencies: RUMScopeDependencies(
+                    appStateListener: rumFeature.appStateListener,
                     userInfoProvider: RUMUserInfoProvider(userInfoProvider: rumFeature.userInfoProvider),
                     launchTimeProvider: rumFeature.launchTimeProvider,
                     connectivityInfoProvider: RUMConnectivityInfoProvider(
@@ -198,6 +199,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     onSessionStart: rumFeature.onSessionStart
                 ),
                 samplingRate: rumFeature.configuration.sessionSamplingRate,
+                applicationStartTime: rumFeature.sdkInitDate,
                 backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled
             ),
             dateProvider: rumFeature.dateProvider

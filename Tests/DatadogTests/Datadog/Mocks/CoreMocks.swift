@@ -454,6 +454,7 @@ extension FeaturesCommonDependencies {
                 return BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false)
             }
         ),
+        sdkInitDate: Date = Date(),
         dateProvider: DateProvider = SystemDateProvider(),
         dateCorrector: DateCorrectorType = DateCorrectorMock(),
         userInfoProvider: UserInfoProvider = .mockAny(),
@@ -468,7 +469,8 @@ extension FeaturesCommonDependencies {
             )
         ),
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
-        launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock()
+        launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock(),
+        appStateListener: AppStateListening = AppStateListenerMock.mockAny()
     ) -> FeaturesCommonDependencies {
         let httpClient: HTTPClient
 
@@ -496,12 +498,14 @@ extension FeaturesCommonDependencies {
             performance: performance,
             httpClient: httpClient,
             mobileDevice: mobileDevice,
+            sdkInitDate: sdkInitDate,
             dateProvider: dateProvider,
             dateCorrector: dateCorrector,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider,
-            launchTimeProvider: launchTimeProvider
+            launchTimeProvider: launchTimeProvider,
+            appStateListener: appStateListener
         )
     }
 
@@ -511,24 +515,28 @@ extension FeaturesCommonDependencies {
         performance: PerformancePreset? = nil,
         httpClient: HTTPClient? = nil,
         mobileDevice: MobileDevice? = nil,
+        sdkInitDate: Date? = nil,
         dateProvider: DateProvider? = nil,
         dateCorrector: DateCorrectorType? = nil,
         userInfoProvider: UserInfoProvider? = nil,
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType? = nil,
         carrierInfoProvider: CarrierInfoProviderType? = nil,
-        launchTimeProvider: LaunchTimeProviderType? = nil
+        launchTimeProvider: LaunchTimeProviderType? = nil,
+        appStateListener: AppStateListening? = nil
     ) -> FeaturesCommonDependencies {
         return FeaturesCommonDependencies(
             consentProvider: consentProvider ?? self.consentProvider,
             performance: performance ?? self.performance,
             httpClient: httpClient ?? self.httpClient,
             mobileDevice: mobileDevice ?? self.mobileDevice,
+            sdkInitDate: sdkInitDate ?? self.sdkInitDate,
             dateProvider: dateProvider ?? self.dateProvider,
             dateCorrector: dateCorrector ?? self.dateCorrector,
             userInfoProvider: userInfoProvider ?? self.userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider ?? self.networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider ?? self.carrierInfoProvider,
-            launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider
+            launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider,
+            appStateListener: appStateListener ?? self.appStateListener
         )
     }
 }
@@ -653,6 +661,23 @@ class DateCorrectorMock: DateCorrectorType {
 
 struct LaunchTimeProviderMock: LaunchTimeProviderType {
     var launchTime: TimeInterval = 0
+}
+
+class AppStateListenerMock: AppStateListening, AnyMockable {
+    let history: AppStateHistory
+
+    required init(history: AppStateHistory) {
+        self.history = history
+    }
+
+    static func mockAny() -> Self {
+        return .init(
+            history: .init(
+                initialState: .init(isActive: true, date: .mockDecember15th2019At10AMUTC()),
+                recentDate: .mockDecember15th2019At10AMUTC()
+            )
+        )
+    }
 }
 
 extension UserInfo: AnyMockable, RandomMockable {
@@ -988,12 +1013,6 @@ class CarrierInfoProviderMock: CarrierInfoProviderType {
         carrierInfo: CarrierInfo = .mockAny()
     ) -> CarrierInfoProviderMock {
         return CarrierInfoProviderMock(carrierInfo: carrierInfo)
-    }
-}
-
-extension AppStateListener {
-    static func mockAny() -> AppStateListener {
-        return AppStateListener(dateProvider: SystemDateProvider())
     }
 }
 

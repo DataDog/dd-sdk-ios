@@ -178,6 +178,15 @@ func mockRandomRUMCommand(where predicate: (RUMCommand) -> Bool = { _ in true })
     return allCommands.filter(predicate).randomElement()!
 }
 
+extension RUMCommand {
+    func replacing(time: Date? = nil, attributes: [AttributeKey: AttributeValue]? = nil) -> RUMCommand {
+        var command = self
+        command.time = time ?? command.time
+        command.attributes = attributes ?? command.attributes
+        return command
+    }
+}
+
 extension RUMStartViewCommand: AnyMockable, RandomMockable {
     static func mockAny() -> RUMStartViewCommand { mockWith() }
 
@@ -596,6 +605,7 @@ extension RUMScopeDependencies {
     }
 
     static func mockWith(
+        appStateListener: AppStateListening = AppStateListenerMock.mockAny(),
         userInfoProvider: RUMUserInfoProvider = RUMUserInfoProvider(userInfoProvider: .mockAny()),
         launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock(),
         connectivityInfoProvider: RUMConnectivityInfoProvider = RUMConnectivityInfoProvider(
@@ -609,6 +619,7 @@ extension RUMScopeDependencies {
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
+            appStateListener: appStateListener,
             userInfoProvider: userInfoProvider,
             launchTimeProvider: launchTimeProvider,
             connectivityInfoProvider: connectivityInfoProvider,
@@ -625,6 +636,7 @@ extension RUMScopeDependencies {
 
     /// Creates new instance of `RUMScopeDependencies` by replacing individual dependencies.
     func replacing(
+        appStateListener: AppStateListening? = nil,
         userInfoProvider: RUMUserInfoProvider? = nil,
         launchTimeProvider: LaunchTimeProviderType? = nil,
         connectivityInfoProvider: RUMConnectivityInfoProvider? = nil,
@@ -635,6 +647,7 @@ extension RUMScopeDependencies {
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
+            appStateListener: appStateListener ?? self.appStateListener,
             userInfoProvider: userInfoProvider ?? self.userInfoProvider,
             launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider,
             connectivityInfoProvider: connectivityInfoProvider ?? self.connectivityInfoProvider,
@@ -658,13 +671,15 @@ extension RUMApplicationScope {
     static func mockWith(
         rumApplicationID: String = .mockAny(),
         dependencies: RUMScopeDependencies = .mockAny(),
-        samplingRate: Float = 100,
+        samplingRate: Float = .mockAny(),
+        applicationStartTime: Date = .mockAny(),
         backgroundEventTrackingEnabled: Bool = .mockAny()
     ) -> RUMApplicationScope {
         return RUMApplicationScope(
             rumApplicationID: rumApplicationID,
             dependencies: dependencies,
             samplingRate: samplingRate,
+            applicationStartTime: applicationStartTime,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
         )
     }

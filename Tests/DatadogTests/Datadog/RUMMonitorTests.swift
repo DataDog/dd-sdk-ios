@@ -928,12 +928,15 @@ class RUMMonitorTests: XCTestCase {
     // MARK: - Tracking App Launch Events
 
     func testWhenCollectingEventsBeforeStartingFirstView_itTracksThemWithinApplicationLaunchView() throws {
+        let sdkInitDate: Date = .mockDecember15th2019At10AMUTC()
+
         // Given
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
+                sdkInitDate: sdkInitDate,
                 dateProvider: RelativeDateProvider(
-                    startingFrom: Date(),
+                    startingFrom: sdkInitDate.addingTimeInterval(1),
                     advancingBySeconds: 1
                 )
             )
@@ -957,10 +960,15 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(session.viewVisits.count, 2, "It should track 2 views")
 
         let appLaunchView = session.viewVisits[0]
+        let sdkInitDateInMilliseconds = sdkInitDate.timeIntervalSince1970.toInt64Milliseconds
+
         XCTAssertEqual(appLaunchView.name, "ApplicationLaunch", "It should track 'ApplicationLaunch' view")
+        XCTAssertEqual(appLaunchView.viewEvents.first?.date, sdkInitDateInMilliseconds, "'ApplicationLaunch' view should start at SDK init")
         XCTAssertEqual(appLaunchView.actionEvents.count, 2, "'ApplicationLaunch' should track 2 actions")
         XCTAssertEqual(appLaunchView.actionEvents[0].action.type, .applicationStart, "'ApplicationLaunch' should track 'application start' action")
+        XCTAssertEqual(appLaunchView.actionEvents[0].date, sdkInitDateInMilliseconds, "'application start' action should be tracked at SDK init")
         XCTAssertEqual(appLaunchView.actionEvents[1].action.target?.name, "A1", "'ApplicationLaunch' should track 'A1' action")
+        XCTAssertGreaterThan(appLaunchView.actionEvents[1].date, sdkInitDateInMilliseconds, "'A1' action should be tracked after SDK init")
         XCTAssertEqual(appLaunchView.errorEvents.count, 1, "'ApplicationLaunch' should track 1 error")
         XCTAssertEqual(appLaunchView.errorEvents[0].error.message, "E1", "'ApplicationLaunch' should track 'E1' error")
         XCTAssertEqual(appLaunchView.resourceEvents.count, 1, "'ApplicationLaunch' should track 1 resource")

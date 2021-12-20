@@ -49,7 +49,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     let isInitialSession: Bool
     /// RUM Session sampling rate.
     private let samplingRate: Float
-    /// The start time of this Session.
+    /// The start time of this Session, measured in device date. In initial session this is the time of SDK init.
     private let sessionStartTime: Date
     /// Time of the last RUM interaction noticed by this Session.
     private var lastInteractionTime: Date
@@ -129,9 +129,14 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         // Consider starting an active view, "ApplicationLaunch" view or "Background" view
         if let startViewCommand = command as? RUMStartViewCommand {
             startView(on: startViewCommand)
-        } else if isInitialSession && !hasTrackedAnyView && command.canStartApplicationLaunchView {
-            startApplicationLaunchView(on: command)
-        } else if backgroundEventTrackingEnabled && !hasActiveView && command.canStartBackgroundView {
+        } else if isInitialSession && !hasTrackedAnyView { // if initial session with no views history
+            let appInForeground = dependencies.appStateListener.history.currentState.isActive
+            if appInForeground && command.canStartApplicationLaunchView { // when app is in foreground, start "ApplicationLaunch" view
+                startApplicationLaunchView(on: command)
+            } else if backgroundEventTrackingEnabled && command.canStartBackgroundView { // when app is in background and BET is enabled, start "Background" view
+                startBackgroundView(on: command)
+            }
+        } else if backgroundEventTrackingEnabled && !hasActiveView && command.canStartBackgroundView { // if existing session with views history and BET is enabled
             startBackgroundView(on: command)
         }
 
@@ -186,7 +191,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 name: Constants.applicationLaunchViewName,
                 attributes: command.attributes,
                 customTimings: [:],
-                startTime: command.time
+                startTime: sessionStartTime
             )
         )
     }

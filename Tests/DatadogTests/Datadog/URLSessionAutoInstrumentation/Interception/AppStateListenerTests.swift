@@ -13,7 +13,7 @@ class AppStateHistoryTests: XCTestCase {
         let history = AppStateHistory(
             initialState: .init(isActive: true, date: startDate),
             changes: [],
-            finalDate: startDate + 1.0
+            recentDate: startDate + 1.0
         )
 
         XCTAssertEqual(history.foregroundDuration, 1.0)
@@ -29,7 +29,7 @@ class AppStateHistoryTests: XCTestCase {
                 .init(isActive: false, date: startDate + 3.0),
                 .init(isActive: true, date: startDate + 4.0)
             ],
-            finalDate: startDate + 5.0
+            recentDate: startDate + 5.0
         )
 
         XCTAssertEqual(history.foregroundDuration, 3.0)
@@ -43,7 +43,7 @@ class AppStateHistoryTests: XCTestCase {
                 .init(isActive: false, date: startDate + 1.0),
                 .init(isActive: false, date: startDate + 3.0)
             ],
-            finalDate: startDate + 5.0
+            recentDate: startDate + 5.0
         )
 
         XCTAssertEqual(history.foregroundDuration, 1.0)
@@ -54,7 +54,7 @@ class AppStateHistoryTests: XCTestCase {
         let history = AppStateHistory(
             initialState: .init(isActive: true, date: startDate),
             changes: [],
-            finalDate: startDate + 5.0
+            recentDate: startDate + 5.0
         )
         let extrapolatedHistory = history.take(
             between: (startDate - 5.0)...(startDate + 15.0)
@@ -63,7 +63,7 @@ class AppStateHistoryTests: XCTestCase {
         let expectedHistory = AppStateHistory(
             initialState: .init(isActive: true, date: startDate - 5.0),
             changes: [],
-            finalDate: startDate + 15.0
+            recentDate: startDate + 15.0
         )
         XCTAssertEqual(extrapolatedHistory, expectedHistory)
     }
@@ -73,7 +73,7 @@ class AppStateHistoryTests: XCTestCase {
         let history = AppStateHistory(
             initialState: .init(isActive: true, date: startDate),
             changes: [],
-            finalDate: startDate + 20.0
+            recentDate: startDate + 20.0
         )
         let limitedHistory = history.take(
             between: (startDate + 5.0)...(startDate + 10.0)
@@ -82,7 +82,7 @@ class AppStateHistoryTests: XCTestCase {
         let expectedHistory = AppStateHistory(
             initialState: .init(isActive: true, date: startDate + 5.0),
             changes: [],
-            finalDate: startDate + 10.0
+            recentDate: startDate + 10.0
         )
         XCTAssertEqual(limitedHistory, expectedHistory)
     }
@@ -108,7 +108,7 @@ class AppStateHistoryTests: XCTestCase {
         let history = AppStateHistory(
             initialState: .init(isActive: true, date: startDate),
             changes: allChanges,
-            finalDate: startDate + 4_000
+            recentDate: startDate + 4_000
         )
 
         let limitedHistory = history.take(
@@ -118,7 +118,7 @@ class AppStateHistoryTests: XCTestCase {
         let expectedHistory = AppStateHistory(
             initialState: .init(isActive: true, date: startDate + 1_250),
             changes: [.init(isActive: false, date: startDate + 1_500)],
-            finalDate: startDate + 1_750
+            recentDate: startDate + 1_750
         )
         XCTAssertEqual(limitedHistory, expectedHistory)
     }
@@ -143,7 +143,7 @@ class AppStateListenerTests: XCTestCase {
                 .init(isActive: false, date: startDate + 1.0),
                 .init(isActive: true, date: startDate + 2.0)
             ],
-            finalDate: startDate + 3.0
+            recentDate: startDate + 3.0
         )
         XCTAssertEqual(listener.history, expected)
     }
@@ -163,7 +163,7 @@ class AppStateListenerTests: XCTestCase {
                 .init(isActive: true, date: startDate + 1.0),
                 .init(isActive: false, date: startDate + 2.0)
             ],
-            finalDate: startDate + 3.0
+            recentDate: startDate + 3.0
         )
         XCTAssertEqual(listener.history, expected)
     }
@@ -177,7 +177,7 @@ class AppStateListenerTests: XCTestCase {
         let history1 = listener.history
         let history2 = listener.history
 
-        XCTAssertEqual(history2.finalState.date.timeIntervalSince(history1.finalState.date), 1.0)
+        XCTAssertEqual(history2.currentState.date.timeIntervalSince(history1.currentState.date), 1.0)
     }
 
     func testWhenAppStateListenerIsCalledFromDifferentThreads_thenItWorks() {
