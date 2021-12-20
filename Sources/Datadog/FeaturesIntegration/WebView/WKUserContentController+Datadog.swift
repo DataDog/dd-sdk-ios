@@ -17,18 +17,26 @@ public extension WKUserContentController {
         let bridgeName = DatadogMessageHandler.name
 
         let contextProvider = (Global.rum as? RUMMonitor)?.contextProvider
-        let logEventConsumer = WebLogEventConsumer(
-            userLogsWriter: LoggingFeature.instance?.storage.writer,
-            internalLogsWriter: InternalMonitoringFeature.instance?.logsStorage.writer,
-            dateCorrector: LoggingFeature.instance?.dateCorrector,
-            rumContextProvider: contextProvider
-        )
-        let rumEventConsumer = WebRUMEventConsumer(
-            dataWriter: RUMFeature.instance?.storage.writer,
-            dateCorrector: RUMFeature.instance?.dateCorrector,
-            webRUMEventMapper: WebRUMEventMapper(),
-            contextProvider: contextProvider
-        )
+
+        var logEventConsumer: WebLogEventConsumer? = nil
+        if let loggingFeature = LoggingFeature.instance {
+            logEventConsumer = WebLogEventConsumer(
+                userLogsWriter: loggingFeature.storage.writer,
+                internalLogsWriter: InternalMonitoringFeature.instance?.logsStorage.writer,
+                dateCorrector: loggingFeature.dateCorrector,
+                rumContextProvider: contextProvider
+            )
+        }
+
+        var rumEventConsumer: WebRUMEventConsumer? = nil
+        if let rumFeature = RUMFeature.instance {
+            rumEventConsumer = WebRUMEventConsumer(
+                dataWriter: rumFeature.storage.writer,
+                dateCorrector: rumFeature.dateCorrector,
+                webRUMEventMapper: WebRUMEventMapper(),
+                contextProvider: contextProvider
+            )
+        }
 
         let messageHandler = DatadogMessageHandler(
             eventBridge: WebEventBridge(

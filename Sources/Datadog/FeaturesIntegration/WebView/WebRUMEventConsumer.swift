@@ -10,14 +10,14 @@ import Foundation
 internal class WebRUMEventMapper { }
 
 internal class WebRUMEventConsumer: WebEventConsumer {
-    private let dataWriter: Writer?
-    private let dateCorrector: DateCorrectorType?
+    private let dataWriter: Writer
+    private let dateCorrector: DateCorrectorType
     private let webRUMEventMapper: WebRUMEventMapper?
     private let contextProvider: RUMContextProvider?
 
     init(
-        dataWriter: Writer?,
-        dateCorrector: DateCorrectorType?,
+        dataWriter: Writer,
+        dateCorrector: DateCorrectorType,
         webRUMEventMapper: WebRUMEventMapper?,
         contextProvider: RUMContextProvider?
     ) {
@@ -68,7 +68,7 @@ internal class WebRUMEventConsumer: WebEventConsumer {
     }
 
     private func write<T: RUMDataModel>(_ model: T) {
-        dataWriter?.write(value: model)
+        dataWriter.write(value: model)
     }
 
     // MARK: - Time offsets
@@ -84,7 +84,7 @@ internal class WebRUMEventConsumer: WebEventConsumer {
         if let found = found {
             return found.offset
         }
-        let offset = dateCorrector?.currentCorrection.serverTimeOffset ?? 0.0
+        let offset = dateCorrector.currentCorrection.serverTimeOffset
         viewIDOffsetPairs.insert((viewID: viewID, offset: offset), at: 0)
         return offset
     }

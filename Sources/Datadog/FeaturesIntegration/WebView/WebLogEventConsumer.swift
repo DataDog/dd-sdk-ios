@@ -17,9 +17,9 @@ internal class WebLogEventConsumer: WebEventConsumer {
         static let dateKey = "date"
     }
 
-    private let userLogsWriter: Writer?
+    private let userLogsWriter: Writer
     private let internalLogsWriter: Writer?
-    private let dateCorrector: DateCorrectorType?
+    private let dateCorrector: DateCorrectorType
     private let rumContextProvider: RUMContextProvider?
     private let jsonDecoder = JSONDecoder()
 
@@ -33,9 +33,9 @@ internal class WebLogEventConsumer: WebEventConsumer {
     }()
 
     init(
-        userLogsWriter: Writer?,
+        userLogsWriter: Writer,
         internalLogsWriter: Writer?,
-        dateCorrector: DateCorrectorType?,
+        dateCorrector: DateCorrectorType,
         rumContextProvider: RUMContextProvider?
     ) {
         self.userLogsWriter = userLogsWriter
@@ -54,7 +54,7 @@ internal class WebLogEventConsumer: WebEventConsumer {
         }
 
         if let date = mutableEvent[Constants.dateKey] as? Int {
-            let serverTimeOffsetInNs = dateCorrector?.currentCorrection.serverTimeOffset.toInt64Nanoseconds ?? 0
+            let serverTimeOffsetInNs = dateCorrector.currentCorrection.serverTimeOffset.toInt64Nanoseconds
             let correctedDate = Int64(date) + serverTimeOffsetInNs
             mutableEvent[Constants.dateKey] = correctedDate
         }
@@ -68,7 +68,7 @@ internal class WebLogEventConsumer: WebEventConsumer {
         let encodableEvent = try jsonDecoder.decode(CodableValue.self, from: jsonData)
 
         if eventType == Constants.logEventType {
-            userLogsWriter?.write(value: encodableEvent)
+            userLogsWriter.write(value: encodableEvent)
         } else if eventType == Constants.internalLogEventType {
             internalLogsWriter?.write(value: encodableEvent)
         }

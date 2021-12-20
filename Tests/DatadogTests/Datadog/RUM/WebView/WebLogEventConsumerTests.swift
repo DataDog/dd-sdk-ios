@@ -117,7 +117,7 @@ class WebLogEventConsumerTests: XCTestCase {
         let eventConsumer = WebLogEventConsumer(
             userLogsWriter: mockUserLogsWriter,
             internalLogsWriter: mockInternalLogsWriter,
-            dateCorrector: nil,
+            dateCorrector: mockDateCorrector,
             rumContextProvider: nil
         )
 
