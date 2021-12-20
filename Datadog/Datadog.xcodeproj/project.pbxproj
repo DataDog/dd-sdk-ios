@@ -515,6 +515,7 @@
 		B3FC3C3C2653A97700DEED9E /* VitalInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FC3C3B2653A97700DEED9E /* VitalInfoTests.swift */; };
 		D2135330270CA722000315AD /* DataCompressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D213532F270CA722000315AD /* DataCompressionTests.swift */; };
 		D22C1F5C271484B400922024 /* LogEventMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22C1F5B271484B400922024 /* LogEventMapper.swift */; };
+		D243BBC0276C9D640019C857 /* PLCrashReporterIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D243BBBF276C9D640019C857 /* PLCrashReporterIntegrationTests.swift */; };
 		D244B3A3271EDACD003E1B29 /* SwiftUIExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D244B3A2271EDACD003E1B29 /* SwiftUIExtensionsTests.swift */; };
 		D24985A22728048B00B4F72D /* SwiftUIViewHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24985A12728048B00B4F72D /* SwiftUIViewHandler.swift */; };
 		D24985A327280FD100B4F72D /* SwiftUIViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D249859F2728042200B4F72D /* SwiftUIViewModifier.swift */; };
@@ -1182,6 +1183,7 @@
 		B3FC3C3B2653A97700DEED9E /* VitalInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalInfoTests.swift; sourceTree = "<group>"; };
 		D213532F270CA722000315AD /* DataCompressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCompressionTests.swift; sourceTree = "<group>"; };
 		D22C1F5B271484B400922024 /* LogEventMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEventMapper.swift; sourceTree = "<group>"; };
+		D243BBBF276C9D640019C857 /* PLCrashReporterIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PLCrashReporterIntegrationTests.swift; sourceTree = "<group>"; };
 		D244B3A2271EDACD003E1B29 /* SwiftUIExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIExtensionsTests.swift; sourceTree = "<group>"; };
 		D249859F2728042200B4F72D /* SwiftUIViewModifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftUIViewModifier.swift; sourceTree = "<group>"; };
 		D24985A12728048B00B4F72D /* SwiftUIViewHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftUIViewHandler.swift; sourceTree = "<group>"; };
@@ -3169,6 +3171,7 @@
 		61FCBFE525DBBE7D00CCF864 /* PLCrashReporterIntegration */ = {
 			isa = PBXGroup;
 			children = (
+				D243BBBF276C9D640019C857 /* PLCrashReporterIntegrationTests.swift */,
 				615CC4122695957C0005F08C /* CrashReportTests.swift */,
 				61FDBA14269722B4001D9D43 /* CrashReportMinifierTests.swift */,
 				61E95D872695C00200EA3115 /* DDCrashReportExporterTests.swift */,
@@ -4481,6 +4484,7 @@
 				61FDBA1726974CA9001D9D43 /* DDCrashReportBuilderTests.swift in Sources */,
 				612556BC26933228002BCE74 /* FoundationMocks.swift in Sources */,
 				615CC4102694A64D0005F08C /* SwiftExtensionTests.swift in Sources */,
+				D243BBC0276C9D640019C857 /* PLCrashReporterIntegrationTests.swift in Sources */,
 				61FDBA15269722B4001D9D43 /* CrashReportMinifierTests.swift in Sources */,
 				61E95D882695C00200EA3115 /* DDCrashReportExporterTests.swift in Sources */,
 				612556BD2693348F002BCE74 /* EquatableInTests.swift in Sources */,
