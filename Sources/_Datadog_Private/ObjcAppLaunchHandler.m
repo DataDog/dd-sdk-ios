@@ -72,6 +72,7 @@ NS_INLINE NSTimeInterval ComputeProcessTimeFromStart() {
         pthread_rwlock_unlock(&rwLock);
 
         [center removeObserver:token];
+        token = nil;
     }];
 }
 
