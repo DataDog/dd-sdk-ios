@@ -11,7 +11,12 @@ internal extension PLCrashReporterConfig {
     /// `PLCR` configuration used for `DatadogCrashReporting`
     static func ddConfiguration() throws -> PLCrashReporterConfig {
         let version = "v1"
-        let path = try createCache(subdirectory: "com.datadoghq.crash-reporting/\(version)")
+
+        guard let cache = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+            throw CrashReportException(description: "Cannot obtain `/Library/Caches/` url.")
+        }
+
+        let directory = cache.appendingPathComponent("com.datadoghq.crash-reporting/\(version)", isDirectory: true)
 
         return PLCrashReporterConfig(
             // The choice of `.BSD` over `.mach` is well discussed here:
@@ -20,7 +25,7 @@ internal extension PLCrashReporterConfig {
             // We don't symbolicate on device. All symbolication will happen backend-side.
             symbolicationStrategy: [],
             // Set a custom path to avoid conflicts with other PLC instances
-            basePath: path
+            basePath: directory.path
         )
     }
 }
@@ -56,28 +61,6 @@ internal final class PLCrashReporterIntegration: ThirdPartyCrashReporter {
 
     func purgePendingCrashReport() throws {
         try crashReporter.purgePendingCrashReportAndReturnError()
-    }
-}
-
-/// Creates subdirectory at given path in `/Library/Caches` if it does not exist.
-///
-/// `/Library/Caches` is exclduded from iTunes and iCloud backups by default.
-/// System may delete data in `/Library/Cache` to free up disk space which reduces the impact on devices working under heavy space pressure.
-///
-/// - Parameter path: The subdirectory path.
-/// - Throws: `CrashReportException` when it's not possible.
-/// - Returns: The absolute string of the subdirectory path
-private func createCache(subdirectory path: String) throws -> String {
-    guard let cache = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
-        throw CrashReportException(description: "Cannot obtain `/Library/Caches/` url.")
-    }
-
-    do {
-        let url = cache.appendingPathComponent(path, isDirectory: true)
-        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
-        return url.absoluteString
-    } catch {
-        throw CrashReportException(description: "Cannot create subdirectory in `/Library/Caches/` folder.")
     }
 }
 
