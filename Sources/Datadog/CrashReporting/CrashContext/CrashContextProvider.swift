@@ -70,7 +70,7 @@ internal class CrashContextProvider: CrashContextProviderType {
 
     /// Updates `CrashContext` with last app foreground / background state information.
     private lazy var isAppInForegroundUpdater = ContextValueUpdater<AppStateHistory>(queue: queue) { newValue in
-        self.unsafeCrashContext.lastIsAppInForeground = newValue.currentState.isActive
+        self.unsafeCrashContext.lastIsAppInForeground = newValue.currentSnapshot.state.isRunningInForeground
     }
 
     // MARK: - Initializer
@@ -96,7 +96,7 @@ internal class CrashContextProvider: CrashContextProviderType {
             lastNetworkConnectionInfo: networkConnectionInfoProvider.current,
             lastCarrierInfo: carrierInfoProvider.current,
             lastRUMSessionState: rumSessionStateProvider.currentValue,
-            lastIsAppInForeground: appStateListener.history.currentState.isActive
+            lastIsAppInForeground: appStateListener.history.currentSnapshot.state.isRunningInForeground
         )
 
         // Subscribe for context updates

@@ -13,7 +13,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
     private let handler = URLSessionTracingHandler(
         appStateListener: AppStateListenerMock(
             history: .init(
-                initialState: .init(isActive: true, date: .mockDecember15th2019At10AMUTC()),
+                initialSnapshot: .init(state: .active, date: .mockDecember15th2019At10AMUTC()),
                 recentDate: .mockDecember15th2019At10AMUTC() + 10
             )
         )

@@ -683,6 +683,20 @@ struct LaunchTimeProviderMock: LaunchTimeProviderType {
     var launchTime: TimeInterval = 0
 }
 
+extension AppState: AnyMockable, RandomMockable {
+    static func mockAny() -> AppState {
+        return .active
+    }
+
+    static func mockRandom() -> AppState {
+        return [.active, .inactive, .background].randomElement()!
+    }
+
+    static func mockRandom(runningInForeground: Bool) -> AppState {
+        return runningInForeground ? [.active, .inactive].randomElement()! : .background
+    }
+}
+
 class AppStateListenerMock: AppStateListening, AnyMockable {
     let history: AppStateHistory
 
@@ -696,13 +710,13 @@ class AppStateListenerMock: AppStateListening, AnyMockable {
 
     static func mockAppInForeground(since date: Date = Date()) -> Self {
         return .init(
-            history: .init(initialState: .init(isActive: true, date: date), recentDate: date)
+            history: .init(initialSnapshot: .init(state: .active, date: date), recentDate: date)
         )
     }
 
     static func mockAppInBackground(since date: Date = Date()) -> Self {
         return .init(
-            history: .init(initialState: .init(isActive: false, date: date), recentDate: date)
+            history: .init(initialSnapshot: .init(state: .background, date: date), recentDate: date)
         )
     }
 
