@@ -162,6 +162,14 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             viewScopes = manage(childScopes: viewScopes, byPropagatingCommand: command)
         }
 
+        if !hasActiveView {
+            // If there is no active view, update `CrashContext` accordingly, so eventual crash
+            // won't be associated to an inactive view and instead we will consider starting background view to track it.
+            // It means that with Background Events Tracking disabled, eventual off-view crashes will be dropped
+            // similar to how we drop other events.
+            dependencies.crashContextIntegration?.update(lastRUMViewEvent: nil)
+        }
+
         return true
     }
 

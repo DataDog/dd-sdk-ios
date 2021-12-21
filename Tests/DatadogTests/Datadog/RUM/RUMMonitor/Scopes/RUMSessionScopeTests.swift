@@ -413,6 +413,35 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(rumSessionStateInjectedToCrashContext, expectedSessionState, "It must inject expected session state to crash context")
     }
 
+    func testWhenSessionScopeHasNoActiveView_thenItUpdatesLastRUMViewEventInCrashContext() throws {
+        let rumViewEventProvider = ValuePublisher<RUMEvent<RUMViewEvent>?>(initialValue: nil)
+
+        // Given
+        let sessionStartTime = Date()
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            dependencies: .mockWith(
+                crashContextIntegration: RUMWithCrashContextIntegration(
+                    rumViewEventProvider: rumViewEventProvider,
+                    rumSessionStateProvider: .mockAny()
+                )
+            ),
+            startTime: sessionStartTime
+        )
+
+        // When
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: sessionStartTime, identity: mockView))
+
+        // Then
+        XCTAssertNotNil(rumViewEventProvider.currentValue, "Crash context must be include rum view event, because there is an active view")
+
+        // When
+        _ = scope.process(command: RUMStopViewCommand.mockWith(time: sessionStartTime.addingTimeInterval(1), identity: mockView))
+
+        // Then
+        XCTAssertNil(rumViewEventProvider.currentValue, "Crash context must not include rum view event, because there is no active view")
+    }
+
     // MARK: - Usage
 
     func testWhenNoActiveViewScopes_itLogsWarning() {
