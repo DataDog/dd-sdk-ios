@@ -19,6 +19,9 @@ internal struct RUMScopeDependencies {
     let rumUUIDGenerator: RUMUUIDGenerator
     /// Adjusts RUM events time (device time) to server time.
     let dateCorrector: DateCorrectorType
+    /// Integration with Crash Reporting. It updates the crash context with RUM info.
+    /// `nil` if Crash Reporting feature is not enabled.
+    let crashContextIntegration: RUMWithCrashContextIntegration?
 
     let vitalCPUReader: SamplingBasedVitalReader
     let vitalMemoryReader: SamplingBasedVitalReader

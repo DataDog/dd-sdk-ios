@@ -50,7 +50,9 @@ internal class CrashReporter {
                 userInfoProvider: crashReportingFeature.userInfoProvider,
                 networkConnectionInfoProvider: crashReportingFeature.networkConnectionInfoProvider,
                 carrierInfoProvider: crashReportingFeature.carrierInfoProvider,
-                rumViewEventProvider: crashReportingFeature.rumViewEventProvider
+                rumViewEventProvider: crashReportingFeature.rumViewEventProvider,
+                rumSessionStateProvider: crashReportingFeature.rumSessionStateProvider,
+                appStateListener: crashReportingFeature.appStateListener
             ),
             loggingOrRUMIntegration: availableLoggingOrRUMIntegration
         )

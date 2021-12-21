@@ -29,7 +29,13 @@ internal final class CrashReportingFeature {
     /// Publishes recent `CarrierInfo` value so it can be persisted in `CrashContext`.
     let carrierInfoProvider: CarrierInfoProviderType
     /// Publishes recent `RUMEvent<RUMViewEvent>` value so it can be persisted in `CrashContext`.
+    /// It will provide `nil` until first view is tracked.
     let rumViewEventProvider: ValuePublisher<RUMEvent<RUMViewEvent>?>
+    /// Publishes recent RUM session state so it can be persisted in `CrashContext`.
+    /// It will be used to decide if and how to track crashes which happen while there was no active view.
+    let rumSessionStateProvider: ValuePublisher<RUMSessionState?>
+    /// Publishes changes to app "foreground" / "background" state.
+    let appStateListener: AppStateListening
 
     init(
         configuration: FeaturesConfiguration.CrashReporting,
@@ -40,7 +46,9 @@ internal final class CrashReportingFeature {
         self.userInfoProvider = commonDependencies.userInfoProvider
         self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider
         self.carrierInfoProvider = commonDependencies.carrierInfoProvider
-        self.rumViewEventProvider = ValuePublisher(initialValue: nil)
+        self.rumViewEventProvider = ValuePublisher(initialValue: nil) // `nil` by default, because there cannot be any RUM view at this ponit
+        self.rumSessionStateProvider = ValuePublisher(initialValue: nil) // `nil` by default, because there cannot be any RUM session at this ponit
+        self.appStateListener = commonDependencies.appStateListener
     }
 
 #if DD_SDK_COMPILED_FOR_TESTING

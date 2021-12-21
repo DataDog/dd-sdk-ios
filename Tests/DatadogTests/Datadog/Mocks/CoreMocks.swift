@@ -671,13 +671,26 @@ class AppStateListenerMock: AppStateListening, AnyMockable {
     }
 
     static func mockAny() -> Self {
+        return mockAppInForeground(since: .mockDecember15th2019At10AMUTC())
+    }
+
+    static func mockAppInForeground(since date: Date = Date()) -> Self {
         return .init(
-            history: .init(
-                initialState: .init(isActive: true, date: .mockDecember15th2019At10AMUTC()),
-                recentDate: .mockDecember15th2019At10AMUTC()
-            )
+            history: .init(initialState: .init(isActive: true, date: date), recentDate: date)
         )
     }
+
+    static func mockAppInBackground(since date: Date = Date()) -> Self {
+        return .init(
+            history: .init(initialState: .init(isActive: false, date: date), recentDate: date)
+        )
+    }
+
+    static func mockRandom(since date: Date = Date()) -> Self {
+        return Bool.random() ? mockAppInForeground(since: date) : mockAppInBackground(since: date)
+    }
+
+    func subscribe<Observer: AppStateHistoryObserver>(_ subscriber: Observer) where Observer.ObservedValue == AppStateHistory {}
 }
 
 extension UserInfo: AnyMockable, RandomMockable {

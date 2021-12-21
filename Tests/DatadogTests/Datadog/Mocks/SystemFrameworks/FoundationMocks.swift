@@ -198,6 +198,16 @@ extension URL: AnyMockable, RandomMockable {
     }
 }
 
+extension UUID: AnyMockable, RandomMockable {
+    static func mockAny() -> UUID {
+        return UUID()
+    }
+
+    static func mockRandom() -> UUID {
+        return UUID()
+    }
+}
+
 extension String: AnyMockable, RandomMockable {
     static func mockAny() -> String {
         return "abc"

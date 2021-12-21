@@ -69,10 +69,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// It can be toggled from inside `RUMResourceScope`/`RUMUserActionScope` callbacks, as they are called from processing `RUMCommand`s inside `process()`.
     private var needsViewUpdate = false
 
-    /// Integration with Crash Reporting. It updates the context of crash reporter with last `RUMViewEvent` information.
-    /// `nil` if Crash Reporting feature is not enabled.
-    private let crashContextIntegration: RUMWithCrashContextIntegration?
-
     private let vitalInfoSampler: VitalInfoSampler
 
     init(
@@ -97,7 +93,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.viewName = name
         self.viewStartTime = startTime
         self.dateCorrection = dependencies.dateCorrector.currentCorrection
-        self.crashContextIntegration = RUMWithCrashContextIntegration()
 
         self.vitalInfoSampler = VitalInfoSampler(
             cpuReader: dependencies.vitalCPUReader,
@@ -415,7 +410,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         if let event = dependencies.eventBuilder.createRUMEvent(with: eventData) {
             dependencies.eventOutput.write(rumEvent: event)
-            crashContextIntegration?.update(lastRUMViewEvent: event)
+
+            // Update `CrashContext` with recent RUM view:
+            dependencies.crashContextIntegration?.update(lastRUMViewEvent: event)
         } else {
             version -= 1
         }
