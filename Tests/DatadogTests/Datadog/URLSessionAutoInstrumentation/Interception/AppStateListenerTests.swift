@@ -181,7 +181,7 @@ class AppStateListenerTests: XCTestCase {
         )
 
         // When
-        (0..<1).forEach { _ in
+        (0..<10).forEach { _ in
             let randomNotification = supportedNotifications.randomElement()!
             notificationCenter.post(name: randomNotification.name, object: nil)
             expectedHistoryStates.append(randomNotification.expectedState)
