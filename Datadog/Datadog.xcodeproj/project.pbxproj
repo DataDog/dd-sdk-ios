@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		61020C2A2757AD91005EEAEA /* BackgroundLocationMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61020C292757AD91005EEAEA /* BackgroundLocationMonitor.swift */; };
+		61020C2C2758E853005EEAEA /* DebugBackgroundEventsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61020C2B2758E853005EEAEA /* DebugBackgroundEventsViewController.swift */; };
 		6105D1A02508F1600040DD22 /* LoggingWithActiveSpanIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6105D19F2508F1600040DD22 /* LoggingWithActiveSpanIntegration.swift */; };
 		610DE00E26613E990042763D /* PersistenceHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6111544725C9A88B007C84C9 /* PersistenceHelper.swift */; };
 		6111542525C992F8007C84C9 /* CrashReportingScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6111542425C992F8007C84C9 /* CrashReportingScenarios.swift */; };
@@ -151,6 +153,8 @@
 		613BE04A25640FF80015216C /* BenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613BE04925640FF80015216C /* BenchmarkTests.swift */; };
 		613BE06225642F790015216C /* RUMStorageBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613BE06125642F790015216C /* RUMStorageBenchmarkTests.swift */; };
 		613BE073256431960015216C /* FoundationMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C202423990D00786299 /* FoundationMocks.swift */; };
+		613C6B902768FDDE00870CBF /* Sampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613C6B8F2768FDDE00870CBF /* Sampler.swift */; };
+		613C6B922768FF3100870CBF /* SamplerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613C6B912768FF3100870CBF /* SamplerTests.swift */; };
 		613E79282577B0EE00DFCC17 /* Writer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613E79272577B0EE00DFCC17 /* Writer.swift */; };
 		613E792F2577B0F900DFCC17 /* Reader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613E792E2577B0F900DFCC17 /* Reader.swift */; };
 		613E793B2577B6EE00DFCC17 /* DataReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613E793A2577B6EE00DFCC17 /* DataReader.swift */; };
@@ -310,6 +314,8 @@
 		619E16D82577C1CB00B2516B /* DataProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16D72577C1CB00B2516B /* DataProcessor.swift */; };
 		619E16E92578E73E00B2516B /* DataMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16E82578E73E00B2516B /* DataMigrator.swift */; };
 		619E16F12578E89700B2516B /* DeleteAllDataMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16F02578E89700B2516B /* DeleteAllDataMigrator.swift */; };
+		61A614E8276B2BD000A06CE7 /* RUMOffViewEventsHandlingRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A614E7276B2BD000A06CE7 /* RUMOffViewEventsHandlingRule.swift */; };
+		61A614EA276B9D4C00A06CE7 /* RUMOffViewEventsHandlingRuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A614E9276B9D4C00A06CE7 /* RUMOffViewEventsHandlingRuleTests.swift */; };
 		61A763DC252DB2B3005A23F2 /* NSURLSessionBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 61A763DB252DB2B3005A23F2 /* NSURLSessionBridge.m */; };
 		61A9238E256FCAA2009B9667 /* DateCorrectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A9238D256FCAA2009B9667 /* DateCorrectionTests.swift */; };
 		61AADBDD263C7ECF008ABC6F /* EquatableInTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AADBDC263C7ECF008ABC6F /* EquatableInTests.swift */; };
@@ -522,8 +528,8 @@
 		D24C27EA270C8BEE005DE596 /* DataCompression.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24C27E9270C8BEE005DE596 /* DataCompression.swift */; };
 		D2791EF927170A760046E07A /* RUMSwiftUIScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2791EF827170A760046E07A /* RUMSwiftUIScenarioTests.swift */; };
 		D29889C9273413ED00A4D1A9 /* RUMViewsHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29889C72734136200A4D1A9 /* RUMViewsHandlerTests.swift */; };
-		D2EFF3D32731822A00D09F33 /* RUMViewsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFF3D22731822A00D09F33 /* RUMViewsHandler.swift */; };
 		D29D5A4D273BF8B400A687C1 /* SwiftUIActionModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */; };
+		D2EFF3D32731822A00D09F33 /* RUMViewsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFF3D22731822A00D09F33 /* RUMViewsHandler.swift */; };
 		D2F1B81126D795F3009F3293 /* DDNoopRUMMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1B81026D795F3009F3293 /* DDNoopRUMMonitor.swift */; };
 		D2F1B81326D8DA68009F3293 /* DDNoopRUMMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1B81226D8DA68009F3293 /* DDNoopRUMMonitorTests.swift */; };
 		D2F1B81526D8E5FF009F3293 /* DDNoopTracerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1B81426D8E5FF009F3293 /* DDNoopTracerTests.swift */; };
@@ -671,6 +677,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		61020C292757AD91005EEAEA /* BackgroundLocationMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundLocationMonitor.swift; sourceTree = "<group>"; };
+		61020C2B2758E853005EEAEA /* DebugBackgroundEventsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugBackgroundEventsViewController.swift; sourceTree = "<group>"; };
 		6105D19F2508F1600040DD22 /* LoggingWithActiveSpanIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingWithActiveSpanIntegration.swift; sourceTree = "<group>"; };
 		6111542425C992F8007C84C9 /* CrashReportingScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingScenarios.swift; sourceTree = "<group>"; };
 		6111543525C993C2007C84C9 /* CrashReportingScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = CrashReportingScenario.storyboard; sourceTree = "<group>"; };
@@ -817,6 +825,8 @@
 		613BE0422563FB9E0015216C /* RUMBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMBenchmarkTests.swift; sourceTree = "<group>"; };
 		613BE04925640FF80015216C /* BenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkTests.swift; sourceTree = "<group>"; };
 		613BE06125642F790015216C /* RUMStorageBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMStorageBenchmarkTests.swift; sourceTree = "<group>"; };
+		613C6B8F2768FDDE00870CBF /* Sampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sampler.swift; sourceTree = "<group>"; };
+		613C6B912768FF3100870CBF /* SamplerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplerTests.swift; sourceTree = "<group>"; };
 		613E79272577B0EE00DFCC17 /* Writer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Writer.swift; sourceTree = "<group>"; };
 		613E792E2577B0F900DFCC17 /* Reader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reader.swift; sourceTree = "<group>"; };
 		613E793A2577B6EE00DFCC17 /* DataReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataReader.swift; sourceTree = "<group>"; };
@@ -980,6 +990,8 @@
 		619E16D72577C1CB00B2516B /* DataProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataProcessor.swift; sourceTree = "<group>"; };
 		619E16E82578E73E00B2516B /* DataMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataMigrator.swift; sourceTree = "<group>"; };
 		619E16F02578E89700B2516B /* DeleteAllDataMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteAllDataMigrator.swift; sourceTree = "<group>"; };
+		61A614E7276B2BD000A06CE7 /* RUMOffViewEventsHandlingRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMOffViewEventsHandlingRule.swift; sourceTree = "<group>"; };
+		61A614E9276B9D4C00A06CE7 /* RUMOffViewEventsHandlingRuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMOffViewEventsHandlingRuleTests.swift; sourceTree = "<group>"; };
 		61A763D9252DB2B3005A23F2 /* DatadogTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DatadogTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		61A763DA252DB2B3005A23F2 /* NSURLSessionBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NSURLSessionBridge.h; sourceTree = "<group>"; };
 		61A763DB252DB2B3005A23F2 /* NSURLSessionBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NSURLSessionBridge.m; sourceTree = "<group>"; };
@@ -1190,8 +1202,8 @@
 		D24C27E9270C8BEE005DE596 /* DataCompression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCompression.swift; sourceTree = "<group>"; };
 		D2791EF827170A760046E07A /* RUMSwiftUIScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIScenarioTests.swift; sourceTree = "<group>"; };
 		D29889C72734136200A4D1A9 /* RUMViewsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewsHandlerTests.swift; sourceTree = "<group>"; };
-		D2EFF3D22731822A00D09F33 /* RUMViewsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewsHandler.swift; sourceTree = "<group>"; };
 		D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIActionModifier.swift; sourceTree = "<group>"; };
+		D2EFF3D22731822A00D09F33 /* RUMViewsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewsHandler.swift; sourceTree = "<group>"; };
 		D2F1B81026D795F3009F3293 /* DDNoopRUMMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNoopRUMMonitor.swift; sourceTree = "<group>"; };
 		D2F1B81226D8DA68009F3293 /* DDNoopRUMMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNoopRUMMonitorTests.swift; sourceTree = "<group>"; };
 		D2F1B81426D8E5FF009F3293 /* DDNoopTracerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNoopTracerTests.swift; sourceTree = "<group>"; };
@@ -1309,6 +1321,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		61020C272757AD63005EEAEA /* BackgroundEvents */ = {
+			isa = PBXGroup;
+			children = (
+				61020C2B2758E853005EEAEA /* DebugBackgroundEventsViewController.swift */,
+				61020C292757AD91005EEAEA /* BackgroundLocationMonitor.swift */,
+			);
+			path = BackgroundEvents;
+			sourceTree = "<group>";
+		};
 		6111542325C992D9007C84C9 /* CrashReporting */ = {
 			isa = PBXGroup;
 			children = (
@@ -1459,6 +1480,7 @@
 				61363D9C24D999F70084CD6F /* DDError.swift */,
 				6139CD702589FAFD007E8BB7 /* Retrying.swift */,
 				611529A425E3DD51004F740E /* ValuePublisher.swift */,
+				613C6B8F2768FDDE00870CBF /* Sampler.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -2262,6 +2284,7 @@
 				61F74AF326F20E4600E5F5ED /* DebugCrashReportingWithRUMViewController.swift */,
 				618236882710560900125326 /* DebugWebviewViewController.swift */,
 				61776CEC273BEA5500F93802 /* DebugRUMSessionViewController.swift */,
+				61020C272757AD63005EEAEA /* BackgroundEvents */,
 				61776D4C273E6D8100F93802 /* Helpers */,
 			);
 			path = Debugging;
@@ -2476,6 +2499,7 @@
 			isa = PBXGroup;
 			children = (
 				61C1510C25AC8C1B00362D4B /* RUMViewIdentityTests.swift */,
+				61A614E9276B9D4C00A06CE7 /* RUMOffViewEventsHandlingRuleTests.swift */,
 				617B953F24BF4DB300E6F443 /* RUMApplicationScopeTests.swift */,
 				61C2C20824C0C75500C0321C /* RUMSessionScopeTests.swift */,
 				6198D27024C6E3B700493501 /* RUMViewScopeTests.swift */,
@@ -2545,6 +2569,7 @@
 				618C365E248E85B400520CDE /* DateFormattingTests.swift */,
 				9E58E8E224615EDA008E5063 /* JSONEncoderTests.swift */,
 				61363D9E24D99BAA0084CD6F /* DDErrorTests.swift */,
+				613C6B912768FF3100870CBF /* SamplerTests.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -2785,6 +2810,7 @@
 			isa = PBXGroup;
 			children = (
 				61FF9A4425AC5DEA001058CC /* RUMViewIdentity.swift */,
+				61A614E7276B2BD000A06CE7 /* RUMOffViewEventsHandlingRule.swift */,
 				61C3E63D24BF1B91008053F2 /* RUMApplicationScope.swift */,
 				61C2C20624C098FC00C0321C /* RUMSessionScope.swift */,
 				61C2C21124C5951400C0321C /* RUMViewScope.swift */,
@@ -4064,6 +4090,7 @@
 				61133BE72423979B00786299 /* LogUtilityOutputs.swift in Sources */,
 				61133BDA2423979B00786299 /* RequestBuilder.swift in Sources */,
 				61C3E63924BF19B4008053F2 /* RUMContext.swift in Sources */,
+				61A614E8276B2BD000A06CE7 /* RUMOffViewEventsHandlingRule.swift in Sources */,
 				61ED39D426C2A36B002C0F26 /* DataUploadStatus.swift in Sources */,
 				61133BE82423979B00786299 /* LogFileOutput.swift in Sources */,
 				61133BD72423979B00786299 /* DataUploadWorker.swift in Sources */,
@@ -4090,6 +4117,7 @@
 				614E9EB3244719FA007EE3E1 /* BundleType.swift in Sources */,
 				61F3CDA72512144600C816E5 /* UIKitRUMViewsPredicate.swift in Sources */,
 				61133BCE2423979B00786299 /* BatteryStatusProvider.swift in Sources */,
+				613C6B902768FDDE00870CBF /* Sampler.swift in Sources */,
 				9E9973F1268DF69500D8059B /* VitalInfoSampler.swift in Sources */,
 				9EA3CA6926775A3500B16871 /* VitalRefreshRateReader.swift in Sources */,
 				E13A880C257922EC004FB174 /* EnvironmentSpanIntegration.swift in Sources */,
@@ -4136,6 +4164,7 @@
 				618C365F248E85B400520CDE /* DateFormattingTests.swift in Sources */,
 				61133C5A2423990D00786299 /* FileTests.swift in Sources */,
 				61AD4E3A24534075006E34EA /* TracingFeatureTests.swift in Sources */,
+				613C6B922768FF3100870CBF /* SamplerTests.swift in Sources */,
 				61133C6B2423990D00786299 /* LogMatcher.swift in Sources */,
 				D2135330270CA722000315AD /* DataCompressionTests.swift in Sources */,
 				61DB33B225DEDFC200F7EA71 /* CustomObjcViewController.m in Sources */,
@@ -4181,6 +4210,7 @@
 				6184751526EFCF1300C7C9C5 /* DatadogTestsObserver.swift in Sources */,
 				61133C602423990D00786299 /* RequestBuilderTests.swift in Sources */,
 				61133C572423990D00786299 /* FileReaderTests.swift in Sources */,
+				61A614EA276B9D4C00A06CE7 /* RUMOffViewEventsHandlingRuleTests.swift in Sources */,
 				D2F1B81326D8DA68009F3293 /* DDNoopRUMMonitorTests.swift in Sources */,
 				61133C5F2423990D00786299 /* DataUploaderTests.swift in Sources */,
 				61D6FF7924E42A2900D0E375 /* DataUploadWorkerMock.swift in Sources */,
@@ -4321,6 +4351,7 @@
 				6164AE89252B4ECA000D78C4 /* SendThirdPartyRequestsViewController.swift in Sources */,
 				611EA14225810E1900BC0E56 /* TSHomeViewController.swift in Sources */,
 				612D8F6F25AEE6A7000E2E09 /* RUMScrubbingViewController.swift in Sources */,
+				61020C2A2757AD91005EEAEA /* BackgroundLocationMonitor.swift in Sources */,
 				61163C37252DDD60007DD5BF /* RUMMVSViewController.swift in Sources */,
 				61441C952461A649003D8BB8 /* ConsoleOutputInterceptor.swift in Sources */,
 				61D50C5A2580EFF3006038A3 /* URLSessionScenarios.swift in Sources */,
@@ -4347,6 +4378,7 @@
 				61441C0524616DE9003D8BB8 /* ExampleAppDelegate.swift in Sources */,
 				6193DCCE251B6201009B8011 /* RUMTASScreen1ViewController.swift in Sources */,
 				61163C3E252E0015007DD5BF /* RUMMVSModalViewController.swift in Sources */,
+				61020C2C2758E853005EEAEA /* DebugBackgroundEventsViewController.swift in Sources */,
 				61441C992461A649003D8BB8 /* DebugLoggingViewController.swift in Sources */,
 				617247AF25DA9BEA007085B3 /* CrashReportingObjcHelpers.m in Sources */,
 				6193DCE1251B692C009B8011 /* RUMTASTableViewController.swift in Sources */,

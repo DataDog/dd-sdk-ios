@@ -178,6 +178,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             applicationScope: RUMApplicationScope(
                 rumApplicationID: rumFeature.configuration.applicationID,
                 dependencies: RUMScopeDependencies(
+                    appStateListener: rumFeature.appStateListener,
                     userInfoProvider: RUMUserInfoProvider(userInfoProvider: rumFeature.userInfoProvider),
                     launchTimeProvider: rumFeature.launchTimeProvider,
                     connectivityInfoProvider: RUMConnectivityInfoProvider(
@@ -190,14 +191,16 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     eventOutput: RUMEventFileOutput(
                         fileWriter: rumFeature.storage.writer
                     ),
-                    rumUUIDGenerator: DefaultRUMUUIDGenerator(),
+                    rumUUIDGenerator: rumFeature.configuration.uuidGenerator,
                     dateCorrector: rumFeature.dateCorrector,
+                    crashContextIntegration: RUMWithCrashContextIntegration(),
                     vitalCPUReader: rumFeature.vitalCPUReader,
                     vitalMemoryReader: rumFeature.vitalMemoryReader,
                     vitalRefreshRateReader: rumFeature.vitalRefreshRateReader,
                     onSessionStart: rumFeature.onSessionStart
                 ),
-                samplingRate: rumFeature.configuration.sessionSamplingRate,
+                sampler: rumFeature.configuration.sessionSampler,
+                sdkInitDate: rumFeature.sdkInitDate,
                 backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled
             ),
             dateProvider: rumFeature.dateProvider

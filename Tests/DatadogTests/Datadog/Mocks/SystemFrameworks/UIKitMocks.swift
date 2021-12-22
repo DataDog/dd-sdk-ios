@@ -94,3 +94,13 @@ private class UITouchMock: UITouch {
     override var phase: UITouch.Phase { _phase }
     override var view: UIView? { _view }
 }
+
+extension UIApplication.State: AnyMockable, RandomMockable {
+    static func mockAny() -> UIApplication.State {
+        return .active
+    }
+
+    static func mockRandom() -> UIApplication.State {
+        return [.active, .inactive, .background].randomElement()!
+    }
+}

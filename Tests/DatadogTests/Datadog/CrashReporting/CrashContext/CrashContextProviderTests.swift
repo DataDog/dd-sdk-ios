@@ -24,7 +24,9 @@ class CrashContextProviderTests: XCTestCase {
             userInfoProvider: .mockAny(),
             networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny(),
             carrierInfoProvider: CarrierInfoProviderMock.mockAny(),
-            rumViewEventProvider: .mockRandom()
+            rumViewEventProvider: .mockRandom(),
+            rumSessionStateProvider: .mockAny(),
+            appStateListener: AppStateListenerMock.mockAny()
         )
 
         let initialContext = crashContextProvider.currentCrashContext
@@ -45,24 +47,30 @@ class CrashContextProviderTests: XCTestCase {
 
     // MARK: - `RUMViewEvent` Integration
 
-    func testWhenRUMWithCrashContextIntegrationIsUpdated_thenCrashContextProviderNotifiesNewContext() {
+    func testWhenRUMWithCrashContextIntegrationIsUpdatedWithRUMViewEvent_thenCrashContextProviderNotifiesNewContext() {
         let expectation = self.expectation(description: "Notify new crash context")
-        let randomRUMViewEvent: RUMEvent<RUMViewEvent> = RUMEvent(model: RUMViewEvent.mockRandom())
+        let initialRUMViewEvent: RUMEvent<RUMViewEvent> = .mockRandom()
+        let randomRUMViewEvent: RUMEvent<RUMViewEvent> = .mockRandom()
 
-        let rumViewEventProvider = ValuePublisher<RUMEvent<RUMViewEvent>?>(initialValue: randomRUMViewEvent)
+        let rumViewEventProvider = ValuePublisher<RUMEvent<RUMViewEvent>?>(initialValue: initialRUMViewEvent)
         let crashContextProvider = CrashContextProvider(
             consentProvider: .mockAny(),
             userInfoProvider: .mockAny(),
             networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny(),
             carrierInfoProvider: CarrierInfoProviderMock.mockAny(),
-            rumViewEventProvider: rumViewEventProvider
+            rumViewEventProvider: rumViewEventProvider,
+            rumSessionStateProvider: .mockAny(),
+            appStateListener: AppStateListenerMock.mockAny()
         )
 
         let initialContext = crashContextProvider.currentCrashContext
         var updatedContext: CrashContext?
 
         // When
-        let rumWithCrashContextIntegration = RUMWithCrashContextIntegration(rumViewEventProvider: rumViewEventProvider)
+        let rumWithCrashContextIntegration = RUMWithCrashContextIntegration(
+            rumViewEventProvider: rumViewEventProvider,
+            rumSessionStateProvider: .mockAny()
+        )
         crashContextProvider.onCrashContextChange = { newContext in
             updatedContext = newContext
             expectation.fulfill()
@@ -71,8 +79,46 @@ class CrashContextProviderTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 1, handler: nil)
-        XCTAssertNil(initialContext.lastRUMViewEvent)
+        XCTAssertEqual(initialContext.lastRUMViewEvent, initialRUMViewEvent)
         XCTAssertEqual(updatedContext?.lastRUMViewEvent, randomRUMViewEvent)
+    }
+
+    // MARK: - RUM Session State Integration
+
+    func testWhenRUMWithCrashContextIntegrationIsUpdatedWithRUMSessionState_thenCrashContextProviderNotifiesNewContext() {
+        let expectation = self.expectation(description: "Notify new crash context")
+        let initialRUMSessionState: RUMSessionState = .mockRandom()
+        let randomRUMSessionState: RUMSessionState = .mockRandom()
+
+        let rumSessionStateProvider = ValuePublisher<RUMSessionState?>(initialValue: initialRUMSessionState)
+        let crashContextProvider = CrashContextProvider(
+            consentProvider: .mockAny(),
+            userInfoProvider: .mockAny(),
+            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny(),
+            carrierInfoProvider: CarrierInfoProviderMock.mockAny(),
+            rumViewEventProvider: .mockRandom(),
+            rumSessionStateProvider: rumSessionStateProvider,
+            appStateListener: AppStateListenerMock.mockAny()
+        )
+
+        let initialContext = crashContextProvider.currentCrashContext
+        var updatedContext: CrashContext?
+
+        // When
+        let rumWithCrashContextIntegration = RUMWithCrashContextIntegration(
+            rumViewEventProvider: .mockRandom(),
+            rumSessionStateProvider: rumSessionStateProvider
+        )
+        crashContextProvider.onCrashContextChange = { newContext in
+            updatedContext = newContext
+            expectation.fulfill()
+        }
+        rumWithCrashContextIntegration.update(lastRUMSessionState: randomRUMSessionState)
+
+        // Then
+        waitForExpectations(timeout: 1, handler: nil)
+        XCTAssertEqual(initialContext.lastRUMSessionState, initialRUMSessionState)
+        XCTAssertEqual(updatedContext?.lastRUMSessionState, randomRUMSessionState)
     }
 
     // MARK: - `UserInfo` Integration
@@ -90,7 +136,9 @@ class CrashContextProviderTests: XCTestCase {
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny(),
             carrierInfoProvider: CarrierInfoProviderMock.mockAny(),
-            rumViewEventProvider: .mockRandom()
+            rumViewEventProvider: .mockRandom(),
+            rumSessionStateProvider: .mockAny(),
+            appStateListener: AppStateListenerMock.mockAny()
         )
 
         let initialContext = crashContextProvider.currentCrashContext
@@ -122,7 +170,9 @@ class CrashContextProviderTests: XCTestCase {
             userInfoProvider: .mockAny(),
             networkConnectionInfoProvider: mainProvider,
             carrierInfoProvider: CarrierInfoProviderMock.mockAny(),
-            rumViewEventProvider: .mockRandom()
+            rumViewEventProvider: .mockRandom(),
+            rumSessionStateProvider: .mockAny(),
+            appStateListener: AppStateListenerMock.mockAny()
         )
 
         let initialContext = crashContextProvider.currentCrashContext
@@ -160,7 +210,9 @@ class CrashContextProviderTests: XCTestCase {
             userInfoProvider: .mockAny(),
             networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny(),
             carrierInfoProvider: carrierInfoProvider,
-            rumViewEventProvider: .mockRandom()
+            rumViewEventProvider: .mockRandom(),
+            rumSessionStateProvider: .mockAny(),
+            appStateListener: AppStateListenerMock.mockAny()
         )
 
         let initialContext = crashContextProvider.currentCrashContext
@@ -198,7 +250,9 @@ class CrashContextProviderTests: XCTestCase {
                 userInfoProvider: .mockAny(),
                 networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny(),
                 carrierInfoProvider: carrierInfoProvider,
-                rumViewEventProvider: .mockRandom()
+                rumViewEventProvider: .mockRandom(),
+                rumSessionStateProvider: .mockAny(),
+                appStateListener: AppStateListenerMock.mockAny()
             )
 
             let initialContext = crashContextProvider.currentCrashContext
@@ -224,6 +278,44 @@ class CrashContextProviderTests: XCTestCase {
         }
     }
 
+    // MARK: - `AppStateListener` Integration
+
+    func testWhenAppStateChangeIsTrackedByAppStateListener_thenCrashContextProviderNotifiesNewContext() {
+        let expectation = self.expectation(description: "Notify new crash context")
+
+        let notificationCenter = NotificationCenter()
+        let appStateListener = AppStateListener(
+            dateProvider: SystemDateProvider(),
+            initialAppState: .active,
+            notificationCenter: notificationCenter
+        )
+
+        let crashContextProvider = CrashContextProvider(
+            consentProvider: .mockAny(),
+            userInfoProvider: .mockAny(),
+            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny(),
+            carrierInfoProvider: CarrierInfoProviderMock.mockAny(),
+            rumViewEventProvider: .mockRandom(),
+            rumSessionStateProvider: .mockAny(),
+            appStateListener: appStateListener
+        )
+
+        let initialContext = crashContextProvider.currentCrashContext
+        var updatedContext: CrashContext?
+
+        // When
+        crashContextProvider.onCrashContextChange = { newContext in
+            updatedContext = newContext
+            expectation.fulfill()
+        }
+        notificationCenter.post(name: UIApplication.didEnterBackgroundNotification, object: nil) // app goes to background
+
+        // Then
+        waitForExpectations(timeout: 1, handler: nil)
+        XCTAssertTrue(initialContext.lastIsAppInForeground, "It must track initial app state ('foreground')")
+        XCTAssertEqual(updatedContext?.lastIsAppInForeground, false, "It must track app state update (to 'background')")
+    }
+
     // MARK: - Thread safety
 
     func testWhenContextIsWrittenAndReadFromDifferentThreads_itRunsAllOperationsSafely() {
@@ -240,7 +332,9 @@ class CrashContextProviderTests: XCTestCase {
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkInfoMainProvider,
             carrierInfoProvider: carrierInfoMainProvider,
-            rumViewEventProvider: .mockRandom()
+            rumViewEventProvider: .mockRandom(),
+            rumSessionStateProvider: .mockAny(),
+            appStateListener: AppStateListenerMock.mockAny()
         )
 
         withExtendedLifetime(provider) {

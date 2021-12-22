@@ -8,9 +8,6 @@ import Foundation
 
 internal class RUMViewScope: RUMScope, RUMContextProvider {
     struct Constants {
-        static let backgroundViewURL = "com/datadog/background/view"
-        static let backgroundViewName = "Background"
-
         static let frozenFrameThresholdInNs = (0.07).toInt64Nanoseconds // 70ms
         static let slowRenderingThresholdFPS = 55.0
     }
@@ -26,6 +23,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     private unowned let parent: RUMContextProvider
     private let dependencies: RUMScopeDependencies
+    /// If this is the very first view created in the current app process.
+    private let isInitialView: Bool
 
     /// The value holding stable identity of this RUM View.
     let identity: RUMViewIdentity
@@ -70,13 +69,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// It can be toggled from inside `RUMResourceScope`/`RUMUserActionScope` callbacks, as they are called from processing `RUMCommand`s inside `process()`.
     private var needsViewUpdate = false
 
-    /// Integration with Crash Reporting. It updates the context of crash reporter with last `RUMViewEvent` information.
-    /// `nil` if Crash Reporting feature is not enabled.
-    private let crashContextIntegration: RUMWithCrashContextIntegration?
-
     private let vitalInfoSampler: VitalInfoSampler
 
     init(
+        isInitialView: Bool,
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
         identity: RUMViewIdentifiable,
@@ -88,6 +84,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     ) {
         self.parent = parent
         self.dependencies = dependencies
+        self.isInitialView = isInitialView
         self.identity = identity.asRUMViewIdentity()
         self.attributes = attributes
         self.customTimings = customTimings
@@ -96,7 +93,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.viewName = name
         self.viewStartTime = startTime
         self.dateCorrection = dependencies.dateCorrector.currentCorrection
-        self.crashContextIntegration = RUMWithCrashContextIntegration()
 
         self.vitalInfoSampler = VitalInfoSampler(
             cpuReader: dependencies.vitalCPUReader,
@@ -125,6 +121,17 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         // Propagate to User Action scope
         userActionScope = manage(childScope: userActionScope, byPropagatingCommand: command)
 
+        // Send "application start" action if this is the very first view tracked in the app
+        let hasSentNoViewUpdatesYet = version == 0
+        if isInitialView && hasSentNoViewUpdatesYet {
+            actionsCount += 1
+            if !sendApplicationStartAction() {
+                actionsCount -= 1
+            } else {
+                needsViewUpdate = true
+            }
+        }
+
         // Apply side effects
         switch command {
         // View commands
@@ -135,13 +142,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 isActiveView = false
             }
             didReceiveStartCommand = true
-            if command.isInitialView {
-                actionsCount += 1
-                if !sendApplicationStartAction(on: command) {
-                    actionsCount -= 1
-                    break
-                }
-            }
             needsViewUpdate = true
         case let command as RUMStartViewCommand where !identity.equals(command.identity):
             isActiveView = false
@@ -165,11 +165,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 reportActionDropped(type: command.actionType, name: command.name)
             }
         case let command as RUMAddUserActionCommand where isActiveView:
-            if userActionScope == nil {
-                addDiscreteUserAction(on: command)
-            } else if command.actionType == .custom {
-                // still let it go, just instantly without any dependencies
+            if command.actionType == .custom {
+                // send it instantly without waiting for child events (e.g. resource associated to this action)
                 sendDiscreteCustomUserAction(on: command)
+            } else if userActionScope == nil {
+                addDiscreteUserAction(on: command)
             } else {
                 reportActionDropped(type: command.actionType, name: command.name)
             }
@@ -302,7 +302,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     // MARK: - Sending RUM Events
 
-    private func sendApplicationStartAction(on command: RUMCommand) -> Bool {
+    private func sendApplicationStartAction() -> Bool {
         let eventData = RUMActionEvent(
             dd: .init(
                 session: .init(plan: .plan1)
@@ -405,7 +405,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         if let event = dependencies.eventBuilder.createRUMEvent(with: eventData) {
             dependencies.eventOutput.write(rumEvent: event)
-            crashContextIntegration?.update(lastRUMViewEvent: event)
+
+            // Update `CrashContext` with recent RUM view:
+            dependencies.crashContextIntegration?.update(lastRUMViewEvent: event)
         } else {
             version -= 1
         }
