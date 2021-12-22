@@ -7,57 +7,91 @@
 import Foundation
 import class UIKit.UIApplication
 
+/// Application state, constructed from `UIApplication.State`.
+internal enum AppState: Equatable {
+    /// The app is running in the foreground and currently receiving events.
+    case active
+    /// The app is running in the foreground but is not receiving events.
+    /// This might happen as a result of an interruption or because the app is transitioning to or from the background.
+    case inactive
+    /// The app is running in the background.
+    case background
+
+    /// If the app is running in the foreground - no matter if receiving events or not (i.e. being interrupted because of transitioning from background).
+    var isRunningInForeground: Bool {
+        switch self {
+        case .active, .inactive:
+            return true
+        case .background:
+            return false
+        }
+    }
+
+    init(uiApplicationState: UIApplication.State) {
+        switch uiApplicationState {
+        case .active:
+            self = .active
+        case .inactive:
+            self = .inactive
+        case .background:
+            self = .background
+        @unknown default:
+            self = .active // in case a new state is introduced, we rather want to fallback to most expected state
+        }
+    }
+}
+
 /// A data structure to represent recorded app states in a given period of time
 internal struct AppStateHistory: Equatable {
     /// Snapshot of the app state at `date`
     struct Snapshot: Equatable {
-        /// If the app is running in the foreground and currently receiving events.
-        let isActive: Bool
+        /// The app state at this `date`.
+        let state: AppState
         /// Date of recording this snapshot.
         let date: Date
     }
 
-    fileprivate(set) var initialState: Snapshot
-    fileprivate(set) var changes = [Snapshot]()
+    fileprivate(set) var initialSnapshot: Snapshot
+    fileprivate(set) var snapshots = [Snapshot]()
 
     /// Date of last the update to `AppStateHistory`.
     fileprivate(set) var recentDate: Date
 
     /// The most recent app state `Snapshot`.
-    var currentState: Snapshot {
+    var currentSnapshot: Snapshot {
         return Snapshot(
-            isActive: (changes.last ?? initialState).isActive,
+            state: (snapshots.last ?? initialSnapshot).state,
             date: recentDate
         )
     }
 
     /// Limits or extrapolates app state history to the given range
     /// This is useful when you record between 0...3t but you are concerned of t...2t only
-    /// - Parameter range: if outside of `initialState` and `finalState`, it extrapolates; otherwise it limits
+    /// - Parameter range: if outside of initial and final states, it extrapolates; otherwise it limits
     /// - Returns: a history instance spanning the given range
     func take(between range: ClosedRange<Date>) -> AppStateHistory {
         var taken = self
         // move initial state to lowerBound
-        taken.initialState = Snapshot(
-            isActive: isActive(at: range.lowerBound),
+        taken.initialSnapshot = Snapshot(
+            state: state(at: range.lowerBound),
             date: range.lowerBound
         )
         // move final state to upperBound
         taken.recentDate = range.upperBound
         // filter changes outside of the range
-        taken.changes = taken.changes.filter { range.contains($0.date) }
+        taken.snapshots = taken.snapshots.filter { range.contains($0.date) }
         return taken
     }
 
     var foregroundDuration: TimeInterval {
         var duration: TimeInterval = 0.0
         var lastActiveStartDate: Date?
-        let allEvents = [initialState] + changes + [currentState]
+        let allEvents = [initialSnapshot] + snapshots + [currentSnapshot]
         for event in allEvents {
             if let startDate = lastActiveStartDate {
                 duration += event.date.timeIntervalSince(startDate)
             }
-            if event.isActive {
+            if event.state.isRunningInForeground {
                 lastActiveStartDate = event.date
             } else {
                 lastActiveStartDate = nil
@@ -66,26 +100,22 @@ internal struct AppStateHistory: Equatable {
         return duration
     }
 
-    var didRunInBackground: Bool {
-        return !initialState.isActive || !currentState.isActive
-    }
-
-    private func isActive(at date: Date) -> Bool {
-        if date <= initialState.date {
+    private func state(at date: Date) -> AppState {
+        if date <= initialSnapshot.date {
             // we assume there was no change before initial state
-            return initialState.isActive
-        } else if currentState.date <= date {
+            return initialSnapshot.state
+        } else if currentSnapshot.date <= date {
             // and no change after final state
-            return currentState.isActive
+            return currentSnapshot.state
         }
-        var active = initialState
-        for change in changes {
+        var active = initialSnapshot
+        for change in snapshots {
             if date < change.date {
                 break
             }
             active = change
         }
-        return active.isActive
+        return active.state
     }
 }
 
@@ -106,6 +136,12 @@ internal class AppStateListener: AppStateListening {
 
     private let dateProvider: DateProvider
     private let publisher: ValuePublisher<AppStateHistory>
+    /// The notification center where this listener observes following `UIApplication` notifications:
+    /// - `.didBecomeActiveNotification`
+    /// - `.willResignActiveNotification`
+    /// - `.didEnterBackgroundNotification`
+    /// - `.willEnterForegroundNotification`
+    private weak var notificationCenter: NotificationCenter?
 
     var history: AppStateHistory {
         var current = publisher.currentValue
@@ -113,42 +149,69 @@ internal class AppStateListener: AppStateListening {
         return current
     }
 
-    private static var isAppActive: Bool {
-        return UIApplication.managedShared?.applicationState == .active
+    convenience init(dateProvider: DateProvider) {
+        self.init(
+            dateProvider: dateProvider,
+            initialAppState: UIApplication.managedShared?.applicationState ?? .active, // fallback to most expected state,
+            notificationCenter: .default
+        )
     }
 
     init(
         dateProvider: DateProvider,
-        notificationCenter: NotificationCenter = .default
+        initialAppState: UIApplication.State,
+        notificationCenter: NotificationCenter
     ) {
-        self.dateProvider = dateProvider
-        let currentState = Snapshot(
-            isActive: AppStateListener.isAppActive,
+        let currentSnapshot = Snapshot(
+            state: AppState(uiApplicationState: initialAppState),
             date: dateProvider.currentDate()
         )
+        self.dateProvider = dateProvider
+        self.notificationCenter = notificationCenter
         self.publisher = ValuePublisher(
             initialValue: AppStateHistory(
-                initialState: currentState,
-                recentDate: currentState.date
+                initialSnapshot: currentSnapshot,
+                recentDate: currentSnapshot.date
             )
         )
 
-        notificationCenter.addObserver(self, selector: #selector(appWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
         notificationCenter.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(appWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(appWillEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
+    }
+
+    deinit {
+        notificationCenter?.removeObserver(self, name: UIApplication.didBecomeActiveNotification, object: nil)
+        notificationCenter?.removeObserver(self, name: UIApplication.willResignActiveNotification, object: nil)
+        notificationCenter?.removeObserver(self, name: UIApplication.didEnterBackgroundNotification, object: nil)
+        notificationCenter?.removeObserver(self, name: UIApplication.willEnterForegroundNotification, object: nil)
+    }
+
+    @objc
+    private func appDidBecomeActive() {
+        registerChange(to: .active)
     }
 
     @objc
     private func appWillResignActive() {
-        let now = dateProvider.currentDate()
-        var value = publisher.currentValue
-        value.changes.append(Snapshot(isActive: false, date: now))
-        publisher.publishAsync(value)
+        registerChange(to: .inactive)
     }
+
     @objc
-    private func appDidBecomeActive() {
+    private func appDidEnterBackground() {
+        registerChange(to: .background)
+    }
+
+    @objc
+    private func appWillEnterForeground() {
+        registerChange(to: .inactive)
+    }
+
+    private func registerChange(to newState: AppState) {
         let now = dateProvider.currentDate()
         var value = publisher.currentValue
-        value.changes.append(Snapshot(isActive: true, date: now))
+        value.snapshots.append(Snapshot(state: newState, date: now))
         publisher.publishAsync(value)
     }
 

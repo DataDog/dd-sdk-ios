@@ -286,6 +286,7 @@ class CrashContextProviderTests: XCTestCase {
         let notificationCenter = NotificationCenter()
         let appStateListener = AppStateListener(
             dateProvider: SystemDateProvider(),
+            initialAppState: .active,
             notificationCenter: notificationCenter
         )
 
@@ -307,7 +308,7 @@ class CrashContextProviderTests: XCTestCase {
             updatedContext = newContext
             expectation.fulfill()
         }
-        notificationCenter.post(name: UIApplication.willResignActiveNotification, object: nil) // app goes to background
+        notificationCenter.post(name: UIApplication.didEnterBackgroundNotification, object: nil) // app goes to background
 
         // Then
         waitForExpectations(timeout: 1, handler: nil)

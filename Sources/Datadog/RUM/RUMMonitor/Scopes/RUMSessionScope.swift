@@ -136,7 +136,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             // Otherwise, if there is no active view scope, consider starting artificial scope for handling this command
             let handlingRule = RUMOffViewEventsHandlingRule(
                 sessionState: state,
-                isAppInForeground: dependencies.appStateListener.history.currentState.isActive,
+                isAppInForeground: dependencies.appStateListener.history.currentSnapshot.state.isRunningInForeground,
                 isBETEnabled: backgroundEventTrackingEnabled
             )
 

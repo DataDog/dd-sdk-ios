@@ -19,6 +19,8 @@ private class DebugBackgroundEventsViewModel: ObservableObject {
     private let locationMonitor: BackgroundLocationMonitor
 
     @Published var isLocationMonitoringON = false
+    @Published var willCrashDuringNextBackgroundLaunch = false
+    @Published var willCrashOnNextBackgroundEvent = false
     @Published var authorizationStatus = ""
 
     init() {
@@ -28,6 +30,8 @@ private class DebugBackgroundEventsViewModel: ObservableObject {
         locationMonitor.onAuthorizationStatusChange = { [weak self] newStatus in
             self?.authorizationStatus = newStatus
         }
+        willCrashDuringNextBackgroundLaunch = locationMonitor.shouldCrashDuringNextBackgroundLaunch
+        willCrashOnNextBackgroundEvent = locationMonitor.shouldCrashOnNextBackgroundEvent
     }
 
     func startLocationMonitoring() {
@@ -38,6 +42,16 @@ private class DebugBackgroundEventsViewModel: ObservableObject {
     func stopLocationMonitoring() {
         locationMonitor.stopMonitoring()
         isLocationMonitoringON = locationMonitor.isStarted
+    }
+
+    func toggleCrashDuringNextBackgroundLaunch() {
+        locationMonitor.setCrashDuringNextBackgroundLaunch(!locationMonitor.shouldCrashDuringNextBackgroundLaunch)
+        willCrashDuringNextBackgroundLaunch = locationMonitor.shouldCrashDuringNextBackgroundLaunch
+    }
+
+    func toggleCrashOnNextBackgroundEvent() {
+        locationMonitor.setCrashOnNextBackgroundEvent(!locationMonitor.shouldCrashOnNextBackgroundEvent)
+        willCrashOnNextBackgroundEvent = locationMonitor.shouldCrashOnNextBackgroundEvent
     }
 }
 
@@ -73,6 +87,21 @@ internal struct DebugBackgroundEventsView: View {
                     } else {
                         viewModel.startLocationMonitoring()
                     }
+                }
+            }
+            Divider()
+            HStack {
+                Text("Crash during next background launch:").font(.footnote).fontWeight(.light)
+                Spacer()
+                Button(viewModel.willCrashDuringNextBackgroundLaunch ? "🔥 ENABLED" : "DISABLED") {
+                    viewModel.toggleCrashDuringNextBackgroundLaunch()
+                }
+            }
+            HStack {
+                Text("Crash on next background event:").font(.footnote).fontWeight(.light)
+                Spacer()
+                Button(viewModel.willCrashOnNextBackgroundEvent ? "🔥 ENABLED" : "DISABLED") {
+                    viewModel.toggleCrashOnNextBackgroundEvent()
                 }
             }
             Divider()

@@ -7,6 +7,7 @@
 import Foundation
 import Datadog
 import CoreLocation
+import UIKit.UIApplication
 
 internal var backgroundLocationMonitor: BackgroundLocationMonitor?
 
@@ -14,6 +15,8 @@ internal var backgroundLocationMonitor: BackgroundLocationMonitor?
 internal class BackgroundLocationMonitor: NSObject, CLLocationManagerDelegate {
     private struct Constants {
         static let locationMonitoringUserDefaultsKey = "is-location-monitoring-started"
+        static let crashOnNextBackgroundEventUserDefaultsKey = "crash-on-next-background-event"
+        static let crashDuringNextBackgroundLaunchUserDefaultsKey = "crash-during-next-background-launch"
     }
 
     private let locationManager = CLLocationManager()
@@ -28,6 +31,24 @@ internal class BackgroundLocationMonitor: NSObject, CLLocationManagerDelegate {
         set { UserDefaults.standard.set(newValue, forKey: Constants.locationMonitoringUserDefaultsKey) }
     }
 
+    /// If enabled, the Example app will crash on receiving next event in background.
+    /// This setting is preserved between application launches. Defaults to `false` and is reset to `false` shortly before crash.
+    private(set) var shouldCrashOnNextBackgroundEvent: Bool {
+        get { UserDefaults.standard.bool(forKey: Constants.crashOnNextBackgroundEventUserDefaultsKey) }
+        set { UserDefaults.standard.set(newValue, forKey: Constants.crashOnNextBackgroundEventUserDefaultsKey) }
+    }
+
+    /// If enabled, the Example app will crash during next launch in background.
+    /// This setting is preserved between application launches. Defaults to `false` and is reset to `false` shortly before crash.
+    private(set) var shouldCrashDuringNextBackgroundLaunch: Bool {
+        get { UserDefaults.standard.bool(forKey: Constants.crashDuringNextBackgroundLaunchUserDefaultsKey) }
+        set { UserDefaults.standard.set(newValue, forKey: Constants.crashDuringNextBackgroundLaunchUserDefaultsKey) }
+    }
+
+    private var isAppInBackground: Bool {
+        return UIApplication.shared.applicationState == .background
+    }
+
     /// Current authorization status for location monitoring.
     var currentAuthorizationStatus: String { authorizationStatusDescription(for: locationManager) }
 
@@ -40,6 +61,13 @@ internal class BackgroundLocationMonitor: NSObject, CLLocationManagerDelegate {
             // If location monitoring was enabled in previous app session, here we start it for current session.
             // This will keep location tracking when the app is woken up in background due to significant location change.
             startMonitoring()
+        }
+
+        if isAppInBackground && shouldCrashDuringNextBackgroundLaunch {
+            shouldCrashDuringNextBackgroundLaunch = false
+            DispatchQueue.global().asyncAfter(deadline: .now() + 1) {
+                fatalError("Crash during application launch in background")
+            }
         }
     }
 
@@ -61,6 +89,14 @@ internal class BackgroundLocationMonitor: NSObject, CLLocationManagerDelegate {
     func stopMonitoring() {
         locationManager.stopMonitoringSignificantLocationChanges()
         isStarted = false
+    }
+
+    func setCrashOnNextBackgroundEvent(_ enabled: Bool) {
+        shouldCrashOnNextBackgroundEvent = enabled
+    }
+
+    func setCrashDuringNextBackgroundLaunch(_ enabled: Bool) {
+        shouldCrashDuringNextBackgroundLaunch = enabled
     }
 
     // MARK: - CLLocationManagerDelegate
@@ -95,6 +131,13 @@ internal class BackgroundLocationMonitor: NSObject, CLLocationManagerDelegate {
                 "speed": recentLocation.speed,
             ]
         )
+
+        if isAppInBackground && shouldCrashOnNextBackgroundEvent {
+            shouldCrashOnNextBackgroundEvent = false
+            DispatchQueue.global().asyncAfter(deadline: .now() + 1) {
+                fatalError("Crash on receiving event in background")
+            }
+        }
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
