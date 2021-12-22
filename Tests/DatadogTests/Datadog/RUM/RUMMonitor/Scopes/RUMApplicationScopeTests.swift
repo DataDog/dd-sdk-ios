@@ -13,7 +13,7 @@ class RUMApplicationScopeTests: XCTestCase {
             rumApplicationID: "abc-123",
             dependencies: .mockAny(),
             sampler: .mockAny(),
-            applicationStartTime: .mockAny(),
+            sdkInitDate: .mockAny(),
             backgroundEventTrackingEnabled: .mockAny()
         )
 
@@ -38,7 +38,7 @@ class RUMApplicationScopeTests: XCTestCase {
             rumApplicationID: .mockAny(),
             dependencies: .mockWith(onSessionStart: onSessionStart),
             sampler: .mockRejectAll(),
-            applicationStartTime: currentTime,
+            sdkInitDate: currentTime,
             backgroundEventTrackingEnabled: .mockRandom()
         )
         XCTAssertNil(scope.sessionScope)
@@ -70,7 +70,7 @@ class RUMApplicationScopeTests: XCTestCase {
             rumApplicationID: .mockAny(),
             dependencies: .mockWith(onSessionStart: onSessionStart),
             sampler: .mockKeepAll(),
-            applicationStartTime: currentTime,
+            sdkInitDate: currentTime,
             backgroundEventTrackingEnabled: .mockAny()
         )
 
@@ -109,7 +109,7 @@ class RUMApplicationScopeTests: XCTestCase {
             rumApplicationID: .mockAny(),
             dependencies: dependencies,
             sampler: Sampler(samplingRate: 100),
-            applicationStartTime: currentTime,
+            sdkInitDate: currentTime,
             backgroundEventTrackingEnabled: .mockAny()
         )
 
@@ -128,7 +128,7 @@ class RUMApplicationScopeTests: XCTestCase {
             rumApplicationID: .mockAny(),
             dependencies: dependencies,
             sampler: Sampler(samplingRate: 0),
-            applicationStartTime: currentTime,
+            sdkInitDate: currentTime,
             backgroundEventTrackingEnabled: .mockAny()
         )
 
@@ -147,7 +147,7 @@ class RUMApplicationScopeTests: XCTestCase {
             rumApplicationID: .mockAny(),
             dependencies: dependencies,
             sampler: Sampler(samplingRate: 50),
-            applicationStartTime: currentTime,
+            sdkInitDate: currentTime,
             backgroundEventTrackingEnabled: .mockAny()
         )
 

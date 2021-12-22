@@ -40,8 +40,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// RUM Sessions sampler.
     internal let sampler: Sampler
 
-    /// The start time of the application, measured in device date. It equals the time of SDK init.
-    private let applicationStartTime: Date
+    /// The start time of the application, indicated as SDK init. Measured in device time (without NTP correction).
+    private let sdkInitDate: Date
 
     /// Automatically detect background events
     internal let backgroundEventTrackingEnabled: Bool
@@ -54,12 +54,12 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         rumApplicationID: String,
         dependencies: RUMScopeDependencies,
         sampler: Sampler,
-        applicationStartTime: Date,
+        sdkInitDate: Date,
         backgroundEventTrackingEnabled: Bool
     ) {
         self.dependencies = dependencies
         self.sampler = sampler
-        self.applicationStartTime = applicationStartTime
+        self.sdkInitDate = sdkInitDate
         self.backgroundEventTrackingEnabled = backgroundEventTrackingEnabled
         self.context = RUMContext(
             rumApplicationID: rumApplicationID,
@@ -108,7 +108,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             parent: self,
             dependencies: dependencies,
             sampler: sampler,
-            startTime: applicationStartTime,
+            startTime: sdkInitDate,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
         )
         sessionScope = initialSession

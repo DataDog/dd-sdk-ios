@@ -694,14 +694,14 @@ extension RUMApplicationScope {
         rumApplicationID: String = .mockAny(),
         dependencies: RUMScopeDependencies = .mockAny(),
         sampler: Sampler = .mockKeepAll(),
-        applicationStartTime: Date = .mockAny(),
+        sdkInitDate: Date = .mockAny(),
         backgroundEventTrackingEnabled: Bool = .mockAny()
     ) -> RUMApplicationScope {
         return RUMApplicationScope(
             rumApplicationID: rumApplicationID,
             dependencies: dependencies,
             sampler: sampler,
-            applicationStartTime: applicationStartTime,
+            sdkInitDate: sdkInitDate,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
         )
     }
