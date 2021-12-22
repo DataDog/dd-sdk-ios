@@ -33,7 +33,7 @@ internal struct RUMWithCrashContextIntegration {
         self.rumSessionStateProvider = rumSessionStateProvider
     }
 
-    func update(lastRUMViewEvent: RUMEvent<RUMViewEvent>) {
+    func update(lastRUMViewEvent: RUMEvent<RUMViewEvent>?) {
         rumViewEventProvider?.publishAsync(lastRUMViewEvent)
     }
 

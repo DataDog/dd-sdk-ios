@@ -395,7 +395,7 @@ class FeaturesConfigurationTests: XCTestCase {
             appContext: .mockAny()
         )
         XCTAssertEqual(custom.rum?.applicationID, "rum-app-id")
-        XCTAssertEqual(custom.rum?.sessionSamplingRate, 45.2)
+        XCTAssertEqual(custom.rum?.sessionSampler.samplingRate, 45.2)
     }
 
     func testRUMAutoInstrumentationConfiguration() throws {

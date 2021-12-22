@@ -595,11 +595,19 @@ extension RUMContext {
 
 extension RUMSessionState: AnyMockable, RandomMockable {
     static func mockAny() -> RUMSessionState {
-        return .init(sessionUUID: .mockAny(), isInitialSession: .mockAny(), hasTrackedAnyView: .mockAny())
+        return mockWith()
     }
 
     static func mockRandom() -> RUMSessionState {
         return .init(sessionUUID: .mockRandom(), isInitialSession: .mockRandom(), hasTrackedAnyView: .mockRandom())
+    }
+
+    static func mockWith(
+        sessionUUID: UUID = .mockAny(),
+        isInitialSession: Bool = .mockAny(),
+        hasTrackedAnyView: Bool = .mockAny()
+    ) -> RUMSessionState {
+        return RUMSessionState(sessionUUID: sessionUUID, isInitialSession: isInitialSession, hasTrackedAnyView: hasTrackedAnyView)
     }
 }
 
@@ -685,14 +693,14 @@ extension RUMApplicationScope {
     static func mockWith(
         rumApplicationID: String = .mockAny(),
         dependencies: RUMScopeDependencies = .mockAny(),
-        samplingRate: Float = .mockAny(),
+        sampler: Sampler = .mockKeepAll(),
         applicationStartTime: Date = .mockAny(),
         backgroundEventTrackingEnabled: Bool = .mockAny()
     ) -> RUMApplicationScope {
         return RUMApplicationScope(
             rumApplicationID: rumApplicationID,
             dependencies: dependencies,
-            samplingRate: samplingRate,
+            sampler: sampler,
             applicationStartTime: applicationStartTime,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
         )
@@ -708,7 +716,7 @@ extension RUMSessionScope {
         isInitialSession: Bool = .mockAny(),
         parent: RUMContextProvider = RUMContextProviderMock(),
         dependencies: RUMScopeDependencies = .mockAny(),
-        samplingRate: Float = 100,
+        sampler: Sampler = .mockKeepAll(),
         startTime: Date = .mockAny(),
         backgroundEventTrackingEnabled: Bool = .mockAny()
     ) -> RUMSessionScope {
@@ -716,7 +724,7 @@ extension RUMSessionScope {
             isInitialSession: isInitialSession,
             parent: parent,
             dependencies: dependencies,
-            samplingRate: samplingRate,
+            sampler: sampler,
             startTime: startTime,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
         )

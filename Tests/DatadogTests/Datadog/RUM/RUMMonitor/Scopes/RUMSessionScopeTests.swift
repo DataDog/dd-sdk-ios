@@ -11,7 +11,7 @@ class RUMSessionScopeTests: XCTestCase {
     private let parent: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123")
 
     func testDefaultContext() {
-        let scope: RUMSessionScope = .mockWith(parent: parent, samplingRate: 100)
+        let scope: RUMSessionScope = .mockWith(parent: parent)
 
         XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
         XCTAssertNotEqual(scope.context.sessionID, .nullUUID)
@@ -20,8 +20,8 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertNil(scope.context.activeUserActionID)
     }
 
-    func testContextWhenSessionIsSampled() {
-        let scope: RUMSessionScope = .mockWith(parent: parent, samplingRate: 0)
+    func testContextWhenSessionIsRejectedBySampler() {
+        let scope: RUMSessionScope = .mockWith(parent: parent, sampler: .mockRejectAll())
 
         XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
         XCTAssertEqual(scope.context.sessionID, .nullUUID)
@@ -32,7 +32,7 @@ class RUMSessionScopeTests: XCTestCase {
 
     func testWhenSessionExceedsMaxDuration_itGetsClosed() {
         var currentTime = Date()
-        let scope: RUMSessionScope = .mockWith(parent: parent, samplingRate: 50, startTime: currentTime)
+        let scope: RUMSessionScope = .mockWith(parent: parent, sampler: .mockRandom(), startTime: currentTime)
 
         XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)))
 
@@ -44,7 +44,7 @@ class RUMSessionScopeTests: XCTestCase {
 
     func testWhenSessionIsInactiveForCertainDuration_itGetsClosed() {
         var currentTime = Date()
-        let scope: RUMSessionScope = .mockWith(parent: parent, samplingRate: 50, startTime: currentTime)
+        let scope: RUMSessionScope = .mockWith(parent: parent, sampler: .mockRandom(), startTime: currentTime)
 
         XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)))
 
@@ -60,7 +60,7 @@ class RUMSessionScopeTests: XCTestCase {
     }
 
     func testItManagesViewScopeLifecycle() {
-        let scope: RUMSessionScope = .mockWith(parent: parent, samplingRate: 100, startTime: Date())
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
         XCTAssertEqual(scope.viewScopes.count, 0)
         _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
         XCTAssertEqual(scope.viewScopes.count, 1)
@@ -84,7 +84,6 @@ class RUMSessionScopeTests: XCTestCase {
             dependencies: .mockWith(
                 appStateListener: AppStateListenerMock.mockAppInBackground(since: sessionStartTime) // app in background
             ),
-            samplingRate: 100,
             startTime: sessionStartTime,
             backgroundEventTrackingEnabled: true // BET enabled
         )
@@ -111,7 +110,6 @@ class RUMSessionScopeTests: XCTestCase {
             dependencies: .mockWith(
                 appStateListener: AppStateListenerMock.mockAppInBackground(since: sessionStartTime) // app in background
             ),
-            samplingRate: 100,
             startTime: sessionStartTime,
             backgroundEventTrackingEnabled: true // BET enabled
         )
@@ -145,7 +143,6 @@ class RUMSessionScopeTests: XCTestCase {
             dependencies: .mockWith(
                 appStateListener: AppStateListenerMock.mockAppInBackground(since: sessionStartTime) // app in background
             ),
-            samplingRate: 100,
             startTime: sessionStartTime,
             backgroundEventTrackingEnabled: true // BET enabled
         )
@@ -169,7 +166,6 @@ class RUMSessionScopeTests: XCTestCase {
             dependencies: .mockWith(
                 appStateListener: AppStateListenerMock.mockRandom(since: sessionStartTime) // no matter of app state (if foreground or background)
             ),
-            samplingRate: 100,
             startTime: sessionStartTime,
             backgroundEventTrackingEnabled: false // BET disabled
         )
@@ -195,7 +191,6 @@ class RUMSessionScopeTests: XCTestCase {
             dependencies: .mockWith(
                 appStateListener: AppStateListenerMock.mockAppInForeground(since: sessionStartTime) // app in foreground
             ),
-            samplingRate: 100,
             startTime: sessionStartTime,
             backgroundEventTrackingEnabled: .mockRandom() // no matter of BET state
         )
@@ -222,7 +217,6 @@ class RUMSessionScopeTests: XCTestCase {
             dependencies: .mockWith(
                 appStateListener: AppStateListenerMock.mockAppInForeground(since: sessionStartTime) // app in foreground
             ),
-            samplingRate: 100,
             startTime: sessionStartTime,
             backgroundEventTrackingEnabled: .mockRandom() // no matter of BET state
         )
@@ -246,7 +240,6 @@ class RUMSessionScopeTests: XCTestCase {
             dependencies: .mockWith(
                 appStateListener: AppStateListenerMock.mockRandom(since: sessionStartTime) // no matter of app state (if foreground or background)
             ),
-            samplingRate: 100,
             startTime: sessionStartTime,
             backgroundEventTrackingEnabled: .mockRandom() // no matter of BET state
         )
@@ -276,7 +269,6 @@ class RUMSessionScopeTests: XCTestCase {
             dependencies: .mockWith(
                 appStateListener: AppStateListenerMock.mockAppInForeground(since: sessionStartTime) // app in foreground
             ),
-            samplingRate: 100,
             startTime: sessionStartTime,
             backgroundEventTrackingEnabled: true // BET enabled
         )
@@ -303,7 +295,6 @@ class RUMSessionScopeTests: XCTestCase {
             dependencies: .mockWith(
                 appStateListener: AppStateListenerMock.mockAppInBackground(since: sessionStartTime) // app in background
             ),
-            samplingRate: 100,
             startTime: sessionStartTime,
             backgroundEventTrackingEnabled: true // BET enabled
         )
@@ -330,7 +321,6 @@ class RUMSessionScopeTests: XCTestCase {
             dependencies: .mockWith(
                 appStateListener: AppStateListenerMock.mockAppInBackground(since: sessionStartTime) // app in background
             ),
-            samplingRate: 100,
             startTime: sessionStartTime,
             backgroundEventTrackingEnabled: false // BET disabled
         )
@@ -347,12 +337,17 @@ class RUMSessionScopeTests: XCTestCase {
 
     // MARK: - Sampling
 
-    func testWhenSessionIsRejected_itDoesNotCreateViewScopes() {
-        let scope: RUMSessionScope = .mockWith(parent: parent, samplingRate: 0, startTime: Date())
+    func testWhenSessionIsRejectedBySampler_itDoesNotCreateViewScopes() {
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            sampler: .mockRejectAll(),
+            startTime: Date()
+        )
+
         XCTAssertEqual(scope.viewScopes.count, 0)
         XCTAssertTrue(
             scope.process(command: RUMStartViewCommand.mockWith(identity: mockView)),
-            "Sampled session should be kept until it expires or reaches the timeout."
+            "Rejected session should be kept until it expires or reaches the timeout."
         )
         XCTAssertEqual(scope.viewScopes.count, 0)
     }
@@ -373,7 +368,7 @@ class RUMSessionScopeTests: XCTestCase {
                     rumSessionStateProvider: rumSessionStateProvider
                 )
             ),
-            samplingRate: 50
+            sampler: .mockRandom() // no matter if sampled or not
         )
 
         // Then
@@ -401,7 +396,6 @@ class RUMSessionScopeTests: XCTestCase {
                     rumSessionStateProvider: rumSessionStateProvider
                 )
             ),
-            samplingRate: 100,
             startTime: sessionStartTime
         )
 
@@ -419,11 +413,40 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(rumSessionStateInjectedToCrashContext, expectedSessionState, "It must inject expected session state to crash context")
     }
 
+    func testWhenSessionScopeHasNoActiveView_thenItUpdatesLastRUMViewEventInCrashContext() throws {
+        let rumViewEventProvider = ValuePublisher<RUMEvent<RUMViewEvent>?>(initialValue: nil)
+
+        // Given
+        let sessionStartTime = Date()
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            dependencies: .mockWith(
+                crashContextIntegration: RUMWithCrashContextIntegration(
+                    rumViewEventProvider: rumViewEventProvider,
+                    rumSessionStateProvider: .mockAny()
+                )
+            ),
+            startTime: sessionStartTime
+        )
+
+        // When
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: sessionStartTime, identity: mockView))
+
+        // Then
+        XCTAssertNotNil(rumViewEventProvider.currentValue, "Crash context must be include rum view event, because there is an active view")
+
+        // When
+        _ = scope.process(command: RUMStopViewCommand.mockWith(time: sessionStartTime.addingTimeInterval(1), identity: mockView))
+
+        // Then
+        XCTAssertNil(rumViewEventProvider.currentValue, "Crash context must not include rum view event, because there is no active view")
+    }
+
     // MARK: - Usage
 
     func testWhenNoActiveViewScopes_itLogsWarning() {
         // Given
-        let scope: RUMSessionScope = .mockWith(parent: parent, samplingRate: 100, startTime: Date())
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
         XCTAssertEqual(scope.viewScopes.count, 0)
 
         let previousUserLogger = userLogger

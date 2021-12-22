@@ -802,7 +802,7 @@ class RUMMonitorTests: XCTestCase {
         RUMFeature.instance = .mockWith(
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(
-                sessionSamplingRate: keepAllSessions ? 100 : 0,
+                sessionSampler: keepAllSessions ? .mockKeepAll() : .mockRejectAll(),
                 onSessionStart: onSessionStart
             )
         )

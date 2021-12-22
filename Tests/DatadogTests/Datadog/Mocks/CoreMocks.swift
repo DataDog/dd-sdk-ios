@@ -93,6 +93,24 @@ extension Datadog.Configuration {
     }
 }
 
+extension Sampler: AnyMockable, RandomMockable {
+    static func mockAny() -> Sampler {
+        return .init(samplingRate: 50)
+    }
+
+    static func mockRandom() -> Sampler {
+        return .init(samplingRate: .random(in: (0.0...100.0)))
+    }
+
+    static func mockKeepAll() -> Sampler {
+        return .init(samplingRate: 100)
+    }
+
+    static func mockRejectAll() -> Sampler {
+        return .init(samplingRate: 0)
+    }
+}
+
 typealias BatchSize = Datadog.Configuration.BatchSize
 
 extension BatchSize: CaseIterable {
@@ -237,7 +255,8 @@ extension FeaturesConfiguration.RUM {
         uploadURL: URL = .mockAny(),
         clientToken: String = .mockAny(),
         applicationID: String = .mockAny(),
-        sessionSamplingRate: Float = 100.0,
+        sessionSampler: Sampler = Sampler(samplingRate: 100),
+        uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         viewEventMapper: RUMViewEventMapper? = nil,
         resourceEventMapper: RUMResourceEventMapper? = nil,
         actionEventMapper: RUMActionEventMapper? = nil,
@@ -252,7 +271,8 @@ extension FeaturesConfiguration.RUM {
             uploadURL: uploadURL,
             clientToken: clientToken,
             applicationID: applicationID,
-            sessionSamplingRate: sessionSamplingRate,
+            sessionSampler: sessionSampler,
+            uuidGenerator: uuidGenerator,
             viewEventMapper: viewEventMapper,
             resourceEventMapper: resourceEventMapper,
             actionEventMapper: actionEventMapper,

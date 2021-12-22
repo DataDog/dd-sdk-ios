@@ -354,7 +354,7 @@ class DatadogTests: XCTestCase {
             uploadFrequency: .frequent,
             bundleType: .iOSApp
         )
-        XCTAssertEqual(RUMFeature.instance?.configuration.sessionSamplingRate, 100)
+        XCTAssertEqual(RUMFeature.instance?.configuration.sessionSampler.samplingRate, 100)
         XCTAssertEqual(TracingFeature.instance?.configuration.common.performance, expectedPerformancePreset)
         XCTAssertEqual(LoggingFeature.instance?.configuration.common.performance, expectedPerformancePreset)
         XCTAssertEqual(Datadog.verbosityLevel, .debug)

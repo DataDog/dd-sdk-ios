@@ -153,6 +153,8 @@
 		613BE04A25640FF80015216C /* BenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613BE04925640FF80015216C /* BenchmarkTests.swift */; };
 		613BE06225642F790015216C /* RUMStorageBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613BE06125642F790015216C /* RUMStorageBenchmarkTests.swift */; };
 		613BE073256431960015216C /* FoundationMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C202423990D00786299 /* FoundationMocks.swift */; };
+		613C6B902768FDDE00870CBF /* Sampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613C6B8F2768FDDE00870CBF /* Sampler.swift */; };
+		613C6B922768FF3100870CBF /* SamplerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613C6B912768FF3100870CBF /* SamplerTests.swift */; };
 		613E79282577B0EE00DFCC17 /* Writer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613E79272577B0EE00DFCC17 /* Writer.swift */; };
 		613E792F2577B0F900DFCC17 /* Reader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613E792E2577B0F900DFCC17 /* Reader.swift */; };
 		613E793B2577B6EE00DFCC17 /* DataReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613E793A2577B6EE00DFCC17 /* DataReader.swift */; };
@@ -822,6 +824,8 @@
 		613BE0422563FB9E0015216C /* RUMBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMBenchmarkTests.swift; sourceTree = "<group>"; };
 		613BE04925640FF80015216C /* BenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkTests.swift; sourceTree = "<group>"; };
 		613BE06125642F790015216C /* RUMStorageBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMStorageBenchmarkTests.swift; sourceTree = "<group>"; };
+		613C6B8F2768FDDE00870CBF /* Sampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sampler.swift; sourceTree = "<group>"; };
+		613C6B912768FF3100870CBF /* SamplerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplerTests.swift; sourceTree = "<group>"; };
 		613E79272577B0EE00DFCC17 /* Writer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Writer.swift; sourceTree = "<group>"; };
 		613E792E2577B0F900DFCC17 /* Reader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reader.swift; sourceTree = "<group>"; };
 		613E793A2577B6EE00DFCC17 /* DataReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataReader.swift; sourceTree = "<group>"; };
@@ -1474,6 +1478,7 @@
 				61363D9C24D999F70084CD6F /* DDError.swift */,
 				6139CD702589FAFD007E8BB7 /* Retrying.swift */,
 				611529A425E3DD51004F740E /* ValuePublisher.swift */,
+				613C6B8F2768FDDE00870CBF /* Sampler.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -2562,6 +2567,7 @@
 				618C365E248E85B400520CDE /* DateFormattingTests.swift */,
 				9E58E8E224615EDA008E5063 /* JSONEncoderTests.swift */,
 				61363D9E24D99BAA0084CD6F /* DDErrorTests.swift */,
+				613C6B912768FF3100870CBF /* SamplerTests.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -4108,6 +4114,7 @@
 				614E9EB3244719FA007EE3E1 /* BundleType.swift in Sources */,
 				61F3CDA72512144600C816E5 /* UIKitRUMViewsPredicate.swift in Sources */,
 				61133BCE2423979B00786299 /* BatteryStatusProvider.swift in Sources */,
+				613C6B902768FDDE00870CBF /* Sampler.swift in Sources */,
 				9E9973F1268DF69500D8059B /* VitalInfoSampler.swift in Sources */,
 				9EA3CA6926775A3500B16871 /* VitalRefreshRateReader.swift in Sources */,
 				E13A880C257922EC004FB174 /* EnvironmentSpanIntegration.swift in Sources */,
@@ -4154,6 +4161,7 @@
 				618C365F248E85B400520CDE /* DateFormattingTests.swift in Sources */,
 				61133C5A2423990D00786299 /* FileTests.swift in Sources */,
 				61AD4E3A24534075006E34EA /* TracingFeatureTests.swift in Sources */,
+				613C6B922768FF3100870CBF /* SamplerTests.swift in Sources */,
 				61133C6B2423990D00786299 /* LogMatcher.swift in Sources */,
 				D2135330270CA722000315AD /* DataCompressionTests.swift in Sources */,
 				61DB33B225DEDFC200F7EA71 /* CustomObjcViewController.m in Sources */,
