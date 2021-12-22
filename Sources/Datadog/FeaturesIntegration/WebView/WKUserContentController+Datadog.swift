@@ -79,10 +79,10 @@ public extension WKUserContentController {
     }
 }
 
-private class DatadogMessageHandler: NSObject, WKScriptMessageHandler {
+internal class DatadogMessageHandler: NSObject, WKScriptMessageHandler {
     static let name = "DatadogEventBridge"
     private let eventBridge: WebEventBridge
-    private let queue = DispatchQueue(
+    let queue = DispatchQueue(
         label: "com.datadoghq.JSEventBridge",
         target: .global(qos: .userInteractive)
     )

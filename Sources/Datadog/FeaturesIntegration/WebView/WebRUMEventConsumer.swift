@@ -38,19 +38,19 @@ internal class WebRUMEventConsumer: WebEventConsumer {
             let mappedViewEvent = mapIfNeeded(dataModel: viewEvent, context: rumContext, offset: getOffset(viewID: viewEvent.view.id))
             write(mappedViewEvent)
         case "action":
-            let actionEvent = try jsonDecoder.decode(RUMViewEvent.self, from: eventData)
+            let actionEvent = try jsonDecoder.decode(RUMActionEvent.self, from: eventData)
             let mappedActionEvent = mapIfNeeded(dataModel: actionEvent, context: rumContext, offset: getOffset(viewID: actionEvent.view.id))
             write(mappedActionEvent)
         case "resource":
-            let resourceEvent = try jsonDecoder.decode(RUMViewEvent.self, from: eventData)
+            let resourceEvent = try jsonDecoder.decode(RUMResourceEvent.self, from: eventData)
             let mappedResourceEvent = mapIfNeeded(dataModel: resourceEvent, context: rumContext, offset: getOffset(viewID: resourceEvent.view.id))
             write(mappedResourceEvent)
         case "error":
-            let errorEvent = try jsonDecoder.decode(RUMViewEvent.self, from: eventData)
+            let errorEvent = try jsonDecoder.decode(RUMErrorEvent.self, from: eventData)
             let mappedErrorEvent = mapIfNeeded(dataModel: errorEvent, context: rumContext, offset: getOffset(viewID: errorEvent.view.id))
             write(mappedErrorEvent)
         case "long_task":
-            let longTaskEvent = try jsonDecoder.decode(RUMViewEvent.self, from: eventData)
+            let longTaskEvent = try jsonDecoder.decode(RUMLongTaskEvent.self, from: eventData)
             let mappedLongTaskEvent = mapIfNeeded(dataModel: longTaskEvent, context: rumContext, offset: getOffset(viewID: longTaskEvent.view.id))
             write(mappedLongTaskEvent)
         default:
