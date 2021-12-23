@@ -129,13 +129,15 @@ class WebLogEventConsumerTests: XCTestCase {
             "status": "error",
             "view": ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"]
         ]
+        var expectedWebLogEvent: JSON = webLogEvent
+        expectedWebLogEvent["ddtags"] = "version:,env:"
 
         try eventConsumer.consume(event: webLogEvent, eventType: "log")
 
         let data = try JSONEncoder().encode(mockUserLogsWriter.dataWritten as? CodableValue)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
-        AssertDictionariesEqual(writtenJSON, webLogEvent)
+        AssertDictionariesEqual(writtenJSON, expectedWebLogEvent)
 
         XCTAssertNil(mockInternalLogsWriter.dataWritten)
     }

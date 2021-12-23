@@ -33,7 +33,6 @@ public extension WKUserContentController {
             rumEventConsumer = WebRUMEventConsumer(
                 dataWriter: rumFeature.storage.writer,
                 dateCorrector: rumFeature.dateCorrector,
-                webRUMEventMapper: WebRUMEventMapper(),
                 contextProvider: contextProvider
             )
         }

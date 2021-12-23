@@ -6,24 +6,18 @@
 
 import Foundation
 
-// TODO: RUMM-1786 implement mappers
-internal class WebRUMEventMapper { }
-
 internal class WebRUMEventConsumer: WebEventConsumer {
     private let dataWriter: Writer
     private let dateCorrector: DateCorrectorType
-    private let webRUMEventMapper: WebRUMEventMapper?
     private let contextProvider: RUMContextProvider?
 
     init(
         dataWriter: Writer,
         dateCorrector: DateCorrectorType,
-        webRUMEventMapper: WebRUMEventMapper?,
         contextProvider: RUMContextProvider?
     ) {
         self.dataWriter = dataWriter
         self.dateCorrector = dateCorrector
-        self.webRUMEventMapper = webRUMEventMapper
         self.contextProvider = contextProvider
     }
 
@@ -59,12 +53,8 @@ internal class WebRUMEventConsumer: WebEventConsumer {
     }
 
     private func mapIfNeeded<T: RUMDataModel>(dataModel: T, context: RUMContext?, offset: Offset) -> T {
-        guard let context = context else {
-            return dataModel
-        }
-        // TODO: RUMM-1786 implement mappers
-        let mappedDataModel = dataModel
-        return mappedDataModel
+        // TODO: RUMM-1786 implement mutating session_id & application_id
+        return dataModel
     }
 
     private func write<T: RUMDataModel>(_ model: T) {
