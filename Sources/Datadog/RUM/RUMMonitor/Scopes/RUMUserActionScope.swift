@@ -134,6 +134,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
         let eventData = RUMActionEvent(
             dd: .init(
+                browserSdkVersion: nil,
                 session: .init(plan: .plan1)
             ),
             action: .init(
@@ -147,6 +148,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                 type: actionType.toRUMDataFormat
             ),
             application: .init(id: context.rumApplicationID),
+            ciTest: nil,
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: actionStartTime).timeIntervalSince1970.toInt64Milliseconds,

@@ -100,10 +100,31 @@ internal class RUMSwiftTypeTransformer: TypeTransformer<SwiftType> {
             return structProperty
         }
 
+        // NOTE: RUMM-1786 Some props need to be internally mutable due to events coming from browser-sdk
+        let commonPropertySet: Set<String> = ["_dd", "application", "date", "service", "session"]
+        let internallyMutablePropsDictionary: [String: Set<String>] = [
+            "RUMViewEvent": commonPropertySet,
+            "RUMActionEvent": commonPropertySet,
+            "RUMResourceEvent": commonPropertySet,
+            "RUMErrorEvent": commonPropertySet,
+            "RUMLongTaskEvent": commonPropertySet,
+            "Session": ["plan", "id"],
+            "Application": ["id"]
+        ]
+
         var `struct` = `struct`
         `struct`.name = format(structName: `struct`.name)
-        `struct`.properties = try `struct`.properties
-            .map { try transform(structProperty: $0) }
+        `struct`.properties = try `struct`.properties.map {
+            var transformedProp = try transform(structProperty: $0)
+            if $0.mutability == .immutable,
+               let internallyMutablePropSet = internallyMutablePropsDictionary[`struct`.name],
+               internallyMutablePropSet.contains($0.name) {
+                transformedProp.mutability = .mutableInternally
+            }
+
+            return transformedProp
+        }
+
         if context.parent == nil {
             `struct`.conformance = [rumDataModelProtocol] // Conform root structs to `RUMDataModel`
         } else {

@@ -96,10 +96,12 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
 
         let rumError = RUMErrorEvent(
             dd: .init(
+                browserSdkVersion: nil,
                 session: .init(plan: .plan1)
             ),
             action: nil,
             application: .init(id: lastRUMView.application.id),
+            ciTest: nil,
             connectivity: lastRUMView.connectivity,
             context: nil,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds,
@@ -142,10 +144,12 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         let original = rumViewEvent.model
         let rumView = RUMViewEvent(
             dd: .init(
+                browserSdkVersion: nil,
                 documentVersion: original.dd.documentVersion + 1,
                 session: .init(plan: .plan1)
             ),
             application: original.application,
+            ciTest: nil,
             connectivity: original.connectivity,
             context: original.context,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds,
