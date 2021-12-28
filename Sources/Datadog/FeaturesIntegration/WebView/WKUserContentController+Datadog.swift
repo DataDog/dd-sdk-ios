@@ -24,7 +24,9 @@ public extension WKUserContentController {
                 userLogsWriter: loggingFeature.storage.writer,
                 internalLogsWriter: InternalMonitoringFeature.instance?.logsStorage.writer,
                 dateCorrector: loggingFeature.dateCorrector,
-                rumContextProvider: contextProvider
+                rumContextProvider: contextProvider,
+                applicationVersion: loggingFeature.configuration.common.applicationVersion,
+                environment: loggingFeature.configuration.common.environment
             )
         }
 

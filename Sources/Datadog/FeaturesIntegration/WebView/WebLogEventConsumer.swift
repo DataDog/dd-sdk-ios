@@ -21,13 +21,16 @@ internal class WebLogEventConsumer: WebEventConsumer {
     private let internalLogsWriter: Writer?
     private let dateCorrector: DateCorrectorType
     private let rumContextProvider: RUMContextProvider?
+    private let applicationVersion: String
+    private let environment: String
+
     private let jsonDecoder = JSONDecoder()
 
     private lazy var ddTags: String = {
         let versionKey = LogEventEncoder.StaticCodingKeys.applicationVersion.rawValue
-        let versionValue = LoggingFeature.instance?.configuration.common.applicationVersion ?? ""
+        let versionValue = applicationVersion
         let envKey = LogEventEncoder.StaticCodingKeys.environment.rawValue
-        let envValue = LoggingFeature.instance?.configuration.common.environment ?? ""
+        let envValue = environment
 
         return "\(versionKey):\(versionValue),\(envKey):\(envValue)"
     }()
@@ -36,12 +39,16 @@ internal class WebLogEventConsumer: WebEventConsumer {
         userLogsWriter: Writer,
         internalLogsWriter: Writer?,
         dateCorrector: DateCorrectorType,
-        rumContextProvider: RUMContextProvider?
+        rumContextProvider: RUMContextProvider?,
+        applicationVersion: String,
+        environment: String
     ) {
         self.userLogsWriter = userLogsWriter
         self.internalLogsWriter = internalLogsWriter
         self.dateCorrector = dateCorrector
         self.rumContextProvider = rumContextProvider
+        self.applicationVersion = applicationVersion
+        self.environment = environment
     }
 
     func consume(event: JSON, eventType: String) throws {
@@ -71,6 +78,8 @@ internal class WebLogEventConsumer: WebEventConsumer {
             userLogsWriter.write(value: encodableEvent)
         } else if eventType == Constants.internalLogEventType {
             internalLogsWriter?.write(value: encodableEvent)
+        } else {
+            userLogger.error("🔥 Invalid Web Event Type: \(eventType)")
         }
     }
 }

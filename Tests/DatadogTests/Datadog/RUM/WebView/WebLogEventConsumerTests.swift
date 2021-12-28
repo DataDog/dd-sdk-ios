@@ -17,11 +17,15 @@ class WebLogEventConsumerTests: XCTestCase {
         let mockSessionID = UUID(uuidString: "e9796469-c2a1-43d6-b0f6-65c47d33cf5f")!
         mockContextProvider.context.sessionID = RUMUUID(rawValue: mockSessionID)
         mockDateCorrector.correctionOffset = 123
+        let applicationVersion = String.mockRandom()
+        let environment = String.mockRandom()
         let eventConsumer = WebLogEventConsumer(
             userLogsWriter: mockUserLogsWriter,
             internalLogsWriter: mockInternalLogsWriter,
             dateCorrector: mockDateCorrector,
-            rumContextProvider: mockContextProvider
+            rumContextProvider: mockContextProvider,
+            applicationVersion: applicationVersion,
+            environment: environment
         )
 
         let webLogEvent: JSON = [
@@ -39,7 +43,7 @@ class WebLogEventConsumerTests: XCTestCase {
             "application_id": "123456",
             "session_id": mockSessionID.uuidString.lowercased(),
             "status": "error",
-            "ddtags": "version:,env:",
+            "ddtags": "version:\(applicationVersion),env:\(environment)",
             "view": ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"]
         ]
 
@@ -57,11 +61,15 @@ class WebLogEventConsumerTests: XCTestCase {
         let mockSessionID = UUID(uuidString: "e9796469-c2a1-43d6-b0f6-65c47d33cf5f")!
         mockContextProvider.context.sessionID = RUMUUID(rawValue: mockSessionID)
         mockDateCorrector.correctionOffset = 123
+        let applicationVersion = String.mockRandom()
+        let environment = String.mockRandom()
         let eventConsumer = WebLogEventConsumer(
             userLogsWriter: mockUserLogsWriter,
             internalLogsWriter: mockInternalLogsWriter,
             dateCorrector: mockDateCorrector,
-            rumContextProvider: mockContextProvider
+            rumContextProvider: mockContextProvider,
+            applicationVersion: applicationVersion,
+            environment: environment
         )
 
         let webLogEvent: JSON = [
@@ -79,7 +87,7 @@ class WebLogEventConsumerTests: XCTestCase {
             "application_id": "123456",
             "session_id": mockSessionID.uuidString.lowercased(),
             "status": "error",
-            "ddtags": "version:,env:",
+            "ddtags": "version:\(applicationVersion),env:\(environment)",
             "view": ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"]
         ]
 
@@ -94,11 +102,18 @@ class WebLogEventConsumerTests: XCTestCase {
     }
 
     func testWhenInvalidEventTypePassed_itIgnoresEvent() throws {
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
+        let userLoggerOutput = LogOutputMock()
+        userLogger = .mockWith(logOutput: userLoggerOutput)
+
         let eventConsumer = WebLogEventConsumer(
             userLogsWriter: mockUserLogsWriter,
             internalLogsWriter: mockInternalLogsWriter,
             dateCorrector: mockDateCorrector,
-            rumContextProvider: mockContextProvider
+            rumContextProvider: mockContextProvider,
+            applicationVersion: .mockRandom(),
+            environment: .mockRandom()
         )
 
         let webLogEvent: JSON = [
@@ -111,14 +126,19 @@ class WebLogEventConsumerTests: XCTestCase {
 
         XCTAssertNil(mockUserLogsWriter.dataWritten)
         XCTAssertNil(mockInternalLogsWriter.dataWritten)
+        XCTAssertEqual(userLoggerOutput.recordedLog?.message, "🔥 Invalid Web Event Type: invalid_log")
     }
 
     func testWhenContextIsUnavailable_itPassesEventAsIs() throws {
+        let applicationVersion = String.mockRandom()
+        let environment = String.mockRandom()
         let eventConsumer = WebLogEventConsumer(
             userLogsWriter: mockUserLogsWriter,
             internalLogsWriter: mockInternalLogsWriter,
             dateCorrector: mockDateCorrector,
-            rumContextProvider: nil
+            rumContextProvider: nil,
+            applicationVersion: applicationVersion,
+            environment: environment
         )
 
         let webLogEvent: JSON = [
@@ -130,7 +150,7 @@ class WebLogEventConsumerTests: XCTestCase {
             "view": ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"]
         ]
         var expectedWebLogEvent: JSON = webLogEvent
-        expectedWebLogEvent["ddtags"] = "version:,env:"
+        expectedWebLogEvent["ddtags"] = "version:\(applicationVersion),env:\(environment)"
 
         try eventConsumer.consume(event: webLogEvent, eventType: "log")
 
