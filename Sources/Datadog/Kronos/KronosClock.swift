@@ -2,7 +2,6 @@ import Foundation
 
 /// Struct that has time + related metadata
 internal typealias KronosAnnotatedTime = (
-
     /// Time that is being annotated
     date: Date,
 
@@ -51,8 +50,10 @@ internal struct KronosClock {
             return nil
         }
 
-        return KronosAnnotatedTime(date: Date(timeIntervalSince1970: stableTime.adjustedTimestamp),
-                             timeSinceLastNtpSync: stableTime.timeSinceLastNtpSync)
+        return KronosAnnotatedTime(
+            date: Date(timeIntervalSince1970: stableTime.adjustedTimestamp),
+            timeSinceLastNtpSync: stableTime.timeSinceLastNtpSync
+        )
     }
 
     /// Syncs the clock using NTP. Note that the full synchronization could take a few seconds. The given
@@ -65,10 +66,12 @@ internal struct KronosClock {
     /// - parameter samples:    The number of samples to be acquired from each server (default 4).
     /// - parameter completion: A closure that will be called after _all_ the NTP calls are finished.
     /// - parameter first:      A closure that will be called after the first valid date is calculated.
-    static func sync(from pool: String = "time.apple.com", samples: Int = 4,
-                            first: ((Date, TimeInterval) -> Void)? = nil,
-                            completion: ((Date?, TimeInterval?) -> Void)? = nil)
-    {
+    static func sync(
+        from pool: String = "time.apple.com",
+        samples: Int = 4,
+        first: ((Date, TimeInterval) -> Void)? = nil,
+        completion: ((Date?, TimeInterval?) -> Void)? = nil
+    ) {
         self.loadFromDefaults()
 
         KronosNTPClient().query(pool: pool, numberOfSamples: samples) { offset, done, total in

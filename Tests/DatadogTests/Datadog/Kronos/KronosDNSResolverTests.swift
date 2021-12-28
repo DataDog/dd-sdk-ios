@@ -2,7 +2,6 @@ import XCTest
 @testable import Datadog
 
 final class KronosDNSResolverTests: XCTestCase {
-
     func testResolveOneIP() {
         let expectation = self.expectation(description: "Query host's DNS for a single IP")
         KronosDNSResolver.resolve(host: "test.com") { addresses in

@@ -16,9 +16,11 @@ internal final class KronosDNSResolver {
     /// - parameter timeout:    The connection timeout.
     /// - parameter completion: A completion block that will be called both on failure and success with a list
     ///                         of IPs.
-    static func resolve(host: String, timeout: TimeInterval = kDefaultTimeout,
-                        completion: @escaping ([KronosInternetAddress]) -> Void)
-    {
+    static func resolve(
+        host: String,
+        timeout: TimeInterval = kDefaultTimeout,
+        completion: @escaping ([KronosInternetAddress]) -> Void
+    ) {
         let callback: CFHostClientCallBack = { host, _, _, info in
             guard let info = info else {
                 return
@@ -47,13 +49,22 @@ internal final class KronosDNSResolver {
         resolver.completion = completion
 
         let retainedClosure = Unmanaged.passRetained(resolver).toOpaque()
-        var clientContext = CFHostClientContext(version: 0, info: UnsafeMutableRawPointer(retainedClosure),
-                                                retain: nil, release: nil, copyDescription: kCopyNoOperation)
+        var clientContext = CFHostClientContext(
+            version: 0,
+            info: UnsafeMutableRawPointer(retainedClosure),
+            retain: nil,
+            release: nil,
+            copyDescription: kCopyNoOperation
+        )
 
         let hostReference = CFHostCreateWithName(kCFAllocatorDefault, host as CFString).takeUnretainedValue()
-        resolver.timer = Timer.scheduledTimer(timeInterval: timeout, target: resolver,
-                                              selector: #selector(KronosDNSResolver.onTimeout),
-                                              userInfo: hostReference, repeats: false)
+        resolver.timer = Timer.scheduledTimer(
+            timeInterval: timeout,
+            target: resolver,
+            selector: #selector(KronosDNSResolver.onTimeout),
+            userInfo: hostReference,
+            repeats: false
+        )
 
         CFHostSetClient(hostReference, callback, &clientContext)
         CFHostScheduleWithRunLoop(hostReference, CFRunLoopGetMain(), CFRunLoopMode.commonModes.rawValue)

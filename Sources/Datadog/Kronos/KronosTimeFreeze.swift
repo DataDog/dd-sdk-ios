@@ -32,9 +32,9 @@ internal struct KronosTimeFreeze {
     }
 
     init?(from dictionary: [String: TimeInterval]) {
-        guard let uptime = dictionary[kUptimeKey], let timestamp = dictionary[kTimestampKey],
-            let offset = dictionary[kOffsetKey] else
-        {
+        guard let uptime = dictionary[kUptimeKey],
+              let timestamp = dictionary[kTimestampKey],
+              let offset = dictionary[kOffsetKey] else {
             return nil
         }
 

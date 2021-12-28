@@ -1,7 +1,7 @@
 import Foundation
 
 /// Delta between system and NTP time
-private let kEpochDelta = 2208988800.0
+private let kEpochDelta = 2_208_988_800.0
 
 /// This is the maximum that we'll tolerate for the client's time vs self.delay
 private let kMaximumDelayDifference = 0.1
@@ -19,7 +19,6 @@ internal func kronosCurrentTime() -> TimeInterval {
 }
 
 internal struct KronosNTPPacket {
-
     /// The leap indicator warning of an impending leap second to be inserted or deleted in the last
     /// minute of the current month.
     let leap: KronosLeapIndicator
@@ -151,25 +150,25 @@ internal struct KronosNTPPacket {
 
     private func dateToNTPFormat(_ time: TimeInterval) -> UInt64 {
         let integer = UInt32(time + kEpochDelta)
-        let decimal = modf(time).1 * 4294967296.0 // 2 ^ 32
+        let decimal = modf(time).1 * 4_294_967_296.0 // 2 ^ 32
         return UInt64(integer) << 32 | UInt64(decimal)
     }
 
     private func intervalToNTPFormat(_ time: TimeInterval) -> UInt32 {
         let integer = UInt16(time)
-        let decimal = modf(time).1 * 65536 // 2 ^ 16
+        let decimal = modf(time).1 * 65_536 // 2 ^ 16
         return UInt32(integer) << 16 | UInt32(decimal)
     }
 
     private static func dateFromNTPFormat(_ time: UInt64) -> TimeInterval {
         let integer = Double(time >> 32)
-        let decimal = Double(time & 0xffffffff) / 4294967296.0
+        let decimal = Double(time & 0xffffffff) / 4_294_967_296.0
         return integer - kEpochDelta + decimal
     }
 
     private static func intervalFromNTPFormat(_ time: UInt32) -> TimeInterval {
         let integer = Double(time >> 16)
-        let decimal = Double(time & 0xffff) / 65536
+        let decimal = Double(time & 0xffff) / 65_536
         return integer + decimal
     }
 }
@@ -187,7 +186,6 @@ internal struct KronosNTPPacket {
 ///
 /// d = (T4 - T1) - (T3 - T2)     t = ((T2 - T1) + (T3 - T4)) / 2.
 extension KronosNTPPacket {
-
     /// Clocks offset in seconds.
     var offset: TimeInterval {
         return ((self.receiveTime - self.originTime) + (self.transmitTime - self.destinationTime)) / 2.0

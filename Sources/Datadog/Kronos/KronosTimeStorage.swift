@@ -30,8 +30,7 @@ internal struct KronosTimeStorage {
     var stableTime: KronosTimeFreeze? {
         get {
             guard let stored = self.userDefaults.value(forKey: kDefaultsKey) as? [String: TimeInterval],
-                let previousStableTime = KronosTimeFreeze(from: stored) else
-            {
+                let previousStableTime = KronosTimeFreeze(from: stored) else {
                 return nil
             }
 

@@ -4,7 +4,7 @@ import XCTest
 final class KronosNTPPacketTests: XCTestCase {
     func testToData() {
         var packet = KronosNTPPacket()
-        let data = packet.prepareToSend(transmitTime: 1463303662.776552)
+        let data = packet.prepareToSend(transmitTime: 1_463_303_662.776_552)
         XCTAssertEqual(data, Data(hex: "1b0004fa0001000000010000000000000000000000000000" +
                                        "00000000000000000000000000000000dae2bc6ec6cc1c00")!)
     }
@@ -31,11 +31,11 @@ final class KronosNTPPacketTests: XCTestCase {
         let network = Data(hex: "1c0203e90000065700000a68ada2c09cdae2d084a5a76d5fdae2d3354a529000dae2d32b" +
                                 "b38bab46dae2d32bb38d9e00")!
         let PDU = try? KronosNTPPacket(data: network, destinationTime: 0)
-        XCTAssertEqual(PDU?.rootDelay, 0.0247650146484375)
-        XCTAssertEqual(PDU?.rootDispersion, 0.0406494140625)
-        XCTAssertEqual(PDU?.clockSource.ID, 2913124508)
-        XCTAssertEqual(PDU?.referenceTime, 1463308804.6470859051)
-        XCTAssertEqual(PDU?.originTime, 1463309493.2903223038)
-        XCTAssertEqual(PDU?.receiveTime, 1463309483.7013499737)
+        XCTAssertEqual(PDU?.rootDelay, 0.024_765_014_648_437_5)
+        XCTAssertEqual(PDU?.rootDispersion, 0.040_649_414_062_5)
+        XCTAssertEqual(PDU?.clockSource.ID, 2_913_124_508)
+        XCTAssertEqual(PDU?.referenceTime, 1_463_308_804.647_085_905_1)
+        XCTAssertEqual(PDU?.originTime, 1_463_309_493.290_322_303_8)
+        XCTAssertEqual(PDU?.receiveTime, 1_463_309_483.701_349_973_7)
     }
 }

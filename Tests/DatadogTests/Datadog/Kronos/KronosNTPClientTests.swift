@@ -2,21 +2,21 @@ import XCTest
 @testable import Datadog
 
 final class KronosNTPClientTests: XCTestCase {
-
     func testQueryIP() {
         let expectation = self.expectation(description: "NTPClient queries single IPs")
 
         KronosDNSResolver.resolve(host: "time.apple.com") { addresses in
             XCTAssertGreaterThan(addresses.count, 0)
 
-            KronosNTPClient().query(ip: addresses.first!, version: 3, numberOfSamples: 1) { PDU in
-                XCTAssertNotNil(PDU)
+            KronosNTPClient()
+                .query(ip: addresses.first!, version: 3, numberOfSamples: 1) { PDU in
+                    XCTAssertNotNil(PDU)
 
-                XCTAssertGreaterThanOrEqual(PDU!.version, 3)
-                XCTAssertTrue(PDU!.isValidResponse())
+                    XCTAssertGreaterThanOrEqual(PDU!.version, 3)
+                    XCTAssertTrue(PDU!.isValidResponse())
 
-                expectation.fulfill()
-            }
+                    expectation.fulfill()
+                }
         }
 
         self.waitForExpectations(timeout: 10)
@@ -27,12 +27,12 @@ final class KronosNTPClientTests: XCTestCase {
         KronosNTPClient().query(pool: "0.pool.ntp.org", numberOfSamples: 1, maximumServers: 1) { offset, _, _ in
             XCTAssertNotNil(offset)
 
-            KronosNTPClient().query(pool: "0.pool.ntp.org", numberOfSamples: 1, maximumServers: 1)
-            { offset2, _, _ in
-                XCTAssertNotNil(offset2)
-                XCTAssertLessThan(abs(offset! - offset2!), 0.10)
-                expectation.fulfill()
-            }
+            KronosNTPClient()
+                .query(pool: "0.pool.ntp.org", numberOfSamples: 1, maximumServers: 1) { offset2, _, _ in
+                    XCTAssertNotNil(offset2)
+                    XCTAssertLessThan(abs(offset! - offset2!), 0.10)
+                    expectation.fulfill()
+                }
         }
 
         self.waitForExpectations(timeout: 10)

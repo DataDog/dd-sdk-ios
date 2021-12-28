@@ -1,7 +1,6 @@
 import Foundation
 
 extension Data {
-
     /// Creates an Data instance based on a hex string (example: "ffff" would be <FF FF>).
     ///
     /// - parameter hex: The hex string without any spaces; should only have [0-9A-Fa-f].
@@ -31,7 +30,7 @@ extension Data {
     /// - returns: The byte located at position `index`.
     func getByte(at index: Int) -> Int8 {
         let data: Int8 = self.subdata(in: index ..< (index + 1)).withUnsafeBytes { rawPointer in
-            rawPointer.bindMemory(to: Int8.self).baseAddress!.pointee
+            rawPointer.bindMemory(to: Int8.self).baseAddress!.pointee // swiftlint:disable:this force_unwrapping
         }
 
         return data
@@ -44,8 +43,8 @@ extension Data {
     ///
     /// - returns: The unsigned int located at position `index`.
     func getUnsignedInteger(at index: Int, bigEndian: Bool = true) -> UInt32 {
-        let data: UInt32 =  self.subdata(in: index ..< (index + 4)).withUnsafeBytes { rawPointer in
-            rawPointer.bindMemory(to: UInt32.self).baseAddress!.pointee
+        let data: UInt32 = self.subdata(in: index ..< (index + 4)).withUnsafeBytes { rawPointer in
+            rawPointer.bindMemory(to: UInt32.self).baseAddress!.pointee // swiftlint:disable:this force_unwrapping
         }
 
         return bigEndian ? data.bigEndian : data.littleEndian
@@ -59,7 +58,7 @@ extension Data {
     /// - returns: The unsigned long integer located at position `index`.
     func getUnsignedLong(at index: Int, bigEndian: Bool = true) -> UInt64 {
         let data: UInt64 = self.subdata(in: index ..< (index + 8)).withUnsafeBytes { rawPointer in
-            rawPointer.bindMemory(to: UInt64.self).baseAddress!.pointee
+            rawPointer.bindMemory(to: UInt64.self).baseAddress!.pointee // swiftlint:disable:this force_unwrapping
         }
 
         return bigEndian ? data.bigEndian : data.littleEndian

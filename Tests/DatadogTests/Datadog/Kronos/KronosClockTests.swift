@@ -2,7 +2,6 @@ import XCTest
 @testable import Datadog
 
 final class KronosClockTests: XCTestCase {
-
     override func setUp() {
         super.setUp()
         KronosClock.reset()
@@ -33,8 +32,13 @@ final class KronosClockTests: XCTestCase {
         let firstExpectation = self.expectation(description: "Clock sync calls first closure")
         let lastExpectation = self.expectation(description: "Clock sync calls last closure")
         KronosClock.sync(
-            first: { _, _ in firstExpectation.fulfill() },
-            completion: { _, _ in lastExpectation.fulfill() })
+            first: { _, _ in
+                firstExpectation.fulfill()
+            },
+            completion: { _, _ in
+                lastExpectation.fulfill()
+            }
+        )
 
         self.waitForExpectations(timeout: 20)
     }

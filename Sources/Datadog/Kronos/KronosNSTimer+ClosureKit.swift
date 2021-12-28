@@ -12,7 +12,6 @@ internal typealias CKTimerHandler = (Timer) -> Void
 /// }
 /// ```
 internal final class KronosBlockTimer: NSObject {
-
     /// Creates and returns a block-based NSTimer object and schedules it on the current run loop.
     ///
     /// - parameter interval: The number of seconds between firings of the timer.
@@ -21,18 +20,24 @@ internal final class KronosBlockTimer: NSObject {
     /// - parameter handler:  The closure that the NSTimer fires.
     ///
     /// - returns: A new NSTimer object, configured according to the specified parameters.
-    class func scheduledTimer(withTimeInterval interval: TimeInterval, repeated: Bool = false,
-                              handler: @escaping CKTimerHandler) -> Timer
-    {
-        return Timer.scheduledTimer(timeInterval: interval, target: self,
+    class func scheduledTimer(
+        withTimeInterval interval: TimeInterval,
+        repeated: Bool = false,
+        handler: @escaping CKTimerHandler
+    ) -> Timer {
+        return Timer.scheduledTimer(
+            timeInterval: interval,
+            target: self,
             selector: #selector(KronosBlockTimer.invokeFrom(timer:)),
-            userInfo: TimerClosureWrapper(handler: handler, repeats: repeated), repeats: repeated)
+            userInfo: TimerClosureWrapper(handler: handler, repeats: repeated),
+            repeats: repeated
+        )
     }
 
     // MARK: Private methods
 
     @objc
-    class private func invokeFrom(timer: Timer) {
+    private class func invokeFrom(timer: Timer) {
         if let closureWrapper = timer.userInfo as? TimerClosureWrapper {
             closureWrapper.handler(timer)
         }
