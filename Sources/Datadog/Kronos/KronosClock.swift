@@ -1,7 +1,7 @@
 import Foundation
 
 /// Struct that has time + related metadata
-public typealias AnnotatedTime = (
+internal typealias KronosAnnotatedTime = (
 
     /// Time that is being annotated
     date: Date,
@@ -18,14 +18,14 @@ public typealias AnnotatedTime = (
 /// Example usage:
 ///
 /// ```swift
-/// Clock.sync { date, offset in
+/// KronosClock.sync { date, offset in
 ///     print(date)
 /// }
 /// // (... later on ...)
-/// print(Clock.now)
+/// print(KronosClock.now)
 /// ```
-public struct Clock {
-    private static var stableTime: TimeFreeze? {
+internal struct KronosClock {
+    private static var stableTime: KronosTimeFreeze? {
         didSet {
             self.storage.stableTime = self.stableTime
         }
@@ -33,25 +33,25 @@ public struct Clock {
 
     /// Determines where the most current stable time is stored. Use TimeStoragePolicy.appGroup to share
     /// between your app and an extension.
-    public static var storage = TimeStorage(storagePolicy: .standard)
+    static var storage = KronosTimeStorage(storagePolicy: .standard)
 
     /// The most accurate timestamp that we have so far (nil if no synchronization was done yet)
-    public static var timestamp: TimeInterval? {
+    static var timestamp: TimeInterval? {
         return self.stableTime?.adjustedTimestamp
     }
 
     /// The most accurate date that we have so far (nil if no synchronization was done yet)
-    public static var now: Date? {
+    static var now: Date? {
         return self.annotatedNow?.date
     }
 
     /// Same as `now` except with analytic metadata about the time
-    public static var annotatedNow: AnnotatedTime? {
+    static var annotatedNow: KronosAnnotatedTime? {
         guard let stableTime = self.stableTime else {
             return nil
         }
 
-        return AnnotatedTime(date: Date(timeIntervalSince1970: stableTime.adjustedTimestamp),
+        return KronosAnnotatedTime(date: Date(timeIntervalSince1970: stableTime.adjustedTimestamp),
                              timeSinceLastNtpSync: stableTime.timeSinceLastNtpSync)
     }
 
@@ -65,15 +65,15 @@ public struct Clock {
     /// - parameter samples:    The number of samples to be acquired from each server (default 4).
     /// - parameter completion: A closure that will be called after _all_ the NTP calls are finished.
     /// - parameter first:      A closure that will be called after the first valid date is calculated.
-    public static func sync(from pool: String = "time.apple.com", samples: Int = 4,
+    static func sync(from pool: String = "time.apple.com", samples: Int = 4,
                             first: ((Date, TimeInterval) -> Void)? = nil,
                             completion: ((Date?, TimeInterval?) -> Void)? = nil)
     {
         self.loadFromDefaults()
 
-        NTPClient().query(pool: pool, numberOfSamples: samples) { offset, done, total in
+        KronosNTPClient().query(pool: pool, numberOfSamples: samples) { offset, done, total in
             if let offset = offset {
-                self.stableTime = TimeFreeze(offset: offset)
+                self.stableTime = KronosTimeFreeze(offset: offset)
 
                 if done == 1, let now = self.now {
                     first?(now, offset)
@@ -88,7 +88,7 @@ public struct Clock {
 
     /// Resets all state of the monotonic clock. Note that you won't be able to access `now` until you `sync`
     /// again.
-    public static func reset() {
+    static func reset() {
         self.stableTime = nil
     }
 

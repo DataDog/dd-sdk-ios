@@ -392,21 +392,21 @@
 		61C5A8A624509FAA00DA608C /* SpanEventEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A8A424509FAA00DA608C /* SpanEventEncoder.swift */; };
 		61C5A8A724509FAA00DA608C /* SpanEventBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A8A524509FAA00DA608C /* SpanEventBuilder.swift */; };
 		61D03BE0273404E700367DE0 /* RUMDataModels+objcTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D03BDF273404E700367DE0 /* RUMDataModels+objcTests.swift */; };
-		61D3E0D2277B23F1008BE766 /* InternetAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0C8277B23F0008BE766 /* InternetAddress.swift */; };
-		61D3E0D3277B23F1008BE766 /* DNSResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0C9277B23F0008BE766 /* DNSResolver.swift */; };
-		61D3E0D4277B23F1008BE766 /* TimeStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0CA277B23F0008BE766 /* TimeStorage.swift */; };
-		61D3E0D5277B23F1008BE766 /* NTPPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0CB277B23F0008BE766 /* NTPPacket.swift */; };
-		61D3E0D6277B23F1008BE766 /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0CC277B23F0008BE766 /* Clock.swift */; };
-		61D3E0D7277B23F1008BE766 /* Data+Bytes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0CD277B23F0008BE766 /* Data+Bytes.swift */; };
-		61D3E0D8277B23F1008BE766 /* NTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0CE277B23F0008BE766 /* NTPClient.swift */; };
-		61D3E0D9277B23F1008BE766 /* NTPProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0CF277B23F0008BE766 /* NTPProtocol.swift */; };
-		61D3E0DA277B23F1008BE766 /* TimeFreeze.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0D0277B23F1008BE766 /* TimeFreeze.swift */; };
-		61D3E0DB277B23F1008BE766 /* NSTimer+ClosureKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0D1277B23F1008BE766 /* NSTimer+ClosureKit.swift */; };
-		61D3E0E3277B3D92008BE766 /* NTPClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0DE277B3D92008BE766 /* NTPClientTests.swift */; };
-		61D3E0E4277B3D92008BE766 /* NTPPacketTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0DF277B3D92008BE766 /* NTPPacketTests.swift */; };
-		61D3E0E5277B3D92008BE766 /* ClockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0E0277B3D92008BE766 /* ClockTests.swift */; };
-		61D3E0E6277B3D92008BE766 /* DNSResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0E1277B3D92008BE766 /* DNSResolverTests.swift */; };
-		61D3E0E7277B3D92008BE766 /* TimeStorageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0E2277B3D92008BE766 /* TimeStorageTests.swift */; };
+		61D3E0D2277B23F1008BE766 /* KronosInternetAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0C8277B23F0008BE766 /* KronosInternetAddress.swift */; };
+		61D3E0D3277B23F1008BE766 /* KronosDNSResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0C9277B23F0008BE766 /* KronosDNSResolver.swift */; };
+		61D3E0D4277B23F1008BE766 /* KronosTimeStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0CA277B23F0008BE766 /* KronosTimeStorage.swift */; };
+		61D3E0D5277B23F1008BE766 /* KronosNTPPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0CB277B23F0008BE766 /* KronosNTPPacket.swift */; };
+		61D3E0D6277B23F1008BE766 /* KronosClock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0CC277B23F0008BE766 /* KronosClock.swift */; };
+		61D3E0D7277B23F1008BE766 /* KronosData+Bytes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0CD277B23F0008BE766 /* KronosData+Bytes.swift */; };
+		61D3E0D8277B23F1008BE766 /* KronosNTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0CE277B23F0008BE766 /* KronosNTPClient.swift */; };
+		61D3E0D9277B23F1008BE766 /* KronosNTPProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0CF277B23F0008BE766 /* KronosNTPProtocol.swift */; };
+		61D3E0DA277B23F1008BE766 /* KronosTimeFreeze.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0D0277B23F1008BE766 /* KronosTimeFreeze.swift */; };
+		61D3E0DB277B23F1008BE766 /* KronosNSTimer+ClosureKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0D1277B23F1008BE766 /* KronosNSTimer+ClosureKit.swift */; };
+		61D3E0E3277B3D92008BE766 /* KronosNTPClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0DE277B3D92008BE766 /* KronosNTPClientTests.swift */; };
+		61D3E0E4277B3D92008BE766 /* KronosNTPPacketTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0DF277B3D92008BE766 /* KronosNTPPacketTests.swift */; };
+		61D3E0E5277B3D92008BE766 /* KronosClockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0E0277B3D92008BE766 /* KronosClockTests.swift */; };
+		61D3E0E6277B3D92008BE766 /* KronosDNSResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0E1277B3D92008BE766 /* KronosDNSResolverTests.swift */; };
+		61D3E0E7277B3D92008BE766 /* KronosTimeStorageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0E2277B3D92008BE766 /* KronosTimeStorageTests.swift */; };
 		61D447E224917F8F00649287 /* DateFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D447E124917F8F00649287 /* DateFormatting.swift */; };
 		61D50C3C2580EEF8006038A3 /* LoggingScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D50C3B2580EEF8006038A3 /* LoggingScenarios.swift */; };
 		61D50C462580EF19006038A3 /* TracingScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D50C452580EF19006038A3 /* TracingScenarios.swift */; };
@@ -1078,21 +1078,21 @@
 		61C5A8A424509FAA00DA608C /* SpanEventEncoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpanEventEncoder.swift; sourceTree = "<group>"; };
 		61C5A8A524509FAA00DA608C /* SpanEventBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpanEventBuilder.swift; sourceTree = "<group>"; };
 		61D03BDF273404E700367DE0 /* RUMDataModels+objcTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMDataModels+objcTests.swift"; sourceTree = "<group>"; };
-		61D3E0C8277B23F0008BE766 /* InternetAddress.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InternetAddress.swift; sourceTree = "<group>"; };
-		61D3E0C9277B23F0008BE766 /* DNSResolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DNSResolver.swift; sourceTree = "<group>"; };
-		61D3E0CA277B23F0008BE766 /* TimeStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TimeStorage.swift; sourceTree = "<group>"; };
-		61D3E0CB277B23F0008BE766 /* NTPPacket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NTPPacket.swift; sourceTree = "<group>"; };
-		61D3E0CC277B23F0008BE766 /* Clock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Clock.swift; sourceTree = "<group>"; };
-		61D3E0CD277B23F0008BE766 /* Data+Bytes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Data+Bytes.swift"; sourceTree = "<group>"; };
-		61D3E0CE277B23F0008BE766 /* NTPClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NTPClient.swift; sourceTree = "<group>"; };
-		61D3E0CF277B23F0008BE766 /* NTPProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NTPProtocol.swift; sourceTree = "<group>"; };
-		61D3E0D0277B23F1008BE766 /* TimeFreeze.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TimeFreeze.swift; sourceTree = "<group>"; };
-		61D3E0D1277B23F1008BE766 /* NSTimer+ClosureKit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSTimer+ClosureKit.swift"; sourceTree = "<group>"; };
-		61D3E0DE277B3D92008BE766 /* NTPClientTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NTPClientTests.swift; sourceTree = "<group>"; };
-		61D3E0DF277B3D92008BE766 /* NTPPacketTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NTPPacketTests.swift; sourceTree = "<group>"; };
-		61D3E0E0277B3D92008BE766 /* ClockTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ClockTests.swift; sourceTree = "<group>"; };
-		61D3E0E1277B3D92008BE766 /* DNSResolverTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DNSResolverTests.swift; sourceTree = "<group>"; };
-		61D3E0E2277B3D92008BE766 /* TimeStorageTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TimeStorageTests.swift; sourceTree = "<group>"; };
+		61D3E0C8277B23F0008BE766 /* KronosInternetAddress.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KronosInternetAddress.swift; sourceTree = "<group>"; };
+		61D3E0C9277B23F0008BE766 /* KronosDNSResolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KronosDNSResolver.swift; sourceTree = "<group>"; };
+		61D3E0CA277B23F0008BE766 /* KronosTimeStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KronosTimeStorage.swift; sourceTree = "<group>"; };
+		61D3E0CB277B23F0008BE766 /* KronosNTPPacket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KronosNTPPacket.swift; sourceTree = "<group>"; };
+		61D3E0CC277B23F0008BE766 /* KronosClock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KronosClock.swift; sourceTree = "<group>"; };
+		61D3E0CD277B23F0008BE766 /* KronosData+Bytes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "KronosData+Bytes.swift"; sourceTree = "<group>"; };
+		61D3E0CE277B23F0008BE766 /* KronosNTPClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KronosNTPClient.swift; sourceTree = "<group>"; };
+		61D3E0CF277B23F0008BE766 /* KronosNTPProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KronosNTPProtocol.swift; sourceTree = "<group>"; };
+		61D3E0D0277B23F1008BE766 /* KronosTimeFreeze.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KronosTimeFreeze.swift; sourceTree = "<group>"; };
+		61D3E0D1277B23F1008BE766 /* KronosNSTimer+ClosureKit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "KronosNSTimer+ClosureKit.swift"; sourceTree = "<group>"; };
+		61D3E0DE277B3D92008BE766 /* KronosNTPClientTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KronosNTPClientTests.swift; sourceTree = "<group>"; };
+		61D3E0DF277B3D92008BE766 /* KronosNTPPacketTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KronosNTPPacketTests.swift; sourceTree = "<group>"; };
+		61D3E0E0277B3D92008BE766 /* KronosClockTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KronosClockTests.swift; sourceTree = "<group>"; };
+		61D3E0E1277B3D92008BE766 /* KronosDNSResolverTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KronosDNSResolverTests.swift; sourceTree = "<group>"; };
+		61D3E0E2277B3D92008BE766 /* KronosTimeStorageTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KronosTimeStorageTests.swift; sourceTree = "<group>"; };
 		61D447E124917F8F00649287 /* DateFormatting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DateFormatting.swift; sourceTree = "<group>"; };
 		61D50C3B2580EEF8006038A3 /* LoggingScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingScenarios.swift; sourceTree = "<group>"; };
 		61D50C452580EF19006038A3 /* TracingScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingScenarios.swift; sourceTree = "<group>"; };
@@ -2948,16 +2948,16 @@
 		61D3E0C7277B237D008BE766 /* Kronos */ = {
 			isa = PBXGroup;
 			children = (
-				61D3E0CC277B23F0008BE766 /* Clock.swift */,
-				61D3E0CD277B23F0008BE766 /* Data+Bytes.swift */,
-				61D3E0C9277B23F0008BE766 /* DNSResolver.swift */,
-				61D3E0C8277B23F0008BE766 /* InternetAddress.swift */,
-				61D3E0D1277B23F1008BE766 /* NSTimer+ClosureKit.swift */,
-				61D3E0CE277B23F0008BE766 /* NTPClient.swift */,
-				61D3E0CB277B23F0008BE766 /* NTPPacket.swift */,
-				61D3E0CF277B23F0008BE766 /* NTPProtocol.swift */,
-				61D3E0D0277B23F1008BE766 /* TimeFreeze.swift */,
-				61D3E0CA277B23F0008BE766 /* TimeStorage.swift */,
+				61D3E0CC277B23F0008BE766 /* KronosClock.swift */,
+				61D3E0CD277B23F0008BE766 /* KronosData+Bytes.swift */,
+				61D3E0C9277B23F0008BE766 /* KronosDNSResolver.swift */,
+				61D3E0C8277B23F0008BE766 /* KronosInternetAddress.swift */,
+				61D3E0D1277B23F1008BE766 /* KronosNSTimer+ClosureKit.swift */,
+				61D3E0CE277B23F0008BE766 /* KronosNTPClient.swift */,
+				61D3E0CB277B23F0008BE766 /* KronosNTPPacket.swift */,
+				61D3E0CF277B23F0008BE766 /* KronosNTPProtocol.swift */,
+				61D3E0D0277B23F1008BE766 /* KronosTimeFreeze.swift */,
+				61D3E0CA277B23F0008BE766 /* KronosTimeStorage.swift */,
 			);
 			path = Kronos;
 			sourceTree = "<group>";
@@ -2965,11 +2965,11 @@
 		61D3E0DD277B3D6E008BE766 /* Kronos */ = {
 			isa = PBXGroup;
 			children = (
-				61D3E0E0277B3D92008BE766 /* ClockTests.swift */,
-				61D3E0E1277B3D92008BE766 /* DNSResolverTests.swift */,
-				61D3E0DE277B3D92008BE766 /* NTPClientTests.swift */,
-				61D3E0DF277B3D92008BE766 /* NTPPacketTests.swift */,
-				61D3E0E2277B3D92008BE766 /* TimeStorageTests.swift */,
+				61D3E0E0277B3D92008BE766 /* KronosClockTests.swift */,
+				61D3E0E1277B3D92008BE766 /* KronosDNSResolverTests.swift */,
+				61D3E0DE277B3D92008BE766 /* KronosNTPClientTests.swift */,
+				61D3E0DF277B3D92008BE766 /* KronosNTPPacketTests.swift */,
+				61D3E0E2277B3D92008BE766 /* KronosTimeStorageTests.swift */,
 			);
 			path = Kronos;
 			sourceTree = "<group>";
@@ -4042,10 +4042,10 @@
 				61133BDC2423979B00786299 /* Logger.swift in Sources */,
 				6114FE1625766B310084E372 /* TrackingConsent.swift in Sources */,
 				61133BD02423979B00786299 /* DateProvider.swift in Sources */,
-				61D3E0D2277B23F1008BE766 /* InternetAddress.swift in Sources */,
+				61D3E0D2277B23F1008BE766 /* KronosInternetAddress.swift in Sources */,
 				6156CB8E24DDA1B5008CB2B2 /* RUMContextProvider.swift in Sources */,
 				61C2C21224C5951400C0321C /* RUMViewScope.swift in Sources */,
-				61D3E0D5277B23F1008BE766 /* NTPPacket.swift in Sources */,
+				61D3E0D5277B23F1008BE766 /* KronosNTPPacket.swift in Sources */,
 				61DE332625C826E4008E3EC2 /* CrashReportingFeature.swift in Sources */,
 				61E36A11254B2280001AD6F2 /* LaunchTimeProvider.swift in Sources */,
 				614872772485067300E3EBDB /* SpanTagsReducer.swift in Sources */,
@@ -4086,7 +4086,7 @@
 				619E16E92578E73E00B2516B /* DataMigrator.swift in Sources */,
 				618DCFD924C7269500589570 /* RUMUUIDGenerator.swift in Sources */,
 				9EFD112C24B32D29003A1A2B /* FirstPartyURLsFilter.swift in Sources */,
-				61D3E0DB277B23F1008BE766 /* NSTimer+ClosureKit.swift in Sources */,
+				61D3E0DB277B23F1008BE766 /* KronosNSTimer+ClosureKit.swift in Sources */,
 				61B0386C2527247B00518F3C /* TaskInterception.swift in Sources */,
 				61B03892252724D900518F3C /* HTTPHeadersReader.swift in Sources */,
 				61122ECE25B1B74500F9C7F5 /* SpanSanitizer.swift in Sources */,
@@ -4106,7 +4106,7 @@
 				613E792F2577B0F900DFCC17 /* Reader.swift in Sources */,
 				61B0385A2527247000518F3C /* DDURLSessionDelegate.swift in Sources */,
 				61133BDF2423979B00786299 /* SwiftExtensions.swift in Sources */,
-				61D3E0D3277B23F1008BE766 /* DNSResolver.swift in Sources */,
+				61D3E0D3277B23F1008BE766 /* KronosDNSResolver.swift in Sources */,
 				6149FB3A2529D17F00EE387A /* InternalURLsFilter.swift in Sources */,
 				611529A525E3DD51004F740E /* ValuePublisher.swift in Sources */,
 				618DCFD724C7265300589570 /* RUMUUID.swift in Sources */,
@@ -4118,7 +4118,7 @@
 				61C5A88E24509A1F00DA608C /* Tracer.swift in Sources */,
 				61E909EE24A24DD3005EA2DE /* OTFormat.swift in Sources */,
 				9E26E6B924C87693000B3270 /* RUMDataModels.swift in Sources */,
-				61D3E0D6277B23F1008BE766 /* Clock.swift in Sources */,
+				61D3E0D6277B23F1008BE766 /* KronosClock.swift in Sources */,
 				613E793B2577B6EE00DFCC17 /* DataReader.swift in Sources */,
 				614B0A5324EBFE5500A2A780 /* DDRUMMonitor.swift in Sources */,
 				61133BE32423979B00786299 /* UserInfoProvider.swift in Sources */,
@@ -4139,11 +4139,11 @@
 				61C5A88A24509A0C00DA608C /* SpanFileOutput.swift in Sources */,
 				61C3E63524BF1794008053F2 /* Attributes.swift in Sources */,
 				61133BD32423979B00786299 /* File.swift in Sources */,
-				61D3E0D9277B23F1008BE766 /* NTPProtocol.swift in Sources */,
+				61D3E0D9277B23F1008BE766 /* KronosNTPProtocol.swift in Sources */,
 				61DE333625C8278A008E3EC2 /* DDCrashReportingPluginType.swift in Sources */,
 				6112B10225C83D4E00B37771 /* CrashReportingWithLoggingIntegration.swift in Sources */,
 				6161249E25CAB340009901BE /* CrashContext.swift in Sources */,
-				61D3E0DA277B23F1008BE766 /* TimeFreeze.swift in Sources */,
+				61D3E0DA277B23F1008BE766 /* KronosTimeFreeze.swift in Sources */,
 				61D447E224917F8F00649287 /* DateFormatting.swift in Sources */,
 				61133BE72423979B00786299 /* LogUtilityOutputs.swift in Sources */,
 				61133BDA2423979B00786299 /* RequestBuilder.swift in Sources */,
@@ -4152,7 +4152,7 @@
 				61ED39D426C2A36B002C0F26 /* DataUploadStatus.swift in Sources */,
 				61133BE82423979B00786299 /* LogFileOutput.swift in Sources */,
 				61133BD72423979B00786299 /* DataUploadWorker.swift in Sources */,
-				61D3E0D4277B23F1008BE766 /* TimeStorage.swift in Sources */,
+				61D3E0D4277B23F1008BE766 /* KronosTimeStorage.swift in Sources */,
 				61133BD12423979B00786299 /* FilesOrchestrator.swift in Sources */,
 				61133BCD2423979B00786299 /* NetworkConnectionInfoProvider.swift in Sources */,
 				61FF282424B8A1C3000B3D9B /* RUMEventFileOutput.swift in Sources */,
@@ -4177,7 +4177,7 @@
 				61F3CDA72512144600C816E5 /* UIKitRUMViewsPredicate.swift in Sources */,
 				61133BCE2423979B00786299 /* BatteryStatusProvider.swift in Sources */,
 				613C6B902768FDDE00870CBF /* Sampler.swift in Sources */,
-				61D3E0D8277B23F1008BE766 /* NTPClient.swift in Sources */,
+				61D3E0D8277B23F1008BE766 /* KronosNTPClient.swift in Sources */,
 				9E9973F1268DF69500D8059B /* VitalInfoSampler.swift in Sources */,
 				9EA3CA6926775A3500B16871 /* VitalRefreshRateReader.swift in Sources */,
 				E13A880C257922EC004FB174 /* EnvironmentSpanIntegration.swift in Sources */,
@@ -4189,7 +4189,7 @@
 				61C3E63B24BF1A4B008053F2 /* RUMCommand.swift in Sources */,
 				61133BE92423979B00786299 /* LogOutput.swift in Sources */,
 				61C5A88524509A0C00DA608C /* DDNoOps.swift in Sources */,
-				61D3E0D7277B23F1008BE766 /* Data+Bytes.swift in Sources */,
+				61D3E0D7277B23F1008BE766 /* KronosData+Bytes.swift in Sources */,
 				61E5332C24B75C51003D6C4E /* RUMFeature.swift in Sources */,
 				61E5333D24B8791A003D6C4E /* RUMEventEncoder.swift in Sources */,
 				6156CB9D24E18600008CB2B2 /* TracingWithRUMIntegration.swift in Sources */,
@@ -4210,7 +4210,7 @@
 				61B0387D252724AB00518F3C /* URLSessionSwizzlerTests.swift in Sources */,
 				617CD0DD24CEDDD300B0B557 /* RUMUserActionScopeTests.swift in Sources */,
 				D29889C9273413ED00A4D1A9 /* RUMViewsHandlerTests.swift in Sources */,
-				61D3E0E3277B3D92008BE766 /* NTPClientTests.swift in Sources */,
+				61D3E0E3277B3D92008BE766 /* KronosNTPClientTests.swift in Sources */,
 				61C5A8A024509C1100DA608C /* Casting+Tracing.swift in Sources */,
 				61133C662423990D00786299 /* LogSanitizerTests.swift in Sources */,
 				6114FE23257671F00084E372 /* ConsentAwareDataWriterTests.swift in Sources */,
@@ -4235,7 +4235,7 @@
 				61411B1024EC15AC0012EAB2 /* Casting+RUM.swift in Sources */,
 				61133C622423990D00786299 /* InternalLoggersTests.swift in Sources */,
 				61FF283024BC5E2D000B3D9B /* RUMEventFileOutputTests.swift in Sources */,
-				61D3E0E7277B3D92008BE766 /* TimeStorageTests.swift in Sources */,
+				61D3E0E7277B3D92008BE766 /* KronosTimeStorageTests.swift in Sources */,
 				9E986C302677B91400D62490 /* VitalRefreshRateReaderTests.swift in Sources */,
 				61133C582423990D00786299 /* FileWriterTests.swift in Sources */,
 				61E917D3246546BF00E6C631 /* TracerConfigurationTests.swift in Sources */,
@@ -4259,7 +4259,7 @@
 				61D03BE0273404E700367DE0 /* RUMDataModels+objcTests.swift in Sources */,
 				615C3196251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift in Sources */,
 				61E917CF2464270500E6C631 /* CodableValueTests.swift in Sources */,
-				61D3E0E4277B3D92008BE766 /* NTPPacketTests.swift in Sources */,
+				61D3E0E4277B3D92008BE766 /* KronosNTPPacketTests.swift in Sources */,
 				61133C542423990D00786299 /* NetworkConnectionInfoProviderTests.swift in Sources */,
 				616B668E259CC28E00968EE8 /* DDRUMMonitorTests.swift in Sources */,
 				B3BBBCBC265E71D100943419 /* VitalMemoryReaderTests.swift in Sources */,
@@ -4342,10 +4342,10 @@
 				611F82032563C66100CB9BDB /* UIKitRUMViewsPredicateTests.swift in Sources */,
 				61133C652423990D00786299 /* LogBuilderTests.swift in Sources */,
 				61B5E42B26DFC433000B0A5F /* DDNSURLSessionDelegate+apiTests.m in Sources */,
-				61D3E0E5277B3D92008BE766 /* ClockTests.swift in Sources */,
+				61D3E0E5277B3D92008BE766 /* KronosClockTests.swift in Sources */,
 				61F8CC092469295500FE2908 /* DatadogConfigurationBuilderTests.swift in Sources */,
 				61F1A623249B811200075390 /* Encoding.swift in Sources */,
-				61D3E0E6277B3D92008BE766 /* DNSResolverTests.swift in Sources */,
+				61D3E0E6277B3D92008BE766 /* KronosDNSResolverTests.swift in Sources */,
 				6114FE3B25768AA90084E372 /* ConsentProviderTests.swift in Sources */,
 				61133C642423990D00786299 /* LoggerTests.swift in Sources */,
 				617B953D24BF4D8F00E6F443 /* RUMMonitorTests.swift in Sources */,

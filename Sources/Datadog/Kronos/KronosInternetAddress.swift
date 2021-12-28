@@ -4,7 +4,7 @@ import Foundation
 ///
 /// - IPv6: An Internet Address of type IPv6 (e.g.: '::1').
 /// - IPv4: An Internet Address of type IPv4 (e.g.: '127.0.0.1').
-enum InternetAddress: Hashable {
+internal enum KronosInternetAddress: Hashable {
     case ipv6(sockaddr_in6)
     case ipv4(sockaddr_in)
 
@@ -42,10 +42,10 @@ enum InternetAddress: Hashable {
         let storage = sockaddr_storage.from(unsafeDataWithSockAddress: data)
         switch Int32(storage.ss_family) {
         case AF_INET:
-            self = storage.withUnsafeAddress { InternetAddress.ipv4($0.pointee) }
+            self = storage.withUnsafeAddress { KronosInternetAddress.ipv4($0.pointee) }
 
         case AF_INET6:
-            self = storage.withUnsafeAddress { InternetAddress.ipv6($0.pointee) }
+            self = storage.withUnsafeAddress { KronosInternetAddress.ipv6($0.pointee) }
 
         default:
             return nil
@@ -71,7 +71,7 @@ enum InternetAddress: Hashable {
 }
 
 /// Compare InternetAddress(es) by making sure the host representation are equal.
-func == (lhs: InternetAddress, rhs: InternetAddress) -> Bool {
+internal func == (lhs: KronosInternetAddress, rhs: KronosInternetAddress) -> Bool {
     return lhs.host == rhs.host
 }
 

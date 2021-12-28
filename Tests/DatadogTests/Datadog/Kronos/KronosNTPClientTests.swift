@@ -1,15 +1,15 @@
 import XCTest
 @testable import Datadog
 
-final class NTPClientTests: XCTestCase {
+final class KronosNTPClientTests: XCTestCase {
 
     func testQueryIP() {
         let expectation = self.expectation(description: "NTPClient queries single IPs")
 
-        DNSResolver.resolve(host: "time.apple.com") { addresses in
+        KronosDNSResolver.resolve(host: "time.apple.com") { addresses in
             XCTAssertGreaterThan(addresses.count, 0)
 
-            NTPClient().query(ip: addresses.first!, version: 3, numberOfSamples: 1) { PDU in
+            KronosNTPClient().query(ip: addresses.first!, version: 3, numberOfSamples: 1) { PDU in
                 XCTAssertNotNil(PDU)
 
                 XCTAssertGreaterThanOrEqual(PDU!.version, 3)
@@ -24,10 +24,10 @@ final class NTPClientTests: XCTestCase {
 
     func testQueryPool() {
         let expectation = self.expectation(description: "Offset from ref clock to local clock are accurate")
-        NTPClient().query(pool: "0.pool.ntp.org", numberOfSamples: 1, maximumServers: 1) { offset, _, _ in
+        KronosNTPClient().query(pool: "0.pool.ntp.org", numberOfSamples: 1, maximumServers: 1) { offset, _, _ in
             XCTAssertNotNil(offset)
 
-            NTPClient().query(pool: "0.pool.ntp.org", numberOfSamples: 1, maximumServers: 1)
+            KronosNTPClient().query(pool: "0.pool.ntp.org", numberOfSamples: 1, maximumServers: 1)
             { offset2, _, _ in
                 XCTAssertNotNil(offset2)
                 XCTAssertLessThan(abs(offset! - offset2!), 0.10)
@@ -40,7 +40,7 @@ final class NTPClientTests: XCTestCase {
 
     func testQueryPoolWithIPv6() {
         let expectation = self.expectation(description: "NTPClient queries a pool that supports IPv6")
-        NTPClient().query(pool: "2.pool.ntp.org", numberOfSamples: 1, maximumServers: 1) { offset, _, _ in
+        KronosNTPClient().query(pool: "2.pool.ntp.org", numberOfSamples: 1, maximumServers: 1) { offset, _, _ in
             XCTAssertNotNil(offset)
             expectation.fulfill()
         }

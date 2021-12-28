@@ -10,7 +10,7 @@ private let kMaximumDispersion = 100.0
 /// Returns the current time in decimal EPOCH timestamp format.
 ///
 /// - returns: The current time in EPOCH timestamp format.
-func currentTime() -> TimeInterval {
+internal func kronosCurrentTime() -> TimeInterval {
     var current = timeval()
     let systemTimeError = gettimeofday(&current, nil) != 0
     assert(!systemTimeError, "system clock error: system time unavailable")
@@ -18,20 +18,20 @@ func currentTime() -> TimeInterval {
     return Double(current.tv_sec) + Double(current.tv_usec) / 1_000_000
 }
 
-struct NTPPacket {
+internal struct KronosNTPPacket {
 
     /// The leap indicator warning of an impending leap second to be inserted or deleted in the last
     /// minute of the current month.
-    let leap: LeapIndicator
+    let leap: KronosLeapIndicator
 
     /// Version Number (VN): This is a three-bit integer indicating the NTP version number, currently 3.
     let version: Int8
 
     /// The current connection mode.
-    let mode: Mode
+    let mode: KronosMode
 
     /// Mode representing the stratum level of the local clock.
-    let stratum: Stratum
+    let stratum: KronosStratum
 
     /// Indicates the maximum interval between successive messages, in seconds to the nearest power of two.
     /// The values that normally appear in this field range from 6 to 10, inclusive.
@@ -52,7 +52,7 @@ struct NTPPacket {
     let rootDispersion: TimeInterval
 
     /// Server or reference clock. This value is generated based on a reference identifier maintained by IANA.
-    let clockSource: ClockSource
+    let clockSource: KronosClockSource
 
     /// Time when the system clock was last set or corrected, in EPOCH timestamp format.
     let referenceTime: TimeInterval
@@ -74,7 +74,7 @@ struct NTPPacket {
     /// - parameter transmitTime: Packet transmission timestamp.
     /// - parameter version:      NTP protocol version.
     /// - parameter mode:         Packet mode (client, server).
-    init(version: Int8 = 3, mode: Mode = .client) {
+    init(version: Int8 = 3, mode: KronosMode = .client) {
         self.version = version
         self.leap = .noWarning
         self.mode = mode
@@ -94,25 +94,25 @@ struct NTPPacket {
     ///
     /// - parameter data:            The PDU received from the NTP call.
     /// - parameter destinationTime: The time where the package arrived (client time) in EPOCH format.
-    /// - throws:                    NTPParsingError in case of an invalid response.
+    /// - throws:                    KronosNTPParsingError in case of an invalid response.
     init(data: Data, destinationTime: TimeInterval) throws {
         if data.count < 48 {
-            throw NTPParsingError.invalidNTPPDU("Invalid PDU length: \(data.count)")
+            throw KronosNTPParsingError.invalidNTPPDU("Invalid PDU length: \(data.count)")
         }
 
-        self.leap = LeapIndicator(rawValue: (data.getByte(at: 0) >> 6) & 0b11) ?? .noWarning
+        self.leap = KronosLeapIndicator(rawValue: (data.getByte(at: 0) >> 6) & 0b11) ?? .noWarning
         self.version = data.getByte(at: 0) >> 3 & 0b111
-        self.mode = Mode(rawValue: data.getByte(at: 0) & 0b111) ?? .unknown
-        self.stratum = Stratum(value: data.getByte(at: 1))
+        self.mode = KronosMode(rawValue: data.getByte(at: 0) & 0b111) ?? .unknown
+        self.stratum = KronosStratum(value: data.getByte(at: 1))
         self.poll = data.getByte(at: 2)
         self.precision = data.getByte(at: 3)
-        self.rootDelay = NTPPacket.intervalFromNTPFormat(data.getUnsignedInteger(at: 4))
-        self.rootDispersion = NTPPacket.intervalFromNTPFormat(data.getUnsignedInteger(at: 8))
-        self.clockSource = ClockSource(stratum: self.stratum, sourceID: data.getUnsignedInteger(at: 12))
-        self.referenceTime = NTPPacket.dateFromNTPFormat(data.getUnsignedLong(at: 16))
-        self.originTime = NTPPacket.dateFromNTPFormat(data.getUnsignedLong(at: 24))
-        self.receiveTime = NTPPacket.dateFromNTPFormat(data.getUnsignedLong(at: 32))
-        self.transmitTime = NTPPacket.dateFromNTPFormat(data.getUnsignedLong(at: 40))
+        self.rootDelay = KronosNTPPacket.intervalFromNTPFormat(data.getUnsignedInteger(at: 4))
+        self.rootDispersion = KronosNTPPacket.intervalFromNTPFormat(data.getUnsignedInteger(at: 8))
+        self.clockSource = KronosClockSource(stratum: self.stratum, sourceID: data.getUnsignedInteger(at: 12))
+        self.referenceTime = KronosNTPPacket.dateFromNTPFormat(data.getUnsignedLong(at: 16))
+        self.originTime = KronosNTPPacket.dateFromNTPFormat(data.getUnsignedLong(at: 24))
+        self.receiveTime = KronosNTPPacket.dateFromNTPFormat(data.getUnsignedLong(at: 32))
+        self.transmitTime = KronosNTPPacket.dateFromNTPFormat(data.getUnsignedLong(at: 40))
         self.destinationTime = destinationTime
     }
 
@@ -132,7 +132,7 @@ struct NTPPacket {
         data.append(unsignedLong: self.dateToNTPFormat(self.originTime))
         data.append(unsignedLong: self.dateToNTPFormat(self.receiveTime))
 
-        self.transmitTime = transmitTime ?? currentTime()
+        self.transmitTime = transmitTime ?? kronosCurrentTime()
         data.append(unsignedLong: self.dateToNTPFormat(self.transmitTime))
         return data
     }
@@ -144,7 +144,7 @@ struct NTPPacket {
         return (self.mode == .server || self.mode == .symmetricPassive) && self.leap != .alarm
             && self.stratum != .invalid && self.stratum != .unspecified
             && self.rootDispersion < kMaximumDispersion
-            && abs(currentTime() - self.originTime - self.delay) < kMaximumDelayDifference
+            && abs(kronosCurrentTime() - self.originTime - self.delay) < kMaximumDelayDifference
     }
 
     // MARK: - Private helpers
@@ -186,7 +186,7 @@ struct NTPPacket {
 /// The roundtrip delay d and local clock offset t are defined as
 ///
 /// d = (T4 - T1) - (T3 - T2)     t = ((T2 - T1) + (T3 - T4)) / 2.
-extension NTPPacket {
+extension KronosNTPPacket {
 
     /// Clocks offset in seconds.
     var offset: TimeInterval {

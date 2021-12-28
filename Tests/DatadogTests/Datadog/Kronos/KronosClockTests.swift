@@ -1,16 +1,16 @@
 import XCTest
 @testable import Datadog
 
-final class ClockTests: XCTestCase {
+final class KronosClockTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        Clock.reset()
+        KronosClock.reset()
     }
 
     func testFirst() {
         let expectation = self.expectation(description: "Clock sync calls first closure")
-        Clock.sync(first: { date, _ in
+        KronosClock.sync(first: { date, _ in
             XCTAssertNotNil(date)
             expectation.fulfill()
         })
@@ -20,7 +20,7 @@ final class ClockTests: XCTestCase {
 
     func testLast() {
         let expectation = self.expectation(description: "Clock sync calls last closure")
-        Clock.sync(completion: { date, offset in
+        KronosClock.sync(completion: { date, offset in
             XCTAssertNotNil(date)
             XCTAssertNotNil(offset)
             expectation.fulfill()
@@ -32,7 +32,7 @@ final class ClockTests: XCTestCase {
     func testBoth() {
         let firstExpectation = self.expectation(description: "Clock sync calls first closure")
         let lastExpectation = self.expectation(description: "Clock sync calls last closure")
-        Clock.sync(
+        KronosClock.sync(
             first: { _, _ in firstExpectation.fulfill() },
             completion: { _, _ in lastExpectation.fulfill() })
 

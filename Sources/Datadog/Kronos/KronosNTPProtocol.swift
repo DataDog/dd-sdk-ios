@@ -1,13 +1,13 @@
 import Foundation
 
 /// Exception raised when the received PDU is invalid.
-enum NTPParsingError: Error {
+internal enum KronosNTPParsingError: Error {
     case invalidNTPPDU(String)
 }
 
 /// The leap indicator warning of an impending leap second to be inserted or deleted in the last minute of the
 /// current month.
-enum LeapIndicator: Int8 {
+internal enum KronosLeapIndicator: Int8 {
     case noWarning, sixtyOneSeconds, fiftyNineSeconds, alarm
 
     /// Human readable value of the leap warning.
@@ -26,12 +26,12 @@ enum LeapIndicator: Int8 {
 }
 
 /// The connection mode.
-enum Mode: Int8 {
+internal enum KronosMode: Int8 {
     case reserved, symmetricActive, symmetricPassive, client, server, broadcast, reservedNTP, unknown
 }
 
 /// Mode representing the stratum level of the clock.
-enum Stratum: Int8 {
+internal enum KronosStratum: Int8 {
     case unspecified, primary, secondary, invalid
 
     init(value: Int8) {
@@ -56,18 +56,18 @@ enum Stratum: Int8 {
 /// - ReferenceClock:          Contains the sourceID and the description for the reference clock (stratum 1).
 /// - Debug(id):               Contains the kiss code for debug purposes (stratum 0).
 /// - ReferenceIdentifier(id): The reference identifier of the server (stratum > 1).
-enum ClockSource {
+internal enum KronosClockSource {
     case referenceClock(id: UInt32, description: String)
     case debug(id: UInt32)
     case referenceIdentifier(id: UInt32)
 
-    init(stratum: Stratum, sourceID: UInt32) {
+    init(stratum: KronosStratum, sourceID: UInt32) {
         switch stratum {
         case .unspecified:
             self = .debug(id: sourceID)
 
         case .primary:
-            let (id, description) = ClockSource.description(fromID: sourceID)
+            let (id, description) = KronosClockSource.description(fromID: sourceID)
             self = .referenceClock(id: id, description: description)
 
         case .secondary, .invalid:

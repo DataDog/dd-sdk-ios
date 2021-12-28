@@ -3,8 +3,8 @@ import Foundation
 private let kCopyNoOperation = unsafeBitCast(0, to: CFAllocatorCopyDescriptionCallBack.self)
 private let kDefaultTimeout = 8.0
 
-final class DNSResolver {
-    private var completion: (([InternetAddress]) -> Void)?
+internal final class KronosDNSResolver {
+    private var completion: (([KronosInternetAddress]) -> Void)?
     private var timer: Timer?
 
     private init() {}
@@ -17,13 +17,13 @@ final class DNSResolver {
     /// - parameter completion: A completion block that will be called both on failure and success with a list
     ///                         of IPs.
     static func resolve(host: String, timeout: TimeInterval = kDefaultTimeout,
-                        completion: @escaping ([InternetAddress]) -> Void)
+                        completion: @escaping ([KronosInternetAddress]) -> Void)
     {
         let callback: CFHostClientCallBack = { host, _, _, info in
             guard let info = info else {
                 return
             }
-            let retainedSelf = Unmanaged<DNSResolver>.fromOpaque(info)
+            let retainedSelf = Unmanaged<KronosDNSResolver>.fromOpaque(info)
             let resolver = retainedSelf.takeUnretainedValue()
             resolver.timer?.invalidate()
             resolver.timer = nil
@@ -37,13 +37,13 @@ final class DNSResolver {
 
             let IPs = (addresses.takeUnretainedValue() as NSArray)
                 .compactMap { $0 as? NSData }
-                .compactMap(InternetAddress.init)
+                .compactMap(KronosInternetAddress.init)
 
             resolver.completion?(IPs)
             retainedSelf.release()
         }
 
-        let resolver = DNSResolver()
+        let resolver = KronosDNSResolver()
         resolver.completion = completion
 
         let retainedClosure = Unmanaged.passRetained(resolver).toOpaque()
@@ -52,7 +52,7 @@ final class DNSResolver {
 
         let hostReference = CFHostCreateWithName(kCFAllocatorDefault, host as CFString).takeUnretainedValue()
         resolver.timer = Timer.scheduledTimer(timeInterval: timeout, target: resolver,
-                                              selector: #selector(DNSResolver.onTimeout),
+                                              selector: #selector(KronosDNSResolver.onTimeout),
                                               userInfo: hostReference, repeats: false)
 
         CFHostSetClient(hostReference, callback, &clientContext)

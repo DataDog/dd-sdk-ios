@@ -1,7 +1,7 @@
 import Foundation
 
 /// Defines where the user defaults are stored
-public enum TimeStoragePolicy {
+internal enum KronosTimeStoragePolicy {
     /// Uses `UserDefaults.Standard`
     case standard
     /// Attempts to use the specified App Group ID (which is the String) to access shared storage.
@@ -11,7 +11,7 @@ public enum TimeStoragePolicy {
     ///
     /// - parameter appGroupID: The App Group ID that maps to a shared container for `UserDefaults`. If this
     ///                         is nil, the resulting instance will be `.standard`
-    public init(appGroupID: String?) {
+    init(appGroupID: String?) {
         if let appGroupID = appGroupID {
             self = .appGroup(appGroupID)
         } else {
@@ -20,17 +20,17 @@ public enum TimeStoragePolicy {
     }
 }
 
-/// Handles saving and retrieving instances of `TimeFreeze` for quick retrieval
-public struct TimeStorage {
+/// Handles saving and retrieving instances of `KronosTimeFreeze` for quick retrieval
+internal struct KronosTimeStorage {
     private var userDefaults: UserDefaults
     private let kDefaultsKey = "KronosStableTime"
 
     /// The most recent stored `TimeFreeze`. Getting retrieves from the UserDefaults defined by the storage
     /// policy. Setting sets the value in UserDefaults
-    var stableTime: TimeFreeze? {
+    var stableTime: KronosTimeFreeze? {
         get {
             guard let stored = self.userDefaults.value(forKey: kDefaultsKey) as? [String: TimeInterval],
-                let previousStableTime = TimeFreeze(from: stored) else
+                let previousStableTime = KronosTimeFreeze(from: stored) else
             {
                 return nil
             }
@@ -50,7 +50,7 @@ public struct TimeStorage {
     /// Creates an instance
     ///
     /// - parameter storagePolicy: Defines the storage location of `UserDefaults`
-    public init(storagePolicy: TimeStoragePolicy) {
+    init(storagePolicy: KronosTimeStoragePolicy) {
         switch storagePolicy {
         case .standard:
             self.userDefaults = .standard

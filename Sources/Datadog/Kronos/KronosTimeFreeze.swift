@@ -4,7 +4,7 @@ private let kUptimeKey = "Uptime"
 private let kTimestampKey = "Timestamp"
 private let kOffsetKey = "Offset"
 
-struct TimeFreeze {
+internal struct KronosTimeFreeze {
     private let uptime: TimeInterval
     private let timestamp: TimeInterval
     private let offset: TimeInterval
@@ -17,18 +17,18 @@ struct TimeFreeze {
     /// The stable timestamp (calculated based on the uptime); note that this doesn't have sub-seconds
     /// precision. See `systemUptime()` for more information.
     var stableTimestamp: TimeInterval {
-        return (TimeFreeze.systemUptime() - self.uptime) + self.timestamp
+        return (KronosTimeFreeze.systemUptime() - self.uptime) + self.timestamp
     }
 
     /// Time interval between now and the time the NTP response represented by this TimeFreeze was received.
     var timeSinceLastNtpSync: TimeInterval {
-        return TimeFreeze.systemUptime() - uptime
+        return KronosTimeFreeze.systemUptime() - uptime
     }
 
     init(offset: TimeInterval) {
         self.offset = offset
-        self.timestamp = currentTime()
-        self.uptime = TimeFreeze.systemUptime()
+        self.timestamp = kronosCurrentTime()
+        self.uptime = KronosTimeFreeze.systemUptime()
     }
 
     init?(from dictionary: [String: TimeInterval]) {
@@ -38,8 +38,8 @@ struct TimeFreeze {
             return nil
         }
 
-        let currentUptime = TimeFreeze.systemUptime()
-        let currentTimestamp = currentTime()
+        let currentUptime = KronosTimeFreeze.systemUptime()
+        let currentTimestamp = kronosCurrentTime()
         let currentBoot = currentUptime - currentTimestamp
         let previousBoot = uptime - timestamp
         if rint(currentBoot) - rint(previousBoot) != 0 {
@@ -78,7 +78,7 @@ struct TimeFreeze {
         let bootTimeError = sysctl(&mib, u_int(mib.count), &bootTime, &size, nil, 0) != 0
         assert(!bootTimeError, "system clock error: kernel boot time unavailable")
 
-        let now = currentTime()
+        let now = kronosCurrentTime()
         let uptime = Double(bootTime.tv_sec) + Double(bootTime.tv_usec) / 1_000_000
         assert(now >= uptime, "inconsistent clock state: system time precedes boot time")
 

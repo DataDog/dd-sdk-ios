@@ -8,12 +8,12 @@ private let kMaximumResultDispersion = 10.0
 private typealias ObjCCompletionType = @convention(block) (Data?, TimeInterval) -> Void
 
 /// Exception raised while sending / receiving NTP packets.
-enum NTPNetworkError: Error {
+internal enum KronosNTPNetworkError: Error {
     case noValidNTPPacketFound
 }
 
 /// NTP client session.
-final class NTPClient {
+internal final class KronosNTPClient {
 
     /// Query the all ips that resolve from the given pool.
     ///
@@ -29,10 +29,10 @@ final class NTPClient {
                timeout: CFTimeInterval = kDefaultTimeout,
                progress: @escaping (TimeInterval?, Int, Int) -> Void)
     {
-        var servers: [InternetAddress: [NTPPacket]] = [:]
+        var servers: [KronosInternetAddress: [KronosNTPPacket]] = [:]
         var completed: Int = 0
 
-        let queryIPAndStoreResult = { (address: InternetAddress, totalQueries: Int) -> Void in
+        let queryIPAndStoreResult = { (address: KronosInternetAddress, totalQueries: Int) -> Void in
             self.query(ip: address, port: port, version: version, timeout: timeout,
                          numberOfSamples: numberOfSamples)
             { packet in
@@ -55,7 +55,7 @@ final class NTPClient {
             }
         }
 
-        DNSResolver.resolve(host: pool) { addresses in
+        KronosDNSResolver.resolve(host: pool) { addresses in
             if addresses.count == 0 {
                 return progress(nil, 0, 0)
             }
@@ -75,9 +75,9 @@ final class NTPClient {
     /// - parameter timeout:         Timeout on socket operations.
     /// - parameter numberOfSamples: The number of samples to be acquired from the server (default 4).
     /// - parameter completion:      A closure that will be response PDU on success or nil on error.
-    func query(ip: InternetAddress, port: Int = 123, version: Int8 = 3,
+    func query(ip: KronosInternetAddress, port: Int = 123, version: Int8 = 3,
                timeout: CFTimeInterval = kDefaultTimeout, numberOfSamples: Int = kDefaultSamples,
-               completion: @escaping (NTPPacket?) -> Void)
+               completion: @escaping (KronosNTPPacket?) -> Void)
     {
         var timer: Timer?
         let bridgeCallback: ObjCCompletionType = { data, destinationTime in
@@ -91,7 +91,7 @@ final class NTPClient {
 
             timer?.invalidate()
             guard
-                let data = data, let PDU = try? NTPPacket(data: data, destinationTime: destinationTime),
+                let data = data, let PDU = try? KronosNTPPacket(data: data, destinationTime: destinationTime),
                 PDU.isValidResponse() else
             {
                 completion(nil)
@@ -108,7 +108,7 @@ final class NTPClient {
             completion: UnsafeMutableRawPointer(retainedCallback.toOpaque())
         )
 
-        timer = BlockTimer.scheduledTimer(withTimeInterval: timeout, repeated: true) { _ in
+        timer = KronosBlockTimer.scheduledTimer(withTimeInterval: timeout, repeated: true) { _ in
             bridgeCallback(nil, TimeInterval.infinity)
             retainedCallback.release()
 
@@ -121,9 +121,9 @@ final class NTPClient {
 
     // MARK: - Private helpers (NTP Calculation)
 
-    private func offset(from responses: [[NTPPacket]]) throws -> TimeInterval {
-        let now = currentTime()
-        var bestResponses: [NTPPacket] = []
+    private func offset(from responses: [[KronosNTPPacket]]) throws -> TimeInterval {
+        let now = kronosCurrentTime()
+        var bestResponses: [KronosNTPPacket] = []
         for serverResponses in responses {
             let filtered = serverResponses
                 .filter { abs($0.originTime - now) < kMaximumResultDispersion }
@@ -135,7 +135,7 @@ final class NTPClient {
         }
 
         if bestResponses.count == 0 {
-            throw NTPNetworkError.noValidNTPPacketFound
+            throw KronosNTPNetworkError.noValidNTPPacketFound
         }
 
         bestResponses.sort { $0.offset < $1.offset }
@@ -144,14 +144,14 @@ final class NTPClient {
 
     // MARK: - Private helpers (CFSocket)
 
-    private func sendAsyncUDPQuery(to ip: InternetAddress, port: Int, timeout: TimeInterval,
+    private func sendAsyncUDPQuery(to ip: KronosInternetAddress, port: Int, timeout: TimeInterval,
                                    completion: UnsafeMutableRawPointer) -> (CFRunLoopSource, CFSocket)?
     {
         signal(SIGPIPE, SIG_IGN)
 
         let callback: CFSocketCallBack = { socket, callbackType, _, data, info in
             if callbackType == .writeCallBack {
-                var packet = NTPPacket()
+                var packet = KronosNTPPacket()
                 let PDU = packet.prepareToSend() as CFData
                 CFSocketSendData(socket, nil, PDU, kDefaultTimeout)
                 return
@@ -163,7 +163,7 @@ final class NTPClient {
 
             CFSocketInvalidate(socket)
 
-            let destinationTime = currentTime()
+            let destinationTime = kronosCurrentTime()
             let retainedClosure = Unmanaged<AnyObject>.fromOpaque(info)
             let completion = unsafeBitCast(retainedClosure.takeUnretainedValue(), to: ObjCCompletionType.self)
 

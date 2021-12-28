@@ -1,11 +1,11 @@
 import XCTest
 @testable import Datadog
 
-final class DNSResolverTests: XCTestCase {
+final class KronosDNSResolverTests: XCTestCase {
 
     func testResolveOneIP() {
         let expectation = self.expectation(description: "Query host's DNS for a single IP")
-        DNSResolver.resolve(host: "test.com") { addresses in
+        KronosDNSResolver.resolve(host: "test.com") { addresses in
             XCTAssertEqual(addresses.count, 1)
             expectation.fulfill()
         }
@@ -15,7 +15,7 @@ final class DNSResolverTests: XCTestCase {
 
     func testResolveMultipleIP() {
         let expectation = self.expectation(description: "Query host's DNS for multiple IPs")
-        DNSResolver.resolve(host: "pool.ntp.org") { addresses in
+        KronosDNSResolver.resolve(host: "pool.ntp.org") { addresses in
             XCTAssertGreaterThan(addresses.count, 1)
             expectation.fulfill()
         }
@@ -25,7 +25,7 @@ final class DNSResolverTests: XCTestCase {
 
     func testResolveIPv6() {
         let expectation = self.expectation(description: "Query host's DNS that supports IPv6")
-        DNSResolver.resolve(host: "ipv6friday.org") { addresses in
+        KronosDNSResolver.resolve(host: "ipv6friday.org") { addresses in
             XCTAssertGreaterThan(addresses.count, 0)
             expectation.fulfill()
         }
@@ -35,7 +35,7 @@ final class DNSResolverTests: XCTestCase {
 
     func testInvalidIP() {
         let expectation = self.expectation(description: "Query invalid host's DNS")
-        DNSResolver.resolve(host: "l33t.h4x") { addresses in
+        KronosDNSResolver.resolve(host: "l33t.h4x") { addresses in
             XCTAssertEqual(addresses.count, 0)
             expectation.fulfill()
         }
@@ -45,7 +45,7 @@ final class DNSResolverTests: XCTestCase {
 
     func testTimeout() {
         let expectation = self.expectation(description: "DNS times out")
-        DNSResolver.resolve(host: "ip6.nl", timeout: 0) { addresses in
+        KronosDNSResolver.resolve(host: "ip6.nl", timeout: 0) { addresses in
             XCTAssertEqual(addresses.count, 0)
             expectation.fulfill()
         }
@@ -56,7 +56,7 @@ final class DNSResolverTests: XCTestCase {
     func testTemporaryRunloopHandling() {
         let expectation = self.expectation(description: "Query works from async GCD queues")
         DispatchQueue(label: "Ephemeral DNS test queue").async {
-            DNSResolver.resolve(host: "lyft.com") { _ in
+            KronosDNSResolver.resolve(host: "lyft.com") { _ in
                 expectation.fulfill()
             }
         }

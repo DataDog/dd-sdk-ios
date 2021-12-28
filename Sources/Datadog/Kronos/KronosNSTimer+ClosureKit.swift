@@ -1,17 +1,17 @@
 import Foundation
 
-typealias CKTimerHandler = (Timer) -> Void
+internal typealias CKTimerHandler = (Timer) -> Void
 
 /// Simple closure implementation on NSTimer scheduling.
 ///
 /// Example:
 ///
 /// ```swift
-/// BlockTimer.scheduledTimer(withTimeInterval: 1.0) { timer in
+/// KronosBlockTimer.scheduledTimer(withTimeInterval: 1.0) { timer in
 ///     print("Did something after 1s!")
 /// }
 /// ```
-final class BlockTimer: NSObject {
+internal final class KronosBlockTimer: NSObject {
 
     /// Creates and returns a block-based NSTimer object and schedules it on the current run loop.
     ///
@@ -25,7 +25,7 @@ final class BlockTimer: NSObject {
                               handler: @escaping CKTimerHandler) -> Timer
     {
         return Timer.scheduledTimer(timeInterval: interval, target: self,
-            selector: #selector(BlockTimer.invokeFrom(timer:)),
+            selector: #selector(KronosBlockTimer.invokeFrom(timer:)),
             userInfo: TimerClosureWrapper(handler: handler, repeats: repeated), repeats: repeated)
     }
 
