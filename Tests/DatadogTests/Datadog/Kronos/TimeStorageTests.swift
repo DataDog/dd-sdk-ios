@@ -1,5 +1,5 @@
-@testable import Kronos
 import XCTest
+@testable import Datadog
 
 class TimeStoragePolicyTests: XCTestCase {
     func testInitWithStringGivesAppGroupType() {

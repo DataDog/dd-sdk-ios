@@ -1,5 +1,5 @@
 import XCTest
-@testable import Kronos
+@testable import Datadog
 
 final class NTPClientTests: XCTestCase {
 
