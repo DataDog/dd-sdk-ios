@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import Kronos
 
 /// Abstract the monotonic clock synchronized with the server using NTP.
 internal protocol ServerDateProvider {

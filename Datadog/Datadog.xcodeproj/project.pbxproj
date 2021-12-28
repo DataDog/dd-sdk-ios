@@ -305,11 +305,7 @@
 		61993657265BB6A6009D7EA8 /* Datadog.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6199365A265BB6A6009D7EA8 /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */; };
 		6199365B265BB6A6009D7EA8 /* DatadogCrashReporting.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		6199365E265BB6A6009D7EA8 /* Kronos.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */; };
-		6199365F265BB6A6009D7EA8 /* Kronos.xcframework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61993668265BBEDC009D7EA8 /* E2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61993667265BBEDC009D7EA8 /* E2ETests.swift */; };
-		61993673265BC371009D7EA8 /* Kronos.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */; };
-		61993674265BC371009D7EA8 /* Kronos.xcframework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		619A29F326E64910007D62A3 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 614ED36B260352DC00C8C519 /* CrashReporter.xcframework */; };
 		619E16D82577C1CB00B2516B /* DataProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16D72577C1CB00B2516B /* DataProcessor.swift */; };
 		619E16E92578E73E00B2516B /* DataMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16E82578E73E00B2516B /* DataMigrator.swift */; };
@@ -499,7 +495,6 @@
 		61FF283024BC5E2D000B3D9B /* RUMEventFileOutputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF282F24BC5E2D000B3D9B /* RUMEventFileOutputTests.swift */; };
 		61FF416225EE5FF400CE35EC /* CrashReportingWithLoggingIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF416125EE5FF400CE35EC /* CrashReportingWithLoggingIntegrationTests.swift */; };
 		61FF9A4525AC5DEA001058CC /* RUMViewIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF9A4425AC5DEA001058CC /* RUMViewIdentity.swift */; };
-		9E0542CB25F8EBBE007A3D0B /* Kronos.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */; };
 		9E26E6B924C87693000B3270 /* RUMDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E26E6B824C87693000B3270 /* RUMDataModels.swift */; };
 		9E2EF44F2694FA14008A7DAE /* VitalInfoSamplerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E2EF44E2694FA14008A7DAE /* VitalInfoSamplerTests.swift */; };
 		9E307C3224C8846D0039607E /* RUMDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E26E6B824C87693000B3270 /* RUMDataModels.swift */; };
@@ -669,7 +664,6 @@
 			dstSubfolderSpec = 10;
 			files = (
 				61441C4E24619498003D8BB8 /* Datadog.framework in ⚙️ Embed Framework Dependencies */,
-				61993674265BC371009D7EA8 /* Kronos.xcframework in ⚙️ Embed Framework Dependencies */,
 				614ED39B260357FA00C8C519 /* DatadogCrashReporting.framework in ⚙️ Embed Framework Dependencies */,
 				61570006246AAE5E00E96950 /* DatadogObjc.framework in ⚙️ Embed Framework Dependencies */,
 			);
@@ -682,7 +676,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				6199365F265BB6A6009D7EA8 /* Kronos.xcframework in ⚙️ Embed Framework Dependencies */,
 				61993657265BB6A6009D7EA8 /* Datadog.framework in ⚙️ Embed Framework Dependencies */,
 				6199365B265BB6A6009D7EA8 /* DatadogCrashReporting.framework in ⚙️ Embed Framework Dependencies */,
 			);
@@ -1273,7 +1266,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				61B03ECE274FF01F00EB1AE1 /* SwiftUI.framework in Frameworks */,
-				61993673265BC371009D7EA8 /* Kronos.xcframework in Frameworks */,
 				614ED39A260357FA00C8C519 /* DatadogCrashReporting.framework in Frameworks */,
 				614ED37C2603533D00C8C519 /* CrashReporter.xcframework in Frameworks */,
 			);
@@ -1301,7 +1293,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9E0542CB25F8EBBE007A3D0B /* Kronos.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1318,7 +1309,6 @@
 			files = (
 				61993656265BB6A6009D7EA8 /* Datadog.framework in Frameworks */,
 				6199365A265BB6A6009D7EA8 /* DatadogCrashReporting.framework in Frameworks */,
-				6199365E265BB6A6009D7EA8 /* Kronos.xcframework in Frameworks */,
 				61993654265BB6A6009D7EA8 /* CrashReporter.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

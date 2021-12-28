@@ -35,7 +35,6 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(name: "Kronos", url: "https://github.com/lyft/Kronos.git", from: "4.2.1"),
         .package(name: "PLCrashReporter", url: "https://github.com/microsoft/plcrashreporter.git", from: "1.10.0"),
     ],
     targets: [
@@ -43,7 +42,6 @@ let package = Package(
             name: "Datadog",
             dependencies: [
                 "_Datadog_Private",
-                .product(name: "Kronos", package: "Kronos"),
             ],
             swiftSettings: [.define("SPM_BUILD")]
         ),
