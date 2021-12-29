@@ -416,14 +416,19 @@ class RUMViewScopeTests: XCTestCase {
             scope.process(command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1")),
             "The View should be kept alive as all its Resources haven't yet finished loading"
         )
+
+        var event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
+        XCTAssertTrue(event.model.view.isActive ?? false, "View should stay active")
+
         XCTAssertFalse(
             scope.process(command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/2")),
             "The View should stop as all its Resources finished loading"
         )
 
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
+        event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
         XCTAssertEqual(event.model.view.resource.count, 1, "View should record 1 successful Resource")
         XCTAssertEqual(event.model.view.error.count, 1, "View should record 1 error due to second Resource failure")
+        XCTAssertFalse(event.model.view.isActive ?? true, "View should be inactive")
     }
 
     // MARK: - User Action Tracking
