@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal class WebRUMEventConsumer: WebEventConsumer {
+internal class DefaultWebRUMEventConsumer: WebRUMEventConsumer {
     private let dataWriter: Writer
     private let dateCorrector: DateCorrectorType
     private let contextProvider: RUMContextProvider?
@@ -23,7 +23,7 @@ internal class WebRUMEventConsumer: WebEventConsumer {
         self.contextProvider = contextProvider
     }
 
-    func consume(event: JSON, eventType: String) throws {
+    func consume(event: JSON) throws {
         let rumContext = contextProvider?.context
         let mappedEvent = map(event: event, with: rumContext)
 

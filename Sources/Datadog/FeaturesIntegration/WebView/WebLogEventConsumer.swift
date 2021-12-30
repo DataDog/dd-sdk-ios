@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal class WebLogEventConsumer: WebEventConsumer {
+internal class DefaultWebLogEventConsumer: WebLogEventConsumer {
     private struct Constants {
         static let logEventType = "log"
         static let internalLogEventType = "internal_log"
@@ -51,7 +51,7 @@ internal class WebLogEventConsumer: WebEventConsumer {
         self.environment = environment
     }
 
-    func consume(event: JSON, eventType: String) throws {
+    func consume(event: JSON, internalLog: Bool) throws {
         var mutableEvent = event
 
         if let existingTags = mutableEvent[Constants.ddTagsKey] as? String, !existingTags.isEmpty {
@@ -74,12 +74,10 @@ internal class WebLogEventConsumer: WebEventConsumer {
         let jsonData = try JSONSerialization.data(withJSONObject: mutableEvent, options: [])
         let encodableEvent = try jsonDecoder.decode(CodableValue.self, from: jsonData)
 
-        if eventType == Constants.logEventType {
-            userLogsWriter.write(value: encodableEvent)
-        } else if eventType == Constants.internalLogEventType {
+        if internalLog {
             internalLogsWriter?.write(value: encodableEvent)
         } else {
-            userLogger.error("🔥 Invalid Web Event Type: \(eventType)")
+            userLogsWriter.write(value: encodableEvent)
         }
     }
 }

@@ -18,9 +18,9 @@ public extension WKUserContentController {
 
         let contextProvider = (Global.rum as? RUMMonitor)?.contextProvider
 
-        var logEventConsumer: WebLogEventConsumer? = nil
+        var logEventConsumer: DefaultWebLogEventConsumer? = nil
         if let loggingFeature = LoggingFeature.instance {
-            logEventConsumer = WebLogEventConsumer(
+            logEventConsumer = DefaultWebLogEventConsumer(
                 userLogsWriter: loggingFeature.storage.writer,
                 internalLogsWriter: InternalMonitoringFeature.instance?.logsStorage.writer,
                 dateCorrector: loggingFeature.dateCorrector,
@@ -30,9 +30,9 @@ public extension WKUserContentController {
             )
         }
 
-        var rumEventConsumer: WebRUMEventConsumer? = nil
+        var rumEventConsumer: DefaultWebRUMEventConsumer? = nil
         if let rumFeature = RUMFeature.instance {
-            rumEventConsumer = WebRUMEventConsumer(
+            rumEventConsumer = DefaultWebRUMEventConsumer(
                 dataWriter: rumFeature.storage.writer,
                 dateCorrector: rumFeature.dateCorrector,
                 contextProvider: contextProvider

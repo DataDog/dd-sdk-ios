@@ -8,8 +8,12 @@ import Foundation
 
 internal typealias JSON = [String: Any]
 
-internal protocol WebEventConsumer {
-    func consume(event: JSON, eventType: String) throws
+internal protocol WebLogEventConsumer {
+    func consume(event: JSON, internalLog: Bool) throws
+}
+
+internal protocol WebRUMEventConsumer {
+    func consume(event: JSON) throws
 }
 
 internal enum WebEventError: Error, Equatable {
@@ -27,10 +31,10 @@ internal class WebEventBridge {
         static let eventTypeInternalLog = "internal_log"
     }
 
-    private let logEventConsumer: WebEventConsumer?
-    private let rumEventConsumer: WebEventConsumer?
+    private let logEventConsumer: WebLogEventConsumer?
+    private let rumEventConsumer: WebRUMEventConsumer?
 
-    init(logEventConsumer: WebEventConsumer?, rumEventConsumer: WebEventConsumer?) {
+    init(logEventConsumer: WebLogEventConsumer?, rumEventConsumer: WebRUMEventConsumer?) {
         self.logEventConsumer = logEventConsumer
         self.rumEventConsumer = rumEventConsumer
     }
@@ -50,13 +54,16 @@ internal class WebEventBridge {
         if eventType == Constants.eventTypeLog ||
             eventType == Constants.eventTypeInternalLog {
             if let consumer = logEventConsumer {
-                try consumer.consume(event: wrappedEvent, eventType: eventType)
+                try consumer.consume(
+                    event: wrappedEvent,
+                    internalLog: (eventType == Constants.eventTypeInternalLog)
+                )
             } else {
                 userLogger.warn("A WebView log is lost because Logging is disabled in iOS SDK")
             }
         } else {
             if let consumer = rumEventConsumer {
-                try consumer.consume(event: wrappedEvent, eventType: eventType)
+                try consumer.consume(event: wrappedEvent)
             } else {
                userLogger.warn("A WebView RUM event is lost because RUM is disabled in iOS SDK")
            }
