@@ -30,7 +30,7 @@ class KronosTimeStoragePolicyTests: XCTestCase {
     }
 }
 
-class TimeStorageTests: XCTestCase {
+class KronosTimeStorageTests: XCTestCase {
     func testStoringAndRetrievingTimeFreeze() {
         var storage = KronosTimeStorage(storagePolicy: .standard)
         let sampleFreeze = KronosTimeFreeze(offset: 5_000.324_23)
