@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import Kronos
 
 /// Abstract the monotonic clock synchronized with the server using NTP.
 internal protocol ServerDateProvider {
@@ -28,7 +27,7 @@ internal class NTPServerDateProvider: ServerDateProvider {
     }
 
     func synchronize(with pool: String, completion: @escaping (TimeInterval?) -> Void) {
-        Clock.sync(
+        KronosClock.sync(
             from: pool,
             first: { [weak self] _, offset in
                 self?.publisher.publishAsync(offset)
@@ -50,6 +49,6 @@ internal class NTPServerDateProvider: ServerDateProvider {
 
         // `Kronos.sync` first loads the previous state from the `UserDefaults` if any.
         // We can invoke `Clock.now` to retrieve the stored offset.
-        publisher.publishAsync(Clock.now?.timeIntervalSinceNow)
+        publisher.publishAsync(KronosClock.now?.timeIntervalSinceNow)
     }
 }
