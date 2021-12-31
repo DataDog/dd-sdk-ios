@@ -345,8 +345,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         version += 1
         attributes.merge(rumCommandAttributes: command.attributes)
 
-        let timeSpent = command.time.timeIntervalSince(viewStartTime)
+        // RUMM-1779 Keep view active as long as we have ongoing resources
+        let isActive = isActiveView || !resourceScopes.isEmpty
 
+        let timeSpent = command.time.timeIntervalSince(viewStartTime)
         let cpuInfo = vitalInfoSampler.cpu
         let memoryInfo = vitalInfoSampler.memory
         let refreshRateInfo = vitalInfoSampler.refreshRate
@@ -384,7 +386,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 frozenFrame: .init(count: frozenFramesCount),
                 id: viewUUID.toRUMDataFormat,
                 inForegroundPeriods: nil,
-                isActive: isActiveView,
+                isActive: isActive,
                 isSlowRendered: isSlowRendered,
                 largestContentfulPaint: nil,
                 loadEvent: nil,

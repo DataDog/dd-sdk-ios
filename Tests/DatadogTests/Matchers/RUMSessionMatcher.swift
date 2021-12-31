@@ -213,23 +213,26 @@ internal class RUMSessionMatcher {
 
         // Validate ViewVisit's view.isActive for each events
         try visits.forEach { visit in
-            var viewWasPreviouslyActive = false
+            var viewIsInactive = false
             try visit.viewEvents.enumerated().forEach { index, viewEvent in
-                let viewIsActive = viewEvent.view.isActive!
-                if index == 0 {
-                    if !viewIsActive {
-                        throw RUMSessionConsistencyException(
-                            description: "A `RUMSessionMatcher.ViewVisit` can't have a first event with an inactive `View`."
-                        )
-                    }
-                } else {
-                    if !viewWasPreviouslyActive && viewIsActive {
-                        throw RUMSessionConsistencyException(
-                            description: "A `RUMSessionMatcher.ViewVisit` can't have an event where a `View` is active after the `View` was marked as inactive."
-                        )
-                    }
+                guard let viewIsActive = viewEvent.view.isActive else {
+                    throw RUMSessionConsistencyException(
+                        description: "A `RUMSessionMatcher.ViewVisit` can't have an event without the `isActive` parameter set."
+                    )
                 }
-                viewWasPreviouslyActive = viewIsActive
+
+                if index == 0 && !viewIsActive {
+                    throw RUMSessionConsistencyException(
+                        description: "A `RUMSessionMatcher.ViewVisit` can't have a first event with an inactive `View`."
+                    )
+                }
+
+                if viewIsInactive {
+                    throw RUMSessionConsistencyException(
+                        description: "A `RUMSessionMatcher.ViewVisit` can't have an event after the `View` was marked as inactive."
+                    )
+                }
+                viewIsInactive = !viewIsActive
             }
         }
 
