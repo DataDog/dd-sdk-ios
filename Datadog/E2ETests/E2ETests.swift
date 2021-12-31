@@ -41,14 +41,17 @@ class E2ETests: XCTestCase {
     // MARK: - Measuring Performance with APM
 
     /// Measures time of execution for given `block` - sends it as a `"perf_measure"` `Span` with a given resource name.
-    func measure(resourceName: String, _ block: () -> Void) {
+    @discardableResult
+    func measure<T>(resourceName: String, _ block: () -> T) -> T {
         let start = Date()
-        block()
+        let result = block()
         let stop = Date()
 
         let performanceSpan = Global.sharedTracer.startRootSpan(operationName: "perf_measure", startTime: start)
         performanceSpan.setTag(key: DDTags.resource, value: resourceName)
         performanceSpan.finish(at: stop)
+
+        return result
     }
 
     // MARK: - SDK Lifecycle

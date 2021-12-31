@@ -9,7 +9,7 @@
 
 import Foundation
 
-private let kDefaultTimeout = 6.0
+internal let kronosDefaultTimeout = 6.0
 private let kDefaultSamples = 4
 private let kMaximumNTPServers = 5
 private let kMaximumResultDispersion = 10.0
@@ -38,7 +38,7 @@ internal final class KronosNTPClient {
         port: Int = 123,
         numberOfSamples: Int = kDefaultSamples,
         maximumServers: Int = kMaximumNTPServers,
-        timeout: CFTimeInterval = kDefaultTimeout,
+        timeout: CFTimeInterval = kronosDefaultTimeout,
         progress: @escaping (TimeInterval?, Int, Int) -> Void
     ) {
         var servers: [KronosInternetAddress: [KronosNTPPacket]] = [:]
@@ -89,7 +89,7 @@ internal final class KronosNTPClient {
         ip: KronosInternetAddress,
         port: Int = 123,
         version: Int8 = 3,
-        timeout: CFTimeInterval = kDefaultTimeout,
+        timeout: CFTimeInterval = kronosDefaultTimeout,
         numberOfSamples: Int = kDefaultSamples,
         completion: @escaping (KronosNTPPacket?) -> Void
     ) {
@@ -168,7 +168,7 @@ internal final class KronosNTPClient {
             if callbackType == .writeCallBack {
                 var packet = KronosNTPPacket()
                 let PDU = packet.prepareToSend() as CFData
-                CFSocketSendData(socket, nil, PDU, kDefaultTimeout)
+                CFSocketSendData(socket, nil, PDU, kronosDefaultTimeout)
                 return
             }
 
