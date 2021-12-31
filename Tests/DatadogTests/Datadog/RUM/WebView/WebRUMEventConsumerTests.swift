@@ -83,6 +83,27 @@ class WebRUMEventConsumerTests: XCTestCase {
         AssertDictionariesEqual(writtenJSON, webRUMEvent)
     }
 
+    func testWhenNativeSessionIsSampledOut_itPassesWebEventToWriter() throws {
+        mockContextProvider.context.sessionID = RUMUUID.nullUUID
+        let eventConsumer = DefaultWebRUMEventConsumer(
+            dataWriter: mockWriter,
+            dateCorrector: mockDateCorrector,
+            contextProvider: mockContextProvider
+        )
+
+        let webRUMEvent: JSON = [
+            "new_key": "new_value",
+            "type": "unknown"
+        ]
+
+        try eventConsumer.consume(event: webRUMEvent)
+
+        let data = try JSONEncoder().encode(mockWriter.dataWritten as? CodableValue)
+        let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
+
+        AssertDictionariesEqual(writtenJSON, webRUMEvent)
+    }
+
     func testWhenUnknownWebRUMEventPassed_itPassesToWriter() throws {
         let eventConsumer = DefaultWebRUMEventConsumer(
             dataWriter: mockWriter,
