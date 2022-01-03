@@ -6,8 +6,93 @@
 
 import Foundation
 
-internal class WebRUMEventConsumer: WebEventConsumer {
-    func consume(event: [String: Any], eventType: String) {
-        // TODO: RUMM-1791 implement event consumers
+internal class DefaultWebRUMEventConsumer: WebRUMEventConsumer {
+    private let dataWriter: Writer
+    private let dateCorrector: DateCorrectorType
+    private let contextProvider: RUMContextProvider?
+
+    private let jsonDecoder = JSONDecoder()
+
+    init(
+        dataWriter: Writer,
+        dateCorrector: DateCorrectorType,
+        contextProvider: RUMContextProvider?
+    ) {
+        self.dataWriter = dataWriter
+        self.dateCorrector = dateCorrector
+        self.contextProvider = contextProvider
+    }
+
+    func consume(event: JSON) throws {
+        let rumContext = contextProvider?.context
+        let mappedEvent = map(event: event, with: rumContext)
+
+        let jsonData = try JSONSerialization.data(withJSONObject: mappedEvent, options: [])
+        let encodableEvent = try jsonDecoder.decode(CodableValue.self, from: jsonData)
+
+        dataWriter.write(value: encodableEvent)
+    }
+
+    private func map(event: JSON, with context: RUMContext?) -> JSON {
+        guard let context = context,
+              context.sessionID != .nullUUID else {
+            return event
+        }
+
+        var mutableEvent = event
+
+        if let date = mutableEvent["date"] as? Int {
+            let viewID = (mutableEvent["view"] as? JSON)?["id"] as? String
+            let serverTimeOffsetInNs = getOffset(viewID: viewID)
+            let correctedDate = Int64(date) + serverTimeOffsetInNs
+            mutableEvent["date"] = correctedDate
+        }
+
+        if let context = contextProvider?.context {
+            if var application = mutableEvent["application"] as? JSON {
+                application["id"] = context.rumApplicationID
+                mutableEvent["application"] = application
+            }
+            if var session = mutableEvent["session"] as? JSON {
+                session["id"] = context.sessionID.toRUMDataFormat
+                mutableEvent["session"] = session
+            }
+        }
+
+        if var dd = mutableEvent["_dd"] as? JSON,
+           var dd_sesion = dd["session"] as? [String: Int] {
+            dd_sesion["plan"] = 1
+            dd["session"] = dd_sesion
+            mutableEvent["_dd"] = dd
+        }
+
+        return mutableEvent
+    }
+
+    // MARK: - Time offsets
+
+    private typealias Offset = Int64
+    private typealias ViewIDOffsetPair = (viewID: String, offset: Offset)
+    private var viewIDOffsetPairs = [ViewIDOffsetPair]()
+
+    private func getOffset(viewID: String?) -> Offset {
+        guard let viewID = viewID else {
+            return 0
+        }
+
+        purgeOffsets()
+        let found = viewIDOffsetPairs.first { $0.viewID == viewID }
+        if let found = found {
+            return found.offset
+        }
+        let offset = dateCorrector.currentCorrection.serverTimeOffset.toInt64Nanoseconds
+        viewIDOffsetPairs.insert((viewID: viewID, offset: offset), at: 0)
+        return offset
+    }
+
+    private func purgeOffsets() {
+        while viewIDOffsetPairs.count > 3 {
+            _ = viewIDOffsetPairs.popLast()
+        }
     }
 }

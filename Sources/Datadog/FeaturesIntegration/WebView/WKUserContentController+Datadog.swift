@@ -16,10 +16,33 @@ public extension WKUserContentController {
     internal func __addDatadogMessageHandler(allowedWebViewHosts: Set<String>, hostsSanitizer: HostsSanitizing) {
         let bridgeName = DatadogMessageHandler.name
 
+        let contextProvider = (Global.rum as? RUMMonitor)?.contextProvider
+
+        var logEventConsumer: DefaultWebLogEventConsumer? = nil
+        if let loggingFeature = LoggingFeature.instance {
+            logEventConsumer = DefaultWebLogEventConsumer(
+                userLogsWriter: loggingFeature.storage.writer,
+                internalLogsWriter: InternalMonitoringFeature.instance?.logsStorage.writer,
+                dateCorrector: loggingFeature.dateCorrector,
+                rumContextProvider: contextProvider,
+                applicationVersion: loggingFeature.configuration.common.applicationVersion,
+                environment: loggingFeature.configuration.common.environment
+            )
+        }
+
+        var rumEventConsumer: DefaultWebRUMEventConsumer? = nil
+        if let rumFeature = RUMFeature.instance {
+            rumEventConsumer = DefaultWebRUMEventConsumer(
+                dataWriter: rumFeature.storage.writer,
+                dateCorrector: rumFeature.dateCorrector,
+                contextProvider: contextProvider
+            )
+        }
+
         let messageHandler = DatadogMessageHandler(
             eventBridge: WebEventBridge(
-                logEventConsumer: WebLogEventConsumer(),
-                rumEventConsumer: WebRUMEventConsumer()
+                logEventConsumer: logEventConsumer,
+                rumEventConsumer: rumEventConsumer
             )
         )
         add(messageHandler, name: bridgeName)
@@ -57,10 +80,10 @@ public extension WKUserContentController {
     }
 }
 
-private class DatadogMessageHandler: NSObject, WKScriptMessageHandler {
+internal class DatadogMessageHandler: NSObject, WKScriptMessageHandler {
     static let name = "DatadogEventBridge"
     private let eventBridge: WebEventBridge
-    private let queue = DispatchQueue(
+    let queue = DispatchQueue(
         label: "com.datadoghq.JSEventBridge",
         target: .global(qos: .userInteractive)
     )
@@ -73,9 +96,11 @@ private class DatadogMessageHandler: NSObject, WKScriptMessageHandler {
         _ userContentController: WKUserContentController,
         didReceive message: WKScriptMessage
     ) {
+        // message.body must be called within UI thread
+        let messageBody = message.body
         queue.async {
             do {
-                try self.eventBridge.consume(message.body)
+                try self.eventBridge.consume(messageBody)
             } catch {
                 userLogger.error("🔥 Web Event Error: \(error)")
             }
