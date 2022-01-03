@@ -84,10 +84,10 @@ class DatadogCrashReportingXCFrameworkValidator(XCFrameworkValidator):
             'ios-arm64/**/arm64.swiftinterface',
             'ios-arm64/**/arm64-apple-ios.swiftinterface',
 
-            'ios-x86_64-simulator',
-            'ios-x86_64-simulator/dSYMs/*.dSYM',
-            'ios-x86_64-simulator/**/x86_64.swiftinterface',
-            'ios-x86_64-simulator/**/x86_64-apple-ios-simulator.swiftinterface',
+            'ios-arm64_x86_64-simulator',
+            'ios-arm64_x86_64-simulator/dSYMs/*.dSYM',
+            'ios-arm64_x86_64-simulator/**/x86_64.swiftinterface',
+            'ios-arm64_x86_64-simulator/**/x86_64-apple-ios-simulator.swiftinterface',
         ])
 
 
@@ -160,15 +160,15 @@ class GHAsset:
 
             # Produce XCFrameworks with carthage:
             # - only checkout and `--no-build` as it will build in the next command:
-            shell('carthage bootstrap --platform iOS --no-build', skip=True)
+            shell('carthage bootstrap --platform iOS --no-build')
             # - `--no-build` as it will build in the next command:
-            shell('carthage build --platform iOS --use-xcframeworks --no-use-binaries --no-skip-current', skip=True)
+            shell('carthage build --platform iOS --use-xcframeworks --no-use-binaries --no-skip-current')
 
         # Create `.zip` archive:
         zip_archive_name = f'Datadog-{read_sdk_version()}.zip'
         with remember_cwd():
             os.chdir('Carthage/Build')
-            shell(f'zip -q --symlinks -r {zip_archive_name} *.xcframework', skip=True)
+            shell(f'zip -q --symlinks -r {zip_archive_name} *.xcframework')
 
         self.__path = f'{os.getcwd()}/Carthage/Build/{zip_archive_name}'
         print('   → GH asset created')

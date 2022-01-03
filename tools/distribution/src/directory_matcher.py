@@ -31,7 +31,6 @@ class DirectoryMatcher:
         search_path = os.path.join(self.path, file_path)
         result = list(glob.iglob(search_path, recursive=True))
 
-        # if not os.path.exists(os.path.join(self.path, file_path)):
         if not result:
             raise DirectoryMatcherException(f'Expected "{self.path}" to include {file_path}, but it is missing.')
 
