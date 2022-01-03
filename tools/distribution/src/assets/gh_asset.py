@@ -11,15 +11,8 @@ import os
 import glob
 from tempfile import TemporaryDirectory, NamedTemporaryFile
 from src.utils import remember_cwd, shell, read_sdk_version
+from src.directory_matcher import DirectoryMatcher
 
-SWIFT_CONTENT = [
-    'Datadog.xcframework',
-    'DatadogObjc.xcframework',
-    'DatadogCrashReporting.xcframework',
-    'Kronos.xcframework',
-]
-OBJC_CONTENT = ['CrashReporter.xcframework']
-EXPECTED_ZIP_CONTENT = SWIFT_CONTENT + OBJC_CONTENT
 
 class GHAsset:
     """
@@ -34,35 +27,26 @@ class GHAsset:
 
         with NamedTemporaryFile(mode='w+', prefix='dd-gh-distro-', suffix='.xcconfig') as xcconfig:
             xcconfig.write('BUILD_LIBRARY_FOR_DISTRIBUTION = YES\n')
-            xcconfig.seek(0) # without this line, content isn't actually written
+            xcconfig.seek(0)  # without this line, content isn't actually written
             os.environ['XCODE_XCCONFIG_FILE'] = xcconfig.name
 
             # Produce XCFrameworks with carthage:
             # - only checkout and `--no-build` as it will build in the next command:
-            shell('carthage bootstrap --platform iOS --no-build')
+            shell('carthage bootstrap --platform iOS --no-build', skip=True)
             # - `--no-build` as it will build in the next command:
-            shell('carthage build --platform iOS --use-xcframeworks --no-use-binaries --no-skip-current')
+            shell('carthage build --platform iOS --use-xcframeworks --no-use-binaries --no-skip-current', skip=True)
 
         # Create `.zip` archive:
         zip_archive_name = f'Datadog-{read_sdk_version()}.zip'
         with remember_cwd():
             os.chdir('Carthage/Build')
-            shell(f'zip -q --symlinks -r {zip_archive_name} *.xcframework')
+            shell(f'zip -q --symlinks -r {zip_archive_name} *.xcframework', skip=True)
 
         self.__path = f'{os.getcwd()}/Carthage/Build/{zip_archive_name}'
         print('   → GH asset created')
 
     def __repr__(self):
         return f'[GHAsset: path = {self.__path}]'
-
-    def __content_with_swiftinterface(self, dir: str) -> set:
-        # e.g: /TMP_DIR/X.xcframework/ios-arm64/X.framework/Modules/X.swiftmodule/arm64.swiftinterface
-        swiftinterfaces = glob.iglob(f'{dir}/*.xcframework/**/*.framework/Modules/*.swiftmodule/*.swiftinterface', recursive=True)
-        # e.g: X.xcframework/ios-arm64/X.framework/Modules/X.swiftmodule/arm64.swiftinterface
-        relative_paths = [abs_path.removeprefix(dir + '/') for abs_path in swiftinterfaces]
-        # e.g: X.xcframework
-        product_names = [rel_path[0:rel_path.find('/')] for rel_path in relative_paths]
-        return set(product_names)
 
     def validate(self, git_tag: str):
         """
@@ -79,26 +63,79 @@ class GHAsset:
         # Inspect the content of zip archive:
         with TemporaryDirectory() as unzip_dir:
             shell(f'unzip -q {self.__path} -d {unzip_dir}')
-            actual_files = os.listdir(unzip_dir)
-            expected_files = EXPECTED_ZIP_CONTENT
-            actual_files.sort(), expected_files.sort()
 
-            if set(actual_files) != set(expected_files):
-                raise Exception(f'The content of `.zip` archive is not correct: \n'
-                                f' - actual {actual_files}\n'
-                                f' - expected: {expected_files}')
-
-            missing_swiftinterface_content = set(SWIFT_CONTENT).difference(self.__content_with_swiftinterface(unzip_dir))
-            if missing_swiftinterface_content:
-                raise Exception(f'Frameworks missing .swiftinterface: \n {missing_swiftinterface_content} \n')
-        
-            print(f'   → the content of `.zip` archive is correct: \n'
-                  f'       - actual: {actual_files}\n'
-                  f'       - expected: {expected_files}')
-
-            print(f'   → details on bundled `XCFrameworks`:')
-            for file_path in glob.iglob(f'{unzip_dir}/*.xcframework/*', recursive=True):
+            print(f'   → GH asset (zip) content:')
+            for file_path in glob.iglob(f'{unzip_dir}/**', recursive=True):
                 print(f'      - {file_path.removeprefix(unzip_dir)}')
+
+            dm = DirectoryMatcher(path=unzip_dir)
+            dm.assert_number_of_files(expected_count=5)
+
+            dm.get(file='Datadog.xcframework').assert_it_has_files([
+                'ios-arm64',
+                'ios-arm64/BCSymbolMaps/*.bcsymbolmap',
+                'ios-arm64/dSYMs/*.dSYM',
+                'ios-arm64/**/arm64.swiftinterface',
+                'ios-arm64/**/arm64-apple-ios.swiftinterface',
+
+                'ios-arm64_x86_64-simulator',
+                'ios-arm64_x86_64-simulator/dSYMs/*.dSYM',
+                'ios-arm64_x86_64-simulator/**/arm64.swiftinterface',
+                'ios-arm64_x86_64-simulator/**/arm64-apple-ios-simulator.swiftinterface',
+                'ios-arm64_x86_64-simulator/**/x86_64.swiftinterface',
+                'ios-arm64_x86_64-simulator/**/x86_64-apple-ios-simulator.swiftinterface',
+            ])
+
+            dm.get('DatadogObjc.xcframework').assert_it_has_files([
+                'ios-arm64',
+                'ios-arm64/BCSymbolMaps/*.bcsymbolmap',
+                'ios-arm64/dSYMs/*.dSYM',
+                'ios-arm64/**/arm64.swiftinterface',
+                'ios-arm64/**/arm64-apple-ios.swiftinterface',
+
+                'ios-arm64_x86_64-simulator',
+                'ios-arm64_x86_64-simulator/**/arm64.swiftinterface',
+                'ios-arm64_x86_64-simulator/**/arm64-apple-ios-simulator.swiftinterface',
+                'ios-arm64_x86_64-simulator/**/x86_64.swiftinterface',
+                'ios-arm64_x86_64-simulator/**/x86_64-apple-ios-simulator.swiftinterface',
+            ])
+
+            dm.get('DatadogCrashReporting.xcframework').assert_it_has_files([
+                'ios-arm64',
+                'ios-arm64/BCSymbolMaps/*.bcsymbolmap',
+                'ios-arm64/**/arm64.swiftinterface',
+                'ios-arm64/**/arm64-apple-ios.swiftinterface',
+
+                'ios-x86_64-simulator',
+                'ios-x86_64-simulator/dSYMs/*.dSYM',
+                'ios-x86_64-simulator/**/x86_64.swiftinterface',
+                'ios-x86_64-simulator/**/x86_64-apple-ios-simulator.swiftinterface',
+            ])
+
+            dm.get('CrashReporter.xcframework').assert_it_has_files([
+                'ios-arm64_arm64e_armv7_armv7s',
+                'ios-arm64_i386_x86_64-simulator',
+            ])
+
+            dm.get('Kronos.xcframework').assert_it_has_files([
+                'ios-arm64_armv7',
+                'ios-arm64_armv7/BCSymbolMaps/*.bcsymbolmap',
+                'ios-arm64_armv7/dSYMs/*.dSYM',
+                'ios-arm64_armv7/**/arm.swiftinterface',
+                'ios-arm64_armv7/**/arm64-apple-ios.swiftinterface',
+                'ios-arm64_armv7/**/arm64.swiftinterface',
+                'ios-arm64_armv7/**/armv7-apple-ios.swiftinterface',
+                'ios-arm64_armv7/**/armv7.swiftinterface',
+
+                'ios-arm64_i386_x86_64-simulator',
+                'ios-arm64_i386_x86_64-simulator/dSYMs/*.dSYM',
+                'ios-arm64_i386_x86_64-simulator/**/arm64-apple-ios-simulator.swiftinterface',
+                'ios-arm64_i386_x86_64-simulator/**/i386-apple-ios-simulator.swiftinterface',
+                'ios-arm64_i386_x86_64-simulator/**/x86_64-apple-ios-simulator.swiftinterface',
+                'ios-arm64_i386_x86_64-simulator/**/x86_64.swiftinterface',
+            ])
+
+            print(f'   → the content of `.zip` archive is correct')
 
     def publish(self, git_tag: str, overwrite_existing: bool, dry_run: bool):
         """
