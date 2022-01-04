@@ -11,8 +11,8 @@ Send [traces][1] to Datadog from your iOS applications with [Datadog's `dd-sdk-i
 
 1. Declare the library as a dependency depending on your package manager:
 
-    {{< tabs >}}
-    {{% tab "CocoaPods" %}}
+{{< tabs >}}
+{{% tab "CocoaPods" %}}
 
 You can use [CocoaPods][4] to install `dd-sdk-ios`:
 ```
@@ -21,16 +21,16 @@ pod 'DatadogSDK'
 
 [4]: https://cocoapods.org/
 
-    {{% /tab %}}
-    {{% tab "Swift Package Manager (SPM)" %}}
+{{% /tab %}}
+{{% tab "Swift Package Manager (SPM)" %}}
 
 To integrate using Apple's Swift Package Manager, add the following as a dependency to your `Package.swift`:
 ```swift
 .package(url: "https://github.com/Datadog/dd-sdk-ios.git", .upToNextMajor(from: "1.0.0"))
 ```
 
-    {{% /tab %}}
-    {{% tab "Carthage" %}}
+{{% /tab %}}
+{{% tab "Carthage" %}}
 
 You can use [Carthage][5] to install `dd-sdk-ios`:
 ```
@@ -39,13 +39,14 @@ github "DataDog/dd-sdk-ios"
 
 [5]: https://github.com/Carthage/Carthage
 
-    {{% /tab %}}
-    {{< /tabs >}}
+{{% /tab %}}
+{{< /tabs >}}
 
 2. Initialize the library with your application context and your [Datadog client token][6]. For security reasons, you must use a client token: you cannot use [Datadog API keys][7] to configure the `dd-sdk-ios` library as they would be exposed client-side in the iOS application IPA byte code. For more information about setting up a client token, see the [client token documentation][6].
 
-    {{< tabs >}}
-    {{% tab "US" %}}
+{{< site-region region="us" >}}
+{{< tabs >}}
+{{% tab "Swift" %}}
 
 ```swift
 Datadog.initialize(
@@ -54,13 +55,29 @@ Datadog.initialize(
     configuration: Datadog.Configuration
         .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
         .set(serviceName: "app-name")
+        .set(endpoint: .us1)
         .build()
 )
 ```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<client_token>"
+                                                                  environment:@"<environment_name>"];
+[builder setWithServiceName:@"app-name"];
+[builder setWithEndpoint:[DDEndpoint us1]];
 
-    {{% /tab %}}
-    {{% tab "EU" %}}
+[DDDatadog initializeWithAppContext:[DDAppContext new]
+                    trackingConsent:trackingConsent
+                      configuration:[builder build]];
+```
+{{% /tab %}}
+{{< /tabs >}}
+{{< /site-region >}}
 
+{{< site-region region="eu" >}}
+{{< tabs >}}
+{{% tab "Swift" %}}
 ```swift
 Datadog.initialize(
     appContext: .init(),
@@ -68,13 +85,25 @@ Datadog.initialize(
     configuration: Datadog.Configuration
         .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
         .set(serviceName: "app-name")
-        .set(endpoint: .eu)
+        .set(endpoint: .eu1)
         .build()
 )
 ```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<client_token>"
+                                                              environment:@"<environment_name>"];
+[builder setWithServiceName:@"app-name"];
+[builder setWithEndpoint:[DDEndpoint eu1]];
 
-    {{% /tab %}}
-    {{< /tabs >}}
+[DDDatadog initializeWithAppContext:[DDAppContext new]
+                    trackingConsent:trackingConsent
+                        configuration:[builder build]];
+```
+{{% /tab %}}
+{{< /tabs >}}
+{{< /site-region >}}
 
     To be compliant with the GDPR regulation, the SDK requires the `trackingConsent` value at initialization.
     The `trackingConsent` can be one of the following values:
@@ -91,33 +120,64 @@ Datadog.initialize(
 
     When writing your application, you can enable development logs. All internal messages in the SDK with a priority equal to or higher than the provided level are then logged to console logs.
 
+    {{< tabs >}}
+    {{% tab "Swift" %}}
     ```swift
     Datadog.verbosityLevel = .debug
     ```
+    {{% /tab %}}
+    {{% tab "Objective-C" %}}
+    DDDatadog.verbosityLevel = DDSDKVerbosityLevelDebug;
+    ```
+    {{% /tab %}}
+    {{< /tabs >}}
 
 3. Datadog tracer implements the [Open Tracing standard][8]. Configure and register the `Tracer` globally as Open Tracing `Global.sharedTracer`. You only need to do it once, usually in your `AppDelegate` code:
 
+    {{< tabs >}}
+    {{% tab "Swift" %}}
     ```swift
-    import Datadog
-
     Global.sharedTracer = Tracer.initialize(
         configuration: Tracer.Configuration(
             sendNetworkInfo: true
         )
     )
     ```
+    {{% /tab %}}
+    {{% tab "Objective-C" %}}
+    ```objective-c
+    DDTracerConfiguration *configuration = [[DDTracerConfiguration alloc] init];
+    [configuration sendNetworkInfo:YES];
+    DDGlobal.sharedTracer = [[DDTracer alloc] initWithConfiguration:configuration];
+    ```
+    {{% /tab %}}
+    {{< /tabs >}}
 
 4. Instrument your code using the following methods:
 
+    {{< tabs >}}
+    {{% tab "Swift" %}}
     ```swift
     let span = Global.sharedTracer.startSpan(operationName: "<span_name>")
     // do something you want to measure ...
     // ... then, when the operation is finished:
     span.finish()
     ```
+    {{% /tab %}}
+    {{% tab "Objective-C" %}}
+    ```objective-c
+    id<OTSpan> span = [DDGlobal.sharedTracer startSpan:@"<span_name>"];
+    // do something you want to measure ...
+    // ... then, when the operation is finished:
+    [span finish];
+    ```
+    {{% /tab %}}
+    {{< /tabs >}}
 
 5. (Optional) - Set child-parent relationship between your spans:
 
+    {{< tabs >}}
+    {{% tab "Swift" %}}
     ```swift
     let responseDecodingSpan = Global.sharedTracer.startSpan(
         operationName: "response decoding",
@@ -126,15 +186,36 @@ Datadog.initialize(
     // ... decode HTTP response data ...
     responseDecodingSpan.finish()
     ```
+    {{% /tab %}}
+    {{% tab "Objective-C" %}}
+    ```objective-c
+    id<OTSpan> responseDecodingSpan = [DDGlobal.sharedTracer startSpan:@"response decoding"
+                                                               childOf:networkRequestSpan.context];
+    // ... decode HTTP response data ...
+    [responseDecodingSpan finish];
+    ```
+    {{% /tab %}}
+    {{< /tabs >}}
 
 6. (Optional) - Provide additional tags alongside your span:
 
+    {{< tabs >}}
+    {{% tab "Swift" %}}
     ```swift
     span.setTag(key: "http.url", value: url)
     ```
+    {{% /tab %}}
+    {{% tab "Objective-C" %}}
+    ```objective-c
+    [span setTag:@"http.url" value:url];
+    ```
+    {{% /tab %}}
+    {{< /tabs >}}
 
 7. (Optional) Attach an error to a span - you can do so by logging the error information using the [standard Open Tracing log fields][9]:
 
+    {{< tabs >}}
+    {{% tab "Swift" %}}
     ```swift
     span.log(
         fields: [
@@ -145,14 +226,26 @@ Datadog.initialize(
         ]
     )
     ```
+    {{% /tab %}}
+    {{% tab "Objective-C" %}}
+    ```objective-c
+    [span log:@{
+        @"event": @"error",
+        @"error.kind": @"I/O Exception",
+        @"message": @"File not found",
+        @"stack": @"FileReader.swift:42",
+    }];
+    ```
+    {{% /tab %}}
+    {{< /tabs >}}
 
 8. (Optional) To distribute traces between your environments, for example frontend - backend, you can either do it manually or leverage our auto instrumentation.
 
     * To manually propagate the trace, inject the span context into `URLRequest` headers:
 
+    {{< tabs >}}
+    {{% tab "Swift" %}}
     ```swift
-    import Datadog
-
     var request: URLRequest = ... // the request to your API
 
     let span = Global.sharedTracer.startSpan(operationName: "network request")
@@ -164,16 +257,38 @@ Datadog.initialize(
         request.addValue(value, forHTTPHeaderField: headerField)
     }
     ```
+    {{% /tab %}}
+    {{% tab "Objective-C" %}}
+    ```objective-c
+    id<OTSpan> span = [DDGlobal.sharedTracer startSpan:@"network request"];
+    DDHTTPHeadersWriter *headersWriter = [[DDHTTPHeadersWriter alloc] init];
+
+    NSError *error = nil;
+    [DDGlobal.sharedTracer inject:span.context
+                           format:OT.formatTextMap
+                          carrier:headersWriter
+                            error:&error];
+
+    for (NSString *key in headersWriter.tracePropagationHTTPHeaders) {
+        NSString *value = headersWriter.tracePropagationHTTPHeaders[key];
+        [request addValue:value forHTTPHeaderField:key];
+    }
+    ```
+    {{% /tab %}}
+    {{< /tabs >}}
+
     This will set additional tracing headers on your request, so that your backend can extract it and continue distributed tracing. Once the request is done, within a completion handler, call `span.finish()`. If your backend is also instrumented with [Datadog APM & Distributed Tracing][10] you will see the entire front-to-back trace in Datadog dashboard.
 
     * To have the SDK automatically trace all network requests made to given hosts, specify the `firstPartyHosts` array during Datadog initialization and use the `DDURLSessionDelegate` as a delegate of the `URLSession` instance that you want to monitor:
 
+    {{< tabs >}}
+    {{% tab "Swift" %}}
     ```swift
     Datadog.initialize(
         appContext: .init(),
         configuration: Datadog.Configuration
             .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
-            .track(firstPartyHosts: ["example.com", "api.yourdomain.com"])
+            .trackURLSession(firstPartyHosts: ["example.com", "api.yourdomain.com"])
             .build()
     )
 
@@ -183,6 +298,24 @@ Datadog.initialize(
         delegateQueue: nil
     )
     ```
+    {{% /tab %}}
+    {{% tab "Objective-C" %}}
+    ```objective-c
+    DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<client_token>"
+                                                                  environment:@"<environment_name>"];
+    [builder trackURLSessionWithFirstPartyHosts:[NSSet setWithObjects:@"example.com", @"api.yourdomain.com", nil]];
+
+    [DDDatadog initializeWithAppContext:[DDAppContext new]
+                        trackingConsent:trackingConsent
+                          configuration:[builder build]];
+
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]
+                                                          delegate:[[DDNSURLSessionDelegate alloc] init]
+                                                     delegateQueue:NULL];
+    ```
+    {{% /tab %}}
+    {{< /tabs >}}
+
     This will trace all requests made with this `session` to `example.com` and `api.yourdomain.com` hosts (for example, `https://api.yourdomain.com/v2/users` or `https://subdomain.example.com/image.png`).
 
     **Note**: Tracing auto instrumentation uses `URLSession` swizzling, but it is opt-in: if you do not specify `firstPartyHosts`, no swizzling is applied.
