@@ -10,20 +10,32 @@ internal class DefaultWebRUMEventConsumer: WebRUMEventConsumer {
     private let dataWriter: Writer
     private let dateCorrector: DateCorrectorType
     private let contextProvider: RUMContextProvider?
+    private let rumCommandSubscriber: RUMCommandSubscriber?
+    private let dateProvider: DateProvider
 
     private let jsonDecoder = JSONDecoder()
 
     init(
         dataWriter: Writer,
         dateCorrector: DateCorrectorType,
-        contextProvider: RUMContextProvider?
+        contextProvider: RUMContextProvider?,
+        rumCommandSubscriber: RUMCommandSubscriber?,
+        dateProvider: DateProvider
     ) {
         self.dataWriter = dataWriter
         self.dateCorrector = dateCorrector
         self.contextProvider = contextProvider
+        self.rumCommandSubscriber = rumCommandSubscriber
+        self.dateProvider = dateProvider
     }
 
     func consume(event: JSON) throws {
+        rumCommandSubscriber?.process(
+            command: RUMWebViewCommand(
+                time: dateProvider.currentDate(),
+                attributes: [:]
+            )
+        )
         let rumContext = contextProvider?.context
         let mappedEvent = map(event: event, with: rumContext)
 

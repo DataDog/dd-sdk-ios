@@ -281,3 +281,10 @@ internal struct RUMAddLongTaskCommand: RUMCommand {
 
     let duration: TimeInterval
 }
+
+// MARK: - RUM Web Events related commands
+
+internal struct RUMWebViewCommand: RUMCommand {
+    var time: Date
+    var attributes: [AttributeKey: AttributeValue]
+}
