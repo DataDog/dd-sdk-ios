@@ -46,8 +46,39 @@ github "DataDog/dd-sdk-ios"
 
 2. Initialize the library with your application context and your [Datadog client token][2]. For security reasons, you must use a client token: you cannot use [Datadog API keys][3] to configure the `dd-sdk-ios` library as they would be exposed client-side in the iOS application IPA byte code. For more information about setting up a client token, see the [client token documentation][2]:
 
-    {{< tabs >}}
-    {{% tab "US" %}}
+{{< site-region region="us" >}}
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+Datadog.initialize(
+    appContext: .init(),
+    trackingConsent: trackingConsent,
+    configuration: Datadog.Configuration
+        .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
+        .set(serviceName: "app-name")
+        .set(endpoint: .us1)
+        .build()
+)
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<client_token>"
+                                                                  environment:@"<environment_name>"];
+[builder setWithServiceName:@"app-name"];
+[builder setWithEndpoint:[DDEndpoint us1]];
+
+[DDDatadog initializeWithAppContext:[DDAppContext new]
+                    trackingConsent:trackingConsent
+                        configuration:[builder build]];
+```
+{{% /tab %}}
+{{< /tabs >}}
+{{< /site-region >}}
+
+{{< site-region region="eu" >}}
+{{< tabs >}}
+{{% tab "Swift" %}}
 
 ```swift
 Datadog.initialize(
@@ -56,27 +87,25 @@ Datadog.initialize(
     configuration: Datadog.Configuration
         .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
         .set(serviceName: "app-name")
+        .set(endpoint: .eu1)
         .build()
 )
 ```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<client_token>"
+                                                              environment:@"<environment_name>"];
+[builder setWithServiceName:@"app-name"];
+[builder setWithEndpoint:[DDEndpoint eu1]];
 
-    {{% /tab %}}
-    {{% tab "EU" %}}
-
-```swift
-Datadog.initialize(
-    appContext: .init(),
-    trackingConsent: trackingConsent,
-    configuration: Datadog.Configuration
-        .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
-        .set(serviceName: "app-name")
-        .set(endpoint: .eu)
-        .build()
-)
+[DDDatadog initializeWithAppContext:[DDAppContext new]
+                    trackingConsent:trackingConsent
+                      configuration:[builder build]];
 ```
-
-    {{% /tab %}}
-    {{< /tabs >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{< /site-region >}}
 
     To be compliant with the GDPR regulation, the SDK requires the `trackingConsent` value at initialization.
     The `trackingConsent` can be one of the following values:
@@ -93,21 +122,45 @@ Datadog.initialize(
 
      When writing your application, you can enable development logs. All internal messages in the SDK with a priority equal to or higher than the provided level are then logged to console logs.
 
+    {{< tabs >}}
+    {{% tab "Swift" %}}
     ```swift
     Datadog.verbosityLevel = .debug
     ```
+    {{% /tab %}}
+    {{% tab "Objective-C" %}}
+    ```objective-c
+    DDDatadog.verbosityLevel = DDSDKVerbosityLevelDebug;
+    ```
+    {{% /tab %}}
+    {{< /tabs >}}
 
 3. Configure the `Logger`:
 
+    {{< tabs >}}
+    {{% tab "Swift" %}}
     ```swift
-    logger = Logger.builder
+    let logger = Logger.builder
         .sendNetworkInfo(true)
         .printLogsToConsole(true, usingFormat: .shortWith(prefix: "[iOS App] "))
         .build()
     ```
+    {{% /tab %}}
+    {{% tab "Objective-C" %}}
+    ```objective-c
+    DDLoggerBuilder *builder = [DDLogger builder];
+    [builder sendNetworkInfo:YES];
+    [builder printLogsToConsole:YES];
+
+    DDLogger *logger = [builder build];
+    ```
+    {{% /tab %}}
+    {{< /tabs >}}
 
 4. Send a custom log entry directly to Datadog with one of the following methods:
 
+    {{< tabs >}}
+    {{% tab "Swift" %}}
     ```swift
     logger.debug("A debug message.")
     logger.info("Some relevant information?")
@@ -116,12 +169,33 @@ Datadog.initialize(
     logger.error("An error was met!")
     logger.critical("Something critical happened!")
     ```
+    {{% /tab %}}
+    {{% tab "Objective-C" %}}
+    ```objective-c
+    [logger debug:@"A debug message."];
+    [logger info:@"Some relevant information?"];
+    [logger notice:@"Have you noticed?"];
+    [logger warn:@"An important warning…"];
+    [logger error:@"An error was met!"];
+    [logger critical:@"Something critical happened!"];
+    ```
+    {{% /tab %}}
+    {{< /tabs >}}
 
 5. (Optional) - Provide a map of `attributes` alongside your log message to add attributes to the emitted log. Each entry of the map is added as an attribute.
 
+    {{< tabs >}}
+    {{% tab "Swift" %}}
     ```swift
     logger.info("Clicked OK", attributes: ["context": "onboarding flow"])
     ```
+    {{% /tab %}}
+    {{% tab "Objective-C" %}}
+    ```objective-c
+    [logger info:@"Clicked OK" attributes:@{@"context": @"onboarding flow"}];
+    ```
+    {{% /tab %}}
+    {{< /tabs >}}
 
 ## Advanced logging
 
@@ -148,10 +222,19 @@ Find below methods to add/remove tags and attributes to all logs sent by a given
 
 Use the `addTag(withKey:value:)` method to add tags to all logs sent by a specific logger:
 
+{{< tabs >}}
+{{% tab "Swift" %}}
 ```swift
 // This adds a tag "build_configuration:debug"
 logger.addTag(withKey: "build_configuration", value: "debug")
 ```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+[logger addTagWithKey:@"build_configuration" value:@"debug"];
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 **Note**: `<TAG_VALUE>` must be a `String`.
 
@@ -159,10 +242,19 @@ logger.addTag(withKey: "build_configuration", value: "debug")
 
 Use the `removeTag(withKey:)` method to remove tags from all logs sent by a specific logger:
 
+{{< tabs >}}
+{{% tab "Swift" %}}
 ```swift
 // This removes any tag starting with "build_configuration"
 logger.removeTag(withKey: "build_configuration")
 ```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+[logger removeTagWithKey:@"build_configuration"];
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 [Learn more about Datadog tags][5].
 
@@ -181,10 +273,19 @@ By default, the following attributes are added to all logs sent by a logger:
 
 Use the `addAttribute(forKey:value:)` method to add a custom attribute to all logs sent by a specific logger:
 
+{{< tabs >}}
+{{% tab "Swift" %}}
 ```swift
 // This adds an attribute "device-model" with a string value
 logger.addAttribute(forKey: "device-model", value: UIDevice.current.model)
 ```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+[logger addAttributeForKey:@"device-model" value:UIDevice.currentDevice.model];
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 **Note**: `<ATTRIBUTE_VALUE>` can be anything conforming to `Encodable` (`String`, `Date`, custom `Codable` data model, ...).
 
@@ -192,11 +293,19 @@ logger.addAttribute(forKey: "device-model", value: UIDevice.current.model)
 
 Use the `removeAttribute(forKey:)` method to remove a custom attribute from all logs sent by a specific logger:
 
+{{< tabs >}}
+{{% tab "Swift" %}}
 ```swift
 // This removes the attribute "device-model" from all further log send.
 logger.removeAttribute(forKey: "device-model")
-
 ```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+[logger removeAttributeForKey:@"device-model"];
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Further Reading
 
