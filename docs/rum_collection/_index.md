@@ -49,51 +49,76 @@ For more information about setting up a client token, see the [Client token docu
 
 ### Initialize the library
 
+{{< site-region region="us" >}}
 {{< tabs >}}
-{{% tab "US" %}}
+{{% tab "Swift" %}}
 
 ```swift
 Datadog.initialize(
     appContext: .init(),
     trackingConsent: trackingConsent,
     configuration: Datadog.Configuration
-        .builderUsing(
-            rumApplicationID: "<rum_application_id>",
-            clientToken: "<client_token>",
-            environment: "<environment_name>"
-        )
+        .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
         .set(serviceName: "app-name")
-        .trackUIKitRUMViews()
-        .trackUIKitActions()
-        .trackURLSession()
+        .set(endpoint: .us1)
         .build()
 )
 ```
-
 {{% /tab %}}
-{{% tab "EU" %}}
+{{% tab "Objective-C" %}}
+```objective-c
+DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<client_token>"
+                                                                  environment:@"<environment_name>"];
+[builder setWithServiceName:@"app-name"];
+[builder setWithEndpoint:[DDEndpoint us1]];
 
-```swift
-Datadog.initialize(
-    appContext: .init(),
-    trackingConsent: trackingConsent,
-    configuration: Datadog.Configuration
-        .builderUsing(
-            rumApplicationID: "<rum_application_id>",
-            clientToken: "<client_token>",
-            environment: "<environment_name>"
-        )
-        .set(serviceName: "app-name")
-        .set(endpoint: .eu)
-        .trackUIKitRUMViews()
-        .trackUIKitActions()
-        .trackURLSession()
-        .build()
-)
+[DDDatadog initializeWithAppContext:[DDAppContext new]
+                    trackingConsent:trackingConsent
+                      configuration:[builder build]];
 ```
-
 {{% /tab %}}
 {{< /tabs >}}
+{{< /site-region >}}
+
+{{< site-region region="eu" >}}
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+Datadog.initialize(
+    appContext: .init(),
+    trackingConsent: trackingConsent,
+    configuration: Datadog.Configuration
+        .builderUsing(
+            rumApplicationID: "<rum_application_id>",
+            clientToken: "<client_token>",
+            environment: "<environment_name>"
+        )
+        .set(serviceName: "app-name")
+        .trackUIKitRUMViews()
+        .trackUIKitActions()
+        .trackURLSession()
+        .build()
+)
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+DDConfigurationBuilder *builder = [DDConfiguration builderWithRumApplicationID:@"<rum_application_id>"
+                                                                   clientToken:@"<client_token>"
+                                                                   environment:@"<environment_name>"];
+[builder setWithServiceName:@"app-name"];
+[builder setWithEndpoint:[DDEndpoint us1]];
+[builder trackUIKitRUMViews];
+[builder trackUIKitRUMActions];
+[builder trackURLSessionWithFirstPartyHosts:[NSSet new]];
+
+[DDDatadog initializeWithAppContext:[DDAppContext new]
+                    trackingConsent:trackingConsent
+                        configuration:[builder build]];
+```
+{{% /tab %}}
+{{< /tabs >}}
+{{< /site-region >}}
 
 The RUM SDK automatically tracks user sessions depending on options provided at the SDK initialization. To add GDPR compliance for your EU users and other [initialization parameters][9] to the SDK configuration, see the [Set tracking consent documentation][8].
 
@@ -101,21 +126,43 @@ The RUM SDK automatically tracks user sessions depending on options provided at 
 
 Configure and register the RUM Monitor. You only need to do it once, usually in your `AppDelegate` code:
 
+{{< tabs >}}
+{{% tab "Swift" %}}
 ```swift
 import Datadog
 
 Global.rum = RUMMonitor.initialize()
 ```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+@import DatadogObjc;
+
+DDGlobal.rum = [[DDRUMMonitor alloc] init];
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 To monitor requests sent from the `URLSession` instance as resources, assign `DDURLSessionDelegate()` as a `delegate` of that `URLSession`:
 
+{{< tabs >}}
+{{% tab "Swift" %}}
 ```swift
 let session = URLSession(
     configuration: .default,
     delegate: DDURLSessionDelegate(),
     delegateQueue: nil
 )
-``` 
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]
+                                                      delegate:[[DDNSURLSessionDelegate alloc] init]
+                                                 delegateQueue:NULL];
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 ## iOS Crash Reporting and Error Tracking
 
