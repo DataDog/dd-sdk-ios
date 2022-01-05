@@ -31,7 +31,7 @@ internal class DefaultWebRUMEventConsumer: WebRUMEventConsumer {
 
     func consume(event: JSON) throws {
         rumCommandSubscriber?.process(
-            command: RUMWebViewCommand(
+            command: RUMKeepSessionAliveCommand(
                 time: dateProvider.currentDate(),
                 attributes: [:]
             )
