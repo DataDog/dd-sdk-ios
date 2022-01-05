@@ -159,7 +159,7 @@ let session = URLSession(
 ```objective-c
 NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]
                                                       delegate:[[DDNSURLSessionDelegate alloc] init]
-                                                 delegateQueue:NULL];
+                                                 delegateQueue:nil];
 ```
 {{% /tab %}}
 {{< /tabs >}}

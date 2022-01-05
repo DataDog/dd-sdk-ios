@@ -48,13 +48,13 @@ override func viewDidDisappear(_ animated: Bool) {
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 
-    [DDGlobal.rum startViewWithViewController:self name:NULL attributes:NULL];
+    [DDGlobal.rum startViewWithViewController:self name:nil attributes:nil];
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
 
-    [DDGlobal.rum stopViewWithViewController:self attributes:NULL];
+    [DDGlobal.rum stopViewWithViewController:self attributes:nil];
 }
 ```
 {{% /tab %}}
@@ -179,7 +179,7 @@ Global.rum.addError(message: "error message.")
 {{% /tab %}}
 {{% tab "Objective-C" %}}
 ```objective-c
-[DDGlobal.rum addErrorWithMessage:@"error message." source:DDRUMErrorSourceCustom stack:NULL attributes:@{}];
+[DDGlobal.rum addErrorWithMessage:@"error message." source:DDRUMErrorSourceCustom stack:nil attributes:@{}];
 ```
 {{% /tab %}}
 {{< /tabs >}}
@@ -349,7 +349,7 @@ class YourCustomPredicate: UIKitRUMViewsPredicate {
         return [[DDRUMView alloc] initWithName:@"Details" attributes:@{}];
     }
 
-    return NULL;
+    return nil;
 }
 
 @end
@@ -387,7 +387,7 @@ class YourCustomPredicate: UIKitRUMViewsPredicate {
         return [[DDRUMView alloc] initWithName:viewController.accessibilityLabel attributes:@{}];
     }
 
-    return NULL;
+    return nil;
 }
 
 @end
@@ -419,7 +419,7 @@ let session = URLSession(
 ```objective-c
 NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]
                                                       delegate:[[DDNSURLSessionDelegate alloc] init]
-                                                 delegateQueue:NULL];
+                                                 delegateQueue:nil];
 ```
 {{% /tab %}}
 {{< /tabs >}}
@@ -458,7 +458,7 @@ DDConfigurationBuilder *builder = [DDConfiguration builderWithRumApplicationID:@
 
 // ...
 [builder trackUIKitRUMViews];
-[builder trackURLSessionWithFirstPartyHosts:[NSSet setWithObjects:@"example.com", nil]];
+[builder trackURLSessionWithFirstPartyHosts:[NSSet setWithArray:@[@"example.com"]]];
 
 DDGlobal.rum = [[DDRUMMonitor alloc] init];
 DDGlobal.sharedTracer = [[DDTracer alloc] initWithConfiguration:[DDTracerConfiguration new]];

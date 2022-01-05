@@ -303,7 +303,8 @@ DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<cli
     ```objective-c
     DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<client_token>"
                                                                   environment:@"<environment_name>"];
-    [builder trackURLSessionWithFirstPartyHosts:[NSSet setWithObjects:@"example.com", @"api.yourdomain.com", nil]];
+
+    [builder trackURLSessionWithFirstPartyHosts:[NSSet setWithArray:@[@"example.com", @"api.yourdomain.com"]]];
 
     [DDDatadog initializeWithAppContext:[DDAppContext new]
                         trackingConsent:trackingConsent
@@ -311,7 +312,7 @@ DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<cli
 
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]
                                                           delegate:[[DDNSURLSessionDelegate alloc] init]
-                                                     delegateQueue:NULL];
+                                                     delegateQueue:nil];
     ```
     {{% /tab %}}
     {{< /tabs >}}
