@@ -281,3 +281,11 @@ internal struct RUMAddLongTaskCommand: RUMCommand {
 
     let duration: TimeInterval
 }
+
+// MARK: - RUM Web Events related commands
+
+/// RUM Events received from WebView should keep the active session alive, therefore they fire this command to do so. (ref: RUMM-1793)
+internal struct RUMKeepSessionAliveCommand: RUMCommand {
+    var time: Date
+    var attributes: [AttributeKey: AttributeValue]
+}

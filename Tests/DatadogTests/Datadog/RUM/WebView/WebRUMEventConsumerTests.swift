@@ -12,12 +12,20 @@ class WebRUMEventConsumerTests: XCTestCase {
     let mockWriter = FileWriterMock()
     let mockDateCorrector = DateCorrectorMock()
     let mockContextProvider = RUMContextProviderMock(context: .mockWith(rumApplicationID: "123456"))
+    let mockCommandSubscriber = RUMCommandSubscriberMock()
+    let mockDateProvider = RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC(), advancingBySeconds: 0.0)
 
     func testWhenValidWebRUMEventPassed_itDecoratesAndPassesToWriter() throws {
         let mockSessionID = UUID(uuidString: "e9796469-c2a1-43d6-b0f6-65c47d33cf5f")!
         mockContextProvider.context.sessionID = RUMUUID(rawValue: mockSessionID)
         mockDateCorrector.correctionOffset = 123
-        let eventConsumer = DefaultWebRUMEventConsumer(dataWriter: mockWriter, dateCorrector: mockDateCorrector, contextProvider: mockContextProvider)
+        let eventConsumer = DefaultWebRUMEventConsumer(
+            dataWriter: mockWriter,
+            dateCorrector: mockDateCorrector,
+            contextProvider: mockContextProvider,
+            rumCommandSubscriber: mockCommandSubscriber,
+            dateProvider: mockDateProvider
+        )
 
         let webRUMEvent: JSON = [
             "_dd": [
@@ -52,13 +60,17 @@ class WebRUMEventConsumerTests: XCTestCase {
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
         AssertDictionariesEqual(writtenJSON, expectedWebRUMEvent)
+        let webViewCommand = try XCTUnwrap(mockCommandSubscriber.lastReceivedCommand)
+        XCTAssertEqual(webViewCommand.time, .mockDecember15th2019At10AMUTC())
     }
 
     func testWhenValidWebRUMEventPassedWithoutRUMContext_itPassesToWriter() throws {
         let eventConsumer = DefaultWebRUMEventConsumer(
             dataWriter: mockWriter,
             dateCorrector: mockDateCorrector,
-            contextProvider: nil
+            contextProvider: nil,
+            rumCommandSubscriber: mockCommandSubscriber,
+            dateProvider: mockDateProvider
         )
 
         let webRUMEvent: JSON = [
@@ -81,6 +93,8 @@ class WebRUMEventConsumerTests: XCTestCase {
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
         AssertDictionariesEqual(writtenJSON, webRUMEvent)
+        let webViewCommand = try XCTUnwrap(mockCommandSubscriber.lastReceivedCommand)
+        XCTAssertEqual(webViewCommand.time, .mockDecember15th2019At10AMUTC())
     }
 
     func testWhenNativeSessionIsSampledOut_itPassesWebEventToWriter() throws {
@@ -88,7 +102,9 @@ class WebRUMEventConsumerTests: XCTestCase {
         let eventConsumer = DefaultWebRUMEventConsumer(
             dataWriter: mockWriter,
             dateCorrector: mockDateCorrector,
-            contextProvider: mockContextProvider
+            contextProvider: mockContextProvider,
+            rumCommandSubscriber: mockCommandSubscriber,
+            dateProvider: mockDateProvider
         )
 
         let webRUMEvent: JSON = [
@@ -102,13 +118,17 @@ class WebRUMEventConsumerTests: XCTestCase {
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
         AssertDictionariesEqual(writtenJSON, webRUMEvent)
+        let webViewCommand = try XCTUnwrap(mockCommandSubscriber.lastReceivedCommand)
+        XCTAssertEqual(webViewCommand.time, .mockDecember15th2019At10AMUTC())
     }
 
     func testWhenUnknownWebRUMEventPassed_itPassesToWriter() throws {
         let eventConsumer = DefaultWebRUMEventConsumer(
             dataWriter: mockWriter,
             dateCorrector: mockDateCorrector,
-            contextProvider: mockContextProvider
+            contextProvider: mockContextProvider,
+            rumCommandSubscriber: mockCommandSubscriber,
+            dateProvider: mockDateProvider
         )
 
         let unknownWebRUMEvent: JSON = [
@@ -122,5 +142,7 @@ class WebRUMEventConsumerTests: XCTestCase {
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
         AssertDictionariesEqual(writtenJSON, unknownWebRUMEvent)
+        let webViewCommand = try XCTUnwrap(mockCommandSubscriber.lastReceivedCommand)
+        XCTAssertEqual(webViewCommand.time, .mockDecember15th2019At10AMUTC())
     }
 }

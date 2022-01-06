@@ -16,7 +16,7 @@ public extension WKUserContentController {
     internal func __addDatadogMessageHandler(allowedWebViewHosts: Set<String>, hostsSanitizer: HostsSanitizing) {
         let bridgeName = DatadogMessageHandler.name
 
-        let contextProvider = (Global.rum as? RUMMonitor)?.contextProvider
+        let globalRUMMonitor = Global.rum as? RUMMonitor
 
         var logEventConsumer: DefaultWebLogEventConsumer? = nil
         if let loggingFeature = LoggingFeature.instance {
@@ -24,7 +24,7 @@ public extension WKUserContentController {
                 userLogsWriter: loggingFeature.storage.writer,
                 internalLogsWriter: InternalMonitoringFeature.instance?.logsStorage.writer,
                 dateCorrector: loggingFeature.dateCorrector,
-                rumContextProvider: contextProvider,
+                rumContextProvider: globalRUMMonitor?.contextProvider,
                 applicationVersion: loggingFeature.configuration.common.applicationVersion,
                 environment: loggingFeature.configuration.common.environment
             )
@@ -35,7 +35,9 @@ public extension WKUserContentController {
             rumEventConsumer = DefaultWebRUMEventConsumer(
                 dataWriter: rumFeature.storage.writer,
                 dateCorrector: rumFeature.dateCorrector,
-                contextProvider: contextProvider
+                contextProvider: globalRUMMonitor?.contextProvider,
+                rumCommandSubscriber: globalRUMMonitor,
+                dateProvider: rumFeature.dateProvider
             )
         }
 
