@@ -25,16 +25,31 @@ Enable iOS Crash Reporting and Error Tracking to get comprehensive crash reports
 
 ### Add crash reporting 
 
-If you have not set up the SDK yet, follow the [in-app setup instructions][1] or refer to the [iOS RUM setup documentation][2]. 
+If you have not set up the SDK yet, follow the [in-app setup instructions][1] or see the [iOS RUM setup documentation][2].
 
-Add the `DatadogCrashReporting` dependency to your project. For CocoaPods, use `pod 'DatadogSDKCrashReporting'`. For SPM and Carthage, `DatadogCrashReporting` is available with `dd-sdk-ios`.
+#### Dependency Manager
+{{< tabs >}}
+{{% tab "CocoaPods" %}}
+Add `DatadogSDKCrashReporting` to your `Podfile`:
+```ruby
+platform :ios, '11.0'
+use_frameworks!
 
-| Package manager            | Installation method                                                                         |
-|----------------------------|-------------------------------------------------------|
-| CocoaPods                  | Use `pod 'DatadogSDKCrashReporting'`                      |
-| Swift Package Manager      | Link the `DatadogCrashReporting` module                   |
-| Carthage                   | Use `DatadogCrashReporting.xcframework`               |
+target 'App' do
+  pod 'DatadogSDKCrashReporting'
+end
+```
+{{% /tab %}}
+{{% tab "Swift Package Manager" %}}
+Add the package at `https://github.com/DataDog/dd-sdk-ios` and link `DatadogCrashReporting` to your application target.
 
+**Note:** If you link to `Datadog` or the `DatadogStatic` library, replace it with `DatadogCrashReporting`.
+
+{{% /tab %}}
+{{% tab "Carthage" %}}
+Add `github "DataDog/dd-sdk-ios"` to your `Cartfile` and link `DatadogCrashReporting.xcframework` to your application target.
+{{% /tab %}}
+{{< /tabs >}}
 
 Update your initialization snippet to include crash reporting:
 
