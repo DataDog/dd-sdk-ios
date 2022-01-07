@@ -20,6 +20,13 @@ internal class NTPServerDateProvider: ServerDateProvider {
     /// Server offset publisher.
     private let publisher: ValuePublisher<TimeInterval?> = ValuePublisher(initialValue: nil)
 
+    /// Monitor collecting Kronos telemetry - only enabled if Internal Monitoring is configured.
+    private let kronosMonitor: KronosMonitor?
+
+    init(kronosMonitor: KronosMonitor? = nil) {
+        self.kronosMonitor = kronosMonitor
+    }
+
     /// Returns the server time offset or `nil` if not yet determined.
     /// This offset gets more precise while synchronization is pending.
     var offset: TimeInterval? {
@@ -29,6 +36,7 @@ internal class NTPServerDateProvider: ServerDateProvider {
     func synchronize(with pool: String, completion: @escaping (TimeInterval?) -> Void) {
         KronosClock.sync(
             from: pool,
+            monitor: kronosMonitor,
             first: { [weak self] _, offset in
                 self?.publisher.publishAsync(offset)
             },
@@ -36,7 +44,8 @@ internal class NTPServerDateProvider: ServerDateProvider {
                 // Kronos only notifies for the first and last samples.
                 // In case, the last sample does not return an offset, we calculate the offset
                 // from the returned `now` parameter. The `now` parameter in this callback
-                // is `Clock.now`, so it is possible to have `now` but not `offset`.
+                // is `Clock.now` and it can be either offset computed from prior samples or persisted
+                // in user defaults from previous app session.
                 if let offset = offset {
                     self?.publisher.publishAsync(offset)
                 } else if let now = now {

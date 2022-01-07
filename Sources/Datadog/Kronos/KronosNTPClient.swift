@@ -31,6 +31,7 @@ internal final class KronosNTPClient {
     /// - parameter numberOfSamples: The number of samples to be acquired from each server (default 4).
     /// - parameter maximumServers:  The maximum number of servers to be queried (default 5).
     /// - parameter timeout:         The individual timeout for each of the NTP operations.
+    /// - parameter monitor:         Monitor collecting Kronos telemetry - only enabled if Internal Monitoring is configured.
     /// - parameter completion:      A closure that will be response PDU on success or nil on error.
     func query(
         pool: String = "time.apple.com",
@@ -39,13 +40,15 @@ internal final class KronosNTPClient {
         numberOfSamples: Int = kDefaultSamples,
         maximumServers: Int = kMaximumNTPServers,
         timeout: CFTimeInterval = kronosDefaultTimeout,
+        monitor: KronosMonitor? = nil,
         progress: @escaping (TimeInterval?, Int, Int) -> Void
     ) {
         var servers: [KronosInternetAddress: [KronosNTPPacket]] = [:]
         var completed: Int = 0
 
         let queryIPAndStoreResult = { (address: KronosInternetAddress, totalQueries: Int) -> Void in
-            self.query(ip: address, port: port, version: version, timeout: timeout, numberOfSamples: numberOfSamples) { packet in
+            monitor?.notifyStartQuerying(ip: address, numberOfSamples: numberOfSamples)
+            self.query(ip: address, port: port, version: version, timeout: timeout, numberOfSamples: numberOfSamples, monitor: monitor) { packet in
                 defer {
                     completed += 1
 
@@ -71,7 +74,11 @@ internal final class KronosNTPClient {
             }
 
             let totalServers = min(addresses.count, maximumServers)
-            for address in addresses[0 ..< totalServers] {
+            let addressesToQuery = Array(addresses[0 ..< totalServers])
+
+            monitor?.notifyResolveDNS(to: addressesToQuery)
+
+            for address in addressesToQuery {
                 queryIPAndStoreResult(address, totalServers * numberOfSamples)
             }
         }
@@ -84,6 +91,7 @@ internal final class KronosNTPClient {
     /// - parameter version:         NTP version to use (default 3).
     /// - parameter timeout:         Timeout on socket operations.
     /// - parameter numberOfSamples: The number of samples to be acquired from the server (default 4).
+    /// - parameter monitor:         Monitor collecting Kronos telemetry - only enabled if Internal Monitoring is configured.
     /// - parameter completion:      A closure that will be response PDU on success or nil on error.
     func query(
         ip: KronosInternetAddress,
@@ -91,6 +99,7 @@ internal final class KronosNTPClient {
         version: Int8 = 3,
         timeout: CFTimeInterval = kronosDefaultTimeout,
         numberOfSamples: Int = kDefaultSamples,
+        monitor: KronosMonitor? = nil,
         completion: @escaping (KronosNTPPacket?) -> Void
     ) {
         var timer: Timer?
@@ -98,19 +107,26 @@ internal final class KronosNTPClient {
             defer {
                 // If we still have samples left; we'll keep querying the same server
                 if numberOfSamples > 1 {
-                    self.query(ip: ip, port: port, version: version, timeout: timeout, numberOfSamples: numberOfSamples - 1, completion: completion)
+                    self.query(ip: ip, port: port, version: version, timeout: timeout, numberOfSamples: numberOfSamples - 1, monitor: monitor, completion: completion)
                 }
             }
-
             timer?.invalidate()
             guard
                 let data = data, let PDU = try? KronosNTPPacket(data: data, destinationTime: destinationTime),
                 PDU.isValidResponse() else
             {
+                monitor?.notifyReceivePacket(from: ip, isValidSample: false)
+                if numberOfSamples == 1 {
+                    monitor?.notifyEndQuerying(ip: ip)
+                }
                 completion(nil)
                 return
             }
 
+            monitor?.notifyReceivePacket(from: ip, isValidSample: true)
+            if numberOfSamples == 1 {
+                monitor?.notifyEndQuerying(ip: ip)
+            }
             completion(PDU)
         }
 
