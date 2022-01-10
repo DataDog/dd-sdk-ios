@@ -465,7 +465,7 @@ DDGlobal.sharedTracer = [[DDTracer alloc] initWithConfiguration:[DDTracerConfigu
 
 [DDDatadog initializeWithAppContext:[DDAppContext new]
                     trackingConsent:trackingConsent
-                        configuration:[builder build]];
+                      configuration:[builder build]];
 ```
 {{% /tab %}}
 {{< /tabs >}}

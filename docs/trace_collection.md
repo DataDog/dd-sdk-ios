@@ -63,7 +63,7 @@ Datadog.initialize(
 {{% tab "Objective-C" %}}
 ```objective-c
 DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<client_token>"
-                                                                  environment:@"<environment_name>"];
+                                                              environment:@"<environment_name>"];
 [builder setWithServiceName:@"app-name"];
 [builder setWithEndpoint:[DDEndpoint us1]];
 
@@ -99,7 +99,7 @@ DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<cli
 
 [DDDatadog initializeWithAppContext:[DDAppContext new]
                     trackingConsent:trackingConsent
-                        configuration:[builder build]];
+                      configuration:[builder build]];
 ```
 {{% /tab %}}
 {{< /tabs >}}

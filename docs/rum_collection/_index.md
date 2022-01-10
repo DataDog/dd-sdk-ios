@@ -58,7 +58,11 @@ Datadog.initialize(
     appContext: .init(),
     trackingConsent: trackingConsent,
     configuration: Datadog.Configuration
-        .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
+        .builderUsing(
+            rumApplicationID: "<rum_application_id>",
+            clientToken: "<client_token>",
+            environment: "<environment_name>"
+        )
         .set(serviceName: "app-name")
         .set(endpoint: .us1)
         .build()
@@ -67,8 +71,9 @@ Datadog.initialize(
 {{% /tab %}}
 {{% tab "Objective-C" %}}
 ```objective-c
-DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<client_token>"
-                                                                  environment:@"<environment_name>"];
+DDConfigurationBuilder *builder = [DDConfiguration builderWithRumApplicationID:@"<rum_application_id>"
+                                                                   clientToken:@"<client_token>"
+                                                                   environment:@"<environment_name>"];
 [builder setWithServiceName:@"app-name"];
 [builder setWithEndpoint:[DDEndpoint us1]];
 
@@ -114,7 +119,7 @@ DDConfigurationBuilder *builder = [DDConfiguration builderWithRumApplicationID:@
 
 [DDDatadog initializeWithAppContext:[DDAppContext new]
                     trackingConsent:trackingConsent
-                        configuration:[builder build]];
+                      configuration:[builder build]];
 ```
 {{% /tab %}}
 {{< /tabs >}}
