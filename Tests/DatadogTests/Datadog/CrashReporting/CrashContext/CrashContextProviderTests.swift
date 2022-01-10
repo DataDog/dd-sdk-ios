@@ -159,7 +159,7 @@ class CrashContextProviderTests: XCTestCase {
 
     // MARK: - `NetworkConnectionInfo` Integration
 
-    func testWhenCurrentValueIsObtainedFromNetworkConnectionInfoProvider_thenCrashContextProviderNotifiesNewContext() {
+    func testWhenCurrentValueIsObtainedFromNetworkConnectionInfoProvider_thenCrashContextProviderNotifiesNewContext() throws {
         let expectation = self.expectation(description: "Notify new crash context")
         let initialNetworkConnectionInfo: NetworkConnectionInfo = .mockRandom()
         let wrappedProvider = NetworkConnectionInfoProviderMock(networkConnectionInfo: initialNetworkConnectionInfo)
@@ -188,8 +188,9 @@ class CrashContextProviderTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 1, handler: nil)
-        XCTAssertEqual(initialContext.lastNetworkConnectionInfo, initialNetworkConnectionInfo)
-        XCTAssertEqual(updatedContext?.lastNetworkConnectionInfo, currentNetworkConnectionInfo)
+        let updatedNetworkConnectionInfo = try XCTUnwrap(updatedContext?.lastNetworkConnectionInfo)
+        XCTAssertEqual(initialContext.lastNetworkConnectionInfo, initialNetworkConnectionInfo, "It must store initial network info")
+        XCTAssertEqual(updatedNetworkConnectionInfo, currentNetworkConnectionInfo, "It must store updated network info")
     }
 
     // MARK: - `CarrierInfo` Integration
