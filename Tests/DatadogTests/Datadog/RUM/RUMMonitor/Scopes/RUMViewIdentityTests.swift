@@ -89,12 +89,15 @@ class RUMViewIdentityTests: XCTestCase {
     // MARK: - Memory management
 
     func testItStoresWeakReferenceToUIViewController() throws {
-        var vc: UIViewController? = UIViewController()
+        var identity: RUMViewIdentity! // swiftlint:disable:this implicitly_unwrapped_optional
 
-        let identity = try XCTUnwrap(vc?.asRUMViewIdentity())
+        try autoreleasepool {
+            var vc: UIViewController? = UIViewController()
+            identity = try XCTUnwrap(vc?.asRUMViewIdentity())
+            XCTAssertNotNil(identity.identifiable, "Reference should be available while `vc` is alive.")
+            vc = nil
+        }
 
-        XCTAssertNotNil(identity.identifiable, "Reference should be available while `vc` is alive.")
-        vc = nil
         XCTAssertNil(identity.identifiable, "Reference should not be available after `vc` was deallocated.")
     }
 }
