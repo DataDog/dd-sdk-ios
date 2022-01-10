@@ -101,6 +101,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         } else {
             // We know it is too late for sending RUM view to previous RUM session as it is now stale on backend.
             // To avoid inconsistency, we only send the RUM error.
+            userLogger.debug("Sending crash as RUM error.")
             let rumError = createRUMError(from: crashReport, and: lastRUMViewEvent, crashDate: crashTimings.realCrashDate)
             rumEventOutput.write(rumEvent: rumError)
         }
@@ -146,7 +147,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 crashContext: crashContext
             )
         case .doNotHandle:
-            // This can mean that the crash happened in background and BET is disabled OR that the previous session was sampled.
+            userLogger.debug("There was a crash in background, but it is ignored due to Background Event Tracking disabled or sampling.")
             newRUMView = nil
         }
 
@@ -191,7 +192,8 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 crashContext: crashContext
             )
         case .doNotHandle:
-            newRUMView = nil // could mean that the crash happened in background and BET is disabled
+            userLogger.debug("There was a crash in background, but it is ignored due to Background Event Tracking disabled.")
+            newRUMView = nil
         }
 
         if let newRUMView = newRUMView {
@@ -201,6 +203,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
 
     /// Sends given `CrashReport` by linking it to given `rumView` and updating view counts accordingly.
     private func send(crashReport: DDCrashReport, to rumView: RUMEvent<RUMViewEvent>, using realCrashDate: Date) {
+        userLogger.debug("Updating RUM view with crash report.")
         let updatedRUMView = updateRUMViewWithNewError(rumView, crashDate: realCrashDate)
         let rumError = createRUMError(from: crashReport, and: updatedRUMView, crashDate: realCrashDate)
         rumEventOutput.write(rumEvent: rumError)
