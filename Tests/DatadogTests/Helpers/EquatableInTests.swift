@@ -38,7 +38,6 @@ private func equalsAny(lhs: Any, rhs: Any) -> Bool {
 
     switch (lhsMirror.displayStyle, rhsMirror.displayStyle) {
     case (.dictionary?, .dictionary?): // two dictionaries
-        print("Two dictionaries: \(lhs) vs \(rhs)")
         let lhsDictionary = lhs as! [String: Any]
         let rhsDictionary = rhs as! [String: Any]
 

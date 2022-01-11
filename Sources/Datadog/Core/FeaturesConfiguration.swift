@@ -48,7 +48,8 @@ internal struct FeaturesConfiguration {
         let uploadURL: URL
         let clientToken: String
         let applicationID: String
-        let sessionSamplingRate: Float
+        let sessionSampler: Sampler
+        let uuidGenerator: RUMUUIDGenerator
         let viewEventMapper: RUMViewEventMapper?
         let resourceEventMapper: RUMResourceEventMapper?
         let actionEventMapper: RUMActionEventMapper?
@@ -205,7 +206,8 @@ extension FeaturesConfiguration {
                     uploadURL: try ifValid(endpointURLString: rumEndpoint.url),
                     clientToken: try ifValid(clientToken: configuration.clientToken),
                     applicationID: rumApplicationID,
-                    sessionSamplingRate: debugOverride ? 100.0 : configuration.rumSessionsSamplingRate,
+                    sessionSampler: Sampler(samplingRate: debugOverride ? 100.0 : configuration.rumSessionsSamplingRate),
+                    uuidGenerator: DefaultRUMUUIDGenerator(),
                     viewEventMapper: configuration.rumViewEventMapper,
                     resourceEventMapper: configuration.rumResourceEventMapper,
                     actionEventMapper: configuration.rumActionEventMapper,

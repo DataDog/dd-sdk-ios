@@ -10,15 +10,32 @@ import XCTest
 class RUMWithCrashContextIntegrationTests: XCTestCase {
     func testWhenCrashReportingIsEnabled_itUpdatesCrashContextWithLastRUMView() throws {
         // When
+        let crashReporting: CrashReportingFeature = .mockNoOp()
+        CrashReportingFeature.instance = crashReporting
+        defer { CrashReportingFeature.instance?.deinitialize() }
+
+        let rumWithCrashContextIntegration = try XCTUnwrap(RUMWithCrashContextIntegration())
+
+        // Then
+        let randomRUMViewEvent: RUMEvent<RUMViewEvent> = .mockRandom()
+        rumWithCrashContextIntegration.update(lastRUMViewEvent: randomRUMViewEvent)
+        XCTAssertEqual(crashReporting.rumViewEventProvider.currentValue, randomRUMViewEvent)
+
+        rumWithCrashContextIntegration.update(lastRUMViewEvent: nil)
+        XCTAssertNil(crashReporting.rumViewEventProvider.currentValue)
+    }
+
+    func testWhenCrashReportingIsEnabled_itUpdatesCrashContextWithRUMSessionState() throws {
+        // When
         CrashReportingFeature.instance = .mockNoOp()
         defer { CrashReportingFeature.instance?.deinitialize() }
 
         // Then
         let rumWithCrashContextIntegration = try XCTUnwrap(RUMWithCrashContextIntegration())
-        let randomRUMViewEvent: RUMEvent<RUMViewEvent> = .mockRandom()
-        rumWithCrashContextIntegration.update(lastRUMViewEvent: randomRUMViewEvent)
+        let randomRUMSessionState: RUMSessionState = .mockRandom()
+        rumWithCrashContextIntegration.update(lastRUMSessionState: randomRUMSessionState)
 
-        XCTAssertEqual(CrashReportingFeature.instance?.rumViewEventProvider.currentValue, randomRUMViewEvent)
+        XCTAssertEqual(CrashReportingFeature.instance?.rumSessionStateProvider.currentValue, randomRUMSessionState)
     }
 
     func testWhenCrashReportingIsNotEnabled_itCannotBeInitialized() {

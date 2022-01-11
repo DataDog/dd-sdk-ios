@@ -14,8 +14,6 @@
 		61C36425243752A600C4D4E6 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61C36423243752A600C4D4E6 /* LaunchScreen.storyboard */; };
 		61C36430243752A600C4D4E6 /* CTProjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3642F243752A600C4D4E6 /* CTProjectTests.swift */; };
 		61C3643B243752A600C4D4E6 /* CTProjectUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3643A243752A600C4D4E6 /* CTProjectUITests.swift */; };
-		9E9D5E8825F90FC6002F12A0 /* Kronos.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E9D5E8525F90FC6002F12A0 /* Kronos.xcframework */; };
-		9E9D5E8925F90FC6002F12A0 /* Kronos.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9E9D5E8525F90FC6002F12A0 /* Kronos.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9E9D5E8A25F90FC6002F12A0 /* DatadogObjc.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E9D5E8625F90FC6002F12A0 /* DatadogObjc.xcframework */; };
 		9E9D5E8B25F90FC6002F12A0 /* DatadogObjc.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9E9D5E8625F90FC6002F12A0 /* DatadogObjc.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9E9D5E8C25F90FC6002F12A0 /* Datadog.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E9D5E8725F90FC6002F12A0 /* Datadog.xcframework */; };
@@ -52,7 +50,6 @@
 				9EF87B8D26B04E1F00998076 /* CrashReporter.xcframework in Embed Frameworks */,
 				9E9D5E8D25F90FC6002F12A0 /* Datadog.xcframework in Embed Frameworks */,
 				9E9D5E8B25F90FC6002F12A0 /* DatadogObjc.xcframework in Embed Frameworks */,
-				9E9D5E8925F90FC6002F12A0 /* Kronos.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -90,7 +87,6 @@
 				9EF87B8C26B04E1F00998076 /* CrashReporter.xcframework in Frameworks */,
 				9E9D5E8C25F90FC6002F12A0 /* Datadog.xcframework in Frameworks */,
 				9E9D5E8A25F90FC6002F12A0 /* DatadogObjc.xcframework in Frameworks */,
-				9E9D5E8825F90FC6002F12A0 /* Kronos.xcframework in Frameworks */,
 				9EF87B8E26B04E1F00998076 /* DatadogCrashReporting.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

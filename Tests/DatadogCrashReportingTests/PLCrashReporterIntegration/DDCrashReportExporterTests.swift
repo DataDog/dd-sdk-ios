@@ -360,7 +360,7 @@ class DDCrashReportExporterTests: XCTestCase {
     // MARK: - Comparing with PLCR text format
 
     func testExportedStacksHaveTheSameFormatAndValuesAsIfTheyWereExportedFromPLCR() throws {
-        let crashReporter = PLCrashReporter(configuration: .ddConfiguration())!
+        let crashReporter = try PLCrashReporter(configuration: .ddConfiguration())!
 
         // Given
         let plCrashReport = try PLCrashReport(
@@ -393,7 +393,7 @@ class DDCrashReportExporterTests: XCTestCase {
     }
 
     func testExportedBinaryImagesHaveTheSameValuesAsIfTheyWereExportedFromPLCR() throws {
-        let crashReporter = PLCrashReporter(configuration: .ddConfiguration())!
+        let crashReporter = try PLCrashReporter(configuration: .ddConfiguration())!
 
         // Given
         let plCrashReport = try PLCrashReport(

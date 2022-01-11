@@ -53,6 +53,13 @@ class TimeIntervalExtensionTests: XCTestCase {
     }
 }
 
+class UUIDExtensionTests: XCTestCase {
+    func testNullUUID() {
+        let uuid: UUID = .nullUUID
+        XCTAssertEqual(uuid.uuidString, "00000000-0000-0000-0000-000000000000", "It must be all zeroes")
+    }
+}
+
 class IntegerOverflowExtensionTests: XCTestCase {
     func testHappyPath() {
         let reasonableDouble = Double(1_000.123_456)

@@ -9,13 +9,23 @@ import Datadog
 
 internal extension PLCrashReporterConfig {
     /// `PLCR` configuration used for `DatadogCrashReporting`
-    static func ddConfiguration() -> PLCrashReporterConfig {
+    static func ddConfiguration() throws -> PLCrashReporterConfig {
+        let version = "v1"
+
+        guard let cache = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+            throw CrashReportException(description: "Cannot obtain `/Library/Caches/` url.")
+        }
+
+        let directory = cache.appendingPathComponent("com.datadoghq.crash-reporting/\(version)", isDirectory: true)
+
         return PLCrashReporterConfig(
             // The choice of `.BSD` over `.mach` is well discussed here:
-            // https://github.com/ChatSecure/PLCrashReporter/blob/7f27b272d5ff0d6650fc41317127bb2378ed6e88/Source/CrashReporter.h#L238-L363
+            // https://github.com/microsoft/PLCrashReporter/blob/7f27b272d5ff0d6650fc41317127bb2378ed6e88/Source/CrashReporter.h#L238-L363
             signalHandlerType: .BSD,
             // We don't symbolicate on device. All symbolication will happen backend-side.
-            symbolicationStrategy: []
+            symbolicationStrategy: [],
+            // Set a custom path to avoid conflicts with other PLC instances
+            basePath: directory.path
         )
     }
 }
@@ -25,7 +35,7 @@ internal final class PLCrashReporterIntegration: ThirdPartyCrashReporter {
     private let builder = DDCrashReportBuilder()
 
     init() throws {
-        self.crashReporter = PLCrashReporter(configuration: .ddConfiguration())
+        self.crashReporter = try PLCrashReporter(configuration: .ddConfiguration())
         try crashReporter.enableAndReturnError()
     }
 
@@ -102,4 +112,5 @@ private struct PLCrashReportDiagnosticInfo: Encodable {
         self.numberOfStackFramesInCrashedThread = numberOfStackFramesInCrashedThread
     }
 }
+
 #endif

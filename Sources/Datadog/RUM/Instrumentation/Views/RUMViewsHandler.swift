@@ -30,9 +30,9 @@ internal final class RUMViewsHandler {
     /// disabled.
     private let predicate: UIKitRUMViewsPredicate?
 
-    /// The notification center where this handler observe the following notifications:
-    /// - `UIApplicationDidEnterBackgroundNotification`
-    /// - `UIApplicationWillEnterForegroundNotification`
+    /// The notification center where this handler observes following `UIApplication` notifications:
+    /// - `.didEnterBackgroundNotification`
+    /// - `.willEnterForegroundNotification`
     private weak var notificationCenter: NotificationCenter?
 
     /// The RUM Command subscriber responsible for processing
