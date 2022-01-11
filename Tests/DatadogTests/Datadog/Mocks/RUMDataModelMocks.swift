@@ -55,10 +55,12 @@ extension RUMViewEvent: RandomMockable {
     static func mockRandom() -> RUMViewEvent {
         return RUMViewEvent(
             dd: .init(
+                browserSdkVersion: nil,
                 documentVersion: .mockRandom(),
                 session: .init(plan: .plan1)
             ),
             application: .init(id: .mockRandom()),
+            ciTest: nil,
             connectivity: .mockRandom(),
             context: .mockRandom(),
             date: .mockRandom(),
@@ -117,12 +119,14 @@ extension RUMResourceEvent: RandomMockable {
     static func mockRandom() -> RUMResourceEvent {
         return RUMResourceEvent(
             dd: .init(
+                browserSdkVersion: nil,
                 session: .init(plan: .plan1),
                 spanId: .mockRandom(),
                 traceId: .mockRandom()
             ),
             action: .init(id: .mockRandom()),
             application: .init(id: .mockRandom()),
+            ciTest: nil,
             connectivity: .mockRandom(),
             context: .mockRandom(),
             date: .mockRandom(),
@@ -167,6 +171,7 @@ extension RUMActionEvent: RandomMockable {
     static func mockRandom() -> RUMActionEvent {
         return RUMActionEvent(
             dd: .init(
+                browserSdkVersion: nil,
                 session: .init(plan: .plan1)
             ),
             action: .init(
@@ -180,6 +185,7 @@ extension RUMActionEvent: RandomMockable {
                 type: [.tap, .swipe, .scroll].randomElement()!
             ),
             application: .init(id: .mockRandom()),
+            ciTest: nil,
             connectivity: .mockRandom(),
             context: .mockRandom(),
             date: .mockRandom(),
@@ -211,10 +217,12 @@ extension RUMErrorEvent: RandomMockable {
     static func mockRandom() -> RUMErrorEvent {
         return RUMErrorEvent(
             dd: .init(
+                browserSdkVersion: nil,
                 session: .init(plan: .plan1)
             ),
             action: .init(id: .mockRandom()),
             application: .init(id: .mockRandom()),
+            ciTest: nil,
             connectivity: .mockRandom(),
             context: .mockRandom(),
             date: .mockRandom(),
@@ -260,9 +268,13 @@ extension RUMErrorEvent: RandomMockable {
 extension RUMLongTaskEvent: RandomMockable {
     static func mockRandom() -> RUMLongTaskEvent {
         return RUMLongTaskEvent(
-            dd: .init(session: .init(plan: .plan1)),
+            dd: .init(
+                browserSdkVersion: nil,
+                session: .init(plan: .plan1)
+            ),
             action: .init(id: .mockRandom()),
             application: .init(id: .mockRandom()),
+            ciTest: nil,
             connectivity: .mockRandom(),
             context: .mockRandom(),
             date: .mockRandom(),

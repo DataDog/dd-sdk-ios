@@ -16,6 +16,9 @@ public struct RUMViewEvent: RUMDataModel {
     /// Application properties
     public let application: Application
 
+    /// CI Visibility properties
+    public let ciTest: CiTest?
+
     /// Device connectivity properties
     public let connectivity: RUMConnectivity?
 
@@ -46,6 +49,7 @@ public struct RUMViewEvent: RUMDataModel {
     enum CodingKeys: String, CodingKey {
         case dd = "_dd"
         case application = "application"
+        case ciTest = "ci_test"
         case connectivity = "connectivity"
         case context = "context"
         case date = "date"
@@ -59,6 +63,9 @@ public struct RUMViewEvent: RUMDataModel {
 
     /// Internal properties
     public struct DD: Codable {
+        /// Browser SDK version
+        public let browserSdkVersion: String?
+
         /// Version of the update of the view event
         public let documentVersion: Int64
 
@@ -69,6 +76,7 @@ public struct RUMViewEvent: RUMDataModel {
         public let session: Session?
 
         enum CodingKeys: String, CodingKey {
+            case browserSdkVersion = "browser_sdk_version"
             case documentVersion = "document_version"
             case formatVersion = "format_version"
             case session = "session"
@@ -101,6 +109,16 @@ public struct RUMViewEvent: RUMDataModel {
         }
     }
 
+    /// CI Visibility properties
+    public struct CiTest: Codable {
+        /// The identifier of the current CI Visibility test execution
+        public let testExecutionId: String
+
+        enum CodingKeys: String, CodingKey {
+            case testExecutionId = "test_execution_id"
+        }
+    }
+
     /// Session properties
     public struct Session: Codable {
         /// Whether this session has a replay
@@ -122,11 +140,15 @@ public struct RUMViewEvent: RUMDataModel {
         public enum SessionType: String, Codable {
             case user = "user"
             case synthetics = "synthetics"
+            case ciTest = "ci_test"
         }
     }
 
     /// Synthetics properties
     public struct Synthetics: Codable {
+        /// Whether the event comes from a SDK instance injected by Synthetics
+        public let injected: Bool?
+
         /// The identifier of the current Synthetics test results
         public let resultId: String
 
@@ -134,6 +156,7 @@ public struct RUMViewEvent: RUMDataModel {
         public let testId: String
 
         enum CodingKeys: String, CodingKey {
+            case injected = "injected"
             case resultId = "result_id"
             case testId = "test_id"
         }
@@ -371,6 +394,9 @@ public struct RUMResourceEvent: RUMDataModel {
     /// Application properties
     public let application: Application
 
+    /// CI Visibility properties
+    public let ciTest: CiTest?
+
     /// Device connectivity properties
     public let connectivity: RUMConnectivity?
 
@@ -405,6 +431,7 @@ public struct RUMResourceEvent: RUMDataModel {
         case dd = "_dd"
         case action = "action"
         case application = "application"
+        case ciTest = "ci_test"
         case connectivity = "connectivity"
         case context = "context"
         case date = "date"
@@ -419,6 +446,9 @@ public struct RUMResourceEvent: RUMDataModel {
 
     /// Internal properties
     public struct DD: Codable {
+        /// Browser SDK version
+        public let browserSdkVersion: String?
+
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
@@ -432,6 +462,7 @@ public struct RUMResourceEvent: RUMDataModel {
         public let traceId: String?
 
         enum CodingKeys: String, CodingKey {
+            case browserSdkVersion = "browser_sdk_version"
             case formatVersion = "format_version"
             case session = "session"
             case spanId = "span_id"
@@ -472,6 +503,16 @@ public struct RUMResourceEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
+        }
+    }
+
+    /// CI Visibility properties
+    public struct CiTest: Codable {
+        /// The identifier of the current CI Visibility test execution
+        public let testExecutionId: String
+
+        enum CodingKeys: String, CodingKey {
+            case testExecutionId = "test_execution_id"
         }
     }
 
@@ -693,11 +734,15 @@ public struct RUMResourceEvent: RUMDataModel {
         public enum SessionType: String, Codable {
             case user = "user"
             case synthetics = "synthetics"
+            case ciTest = "ci_test"
         }
     }
 
     /// Synthetics properties
     public struct Synthetics: Codable {
+        /// Whether the event comes from a SDK instance injected by Synthetics
+        public let injected: Bool?
+
         /// The identifier of the current Synthetics test results
         public let resultId: String
 
@@ -705,6 +750,7 @@ public struct RUMResourceEvent: RUMDataModel {
         public let testId: String
 
         enum CodingKeys: String, CodingKey {
+            case injected = "injected"
             case resultId = "result_id"
             case testId = "test_id"
         }
@@ -744,6 +790,9 @@ public struct RUMActionEvent: RUMDataModel {
     /// Application properties
     public let application: Application
 
+    /// CI Visibility properties
+    public let ciTest: CiTest?
+
     /// Device connectivity properties
     public let connectivity: RUMConnectivity?
 
@@ -775,6 +824,7 @@ public struct RUMActionEvent: RUMDataModel {
         case dd = "_dd"
         case action = "action"
         case application = "application"
+        case ciTest = "ci_test"
         case connectivity = "connectivity"
         case context = "context"
         case date = "date"
@@ -788,6 +838,9 @@ public struct RUMActionEvent: RUMDataModel {
 
     /// Internal properties
     public struct DD: Codable {
+        /// Browser SDK version
+        public let browserSdkVersion: String?
+
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
@@ -795,6 +848,7 @@ public struct RUMActionEvent: RUMDataModel {
         public let session: Session?
 
         enum CodingKeys: String, CodingKey {
+            case browserSdkVersion = "browser_sdk_version"
             case formatVersion = "format_version"
             case session = "session"
         }
@@ -925,6 +979,16 @@ public struct RUMActionEvent: RUMDataModel {
         }
     }
 
+    /// CI Visibility properties
+    public struct CiTest: Codable {
+        /// The identifier of the current CI Visibility test execution
+        public let testExecutionId: String
+
+        enum CodingKeys: String, CodingKey {
+            case testExecutionId = "test_execution_id"
+        }
+    }
+
     /// Session properties
     public struct Session: Codable {
         /// Whether this session has a replay
@@ -946,11 +1010,15 @@ public struct RUMActionEvent: RUMDataModel {
         public enum SessionType: String, Codable {
             case user = "user"
             case synthetics = "synthetics"
+            case ciTest = "ci_test"
         }
     }
 
     /// Synthetics properties
     public struct Synthetics: Codable {
+        /// Whether the event comes from a SDK instance injected by Synthetics
+        public let injected: Bool?
+
         /// The identifier of the current Synthetics test results
         public let resultId: String
 
@@ -958,6 +1026,7 @@ public struct RUMActionEvent: RUMDataModel {
         public let testId: String
 
         enum CodingKeys: String, CodingKey {
+            case injected = "injected"
             case resultId = "result_id"
             case testId = "test_id"
         }
@@ -1001,6 +1070,9 @@ public struct RUMErrorEvent: RUMDataModel {
     /// Application properties
     public let application: Application
 
+    /// CI Visibility properties
+    public let ciTest: CiTest?
+
     /// Device connectivity properties
     public let connectivity: RUMConnectivity?
 
@@ -1035,6 +1107,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case dd = "_dd"
         case action = "action"
         case application = "application"
+        case ciTest = "ci_test"
         case connectivity = "connectivity"
         case context = "context"
         case date = "date"
@@ -1049,6 +1122,9 @@ public struct RUMErrorEvent: RUMDataModel {
 
     /// Internal properties
     public struct DD: Codable {
+        /// Browser SDK version
+        public let browserSdkVersion: String?
+
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
@@ -1056,6 +1132,7 @@ public struct RUMErrorEvent: RUMDataModel {
         public let session: Session?
 
         enum CodingKeys: String, CodingKey {
+            case browserSdkVersion = "browser_sdk_version"
             case formatVersion = "format_version"
             case session = "session"
         }
@@ -1094,6 +1171,16 @@ public struct RUMErrorEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
+        }
+    }
+
+    /// CI Visibility properties
+    public struct CiTest: Codable {
+        /// The identifier of the current CI Visibility test execution
+        public let testExecutionId: String
+
+        enum CodingKeys: String, CodingKey {
+            case testExecutionId = "test_execution_id"
         }
     }
 
@@ -1223,6 +1310,7 @@ public struct RUMErrorEvent: RUMDataModel {
             case browser = "browser"
             case ios = "ios"
             case reactNative = "react-native"
+            case flutter = "flutter"
         }
     }
 
@@ -1247,11 +1335,15 @@ public struct RUMErrorEvent: RUMDataModel {
         public enum SessionType: String, Codable {
             case user = "user"
             case synthetics = "synthetics"
+            case ciTest = "ci_test"
         }
     }
 
     /// Synthetics properties
     public struct Synthetics: Codable {
+        /// Whether the event comes from a SDK instance injected by Synthetics
+        public let injected: Bool?
+
         /// The identifier of the current Synthetics test results
         public let resultId: String
 
@@ -1259,6 +1351,7 @@ public struct RUMErrorEvent: RUMDataModel {
         public let testId: String
 
         enum CodingKeys: String, CodingKey {
+            case injected = "injected"
             case resultId = "result_id"
             case testId = "test_id"
         }
@@ -1302,6 +1395,9 @@ public struct RUMLongTaskEvent: RUMDataModel {
     /// Application properties
     public let application: Application
 
+    /// CI Visibility properties
+    public let ciTest: CiTest?
+
     /// Device connectivity properties
     public let connectivity: RUMConnectivity?
 
@@ -1336,6 +1432,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case dd = "_dd"
         case action = "action"
         case application = "application"
+        case ciTest = "ci_test"
         case connectivity = "connectivity"
         case context = "context"
         case date = "date"
@@ -1350,6 +1447,9 @@ public struct RUMLongTaskEvent: RUMDataModel {
 
     /// Internal properties
     public struct DD: Codable {
+        /// Browser SDK version
+        public let browserSdkVersion: String?
+
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
@@ -1357,6 +1457,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         public let session: Session?
 
         enum CodingKeys: String, CodingKey {
+            case browserSdkVersion = "browser_sdk_version"
             case formatVersion = "format_version"
             case session = "session"
         }
@@ -1395,6 +1496,16 @@ public struct RUMLongTaskEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
+        }
+    }
+
+    /// CI Visibility properties
+    public struct CiTest: Codable {
+        /// The identifier of the current CI Visibility test execution
+        public let testExecutionId: String
+
+        enum CodingKeys: String, CodingKey {
+            case testExecutionId = "test_execution_id"
         }
     }
 
@@ -1437,11 +1548,15 @@ public struct RUMLongTaskEvent: RUMDataModel {
         public enum SessionType: String, Codable {
             case user = "user"
             case synthetics = "synthetics"
+            case ciTest = "ci_test"
         }
     }
 
     /// Synthetics properties
     public struct Synthetics: Codable {
+        /// Whether the event comes from a SDK instance injected by Synthetics
+        public let injected: Bool?
+
         /// The identifier of the current Synthetics test results
         public let resultId: String
 
@@ -1449,6 +1564,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         public let testId: String
 
         enum CodingKeys: String, CodingKey {
+            case injected = "injected"
             case resultId = "result_id"
             case testId = "test_id"
         }
@@ -1640,4 +1756,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/9c135e77bb1da61ebbb6b2fb3b39e156d5120a8e
+// Generated from https://github.com/DataDog/rum-events-format/tree/a7adc4275073e4d5bc146e9fdd4ceb4147379327
