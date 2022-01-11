@@ -38,11 +38,7 @@ internal class DateCorrector: DateCorrectorType {
         self.serverDateProvider = serverDateProvider
         serverDateProvider.synchronize(
             with: DateCorrector.datadogNTPServers.randomElement()!, // swiftlint:disable:this force_unwrapping
-            completion: { [weak self] offset in
-                guard let _ = self else {
-                    return
-                }
-
+            completion: { offset in
                 if let offset = offset {
                     let difference = (offset * 1_000).rounded() / 1_000
                     userLogger.info(
