@@ -33,17 +33,21 @@ internal class NTPServerDateProvider: ServerDateProvider {
                 self?.publisher.publishAsync(offset)
             },
             completion: { [weak self] now, offset in
+                guard let self = self else {
+                    return
+                }
+
                 // Kronos only notifies for the first and last samples.
                 // In case, the last sample does not return an offset, we calculate the offset
                 // from the returned `now` parameter. The `now` parameter in this callback
                 // is `Clock.now`, so it is possible to have `now` but not `offset`.
                 if let offset = offset {
-                    self?.publisher.publishAsync(offset)
+                    self.publisher.publishAsync(offset)
                 } else if let now = now {
-                    self?.publisher.publishAsync(now.timeIntervalSinceNow)
+                    self.publisher.publishAsync(now.timeIntervalSinceNow)
                 }
 
-                completion(self?.publisher.currentValue)
+                completion(self.publisher.currentValue)
             }
         )
 

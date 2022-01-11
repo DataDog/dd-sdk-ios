@@ -146,12 +146,23 @@ extension XCTestCase {
     ) throws {
         let prettyEncoder = JSONEncoder()
         prettyEncoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        let encodedValue1 = try prettyEncoder.encode(value1)
-        let encodedValue2 = try prettyEncoder.encode(value2)
-
-        let value1JSONString = encodedValue1.utf8String
-        let value2JSONString = encodedValue2.utf8String
-        XCTAssertEqual(value1JSONString, value2JSONString, file: file, line: line)
+        do {
+            let encodedValue1: Data
+            let encodedValue2: Data
+            if #available(iOS 13.0, *) {
+                encodedValue1 = try prettyEncoder.encode(value1)
+                encodedValue2 = try prettyEncoder.encode(value2)
+            } else {
+                encodedValue1 = try prettyEncoder.encode(EncodingContainer(value1))
+                encodedValue2 = try prettyEncoder.encode(EncodingContainer(value2))
+            }
+            let value1JSONString = encodedValue1.utf8String
+            let value2JSONString = encodedValue2.utf8String
+            XCTAssertEqual(value1JSONString, value2JSONString, file: file, line: line)
+        } catch let exception {
+            XCTFail("Failed to encode one of the values in `AssertEncodedRepresentationsEqual`", file: file, line: line)
+            throw exception
+        }
     }
 
     func AssertURLSessionTasksIdentical(

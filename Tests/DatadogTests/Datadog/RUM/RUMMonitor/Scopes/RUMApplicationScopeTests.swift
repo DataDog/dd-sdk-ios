@@ -151,7 +151,7 @@ class RUMApplicationScopeTests: XCTestCase {
             backgroundEventTrackingEnabled: .mockAny()
         )
 
-        let simulatedSessionsCount = 200
+        let simulatedSessionsCount = 400
         (0..<simulatedSessionsCount).forEach { _ in
             _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView))
             _ = scope.process(command: RUMStopViewCommand.mockWith(time: currentTime, identity: mockView))
@@ -161,7 +161,8 @@ class RUMApplicationScopeTests: XCTestCase {
         let viewEventsCount = try output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).count
         let trackedSessionsCount = Double(viewEventsCount) / 2 // each Session should send 2 View updates
 
-        XCTAssertGreaterThan(trackedSessionsCount, 100 * 0.8) // -20%
-        XCTAssertLessThan(trackedSessionsCount, 100 * 1.2) // +20%
+        let halfSessionsCount = 0.5 * Double(simulatedSessionsCount)
+        XCTAssertGreaterThan(trackedSessionsCount, halfSessionsCount * 0.8) // -20%
+        XCTAssertLessThan(trackedSessionsCount, halfSessionsCount * 1.2) // +20%
     }
 }
