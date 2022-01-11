@@ -7,8 +7,11 @@
 @testable import Datadog
 
 class KronosE2ETests: E2ETests {
-    /// The logger sending additional telemetry on Kronos execution. These logs are available in Mobile Integrations org.
+    /// The logger sending logs on Kronos execution. These logs are available in Mobile Integrations org.
     private var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
+    /// The logger sending telemetry on internal Kronos execution. These logs are available in Mobile Integrations org.
+    private var telemetryLogger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
+    private let queue = DispatchQueue(label: "kronos-monitor-queue")
 
     override func setUp() {
         super.setUp()
@@ -16,11 +19,31 @@ class KronosE2ETests: E2ETests {
             .builder
             .set(loggerName: "kronos-e2e")
             .build()
+        telemetryLogger = Logger.builder
+            .set(loggerName: "kronos-e2e-internal-telemetry")
+            .sendNetworkInfo(true)
+            .build()
     }
 
     override func tearDown() {
         logger = nil
+        telemetryLogger = nil
         super.tearDown()
+    }
+
+    /// Creates kronos monitor for checking connections to all IPs resolved from NTP pool and sending additional telemetry on their statuses.
+    private func createKronosMonitor() -> KronosMonitor? {
+        if #available(iOS 14.2, *) {
+            let monitor = KronosInternalMonitor(
+                queue: queue,
+                connectionMonitor: IPConnectionMonitor(queue: queue)
+            )
+            // Here we redirect IM's logger to E2E Kronos logger (`telemetryLogger`) to send data to Mobile Integrations org, not IM's org
+            monitor.export(to: InternalMonitor(sdkLogger: telemetryLogger))
+            return monitor
+        } else {
+            return nil
+        }
     }
 
     ///  TODO: RUMM-1859: Add E2E tests for monitoring Kronos in nightly tests
@@ -58,6 +81,7 @@ class KronosE2ETests: E2ETests {
             KronosClock.sync(
                 from: pool,
                 samples: numberOfSamplesForEachIP,
+                monitor: createKronosMonitor(),
                 first: { date, offset in // this closure could not be called if all samples to all servers resulted with failure
                     result.firstReceivedDate = date
                     result.firstReceivedOffset = offset
@@ -122,6 +146,7 @@ class KronosE2ETests: E2ETests {
 
         func performKronosNTPClientQuery() -> KronosNTPClientQueryResult {
             let testTimeout: TimeInterval = 30
+            let monitor = createKronosMonitor()
 
             // Given
             let pool = "2.datadog.pool.ntp.org" // a pool resolved to multiple IPv4 and IPv6 addresses (e.g. 4 + 4)
@@ -136,18 +161,22 @@ class KronosE2ETests: E2ETests {
             let completionExpectation = expectation(description: "It completes all samples for all IPs")
             var result = KronosNTPClientQueryResult()
 
+            monitor?.notifySyncStart(from: pool) // must be notified by hand because normally it's called from `KronosClock.sync()`
+
             KronosNTPClient()
                 .query(
                     pool: pool,
                     numberOfSamples: numberOfSamplesForEachIP,
                     maximumServers: .max, // query all resolved IPs in the pool - to include both IPv4 and IPv6
-                    timeout: timeoutForEachSample
+                    timeout: timeoutForEachSample,
+                    monitor: monitor
                 ) { offset, completed, total in
                     result.receivedOffsets.append(offset)
                     result.numberOfCompletedSamples = completed
                     result.expectedNumberOfSamples = total
 
                     if completed == total {
+                        monitor?.notifySyncEnd(serverOffset: offset) // must be notified by hand because normally it's called from `KronosClock.sync()`
                         completionExpectation.fulfill()
                     }
                 }

@@ -172,11 +172,19 @@ public class Datadog {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
 
+        let kronosMonitor: KronosMonitor?
+#if DD_SDK_ENABLE_INTERNAL_MONITORING
+        // Collect Kronos telemetry only if internal monitoring is compiled and enabled
+        kronosMonitor = configuration.internalMonitoring != nil ? KronosInternalMonitor() : nil
+#else
+        kronosMonitor = nil
+#endif
+
         let consentProvider = ConsentProvider(initialConsent: initialTrackingConsent)
         let dateProvider = SystemDateProvider()
         let dateCorrector = DateCorrector(
             deviceDateProvider: dateProvider,
-            serverDateProvider: NTPServerDateProvider()
+            serverDateProvider: NTPServerDateProvider(kronosMonitor: kronosMonitor)
         )
         let userInfoProvider = UserInfoProvider()
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
@@ -304,6 +312,12 @@ public class Datadog {
         if let crashReportingFeature = CrashReportingFeature.instance {
             Global.crashReporter = CrashReporter(crashReportingFeature: crashReportingFeature)
             Global.crashReporter?.sendCrashReportIfFound()
+        }
+
+        // If Internal Monitoring is enabled and Kronos internal monitor is configured,
+        // export result of NTP sync to IM.
+        if let internalMonitoringFeature = InternalMonitoringFeature.instance {
+            kronosMonitor?.export(to: internalMonitoringFeature.monitor)
         }
     }
 
