@@ -543,6 +543,15 @@ private class MetricMonitor: NSObject, MXMetricManagerSubscriber {
         self.launchTime = launchTime
         self.timestamp = Date()
         MXMetricManager.shared.add(self)
+
+        InternalMonitoringFeature.instance?.monitor.sdkLogger.info(
+            "Did request MetricKit metrics and diagnostics",
+            attributes: [
+                "application_launch_time": launchTime,
+                "active_pre_warm": ProcessInfo.processInfo.environment["ActivePrewarm"] ?? "(null)",
+                "os_version": ProcessInfo.processInfo.operatingSystemVersionString
+            ]
+        )
     }
 
     @available(iOS 13.0, *)
@@ -555,6 +564,8 @@ private class MetricMonitor: NSObject, MXMetricManagerSubscriber {
             "Did receive MetricKit metrics",
             attributes: [
                 "application_launch_time": launchTime,
+                "active_pre_warm": ProcessInfo.processInfo.environment["ActivePrewarm"] ?? "(null)",
+                "os_version": ProcessInfo.processInfo.operatingSystemVersionString,
                 "delay": Date().timeIntervalSince(timestamp),
                 "payloads": MetricEncodable(metrics)
             ]
@@ -570,6 +581,7 @@ private class MetricMonitor: NSObject, MXMetricManagerSubscriber {
         InternalMonitoringFeature.instance?.monitor.sdkLogger.info(
             "Did receive MetricKit diagnostics",
             attributes: [
+                "os_version": ProcessInfo.processInfo.operatingSystemVersionString,
                 "delay": Date().timeIntervalSince(timestamp),
                 "payloads": MetricEncodable(diagnostics)
             ]
