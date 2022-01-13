@@ -26,7 +26,7 @@ class URLSessionInterceptorTests: XCTestCase {
         let instrumentRUM = false
 
         // When
-        let appStateListener = AppStateListener.mockAny()
+        let appStateListener = AppStateListenerMock.mockAny()
         let interceptor = URLSessionInterceptor(
             configuration: .mockWith(instrumentTracing: instrumentTracing, instrumentRUM: instrumentRUM),
             dateProvider: SystemDateProvider(),
@@ -55,7 +55,7 @@ class URLSessionInterceptorTests: XCTestCase {
         let interceptor = URLSessionInterceptor(
             configuration: .mockWith(instrumentTracing: instrumentTracing, instrumentRUM: instrumentRUM),
             dateProvider: SystemDateProvider(),
-            appStateListener: AppStateListener.mockAny()
+            appStateListener: AppStateListenerMock.mockAny()
         )
 
         // Then
@@ -79,7 +79,7 @@ class URLSessionInterceptorTests: XCTestCase {
         let interceptor = URLSessionInterceptor(
             configuration: .mockWith(instrumentTracing: instrumentTracing, instrumentRUM: instrumentRUM),
             dateProvider: SystemDateProvider(),
-            appStateListener: AppStateListener.mockAny()
+            appStateListener: AppStateListenerMock.mockAny()
         )
 
         // Then

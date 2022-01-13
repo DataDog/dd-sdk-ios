@@ -11,43 +11,54 @@ import UIKit
 class VitalRefreshRateReaderTests: XCTestCase {
     private let mockNotificationCenter = NotificationCenter()
 
-    func testHighAndLowRefreshRates() {
+    func testWhenMainThreadOverheadGoesUp_itMeasuresLowerRefreshRate() throws {
         let reader = VitalRefreshRateReader(notificationCenter: mockNotificationCenter)
-        let registrar_view1 = VitalPublisher(initialValue: VitalInfo())
-        let registrar_view2 = VitalPublisher(initialValue: VitalInfo())
+        let targetSamplesCount = 30
 
-        // View1 has simple UI, high FPS expected
-        reader.register(registrar_view1)
-
-        // Wait without blocking UI thread
-        let expectation1 = expectation(description: "async expectation for first observer")
-        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
-            expectation1.fulfill()
+        /// Runs given work on the main thread until `condition` is met, then calls `completion`.
+        func run(mainThreadWork: @escaping () -> Void, until condition: @escaping () -> Bool, completion: @escaping () -> Void) {
+            if !condition() {
+                mainThreadWork()
+                DispatchQueue.main.async { // schedule to next runloop
+                    run(mainThreadWork: mainThreadWork, until: condition, completion: completion)
+                }
+            } else {
+                completion()
+            }
         }
 
-        waitForExpectations(timeout: 1.0) { _ in
-            XCTAssertGreaterThan(registrar_view1.currentValue.sampleCount, 0)
-            XCTAssertGreaterThan(UIScreen.main.maximumFramesPerSecond, Int(registrar_view1.currentValue.maxValue!))
-            XCTAssertGreaterThan(registrar_view1.currentValue.minValue!, 0.0)
+        /// Records `targetSamplesCount` samples into `measure` by running given work on the main thread.
+        func record(_ measure: VitalPublisher, mainThreadWork: @escaping () -> Void) {
+            let completion = expectation(description: "Complete measurement")
+            reader.register(measure)
+
+            run(
+                mainThreadWork: mainThreadWork,
+                until: { measure.currentValue.sampleCount == targetSamplesCount },
+                completion: {
+                    reader.unregister(measure)
+                    completion.fulfill()
+                }
+            )
+
+            wait(for: [completion], timeout: 10)
         }
 
-        reader.unregister(registrar_view1)
+        // Given
+        let lowOverhead = { /* no-op */ } // no overhead in succeeding runloop runs
+        let lowOverheadMeasure = VitalPublisher(initialValue: VitalInfo())
 
-        // View2 has complex UI, lower FPS expected
-        reader.register(registrar_view2)
+        let highOverhead = { Thread.sleep(forTimeInterval: 0.02) } // 0.02 overhead in succeeding runloop runs
+        let highOverheadMeasure = VitalPublisher(initialValue: VitalInfo())
 
-        // Block UI thread
-        Thread.sleep(forTimeInterval: 1.0)
+        // When
+        record(lowOverheadMeasure, mainThreadWork: lowOverhead)
+        record(highOverheadMeasure, mainThreadWork: highOverhead)
 
-        // Wait after blocking UI thread so that reader will read refresh rate before assertions
-        let expectation2 = expectation(description: "async expectation for second observer")
-        DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
-            expectation2.fulfill()
-        }
-        waitForExpectations(timeout: 0.5) { _ in }
-
-        XCTAssertGreaterThan(registrar_view2.currentValue.sampleCount, 0)
-        XCTAssertGreaterThan(registrar_view1.currentValue.meanValue!, registrar_view2.currentValue.meanValue!)
+        // Then
+        let expectedHighFPS = try XCTUnwrap(lowOverheadMeasure.currentValue.meanValue)
+        let expectedLowFPS = try XCTUnwrap(highOverheadMeasure.currentValue.meanValue)
+        XCTAssertGreaterThan(expectedHighFPS, expectedLowFPS, "It must measure higher FPS for lower main thread overhead")
     }
 
     func testAppStateHandling() {

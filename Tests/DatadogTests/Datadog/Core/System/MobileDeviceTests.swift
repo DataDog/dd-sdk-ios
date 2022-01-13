@@ -11,10 +11,6 @@ import UIKit
 class MobileDeviceTests: XCTestCase {
     private let notificationCenter = NotificationCenter()
 
-    func testWhenRunningOnMobile_itReturnsDevice() {
-        XCTAssertNotNil(MobileDevice.current)
-    }
-
     func testWhenRunningOnMobile_itUsesUIDeviceInfo() {
         let uiDevice = UIDeviceMock(
             model: "model mock",

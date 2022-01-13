@@ -27,6 +27,7 @@ class RUMScrubbingScenarioTests: IntegrationTests, RUMCommonAsserts {
         assertRUM(requests: recordedRUMRequests)
 
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
+        sendCIAppLog(session)
 
         XCTAssertEqual(session.viewVisits.count, 1)
         let viewVisit = session.viewVisits[0]

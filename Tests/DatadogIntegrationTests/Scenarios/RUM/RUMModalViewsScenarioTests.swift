@@ -9,7 +9,7 @@ import XCTest
 
 private extension ExampleApplication {
     func tapButton(titled buttonTitle: String) {
-        buttons[buttonTitle].tap()
+        buttons[buttonTitle].safeTap(within: 5)
     }
 
     func swipeToPullModalDown() {
@@ -59,6 +59,8 @@ class RUMModalViewsScenarioTests: IntegrationTests, RUMCommonAsserts {
         assertRUM(requests: recordedRUMRequests)
 
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
+        sendCIAppLog(session)
+
         let visits = session.viewVisits
         XCTAssertEqual(visits[0].name, "Screen")
         XCTAssertEqual(visits[0].path, "Example.RUMMVSViewController")

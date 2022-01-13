@@ -79,7 +79,10 @@ internal class URLSessionTracingHandler: URLSessionInterceptionHandler {
             between: resourceMetrics.fetch.start...resourceMetrics.fetch.end
         )
         span.setTag(key: DDTags.foregroundDuration, value: appStateHistory.foregroundDuration.toNanoseconds)
-        span.setTag(key: DDTags.isBackground, value: appStateHistory.didRunInBackground)
+
+        let didStartInBackground = appStateHistory.initialSnapshot.state == .background
+        let doesEndInBackground = appStateHistory.currentSnapshot.state == .background
+        span.setTag(key: DDTags.isBackground, value: didStartInBackground || doesEndInBackground)
 
         span.finish(at: resourceMetrics.fetch.end)
     }

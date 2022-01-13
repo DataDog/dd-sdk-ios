@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import class UIKit.UIViewController
 
 internal class RUMSessionScope: RUMScope, RUMContextProvider {
     struct Constants {
@@ -18,42 +17,63 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     // MARK: - Child Scopes
 
     /// Active View scopes. Scopes are added / removed when the View starts / stops displaying.
-    private(set) var viewScopes: [RUMViewScope] = []
+    private(set) var viewScopes: [RUMViewScope] = [] {
+        didSet {
+            if !state.hasTrackedAnyView && !viewScopes.isEmpty {
+                state = RUMSessionState(sessionUUID: state.sessionUUID, isInitialSession: state.isInitialSession, hasTrackedAnyView: true)
+            }
+        }
+    }
+
+    /// Information about this session state, shared with `CrashContext`.
+    private var state: RUMSessionState {
+        didSet {
+            dependencies.crashContextIntegration?.update(lastRUMSessionState: state)
+        }
+    }
 
     // MARK: - Initialization
 
     unowned let parent: RUMContextProvider
     private let dependencies: RUMScopeDependencies
 
-    /// Automatically detect background events
+    /// Automatically detect background events by creating "Background" view if no other view is active
     internal let backgroundEventTrackingEnabled: Bool
 
     /// This Session UUID. Equals `.nullUUID` if the Session is sampled.
     let sessionUUID: RUMUUID
-    /// Tells if events from this Session should be sampled-out (not send).
-    let shouldBeSampledOut: Bool
-    /// RUM Session sampling rate.
-    private let samplingRate: Float
-    /// The start time of this Session.
+    /// If events from this session should be sampled (send to Datadog).
+    let isSampled: Bool
+    /// If this is the very first session created in the current app process (`false` for session created upon expiration of a previous one).
+    let isInitialSession: Bool
+    /// RUM Session sampler.
+    private let sampler: Sampler
+    /// The start time of this Session, measured in device date. In initial session this is the time of SDK init.
     private let sessionStartTime: Date
     /// Time of the last RUM interaction noticed by this Session.
     private var lastInteractionTime: Date
 
     init(
+        isInitialSession: Bool,
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
-        samplingRate: Float,
+        sampler: Sampler,
         startTime: Date,
         backgroundEventTrackingEnabled: Bool
     ) {
         self.parent = parent
         self.dependencies = dependencies
-        self.samplingRate = samplingRate
-        self.shouldBeSampledOut = RUMSessionScope.randomizeSampling(using: samplingRate)
-        self.sessionUUID = shouldBeSampledOut ? .nullUUID : dependencies.rumUUIDGenerator.generateUnique()
+        self.sampler = sampler
+        self.isSampled = sampler.sample()
+        self.sessionUUID = isSampled ? dependencies.rumUUIDGenerator.generateUnique() : .nullUUID
+        self.isInitialSession = isInitialSession
         self.sessionStartTime = startTime
         self.lastInteractionTime = startTime
         self.backgroundEventTrackingEnabled = backgroundEventTrackingEnabled
+        self.state = RUMSessionState(sessionUUID: sessionUUID.rawValue, isInitialSession: isInitialSession, hasTrackedAnyView: false)
+
+        // Update `CrashContext` with recent RUM session state:
+        dependencies.crashContextIntegration?.update(lastRUMSessionState: state)
     }
 
     /// Creates a new Session upon expiration of the previous one.
@@ -62,9 +82,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         startTime: Date
     ) {
         self.init(
+            isInitialSession: false,
             parent: expiredSession.parent,
             dependencies: expiredSession.dependencies,
-            samplingRate: expiredSession.samplingRate,
+            sampler: expiredSession.sampler,
             startTime: startTime,
             backgroundEventTrackingEnabled: expiredSession.backgroundEventTrackingEnabled
         )
@@ -75,6 +96,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 return nil // if the underlying identifiable (`UIVIewController`) no longer exists, skip transferring its scope
             }
             return RUMViewScope(
+                isInitialView: false,
                 parent: self,
                 dependencies: dependencies,
                 identity: expiredViewIdentifiable,
@@ -103,41 +125,66 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
         lastInteractionTime = command.time
 
-        if shouldBeSampledOut {
-            return true
+        if !isSampled {
+            return true // discard all events in this session
         }
 
-        // Apply side effects
-        switch command {
-        case let command as RUMStartViewCommand:
-            startView(on: command)
-        case is RUMStartResourceCommand, is RUMAddUserActionCommand, is RUMStartUserActionCommand:
-            handleOrphanStartCommand(command: command)
-        default:
-            break
+        if let startViewCommand = command as? RUMStartViewCommand {
+            // Start view scope explicitly on receiving "start view" command
+            startView(on: startViewCommand)
+        } else if !hasActiveView {
+            // Otherwise, if there is no active view scope, consider starting artificial scope for handling this command
+            let handlingRule = RUMOffViewEventsHandlingRule(
+                sessionState: state,
+                isAppInForeground: dependencies.appStateListener.history.currentSnapshot.state.isRunningInForeground,
+                isBETEnabled: backgroundEventTrackingEnabled
+            )
+
+            switch handlingRule {
+            case .handleInApplicationLaunchView where command.canStartApplicationLaunchView:
+                startApplicationLaunchView(on: command)
+            case .handleInBackgroundView where command.canStartBackgroundView:
+                startBackgroundView(on: command)
+            default:
+                // As no view scope will handle this command, warn the user on dropping it
+                userLogger.warn(
+                    """
+                    \(String(describing: command)) was detected, but no view is active. To track views automatically, try calling the
+                    DatadogConfiguration.Builder.trackUIKitRUMViews() method. You can also track views manually using
+                    the RumMonitor.startView() and RumMonitor.stopView() methods.
+                    """
+                )
+            }
         }
 
         // Propagate command
         if !viewScopes.isEmpty {
             viewScopes = manage(childScopes: viewScopes, byPropagatingCommand: command)
-        } else {
-            userLogger.warn(
-                """
-                \(String(describing: command)) was detected, but no view is active. To track views automatically, try calling the
-                DatadogConfiguration.Builder.trackUIKitRUMViews() method. You can also track views manually using
-                the RumMonitor.startView() and RumMonitor.stopView() methods.
-                """
-            )
+        }
+
+        if !hasActiveView {
+            // If there is no active view, update `CrashContext` accordingly, so eventual crash
+            // won't be associated to an inactive view and instead we will consider starting background view to track it.
+            // It means that with Background Events Tracking disabled, eventual off-view crashes will be dropped
+            // similar to how we drop other events.
+            dependencies.crashContextIntegration?.update(lastRUMViewEvent: nil)
         }
 
         return true
     }
 
+    /// If there is an active view.
+    private var hasActiveView: Bool {
+        return viewScopes.contains { $0.isActiveView }
+    }
+
     // MARK: - RUMCommands Processing
 
     private func startView(on command: RUMStartViewCommand) {
+        let isStartingInitialView = isInitialSession && !state.hasTrackedAnyView
         viewScopes.append(
             RUMViewScope(
+                isInitialView: isStartingInitialView,
                 parent: self,
                 dependencies: dependencies,
                 identity: command.identity,
@@ -150,22 +197,37 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         )
     }
 
-    // MARK: - Private    
-    private func handleOrphanStartCommand(command: RUMCommand) {
-        if viewScopes.isEmpty && backgroundEventTrackingEnabled {
-            viewScopes.append(
-                RUMViewScope(
-                    parent: self,
-                    dependencies: dependencies,
-                    identity: RUMViewScope.Constants.backgroundViewURL,
-                    path: RUMViewScope.Constants.backgroundViewURL,
-                    name: RUMViewScope.Constants.backgroundViewName,
-                    attributes: command.attributes,
-                    customTimings: [:],
-                    startTime: command.time
-                )
+    private func startApplicationLaunchView(on command: RUMCommand) {
+        viewScopes.append(
+            RUMViewScope(
+                isInitialView: true,
+                parent: self,
+                dependencies: dependencies,
+                identity: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
+                path: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
+                name: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName,
+                attributes: command.attributes,
+                customTimings: [:],
+                startTime: sessionStartTime
             )
-        }
+        )
+    }
+
+    private func startBackgroundView(on command: RUMCommand) {
+        let isStartingInitialView = isInitialSession && !state.hasTrackedAnyView
+        viewScopes.append(
+            RUMViewScope(
+                isInitialView: isStartingInitialView,
+                parent: self,
+                dependencies: dependencies,
+                identity: RUMOffViewEventsHandlingRule.Constants.backgroundViewURL,
+                path: RUMOffViewEventsHandlingRule.Constants.backgroundViewURL,
+                name: RUMOffViewEventsHandlingRule.Constants.backgroundViewName,
+                attributes: command.attributes,
+                customTimings: [:],
+                startTime: command.time
+            )
+        )
     }
 
     private func timedOutOrExpired(currentTime: Date) -> Bool {
@@ -176,10 +238,5 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         let expired = sessionDuration >= Constants.sessionMaxDuration
 
         return timedOut || expired
-    }
-
-    private static func randomizeSampling(using samplingRate: Float) -> Bool {
-        let sendSessionEvents = Float.random(in: 0.0..<100.0) < samplingRate
-        return !sendSessionEvents
     }
 }

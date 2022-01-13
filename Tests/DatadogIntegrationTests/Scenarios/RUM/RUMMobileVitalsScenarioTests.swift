@@ -47,6 +47,7 @@ class RUMMobileVitalsScenarioTests: IntegrationTests, RUMCommonAsserts {
         assertRUM(requests: recordedRUMRequests)
 
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
+        sendCIAppLog(session)
 
         XCTAssertEqual(session.viewVisits[0].viewEvents.count, 5)
 

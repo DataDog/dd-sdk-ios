@@ -19,13 +19,17 @@ internal struct CrashContext: Codable {
         lastUserInfo: UserInfo,
         lastRUMViewEvent: RUMEvent<RUMViewEvent>?,
         lastNetworkConnectionInfo: NetworkConnectionInfo?,
-        lastCarrierInfo: CarrierInfo?
+        lastCarrierInfo: CarrierInfo?,
+        lastRUMSessionState: RUMSessionState?,
+        lastIsAppInForeground: Bool
     ) {
         self.codableTrackingConsent = .init(from: lastTrackingConsent)
         self.codableLastUserInfo = .init(from: lastUserInfo)
         self.codableLastRUMViewEvent = lastRUMViewEvent.flatMap { .init(from: $0) }
         self.codableLastNetworkConnectionInfo = lastNetworkConnectionInfo.flatMap { .init(from: $0) }
         self.codableLastCarrierInfo = lastCarrierInfo.flatMap { .init(from: $0) }
+        self.lastRUMSessionState = lastRUMSessionState
+        self.lastIsAppInForeground = lastIsAppInForeground
     }
 
     // MARK: - Codable values
@@ -42,6 +46,8 @@ internal struct CrashContext: Codable {
         case codableLastUserInfo = "lui"
         case codableLastNetworkConnectionInfo = "lni"
         case codableLastCarrierInfo = "lci"
+        case lastRUMSessionState = "rst"
+        case lastIsAppInForeground = "aif"
     }
 
     // MARK: - Setters & Getters using managed types
@@ -70,6 +76,14 @@ internal struct CrashContext: Codable {
         set { codableLastCarrierInfo = newValue.flatMap { CodableCarrierInfo(from: $0) } }
         get { codableLastCarrierInfo?.managedValue }
     }
+
+    // MARK: - Direct Codable values
+
+    /// State of the last RUM session in crashed app process.
+    var lastRUMSessionState: RUMSessionState?
+
+    /// The last _"Is app in foreground?"_ information from crashed app process.
+    var lastIsAppInForeground: Bool
 }
 
 // MARK: - Bridging managed types to Codable representation

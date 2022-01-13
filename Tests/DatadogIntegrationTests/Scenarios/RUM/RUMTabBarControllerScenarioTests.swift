@@ -51,8 +51,9 @@ class RUMTabBarControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
         assertRUM(requests: recordedRUMRequests)
 
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
-        let visits = session.viewVisits
+        sendCIAppLog(session)
 
+        let visits = session.viewVisits
         XCTAssertEqual(session.viewVisits[0].name, "Screen A")
         XCTAssertEqual(session.viewVisits[0].path, "UIViewController")
         XCTAssertEqual(session.viewVisits[0].actionEvents[0].action.type, .applicationStart)

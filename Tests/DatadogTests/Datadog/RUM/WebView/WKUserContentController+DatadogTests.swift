@@ -142,7 +142,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
 
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 1)
         try rumEventMatchers[0].model(ofType: RUMViewEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.application.id, "xxx")
+            XCTAssertEqual(rumModel.application.id, "abc")
             XCTAssertEqual(rumModel.view.id, "64308fd4-83f9-48cb-b3e1-1e91f6721230")
         }
     }

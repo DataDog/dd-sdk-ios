@@ -7,17 +7,17 @@
 import XCTest
 @testable import Datadog
 
-private class MockAppStateListener: AppStateListening {
-    let history = AppStateHistory(
-        initialState: .init(isActive: true, date: .mockDecember15th2019At10AMUTC()),
-        finalDate: .mockDecember15th2019At10AMUTC() + 10
-    )
-}
-
 class URLSessionTracingHandlerTests: XCTestCase {
     private let spanOutput = SpanOutputMock()
     private let logOutput = LogOutputMock()
-    private let handler = URLSessionTracingHandler(appStateListener: MockAppStateListener())
+    private let handler = URLSessionTracingHandler(
+        appStateListener: AppStateListenerMock(
+            history: .init(
+                initialSnapshot: .init(state: .active, date: .mockDecember15th2019At10AMUTC()),
+                recentDate: .mockDecember15th2019At10AMUTC() + 10
+            )
+        )
+    )
 
     override func setUp() {
         Global.sharedTracer = Tracer.mockWith(

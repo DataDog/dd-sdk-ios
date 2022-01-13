@@ -79,6 +79,7 @@ public class DDRUMMonitor {
     /// Notifies that an Error occurred in currently presented View.
     /// - Parameters:
     ///   - message: a message explaining the Error.
+    ///   - type: the type of Error. Defaults to `nil`.
     ///   - source: the origin of the error.
     ///   - stack: stack trace of the error. No specific format needed. Overwrites `file` and `line` parameters below.
     ///   - attributes: custom attributes to attach to the Error
@@ -86,6 +87,7 @@ public class DDRUMMonitor {
     ///   - line: the line number on which the Error occurred (the default is the line number on which this method was called).
     public func addError(
         message: String,
+        type: String? = nil,
         source: RUMErrorSource = .custom,
         stack: String? = nil,
         attributes: [AttributeKey: AttributeValue] = [:],
@@ -221,11 +223,13 @@ public class DDRUMMonitor {
     /// - Parameters:
     ///   - resourceKey: the key representing the Resource - must match the one used in `startResourceLoading(...)`.
     ///   - errorMessage: the message explaining the Resource failure.
+    ///   - type: the type of Error. Defaults to `nil`.
     ///   - response: an optional `URLResepone` received for the Resource.
     ///   - attributes: custom attributes to attach to the Resource.
     public func stopResourceLoadingWithError(
         resourceKey: String,
         errorMessage: String,
+        type: String? = nil,
         response: URLResponse? = nil,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {}

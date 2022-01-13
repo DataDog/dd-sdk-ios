@@ -16,7 +16,7 @@ class LaunchTimeProviderTests: XCTestCase {
         var values: [TimeInterval] = []
         (0..<10).forEach { _ in
             Thread.sleep(forTimeInterval: 0.01)
-            values.append(provider.launchTime!)
+            values.append(provider.launchTime)
         }
 
         // Then
