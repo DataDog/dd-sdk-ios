@@ -52,6 +52,10 @@ public class DDRUMViewEvent: NSObject {
         DDRUMViewEventSession(root: root)
     }
 
+    @objc public var source: DDRUMViewEventSource {
+        .init(swift: root.swiftModel.source)
+    }
+
     @objc public var synthetics: DDRUMViewEventSynthetics? {
         root.swiftModel.synthetics != nil ? DDRUMViewEventSynthetics(root: root) : nil
     }
@@ -310,6 +314,38 @@ public enum DDRUMViewEventSessionSessionType: Int {
     case user
     case synthetics
     case ciTest
+}
+
+@objc
+public enum DDRUMViewEventSource: Int {
+    internal init(swift: RUMViewEvent.Source?) {
+        switch swift {
+        case nil: self = .none
+        case .android?: self = .android
+        case .ios?: self = .ios
+        case .browser?: self = .browser
+        case .flutter?: self = .flutter
+        case .reactNative?: self = .reactNative
+        }
+    }
+
+    internal var toSwift: RUMViewEvent.Source? {
+        switch self {
+        case .none: return nil
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        }
+    }
+
+    case none
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
 }
 
 @objc
@@ -682,6 +718,10 @@ public class DDRUMResourceEvent: NSObject {
 
     @objc public var session: DDRUMResourceEventSession {
         DDRUMResourceEventSession(root: root)
+    }
+
+    @objc public var source: DDRUMResourceEventSource {
+        .init(swift: root.swiftModel.source)
     }
 
     @objc public var synthetics: DDRUMResourceEventSynthetics? {
@@ -1292,6 +1332,38 @@ public enum DDRUMResourceEventSessionSessionType: Int {
 }
 
 @objc
+public enum DDRUMResourceEventSource: Int {
+    internal init(swift: RUMResourceEvent.Source?) {
+        switch swift {
+        case nil: self = .none
+        case .android?: self = .android
+        case .ios?: self = .ios
+        case .browser?: self = .browser
+        case .flutter?: self = .flutter
+        case .reactNative?: self = .reactNative
+        }
+    }
+
+    internal var toSwift: RUMResourceEvent.Source? {
+        switch self {
+        case .none: return nil
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        }
+    }
+
+    case none
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+}
+
+@objc
 public class DDRUMResourceEventSynthetics: NSObject {
     internal let root: DDRUMResourceEvent
 
@@ -1408,6 +1480,10 @@ public class DDRUMActionEvent: NSObject {
 
     @objc public var session: DDRUMActionEventSession {
         DDRUMActionEventSession(root: root)
+    }
+
+    @objc public var source: DDRUMActionEventSource {
+        .init(swift: root.swiftModel.source)
     }
 
     @objc public var synthetics: DDRUMActionEventSynthetics? {
@@ -1809,6 +1885,38 @@ public enum DDRUMActionEventSessionSessionType: Int {
 }
 
 @objc
+public enum DDRUMActionEventSource: Int {
+    internal init(swift: RUMActionEvent.Source?) {
+        switch swift {
+        case nil: self = .none
+        case .android?: self = .android
+        case .ios?: self = .ios
+        case .browser?: self = .browser
+        case .flutter?: self = .flutter
+        case .reactNative?: self = .reactNative
+        }
+    }
+
+    internal var toSwift: RUMActionEvent.Source? {
+        switch self {
+        case .none: return nil
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        }
+    }
+
+    case none
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+}
+
+@objc
 public class DDRUMActionEventSynthetics: NSObject {
     internal let root: DDRUMActionEvent
 
@@ -1933,6 +2041,10 @@ public class DDRUMErrorEvent: NSObject {
 
     @objc public var session: DDRUMErrorEventSession {
         DDRUMErrorEventSession(root: root)
+    }
+
+    @objc public var source: DDRUMErrorEventSource {
+        .init(swift: root.swiftModel.source)
     }
 
     @objc public var synthetics: DDRUMErrorEventSynthetics? {
@@ -2484,6 +2596,38 @@ public enum DDRUMErrorEventSessionSessionType: Int {
 }
 
 @objc
+public enum DDRUMErrorEventSource: Int {
+    internal init(swift: RUMErrorEvent.Source?) {
+        switch swift {
+        case nil: self = .none
+        case .android?: self = .android
+        case .ios?: self = .ios
+        case .browser?: self = .browser
+        case .flutter?: self = .flutter
+        case .reactNative?: self = .reactNative
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.Source? {
+        switch self {
+        case .none: return nil
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        }
+    }
+
+    case none
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+}
+
+@objc
 public class DDRUMErrorEventSynthetics: NSObject {
     internal let root: DDRUMErrorEvent
 
@@ -2608,6 +2752,10 @@ public class DDRUMLongTaskEvent: NSObject {
 
     @objc public var session: DDRUMLongTaskEventSession {
         DDRUMLongTaskEventSession(root: root)
+    }
+
+    @objc public var source: DDRUMLongTaskEventSource {
+        .init(swift: root.swiftModel.source)
     }
 
     @objc public var synthetics: DDRUMLongTaskEventSynthetics? {
@@ -2901,6 +3049,38 @@ public enum DDRUMLongTaskEventSessionSessionType: Int {
 }
 
 @objc
+public enum DDRUMLongTaskEventSource: Int {
+    internal init(swift: RUMLongTaskEvent.Source?) {
+        switch swift {
+        case nil: self = .none
+        case .android?: self = .android
+        case .ios?: self = .ios
+        case .browser?: self = .browser
+        case .flutter?: self = .flutter
+        case .reactNative?: self = .reactNative
+        }
+    }
+
+    internal var toSwift: RUMLongTaskEvent.Source? {
+        switch self {
+        case .none: return nil
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        }
+    }
+
+    case none
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+}
+
+@objc
 public class DDRUMLongTaskEventSynthetics: NSObject {
     internal let root: DDRUMLongTaskEvent
 
@@ -2976,4 +3156,4 @@ public class DDRUMLongTaskEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/a7adc4275073e4d5bc146e9fdd4ceb4147379327
+// Generated from https://github.com/DataDog/rum-events-format/tree/114c173caac5ea15446a157b666acbab05431361

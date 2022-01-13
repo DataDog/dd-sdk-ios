@@ -252,6 +252,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 id: lastRUMView.session.id,
                 type: .user
             ),
+            source: .ios,
             synthetics: nil,
             usr: lastRUMView.usr,
             view: .init(
@@ -284,6 +285,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds - 1, // -1ms to put the crash after view in RUM session
             service: original.service,
             session: original.session,
+            source: .ios,
             synthetics: nil,
             usr: original.usr,
             view: .init(
@@ -357,6 +359,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 id: sessionUUID.toRUMDataFormat,
                 type: .user
             ),
+            source: .ios,
             synthetics: nil,
             usr: crashContext.lastUserInfo.flatMap { RUMUser(userInfo: $0) },
             view: .init(

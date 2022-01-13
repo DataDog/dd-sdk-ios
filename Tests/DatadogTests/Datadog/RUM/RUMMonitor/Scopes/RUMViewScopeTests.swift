@@ -92,6 +92,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.action.type, .applicationStart)
         XCTAssertEqual(event.model.action.loadingTime, 2_000_000_000) // 2e+9 ns
         XCTAssertEqual(event.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+        XCTAssertEqual(event.model.source, .ios)
     }
 
     func testWhenInitialViewReceivesAnyCommand_itSendsViewUpdateEvent() throws {
@@ -786,6 +787,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(longTask.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(longTask.date, longTaskStartingDate.timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(longTask.dd.session?.plan, .plan1)
+        XCTAssertEqual(longTask.source, .ios)
         XCTAssertEqual(longTask.longTask.duration, (1.0).toInt64Nanoseconds)
         XCTAssertTrue(longTask.longTask.isFrozenFrame == true)
         XCTAssertEqual(longTask.view.id, scope.viewUUID.toRUMDataFormat)

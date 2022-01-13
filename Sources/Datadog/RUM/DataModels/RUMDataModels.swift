@@ -34,6 +34,9 @@ public struct RUMViewEvent: RUMDataModel {
     /// Session properties
     public let session: Session
 
+    /// The source of this event
+    public let source: Source?
+
     /// Synthetics properties
     public let synthetics: Synthetics?
 
@@ -55,6 +58,7 @@ public struct RUMViewEvent: RUMDataModel {
         case date = "date"
         case service = "service"
         case session = "session"
+        case source = "source"
         case synthetics = "synthetics"
         case type = "type"
         case usr = "usr"
@@ -142,6 +146,15 @@ public struct RUMViewEvent: RUMDataModel {
             case synthetics = "synthetics"
             case ciTest = "ci_test"
         }
+    }
+
+    /// The source of this event
+    public enum Source: String, Codable {
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
     }
 
     /// Synthetics properties
@@ -415,6 +428,9 @@ public struct RUMResourceEvent: RUMDataModel {
     /// Session properties
     public let session: Session
 
+    /// The source of this event
+    public let source: Source?
+
     /// Synthetics properties
     public let synthetics: Synthetics?
 
@@ -438,6 +454,7 @@ public struct RUMResourceEvent: RUMDataModel {
         case resource = "resource"
         case service = "service"
         case session = "session"
+        case source = "source"
         case synthetics = "synthetics"
         case type = "type"
         case usr = "usr"
@@ -738,6 +755,15 @@ public struct RUMResourceEvent: RUMDataModel {
         }
     }
 
+    /// The source of this event
+    public enum Source: String, Codable {
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+    }
+
     /// Synthetics properties
     public struct Synthetics: Codable {
         /// Whether the event comes from a SDK instance injected by Synthetics
@@ -808,6 +834,9 @@ public struct RUMActionEvent: RUMDataModel {
     /// Session properties
     public let session: Session
 
+    /// The source of this event
+    public let source: Source?
+
     /// Synthetics properties
     public let synthetics: Synthetics?
 
@@ -830,6 +859,7 @@ public struct RUMActionEvent: RUMDataModel {
         case date = "date"
         case service = "service"
         case session = "session"
+        case source = "source"
         case synthetics = "synthetics"
         case type = "type"
         case usr = "usr"
@@ -1014,6 +1044,15 @@ public struct RUMActionEvent: RUMDataModel {
         }
     }
 
+    /// The source of this event
+    public enum Source: String, Codable {
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+    }
+
     /// Synthetics properties
     public struct Synthetics: Codable {
         /// Whether the event comes from a SDK instance injected by Synthetics
@@ -1091,6 +1130,9 @@ public struct RUMErrorEvent: RUMDataModel {
     /// Session properties
     public let session: Session
 
+    /// The source of this event
+    public let source: Source?
+
     /// Synthetics properties
     public let synthetics: Synthetics?
 
@@ -1114,6 +1156,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case error = "error"
         case service = "service"
         case session = "session"
+        case source = "source"
         case synthetics = "synthetics"
         case type = "type"
         case usr = "usr"
@@ -1339,6 +1382,15 @@ public struct RUMErrorEvent: RUMDataModel {
         }
     }
 
+    /// The source of this event
+    public enum Source: String, Codable {
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+    }
+
     /// Synthetics properties
     public struct Synthetics: Codable {
         /// Whether the event comes from a SDK instance injected by Synthetics
@@ -1416,6 +1468,9 @@ public struct RUMLongTaskEvent: RUMDataModel {
     /// Session properties
     public let session: Session
 
+    /// The source of this event
+    public let source: Source?
+
     /// Synthetics properties
     public let synthetics: Synthetics?
 
@@ -1439,6 +1494,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case longTask = "long_task"
         case service = "service"
         case session = "session"
+        case source = "source"
         case synthetics = "synthetics"
         case type = "type"
         case usr = "usr"
@@ -1550,6 +1606,15 @@ public struct RUMLongTaskEvent: RUMDataModel {
             case synthetics = "synthetics"
             case ciTest = "ci_test"
         }
+    }
+
+    /// The source of this event
+    public enum Source: String, Codable {
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
     }
 
     /// Synthetics properties
@@ -1756,4 +1821,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/a7adc4275073e4d5bc146e9fdd4ceb4147379327
+// Generated from https://github.com/DataDog/rum-events-format/tree/114c173caac5ea15446a157b666acbab05431361

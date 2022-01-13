@@ -325,6 +325,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: nil,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             view: .init(
@@ -369,6 +370,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: nil,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             view: .init(
@@ -449,6 +451,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ),
             service: nil,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             view: .init(
@@ -487,6 +490,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             longTask: .init(duration: taskDurationInNs, id: nil, isFrozenFrame: isFrozenFrame),
             service: nil,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             view: .init(

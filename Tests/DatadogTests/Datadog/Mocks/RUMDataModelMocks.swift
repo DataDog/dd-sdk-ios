@@ -70,6 +70,7 @@ extension RUMViewEvent: RandomMockable {
                 id: .mockRandom(),
                 type: .user
             ),
+            source: .ios,
             synthetics: nil,
             usr: .mockRandom(),
             view: .init(
@@ -156,6 +157,7 @@ extension RUMResourceEvent: RandomMockable {
                 id: .mockRandom(),
                 type: .user
             ),
+            source: .ios,
             synthetics: nil,
             usr: .mockRandom(),
             view: .init(
@@ -195,6 +197,7 @@ extension RUMActionEvent: RandomMockable {
                 id: .mockRandom(),
                 type: .user
             ),
+            source: .ios,
             synthetics: nil,
             usr: .mockRandom(),
             view: .init(
@@ -253,6 +256,7 @@ extension RUMErrorEvent: RandomMockable {
                 id: .mockRandom(),
                 type: .user
             ),
+            source: .ios,
             synthetics: nil,
             usr: .mockRandom(),
             view: .init(
@@ -281,6 +285,7 @@ extension RUMLongTaskEvent: RandomMockable {
             longTask: .init(duration: .mockRandom(), id: .mockRandom(), isFrozenFrame: .mockRandom()),
             service: .mockRandom(),
             session: .init(hasReplay: false, id: .mockRandom(), type: .user),
+            source: .ios,
             synthetics: nil,
             usr: .mockRandom(),
             view: .init(id: .mockRandom(), name: .mockRandom(), referrer: .mockRandom(), url: .mockRandom())
