@@ -45,7 +45,7 @@ class WebRUMEventConsumerTests: XCTestCase {
                 "session": ["plan": 1]
             ],
             "application": ["id": mockContextProvider.context.rumApplicationID],
-            "date": 1_640_252_823_292 + 123.toInt64Nanoseconds,
+            "date": 1_640_252_823_292 + 123.toInt64Milliseconds,
             "service": "shopist-web-ui",
             "session": ["id": mockContextProvider.context.sessionID.toRUMDataFormat],
             "view": [
