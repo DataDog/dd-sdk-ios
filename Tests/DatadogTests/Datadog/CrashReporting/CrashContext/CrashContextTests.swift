@@ -46,6 +46,24 @@ class CrashContextTests: XCTestCase {
         )
     }
 
+    func testGivenContextWithLastRUMSessionStateSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
+        let randomRUMSessionState: RUMSessionState? = Bool.random() ? .mockRandom() : nil
+
+        // Given
+        var context: CrashContext = .mockRandom()
+        context.lastRUMSessionState = randomRUMSessionState
+
+        // When
+        let serializedContext = try encoder.encode(context)
+
+        // Then
+        let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
+        try AssertEncodedRepresentationsEqual(
+            value1: deserializedContext.lastRUMSessionState,
+            value2: randomRUMSessionState
+        )
+    }
+
     func testGivenContextWithUserInfoSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
         let randomUserInfo: UserInfo = .mockRandom()
 
@@ -95,6 +113,21 @@ class CrashContextTests: XCTestCase {
         // Then
         let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
         XCTAssertEqual(deserializedContext.lastCarrierInfo, randomCarrierInfo)
+    }
+
+    func testGivenContextWithIsAppInForeground_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
+        let randomIsAppInForeground: Bool = .mockRandom()
+
+        // Given
+        var context: CrashContext = .mockRandom()
+        context.lastIsAppInForeground = randomIsAppInForeground
+
+        // When
+        let serializedContext = try encoder.encode(context)
+
+        // Then
+        let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
+        XCTAssertEqual(deserializedContext.lastIsAppInForeground, randomIsAppInForeground)
     }
 
     // MARK: - Helpers

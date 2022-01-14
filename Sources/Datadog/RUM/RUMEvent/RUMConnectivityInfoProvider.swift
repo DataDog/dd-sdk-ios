@@ -14,21 +14,29 @@ internal struct RUMConnectivityInfoProvider {
     let carrierInfoProvider: CarrierInfoProviderType
 
     var current: RUMConnectivity? {
-        guard let networkInfo = networkConnectionInfoProvider.current else {
+        return RUMConnectivity(
+            networkInfo: networkConnectionInfoProvider.current,
+            carrierInfo: carrierInfoProvider.current
+        )
+    }
+}
+
+extension RUMConnectivity {
+    init?(networkInfo: NetworkConnectionInfo?, carrierInfo: CarrierInfo?) {
+        guard let networkInfo = networkInfo else {
             return nil
         }
-        let carrierInfo = carrierInfoProvider.current
 
-        return RUMConnectivity(
-            cellular: carrierInfo.flatMap { connectivityCellularInfo(for: $0) },
-            interfaces: connectivityInterfaces(for: networkInfo),
-            status: connectivityStatus(for: networkInfo)
+        self.init(
+            cellular: carrierInfo.flatMap { RUMConnectivity.connectivityCellularInfo(for: $0) },
+            interfaces: RUMConnectivity.connectivityInterfaces(for: networkInfo),
+            status: RUMConnectivity.connectivityStatus(for: networkInfo)
         )
     }
 
     // MARK: - Private
 
-    private func connectivityStatus(for networkInfo: NetworkConnectionInfo) -> RUMConnectivity.Status {
+    private static func connectivityStatus(for networkInfo: NetworkConnectionInfo) -> RUMConnectivity.Status {
         switch networkInfo.reachability {
         case .yes:   return .connected
         case .maybe: return .maybe
@@ -36,7 +44,7 @@ internal struct RUMConnectivityInfoProvider {
         }
     }
 
-    private func connectivityInterfaces(for networkInfo: NetworkConnectionInfo) -> [RUMConnectivity.Interfaces] {
+    private static func connectivityInterfaces(for networkInfo: NetworkConnectionInfo) -> [RUMConnectivity.Interfaces] {
         guard let availableInterfaces = networkInfo.availableInterfaces, !availableInterfaces.isEmpty else {
             return [.none]
         }
@@ -51,7 +59,7 @@ internal struct RUMConnectivityInfoProvider {
         }
     }
 
-    private func connectivityCellularInfo(for carrierInfo: CarrierInfo) -> RUMConnectivity.Cellular {
+    private static func connectivityCellularInfo(for carrierInfo: CarrierInfo) -> RUMConnectivity.Cellular {
         return RUMConnectivity.Cellular(
             carrierName: carrierInfo.carrierName,
             technology: carrierInfo.radioAccessTechnology.rawValue

@@ -59,6 +59,11 @@ internal struct Environment {
         return ProcessInfo.processInfo.arguments.contains(Argument.isRunningUITests)
     }
 
+    /// If running `Example` in interactive, debug mode (launching it with 'Run' in Xcode or by tapping on the app icon).
+    static func isRunningInteractive() -> Bool {
+        return !isRunningUITests() && !isRunningUnitTests()
+    }
+
     static func shouldClearPersistentData() -> Bool {
         return !ProcessInfo.processInfo.arguments.contains(Argument.doNotClearPersistentData)
     }

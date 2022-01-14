@@ -52,6 +52,7 @@ extension Datadog.Configuration {
         rumSessionsSamplingRate: Float = 100.0,
         rumUIKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
         rumUIKitUserActionsPredicate: UIKitRUMUserActionsPredicate? = nil,
+        rumLongTaskDurationThreshold: TimeInterval? = nil,
         rumResourceAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         rumBackgroundEventTrackingEnabled: Bool = false,
         batchSize: BatchSize = .medium,
@@ -80,6 +81,7 @@ extension Datadog.Configuration {
             rumSessionsSamplingRate: rumSessionsSamplingRate,
             rumUIKitViewsPredicate: rumUIKitViewsPredicate,
             rumUIKitUserActionsPredicate: rumUIKitUserActionsPredicate,
+            rumLongTaskDurationThreshold: rumLongTaskDurationThreshold,
             rumResourceAttributesProvider: rumResourceAttributesProvider,
             rumBackgroundEventTrackingEnabled: rumBackgroundEventTrackingEnabled,
             batchSize: batchSize,
@@ -88,6 +90,24 @@ extension Datadog.Configuration {
             proxyConfiguration: proxyConfiguration,
             internalMonitoringClientToken: internalMonitoringClientToken
         )
+    }
+}
+
+extension Sampler: AnyMockable, RandomMockable {
+    static func mockAny() -> Sampler {
+        return .init(samplingRate: 50)
+    }
+
+    static func mockRandom() -> Sampler {
+        return .init(samplingRate: .random(in: (0.0...100.0)))
+    }
+
+    static func mockKeepAll() -> Sampler {
+        return .init(samplingRate: 100)
+    }
+
+    static func mockRejectAll() -> Sampler {
+        return .init(samplingRate: 0)
     }
 }
 
@@ -235,13 +255,14 @@ extension FeaturesConfiguration.RUM {
         uploadURL: URL = .mockAny(),
         clientToken: String = .mockAny(),
         applicationID: String = .mockAny(),
-        sessionSamplingRate: Float = 100.0,
+        sessionSampler: Sampler = Sampler(samplingRate: 100),
+        uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         viewEventMapper: RUMViewEventMapper? = nil,
         resourceEventMapper: RUMResourceEventMapper? = nil,
         actionEventMapper: RUMActionEventMapper? = nil,
         errorEventMapper: RUMErrorEventMapper? = nil,
         longTaskEventMapper: RUMLongTaskEventMapper? = nil,
-        autoInstrumentation: FeaturesConfiguration.RUM.AutoInstrumentation? = nil,
+        instrumentation: FeaturesConfiguration.RUM.Instrumentation? = nil,
         backgroundEventTrackingEnabled: Bool = false,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> Self {
@@ -250,13 +271,14 @@ extension FeaturesConfiguration.RUM {
             uploadURL: uploadURL,
             clientToken: clientToken,
             applicationID: applicationID,
-            sessionSamplingRate: sessionSamplingRate,
+            sessionSampler: sessionSampler,
+            uuidGenerator: uuidGenerator,
             viewEventMapper: viewEventMapper,
             resourceEventMapper: resourceEventMapper,
             actionEventMapper: actionEventMapper,
             errorEventMapper: errorEventMapper,
             longTaskEventMapper: longTaskEventMapper,
-            autoInstrumentation: autoInstrumentation,
+            instrumentation: instrumentation,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
             onSessionStart: onSessionStart
         )
@@ -328,13 +350,15 @@ extension AppContext {
         bundleType: BundleType = .iOSApp,
         bundleIdentifier: String? = .mockAny(),
         bundleVersion: String? = .mockAny(),
-        bundleName: String? = .mockAny()
+        bundleName: String? = .mockAny(),
+        processInfo: ProcessInfo = ProcessInfoMock()
     ) -> AppContext {
         return AppContext(
             bundleType: bundleType,
             bundleIdentifier: bundleIdentifier,
             bundleVersion: bundleVersion,
-            bundleName: bundleName
+            bundleName: bundleName,
+            processInfo: processInfo
         )
     }
 }
@@ -450,6 +474,7 @@ extension FeaturesCommonDependencies {
                 return BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false)
             }
         ),
+        sdkInitDate: Date = Date(),
         dateProvider: DateProvider = SystemDateProvider(),
         dateCorrector: DateCorrectorType = DateCorrectorMock(),
         userInfoProvider: UserInfoProvider = .mockAny(),
@@ -464,7 +489,8 @@ extension FeaturesCommonDependencies {
             )
         ),
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
-        launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock()
+        launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock(),
+        appStateListener: AppStateListening = AppStateListenerMock.mockAny()
     ) -> FeaturesCommonDependencies {
         let httpClient: HTTPClient
 
@@ -492,12 +518,14 @@ extension FeaturesCommonDependencies {
             performance: performance,
             httpClient: httpClient,
             mobileDevice: mobileDevice,
+            sdkInitDate: sdkInitDate,
             dateProvider: dateProvider,
             dateCorrector: dateCorrector,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider,
-            launchTimeProvider: launchTimeProvider
+            launchTimeProvider: launchTimeProvider,
+            appStateListener: appStateListener
         )
     }
 
@@ -507,24 +535,28 @@ extension FeaturesCommonDependencies {
         performance: PerformancePreset? = nil,
         httpClient: HTTPClient? = nil,
         mobileDevice: MobileDevice? = nil,
+        sdkInitDate: Date? = nil,
         dateProvider: DateProvider? = nil,
         dateCorrector: DateCorrectorType? = nil,
         userInfoProvider: UserInfoProvider? = nil,
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType? = nil,
         carrierInfoProvider: CarrierInfoProviderType? = nil,
-        launchTimeProvider: LaunchTimeProviderType? = nil
+        launchTimeProvider: LaunchTimeProviderType? = nil,
+        appStateListener: AppStateListening? = nil
     ) -> FeaturesCommonDependencies {
         return FeaturesCommonDependencies(
             consentProvider: consentProvider ?? self.consentProvider,
             performance: performance ?? self.performance,
             httpClient: httpClient ?? self.httpClient,
             mobileDevice: mobileDevice ?? self.mobileDevice,
+            sdkInitDate: sdkInitDate ?? self.sdkInitDate,
             dateProvider: dateProvider ?? self.dateProvider,
             dateCorrector: dateCorrector ?? self.dateCorrector,
             userInfoProvider: userInfoProvider ?? self.userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider ?? self.networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider ?? self.carrierInfoProvider,
-            launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider
+            launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider,
+            appStateListener: appStateListener ?? self.appStateListener
         )
     }
 }
@@ -648,7 +680,51 @@ class DateCorrectorMock: DateCorrectorType {
 }
 
 struct LaunchTimeProviderMock: LaunchTimeProviderType {
-    var launchTime: TimeInterval? = nil
+    var launchTime: TimeInterval = 0
+}
+
+extension AppState: AnyMockable, RandomMockable {
+    static func mockAny() -> AppState {
+        return .active
+    }
+
+    static func mockRandom() -> AppState {
+        return [.active, .inactive, .background].randomElement()!
+    }
+
+    static func mockRandom(runningInForeground: Bool) -> AppState {
+        return runningInForeground ? [.active, .inactive].randomElement()! : .background
+    }
+}
+
+class AppStateListenerMock: AppStateListening, AnyMockable {
+    let history: AppStateHistory
+
+    required init(history: AppStateHistory) {
+        self.history = history
+    }
+
+    static func mockAny() -> Self {
+        return mockAppInForeground(since: .mockDecember15th2019At10AMUTC())
+    }
+
+    static func mockAppInForeground(since date: Date = Date()) -> Self {
+        return .init(
+            history: .init(initialSnapshot: .init(state: .active, date: date), recentDate: date)
+        )
+    }
+
+    static func mockAppInBackground(since date: Date = Date()) -> Self {
+        return .init(
+            history: .init(initialSnapshot: .init(state: .background, date: date), recentDate: date)
+        )
+    }
+
+    static func mockRandom(since date: Date = Date()) -> Self {
+        return Bool.random() ? mockAppInForeground(since: date) : mockAppInBackground(since: date)
+    }
+
+    func subscribe<Observer: AppStateHistoryObserver>(_ subscriber: Observer) where Observer.ObservedValue == AppStateHistory {}
 }
 
 extension UserInfo: AnyMockable, RandomMockable {
@@ -984,12 +1060,6 @@ class CarrierInfoProviderMock: CarrierInfoProviderType {
         carrierInfo: CarrierInfo = .mockAny()
     ) -> CarrierInfoProviderMock {
         return CarrierInfoProviderMock(carrierInfo: carrierInfo)
-    }
-}
-
-extension AppStateListener {
-    static func mockAny() -> AppStateListener {
-        return AppStateListener(dateProvider: SystemDateProvider())
     }
 }
 

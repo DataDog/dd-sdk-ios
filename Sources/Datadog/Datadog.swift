@@ -16,8 +16,10 @@ public class Datadog {
         internal let bundleVersion: String?
         /// Executable name (i.e. application name or app extension name)
         internal let bundleName: String?
+        /// Process info
+        internal let processInfo: ProcessInfo
 
-        public init(mainBundle: Bundle = Bundle.main) {
+        public init(mainBundle: Bundle = Bundle.main, processInfo: ProcessInfo = ProcessInfo.processInfo) {
             let bundleVersion = mainBundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
             let bundleShortVersion = mainBundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
 
@@ -25,7 +27,8 @@ public class Datadog {
                 bundleType: mainBundle.bundlePath.hasSuffix(".appex") ? .iOSAppExtension : .iOSApp,
                 bundleIdentifier: mainBundle.bundleIdentifier,
                 bundleVersion: bundleShortVersion ?? bundleVersion,
-                bundleName: mainBundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String
+                bundleName: mainBundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String,
+                processInfo: processInfo
             )
         }
 
@@ -33,12 +36,14 @@ public class Datadog {
             bundleType: BundleType,
             bundleIdentifier: String?,
             bundleVersion: String?,
-            bundleName: String?
+            bundleName: String?,
+            processInfo: ProcessInfo
         ) {
             self.bundleType = bundleType
             self.bundleIdentifier = bundleIdentifier
             self.bundleVersion = bundleVersion
             self.bundleName = bundleName
+            self.processInfo = processInfo
         }
     }
 
@@ -74,6 +79,7 @@ public class Datadog {
         #if targetEnvironment(macCatalyst)
         consolePrint("⚠️ Catalyst is not officially supported by Datadog SDK: some features may NOT be functional!")
         #endif
+
         do {
             try initializeOrThrow(
                 initialTrackingConsent: trackingConsent,
@@ -82,6 +88,13 @@ public class Datadog {
                     appContext: appContext
                 )
             )
+
+            // Now that RUM is potentially initialized, override the debugRUM value
+            let debugRumOverride = appContext.processInfo.arguments.contains(LaunchArguments.DebugRUM)
+            if debugRumOverride {
+                consolePrint("⚠️ Overriding RUM debugging due to \(LaunchArguments.DebugRUM) launch argument")
+                Datadog.debugRUM = true
+            }
         } catch {
             consolePrint("\(error)")
         }
@@ -140,6 +153,10 @@ public class Datadog {
     }
 
     // MARK: - Internal
+    internal struct LaunchArguments {
+        static let Debug = "DD_DEBUG"
+        static let DebugRUM = "DD_DEBUG_RUM"
+    }
 
     internal static var instance: Datadog?
 
@@ -155,11 +172,19 @@ public class Datadog {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
 
+        let kronosMonitor: KronosMonitor?
+#if DD_SDK_ENABLE_INTERNAL_MONITORING
+        // Collect Kronos telemetry only if internal monitoring is compiled and enabled
+        kronosMonitor = configuration.internalMonitoring != nil ? KronosInternalMonitor() : nil
+#else
+        kronosMonitor = nil
+#endif
+
         let consentProvider = ConsentProvider(initialConsent: initialTrackingConsent)
         let dateProvider = SystemDateProvider()
         let dateCorrector = DateCorrector(
             deviceDateProvider: dateProvider,
-            serverDateProvider: NTPServerDateProvider()
+            serverDateProvider: NTPServerDateProvider(kronosMonitor: kronosMonitor)
         )
         let userInfoProvider = UserInfoProvider()
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
@@ -188,19 +213,21 @@ public class Datadog {
         var crashReporting: CrashReportingFeature?
 
         var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
-        var rumAutoInstrumentation: RUMAutoInstrumentation?
+        var rumInstrumentation: RUMInstrumentation?
 
         let commonDependencies = FeaturesCommonDependencies(
             consentProvider: consentProvider,
             performance: configuration.common.performance,
             httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
-            mobileDevice: MobileDevice.current,
+            mobileDevice: MobileDevice(),
+            sdkInitDate: dateProvider.currentDate(),
             dateProvider: dateProvider,
             dateCorrector: dateCorrector,
             userInfoProvider: userInfoProvider,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider,
-            launchTimeProvider: launchTimeProvider
+            launchTimeProvider: launchTimeProvider,
+            appStateListener: AppStateListener(dateProvider: dateProvider)
         )
 
         if let internalMonitoringConfiguration = configuration.internalMonitoring {
@@ -238,9 +265,9 @@ public class Datadog {
                 commonDependencies: commonDependencies,
                 internalMonitor: internalMonitoring?.monitor
             )
-            if let autoInstrumentationConfiguration = rumConfiguration.autoInstrumentation {
-                rumAutoInstrumentation = RUMAutoInstrumentation(
-                    configuration: autoInstrumentationConfiguration,
+            if let instrumentationConfiguration = rumConfiguration.instrumentation {
+                rumInstrumentation = RUMInstrumentation(
+                    configuration: instrumentationConfiguration,
                     dateProvider: dateProvider
                 )
             }
@@ -256,8 +283,7 @@ public class Datadog {
         if let urlSessionAutoInstrumentationConfiguration = configuration.urlSessionAutoInstrumentation {
             urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
                 configuration: urlSessionAutoInstrumentationConfiguration,
-                dateProvider: dateProvider,
-                appStateListener: AppStateListener(dateProvider: dateProvider)
+                commonDependencies: commonDependencies
             )
         }
 
@@ -268,8 +294,8 @@ public class Datadog {
         RUMFeature.instance = rum
         CrashReportingFeature.instance = crashReporting
 
-        RUMAutoInstrumentation.instance = rumAutoInstrumentation
-        RUMAutoInstrumentation.instance?.enable()
+        RUMInstrumentation.instance = rumInstrumentation
+        RUMInstrumentation.instance?.enable()
 
         URLSessionAutoInstrumentation.instance = urlSessionAutoInstrumentation
         URLSessionAutoInstrumentation.instance?.enable()
@@ -286,6 +312,12 @@ public class Datadog {
         if let crashReportingFeature = CrashReportingFeature.instance {
             Global.crashReporter = CrashReporter(crashReportingFeature: crashReportingFeature)
             Global.crashReporter?.sendCrashReportIfFound()
+        }
+
+        // If Internal Monitoring is enabled and Kronos internal monitor is configured,
+        // export result of NTP sync to IM.
+        if let internalMonitoringFeature = InternalMonitoringFeature.instance {
+            kronosMonitor?.export(to: internalMonitoringFeature.monitor)
         }
     }
 
@@ -326,7 +358,7 @@ public class Datadog {
         InternalMonitoringFeature.instance?.deinitialize()
         CrashReportingFeature.instance?.deinitialize()
 
-        RUMAutoInstrumentation.instance?.deinitialize()
+        RUMInstrumentation.instance?.deinitialize()
         URLSessionAutoInstrumentation.instance?.deinitialize()
 
         // Reset Globals:

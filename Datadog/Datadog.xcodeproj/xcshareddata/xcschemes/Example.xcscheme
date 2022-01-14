@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1250"
+   LastUpgradeVersion = "1310"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -50,10 +50,25 @@
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "DD_DEBUG"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "DD_DEBUG_RUM"
+            isEnabled = "NO">
+         </CommandLineArgument>
+      </CommandLineArguments>
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "DD_TEST_SCENARIO_CLASS_NAME"
             value = "LoggingManualInstrumentationScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "RUMSwiftUIInstrumentationScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable

@@ -7,7 +7,7 @@
 import Foundation
 
 /// `URLSession` Auto Instrumentation feature.
-internal final class URLSessionAutoInstrumentation {
+internal final class URLSessionAutoInstrumentation: RUMCommandPublisher {
     static var instance: URLSessionAutoInstrumentation?
 
     let swizzler: URLSessionSwizzler
@@ -15,16 +15,15 @@ internal final class URLSessionAutoInstrumentation {
 
     convenience init?(
         configuration: FeaturesConfiguration.URLSessionAutoInstrumentation,
-        dateProvider: DateProvider,
-        appStateListener: AppStateListening
+        commonDependencies: FeaturesCommonDependencies
     ) {
         do {
             self.init(
                 swizzler: try URLSessionSwizzler(),
                 interceptor: URLSessionInterceptor(
                     configuration: configuration,
-                    dateProvider: dateProvider,
-                    appStateListener: appStateListener
+                    dateProvider: commonDependencies.dateProvider,
+                    appStateListener: commonDependencies.appStateListener
                 )
             )
         } catch {
@@ -44,9 +43,9 @@ internal final class URLSessionAutoInstrumentation {
         swizzler.swizzle()
     }
 
-    func subscribe(commandSubscriber: RUMCommandSubscriber) {
+    func publish(to subscriber: RUMCommandSubscriber) {
         let rumResourceHandler = interceptor.handler as? URLSessionRUMResourcesHandler
-        rumResourceHandler?.subscribe(commandsSubscriber: commandSubscriber)
+        rumResourceHandler?.publish(to: subscriber)
     }
 
 #if DD_SDK_COMPILED_FOR_TESTING

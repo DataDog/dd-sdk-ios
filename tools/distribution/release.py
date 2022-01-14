@@ -16,6 +16,7 @@ from tempfile import TemporaryDirectory
 from src.git import clone_repo
 from src.assets.gh_asset import GHAsset
 from src.assets.podspec import CPPodspec
+from src.semver import Version
 
 DD_SDK_IOS_REPO_SSH = 'git@github.com:DataDog/dd-sdk-ios.git'
 DD_SDK_IOS_REPO_NAME = 'dd-sdk-ios'
@@ -82,6 +83,8 @@ if __name__ == "__main__":
               f'- only_cocoapods    = {only_cocoapods}\n'
               f'- overwrite_github  = {overwrite_github}\n'
               f'- dry_run           = {dry_run}.')
+
+        print(f'🛠️ Git tag read to version: {Version.parse(git_tag)}')
 
         publish_to_gh = not only_cocoapods
         publish_to_cp = not only_github

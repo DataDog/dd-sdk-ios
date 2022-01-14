@@ -198,6 +198,16 @@ extension URL: AnyMockable, RandomMockable {
     }
 }
 
+extension UUID: AnyMockable, RandomMockable {
+    static func mockAny() -> UUID {
+        return UUID()
+    }
+
+    static func mockRandom() -> UUID {
+        return UUID()
+    }
+}
+
 extension String: AnyMockable, RandomMockable {
     static func mockAny() -> String {
         return "abc"
@@ -408,12 +418,16 @@ extension URLRequest: AnyMockable {
 
 class ProcessInfoMock: ProcessInfo {
     private var _isLowPowerModeEnabled: Bool
+    private var _arguments: [String]
 
-    init(isLowPowerModeEnabled: Bool = .mockAny()) {
+    init(isLowPowerModeEnabled: Bool = .mockAny(), arguments: [String] = []) {
         _isLowPowerModeEnabled = isLowPowerModeEnabled
+        _arguments = arguments
     }
 
     override var isLowPowerModeEnabled: Bool { _isLowPowerModeEnabled }
+
+    override var arguments: [String] { _arguments }
 }
 
 // MARK: - URLSession

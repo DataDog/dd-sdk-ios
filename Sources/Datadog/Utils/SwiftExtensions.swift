@@ -25,6 +25,14 @@ extension Double {
     }
 }
 
+// MARK: - UUID
+
+extension UUID {
+    /// An UUID with all zeroes (`00000000-0000-0000-0000-000000000000`).
+    /// Used to represent "null" in types that cannot be given a proper UUID (e.g. rejected RUM session).
+    static let nullUUID = UUID(uuidString: "00000000-0000-0000-0000-000000000000") ?? UUID()
+}
+
 // MARK: - TimeInterval
 
 extension TimeInterval {

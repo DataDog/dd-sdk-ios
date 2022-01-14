@@ -30,8 +30,10 @@ internal final class RUMFeature {
 
     // MARK: - Dependencies
 
+    let sdkInitDate: Date
     let dateProvider: DateProvider
     let dateCorrector: DateCorrectorType
+    let appStateListener: AppStateListening
     let userInfoProvider: UserInfoProvider
     let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
     let carrierInfoProvider: CarrierInfoProviderType
@@ -167,8 +169,10 @@ internal final class RUMFeature {
         self.configuration = configuration
 
         // Bundle dependencies
+        self.sdkInitDate = commonDependencies.sdkInitDate
         self.dateProvider = commonDependencies.dateProvider
         self.dateCorrector = commonDependencies.dateCorrector
+        self.appStateListener = commonDependencies.appStateListener
         self.userInfoProvider = commonDependencies.userInfoProvider
         self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider
         self.carrierInfoProvider = commonDependencies.carrierInfoProvider

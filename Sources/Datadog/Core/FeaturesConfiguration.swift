@@ -38,7 +38,7 @@ internal struct FeaturesConfiguration {
     }
 
     struct RUM {
-        struct AutoInstrumentation {
+        struct Instrumentation {
             let uiKitRUMViewsPredicate: UIKitRUMViewsPredicate?
             let uiKitRUMUserActionsPredicate: UIKitRUMUserActionsPredicate?
             let longTaskThreshold: TimeInterval?
@@ -48,14 +48,15 @@ internal struct FeaturesConfiguration {
         let uploadURL: URL
         let clientToken: String
         let applicationID: String
-        let sessionSamplingRate: Float
+        let sessionSampler: Sampler
+        let uuidGenerator: RUMUUIDGenerator
         let viewEventMapper: RUMViewEventMapper?
         let resourceEventMapper: RUMResourceEventMapper?
         let actionEventMapper: RUMActionEventMapper?
         let errorEventMapper: RUMErrorEventMapper?
         let longTaskEventMapper: RUMLongTaskEventMapper?
         /// RUM auto instrumentation configuration, `nil` if not enabled.
-        let autoInstrumentation: AutoInstrumentation?
+        let instrumentation: Instrumentation?
         let backgroundEventTrackingEnabled: Bool
         let onSessionStart: RUMSessionListener?
     }
@@ -152,6 +153,12 @@ extension FeaturesConfiguration {
         let source = (configuration.additionalConfiguration[CrossPlatformAttributes.ddsource] as? String) ?? Datadog.Constants.ddsource
         let sdkVersion = (configuration.additionalConfiguration[CrossPlatformAttributes.sdkVersion] as? String) ?? __sdkVersion
 
+        let debugOverride = appContext.processInfo.arguments.contains(Datadog.LaunchArguments.Debug)
+        if debugOverride {
+            consolePrint("⚠️ Overriding sampling, verbosity, and upload frequency due to \(Datadog.LaunchArguments.Debug) launch argument")
+            Datadog.verbosityLevel = .debug
+        }
+
         let common = Common(
             applicationName: appContext.bundleName ?? appContext.bundleType.rawValue,
             applicationVersion: appContext.bundleVersion ?? "0.0.0",
@@ -159,8 +166,8 @@ extension FeaturesConfiguration {
             serviceName: configuration.serviceName ?? appContext.bundleIdentifier ?? "ios",
             environment: try ifValid(environment: configuration.environment),
             performance: PerformancePreset(
-                batchSize: configuration.batchSize,
-                uploadFrequency: configuration.uploadFrequency,
+                batchSize: debugOverride ? .small : configuration.batchSize,
+                uploadFrequency: debugOverride ? .frequent : configuration.uploadFrequency,
                 bundleType: appContext.bundleType
             ),
             source: source,
@@ -187,17 +194,11 @@ extension FeaturesConfiguration {
         }
 
         if configuration.rumEnabled {
-            var autoInstrumentation: RUM.AutoInstrumentation?
-
-            if configuration.rumUIKitViewsPredicate != nil ||
-                configuration.rumUIKitUserActionsPredicate != nil ||
-                configuration.rumLongTaskDurationThreshold != nil {
-                autoInstrumentation = RUM.AutoInstrumentation(
-                    uiKitRUMViewsPredicate: configuration.rumUIKitViewsPredicate,
-                    uiKitRUMUserActionsPredicate: configuration.rumUIKitUserActionsPredicate,
-                    longTaskThreshold: configuration.rumLongTaskDurationThreshold
-                )
-            }
+            let instrumentation = RUM.Instrumentation(
+                uiKitRUMViewsPredicate: configuration.rumUIKitViewsPredicate,
+                uiKitRUMUserActionsPredicate: configuration.rumUIKitUserActionsPredicate,
+                longTaskThreshold: configuration.rumLongTaskDurationThreshold
+            )
 
             if let rumApplicationID = configuration.rumApplicationID {
                 rum = RUM(
@@ -205,13 +206,14 @@ extension FeaturesConfiguration {
                     uploadURL: try ifValid(endpointURLString: rumEndpoint.url),
                     clientToken: try ifValid(clientToken: configuration.clientToken),
                     applicationID: rumApplicationID,
-                    sessionSamplingRate: configuration.rumSessionsSamplingRate,
+                    sessionSampler: Sampler(samplingRate: debugOverride ? 100.0 : configuration.rumSessionsSamplingRate),
+                    uuidGenerator: DefaultRUMUUIDGenerator(),
                     viewEventMapper: configuration.rumViewEventMapper,
                     resourceEventMapper: configuration.rumResourceEventMapper,
                     actionEventMapper: configuration.rumActionEventMapper,
                     errorEventMapper: configuration.rumErrorEventMapper,
                     longTaskEventMapper: configuration.rumLongTaskEventMapper,
-                    autoInstrumentation: autoInstrumentation,
+                    instrumentation: instrumentation,
                     backgroundEventTrackingEnabled: configuration.rumBackgroundEventTrackingEnabled,
                     onSessionStart: configuration.rumSessionsListener
                 )

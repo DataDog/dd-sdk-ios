@@ -22,13 +22,15 @@ extension FeaturesCommonDependencies {
             consentProvider: ConsentProvider(initialConsent: .granted),
             performance: .benchmarksPreset,
             httpClient: HTTPClient(),
-            mobileDevice: .current,
+            mobileDevice: MobileDevice(),
+            sdkInitDate: Date(),
             dateProvider: SystemDateProvider(),
             dateCorrector: DateCorrectorMock(),
             userInfoProvider: UserInfoProvider(),
             networkConnectionInfoProvider: NetworkConnectionInfoProvider(),
             carrierInfoProvider: CarrierInfoProvider(),
-            launchTimeProvider: LaunchTimeProvider()
+            launchTimeProvider: LaunchTimeProvider(),
+            appStateListener: AppStateListener(dateProvider: SystemDateProvider())
         )
     }
 }

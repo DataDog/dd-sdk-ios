@@ -220,6 +220,37 @@ final class RUMScrubbingScenario: TestScenario {
     }
 }
 
+@available(iOS 13, *)
+/// Scenario which presents `SwiftUI`-based hierarchy and navigates through
+/// its views and view controllers.
+final class RUMSwiftUIInstrumentationScenario: TestScenario {
+    static var storyboardName: String = "RUMSwiftUIInstrumentationScenario"
+
+    private class Predicate: UIKitRUMViewsPredicate {
+        let `default` = DefaultUIKitRUMViewsPredicate()
+
+        func rumView(for viewController: UIViewController) -> RUMView? {
+            if viewController is SwiftUIRootViewController {
+                return nil
+            }
+
+            if let viewController = viewController as? UIScreenViewController {
+                return .init(name: "UIKit View \(viewController.index)")
+            }
+
+            return `default`.rumView(for: viewController)
+        }
+    }
+
+    func configureSDK(builder: Datadog.Configuration.Builder) {
+        _ = builder
+            .trackUIKitRUMViews(using: Predicate())
+            .trackUIKitRUMActions()
+            .enableLogging(false)
+            .enableTracing(false)
+    }
+}
+
 // MARK: - Helpers
 
 private func rumResourceAttributesProvider(

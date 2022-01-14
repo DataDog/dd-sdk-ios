@@ -14,6 +14,9 @@
 
 // A Read-Write lock to allow concurrent reads of TimeToApplicationDidBecomeActive, unless the initial (and only) write is locking it.
 static pthread_rwlock_t rwLock;
+// The framework load time  in seconds relative to the absolute reference date of Jan 1 2001 00:00:00 GMT.
+static NSTimeInterval FrameworkLoadTime = 0.0;
+// The time interval between the application starts and it's responsive and accepts touch events.
 static NSTimeInterval TimeToApplicationDidBecomeActive = 0.0;
 
 NS_INLINE NSTimeInterval QueryProcessStartTimeWithFallback(NSTimeInterval fallbackTime) {
@@ -41,14 +44,10 @@ NS_INLINE NSTimeInterval QueryProcessStartTimeWithFallback(NSTimeInterval fallba
     return processStartTime;
 }
 
-NS_INLINE void ComputeTimeToApplicationDidBecomeActiveWithFallback(NSTimeInterval fallbackTime) {
-    if (TimeToApplicationDidBecomeActive > 0) {
-        return;
-    }
-
+NS_INLINE NSTimeInterval ComputeProcessTimeFromStart() {
     NSTimeInterval now = CFAbsoluteTimeGetCurrent();
-    NSTimeInterval processStartTime = QueryProcessStartTimeWithFallback(fallbackTime);
-    TimeToApplicationDidBecomeActive = now - processStartTime;
+    NSTimeInterval processStartTime = QueryProcessStartTimeWithFallback(FrameworkLoadTime);
+    return now - processStartTime;
 }
 
 @interface AppLaunchHandler : NSObject
@@ -58,8 +57,10 @@ NS_INLINE void ComputeTimeToApplicationDidBecomeActiveWithFallback(NSTimeInterva
 
 + (void)load {
     // This is called at the `_Datadog_Private` load time, keep the work minimal
-    NSTimeInterval frameworkLoadTime = CFAbsoluteTimeGetCurrent();
-    id __block token = [NSNotificationCenter.defaultCenter
+    FrameworkLoadTime = CFAbsoluteTimeGetCurrent();
+
+    NSNotificationCenter * __weak center = NSNotificationCenter.defaultCenter;
+    id __block token = [center
                         addObserverForName:UIApplicationDidBecomeActiveNotification
                         object:nil
                         queue:NSOperationQueue.mainQueue
@@ -67,10 +68,11 @@ NS_INLINE void ComputeTimeToApplicationDidBecomeActiveWithFallback(NSTimeInterva
 
         pthread_rwlock_init(&rwLock, NULL);
         pthread_rwlock_wrlock(&rwLock);
-        ComputeTimeToApplicationDidBecomeActiveWithFallback(frameworkLoadTime);
+        TimeToApplicationDidBecomeActive = ComputeProcessTimeFromStart();
         pthread_rwlock_unlock(&rwLock);
 
-        [NSNotificationCenter.defaultCenter removeObserver:token];
+        [center removeObserver:token];
+        token = nil;
     }];
 }
 
@@ -79,6 +81,7 @@ NS_INLINE void ComputeTimeToApplicationDidBecomeActiveWithFallback(NSTimeInterva
 CFTimeInterval __dd_private_AppLaunchTime() {
     pthread_rwlock_rdlock(&rwLock);
     CFTimeInterval time = TimeToApplicationDidBecomeActive;
+    if (time == 0) time = ComputeProcessTimeFromStart();
     pthread_rwlock_unlock(&rwLock);
     return time;
 }

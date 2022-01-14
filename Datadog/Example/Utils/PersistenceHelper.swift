@@ -12,7 +12,7 @@ internal struct PersistenceHelpers {
         do {
             try FileManager.default
                 .getCacheSubdirectories()
-                .filter { isFeatureDirectory($0) || isCrashReporterDirectory($0) }
+                .filter { isFeatureDirectory($0) }
                 .forEach { FileManager.default.delete($0) }
         } catch {
             print("🔥 Failed to delete SDK data directory: \(error)")

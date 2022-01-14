@@ -74,19 +74,18 @@ internal class MobileDevice {
             }
         )
     }
-    /// Returns current mobile device  if `UIDevice` is available on this platform.
-    /// On other platforms returns `nil`.
-    static var current: MobileDevice {
+
+    convenience init() {
         #if !targetEnvironment(simulator)
         // Real device
-        return MobileDevice(
+        self.init(
             uiDevice: UIDevice.current,
             processInfo: ProcessInfo.processInfo,
             notificationCenter: .default
         )
         #else
         // iOS Simulator - battery monitoring doesn't work on Simulator, so return "always OK" value
-        return MobileDevice(
+        self.init(
             model: UIDevice.current.model,
             osName: UIDevice.current.systemName,
             osVersion: UIDevice.current.systemVersion,

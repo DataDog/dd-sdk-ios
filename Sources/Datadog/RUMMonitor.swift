@@ -164,8 +164,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 )
             }
             let monitor = RUMMonitor(rumFeature: rumFeature)
-            RUMAutoInstrumentation.instance?.subscribe(commandSubscriber: monitor)
-            URLSessionAutoInstrumentation.instance?.subscribe(commandSubscriber: monitor)
+            RUMInstrumentation.instance?.publish(to: monitor)
+            URLSessionAutoInstrumentation.instance?.publish(to: monitor)
             return monitor
         } catch {
             consolePrint("\(error)")
@@ -178,6 +178,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             applicationScope: RUMApplicationScope(
                 rumApplicationID: rumFeature.configuration.applicationID,
                 dependencies: RUMScopeDependencies(
+                    appStateListener: rumFeature.appStateListener,
                     userInfoProvider: RUMUserInfoProvider(userInfoProvider: rumFeature.userInfoProvider),
                     launchTimeProvider: rumFeature.launchTimeProvider,
                     connectivityInfoProvider: RUMConnectivityInfoProvider(
@@ -190,14 +191,16 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     eventOutput: RUMEventFileOutput(
                         fileWriter: rumFeature.storage.writer
                     ),
-                    rumUUIDGenerator: DefaultRUMUUIDGenerator(),
+                    rumUUIDGenerator: rumFeature.configuration.uuidGenerator,
                     dateCorrector: rumFeature.dateCorrector,
+                    crashContextIntegration: RUMWithCrashContextIntegration(),
                     vitalCPUReader: rumFeature.vitalCPUReader,
                     vitalMemoryReader: rumFeature.vitalMemoryReader,
                     vitalRefreshRateReader: rumFeature.vitalRefreshRateReader,
                     onSessionStart: rumFeature.onSessionStart
                 ),
-                samplingRate: rumFeature.configuration.sessionSamplingRate,
+                sampler: rumFeature.configuration.sessionSampler,
+                sdkInitDate: rumFeature.sdkInitDate,
                 backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled
             ),
             dateProvider: rumFeature.dateProvider
@@ -309,6 +312,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
 
     override public func addError(
         message: String,
+        type: String? = nil,
         source: RUMErrorSource,
         stack: String?,
         attributes: [AttributeKey: AttributeValue],
@@ -323,7 +327,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             }
             return nil
         }()
-        addError(message: message, type: nil, stack: stack, source: RUMInternalErrorSource(source), attributes: attributes)
+        addError(message: message, type: type, stack: stack, source: RUMInternalErrorSource(source), attributes: attributes)
     }
 
     internal func addError(
@@ -532,6 +536,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     override public func stopResourceLoadingWithError(
         resourceKey: String,
         errorMessage: String,
+        type: String? = nil,
         response: URLResponse?,
         attributes: [AttributeKey: AttributeValue]
     ) {
@@ -540,7 +545,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 resourceKey: resourceKey,
                 time: dateProvider.currentDate(),
                 message: errorMessage,
-                type: nil,
+                type: type,
                 source: .network,
                 httpStatusCode: (response as? HTTPURLResponse)?.statusCode,
                 attributes: attributes

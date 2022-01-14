@@ -327,6 +327,8 @@ public protocol UIKitRUMUserActionsPredicate
 public struct DefaultUIKitRUMUserActionsPredicate: UIKitRUMUserActionsPredicate
  public init ()
  public func rumAction(targetView: UIView) -> RUMAction?
+public extension SwiftUI.View
+ func trackRUMView(name: String,attributes: [AttributeKey: AttributeValue] = [:]) -> some View
 public struct RUMView
  public var name: String
  public var path: String?
