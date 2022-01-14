@@ -55,8 +55,8 @@ internal class DefaultWebRUMEventConsumer: WebRUMEventConsumer {
 
         if let date = mutableEvent["date"] as? Int {
             let viewID = (mutableEvent["view"] as? JSON)?["id"] as? String
-            let serverTimeOffsetInNs = getOffset(viewID: viewID)
-            let correctedDate = Int64(date) + serverTimeOffsetInNs
+            let serverTimeOffsetInMs = getOffsetInMs(viewID: viewID)
+            let correctedDate = Int64(date) + serverTimeOffsetInMs
             mutableEvent["date"] = correctedDate
         }
 
@@ -87,7 +87,7 @@ internal class DefaultWebRUMEventConsumer: WebRUMEventConsumer {
     private typealias ViewIDOffsetPair = (viewID: String, offset: Offset)
     private var viewIDOffsetPairs = [ViewIDOffsetPair]()
 
-    private func getOffset(viewID: String?) -> Offset {
+    private func getOffsetInMs(viewID: String?) -> Offset {
         guard let viewID = viewID else {
             return 0
         }
@@ -97,7 +97,7 @@ internal class DefaultWebRUMEventConsumer: WebRUMEventConsumer {
         if let found = found {
             return found.offset
         }
-        let offset = dateCorrector.currentCorrection.serverTimeOffset.toInt64Nanoseconds
+        let offset = dateCorrector.currentCorrection.serverTimeOffset.toInt64Milliseconds
         viewIDOffsetPairs.insert((viewID: viewID, offset: offset), at: 0)
         return offset
     }
