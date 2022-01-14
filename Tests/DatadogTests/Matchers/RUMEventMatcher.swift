@@ -40,8 +40,19 @@ internal class RUMEventMatcher {
     private let jsonDataDecoder = JSONDecoder()
 
     private init(with jsonData: Data) throws {
-        self.jsonMatcher = JSONDataMatcher(from: try jsonData.toJSONObject())
-        self.jsonData = jsonData
+        var json = try jsonData.toJSONObject()
+
+        // NOTE: RUMM-1649 WebViewScenarioTest receives lowercase `method` values
+        if let eventType = json["type"] as? String,
+           eventType == "resource",
+           var resource = json["resource"] as? [String: Any],
+           let method = resource["method"] as? String {
+            resource["method"] = method.uppercased()
+            json["resource"] = resource
+        }
+
+        self.jsonMatcher = JSONDataMatcher(from: json)
+        self.jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
     }
 
     // MARK: - Full match

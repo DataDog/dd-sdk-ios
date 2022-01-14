@@ -137,7 +137,7 @@ internal class RUMSessionMatcher {
                 visit.viewEvents.append(rumEvent)
                 visit.viewEventMatchers.append(matcher)
                 if visit.name.isEmpty {
-                    visit.name = rumEvent.view.name!
+                    visit.name = rumEvent.view.name ?? ""
                 } else if visit.name != rumEvent.view.name {
                     throw RUMSessionConsistencyException(
                         description: "The RUM View name: \(rumEvent) is different than other RUM View names for the same `view.id`."

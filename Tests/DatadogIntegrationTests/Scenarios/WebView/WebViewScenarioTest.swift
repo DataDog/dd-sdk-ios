@@ -8,28 +8,36 @@ import Foundation
 import HTTPServerMock
 import XCTest
 
-class WebViewScenarioTest: IntegrationTests, LoggingCommonAsserts {
-    func testWebViewLoggingScenario() throws {
-        let loggingServerSession = server.obtainUniqueRecordingSession()
+class WebViewScenarioTest: IntegrationTests, RUMCommonAsserts {
+    func testWebViewRUMEventsScenario() throws {
+        // Server session recording RUM events send to `HTTPServerMock`.
+        let rumServerSession = server.obtainUniqueRecordingSession()
 
         let app = ExampleApplication()
         app.launchWith(
             testScenarioClassName: "WebViewTrackingScenario",
             serverConfiguration: HTTPServerMockConfiguration(
-                logsEndpoint: loggingServerSession.recordingURL
+                rumEndpoint: rumServerSession.recordingURL
             )
         )
 
-        // Get expected number of `LogMatchers`
-        let recordedRequests = try loggingServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try LogMatcher.from(requests: requests).count >= 1
+        // Get RUM Sessions with expected number of View visits
+        let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
+            try RUMSessionMatcher.singleSession(from: requests)?.viewVisits.count == 2
         }
-        let logMatchers = try LogMatcher.from(requests: recordedRequests)
 
-        // Assert common things
-        assertLogging(requests: recordedRequests)
+        assertRUM(requests: recordedRUMRequests)
 
-        logMatchers[0].assertStatus(equals: "error")
-        logMatchers[0].assertMessage(equals: "console error: error")
+        let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
+
+        XCTAssertEqual(session.viewVisits.count, 2)
+        session.viewVisits[0].viewEvents.forEach { nativeView in
+            XCTAssertEqual(nativeView.source, .ios)
+        }
+        session.viewVisits[1].viewEvents.forEach { browserView in
+            // ideally `source` should be `.browser`
+            // but it's not implemented in `browser-sdk` yet
+            XCTAssertNotEqual(browserView.source, .ios)
+        }
     }
 }
