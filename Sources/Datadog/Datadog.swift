@@ -333,9 +333,6 @@ public class Datadog {
     public static func flushAndDeinitialize() {
         assert(Datadog.instance != nil, "SDK must be first initialized.")
 
-        // Reset internal loggers:
-        userLogger = createNoOpSDKUserLogger()
-
         // Tear down and deinitialize all features:
         LoggingFeature.instance?.deinitialize()
         TracingFeature.instance?.deinitialize()
@@ -350,10 +347,14 @@ public class Datadog {
         // Reset Globals:
         Global.sharedTracer = DDNoopGlobals.tracer
         Global.rum = DDNoopRUMMonitor()
+        Global.crashReporter?.deinitialize()
         Global.crashReporter = nil
 
         // Deinitialize `Datadog`:
         Datadog.instance = nil
+
+        // Reset internal loggers:
+        userLogger = createNoOpSDKUserLogger()
     }
 #endif
 }

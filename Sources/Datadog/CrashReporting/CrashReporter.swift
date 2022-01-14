@@ -89,9 +89,11 @@ internal class CrashReporter {
         queue.async {
             self.plugin.readPendingCrashReport { [weak self] crashReport in
                 guard let self = self, let availableCrashReport = crashReport else {
+                    userLogger.debug("No pending crash available")
                     return false
                 }
 
+                userLogger.debug("Loaded pending crash report")
 #if DD_SDK_ENABLE_INTERNAL_MONITORING
                 InternalMonitoringFeature.instance?.monitor.sdkLogger
                     .debug("Loaded pending crash report", attributes: availableCrashReport.diagnosticInfo)
@@ -166,4 +168,11 @@ internal class CrashReporter {
             return nil
         }
     }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    func deinitialize() {
+        // Await asynchronous operations completion to safely sink all pending tasks.
+        queue.sync {}
+    }
+#endif
 }
