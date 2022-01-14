@@ -28,6 +28,10 @@ public class DDRUMViewEvent: NSObject {
         DDRUMViewEventApplication(root: root)
     }
 
+    @objc public var ciTest: DDRUMViewEventCiTest? {
+        root.swiftModel.ciTest != nil ? DDRUMViewEventCiTest(root: root) : nil
+    }
+
     @objc public var connectivity: DDRUMViewEventRUMConnectivity? {
         root.swiftModel.connectivity != nil ? DDRUMViewEventRUMConnectivity(root: root) : nil
     }
@@ -46,6 +50,10 @@ public class DDRUMViewEvent: NSObject {
 
     @objc public var session: DDRUMViewEventSession {
         DDRUMViewEventSession(root: root)
+    }
+
+    @objc public var source: DDRUMViewEventSource {
+        .init(swift: root.swiftModel.source)
     }
 
     @objc public var synthetics: DDRUMViewEventSynthetics? {
@@ -71,6 +79,10 @@ public class DDRUMViewEventDD: NSObject {
 
     internal init(root: DDRUMViewEvent) {
         self.root = root
+    }
+
+    @objc public var browserSdkVersion: String? {
+        root.swiftModel.dd.browserSdkVersion
     }
 
     @objc public var documentVersion: NSNumber {
@@ -129,6 +141,19 @@ public class DDRUMViewEventApplication: NSObject {
 
     @objc public var id: String {
         root.swiftModel.application.id
+    }
+}
+
+@objc
+public class DDRUMViewEventCiTest: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var testExecutionId: String {
+        root.swiftModel.ciTest!.testExecutionId
     }
 }
 
@@ -274,6 +299,7 @@ public enum DDRUMViewEventSessionSessionType: Int {
         switch swift {
         case .user: self = .user
         case .synthetics: self = .synthetics
+        case .ciTest: self = .ciTest
         }
     }
 
@@ -281,11 +307,45 @@ public enum DDRUMViewEventSessionSessionType: Int {
         switch self {
         case .user: return .user
         case .synthetics: return .synthetics
+        case .ciTest: return .ciTest
         }
     }
 
     case user
     case synthetics
+    case ciTest
+}
+
+@objc
+public enum DDRUMViewEventSource: Int {
+    internal init(swift: RUMViewEvent.Source?) {
+        switch swift {
+        case nil: self = .none
+        case .android?: self = .android
+        case .ios?: self = .ios
+        case .browser?: self = .browser
+        case .flutter?: self = .flutter
+        case .reactNative?: self = .reactNative
+        }
+    }
+
+    internal var toSwift: RUMViewEvent.Source? {
+        switch self {
+        case .none: return nil
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        }
+    }
+
+    case none
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
 }
 
 @objc
@@ -294,6 +354,10 @@ public class DDRUMViewEventSynthetics: NSObject {
 
     internal init(root: DDRUMViewEvent) {
         self.root = root
+    }
+
+    @objc public var injected: NSNumber? {
+        root.swiftModel.synthetics!.injected as NSNumber?
     }
 
     @objc public var resultId: String {
@@ -628,6 +692,10 @@ public class DDRUMResourceEvent: NSObject {
         DDRUMResourceEventApplication(root: root)
     }
 
+    @objc public var ciTest: DDRUMResourceEventCiTest? {
+        root.swiftModel.ciTest != nil ? DDRUMResourceEventCiTest(root: root) : nil
+    }
+
     @objc public var connectivity: DDRUMResourceEventRUMConnectivity? {
         root.swiftModel.connectivity != nil ? DDRUMResourceEventRUMConnectivity(root: root) : nil
     }
@@ -650,6 +718,10 @@ public class DDRUMResourceEvent: NSObject {
 
     @objc public var session: DDRUMResourceEventSession {
         DDRUMResourceEventSession(root: root)
+    }
+
+    @objc public var source: DDRUMResourceEventSource {
+        .init(swift: root.swiftModel.source)
     }
 
     @objc public var synthetics: DDRUMResourceEventSynthetics? {
@@ -675,6 +747,10 @@ public class DDRUMResourceEventDD: NSObject {
 
     internal init(root: DDRUMResourceEvent) {
         self.root = root
+    }
+
+    @objc public var browserSdkVersion: String? {
+        root.swiftModel.dd.browserSdkVersion
     }
 
     @objc public var formatVersion: NSNumber {
@@ -750,6 +826,19 @@ public class DDRUMResourceEventApplication: NSObject {
 
     @objc public var id: String {
         root.swiftModel.application.id
+    }
+}
+
+@objc
+public class DDRUMResourceEventCiTest: NSObject {
+    internal let root: DDRUMResourceEvent
+
+    internal init(root: DDRUMResourceEvent) {
+        self.root = root
+    }
+
+    @objc public var testExecutionId: String {
+        root.swiftModel.ciTest!.testExecutionId
     }
 }
 
@@ -1225,6 +1314,7 @@ public enum DDRUMResourceEventSessionSessionType: Int {
         switch swift {
         case .user: self = .user
         case .synthetics: self = .synthetics
+        case .ciTest: self = .ciTest
         }
     }
 
@@ -1232,11 +1322,45 @@ public enum DDRUMResourceEventSessionSessionType: Int {
         switch self {
         case .user: return .user
         case .synthetics: return .synthetics
+        case .ciTest: return .ciTest
         }
     }
 
     case user
     case synthetics
+    case ciTest
+}
+
+@objc
+public enum DDRUMResourceEventSource: Int {
+    internal init(swift: RUMResourceEvent.Source?) {
+        switch swift {
+        case nil: self = .none
+        case .android?: self = .android
+        case .ios?: self = .ios
+        case .browser?: self = .browser
+        case .flutter?: self = .flutter
+        case .reactNative?: self = .reactNative
+        }
+    }
+
+    internal var toSwift: RUMResourceEvent.Source? {
+        switch self {
+        case .none: return nil
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        }
+    }
+
+    case none
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
 }
 
 @objc
@@ -1245,6 +1369,10 @@ public class DDRUMResourceEventSynthetics: NSObject {
 
     internal init(root: DDRUMResourceEvent) {
         self.root = root
+    }
+
+    @objc public var injected: NSNumber? {
+        root.swiftModel.synthetics!.injected as NSNumber?
     }
 
     @objc public var resultId: String {
@@ -1330,6 +1458,10 @@ public class DDRUMActionEvent: NSObject {
         DDRUMActionEventApplication(root: root)
     }
 
+    @objc public var ciTest: DDRUMActionEventCiTest? {
+        root.swiftModel.ciTest != nil ? DDRUMActionEventCiTest(root: root) : nil
+    }
+
     @objc public var connectivity: DDRUMActionEventRUMConnectivity? {
         root.swiftModel.connectivity != nil ? DDRUMActionEventRUMConnectivity(root: root) : nil
     }
@@ -1348,6 +1480,10 @@ public class DDRUMActionEvent: NSObject {
 
     @objc public var session: DDRUMActionEventSession {
         DDRUMActionEventSession(root: root)
+    }
+
+    @objc public var source: DDRUMActionEventSource {
+        .init(swift: root.swiftModel.source)
     }
 
     @objc public var synthetics: DDRUMActionEventSynthetics? {
@@ -1373,6 +1509,10 @@ public class DDRUMActionEventDD: NSObject {
 
     internal init(root: DDRUMActionEvent) {
         self.root = root
+    }
+
+    @objc public var browserSdkVersion: String? {
+        root.swiftModel.dd.browserSdkVersion
     }
 
     @objc public var formatVersion: NSNumber {
@@ -1573,6 +1713,19 @@ public class DDRUMActionEventApplication: NSObject {
 }
 
 @objc
+public class DDRUMActionEventCiTest: NSObject {
+    internal let root: DDRUMActionEvent
+
+    internal init(root: DDRUMActionEvent) {
+        self.root = root
+    }
+
+    @objc public var testExecutionId: String {
+        root.swiftModel.ciTest!.testExecutionId
+    }
+}
+
+@objc
 public class DDRUMActionEventRUMConnectivity: NSObject {
     internal let root: DDRUMActionEvent
 
@@ -1714,6 +1867,7 @@ public enum DDRUMActionEventSessionSessionType: Int {
         switch swift {
         case .user: self = .user
         case .synthetics: self = .synthetics
+        case .ciTest: self = .ciTest
         }
     }
 
@@ -1721,11 +1875,45 @@ public enum DDRUMActionEventSessionSessionType: Int {
         switch self {
         case .user: return .user
         case .synthetics: return .synthetics
+        case .ciTest: return .ciTest
         }
     }
 
     case user
     case synthetics
+    case ciTest
+}
+
+@objc
+public enum DDRUMActionEventSource: Int {
+    internal init(swift: RUMActionEvent.Source?) {
+        switch swift {
+        case nil: self = .none
+        case .android?: self = .android
+        case .ios?: self = .ios
+        case .browser?: self = .browser
+        case .flutter?: self = .flutter
+        case .reactNative?: self = .reactNative
+        }
+    }
+
+    internal var toSwift: RUMActionEvent.Source? {
+        switch self {
+        case .none: return nil
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        }
+    }
+
+    case none
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
 }
 
 @objc
@@ -1734,6 +1922,10 @@ public class DDRUMActionEventSynthetics: NSObject {
 
     internal init(root: DDRUMActionEvent) {
         self.root = root
+    }
+
+    @objc public var injected: NSNumber? {
+        root.swiftModel.synthetics!.injected as NSNumber?
     }
 
     @objc public var resultId: String {
@@ -1823,6 +2015,10 @@ public class DDRUMErrorEvent: NSObject {
         DDRUMErrorEventApplication(root: root)
     }
 
+    @objc public var ciTest: DDRUMErrorEventCiTest? {
+        root.swiftModel.ciTest != nil ? DDRUMErrorEventCiTest(root: root) : nil
+    }
+
     @objc public var connectivity: DDRUMErrorEventRUMConnectivity? {
         root.swiftModel.connectivity != nil ? DDRUMErrorEventRUMConnectivity(root: root) : nil
     }
@@ -1845,6 +2041,10 @@ public class DDRUMErrorEvent: NSObject {
 
     @objc public var session: DDRUMErrorEventSession {
         DDRUMErrorEventSession(root: root)
+    }
+
+    @objc public var source: DDRUMErrorEventSource {
+        .init(swift: root.swiftModel.source)
     }
 
     @objc public var synthetics: DDRUMErrorEventSynthetics? {
@@ -1870,6 +2070,10 @@ public class DDRUMErrorEventDD: NSObject {
 
     internal init(root: DDRUMErrorEvent) {
         self.root = root
+    }
+
+    @objc public var browserSdkVersion: String? {
+        root.swiftModel.dd.browserSdkVersion
     }
 
     @objc public var formatVersion: NSNumber {
@@ -1937,6 +2141,19 @@ public class DDRUMErrorEventApplication: NSObject {
 
     @objc public var id: String {
         root.swiftModel.application.id
+    }
+}
+
+@objc
+public class DDRUMErrorEventCiTest: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var testExecutionId: String {
+        root.swiftModel.ciTest!.testExecutionId
     }
 }
 
@@ -2311,6 +2528,7 @@ public enum DDRUMErrorEventErrorSourceType: Int {
         case .browser?: self = .browser
         case .ios?: self = .ios
         case .reactNative?: self = .reactNative
+        case .flutter?: self = .flutter
         }
     }
 
@@ -2321,6 +2539,7 @@ public enum DDRUMErrorEventErrorSourceType: Int {
         case .browser: return .browser
         case .ios: return .ios
         case .reactNative: return .reactNative
+        case .flutter: return .flutter
         }
     }
 
@@ -2329,6 +2548,7 @@ public enum DDRUMErrorEventErrorSourceType: Int {
     case browser
     case ios
     case reactNative
+    case flutter
 }
 
 @objc
@@ -2358,6 +2578,7 @@ public enum DDRUMErrorEventSessionSessionType: Int {
         switch swift {
         case .user: self = .user
         case .synthetics: self = .synthetics
+        case .ciTest: self = .ciTest
         }
     }
 
@@ -2365,11 +2586,45 @@ public enum DDRUMErrorEventSessionSessionType: Int {
         switch self {
         case .user: return .user
         case .synthetics: return .synthetics
+        case .ciTest: return .ciTest
         }
     }
 
     case user
     case synthetics
+    case ciTest
+}
+
+@objc
+public enum DDRUMErrorEventSource: Int {
+    internal init(swift: RUMErrorEvent.Source?) {
+        switch swift {
+        case nil: self = .none
+        case .android?: self = .android
+        case .ios?: self = .ios
+        case .browser?: self = .browser
+        case .flutter?: self = .flutter
+        case .reactNative?: self = .reactNative
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.Source? {
+        switch self {
+        case .none: return nil
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        }
+    }
+
+    case none
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
 }
 
 @objc
@@ -2378,6 +2633,10 @@ public class DDRUMErrorEventSynthetics: NSObject {
 
     internal init(root: DDRUMErrorEvent) {
         self.root = root
+    }
+
+    @objc public var injected: NSNumber? {
+        root.swiftModel.synthetics!.injected as NSNumber?
     }
 
     @objc public var resultId: String {
@@ -2467,6 +2726,10 @@ public class DDRUMLongTaskEvent: NSObject {
         DDRUMLongTaskEventApplication(root: root)
     }
 
+    @objc public var ciTest: DDRUMLongTaskEventCiTest? {
+        root.swiftModel.ciTest != nil ? DDRUMLongTaskEventCiTest(root: root) : nil
+    }
+
     @objc public var connectivity: DDRUMLongTaskEventRUMConnectivity? {
         root.swiftModel.connectivity != nil ? DDRUMLongTaskEventRUMConnectivity(root: root) : nil
     }
@@ -2489,6 +2752,10 @@ public class DDRUMLongTaskEvent: NSObject {
 
     @objc public var session: DDRUMLongTaskEventSession {
         DDRUMLongTaskEventSession(root: root)
+    }
+
+    @objc public var source: DDRUMLongTaskEventSource {
+        .init(swift: root.swiftModel.source)
     }
 
     @objc public var synthetics: DDRUMLongTaskEventSynthetics? {
@@ -2514,6 +2781,10 @@ public class DDRUMLongTaskEventDD: NSObject {
 
     internal init(root: DDRUMLongTaskEvent) {
         self.root = root
+    }
+
+    @objc public var browserSdkVersion: String? {
+        root.swiftModel.dd.browserSdkVersion
     }
 
     @objc public var formatVersion: NSNumber {
@@ -2581,6 +2852,19 @@ public class DDRUMLongTaskEventApplication: NSObject {
 
     @objc public var id: String {
         root.swiftModel.application.id
+    }
+}
+
+@objc
+public class DDRUMLongTaskEventCiTest: NSObject {
+    internal let root: DDRUMLongTaskEvent
+
+    internal init(root: DDRUMLongTaskEvent) {
+        self.root = root
+    }
+
+    @objc public var testExecutionId: String {
+        root.swiftModel.ciTest!.testExecutionId
     }
 }
 
@@ -2747,6 +3031,7 @@ public enum DDRUMLongTaskEventSessionSessionType: Int {
         switch swift {
         case .user: self = .user
         case .synthetics: self = .synthetics
+        case .ciTest: self = .ciTest
         }
     }
 
@@ -2754,11 +3039,45 @@ public enum DDRUMLongTaskEventSessionSessionType: Int {
         switch self {
         case .user: return .user
         case .synthetics: return .synthetics
+        case .ciTest: return .ciTest
         }
     }
 
     case user
     case synthetics
+    case ciTest
+}
+
+@objc
+public enum DDRUMLongTaskEventSource: Int {
+    internal init(swift: RUMLongTaskEvent.Source?) {
+        switch swift {
+        case nil: self = .none
+        case .android?: self = .android
+        case .ios?: self = .ios
+        case .browser?: self = .browser
+        case .flutter?: self = .flutter
+        case .reactNative?: self = .reactNative
+        }
+    }
+
+    internal var toSwift: RUMLongTaskEvent.Source? {
+        switch self {
+        case .none: return nil
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        }
+    }
+
+    case none
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
 }
 
 @objc
@@ -2767,6 +3086,10 @@ public class DDRUMLongTaskEventSynthetics: NSObject {
 
     internal init(root: DDRUMLongTaskEvent) {
         self.root = root
+    }
+
+    @objc public var injected: NSNumber? {
+        root.swiftModel.synthetics!.injected as NSNumber?
     }
 
     @objc public var resultId: String {
@@ -2833,4 +3156,4 @@ public class DDRUMLongTaskEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/9c135e77bb1da61ebbb6b2fb3b39e156d5120a8e
+// Generated from https://github.com/DataDog/rum-events-format/tree/114c173caac5ea15446a157b666acbab05431361
