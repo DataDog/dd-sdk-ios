@@ -225,10 +225,12 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
 
         let rumError = RUMErrorEvent(
             dd: .init(
+                browserSdkVersion: nil,
                 session: .init(plan: .plan1)
             ),
             action: nil,
             application: .init(id: lastRUMView.application.id),
+            ciTest: nil,
             connectivity: lastRUMView.connectivity,
             context: nil,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds,
@@ -250,6 +252,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 id: lastRUMView.session.id,
                 type: .user
             ),
+            source: .ios,
             synthetics: nil,
             usr: lastRUMView.usr,
             view: .init(
@@ -271,15 +274,18 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         let original = rumViewEvent.model
         let rumView = RUMViewEvent(
             dd: .init(
+                browserSdkVersion: nil,
                 documentVersion: original.dd.documentVersion + 1,
                 session: .init(plan: .plan1)
             ),
             application: original.application,
+            ciTest: nil,
             connectivity: original.connectivity,
             context: original.context,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds - 1, // -1ms to put the crash after view in RUM session
             service: original.service,
             session: original.session,
+            source: .ios,
             synthetics: nil,
             usr: original.usr,
             view: .init(
@@ -333,12 +339,14 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
 
         let rumView = RUMViewEvent(
             dd: .init(
+                browserSdkVersion: nil,
                 documentVersion: 1,
                 session: .init(plan: .plan1)
             ),
             application: .init(
                 id: rumConfiguration.applicationID
             ),
+            ciTest: nil,
             connectivity: RUMConnectivity(
                 networkInfo: crashContext.lastNetworkConnectionInfo,
                 carrierInfo: crashContext.lastCarrierInfo
@@ -351,6 +359,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 id: sessionUUID.toRUMDataFormat,
                 type: .user
             ),
+            source: .ios,
             synthetics: nil,
             usr: crashContext.lastUserInfo.flatMap { RUMUser(userInfo: $0) },
             view: .init(

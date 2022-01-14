@@ -76,6 +76,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.model.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.model.session.type, .user)
+        XCTAssertEqual(event.model.source, .ios)
         XCTAssertEqual(event.model.view.id, context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.model.view.url, "FooViewController")
         XCTAssertEqual(event.model.view.name, "FooViewName")
