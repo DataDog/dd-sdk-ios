@@ -58,6 +58,7 @@ class RUMUserActionScopeTests: XCTestCase {
         let recordedAction = try XCTUnwrap(recordedActionEvents.last)
         XCTAssertEqual(recordedAction.model.action.type.rawValue, String(describing: mockUserActionCmd.actionType))
         XCTAssertEqual(recordedAction.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+        XCTAssertEqual(recordedAction.model.source, .ios)
     }
 
     // MARK: - Continuous User Action
