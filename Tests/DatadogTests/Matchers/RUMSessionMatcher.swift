@@ -48,7 +48,8 @@ internal class RUMSessionMatcher {
 
         /// The `name` of the visited RUM View.
         /// Corresponds to the "VIEW NAME" in RUM Explorer.
-        fileprivate(set) var name: String = ""
+        /// Might be `nil` for events received from Browser SDK.
+        fileprivate(set) var name: String?
 
         /// The `path` of the visited RUM View.
         /// Corresponds to the "VIEW URL" in RUM Explorer.
@@ -136,8 +137,8 @@ internal class RUMSessionMatcher {
             if let visit = visitsByViewID[rumEvent.view.id] {
                 visit.viewEvents.append(rumEvent)
                 visit.viewEventMatchers.append(matcher)
-                if visit.name.isEmpty {
-                    visit.name = rumEvent.view.name ?? ""
+                if visit.name == nil {
+                    visit.name = rumEvent.view.name
                 } else if visit.name != rumEvent.view.name {
                     throw RUMSessionConsistencyException(
                         description: "The RUM View name: \(rumEvent) is different than other RUM View names for the same `view.id`."
@@ -324,7 +325,7 @@ extension RUMSessionMatcher: CustomStringConvertible {
             return "    → [⛔️ Invalid View - it has no view events]"
         }
 
-        var description = "    → [📸 View (name: '\(viewVisit.name)', id: \(viewVisit.viewID), duration: \(seconds(from: lastViewEvent.view.timeSpent)) actions.count: \(lastViewEvent.view.action.count), resources.count: \(lastViewEvent.view.resource.count), errors.count: \(lastViewEvent.view.error.count), longTask.count: \(lastViewEvent.view.longTask?.count ?? 0), frozenFrames.count: \(lastViewEvent.view.frozenFrame?.count ?? 0)]"
+        var description = "    → [📸 View (name: '\(viewVisit.name ?? "nil")', id: \(viewVisit.viewID), duration: \(seconds(from: lastViewEvent.view.timeSpent)) actions.count: \(lastViewEvent.view.action.count), resources.count: \(lastViewEvent.view.resource.count), errors.count: \(lastViewEvent.view.error.count), longTask.count: \(lastViewEvent.view.longTask?.count ?? 0), frozenFrames.count: \(lastViewEvent.view.frozenFrame?.count ?? 0)]"
 
         if !viewVisit.actionEvents.isEmpty {
             description += "\n        → action events:"
