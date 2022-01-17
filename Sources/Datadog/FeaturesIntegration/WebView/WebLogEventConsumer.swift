@@ -60,10 +60,10 @@ internal class DefaultWebLogEventConsumer: WebLogEventConsumer {
             mutableEvent[Constants.ddTagsKey] = ddTags
         }
 
-        if let date = mutableEvent[Constants.dateKey] as? Int {
-            let serverTimeOffsetInNs = dateCorrector.currentCorrection.serverTimeOffset.toInt64Nanoseconds
-            let correctedDate = Int64(date) + serverTimeOffsetInNs
-            mutableEvent[Constants.dateKey] = correctedDate
+        if let timestampInMs = mutableEvent[Constants.dateKey] as? Int {
+            let serverTimeOffsetInMs = dateCorrector.currentCorrection.serverTimeOffset.toInt64Milliseconds
+            let correctedTimestamp = Int64(timestampInMs) + serverTimeOffsetInMs
+            mutableEvent[Constants.dateKey] = correctedTimestamp
         }
 
         if let context = rumContextProvider?.context {

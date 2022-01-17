@@ -14,7 +14,7 @@ class WebLogEventConsumerTests: XCTestCase {
     let mockContextProvider = RUMContextProviderMock(context: .mockWith(rumApplicationID: "123456"))
 
     func testWhenValidWebLogEventPassed_itDecoratesAndPassesToWriter() throws {
-        let mockSessionID = UUID(uuidString: "e9796469-c2a1-43d6-b0f6-65c47d33cf5f")!
+        let mockSessionID: UUID = .mockRandom()
         mockContextProvider.context.sessionID = RUMUUID(rawValue: mockSessionID)
         mockDateCorrector.correctionOffset = 123
         let applicationVersion = String.mockRandom()
@@ -37,7 +37,7 @@ class WebLogEventConsumerTests: XCTestCase {
             "view": ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"]
         ]
         let expectedWebLogEvent: JSON = [
-            "date": 1_635_932_927_012 + 123.toInt64Nanoseconds,
+            "date": 1_635_932_927_012 + 123.toInt64Milliseconds,
             "error": ["origin": "console"],
             "message": "console error: error",
             "application_id": "123456",
@@ -58,7 +58,7 @@ class WebLogEventConsumerTests: XCTestCase {
     }
 
     func testWhenValidWebInternalLogEventPassed_itDecoratesAndPassesToWriter() throws {
-        let mockSessionID = UUID(uuidString: "e9796469-c2a1-43d6-b0f6-65c47d33cf5f")!
+        let mockSessionID: UUID = .mockRandom()
         mockContextProvider.context.sessionID = RUMUUID(rawValue: mockSessionID)
         mockDateCorrector.correctionOffset = 123
         let applicationVersion = String.mockRandom()
@@ -81,7 +81,7 @@ class WebLogEventConsumerTests: XCTestCase {
             "view": ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"]
         ]
         let expectedWebLogEvent: JSON = [
-            "date": 1_635_932_927_012 + 123.toInt64Nanoseconds,
+            "date": 1_635_932_927_012 + 123.toInt64Milliseconds,
             "error": ["origin": "console"],
             "message": "console error: error",
             "application_id": "123456",
