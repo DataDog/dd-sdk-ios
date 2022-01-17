@@ -4,16 +4,27 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import Foundation
+import UIKit
 import Datadog
 
-/// Scenario which uses RUM only. Blocks the main thread and expects to have non-zero MobileVitals values
+private struct WebViewTrackingScenarioPredicate: UIKitRUMViewsPredicate {
+    private let defaultPredicate = DefaultUIKitRUMViewsPredicate()
+
+    func rumView(for viewController: UIViewController) -> RUMView? {
+        if viewController is ShopistWebviewViewController {
+            return nil // do not consider the webview itself as RUM view
+        } else {
+            return defaultPredicate.rumView(for: viewController)
+        }
+    }
+}
+
 final class WebViewTrackingScenario: TestScenario {
     static var storyboardName: String = "WebViewTrackingScenario"
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
-            .trackUIKitRUMViews()
+            .trackUIKitRUMViews(using: WebViewTrackingScenarioPredicate())
             .enableLogging(true)
             .enableRUM(true)
     }

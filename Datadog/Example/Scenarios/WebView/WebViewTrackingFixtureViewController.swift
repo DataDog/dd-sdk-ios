@@ -9,6 +9,19 @@ import WebKit
 import Datadog
 
 class WebViewTrackingFixtureViewController: UIViewController, WKNavigationDelegate {
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        // An action sent from native iOS SDK.
+        Global.rum.addUserAction(type: .custom, name: "Native action")
+
+        // Opens a webview configured to pass all its Browser SDK events to native iOS SDK.
+        show(ShopistWebviewViewController(), sender: nil)
+    }
+}
+
+class ShopistWebviewViewController: UIViewController {
+    private let request = URLRequest(url: URL(string: "https://shopist.io")!)
     private var webView: WKWebView!
 
     override func viewDidLoad() {
@@ -19,16 +32,12 @@ class WebViewTrackingFixtureViewController: UIViewController, WKNavigationDelega
         let config = WKWebViewConfiguration()
         config.userContentController = controller
 
-        webView = WKWebView(frame: view.bounds, configuration: config)
-        webView.navigationDelegate = self
+        webView = WKWebView(frame: UIScreen.main.bounds, configuration: config)
         view.addSubview(webView)
     }
 
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-
-        // swiftlint:disable:next force_unwrapping
-        let request = URLRequest(url: URL(string: "https://shopist.io")!)
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         webView.load(request)
     }
 }
