@@ -85,7 +85,6 @@ class WebviewViewController: UIViewController {
         super.viewDidLoad()
 
         let controller = WKUserContentController()
-        // TODO: RUMM-1794 remove internal method call and use public API
         controller.addDatadogMessageHandler(allowedWebViewHosts: ["datadoghq.dev"])
         let config = WKWebViewConfiguration()
         config.userContentController = controller
