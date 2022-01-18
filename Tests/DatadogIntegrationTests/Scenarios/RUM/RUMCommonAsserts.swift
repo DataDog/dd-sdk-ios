@@ -60,14 +60,16 @@ extension RUMCommonAsserts {
 
 extension RUMSessionMatcher {
     /// Retrieves single RUM Session from given `requests`.
-    class func singleSession(from requests: [HTTPServerMock.Request]) throws -> RUMSessionMatcher? {
-        return try sessions(maxCount: 1, from: requests).first
+    /// - Parameter eventsPatch: optional transformation to apply on each event within the payload before instantiating matcher (default: `nil`)
+    class func singleSession(from requests: [HTTPServerMock.Request], eventsPatch: ((Data) throws -> Data)? = nil) throws -> RUMSessionMatcher? {
+        return try sessions(maxCount: 1, from: requests, eventsPatch: eventsPatch).first
     }
 
     /// Retrieves `maxCount` RUM Sessions from given `requests`.
-    class func sessions(maxCount: Int, from requests: [HTTPServerMock.Request]) throws -> [RUMSessionMatcher] {
+    /// - Parameter eventsPatch: optional transformation to apply on each event within the payload before instantiating matcher (default: `nil`)
+    class func sessions(maxCount: Int, from requests: [HTTPServerMock.Request], eventsPatch: ((Data) throws -> Data)? = nil) throws -> [RUMSessionMatcher] {
         let eventMatchers = try requests
-            .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
+            .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody, eventsPatch: eventsPatch) }
         let sessionMatchers = try RUMSessionMatcher.groupMatchersBySessions(eventMatchers)
 
         if sessionMatchers.count > maxCount {
