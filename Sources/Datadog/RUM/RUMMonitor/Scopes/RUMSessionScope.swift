@@ -146,14 +146,16 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             case .handleInBackgroundView where command.canStartBackgroundView:
                 startBackgroundView(on: command)
             default:
-                // As no view scope will handle this command, warn the user on dropping it
-                userLogger.warn(
-                    """
-                    \(String(describing: command)) was detected, but no view is active. To track views automatically, try calling the
-                    DatadogConfiguration.Builder.trackUIKitRUMViews() method. You can also track views manually using
-                    the RumMonitor.startView() and RumMonitor.stopView() methods.
-                    """
-                )
+                if !(command is RUMKeepSessionAliveCommand) { // it is expected to receive 'keep alive' while no active view (when tracking WebView events)
+                    // As no view scope will handle this command, warn the user on dropping it.
+                    userLogger.warn(
+                        """
+                        \(String(describing: command)) was detected, but no view is active. To track views automatically, try calling the
+                        DatadogConfiguration.Builder.trackUIKitRUMViews() method. You can also track views manually using
+                        the RumMonitor.startView() and RumMonitor.stopView() methods.
+                        """
+                    )
+                }
             }
         }
 
