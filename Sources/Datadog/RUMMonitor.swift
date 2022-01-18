@@ -185,6 +185,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                         networkConnectionInfoProvider: rumFeature.networkConnectionInfoProvider,
                         carrierInfoProvider: rumFeature.carrierInfoProvider
                     ),
+                    serviceName: rumFeature.configuration.common.serviceName,
                     eventBuilder: RUMEventBuilder(
                         eventsMapper: rumFeature.eventsMapper
                     ),
