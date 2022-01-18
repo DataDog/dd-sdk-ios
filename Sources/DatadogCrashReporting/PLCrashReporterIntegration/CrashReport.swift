@@ -91,7 +91,7 @@ internal struct BinaryImageInfo {
     }
 
     /// The UUID of this image.
-    var uuid: String
+    var uuid: String?
     /// The name of this image (referenced by "library name" in the stack frame).
     var imageName: String
     /// If its a system library image.
@@ -232,14 +232,12 @@ extension ThreadInfo {
 
 extension BinaryImageInfo {
     init?(from imageInfo: PLCrashReportBinaryImageInfo) {
-        guard let imagePath = imageInfo.imageName,
-              let imageUUID = imageInfo.hasImageUUID ? imageInfo.imageUUID : nil else {
-            // We can drop this image as it won't be useful for symbolication - both
-            // "image name" and "uuid" are necessary.
+        guard let imagePath = imageInfo.imageName else {
+            // We can drop this image as it won't be useful for symbolication
             return nil
         }
 
-        self.uuid = imageUUID
+        self.uuid = imageInfo.imageUUID
         self.imageName = URL(fileURLWithPath: imagePath).lastPathComponent
 
         #if targetEnvironment(simulator)
@@ -303,18 +301,17 @@ extension BinaryImageInfo.CodeType {
 
 extension StackFrame {
     init(from stackFrame: PLCrashReportStackFrameInfo, number: Int, in crashReport: PLCrashReport) {
-        if let image = crashReport.image(forAddress: stackFrame.instructionPointer),
-           let imageInfo = BinaryImageInfo(from: image) {
-            self.libraryName = imageInfo.imageName
-            self.libraryBaseAddress = imageInfo.imageBaseAddress
-        } else {
-            // Without "library name" and its "base address" symbolication will not be possible,
-            // but the presence of this frame in the stack will be still relevant.
-            self.libraryName = nil
-            self.libraryBaseAddress = nil
-        }
-
         self.number = number
         self.instructionPointer = stackFrame.instructionPointer
+
+        // Without "library name" and its "base address" symbolication will not be possible,
+        // but the presence of this frame in the stack will be still relevant.
+        let image = crashReport.image(forAddress: stackFrame.instructionPointer)
+
+        self.libraryBaseAddress = image?.imageBaseAddress
+
+        if let imagePath = image?.imageName {
+            self.libraryName = URL(fileURLWithPath: imagePath).lastPathComponent
+        }
     }
 }

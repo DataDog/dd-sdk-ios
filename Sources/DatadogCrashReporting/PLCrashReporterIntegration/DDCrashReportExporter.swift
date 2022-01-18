@@ -150,7 +150,7 @@ internal struct DDCrashReportExporter {
 
             return DDCrashReport.BinaryImage(
                 libraryName: image.imageName,
-                uuid: image.uuid,
+                uuid: image.uuid ?? unavailable,
                 architecture: image.codeType?.architectureName ?? unavailable,
                 isSystemLibrary: image.isSystemImage,
                 loadAddress: loadAddressHex,
