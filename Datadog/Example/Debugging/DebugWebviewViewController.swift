@@ -85,7 +85,7 @@ class WebviewViewController: UIViewController {
         super.viewDidLoad()
 
         let controller = WKUserContentController()
-        controller.addDatadogMessageHandler(allowedWebViewHosts: ["datadoghq.dev"])
+        controller.addDatadogMessageHandler(allowedWebViewHosts: [request.url!.host!])
         let config = WKWebViewConfiguration()
         config.userContentController = controller
 
