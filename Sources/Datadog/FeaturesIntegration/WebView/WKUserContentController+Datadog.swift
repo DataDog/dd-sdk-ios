@@ -4,6 +4,7 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+#if DD_SDK_ENABLE_EXPERIMENTAL_APIS
 import Foundation
 import WebKit
 
@@ -109,3 +110,4 @@ internal class DatadogMessageHandler: NSObject, WKScriptMessageHandler {
         }
     }
 }
+#endif
