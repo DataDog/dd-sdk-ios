@@ -7,7 +7,6 @@
 import XCTest
 @testable import Datadog
 
-// TODO: RUMM-1786 test mutations (session_id, application_id, date)
 class WebRUMEventConsumerTests: XCTestCase {
     let mockWriter = FileWriterMock()
     let mockDateCorrector = DateCorrectorMock()
