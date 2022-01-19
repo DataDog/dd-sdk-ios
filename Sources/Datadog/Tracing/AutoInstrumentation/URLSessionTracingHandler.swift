@@ -56,8 +56,14 @@ internal class URLSessionTracingHandler: URLSessionInterceptionHandler {
         }
 
         let url = interception.request.url?.absoluteString ?? "unknown_url"
+
+        if let requestUrl = interception.request.url {
+            var urlComponent = URLComponents(url: requestUrl, resolvingAgainstBaseURL: true)
+            urlComponent?.query = nil
+            let resourceUrl = urlComponent?.url?.absoluteString ?? "unknown_url"
+            span.setTag(key: DDTags.resource, value: resourceUrl)
+        }
         let method = interception.request.httpMethod ?? "unknown_method"
-        span.setTag(key: DDTags.resource, value: url)
         span.setTag(key: OTTags.httpUrl, value: url)
         span.setTag(key: OTTags.httpMethod, value: method)
 
