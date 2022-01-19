@@ -28,7 +28,7 @@ class ShopistWebviewViewController: UIViewController {
         super.viewDidLoad()
 
         let controller = WKUserContentController()
-        controller.addDatadogMessageHandler(allowedWebViewHosts: ["shopist.io"])
+        controller.trackDatadogEvents(in: ["shopist.io"])
         let config = WKWebViewConfiguration()
         config.userContentController = controller
 

@@ -50,7 +50,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
 
         let initialUserScriptCount = controller.userScripts.count
 
-        controller.__addDatadogMessageHandler(allowedWebViewHosts: ["datadoghq.com"], hostsSanitizer: mockSanitizer)
+        controller.addDatadogMessageHandler(allowedWebViewHosts: ["datadoghq.com"], hostsSanitizer: mockSanitizer)
 
         XCTAssertEqual(controller.userScripts.count, initialUserScriptCount + 1)
         XCTAssertEqual(controller.messageHandlers.map({ $0.name }), ["DatadogEventBridge"])
@@ -68,7 +68,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
         userLogger = .mockWith(logOutput: output)
 
         let controller = DDUserContentController()
-        controller.__addDatadogMessageHandler(allowedWebViewHosts: ["datadoghq.com"], hostsSanitizer: MockHostsSanitizer())
+        controller.addDatadogMessageHandler(allowedWebViewHosts: ["datadoghq.com"], hostsSanitizer: MockHostsSanitizer())
 
         let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DatadogMessageHandler
         // non-string body is passed
@@ -111,7 +111,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
         }
 
         let controller = DDUserContentController()
-        controller.__addDatadogMessageHandler(
+        controller.addDatadogMessageHandler(
             allowedWebViewHosts: ["datadoghq.com"],
             hostsSanitizer: MockHostsSanitizer()
         )

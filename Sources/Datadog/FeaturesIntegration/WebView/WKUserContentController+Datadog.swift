@@ -8,13 +8,18 @@
 import Foundation
 import WebKit
 
-// TODO: RUMM-1794 rename the methods
 public extension WKUserContentController {
-    func addDatadogMessageHandler(allowedWebViewHosts: Set<String>) {
-        __addDatadogMessageHandler(allowedWebViewHosts: allowedWebViewHosts, hostsSanitizer: HostsSanitizer())
+    /// Enables SDK to correlate Datadog RUM events and Logs from the WebView with native RUM session.
+    ///
+    /// If the content loaded in WebView uses Datadog Browser SDK (`v4.2.0+`) and matches specified `hosts`, web events will be correlated
+    /// with the RUM session from native SDK.
+    ///
+    /// - Parameter hosts: a list of hosts instrumented with Browser SDK to capture Datadog events from
+    func trackDatadogEvents(in hosts: Set<String>) {
+        addDatadogMessageHandler(allowedWebViewHosts: hosts, hostsSanitizer: HostsSanitizer())
     }
 
-    internal func __addDatadogMessageHandler(allowedWebViewHosts: Set<String>, hostsSanitizer: HostsSanitizing) {
+    internal func addDatadogMessageHandler(allowedWebViewHosts: Set<String>, hostsSanitizer: HostsSanitizing) {
         let bridgeName = DatadogMessageHandler.name
 
         let globalRUMMonitor = Global.rum as? RUMMonitor
