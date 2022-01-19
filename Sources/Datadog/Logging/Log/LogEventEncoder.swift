@@ -89,6 +89,7 @@ internal struct LogEventEncoder {
         case status
         case message
         case serviceName = "service"
+        case environment = "env"
         case tags = "ddtags"
 
         // MARK: - Error

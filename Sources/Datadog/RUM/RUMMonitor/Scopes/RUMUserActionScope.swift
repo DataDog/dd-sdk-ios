@@ -152,7 +152,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: actionStartTime).timeIntervalSince1970.toInt64Milliseconds,
-            service: nil,
+            service: dependencies.serviceName,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
             source: .ios,
             synthetics: nil,

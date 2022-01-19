@@ -27,11 +27,15 @@ internal class RUMEventMatcher {
     ///     ```
     ///
     /// **See Also** `RUMEventMatcher.fromJSONObjectData(_:)`
-    ///
-    class func fromNewlineSeparatedJSONObjectsData(_ data: Data) throws -> [RUMEventMatcher] {
+    /// - Parameter data: payload data
+    /// - Parameter eventsPatch: optional transformation to apply on each event within the payload before instantiating matcher (default: `nil`)
+    class func fromNewlineSeparatedJSONObjectsData(_ data: Data, eventsPatch: ((Data) throws -> Data)? = nil) throws -> [RUMEventMatcher] {
         let separator = "\n".data(using: .utf8)![0]
-        let spansData = data.split(separator: separator).map { Data($0) }
-        return try spansData.map { spanJSONData in try RUMEventMatcher.fromJSONObjectData(spanJSONData) }
+        var eventsData = data.split(separator: separator).map { Data($0) }
+        if let patch = eventsPatch {
+            eventsData = try eventsData.map { try patch($0) }
+        }
+        return try eventsData.map { eventJSONData in try RUMEventMatcher.fromJSONObjectData(eventJSONData) }
     }
 
     let jsonData: Data

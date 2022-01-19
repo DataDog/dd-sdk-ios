@@ -189,7 +189,7 @@ internal class RUMResourceScope: RUMScope {
                 type: resourceType,
                 url: resourceURL
             ),
-            service: nil,
+            service: dependencies.serviceName,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
             source: .ios,
             synthetics: nil,
@@ -242,7 +242,7 @@ internal class RUMResourceScope: RUMScope {
                 stack: command.stack,
                 type: command.errorType
             ),
-            service: nil,
+            service: dependencies.serviceName,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
             source: .ios,
             synthetics: nil,

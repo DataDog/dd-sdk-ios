@@ -356,7 +356,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             ),
             context: nil,
             date: startDate.timeIntervalSince1970.toInt64Milliseconds,
-            service: nil,
+            service: rumConfiguration.common.serviceName,
             session: .init(
                 hasReplay: nil,
                 id: sessionUUID.toRUMDataFormat,

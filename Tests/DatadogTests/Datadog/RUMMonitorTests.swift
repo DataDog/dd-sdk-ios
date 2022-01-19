@@ -27,8 +27,12 @@ class RUMMonitorTests: XCTestCase {
 
     func testStartingViewIdentifiedByViewController() throws {
         let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        let randomServiceName: String = .mockRandom()
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(
             directories: temporaryFeatureDirectories,
+            configuration: .mockWith(
+                common: .mockWith(serviceName: randomServiceName)
+            ),
             dependencies: .mockWith(
                 dateProvider: dateProvider
             )
@@ -46,16 +50,20 @@ class RUMMonitorTests: XCTestCase {
         verifyGlobalAttributes(in: rumEventMatchers)
         try rumEventMatchers[0].model(ofType: RUMActionEvent.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .applicationStart)
+            XCTAssertEqual(rumModel.service, randomServiceName)
         }
         try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
+            XCTAssertEqual(rumModel.service, randomServiceName)
         }
         try rumEventMatchers[2].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.timeSpent, 1_000_000_000)
+            XCTAssertEqual(rumModel.service, randomServiceName)
         }
         try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 0)
+            XCTAssertEqual(rumModel.service, randomServiceName)
         }
     }
 
