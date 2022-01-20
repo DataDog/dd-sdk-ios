@@ -444,31 +444,43 @@ class RUMSessionScopeTests: XCTestCase {
 
     // MARK: - Usage
 
-    func testWhenNoActiveViewScopes_itLogsWarning() {
-        // Given
-        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
-        XCTAssertEqual(scope.viewScopes.count, 0)
+    func testGivenSessionWithNoActiveScope_whenReceivingRUMCommandOtherThanKeepSessionAliveCommand_itLogsWarning() throws {
+        func recordLogOnReceiving(command: RUMCommand) -> LogEvent? {
+            // Given
+            let scope: RUMSessionScope = .mockWith(
+                parent: parent,
+                startTime: Date()
+            )
+            XCTAssertEqual(scope.viewScopes.count, 0)
 
-        let previousUserLogger = userLogger
-        defer { userLogger = previousUserLogger }
+            let previousUserLogger = userLogger
+            defer { userLogger = previousUserLogger }
 
-        let logOutput = LogOutputMock()
-        userLogger = .mockWith(logOutput: logOutput)
+            let logOutput = LogOutputMock()
+            userLogger = .mockWith(logOutput: logOutput)
 
-        let command = RUMCommandMock(time: Date(), canStartBackgroundView: false)
+            // When
+            _ = scope.process(command: command)
 
-        // When
-        _ = scope.process(command: command)
+            // Then
+            XCTAssertEqual(scope.viewScopes.count, 0)
+            return logOutput.recordedLog
+        }
 
-        // Then
-        XCTAssertEqual(scope.viewScopes.count, 0)
+        let randomCommand = RUMCommandMock(time: Date(), canStartBackgroundView: false, canStartApplicationLaunchView: false)
+        let randomCommandLog = try XCTUnwrap(recordLogOnReceiving(command: randomCommand))
+        XCTAssertEqual(randomCommandLog.status, .warn)
         XCTAssertEqual(
-            logOutput.recordedLog?.message,
+            randomCommandLog.message,
             """
-            \(String(describing: command)) was detected, but no view is active. To track views automatically, try calling the
+            \(String(describing: randomCommand)) was detected, but no view is active. To track views automatically, try calling the
             DatadogConfiguration.Builder.trackUIKitRUMViews() method. You can also track views manually using
             the RumMonitor.startView() and RumMonitor.stopView() methods.
             """
         )
+
+        let keepAliveCommand = RUMKeepSessionAliveCommand(time: Date(), attributes: [:])
+        let keepAliveLog = recordLogOnReceiving(command: keepAliveCommand)
+        XCTAssertNil(keepAliveLog, "It shouldn't log warning when receiving `RUMKeepSessionAliveCommand`")
     }
 }

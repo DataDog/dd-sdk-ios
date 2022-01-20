@@ -9,7 +9,11 @@ import XCTest
 
 class RUMUserActionScopeTests: XCTestCase {
     private let output = RUMEventOutputMock()
-    private lazy var dependencies: RUMScopeDependencies = .mockWith(eventOutput: output)
+    private let randomServiceName: String = .mockRandom()
+    private lazy var dependencies: RUMScopeDependencies = .mockWith(
+        serviceName: randomServiceName,
+        eventOutput: output
+    )
     private let parent = RUMContextProviderMock(
         context: .mockWith(
             rumApplicationID: "rum-123",
@@ -58,6 +62,8 @@ class RUMUserActionScopeTests: XCTestCase {
         let recordedAction = try XCTUnwrap(recordedActionEvents.last)
         XCTAssertEqual(recordedAction.model.action.type.rawValue, String(describing: mockUserActionCmd.actionType))
         XCTAssertEqual(recordedAction.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+        XCTAssertEqual(recordedAction.model.source, .ios)
+        XCTAssertEqual(recordedAction.model.service, randomServiceName)
     }
 
     // MARK: - Continuous User Action
@@ -102,6 +108,8 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(event.model.action.resource?.count, 0)
         XCTAssertEqual(event.model.action.error?.count, 0)
         XCTAssertEqual(event.model.context?.contextInfo as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.model.source, .ios)
+        XCTAssertEqual(event.model.service, randomServiceName)
     }
 
     func testWhenContinuousUserActionExpires_itSendsActionEvent() throws {

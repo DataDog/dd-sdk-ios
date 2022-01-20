@@ -11,7 +11,11 @@ import UIKit
 class RUMViewScopeTests: XCTestCase {
     private let output = RUMEventOutputMock()
     private let parent = RUMContextProviderMock()
-    private lazy var dependencies: RUMScopeDependencies = .mockWith(eventOutput: output)
+    private let randomServiceName: String = .mockRandom()
+    private lazy var dependencies: RUMScopeDependencies = .mockWith(
+        serviceName: randomServiceName,
+        eventOutput: output
+    )
 
     func testDefaultContext() {
         let applicationScope: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123")
@@ -66,9 +70,8 @@ class RUMViewScopeTests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: true,
             parent: parent,
-            dependencies: .mockWith(
-                launchTimeProvider: LaunchTimeProviderMock(launchTime: 2), // 2 seconds
-                eventOutput: output
+            dependencies: dependencies.replacing(
+                launchTimeProvider: LaunchTimeProviderMock(launchTime: 2) // 2 seconds
             ),
             identity: mockView,
             path: "UIViewController",
@@ -92,6 +95,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.action.type, .applicationStart)
         XCTAssertEqual(event.model.action.loadingTime, 2_000_000_000) // 2e+9 ns
         XCTAssertEqual(event.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+        XCTAssertEqual(event.model.source, .ios)
+        XCTAssertEqual(event.model.service, randomServiceName)
     }
 
     func testWhenInitialViewReceivesAnyCommand_itSendsViewUpdateEvent() throws {
@@ -126,6 +131,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.resource.count, 0)
         XCTAssertEqual(event.model.dd.documentVersion, 1)
         XCTAssertEqual(event.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+        XCTAssertEqual(event.model.source, .ios)
+        XCTAssertEqual(event.model.service, randomServiceName)
     }
 
     func testWhenViewIsStarted_itSendsViewUpdateEvent() throws {
@@ -165,6 +172,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.resource.count, 0)
         XCTAssertEqual(event.model.dd.documentVersion, 1)
         XCTAssertEqual(event.model.context?.contextInfo as? [String: String], ["foo": "bar 2", "fizz": "buzz"])
+        XCTAssertEqual(event.model.source, .ios)
+        XCTAssertEqual(event.model.service, randomServiceName)
     }
 
     func testWhenViewIsStopped_itSendsViewUpdateEvent_andEndsTheScope() throws {
@@ -217,6 +226,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.model.view.resource.count, 0)
         XCTAssertEqual(event.model.dd.documentVersion, 2)
         XCTAssertEqual(event.model.context?.contextInfo as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.model.source, .ios)
+        XCTAssertEqual(event.model.service, randomServiceName)
     }
 
     func testWhenAnotherViewIsStarted_itEndsTheScope() throws {
@@ -586,6 +597,8 @@ class RUMViewScopeTests: XCTestCase {
         let firstActionEvent = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).first)
         XCTAssertEqual(lastViewEvent.model.view.action.count, 1, "View should record 1 only custom action (pending action is not yet finished)")
         XCTAssertEqual(firstActionEvent.model.action.target?.name, customActionName)
+        XCTAssertEqual(firstActionEvent.model.source, .ios)
+        XCTAssertEqual(firstActionEvent.model.service, randomServiceName)
     }
 
     func testGivenViewWithNoPendingAction_whenCustomActionIsAdded_itSendsItInstantly() throws {
@@ -619,6 +632,8 @@ class RUMViewScopeTests: XCTestCase {
         let firstActionEvent = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMActionEvent>.self).first)
         XCTAssertEqual(lastViewEvent.model.view.action.count, 1, "View should record custom action")
         XCTAssertEqual(firstActionEvent.model.action.target?.name, customActionName)
+        XCTAssertEqual(firstActionEvent.model.source, .ios)
+        XCTAssertEqual(firstActionEvent.model.service, randomServiceName)
     }
 
     // MARK: - Error Tracking
@@ -671,6 +686,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNil(error.model.action)
         XCTAssertEqual(error.model.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(error.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+        XCTAssertEqual(error.model.source, .ios)
+        XCTAssertEqual(error.model.service, randomServiceName)
 
         let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
         XCTAssertEqual(viewUpdate.model.view.error.count, 1)
@@ -699,12 +716,15 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         let error = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMErrorEvent>.self).last)
-
         XCTAssertEqual(error.model.error.sourceType, .reactNative)
         XCTAssertTrue(error.model.error.isCrash ?? false)
+        XCTAssertEqual(error.model.source, .ios)
+        XCTAssertEqual(error.model.service, randomServiceName)
 
         let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
         XCTAssertEqual(viewUpdate.model.view.error.count, 1)
+        XCTAssertEqual(viewUpdate.model.source, .ios)
+        XCTAssertEqual(viewUpdate.model.service, randomServiceName)
     }
 
     func testWhenResourceIsFinishedWithError_itSendsViewUpdateEvent() throws {
@@ -786,10 +806,12 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(longTask.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(longTask.date, longTaskStartingDate.timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(longTask.dd.session?.plan, .plan1)
+        XCTAssertEqual(longTask.source, .ios)
         XCTAssertEqual(longTask.longTask.duration, (1.0).toInt64Nanoseconds)
         XCTAssertTrue(longTask.longTask.isFrozenFrame == true)
         XCTAssertEqual(longTask.view.id, scope.viewUUID.toRUMDataFormat)
         XCTAssertNil(longTask.synthetics)
+        XCTAssertEqual(longTask.service, randomServiceName)
 
         let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMViewEvent>.self).last)
         XCTAssertEqual(viewUpdate.model.view.longTask?.count, 1)

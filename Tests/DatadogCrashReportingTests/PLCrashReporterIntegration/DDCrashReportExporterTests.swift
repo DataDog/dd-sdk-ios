@@ -275,6 +275,17 @@ class DDCrashReportExporterTests: XCTestCase {
         }
     }
 
+    func testExportingBinaryImageWhenUUIDIsUnavailable() {
+        // Given
+        crashReport.binaryImages = [.mockWith(uuid: nil)]
+
+        // When
+        let exportedImages = exporter.export(crashReport).binaryImages
+
+        // Then
+        XCTAssertEqual(exportedImages.first?.uuid, "???")
+    }
+
     func testExportingBinaryImageAddressRange() throws {
         let randomImageLoadAddress: UInt64 = .mockRandom()
         let randomImageSize: UInt64 = .mockRandom()

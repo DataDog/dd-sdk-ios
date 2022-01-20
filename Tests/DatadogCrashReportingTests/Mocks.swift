@@ -252,7 +252,7 @@ extension ThreadInfo {
 
 extension BinaryImageInfo {
     static func mockWith(
-        uuid: String = .mockAny(),
+        uuid: String? = .mockAny(),
         imageName: String = .mockAny(),
         isSystemImage: Bool = .random(),
         architectureName: String? = .mockAny(),

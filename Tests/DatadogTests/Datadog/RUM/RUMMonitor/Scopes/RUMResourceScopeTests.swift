@@ -9,7 +9,11 @@ import XCTest
 
 class RUMResourceScopeTests: XCTestCase {
     private let output = RUMEventOutputMock()
-    private lazy var dependencies: RUMScopeDependencies = .mockWith(eventOutput: output)
+    private let randomServiceName: String = .mockRandom()
+    private lazy var dependencies: RUMScopeDependencies = .mockWith(
+        serviceName: randomServiceName,
+        eventOutput: output
+    )
     private let context = RUMContext.mockWith(
         rumApplicationID: "rum-123",
         sessionID: .mockRandom(),
@@ -76,6 +80,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.model.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.model.session.type, .user)
+        XCTAssertEqual(event.model.source, .ios)
         XCTAssertEqual(event.model.view.id, context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.model.view.url, "FooViewController")
         XCTAssertEqual(event.model.view.name, "FooViewName")
@@ -98,6 +103,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.dd.traceId, "100")
         XCTAssertEqual(event.model.dd.spanId, "200")
         XCTAssertEqual(event.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+        XCTAssertEqual(event.model.service, randomServiceName)
     }
 
     func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEventWithCustomSpanAndTraceId() throws {
@@ -161,6 +167,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.model.dd.traceId, "100")
         XCTAssertEqual(event.model.dd.spanId, "200")
+        XCTAssertEqual(event.model.source, .ios)
+        XCTAssertEqual(event.model.service, randomServiceName)
     }
 
     func testGivenStartedResource_whenResourceLoadingEndsWithError_itSendsErrorEvent() throws {
@@ -215,6 +223,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(try XCTUnwrap(event.model.action?.id), context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.model.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+        XCTAssertEqual(event.model.source, .ios)
+        XCTAssertEqual(event.model.service, randomServiceName)
     }
 
     func testGivenStartedResource_whenResourceReceivesMetricsBeforeItEnds_itUsesMetricValuesInSentResourceEvent() throws {
@@ -323,6 +333,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.model.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertNil(event.model.dd.traceId)
         XCTAssertNil(event.model.dd.spanId)
+        XCTAssertEqual(event.model.source, .ios)
+        XCTAssertEqual(event.model.service, randomServiceName)
     }
 
     func testGivenMultipleResourceScopes_whenSendingResourceEvents_eachEventHasUniqueResourceID() throws {

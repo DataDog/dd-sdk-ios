@@ -101,6 +101,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         } else {
             // We know it is too late for sending RUM view to previous RUM session as it is now stale on backend.
             // To avoid inconsistency, we only send the RUM error.
+            userLogger.debug("Sending crash as RUM error.")
             let rumError = createRUMError(from: crashReport, and: lastRUMViewEvent, crashDate: crashTimings.realCrashDate)
             rumEventOutput.write(rumEvent: rumError)
         }
@@ -146,7 +147,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 crashContext: crashContext
             )
         case .doNotHandle:
-            // This can mean that the crash happened in background and BET is disabled OR that the previous session was sampled.
+            userLogger.debug("There was a crash in background, but it is ignored due to Background Event Tracking disabled or sampling.")
             newRUMView = nil
         }
 
@@ -191,7 +192,8 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 crashContext: crashContext
             )
         case .doNotHandle:
-            newRUMView = nil // could mean that the crash happened in background and BET is disabled
+            userLogger.debug("There was a crash in background, but it is ignored due to Background Event Tracking disabled.")
+            newRUMView = nil
         }
 
         if let newRUMView = newRUMView {
@@ -201,6 +203,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
 
     /// Sends given `CrashReport` by linking it to given `rumView` and updating view counts accordingly.
     private func send(crashReport: DDCrashReport, to rumView: RUMEvent<RUMViewEvent>, using realCrashDate: Date) {
+        userLogger.debug("Updating RUM view with crash report.")
         let updatedRUMView = updateRUMViewWithNewError(rumView, crashDate: realCrashDate)
         let rumError = createRUMError(from: crashReport, and: updatedRUMView, crashDate: realCrashDate)
         rumEventOutput.write(rumEvent: rumError)
@@ -225,10 +228,12 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
 
         let rumError = RUMErrorEvent(
             dd: .init(
+                browserSdkVersion: nil,
                 session: .init(plan: .plan1)
             ),
             action: nil,
             application: .init(id: lastRUMView.application.id),
+            ciTest: nil,
             connectivity: lastRUMView.connectivity,
             context: nil,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds,
@@ -250,6 +255,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 id: lastRUMView.session.id,
                 type: .user
             ),
+            source: .ios,
             synthetics: nil,
             usr: lastRUMView.usr,
             view: .init(
@@ -271,15 +277,18 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         let original = rumViewEvent.model
         let rumView = RUMViewEvent(
             dd: .init(
+                browserSdkVersion: nil,
                 documentVersion: original.dd.documentVersion + 1,
                 session: .init(plan: .plan1)
             ),
             application: original.application,
+            ciTest: nil,
             connectivity: original.connectivity,
             context: original.context,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds - 1, // -1ms to put the crash after view in RUM session
             service: original.service,
             session: original.session,
+            source: .ios,
             synthetics: nil,
             usr: original.usr,
             view: .init(
@@ -333,24 +342,27 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
 
         let rumView = RUMViewEvent(
             dd: .init(
+                browserSdkVersion: nil,
                 documentVersion: 1,
                 session: .init(plan: .plan1)
             ),
             application: .init(
                 id: rumConfiguration.applicationID
             ),
+            ciTest: nil,
             connectivity: RUMConnectivity(
                 networkInfo: crashContext.lastNetworkConnectionInfo,
                 carrierInfo: crashContext.lastCarrierInfo
             ),
             context: nil,
             date: startDate.timeIntervalSince1970.toInt64Milliseconds,
-            service: nil,
+            service: rumConfiguration.common.serviceName,
             session: .init(
                 hasReplay: nil,
                 id: sessionUUID.toRUMDataFormat,
                 type: .user
             ),
+            source: .ios,
             synthetics: nil,
             usr: crashContext.lastUserInfo.flatMap { RUMUser(userInfo: $0) },
             view: .init(

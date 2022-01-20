@@ -1,7 +1,7 @@
 all: dependencies xcodeproj-httpservermock templates
 
 # The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
-DD_SDK_SWIFT_TESTING_VERSION = 1.0.3-beta.1
+DD_SDK_SWIFT_TESTING_VERSION = 1.1.0
 
 define DD_SDK_TESTING_XCCONFIG_CI
 FRAMEWORK_SEARCH_PATHS=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
@@ -17,8 +17,9 @@ export DD_SDK_TESTING_XCCONFIG_CI
 define DD_SDK_BASE_XCCONFIG
 // Active compilation conditions - only enabled on local machine:\n
 // - DD_SDK_ENABLE_INTERNAL_MONITORING - enables Internal Monitoring APIs\n
+// - DD_SDK_ENABLE_EXPERIMENTAL_APIS - enables APIs which are not available in released version of the SDK\n
 // - DD_SDK_COMPILED_FOR_TESTING - conditions the SDK code compiled for testing\n
-SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DD_SDK_ENABLE_INTERNAL_MONITORING DD_SDK_COMPILED_FOR_TESTING\n
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DD_SDK_ENABLE_INTERNAL_MONITORING DD_SDK_ENABLE_EXPERIMENTAL_APIS DD_SDK_COMPILED_FOR_TESTING\n
 \n
 // To build only active architecture for all configurations. This gives us ~10% build time gain\n
 // in targets which do not use 'Debug' configuration.\n

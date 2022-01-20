@@ -130,6 +130,7 @@ internal class RUMResourceScope: RUMScope {
 
         let eventData = RUMResourceEvent(
             dd: .init(
+                browserSdkVersion: nil,
                 session: .init(plan: .plan1),
                 spanId: spanId,
                 traceId: traceId
@@ -138,6 +139,7 @@ internal class RUMResourceScope: RUMScope {
                 .init(id: rumUUID.toRUMDataFormat)
             },
             application: .init(id: context.rumApplicationID),
+            ciTest: nil,
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: resourceStartTime).timeIntervalSince1970.toInt64Milliseconds,
@@ -187,8 +189,9 @@ internal class RUMResourceScope: RUMScope {
                 type: resourceType,
                 url: resourceURL
             ),
-            service: nil,
+            service: dependencies.serviceName,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             view: .init(
@@ -211,12 +214,14 @@ internal class RUMResourceScope: RUMScope {
 
         let eventData = RUMErrorEvent(
             dd: .init(
+                browserSdkVersion: nil,
                 session: .init(plan: .plan1)
             ),
             action: context.activeUserActionID.flatMap { rumUUID in
                 .init(id: rumUUID.toRUMDataFormat)
             },
             application: .init(id: context.rumApplicationID),
+            ciTest: nil,
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
@@ -237,8 +242,9 @@ internal class RUMResourceScope: RUMScope {
                 stack: command.stack,
                 type: command.errorType
             ),
-            service: nil,
+            service: dependencies.serviceName,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             view: .init(

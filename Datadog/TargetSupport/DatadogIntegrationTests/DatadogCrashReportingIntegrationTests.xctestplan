@@ -33,21 +33,9 @@
   },
   "testTargets" : [
     {
-      "skippedTests" : [
-        "IntegrationTests",
-        "LoggingScenarioTests",
-        "RUMManualInstrumentationScenarioTests",
-        "RUMMobileVitalsScenarioTests",
-        "RUMModalViewsScenarioTests",
-        "RUMNavigationControllerScenarioTests",
-        "RUMResourcesScenarioTests",
-        "RUMScrubbingScenarioTests",
-        "RUMSwiftUIScenarioTests",
-        "RUMTabBarControllerScenarioTests",
-        "RUMTapActionScenarioTests",
-        "TracingManualInstrumentationScenarioTests",
-        "TracingURLSessionScenarioTests",
-        "TrackingConsentScenarioTests"
+      "selectedTests" : [
+        "CrashReportingWithLoggingScenarioTests\/testCrashReportingCollectOrSendWithLoggingScenario()",
+        "CrashReportingWithRUMScenarioTests\/testCrashReportingCollectOrSendWithRUMScenario()"
       ],
       "target" : {
         "containerPath" : "container:Datadog.xcodeproj",

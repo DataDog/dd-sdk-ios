@@ -115,7 +115,7 @@ extension FeaturesConfiguration {
     ///
     /// Throws an error on invalid user input, i.e. broken custom URL.
     /// Prints a warning if configuration is inconsistent, i.e. RUM is enabled, but RUM Application ID was not specified.
-    init(configuration: Datadog.Configuration, appContext: AppContext) throws {
+    init(configuration: Datadog.Configuration, appContext: AppContext, hostsSanitizer: HostsSanitizing = HostsSanitizer()) throws {
         var logging: Logging?
         var tracing: Tracing?
         var rum: RUM?
@@ -231,7 +231,10 @@ extension FeaturesConfiguration {
         if let firstPartyHosts = configuration.firstPartyHosts {
             if configuration.tracingEnabled || configuration.rumEnabled {
                 urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
-                    userDefinedFirstPartyHosts: sanitized(firstPartyHosts: firstPartyHosts),
+                    userDefinedFirstPartyHosts: hostsSanitizer.sanitized(
+                        hosts: firstPartyHosts,
+                        warningMessage: "The first party host configured for Datadog SDK is not valid"
+                    ),
                     sdkInternalURLs: [
                         logsEndpoint.url,
                         tracesEndpoint.url,
@@ -317,48 +320,4 @@ private func ifValid(clientToken: String) throws -> String {
         throw ProgrammerError(description: "`clientToken` cannot be empty.")
     }
     return clientToken
-}
-
-private func sanitized(firstPartyHosts: Set<String>) -> Set<String> {
-    let urlRegex = #"^(http|https)://(.*)"#
-    let hostRegex = #"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)+([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$"#
-    let ipRegex = #"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"#
-
-    var warnings: [String] = []
-
-    let array: [String] = firstPartyHosts.compactMap { host in
-        if host.range(of: urlRegex, options: .regularExpression) != nil {
-            // if an URL is given instead of the host, take its `host` part
-            if let sanitizedHost = URL(string: host)?.host {
-                warnings.append("'\(host)' is an url and will be sanitized to: '\(sanitizedHost)'.")
-                return sanitizedHost
-            } else {
-                warnings.append("'\(host)' is not a valid host name and will be dropped.")
-                return nil
-            }
-        } else if host.range(of: hostRegex, options: .regularExpression) != nil {
-            // if a valid host name is given, accept it
-            return host
-        } else if host.range(of: ipRegex, options: .regularExpression) != nil {
-            // if a valid IP address is given, accept it
-            return host
-        } else if host == "localhost" {
-            // if "localhost" given, accept it
-            return host
-        } else {
-            // otherwise, drop
-            warnings.append("'\(host)' is not a valid host name and will be dropped.")
-            return nil
-        }
-    }
-
-    warnings.forEach { warning in
-        consolePrint(
-            """
-            ⚠️ The first party host configured for Datadog SDK is not valid: \(warning)
-            """
-        )
-    }
-
-    return Set(array)
 }

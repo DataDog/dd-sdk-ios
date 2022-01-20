@@ -14,6 +14,7 @@ internal struct RUMScopeDependencies {
     let userInfoProvider: RUMUserInfoProvider
     let launchTimeProvider: LaunchTimeProviderType
     let connectivityInfoProvider: RUMConnectivityInfoProvider
+    let serviceName: String
     let eventBuilder: RUMEventBuilder
     let eventOutput: RUMEventOutput
     let rumUUIDGenerator: RUMUUIDGenerator

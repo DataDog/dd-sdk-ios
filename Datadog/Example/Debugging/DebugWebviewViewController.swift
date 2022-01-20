@@ -5,8 +5,8 @@
  */
 
 import UIKit
-import Datadog
 import WebKit
+import Datadog
 
 class DebugWebviewViewController: UIViewController {
     @IBOutlet weak var rumServiceNameTextField: UITextField!
@@ -47,7 +47,7 @@ class DebugWebviewViewController: UIViewController {
 
     private var webviewURL: String {
         guard let text = webviewURLTextField.text, !text.isEmpty else {
-            return  "https://www.datadoghq.com"
+            return "https://datadoghq.dev/browser-sdk-test-playground/webview.html"
         }
         return text
     }
@@ -84,8 +84,12 @@ class WebviewViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let configuration = WKWebViewConfiguration()
-        webView = WKWebView(frame: UIScreen.main.bounds, configuration: configuration)
+        let controller = WKUserContentController()
+        controller.trackDatadogEvents(in: [request.url!.host!])
+        let config = WKWebViewConfiguration()
+        config.userContentController = controller
+
+        webView = WKWebView(frame: UIScreen.main.bounds, configuration: config)
         view.addSubview(webView)
     }
 

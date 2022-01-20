@@ -111,6 +111,16 @@
             value = "$(BITRISE_BUILD_URL)"
             isEnabled = "YES">
          </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_ENABLE_STDOUT_INSTRUMENTATION"
+            value = "1"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_ENABLE_STDERR_INSTRUMENTATION"
+            value = "1"
+            isEnabled = "YES">
+         </EnvironmentVariable>
       </EnvironmentVariables>
       <CodeCoverageTargets>
          <BuildableReference

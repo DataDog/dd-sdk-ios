@@ -305,6 +305,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private func sendApplicationStartAction() -> Bool {
         let eventData = RUMActionEvent(
             dd: .init(
+                browserSdkVersion: nil,
                 session: .init(plan: .plan1)
             ),
             action: .init(
@@ -318,11 +319,13 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 type: .applicationStart
             ),
             application: .init(id: context.rumApplicationID),
+            ciTest: nil,
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
-            service: nil,
+            service: dependencies.serviceName,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             view: .init(
@@ -364,15 +367,18 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         let eventData = RUMViewEvent(
             dd: .init(
+                browserSdkVersion: nil,
                 documentVersion: version.toInt64,
                 session: .init(plan: .plan1)
             ),
             application: .init(id: context.rumApplicationID),
+            ciTest: nil,
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
-            service: nil,
+            service: dependencies.serviceName,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             view: .init(
@@ -428,12 +434,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         let eventData = RUMErrorEvent(
             dd: .init(
+                browserSdkVersion: nil,
                 session: .init(plan: .plan1)
             ),
             action: context.activeUserActionID.flatMap { rumUUID in
                 .init(id: rumUUID.toRUMDataFormat)
             },
             application: .init(id: context.rumApplicationID),
+            ciTest: nil,
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
@@ -449,8 +457,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 stack: command.stack,
                 type: command.type
             ),
-            service: nil,
+            service: dependencies.serviceName,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             view: .init(
@@ -476,15 +485,20 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let isFrozenFrame = taskDurationInNs > Constants.frozenFrameThresholdInNs
 
         let eventData = RUMLongTaskEvent(
-            dd: .init(session: .init(plan: .plan1)),
+            dd: .init(
+              browserSdkVersion: nil,
+              session: .init(plan: .plan1)
+            ),
             action: context.activeUserActionID.flatMap { RUMLongTaskEvent.Action(id: $0.toRUMDataFormat) },
             application: .init(id: context.rumApplicationID),
+            ciTest: nil,
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: command.time - command.duration).timeIntervalSince1970.toInt64Milliseconds,
             longTask: .init(duration: taskDurationInNs, id: nil, isFrozenFrame: isFrozenFrame),
-            service: nil,
+            service: dependencies.serviceName,
             session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             view: .init(
