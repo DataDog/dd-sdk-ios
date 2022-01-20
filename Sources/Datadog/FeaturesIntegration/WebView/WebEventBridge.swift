@@ -39,9 +39,9 @@ internal class WebEventBridge {
         self.rumEventConsumer = rumEventConsumer
     }
 
-    func consume(_ message: Any) throws {
-        guard let message = message as? String else {
-            throw WebEventError.invalidMessage(description: String(describing: message))
+    func consume(_ anyMessage: Any) throws {
+        guard let message = anyMessage as? String else {
+            throw WebEventError.invalidMessage(description: String(describing: anyMessage))
         }
         let eventJSON = try parse(message)
         guard let eventType = eventJSON[Constants.eventTypeKey] as? String else {
