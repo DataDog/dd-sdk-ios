@@ -10,7 +10,7 @@
 import os
 import glob
 from tempfile import TemporaryDirectory, NamedTemporaryFile
-from src.utils import remember_cwd, shell, read_sdk_version
+from src.utils import remember_cwd, shell, read_sdk_version, read_xcode_version
 from src.directory_matcher import DirectoryMatcher
 from src.semver import Version
 
@@ -150,7 +150,7 @@ class GHAsset:
 
     __path: str  # The path to the asset `.zip` archive
 
-    def __init__(self):
+    def __init__(self, add_xcode_version: bool):
         print(f'⌛️️️ Creating the GH release asset from {os.getcwd()}')
 
         with NamedTemporaryFile(mode='w+', prefix='dd-gh-distro-', suffix='.xcconfig') as xcconfig:
@@ -166,7 +166,13 @@ class GHAsset:
 
         # Create `.zip` archive:
         zip_archive_name = f'Datadog-{read_sdk_version()}.zip'
+
+        if add_xcode_version:
+            xc_version = read_xcode_version().replace(' ', '-')
+            zip_archive_name = f'Datadog-{read_sdk_version()}-Xcode-{xc_version}.zip'
+
         with remember_cwd():
+            print(f'   → Creating GH asset: {zip_archive_name}')
             os.chdir('Carthage/Build')
             shell(f'zip -q --symlinks -r {zip_archive_name} *.xcframework')
 
