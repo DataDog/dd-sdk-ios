@@ -113,7 +113,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         spanOutput.onSpanRecorded = { _ in spanSentExpectation.fulfill() }
 
         // Given
-        let request: URLRequest = .mockWith(httpMethod: "GET")
+        let request: URLRequest = .mockWith(url: "https://www.example.com", queryParams: [URLQueryItem(name: "foo", value: "42"), URLQueryItem(name: "lang", value: "en")], httpMethod: "GET")
         let error = NSError(domain: "domain", code: 123, userInfo: [NSLocalizedDescriptionKey: "network error"])
         let interception = TaskInterception(request: request, isFirstParty: true)
         interception.register(completion: .mockWith(response: nil, error: error))
@@ -134,7 +134,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
 
         let span = try XCTUnwrap(spanOutput.lastRecordedSpan)
         XCTAssertEqual(span.operationName, "urlsession.request")
-        XCTAssertEqual(span.resource, request.url!.absoluteString)
+        XCTAssertEqual(span.resource, "https://www.example.com")
         XCTAssertEqual(span.duration, 30)
         XCTAssertTrue(span.isError)
         XCTAssertEqual(span.tags[OTTags.httpUrl], request.url!.absoluteString)
