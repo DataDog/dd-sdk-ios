@@ -49,11 +49,11 @@ class RUMEventsMapperTests: XCTestCase {
         )
 
         // When
-        let mappedViewEvent = mapper.map(event: RUMEvent(model: originalViewEvent))?.model
-        let mappedErrorEvent = mapper.map(event: RUMEvent(model: originalErrorEvent))?.model
-        let mappedResourceEvent = mapper.map(event: RUMEvent(model: originalResourceEvent))?.model
-        let mappedActionEvent = mapper.map(event: RUMEvent(model: originalActionEvent))?.model
-        let mappedLongTaskEvent = mapper.map(event: RUMEvent(model: originalLongTaskEvent))?.model
+        let mappedViewEvent = mapper.map(event: originalViewEvent)
+        let mappedErrorEvent = mapper.map(event: originalErrorEvent)
+        let mappedResourceEvent = mapper.map(event: originalResourceEvent)
+        let mappedActionEvent = mapper.map(event: originalActionEvent)
+        let mappedLongTaskEvent = mapper.map(event: originalLongTaskEvent)
 
         // Then
         XCTAssertEqual(try XCTUnwrap(mappedViewEvent), modifiedViewEvent, "Mapper should return modified event.")
@@ -91,10 +91,10 @@ class RUMEventsMapperTests: XCTestCase {
         )
 
         // When
-        let mappedErrorEvent = mapper.map(event: RUMEvent(model: originalErrorEvent))?.model
-        let mappedResourceEvent = mapper.map(event: RUMEvent(model: originalResourceEvent))?.model
-        let mappedActionEvent = mapper.map(event: RUMEvent(model: originalActionEvent))?.model
-        let mappedLongTaskEvent = mapper.map(event: RUMEvent(model: originalLongTaskEvent))?.model
+        let mappedErrorEvent = mapper.map(event: originalErrorEvent)
+        let mappedResourceEvent = mapper.map(event: originalResourceEvent)
+        let mappedActionEvent = mapper.map(event: originalActionEvent)
+        let mappedLongTaskEvent = mapper.map(event: originalLongTaskEvent)
 
         // Then
         XCTAssertNil(mappedErrorEvent, "Mapper should return nil.")
@@ -120,11 +120,11 @@ class RUMEventsMapperTests: XCTestCase {
         )
 
         // When
-        let mappedViewEvent = mapper.map(event: RUMEvent(model: originalViewEvent))?.model
-        let mappedErrorEvent = mapper.map(event: RUMEvent(model: originalErrorEvent))?.model
-        let mappedResourceEvent = mapper.map(event: RUMEvent(model: originalResourceEvent))?.model
-        let mappedActionEvent = mapper.map(event: RUMEvent(model: originalActionEvent))?.model
-        let mappedLongTaskEvent = mapper.map(event: RUMEvent(model: originalLongTaskEvent))?.model
+        let mappedViewEvent = mapper.map(event: originalViewEvent)
+        let mappedErrorEvent = mapper.map(event: originalErrorEvent)
+        let mappedResourceEvent = mapper.map(event: originalResourceEvent)
+        let mappedActionEvent = mapper.map(event: originalActionEvent)
+        let mappedLongTaskEvent = mapper.map(event: originalLongTaskEvent)
 
         // Then
         XCTAssertEqual(try XCTUnwrap(mappedViewEvent), originalViewEvent, "Mapper should return the original event.")

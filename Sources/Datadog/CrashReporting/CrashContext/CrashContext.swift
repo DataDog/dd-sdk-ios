@@ -17,7 +17,7 @@ internal struct CrashContext: Codable {
     init(
         lastTrackingConsent: TrackingConsent,
         lastUserInfo: UserInfo,
-        lastRUMViewEvent: RUMEvent<RUMViewEvent>?,
+        lastRUMViewEvent: RUMViewEvent?,
         lastNetworkConnectionInfo: NetworkConnectionInfo?,
         lastCarrierInfo: CarrierInfo?,
         lastRUMSessionState: RUMSessionState?,
@@ -25,7 +25,7 @@ internal struct CrashContext: Codable {
     ) {
         self.codableTrackingConsent = .init(from: lastTrackingConsent)
         self.codableLastUserInfo = .init(from: lastUserInfo)
-        self.codableLastRUMViewEvent = lastRUMViewEvent.flatMap { .init(from: $0) }
+        self.lastRUMViewEvent = lastRUMViewEvent
         self.codableLastNetworkConnectionInfo = lastNetworkConnectionInfo.flatMap { .init(from: $0) }
         self.codableLastCarrierInfo = lastCarrierInfo.flatMap { .init(from: $0) }
         self.lastRUMSessionState = lastRUMSessionState
@@ -36,16 +36,15 @@ internal struct CrashContext: Codable {
 
     private var codableTrackingConsent: CodableTrackingConsent
     private var codableLastUserInfo: CodableUserInfo?
-    private var codableLastRUMViewEvent: CodableRUMViewEvent?
     private var codableLastNetworkConnectionInfo: CodableNetworkConnectionInfo?
     private var codableLastCarrierInfo: CodableCarrierInfo?
 
     enum CodingKeys: String, CodingKey {
         case codableTrackingConsent = "ctc"
-        case codableLastRUMViewEvent = "lre"
         case codableLastUserInfo = "lui"
         case codableLastNetworkConnectionInfo = "lni"
         case codableLastCarrierInfo = "lci"
+        case lastRUMViewEvent = "lre"
         case lastRUMSessionState = "rst"
         case lastIsAppInForeground = "aif"
     }
@@ -62,11 +61,6 @@ internal struct CrashContext: Codable {
         get { codableLastUserInfo?.managedValue }
     }
 
-    var lastRUMViewEvent: RUMEvent<RUMViewEvent>? {
-        set { codableLastRUMViewEvent = newValue.flatMap { CodableRUMViewEvent(from: $0) } }
-        get { codableLastRUMViewEvent?.managedValue }
-    }
-
     var lastNetworkConnectionInfo: NetworkConnectionInfo? {
         set { codableLastNetworkConnectionInfo = newValue.flatMap { CodableNetworkConnectionInfo(from: $0) } }
         get { codableLastNetworkConnectionInfo?.managedValue }
@@ -78,6 +72,8 @@ internal struct CrashContext: Codable {
     }
 
     // MARK: - Direct Codable values
+
+    var lastRUMViewEvent: RUMViewEvent?
 
     /// State of the last RUM session in crashed app process.
     var lastRUMSessionState: RUMSessionState?
@@ -159,34 +155,6 @@ private struct CodableUserInfo: Codable {
         try container.encode(name, forKey: .name)
         try container.encode(email, forKey: .email)
         try container.encode(encodedExtraInfo, forKey: .extraInfo)
-    }
-}
-
-private struct CodableRUMViewEvent: Codable {
-    private let model: RUMViewEvent
-
-    init(from managedValue: RUMEvent<RUMViewEvent>) {
-        self.model = managedValue.model
-    }
-
-    var managedValue: RUMEvent<RUMViewEvent> {
-        return .init(model: model)
-    }
-
-    // MARK: - Codable
-
-    enum CodingKeys: String, CodingKey {
-        case model = "mdl"
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.model = try container.decode(RUMViewEvent.self, forKey: .model)
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(model, forKey: .model)
     }
 }
 

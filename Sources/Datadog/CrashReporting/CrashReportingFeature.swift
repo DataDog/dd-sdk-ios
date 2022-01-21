@@ -30,7 +30,7 @@ internal final class CrashReportingFeature {
     let carrierInfoProvider: CarrierInfoProviderType
     /// Publishes recent `RUMEvent<RUMViewEvent>` value so it can be persisted in `CrashContext`.
     /// It will provide `nil` until first view is tracked.
-    let rumViewEventProvider: ValuePublisher<RUMEvent<RUMViewEvent>?>
+    let rumViewEventProvider: ValuePublisher<RUMViewEvent?>
     /// Publishes recent RUM session state so it can be persisted in `CrashContext`.
     /// It will be used to decide if and how to track crashes which happen while there was no active view.
     let rumSessionStateProvider: ValuePublisher<RUMSessionState?>
