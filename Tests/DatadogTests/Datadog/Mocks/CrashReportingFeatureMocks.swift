@@ -88,7 +88,7 @@ extension CrashContext {
     static func mockWith(
         lastTrackingConsent: TrackingConsent = .granted,
         lastUserInfo: UserInfo = .mockAny(),
-        lastRUMViewEvent: RUMEvent<RUMViewEvent>? = nil,
+        lastRUMViewEvent: RUMViewEvent? = nil,
         lastNetworkConnectionInfo: NetworkConnectionInfo? = .mockAny(),
         lastCarrierInfo: CarrierInfo? = .mockAny(),
         lastRUMSessionState: RUMSessionState? = .mockAny(),

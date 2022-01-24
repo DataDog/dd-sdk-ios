@@ -37,14 +37,14 @@ class RUMEventFileOutputTests: XCTestCase {
 
         let dataModel1 = RUMDataModelMock(attribute: "foo", context: RUMEventAttributes(contextInfo: ["custom.attribute": "value"]))
         let dataModel2 = RUMDataModelMock(attribute: "bar")
-        let event1 = try XCTUnwrap(builder.createRUMEvent(with: dataModel1))
-        let event2 = try XCTUnwrap(builder.createRUMEvent(with: dataModel2))
+        let event1 = try XCTUnwrap(builder.build(from: dataModel1))
+        let event2 = try XCTUnwrap(builder.build(from: dataModel2))
 
-        output.write(rumEvent: event1)
+        output.write(event: event1)
 
         fileCreationDateProvider.advance(bySeconds: 1)
 
-        output.write(rumEvent: event2)
+        output.write(event: event2)
 
         let event1FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC())
         let event1Data = try temporaryDirectory.file(named: event1FileName).read()

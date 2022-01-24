@@ -43,7 +43,7 @@ class RUMStorageBenchmarkTests: XCTestCase {
     }
 
     func testWritingRUMEventsOnDisc() throws {
-        let event = RUMEvent(model: RUMViewEvent.mockRandom())
+        let event: RUMViewEvent = .mockRandom()
 
         measure {
             writer.write(value: event)
@@ -53,7 +53,7 @@ class RUMStorageBenchmarkTests: XCTestCase {
 
     func testReadingRUMEventsFromDisc() throws {
         while try directory.files().count < 10 { // `measureMetrics {}` is fired 10 times so 10 batch files are required
-            writer.write(value: RUMEvent(model: RUMViewEvent.mockRandom()))
+            writer.write(value: RUMViewEvent.mockRandom())
             queue.sync {} // wait to complete async write
         }
 

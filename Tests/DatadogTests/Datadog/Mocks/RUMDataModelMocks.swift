@@ -13,7 +13,7 @@ extension RUMResourceEvent: EquatableInTests {}
 extension RUMActionEvent: EquatableInTests {}
 extension RUMErrorEvent: EquatableInTests {}
 extension RUMLongTaskEvent: EquatableInTests {}
-extension RUMEvent: EquatableInTests {}
+extension RUMCrashEvent: EquatableInTests {}
 
 extension RUMUser {
     static func mockRandom() -> RUMUser {

@@ -337,8 +337,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         )
 
-        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData) {
-            dependencies.eventOutput.write(rumEvent: event)
+        if let event = dependencies.eventBuilder.build(from: eventData) {
+            dependencies.eventOutput.write(event: event)
             return true
         }
         return false
@@ -411,8 +411,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         )
 
-        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData) {
-            dependencies.eventOutput.write(rumEvent: event)
+        if let event = dependencies.eventBuilder.build(from: eventData) {
+            dependencies.eventOutput.write(event: event)
 
             // Update `CrashContext` with recent RUM view:
             dependencies.crashContextIntegration?.update(lastRUMViewEvent: event)
@@ -463,8 +463,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         )
 
-        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData) {
-            dependencies.eventOutput.write(rumEvent: event)
+        if let event = dependencies.eventBuilder.build(from: eventData) {
+            dependencies.eventOutput.write(event: event)
             return true
         }
         return false
@@ -501,8 +501,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         )
 
-        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData) {
-            dependencies.eventOutput.write(rumEvent: event)
+        if let event = dependencies.eventBuilder.build(from: eventData) {
+            dependencies.eventOutput.write(event: event)
             return true
         }
         return false

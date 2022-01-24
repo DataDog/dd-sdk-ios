@@ -1140,7 +1140,7 @@ class RUMMonitorTests: XCTestCase {
         let lastRUMViewEventSent: RUMViewEvent = try rumEventMatchers[1].model()
 
         let currentCrashContext = try XCTUnwrap(Global.crashReporter?.crashContextProvider.currentCrashContext)
-        let currentLastRUMViewEventSent = try XCTUnwrap(currentCrashContext.lastRUMViewEvent?.model)
+        let currentLastRUMViewEventSent = try XCTUnwrap(currentCrashContext.lastRUMViewEvent)
 
         try AssertEncodedRepresentationsEqual(value1: currentLastRUMViewEventSent, value2: lastRUMViewEventSent)
     }

@@ -49,10 +49,10 @@ class CrashContextProviderTests: XCTestCase {
 
     func testWhenRUMWithCrashContextIntegrationIsUpdatedWithRUMViewEvent_thenCrashContextProviderNotifiesNewContext() {
         let expectation = self.expectation(description: "Notify new crash context")
-        let initialRUMViewEvent: RUMEvent<RUMViewEvent> = .mockRandom()
-        let randomRUMViewEvent: RUMEvent<RUMViewEvent> = .mockRandom()
+        let initialRUMViewEvent: RUMViewEvent = .mockRandom()
+        let randomRUMViewEvent: RUMViewEvent = .mockRandom()
 
-        let rumViewEventProvider = ValuePublisher<RUMEvent<RUMViewEvent>?>(initialValue: initialRUMViewEvent)
+        let rumViewEventProvider = ValuePublisher<RUMViewEvent?>(initialValue: initialRUMViewEvent)
         let crashContextProvider = CrashContextProvider(
             consentProvider: .mockAny(),
             userInfoProvider: .mockAny(),
@@ -321,7 +321,7 @@ class CrashContextProviderTests: XCTestCase {
 
     func testWhenContextIsWrittenAndReadFromDifferentThreads_itRunsAllOperationsSafely() {
         let consentProvider: ConsentProvider = .mockAny()
-        let rumViewEventProvider: ValuePublisher<RUMEvent<RUMViewEvent>?> = .mockRandom()
+        let rumViewEventProvider: ValuePublisher<RUMViewEvent?> = .mockRandom()
         let userInfoProvider: UserInfoProvider = .mockAny()
         let networkInfoWrappedProvider = NetworkConnectionInfoProviderMock(networkConnectionInfo: .mockRandom())
         let networkInfoMainProvider = NetworkConnectionInfoProvider(wrappedProvider: networkInfoWrappedProvider)

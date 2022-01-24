@@ -75,35 +75,35 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self).first)
-        XCTAssertEqual(event.model.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
-        XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
-        XCTAssertEqual(event.model.session.id, scope.context.sessionID.toRUMDataFormat)
-        XCTAssertEqual(event.model.session.type, .user)
-        XCTAssertEqual(event.model.source, .ios)
-        XCTAssertEqual(event.model.view.id, context.activeViewID?.toRUMDataFormat)
-        XCTAssertEqual(event.model.view.url, "FooViewController")
-        XCTAssertEqual(event.model.view.name, "FooViewName")
-        XCTAssertValidRumUUID(event.model.resource.id)
-        XCTAssertEqual(event.model.resource.type, .image)
-        XCTAssertEqual(event.model.resource.method, .post)
-        XCTAssertNil(event.model.resource.provider)
-        XCTAssertEqual(event.model.resource.url, "https://foo.com/resource/1")
-        XCTAssertEqual(event.model.resource.statusCode, 200)
-        XCTAssertEqual(event.model.resource.duration, 2_000_000_000)
-        XCTAssertEqual(event.model.resource.size, 1_024)
-        XCTAssertNil(event.model.resource.redirect)
-        XCTAssertNil(event.model.resource.dns)
-        XCTAssertNil(event.model.resource.connect)
-        XCTAssertNil(event.model.resource.ssl)
-        XCTAssertNil(event.model.resource.firstByte)
-        XCTAssertNil(event.model.resource.download)
-        XCTAssertEqual(try XCTUnwrap(event.model.action?.id), context.activeUserActionID?.toRUMDataFormat)
-        XCTAssertEqual(event.model.context?.contextInfo as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(event.model.dd.traceId, "100")
-        XCTAssertEqual(event.model.dd.spanId, "200")
-        XCTAssertEqual(event.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
-        XCTAssertEqual(event.model.service, randomServiceName)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMResourceEvent.self).first)
+        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.session.type, .user)
+        XCTAssertEqual(event.source, .ios)
+        XCTAssertEqual(event.view.id, context.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.url, "FooViewController")
+        XCTAssertEqual(event.view.name, "FooViewName")
+        XCTAssertValidRumUUID(event.resource.id)
+        XCTAssertEqual(event.resource.type, .image)
+        XCTAssertEqual(event.resource.method, .post)
+        XCTAssertNil(event.resource.provider)
+        XCTAssertEqual(event.resource.url, "https://foo.com/resource/1")
+        XCTAssertEqual(event.resource.statusCode, 200)
+        XCTAssertEqual(event.resource.duration, 2_000_000_000)
+        XCTAssertEqual(event.resource.size, 1_024)
+        XCTAssertNil(event.resource.redirect)
+        XCTAssertNil(event.resource.dns)
+        XCTAssertNil(event.resource.connect)
+        XCTAssertNil(event.resource.ssl)
+        XCTAssertNil(event.resource.firstByte)
+        XCTAssertNil(event.resource.download)
+        XCTAssertEqual(try XCTUnwrap(event.action?.id), context.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.dd.traceId, "100")
+        XCTAssertEqual(event.dd.spanId, "200")
+        XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+        XCTAssertEqual(event.service, randomServiceName)
     }
 
     func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEventWithCustomSpanAndTraceId() throws {
@@ -141,34 +141,34 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self).first)
-        XCTAssertEqual(event.model.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
-        XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
-        XCTAssertEqual(event.model.session.id, scope.context.sessionID.toRUMDataFormat)
-        XCTAssertEqual(event.model.session.type, .user)
-        XCTAssertEqual(event.model.view.id, context.activeViewID?.toRUMDataFormat)
-        XCTAssertEqual(event.model.view.url, "FooViewController")
-        XCTAssertEqual(event.model.view.name, "FooViewName")
-        XCTAssertValidRumUUID(event.model.resource.id)
-        XCTAssertEqual(event.model.resource.type, .image)
-        XCTAssertEqual(event.model.resource.method, .post)
-        XCTAssertNil(event.model.resource.provider)
-        XCTAssertEqual(event.model.resource.url, "https://foo.com/resource/1")
-        XCTAssertEqual(event.model.resource.statusCode, 200)
-        XCTAssertEqual(event.model.resource.duration, 2_000_000_000)
-        XCTAssertEqual(event.model.resource.size, 1_024)
-        XCTAssertNil(event.model.resource.redirect)
-        XCTAssertNil(event.model.resource.dns)
-        XCTAssertNil(event.model.resource.connect)
-        XCTAssertNil(event.model.resource.ssl)
-        XCTAssertNil(event.model.resource.firstByte)
-        XCTAssertNil(event.model.resource.download)
-        XCTAssertEqual(try XCTUnwrap(event.model.action?.id), context.activeUserActionID?.toRUMDataFormat)
-        XCTAssertEqual(event.model.context?.contextInfo as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(event.model.dd.traceId, "100")
-        XCTAssertEqual(event.model.dd.spanId, "200")
-        XCTAssertEqual(event.model.source, .ios)
-        XCTAssertEqual(event.model.service, randomServiceName)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMResourceEvent.self).first)
+        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.session.type, .user)
+        XCTAssertEqual(event.view.id, context.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.url, "FooViewController")
+        XCTAssertEqual(event.view.name, "FooViewName")
+        XCTAssertValidRumUUID(event.resource.id)
+        XCTAssertEqual(event.resource.type, .image)
+        XCTAssertEqual(event.resource.method, .post)
+        XCTAssertNil(event.resource.provider)
+        XCTAssertEqual(event.resource.url, "https://foo.com/resource/1")
+        XCTAssertEqual(event.resource.statusCode, 200)
+        XCTAssertEqual(event.resource.duration, 2_000_000_000)
+        XCTAssertEqual(event.resource.size, 1_024)
+        XCTAssertNil(event.resource.redirect)
+        XCTAssertNil(event.resource.dns)
+        XCTAssertNil(event.resource.connect)
+        XCTAssertNil(event.resource.ssl)
+        XCTAssertNil(event.resource.firstByte)
+        XCTAssertNil(event.resource.download)
+        XCTAssertEqual(try XCTUnwrap(event.action?.id), context.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.dd.traceId, "100")
+        XCTAssertEqual(event.dd.spanId, "200")
+        XCTAssertEqual(event.source, .ios)
+        XCTAssertEqual(event.service, randomServiceName)
     }
 
     func testGivenStartedResource_whenResourceLoadingEndsWithError_itSendsErrorEvent() throws {
@@ -203,28 +203,28 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMErrorEvent>.self).first)
-        XCTAssertEqual(event.model.date, currentTime.timeIntervalSince1970.toInt64Milliseconds)
-        XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
-        XCTAssertEqual(event.model.session.id, scope.context.sessionID.toRUMDataFormat)
-        XCTAssertEqual(event.model.session.type, .user)
-        XCTAssertEqual(event.model.view.id, context.activeViewID?.toRUMDataFormat)
-        XCTAssertEqual(event.model.view.url, "FooViewController")
-        XCTAssertEqual(event.model.view.name, "FooViewName")
-        XCTAssertEqual(event.model.error.type, "ErrorMock")
-        XCTAssertEqual(event.model.error.message, "network issue explanation")
-        XCTAssertEqual(event.model.error.source, .network)
-        XCTAssertEqual(event.model.error.stack, "network issue explanation")
-        XCTAssertEqual(event.model.error.resource?.method, .post)
-        XCTAssertEqual(event.model.error.type, "ErrorMock")
-        XCTAssertNil(event.model.error.resource?.provider)
-        XCTAssertEqual(event.model.error.resource?.statusCode, 500)
-        XCTAssertEqual(event.model.error.resource?.url, "https://foo.com/resource/1")
-        XCTAssertEqual(try XCTUnwrap(event.model.action?.id), context.activeUserActionID?.toRUMDataFormat)
-        XCTAssertEqual(event.model.context?.contextInfo as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(event.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
-        XCTAssertEqual(event.model.source, .ios)
-        XCTAssertEqual(event.model.service, randomServiceName)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMErrorEvent.self).first)
+        XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.session.type, .user)
+        XCTAssertEqual(event.view.id, context.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.url, "FooViewController")
+        XCTAssertEqual(event.view.name, "FooViewName")
+        XCTAssertEqual(event.error.type, "ErrorMock")
+        XCTAssertEqual(event.error.message, "network issue explanation")
+        XCTAssertEqual(event.error.source, .network)
+        XCTAssertEqual(event.error.stack, "network issue explanation")
+        XCTAssertEqual(event.error.resource?.method, .post)
+        XCTAssertEqual(event.error.type, "ErrorMock")
+        XCTAssertNil(event.error.resource?.provider)
+        XCTAssertEqual(event.error.resource?.statusCode, 500)
+        XCTAssertEqual(event.error.resource?.url, "https://foo.com/resource/1")
+        XCTAssertEqual(try XCTUnwrap(event.action?.id), context.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+        XCTAssertEqual(event.source, .ios)
+        XCTAssertEqual(event.service, randomServiceName)
     }
 
     func testGivenStartedResource_whenResourceReceivesMetricsBeforeItEnds_itUsesMetricValuesInSentResourceEvent() throws {
@@ -302,39 +302,39 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let metrics = metricsCommand.metrics
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self).first)
-        XCTAssertEqual(event.model.date, metrics.fetch.start.timeIntervalSince1970.toInt64Milliseconds)
-        XCTAssertEqual(event.model.application.id, scope.context.rumApplicationID)
-        XCTAssertEqual(event.model.session.id, scope.context.sessionID.toRUMDataFormat)
-        XCTAssertEqual(event.model.session.type, .user)
-        XCTAssertEqual(event.model.view.id, context.activeViewID?.toRUMDataFormat)
-        XCTAssertEqual(event.model.view.url, "FooViewController")
-        XCTAssertEqual(event.model.view.name, "FooViewName")
-        XCTAssertValidRumUUID(event.model.resource.id)
-        XCTAssertEqual(event.model.resource.type, .image)
-        XCTAssertEqual(event.model.resource.method, .post)
-        XCTAssertEqual(event.model.resource.url, "https://foo.com/resource/1")
-        XCTAssertEqual(event.model.resource.statusCode, 200)
-        XCTAssertEqual(event.model.resource.duration, 10_000_000_000)
-        XCTAssertEqual(event.model.resource.size, 2_048)
-        XCTAssertEqual(event.model.resource.redirect?.start, 1_000_000_000)
-        XCTAssertEqual(event.model.resource.redirect?.duration, 1_000_000_000)
-        XCTAssertEqual(event.model.resource.dns?.start, 3_000_000_000)
-        XCTAssertEqual(event.model.resource.dns?.duration, 1_000_000_000)
-        XCTAssertEqual(event.model.resource.connect?.start, 5_000_000_000)
-        XCTAssertEqual(event.model.resource.connect?.duration, 2_000_000_000)
-        XCTAssertEqual(event.model.resource.ssl?.start, 6_000_000_000)
-        XCTAssertEqual(event.model.resource.ssl?.duration, 1_000_000_000)
-        XCTAssertEqual(event.model.resource.firstByte?.start, 8_000_000_000)
-        XCTAssertEqual(event.model.resource.firstByte?.duration, 1_000_000_000)
-        XCTAssertEqual(event.model.resource.download?.start, 9_000_000_000)
-        XCTAssertEqual(event.model.resource.download?.duration, 1_000_000_000)
-        XCTAssertEqual(try XCTUnwrap(event.model.action?.id), context.activeUserActionID?.toRUMDataFormat)
-        XCTAssertEqual(event.model.context?.contextInfo as? [String: String], ["foo": "bar"])
-        XCTAssertNil(event.model.dd.traceId)
-        XCTAssertNil(event.model.dd.spanId)
-        XCTAssertEqual(event.model.source, .ios)
-        XCTAssertEqual(event.model.service, randomServiceName)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMResourceEvent.self).first)
+        XCTAssertEqual(event.date, metrics.fetch.start.timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.session.type, .user)
+        XCTAssertEqual(event.view.id, context.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.url, "FooViewController")
+        XCTAssertEqual(event.view.name, "FooViewName")
+        XCTAssertValidRumUUID(event.resource.id)
+        XCTAssertEqual(event.resource.type, .image)
+        XCTAssertEqual(event.resource.method, .post)
+        XCTAssertEqual(event.resource.url, "https://foo.com/resource/1")
+        XCTAssertEqual(event.resource.statusCode, 200)
+        XCTAssertEqual(event.resource.duration, 10_000_000_000)
+        XCTAssertEqual(event.resource.size, 2_048)
+        XCTAssertEqual(event.resource.redirect?.start, 1_000_000_000)
+        XCTAssertEqual(event.resource.redirect?.duration, 1_000_000_000)
+        XCTAssertEqual(event.resource.dns?.start, 3_000_000_000)
+        XCTAssertEqual(event.resource.dns?.duration, 1_000_000_000)
+        XCTAssertEqual(event.resource.connect?.start, 5_000_000_000)
+        XCTAssertEqual(event.resource.connect?.duration, 2_000_000_000)
+        XCTAssertEqual(event.resource.ssl?.start, 6_000_000_000)
+        XCTAssertEqual(event.resource.ssl?.duration, 1_000_000_000)
+        XCTAssertEqual(event.resource.firstByte?.start, 8_000_000_000)
+        XCTAssertEqual(event.resource.firstByte?.duration, 1_000_000_000)
+        XCTAssertEqual(event.resource.download?.start, 9_000_000_000)
+        XCTAssertEqual(event.resource.download?.duration, 1_000_000_000)
+        XCTAssertEqual(try XCTUnwrap(event.action?.id), context.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
+        XCTAssertNil(event.dd.traceId)
+        XCTAssertNil(event.dd.spanId)
+        XCTAssertEqual(event.source, .ios)
+        XCTAssertEqual(event.service, randomServiceName)
     }
 
     func testGivenMultipleResourceScopes_whenSendingResourceEvents_eachEventHasUniqueResourceID() throws {
@@ -359,12 +359,12 @@ class RUMResourceScopeTests: XCTestCase {
         _ = scope2.process(command: RUMStopResourceCommand.mockWith(resourceKey: resourceKey))
 
         // Then
-        let resourceEvents = try output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self)
-        let resource1Events = resourceEvents.filter { $0.model.resource.url == "/r/1" }
-        let resource2Events = resourceEvents.filter { $0.model.resource.url == "/r/2" }
+        let resourceEvents = try output.recordedEvents(ofType: RUMResourceEvent.self)
+        let resource1Events = resourceEvents.filter { $0.resource.url == "/r/1" }
+        let resource2Events = resourceEvents.filter { $0.resource.url == "/r/2" }
         XCTAssertEqual(resource1Events.count, 1)
         XCTAssertEqual(resource2Events.count, 1)
-        XCTAssertNotEqual(resource1Events[0].model.resource.id, resource2Events[0].model.resource.id)
+        XCTAssertNotEqual(resource1Events[0].resource.id, resource2Events[0].resource.id)
     }
 
     func testGivenResourceStartedWithKindBasedOnRequest_whenLoadingEndsWithDifferentKind_itSendsTheKindBasedOnRequest() throws {
@@ -397,8 +397,8 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self).first)
-        XCTAssertEqual(event.model.resource.type, kindBasedOnRequest)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMResourceEvent.self).first)
+        XCTAssertEqual(event.resource.type, kindBasedOnRequest)
     }
 
     func testGivenStartedFirstPartyResource_whenResourceLoadingEnds_itSendsResourceEventWithFirstPartyProvider() throws {
@@ -429,9 +429,9 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self).first)
-        let providerType = try XCTUnwrap(event.model.resource.provider?.type)
-        let providerDomain = try XCTUnwrap(event.model.resource.provider?.domain)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMResourceEvent.self).first)
+        let providerType = try XCTUnwrap(event.resource.provider?.type)
+        let providerDomain = try XCTUnwrap(event.resource.provider?.domain)
         XCTAssertEqual(providerType, .firstParty)
         XCTAssertEqual(providerDomain, "foo.com")
     }
@@ -464,8 +464,8 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self).first)
-        XCTAssertNil(event.model.resource.provider)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMResourceEvent.self).first)
+        XCTAssertNil(event.resource.provider)
     }
 
     func testGivenStartedFirstPartyResource_whenResourceLoadingEndsWithError_itSendsErrorEventWithFirstPartyProvider() throws {
@@ -494,12 +494,12 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMErrorEvent>.self).first)
-        let providerType = try XCTUnwrap(event.model.error.resource?.provider?.type)
-        let providerDomain = try XCTUnwrap(event.model.error.resource?.provider?.domain)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMErrorEvent.self).first)
+        let providerType = try XCTUnwrap(event.error.resource?.provider?.type)
+        let providerDomain = try XCTUnwrap(event.error.resource?.provider?.domain)
         XCTAssertEqual(providerType, .firstParty)
         XCTAssertEqual(providerDomain, "foo.com")
-        XCTAssertEqual(event.model.error.sourceType, .ios)
+        XCTAssertEqual(event.error.sourceType, .ios)
     }
 
     func testGivenStartedThirdPartyResource_whenResourceLoadingEndsWithError_itSendsErrorEventWithoutResourceProvider() throws {
@@ -528,9 +528,9 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMErrorEvent>.self).first)
-        XCTAssertNil(event.model.error.resource?.provider)
-        XCTAssertEqual(event.model.error.sourceType, .ios)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMErrorEvent.self).first)
+        XCTAssertNil(event.error.resource?.provider)
+        XCTAssertEqual(event.error.sourceType, .ios)
     }
 
     func testGivenStartedResource_whenResourceLoadingEndsWithErrorWithCustomSourceType_itSendsErrorEventWithCustomSourceType() throws {
@@ -563,8 +563,8 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMEvent<RUMErrorEvent>.self).first)
-        XCTAssertEqual(event.model.error.sourceType, .reactNative)
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMErrorEvent.self).first)
+        XCTAssertEqual(event.error.sourceType, .reactNative)
     }
 
     // MARK: - Events sending callbacks
@@ -629,7 +629,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        XCTAssertNotNil(try (output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self).first))
+        XCTAssertNotNil(try (output.recordedEvents(ofType: RUMResourceEvent.self).first))
         XCTAssertTrue(onResourceEventSentCalled)
         XCTAssertTrue(onErrorEventSentCalled)
     }
@@ -709,7 +709,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        XCTAssertNil(try (output.recordedEvents(ofType: RUMEvent<RUMResourceEvent>.self).first))
+        XCTAssertNil(try (output.recordedEvents(ofType: RUMResourceEvent.self).first))
         XCTAssertFalse(onResourceEventSentCalled)
         XCTAssertFalse(onErrorEventSentCalled)
     }

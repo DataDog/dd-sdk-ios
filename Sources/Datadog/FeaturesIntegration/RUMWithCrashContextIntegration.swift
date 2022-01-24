@@ -11,7 +11,7 @@ import Foundation
 ///
 /// This integration isolates the direct link between RUM and Crash Reporting.
 internal struct RUMWithCrashContextIntegration {
-    private weak var rumViewEventProvider: ValuePublisher<RUMEvent<RUMViewEvent>?>?
+    private weak var rumViewEventProvider: ValuePublisher<RUMViewEvent?>?
     private weak var rumSessionStateProvider: ValuePublisher<RUMSessionState?>?
 
     init?() {
@@ -26,14 +26,14 @@ internal struct RUMWithCrashContextIntegration {
     }
 
     init(
-        rumViewEventProvider: ValuePublisher<RUMEvent<RUMViewEvent>?>,
+        rumViewEventProvider: ValuePublisher<RUMViewEvent?>,
         rumSessionStateProvider: ValuePublisher<RUMSessionState?>
     ) {
         self.rumViewEventProvider = rumViewEventProvider
         self.rumSessionStateProvider = rumSessionStateProvider
     }
 
-    func update(lastRUMViewEvent: RUMEvent<RUMViewEvent>?) {
+    func update(lastRUMViewEvent: RUMViewEvent?) {
         rumViewEventProvider?.publishAsync(lastRUMViewEvent)
     }
 

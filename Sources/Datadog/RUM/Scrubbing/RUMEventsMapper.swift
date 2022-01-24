@@ -27,16 +27,21 @@ internal struct RUMEventsMapper {
     /// It takes an `event` and returns its modified representation or `nil` (for dropping the event).
     func map<T>(event: T) -> T? {
         switch event {
-        case let viewEvent as RUMEvent<RUMViewEvent>:
-            return map(rumEvent: viewEvent, using: viewEventMapper) as? T
-        case let errorEvent as RUMEvent<RUMErrorEvent>:
-            return map(rumEvent: errorEvent, using: errorEventMapper) as? T
-        case let resourceEvent as RUMEvent<RUMResourceEvent>:
-            return map(rumEvent: resourceEvent, using: resourceEventMapper) as? T
-        case let actionEvent as RUMEvent<RUMActionEvent>:
-            return map(rumEvent: actionEvent, using: actionEventMapper) as? T
-        case let longTaskEvent as RUMEvent<RUMLongTaskEvent>:
-            return map(rumEvent: longTaskEvent, using: longTaskEventMapper) as? T
+        case let event as RUMViewEvent:
+            return map(event: event, using: viewEventMapper) as? T
+        case let event as RUMErrorEvent:
+            return map(event: event, using: errorEventMapper) as? T
+        case let event as RUMCrashEvent:
+            guard let model = map(event: event.model, using: errorEventMapper) else {
+                return nil
+            }
+            return RUMCrashEvent(error: model, additionalAttributes: event.additionalAttributes) as? T
+        case let event as RUMResourceEvent:
+            return map(event: event, using: resourceEventMapper) as? T
+        case let event as RUMActionEvent:
+            return map(event: event, using: actionEventMapper) as? T
+        case let event as RUMLongTaskEvent:
+            return map(event: event, using: longTaskEventMapper) as? T
         default:
             internalMonitor?.sdkLogger.critical("No `RUMEventMapper` is registered for \(type(of: event))")
             return event
@@ -45,17 +50,11 @@ internal struct RUMEventsMapper {
 
     // MARK: - Private
 
-    private func map<DM: RUMDataModel>(rumEvent: RUMEvent<DM>, using mapper: ((DM) -> DM?)?) -> RUMEvent<DM>? {
+    private func map<Event>(event: Event, using mapper: ((Event) -> Event?)?) -> Event? {
         guard let mapper = mapper else {
-            return rumEvent // if no mapper is provided, do not modify the `rumEvent`
+            return event // if no mapper is provided, do not modify the `rumEvent`
         }
 
-        if let mappedModel = mapper(rumEvent.model) {
-            var mutableRUMEvent = rumEvent
-            mutableRUMEvent.model = mappedModel
-            return mutableRUMEvent
-        } else {
-            return nil
-        }
+        return mapper(event)
     }
 }
