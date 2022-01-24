@@ -7,7 +7,7 @@
 import Foundation
 import XCTest
 
-/// Provides set of assertions for single `RUMEvent<DM: RUMDataModel>` JSON object and collection of `[RUMEvent<DM: RUMDataModel>]`.
+/// Provides set of assertions for single `RUMDataModel` JSON object and collection of `[RUMDataModel]`.
 /// Note: this file is individually referenced by integration tests target, so no dependency on other source files should be introduced except `RUMDataModel` implementations
 /// for partial matching concrete RUM events conforming to [rum-events-format](https://github.com/DataDog/rum-events-format).
 internal class RUMEventMatcher {
