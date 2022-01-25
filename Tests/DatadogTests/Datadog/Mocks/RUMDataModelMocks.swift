@@ -269,6 +269,19 @@ extension RUMErrorEvent: RandomMockable {
     }
 }
 
+extension RUMCrashEvent: RandomMockable {
+    static func mockRandom(error: RUMErrorEvent) -> RUMCrashEvent {
+        return .init(
+            error: error,
+            additionalAttributes: mockRandomAttributes()
+        )
+    }
+
+    static func mockRandom() -> RUMCrashEvent {
+        return mockRandom(error: .mockRandom())
+    }
+}
+
 extension RUMLongTaskEvent: RandomMockable {
     static func mockRandom() -> RUMLongTaskEvent {
         return RUMLongTaskEvent(

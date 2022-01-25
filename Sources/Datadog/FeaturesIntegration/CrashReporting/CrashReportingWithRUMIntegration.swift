@@ -400,7 +400,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
 
 /// `Encodable` representation of RUM Error event for crash.
 /// Mutable properties are subject of sanitization or data scrubbing.
-/// TODO: RUMM-1584 - Remove `RUMCrashEvent` container.
+/// TODO: RUMM-1949 - Remove `RUMCrashEvent` with generated model.
 internal struct RUMCrashEvent: RUMDataModel {
     /// The actual RUM event model created by `RUMMonitor`
     var model: RUMErrorEvent
