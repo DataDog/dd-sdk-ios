@@ -2,7 +2,6 @@
 
 ### Changes
 
-* [BUGFIX] Strip query parameters from span resource. See [#728][]
 * [BUGFIX] Report binary image with no UUID. See [#724][]
 * [FEATURE] Add Application Launch events tracking. See [#699][]
 * [FEATURE] Set `PLCrashReporter` custom path. See [#692][]
@@ -318,7 +317,6 @@
 [#715]: https://github.com/DataDog/dd-sdk-ios/issues/715
 [#724]: https://github.com/DataDog/dd-sdk-ios/issues/724
 [#725]: https://github.com/DataDog/dd-sdk-ios/issues/725
-[#728]: https://github.com/DataDog/dd-sdk-ios/issues/728
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu
