@@ -53,6 +53,7 @@ public extension WKUserContentController {
                 rumEventConsumer: rumEventConsumer
             )
         )
+        removeScriptMessageHandler(forName: bridgeName)
         add(messageHandler, name: bridgeName)
 
         // WebKit installs message handlers with the given name format below
@@ -68,7 +69,9 @@ public extension WKUserContentController {
             .map { return "\"\($0)\"" }
             .joined(separator: ",")
 
+        let jsPrefix = "/* DatadogEventBridge */"
         let js = """
+        \(jsPrefix)
         window.\(bridgeName) = {
           send(msg) {
             \(webkitMethodName)(msg)
@@ -78,6 +81,14 @@ public extension WKUserContentController {
           }
         }
         """
+
+        let userScriptsWithoutDatadog = userScripts.filter { script in
+            return !script.source.starts(with: jsPrefix)
+        }
+        if userScriptsWithoutDatadog.count != userScripts.count {
+            removeAllUserScripts()
+            userScriptsWithoutDatadog.forEach { addUserScript($0) }
+        }
         addUserScript(
             WKUserScript(
                 source: js,

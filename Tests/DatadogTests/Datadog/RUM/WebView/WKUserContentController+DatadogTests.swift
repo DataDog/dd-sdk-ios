@@ -15,6 +15,12 @@ final class DDUserContentController: WKUserContentController {
     override func add(_ scriptMessageHandler: WKScriptMessageHandler, name: String) {
         messageHandlers.append((name: name, handler: scriptMessageHandler))
     }
+
+    override func removeScriptMessageHandler(forName name: String) {
+        messageHandlers = messageHandlers.filter {
+            return $0.name != name
+        }
+    }
 }
 
 final class MockScriptMessage: WKScriptMessage {
@@ -50,12 +56,14 @@ class WKUserContentController_DatadogTests: XCTestCase {
 
         let initialUserScriptCount = controller.userScripts.count
 
-        controller.addDatadogMessageHandler(allowedWebViewHosts: ["datadoghq.com"], hostsSanitizer: mockSanitizer)
+        (0..<5).forEach { _ in
+            controller.addDatadogMessageHandler(allowedWebViewHosts: ["datadoghq.com"], hostsSanitizer: mockSanitizer)
+        }
 
         XCTAssertEqual(controller.userScripts.count, initialUserScriptCount + 1)
         XCTAssertEqual(controller.messageHandlers.map({ $0.name }), ["DatadogEventBridge"])
 
-        XCTAssertEqual(mockSanitizer.sanitizations.count, 1)
+        XCTAssertGreaterThanOrEqual(mockSanitizer.sanitizations.count, 1)
         let sanitization = try XCTUnwrap(mockSanitizer.sanitizations.first)
         XCTAssertEqual(sanitization.hosts, ["datadoghq.com"])
         XCTAssertEqual(sanitization.warningMessage, "The allowed WebView host configured for Datadog SDK is not valid")
