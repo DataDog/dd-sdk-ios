@@ -97,7 +97,7 @@ If your application has Bitcode enabled, download your app's dSYM files on [App 
 {{< partial name="whats-next/whats-next.html" >}}
 
 [1]: https://app.datadoghq.com/rum/application/create
-[2]: /real_user_monitoring/ios
+[2]: https://docs.datadoghq.com/real_user_monitoring/ios
 [3]: https://github.com/DataDog/dd-sdk-ios/releases
 [4]: https://github.com/DataDog/datadog-ci
 [5]: https://www.npmjs.com/package/@datadog/datadog-ci

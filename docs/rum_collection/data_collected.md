@@ -224,5 +224,5 @@ Network errors include information about failing HTTP requests. The following fa
 
 {{< partial name="whats-next/whats-next.html" >}}
 
-[1]: /real_user_monitoring/ios/advanced_configuration/#enrich-user-sessions
-[2]: /real_user_monitoring/ios/advanced_configuration/#track-user-sessions
+[1]: https://docs.datadoghq.com/real_user_monitoring/ios/advanced_configuration/#enrich-user-sessions
+[2]: https://docs.datadoghq.com/real_user_monitoring/ios/advanced_configuration/#track-user-sessions
