@@ -9,6 +9,14 @@ import Foundation
 import WebKit
 
 public extension WKUserContentController {
+    private static let jsCodePrefix = "/* DatadogEventBridge */"
+
+    private var isTracking: Bool {
+        return userScripts.contains {
+            return $0.source.starts(with: Self.jsCodePrefix)
+        }
+    }
+
     /// Enables SDK to correlate Datadog RUM events and Logs from the WebView with native RUM session.
     ///
     /// If the content loaded in WebView uses Datadog Browser SDK (`v4.2.0+`) and matches specified `hosts`, web events will be correlated
@@ -20,6 +28,11 @@ public extension WKUserContentController {
     }
 
     internal func addDatadogMessageHandler(allowedWebViewHosts: Set<String>, hostsSanitizer: HostsSanitizing) {
+        guard !isTracking else {
+              userLogger.warn("`trackDatadogEvents(in:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")
+              return
+           }
+
         let bridgeName = DatadogMessageHandler.name
 
         let globalRUMMonitor = Global.rum as? RUMMonitor
@@ -53,7 +66,6 @@ public extension WKUserContentController {
                 rumEventConsumer: rumEventConsumer
             )
         )
-        removeScriptMessageHandler(forName: bridgeName)
         add(messageHandler, name: bridgeName)
 
         // WebKit installs message handlers with the given name format below
@@ -69,9 +81,8 @@ public extension WKUserContentController {
             .map { return "\"\($0)\"" }
             .joined(separator: ",")
 
-        let jsPrefix = "/* DatadogEventBridge */"
         let js = """
-        \(jsPrefix)
+        \(Self.jsCodePrefix)
         window.\(bridgeName) = {
           send(msg) {
             \(webkitMethodName)(msg)
@@ -82,13 +93,6 @@ public extension WKUserContentController {
         }
         """
 
-        let userScriptsWithoutDatadog = userScripts.filter { script in
-            return !script.source.starts(with: jsPrefix)
-        }
-        if userScriptsWithoutDatadog.count != userScripts.count {
-            removeAllUserScripts()
-            userScriptsWithoutDatadog.forEach { addUserScript($0) }
-        }
         addUserScript(
             WKUserScript(
                 source: js,
