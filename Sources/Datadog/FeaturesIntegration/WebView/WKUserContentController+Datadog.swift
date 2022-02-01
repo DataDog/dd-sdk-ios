@@ -9,6 +9,14 @@ import Foundation
 import WebKit
 
 public extension WKUserContentController {
+    private static let jsCodePrefix = "/* DatadogEventBridge */"
+
+    private var isTracking: Bool {
+        return userScripts.contains {
+            return $0.source.starts(with: Self.jsCodePrefix)
+        }
+    }
+
     /// Enables SDK to correlate Datadog RUM events and Logs from the WebView with native RUM session.
     ///
     /// If the content loaded in WebView uses Datadog Browser SDK (`v4.2.0+`) and matches specified `hosts`, web events will be correlated
@@ -20,6 +28,11 @@ public extension WKUserContentController {
     }
 
     internal func addDatadogMessageHandler(allowedWebViewHosts: Set<String>, hostsSanitizer: HostsSanitizing) {
+        guard !isTracking else {
+              userLogger.warn("`trackDatadogEvents(in:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")
+              return
+           }
+
         let bridgeName = DatadogMessageHandler.name
 
         let globalRUMMonitor = Global.rum as? RUMMonitor
@@ -69,6 +82,7 @@ public extension WKUserContentController {
             .joined(separator: ",")
 
         let js = """
+        \(Self.jsCodePrefix)
         window.\(bridgeName) = {
           send(msg) {
             \(webkitMethodName)(msg)
@@ -78,6 +92,7 @@ public extension WKUserContentController {
           }
         }
         """
+
         addUserScript(
             WKUserScript(
                 source: js,
