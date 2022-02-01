@@ -202,8 +202,8 @@ internal class RUMResourceScope: RUMScope {
             )
         )
 
-        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData) {
-            dependencies.eventOutput.write(rumEvent: event)
+        if let event = dependencies.eventBuilder.build(from: eventData) {
+            dependencies.eventOutput.write(event: event)
             return true
         }
         return false
@@ -256,8 +256,8 @@ internal class RUMResourceScope: RUMScope {
             )
         )
 
-        if let event = dependencies.eventBuilder.createRUMEvent(with: eventData) {
-            dependencies.eventOutput.write(rumEvent: event)
+        if let event = dependencies.eventBuilder.build(from: eventData) {
+            dependencies.eventOutput.write(event: event)
             return true
         }
         return false

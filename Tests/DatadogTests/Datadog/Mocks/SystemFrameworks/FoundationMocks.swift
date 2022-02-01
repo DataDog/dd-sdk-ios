@@ -175,6 +175,12 @@ extension URL: AnyMockable, RandomMockable {
         return URL(string: "https://www.foo.com/")!.appendingPathComponent(pathComponent)
     }
 
+    static func mockWith(url: String, queryParams: [URLQueryItem]) -> URL {
+        var urlComponents = URLComponents(string: url)
+        urlComponents!.queryItems = queryParams
+        return urlComponents!.url!
+    }
+
     static func mockRandom() -> URL {
         return URL(string: "https://www.foo.com/")!
             .appendingPathComponent(
@@ -409,6 +415,13 @@ extension URLRequest: AnyMockable {
 
     static func mockWith(httpMethod: String) -> URLRequest {
         var request = URLRequest(url: .mockAny())
+        request.httpMethod = httpMethod
+        return request
+    }
+
+    static func mockWith(url: String, queryParams: [URLQueryItem], httpMethod: String) -> URLRequest {
+        let url: URL = .mockWith(url: url, queryParams: queryParams)
+        var request = URLRequest(url: url)
         request.httpMethod = httpMethod
         return request
     }

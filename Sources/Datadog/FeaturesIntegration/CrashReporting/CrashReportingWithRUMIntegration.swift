@@ -93,7 +93,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
     /// the crash to that view. The error event can be preceded with a view update based on `Constants.viewEventAvailabilityThreshold` condition.
     private func sendCrashReportLinkedToLastViewInPreviousSession(
         _ crashReport: DDCrashReport,
-        lastRUMViewEventInPreviousSession lastRUMViewEvent: RUMEvent<RUMViewEvent>,
+        lastRUMViewEventInPreviousSession lastRUMViewEvent: RUMViewEvent,
         using crashTimings: AdjustedCrashTimings
     ) {
         if crashTimings.realDateNow.timeIntervalSince(crashTimings.realCrashDate) < Constants.viewEventAvailabilityThreshold {
@@ -103,7 +103,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             // To avoid inconsistency, we only send the RUM error.
             userLogger.debug("Sending crash as RUM error.")
             let rumError = createRUMError(from: crashReport, and: lastRUMViewEvent, crashDate: crashTimings.realCrashDate)
-            rumEventOutput.write(rumEvent: rumError)
+            rumEventOutput.write(event: rumError)
         }
     }
 
@@ -122,7 +122,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             isBETEnabled: rumConfiguration.backgroundEventTrackingEnabled
         )
 
-        let newRUMView: RUMEvent<RUMViewEvent>?
+        let newRUMView: RUMViewEvent?
 
         switch handlingRule {
         case .handleInApplicationLaunchView:
@@ -172,7 +172,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             isBETEnabled: rumConfiguration.backgroundEventTrackingEnabled
         )
 
-        let newRUMView: RUMEvent<RUMViewEvent>?
+        let newRUMView: RUMViewEvent?
 
         switch handlingRule {
         case .handleInApplicationLaunchView:
@@ -202,31 +202,29 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
     }
 
     /// Sends given `CrashReport` by linking it to given `rumView` and updating view counts accordingly.
-    private func send(crashReport: DDCrashReport, to rumView: RUMEvent<RUMViewEvent>, using realCrashDate: Date) {
+    private func send(crashReport: DDCrashReport, to rumView: RUMViewEvent, using realCrashDate: Date) {
         userLogger.debug("Updating RUM view with crash report.")
         let updatedRUMView = updateRUMViewWithNewError(rumView, crashDate: realCrashDate)
         let rumError = createRUMError(from: crashReport, and: updatedRUMView, crashDate: realCrashDate)
-        rumEventOutput.write(rumEvent: rumError)
-        rumEventOutput.write(rumEvent: updatedRUMView)
+        rumEventOutput.write(event: rumError)
+        rumEventOutput.write(event: updatedRUMView)
     }
 
     // MARK: - Building RUM events
 
     /// Creates RUM error based on the session information from `lastRUMViewEvent` and `DDCrashReport` details.
-    private func createRUMError(from crashReport: DDCrashReport, and lastRUMViewEvent: RUMEvent<RUMViewEvent>, crashDate: Date) -> RUMEvent<RUMErrorEvent> {
-        let lastRUMView = lastRUMViewEvent.model
-
+    private func createRUMError(from crashReport: DDCrashReport, and lastRUMView: RUMViewEvent, crashDate: Date) -> RUMCrashEvent {
         let errorType = crashReport.type
         let errorMessage = crashReport.message
         let errorStackTrace = crashReport.stack
 
-        var errorAttributes = lastRUMViewEvent.errorAttributes ?? [:]
+        var errorAttributes: [String: Encodable] = [:]
         errorAttributes[DDError.threads] = crashReport.threads
         errorAttributes[DDError.binaryImages] = crashReport.binaryImages
         errorAttributes[DDError.meta] = crashReport.meta
         errorAttributes[DDError.wasTruncated] = crashReport.wasTruncated
 
-        let rumError = RUMErrorEvent(
+        let event = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
                 session: .init(plan: .plan1)
@@ -266,16 +264,15 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             )
         )
 
-        return RUMEvent(
-            model: rumError,
-            errorAttributes: errorAttributes
+        return RUMCrashEvent(
+            error: event,
+            additionalAttributes: errorAttributes
         )
     }
 
     /// Updates given RUM view event with crash information.
-    private func updateRUMViewWithNewError(_ rumViewEvent: RUMEvent<RUMViewEvent>, crashDate: Date) -> RUMEvent<RUMViewEvent> {
-        let original = rumViewEvent.model
-        let rumView = RUMViewEvent(
+    private func updateRUMViewWithNewError(_ original: RUMViewEvent, crashDate: Date) -> RUMViewEvent {
+        return RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
                 documentVersion: original.dd.documentVersion + 1,
@@ -326,8 +323,6 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 url: original.view.url
             )
         )
-
-        return RUMEvent(model: rumView)
     }
 
     /// Creates new RUM view event.
@@ -337,10 +332,10 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         startDate: Date,
         sessionUUID: RUMUUID,
         crashContext: CrashContext
-    ) -> RUMEvent<RUMViewEvent> {
+    ) -> RUMViewEvent {
         let viewUUID = rumConfiguration.uuidGenerator.generateUnique()
 
-        let rumView = RUMViewEvent(
+        return RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
                 documentVersion: 1,
@@ -400,7 +395,78 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 url: viewURL
             )
         )
+    }
+}
 
-        return RUMEvent(model: rumView)
+/// `Encodable` representation of RUM Error event for crash.
+/// Mutable properties are subject of sanitization or data scrubbing.
+/// TODO: RUMM-1949 - Remove `RUMCrashEvent` with generated model.
+internal struct RUMCrashEvent: RUMDataModel {
+    /// The actual RUM event model created by `RUMMonitor`
+    var model: RUMErrorEvent
+
+    /// Error attributes. Only set when `DM == RUMErrorEvent` and error describes a crash.
+    /// Can be entirely removed when RUMM-1463 is resolved and error values are part of the `RUMErrorEvent`.
+    let additionalAttributes: [String: Encodable]?
+
+    /// Creates a RUM Event object object based on the given sanitizable model.
+    ///
+    /// The error attributes keys must be prefixed by `error.*`.
+    ///
+    /// - Parameters:
+    ///   - model: The sanitizable event model.
+    ///   - errorAttributes: The optional error attributes.
+    init(error: RUMErrorEvent, additionalAttributes: [String: Encodable]? = nil) {
+        self.model = error
+        self.additionalAttributes = additionalAttributes
+    }
+
+    func encode(to encoder: Encoder) throws {
+        // Encode attributes
+        var container = encoder.container(keyedBy: DynamicCodingKey.self)
+
+        // TODO: RUMM-1463 Remove this `errorAttributes` property once new error format is managed through `RUMDataModels`
+        try additionalAttributes?.forEach { attribute in
+            try container.encode(CodableValue(attribute.value), forKey: DynamicCodingKey(attribute.key))
+        }
+
+        // Encode the sanitized `RUMErrorEvent`.
+        try model.encode(to: encoder)
+    }
+
+    init(from decoder: Decoder) throws {
+        self.model = try RUMErrorEvent(from: decoder)
+
+        // Decode other properties into additionalAttributes
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        let dynamicKeys = dynamicContainer.allKeys.filter { RUMErrorEvent.CodingKeys(rawValue: $0.stringValue) == nil }
+        var dictionary: [String: Codable] = [:]
+
+        try dynamicKeys.forEach { codingKey in
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(CodableValue.self, forKey: codingKey)
+        }
+
+        self.additionalAttributes = dictionary
+    }
+
+    /// Coding keys for dynamic `RUMEvent` attributes specified by user.
+    private struct DynamicCodingKey: CodingKey {
+        var stringValue: String
+        var intValue: Int?
+        init?(stringValue: String) { self.stringValue = stringValue }
+        init?(intValue: Int) { return nil }
+        init(_ string: String) { self.stringValue = string }
+    }
+}
+
+extension RUMCrashEvent: RUMSanitizableEvent {
+    var usr: RUMUser? {
+        get { model.usr }
+        set { model.usr = newValue }
+    }
+
+    var context: RUMEventAttributes? {
+        get { model.context }
+        set { model.context = newValue }
     }
 }

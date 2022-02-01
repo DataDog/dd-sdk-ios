@@ -6,6 +6,15 @@
 
 import Foundation
 
+/// Constraint on RUM event types that require sanitization before encoding.
+internal protocol RUMSanitizableEvent {
+    /// Mutable user property.
+    var usr: RUMUser? { get set }
+
+    /// Mutable event context.
+    var context: RUMEventAttributes? { get set }
+}
+
 /// Sanitizes `RUMEvent` representation received from the user, so it can match Datadog RUM Events constraints.
 internal struct RUMEventSanitizer {
     private let attributesSanitizer = AttributesSanitizer(featureName: "RUM Event")
@@ -53,3 +62,13 @@ internal struct RUMEventSanitizer {
         return context
     }
 }
+
+extension RUMViewEvent: RUMSanitizableEvent {}
+
+extension RUMActionEvent: RUMSanitizableEvent {}
+
+extension RUMResourceEvent: RUMSanitizableEvent {}
+
+extension RUMErrorEvent: RUMSanitizableEvent {}
+
+extension RUMLongTaskEvent: RUMSanitizableEvent {}

@@ -15,6 +15,12 @@ final class DDUserContentController: WKUserContentController {
     override func add(_ scriptMessageHandler: WKScriptMessageHandler, name: String) {
         messageHandlers.append((name: name, handler: scriptMessageHandler))
     }
+
+    override func removeScriptMessageHandler(forName name: String) {
+        messageHandlers = messageHandlers.filter {
+            return $0.name != name
+        }
+    }
 }
 
 final class MockScriptMessage: WKScriptMessage {
@@ -59,6 +65,35 @@ class WKUserContentController_DatadogTests: XCTestCase {
         let sanitization = try XCTUnwrap(mockSanitizer.sanitizations.first)
         XCTAssertEqual(sanitization.hosts, ["datadoghq.com"])
         XCTAssertEqual(sanitization.warningMessage, "The allowed WebView host configured for Datadog SDK is not valid")
+    }
+
+    func testWhenAddingMessageHandlerMultipleTimes_itIgnoresExtraOnesAndPrintsWarning() throws {
+        let previousUserLogger = userLogger
+        defer { userLogger = previousUserLogger }
+
+        let output = LogOutputMock()
+        userLogger = .mockWith(logOutput: output)
+
+        let mockSanitizer = MockHostsSanitizer()
+        let controller = DDUserContentController()
+
+        let initialUserScriptCount = controller.userScripts.count
+
+        let multipleTimes = 5
+        (0..<multipleTimes).forEach { _ in
+            controller.addDatadogMessageHandler(allowedWebViewHosts: ["datadoghq.com"], hostsSanitizer: mockSanitizer)
+        }
+
+        XCTAssertEqual(controller.userScripts.count, initialUserScriptCount + 1)
+        XCTAssertEqual(controller.messageHandlers.map({ $0.name }), ["DatadogEventBridge"])
+
+        XCTAssertGreaterThanOrEqual(mockSanitizer.sanitizations.count, 1)
+        let sanitization = try XCTUnwrap(mockSanitizer.sanitizations.first)
+        XCTAssertEqual(sanitization.hosts, ["datadoghq.com"])
+        XCTAssertEqual(sanitization.warningMessage, "The allowed WebView host configured for Datadog SDK is not valid")
+
+        let recordedLogMessages = output.allRecordedLogs.map { return $0.message }
+        XCTAssertEqual(recordedLogMessages, Array(repeating: "`trackDatadogEvents(in:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.", count: multipleTimes - 1))
     }
 
     func testItLogsInvalidWebMessages() throws {
