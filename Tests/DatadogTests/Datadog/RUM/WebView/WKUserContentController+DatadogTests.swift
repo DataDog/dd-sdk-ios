@@ -67,7 +67,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
         XCTAssertEqual(sanitization.warningMessage, "The allowed WebView host configured for Datadog SDK is not valid")
     }
 
-    func testItAddsUserScriptAndMessageHandlerMultipleTimes() throws {
+    func testWhenAddingMessageHandlerMultipleTimes_itIgnoresExtraOnesAndPrintsWarning() throws {
         let previousUserLogger = userLogger
         defer { userLogger = previousUserLogger }
 
