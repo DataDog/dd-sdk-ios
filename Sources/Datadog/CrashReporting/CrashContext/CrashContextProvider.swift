@@ -59,7 +59,7 @@ internal class CrashContextProvider: CrashContextProviderType {
     }
 
     /// Updates `CrashContext` with last `RUMViewEvent` information.
-    private lazy var rumViewEventUpdater = ContextValueUpdater<RUMEvent<RUMViewEvent>?>(queue: queue) { newValue in
+    private lazy var rumViewEventUpdater = ContextValueUpdater<RUMViewEvent?>(queue: queue) { newValue in
         self.unsafeCrashContext.lastRUMViewEvent = newValue
     }
 
@@ -80,7 +80,7 @@ internal class CrashContextProvider: CrashContextProviderType {
         userInfoProvider: UserInfoProvider,
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
         carrierInfoProvider: CarrierInfoProviderType,
-        rumViewEventProvider: ValuePublisher<RUMEvent<RUMViewEvent>?>,
+        rumViewEventProvider: ValuePublisher<RUMViewEvent?>,
         rumSessionStateProvider: ValuePublisher<RUMSessionState?>,
         appStateListener: AppStateListening
     ) {

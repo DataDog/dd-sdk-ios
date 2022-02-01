@@ -18,9 +18,9 @@ class RUMEventBuilderTests: XCTestCase {
         )
         let originalEventModel = RUMViewEvent.mockRandom()
         let event = try XCTUnwrap(
-            builder.createRUMEvent(with: RUMViewEvent.mockRandom())
+            builder.build(from: RUMViewEvent.mockRandom())
         )
-        XCTAssertNotEqual(event.model, originalEventModel)
+        XCTAssertNotEqual(event, originalEventModel)
     }
 
     func testGivenEventBuilderWithEventMapper_whenEventIsDropped_itBuildsNoEvent() {
@@ -31,7 +31,7 @@ class RUMEventBuilderTests: XCTestCase {
                 }
             )
         )
-        let event = builder.createRUMEvent(with: RUMResourceEvent.mockRandom())
+        let event = builder.build(from: RUMResourceEvent.mockRandom())
         XCTAssertNil(event)
     }
 
@@ -45,8 +45,8 @@ class RUMEventBuilderTests: XCTestCase {
         )
         let originalEventModel = RUMResourceEvent.mockRandom()
         let event = try XCTUnwrap(
-            builder.createRUMEvent(with: originalEventModel)
+            builder.build(from: originalEventModel)
         )
-        XCTAssertEqual(event.model, originalEventModel)
+        XCTAssertEqual(event, originalEventModel)
     }
 }

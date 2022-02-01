@@ -96,18 +96,6 @@ struct RUMDataModelMock: RUMDataModel, RUMSanitizableEvent, EquatableInTests {
 
 // MARK: - Component Mocks
 
-extension RUMEvent: AnyMockable where DM: AnyMockable {
-    static func mockAny() -> RUMEvent<DM> {
-        return RUMEvent(model: .mockAny())
-    }
-}
-
-extension RUMEvent: RandomMockable where DM: RandomMockable {
-    static func mockRandom() -> RUMEvent<DM> {
-        return RUMEvent(model: .mockRandom())
-    }
-}
-
 extension RUMEventBuilder {
     static func mockAny() -> RUMEventBuilder {
         return RUMEventBuilder(eventsMapper: .mockNoOp())
@@ -123,8 +111,8 @@ class RUMEventOutputMock: RUMEventOutput {
 
     // MARK: - RUMEventOutput
 
-    func write<DM: RUMDataModel>(rumEvent: RUMEvent<DM>) {
-        recordedEvents.append(rumEvent)
+    func write<Event>(event: Event) where Event: Encodable {
+        recordedEvents.append(event)
     }
 }
 

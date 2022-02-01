@@ -9,6 +9,7 @@
 
 import re
 import os
+import subprocess
 import contextlib
 
 
@@ -27,7 +28,8 @@ def remember_cwd():
 
 def shell(command: str, skip: bool = False):
     """
-    Executes given shell command. Fails on exit code != 0.
+    Executes given shell command without capturing its output.
+    Fails on exit code != 0.
     """
     print(f'   → running `{command}`' if not skip else f'   → running `{command}` - ⚡️ skipped (dry_run)')
     if not skip:
@@ -37,6 +39,31 @@ def shell(command: str, skip: bool = False):
 
     if result != 0:
         raise Exception(f'Failed on: `{command}` with exit code {result}')
+
+
+# Copied from `tools/nightly-unit-tests/src/utils.py`
+# TODO: RUMM-1860 Share this code between both tools
+def shell_output(command: str):
+    """
+    Runs shell command and returns its output.
+    Fails on exit code != 0.
+    """
+    process = subprocess.run(
+        args=[command],
+        capture_output=True,
+        shell=True,
+        text=True  # capture STDOUT as text
+    )
+    if process.returncode == 0:
+        return process.stdout
+    else:
+        raise Exception(
+            f'''
+            Command {command} exited with status code {process.returncode}
+            - STDOUT: {process.stdout if process.stdout != '' else '""'}
+            - STDERR: {process.stderr if process.stderr != '' else '""'}
+            '''
+        )
 
 
 def read_sdk_version() -> str:
@@ -56,3 +83,16 @@ def read_sdk_version() -> str:
         raise Exception(f'Expected one `sdk_version` in {file}, but found {len(versions)}: {versions}')
 
     return versions[0]
+
+
+def read_xcode_version() -> str:
+    """
+    Reads Xcode version from `xcodebuild -version`. Returns only the version number, e.g. '13.2.1'
+    """
+    xc_version_regex = r'^Xcode (.+)\n'  # e.g. 'Xcode 13.1', 'Xcode 13.2 Beta 2'
+    xc_version_string = shell_output(command='xcodebuild -version')
+
+    if match := re.match(xc_version_regex, xc_version_string):
+        return match.groups()[0]
+    else:
+        raise Exception(f'Cannot read Xcode version from `xcodebuild -version` output: {xc_version_string}')

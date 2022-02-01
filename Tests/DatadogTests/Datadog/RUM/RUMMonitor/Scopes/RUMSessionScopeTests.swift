@@ -414,7 +414,7 @@ class RUMSessionScopeTests: XCTestCase {
     }
 
     func testWhenSessionScopeHasNoActiveView_thenItUpdatesLastRUMViewEventInCrashContext() throws {
-        let rumViewEventProvider = ValuePublisher<RUMEvent<RUMViewEvent>?>(initialValue: nil)
+        let rumViewEventProvider = ValuePublisher<RUMViewEvent?>(initialValue: nil)
 
         // Given
         let sessionStartTime = Date()

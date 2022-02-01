@@ -8,13 +8,17 @@ import Foundation
 
 internal class RUMEventBuilder {
     let eventsMapper: RUMEventsMapper
+    let sanitizer = RUMEventSanitizer()
 
     init(eventsMapper: RUMEventsMapper) {
         self.eventsMapper = eventsMapper
     }
 
-    func createRUMEvent<DM: RUMDataModel>(with model: DM) -> RUMEvent<DM>? {
-        let event = RUMEvent(model: model)
-        return eventsMapper.map(event: event)
+    func build<Event>(from event: Event) -> Event? where Event: RUMSanitizableEvent {
+        guard let transformedEvent = eventsMapper.map(event: event) else {
+            return nil
+        }
+
+        return sanitizer.sanitize(event: transformedEvent)
     }
 }

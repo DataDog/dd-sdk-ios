@@ -1,3 +1,19 @@
+# 1.9.0 / 01-26-2022
+
+### Changes
+
+* [BUGFIX] Report binary image with no UUID. See [#724][]
+* [FEATURE] Add Application Launch events tracking. See [#699][]
+* [FEATURE] Set `PLCrashReporter` custom path. See [#692][]
+* [FEATURE] `SwiftUI` Instrumentation. See [#676][]
+* [IMPROVEMENT] Embed Kronos. See [#708][]
+* [IMPROVEMENT] Add `@service` attribute to all RUM events. See [#725][]
+* [IMPROVEMENT] Adds support for flutter error source. See [#715][]
+* [IMPROVEMENT] Add crash reporting console logs. See [#712][]
+* [IMPROVEMENT] Keep view active until all resources are consumed. See [#702][]
+* [IMPROVEMENT] Allow passing in a type for errors sent with a message. See [#680][] (Thanks [@AvdLee][])
+* [IMPROVEMENT] Add config overrides for debug launch arguments. See [#679][]
+
 # 1.8.0 / 11-23-2021
 
 ### Changes
@@ -290,6 +306,17 @@
 [#644]: https://github.com/DataDog/dd-sdk-ios/issues/644
 [#654]: https://github.com/DataDog/dd-sdk-ios/issues/654
 [#655]: https://github.com/DataDog/dd-sdk-ios/issues/655
+[#676]: https://github.com/DataDog/dd-sdk-ios/issues/676
+[#679]: https://github.com/DataDog/dd-sdk-ios/issues/679
+[#680]: https://github.com/DataDog/dd-sdk-ios/issues/680
+[#692]: https://github.com/DataDog/dd-sdk-ios/issues/692
+[#699]: https://github.com/DataDog/dd-sdk-ios/issues/699
+[#702]: https://github.com/DataDog/dd-sdk-ios/issues/702
+[#708]: https://github.com/DataDog/dd-sdk-ios/issues/708
+[#712]: https://github.com/DataDog/dd-sdk-ios/issues/712
+[#715]: https://github.com/DataDog/dd-sdk-ios/issues/715
+[#724]: https://github.com/DataDog/dd-sdk-ios/issues/724
+[#725]: https://github.com/DataDog/dd-sdk-ios/issues/725
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu
@@ -314,3 +341,4 @@
 [@provTheodoreNewell]: https://github.com/provTheodoreNewell
 [@safa-ads]: https://github.com/safa-ads
 [@sdejesusF]: https://github.com/sdejesusF
+[@AvdLee]: https://github.com/AvdLee

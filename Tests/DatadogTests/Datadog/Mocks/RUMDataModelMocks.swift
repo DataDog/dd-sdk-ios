@@ -13,7 +13,7 @@ extension RUMResourceEvent: EquatableInTests {}
 extension RUMActionEvent: EquatableInTests {}
 extension RUMErrorEvent: EquatableInTests {}
 extension RUMLongTaskEvent: EquatableInTests {}
-extension RUMEvent: EquatableInTests {}
+extension RUMCrashEvent: EquatableInTests {}
 
 extension RUMUser {
     static func mockRandom() -> RUMUser {
@@ -266,6 +266,19 @@ extension RUMErrorEvent: RandomMockable {
                 url: .mockRandom()
             )
         )
+    }
+}
+
+extension RUMCrashEvent: RandomMockable {
+    static func mockRandom(error: RUMErrorEvent) -> RUMCrashEvent {
+        return .init(
+            error: error,
+            additionalAttributes: mockRandomAttributes()
+        )
+    }
+
+    static func mockRandom() -> RUMCrashEvent {
+        return mockRandom(error: .mockRandom())
     }
 }
 
