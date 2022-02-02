@@ -115,7 +115,7 @@ For more details and available options, refer to the code documentation comments
 
 ## Track custom global attributes
 
-In addition to the [default RUM attributes][6] captured by the mobile SDK automatically, you can choose to add additional contextual information, such as custom attributes, to your RUM events to enrich your observability within Datadog. 
+In addition to the [default RUM attributes][7] captured by the mobile SDK automatically, you can choose to add additional contextual information, such as custom attributes, to your RUM events to enrich your observability within Datadog. 
 
 Custom attributes allow you to filter and group information about observed user behavior (such as cart value, merchant tier, or ad campaign) with code-level information (such as backend services, session timeline, error logs, and network health).
 
@@ -295,7 +295,7 @@ let session = URLSession(
 )
 ```
 
-This tracks all requests sent with the instrumented `session`. Requests matching the `example.com` domain are marked as "first party" and tracing information is sent to your backend to [connect the RUM resource with its Trace][7].
+This tracks all requests sent with the instrumented `session`. Requests matching the `example.com` domain are marked as "first party" and tracing information is sent to your backend to [connect the RUM resource with its Trace][6].
 
 To add custom attributes to resources, use the `.setRUMResourceAttributesProvider(_ :)` option when configuring SDK. By setting attributes provider closure, you can return additional attributes to be attached to tracked resource. 
 
