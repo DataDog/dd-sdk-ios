@@ -11,7 +11,7 @@ import os
 import re
 import time
 import random
-from src.utils import shell, read_sdk_version
+from src.release.utils import shell, read_sdk_version
 
 
 class CPPodspec:

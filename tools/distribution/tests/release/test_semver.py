@@ -8,7 +8,7 @@
 # TODO: RUMM-1860 Share this code between both tools
 
 import unittest
-from src.semver import Version, PreRelease, VersionParsingException
+from src.release.semver import Version, PreRelease, VersionParsingException
 
 
 class VersionTestCase(unittest.TestCase):

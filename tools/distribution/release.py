@@ -13,10 +13,10 @@ import os
 import re
 import traceback
 from tempfile import TemporaryDirectory
-from src.git import clone_repo
-from src.assets.gh_asset import GHAsset
-from src.assets.podspec import CPPodspec
-from src.semver import Version
+from src.release.git import clone_repo
+from src.release.assets.gh_asset import GHAsset
+from src.release.assets.podspec import CPPodspec
+from src.release.semver import Version
 
 DD_SDK_IOS_REPO_SSH = 'git@github.com:DataDog/dd-sdk-ios.git'
 DD_SDK_IOS_REPO_NAME = 'dd-sdk-ios'
