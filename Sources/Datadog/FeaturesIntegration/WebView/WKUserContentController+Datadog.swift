@@ -27,6 +27,22 @@ public extension WKUserContentController {
         addDatadogMessageHandler(allowedWebViewHosts: hosts, hostsSanitizer: HostsSanitizer())
     }
 
+    /// Disables Datadog iOS SDK and Datadog Browser SDK integration.
+    ///
+    /// Removes Datadog's ScriptMessageHandler and UserScript from the caller.
+    /// _NOTE:_ This method **must** be called when the webview can be deinitialized.
+    func stopTrackingDatadogEvents() {
+        removeScriptMessageHandler(forName: DatadogMessageHandler.name)
+
+        let nonDatadogUserScripts = userScripts.filter {
+            return !$0.source.starts(with: Self.jsCodePrefix)
+        }
+        removeAllUserScripts()
+        nonDatadogUserScripts.forEach {
+            addUserScript($0)
+        }
+    }
+
     internal func addDatadogMessageHandler(allowedWebViewHosts: Set<String>, hostsSanitizer: HostsSanitizing) {
         guard !isTracking else {
               userLogger.warn("`trackDatadogEvents(in:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")
