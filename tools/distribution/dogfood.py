@@ -12,9 +12,9 @@ import os
 import contextlib
 import traceback
 from tempfile import TemporaryDirectory
-from src.package_resolved import PackageResolvedFile
-from src.dogfooded_commit import DogfoodedCommit
-from src.repository import Repository
+from src.dogfood.package_resolved import PackageResolvedFile
+from src.dogfood.dogfooded_commit import DogfoodedCommit
+from src.dogfood.repository import Repository
 
 
 @contextlib.contextmanager
