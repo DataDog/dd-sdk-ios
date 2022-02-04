@@ -188,5 +188,5 @@ Crash Reporting and Error Tracking for iOS displays any issues and latest availa
 [5]: https://app.datadoghq.com/rum/create
 [6]: https://docs.datadoghq.com/account_management/api-app-keys/#api-keys
 [7]: https://docs.datadoghq.com/account_management/api-app-keys/#client-tokens
-[8]: /real_user_monitoring/ios/advanced_configuration/#set-tracking-consent-gdpr-compliance
-[9]: /real_user_monitoring/ios/advanced_configuration/#initialization-parameters
+[8]: https://docs.datadoghq.com/real_user_monitoring/ios/advanced_configuration/#set-tracking-consent-gdpr-compliance
+[9]: https://docs.datadoghq.com/real_user_monitoring/ios/advanced_configuration/#initialization-parameters

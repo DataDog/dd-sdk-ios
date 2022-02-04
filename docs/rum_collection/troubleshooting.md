@@ -33,4 +33,4 @@ If all goes well you should see output similar to this saying that a batch of RU
 
 {{< partial name="whats-next/whats-next.html" >}}
 
-[1]:/real_user_monitoring/ios/advanced_configuration/#initialization-parameters
+[1]: https://docs.datadoghq.com/real_user_monitoring/ios/advanced_configuration/#initialization-parameters
