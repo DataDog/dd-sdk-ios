@@ -25,7 +25,7 @@ internal class TSHomeViewController: UIViewController {
             // Because user info is attached to events in all features, we use it
             // to record current consent value for each event. This is later used
             // for assertions in integration tests.
-            Datadog.setUserInfo(
+            DatadogSDK.setUserInfo(
                 name: "John Doe",
                 extraInfo: [
                     "current-consent-value": consentValueLabel.text!

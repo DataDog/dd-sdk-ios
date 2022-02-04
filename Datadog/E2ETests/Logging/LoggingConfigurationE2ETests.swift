@@ -32,7 +32,7 @@ class LoggingConfigurationE2ETests: E2ETests {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(
                 trackingConsent: .granted,
-                configuration: Datadog.Configuration.builderUsingE2EConfig()
+                configuration: DatadogSDK.Configuration.builderUsingE2EConfig()
                     .enableLogging(true)
                     .enableTracing(true)
                     .enableRUM(true)
@@ -62,7 +62,7 @@ class LoggingConfigurationE2ETests: E2ETests {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
             initializeSDK(
                 trackingConsent: .granted,
-                configuration: Datadog.Configuration.builderUsingE2EConfig()
+                configuration: DatadogSDK.Configuration.builderUsingE2EConfig()
                     .enableLogging(false)
                     .enableTracing(true)
                     .enableRUM(true)

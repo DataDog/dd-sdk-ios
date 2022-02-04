@@ -75,7 +75,7 @@ class RUMTrackingConsentE2ETests: E2ETests {
         }
         rum.dd.sendRandomRUMEvent()
         measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
-            Datadog.set(trackingConsent: .granted)
+            DatadogSDK.set(trackingConsent: .granted)
         }
     }
 
@@ -94,7 +94,7 @@ class RUMTrackingConsentE2ETests: E2ETests {
         }
         rum.dd.sendRandomRUMEvent()
         measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
-            Datadog.set(trackingConsent: .notGranted)
+            DatadogSDK.set(trackingConsent: .notGranted)
         }
     }
 
@@ -113,7 +113,7 @@ class RUMTrackingConsentE2ETests: E2ETests {
         }
         rum.dd.sendRandomRUMEvent()
         measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
-            Datadog.set(trackingConsent: .notGranted)
+            DatadogSDK.set(trackingConsent: .notGranted)
         }
     }
 
@@ -132,7 +132,7 @@ class RUMTrackingConsentE2ETests: E2ETests {
         }
         rum.dd.sendRandomRUMEvent()
         measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
-            Datadog.set(trackingConsent: .pending)
+            DatadogSDK.set(trackingConsent: .pending)
         }
     }
 
@@ -151,7 +151,7 @@ class RUMTrackingConsentE2ETests: E2ETests {
         }
         rum.dd.sendRandomRUMEvent()
         measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
-            Datadog.set(trackingConsent: .granted)
+            DatadogSDK.set(trackingConsent: .granted)
         }
     }
 
@@ -170,7 +170,7 @@ class RUMTrackingConsentE2ETests: E2ETests {
         }
         rum.dd.sendRandomRUMEvent()
         measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
-            Datadog.set(trackingConsent: .pending)
+            DatadogSDK.set(trackingConsent: .pending)
         }
     }
 }

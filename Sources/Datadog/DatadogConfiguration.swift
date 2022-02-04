@@ -6,7 +6,7 @@
 
 import Foundation
 
-extension Datadog {
+extension DatadogSDK {
     internal struct Constants {
         /// Value for `ddsource` send by different features.
         static let ddsource = "ios"

@@ -10,7 +10,7 @@ import Datadog
 final class LoggingManualInstrumentationScenario: TestScenario {
     static let storyboardName = "LoggingManualInstrumentationScenario"
 
-    func configureSDK(builder: Datadog.Configuration.Builder) {
+    func configureSDK(builder: DatadogSDK.Configuration.Builder) {
         _ = builder
             .setLogEventMapper {
                 var log = $0

@@ -162,11 +162,11 @@ class FeaturesConfigurationTests: XCTestCase {
     }
 
     func testEndpoint() throws {
-        let randomLogsEndpoint: Datadog.Configuration.LogsEndpoint = .mockRandom()
-        let randomTracesEndpoint: Datadog.Configuration.TracesEndpoint = .mockRandom()
-        let randomRUMEndpoint: Datadog.Configuration.RUMEndpoint = .mockRandom()
+        let randomLogsEndpoint: DatadogSDK.Configuration.LogsEndpoint = .mockRandom()
+        let randomTracesEndpoint: DatadogSDK.Configuration.TracesEndpoint = .mockRandom()
+        let randomRUMEndpoint: DatadogSDK.Configuration.RUMEndpoint = .mockRandom()
 
-        func configuration(datadogEndpoint: Datadog.Configuration.DatadogEndpoint?) throws -> FeaturesConfiguration {
+        func configuration(datadogEndpoint: DatadogSDK.Configuration.DatadogEndpoint?) throws -> FeaturesConfiguration {
             try createConfiguration(
                 datadogEndpoint: datadogEndpoint,
                 logsEndpoint: randomLogsEndpoint,
@@ -175,7 +175,7 @@ class FeaturesConfigurationTests: XCTestCase {
             )
         }
 
-        typealias DeprecatedEndpoints = Deprecated<Datadog.Configuration.DatadogEndpoint>
+        typealias DeprecatedEndpoints = Deprecated<DatadogSDK.Configuration.DatadogEndpoint>
 
         XCTAssertEqual(
             try configuration(datadogEndpoint: .us1).logging?.uploadURL.absoluteString,
@@ -320,7 +320,7 @@ class FeaturesConfigurationTests: XCTestCase {
     }
 
     func testCustomLogsEndpoint() throws {
-        let randomDatadogEndpoint: Datadog.Configuration.DatadogEndpoint = .mockRandom()
+        let randomDatadogEndpoint: DatadogSDK.Configuration.DatadogEndpoint = .mockRandom()
         let randomCustomEndpoint: URL = .mockRandom()
 
         let configuration = try createConfiguration(
@@ -345,7 +345,7 @@ class FeaturesConfigurationTests: XCTestCase {
     }
 
     func testCustomTracesEndpoint() throws {
-        let randomDatadogEndpoint: Datadog.Configuration.DatadogEndpoint = .mockRandom()
+        let randomDatadogEndpoint: DatadogSDK.Configuration.DatadogEndpoint = .mockRandom()
         let randomCustomEndpoint: URL = .mockRandom()
 
         let configuration = try createConfiguration(
@@ -370,7 +370,7 @@ class FeaturesConfigurationTests: XCTestCase {
     }
 
     func testCustomRUMEndpoint() throws {
-        let randomDatadogEndpoint: Datadog.Configuration.DatadogEndpoint = .mockRandom()
+        let randomDatadogEndpoint: DatadogSDK.Configuration.DatadogEndpoint = .mockRandom()
         let randomCustomEndpoint: URL = .mockRandom()
 
         let configuration = try createConfiguration(
@@ -497,7 +497,7 @@ class FeaturesConfigurationTests: XCTestCase {
     // MARK: - URLSession Auto Instrumentation Configuration Tests
 
     func testURLSessionAutoInstrumentationConfiguration() throws {
-        let randomDatadogEndpoint: Datadog.Configuration.DatadogEndpoint = .mockRandom()
+        let randomDatadogEndpoint: DatadogSDK.Configuration.DatadogEndpoint = .mockRandom()
         let randomCustomLogsEndpoint: URL? = Bool.random() ? .mockRandom() : nil
         let randomCustomTracesEndpoint: URL? = Bool.random() ? .mockRandom() : nil
         let randomCustomRUMEndpoint: URL? = Bool.random() ? .mockRandom() : nil
@@ -765,13 +765,13 @@ class FeaturesConfigurationTests: XCTestCase {
 
     private func createConfiguration(
         clientToken: String = "abc",
-        datadogEndpoint: Datadog.Configuration.DatadogEndpoint? = nil,
+        datadogEndpoint: DatadogSDK.Configuration.DatadogEndpoint? = nil,
         customLogsEndpoint: URL? = nil,
         customTracesEndpoint: URL? = nil,
         customRUMEndpoint: URL? = nil,
-        logsEndpoint: Datadog.Configuration.LogsEndpoint = .us1,
-        tracesEndpoint: Datadog.Configuration.TracesEndpoint = .us1,
-        rumEndpoint: Datadog.Configuration.RUMEndpoint = .us1,
+        logsEndpoint: DatadogSDK.Configuration.LogsEndpoint = .us1,
+        tracesEndpoint: DatadogSDK.Configuration.TracesEndpoint = .us1,
+        rumEndpoint: DatadogSDK.Configuration.RUMEndpoint = .us1,
         proxyConfiguration: [AnyHashable: Any]? = nil
     ) throws -> FeaturesConfiguration {
         return try FeaturesConfiguration(
@@ -802,7 +802,7 @@ private protocol DeprecatedDatadogEndpoints {
     static var eu: Self { get }
     static var gov: Self { get }
 }
-extension Datadog.Configuration.DatadogEndpoint: DeprecatedDatadogEndpoints {}
+extension DatadogSDK.Configuration.DatadogEndpoint: DeprecatedDatadogEndpoints {}
 
 /// An assistant shim to access `Datadog.Configuration.DatadogEndpoint` deprecated APIs with no warning.
 private struct Deprecated<T: DeprecatedDatadogEndpoints> {

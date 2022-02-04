@@ -68,8 +68,8 @@ internal struct PerformancePreset: Equatable, StoragePerformancePreset, UploadPe
 
 internal extension PerformancePreset {
     init(
-        batchSize: Datadog.Configuration.BatchSize,
-        uploadFrequency: Datadog.Configuration.UploadFrequency,
+        batchSize: DatadogSDK.Configuration.BatchSize,
+        uploadFrequency: DatadogSDK.Configuration.UploadFrequency,
         bundleType: BundleType
     ) {
         let meanFileAgeInSeconds: TimeInterval = {

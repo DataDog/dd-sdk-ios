@@ -8,7 +8,7 @@ import Foundation
 import Datadog
 
 internal class TrackingConsentBaseScenario {
-    func configureSDK(builder: Datadog.Configuration.Builder) {
+    func configureSDK(builder: DatadogSDK.Configuration.Builder) {
         _ = builder
             .trackUIKitRUMViews()
             .trackUIKitRUMActions()
@@ -21,7 +21,7 @@ final class TrackingConsentStartPendingScenario: TrackingConsentBaseScenario, Te
     static let storyboardName = "TrackingConsentScenario"
     let initialTrackingConsent: TrackingConsent = .pending
 
-    override func configureSDK(builder: Datadog.Configuration.Builder) {
+    override func configureSDK(builder: DatadogSDK.Configuration.Builder) {
         super.configureSDK(builder: builder)
     }
 }
@@ -31,7 +31,7 @@ final class TrackingConsentStartGrantedScenario: TrackingConsentBaseScenario, Te
     static let storyboardName = "TrackingConsentScenario"
     let initialTrackingConsent: TrackingConsent = .granted
 
-    override func configureSDK(builder: Datadog.Configuration.Builder) {
+    override func configureSDK(builder: DatadogSDK.Configuration.Builder) {
         super.configureSDK(builder: builder)
     }
 }

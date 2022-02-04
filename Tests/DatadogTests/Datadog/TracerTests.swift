@@ -11,13 +11,13 @@ import XCTest
 class TracerTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        XCTAssertNil(Datadog.instance)
+        XCTAssertNil(DatadogSDK.instance)
         XCTAssertNil(LoggingFeature.instance)
         temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
-        XCTAssertNil(Datadog.instance)
+        XCTAssertNil(DatadogSDK.instance)
         XCTAssertNil(LoggingFeature.instance)
         temporaryFeatureDirectories.delete()
         super.tearDown()
@@ -316,17 +316,17 @@ class TracerTests: XCTestCase {
     // MARK: - Sending user info
 
     func testSendingUserInfo() throws {
-        Datadog.instance = Datadog(
+        DatadogSDK.instance = DatadogSDK(
             consentProvider: ConsentProvider(initialConsent: .granted),
             userInfoProvider: UserInfoProvider(),
             launchTimeProvider: LaunchTimeProviderMock()
         )
-        defer { Datadog.flushAndDeinitialize() }
+        defer { DatadogSDK.flushAndDeinitialize() }
 
         TracingFeature.instance = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
-                userInfoProvider: Datadog.instance!.userInfoProvider
+                userInfoProvider: DatadogSDK.instance!.userInfoProvider
             )
         )
         defer { TracingFeature.instance?.deinitialize() }
@@ -336,11 +336,11 @@ class TracerTests: XCTestCase {
         tracer.startSpan(operationName: "span with no user info").finish()
         tracer.queue.sync {} // wait for processing the span event in `DDSpan`
 
-        Datadog.setUserInfo(id: "abc-123", name: "Foo")
+        DatadogSDK.setUserInfo(id: "abc-123", name: "Foo")
         tracer.startSpan(operationName: "span with user `id` and `name`").finish()
         tracer.queue.sync {}
 
-        Datadog.setUserInfo(
+        DatadogSDK.setUserInfo(
             id: "abc-123",
             name: "Foo",
             email: "foo@example.com",
@@ -353,7 +353,7 @@ class TracerTests: XCTestCase {
         tracer.startSpan(operationName: "span with user `id`, `name`, `email` and `extraInfo`").finish()
         tracer.queue.sync {}
 
-        Datadog.setUserInfo(id: nil, name: nil, email: nil)
+        DatadogSDK.setUserInfo(id: nil, name: nil, email: nil)
         tracer.startSpan(operationName: "span with no user info").finish()
 
         let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 4)
@@ -993,7 +993,7 @@ class TracerTests: XCTestCase {
         defer { consolePrint = { print($0) } }
 
         // given
-        XCTAssertNil(Datadog.instance)
+        XCTAssertNil(DatadogSDK.instance)
 
         // when
         let tracer = Tracer.initialize(configuration: .init())
@@ -1012,10 +1012,10 @@ class TracerTests: XCTestCase {
         defer { consolePrint = { print($0) } }
 
         // given
-        Datadog.initialize(
+        DatadogSDK.initialize(
             appContext: .mockAny(),
             trackingConsent: .mockRandom(),
-            configuration: Datadog.Configuration.builderUsing(clientToken: "abc.def", environment: "tests")
+            configuration: DatadogSDK.Configuration.builderUsing(clientToken: "abc.def", environment: "tests")
                 .enableTracing(false)
                 .build()
         )
@@ -1030,15 +1030,15 @@ class TracerTests: XCTestCase {
         )
         XCTAssertTrue(tracer is DDNoopTracer)
 
-        Datadog.flushAndDeinitialize()
+        DatadogSDK.flushAndDeinitialize()
     }
 
     func testGivenLoggingFeatureDisabled_whenSendingLogFromSpan_itPrintsWarning() {
         // given
-        Datadog.initialize(
+        DatadogSDK.initialize(
             appContext: .mockAny(),
             trackingConsent: .mockRandom(),
-            configuration: Datadog.Configuration.builderUsing(clientToken: "abc.def", environment: "tests")
+            configuration: DatadogSDK.Configuration.builderUsing(clientToken: "abc.def", environment: "tests")
                 .enableLogging(false)
                 .build()
         )
@@ -1056,7 +1056,7 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(output.recordedLog?.status, .warn)
         XCTAssertEqual(output.recordedLog?.message, "The log for span \"foo\" will not be send, because the Logging feature is disabled.")
 
-        Datadog.flushAndDeinitialize()
+        DatadogSDK.flushAndDeinitialize()
     }
 
     func testGivenTracerInitialized_whenInitializingAnotherTime_itPrintsError() {
@@ -1065,10 +1065,10 @@ class TracerTests: XCTestCase {
         defer { consolePrint = { print($0) } }
 
         // given
-        Datadog.initialize(
+        DatadogSDK.initialize(
             appContext: .mockAny(),
             trackingConsent: .mockRandom(),
-            configuration: Datadog.Configuration.builderUsing(clientToken: .mockAny(), environment: .mockAny()).build()
+            configuration: DatadogSDK.Configuration.builderUsing(clientToken: .mockAny(), environment: .mockAny()).build()
         )
         Global.sharedTracer = Tracer.initialize(configuration: .init())
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
@@ -1084,14 +1084,14 @@ class TracerTests: XCTestCase {
             """
         )
 
-        Datadog.flushAndDeinitialize()
+        DatadogSDK.flushAndDeinitialize()
     }
 
     func testGivenOnlyTracingAutoInstrumentationEnabled_whenTracerIsNotRegistered_itPrintsWarningsOnEachFirstPartyRequest() throws {
-        Datadog.initialize(
+        DatadogSDK.initialize(
             appContext: .mockAny(),
             trackingConsent: .mockRandom(),
-            configuration: Datadog.Configuration
+            configuration: DatadogSDK.Configuration
                 .builderUsing(clientToken: .mockAny(), environment: .mockAny())
                 .trackURLSession(firstPartyHosts: [.mockAny()])
                 .build()
@@ -1119,7 +1119,7 @@ class TracerTests: XCTestCase {
 
         URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
 
-        Datadog.flushAndDeinitialize()
+        DatadogSDK.flushAndDeinitialize()
     }
 
     // MARK: - Environment Context

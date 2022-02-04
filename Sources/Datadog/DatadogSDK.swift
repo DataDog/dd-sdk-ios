@@ -7,7 +7,7 @@
 import Foundation
 
 /// Datadog SDK configuration object.
-public class Datadog {
+public class DatadogSDK {
     /// Provides information about the app.
     public struct AppContext {
         internal let bundleType: BundleType
@@ -93,7 +93,7 @@ public class Datadog {
             let debugRumOverride = appContext.processInfo.arguments.contains(LaunchArguments.DebugRUM)
             if debugRumOverride {
                 consolePrint("⚠️ Overriding RUM debugging due to \(LaunchArguments.DebugRUM) launch argument")
-                Datadog.debugRUM = true
+                DatadogSDK.debugRUM = true
             }
         } catch {
             consolePrint("\(error)")
@@ -158,7 +158,7 @@ public class Datadog {
         static let DebugRUM = "DD_DEBUG_RUM"
     }
 
-    internal static var instance: Datadog?
+    internal static var instance: DatadogSDK?
 
     internal let consentProvider: ConsentProvider
     internal let userInfoProvider: UserInfoProvider
@@ -168,7 +168,7 @@ public class Datadog {
         initialTrackingConsent: TrackingConsent,
         configuration: FeaturesConfiguration
     ) throws {
-        guard Datadog.instance == nil else {
+        guard DatadogSDK.instance == nil else {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
 
@@ -301,7 +301,7 @@ public class Datadog {
         URLSessionAutoInstrumentation.instance?.enable()
 
         // Only after all features were initialized with no error thrown:
-        self.instance = Datadog(
+        self.instance = DatadogSDK(
             consentProvider: consentProvider,
             userInfoProvider: userInfoProvider,
             launchTimeProvider: launchTimeProvider
@@ -345,7 +345,7 @@ public class Datadog {
     ///
     /// This is highly experimental API and only supported in tests.
     public static func flushAndDeinitialize() {
-        assert(Datadog.instance != nil, "SDK must be first initialized.")
+        assert(DatadogSDK.instance != nil, "SDK must be first initialized.")
 
         // Tear down and deinitialize all features:
         LoggingFeature.instance?.deinitialize()
@@ -365,7 +365,7 @@ public class Datadog {
         Global.crashReporter = nil
 
         // Deinitialize `Datadog`:
-        Datadog.instance = nil
+        DatadogSDK.instance = nil
 
         // Reset internal loggers:
         userLogger = createNoOpSDKUserLogger()
@@ -374,7 +374,7 @@ public class Datadog {
 }
 
 /// Convenience typealias.
-internal typealias AppContext = Datadog.AppContext
+internal typealias AppContext = DatadogSDK.AppContext
 
 /// An exception thrown due to programmer error when calling SDK public API.
 /// It makes the SDK non-functional and print the error to developer in debugger console..

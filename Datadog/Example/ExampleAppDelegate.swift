@@ -27,14 +27,14 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         }
 
         // Initialize Datadog SDK
-        Datadog.initialize(
+        DatadogSDK.initialize(
             appContext: .init(),
             trackingConsent: appConfiguration.initialTrackingConsent,
             configuration: appConfiguration.sdkConfiguration()
         )
 
         // Set user information
-        Datadog.setUserInfo(id: "abcd-1234", name: "foo", email: "foo@example.com", extraInfo: ["key-extraUserInfo": "value-extraUserInfo"])
+        DatadogSDK.setUserInfo(id: "abcd-1234", name: "foo", email: "foo@example.com", extraInfo: ["key-extraUserInfo": "value-extraUserInfo"])
 
         // Create Logger
         logger = Logger.builder
@@ -62,10 +62,10 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         Global.rum = RUMMonitor.initialize()
 
         // Set highest verbosity level to see debugging logs from the SDK
-        Datadog.verbosityLevel = .debug
+        DatadogSDK.verbosityLevel = .debug
 
         // Enable RUM Views debugging
-        Datadog.debugRUM = true
+        DatadogSDK.debugRUM = true
 
         // Launch initial screen depending on the launch configuration
         if let storyboard = appConfiguration.initialStoryboard() {

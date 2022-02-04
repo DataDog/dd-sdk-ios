@@ -113,7 +113,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
             logger = Logger.builder.build()
         }
         measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
-            Datadog.set(trackingConsent: .notGranted)
+            DatadogSDK.set(trackingConsent: .notGranted)
         }
 
         logger.sendRandomLog(with: DD.logAttributes())
@@ -137,7 +137,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
             logger = Logger.builder.build()
         }
         measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
-            Datadog.set(trackingConsent: .pending)
+            DatadogSDK.set(trackingConsent: .pending)
         }
 
         logger.sendRandomLog(with: DD.logAttributes())
@@ -159,7 +159,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
             logger = Logger.builder.build()
         }
         measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
-            Datadog.set(trackingConsent: .granted)
+            DatadogSDK.set(trackingConsent: .granted)
         }
 
         logger.sendRandomLog(with: DD.logAttributes())
@@ -183,7 +183,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
             logger = Logger.builder.build()
         }
         measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
-            Datadog.set(trackingConsent: .pending)
+            DatadogSDK.set(trackingConsent: .pending)
         }
 
         logger.sendRandomLog(with: DD.logAttributes())
@@ -208,7 +208,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
         logger.sendRandomLog(with: DD.logAttributes())
 
         measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
-            Datadog.set(trackingConsent: .granted)
+            DatadogSDK.set(trackingConsent: .granted)
         }
     }
 
@@ -233,7 +233,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
         logger.sendRandomLog(with: DD.logAttributes())
 
         measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
-            Datadog.set(trackingConsent: .notGranted)
+            DatadogSDK.set(trackingConsent: .notGranted)
         }
     }
 }

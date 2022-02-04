@@ -8,8 +8,8 @@ import XCTest
 @testable import Datadog
 @testable import DatadogObjc
 
-extension Datadog.Configuration.LogsEndpoint: Equatable {
-    public static func == (_ lhs: Datadog.Configuration.LogsEndpoint, _ rhs: Datadog.Configuration.LogsEndpoint) -> Bool {
+extension DatadogSDK.Configuration.LogsEndpoint: Equatable {
+    public static func == (_ lhs: DatadogSDK.Configuration.LogsEndpoint, _ rhs: DatadogSDK.Configuration.LogsEndpoint) -> Bool {
         switch (lhs, rhs) {
         case (.us, .us), (.eu, .eu), (.gov, .gov), (.us1, .us1), (.us3, .us3), (.us5, .us5), (.eu1, .eu1), (.us1_fed, .us1_fed): return true
         case let (.custom(lhsURL), .custom(rhsURL)): return lhsURL == rhsURL
@@ -18,8 +18,8 @@ extension Datadog.Configuration.LogsEndpoint: Equatable {
     }
 }
 
-extension Datadog.Configuration.TracesEndpoint: Equatable {
-    public static func == (_ lhs: Datadog.Configuration.TracesEndpoint, _ rhs: Datadog.Configuration.TracesEndpoint) -> Bool {
+extension DatadogSDK.Configuration.TracesEndpoint: Equatable {
+    public static func == (_ lhs: DatadogSDK.Configuration.TracesEndpoint, _ rhs: DatadogSDK.Configuration.TracesEndpoint) -> Bool {
         switch (lhs, rhs) {
         case (.us, .us), (.eu, .eu), (.gov, .gov), (.us1, .us1), (.us3, .us3), (.us5, .us5), (.eu1, .eu1), (.us1_fed, .us1_fed): return true
         case let (.custom(lhsURL), .custom(rhsURL)): return lhsURL == rhsURL

@@ -11,13 +11,13 @@ import UIKit
 class RUMMonitorTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        XCTAssertNil(Datadog.instance)
+        XCTAssertNil(DatadogSDK.instance)
         XCTAssertNil(RUMFeature.instance)
         temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
-        XCTAssertNil(Datadog.instance)
+        XCTAssertNil(DatadogSDK.instance)
         XCTAssertNil(RUMFeature.instance)
         temporaryFeatureDirectories.delete()
         super.tearDown()
@@ -1186,7 +1186,7 @@ class RUMMonitorTests: XCTestCase {
         defer { consolePrint = { print($0) } }
 
         // given
-        XCTAssertNil(Datadog.instance)
+        XCTAssertNil(DatadogSDK.instance)
 
         // when
         let monitor = RUMMonitor.initialize()
@@ -1205,10 +1205,10 @@ class RUMMonitorTests: XCTestCase {
         defer { consolePrint = { print($0) } }
 
         // given
-        Datadog.initialize(
+        DatadogSDK.initialize(
             appContext: .mockAny(),
             trackingConsent: .mockRandom(),
-            configuration: Datadog.Configuration.builderUsing(clientToken: "abc-def", environment: "tests").build()
+            configuration: DatadogSDK.Configuration.builderUsing(clientToken: "abc-def", environment: "tests").build()
         )
 
         // when
@@ -1221,7 +1221,7 @@ class RUMMonitorTests: XCTestCase {
         )
         XCTAssertTrue(monitor is DDNoopRUMMonitor)
 
-        Datadog.flushAndDeinitialize()
+        DatadogSDK.flushAndDeinitialize()
     }
 
     func testGivenRUMMonitorInitialized_whenInitializingAnotherTime_itPrintsError() {
@@ -1230,10 +1230,10 @@ class RUMMonitorTests: XCTestCase {
         defer { consolePrint = { print($0) } }
 
         // given
-        Datadog.initialize(
+        DatadogSDK.initialize(
             appContext: .mockAny(),
             trackingConsent: .mockRandom(),
-            configuration: Datadog.Configuration.builderUsing(rumApplicationID: .mockAny(), clientToken: .mockAny(), environment: .mockAny()).build()
+            configuration: DatadogSDK.Configuration.builderUsing(rumApplicationID: .mockAny(), clientToken: .mockAny(), environment: .mockAny()).build()
         )
         Global.rum = RUMMonitor.initialize()
         defer { Global.rum = DDNoopRUMMonitor() }
@@ -1249,12 +1249,12 @@ class RUMMonitorTests: XCTestCase {
             """
         )
 
-        Datadog.flushAndDeinitialize()
+        DatadogSDK.flushAndDeinitialize()
     }
 
     func testGivenRUMMonitorInitialized_whenTogglingDatadogDebugRUM_itTogglesRUMDebugging() {
         // given
-        Datadog.initialize(
+        DatadogSDK.initialize(
             appContext: .mockAny(),
             trackingConsent: .mockRandom(),
             configuration: .mockWith(rumApplicationID: "rum-123", rumEnabled: true)
@@ -1267,22 +1267,22 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertNil(monitor.debugging)
 
         // when & then
-        Datadog.debugRUM = true
+        DatadogSDK.debugRUM = true
         monitor.flush()
         XCTAssertNotNil(monitor.debugging)
 
-        Datadog.debugRUM = false
+        DatadogSDK.debugRUM = false
         monitor.flush()
         XCTAssertNil(monitor.debugging)
 
-        Datadog.flushAndDeinitialize()
+        DatadogSDK.flushAndDeinitialize()
     }
 
     func testGivenRUMAutoInstrumentationEnabled_whenRUMMonitorIsNotRegistered_itPrintsWarningsOnEachEvent() throws {
-        Datadog.initialize(
+        DatadogSDK.initialize(
             appContext: .mockAny(),
             trackingConsent: .mockRandom(),
-            configuration: Datadog.Configuration
+            configuration: DatadogSDK.Configuration
                 .builderUsing(rumApplicationID: .mockAny(), clientToken: .mockAny(), environment: .mockAny())
                 .trackURLSession(firstPartyHosts: [.mockAny()])
                 .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock(result: .init(name: .mockAny())))
@@ -1342,7 +1342,7 @@ class RUMMonitorTests: XCTestCase {
         RUMInstrumentation.instance?.viewControllerSwizzler?.unswizzle()
         RUMInstrumentation.instance?.userActionsAutoInstrumentation?.swizzler.unswizzle()
 
-        Datadog.flushAndDeinitialize()
+        DatadogSDK.flushAndDeinitialize()
     }
 
     // MARK: - Internal attributes

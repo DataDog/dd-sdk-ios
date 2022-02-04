@@ -16,7 +16,7 @@ protocol TestScenario: AnyObject {
 
     /// Applies additional SDK configuration for running this scenario.
     /// Defaults to no-op.
-    func configureSDK(builder: Datadog.Configuration.Builder)
+    func configureSDK(builder: DatadogSDK.Configuration.Builder)
 
     init()
 }
@@ -24,7 +24,7 @@ protocol TestScenario: AnyObject {
 /// Defaults.
 extension TestScenario {
     var initialTrackingConsent: TrackingConsent { .granted }
-    func configureSDK(builder: Datadog.Configuration.Builder) { /* no-op */ }
+    func configureSDK(builder: DatadogSDK.Configuration.Builder) { /* no-op */ }
 }
 
 internal func initializeTestScenario(with className: String) -> TestScenario {

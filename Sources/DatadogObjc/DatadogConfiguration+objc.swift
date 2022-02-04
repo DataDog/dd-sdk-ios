@@ -9,9 +9,9 @@ import Datadog
 
 @objc
 public class DDEndpoint: NSObject {
-    internal let sdkEndpoint: Datadog.Configuration.DatadogEndpoint
+    internal let sdkEndpoint: DatadogSDK.Configuration.DatadogEndpoint
 
-    internal init(sdkEndpoint: Datadog.Configuration.DatadogEndpoint) {
+    internal init(sdkEndpoint: DatadogSDK.Configuration.DatadogEndpoint) {
         self.sdkEndpoint = sdkEndpoint
     }
 
@@ -44,9 +44,9 @@ public class DDEndpoint: NSObject {
 
 @objc
 public class DDLogsEndpoint: NSObject {
-    internal let sdkEndpoint: Datadog.Configuration.LogsEndpoint
+    internal let sdkEndpoint: DatadogSDK.Configuration.LogsEndpoint
 
-    internal init(sdkEndpoint: Datadog.Configuration.LogsEndpoint) {
+    internal init(sdkEndpoint: DatadogSDK.Configuration.LogsEndpoint) {
         self.sdkEndpoint = sdkEndpoint
     }
 
@@ -79,9 +79,9 @@ public class DDLogsEndpoint: NSObject {
 
 @objc
 public class DDTracesEndpoint: NSObject {
-    internal let sdkEndpoint: Datadog.Configuration.TracesEndpoint
+    internal let sdkEndpoint: DatadogSDK.Configuration.TracesEndpoint
 
-    internal init(sdkEndpoint: Datadog.Configuration.TracesEndpoint) {
+    internal init(sdkEndpoint: DatadogSDK.Configuration.TracesEndpoint) {
         self.sdkEndpoint = sdkEndpoint
     }
 
@@ -118,7 +118,7 @@ public enum DDBatchSize: Int {
     case medium
     case large
 
-    internal var swiftType: Datadog.Configuration.BatchSize {
+    internal var swiftType: DatadogSDK.Configuration.BatchSize {
         switch self {
         case .small: return .small
         case .medium: return .medium
@@ -133,7 +133,7 @@ public enum DDUploadFrequency: Int {
     case average
     case rare
 
-    internal var swiftType: Datadog.Configuration.UploadFrequency {
+    internal var swiftType: DatadogSDK.Configuration.UploadFrequency {
         switch self {
         case .frequent: return .frequent
         case .average: return .average
@@ -144,9 +144,9 @@ public enum DDUploadFrequency: Int {
 
 @objc
 public class DDConfiguration: NSObject {
-    internal let sdkConfiguration: Datadog.Configuration
+    internal let sdkConfiguration: DatadogSDK.Configuration
 
-    internal init(sdkConfiguration: Datadog.Configuration) {
+    internal init(sdkConfiguration: DatadogSDK.Configuration) {
         self.sdkConfiguration = sdkConfiguration
     }
 
@@ -155,14 +155,14 @@ public class DDConfiguration: NSObject {
     @objc
     public static func builder(clientToken: String, environment: String) -> DDConfigurationBuilder {
         return DDConfigurationBuilder(
-            sdkBuilder: Datadog.Configuration.builderUsing(clientToken: clientToken, environment: environment)
+            sdkBuilder: DatadogSDK.Configuration.builderUsing(clientToken: clientToken, environment: environment)
         )
     }
 
     @objc
     public static func builder(rumApplicationID: String, clientToken: String, environment: String) -> DDConfigurationBuilder {
         return DDConfigurationBuilder(
-            sdkBuilder: Datadog.Configuration
+            sdkBuilder: DatadogSDK.Configuration
                 .builderUsing(rumApplicationID: rumApplicationID, clientToken: clientToken, environment: environment)
         )
     }
@@ -170,9 +170,9 @@ public class DDConfiguration: NSObject {
 
 @objc
 public class DDConfigurationBuilder: NSObject {
-    internal let sdkBuilder: Datadog.Configuration.Builder
+    internal let sdkBuilder: DatadogSDK.Configuration.Builder
 
-    internal init(sdkBuilder: Datadog.Configuration.Builder) {
+    internal init(sdkBuilder: DatadogSDK.Configuration.Builder) {
         self.sdkBuilder = sdkBuilder
     }
 

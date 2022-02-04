@@ -25,13 +25,13 @@ internal class TSConsentSettingViewController: UIViewController {
     @IBAction func didChangeConsentValue(_ sender: Any) {
         switch consentValueControl.selectedSegmentIndex {
         case 0:
-            Datadog.set(trackingConsent: .granted)
+            DatadogSDK.set(trackingConsent: .granted)
             homeViewController.currentConsentValue = .granted
         case 1:
-            Datadog.set(trackingConsent: .notGranted)
+            DatadogSDK.set(trackingConsent: .notGranted)
             homeViewController.currentConsentValue = .notGranted
         case 2:
-            Datadog.set(trackingConsent: .pending)
+            DatadogSDK.set(trackingConsent: .pending)
             homeViewController.currentConsentValue = .pending
         default: fatalError()
         }

@@ -35,7 +35,7 @@ final class RUMNavigationControllerScenario: TestScenario {
         }
     }
 
-    func configureSDK(builder: Datadog.Configuration.Builder) {
+    func configureSDK(builder: DatadogSDK.Configuration.Builder) {
         _ = builder
             .trackUIKitRUMViews(using: Predicate())
             .enableLogging(false)
@@ -58,7 +58,7 @@ final class RUMTabBarAutoInstrumentationScenario: TestScenario {
         }
     }
 
-    func configureSDK(builder: Datadog.Configuration.Builder) {
+    func configureSDK(builder: DatadogSDK.Configuration.Builder) {
         _ = builder
             .trackUIKitRUMViews(using: Predicate())
             .enableLogging(false)
@@ -81,7 +81,7 @@ final class RUMModalViewsAutoInstrumentationScenario: TestScenario {
         }
     }
 
-    func configureSDK(builder: Datadog.Configuration.Builder) {
+    func configureSDK(builder: DatadogSDK.Configuration.Builder) {
         _ = builder
             .trackUIKitRUMViews(using: Predicate())
             .enableLogging(false)
@@ -112,7 +112,7 @@ final class RUMTapActionScenario: TestScenario {
         }
     }
 
-    func configureSDK(builder: Datadog.Configuration.Builder) {
+    func configureSDK(builder: DatadogSDK.Configuration.Builder) {
         _ = builder
             .trackUIKitRUMViews(using: Predicate())
             .trackUIKitRUMActions()
@@ -125,7 +125,7 @@ final class RUMTapActionScenario: TestScenario {
 final class RUMMobileVitalsScenario: TestScenario {
     static var storyboardName: String = "RUMMobileVitalsScenario"
 
-    func configureSDK(builder: Datadog.Configuration.Builder) {
+    func configureSDK(builder: DatadogSDK.Configuration.Builder) {
         _ = builder
             .trackUIKitRUMViews()
             .trackUIKitRUMActions()
@@ -140,7 +140,7 @@ final class RUMMobileVitalsScenario: TestScenario {
 final class RUMURLSessionResourcesScenario: URLSessionBaseScenario, TestScenario {
     static let storyboardName = "URLSessionScenario"
 
-    override func configureSDK(builder: Datadog.Configuration.Builder) {
+    override func configureSDK(builder: DatadogSDK.Configuration.Builder) {
         _ = builder
             .trackUIKitRUMViews()
             .setRUMResourceAttributesProvider(rumResourceAttributesProvider(request:response:data:error:))
@@ -154,7 +154,7 @@ final class RUMURLSessionResourcesScenario: URLSessionBaseScenario, TestScenario
 final class RUMNSURLSessionResourcesScenario: URLSessionBaseScenario, TestScenario {
     static let storyboardName = "NSURLSessionScenario"
 
-    override func configureSDK(builder: Datadog.Configuration.Builder) {
+    override func configureSDK(builder: DatadogSDK.Configuration.Builder) {
         _ = builder
             .trackUIKitRUMViews()
             .setRUMResourceAttributesProvider(rumResourceAttributesProvider(request:response:data:error:))
@@ -168,7 +168,7 @@ final class RUMNSURLSessionResourcesScenario: URLSessionBaseScenario, TestScenar
 final class RUMScrubbingScenario: TestScenario {
     static var storyboardName: String = "RUMScrubbingScenario"
 
-    func configureSDK(builder: Datadog.Configuration.Builder) {
+    func configureSDK(builder: DatadogSDK.Configuration.Builder) {
         func redacted(_ string: String) -> String {
             return string.replacingOccurrences(of: "sensitive", with: "REDACTED")
         }
@@ -242,7 +242,7 @@ final class RUMSwiftUIInstrumentationScenario: TestScenario {
         }
     }
 
-    func configureSDK(builder: Datadog.Configuration.Builder) {
+    func configureSDK(builder: DatadogSDK.Configuration.Builder) {
         _ = builder
             .trackUIKitRUMViews(using: Predicate())
             .trackUIKitRUMActions()

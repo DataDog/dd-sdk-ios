@@ -42,7 +42,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
         temporaryFeatureDirectories.create()
     }
 
-    override func tearDown() {
+    override func teaDatadogSDK {
         XCTAssertNil(Datadog.instance)
         XCTAssertNil(LoggingFeature.instance)
         XCTAssertNil(RUMFeature.instance)
@@ -50,7 +50,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
         super.tearDown()
     }
 
-    func testItAddsUserScriptAndMessageHandler() throws {
+    func testItAddsUDatadogSDKptAndMessageHandler() throws {
         let mockSanitizer = MockHostsSanitizer()
         let controller = DDUserContentController()
 

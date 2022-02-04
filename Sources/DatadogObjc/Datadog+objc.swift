@@ -29,18 +29,18 @@ public class DDTrackingConsent: NSObject {
 
 @objc
 public class DDAppContext: NSObject {
-    internal let sdkAppContext: Datadog.AppContext
+    internal let sdkAppContext: DatadogSDK.AppContext
 
     // MARK: - Public
 
     @objc
     public init(mainBundle: Bundle) {
-        self.sdkAppContext = Datadog.AppContext(mainBundle: mainBundle)
+        self.sdkAppContext = DatadogSDK.AppContext(mainBundle: mainBundle)
     }
 
     @objc
     override public init() {
-        self.sdkAppContext = Datadog.AppContext()
+        self.sdkAppContext = DatadogSDK.AppContext()
     }
 }
 
@@ -56,7 +56,7 @@ public class DDDatadog: NSObject {
     """)
     @objc
     public static func initialize(appContext: DDAppContext, configuration: DDConfiguration) {
-        Datadog.initialize(
+        DatadogSDK.initialize(
             appContext: appContext.sdkAppContext,
             configuration: configuration.sdkConfiguration
         )
@@ -68,7 +68,7 @@ public class DDDatadog: NSObject {
         trackingConsent: DDTrackingConsent,
         configuration: DDConfiguration
     ) {
-        Datadog.initialize(
+        DatadogSDK.initialize(
             appContext: appContext.sdkAppContext,
             trackingConsent: trackingConsent.sdkConsent,
             configuration: configuration.sdkConfiguration
@@ -78,19 +78,19 @@ public class DDDatadog: NSObject {
     @objc
     public static func setVerbosityLevel(_ verbosityLevel: DDSDKVerbosityLevel) {
         switch verbosityLevel {
-        case .debug: Datadog.verbosityLevel = .debug
-        case .info: Datadog.verbosityLevel = .info
-        case .notice: Datadog.verbosityLevel = .notice
-        case .warn: Datadog.verbosityLevel = .warn
-        case .error: Datadog.verbosityLevel = .error
-        case .critical: Datadog.verbosityLevel = .critical
-        case .none: Datadog.verbosityLevel = nil
+        case .debug: DatadogSDK.verbosityLevel = .debug
+        case .info: DatadogSDK.verbosityLevel = .info
+        case .notice: DatadogSDK.verbosityLevel = .notice
+        case .warn: DatadogSDK.verbosityLevel = .warn
+        case .error: DatadogSDK.verbosityLevel = .error
+        case .critical: DatadogSDK.verbosityLevel = .critical
+        case .none: DatadogSDK.verbosityLevel = nil
         }
     }
 
     @objc
     public static func verbosityLevel() -> DDSDKVerbosityLevel {
-        switch Datadog.verbosityLevel {
+        switch DatadogSDK.verbosityLevel {
         case .debug: return .debug
         case .info: return .info
         case .notice: return .notice
@@ -103,23 +103,23 @@ public class DDDatadog: NSObject {
 
     @objc
     public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:]) {
-        Datadog.setUserInfo(id: id, name: name, email: email, extraInfo: castAttributesToSwift(extraInfo))
+        DatadogSDK.setUserInfo(id: id, name: name, email: email, extraInfo: castAttributesToSwift(extraInfo))
     }
 
     @objc
     public static func setTrackingConsent(consent: DDTrackingConsent) {
-        Datadog.set(trackingConsent: consent.sdkConsent)
+        DatadogSDK.set(trackingConsent: consent.sdkConsent)
     }
 
     @objc
     public static func clearAllData() {
-        Datadog.clearAllData()
+        DatadogSDK.clearAllData()
     }
 
 #if DD_SDK_COMPILED_FOR_TESTING
     @objc
     public static func flushAndDeinitialize() {
-        Datadog.flushAndDeinitialize()
+        DatadogSDK.flushAndDeinitialize()
     }
 #endif
 }

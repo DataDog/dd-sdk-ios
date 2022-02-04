@@ -22,7 +22,7 @@ private struct WebViewTrackingScenarioPredicate: UIKitRUMViewsPredicate {
 final class WebViewTrackingScenario: TestScenario {
     static var storyboardName: String = "WebViewTrackingScenario"
 
-    func configureSDK(builder: Datadog.Configuration.Builder) {
+    func configureSDK(builder: DatadogSDK.Configuration.Builder) {
         _ = builder
             .trackUIKitRUMViews(using: WebViewTrackingScenarioPredicate())
             .enableLogging(true)

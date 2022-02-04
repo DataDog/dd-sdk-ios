@@ -29,7 +29,7 @@ internal class CrashReportingBaseScenario {
 
 /// A `CrashReportingScenario` which uploads the crash report as RUM Error.
 final class CrashReportingCollectOrSendWithRUMScenario: CrashReportingBaseScenario, TestScenario {
-    func configureSDK(builder: Datadog.Configuration.Builder) {
+    func configureSDK(builder: DatadogSDK.Configuration.Builder) {
         class CustomPredicate: UIKitRUMViewsPredicate {
             private let defaultPredicate = DefaultUIKitRUMViewsPredicate()
 
@@ -53,7 +53,7 @@ final class CrashReportingCollectOrSendWithRUMScenario: CrashReportingBaseScenar
 
 /// A `CrashReportingScenario` which uploads the crash report as "EMERGENCY" Log.
 final class CrashReportingCollectOrSendWithLoggingScenario: CrashReportingBaseScenario, TestScenario {
-    func configureSDK(builder: Datadog.Configuration.Builder) {
+    func configureSDK(builder: DatadogSDK.Configuration.Builder) {
         _ = builder
             .enableRUM(false) // disable RUM, so the crash report is sent with Logging
             .enableCrashReporting(using: DDCrashReportingPlugin())

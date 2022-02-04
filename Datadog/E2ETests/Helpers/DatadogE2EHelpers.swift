@@ -6,8 +6,8 @@
 
 import Datadog
 
-extension Datadog.Configuration {
-    static func builderUsingE2EConfig() -> Datadog.Configuration.Builder {
+extension DatadogSDK.Configuration {
+    static func builderUsingE2EConfig() -> DatadogSDK.Configuration.Builder {
         return builderUsing(
             rumApplicationID: E2EConfig.readRUMApplicationID(),
             clientToken: E2EConfig.readClientToken(),

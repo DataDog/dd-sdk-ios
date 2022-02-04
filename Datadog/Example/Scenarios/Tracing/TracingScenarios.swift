@@ -17,7 +17,7 @@ final class TracingManualInstrumentationScenario: TestScenario {
 final class TracingURLSessionScenario: URLSessionBaseScenario, TestScenario {
     static let storyboardName = "URLSessionScenario"
 
-    override func configureSDK(builder: Datadog.Configuration.Builder) {
+    override func configureSDK(builder: DatadogSDK.Configuration.Builder) {
         _ = builder
             .enableRUM(false)
             .setSpanEventMapper { spanEvent in
@@ -38,7 +38,7 @@ final class TracingURLSessionScenario: URLSessionBaseScenario, TestScenario {
 final class TracingNSURLSessionScenario: URLSessionBaseScenario, TestScenario {
     static let storyboardName = "NSURLSessionScenario"
 
-    override func configureSDK(builder: Datadog.Configuration.Builder) {
+    override func configureSDK(builder: DatadogSDK.Configuration.Builder) {
         _ = builder
             .enableRUM(false)
             .setSpanEventMapper { spanEvent in

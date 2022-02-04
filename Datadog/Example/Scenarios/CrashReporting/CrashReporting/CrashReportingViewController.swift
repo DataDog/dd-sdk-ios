@@ -21,7 +21,7 @@ internal class CrashReportingViewController: UIViewController {
 
         if testScenario.hadPendingCrashReportDataOnStartup {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                Datadog.flushAndDeinitialize()
+                DatadogSDK.flushAndDeinitialize()
             }
         } else {
             addCrashVariantButtons()

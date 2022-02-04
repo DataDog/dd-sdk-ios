@@ -10,13 +10,13 @@ import XCTest
 class InternalMonitoringFeatureTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        XCTAssertNil(Datadog.instance)
+        XCTAssertNil(DatadogSDK.instance)
         XCTAssertNil(InternalMonitoringFeature.instance)
         temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
-        XCTAssertNil(Datadog.instance)
+        XCTAssertNil(DatadogSDK.instance)
         XCTAssertNil(InternalMonitoringFeature.instance)
         temporaryFeatureDirectories.delete()
         super.tearDown()

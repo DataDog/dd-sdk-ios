@@ -40,10 +40,10 @@ class BenchmarkTests: XCTestCase {
 
         let anyURL = connectedServer!.obtainUniqueRecordingSession().recordingURL
 
-        Datadog.initialize(
+        DatadogSDK.initialize(
             appContext: .init(),
             trackingConsent: .granted,
-            configuration: Datadog.Configuration
+            configuration: DatadogSDK.Configuration
                 .builderUsing(rumApplicationID: "rum-123", clientToken: "rum-abc", environment: "benchmarks")
                 .set(customLogsEndpoint: anyURL)
                 .set(customTracesEndpoint: anyURL)

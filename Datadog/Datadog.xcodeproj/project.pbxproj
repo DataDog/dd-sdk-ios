@@ -47,7 +47,7 @@
 		61133BDC2423979B00786299 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB62423979B00786299 /* Logger.swift */; };
 		61133BDD2423979B00786299 /* InternalLoggers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB82423979B00786299 /* InternalLoggers.swift */; };
 		61133BDF2423979B00786299 /* SwiftExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BBA2423979B00786299 /* SwiftExtensions.swift */; };
-		61133BE02423979B00786299 /* Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BBB2423979B00786299 /* Datadog.swift */; };
+		61133BE02423979B00786299 /* DatadogSDK.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BBB2423979B00786299 /* DatadogSDK.swift */; };
 		61133BE32423979B00786299 /* UserInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC02423979B00786299 /* UserInfoProvider.swift */; };
 		61133BE42423979B00786299 /* LogEventEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC22423979B00786299 /* LogEventEncoder.swift */; };
 		61133BE52423979B00786299 /* LogEventBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC32423979B00786299 /* LogEventBuilder.swift */; };
@@ -740,7 +740,7 @@
 		61133BB62423979B00786299 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		61133BB82423979B00786299 /* InternalLoggers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InternalLoggers.swift; sourceTree = "<group>"; };
 		61133BBA2423979B00786299 /* SwiftExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftExtensions.swift; sourceTree = "<group>"; };
-		61133BBB2423979B00786299 /* Datadog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Datadog.swift; sourceTree = "<group>"; };
+		61133BBB2423979B00786299 /* DatadogSDK.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogSDK.swift; sourceTree = "<group>"; };
 		61133BC02423979B00786299 /* UserInfoProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserInfoProvider.swift; sourceTree = "<group>"; };
 		61133BC22423979B00786299 /* LogEventEncoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogEventEncoder.swift; sourceTree = "<group>"; };
 		61133BC32423979B00786299 /* LogEventBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogEventBuilder.swift; sourceTree = "<group>"; };
@@ -1476,7 +1476,7 @@
 			isa = PBXGroup;
 			children = (
 				9E9EB37624468CE90002C80B /* Datadog.modulemap */,
-				61133BBB2423979B00786299 /* Datadog.swift */,
+				61133BBB2423979B00786299 /* DatadogSDK.swift */,
 				61133BB52423979B00786299 /* DatadogConfiguration.swift */,
 				61133BB62423979B00786299 /* Logger.swift */,
 				61E909E824A24DD3005EA2DE /* Global.swift */,
@@ -4222,7 +4222,7 @@
 				614B0A5324EBFE5500A2A780 /* DDRUMMonitor.swift in Sources */,
 				61133BE32423979B00786299 /* UserInfoProvider.swift in Sources */,
 				9EB4B868275103E40041CD03 /* WebEventBridge.swift in Sources */,
-				61133BE02423979B00786299 /* Datadog.swift in Sources */,
+				61133BE02423979B00786299 /* DatadogSDK.swift in Sources */,
 				61133BCB2423979B00786299 /* CarrierInfoProvider.swift in Sources */,
 				61C5A89024509AA700DA608C /* TracingFeature.swift in Sources */,
 				61E5333624B84B43003D6C4E /* RUMMonitor.swift in Sources */,

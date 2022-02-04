@@ -13,7 +13,7 @@ protocol AppConfiguration {
     var initialTrackingConsent: TrackingConsent { get }
 
     /// Datadog SDK configuration for given app configuration.
-    func sdkConfiguration() -> Datadog.Configuration
+    func sdkConfiguration() -> DatadogSDK.Configuration
 
     /// Returns the initial Storyboard to launch the app in this configuration.
     func initialStoryboard() -> UIStoryboard?
@@ -30,8 +30,8 @@ struct ExampleAppConfiguration: AppConfiguration {
 
     let initialTrackingConsent: TrackingConsent = .granted
 
-    func sdkConfiguration() -> Datadog.Configuration {
-        let configuration = Datadog.Configuration
+    func sdkConfiguration() -> DatadogSDK.Configuration {
+        let configuration = DatadogSDK.Configuration
             .builderUsing(
                 rumApplicationID: Environment.readRUMApplicationID(),
                 clientToken: Environment.readClientToken(),
@@ -85,8 +85,8 @@ struct UITestsAppConfiguration: AppConfiguration {
         return testScenario!.initialTrackingConsent
     }
 
-    func sdkConfiguration() -> Datadog.Configuration {
-        let configuration = Datadog.Configuration
+    func sdkConfiguration() -> DatadogSDK.Configuration {
+        let configuration = DatadogSDK.Configuration
             .builderUsing(
                 rumApplicationID: "rum-application-id",
                 clientToken: "ui-tests-client-token",

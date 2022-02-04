@@ -12,13 +12,13 @@ import XCTest
 class DDDatadogTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        XCTAssertNil(Datadog.instance)
+        XCTAssertNil(DatadogSDK.instance)
         XCTAssertNil(LoggingFeature.instance)
         XCTAssertNil(URLSessionAutoInstrumentation.instance)
     }
 
     override func tearDown() {
-        XCTAssertNil(Datadog.instance)
+        XCTAssertNil(DatadogSDK.instance)
         XCTAssertNil(LoggingFeature.instance)
         XCTAssertNil(URLSessionAutoInstrumentation.instance)
         super.tearDown()
@@ -36,13 +36,13 @@ class DDDatadogTests: XCTestCase {
             configuration: configBuilder.build()
         )
 
-        XCTAssertNotNil(Datadog.instance)
+        XCTAssertNotNil(DatadogSDK.instance)
         XCTAssertEqual(LoggingFeature.instance?.configuration.common.applicationName, "app-name")
         XCTAssertEqual(LoggingFeature.instance?.configuration.common.environment, "tests")
         XCTAssertNotNil(URLSessionAutoInstrumentation.instance)
 
         URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
-        Datadog.flushAndDeinitialize()
+        DatadogSDK.flushAndDeinitialize()
     }
 
     // MARK: - Changing Tracking Consent
@@ -57,13 +57,13 @@ class DDDatadogTests: XCTestCase {
             configuration: DDConfiguration.builder(clientToken: "abcefghi", environment: "tests").build()
         )
 
-        XCTAssertEqual(Datadog.instance?.consentProvider.currentValue, initialConsent.swift)
+        XCTAssertEqual(DatadogSDK.instance?.consentProvider.currentValue, initialConsent.swift)
 
         DDDatadog.setTrackingConsent(consent: nextConsent.objc)
 
-        XCTAssertEqual(Datadog.instance?.consentProvider.currentValue, nextConsent.swift)
+        XCTAssertEqual(DatadogSDK.instance?.consentProvider.currentValue, nextConsent.swift)
 
-        Datadog.flushAndDeinitialize()
+        DatadogSDK.flushAndDeinitialize()
     }
 
     // MARK: - Setting user info
@@ -74,7 +74,7 @@ class DDDatadogTests: XCTestCase {
             trackingConsent: randomConsent().objc,
             configuration: DDConfiguration.builder(clientToken: "abcefghi", environment: "tests").build()
         )
-        let userInfo = try XCTUnwrap(Datadog.instance?.userInfoProvider)
+        let userInfo = try XCTUnwrap(DatadogSDK.instance?.userInfoProvider)
 
         DDDatadog.setUserInfo(
             id: "id",
@@ -100,7 +100,7 @@ class DDDatadogTests: XCTestCase {
         XCTAssertNil(userInfo.value.email)
         XCTAssertTrue(userInfo.value.extraInfo.isEmpty)
 
-        Datadog.flushAndDeinitialize()
+        DatadogSDK.flushAndDeinitialize()
     }
 
     // MARK: - Changing SDK verbosity level
@@ -113,19 +113,19 @@ class DDDatadogTests: XCTestCase {
     ]
 
     func testItForwardsSettingVerbosityLevelToSwift() {
-        defer { Datadog.verbosityLevel = nil }
+        defer { DatadogSDK.verbosityLevel = nil }
 
         zip(swiftVerbosityLevels, objcVerbosityLevels).forEach { swiftLevel, objcLevel in
             DDDatadog.setVerbosityLevel(objcLevel)
-            XCTAssertEqual(Datadog.verbosityLevel, swiftLevel)
+            XCTAssertEqual(DatadogSDK.verbosityLevel, swiftLevel)
         }
     }
 
     func testItGetsVerbosityLevelFromSwift() {
-        defer { Datadog.verbosityLevel = nil }
+        defer { DatadogSDK.verbosityLevel = nil }
 
         zip(swiftVerbosityLevels, objcVerbosityLevels).forEach { swiftLevel, objcLevel in
-            Datadog.verbosityLevel = swiftLevel
+            DatadogSDK.verbosityLevel = swiftLevel
             XCTAssertEqual(DDDatadog.verbosityLevel(), objcLevel)
         }
     }

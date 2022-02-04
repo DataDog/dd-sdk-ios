@@ -158,7 +158,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             }
             guard let rumFeature = RUMFeature.instance else {
                 throw ProgrammerError(
-                    description: Datadog.instance == nil
+                    description: DatadogSDK.instance == nil
                         ? "`Datadog.initialize()` must be called prior to `RUMMonitor.initialize()`."
                         : "`RUMMonitor.initialize()` produces a non-functional monitor, as the RUM feature is disabled."
                 )
@@ -218,7 +218,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
 
         super.init()
 
-        if Datadog.debugRUM {
+        if DatadogSDK.debugRUM {
             self.enableRUMDebugging(true)
         }
     }

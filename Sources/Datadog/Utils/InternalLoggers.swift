@@ -64,7 +64,7 @@ internal func createSDKUserLogger(
         logBuilder: logBuilder,
         logOutput: ConditionalLogOutput(conditionedOutput: consoleOutput) { log in
             let logSeverity = LogLevel(from: log.status)?.rawValue ?? .max
-            let threshold = Datadog.verbosityLevel?.rawValue ?? .max
+            let threshold = DatadogSDK.verbosityLevel?.rawValue ?? .max
             return logSeverity >= threshold
         },
         dateProvider: dateProvider,

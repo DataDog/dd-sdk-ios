@@ -25,24 +25,24 @@ class InternalLoggersTests: XCTestCase {
     }
 
     func testGivenDefaultSDKConfiguration_whenInitialized_itUsesWorkingUserLogger() {
-        let defaultSDKConfiguration = Datadog.Configuration.builderUsing(clientToken: "abc", environment: "test").build()
-        Datadog.initialize(
+        let defaultSDKConfiguration = DatadogSDK.Configuration.builderUsing(clientToken: "abc", environment: "test").build()
+        DatadogSDK.initialize(
             appContext: .mockAny(),
             trackingConsent: .mockRandom(),
             configuration: defaultSDKConfiguration
         )
         XCTAssertTrue((userLogger.logOutput as? ConditionalLogOutput)?.conditionedOutput is LogConsoleOutput)
-        Datadog.flushAndDeinitialize()
+        DatadogSDK.flushAndDeinitialize()
     }
 
     func testGivenLoggingFeatureDisabled_whenSDKisInitialized_itUsesWorkingUserLogger() {
-        Datadog.initialize(
+        DatadogSDK.initialize(
             appContext: .mockAny(),
             trackingConsent: .mockRandom(),
             configuration: .mockWith(loggingEnabled: false)
         )
         XCTAssertTrue((userLogger.logOutput as? ConditionalLogOutput)?.conditionedOutput is LogConsoleOutput)
-        Datadog.flushAndDeinitialize()
+        DatadogSDK.flushAndDeinitialize()
     }
 
     func testUserLoggerPrintsMessagesAboveGivenVerbosityLevel() {
@@ -64,41 +64,41 @@ class InternalLoggersTests: XCTestCase {
             "[DATADOG SDK] 🐶 → 12:00:00.000 [CRITICAL] message"
         ]
 
-        XCTAssertNil(Datadog.verbosityLevel)
+        XCTAssertNil(DatadogSDK.verbosityLevel)
         logMessageUsingAllLevels("message", with: userLogger)
         XCTAssertEqual(printedMessages, [])
 
         printedMessages = []
-        Datadog.verbosityLevel = .debug
+        DatadogSDK.verbosityLevel = .debug
         logMessageUsingAllLevels("message", with: userLogger)
         XCTAssertEqual(printedMessages, Array(expectedMessages[0..<expectedMessages.count]))
 
         printedMessages = []
-        Datadog.verbosityLevel = .info
+        DatadogSDK.verbosityLevel = .info
         logMessageUsingAllLevels("message", with: userLogger)
         XCTAssertEqual(printedMessages, Array(expectedMessages[1..<expectedMessages.count]))
 
         printedMessages = []
-        Datadog.verbosityLevel = .notice
+        DatadogSDK.verbosityLevel = .notice
         logMessageUsingAllLevels("message", with: userLogger)
         XCTAssertEqual(printedMessages, Array(expectedMessages[2..<expectedMessages.count]))
 
         printedMessages = []
-        Datadog.verbosityLevel = .warn
+        DatadogSDK.verbosityLevel = .warn
         logMessageUsingAllLevels("message", with: userLogger)
         XCTAssertEqual(printedMessages, Array(expectedMessages[3..<expectedMessages.count]))
 
         printedMessages = []
-        Datadog.verbosityLevel = .error
+        DatadogSDK.verbosityLevel = .error
         logMessageUsingAllLevels("message", with: userLogger)
         XCTAssertEqual(printedMessages, Array(expectedMessages[4..<expectedMessages.count]))
 
         printedMessages = []
-        Datadog.verbosityLevel = .critical
+        DatadogSDK.verbosityLevel = .critical
         logMessageUsingAllLevels("message", with: userLogger)
         XCTAssertEqual(printedMessages, Array(expectedMessages[5..<expectedMessages.count]))
 
-        Datadog.verbosityLevel = nil
+        DatadogSDK.verbosityLevel = nil
     }
 
     // MARK: - Helpers

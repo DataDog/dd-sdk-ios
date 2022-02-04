@@ -58,9 +58,9 @@ class E2ETests: XCTestCase {
 
     func initializeSDK(
         trackingConsent: TrackingConsent = .granted,
-        configuration: Datadog.Configuration = Datadog.Configuration.builderUsingE2EConfig().build()
+        configuration: DatadogSDK.Configuration = DatadogSDK.Configuration.builderUsingE2EConfig().build()
     ) {
-        Datadog.initialize(
+        DatadogSDK.initialize(
             appContext: .init(),
             trackingConsent: trackingConsent,
             configuration: configuration
@@ -72,7 +72,7 @@ class E2ETests: XCTestCase {
 
     /// Sends all collected data and deinitializes the SDK. It is executed synchronously.
     private func sendAllDataAndDeinitializeSDK() {
-        Datadog.flushAndDeinitialize()
+        DatadogSDK.flushAndDeinitialize()
     }
 
     // MARK: - Helpers

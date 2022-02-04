@@ -11,13 +11,13 @@ import XCTest
 class LoggerTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        XCTAssertNil(Datadog.instance)
+        XCTAssertNil(DatadogSDK.instance)
         XCTAssertNil(LoggingFeature.instance)
         temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
-        XCTAssertNil(Datadog.instance)
+        XCTAssertNil(DatadogSDK.instance)
         XCTAssertNil(LoggingFeature.instance)
         temporaryFeatureDirectories.delete()
         super.tearDown()
@@ -164,17 +164,17 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending user info
 
     func testSendingUserInfo() throws {
-        Datadog.instance = Datadog(
+        DatadogSDK.instance = DatadogSDK(
             consentProvider: ConsentProvider(initialConsent: .granted),
             userInfoProvider: UserInfoProvider(),
             launchTimeProvider: LaunchTimeProviderMock()
         )
-        defer { Datadog.flushAndDeinitialize() }
+        defer { DatadogSDK.flushAndDeinitialize() }
 
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
-                userInfoProvider: Datadog.instance!.userInfoProvider
+                userInfoProvider: DatadogSDK.instance!.userInfoProvider
             )
         )
         defer { LoggingFeature.instance?.deinitialize() }
@@ -182,10 +182,10 @@ class LoggerTests: XCTestCase {
         let logger = Logger.builder.build()
         logger.debug("message with no user info")
 
-        Datadog.setUserInfo(id: "abc-123", name: "Foo")
+        DatadogSDK.setUserInfo(id: "abc-123", name: "Foo")
         logger.debug("message with user `id` and `name`")
 
-        Datadog.setUserInfo(
+        DatadogSDK.setUserInfo(
             id: "abc-123",
             name: "Foo",
             email: "foo@example.com",
@@ -197,7 +197,7 @@ class LoggerTests: XCTestCase {
         )
         logger.debug("message with user `id`, `name`, `email` and `extraInfo`")
 
-        Datadog.setUserInfo(id: nil, name: nil, email: nil)
+        DatadogSDK.setUserInfo(id: nil, name: nil, email: nil)
         logger.debug("message with no user info")
 
         let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 4)
@@ -818,7 +818,7 @@ class LoggerTests: XCTestCase {
         defer { consolePrint = { print($0) } }
 
         // given
-        XCTAssertNil(Datadog.instance)
+        XCTAssertNil(DatadogSDK.instance)
 
         // when
         let logger = Logger.builder.build()
@@ -838,10 +838,10 @@ class LoggerTests: XCTestCase {
         defer { consolePrint = { print($0) } }
 
         // given
-        Datadog.initialize(
+        DatadogSDK.initialize(
             appContext: .mockAny(),
             trackingConsent: .mockRandom(),
-            configuration: Datadog.Configuration.builderUsing(clientToken: "abc.def", environment: "tests")
+            configuration: DatadogSDK.Configuration.builderUsing(clientToken: "abc.def", environment: "tests")
                 .enableLogging(false)
                 .build()
         )
@@ -857,7 +857,7 @@ class LoggerTests: XCTestCase {
         XCTAssertNil(logger.logBuilder)
         XCTAssertNil(logger.logOutput)
 
-        Datadog.flushAndDeinitialize()
+        DatadogSDK.flushAndDeinitialize()
     }
 
     func testDDLoggerIsLoggerTypealias() {

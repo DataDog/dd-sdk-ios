@@ -89,7 +89,7 @@ class URLSessionBaseScenario: NSObject {
         }
     }
 
-    func configureSDK(builder: Datadog.Configuration.Builder) {
+    func configureSDK(builder: DatadogSDK.Configuration.Builder) {
         if feedAdditionalFirstyPartyHosts {
             _ = builder.trackURLSession()
         } else {
