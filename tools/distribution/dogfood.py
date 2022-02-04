@@ -9,28 +9,15 @@
 
 import sys
 import os
-import contextlib
 import traceback
 from tempfile import TemporaryDirectory
 from src.dogfood.package_resolved import PackageResolvedFile
 from src.dogfood.dogfooded_commit import DogfoodedCommit
 from src.dogfood.repository import Repository
+from src.utils import remember_cwd
 
 
-@contextlib.contextmanager
-def remember_cwd():
-    """
-    Creates context manager for convenient work with `os.chdir()` API.
-    After context returns, the `os.getcwd()` is set to its previous value.
-    """
-    previous = os.getcwd()
-    try:
-        yield
-    finally:
-        os.chdir(previous)
-
-
-def dogfood(dry_run: bool, repository_url: str, repository_name: str, repository_package_resolved_paths: [str]) -> int:
+def dogfood(dry_run: bool, repository_url: str, repository_name: str, repository_package_resolved_paths: [str]):
     print(f'🐶 Dogfooding: {repository_name}...')
 
     # Read commit information:
@@ -107,13 +94,13 @@ def dogfood(dry_run: bool, repository_url: str, repository_name: str, repository
 
 
 if __name__ == "__main__":
-    # Change working directory to `tools/dogfooding/`
+    # Change working directory to `tools/distribution/`
     print(f'ℹ️ Launch dir: {sys.argv[0]}')
     launch_dir = os.path.dirname(sys.argv[0])
     launch_dir = '.' if launch_dir == '' else launch_dir
-    if launch_dir == 'tools/dogfooding':
+    if launch_dir == 'tools/distribution':
         print(f'    → changing current directory to: {os.getcwd()}')
-        os.chdir('tools/dogfooding')
+        os.chdir('tools/distribution')
 
     try:
         dry_run = os.environ.get('DD_DRY_RUN') == 'yes'
