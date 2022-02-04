@@ -6,6 +6,7 @@
 
 
 import os
+from typing import Union
 from git import Repo, Actor
 
 
@@ -38,7 +39,7 @@ class Repository:
                 f'Unable to clone GH repository ({ssh}). Check GH CLI authentication status in above logs.'
             )
         else:
-            print(f'    → changing current directory to: {repository_name}')
+            print(f'    → changing current directory to: {os.getcwd()}/{repository_name}')
             os.chdir(repository_name)
             return Repository(repo=Repo(path=os.getcwd()))
 
@@ -50,13 +51,16 @@ class Repository:
         print(f'⚙️️️️ Creating git branch: {branch_name}')
         self.repo.git.checkout('HEAD', b=branch_name)
 
-    def commit(self, message: str, author: Actor):
+    def commit(self, message: str, author: Union[None, 'Actor'] = None):
         """
         Creates commit with current changes.
         :param message: commit message
-        :param author: author of the commit (git.Actor object)
+        :param author: author of the commit (git.Actor object) or None (will be read from git config)
         """
-        print(f'⚙️️️️ Committing changes on behalf of {author.name} ({author.email})')
+        if author:
+            print(f'⚙️️️️ Committing changes on behalf of {author.name} ({author.email})')
+        else:
+            print(f'⚙️️️️ Committing changes using git user from current git config')
         print('    → commit message:')
         print(message)
         self.repo.git.add(update=True)
