@@ -355,6 +355,15 @@ workflows:
 
             cd tools/distribution && make
             venv/bin/python3 release.py "$GIT_TAG" --only-cocoapods
+    - build-router-start:
+        title: Start new CI jobs for running 'update_upstream_sdks'.
+        inputs:
+        - access_token: "$BITRISE_PERSONAL_ACCESS_TOKEN"
+        - workflows: |-
+            update_upstream_sdks
+        - environment_key_list: |-
+            DD_RELEASE_GIT_TAG
+            DD_RELEASE_DRY_RUN
 
   update_upstream_sdks:
     before_run:

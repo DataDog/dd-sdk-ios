@@ -100,7 +100,7 @@ if __name__ == "__main__":
         "--dry-run",
         action='store_true',
         help="Run as usual, but skip pushing to git remote (and creating PR).",
-        default=os.environ.get('DD_DRY_RUN') == '1'
+        default=os.environ.get('DD_RELEASE_DRY_RUN') == '1'
     )
     args = parser.parse_args()
 
@@ -111,7 +111,7 @@ if __name__ == "__main__":
         print(f'🛠️️ ENV:\n'
               f'- BITRISE_GIT_TAG                       = {os.environ.get("BITRISE_GIT_TAG")}\n'
               f'- DD_RELEASE_GIT_TAG                    = {os.environ.get("DD_RELEASE_GIT_TAG")}\n'
-              f'- DD_DRY_RUN                            = {os.environ.get("DD_DRY_RUN")}')
+              f'- DD_RELEASE_DRY_RUN                    = {os.environ.get("DD_RELEASE_DRY_RUN")}')
 
         print(f'🛠️️ ENV and CLI arguments resolved to:\n'
               f'- git_tag                            = {git_tag}\n'
