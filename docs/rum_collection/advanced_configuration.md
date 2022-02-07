@@ -4,10 +4,10 @@ kind: documentation
 further_reading:
   - link: "https://github.com/DataDog/dd-sdk-ios"
     tag: "Github"
-    text: "dd-sdk-ios Source code"
+    text: "dd-sdk-ios Source Code"
   - link: "/real_user_monitoring"
     tag: "Documentation"
-    text: "Datadog Real User Monitoring"
+    text: "RUM & Session Replay"
 ---
 
 If you have not set up the SDK yet, follow the [in-app setup instructions][1] or refer to the [iOS RUM setup documentation][2].
@@ -24,9 +24,6 @@ In addition to [tracking views automatically](#automatically-track-views), you c
 - `.stopView(viewController:)`
 
 For example:
-
-=======
-Example:
 
 {{< tabs >}}
 {{% tab "Swift" %}}
@@ -64,11 +61,13 @@ override func viewDidDisappear(_ animated: Bool) {
 {{% /tab %}}
 {{< /tabs >}}
 
-Find more details and available options in `DDRUMMonitor` class.
+Find more details and available options in the [`DDRUMMonitor` class][9].
 
 ### Add your own performance timing
 
-In addition to RUM’s default attributes, you can measure where your application is spending its time by using the `addTiming(name:)` API. The timing measure is relative to the start of the current RUM view. For example, you can time how long it takes for your hero image to appear:
+In addition to RUM’s default attributes, you can measure where your application is spending its time by using the `addTiming(name:)` API. The timing measure is relative to the start of the current RUM view. 
+
+For example, you can time how long it takes for your hero image to appear:
 
 {{< tabs >}}
 {{% tab "Swift" %}}
@@ -87,7 +86,9 @@ func onHeroImageLoaded() {
 {{% /tab %}}
 {{< /tabs >}}
 
-Once you set the timing, it is accessible as `@view.custom_timings.<timing_name>`. For example, `@view.custom_timings.hero_image`. To create visualizations in your dashboards, [create a measure][4] first.
+Once you set the timing, it is accessible as `@view.custom_timings.<timing_name>`. For example, `@view.custom_timings.hero_image`. 
+
+To create visualizations in your dashboards, [create a measure][4] first.
 
 ### Custom Actions
 
@@ -122,7 +123,7 @@ For example:
 
 **Note**: When using `.startUserAction(type:name:)` and `.stopUserAction(type:)`, the action `type` must be the same. This is necessary for the SDK to match an action start with its completion. 
 
-Find more details and available options in `DDRUMMonitor` class.
+Find more details and available options in the [`DDRUMMonitor` class][9].
 
 ### Custom Resources
 
@@ -167,7 +168,7 @@ Global.rum.stopResourceLoading(
 
 **Note**: The `String` used for `resourceKey` in both calls must be unique for the resource you are calling. This is necessary for the SDK to match a resource's start with its completion. 
 
-Find more details and available options in `DDRUMMonitor` class.
+Find more details and available options in the [`DDRUMMonitor` class][9].
 
 ### Custom Errors
 
@@ -186,13 +187,13 @@ Global.rum.addError(message: "error message.")
 {{% /tab %}}
 {{< /tabs >}}
 
-For more details and available options, refer to the code documentation comments in `DDRUMMonitor` class.
+For more details and available options, refer to the code documentation comments in the [`DDRUMMonitor` class][9].
 
 ## Track custom global attributes
 
-In addition to the [default RUM attributes][7] captured by the mobile SDK automatically, you can choose to add additional contextual information, such as custom attributes, to your RUM events to enrich your observability within Datadog. 
+In addition to the [default RUM attributes][7] captured by the mobile SDK automatically, you can choose to add additional contextual information (such as custom attributes) to your RUM events to enrich your observability within Datadog. 
 
-Custom attributes allow you to filter and group information about observed user behavior (such as cart value, merchant tier, or ad campaign) with code-level information (such as backend services, session timeline, error logs, and network health).
+Custom attributes allow you to filter and group information about observed user behavior (such as the cart value, merchant tier, or ad campaign) with code-level information (such as backend services, session timeline, error logs, and network health).
 
 ### Set a custom global attribute
 
@@ -361,7 +362,9 @@ class YourCustomPredicate: UIKitRUMViewsPredicate {
 {{% /tab %}}
 {{< /tabs >}}
 
-You can even come up with a more dynamic solution depending on your app's architecture. For example, if your view controllers use `accessibilityLabel` consistently, you can name views by the value of accessibility label:
+You can even come up with a more dynamic solution depending on your app's architecture. 
+
+For example, if your view controllers use `accessibilityLabel` consistently, you can name views by the value of accessibility label:
 
 {{< tabs >}}
 {{% tab "Swift" %}}
@@ -584,7 +587,9 @@ DDConfigurationBuilder *builder = [DDConfiguration builderWithRumApplicationID:@
 {{% /tab %}}
 {{< /tabs >}}
 
-Each mapper is a Swift closure with a signature of `(T) -> T?`, where `T` is a concrete RUM event type. This allows changing portions of the event before it is sent. For example, to redact sensitive information in RUM Resource's `url`, implement a custom `redacted(_:) -> String` function and use it in `RUMResourceEventMapper`:
+Each mapper is a Swift closure with a signature of `(T) -> T?`, where `T` is a concrete RUM event type. This allows changing portions of the event before it is sent. 
+
+For example, to redact sensitive information in RUM Resource's `url`, implement a custom `redacted(_:) -> String` function and use it in `RUMResourceEventMapper`:
 
 {{< tabs >}}
 {{% tab "Swift" %}}
@@ -606,7 +611,7 @@ Each mapper is a Swift closure with a signature of `(T) -> T?`, where `T` is a c
 {{% /tab %}}
 {{< /tabs >}}
 
-Returning `nil` from the error, resource, or action mapper drops the event entirely (it won't be sent to Datadog). The value returned from the view event mapper must be not `nil` (to drop views customize your implementation of `UIKitRUMViewsPredicate`. Read more in [tracking views automatically](#automatically-track-views)).
+Returning `nil` from the error, resource, or action mapper drops the event entirely; the event is not sent to Datadog. The value returned from the view event mapper must be not `nil` (to drop views customize your implementation of `UIKitRUMViewsPredicate`. Read more in [tracking views automatically](#automatically-track-views)).
 
 Depending on the event's type, only some specific properties can be modified:
 
@@ -731,7 +736,7 @@ DDConfigurationBuilder *builder = [DDConfiguration builderWithRumApplicationID:@
 {{% /tab %}}
 {{< /tabs >}}
 
-For more information, see the [URLSessionConfiguration.connectionProxyDictionary][8] documentation).
+For more information, see the [URLSessionConfiguration.connectionProxyDictionary][8] documentation.
 
 ## Further Reading
 
@@ -745,3 +750,4 @@ For more information, see the [URLSessionConfiguration.connectionProxyDictionary
 [6]: https://docs.datadoghq.com/real_user_monitoring/connect_rum_and_traces?tab=browserrum
 [7]: https://docs.datadoghq.com/real_user_monitoring/ios/data_collected?tab=session#default-attributes
 [8]: https://developer.apple.com/documentation/foundation/urlsessionconfiguration/1411499-connectionproxydictionary
+[9]: https://github.com/DataDog/dd-sdk-ios/blob/master/Sources/Datadog/DDRUMMonitor.swift
