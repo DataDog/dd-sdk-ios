@@ -55,21 +55,26 @@ def update_flutter_sdk(ios_sdk_git_tag: str, dry_run: bool):
             podspec.write(''.join(lines))
 
         shell(command='pod repo update')
+        shell(command='flutter upgrade')
 
         # Run `pod update` in `example/ios`
         with remember_cwd():
-            print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/example/ios')
-            os.chdir('example/ios')
-
+            print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/example')
+            os.chdir('example')
             shell(command='flutter pub get')
+
+            print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/example/ios')
+            os.chdir('ios')
             shell(command='pod update')
 
         # Run `pod update` in `integration_test_app/ios`
         with remember_cwd():
-            print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/integration_test_app/ios')
-            os.chdir('integration_test_app/ios')
-
+            print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/integration_test_app')
+            os.chdir('integration_test_app')
             shell(command='flutter pub get')
+
+            print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/integration_test_app/ios')
+            os.chdir('ios')
             shell(command='pod update')
 
         # Commit changes:
