@@ -127,6 +127,3 @@ bump:
 		git add . ; \
 		git commit -m "Bumped version to $$version"; \
 		echo Bumped version to $$version
-
-dogfood:
-		@cd tools/dogfooding && $(MAKE)
