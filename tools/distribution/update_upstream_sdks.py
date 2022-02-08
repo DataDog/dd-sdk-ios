@@ -37,7 +37,7 @@ def update_flutter_sdk(ios_sdk_git_tag: str, dry_run: bool):
             repository_name=flutter_repo_name,
             temp_dir=clone_dir
         )
-        repository.create_branch(f'update-dd-sdk-ios-to-{ios_sdk_git_tag}')
+        repository.create_branch(f'update/dd-sdk-ios-to-{ios_sdk_git_tag}')
 
         # Replace `dd-sdk-ios` version in `ios/datadog_sdk.podspec`:
         with open('ios/datadog_sdk.podspec', 'r+') as podspec:
