@@ -30,7 +30,7 @@ public extension WKUserContentController {
     /// Disables Datadog iOS SDK and Datadog Browser SDK integration.
     ///
     /// Removes Datadog's ScriptMessageHandler and UserScript from the caller.
-    /// _NOTE:_ This method **must** be called when the webview can be deinitialized.
+    /// - Note: This method **must** be called when the webview can be deinitialized.
     func stopTrackingDatadogEvents() {
         removeScriptMessageHandler(forName: DatadogMessageHandler.name)
 

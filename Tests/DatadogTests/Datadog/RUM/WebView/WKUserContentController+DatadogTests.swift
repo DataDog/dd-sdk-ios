@@ -24,9 +24,7 @@ final class DDUserContentController: WKUserContentController {
 }
 
 final class MockMessageHandler: NSObject, WKScriptMessageHandler {
-    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        return
-    }
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) { }
 }
 
 final class MockScriptMessage: WKScriptMessage {
