@@ -16,7 +16,7 @@ class DogfoodedCommit:
     """
 
     def __init__(self):
-        if 'CI' in os.environ:
+        if os.environ.get('CI') == 'true':
             print('ℹ️ Running on CI')
             print('    → reading git author from ENV')
             self.author = Actor(
@@ -34,3 +34,4 @@ class DogfoodedCommit:
             self.message = dd_sdk_ios_repo.head.commit.message
 
         self.hash_short = self.hash[0:8]
+        print(f'    → Read git info (author: "{self.author}", hash: "{self.hash}", message: "{self.message}")')

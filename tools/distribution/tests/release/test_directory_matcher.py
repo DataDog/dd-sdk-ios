@@ -8,7 +8,7 @@
 import unittest
 import os
 from tempfile import TemporaryDirectory
-from src.directory_matcher import DirectoryMatcher, DirectoryMatcherException
+from src.release.directory_matcher import DirectoryMatcher, DirectoryMatcherException
 
 
 class DirectoryMatcherTestCase(unittest.TestCase):

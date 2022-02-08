@@ -11,8 +11,8 @@ import os
 import glob
 from tempfile import TemporaryDirectory, NamedTemporaryFile
 from src.utils import remember_cwd, shell, read_sdk_version, read_xcode_version
-from src.directory_matcher import DirectoryMatcher
-from src.semver import Version
+from src.release.directory_matcher import DirectoryMatcher
+from src.release.semver import Version
 
 
 class XCFrameworkValidator:
