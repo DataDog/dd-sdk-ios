@@ -611,7 +611,7 @@ For example, to redact sensitive information in RUM Resource's `url`, implement 
 {{% /tab %}}
 {{< /tabs >}}
 
-Returning `nil` from the error, resource, or action mapper drops the event entirely; the event is not sent to Datadog. The value returned from the view event mapper must be not `nil` (to drop views customize your implementation of `UIKitRUMViewsPredicate`. Read more in [tracking views automatically](#automatically-track-views)).
+Returning `nil` from the error, resource, or action mapper drops the event entirely; the event is not sent to Datadog. The value returned from the view event mapper must not be `nil` (to drop views, customize your implementation of `UIKitRUMViewsPredicate`. Read more in [tracking views automatically](#automatically-track-views)).
 
 Depending on the event's type, only some specific properties can be modified:
 
