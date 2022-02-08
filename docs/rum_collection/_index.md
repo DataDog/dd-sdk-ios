@@ -65,6 +65,9 @@ Datadog.initialize(
         )
         .set(serviceName: "app-name")
         .set(endpoint: .us1)
+        .trackUIKitRUMViews()
+        .trackUIKitActions()
+        .trackURLSession()
         .build()
 )
 ```
@@ -76,6 +79,9 @@ DDConfigurationBuilder *builder = [DDConfiguration builderWithRumApplicationID:@
                                                                    environment:@"<environment_name>"];
 [builder setWithServiceName:@"app-name"];
 [builder setWithEndpoint:[DDEndpoint us1]];
+[builder trackUIKitRUMViews];
+[builder trackUIKitRUMActions];
+[builder trackURLSessionWithFirstPartyHosts:[NSSet new]];
 
 [DDDatadog initializeWithAppContext:[DDAppContext new]
                     trackingConsent:trackingConsent
@@ -99,6 +105,7 @@ Datadog.initialize(
             environment: "<environment_name>"
         )
         .set(serviceName: "app-name")
+        .set(endpoint: .eu1)
         .trackUIKitRUMViews()
         .trackUIKitActions()
         .trackURLSession()
@@ -112,7 +119,7 @@ DDConfigurationBuilder *builder = [DDConfiguration builderWithRumApplicationID:@
                                                                    clientToken:@"<client_token>"
                                                                    environment:@"<environment_name>"];
 [builder setWithServiceName:@"app-name"];
-[builder setWithEndpoint:[DDEndpoint us1]];
+[builder setWithEndpoint:[DDEndpoint eu1]];
 [builder trackUIKitRUMViews];
 [builder trackUIKitRUMActions];
 [builder trackURLSessionWithFirstPartyHosts:[NSSet new]];
