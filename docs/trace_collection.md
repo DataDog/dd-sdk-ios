@@ -105,6 +105,96 @@ DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<cli
 {{< /tabs >}}
 {{< /site-region >}}
 
+{{< site-region region="us3" >}}
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+Datadog.initialize(
+    appContext: .init(),
+    trackingConsent: trackingConsent,
+    configuration: Datadog.Configuration
+        .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
+        .set(serviceName: "app-name")
+        .set(endpoint: .us3)
+        .build()
+)
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<client_token>"
+                                                              environment:@"<environment_name>"];
+[builder setWithServiceName:@"app-name"];
+[builder setWithEndpoint:[DDEndpoint us3]];
+
+[DDDatadog initializeWithAppContext:[DDAppContext new]
+                    trackingConsent:trackingConsent
+                      configuration:[builder build]];
+```
+{{% /tab %}}
+{{< /tabs >}}
+{{< /site-region >}}
+
+{{< site-region region="us5" >}}
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+Datadog.initialize(
+    appContext: .init(),
+    trackingConsent: trackingConsent,
+    configuration: Datadog.Configuration
+        .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
+        .set(serviceName: "app-name")
+        .set(endpoint: .us5)
+        .build()
+)
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<client_token>"
+                                                              environment:@"<environment_name>"];
+[builder setWithServiceName:@"app-name"];
+[builder setWithEndpoint:[DDEndpoint us5]];
+
+[DDDatadog initializeWithAppContext:[DDAppContext new]
+                    trackingConsent:trackingConsent
+                      configuration:[builder build]];
+```
+{{% /tab %}}
+{{< /tabs >}}
+{{< /site-region >}}
+
+{{< site-region region="gov" >}}
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+Datadog.initialize(
+    appContext: .init(),
+    trackingConsent: trackingConsent,
+    configuration: Datadog.Configuration
+        .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
+        .set(serviceName: "app-name")
+        .set(endpoint: .us1_fed)
+        .build()
+)
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<client_token>"
+                                                              environment:@"<environment_name>"];
+[builder setWithServiceName:@"app-name"];
+[builder setWithEndpoint:[DDEndpoint us1_fed]];
+
+[DDDatadog initializeWithAppContext:[DDAppContext new]
+                    trackingConsent:trackingConsent
+                      configuration:[builder build]];
+```
+{{% /tab %}}
+{{< /tabs >}}
+{{< /site-region >}}
+
 To be compliant with the GDPR regulation, the SDK requires the `trackingConsent` value at initialization.
 The `trackingConsent` can be one of the following values:
 
