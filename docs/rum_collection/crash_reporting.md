@@ -73,9 +73,60 @@ Datadog.initialize(
 Global.rum = RUMMonitor.initialize()
 ```
 
-### Symbolicate reports using Datadog CI
+### Symbolicate reports
 
-If your iOS error is unsymbolicated, upload your dSYM file using [@datadog/datadog-ci][5] to symbolicate your different stack traces. For any given error, you have access to the file path, the line number, and a code snippet for each frame of the related stack trace. 
+If your iOS error is unsymbolicated, upload your dSYM file using one of the following tools to symbolicate your different stack traces. For any given error, you have access to the file path, the line number, and a code snippet for each frame of the related stack trace.
+
+#### Fastlane Plugin
+
+Datadog plugin helps you uploading dSYM files to Datadog from your fastlane configuration.
+
+1. Add [`fastlane-plugin-datadog`][3] to your project
+```sh
+fastlane add_plugin datadog
+```
+
+2. Then configure fastlane to upload your symbols, e.g.:
+```ruby
+# download_dsyms action feeds dsym_paths automatically
+lane :upload_dsym_with_download_dsyms do
+  download_dsyms
+  upload_symbols_to_datadog(api_key: "datadog-api-key")
+end
+```
+> See [`fastlane-plugin-datadog`][3] for more instructions.
+
+#### Github Action
+
+The [Datadog Upload dSYMs GitHub Action][4] let you upload your symbols during your GitHub Action jobs:
+
+```yml
+name: Upload dSYM Files
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Generate/Download dSYM Files
+        uses: ./release.sh
+
+      - name: Upload dSYMs to Datadog
+        uses: DataDog/upload-dsyms-github-action@v1
+        with:
+          api_key: ${{ secrets.DATADOG_API_KEY }}
+          site: datadoghq.com
+          dsym_paths: |
+            path/to/dsyms/folder
+            path/to/zip/dsyms.zip
+```
+
+#### Datadog CI
+
+You can also use the command line tool [@datadog/datadog-ci][5] to upload your dSYM file:
 
 ```sh
 export DATADOG_API_KEY="<API KEY>"
@@ -89,7 +140,7 @@ npx @datadog/datadog-ci dsyms upload /path/to/appDsyms/
 
 **Note**: To configure the tool to use the EU endpoint, set the `DATADOG_SITE` environment variable to `datadoghq.eu`. To override the full URL for the intake endpoint, define the `DATADOG_DSYM_INTAKE_URL` environment variable. 
 
-If your application has Bitcode enabled, download your app's dSYM files on [App Store Connect][7]. For more information, see [dSYMs commands][8].
+If your application has Bitcode enabled, download your app's dSYM files on [App Store Connect][6]. For more information, see [dSYMs commands][7].
 
 
 ## Further Reading
@@ -98,9 +149,8 @@ If your application has Bitcode enabled, download your app's dSYM files on [App 
 
 [1]: https://app.datadoghq.com/rum/application/create
 [2]: https://docs.datadoghq.com/real_user_monitoring/ios
-[3]: https://github.com/DataDog/dd-sdk-ios/releases
-[4]: https://github.com/DataDog/datadog-ci
+[3]: https://github.com/DataDog/datadog-fastlane-plugin
+[4]: https://github.com/marketplace/actions/datadog-upload-dsyms
 [5]: https://www.npmjs.com/package/@datadog/datadog-ci
-[6]: https://www.npmjs.com/package/npx
-[7]: https://appstoreconnect.apple.com/
-[8]: https://github.com/DataDog/datadog-ci/blob/master/src/commands/dsyms/README.md
+[6]: https://appstoreconnect.apple.com/
+[7]: https://github.com/DataDog/datadog-ci/blob/master/src/commands/dsyms/README.md
