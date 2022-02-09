@@ -29,8 +29,58 @@ If all goes well you should see output similar to this saying that a batch of RU
 
 **Recommendation:** Use `Datadog.verbosityLevel` in `DEBUG` configuration, and unset it in `RELEASE`.
 
+## Using `DDURLSessionDelegate` with your own session delegate
+
+If you want to [automatically track network requests][1] with `DDURLSessionDelegate` but your app already implements its own session delegate, you can use either _inheritance_ or _composition_ patterns and forward calls to `DDURLSessionDelegate`.
+
+When using _inheritance_, use `DDURLSessionDelegate` as a base class for your custom delegate and make sure to call `super` implementation from your overrided methods. For example:
+```swift
+class YourCustomDelegateURLSessionDelegate: DDURLSessionDelegate {
+    override func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        super.urlSession(session, task: task, didCompleteWithError: error) // forward to Datadog delegate
+        /* your custom logic */
+    }
+}
+```
+
+When using _composition_, leverage our `__URLSessionDelegateProviding` protocol to keep internal instance of `DDURLSessionDelegate` and forward calls to `ddURLSessionDelegate`. For example:
+```swift
+private class YourCustomDelegateURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDataDelegate, __URLSessionDelegateProviding {
+    // MARK: - __URLSessionDelegateProviding conformance
+
+    let ddURLSessionDelegate = DDURLSessionDelegate()
+
+    // MARK: - __URLSessionDelegateProviding handling
+
+    func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+        ddURLSessionDelegate.urlSession(session, task: task, didFinishCollecting: metrics) // forward to Datadog delegate
+        /* your custom logic */
+    }
+
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        ddURLSessionDelegate.urlSession(session, task: task, didCompleteWithError: error) // forward to Datadog delegate
+        /* your custom logic */
+    }
+
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        ddURLSessionDelegate.urlSession(session, dataTask: dataTask, didReceive: data) // forward to Datadog delegate
+        /* your custom logic */
+    }
+}
+```
+**Note**: If using _composition_, `ddURLSessionDelegate` must receive all necessary calls listed in [`__URLSessionDelegateProviding` protocol comments][2]. Your delegate needs to:
+* implement `URLSessionTaskDelegate` and forward:
+  * [`urlSession(_:task:didFinishCollecting:)`][3]
+  * [`urlSession(_:task:didCompleteWithError:)`][4]
+* implement `URLSessionDataDelegate` and forward:
+  * [`urlSession(_:dataTask:didReceive:)`][5]
+
 ## Further Reading
 
 {{< partial name="whats-next/whats-next.html" >}}
 
-[1]: https://docs.datadoghq.com/real_user_monitoring/ios/advanced_configuration/#initialization-parameters
+[1]: https://docs.datadoghq.com/real_user_monitoring/ios/advanced_configuration/?tab=swift#automatically-track-network-requests
+[2]: https://github.com/DataDog/dd-sdk-ios/blob/master/Sources/Datadog/URLSessionAutoInstrumentation/DDURLSessionDelegate.swift#L12
+[3]: https://developer.apple.com/documentation/foundation/urlsessiontaskdelegate/1643148-urlsession
+[4]: https://developer.apple.com/documentation/foundation/urlsessiontaskdelegate/1411610-urlsession
+[5]: https://developer.apple.com/documentation/foundation/urlsessiondatadelegate/1411528-urlsession
