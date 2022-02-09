@@ -56,7 +56,7 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDat
         interceptor?.taskCompleted(task: task, error: error)
     }
 
-    public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+    open func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
         // NOTE: This delegate method is only called for `URLSessionTasks` created without the completion handler.
 
         interceptor?.taskReceivedData(task: dataTask, data: data)
