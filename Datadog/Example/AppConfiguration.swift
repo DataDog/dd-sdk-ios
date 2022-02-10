@@ -41,6 +41,16 @@ struct ExampleAppConfiguration: AppConfiguration {
             .set(batchSize: .small)
             .set(uploadFrequency: .frequent)
 
+        if let customLogsURL = Environment.readCustomLogsURL() {
+            _ = configuration.set(customLogsEndpoint: customLogsURL)
+        }
+        if let customTraceURL = Environment.readCustomTraceURL() {
+            _ = configuration.set(customTracesEndpoint: customTraceURL)
+        }
+        if let customRUMURL = Environment.readCustomRUMURL() {
+            _ = configuration.set(customRUMEndpoint: customRUMURL)
+        }
+
 #if DD_SDK_ENABLE_INTERNAL_MONITORING
         _ = configuration
             .enableInternalMonitoring(clientToken: Environment.readClientToken())
