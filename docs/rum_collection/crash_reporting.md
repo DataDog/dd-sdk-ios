@@ -79,7 +79,7 @@ If your iOS error is unsymbolicated, upload your dSYM file using one of the foll
 
 #### Fastlane Plugin
 
-Datadog plugin helps you uploading dSYM files to Datadog from your fastlane configuration.
+The Datadog plugin helps you upload dSYM files to Datadog from your fastlane configuration.
 
 1. Add [`fastlane-plugin-datadog`][3] to your project
 ```sh
