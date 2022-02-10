@@ -11,6 +11,16 @@ import XCTest
 class LogConsoleOutputTests: XCTestCase {
     private let log: LogEvent = .mockWith(date: .mockDecember15th2019At10AMUTC(), status: .info, message: "Info message.")
 
+    func testItPrintsLogsUsingGlobalConsole() {
+        var messagePrinted: String = ""
+        consolePrint = { messagePrinted = $0 }
+        defer { consolePrint = { print($0) } }
+
+        let output1 = LogConsoleOutput(format: .short, timeZone: .UTC)
+        output1.write(log: log)
+        XCTAssertEqual(messagePrinted, "10:00:00.000 [INFO] Info message.")
+    }
+
     func testItPrintsLogsUsingShortFormat() {
         var messagePrinted: String = ""
 
