@@ -3,9 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>CustomLogsURL</key>
-	<string>https://$(CUSTOM_LOGS_URL)</string>
+	<string>$(CUSTOM_LOGS_URL)</string>
+	<key>CustomTraceURL</key>
+	<string>$(CUSTOM_TRACE_URL)</string>
 	<key>CustomRUMURL</key>
-	<string>https://$(CUSTOM_RUM_URL)</string>
+	<string>$(CUSTOM_RUM_URL)</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>

@@ -48,8 +48,9 @@ internal struct Environment {
         static let clientToken      = "DatadogClientToken"
         static let rumApplicationID = "RUMApplicationID"
 
-        static let customLogsURL = "CustomLogsURL"
-        static let customRUMURL = "CustomRUMURL"
+        static let customLogsURL    = "CustomLogsURL"
+        static let customTraceURL   = "CustomTraceURL"
+        static let customRUMURL     = "CustomRUMURL"
     }
 
     // MARK: - Launch Arguments
@@ -110,13 +111,27 @@ internal struct Environment {
         return rumApplicationID
     }
 
-    static func readCustomLogsURL() -> String? {
-        let customLogsURL = Bundle.main.infoDictionary![InfoPlistKey.customLogsURL] as? String
-        return customLogsURL?.isEmpty == true ? nil : customLogsURL
+    static func readCustomLogsURL() -> URL? {
+        if let customLogsURL = Bundle.main.infoDictionary![InfoPlistKey.customLogsURL] as? String,
+           !customLogsURL.isEmpty {
+            return URL(string: "https://\(customLogsURL)")
+        }
+        return nil
     }
 
-    static func readCustomRUMURL() -> String? {
-        let customRUMURL = Bundle.main.infoDictionary![InfoPlistKey.customRUMURL] as? String
-        return customRUMURL?.isEmpty == true ? nil : customRUMURL
+    static func readCustomTraceURL() -> URL? {
+        if let customTraceURL = Bundle.main.infoDictionary![InfoPlistKey.customTraceURL] as? String,
+           !customTraceURL.isEmpty {
+            return URL(string: "https://\(customTraceURL)")
+        }
+        return nil
+    }
+
+    static func readCustomRUMURL() -> URL? {
+        if let customRUMURL = Bundle.main.infoDictionary![InfoPlistKey.customRUMURL] as? String,
+           !customRUMURL.isEmpty {
+            return URL(string: "https://\(customRUMURL)")
+        }
+        return nil
     }
 }
