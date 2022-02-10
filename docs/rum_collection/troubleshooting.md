@@ -33,7 +33,7 @@ If all goes well you should see output similar to this saying that a batch of RU
 
 If you want to [automatically track network requests][1] with `DDURLSessionDelegate` but your app already implements its own session delegate, you can use either _inheritance_ or _composition_ patterns and forward calls to `DDURLSessionDelegate`.
 
-When using _inheritance_, use `DDURLSessionDelegate` as a base class for your custom delegate and make sure to call `super` implementation from your overrided methods. For example:
+When using _inheritance_, use `DDURLSessionDelegate` as a base class for your custom delegate and make sure to call the `super` implementation from your overridden methods. For example:
 ```swift
 class YourCustomDelegateURLSessionDelegate: DDURLSessionDelegate {
     override func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
@@ -43,7 +43,7 @@ class YourCustomDelegateURLSessionDelegate: DDURLSessionDelegate {
 }
 ```
 
-When using _composition_, leverage our `__URLSessionDelegateProviding` protocol to keep internal instance of `DDURLSessionDelegate` and forward calls to `ddURLSessionDelegate`. For example:
+When using _composition_, leverage Datadog's `__URLSessionDelegateProviding` protocol to keep an internal instance of `DDURLSessionDelegate` and forward calls to `ddURLSessionDelegate`. For example:
 ```swift
 private class YourCustomDelegateURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDataDelegate, __URLSessionDelegateProviding {
     // MARK: - __URLSessionDelegateProviding conformance
