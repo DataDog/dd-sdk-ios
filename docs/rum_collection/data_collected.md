@@ -220,7 +220,7 @@ Network errors include information about failing HTTP requests. The following fa
 
 ## Data Storage
 
-Before uploading to Datadog, data is stored in cleartext in the cache directory (`Library/Caches`) of your application sandbox.
+Before data is uploaded to Datadog, it is stored in cleartext in the cache directory (`Library/Caches`) of your application sandbox.
 
 ## Further Reading
 
