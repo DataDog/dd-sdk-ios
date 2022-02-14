@@ -214,7 +214,9 @@ The SDK changes its behavior according to the new value. For example, if the cur
 - if changed to `.granted`, the SDK will send all current and future data to Datadog;
 - if changed to `.notGranted`, the SDK will wipe all current data and will not collect any future data.
 
-    When writing your application, you can enable development logs. All internal messages in the SDK with a priority equal to or higher than the provided level are then logged to console logs.
+Before uploading to Datadog, data is stored in cleartext in the cache directory (`Library/Caches`) of your application sandbox.
+
+When writing your application, you can enable development logs. All internal messages in the SDK with a priority equal to or higher than the provided level are then logged to console logs.
 
     {{< tabs >}}
     {{% tab "Swift" %}}

@@ -218,7 +218,9 @@ Network errors include information about failing HTTP requests. The following fa
 | `action.name`        | string | Name of the user action.                                                        |
 | `action.target.name` | string | Element that the user interacted with. Only for automatically collected actions |
 
+## Data Storage
 
+Before uploading to Datadog, data is stored in cleartext in the cache directory (`Library/Caches`) of your application sandbox.
 
 ## Further Reading
 
