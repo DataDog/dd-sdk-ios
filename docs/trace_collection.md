@@ -373,9 +373,9 @@ for (NSString *key in headersWriter.tracePropagationHTTPHeaders) {
 {{% /tab %}}
 {{< /tabs >}}
 
-This will set additional tracing headers on your request, so that your backend can extract it and continue distributed tracing. Once the request is done, within a completion handler, call `span.finish()`. If your backend is also instrumented with [Datadog APM & Distributed Tracing][10] you will see the entire front-to-back trace in Datadog dashboard.
+This sets additional tracing headers on your request so your backend can extract the request and continue distributed tracing. Once the request is done, call `span.finish()` within a completion handler. If your backend is also instrumented with [Datadog APM & Distributed Tracing][10], the entire front-to-back trace appears in the Datadog dashboard.
 
-* To have the SDK automatically trace all network requests made to given hosts, specify the `firstPartyHosts` array during Datadog initialization and use the `DDURLSessionDelegate` as a delegate of the `URLSession` instance that you want to monitor:
+* In order for the SDK to automatically trace all network requests made to the given hosts, specify the `firstPartyHosts` array in the Datadog initialization and use `DDURLSessionDelegate` as a delegate of the `URLSession` instance you want to monitor:
 
 {{< tabs >}}
 {{% tab "Swift" %}}
@@ -413,9 +413,9 @@ NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConf
 {{% /tab %}}
 {{< /tabs >}}
 
-This will trace all requests made with this `session` to `example.com` and `api.yourdomain.com` hosts (for example, `https://api.yourdomain.com/v2/users` or `https://subdomain.example.com/image.png`).
+This traces all requests made with this `session` to `example.com` and `api.yourdomain.com` hosts (for example, `https://api.yourdomain.com/v2/users` or `https://subdomain.example.com/image.png`).
 
-**Note**: Tracing auto instrumentation uses `URLSession` swizzling, but it is opt-in: if you do not specify `firstPartyHosts`, no swizzling is applied.
+**Note**: Tracing auto-instrumentation uses `URLSession` swizzling and is opt-in. If you do not specify `firstPartyHosts`, swizzling is not applied.
 
 
 ## Batch collection
