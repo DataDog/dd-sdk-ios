@@ -1,3 +1,8 @@
+# Unreleased
+
+* [FEATURE] Web-view tracking. See [#729][]
+* [BUGFIX] Strip query parameters from span resource. See [#728][]
+
 # 1.9.0 / 01-26-2022
 
 ### Changes
@@ -317,6 +322,8 @@
 [#715]: https://github.com/DataDog/dd-sdk-ios/issues/715
 [#724]: https://github.com/DataDog/dd-sdk-ios/issues/724
 [#725]: https://github.com/DataDog/dd-sdk-ios/issues/725
+[#728]: https://github.com/DataDog/dd-sdk-ios/issues/728
+[#729]: https://github.com/DataDog/dd-sdk-ios/issues/729
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu
