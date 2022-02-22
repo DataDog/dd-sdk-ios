@@ -123,6 +123,7 @@ workflows:
   run_unit_tests:
     description: |-
         Runs unit tests for SDK on iOS Simulator.
+        Runs unit tests for SDK on tvOS Simulator.
         Runs benchmarks for SDK on iOS Simulator.
         Runs unit tests for HTTPServerMock package on macOS.
     steps:
@@ -146,10 +147,29 @@ workflows:
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReporting-ios-unit-tests.html"
     - xcode-test:
+        title: Run unit tests for Datadog - tvOS Simulator
+        inputs:
+        - scheme: Datadog tvOS
+        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+        - is_clean_build: 'yes'
+        - test_repetition_mode: 'retry_on_failure'
+        - maximum_test_repetitions: 2
+        - generate_code_coverage_files: 'yes'
+        - project_path: Datadog.xcworkspace
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Datadog-tvos-unit-tests.html"
+    - xcode-test:
+        title: Run unit tests for DatadogCrashReporting - tvOS Simulator
+        inputs:
+        - scheme: DatadogCrashReporting tvOS
+        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+        - generate_code_coverage_files: 'yes'
+        - project_path: Datadog.xcworkspace
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReporting-tvos-unit-tests.html"
+    - xcode-test:
         title: Run benchmarks - DatadogBenchmarkTests on iOS Simulator
         inputs:
         - scheme: DatadogBenchmarkTests
-        - simulator_device: iPhone 11
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - should_build_before_test: 'no'
         - is_clean_build: 'no'
         - generate_code_coverage_files: 'yes'
@@ -177,7 +197,7 @@ workflows:
         title: Run integration tests for RUM, Logging and Tracing (on iOS Simulator)
         inputs:
         - scheme: DatadogIntegrationTests
-        - simulator_device: iPhone 11
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - should_build_before_test: 'no'
         - is_clean_build: 'no'
         - generate_code_coverage_files: 'yes'
@@ -188,7 +208,7 @@ workflows:
         title: Run integration tests for Crash Reporting (on iOS Simulator)
         inputs:
         - scheme: DatadogIntegrationTests
-        - simulator_device: iPhone 11
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - should_build_before_test: 'no'
         - is_clean_build: 'no'
         - generate_code_coverage_files: 'yes'
@@ -219,7 +239,7 @@ workflows:
         title: Run SPMProject tests
         inputs:
         - scheme: SPMProject
-        - simulator_device: iPhone 11
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - is_clean_build: 'yes'
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj"
@@ -235,7 +255,7 @@ workflows:
         title: Run CTProject tests
         inputs:
         - scheme: CTProject
-        - simulator_device: iPhone 11
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - is_clean_build: 'yes'
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/carthage/CTProject.xcodeproj"
@@ -251,7 +271,7 @@ workflows:
         title: Run CPProject tests with 'use_frameworks!'
         inputs:
         - scheme: CPProjectUseFrameworks
-        - simulator_device: iPhone 11
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - is_clean_build: 'yes'
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
@@ -260,7 +280,7 @@ workflows:
         title: Run CPProject tests with no 'use_frameworks!'
         inputs:
         - scheme: CPProjectNoUseFrameworks
-        - simulator_device: iPhone 11
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - is_clean_build: 'yes'
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
@@ -288,14 +308,14 @@ workflows:
         title: Run E2E tests for manual instrumentation APIs - iOS Simulator
         inputs:
         - scheme: E2ETests
-        - simulator_device: iPhone 11
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/E2E-tests.html"
     - xcode-test:
         title: Run E2E tests for auto instrumentation APIs - iOS Simulator
         inputs:
         - scheme: E2EInstrumentationTests
-        - simulator_device: iPhone 11
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/E2E-instrumentation-tests.html"
 
