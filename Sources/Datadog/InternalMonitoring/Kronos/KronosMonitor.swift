@@ -80,7 +80,7 @@ internal class KronosInternalMonitor: KronosMonitor {
 
     convenience init() {
         let queue = DispatchQueue(label: "com.datadoghq.kronos-monitor", qos: .utility)
-        if #available(iOS 14.2, *) {
+        if #available(iOS 14.2, tvOS 14.2, *) {
             self.init(
                 queue: queue,
                 connectionMonitor: IPConnectionMonitor(queue: queue)
@@ -229,7 +229,7 @@ internal protocol IPConnectionMonitorType {
     func checkConnection(to ip: KronosInternetAddress, resultCallback: @escaping (IPConnectionCheckResult) -> Void)
 }
 
-@available(iOS 14.2, *)
+@available(iOS 14.2, tvOS 14.2, *)
 internal class IPConnectionMonitor: IPConnectionMonitorType {
     /// Timeout for checking each connection.
     private let timeout: TimeInterval = 20

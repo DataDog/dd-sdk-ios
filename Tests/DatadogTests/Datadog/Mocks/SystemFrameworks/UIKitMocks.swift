@@ -11,27 +11,52 @@ A collection of mocks for different `UIKit` types.
 It follows the mocking conventions described in `FoundationMocks.swift`.
  */
 
+#if !os(tvOS)
 extension UIDevice.BatteryState {
     static func mockAny() -> UIDevice.BatteryState {
         return .full
     }
 }
+#endif
 
 class UIDeviceMock: UIDevice {
+    override var model: String { _model }
+    override var systemName: String { _systemName }
+    override var systemVersion: String { "mock system version" }
+
     private var _model: String
     private var _systemName: String
     private var _systemVersion: String
+
+    #if os(tvOS)
+    init(
+        model: String = .mockAny(),
+        systemName: String = .mockAny(),
+        systemVersion: String = .mockAny()
+    ) {
+        self._model = model
+        self._systemName = systemName
+        self._systemVersion = systemVersion
+    }
+    #else
+    override var isBatteryMonitoringEnabled: Bool {
+        get { _isBatteryMonitoringEnabled }
+        set { _isBatteryMonitoringEnabled = newValue }
+    }
+    override var batteryState: UIDevice.BatteryState { _batteryState }
+    override var batteryLevel: Float { _batteryLevel }
+
     private var _isBatteryMonitoringEnabled: Bool
-    private var _batteryState: UIDevice.BatteryState
     private var _batteryLevel: Float
+    private var _batteryState: UIDevice.BatteryState
 
     init(
         model: String = .mockAny(),
         systemName: String = .mockAny(),
         systemVersion: String = .mockAny(),
         isBatteryMonitoringEnabled: Bool = .mockAny(),
-        batteryState: UIDevice.BatteryState = .mockAny(),
-        batteryLevel: Float = .mockAny()
+        batteryLevel: Float = .mockAny(),
+        batteryState: UIDevice.BatteryState = .mockAny()
     ) {
         self._model = model
         self._systemName = systemName
@@ -40,16 +65,7 @@ class UIDeviceMock: UIDevice {
         self._batteryState = batteryState
         self._batteryLevel = batteryLevel
     }
-
-    override var model: String { _model }
-    override var systemName: String { _systemName }
-    override var systemVersion: String { "mock system version" }
-    override var isBatteryMonitoringEnabled: Bool {
-        get { _isBatteryMonitoringEnabled }
-        set { _isBatteryMonitoringEnabled = newValue }
-    }
-    override var batteryState: UIDevice.BatteryState { _batteryState }
-    override var batteryLevel: Float { _batteryLevel }
+    #endif
 }
 
 extension UIEvent {

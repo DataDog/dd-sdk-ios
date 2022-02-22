@@ -4,7 +4,9 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+#if !os(tvOS)
 import CoreTelephony
+#endif
 
 /// Network connection details specific to cellular radio access.
 public struct CarrierInfo: Equatable {
@@ -48,7 +50,7 @@ internal protocol CarrierInfoProviderType {
 extension CarrierInfo.RadioAccessTechnology {
     init(ctRadioAccessTechnologyConstant: String) {
         switch ctRadioAccessTechnologyConstant {
-        #if !targetEnvironment(macCatalyst)
+        #if !os(tvOS) && !targetEnvironment(macCatalyst)
         case CTRadioAccessTechnologyGPRS: self = .GPRS
         case CTRadioAccessTechnologyEdge: self = .Edge
         case CTRadioAccessTechnologyWCDMA: self = .WCDMA
@@ -72,9 +74,9 @@ internal class CarrierInfoProvider: CarrierInfoProviderType {
     private let wrappedProvider: CarrierInfoProviderType
 
     convenience init() {
-        #if targetEnvironment(macCatalyst)
+        #if os(tvOS) || targetEnvironment(macCatalyst)
         self.init(
-            wrappedProvider: MacCatalystCarrierInfoProvider()
+            wrappedProvider: NOPCarrierInfoProvider()
         )
         #else
         if #available(iOS 12.0, *) {
@@ -98,16 +100,13 @@ internal class CarrierInfoProvider: CarrierInfoProviderType {
     }
 }
 
-#if targetEnvironment(macCatalyst)
-
-/// Dummy provider for Mac Catalyst which doesn't support carrier info.
-internal struct MacCatalystCarrierInfoProvider: CarrierInfoProviderType {
+/// Dummy provider for platforms which doesn't support carrier info.
+internal struct NOPCarrierInfoProvider: CarrierInfoProviderType {
     var current: CarrierInfo? { return nil }
     func subscribe<Observer>(_ subscriber: Observer) where Observer: ValueObserver, Observer.ObservedValue == CarrierInfo? {}
 }
 
-#else
-
+#if !os(tvOS)
 /// Carrier info provider for iOS 12 and above.
 /// It reads `CarrierInfo?` from `CTTelephonyNetworkInfo` only when `CTCarrier` has changed (e.g. when the SIM card was swapped).
 @available(iOS 12, *)
@@ -208,5 +207,4 @@ internal class iOS11CarrierInfoProvider: CarrierInfoProviderType {
         publisher.subscribe(subscriber)
     }
 }
-
 #endif

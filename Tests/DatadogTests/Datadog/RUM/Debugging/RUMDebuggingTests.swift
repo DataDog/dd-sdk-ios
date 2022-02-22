@@ -8,6 +8,9 @@ import XCTest
 import UIKit
 @testable import Datadog
 
+// TODO: RUMM-2034 Remove this flag once we have a host application for tests
+#if !os(tvOS)
+
 class RUMDebuggingTests: XCTestCase {
     func testWhenOneRUMViewIsActive_itDisplaysSingleRUMViewOutline() throws {
         let expectation = self.expectation(description: "Render RUMDebugging")
@@ -73,3 +76,5 @@ class RUMDebuggingTests: XCTestCase {
         XCTAssertLessThan(firstViewOutlineLabel.alpha, secondViewOutlineLabel.alpha)
     }
 }
+
+#endif

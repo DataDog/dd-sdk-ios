@@ -4,8 +4,11 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+#if !os(tvOS)
+
 import XCTest
 import WebKit
+
 @testable import Datadog
 
 final class DDUserContentController: WKUserContentController {
@@ -211,3 +214,5 @@ class WKUserContentController_DatadogTests: XCTestCase {
         }
     }
 }
+
+#endif

@@ -7,6 +7,53 @@
 #if canImport(SwiftUI)
 import SwiftUI
 
+#if os(tvOS)
+
+/// `SwiftUI.ViewModifier` for RUM which invoke `addUserAction` from the
+/// global RUM Monitor when the modified view receives a tap.
+@available(tvOS 14, *)
+internal struct RUMTapActionModifier: SwiftUI.ViewModifier {
+    /// The minimum duration of the long press that must elapse before the
+    /// gesture succeeds.
+    let minimumDuration: Double
+
+    /// Action Name used for RUM Explorer.
+    let name: String
+
+    /// Custom attributes to attach to the Action.
+    let attributes: [AttributeKey: AttributeValue]
+
+    func body(content: Content) -> some View {
+        content.simultaneousGesture(
+            LongPressGesture(minimumDuration: minimumDuration).onEnded { _ in
+                Global.rum.addUserAction(type: .tap, name: name, attributes: attributes)
+            }
+        )
+    }
+}
+
+@available(tvOS 14, *)
+public extension SwiftUI.View {
+    /// Monitor this view tap actions with Datadog RUM. An Action event will be logged after a number
+    /// of required taps.
+    ///
+    /// - Parameters:
+    ///   - name: The action name.
+    ///   - attributes: custom attributes to attach to the View.
+    ///   - minimumDuration: The minimum duration of the long press that must elapse before the
+    ///                      gesture succeeds.
+    /// - Returns: This view after applying a `ViewModifier` for monitoring the view.
+    func trackRUMTapAction(
+        name: String,
+        attributes: [AttributeKey: AttributeValue] = [:],
+        minimumDuration: Double = 0.01
+    ) -> some View {
+        return modifier(RUMTapActionModifier(minimumDuration: minimumDuration, name: name, attributes: attributes))
+    }
+}
+
+#else
+
 /// `SwiftUI.ViewModifier` for RUM which invoke `addUserAction` from the
 /// global RUM Monitor when the modified view receives a tap.
 @available(iOS 13, *)
@@ -29,7 +76,7 @@ internal struct RUMTapActionModifier: SwiftUI.ViewModifier {
     }
 }
 
-@available(iOS 13, *)
+@available(iOS 13, tvOS 14, *)
 public extension SwiftUI.View {
     /// Monitor this view tap actions with Datadog RUM. An Action event will be logged after a number
     /// of required taps.
@@ -47,5 +94,7 @@ public extension SwiftUI.View {
         return modifier(RUMTapActionModifier(count: count, name: name, attributes: attributes))
     }
 }
+
+#endif
 
 #endif
