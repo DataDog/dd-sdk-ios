@@ -85,7 +85,7 @@ internal final class LoggingFeature {
                         device: commonDependencies.mobileDevice
                     ),
                     .ddAPIKeyHeader(clientToken: configuration.clientToken),
-                    .ddEVPOriginHeader(source: configuration.common.origin),
+                    .ddEVPOriginHeader(source: configuration.common.origin ?? configuration.common.source),
                     .ddEVPOriginVersionHeader(sdkVersion: configuration.common.sdkVersion),
                     .ddRequestIDHeader(),
                 ],

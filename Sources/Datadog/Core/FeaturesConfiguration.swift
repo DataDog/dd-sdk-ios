@@ -19,7 +19,7 @@ internal struct FeaturesConfiguration {
         let environment: String
         let performance: PerformancePreset
         let source: String
-        let origin: String
+        let origin: String?
         let sdkVersion: String
         let proxyConfiguration: [AnyHashable: Any]?
     }
@@ -152,7 +152,7 @@ extension FeaturesConfiguration {
         }
 
         let source = (configuration.additionalConfiguration[CrossPlatformAttributes.ddsource] as? String) ?? Datadog.Constants.ddsource
-        let origin = CITestIntegration.origin ?? source
+        let origin = CITestIntegration.origin
         let sdkVersion = (configuration.additionalConfiguration[CrossPlatformAttributes.sdkVersion] as? String) ?? __sdkVersion
 
         let debugOverride = appContext.processInfo.arguments.contains(Datadog.LaunchArguments.Debug)

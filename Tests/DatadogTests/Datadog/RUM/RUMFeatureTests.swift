@@ -30,6 +30,7 @@ class RUMFeatureTests: XCTestCase {
         let randomServiceName: String = .mockRandom(among: .alphanumerics)
         let randomEnvironmentName: String = .mockRandom(among: .alphanumerics)
         let randomSource: String = .mockRandom(among: .alphanumerics)
+        let randomOrigin: String = .mockRandom(among: .alphanumerics)
         let randomSDKVersion: String = .mockRandom(among: .alphanumerics)
         let randomUploadURL: URL = .mockRandom()
         let randomClientToken: String = .mockRandom()
@@ -49,6 +50,7 @@ class RUMFeatureTests: XCTestCase {
                     serviceName: randomServiceName,
                     environment: randomEnvironmentName,
                     source: randomSource,
+                    origin: randomOrigin,
                     sdkVersion: randomSDKVersion
                 ),
                 uploadURL: randomUploadURL,
@@ -84,7 +86,7 @@ class RUMFeatureTests: XCTestCase {
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "text/plain;charset=UTF-8")
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Encoding"], "deflate")
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-API-KEY"], randomClientToken)
-        XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN"], randomSource)
+        XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN"], randomOrigin)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN-VERSION"], randomSDKVersion)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-REQUEST-ID"]?.matches(regex: .uuidRegex), true)
     }
