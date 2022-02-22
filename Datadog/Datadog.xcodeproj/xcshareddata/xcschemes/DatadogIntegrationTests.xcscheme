@@ -142,15 +142,15 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "61133B81242393DE00786299"
-            BuildableName = "Datadog.framework"
-            BlueprintName = "Datadog"
+            BuildableName = "Datadog_iOS.framework"
+            BlueprintName = "Datadog iOS"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "61133BEF242397DA00786299"
             BuildableName = "DatadogObjc.framework"
-            BlueprintName = "DatadogObjc"
+            BlueprintName = "DatadogObjc iOS"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </CodeCoverageTargets>

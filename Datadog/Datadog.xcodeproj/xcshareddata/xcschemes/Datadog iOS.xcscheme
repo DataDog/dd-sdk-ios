@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "61133BEF242397DA00786299"
-               BuildableName = "DatadogObjc.framework"
-               BlueprintName = "DatadogObjc"
+               BlueprintIdentifier = "61133B81242393DE00786299"
+               BuildableName = "Datadog_iOS.framework"
+               BlueprintName = "Datadog iOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -27,6 +27,7 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "NO"
+      enableThreadSanitizer = "YES"
       codeCoverageEnabled = "YES"
       onlyGenerateCoverageForSpecifiedTargets = "YES">
       <MacroExpansion>
@@ -76,6 +77,11 @@
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
+            key = "DD_DISABLE_NETWORK_INSTRUMENTATION"
+            value = "$(DD_DISABLE_NETWORK_INSTRUMENTATION)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
             key = "SRCROOT"
             value = "$(SRCROOT)"
             isEnabled = "YES">
@@ -120,21 +126,22 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "61133B81242393DE00786299"
-            BuildableName = "Datadog.framework"
-            BlueprintName = "Datadog"
+            BuildableName = "Datadog_iOS.framework"
+            BlueprintName = "Datadog iOS"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "61133BEF242397DA00786299"
             BuildableName = "DatadogObjc.framework"
-            BlueprintName = "DatadogObjc"
+            BlueprintName = "DatadogObjc iOS"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </CodeCoverageTargets>
       <Testables>
          <TestableReference
-            skipped = "NO">
+            skipped = "NO"
+            testExecutionOrdering = "random">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "61133B8A242393DE00786299"
@@ -165,9 +172,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "61133BEF242397DA00786299"
-            BuildableName = "DatadogObjc.framework"
-            BlueprintName = "DatadogObjc"
+            BlueprintIdentifier = "61133B81242393DE00786299"
+            BuildableName = "Datadog_iOS.framework"
+            BlueprintName = "Datadog iOS"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

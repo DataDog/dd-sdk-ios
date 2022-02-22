@@ -3591,9 +3591,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		61133B81242393DE00786299 /* Datadog */ = {
+		61133B81242393DE00786299 /* Datadog iOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 61133B96242393DE00786299 /* Build configuration list for PBXNativeTarget "Datadog" */;
+			buildConfigurationList = 61133B96242393DE00786299 /* Build configuration list for PBXNativeTarget "Datadog iOS" */;
 			buildPhases = (
 				61133B7D242393DE00786299 /* Headers */,
 				61133B7E242393DE00786299 /* Sources */,
@@ -3605,7 +3605,7 @@
 			);
 			dependencies = (
 			);
-			name = Datadog;
+			name = "Datadog iOS";
 			productName = Datadog;
 			productReference = 61133B82242393DE00786299 /* Datadog.framework */;
 			productType = "com.apple.product-type.framework";
@@ -3629,9 +3629,9 @@
 			productReference = 61133B8B242393DE00786299 /* DatadogTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		61133BEF242397DA00786299 /* DatadogObjc */ = {
+		61133BEF242397DA00786299 /* DatadogObjc iOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 61133C01242397DA00786299 /* Build configuration list for PBXNativeTarget "DatadogObjc" */;
+			buildConfigurationList = 61133C01242397DA00786299 /* Build configuration list for PBXNativeTarget "DatadogObjc iOS" */;
 			buildPhases = (
 				61133BEB242397DA00786299 /* Headers */,
 				61133BEC242397DA00786299 /* Sources */,
@@ -3643,7 +3643,7 @@
 			dependencies = (
 				61133C732423993200786299 /* PBXTargetDependency */,
 			);
-			name = DatadogObjc;
+			name = "DatadogObjc iOS";
 			productName = DatadogObjc;
 			productReference = 61133BF0242397DA00786299 /* DatadogObjc.framework */;
 			productType = "com.apple.product-type.framework";
@@ -3771,9 +3771,9 @@
 			productReference = 61993665265BBEDC009D7EA8 /* E2ETests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		61B7885325C180CB002675B5 /* DatadogCrashReporting */ = {
+		61B7885325C180CB002675B5 /* DatadogCrashReporting iOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 61B7886B25C180CB002675B5 /* Build configuration list for PBXNativeTarget "DatadogCrashReporting" */;
+			buildConfigurationList = 61B7886B25C180CB002675B5 /* Build configuration list for PBXNativeTarget "DatadogCrashReporting iOS" */;
 			buildPhases = (
 				61B7884F25C180CB002675B5 /* Headers */,
 				61B7885025C180CB002675B5 /* Sources */,
@@ -3786,7 +3786,7 @@
 			dependencies = (
 				61DE335825C82941008E3EC2 /* PBXTargetDependency */,
 			);
-			name = DatadogCrashReporting;
+			name = "DatadogCrashReporting iOS";
 			productName = DatadogCrashReporting;
 			productReference = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */;
 			productType = "com.apple.product-type.framework";
@@ -3878,9 +3878,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				61133B81242393DE00786299 /* Datadog */,
-				61133BEF242397DA00786299 /* DatadogObjc */,
-				61B7885325C180CB002675B5 /* DatadogCrashReporting */,
+				61133B81242393DE00786299 /* Datadog iOS */,
+				61133BEF242397DA00786299 /* DatadogObjc iOS */,
+				61B7885325C180CB002675B5 /* DatadogCrashReporting iOS */,
 				61133B8A242393DE00786299 /* DatadogTests */,
 				61B7885B25C180CB002675B5 /* DatadogCrashReportingTests */,
 				61441C6724619FE4003D8BB8 /* DatadogBenchmarkTests */,
@@ -4705,7 +4705,7 @@
 /* Begin PBXTargetDependency section */
 		61133C732423993200786299 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 61133B81242393DE00786299 /* Datadog */;
+			target = 61133B81242393DE00786299 /* Datadog iOS */;
 			targetProxy = 61133C722423993200786299 /* PBXContainerItemProxy */;
 		};
 		61441C3024616F1D003D8BB8 /* PBXTargetDependency */ = {
@@ -4715,7 +4715,7 @@
 		};
 		61441C5024619499003D8BB8 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 61133B81242393DE00786299 /* Datadog */;
+			target = 61133B81242393DE00786299 /* Datadog iOS */;
 			targetProxy = 61441C4F24619499003D8BB8 /* PBXContainerItemProxy */;
 		};
 		61441C5A24619A08003D8BB8 /* PBXTargetDependency */ = {
@@ -4730,12 +4730,12 @@
 		};
 		614ED39D260357FA00C8C519 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 61B7885325C180CB002675B5 /* DatadogCrashReporting */;
+			target = 61B7885325C180CB002675B5 /* DatadogCrashReporting iOS */;
 			targetProxy = 614ED39C260357FA00C8C519 /* PBXContainerItemProxy */;
 		};
 		6170DC5325C18E57003AED5C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 61B7885325C180CB002675B5 /* DatadogCrashReporting */;
+			target = 61B7885325C180CB002675B5 /* DatadogCrashReporting iOS */;
 			targetProxy = 6170DC5225C18E57003AED5C /* PBXContainerItemProxy */;
 		};
 		618F9846265BC486009959F8 /* PBXTargetDependency */ = {
@@ -4745,12 +4745,12 @@
 		};
 		61993659265BB6A6009D7EA8 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 61133B81242393DE00786299 /* Datadog */;
+			target = 61133B81242393DE00786299 /* Datadog iOS */;
 			targetProxy = 61993658265BB6A6009D7EA8 /* PBXContainerItemProxy */;
 		};
 		6199365D265BB6A6009D7EA8 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 61B7885325C180CB002675B5 /* DatadogCrashReporting */;
+			target = 61B7885325C180CB002675B5 /* DatadogCrashReporting iOS */;
 			targetProxy = 6199365C265BB6A6009D7EA8 /* PBXContainerItemProxy */;
 		};
 		6199366B265BBEDC009D7EA8 /* PBXTargetDependency */ = {
@@ -4760,7 +4760,7 @@
 		};
 		61B7885F25C180CB002675B5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 61B7885325C180CB002675B5 /* DatadogCrashReporting */;
+			target = 61B7885325C180CB002675B5 /* DatadogCrashReporting iOS */;
 			targetProxy = 61B7885E25C180CB002675B5 /* PBXContainerItemProxy */;
 		};
 		61B7888025C18147002675B5 /* PBXTargetDependency */ = {
@@ -4770,7 +4770,7 @@
 		};
 		61DE335825C82941008E3EC2 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 61133B81242393DE00786299 /* Datadog */;
+			target = 61133B81242393DE00786299 /* Datadog iOS */;
 			targetProxy = 61DE335725C82941008E3EC2 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -4944,7 +4944,7 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.Datadog;
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = Datadog;
 				SKIP_INSTALL = YES;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
@@ -4973,7 +4973,7 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.Datadog;
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = Datadog;
 				SKIP_INSTALL = YES;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
@@ -5047,7 +5047,7 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogObjc;
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = DatadogObjc;
 				SKIP_INSTALL = YES;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
@@ -5076,7 +5076,7 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogObjc;
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = DatadogObjc;
 				SKIP_INSTALL = YES;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
@@ -5461,7 +5461,7 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogCrashReporting;
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = DatadogCrashReporting;
 				SKIP_INSTALL = YES;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -5492,7 +5492,7 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogCrashReporting;
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = DatadogCrashReporting;
 				SKIP_INSTALL = YES;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
@@ -5522,7 +5522,7 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogCrashReporting;
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = DatadogCrashReporting;
 				SKIP_INSTALL = YES;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
@@ -5666,7 +5666,7 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.Datadog;
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = Datadog;
 				SKIP_INSTALL = YES;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
@@ -5695,7 +5695,7 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogObjc;
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = DatadogObjc;
 				SKIP_INSTALL = YES;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
@@ -5738,7 +5738,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		61133B96242393DE00786299 /* Build configuration list for PBXNativeTarget "Datadog" */ = {
+		61133B96242393DE00786299 /* Build configuration list for PBXNativeTarget "Datadog iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				61133B97242393DE00786299 /* Debug */,
@@ -5758,7 +5758,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		61133C01242397DA00786299 /* Build configuration list for PBXNativeTarget "DatadogObjc" */ = {
+		61133C01242397DA00786299 /* Build configuration list for PBXNativeTarget "DatadogObjc iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				61133C02242397DA00786299 /* Debug */,
@@ -5828,7 +5828,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		61B7886B25C180CB002675B5 /* Build configuration list for PBXNativeTarget "DatadogCrashReporting" */ = {
+		61B7886B25C180CB002675B5 /* Build configuration list for PBXNativeTarget "DatadogCrashReporting iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				61B7886525C180CB002675B5 /* Debug */,
