@@ -105,7 +105,7 @@ internal final class RUMFeature {
                         device: commonDependencies.mobileDevice
                     ),
                     .ddAPIKeyHeader(clientToken: configuration.clientToken),
-                    .ddEVPOriginHeader(source: configuration.common.source),
+                    .ddEVPOriginHeader(source: configuration.common.origin),
                     .ddEVPOriginVersionHeader(sdkVersion: configuration.common.sdkVersion),
                     .ddRequestIDHeader(),
                 ],
@@ -189,11 +189,9 @@ internal final class RUMFeature {
         self.onSessionStart = onSessionStart
     }
 
-#if DD_SDK_COMPILED_FOR_TESTING
-    func deinitialize() {
+    internal func deinitialize() {
         storage.flushAndTearDown()
         upload.flushAndTearDown()
         RUMFeature.instance = nil
     }
-#endif
 }

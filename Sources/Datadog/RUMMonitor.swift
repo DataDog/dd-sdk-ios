@@ -221,7 +221,10 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         if Datadog.debugRUM {
             self.enableRUMDebugging(true)
         }
-    }
+
+        if CITestIntegration.isEnabled() {
+            CITestIntegration.startIntegration() }
+        }
 
     // MARK: - Public DDRUMMonitor conformance
 

@@ -123,7 +123,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         // Send "application start" action if this is the very first view tracked in the app
         let hasSentNoViewUpdatesYet = version == 0
-        if isInitialView && hasSentNoViewUpdatesYet {
+        if isInitialView, hasSentNoViewUpdatesYet {
             actionsCount += 1
             if !sendApplicationStartAction() {
                 actionsCount -= 1
@@ -284,10 +284,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let customActionScope = createDiscreteUserActionScope(on: command)
         _ = customActionScope.process(
             command: RUMStopUserActionCommand(
-                                    time: command.time,
-                                    attributes: [:],
-                                    actionType: .custom,
-                                    name: nil
+                time: command.time,
+                attributes: [:],
+                actionType: .custom,
+                name: nil
             )
         )
     }
@@ -303,6 +303,13 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - Sending RUM Events
 
     private func sendApplicationStartAction() -> Bool {
+        let ciTest: RUMActionEvent.CiTest? = {
+            if let testID = CITestIntegration.ciTestExecutionID {
+                return RUMActionEvent.CiTest(testExecutionId: testID)
+            }
+            return nil
+        }()
+
         let eventData = RUMActionEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -319,12 +326,16 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 type: .applicationStart
             ),
             application: .init(id: context.rumApplicationID),
-            ciTest: nil,
+            ciTest: ciTest,
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: dependencies.serviceName,
-            session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            session: .init(
+                hasReplay: nil,
+                id: context.sessionID.toRUMDataFormat,
+                type: ciTest != nil ? .ciTest : .user
+            ),
             source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
@@ -357,6 +368,13 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let refreshRateInfo = vitalInfoSampler.refreshRate
         let isSlowRendered = refreshRateInfo.meanValue.flatMap { $0 < Constants.slowRenderingThresholdFPS }
 
+        let ciTest: RUMViewEvent.CiTest? = {
+            if let testID = CITestIntegration.ciTestExecutionID {
+                return RUMViewEvent.CiTest(testExecutionId: testID)
+            }
+            return nil
+        }()
+
         let eventData = RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -364,12 +382,16 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 session: .init(plan: .plan1)
             ),
             application: .init(id: context.rumApplicationID),
-            ciTest: nil,
+            ciTest: ciTest,
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: dependencies.serviceName,
-            session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            session: .init(
+                hasReplay: nil,
+                id: context.sessionID.toRUMDataFormat,
+                type: ciTest != nil ? .ciTest : .user
+            ),
             source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
@@ -424,6 +446,13 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private func sendErrorEvent(on command: RUMAddCurrentViewErrorCommand) -> Bool {
         attributes.merge(rumCommandAttributes: command.attributes)
 
+        let ciTest: RUMErrorEvent.CiTest? = {
+            if let testID = CITestIntegration.ciTestExecutionID {
+                return RUMErrorEvent.CiTest(testExecutionId: testID)
+            }
+            return nil
+        }()
+
         let eventData = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -433,7 +462,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 .init(id: rumUUID.toRUMDataFormat)
             },
             application: .init(id: context.rumApplicationID),
-            ciTest: nil,
+            ciTest: ciTest,
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
@@ -450,7 +479,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 type: command.type
             ),
             service: dependencies.serviceName,
-            session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            session: .init(
+                hasReplay: nil,
+                id: context.sessionID.toRUMDataFormat,
+                type: ciTest != nil ? .ciTest : .user
+            ),
             source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
@@ -476,20 +509,31 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let taskDurationInNs = command.duration.toInt64Nanoseconds
         let isFrozenFrame = taskDurationInNs > Constants.frozenFrameThresholdInNs
 
+        let ciTest: RUMLongTaskEvent.CiTest? = {
+            if let testID = CITestIntegration.ciTestExecutionID {
+                return RUMLongTaskEvent.CiTest(testExecutionId: testID)
+            }
+            return nil
+        }()
+
         let eventData = RUMLongTaskEvent(
             dd: .init(
-              browserSdkVersion: nil,
-              session: .init(plan: .plan1)
+                browserSdkVersion: nil,
+                session: .init(plan: .plan1)
             ),
             action: context.activeUserActionID.flatMap { RUMLongTaskEvent.Action(id: $0.toRUMDataFormat) },
             application: .init(id: context.rumApplicationID),
-            ciTest: nil,
+            ciTest: ciTest,
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: command.time - command.duration).timeIntervalSince1970.toInt64Milliseconds,
             longTask: .init(duration: taskDurationInNs, id: nil, isFrozenFrame: isFrozenFrame),
             service: dependencies.serviceName,
-            session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            session: .init(
+                hasReplay: nil,
+                id: context.sessionID.toRUMDataFormat,
+                type: ciTest != nil ? .ciTest : .user
+            ),
             source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,

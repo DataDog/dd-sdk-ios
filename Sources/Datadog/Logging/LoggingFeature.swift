@@ -85,7 +85,7 @@ internal final class LoggingFeature {
                         device: commonDependencies.mobileDevice
                     ),
                     .ddAPIKeyHeader(clientToken: configuration.clientToken),
-                    .ddEVPOriginHeader(source: configuration.common.source),
+                    .ddEVPOriginHeader(source: configuration.common.origin),
                     .ddEVPOriginVersionHeader(sdkVersion: configuration.common.sdkVersion),
                     .ddRequestIDHeader(),
                 ],
@@ -142,11 +142,9 @@ internal final class LoggingFeature {
         self.upload = upload
     }
 
-#if DD_SDK_COMPILED_FOR_TESTING
-    func deinitialize() {
+    internal func deinitialize() {
         storage.flushAndTearDown()
         upload.flushAndTearDown()
         LoggingFeature.instance = nil
     }
-#endif
 }
