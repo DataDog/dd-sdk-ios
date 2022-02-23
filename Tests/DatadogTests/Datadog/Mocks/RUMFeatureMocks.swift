@@ -624,6 +624,7 @@ extension RUMScopeDependencies {
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         dateCorrector: DateCorrectorType = DateCorrectorMock(),
         crashContextIntegration: RUMWithCrashContextIntegration? = nil,
+        ciTest: RUMCITest? = nil,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
@@ -637,6 +638,7 @@ extension RUMScopeDependencies {
             rumUUIDGenerator: rumUUIDGenerator,
             dateCorrector: dateCorrector,
             crashContextIntegration: crashContextIntegration,
+            ciTest: ciTest,
             vitalCPUReader: SamplingBasedVitalReaderMock(),
             vitalMemoryReader: SamplingBasedVitalReaderMock(),
             vitalRefreshRateReader: ContinuousVitalReaderMock(),
@@ -656,6 +658,7 @@ extension RUMScopeDependencies {
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
         dateCorrector: DateCorrectorType? = nil,
         crashContextIntegration: RUMWithCrashContextIntegration? = nil,
+        ciTest: RUMCITest? = nil,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
@@ -669,6 +672,7 @@ extension RUMScopeDependencies {
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
             dateCorrector: dateCorrector ?? self.dateCorrector,
             crashContextIntegration: crashContextIntegration ?? self.crashContextIntegration,
+            ciTest: ciTest,
             vitalCPUReader: SamplingBasedVitalReaderMock(),
             vitalMemoryReader: SamplingBasedVitalReaderMock(),
             vitalRefreshRateReader: ContinuousVitalReaderMock(),

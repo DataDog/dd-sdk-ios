@@ -195,6 +195,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     rumUUIDGenerator: rumFeature.configuration.uuidGenerator,
                     dateCorrector: rumFeature.dateCorrector,
                     crashContextIntegration: RUMWithCrashContextIntegration(),
+                    ciTest: CITestIntegration.active?.rumCITest,
                     vitalCPUReader: rumFeature.vitalCPUReader,
                     vitalMemoryReader: rumFeature.vitalMemoryReader,
                     vitalRefreshRateReader: rumFeature.vitalRefreshRateReader,
@@ -222,9 +223,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             self.enableRUMDebugging(true)
         }
 
-        if CITestIntegration.isEnabled() {
-            CITestIntegration.startIntegration() }
-        }
+        CITestIntegration.active?.startIntegration()
+    }
 
     // MARK: - Public DDRUMMonitor conformance
 

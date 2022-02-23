@@ -128,13 +128,6 @@ internal class RUMResourceScope: RUMScope {
         }
         let resourceType: RUMResourceType = resourceKindBasedOnRequest ?? command.kind
 
-        let ciTest: RUMResourceEvent.CiTest? = {
-            if let testID = CITestIntegration.ciTestExecutionID {
-                return RUMResourceEvent.CiTest(testExecutionId: testID)
-            }
-            return nil
-        }()
-
         let eventData = RUMResourceEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -146,7 +139,7 @@ internal class RUMResourceScope: RUMScope {
                 .init(id: rumUUID.toRUMDataFormat)
             },
             application: .init(id: context.rumApplicationID),
-            ciTest: ciTest,
+            ciTest:  dependencies.ciTest,
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: resourceStartTime).timeIntervalSince1970.toInt64Milliseconds,
@@ -200,7 +193,7 @@ internal class RUMResourceScope: RUMScope {
             session: .init(
                 hasReplay: nil,
                 id: context.sessionID.toRUMDataFormat,
-                type: ciTest != nil ? .ciTest : .user
+                type: dependencies.ciTest != nil ? .ciTest : .user
             ),
             source: .ios,
             synthetics: nil,
@@ -222,12 +215,6 @@ internal class RUMResourceScope: RUMScope {
 
     private func sendErrorEvent(on command: RUMStopResourceWithErrorCommand) -> Bool {
         attributes.merge(rumCommandAttributes: command.attributes)
-        let ciTest: RUMErrorEvent.CiTest? = {
-            if let testID = CITestIntegration.ciTestExecutionID {
-                return RUMErrorEvent.CiTest(testExecutionId: testID)
-            }
-            return nil
-        }()
 
         let eventData = RUMErrorEvent(
             dd: .init(
@@ -238,7 +225,7 @@ internal class RUMResourceScope: RUMScope {
                 .init(id: rumUUID.toRUMDataFormat)
             },
             application: .init(id: context.rumApplicationID),
-            ciTest: ciTest,
+            ciTest: dependencies.ciTest,
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
@@ -263,7 +250,7 @@ internal class RUMResourceScope: RUMScope {
             session: .init(
                 hasReplay: nil,
                 id: context.sessionID.toRUMDataFormat,
-                type: ciTest != nil ? .ciTest : .user
+                type: dependencies.ciTest != nil ? .ciTest : .user
             ),
             source: .ios,
             synthetics: nil,

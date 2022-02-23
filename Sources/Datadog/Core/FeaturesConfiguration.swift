@@ -152,7 +152,6 @@ extension FeaturesConfiguration {
         }
 
         let source = (configuration.additionalConfiguration[CrossPlatformAttributes.ddsource] as? String) ?? Datadog.Constants.ddsource
-        let origin = CITestIntegration.origin
         let sdkVersion = (configuration.additionalConfiguration[CrossPlatformAttributes.sdkVersion] as? String) ?? __sdkVersion
 
         let debugOverride = appContext.processInfo.arguments.contains(Datadog.LaunchArguments.Debug)
@@ -173,7 +172,7 @@ extension FeaturesConfiguration {
                 bundleType: appContext.bundleType
             ),
             source: source,
-            origin: origin,
+            origin: CITestIntegration.active?.origin,
             sdkVersion: sdkVersion,
             proxyConfiguration: configuration.proxyConfiguration
         )
