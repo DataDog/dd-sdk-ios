@@ -5,8 +5,11 @@
  */
 
 import XCTest
-@testable import Datadog
+#if canImport(CoreTelephony)
 import CoreTelephony
+#endif
+
+@testable import Datadog
 
 /// This suite tests if `CrashContextProvider` gets updated by different SDK components, each updating
 /// separate part of the `CrashContext` information.
@@ -194,6 +197,7 @@ class CrashContextProviderTests: XCTestCase {
     }
 
     // MARK: - `CarrierInfo` Integration
+    #if !os(tvOS)
 
     private let ctTelephonyNetworkInfoMock = CTTelephonyNetworkInfoMock(
         serviceCurrentRadioAccessTechnology: ["000001": CTRadioAccessTechnologyLTE],
@@ -278,6 +282,7 @@ class CrashContextProviderTests: XCTestCase {
             XCTAssertNotEqual(carrierInfoInInitialContext, carrierInfoInUpdatedContext)
         }
     }
+    #endif
 
     // MARK: - `AppStateListener` Integration
 

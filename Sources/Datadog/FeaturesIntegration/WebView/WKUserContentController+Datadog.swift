@@ -4,7 +4,7 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-#if DD_SDK_ENABLE_EXPERIMENTAL_APIS
+#if !os(tvOS) && DD_SDK_ENABLE_EXPERIMENTAL_APIS
 import Foundation
 import WebKit
 
