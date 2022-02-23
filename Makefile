@@ -102,9 +102,9 @@ rum-models-verify:
 api-surface:
 		@cd tools/api-surface/ && swift build --configuration release
 		@echo "Generating api-surface-swift"
-		./tools/api-surface/.build/x86_64-apple-macosx/release/api-surface workspace --workspace-name Datadog.xcworkspace --scheme Datadog --path . > api-surface-swift
+		./tools/api-surface/.build/x86_64-apple-macosx/release/api-surface workspace --workspace-name Datadog.xcworkspace --scheme "Datadog iOS" --path . > api-surface-swift
 		@echo "Generating api-surface-objc"
-		./tools/api-surface/.build/x86_64-apple-macosx/release/api-surface workspace --workspace-name Datadog.xcworkspace --scheme DatadogObjc --path . > api-surface-objc
+		./tools/api-surface/.build/x86_64-apple-macosx/release/api-surface workspace --workspace-name Datadog.xcworkspace --scheme "DatadogObjc iOS" --path . > api-surface-objc
 
 # Generate Datadog monitors terraform definition for E2E tests:
 e2e-monitors-generate:
