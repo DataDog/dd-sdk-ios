@@ -139,7 +139,7 @@ internal class RUMResourceScope: RUMScope {
                 .init(id: rumUUID.toRUMDataFormat)
             },
             application: .init(id: context.rumApplicationID),
-            ciTest:  dependencies.ciTest,
+            ciTest: dependencies.ciTest,
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: resourceStartTime).timeIntervalSince1970.toInt64Milliseconds,

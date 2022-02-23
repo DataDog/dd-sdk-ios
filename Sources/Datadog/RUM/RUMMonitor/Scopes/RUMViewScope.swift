@@ -303,7 +303,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - Sending RUM Events
 
     private func sendApplicationStartAction() -> Bool {
-
         let eventData = RUMActionEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -488,7 +487,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         let taskDurationInNs = command.duration.toInt64Nanoseconds
         let isFrozenFrame = taskDurationInNs > Constants.frozenFrameThresholdInNs
-        
         let eventData = RUMLongTaskEvent(
             dd: .init(
                 browserSdkVersion: nil,
