@@ -52,6 +52,7 @@ internal class MobileDevice {
         self.currentBatteryStatus = currentBatteryStatus
     }
 
+    #if os(iOS)
     convenience init(uiDevice: UIDevice, processInfo: ProcessInfo, notificationCenter: NotificationCenter) {
         let wasBatteryMonitoringEnabled = uiDevice.isBatteryMonitoringEnabled
 
@@ -105,6 +106,24 @@ internal class MobileDevice {
         @unknown default:   return.unknown
         }
     }
+
+    #else
+    convenience init(
+        uiDevice: UIDevice = .current,
+        processInfo: ProcessInfo = .processInfo,
+        notificationCenter: NotificationCenter = .default
+    ) {
+        // iOS Simulator - battery monitoring doesn't work on tvOS nor Simulator, so return "always OK" value
+        self.init(
+            model: uiDevice.model,
+            osName: uiDevice.systemName,
+            osVersion: uiDevice.systemVersion,
+            enableBatteryStatusMonitoring: {},
+            resetBatteryStatusMonitoring: {},
+            currentBatteryStatus: { BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false) }
+        )
+    }
+    #endif
 }
 
 /// Observes "Low Power Mode" setting changes and provides `isLowPowerModeEnabled` value in a thread-safe manner.

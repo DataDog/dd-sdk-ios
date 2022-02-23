@@ -4,6 +4,7 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+#if canImport(CoreTelephony)
 import CoreTelephony
 
 /*
@@ -67,3 +68,5 @@ class CTTelephonyNetworkInfoMock: CTTelephonyNetworkInfo {
     override var currentRadioAccessTechnology: String? { _serviceCurrentRadioAccessTechnology?.first?.value }
     override var subscriberCellularProvider: CTCarrier? { _serviceSubscriberCellularProviders?.first?.value }
 }
+
+#endif
