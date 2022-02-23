@@ -129,22 +129,22 @@ workflows:
     - xcode-test:
         title: Run unit tests for Datadog - iOS Simulator
         inputs:
-        - scheme: Datadog
-        - simulator_device: iPhone 11
+        - scheme: Datadog iOS
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - is_clean_build: 'yes'
         - test_repetition_mode: 'retry_on_failure'
         - maximum_test_repetitions: 2
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Datadog-unit-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Datadog-ios-unit-tests.html"
     - xcode-test:
         title: Run unit tests for DatadogCrashReporting - iOS Simulator
         inputs:
-        - scheme: DatadogCrashReporting
-        - simulator_device: iPhone 11
+        - scheme: DatadogCrashReporting iOS
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReporting-unit-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReporting-ios-unit-tests.html"
     - xcode-test:
         title: Run benchmarks - DatadogBenchmarkTests on iOS Simulator
         inputs:
