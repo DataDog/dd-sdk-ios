@@ -16,7 +16,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "61133BEF242397DA00786299"
                BuildableName = "DatadogObjc.framework"
-               BlueprintName = "DatadogObjc"
+               BlueprintName = "DatadogObjc iOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -34,7 +34,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "61133B8A242393DE00786299"
             BuildableName = "DatadogTests.xctest"
-            BlueprintName = "DatadogTests"
+            BlueprintName = "DatadogTests iOS"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -121,14 +121,14 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "61133B81242393DE00786299"
             BuildableName = "Datadog.framework"
-            BlueprintName = "Datadog"
+            BlueprintName = "Datadog iOS"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "61133BEF242397DA00786299"
             BuildableName = "DatadogObjc.framework"
-            BlueprintName = "DatadogObjc"
+            BlueprintName = "DatadogObjc iOS"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </CodeCoverageTargets>
@@ -139,7 +139,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "61133B8A242393DE00786299"
                BuildableName = "DatadogTests.xctest"
-               BlueprintName = "DatadogTests"
+               BlueprintName = "DatadogTests iOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -167,7 +167,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "61133BEF242397DA00786299"
             BuildableName = "DatadogObjc.framework"
-            BlueprintName = "DatadogObjc"
+            BlueprintName = "DatadogObjc iOS"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

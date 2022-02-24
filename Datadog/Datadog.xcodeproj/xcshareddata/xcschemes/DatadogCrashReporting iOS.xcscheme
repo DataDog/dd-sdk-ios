@@ -16,7 +16,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "61B7885325C180CB002675B5"
                BuildableName = "DatadogCrashReporting.framework"
-               BlueprintName = "DatadogCrashReporting"
+               BlueprintName = "DatadogCrashReporting iOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -35,7 +35,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "61B7885B25C180CB002675B5"
             BuildableName = "DatadogCrashReportingTests.xctest"
-            BlueprintName = "DatadogCrashReportingTests"
+            BlueprintName = "DatadogCrashReportingTests iOS"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -182,7 +182,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "61B7885325C180CB002675B5"
             BuildableName = "DatadogCrashReporting.framework"
-            BlueprintName = "DatadogCrashReporting"
+            BlueprintName = "DatadogCrashReporting iOS"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </CodeCoverageTargets>
@@ -193,7 +193,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "61B7885B25C180CB002675B5"
                BuildableName = "DatadogCrashReportingTests.xctest"
-               BlueprintName = "DatadogCrashReportingTests"
+               BlueprintName = "DatadogCrashReportingTests iOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -221,7 +221,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "61B7885325C180CB002675B5"
             BuildableName = "DatadogCrashReporting.framework"
-            BlueprintName = "DatadogCrashReporting"
+            BlueprintName = "DatadogCrashReporting iOS"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
