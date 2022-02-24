@@ -18,7 +18,7 @@ internal extension Bundle {
 }
 
 #if canImport(SwiftUI)
-@available(iOS 13, *)
+@available(iOS 13, tvOS 13, *)
 internal extension SwiftUI.View {
     /// The Type descriptionof this view.
     var typeDescription: String {

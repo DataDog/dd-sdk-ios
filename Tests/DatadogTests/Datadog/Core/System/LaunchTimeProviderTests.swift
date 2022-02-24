@@ -7,6 +7,9 @@
 import XCTest
 @testable import Datadog
 
+// TODO: RUMM-2034 Remove this flag once we have a host application for tests
+#if !os(tvOS)
+
 class LaunchTimeProviderTests: XCTestCase {
     func testGivenStartedApplication_whenRequestingLaunchTimeAtAnyTime_itReturnsTheSameValue() {
         // Given
@@ -36,3 +39,5 @@ class LaunchTimeProviderTests: XCTestCase {
         // swiftlint:enable opening_brace
     }
 }
+
+#endif

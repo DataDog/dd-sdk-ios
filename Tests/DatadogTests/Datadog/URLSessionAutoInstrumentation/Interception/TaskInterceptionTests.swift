@@ -64,7 +64,7 @@ class ResourceMetricsTests: XCTestCase {
     }
 
     func testWhenTaskMakesSingleFetchFromNetwork_thenAllMetricsExceptRedirectionAreCollected() {
-        guard #available(iOS 13, *) else {
+        guard #available(iOS 13, tvOS 13, *) else {
             return
         }
 
@@ -103,7 +103,7 @@ class ResourceMetricsTests: XCTestCase {
     }
 
     func testWhenTaskMakesMultipleFetchesFromNetwork_thenAllMetricsAreCollected() {
-        guard #available(iOS 13, *) else {
+        guard #available(iOS 13, tvOS 13, *) else {
             return
         }
 
@@ -164,7 +164,7 @@ class ResourceMetricsTests: XCTestCase {
     }
 
     func testWhenTaskMakesFetchFromLocalCache_thenOnlyFetchMetricIsCollected() {
-        guard #available(iOS 13, *) else {
+        guard #available(iOS 13, tvOS 13, *) else {
             return
         }
 
