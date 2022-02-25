@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "61B8C30226E0E278006EDF53"
-               BuildableName = "CPProjectUseFrameworks.app"
-               BlueprintName = "CPProjectUseFrameworks"
+               BlueprintIdentifier = "61373B2826E0E78300E0F46E"
+               BuildableName = "App.app"
+               BlueprintName = "App Static iOS"
                ReferencedContainer = "container:CPProject.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -32,9 +32,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "61B8C31826E0E27A006EDF53"
-               BuildableName = "CPProjectUseFrameworksTests.xctest"
-               BlueprintName = "CPProjectUseFrameworksTests"
+               BlueprintIdentifier = "61373B3D26E0E78500E0F46E"
+               BuildableName = "App Static iOS Tests.xctest"
+               BlueprintName = "App Static iOS Tests"
                ReferencedContainer = "container:CPProject.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -42,9 +42,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "61B8C32326E0E27A006EDF53"
-               BuildableName = "CPProjectUseFrameworksUITests.xctest"
-               BlueprintName = "CPProjectUseFrameworksUITests"
+               BlueprintIdentifier = "61373B4826E0E78500E0F46E"
+               BuildableName = "App Static iOS UITests.xctest"
+               BlueprintName = "App Static iOS UITests"
                ReferencedContainer = "container:CPProject.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -64,9 +64,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "61B8C30226E0E278006EDF53"
-            BuildableName = "CPProjectUseFrameworks.app"
-            BlueprintName = "CPProjectUseFrameworks"
+            BlueprintIdentifier = "61373B2826E0E78300E0F46E"
+            BuildableName = "App.app"
+            BlueprintName = "App Static iOS"
             ReferencedContainer = "container:CPProject.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -81,9 +81,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "61B8C30226E0E278006EDF53"
-            BuildableName = "CPProjectUseFrameworks.app"
-            BlueprintName = "CPProjectUseFrameworks"
+            BlueprintIdentifier = "61373B2826E0E78300E0F46E"
+            BuildableName = "App.app"
+            BlueprintName = "App Static iOS"
             ReferencedContainer = "container:CPProject.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
