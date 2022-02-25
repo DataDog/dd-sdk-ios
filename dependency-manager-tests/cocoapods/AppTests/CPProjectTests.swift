@@ -5,11 +5,8 @@
 */
 
 import XCTest
-#if COMPILING_FOR_USE_FRAMEWORKS
-@testable import CPProjectUseFrameworks
-#else
-@testable import CPProjectNoUseFrameworks
-#endif
+
+@testable import App
 
 class CPProjectTests: XCTestCase {
     func testCallingLogicThatLoadsSDK() throws {

@@ -268,23 +268,41 @@ workflows:
             set -e
             make test-cocoapods ci=${CI}
     - xcode-test:
-        title: Run CPProject tests with 'use_frameworks!'
+        title: Run CPProject tests iOS with 'use_frameworks!'
         inputs:
-        - scheme: CPProjectUseFrameworks
+        - scheme: App Dynamic iOS
         - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - is_clean_build: 'yes'
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-use_frameworks-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-ios-dynamic-tests.html"
     - xcode-test:
-        title: Run CPProject tests with no 'use_frameworks!'
+        title: Run CPProject tests iOS with no 'use_frameworks!'
         inputs:
-        - scheme: CPProjectNoUseFrameworks
+        - scheme: App Static iOS
         - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - is_clean_build: 'yes'
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-no_use_frameworks-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-ios-static-tests.html"
+    - xcode-test:
+        title: Run CPProject tests tvOS with 'use_frameworks!'
+        inputs:
+        - scheme: App Dynamic tvOS
+        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+        - is_clean_build: 'yes'
+        - cache_level: none
+        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-tvos-dynamic-tests.html"
+    - xcode-test:
+        title: Run CPProject tests tvOS with no 'use_frameworks!'
+        inputs:
+        - scheme: App Static tvOS
+        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+        - is_clean_build: 'yes'
+        - cache_level: none
+        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-tvos-static-tests.html"
 
   create_dogfooding_pr:
     description: |-
