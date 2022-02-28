@@ -35,5 +35,18 @@ internal class ViewController: UIViewController {
 
         // Start span, but never finish it (no upload)
         _ = Global.sharedTracer.startSpan(operationName: "This too")
+
+        addLabel()
+    }
+
+    private func addLabel() {
+        let label = UILabel()
+        label.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.addSubview(label)
+
+        label.text = "Testing..."
+        label.textColor = .white
+        label.sizeToFit()
+        label.center = view.center
     }
 }
