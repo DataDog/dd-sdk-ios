@@ -18,7 +18,7 @@ test:
 		sed "s|GIT_REMOTE|${GIT_REMOTE}|g" > Cartfile
 		@rm -rf Carthage/
 		@echo "🧪 Run 'carthage update'"
-		@carthage update --platform iOS --use-xcframeworks
+		@carthage update --platform iOS,tvOS --use-xcframeworks
 		@echo "🧪 Check if expected frameworks exist in $(PWD)/Carthage/Build/"
 		@[ -e "Carthage/Build/Datadog.xcframework" ] && echo "Datadog.xcframework - OK" || { echo "Datadog.xcframework - missing"; false; }
 		@[ -e "Carthage/Build/DatadogObjc.xcframework" ] && echo "DatadogObjc.xcframework - OK" || { echo "DatadogObjc.xcframework - missing"; false; }
