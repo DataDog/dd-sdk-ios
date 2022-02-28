@@ -960,7 +960,6 @@
 		D2CB6FE227C5352300A62B57 /* Mocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F2729A25C95EB200D54BF8 /* Mocks.swift */; };
 		D2CB6FE527C5352300A62B57 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 614ED36B260352DC00C8C519 /* CrashReporter.xcframework */; };
 		D2CB6FEE27C5365A00A62B57 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6ED127C50EAE00A62B57 /* Datadog.framework */; };
-		D2CB6FEF27C5365A00A62B57 /* Datadog.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6ED127C50EAE00A62B57 /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D2CB6FF327C5369600A62B57 /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6FD127C5348200A62B57 /* DatadogCrashReporting.framework */; };
 		D2EFF3D32731822A00D09F33 /* RUMViewsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFF3D22731822A00D09F33 /* RUMViewsHandler.swift */; };
 		D2F1B81126D795F3009F3293 /* DDNoopRUMMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1B81026D795F3009F3293 /* DDNoopRUMMonitor.swift */; };
@@ -1077,13 +1076,6 @@
 			remoteGlobalIDString = D2CB6FBA27C5348200A62B57;
 			remoteInfo = "DatadogCrashReporting tvOS";
 		};
-		D2CB6F9427C5217A00A62B57 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 61133B79242393DE00786299 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 61133B81242393DE00786299;
-			remoteInfo = Datadog;
-		};
 		D2CB6FB527C5234300A62B57 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 61133B79242393DE00786299 /* Project object */;
@@ -1124,17 +1116,6 @@
 				6199365B265BB6A6009D7EA8 /* DatadogCrashReporting.framework in ⚙️ Embed Framework Dependencies */,
 			);
 			name = "⚙️ Embed Framework Dependencies";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D2CB6FF227C5365A00A62B57 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				D2CB6FEF27C5365A00A62B57 /* Datadog.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -4380,7 +4361,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				D2CB6F9327C5217A00A62B57 /* PBXTargetDependency */,
 				D2CB6FB627C5234300A62B57 /* PBXTargetDependency */,
 			);
 			name = "DatadogObjc tvOS";
@@ -4397,7 +4377,6 @@
 				D2CB6FC827C5348200A62B57 /* Resources */,
 				D2CB6FC927C5348200A62B57 /* ⚙️ Run linter */,
 				D2CB6FCA27C5348200A62B57 /* Frameworks */,
-				D2CB6FF227C5365A00A62B57 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -5936,11 +5915,6 @@
 			isa = PBXTargetDependency;
 			target = D2CB6FBA27C5348200A62B57 /* DatadogCrashReporting tvOS */;
 			targetProxy = D28D5D5327C53A60008E72D0 /* PBXContainerItemProxy */;
-		};
-		D2CB6F9327C5217A00A62B57 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 61133B81242393DE00786299 /* Datadog iOS */;
-			targetProxy = D2CB6F9427C5217A00A62B57 /* PBXContainerItemProxy */;
 		};
 		D2CB6FB627C5234300A62B57 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
