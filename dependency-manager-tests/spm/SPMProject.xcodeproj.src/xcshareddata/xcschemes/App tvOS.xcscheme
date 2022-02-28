@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1140"
+   LastUpgradeVersion = "1310"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "61C363D524374D5F00C4D4E6"
-               BuildableName = "SPMProject.app"
-               BlueprintName = "SPMProject"
+               BlueprintIdentifier = "D23BF5EF27CCCC3300BB4CCD"
+               BuildableName = "App.app"
+               BlueprintName = "App tvOS"
                ReferencedContainer = "container:SPMProject.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -32,9 +32,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "61C363EB24374D6100C4D4E6"
-               BuildableName = "SPMProjectTests.xctest"
-               BlueprintName = "SPMProjectTests"
+               BlueprintIdentifier = "D23BF60C27CCCD5700BB4CCD"
+               BuildableName = "App tvOS Tests.xctest"
+               BlueprintName = "App tvOS Tests"
                ReferencedContainer = "container:SPMProject.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -42,9 +42,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "61C363F624374D6100C4D4E6"
-               BuildableName = "SPMProjectUITests.xctest"
-               BlueprintName = "SPMProjectUITests"
+               BlueprintIdentifier = "D23BF60027CCCCF800BB4CCD"
+               BuildableName = "App tvOS UITests.xctest"
+               BlueprintName = "App tvOS UITests"
                ReferencedContainer = "container:SPMProject.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -64,9 +64,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "61C363D524374D5F00C4D4E6"
-            BuildableName = "SPMProject.app"
-            BlueprintName = "SPMProject"
+            BlueprintIdentifier = "D23BF5EF27CCCC3300BB4CCD"
+            BuildableName = "App.app"
+            BlueprintName = "App tvOS"
             ReferencedContainer = "container:SPMProject.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -81,9 +81,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "61C363D524374D5F00C4D4E6"
-            BuildableName = "SPMProject.app"
-            BlueprintName = "SPMProject"
+            BlueprintIdentifier = "D23BF5EF27CCCC3300BB4CCD"
+            BuildableName = "App.app"
+            BlueprintName = "App tvOS"
             ReferencedContainer = "container:SPMProject.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
