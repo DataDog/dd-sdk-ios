@@ -1287,7 +1287,7 @@
 		61410166251A661D00E3C2D9 /* UIApplicationSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIApplicationSwizzlerTests.swift; sourceTree = "<group>"; };
 		61411B0F24EC15AC0012EAB2 /* Casting+RUM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Casting+RUM.swift"; sourceTree = "<group>"; };
 		61417DC52525CDDE00E2D55C /* TaskInterception.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskInterception.swift; sourceTree = "<group>"; };
-		61441C0224616DE9003D8BB8 /* Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		61441C0224616DE9003D8BB8 /* Example iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Example iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		61441C0424616DE9003D8BB8 /* ExampleAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleAppDelegate.swift; sourceTree = "<group>"; };
 		61441C0B24616DE9003D8BB8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		61441C0D24616DEC003D8BB8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -1914,7 +1914,7 @@
 				61133B82242393DE00786299 /* Datadog.framework */,
 				61133B8B242393DE00786299 /* DatadogTests.xctest */,
 				61133BF0242397DA00786299 /* DatadogObjc.framework */,
-				61441C0224616DE9003D8BB8 /* Example.app */,
+				61441C0224616DE9003D8BB8 /* Example iOS.app */,
 				61441C2A24616F1D003D8BB8 /* DatadogIntegrationTests.xctest */,
 				61441C6824619FE4003D8BB8 /* DatadogBenchmarkTests.xctest */,
 				61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */,
@@ -4153,9 +4153,9 @@
 			productReference = 61133BF0242397DA00786299 /* DatadogObjc.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		61441C0124616DE9003D8BB8 /* Example */ = {
+		61441C0124616DE9003D8BB8 /* Example iOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 61441C1324616DEC003D8BB8 /* Build configuration list for PBXNativeTarget "Example" */;
+			buildConfigurationList = 61441C1324616DEC003D8BB8 /* Build configuration list for PBXNativeTarget "Example iOS" */;
 			buildPhases = (
 				61441BFE24616DE9003D8BB8 /* Sources */,
 				61441BFF24616DE9003D8BB8 /* Frameworks */,
@@ -4168,11 +4168,11 @@
 				61441C5024619499003D8BB8 /* PBXTargetDependency */,
 				6170DC5325C18E57003AED5C /* PBXTargetDependency */,
 			);
-			name = Example;
+			name = "Example iOS";
 			packageProductDependencies = (
 			);
 			productName = Example;
-			productReference = 61441C0224616DE9003D8BB8 /* Example.app */;
+			productReference = 61441C0224616DE9003D8BB8 /* Example iOS.app */;
 			productType = "com.apple.product-type.application";
 		};
 		61441C2924616F1D003D8BB8 /* DatadogIntegrationTests */ = {
@@ -4489,7 +4489,7 @@
 				D2CB6FD327C5352300A62B57 /* DatadogCrashReportingTests tvOS */,
 				61441C6724619FE4003D8BB8 /* DatadogBenchmarkTests */,
 				61441C2924616F1D003D8BB8 /* DatadogIntegrationTests */,
-				61441C0124616DE9003D8BB8 /* Example */,
+				61441C0124616DE9003D8BB8 /* Example iOS */,
 				6199362A265BA958009D7EA8 /* E2E */,
 				61993664265BBEDC009D7EA8 /* E2ETests */,
 				618F983F265BC486009959F8 /* E2EInstrumentationTests */,
@@ -5857,7 +5857,7 @@
 		};
 		61441C3024616F1D003D8BB8 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 61441C0124616DE9003D8BB8 /* Example */;
+			target = 61441C0124616DE9003D8BB8 /* Example iOS */;
 			targetProxy = 61441C2F24616F1D003D8BB8 /* PBXContainerItemProxy */;
 		};
 		61441C5024619499003D8BB8 /* PBXTargetDependency */ = {
@@ -5867,12 +5867,12 @@
 		};
 		61441C5A24619A08003D8BB8 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 61441C0124616DE9003D8BB8 /* Example */;
+			target = 61441C0124616DE9003D8BB8 /* Example iOS */;
 			targetProxy = 61441C5924619A08003D8BB8 /* PBXContainerItemProxy */;
 		};
 		61441C7524619FED003D8BB8 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 61441C0124616DE9003D8BB8 /* Example */;
+			target = 61441C0124616DE9003D8BB8 /* Example iOS */;
 			targetProxy = 61441C7424619FED003D8BB8 /* PBXContainerItemProxy */;
 		};
 		6170DC5325C18E57003AED5C /* PBXTargetDependency */ = {
@@ -5907,7 +5907,7 @@
 		};
 		61B7888025C18147002675B5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 61441C0124616DE9003D8BB8 /* Example */;
+			target = 61441C0124616DE9003D8BB8 /* Example iOS */;
 			targetProxy = 61B7887F25C18147002675B5 /* PBXContainerItemProxy */;
 		};
 		61DE335825C82941008E3EC2 /* PBXTargetDependency */ = {
@@ -6157,7 +6157,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "TargetSupport/DatadogTests/DatadogTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example.app/Example";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example iOS.app/Example iOS";
 			};
 			name = Debug;
 		};
@@ -6179,7 +6179,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "TargetSupport/DatadogTests/DatadogTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example.app/Example";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example iOS.app/Example iOS";
 			};
 			name = Release;
 		};
@@ -6254,6 +6254,7 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.Example;
+				PRODUCT_MODULE_NAME = Example;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "TargetSupport/Example/Example-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -6275,6 +6276,7 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.Example;
+				PRODUCT_MODULE_NAME = Example;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "TargetSupport/Example/Example-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
@@ -6295,6 +6297,7 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.Example;
+				PRODUCT_MODULE_NAME = Example;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "TargetSupport/Example/Example-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
@@ -6376,7 +6379,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogBenchmarkTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example.app/Example";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example iOS.app/Example iOS";
 			};
 			name = Debug;
 		};
@@ -6394,7 +6397,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogBenchmarkTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example.app/Example";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example iOS.app/Example iOS";
 			};
 			name = Release;
 		};
@@ -6412,7 +6415,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogBenchmarkTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example.app/Example";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example iOS.app/Example iOS";
 			};
 			name = Integration;
 		};
@@ -6702,7 +6705,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogCrashReportingTests;
 				PRODUCT_NAME = "$(DD_CR_SDK_PRODUCT_NAME)Tests";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example.app/Example";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example iOS.app/Example iOS";
 			};
 			name = Debug;
 		};
@@ -6721,7 +6724,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogCrashReportingTests;
 				PRODUCT_NAME = "$(DD_CR_SDK_PRODUCT_NAME)Tests";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example.app/Example";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example iOS.app/Example iOS";
 			};
 			name = Release;
 		};
@@ -6740,7 +6743,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogCrashReportingTests;
 				PRODUCT_NAME = "$(DD_CR_SDK_PRODUCT_NAME)Tests";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example.app/Example";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example iOS.app/Example iOS";
 			};
 			name = Integration;
 		};
@@ -6878,7 +6881,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "TargetSupport/DatadogTests/DatadogTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example.app/Example";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example iOS.app/Example iOS";
 			};
 			name = Integration;
 		};
@@ -7320,7 +7323,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		61441C1324616DEC003D8BB8 /* Build configuration list for PBXNativeTarget "Example" */ = {
+		61441C1324616DEC003D8BB8 /* Build configuration list for PBXNativeTarget "Example iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				61441C1424616DEC003D8BB8 /* Debug */,
