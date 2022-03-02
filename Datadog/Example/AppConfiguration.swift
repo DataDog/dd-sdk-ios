@@ -76,7 +76,11 @@ struct ExampleAppConfiguration: AppConfiguration {
         if let testScenario = testScenario {
             return UIStoryboard(name: type(of: testScenario).storyboardName, bundle: nil)
         }
-        return UIStoryboard(name: "Main", bundle: nil)
+        #if os(iOS)
+        return UIStoryboard(name: "Main iOS", bundle: nil)
+        #else
+        return nil
+        #endif
     }
 }
 
