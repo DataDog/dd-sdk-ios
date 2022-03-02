@@ -36,7 +36,7 @@ extension LoggingCommonAsserts {
 
             let expectedHeadersRegexes = [
                 #"^Content-Type: application/json$"#,
-                #"^User-Agent: Example/1.0 CFNetwork \([a-zA-Z ]+; iOS/[0-9.]+\)$"#, // e.g. "User-Agent: Example/1.0 CFNetwork (iPhone; iOS/14.5)"
+                #"^User-Agent: .*/\d+[.\d]* CFNetwork \([a-zA-Z ]+; iOS/[0-9.]+\)$"#, // e.g. "User-Agent: Example/1.0 CFNetwork (iPhone; iOS/14.5)"
                 #"^DD-API-KEY: ui-tests-client-token$"#,
                 #"^DD-EVP-ORIGIN: ios$"#,
                 #"^DD-EVP-ORIGIN-VERSION: [0-9]+.[0-9]+.[0-9]+([-a-z0-9])*$"#, // e.g. "DD-EVP-ORIGIN-VERSION: 1.7.0-beta2"
