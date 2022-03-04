@@ -563,6 +563,7 @@
 		E132727B24B333C700952F8B /* TracingBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */; };
 		E132727D24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */; };
 		E13A880C257922EC004FB174 /* EnvironmentSpanIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13A880B257922EC004FB174 /* EnvironmentSpanIntegration.swift */; };
+		E143CCAF27D236F600F4018A /* CITestIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E143CCAE27D236F600F4018A /* CITestIntegrationTests.swift */; };
 		E1D202EA24C065CF00D1AF3A /* ActiveSpansPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1D202E924C065CF00D1AF3A /* ActiveSpansPool.swift */; };
 		E1D203FD24C1885C00D1AF3A /* ActiveSpansPoolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1D203FB24C1884500D1AF3A /* ActiveSpansPoolTests.swift */; };
 		E1D5AEA724B4D45B007F194B /* Versioning.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1D5AEA624B4D45A007F194B /* Versioning.swift */; };
@@ -1264,6 +1265,7 @@
 		E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingBenchmarkTests.swift; sourceTree = "<group>"; };
 		E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingStorageBenchmarkTests.swift; sourceTree = "<group>"; };
 		E13A880B257922EC004FB174 /* EnvironmentSpanIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentSpanIntegration.swift; sourceTree = "<group>"; };
+		E143CCAE27D236F600F4018A /* CITestIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CITestIntegrationTests.swift; sourceTree = "<group>"; };
 		E1B082CB25641DF9002DB9D2 /* Example.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Example.xcconfig; sourceTree = "<group>"; };
 		E1D202E924C065CF00D1AF3A /* ActiveSpansPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSpansPool.swift; sourceTree = "<group>"; };
 		E1D203FB24C1884500D1AF3A /* ActiveSpansPoolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSpansPoolTests.swift; sourceTree = "<group>"; };
@@ -1991,6 +1993,7 @@
 			isa = PBXGroup;
 			children = (
 				61D980BB24E293F600E03345 /* RUMIntegrationsTests.swift */,
+				E143CCAE27D236F600F4018A /* CITestIntegrationTests.swift */,
 				61216279247D21FE00AC5D67 /* LoggingForTracingAdapterTests.swift */,
 				61FC5F4D25CC2920006BB4DE /* RUMWithCrashContextIntegrationTests.swift */,
 				6182374125D3DFB8006A375B /* CrashReporting */,
@@ -4363,6 +4366,7 @@
 				61EF78B7257E37D500EDCCB3 /* MoveDataMigratorTests.swift in Sources */,
 				61F1A621249A45E400075390 /* DDSpanContextTests.swift in Sources */,
 				61D03BE0273404E700367DE0 /* RUMDataModels+objcTests.swift in Sources */,
+				E143CCAF27D236F600F4018A /* CITestIntegrationTests.swift in Sources */,
 				615C3196251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift in Sources */,
 				61E917CF2464270500E6C631 /* CodableValueTests.swift in Sources */,
 				61D3E0E4277B3D92008BE766 /* KronosNTPPacketTests.swift in Sources */,

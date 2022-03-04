@@ -16,10 +16,7 @@ internal class CITestIntegration {
     /// Current and active integration with CIApp.
     /// `nil` if the integration is not enabled.
     static let active: CITestIntegration? = CITestIntegration()
-
-    /// CI context to be attached to RUM events that identifies that they were created in a CIApp test,
-    let ciTestExecutionID: String
-    /// RUMCITest model to be attached to events
+    /// RUMCITest model to be attached to events, it contains the CI context
     let rumCITest: RUMCITest
     /// Tag that must be added to spans and headers when running inside a CIApp test
     let origin = "ciapp-test"
@@ -28,8 +25,7 @@ internal class CITestIntegration {
         guard let testID = processInfo.environment["CI_VISIBILITY_TEST_EXECUTION_ID"] else {
             return nil
         }
-        self.ciTestExecutionID = testID
-        self.rumCITest = RUMCITest(testExecutionId: ciTestExecutionID)
+        self.rumCITest = RUMCITest(testExecutionId: testID)
     }
 
     /// Entry point for running all the tasks needed for CIApp integration
@@ -45,7 +41,7 @@ internal class CITestIntegration {
         guard let remotePort = CFMessagePortCreateRemote(nil, "DatadogTestingPort" as CFString) else {
             return
         }
-        let status = CFMessagePortSendRequest(
+        CFMessagePortSendRequest(
             remotePort,
             DDCFMessageID.enableRUM, // Message ID for notifying the test that rum is enabled
             nil,
@@ -54,8 +50,6 @@ internal class CITestIntegration {
             nil,
             nil
         )
-        if status == kCFMessagePortSuccess {
-        } else {}
     }
 
     /// Creates a CFMessagePort that is used by the CIApp framework to notify that a test is going to finish, so all
@@ -64,16 +58,14 @@ internal class CITestIntegration {
         func attributeCallback(port: CFMessagePort?, msgid: Int32, data: CFData?, info: UnsafeMutableRawPointer?) -> Unmanaged<CFData>? {
             switch msgid {
             case DDCFMessageID.forceFlush:
-                    Datadog.internalFlushAndDeinitialize()
+                Datadog.internalFlushAndDeinitialize()
             default:
                 break
             }
             return nil
         }
 
-        let port = CFMessagePortCreateLocal(nil, "DatadogRUMTestingPort" as CFString, attributeCallback, nil, nil)
-        if port == nil {
-            print("DatadogTestingPort CFMessagePortCreateLocal failed")
+        guard let port = CFMessagePortCreateLocal(nil, "DatadogRUMTestingPort" as CFString, attributeCallback, nil, nil) else {
             return
         }
         let runLoopSource = CFMessagePortCreateRunLoopSource(nil, port, 0)
