@@ -214,82 +214,84 @@ The SDK changes its behavior according to the new value. For example, if the cur
 - if changed to `.granted`, the SDK will send all current and future data to Datadog;
 - if changed to `.notGranted`, the SDK will wipe all current data and will not collect any future data.
 
-    When writing your application, you can enable development logs. All internal messages in the SDK with a priority equal to or higher than the provided level are then logged to console logs.
+Before data is uploaded to Datadog, it is stored in cleartext in the cache directory (`Library/Caches`) of your application sandbox.
 
-    {{< tabs >}}
-    {{% tab "Swift" %}}
-    ```swift
-    Datadog.verbosityLevel = .debug
-    ```
-    {{% /tab %}}
-    {{% tab "Objective-C" %}}
-    ```objective-c
-    DDDatadog.verbosityLevel = DDSDKVerbosityLevelDebug;
-    ```
-    {{% /tab %}}
-    {{< /tabs >}}
+When writing your application, enable development logs to log to console all internal messages in the SDK with a priority equal to or higher than the provided level.
+
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+Datadog.verbosityLevel = .debug
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+DDDatadog.verbosityLevel = DDSDKVerbosityLevelDebug;
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 3. Configure the `Logger`:
 
-    {{< tabs >}}
-    {{% tab "Swift" %}}
-    ```swift
-    let logger = Logger.builder
-        .sendNetworkInfo(true)
-        .printLogsToConsole(true, usingFormat: .shortWith(prefix: "[iOS App] "))
-        .build()
-    ```
-    {{% /tab %}}
-    {{% tab "Objective-C" %}}
-    ```objective-c
-    DDLoggerBuilder *builder = [DDLogger builder];
-    [builder sendNetworkInfo:YES];
-    [builder printLogsToConsole:YES];
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+let logger = Logger.builder
+    .sendNetworkInfo(true)
+    .printLogsToConsole(true, usingFormat: .shortWith(prefix: "[iOS App] "))
+    .build()
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+DDLoggerBuilder *builder = [DDLogger builder];
+[builder sendNetworkInfo:YES];
+[builder printLogsToConsole:YES];
 
-    DDLogger *logger = [builder build];
-    ```
-    {{% /tab %}}
-    {{< /tabs >}}
+DDLogger *logger = [builder build];
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 4. Send a custom log entry directly to Datadog with one of the following methods:
 
-    {{< tabs >}}
-    {{% tab "Swift" %}}
-    ```swift
-    logger.debug("A debug message.")
-    logger.info("Some relevant information?")
-    logger.notice("Have you noticed?")
-    logger.warn("An important warning…")
-    logger.error("An error was met!")
-    logger.critical("Something critical happened!")
-    ```
-    {{% /tab %}}
-    {{% tab "Objective-C" %}}
-    ```objective-c
-    [logger debug:@"A debug message."];
-    [logger info:@"Some relevant information?"];
-    [logger notice:@"Have you noticed?"];
-    [logger warn:@"An important warning…"];
-    [logger error:@"An error was met!"];
-    [logger critical:@"Something critical happened!"];
-    ```
-    {{% /tab %}}
-    {{< /tabs >}}
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+logger.debug("A debug message.")
+logger.info("Some relevant information?")
+logger.notice("Have you noticed?")
+logger.warn("An important warning…")
+logger.error("An error was met!")
+logger.critical("Something critical happened!")
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+[logger debug:@"A debug message."];
+[logger info:@"Some relevant information?"];
+[logger notice:@"Have you noticed?"];
+[logger warn:@"An important warning…"];
+[logger error:@"An error was met!"];
+[logger critical:@"Something critical happened!"];
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 5. (Optional) - Provide a map of `attributes` alongside your log message to add attributes to the emitted log. Each entry of the map is added as an attribute.
 
-    {{< tabs >}}
-    {{% tab "Swift" %}}
-    ```swift
-    logger.info("Clicked OK", attributes: ["context": "onboarding flow"])
-    ```
-    {{% /tab %}}
-    {{% tab "Objective-C" %}}
-    ```objective-c
-    [logger info:@"Clicked OK" attributes:@{@"context": @"onboarding flow"}];
-    ```
-    {{% /tab %}}
-    {{< /tabs >}}
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+logger.info("Clicked OK", attributes: ["context": "onboarding flow"])
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+[logger info:@"Clicked OK" attributes:@{@"context": @"onboarding flow"}];
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Advanced logging
 

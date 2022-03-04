@@ -89,7 +89,7 @@ class URLSessionBaseScenario: NSObject {
     private var ddURLSessionDelegate: DDURLSessionDelegate?
 
     override init() {
-        instrumentationMethod = .allCases.randomElement()!
+        instrumentationMethod = InstrumentationMethod.allCases.randomElement()!
         lazyInitURLSession = .random()
 
         if ProcessInfo.processInfo.arguments.contains("IS_RUNNING_UI_TESTS") {
