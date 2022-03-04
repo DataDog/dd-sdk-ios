@@ -76,6 +76,7 @@ internal extension RUMErrorSourceType {
 /// Describes the type of a RUM Action.
 public enum RUMUserActionType {
     case tap
+    case click
     case scroll
     case swipe
     case custom
