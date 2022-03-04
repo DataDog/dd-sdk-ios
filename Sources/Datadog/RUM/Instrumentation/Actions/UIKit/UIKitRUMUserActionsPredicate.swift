@@ -29,10 +29,19 @@ public struct RUMAction {
 /// When the app is running, the SDK will ask the implementation of `UIKitRUMUserActionsPredicate` if any noticed user action on the target view should
 /// be considered as the RUM Action. The predicate implementation should return RUM Action parameters if it should be recorded or `nil` otherwise.
 public protocol UIKitRUMUserActionsPredicate {
+    #if !os(tvOS)
     /// The predicate deciding if the RUM Action should be recorded.
     /// - Parameter targetView: an instance of the `UIView` which received the action.
     /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
     func rumAction(targetView: UIView) -> RUMAction?
+    #else
+    /// The predicate deciding if the RUM Action should be recorded.
+    /// - Parameters:
+    ///   - type: the `UIPress.PressType` which received the action.
+    ///   - targetView: an instance of the `UIView` which received the action.
+    /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
+    func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction?
+    #endif
 }
 
 /// Default implementation of `UIKitRUMUserActionsPredicate`.
@@ -40,12 +49,31 @@ public protocol UIKitRUMUserActionsPredicate {
 public struct DefaultUIKitRUMUserActionsPredicate: UIKitRUMUserActionsPredicate {
     public init () {}
 
+    #if !os(tvOS)
     public func rumAction(targetView: UIView) -> RUMAction? {
         return RUMAction(
             name: targetName(for: targetView),
             attributes: [:]
         )
     }
+    #else
+    public func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction? {
+        var name: String
+
+        switch type {
+        case .select:
+            name = targetName(for: targetView)
+        case .menu:
+            name = "menu"
+        case .playPause:
+            name = "play-pause"
+        default:
+            return nil
+        }
+
+        return RUMAction(name: name, attributes: [:])
+    }
+    #endif
 
     /// Builds the RUM Action's `target` name for given `UIView`.
     private func targetName(for view: UIView) -> String {

@@ -28,17 +28,11 @@ internal class UIKitRUMUserActionsHandler: UIEventHandler {
     }
 
     func notify_sendEvent(application: UIApplication, event: UIEvent) {
-        guard let tappedView = captureSingleTouch(event: event)?.view else {
+        guard let command = command(from: event) else {
             return // Not a "tap" event or doesn't have the view.
         }
-        guard isSafeForPrivacy(tappedView) else {
-            return // Ignore for privacy reason.
-        }
-        guard let actionTargetView = bestActionTarget(for: tappedView) else {
-            return // Tapped view is not eligible for producing RUM Action
-        }
 
-        if subscriber == nil {
+        guard let subscriber = subscriber else {
             userLogger.warn(
                 """
                 RUM Action was detected, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work.
@@ -48,22 +42,13 @@ internal class UIKitRUMUserActionsHandler: UIEventHandler {
             return
         }
 
-        if let rumAction = predicate.rumAction(targetView: actionTargetView) {
-            subscriber?.process(
-                command: RUMAddUserActionCommand(
-                    time: dateProvider.currentDate(),
-                    attributes: rumAction.attributes,
-                    actionType: .tap,
-                    name: rumAction.name
-                )
-            )
-        }
+        subscriber.process(command: command)
     }
 
-    // MARK: - Events Filtering
+    // MARK: - Event Processing
 
-    /// Returns the `UITouch` for given `event` only if the event describes the "single tap ended" interaction.
-    private func captureSingleTouch(event: UIEvent) -> UITouch? {
+    #if !os(tvOS)
+    private func command(from event: UIEvent) -> RUMAddUserActionCommand? {
         guard let allTouches = event.allTouches else {
             return nil // not a touch event
         }
@@ -71,10 +56,49 @@ internal class UIKitRUMUserActionsHandler: UIEventHandler {
             return nil // not a single touch event
         }
         guard tap.phase == .ended else {
-            return nil // touch is not in the `.ended` phase
+            return nil // not in `.ended` phase
         }
-        return tap
+        guard let view = tap.view, isSafeForPrivacy(view) else {
+            return nil // no valid view
+        }
+        guard let targetView = bestActionTarget(for: view) else {
+            return nil // Tapped view is not eligible for producing RUM Action
+        }
+        guard let action = predicate.rumAction(targetView: targetView) else {
+            return nil
+        }
+        return RUMAddUserActionCommand(
+            time: dateProvider.currentDate(),
+            attributes: action.attributes,
+            actionType: .tap,
+            name: action.name
+        )
     }
+    #else
+    private func command(from event: UIEvent) -> RUMAddUserActionCommand? {
+        guard let event = event as? UIPressesEvent else {
+            return nil // not a press event
+        }
+        guard event.allPresses.count == 1, let press = event.allPresses.first else {
+            return nil // not a single press event
+        }
+        guard press.phase == .ended else {
+            return nil // not in `.ended` phase
+        }
+        guard let view = press.responder as? UIView, isSafeForPrivacy(view) else {
+            return nil // no valid view
+        }
+        guard let action = predicate.rumAction(press: press.type, targetView: view) else {
+            return nil
+        }
+        return RUMAddUserActionCommand(
+            time: dateProvider.currentDate(),
+            attributes: action.attributes,
+            actionType: .click,
+            name: action.name
+        )
+    }
+    #endif
 
     /// Tells if capturing given `UIView` is safe for the user privacy.
     private func isSafeForPrivacy(_ view: UIView) -> Bool {
