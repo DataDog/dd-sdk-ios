@@ -5,7 +5,8 @@
 */
 
 import XCTest
-@testable import SPMProject
+
+@testable import App
 
 class SPMProjectTests: XCTestCase {
     func testCallingLogicThatLoadsSDK() throws {
