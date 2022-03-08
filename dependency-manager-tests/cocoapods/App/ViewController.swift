@@ -39,6 +39,8 @@ internal class ViewController: UIViewController {
         Global.rum.startView(viewController: self)
 
         createInstrumentedAlamofireSession()
+
+        addLabel()
     }
 
     private func createInstrumentedAlamofireSession() {
@@ -46,5 +48,16 @@ internal class ViewController: UIViewController {
             interceptor: DDRequestInterceptor(),
             eventMonitors: [DDEventMonitor()]
         )
+    }
+
+    private func addLabel() {
+        let label = UILabel()
+        label.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.addSubview(label)
+
+        label.text = "Testing..."
+        label.textColor = .white
+        label.sizeToFit()
+        label.center = view.center
     }
 }

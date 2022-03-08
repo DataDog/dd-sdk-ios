@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "61373B2826E0E78300E0F46E"
-               BuildableName = "CPProjectNoUseFrameworks.app"
-               BlueprintName = "CPProjectNoUseFrameworks"
+               BlueprintIdentifier = "61B8C30226E0E278006EDF53"
+               BuildableName = "App.app"
+               BlueprintName = "App Dynamic iOS"
                ReferencedContainer = "container:CPProject.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -32,9 +32,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "61373B3D26E0E78500E0F46E"
-               BuildableName = "CPProjectNoUseFrameworksTests.xctest"
-               BlueprintName = "CPProjectNoUseFrameworksTests"
+               BlueprintIdentifier = "61B8C31826E0E27A006EDF53"
+               BuildableName = "App Dynamic iOS Tests.xctest"
+               BlueprintName = "App Dynamic iOS Tests"
                ReferencedContainer = "container:CPProject.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -42,9 +42,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "61373B4826E0E78500E0F46E"
-               BuildableName = "CPProjectNoUseFrameworksUITests.xctest"
-               BlueprintName = "CPProjectNoUseFrameworksUITests"
+               BlueprintIdentifier = "61B8C32326E0E27A006EDF53"
+               BuildableName = "App Dynamic iOS UITests.xctest"
+               BlueprintName = "App Dynamic iOS UITests"
                ReferencedContainer = "container:CPProject.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -64,9 +64,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "61373B2826E0E78300E0F46E"
-            BuildableName = "CPProjectNoUseFrameworks.app"
-            BlueprintName = "CPProjectNoUseFrameworks"
+            BlueprintIdentifier = "61B8C30226E0E278006EDF53"
+            BuildableName = "App.app"
+            BlueprintName = "App Dynamic iOS"
             ReferencedContainer = "container:CPProject.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -81,9 +81,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "61373B2826E0E78300E0F46E"
-            BuildableName = "CPProjectNoUseFrameworks.app"
-            BlueprintName = "CPProjectNoUseFrameworks"
+            BlueprintIdentifier = "61B8C30226E0E278006EDF53"
+            BuildableName = "App.app"
+            BlueprintName = "App Dynamic iOS"
             ReferencedContainer = "container:CPProject.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
