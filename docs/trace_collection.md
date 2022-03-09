@@ -205,14 +205,14 @@ Use one of the following values for `trackingConsent`:
 
 To change the tracking consent value after the SDK is initialized, use the `Datadog.set(trackingConsent:)` API call.
 
-The SDK changes its behavior according to the new value. 
+The SDK changes its behavior according to the new value.
 
 For example, if the current tracking consent is `.pending`:
 
 - If changed to `.granted`, the SDK sends all current and future data to Datadog.
 - If changed to `.notGranted`, the SDK wipes all current data and does not collect future data.
 
-Before data is uploaded to Datadog, it is stored in cleartext in the cache directory (`Library/Caches`) of your application sandbox.
+Before data is uploaded to Datadog, it is stored in cleartext in the cache directory (`Library/Caches`) of your [application sandbox](11), which can't be read by any other app installed on the device.
 
 When writing your application, enable development logs to log to console all internal messages in the SDK with a priority equal to or higher than the provided level.
 
@@ -438,3 +438,4 @@ The data on disk will automatically be discarded if it gets too old to ensure th
 [8]: https://opentracing.io
 [9]: https://github.com/opentracing/specification/blob/master/semantic_conventions.md#log-fields-table
 [10]: https://docs.datadoghq.com/tracing/
+[11]: https://support.apple.com/guide/security/security-of-runtime-process-sec15bfe098e/web

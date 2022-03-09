@@ -64,6 +64,26 @@ class RequestBuilderTests: XCTestCase {
         XCTAssertEqual(request.allHTTPHeaderFields?["User-Agent"], "FoobarApp/1.2.3 CFNetwork (iPhone; iOS/13.3.1)")
     }
 
+    func testBuildingRequestWithComplexUserAgentHeader() {
+        let builder = RequestBuilder(
+            url: .mockRandom(),
+            queryItems: .mockRandom(),
+            headers: [
+                .userAgentHeader(
+                    appName: "Foobar 電話 𝛼β",
+                    appVersion: "1.2.3",
+                    device: .mockWith(
+                        model: "iPhone",
+                        osName: "iOS",
+                        osVersion: "13.3.1"
+                    )
+                )
+            ]
+        )
+        let request = builder.uploadRequest(with: .mockRandom())
+        XCTAssertEqual(request.allHTTPHeaderFields?["User-Agent"], "Foobar/1.2.3 CFNetwork (iPhone; iOS/13.3.1)")
+    }
+
     func testBuildingRequestWithDDAPIKeyHeader() {
         let randomClientToken: String = .mockRandom()
         let builder = RequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: [.ddAPIKeyHeader(clientToken: randomClientToken)])
