@@ -66,9 +66,9 @@ The following OS-related attributes are attached automatically to all events col
 
 | Attribute name     | Type   | Description                                                               |
 |--------------------|--------|---------------------------------------------------------------------------|
-| `os.name`          | string | The OS name as reported by the by the device (System User-Agent).          |
-| `os.version`       | string | The OS version as reported by the by the device (System User-Agent).       |
-| `os.version_major` | string | The OS version major as reported by the by the device (System User-Agent). |
+| `os.name`          | string | The OS name as reported by the device (System User-Agent).          |
+| `os.version`       | string | The OS version as reported by the device (System User-Agent).       |
+| `os.version_major` | string | The OS version major as reported by the device (System User-Agent). |
 
 
 ### Geo-location
