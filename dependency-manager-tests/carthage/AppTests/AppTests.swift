@@ -5,7 +5,8 @@
 */
 
 import XCTest
-@testable import CTProject
+
+@testable import App
 
 class CTProjectTests: XCTestCase {
     func testCallingLogicThatLoadsSDK() throws {
