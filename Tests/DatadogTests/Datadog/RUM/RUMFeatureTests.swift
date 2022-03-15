@@ -25,7 +25,7 @@ class RUMFeatureTests: XCTestCase {
     // MARK: - HTTP Message
 
     func testItUsesExpectedHTTPMessage() throws {
-        let randomApplicationName: String = .mockRandom()
+        let randomApplicationName: String = .mockRandom(among: .alphanumerics)
         let randomApplicationVersion: String = .mockRandom(among: .decimalDigits)
         let randomServiceName: String = .mockRandom(among: .alphanumerics)
         let randomEnvironmentName: String = .mockRandom(among: .alphanumerics)
