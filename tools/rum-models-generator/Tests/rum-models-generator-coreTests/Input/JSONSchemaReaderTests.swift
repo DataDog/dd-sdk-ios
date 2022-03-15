@@ -9,58 +9,9 @@ import XCTest
 
 final class JSONSchemaReaderTests: XCTestCase {
     func testReadingSchemaWithTypedAdditionalProperties() throws {
-        let mainSchema = """
-        {
-            "$id": "Schema ID",
-            "type": "object",
-            "title": "Schema title",
-            "description": "Schema description.",
-            "properties": {
-                "stringEnumProperty": {
-                    "type": "string",
-                    "description": "Description of `stringEnumProperty`.",
-                    "enum": ["case1", "case2", "case3", "case4"],
-                    "const": "case2"
-                },
-                "integerEnumProperty": {
-                    "type": "number",
-                    "description": "Description of `integerEnumProperty`.",
-                    "enum": [1, 2, 3, 4],
-                    "const": 3
-                },
-                "arrayProperty": {
-                    "type": "array",
-                    "description": "Description of `arrayProperty`.",
-                    "items": {
-                        "type": "string",
-                        "enum": ["option1", "option2", "option3", "option4"]
-                    },
-                    "readOnly": false
-                },
-                "propertyWithAdditionalProperties": {
-                    "type": "object",
-                    "description": "Description of a property with nested additional properties.",
-                    "additionalProperties": {
-                         "type": "integer",
-                         "readOnly": true
-                    },
-                    "readOnly": true
-                }
-            },
-            "additionalProperties": {
-                "type": "string",
-                "description": "Additional properties of main schema.",
-                "readOnly": true
-            },
-            "required": ["property1"]
-        }
-        """
+        let file = Bundle.module.url(forResource: "Fixtures/fixture-reading-schema-with-typed-additional-properties", withExtension: "json")!
 
-        let schema = try JSONSchemaReader()
-            .readJSONSchema(
-                from: File(name: "main-schema", content: mainSchema.data(using: .utf8)!),
-                resolvingAgainst: []
-            )
+        let schema = try JSONSchemaReader().read(file)
 
         XCTAssertEqual(schema.id, "Schema ID")
         XCTAssertEqual(schema.title, "Schema title")
@@ -102,28 +53,9 @@ final class JSONSchemaReaderTests: XCTestCase {
     }
 
     func testReadingSchemaWithAdditionalPropertiesWithNoType() throws {
-        let mainSchema = """
-        {
-            "additionalProperties": true,
-            "properties": {
-                "foo": {
-                    "type": "string",
-                    "readOnly": true
-                },
-                "bar": {
-                    "type": "object",
-                    "additionalProperties": true
-                }
-            }
-        }
-        """
+        let file = Bundle.module.url(forResource: "Fixtures/fixture-reading-schema-with-additional-properties-with-no-type", withExtension: "json")!
 
-        let schema = try JSONSchemaReader()
-            .readJSONSchema(
-                from: File(name: "main-schema", content: mainSchema.data(using: .utf8)!),
-                resolvingAgainst: []
-            )
-
+        let schema = try JSONSchemaReader().read(file)
         XCTAssertEqual(schema.properties?.count, 2)
 
         XCTAssertNotNil(schema.properties?["foo"])

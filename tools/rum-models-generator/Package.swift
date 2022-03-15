@@ -23,6 +23,8 @@ let package = Package(
         ),
         .testTarget(
             name: "rum-models-generator-coreTests",
-            dependencies: ["RUMModelsGeneratorCore", "Difference"]),
+            dependencies: ["RUMModelsGeneratorCore", "Difference"],
+            resources: [.copy("Fixtures")]
+        ),
     ]
 )
