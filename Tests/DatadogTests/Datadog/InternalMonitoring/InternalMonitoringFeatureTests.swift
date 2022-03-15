@@ -25,7 +25,7 @@ class InternalMonitoringFeatureTests: XCTestCase {
     // MARK: - HTTP Message
 
     func testItUsesExpectedHTTPMessage() throws {
-        let randomApplicationName: String = .mockRandom()
+        let randomApplicationName: String = .mockRandom(among: .alphanumerics)
         let randomApplicationVersion: String = .mockRandom()
         let randomSource: String = .mockRandom(among: .alphanumerics)
         let randomSDKVersion: String = .mockRandom(among: .alphanumerics)
