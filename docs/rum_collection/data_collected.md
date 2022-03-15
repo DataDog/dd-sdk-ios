@@ -5,7 +5,7 @@ further_reading:
   - link: "https://github.com/DataDog/dd-sdk-ios"
     tag: "Github"
     text: "dd-sdk-ios Source code"
-  - link: "/real_user_monitoring"
+  - link: "/real_user_monitoring/"
     tag: "Documentation"
     text: "Datadog Real User Monitoring"
 ---
@@ -222,7 +222,7 @@ Network errors include information about failing HTTP requests. The following fa
 
 ## Data Storage
 
-Before data is uploaded to Datadog, it is stored in cleartext in the cache directory (`Library/Caches`) of your [application sandbox](3), which can't be read by any other app installed on the device.
+Before data is uploaded to Datadog, it is stored in cleartext in the cache directory (`Library/Caches`) of your [application sandbox][3], which can't be read by any other app installed on the device.
 
 ## Further Reading
 
