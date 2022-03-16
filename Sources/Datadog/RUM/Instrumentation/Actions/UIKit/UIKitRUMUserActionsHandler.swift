@@ -10,13 +10,25 @@ internal protocol UIEventHandler: RUMCommandPublisher {
     func notify_sendEvent(application: UIApplication, event: UIEvent)
 }
 
-internal class UIKitRUMUserActionsHandler: UIEventHandler {
-    private let dateProvider: DateProvider
-    let predicate: UIKitRUMUserActionsPredicate
+internal protocol UIEventCommandFactory {
+    func command(from event: UIEvent) -> RUMAddUserActionCommand?
+}
 
-    init(dateProvider: DateProvider, predicate: UIKitRUMUserActionsPredicate) {
-        self.dateProvider = dateProvider
-        self.predicate = predicate
+internal class UIKitRUMUserActionsHandler: UIEventHandler {
+    let factory: UIEventCommandFactory
+
+    convenience init(dateProvider: DateProvider, predicate: UITouchRUMUserActionsPredicate) {
+        let factory = UITouchCommandFactory(dateProvider: dateProvider, predicate: predicate)
+        self.init(factory: factory)
+    }
+
+    convenience init(dateProvider: DateProvider, predicate: UIPressRUMUserActionsPredicate) {
+        let factory = UIPressCommandFactory(dateProvider: dateProvider, predicate: predicate)
+        self.init(factory: factory)
+    }
+
+    init(factory: UIEventCommandFactory) {
+        self.factory = factory
     }
 
     // MARK: - UIKitRUMUserActionsHandlerType
@@ -28,7 +40,7 @@ internal class UIKitRUMUserActionsHandler: UIEventHandler {
     }
 
     func notify_sendEvent(application: UIApplication, event: UIEvent) {
-        guard let command = command(from: event) else {
+        guard let command = factory.command(from: event) else {
             return // Not a "tap" event or doesn't have the view.
         }
 
@@ -44,11 +56,41 @@ internal class UIKitRUMUserActionsHandler: UIEventHandler {
 
         subscriber.process(command: command)
     }
+}
 
-    // MARK: - Event Processing
+private extension UIView {
+    /// Traverses the hierarchy of this view from bottom-up to find any parent view matching
+    /// the given predicate. It starts from `self`.
+    func findInParentHierarchy(viewMatching predicate: (UIView) -> Bool) -> UIView? {
+        if predicate(self) {
+            return self
+        } else if let superview = superview {
+            return superview.findInParentHierarchy(viewMatching: predicate)
+        } else {
+            return nil
+        }
+    }
+}
 
-    #if !os(tvOS)
-    private func command(from event: UIEvent) -> RUMAddUserActionCommand? {
+extension UIEventCommandFactory {
+    /// Tells if capturing given `UIView` is safe for the user privacy.
+    func isSafeForPrivacy(_ view: UIView) -> Bool {
+        guard let window = view.window else {
+            return false // The view is invisible, we can't determine if it's safe.
+        }
+        guard !NSStringFromClass(type(of: window)).contains("Keyboard") else {
+            return false // The window class name suggests that it's the on-screen keyboard.
+        }
+        return true
+    }
+}
+
+internal struct UITouchCommandFactory: UIEventCommandFactory {
+    let dateProvider: DateProvider
+
+    let predicate: UITouchRUMUserActionsPredicate
+
+    func command(from event: UIEvent) -> RUMAddUserActionCommand? {
         guard let allTouches = event.allTouches else {
             return nil // not a touch event
         }
@@ -73,42 +115,6 @@ internal class UIKitRUMUserActionsHandler: UIEventHandler {
             actionType: .tap,
             name: action.name
         )
-    }
-    #else
-    private func command(from event: UIEvent) -> RUMAddUserActionCommand? {
-        guard let event = event as? UIPressesEvent else {
-            return nil // not a press event
-        }
-        guard event.allPresses.count == 1, let press = event.allPresses.first else {
-            return nil // not a single press event
-        }
-        guard press.phase == .ended else {
-            return nil // not in `.ended` phase
-        }
-        guard let view = press.responder as? UIView, isSafeForPrivacy(view) else {
-            return nil // no valid view
-        }
-        guard let action = predicate.rumAction(press: press.type, targetView: view) else {
-            return nil
-        }
-        return RUMAddUserActionCommand(
-            time: dateProvider.currentDate(),
-            attributes: action.attributes,
-            actionType: .click,
-            name: action.name
-        )
-    }
-    #endif
-
-    /// Tells if capturing given `UIView` is safe for the user privacy.
-    private func isSafeForPrivacy(_ view: UIView) -> Bool {
-        guard let window = view.window else {
-            return false // The view is invisible, we can't determine if it's safe.
-        }
-        guard !NSStringFromClass(type(of: window)).contains("Keyboard") else {
-            return false // The window class name suggests that it's the on-screen keyboard.
-        }
-        return true
     }
 
     // MARK: - RUM Action Target Capturing
@@ -136,16 +142,32 @@ internal class UIKitRUMUserActionsHandler: UIEventHandler {
     }
 }
 
-private extension UIView {
-    /// Traverses the hierarchy of this view from bottom-up to find any parent view matching
-    /// the given predicate. It starts from `self`.
-    func findInParentHierarchy(viewMatching predicate: (UIView) -> Bool) -> UIView? {
-        if predicate(self) {
-            return self
-        } else if let superview = superview {
-            return superview.findInParentHierarchy(viewMatching: predicate)
-        } else {
+internal struct UIPressCommandFactory: UIEventCommandFactory {
+    let dateProvider: DateProvider
+
+    let predicate: UIPressRUMUserActionsPredicate
+
+    func command(from event: UIEvent) -> RUMAddUserActionCommand? {
+        guard let event = event as? UIPressesEvent else {
+            return nil // not a press event
+        }
+        guard event.allPresses.count == 1, let press = event.allPresses.first else {
+            return nil // not a single press event
+        }
+        guard press.phase == .ended else {
+            return nil // not in `.ended` phase
+        }
+        guard let view = press.responder as? UIView, isSafeForPrivacy(view) else {
+            return nil // no valid view
+        }
+        guard let action = predicate.rumAction(press: press.type, targetView: view) else {
             return nil
         }
+        return RUMAddUserActionCommand(
+            time: dateProvider.currentDate(),
+            attributes: action.attributes,
+            actionType: .click,
+            name: action.name
+        )
     }
 }

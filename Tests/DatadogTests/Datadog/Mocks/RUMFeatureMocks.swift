@@ -903,7 +903,13 @@ class UIKitRUMViewsHandlerMock: UIViewControllerHandler {
     }
 }
 
-class UIKitRUMUserActionsPredicateMock: UIKitRUMUserActionsPredicate {
+#if os(tvOS)
+typealias UIKitRUMUserActionsPredicateMock = UIPressRUMUserActionsPredicateMock
+#else
+typealias UIKitRUMUserActionsPredicateMock = UITouchRUMUserActionsPredicateMock
+#endif
+
+class UITouchRUMUserActionsPredicateMock: UITouchRUMUserActionsPredicate {
     var resultByView: [UIView: RUMAction] = [:]
     var result: RUMAction?
 
@@ -912,6 +918,19 @@ class UIKitRUMUserActionsPredicateMock: UIKitRUMUserActionsPredicate {
     }
 
     func rumAction(targetView: UIView) -> RUMAction? {
+        return resultByView[targetView] ?? result
+    }
+}
+
+class UIPressRUMUserActionsPredicateMock: UIPressRUMUserActionsPredicate {
+    var resultByView: [UIView: RUMAction] = [:]
+    var result: RUMAction?
+
+    init(result: RUMAction? = nil) {
+        self.result = result
+    }
+
+    func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction? {
         return resultByView[targetView] ?? result
     }
 }
