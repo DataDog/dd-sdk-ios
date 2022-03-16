@@ -25,7 +25,7 @@
 @interface CustomDDUIKitRUMUserActionsPredicate: NSObject
 @end
 
-@interface CustomDDUIKitRUMUserActionsPredicate () <DDUITouchRUMUserActionsPredicate, DDUIPressRUMUserActionsPredicate>
+@interface CustomDDUIKitRUMUserActionsPredicate () <DDUIKitRUMUserActionsPredicate>
 @end
 
 @implementation CustomDDUIKitRUMUserActionsPredicate

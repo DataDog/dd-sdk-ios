@@ -149,7 +149,7 @@ class DDConfigurationTests: XCTestCase {
         objcBuilder.trackUIKitRUMViews(using: viewPredicate)
         XCTAssertTrue((objcBuilder.build().sdkConfiguration.rumUIKitViewsPredicate as? UIKitRUMViewsPredicateBridge)?.objcPredicate === viewPredicate)
 
-        class ObjCActionPredicate: DDUITouchRUMUserActionsPredicate & DDUIPressRUMUserActionsPredicate {
+        class ObjCActionPredicate: DDUIKitRUMUserActionsPredicate & DDUITouchRUMUserActionsPredicate & DDUIPressRUMUserActionsPredicate {
             func rumAction(targetView: UIView) -> DDRUMAction? { nil }
             func rumAction(press type: UIPress.PressType, targetView: UIView) -> DDRUMAction? { nil }
         }

@@ -101,9 +101,11 @@ public class DDRUMAction: NSObject {
 }
 
 #if os(tvOS)
-public typealias DDUIKitRUMUserActionsPredicate = DDUIPressRUMUserActionsPredicate
+@objc
+public protocol DDUIKitRUMUserActionsPredicate: DDUIPressRUMUserActionsPredicate {}
 #else
-public typealias DDUIKitRUMUserActionsPredicate = DDUITouchRUMUserActionsPredicate
+@objc
+public protocol DDUIKitRUMUserActionsPredicate: DDUITouchRUMUserActionsPredicate {}
 #endif
 
 @objc
