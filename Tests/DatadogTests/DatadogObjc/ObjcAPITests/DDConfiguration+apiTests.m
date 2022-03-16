@@ -25,11 +25,13 @@
 @interface CustomDDUIKitRUMUserActionsPredicate: NSObject
 @end
 
-@interface CustomDDUIKitRUMUserActionsPredicate () <DDUIKitRUMUserActionsPredicate>
+@interface CustomDDUIKitRUMUserActionsPredicate () <DDUITouchRUMUserActionsPredicate, DDUIPressRUMUserActionsPredicate>
 @end
 
 @implementation CustomDDUIKitRUMUserActionsPredicate
 - (DDRUMAction * _Nullable)rumActionWithTargetView:(UIView * _Nonnull)targetView { return nil; }
+- (DDRUMAction * _Nullable)rumActionWithPress:(enum UIPressType)type targetView:(UIView * _Nonnull)targetView { return nil; }
+
 @end
 
 // MARK: - Tests

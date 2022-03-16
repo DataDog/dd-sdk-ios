@@ -38,8 +38,8 @@ class DDRUMViewTests: XCTestCase {
 }
 
 class UIKitRUMUserActionsPredicateBridgeTests: XCTestCase {
-    func testItForwardsCallToObjcPredicate() {
-        class MockPredicate: DDUIKitRUMUserActionsPredicate {
+    func testItForwardsCallToObjcTouchPredicate() {
+        class MockPredicate: DDUITouchRUMUserActionsPredicate {
             var didCallRUMAction = false
             func rumAction(targetView: UIView) -> DDRUMAction? {
                 didCallRUMAction = true
@@ -51,6 +51,23 @@ class UIKitRUMUserActionsPredicateBridgeTests: XCTestCase {
 
         let predicateBridge = UIKitRUMUserActionsPredicateBridge(objcPredicate: objcPredicate)
         _ = predicateBridge.rumAction(targetView: UIView())
+
+        XCTAssertTrue(objcPredicate.didCallRUMAction)
+    }
+
+    func testItForwardsCallToObjcPressPredicate() {
+        class MockPredicate: DDUIPressRUMUserActionsPredicate {
+            var didCallRUMAction = false
+            func rumAction(press: UIPress.PressType, targetView: UIView) -> DDRUMAction? {
+                didCallRUMAction = true
+                return nil
+            }
+        }
+
+        let objcPredicate = MockPredicate()
+
+        let predicateBridge = UIKitRUMUserActionsPredicateBridge(objcPredicate: objcPredicate)
+        _ = predicateBridge.rumAction(press: .select, targetView: UIView())
 
         XCTAssertTrue(objcPredicate.didCallRUMAction)
     }
