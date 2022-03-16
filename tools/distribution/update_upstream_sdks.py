@@ -38,9 +38,13 @@ def update_flutter_sdk(ios_sdk_git_tag: str, dry_run: bool):
             temp_dir=clone_dir
         )
         repository.create_branch(f'update/dd-sdk-ios-to-{ios_sdk_git_tag}')
+        
+        package_dir = 'packages/datadog_flutter_plugin'
+        print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/{package_dir}')
+        os.chdir(package_dir)
 
         # Replace `dd-sdk-ios` version in `ios/datadog_sdk.podspec`:
-        with open('ios/datadog_sdk.podspec', 'r+') as podspec:
+        with open('ios/datadog_flutter_plugin.podspec', 'r+') as podspec:
             lines = podspec.readlines()
             for idx, line in enumerate(lines):
                 if match := re.match(r'^(\s*)(s\.dependency\s+\'DatadogSDK\').+', line):
@@ -54,26 +58,27 @@ def update_flutter_sdk(ios_sdk_git_tag: str, dry_run: bool):
             podspec.seek(0)
             podspec.write(''.join(lines))
 
+
         shell(command='pod repo update')
         shell(command='flutter upgrade')
 
         # Run `pod update` in `example/ios`
         with remember_cwd():
-            print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/example')
+            print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/{package_dir}/example')
             os.chdir('example')
             shell(command='flutter pub get')
 
-            print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/example/ios')
+            print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/{package_dir}/example/ios')
             os.chdir('ios')
             shell(command='pod update')
 
         # Run `pod update` in `integration_test_app/ios`
         with remember_cwd():
-            print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/integration_test_app')
+            print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/{package_dir}/integration_test_app')
             os.chdir('integration_test_app')
             shell(command='flutter pub get')
 
-            print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/integration_test_app/ios')
+            print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/{package_dir}/integration_test_app/ios')
             os.chdir('ios')
             shell(command='pod update')
 
