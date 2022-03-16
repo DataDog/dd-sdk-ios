@@ -2787,7 +2787,6 @@
 			isa = PBXGroup;
 			children = (
 				D29D5A48273BF7E100A687C1 /* UIKit */,
-				D29D5A49273BF7F300A687C1 /* SwiftUI */,
 			);
 			path = Actions;
 			sourceTree = "<group>";
@@ -4085,13 +4084,6 @@
 				615C3195251DD5080018781C /* UIKitRUMUserActionsHandlerTests.swift */,
 			);
 			path = UIKit;
-			sourceTree = "<group>";
-		};
-		D29D5A49273BF7F300A687C1 /* SwiftUI */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = SwiftUI;
 			sourceTree = "<group>";
 		};
 		D29D5A4A273BF81500A687C1 /* UIKit */ = {
