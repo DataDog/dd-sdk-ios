@@ -674,52 +674,6 @@ class LoggerTests: XCTestCase {
         logMatcher.assertNoValue(forKeyPath: LoggingWithActiveSpanIntegration.Attributes.spanID)
     }
 
-    // MARK: - Integration With Environment Context
-
-    func testGivenBundlingWithTraceEnabledAndTracerRegisteredAndEnvironmentContext_whenSendingLog_itContainsEnvironmentContextAttributes() throws {
-        LoggingFeature.instance = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
-        defer { LoggingFeature.instance?.deinitialize() }
-
-        setenv("x-datadog-trace-id", "111111", 1)
-        setenv("x-datadog-parent-id", "222222", 1)
-
-        TracingFeature.instance = .mockNoOp()
-        defer { TracingFeature.instance?.deinitialize() }
-
-        // given
-        let logger = Logger.builder.build()
-        Global.sharedTracer = Tracer.initialize(configuration: .init())
-        defer { Global.sharedTracer = DDNoopGlobals.tracer }
-
-        // when
-        let span = Global.sharedTracer.startSpan(operationName: "span").setActive()
-        logger.info("info message 1")
-        span.finish()
-        logger.info("info message 2")
-
-        // then
-        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 2)
-        logMatchers[0].assertValue(
-            forKeyPath: LoggingWithEnvironmentSpanIntegration.Attributes.traceID,
-            equals: "\(span.context.dd.traceID.rawValue)"
-        )
-        logMatchers[0].assertValue(
-            forKeyPath: LoggingWithEnvironmentSpanIntegration.Attributes.spanID,
-            equals: "\(span.context.dd.spanID.rawValue)"
-        )
-        logMatchers[1].assertValue(
-            forKeyPath: LoggingWithEnvironmentSpanIntegration.Attributes.traceID,
-            equals: "\(TracingUUID(rawValue: 111_111).rawValue)"
-        )
-        logMatchers[1].assertValue(
-            forKeyPath: LoggingWithEnvironmentSpanIntegration.Attributes.spanID,
-            equals: "\(TracingUUID(rawValue: 222_222).rawValue)"
-        )
-
-        unsetenv("x-datadog-trace-id")
-        unsetenv("x-datadog-parent-id")
-    }
-
     // MARK: - Log Dates Correction
 
     func testGivenTimeDifferenceBetweenDeviceAndServer_whenCollectingLogs_thenLogDateUsesServerTime() throws {
