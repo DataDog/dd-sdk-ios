@@ -1,0 +1,17 @@
+{
+    "$id": "schema-1.json",
+    "type": "object",
+    "properties": {
+        "bar": {
+            "type": "object",
+            "description": "Description of Bar.",
+            "properties": {
+                "property1": {
+                    "type": "string",
+                    "description": "Description of Bar's `property1`.",
+                    "readOnly": true
+                }
+            }
+        }
+    }
+}
