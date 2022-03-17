@@ -231,7 +231,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             ),
             action: nil,
             application: .init(id: lastRUMView.application.id),
-            ciTest: nil,
+            ciTest: lastRUMView.ciTest,
             connectivity: lastRUMView.connectivity,
             context: nil,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds,
@@ -251,7 +251,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             session: .init(
                 hasReplay: lastRUMView.session.hasReplay,
                 id: lastRUMView.session.id,
-                type: .user
+                type: lastRUMView.ciTest != nil ? .ciTest : .user
             ),
             source: .ios,
             synthetics: nil,
@@ -279,7 +279,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 session: .init(plan: .plan1)
             ),
             application: original.application,
-            ciTest: nil,
+            ciTest: original.ciTest,
             connectivity: original.connectivity,
             context: original.context,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds - 1, // -1ms to put the crash after view in RUM session
@@ -344,7 +344,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             application: .init(
                 id: rumConfiguration.applicationID
             ),
-            ciTest: nil,
+            ciTest: CITestIntegration.active?.rumCITest,
             connectivity: RUMConnectivity(
                 networkInfo: crashContext.lastNetworkConnectionInfo,
                 carrierInfo: crashContext.lastCarrierInfo
@@ -355,7 +355,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             session: .init(
                 hasReplay: nil,
                 id: sessionUUID.toRUMDataFormat,
-                type: .user
+                type: CITestIntegration.active != nil ? .ciTest : .user
             ),
             source: .ios,
             synthetics: nil,

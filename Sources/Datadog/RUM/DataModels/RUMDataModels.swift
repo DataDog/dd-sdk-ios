@@ -17,7 +17,7 @@ public struct RUMViewEvent: RUMDataModel {
     public let application: Application
 
     /// CI Visibility properties
-    public let ciTest: CiTest?
+    public let ciTest: RUMCITest?
 
     /// Device connectivity properties
     public let connectivity: RUMConnectivity?
@@ -110,16 +110,6 @@ public struct RUMViewEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
-        }
-    }
-
-    /// CI Visibility properties
-    public struct CiTest: Codable {
-        /// The identifier of the current CI Visibility test execution
-        public let testExecutionId: String
-
-        enum CodingKeys: String, CodingKey {
-            case testExecutionId = "test_execution_id"
         }
     }
 
@@ -408,7 +398,7 @@ public struct RUMResourceEvent: RUMDataModel {
     public let application: Application
 
     /// CI Visibility properties
-    public let ciTest: CiTest?
+    public let ciTest: RUMCITest?
 
     /// Device connectivity properties
     public let connectivity: RUMConnectivity?
@@ -520,16 +510,6 @@ public struct RUMResourceEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
-        }
-    }
-
-    /// CI Visibility properties
-    public struct CiTest: Codable {
-        /// The identifier of the current CI Visibility test execution
-        public let testExecutionId: String
-
-        enum CodingKeys: String, CodingKey {
-            case testExecutionId = "test_execution_id"
         }
     }
 
@@ -817,7 +797,7 @@ public struct RUMActionEvent: RUMDataModel {
     public let application: Application
 
     /// CI Visibility properties
-    public let ciTest: CiTest?
+    public let ciTest: RUMCITest?
 
     /// Device connectivity properties
     public let connectivity: RUMConnectivity?
@@ -1009,16 +989,6 @@ public struct RUMActionEvent: RUMDataModel {
         }
     }
 
-    /// CI Visibility properties
-    public struct CiTest: Codable {
-        /// The identifier of the current CI Visibility test execution
-        public let testExecutionId: String
-
-        enum CodingKeys: String, CodingKey {
-            case testExecutionId = "test_execution_id"
-        }
-    }
-
     /// Session properties
     public struct Session: Codable {
         /// Whether this session has a replay
@@ -1110,7 +1080,7 @@ public struct RUMErrorEvent: RUMDataModel {
     public let application: Application
 
     /// CI Visibility properties
-    public let ciTest: CiTest?
+    public let ciTest: RUMCITest?
 
     /// Device connectivity properties
     public let connectivity: RUMConnectivity?
@@ -1214,16 +1184,6 @@ public struct RUMErrorEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
-        }
-    }
-
-    /// CI Visibility properties
-    public struct CiTest: Codable {
-        /// The identifier of the current CI Visibility test execution
-        public let testExecutionId: String
-
-        enum CodingKeys: String, CodingKey {
-            case testExecutionId = "test_execution_id"
         }
     }
 
@@ -1448,7 +1408,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     public let application: Application
 
     /// CI Visibility properties
-    public let ciTest: CiTest?
+    public let ciTest: RUMCITest?
 
     /// Device connectivity properties
     public let connectivity: RUMConnectivity?
@@ -1555,16 +1515,6 @@ public struct RUMLongTaskEvent: RUMDataModel {
         }
     }
 
-    /// CI Visibility properties
-    public struct CiTest: Codable {
-        /// The identifier of the current CI Visibility test execution
-        public let testExecutionId: String
-
-        enum CodingKeys: String, CodingKey {
-            case testExecutionId = "test_execution_id"
-        }
-    }
-
     /// Long Task properties
     public struct LongTask: Codable {
         /// Duration in ns of the long task
@@ -1655,6 +1605,16 @@ public struct RUMLongTaskEvent: RUMDataModel {
             case referrer = "referrer"
             case url = "url"
         }
+    }
+}
+
+/// CI Visibility properties
+public struct RUMCITest: Codable {
+    /// The identifier of the current CI Visibility test execution
+    public let testExecutionId: String
+
+    enum CodingKeys: String, CodingKey {
+        case testExecutionId = "test_execution_id"
     }
 }
 

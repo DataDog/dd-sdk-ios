@@ -28,8 +28,8 @@ public class DDRUMViewEvent: NSObject {
         DDRUMViewEventApplication(root: root)
     }
 
-    @objc public var ciTest: DDRUMViewEventCiTest? {
-        root.swiftModel.ciTest != nil ? DDRUMViewEventCiTest(root: root) : nil
+    @objc public var ciTest: DDRUMViewEventRUMCITest? {
+        root.swiftModel.ciTest != nil ? DDRUMViewEventRUMCITest(root: root) : nil
     }
 
     @objc public var connectivity: DDRUMViewEventRUMConnectivity? {
@@ -145,7 +145,7 @@ public class DDRUMViewEventApplication: NSObject {
 }
 
 @objc
-public class DDRUMViewEventCiTest: NSObject {
+public class DDRUMViewEventRUMCITest: NSObject {
     internal let root: DDRUMViewEvent
 
     internal init(root: DDRUMViewEvent) {
@@ -692,8 +692,8 @@ public class DDRUMResourceEvent: NSObject {
         DDRUMResourceEventApplication(root: root)
     }
 
-    @objc public var ciTest: DDRUMResourceEventCiTest? {
-        root.swiftModel.ciTest != nil ? DDRUMResourceEventCiTest(root: root) : nil
+    @objc public var ciTest: DDRUMResourceEventRUMCITest? {
+        root.swiftModel.ciTest != nil ? DDRUMResourceEventRUMCITest(root: root) : nil
     }
 
     @objc public var connectivity: DDRUMResourceEventRUMConnectivity? {
@@ -830,7 +830,7 @@ public class DDRUMResourceEventApplication: NSObject {
 }
 
 @objc
-public class DDRUMResourceEventCiTest: NSObject {
+public class DDRUMResourceEventRUMCITest: NSObject {
     internal let root: DDRUMResourceEvent
 
     internal init(root: DDRUMResourceEvent) {
@@ -1458,8 +1458,8 @@ public class DDRUMActionEvent: NSObject {
         DDRUMActionEventApplication(root: root)
     }
 
-    @objc public var ciTest: DDRUMActionEventCiTest? {
-        root.swiftModel.ciTest != nil ? DDRUMActionEventCiTest(root: root) : nil
+    @objc public var ciTest: DDRUMActionEventRUMCITest? {
+        root.swiftModel.ciTest != nil ? DDRUMActionEventRUMCITest(root: root) : nil
     }
 
     @objc public var connectivity: DDRUMActionEventRUMConnectivity? {
@@ -1713,7 +1713,7 @@ public class DDRUMActionEventApplication: NSObject {
 }
 
 @objc
-public class DDRUMActionEventCiTest: NSObject {
+public class DDRUMActionEventRUMCITest: NSObject {
     internal let root: DDRUMActionEvent
 
     internal init(root: DDRUMActionEvent) {
@@ -2015,8 +2015,8 @@ public class DDRUMErrorEvent: NSObject {
         DDRUMErrorEventApplication(root: root)
     }
 
-    @objc public var ciTest: DDRUMErrorEventCiTest? {
-        root.swiftModel.ciTest != nil ? DDRUMErrorEventCiTest(root: root) : nil
+    @objc public var ciTest: DDRUMErrorEventRUMCITest? {
+        root.swiftModel.ciTest != nil ? DDRUMErrorEventRUMCITest(root: root) : nil
     }
 
     @objc public var connectivity: DDRUMErrorEventRUMConnectivity? {
@@ -2145,7 +2145,7 @@ public class DDRUMErrorEventApplication: NSObject {
 }
 
 @objc
-public class DDRUMErrorEventCiTest: NSObject {
+public class DDRUMErrorEventRUMCITest: NSObject {
     internal let root: DDRUMErrorEvent
 
     internal init(root: DDRUMErrorEvent) {
@@ -2726,8 +2726,8 @@ public class DDRUMLongTaskEvent: NSObject {
         DDRUMLongTaskEventApplication(root: root)
     }
 
-    @objc public var ciTest: DDRUMLongTaskEventCiTest? {
-        root.swiftModel.ciTest != nil ? DDRUMLongTaskEventCiTest(root: root) : nil
+    @objc public var ciTest: DDRUMLongTaskEventRUMCITest? {
+        root.swiftModel.ciTest != nil ? DDRUMLongTaskEventRUMCITest(root: root) : nil
     }
 
     @objc public var connectivity: DDRUMLongTaskEventRUMConnectivity? {
@@ -2856,7 +2856,7 @@ public class DDRUMLongTaskEventApplication: NSObject {
 }
 
 @objc
-public class DDRUMLongTaskEventCiTest: NSObject {
+public class DDRUMLongTaskEventRUMCITest: NSObject {
     internal let root: DDRUMLongTaskEvent
 
     internal init(root: DDRUMLongTaskEvent) {
