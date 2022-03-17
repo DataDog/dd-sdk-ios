@@ -176,7 +176,7 @@ To verify your iOS Crash Reporting and Error Tracking configuration, issue a cra
 1. Run your application on an iOS simulator or a real device. Ensure that the debugger is not attached. Otherwise, Xcode captures the crash before the iOS SDK does.
 2. Execute the code containing the crash:
 
-   ```
+   ```swift
    func didTapButton() {
    fatalError(“Crash the app”)
    }
