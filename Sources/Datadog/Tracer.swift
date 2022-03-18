@@ -55,8 +55,6 @@ public class Tracer: OTTracer {
     internal let queue: DispatchQueue
     /// Integration with RUM Context. `nil` if disabled for this Tracer or if the RUM feature disabled.
     internal let rumContextIntegration: TracingWithRUMContextIntegration?
-    /// Integration with Span context injected by environment.
-    internal let environmentSpanIntegration = TracingWithEnvironmentSpanIntegration()
 
     private let dateProvider: DateProvider
     private let tracingUUIDGenerator: TracingUUIDGenerator
@@ -189,9 +187,9 @@ public class Tracer: OTTracer {
 
     internal func createSpanContext(parentSpanContext: DDSpanContext? = nil) -> DDSpanContext {
         return DDSpanContext(
-            traceID: parentSpanContext?.traceID ?? (environmentSpanIntegration.environmentSpanContext?.traceID ?? tracingUUIDGenerator.generateUnique()),
+            traceID: parentSpanContext?.traceID ?? tracingUUIDGenerator.generateUnique(),
             spanID: tracingUUIDGenerator.generateUnique(),
-            parentSpanID: parentSpanContext?.spanID ?? environmentSpanIntegration.environmentSpanContext?.spanID,
+            parentSpanID: parentSpanContext?.spanID,
             baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: parentSpanContext?.baggageItems)
         )
     }

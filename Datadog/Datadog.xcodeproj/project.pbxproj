@@ -562,7 +562,6 @@
 		E11625D827B681D200E428C6 /* CITestIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11625D727B681D200E428C6 /* CITestIntegration.swift */; };
 		E132727B24B333C700952F8B /* TracingBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */; };
 		E132727D24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */; };
-		E13A880C257922EC004FB174 /* EnvironmentSpanIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13A880B257922EC004FB174 /* EnvironmentSpanIntegration.swift */; };
 		E143CCAF27D236F600F4018A /* CITestIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E143CCAE27D236F600F4018A /* CITestIntegrationTests.swift */; };
 		E1D202EA24C065CF00D1AF3A /* ActiveSpansPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1D202E924C065CF00D1AF3A /* ActiveSpansPool.swift */; };
 		E1D203FD24C1885C00D1AF3A /* ActiveSpansPoolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1D203FB24C1884500D1AF3A /* ActiveSpansPoolTests.swift */; };
@@ -1264,7 +1263,6 @@
 		E11625D727B681D200E428C6 /* CITestIntegration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CITestIntegration.swift; sourceTree = "<group>"; };
 		E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingBenchmarkTests.swift; sourceTree = "<group>"; };
 		E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingStorageBenchmarkTests.swift; sourceTree = "<group>"; };
-		E13A880B257922EC004FB174 /* EnvironmentSpanIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentSpanIntegration.swift; sourceTree = "<group>"; };
 		E143CCAE27D236F600F4018A /* CITestIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CITestIntegrationTests.swift; sourceTree = "<group>"; };
 		E1B082CB25641DF9002DB9D2 /* Example.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Example.xcconfig; sourceTree = "<group>"; };
 		E1D202E924C065CF00D1AF3A /* ActiveSpansPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSpansPool.swift; sourceTree = "<group>"; };
@@ -1981,7 +1979,6 @@
 				6105D19F2508F1600040DD22 /* LoggingWithActiveSpanIntegration.swift */,
 				6156CB9B24E18224008CB2B2 /* TracingWithRUMIntegration.swift */,
 				61FC5F4425CC23C9006BB4DE /* RUMWithCrashContextIntegration.swift */,
-				E13A880B257922EC004FB174 /* EnvironmentSpanIntegration.swift */,
 				E11625D727B681D200E428C6 /* CITestIntegration.swift */,
 				9EB4B860274E79620041CD03 /* WebView */,
 				6112B11C25C84E7F00B37771 /* CrashReporting */,
@@ -4288,7 +4285,6 @@
 				61D3E0D8277B23F1008BE766 /* KronosNTPClient.swift in Sources */,
 				9E9973F1268DF69500D8059B /* VitalInfoSampler.swift in Sources */,
 				9EA3CA6926775A3500B16871 /* VitalRefreshRateReader.swift in Sources */,
-				E13A880C257922EC004FB174 /* EnvironmentSpanIntegration.swift in Sources */,
 				61B038602527247200518F3C /* URLSessionTracingHandler.swift in Sources */,
 				61122ED425B1B84D00F9C7F5 /* RUMEventSanitizer.swift in Sources */,
 				61363D9D24D999F70084CD6F /* DDError.swift in Sources */,
