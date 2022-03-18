@@ -7,7 +7,6 @@
 #if canImport(SwiftUI)
 import SwiftUI
 
-// TODO: RUMM-2035 Enable SwiftUI tap action on tvOS
 #if !os(tvOS)
 
 /// `SwiftUI.ViewModifier` for RUM which invoke `addUserAction` from the
@@ -51,50 +50,5 @@ public extension SwiftUI.View {
     }
 }
 
-#else
-
-/// `SwiftUI.ViewModifier` for RUM which invoke `addUserAction` from the
-/// global RUM Monitor when the modified view receives a click from the remote control.
-@available(tvOS 14, *)
-internal struct RUMClickActionModifier: SwiftUI.ViewModifier {
-    /// The minimum duration in seconds of the long press that must elapse before the gesture succeeds.
-    let minimumDuration: TimeInterval
-
-    /// Action Name used for RUM Explorer.
-    let name: String
-
-    /// Custom attributes to attach to the Action.
-    let attributes: [AttributeKey: AttributeValue]
-
-    func body(content: Content) -> some View {
-        content.simultaneousGesture(
-            LongPressGesture(minimumDuration: minimumDuration).onEnded { _ in
-                Global.rum.addUserAction(type: .click, name: name, attributes: attributes)
-            }
-        )
-    }
-}
-
-@available(tvOS 14, *)
-public extension SwiftUI.View {
-    /// Monitor this view tap actions with Datadog RUM. An Action event will be logged after the minimum
-    /// duration of presss.
-    ///
-    /// - Parameters:
-    ///   - name: The action name.
-    ///   - attributes: custom attributes to attach to the View.
-    ///   - minimumDuration: The minimum duration in seconds of the long press that must elapse
-    ///                      to complete the click action.
-    /// - Returns: This view after applying a `ViewModifier` for monitoring the view.
-    func trackRUMClickAction(
-        name: String,
-        attributes: [AttributeKey: AttributeValue] = [:],
-        minimumDuration: TimeInterval = 0.01
-    ) -> some View {
-        return modifier(RUMClickActionModifier(minimumDuration: minimumDuration, name: name, attributes: attributes))
-    }
-}
-
 #endif
-
 #endif
