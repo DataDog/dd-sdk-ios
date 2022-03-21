@@ -113,9 +113,9 @@ if __name__ == "__main__":
 
             # Publish GH Release asset:
             if publish_to_gh:
-                gh_asset = GHAsset(add_xcode_version=add_xcode_version_to_github_asset)
-                gh_asset.validate(git_tag=git_tag)
-                gh_asset.publish(git_tag=git_tag, overwrite_existing=overwrite_github, dry_run=dry_run)
+                gh_asset = GHAsset(add_xcode_version=add_xcode_version_to_github_asset,git_tag=git_tag)
+                gh_asset.validate()
+                gh_asset.publish(overwrite_existing=overwrite_github, dry_run=dry_run)
 
             # Publish CP podspecs:
             if publish_to_cp:
