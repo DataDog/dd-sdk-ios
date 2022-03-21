@@ -226,7 +226,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         XCTAssertNil(commandSubscriber.lastReceivedCommand)
     }
 
-    func testGivenTouchEvent_ItAppliesUserAttributesAndCustomName() {
+    func testGivenTouchEvent_itAppliesUserAttributesAndCustomName() {
         // Given
         let mockAttributes: [AttributeKey: AttributeValue] = mockRandomAttributes()
         let handler = touchHandler(
