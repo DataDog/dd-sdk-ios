@@ -117,7 +117,7 @@ You can enable [tracking user info][2] globally to collect and apply user attrib
 |------------------------------|--------|----------------------------------------------------------------------------|
 | `session.id`                 | string | Unique ID of the session.                                                  |
 | `session.type`               | string | Type of the session (`user`).                                              |
-| `session.is_active`          | string | Indicates if the session is currently active.                               |
+| `session.is_active`          | boolean | Indicates if the session is currently active. The session ends if a user navigates away from the application or closes the browser window, and expires after 4 hours of activity or 15 minutes of inactivity.                               |
 | `session.initial_view.url`   | string | URL of the initial view of the session.                                     |
 | `ssession.initial_view.name` | string | Name of the initial view of the session.                                    |
 | `session.last_view.url`      | string | URL of the last view of the session.                                        |
