@@ -2,6 +2,7 @@
 
 * [FEATURE] Web-view tracking. See [#729][]
 * [BUGFIX] Strip query parameters from span resource. See [#728][]
+* [BUGFIX] Stop reporting pre-warmed application launch time.
 
 # 1.9.0 / 01-26-2022
 

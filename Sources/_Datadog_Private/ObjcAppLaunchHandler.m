@@ -18,6 +18,11 @@ static pthread_rwlock_t rwLock;
 static NSTimeInterval FrameworkLoadTime = 0.0;
 // The time interval between the application starts and it's responsive and accepts touch events.
 static NSTimeInterval TimeToApplicationDidBecomeActive = 0.0;
+// System sets environment variable ActivePrewarm to 1 when app is pre-warmed.
+static BOOL isActivePrewarm = NO;
+// A very long application launch time is most-likely the result of a pre-warmed process.
+// We consider 30s as a threshold for pre-warm detection.
+static NSTimeInterval ValidAppLaunchTimeThreshold = 30;
 
 NS_INLINE NSTimeInterval QueryProcessStartTimeWithFallback(NSTimeInterval fallbackTime) {
     NSTimeInterval processStartTime;
@@ -59,6 +64,8 @@ NS_INLINE NSTimeInterval ComputeProcessTimeFromStart() {
     // This is called at the `_Datadog_Private` load time, keep the work minimal
     FrameworkLoadTime = CFAbsoluteTimeGetCurrent();
 
+    isActivePrewarm = [NSProcessInfo.processInfo.environment[@"ActivePrewarm"] isEqualToString:@"1"];
+
     NSNotificationCenter * __weak center = NSNotificationCenter.defaultCenter;
     id __block token = [center
                         addObserverForName:UIApplicationDidBecomeActiveNotification
@@ -81,7 +88,13 @@ NS_INLINE NSTimeInterval ComputeProcessTimeFromStart() {
 CFTimeInterval __dd_private_AppLaunchTime() {
     pthread_rwlock_rdlock(&rwLock);
     CFTimeInterval time = TimeToApplicationDidBecomeActive;
-    if (time == 0) time = ComputeProcessTimeFromStart();
     pthread_rwlock_unlock(&rwLock);
+    if (time == 0) time = ComputeProcessTimeFromStart();
     return time;
+}
+
+BOOL __dd_private_isActivePrewarm() {
+    if (isActivePrewarm) return isActivePrewarm;
+    CFTimeInterval time = __dd_private_AppLaunchTime();
+    return time > ValidAppLaunchTimeThreshold;
 }

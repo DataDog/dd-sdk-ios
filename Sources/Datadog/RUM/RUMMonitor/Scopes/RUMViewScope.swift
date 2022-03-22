@@ -10,6 +10,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     struct Constants {
         static let frozenFrameThresholdInNs = (0.07).toInt64Nanoseconds // 70ms
         static let slowRenderingThresholdFPS = 55.0
+        /// The pre-warming detection attribute key
+        static let activePrewarm = "active_pre_warm"
     }
 
     // MARK: - Child Scopes
@@ -303,6 +305,18 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - Sending RUM Events
 
     private func sendApplicationStartAction() -> Bool {
+        var attributes = self.attributes
+        var loadingTime: Int64? = nil
+
+        if dependencies.launchTimeProvider.isActivePrewarm {
+            // Set `active_pre_warm` attribute to true in case
+            // of pre-warmed app
+            attributes[Constants.activePrewarm] = true
+        } else {
+            // Report Application Launch Time only if not pre-warmed
+            loadingTime = dependencies.launchTimeProvider.launchTime.toInt64Nanoseconds
+        }
+
         let eventData = RUMActionEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -312,7 +326,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 crash: nil,
                 error: nil,
                 id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
-                loadingTime: dependencies.launchTimeProvider.launchTime.toInt64Nanoseconds,
+                loadingTime: loadingTime,
                 longTask: nil,
                 resource: nil,
                 target: nil,

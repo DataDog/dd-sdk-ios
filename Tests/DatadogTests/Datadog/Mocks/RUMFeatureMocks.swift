@@ -613,7 +613,7 @@ extension RUMScopeDependencies {
     static func mockWith(
         appStateListener: AppStateListening = AppStateListenerMock.mockAny(),
         userInfoProvider: RUMUserInfoProvider = RUMUserInfoProvider(userInfoProvider: .mockAny()),
-        launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock(),
+        launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock.mockAny(),
         connectivityInfoProvider: RUMConnectivityInfoProvider = RUMConnectivityInfoProvider(
             networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: nil),
             carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: nil)
