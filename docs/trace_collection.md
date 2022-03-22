@@ -212,7 +212,7 @@ For example, if the current tracking consent is `.pending`:
 - If changed to `.granted`, the SDK sends all current and future data to Datadog.
 - If changed to `.notGranted`, the SDK wipes all current data and does not collect future data.
 
-Before data is uploaded to Datadog, it is stored in cleartext in the cache directory (`Library/Caches`) of your [application sandbox](11), which can't be read by any other app installed on the device.
+Before data is uploaded to Datadog, it is stored in cleartext in the cache directory (`Library/Caches`) of your [application sandbox][11], which can't be read by any other app installed on the device.
 
 When writing your application, enable development logs to log to console all internal messages in the SDK with a priority equal to or higher than the provided level.
 
