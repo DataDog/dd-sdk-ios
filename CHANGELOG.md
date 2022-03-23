@@ -2,7 +2,7 @@
 
 * [FEATURE] Web-view tracking. See [#729][]
 * [BUGFIX] Strip query parameters from span resource. See [#728][]
-* [BUGFIX] Stop reporting pre-warmed application launch time.
+* [BUGFIX] Stop reporting pre-warmed application launch time. See [#789][]
 
 # 1.9.0 / 01-26-2022
 
@@ -325,6 +325,7 @@
 [#725]: https://github.com/DataDog/dd-sdk-ios/issues/725
 [#728]: https://github.com/DataDog/dd-sdk-ios/issues/728
 [#729]: https://github.com/DataDog/dd-sdk-ios/issues/729
+[#789]: https://github.com/DataDog/dd-sdk-ios/issues/789
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu
