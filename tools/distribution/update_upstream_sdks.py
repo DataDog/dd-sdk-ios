@@ -57,8 +57,32 @@ def update_flutter_sdk(ios_sdk_git_tag: str, dry_run: bool):
 
             podspec.seek(0)
             podspec.write(''.join(lines))
+        
+        # Update the README.md with the current version
+        with open('README.md', 'r+') as readme:
+            lines = readme.readlines()
+            in_table = False
+            ios_sdk_column = None
+            for idx, line in enumerate(lines):
+                if in_table:
+                  if line.startswith('[//]: #'):
+                      # All done
+                      break
+                  elif line.startswith('|'):
+                      columns = list(filter(None, map(str.strip, line.split('|'))))
+                      if 'iOS SDK' in columns:
+                          ios_sdk_column = columns.index('iOS SDK')
+                      elif ':-' in columns[0]:
+                          continue
+                      elif ios_sdk_column is not None:
+                        columns[ios_sdk_column] = git_tag
+                        lines[idx] = '| ' + ' | '.join(columns) + ' |\n'
+                elif line.startswith('[//]: # (SDK Table)'):
+                    in_table = True
 
-
+            readme.seek(0)
+            readme.write(''.join(lines))
+        
         shell(command='pod repo update')
         shell(command='flutter upgrade')
 
