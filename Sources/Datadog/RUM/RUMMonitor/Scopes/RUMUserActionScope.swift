@@ -148,12 +148,16 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                 type: actionType.toRUMDataFormat
             ),
             application: .init(id: context.rumApplicationID),
-            ciTest: nil,
+            ciTest: dependencies.ciTest,
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: actionStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: dependencies.serviceName,
-            session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            session: .init(
+                hasReplay: nil,
+                id: context.sessionID.toRUMDataFormat,
+                type: dependencies.ciTest != nil ? .ciTest : .user
+            ),
             source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,

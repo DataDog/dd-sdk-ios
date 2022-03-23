@@ -39,14 +39,12 @@ internal class URLSessionSwizzler {
         dataTaskWithURL?.swizzle()
     }
 
-#if DD_SDK_COMPILED_FOR_TESTING
-    func unswizzle() {
+    internal func unswizzle() {
         dataTaskWithURLRequestAndCompletion.unswizzle()
         dataTaskWithURLRequest.unswizzle()
         dataTaskWithURLAndCompletion?.unswizzle()
         dataTaskWithURL?.unswizzle()
     }
-#endif
 
     // MARK: - Swizzlings
 

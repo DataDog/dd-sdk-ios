@@ -178,6 +178,7 @@ extension SpanEvent: AnyMockable, RandomMockable {
         duration: TimeInterval = .mockAny(),
         isError: Bool = .mockAny(),
         source: String = .mockAny(),
+        origin: String? = nil,
         tracerVersion: String = .mockAny(),
         applicationVersion: String = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo? = .mockAny(),
@@ -196,6 +197,7 @@ extension SpanEvent: AnyMockable, RandomMockable {
             duration: duration,
             isError: isError,
             source: source,
+            origin: origin,
             tracerVersion: tracerVersion,
             applicationVersion: applicationVersion,
             networkConnectionInfo: networkConnectionInfo,
@@ -219,6 +221,7 @@ extension SpanEvent: AnyMockable, RandomMockable {
             duration: .mockRandom(),
             isError: .random(),
             source: .mockRandom(),
+            origin: .mockRandom(),
             tracerVersion: .mockRandom(),
             applicationVersion: .mockRandom(),
             networkConnectionInfo: .mockRandom(),
@@ -300,6 +303,7 @@ extension SpanEventBuilder {
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
         dateCorrector: DateCorrectorType = DateCorrectorMock(),
         source: String = .mockAny(),
+        origin: String? = nil,
         sdkVersion: String = .mockAny(),
         eventsMapper: SpanEventMapper? = nil
     ) -> SpanEventBuilder {
@@ -312,6 +316,7 @@ extension SpanEventBuilder {
             carrierInfoProvider: carrierInfoProvider,
             dateCorrector: dateCorrector,
             source: source,
+            origin: origin,
             eventsMapper: eventsMapper
         )
     }

@@ -9,11 +9,11 @@ further_reading:
     tag: "Documentation"
     text: "Datadog Real User Monitoring"
 ---
-The RUM SDK generates events that have associated metrics and attributes. Metrics are quantifiable values that can be used for measurements related to the event. Attributes are non-quantifiable values used to slice metrics data (group by) in analytics. 
+The RUM SDK generates events that have associated metrics and attributes. Metrics are quantifiable values that can be used for measurements related to the event. Attributes are non-quantifiable values used to slice metrics data (group by) in analytics.
 
-Every RUM event has all of the [default attributes](#default-attributes), for example, the device type (`device.type`) and user information such as their name (`usr.name`) and their country (`geo.country`). 
+Every RUM event has all of the [default attributes](#default-attributes), for example, the device type (`device.type`) and user information such as their name (`usr.name`) and their country (`geo.country`).
 
-There are additional [metrics and attributes that are specific to a given event type](#event-specific-metrics-and-attributes). For example, the metric `view.time_spent` is associated with "view" events and the attribute `resource.method` is associated with "resource" events. 
+There are additional [metrics and attributes that are specific to a given event type](#event-specific-metrics-and-attributes). For example, the metric `view.time_spent` is associated with "view" events and the attribute `resource.method` is associated with "resource" events.
 
 This page provides descriptions of each of the metrics and attributes collected.
 
@@ -139,7 +139,7 @@ RUM action, error, resource and long task events contain information about the a
 | `view.action.count`   | number      | Count of all actions collected for this view.                                |
 | `view.is_active`      | boolean     | Indicates whether the view corresponding to this event is considered active. |
 
-### View attributes      
+### View attributes
 
 | Attribute name | Type   | Description                                                     |
 |----------------|--------|-----------------------------------------------------------------|
@@ -187,7 +187,7 @@ Front-end errors are collected with Real User Monitoring (RUM). The error messag
 | `error.stack`    | string | The stack trace or complementary information about the error.                    |
 | `error.issue_id` | string | The stack trace or complementary information about the error.                    |
 
-#### Network errors 
+#### Network errors
 
 Network errors include information about failing HTTP requests. The following facets are also collected:
 
@@ -220,7 +220,7 @@ Network errors include information about failing HTTP requests. The following fa
 
 ## Data Storage
 
-Before data is uploaded to Datadog, it is stored in cleartext in the cache directory (`Library/Caches`) of your application sandbox.
+Before data is uploaded to Datadog, it is stored in cleartext in the cache directory (`Library/Caches`) of your [application sandbox][3], which can't be read by any other app installed on the device.
 
 ## Further Reading
 
@@ -228,3 +228,4 @@ Before data is uploaded to Datadog, it is stored in cleartext in the cache direc
 
 [1]: https://docs.datadoghq.com/real_user_monitoring/ios/advanced_configuration/#enrich-user-sessions
 [2]: https://docs.datadoghq.com/real_user_monitoring/ios/advanced_configuration/#track-user-sessions
+[3]: https://support.apple.com/guide/security/security-of-runtime-process-sec15bfe098e/web

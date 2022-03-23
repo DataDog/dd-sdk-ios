@@ -48,11 +48,9 @@ internal final class URLSessionAutoInstrumentation: RUMCommandPublisher {
         rumResourceHandler?.publish(to: subscriber)
     }
 
-#if DD_SDK_COMPILED_FOR_TESTING
     /// Removes `URLSession` swizzling and deinitializes this component.
-    func deinitialize() {
+    internal func deinitialize() {
         swizzler.unswizzle()
         URLSessionAutoInstrumentation.instance = nil
     }
-#endif
 }

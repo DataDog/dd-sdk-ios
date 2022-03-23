@@ -195,6 +195,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     rumUUIDGenerator: rumFeature.configuration.uuidGenerator,
                     dateCorrector: rumFeature.dateCorrector,
                     crashContextIntegration: RUMWithCrashContextIntegration(),
+                    ciTest: CITestIntegration.active?.rumCITest,
                     vitalCPUReader: rumFeature.vitalCPUReader,
                     vitalMemoryReader: rumFeature.vitalMemoryReader,
                     vitalRefreshRateReader: rumFeature.vitalRefreshRateReader,
@@ -221,6 +222,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         if Datadog.debugRUM {
             self.enableRUMDebugging(true)
         }
+
+        CITestIntegration.active?.startIntegration()
     }
 
     // MARK: - Public DDRUMMonitor conformance

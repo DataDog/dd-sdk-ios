@@ -24,6 +24,7 @@ internal class JSONSchema: Decodable {
         case items = "items"
         case readOnly = "readOnly"
         case ref = "$ref"
+        case oneOf = "oneOf"
         case allOf = "allOf"
     }
 
@@ -77,6 +78,7 @@ internal class JSONSchema: Decodable {
             self.readOnly = try keyedContainer.decodeIfPresent(Bool.self, forKey: .readOnly)
             self.ref = try keyedContainer.decodeIfPresent(String.self, forKey: .ref)
             self.allOf = try keyedContainer.decodeIfPresent([JSONSchema].self, forKey: .allOf)
+            self.oneOf = try keyedContainer.decodeIfPresent([JSONSchema].self, forKey: .oneOf)
         } catch let keyedContainerError as DecodingError {
             // If data in this `decoder` cannot be represented as keyed container, perhaps it encodes
             // a single value. Check known schema values:
@@ -146,45 +148,71 @@ internal class JSONSchema: Decodable {
     private var ref: String?
 
     /// Subschemas to be resolved.
-    /// https://json-schema.org/draft/2019-09/json-schema-core.html#allOf
+    /// https://json-schema.org/draft/2019-09/json-schema-core.html#rfc.section.9.2.1.1
     private var allOf: [JSONSchema]?
 
-    /// All child schemas, used when traversing the schema for `$ref` and `allOf` resolution.
-    private var allChildSchemas: [JSONSchema] {
-        var schemas: [JSONSchema] = []
-        items.ifNotNil { schemas.append($0) }
-        allOf.ifNotNil { schemas.append(contentsOf: $0) }
-        properties.ifNotNil { schemas.append(contentsOf: $0.values.map { $0 }) }
-        return schemas
-    }
+    /// Subschemas to be resolved.
+    /// https://json-schema.org/draft/2019-09/json-schema-core.html#rfc.section.9.2.1.3
+    private var oneOf: [JSONSchema]?
 
-    // MARK: - Resolving Schema Reference
+    // MARK: - Resolving Schema References
 
-    /// Recursively traverses this schema to find the references to `otherSchema`. If the reference is found
-    /// the `otherSchema` gets merged at the level of `$ref` applicator.
-    func resolveReference(to otherSchema: JSONSchema) throws {
-        let referencedID = try otherSchema.id.unwrapOrThrow(.inconsistency("Schema without `$id` cannot be referenced."))
-        let reference = findReference(to: referencedID)
-        reference?.merge(with: otherSchema)
-    }
+    /// Resolves `$ref` recursively.
+    ///
+    /// All sub-schemas with `$ref`, including `self` will be resolved.
+    /// Only `allOf` references will be merged with `self` while `oneOf`
+    /// are kept as orphan objects
+    ///
+    /// - Parameters:
+    ///   - directory: The directory in which to look for referred schemas.
+    ///   - reader: The schema file reader.
+    func resolveReferences(in directory: URL, using reader: JSONSchemaReader) throws {
+        // resolve `properties.$ref`
+        try properties?.map(\.value).forEach {
+            try $0.resolveReferences(in: directory, using: reader)
+        }
 
-    /// Recursively searches all child schemas to find the one which contains `$ref` to given `referencedID`.
-    private func findReference(to referencedID: String) -> JSONSchema? {
-        if ref == referencedID {
-            return self
-        } else {
-            return allChildSchemas.compactMap { $0.findReference(to: referencedID) }.first
+        // resolve `items.$ref`
+        try items.map {
+            try $0.resolveReferences(in: directory, using: reader)
+        }
+
+        // resolve `oneOf[].$ref`
+        // `oneOf` schemas are kept as orphans
+        try oneOf?.forEach {
+            try $0.resolveReferences(in: directory, using: reader)
+        }
+
+        // resolve `allOf[].$ref`
+        // merge `allOf` schemas with `self`
+        try allOf?.forEach {
+            try $0.resolveReferences(in: directory, using: reader)
+            merge(with: $0)
+        }
+
+        // resolve `$ref`
+        try ref.map { ref in
+            let url = directory.appendingPathComponent(ref)
+            let schema = try reader.read(url)
+            merge(with: schema)
         }
     }
 
     // MARK: - Resolving Subschemas
 
-    func resolveSubschemas() {
-        // Resolve all subschemas (head recursion guarantees that leaf schemas are resolved first).
-        allChildSchemas.forEach { $0.resolveSubschemas() }
+    /// Find all sub-schemas recursively, including self for types `object` and `array`.
+    var subschemas: [JSONSchema] {
+        let root: [JSONSchema]
 
-        // Merge this schema with each subschema from `allOf` array.
-        allOf?.forEach { merge(with: $0) }
+        if type == .object, let props = properties, !props.isEmpty {
+            root = [self]
+        } else if type == .array, let items = items {
+            root = [items]
+        } else {
+            root = []
+        }
+
+        return oneOf?.reduce(root) { $0 + $1.subschemas } ?? root
     }
 
     // MARK: - Schemas Merging
@@ -200,6 +228,9 @@ internal class JSONSchema: Decodable {
 
         // Description can be overwritten
         self.description = self.description ?? otherSchema.description
+
+        // Type can be inferred
+        self.type = self.type ?? otherSchema.type
 
         // Properties are accumulated and if both schemas have a property with the same name, property
         // schemas are merged.
@@ -244,6 +275,13 @@ internal class JSONSchema: Decodable {
             self.readOnly = selfReadOnly || otherReadOnly
         } else {
             self.readOnly = self.readOnly ?? otherSchema.readOnly
+        }
+
+        // Accumulate `oneOf` schemas
+        if let selfOneOf = oneOf, let otherOneOf = otherSchema.oneOf {
+            self.oneOf = selfOneOf + otherOneOf
+        } else if let otherOneOf = otherSchema.oneOf {
+            self.oneOf = otherOneOf
         }
     }
 }

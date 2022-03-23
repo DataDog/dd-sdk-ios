@@ -139,7 +139,7 @@ internal class RUMResourceScope: RUMScope {
                 .init(id: rumUUID.toRUMDataFormat)
             },
             application: .init(id: context.rumApplicationID),
-            ciTest: nil,
+            ciTest: dependencies.ciTest,
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: resourceStartTime).timeIntervalSince1970.toInt64Milliseconds,
@@ -190,7 +190,11 @@ internal class RUMResourceScope: RUMScope {
                 url: resourceURL
             ),
             service: dependencies.serviceName,
-            session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            session: .init(
+                hasReplay: nil,
+                id: context.sessionID.toRUMDataFormat,
+                type: dependencies.ciTest != nil ? .ciTest : .user
+            ),
             source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
@@ -221,7 +225,7 @@ internal class RUMResourceScope: RUMScope {
                 .init(id: rumUUID.toRUMDataFormat)
             },
             application: .init(id: context.rumApplicationID),
-            ciTest: nil,
+            ciTest: dependencies.ciTest,
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
@@ -243,7 +247,11 @@ internal class RUMResourceScope: RUMScope {
                 type: command.errorType
             ),
             service: dependencies.serviceName,
-            session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            session: .init(
+                hasReplay: nil,
+                id: context.sessionID.toRUMDataFormat,
+                type: dependencies.ciTest != nil ? .ciTest : .user
+            ),
             source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,

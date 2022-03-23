@@ -1,0 +1,13 @@
+{
+    "additionalProperties": true,
+    "properties": {
+        "foo": {
+            "type": "string",
+            "readOnly": true
+        },
+        "bar": {
+            "type": "object",
+            "additionalProperties": true
+        }
+    }
+}

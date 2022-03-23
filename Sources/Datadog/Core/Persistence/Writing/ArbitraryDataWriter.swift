@@ -33,11 +33,9 @@ internal class ArbitraryDataWriter: AsyncWriter {
         }
     }
 
-#if DD_SDK_COMPILED_FOR_TESTING
     private var isCanceled = false
 
-    func flushAndCancelSynchronously() {
+    internal func flushAndCancelSynchronously() {
         queue.sync { self.isCanceled = true }
     }
-#endif
 }
