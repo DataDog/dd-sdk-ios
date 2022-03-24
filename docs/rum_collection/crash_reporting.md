@@ -12,9 +12,6 @@ further_reading:
 ---
 ## Overview
 
-<div class="alert alert-info"><p>iOS Crash Reporting and Error Tracking is in beta. Upgrade to <a href="https://github.com/DataDog/dd-sdk-ios/releases">dd-sdk-ios v1.7.0+</a> to get access.</p>
-</div>
-
 Enable iOS Crash Reporting and Error Tracking to get comprehensive crash reports and error trends with Real User Monitoring. With this feature, you can access:
 
  - Aggregated iOS crash dashboards and attributes
