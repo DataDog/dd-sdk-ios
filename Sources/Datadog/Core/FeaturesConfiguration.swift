@@ -22,6 +22,7 @@ internal struct FeaturesConfiguration {
         let origin: String?
         let sdkVersion: String
         let proxyConfiguration: [AnyHashable: Any]?
+        let encryption: DataEncryption?
     }
 
     struct Logging {
@@ -174,7 +175,8 @@ extension FeaturesConfiguration {
             source: source,
             origin: CITestIntegration.active?.origin,
             sdkVersion: sdkVersion,
-            proxyConfiguration: configuration.proxyConfiguration
+            proxyConfiguration: configuration.proxyConfiguration,
+            encryption: configuration.encryption
         )
 
         if configuration.loggingEnabled {

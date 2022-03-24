@@ -13,17 +13,17 @@ internal struct DataFormat {
     /// Suffixes the batch payload read from file.
     let suffixData: Data
     /// Separates entities written to file.
-    let separatorData: Data
+    let separatorByte: UInt8
 
     // MARK: - Initialization
 
     init(
         prefix: String,
         suffix: String,
-        separator: String
+        separator: Character
     ) {
         self.prefixData = prefix.data(using: .utf8)! // swiftlint:disable:this force_unwrapping
         self.suffixData = suffix.data(using: .utf8)! // swiftlint:disable:this force_unwrapping
-        self.separatorData = separator.data(using: .utf8)! // swiftlint:disable:this force_unwrapping
+        self.separatorByte = separator.asciiValue!   // swiftlint:disable:this force_unwrapping
     }
 }

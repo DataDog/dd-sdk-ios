@@ -227,7 +227,8 @@ public class Datadog {
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider,
             launchTimeProvider: launchTimeProvider,
-            appStateListener: AppStateListener(dateProvider: dateProvider)
+            appStateListener: AppStateListener(dateProvider: dateProvider),
+            encryption: configuration.common.encryption
         )
 
         if let internalMonitoringConfiguration = configuration.internalMonitoring {

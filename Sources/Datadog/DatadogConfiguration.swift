@@ -267,6 +267,7 @@ extension Datadog {
         private(set) var uploadFrequency: UploadFrequency
         private(set) var additionalConfiguration: [String: Any]
         private(set) var proxyConfiguration: [AnyHashable: Any]?
+        private(set) var encryption: DataEncryption?
 
         /// The client token autorizing internal monitoring data to be sent to Datadog org.
         private(set) var internalMonitoringClientToken: String?
@@ -767,6 +768,13 @@ extension Datadog {
             /// - Parameter additionalConfiguration: `[:]` by default.
             public func set(additionalConfiguration: [String: Any]) -> Builder {
                 configuration.additionalConfiguration = additionalConfiguration
+                return self
+            }
+
+            /// Sets data encryption to use for on-disk data persistency.
+            /// - Parameter encryption: An encryption object complying with `DataEncryption` protocol.
+            public func set(encryption: DataEncryption) -> Builder {
+                configuration.encryption = encryption
                 return self
             }
 
