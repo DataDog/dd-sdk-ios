@@ -8,6 +8,11 @@ import XCTest
 @testable import Datadog
 
 class LaunchTimeProviderTests: XCTestCase {
+    override func tearDown() {
+        super.tearDown()
+        setenv("ActivePrewarm", "", 1)
+    }
+
     func testGivenStartedApplication_whenRequestingLaunchTimeAtAnyTime_itReturnsTheSameValue() {
         // Given
         let provider = LaunchTimeProvider()
@@ -34,5 +39,28 @@ class LaunchTimeProviderTests: XCTestCase {
             iterations: 100
         )
         // swiftlint:enable opening_brace
+    }
+
+    func testIsActivePrewarm_returnsTrue() {
+        // Given
+        let provider = LaunchTimeProvider()
+
+        // When
+        setenv("ActivePrewarm", "1", 1)
+        NSClassFromString("AppLaunchHandler")?.load()
+
+        // Then
+        XCTAssertTrue(provider.isActivePrewarm)
+    }
+
+    func testIsActivePrewarm_returnsFalse() {
+        // Given
+        let provider = LaunchTimeProvider()
+
+        // When
+        NSClassFromString("AppLaunchHandler")?.load()
+
+        // Then
+        XCTAssertFalse(provider.isActivePrewarm)
     }
 }

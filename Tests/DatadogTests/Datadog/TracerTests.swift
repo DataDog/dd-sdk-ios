@@ -319,7 +319,7 @@ class TracerTests: XCTestCase {
         Datadog.instance = Datadog(
             consentProvider: ConsentProvider(initialConsent: .granted),
             userInfoProvider: UserInfoProvider(),
-            launchTimeProvider: LaunchTimeProviderMock()
+            launchTimeProvider: LaunchTimeProviderMock.mockAny()
         )
         defer { Datadog.flushAndDeinitialize() }
 
