@@ -740,7 +740,7 @@
 		D2CB6EB327C50EAE00A62B57 /* KronosNTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0CE277B23F0008BE766 /* KronosNTPClient.swift */; };
 		D2CB6EB427C50EAE00A62B57 /* VitalInfoSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9973F0268DF69500D8059B /* VitalInfoSampler.swift */; };
 		D2CB6EB527C50EAE00A62B57 /* VitalRefreshRateReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EA3CA6826775A3500B16871 /* VitalRefreshRateReader.swift */; };
-		D2CB6EB627C50EAE00A62B57 /* EnvironmentSpanIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13A880B257922EC004FB174 /* EnvironmentSpanIntegration.swift */; };
+		D2CB6EB627C50EAE00A62B57 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		D2CB6EB727C50EAE00A62B57 /* URLSessionTracingHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B03810252656F500518F3C /* URLSessionTracingHandler.swift */; };
 		D2CB6EB827C50EAE00A62B57 /* RUMEventSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61122ED325B1B84D00F9C7F5 /* RUMEventSanitizer.swift */; };
 		D2CB6EB927C50EAE00A62B57 /* DDError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61363D9C24D999F70084CD6F /* DDError.swift */; };
@@ -979,6 +979,8 @@
 		D2CB6FE527C5352300A62B57 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 614ED36B260352DC00C8C519 /* CrashReporter.xcframework */; };
 		D2CB6FEE27C5365A00A62B57 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6ED127C50EAE00A62B57 /* Datadog.framework */; };
 		D2CB6FF327C5369600A62B57 /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6FD127C5348200A62B57 /* DatadogCrashReporting.framework */; };
+		D2DC4BBC27F234D600E4FB96 /* CITestIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11625D727B681D200E428C6 /* CITestIntegration.swift */; };
+		D2DC4BBD27F234E000E4FB96 /* CITestIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E143CCAE27D236F600F4018A /* CITestIntegrationTests.swift */; };
 		D2EFF3D32731822A00D09F33 /* RUMViewsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFF3D22731822A00D09F33 /* RUMViewsHandler.swift */; };
 		D2F1B81126D795F3009F3293 /* DDNoopRUMMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1B81026D795F3009F3293 /* DDNoopRUMMonitor.swift */; };
 		D2F1B81326D8DA68009F3293 /* DDNoopRUMMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1B81226D8DA68009F3293 /* DDNoopRUMMonitorTests.swift */; };
@@ -1167,17 +1169,6 @@
 				D240687E27CF982D00C04F44 /* DatadogCrashReporting.framework in Embed Frameworks */,
 				D240687C27CF982C00C04F44 /* Datadog.framework in Embed Frameworks */,
 				D240688027CF982F00C04F44 /* DatadogObjc.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D2CB6FF227C5365A00A62B57 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				D2CB6FEF27C5365A00A62B57 /* Datadog.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -5544,6 +5535,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D2CB6E1027C50EAE00A62B57 /* CrashReportingWithRUMIntegration.swift in Sources */,
+				D2DC4BBC27F234D600E4FB96 /* CITestIntegration.swift in Sources */,
 				D2CB6E1127C50EAE00A62B57 /* TracerConfiguration.swift in Sources */,
 				D2CB6E1227C50EAE00A62B57 /* SwiftUIViewHandler.swift in Sources */,
 				D2CB6E1327C50EAE00A62B57 /* SwiftUIViewModifier.swift in Sources */,
@@ -5709,7 +5701,7 @@
 				D2CB6EB327C50EAE00A62B57 /* KronosNTPClient.swift in Sources */,
 				D2CB6EB427C50EAE00A62B57 /* VitalInfoSampler.swift in Sources */,
 				D2CB6EB527C50EAE00A62B57 /* VitalRefreshRateReader.swift in Sources */,
-				D2CB6EB627C50EAE00A62B57 /* EnvironmentSpanIntegration.swift in Sources */,
+				D2CB6EB627C50EAE00A62B57 /* (null) in Sources */,
 				D2CB6EB727C50EAE00A62B57 /* URLSessionTracingHandler.swift in Sources */,
 				D2CB6EB827C50EAE00A62B57 /* RUMEventSanitizer.swift in Sources */,
 				D2CB6EB927C50EAE00A62B57 /* DDError.swift in Sources */,
@@ -5746,6 +5738,7 @@
 				D2CB6EDE27C520D400A62B57 /* RUMEventMatcher.swift in Sources */,
 				D2CB6EDF27C520D400A62B57 /* RUMSessionScopeTests.swift in Sources */,
 				D2CB6EE027C520D400A62B57 /* SpanMatcher.swift in Sources */,
+				D2DC4BBD27F234E000E4FB96 /* CITestIntegrationTests.swift in Sources */,
 				D2CB6EE127C520D400A62B57 /* RUMWithCrashContextIntegrationTests.swift in Sources */,
 				D2CB6EE227C520D400A62B57 /* ServerMock.swift in Sources */,
 				D2CB6EE327C520D400A62B57 /* RUMViewScopeTests.swift in Sources */,
