@@ -45,7 +45,7 @@ end
 {{% tab "Swift Package Manager" %}}
 Add the package at `https://github.com/DataDog/dd-sdk-ios` and link `DatadogCrashReporting` to your application target.
 
-**Note:** If you link to `Datadog` or the `DatadogStatic` library, replace it with `DatadogCrashReporting`.
+**Note:** If you link to `Datadog` or the `DatadogStatic` library, link instead to `DatadogCrashReporting`.
 
 {{% /tab %}}
 {{% tab "Carthage" %}}
