@@ -24,28 +24,40 @@ public struct RUMAction {
     }
 }
 
+#if os(tvOS)
+public typealias UIKitRUMUserActionsPredicate = UIPressRUMUserActionsPredicate
+#else
+public typealias UIKitRUMUserActionsPredicate = UITouchRUMUserActionsPredicate
+#endif
+
 /// The predicate deciding if a given RUM Action should be recorded.
 ///
-/// When the app is running, the SDK will ask the implementation of `UIKitRUMUserActionsPredicate` if any noticed user action on the target view should
+/// When the app is running, the SDK will ask the implementation of `UITouchRUMUserActionsPredicate` if any noticed user action on the target view should
 /// be considered as the RUM Action. The predicate implementation should return RUM Action parameters if it should be recorded or `nil` otherwise.
-public protocol UIKitRUMUserActionsPredicate {
+public protocol UITouchRUMUserActionsPredicate {
     /// The predicate deciding if the RUM Action should be recorded.
     /// - Parameter targetView: an instance of the `UIView` which received the action.
     /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
     func rumAction(targetView: UIView) -> RUMAction?
 }
 
+/// The predicate deciding if a given RUM Action should be recorded.
+///
+/// When the app is running, the SDK will ask the implementation of `UIPressRUMUserActionsPredicate` if any noticed user action on the target view should
+/// be considered as the RUM Action. The predicate implementation should return RUM Action parameters if it should be recorded or `nil` otherwise.
+public protocol UIPressRUMUserActionsPredicate {
+    /// The predicate deciding if the RUM Action should be recorded.
+    /// - Parameters:
+    ///   - type: the `UIPress.PressType` which received the action.
+    ///   - targetView: an instance of the `UIView` which received the action.
+    /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
+    func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction?
+}
+
 /// Default implementation of `UIKitRUMUserActionsPredicate`.
 /// It names  RUM Actions by the `accessibilityIdentifier` or `className` otherwise.
-public struct DefaultUIKitRUMUserActionsPredicate: UIKitRUMUserActionsPredicate {
+public struct DefaultUIKitRUMUserActionsPredicate {
     public init () {}
-
-    public func rumAction(targetView: UIView) -> RUMAction? {
-        return RUMAction(
-            name: targetName(for: targetView),
-            attributes: [:]
-        )
-    }
 
     /// Builds the RUM Action's `target` name for given `UIView`.
     private func targetName(for view: UIView) -> String {
@@ -56,5 +68,33 @@ public struct DefaultUIKitRUMUserActionsPredicate: UIKitRUMUserActionsPredicate 
         } else {
             return className
         }
+    }
+}
+
+extension DefaultUIKitRUMUserActionsPredicate: UITouchRUMUserActionsPredicate {
+    public func rumAction(targetView: UIView) -> RUMAction? {
+        return RUMAction(
+            name: targetName(for: targetView),
+            attributes: [:]
+        )
+    }
+}
+
+extension DefaultUIKitRUMUserActionsPredicate: UIPressRUMUserActionsPredicate {
+    public func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction? {
+        var name: String
+
+        switch type {
+        case .select:
+            name = targetName(for: targetView)
+        case .menu:
+            name = "menu"
+        case .playPause:
+            name = "play-pause"
+        default:
+            return nil
+        }
+
+        return RUMAction(name: name, attributes: [:])
     }
 }

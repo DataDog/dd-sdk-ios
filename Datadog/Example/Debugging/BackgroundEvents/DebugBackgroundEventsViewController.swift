@@ -7,14 +7,14 @@
 import SwiftUI
 import Datadog
 
-@available(iOS 13, *)
+@available(iOS 13, tvOS 13,*)
 internal class DebugBackgroundEventsViewController: UIHostingController<DebugBackgroundEventsView> {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder, rootView: DebugBackgroundEventsView())
     }
 }
 
-@available(iOS 13.0, *)
+@available(iOS 13, tvOS 13,*)
 private class DebugBackgroundEventsViewModel: ObservableObject {
     private let locationMonitor: BackgroundLocationMonitor
 
@@ -55,7 +55,7 @@ private class DebugBackgroundEventsViewModel: ObservableObject {
     }
 }
 
-@available(iOS 13.0, *)
+@available(iOS 13, tvOS 13,*)
 internal struct DebugBackgroundEventsView: View {
     @ObservedObject private var viewModel = DebugBackgroundEventsViewModel()
 
@@ -76,7 +76,7 @@ internal struct DebugBackgroundEventsView: View {
                 Text("Location Monitoring:")
                     .font(.body).fontWeight(.light)
                 Spacer()
-                if #available(iOS 14.0, *) {
+                if #available(iOS 14, tvOS 14, *) {
                     if viewModel.isLocationMonitoringON {
                         ProgressView().padding(.trailing, 8)
                     }
@@ -116,7 +116,7 @@ internal struct DebugBackgroundEventsView: View {
 
 // MARK - Preview
 
-@available(iOS 13.0, *)
+@available(iOS 13, tvOS 13,*)
 internal struct DebugBackgroundEventsView_Previews: PreviewProvider {
     static var previews: some View {
         Group {

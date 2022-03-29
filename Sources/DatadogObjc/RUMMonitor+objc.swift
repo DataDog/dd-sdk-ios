@@ -15,7 +15,8 @@ import enum Datadog.RUMMethod
 import struct Datadog.RUMView
 import protocol Datadog.UIKitRUMViewsPredicate
 import struct Datadog.RUMAction
-import protocol Datadog.UIKitRUMUserActionsPredicate
+import protocol Datadog.UITouchRUMUserActionsPredicate
+import protocol Datadog.UIPressRUMUserActionsPredicate
 
 internal struct UIKitRUMViewsPredicateBridge: UIKitRUMViewsPredicate {
     let objcPredicate: DDUIKitRUMViewsPredicate
@@ -53,11 +54,29 @@ public protocol DDUIKitRUMViewsPredicate: AnyObject {
     func rumView(for viewController: UIViewController) -> DDRUMView?
 }
 
-internal struct UIKitRUMUserActionsPredicateBridge: UIKitRUMUserActionsPredicate {
-    let objcPredicate: DDUIKitRUMUserActionsPredicate?
+internal struct UIKitRUMUserActionsPredicateBridge: UITouchRUMUserActionsPredicate & UIPressRUMUserActionsPredicate {
+    let objcPredicate: AnyObject?
+
+    init(objcPredicate: DDUITouchRUMUserActionsPredicate) {
+        self.objcPredicate = objcPredicate
+    }
+
+    init(objcPredicate: DDUIPressRUMUserActionsPredicate) {
+        self.objcPredicate = objcPredicate
+    }
 
     func rumAction(targetView: UIView) -> RUMAction? {
-        return objcPredicate?.rumAction(targetView: targetView)?.swiftAction
+        guard let objcPredicate = objcPredicate as? DDUITouchRUMUserActionsPredicate else {
+            return nil
+        }
+        return objcPredicate.rumAction(targetView: targetView)?.swiftAction
+    }
+
+    func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction? {
+        guard let objcPredicate = objcPredicate as? DDUIPressRUMUserActionsPredicate else {
+            return nil
+        }
+        return objcPredicate.rumAction(press: type, targetView: targetView)?.swiftAction
     }
 }
 
@@ -81,12 +100,30 @@ public class DDRUMAction: NSObject {
     }
 }
 
+#if os(tvOS)
 @objc
-public protocol DDUIKitRUMUserActionsPredicate: AnyObject {
+public protocol DDUIKitRUMUserActionsPredicate: DDUIPressRUMUserActionsPredicate {}
+#else
+@objc
+public protocol DDUIKitRUMUserActionsPredicate: DDUITouchRUMUserActionsPredicate {}
+#endif
+
+@objc
+public protocol DDUITouchRUMUserActionsPredicate: AnyObject {
     /// The predicate deciding if the RUM Action should be recorded.
     /// - Parameter targetView: an instance of the `UIView` which received the action.
     /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
     func rumAction(targetView: UIView) -> DDRUMAction?
+}
+
+@objc
+public protocol DDUIPressRUMUserActionsPredicate: AnyObject {
+    /// The predicate deciding if the RUM Action should be recorded.
+    /// - Parameters:
+    ///   - type: the `UIPress.PressType` which received the action.
+    ///   - targetView: an instance of the `UIView` which received the action.
+    /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
+    func rumAction(press type: UIPress.PressType, targetView: UIView) -> DDRUMAction?
 }
 
 @objc

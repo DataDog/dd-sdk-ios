@@ -36,7 +36,7 @@ class DDCrashReportBuilderTests: XCTestCase {
         )
         XCTAssertTrue(
             ddCrashReport.stack.contains("XCTest"),
-            "`DDCrashReport's` stack should include at least one frame from `DatadogCrashReportingTests` image"
+            "`DDCrashReport's` stack should include at least one frame from `XCTest` image"
         )
         XCTAssertTrue(
             ddCrashReport.binaryImages.contains(where: { $0.libraryName == "DatadogCrashReportingTests" }),

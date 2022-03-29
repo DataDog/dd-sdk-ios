@@ -4,6 +4,8 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+#if !os(tvOS)
+
 import Foundation
 import WebKit
 
@@ -145,3 +147,5 @@ internal class DatadogMessageHandler: NSObject, WKScriptMessageHandler {
         }
     }
 }
+
+#endif

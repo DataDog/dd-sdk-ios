@@ -11,27 +11,52 @@ A collection of mocks for different `UIKit` types.
 It follows the mocking conventions described in `FoundationMocks.swift`.
  */
 
+#if !os(tvOS)
 extension UIDevice.BatteryState {
     static func mockAny() -> UIDevice.BatteryState {
         return .full
     }
 }
+#endif
 
 class UIDeviceMock: UIDevice {
+    override var model: String { _model }
+    override var systemName: String { _systemName }
+    override var systemVersion: String { "mock system version" }
+
     private var _model: String
     private var _systemName: String
     private var _systemVersion: String
+
+    #if os(tvOS)
+    init(
+        model: String = .mockAny(),
+        systemName: String = .mockAny(),
+        systemVersion: String = .mockAny()
+    ) {
+        self._model = model
+        self._systemName = systemName
+        self._systemVersion = systemVersion
+    }
+    #else
+    override var isBatteryMonitoringEnabled: Bool {
+        get { _isBatteryMonitoringEnabled }
+        set { _isBatteryMonitoringEnabled = newValue }
+    }
+    override var batteryState: UIDevice.BatteryState { _batteryState }
+    override var batteryLevel: Float { _batteryLevel }
+
     private var _isBatteryMonitoringEnabled: Bool
-    private var _batteryState: UIDevice.BatteryState
     private var _batteryLevel: Float
+    private var _batteryState: UIDevice.BatteryState
 
     init(
         model: String = .mockAny(),
         systemName: String = .mockAny(),
         systemVersion: String = .mockAny(),
         isBatteryMonitoringEnabled: Bool = .mockAny(),
-        batteryState: UIDevice.BatteryState = .mockAny(),
-        batteryLevel: Float = .mockAny()
+        batteryLevel: Float = .mockAny(),
+        batteryState: UIDevice.BatteryState = .mockAny()
     ) {
         self._model = model
         self._systemName = systemName
@@ -40,25 +65,32 @@ class UIDeviceMock: UIDevice {
         self._batteryState = batteryState
         self._batteryLevel = batteryLevel
     }
-
-    override var model: String { _model }
-    override var systemName: String { _systemName }
-    override var systemVersion: String { "mock system version" }
-    override var isBatteryMonitoringEnabled: Bool {
-        get { _isBatteryMonitoringEnabled }
-        set { _isBatteryMonitoringEnabled = newValue }
-    }
-    override var batteryState: UIDevice.BatteryState { _batteryState }
-    override var batteryLevel: Float { _batteryLevel }
+    #endif
 }
 
 extension UIEvent {
-    static func mockAny() -> UIEvent {
+    static func mockAnyTouch() -> UIEvent {
         return .mockWith(touches: [.mockAny()])
+    }
+
+    static func mockAnyPress() -> UIEvent {
+        return .mockWith(touches: [.mockAny()])
+    }
+
+    static func mockWith(touch: UITouch) -> UIEvent {
+        return UIEventMock(allTouches: [touch])
     }
 
     static func mockWith(touches: Set<UITouch>?) -> UIEvent {
         return UIEventMock(allTouches: touches)
+    }
+
+    static func mockWith(press: UIPress) -> UIPressesEvent {
+        return UIPressesEventMock(allPresses: [press])
+    }
+
+    static func mockWith(presses: Set<UIPress>) -> UIPressesEvent {
+        return UIPressesEventMock(allPresses: presses)
     }
 }
 
@@ -72,13 +104,40 @@ private class UIEventMock: UIEvent {
     override var allTouches: Set<UITouch>? { _allTouches }
 }
 
-extension UITouch {
-    static func mockAny() -> UITouch {
-        return mockWith(phase: .ended, view: UIView())
+private class UIPressesEventMock: UIPressesEvent {
+    private let _allPresses: Set<UIPress>
+
+    fileprivate init(allPresses: Set<UIPress> = []) {
+        _allPresses = allPresses
     }
 
-    static func mockWith(phase: UITouch.Phase, view: UIView?) -> UITouch {
+    override var allPresses: Set<UIPress> { _allPresses }
+}
+
+extension UITouch {
+    static func mockAny() -> UITouch {
+        return mockWith(view: UIView())
+    }
+
+    static func mockWith(
+        phase: UITouch.Phase = .ended,
+        view: UIView? = .init()
+    ) -> UITouch {
         return UITouchMock(phase: phase, view: view)
+    }
+}
+
+extension UIPress {
+    static func mockAny() -> UIPress {
+        return mockWith(type: .select, view: UIView())
+    }
+
+    static func mockWith(
+        phase: UIPress.Phase = .ended,
+        type: UIPress.PressType = .select,
+        view: UIView? = .init()
+    ) -> UIPress {
+        return UIPressMock(phase: phase, type: type, view: view)
     }
 }
 
@@ -93,6 +152,22 @@ private class UITouchMock: UITouch {
 
     override var phase: UITouch.Phase { _phase }
     override var view: UIView? { _view }
+}
+
+private class UIPressMock: UIPress {
+    private let _phase: UIPress.Phase
+    private let _type: UIPress.PressType
+    private let _view: UIView?
+
+    fileprivate init(phase: UIPress.Phase, type: UIPress.PressType, view: UIView?) {
+        _phase = phase
+        _type = type
+        _view = view
+    }
+
+    override var phase: UIPress.Phase { _phase }
+    override var type: UIPress.PressType { _type }
+    override var responder: UIResponder? { _view }
 }
 
 extension UIApplication.State: AnyMockable, RandomMockable {

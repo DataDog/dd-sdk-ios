@@ -1325,10 +1325,17 @@ class RUMMonitorTests: XCTestCase {
         let mockWindow = UIWindow(frame: .zero)
         let mockUIControl = UIControl()
         mockWindow.addSubview(mockUIControl)
+
         userActionsHandler.notify_sendEvent(
             application: .shared,
-            event: .mockWith(touches: [.mockWith(phase: .ended, view: mockUIControl)])
+            event: .mockWith(touch: .mockWith(view: mockUIControl))
         )
+
+        userActionsHandler.notify_sendEvent(
+            application: .shared,
+            event: .mockWith(press: .mockWith(view: mockUIControl))
+        )
+
         XCTAssertEqual(output.recordedLog?.status, .warn)
         XCTAssertEqual(
             output.recordedLog?.message,
