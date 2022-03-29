@@ -4,6 +4,7 @@
 * [FEATURE] Add tvOS Support. See [#793][]
 * [BUGFIX] Strip query parameters from span resource. See [#728][]
 * [BUGFIX] Stop reporting pre-warmed application launch time. See [#789][]
+* [IMPROVEMENT] Crash Reporting: Filter out unrecognized trailing `???` stack frame in `error.stack`. See [#794][]
 
 # 1.9.0 / 01-26-2022
 
@@ -328,6 +329,7 @@
 [#729]: https://github.com/DataDog/dd-sdk-ios/issues/729
 [#789]: https://github.com/DataDog/dd-sdk-ios/issues/789
 [#793]: https://github.com/DataDog/dd-sdk-ios/issues/793
+[#794]: https://github.com/DataDog/dd-sdk-ios/issues/794
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu
