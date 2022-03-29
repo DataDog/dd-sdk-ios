@@ -204,6 +204,26 @@ class DDCrashReportExporterTests: XCTestCase {
         XCTAssertEqual(actualStack, expectedStack)
     }
 
+    func testWhenLastFrameInTheStackHasNoLibraryBaseAddress_itIsFilteredOut() {
+        let stackFrames: [StackFrame] = [
+            .init(number: 0, libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 102),
+            .init(number: 1, libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 112),
+            .init(number: 2, libraryName: "Bizz", libraryBaseAddress: 400, instructionPointer: 432),
+            .init(number: 3, libraryName: "Bizz", libraryBaseAddress: nil, instructionPointer: 432),
+        ]
+
+        crashReport.exceptionInfo = .init(name: .mockAny(), reason: .mockAny(), stackFrames: stackFrames)
+
+        let actualStack = exporter.export(crashReport).stack
+        let expectedStack = """
+        0   Foo                                 0x0000000000000066 0x64 + 2
+        1   Foo                                 0x0000000000000070 0x64 + 12
+        2   Bizz                                0x00000000000001b0 0x190 + 32
+        """
+
+        XCTAssertEqual(actualStack, expectedStack)
+    }
+
     // MARK: - Formatting threads
 
     func testExportingThreads() {
@@ -249,6 +269,29 @@ class DDCrashReportExporterTests: XCTestCase {
         XCTAssertEqual(exportedThreads[2].name, "Thread 2")
         XCTAssertFalse(exportedThreads[2].crashed)
         XCTAssertEqual(exportedThreads[2].stack, expectedOtherThreadStack)
+    }
+
+    func testWhenLastFrameInThreadStackHasNoLibraryBaseAddress_itIsNotFilteredOut() {
+        let crashedThreadStackFrames: [StackFrame] = [
+            .init(number: 0, libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 102),
+            .init(number: 1, libraryName: "Foo", libraryBaseAddress: 100, instructionPointer: 112),
+            .init(number: 2, libraryName: "Bizz", libraryBaseAddress: 400, instructionPointer: 432),
+            .init(number: 3, libraryName: nil, libraryBaseAddress: nil, instructionPointer: 432),
+        ]
+
+        crashReport.threads = [
+            .init(threadNumber: 0, crashed: true, stackFrames: crashedThreadStackFrames),
+        ]
+
+        let actualStack = exporter.export(crashReport).threads[0].stack
+        let expectedStack = """
+        0   Foo                                 0x0000000000000066 0x64 + 2
+        1   Foo                                 0x0000000000000070 0x64 + 12
+        2   Bizz                                0x00000000000001b0 0x190 + 32
+        3   ???                                 0x00000000000001b0 0x0 + 0
+        """
+
+        XCTAssertEqual(actualStack, expectedStack)
     }
 
     // MARK: - Formatting binary images
