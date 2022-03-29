@@ -406,7 +406,7 @@ extension Datadog {
             /// - Parameter mapper: the closure taking `LogEvent` as input and expecting `LogEvent` as output.
             /// The implementation should obtain a mutable version of the `LogEvent`, modify it and return it. Returning `nil` will result
             /// with dropping the Log event entirely, so it won't be send to Datadog.
-            public func setLogEventMapper(_ mapper: @escaping (LogEvent) -> LogEvent) -> Builder {
+            public func setLogEventMapper(_ mapper: @escaping (LogEvent) -> LogEvent?) -> Builder {
                 configuration.logEventMapper = mapper
                 return self
             }
