@@ -1,6 +1,7 @@
 # Unreleased
 
 * [FEATURE] Web-view tracking. See [#729][]
+* [FEATURE] Integration with CI Visibility Tests. See[#761][]
 * [FEATURE] Add tvOS Support. See [#793][]
 * [BUGFIX] Strip query parameters from span resource. See [#728][]
 * [BUGFIX] Stop reporting pre-warmed application launch time. See [#789][]
@@ -327,6 +328,7 @@
 [#725]: https://github.com/DataDog/dd-sdk-ios/issues/725
 [#728]: https://github.com/DataDog/dd-sdk-ios/issues/728
 [#729]: https://github.com/DataDog/dd-sdk-ios/issues/729
+[#761]: https://github.com/DataDog/dd-sdk-ios/issues/761
 [#789]: https://github.com/DataDog/dd-sdk-ios/issues/789
 [#793]: https://github.com/DataDog/dd-sdk-ios/issues/793
 [#794]: https://github.com/DataDog/dd-sdk-ios/issues/794
