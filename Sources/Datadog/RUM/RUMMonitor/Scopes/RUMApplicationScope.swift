@@ -27,6 +27,8 @@ internal struct RUMScopeDependencies {
     let crashContextIntegration: RUMWithCrashContextIntegration?
     /// Integration with CIApp tests. It contains the CIApp test context when active.
     let ciTest: RUMCITest?
+    /// Produces `RUMViewUpdatesSamplerType` for each started RUM view scope.
+    let viewUpdatesSamplerFactory: () -> RUMViewUpdatesSamplerType
 
     let vitalCPUReader: SamplingBasedVitalReader
     let vitalMemoryReader: SamplingBasedVitalReader

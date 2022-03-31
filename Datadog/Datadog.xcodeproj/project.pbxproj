@@ -195,6 +195,8 @@
 		61441C9D2461A796003D8BB8 /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C9C2461A796003D8BB8 /* AppConfiguration.swift */; };
 		6147E3B3270486920092BC9F /* TracingConfigurationE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6147E3B2270486920092BC9F /* TracingConfigurationE2ETests.swift */; };
 		614872772485067300E3EBDB /* SpanTagsReducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614872762485067300E3EBDB /* SpanTagsReducer.swift */; };
+		61494B7A27F352570082BBCC /* RUMViewUpdatesSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494B7927F352570082BBCC /* RUMViewUpdatesSampler.swift */; };
+		61494B7B27F352570082BBCC /* RUMViewUpdatesSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494B7927F352570082BBCC /* RUMViewUpdatesSampler.swift */; };
 		61494CB124C839460082C633 /* RUMResourceScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB024C839460082C633 /* RUMResourceScope.swift */; };
 		61494CB524C864680082C633 /* RUMResourceScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB424C864680082C633 /* RUMResourceScopeTests.swift */; };
 		61494CBA24CB126F0082C633 /* RUMUserActionScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB924CB126F0082C633 /* RUMUserActionScope.swift */; };
@@ -1370,6 +1372,7 @@
 		61441C9C2461A796003D8BB8 /* AppConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
 		6147E3B2270486920092BC9F /* TracingConfigurationE2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingConfigurationE2ETests.swift; sourceTree = "<group>"; };
 		614872762485067300E3EBDB /* SpanTagsReducer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanTagsReducer.swift; sourceTree = "<group>"; };
+		61494B7927F352570082BBCC /* RUMViewUpdatesSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewUpdatesSampler.swift; sourceTree = "<group>"; };
 		61494CB024C839460082C633 /* RUMResourceScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMResourceScope.swift; sourceTree = "<group>"; };
 		61494CB424C864680082C633 /* RUMResourceScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMResourceScopeTests.swift; sourceTree = "<group>"; };
 		61494CB924CB126F0082C633 /* RUMUserActionScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUserActionScope.swift; sourceTree = "<group>"; };
@@ -2910,6 +2913,16 @@
 			path = Example;
 			sourceTree = "<group>";
 		};
+		61494B7827F3522C0082BBCC /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				61FF9A4425AC5DEA001058CC /* RUMViewIdentity.swift */,
+				61A614E7276B2BD000A06CE7 /* RUMOffViewEventsHandlingRule.swift */,
+				61494B7927F352570082BBCC /* RUMViewUpdatesSampler.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
 		615519242461BCE7002A85CF /* xcconfigs */ = {
 			isa = PBXGroup;
 			children = (
@@ -3429,8 +3442,7 @@
 		61C3E63C24BF1B7F008053F2 /* Scopes */ = {
 			isa = PBXGroup;
 			children = (
-				61FF9A4425AC5DEA001058CC /* RUMViewIdentity.swift */,
-				61A614E7276B2BD000A06CE7 /* RUMOffViewEventsHandlingRule.swift */,
+				61494B7827F3522C0082BBCC /* Utils */,
 				61C3E63D24BF1B91008053F2 /* RUMApplicationScope.swift */,
 				61C2C20624C098FC00C0321C /* RUMSessionScope.swift */,
 				61C2C21124C5951400C0321C /* RUMViewScope.swift */,
@@ -4994,6 +5006,7 @@
 				6156CB9024DDA8BE008CB2B2 /* RUMCurrentContext.swift in Sources */,
 				614B0A4F24EBDC6B00A2A780 /* RUMConnectivityInfoProvider.swift in Sources */,
 				9E68FB55244707FD0013A8AA /* ObjcExceptionHandler.m in Sources */,
+				61494B7A27F352570082BBCC /* RUMViewUpdatesSampler.swift in Sources */,
 				6141014F251A57AF00E3C2D9 /* UIApplicationSwizzler.swift in Sources */,
 				61494CB124C839460082C633 /* RUMResourceScope.swift in Sources */,
 				61C2C20724C098FC00C0321C /* RUMSessionScope.swift in Sources */,
@@ -5585,6 +5598,7 @@
 				D2CB6E2C27C50EAE00A62B57 /* KronosNTPPacket.swift in Sources */,
 				D2CB6E2D27C50EAE00A62B57 /* CrashReportingFeature.swift in Sources */,
 				D2CB6E2E27C50EAE00A62B57 /* LaunchTimeProvider.swift in Sources */,
+				61494B7B27F352570082BBCC /* RUMViewUpdatesSampler.swift in Sources */,
 				D2CB6E2F27C50EAE00A62B57 /* SpanTagsReducer.swift in Sources */,
 				D2CB6E3027C50EAE00A62B57 /* RUMApplicationScope.swift in Sources */,
 				D2CB6E3127C50EAE00A62B57 /* FileWriter.swift in Sources */,

@@ -199,6 +199,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     dateCorrector: rumFeature.dateCorrector,
                     crashContextIntegration: RUMWithCrashContextIntegration(),
                     ciTest: CITestIntegration.active?.rumCITest,
+                    viewUpdatesSamplerFactory: { RUMViewUpdatesSampler() },
                     vitalCPUReader: rumFeature.vitalCPUReader,
                     vitalMemoryReader: rumFeature.vitalMemoryReader,
                     vitalRefreshRateReader: rumFeature.vitalRefreshRateReader,

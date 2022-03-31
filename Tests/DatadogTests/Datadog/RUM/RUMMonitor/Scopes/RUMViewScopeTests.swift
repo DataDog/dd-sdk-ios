@@ -1195,6 +1195,94 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.documentVersion, 1, "It should record only one view update")
     }
 
+    // MARK: Suppressing number of view updates
+
+    // swiftlint:disable opening_brace
+    func testGivenScopeWithViewUpdatesSampler_whenReceivingStreamOfCommands_thenItSendsLessViewUpdatesThanScopeWithNoSampler() throws {
+        let commandsIssuingViewUpdates: [(Date) -> RUMCommand] = [
+            // receive resource:
+            { date in RUMStartResourceCommand.mockWith(resourceKey: "resource", time: date) },
+            { date in RUMStopResourceCommand.mockWith(resourceKey: "resource", time: date) },
+            // add action:
+            { date in RUMStartUserActionCommand.mockWith(time: date, actionType: .scroll) },
+            { date in RUMStopUserActionCommand.mockWith(time: date, actionType: .scroll) },
+            // add error:
+            { date in RUMAddCurrentViewErrorCommand.mockWithErrorObject(time: date) },
+            // add long task:
+            { date in RUMAddLongTaskCommand.mockWith(time: date) },
+            // receive timing:
+            { date in RUMAddViewTimingCommand.mockWith(time: date, timingName: .mockRandom()) },
+        ]
+        let stopViewCommand: [(Date) -> RUMCommand] = [
+            { date in RUMStopViewCommand.mockWith(time: date, identity: mockView) }
+        ]
+
+        let commands = (0..<5).flatMap({ _ in commandsIssuingViewUpdates }) + stopViewCommand // loop 5 times through all commands
+        let timeIntervalBetweenCommands = 1.0
+        let simulationDuration = timeIntervalBetweenCommands * Double(commands.count)
+        let samplingDuration = simulationDuration * 0.5 // at least half view updates should be skipped
+
+        // Given
+        let sampler = RUMViewUpdatesSampler(viewUpdateThreshold: samplingDuration)
+        let sampledScopeOutput = RUMEventOutputMock()
+        let sampledScope: RUMViewScope = .mockWith(
+            parent: parent,
+            dependencies: .mockWith(
+                eventOutput: sampledScopeOutput,
+                viewUpdatesSamplerFactory: { sampler }
+            )
+        )
+
+        let noOpSampler = NoOpRUMViewUpdatesSampler()
+        let notSampledScopeOutput = RUMEventOutputMock()
+        let notSampledScope: RUMViewScope = .mockWith(
+            parent: parent,
+            dependencies: .mockWith(
+                eventOutput: notSampledScopeOutput,
+                viewUpdatesSamplerFactory: { noOpSampler }
+            )
+        )
+
+        // When
+        func send(commands: [(Date) -> RUMCommand], to scope: RUMViewScope) {
+            var currentTime = scope.viewStartTime
+            commands.forEach { command in
+                currentTime.addTimeInterval(timeIntervalBetweenCommands)
+                _ = scope.process(command: command(currentTime))
+            }
+        }
+
+        send(commands: commands, to: sampledScope)
+        send(commands: commands, to: notSampledScope)
+
+        // Then
+        let viewUpdatesInSampledScope = try sampledScopeOutput.recordedEvents(ofType: RUMViewEvent.self)
+        let viewUpdatesInNotSampledScope = try notSampledScopeOutput.recordedEvents(ofType: RUMViewEvent.self)
+        XCTAssertLessThan(
+            viewUpdatesInSampledScope.count,
+            viewUpdatesInNotSampledScope.count ,
+            "Sampled scope should send less view updates than not sampled"
+        )
+
+        let actualSamplingRatio = Double(viewUpdatesInSampledScope.count) / Double(viewUpdatesInNotSampledScope.count)
+        let maxExpectedSamplingRatio = samplingDuration / simulationDuration
+        XCTAssertLessThan(
+            actualSamplingRatio,
+            maxExpectedSamplingRatio,
+            "Less than \(maxExpectedSamplingRatio * 100)% of view updates should be sampled"
+        )
+
+        let actualLastUpdate = try XCTUnwrap(viewUpdatesInSampledScope.last)
+        let expectedLastUpdate = try XCTUnwrap(viewUpdatesInNotSampledScope.last)
+        XCTAssertEqual(actualLastUpdate.view.resource.count, expectedLastUpdate.view.resource.count, "It should count all resources")
+        XCTAssertEqual(actualLastUpdate.view.action.count, expectedLastUpdate.view.action.count, "It should count all actions")
+        XCTAssertEqual(actualLastUpdate.view.error.count, expectedLastUpdate.view.error.count, "It should count all errors")
+        XCTAssertEqual(actualLastUpdate.view.longTask?.count, expectedLastUpdate.view.longTask?.count, "It should count all long tasks")
+        XCTAssertEqual(actualLastUpdate.view.customTimings?.count, expectedLastUpdate.view.customTimings?.count, "It should count all view timings")
+        XCTAssertTrue(actualLastUpdate.view.isActive == false, "Terminal view update must always be sent")
+    }
+    // swiftlint:enable opening_brace
+
     // MARK: Integration with Crash Context
 
     func testWhenViewIsStarted_thenItUpdatesLastRUMViewEventInCrashContext() throws {

@@ -73,6 +73,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     private let vitalInfoSampler: VitalInfoSampler
 
+    /// Samples view update events, so we can minimize the number of events in payload.
+    private let viewUpdatesSampler: RUMViewUpdatesSamplerType
+
     init(
         isInitialView: Bool,
         parent: RUMContextProvider,
@@ -101,6 +104,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             memoryReader: dependencies.vitalMemoryReader,
             refreshRateReader: dependencies.vitalRefreshRateReader
         )
+        self.viewUpdatesSampler = dependencies.viewUpdatesSamplerFactory()
     }
 
     // MARK: - RUMContextProvider
@@ -437,11 +441,16 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         )
 
         if let event = dependencies.eventBuilder.build(from: eventData) {
-            dependencies.eventOutput.write(event: event)
+            if viewUpdatesSampler.sample(event: event) {
+                dependencies.eventOutput.write(event: event)
+            } else { // if event was dropped by sampler
+                version -= 1
+            }
 
-            // Update `CrashContext` with recent RUM view:
+            // Update `CrashContext` with recent RUM view (no matter sampling - we want to always
+            // have recent information if process is interrupted by crash):
             dependencies.crashContextIntegration?.update(lastRUMViewEvent: event)
-        } else {
+        } else { // if event was dropped by mapper
             version -= 1
         }
     }

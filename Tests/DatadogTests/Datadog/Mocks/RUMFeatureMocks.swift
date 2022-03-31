@@ -601,6 +601,12 @@ extension RUMSessionState: AnyMockable, RandomMockable {
 
 // MARK: - RUMScope Mocks
 
+internal struct NoOpRUMViewUpdatesSampler: RUMViewUpdatesSamplerType {
+    func sample(event: RUMViewEvent) -> Bool {
+        return true // always send view update
+    }
+}
+
 func mockNoOpSessionListerner() -> RUMSessionListener {
     return { _, _ in }
 }
@@ -625,6 +631,7 @@ extension RUMScopeDependencies {
         dateCorrector: DateCorrectorType = DateCorrectorMock(),
         crashContextIntegration: RUMWithCrashContextIntegration? = nil,
         ciTest: RUMCITest? = nil,
+        viewUpdatesSamplerFactory: @escaping () -> RUMViewUpdatesSamplerType = { NoOpRUMViewUpdatesSampler() },
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
@@ -641,6 +648,7 @@ extension RUMScopeDependencies {
             dateCorrector: dateCorrector,
             crashContextIntegration: crashContextIntegration,
             ciTest: ciTest,
+            viewUpdatesSamplerFactory: viewUpdatesSamplerFactory,
             vitalCPUReader: SamplingBasedVitalReaderMock(),
             vitalMemoryReader: SamplingBasedVitalReaderMock(),
             vitalRefreshRateReader: ContinuousVitalReaderMock(),
@@ -661,6 +669,7 @@ extension RUMScopeDependencies {
         dateCorrector: DateCorrectorType? = nil,
         crashContextIntegration: RUMWithCrashContextIntegration? = nil,
         ciTest: RUMCITest? = nil,
+        viewUpdatesSamplerFactory: (() -> RUMViewUpdatesSamplerType)? = nil,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
@@ -676,7 +685,8 @@ extension RUMScopeDependencies {
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
             dateCorrector: dateCorrector ?? self.dateCorrector,
             crashContextIntegration: crashContextIntegration ?? self.crashContextIntegration,
-            ciTest: ciTest,
+            ciTest: ciTest ?? self.ciTest,
+            viewUpdatesSamplerFactory: viewUpdatesSamplerFactory ?? self.viewUpdatesSamplerFactory,
             vitalCPUReader: SamplingBasedVitalReaderMock(),
             vitalMemoryReader: SamplingBasedVitalReaderMock(),
             vitalRefreshRateReader: ContinuousVitalReaderMock(),
