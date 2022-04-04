@@ -66,12 +66,13 @@ class RUMViewScopeTests: XCTestCase {
     }
 
     func testWhenInitialViewReceivesAnyCommand_itSendsApplicationStartAction() throws {
+        // Given
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
             isInitialView: true,
             parent: parent,
             dependencies: dependencies.replacing(
-                launchTimeProvider: LaunchTimeProviderMock(launchTime: 2) // 2 seconds
+                launchTimeProvider: LaunchTimeProviderMock.mockWith(launchTime: 2) // 2 seconds
             ),
             identity: mockView,
             path: "UIViewController",
@@ -81,8 +82,10 @@ class RUMViewScopeTests: XCTestCase {
             startTime: currentTime
         )
 
+        // When
         _ = scope.process(command: RUMCommandMock(time: currentTime))
 
+        // Then
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMActionEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
@@ -97,6 +100,32 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, randomServiceName)
+        XCTAssertNil(event.context?.contextInfo[RUMViewScope.Constants.activePrewarm])
+    }
+
+    func testWhenActivePrewarm_itSendsApplicationStartAction_withoutLoadingTime() throws {
+        // Given
+        let scope: RUMViewScope = .mockWith(
+            isInitialView: true,
+            parent: parent,
+            dependencies: dependencies.replacing(
+                launchTimeProvider: LaunchTimeProviderMock.mockWith(
+                    launchTime: 2, // 2 seconds
+                    isActivePrewarm: true
+                )
+            ),
+            identity: mockView
+        )
+
+        // When
+        _ = scope.process(command: RUMCommandMock())
+
+        // Then
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMActionEvent.self).first)
+        let isActivePrewarm = try XCTUnwrap(event.context?.contextInfo[RUMViewScope.Constants.activePrewarm] as? Bool)
+        XCTAssertEqual(event.action.type, .applicationStart)
+        XCTAssertNil(event.action.loadingTime)
+        XCTAssertTrue(isActivePrewarm)
     }
 
     func testWhenInitialViewReceivesAnyCommand_itSendsViewUpdateEvent() throws {

@@ -8,6 +8,1229 @@
 
 internal protocol RUMDataModel: Codable {}
 
+/// Schema of all properties of an Action event
+public struct RUMActionEvent: RUMDataModel {
+    /// Internal properties
+    public let dd: DD
+
+    /// Action properties
+    public var action: Action
+
+    /// Application properties
+    public let application: Application
+
+    /// CI Visibility properties
+    public let ciTest: RUMCITest?
+
+    /// Device connectivity properties
+    public let connectivity: RUMConnectivity?
+
+    /// User provided context
+    public internal(set) var context: RUMEventAttributes?
+
+    /// Start of the event in ms from epoch
+    public let date: Int64
+
+    /// The service name for this application
+    public let service: String?
+
+    /// Session properties
+    public let session: Session
+
+    /// The source of this event
+    public let source: Source?
+
+    /// Synthetics properties
+    public let synthetics: Synthetics?
+
+    /// RUM event type
+    public let type: String = "action"
+
+    /// User properties
+    public internal(set) var usr: RUMUser?
+
+    /// View properties
+    public var view: View
+
+    enum CodingKeys: String, CodingKey {
+        case dd = "_dd"
+        case action = "action"
+        case application = "application"
+        case ciTest = "ci_test"
+        case connectivity = "connectivity"
+        case context = "context"
+        case date = "date"
+        case service = "service"
+        case session = "session"
+        case source = "source"
+        case synthetics = "synthetics"
+        case type = "type"
+        case usr = "usr"
+        case view = "view"
+    }
+
+    /// Internal properties
+    public struct DD: Codable {
+        /// Browser SDK version
+        public let browserSdkVersion: String?
+
+        /// Version of the RUM event format
+        public let formatVersion: Int64 = 2
+
+        /// Session-related internal properties
+        public let session: Session?
+
+        enum CodingKeys: String, CodingKey {
+            case browserSdkVersion = "browser_sdk_version"
+            case formatVersion = "format_version"
+            case session = "session"
+        }
+
+        /// Session-related internal properties
+        public struct Session: Codable {
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public let plan: Plan
+
+            enum CodingKeys: String, CodingKey {
+                case plan = "plan"
+            }
+
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public enum Plan: Int, Codable {
+                case plan1 = 1
+                case plan2 = 2
+            }
+        }
+    }
+
+    /// Action properties
+    public struct Action: Codable {
+        /// Properties of the crashes of the action
+        public let crash: Crash?
+
+        /// Properties of the errors of the action
+        public let error: Error?
+
+        /// UUID of the action
+        public let id: String?
+
+        /// Duration in ns to the action is considered loaded
+        public let loadingTime: Int64?
+
+        /// Properties of the long tasks of the action
+        public let longTask: LongTask?
+
+        /// Properties of the resources of the action
+        public let resource: Resource?
+
+        /// Action target properties
+        public var target: Target?
+
+        /// Type of the action
+        public let type: ActionType
+
+        enum CodingKeys: String, CodingKey {
+            case crash = "crash"
+            case error = "error"
+            case id = "id"
+            case loadingTime = "loading_time"
+            case longTask = "long_task"
+            case resource = "resource"
+            case target = "target"
+            case type = "type"
+        }
+
+        /// Properties of the crashes of the action
+        public struct Crash: Codable {
+            /// Number of crashes that occurred on the action
+            public let count: Int64
+
+            enum CodingKeys: String, CodingKey {
+                case count = "count"
+            }
+        }
+
+        /// Properties of the errors of the action
+        public struct Error: Codable {
+            /// Number of errors that occurred on the action
+            public let count: Int64
+
+            enum CodingKeys: String, CodingKey {
+                case count = "count"
+            }
+        }
+
+        /// Properties of the long tasks of the action
+        public struct LongTask: Codable {
+            /// Number of long tasks that occurred on the action
+            public let count: Int64
+
+            enum CodingKeys: String, CodingKey {
+                case count = "count"
+            }
+        }
+
+        /// Properties of the resources of the action
+        public struct Resource: Codable {
+            /// Number of resources that occurred on the action
+            public let count: Int64
+
+            enum CodingKeys: String, CodingKey {
+                case count = "count"
+            }
+        }
+
+        /// Action target properties
+        public struct Target: Codable {
+            /// Target name
+            public var name: String
+
+            enum CodingKeys: String, CodingKey {
+                case name = "name"
+            }
+        }
+
+        /// Type of the action
+        public enum ActionType: String, Codable {
+            case custom = "custom"
+            case click = "click"
+            case tap = "tap"
+            case scroll = "scroll"
+            case swipe = "swipe"
+            case applicationStart = "application_start"
+            case back = "back"
+        }
+    }
+
+    /// Application properties
+    public struct Application: Codable {
+        /// UUID of the application
+        public let id: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+    }
+
+    /// Session properties
+    public struct Session: Codable {
+        /// Whether this session has a replay
+        public let hasReplay: Bool?
+
+        /// UUID of the session
+        public let id: String
+
+        /// Type of the session
+        public let type: SessionType
+
+        enum CodingKeys: String, CodingKey {
+            case hasReplay = "has_replay"
+            case id = "id"
+            case type = "type"
+        }
+
+        /// Type of the session
+        public enum SessionType: String, Codable {
+            case user = "user"
+            case synthetics = "synthetics"
+            case ciTest = "ci_test"
+        }
+    }
+
+    /// The source of this event
+    public enum Source: String, Codable {
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+    }
+
+    /// Synthetics properties
+    public struct Synthetics: Codable {
+        /// Whether the event comes from a SDK instance injected by Synthetics
+        public let injected: Bool?
+
+        /// The identifier of the current Synthetics test results
+        public let resultId: String
+
+        /// The identifier of the current Synthetics test
+        public let testId: String
+
+        enum CodingKeys: String, CodingKey {
+            case injected = "injected"
+            case resultId = "result_id"
+            case testId = "test_id"
+        }
+    }
+
+    /// View properties
+    public struct View: Codable {
+        /// UUID of the view
+        public let id: String
+
+        /// Is the action starting in the foreground (focus in browser)
+        public let inForeground: Bool?
+
+        /// User defined name of the view
+        public var name: String?
+
+        /// URL that linked to the initial view of the page
+        public var referrer: String?
+
+        /// URL of the view
+        public var url: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case inForeground = "in_foreground"
+            case name = "name"
+            case referrer = "referrer"
+            case url = "url"
+        }
+    }
+}
+
+/// Schema of all properties of an Error event
+public struct RUMErrorEvent: RUMDataModel {
+    /// Internal properties
+    public let dd: DD
+
+    /// Action properties
+    public let action: Action?
+
+    /// Application properties
+    public let application: Application
+
+    /// CI Visibility properties
+    public let ciTest: RUMCITest?
+
+    /// Device connectivity properties
+    public let connectivity: RUMConnectivity?
+
+    /// User provided context
+    public internal(set) var context: RUMEventAttributes?
+
+    /// Start of the event in ms from epoch
+    public let date: Int64
+
+    /// Error properties
+    public var error: Error
+
+    /// The service name for this application
+    public let service: String?
+
+    /// Session properties
+    public let session: Session
+
+    /// The source of this event
+    public let source: Source?
+
+    /// Synthetics properties
+    public let synthetics: Synthetics?
+
+    /// RUM event type
+    public let type: String = "error"
+
+    /// User properties
+    public internal(set) var usr: RUMUser?
+
+    /// View properties
+    public var view: View
+
+    enum CodingKeys: String, CodingKey {
+        case dd = "_dd"
+        case action = "action"
+        case application = "application"
+        case ciTest = "ci_test"
+        case connectivity = "connectivity"
+        case context = "context"
+        case date = "date"
+        case error = "error"
+        case service = "service"
+        case session = "session"
+        case source = "source"
+        case synthetics = "synthetics"
+        case type = "type"
+        case usr = "usr"
+        case view = "view"
+    }
+
+    /// Internal properties
+    public struct DD: Codable {
+        /// Browser SDK version
+        public let browserSdkVersion: String?
+
+        /// Version of the RUM event format
+        public let formatVersion: Int64 = 2
+
+        /// Session-related internal properties
+        public let session: Session?
+
+        enum CodingKeys: String, CodingKey {
+            case browserSdkVersion = "browser_sdk_version"
+            case formatVersion = "format_version"
+            case session = "session"
+        }
+
+        /// Session-related internal properties
+        public struct Session: Codable {
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public let plan: Plan
+
+            enum CodingKeys: String, CodingKey {
+                case plan = "plan"
+            }
+
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public enum Plan: Int, Codable {
+                case plan1 = 1
+                case plan2 = 2
+            }
+        }
+    }
+
+    /// Action properties
+    public struct Action: Codable {
+        /// UUID of the action
+        public let id: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+    }
+
+    /// Application properties
+    public struct Application: Codable {
+        /// UUID of the application
+        public let id: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+    }
+
+    /// Error properties
+    public struct Error: Codable {
+        /// Whether the error has been handled manually in the source code or not
+        public let handling: Handling?
+
+        /// Handling call stack
+        public let handlingStack: String?
+
+        /// UUID of the error
+        public let id: String?
+
+        /// Whether this error crashed the host application
+        public let isCrash: Bool?
+
+        /// Error message
+        public var message: String
+
+        /// Resource properties of the error
+        public var resource: Resource?
+
+        /// Source of the error
+        public let source: Source
+
+        /// Source type of the error (the language or platform impacting the error stacktrace format)
+        public let sourceType: SourceType?
+
+        /// Stacktrace of the error
+        public var stack: String?
+
+        /// The type of the error
+        public let type: String?
+
+        enum CodingKeys: String, CodingKey {
+            case handling = "handling"
+            case handlingStack = "handling_stack"
+            case id = "id"
+            case isCrash = "is_crash"
+            case message = "message"
+            case resource = "resource"
+            case source = "source"
+            case sourceType = "source_type"
+            case stack = "stack"
+            case type = "type"
+        }
+
+        /// Whether the error has been handled manually in the source code or not
+        public enum Handling: String, Codable {
+            case handled = "handled"
+            case unhandled = "unhandled"
+        }
+
+        /// Resource properties of the error
+        public struct Resource: Codable {
+            /// HTTP method of the resource
+            public let method: RUMMethod
+
+            /// The provider for this resource
+            public let provider: Provider?
+
+            /// HTTP Status code of the resource
+            public let statusCode: Int64
+
+            /// URL of the resource
+            public var url: String
+
+            enum CodingKeys: String, CodingKey {
+                case method = "method"
+                case provider = "provider"
+                case statusCode = "status_code"
+                case url = "url"
+            }
+
+            /// The provider for this resource
+            public struct Provider: Codable {
+                /// The domain name of the provider
+                public let domain: String?
+
+                /// The user friendly name of the provider
+                public let name: String?
+
+                /// The type of provider
+                public let type: ProviderType?
+
+                enum CodingKeys: String, CodingKey {
+                    case domain = "domain"
+                    case name = "name"
+                    case type = "type"
+                }
+
+                /// The type of provider
+                public enum ProviderType: String, Codable {
+                    case ad = "ad"
+                    case advertising = "advertising"
+                    case analytics = "analytics"
+                    case cdn = "cdn"
+                    case content = "content"
+                    case customerSuccess = "customer-success"
+                    case firstParty = "first party"
+                    case hosting = "hosting"
+                    case marketing = "marketing"
+                    case other = "other"
+                    case social = "social"
+                    case tagManager = "tag-manager"
+                    case utility = "utility"
+                    case video = "video"
+                }
+            }
+        }
+
+        /// Source of the error
+        public enum Source: String, Codable {
+            case network = "network"
+            case source = "source"
+            case console = "console"
+            case logger = "logger"
+            case agent = "agent"
+            case webview = "webview"
+            case custom = "custom"
+            case report = "report"
+        }
+
+        /// Source type of the error (the language or platform impacting the error stacktrace format)
+        public enum SourceType: String, Codable {
+            case android = "android"
+            case browser = "browser"
+            case ios = "ios"
+            case reactNative = "react-native"
+            case flutter = "flutter"
+        }
+    }
+
+    /// Session properties
+    public struct Session: Codable {
+        /// Whether this session has a replay
+        public let hasReplay: Bool?
+
+        /// UUID of the session
+        public let id: String
+
+        /// Type of the session
+        public let type: SessionType
+
+        enum CodingKeys: String, CodingKey {
+            case hasReplay = "has_replay"
+            case id = "id"
+            case type = "type"
+        }
+
+        /// Type of the session
+        public enum SessionType: String, Codable {
+            case user = "user"
+            case synthetics = "synthetics"
+            case ciTest = "ci_test"
+        }
+    }
+
+    /// The source of this event
+    public enum Source: String, Codable {
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+    }
+
+    /// Synthetics properties
+    public struct Synthetics: Codable {
+        /// Whether the event comes from a SDK instance injected by Synthetics
+        public let injected: Bool?
+
+        /// The identifier of the current Synthetics test results
+        public let resultId: String
+
+        /// The identifier of the current Synthetics test
+        public let testId: String
+
+        enum CodingKeys: String, CodingKey {
+            case injected = "injected"
+            case resultId = "result_id"
+            case testId = "test_id"
+        }
+    }
+
+    /// View properties
+    public struct View: Codable {
+        /// UUID of the view
+        public let id: String
+
+        /// Is the error starting in the foreground (focus in browser)
+        public let inForeground: Bool?
+
+        /// User defined name of the view
+        public var name: String?
+
+        /// URL that linked to the initial view of the page
+        public var referrer: String?
+
+        /// URL of the view
+        public var url: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case inForeground = "in_foreground"
+            case name = "name"
+            case referrer = "referrer"
+            case url = "url"
+        }
+    }
+}
+
+/// Schema of all properties of a Long Task event
+public struct RUMLongTaskEvent: RUMDataModel {
+    /// Internal properties
+    public let dd: DD
+
+    /// Action properties
+    public let action: Action?
+
+    /// Application properties
+    public let application: Application
+
+    /// CI Visibility properties
+    public let ciTest: RUMCITest?
+
+    /// Device connectivity properties
+    public let connectivity: RUMConnectivity?
+
+    /// User provided context
+    public internal(set) var context: RUMEventAttributes?
+
+    /// Start of the event in ms from epoch
+    public let date: Int64
+
+    /// Long Task properties
+    public let longTask: LongTask
+
+    /// The service name for this application
+    public let service: String?
+
+    /// Session properties
+    public let session: Session
+
+    /// The source of this event
+    public let source: Source?
+
+    /// Synthetics properties
+    public let synthetics: Synthetics?
+
+    /// RUM event type
+    public let type: String = "long_task"
+
+    /// User properties
+    public internal(set) var usr: RUMUser?
+
+    /// View properties
+    public var view: View
+
+    enum CodingKeys: String, CodingKey {
+        case dd = "_dd"
+        case action = "action"
+        case application = "application"
+        case ciTest = "ci_test"
+        case connectivity = "connectivity"
+        case context = "context"
+        case date = "date"
+        case longTask = "long_task"
+        case service = "service"
+        case session = "session"
+        case source = "source"
+        case synthetics = "synthetics"
+        case type = "type"
+        case usr = "usr"
+        case view = "view"
+    }
+
+    /// Internal properties
+    public struct DD: Codable {
+        /// Browser SDK version
+        public let browserSdkVersion: String?
+
+        /// Version of the RUM event format
+        public let formatVersion: Int64 = 2
+
+        /// Session-related internal properties
+        public let session: Session?
+
+        enum CodingKeys: String, CodingKey {
+            case browserSdkVersion = "browser_sdk_version"
+            case formatVersion = "format_version"
+            case session = "session"
+        }
+
+        /// Session-related internal properties
+        public struct Session: Codable {
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public let plan: Plan
+
+            enum CodingKeys: String, CodingKey {
+                case plan = "plan"
+            }
+
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public enum Plan: Int, Codable {
+                case plan1 = 1
+                case plan2 = 2
+            }
+        }
+    }
+
+    /// Action properties
+    public struct Action: Codable {
+        /// UUID of the action
+        public let id: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+    }
+
+    /// Application properties
+    public struct Application: Codable {
+        /// UUID of the application
+        public let id: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+    }
+
+    /// Long Task properties
+    public struct LongTask: Codable {
+        /// Duration in ns of the long task
+        public let duration: Int64
+
+        /// UUID of the long task
+        public let id: String?
+
+        /// Whether this long task is considered a frozen frame
+        public let isFrozenFrame: Bool?
+
+        enum CodingKeys: String, CodingKey {
+            case duration = "duration"
+            case id = "id"
+            case isFrozenFrame = "is_frozen_frame"
+        }
+    }
+
+    /// Session properties
+    public struct Session: Codable {
+        /// Whether this session has a replay
+        public let hasReplay: Bool?
+
+        /// UUID of the session
+        public let id: String
+
+        /// Type of the session
+        public let type: SessionType
+
+        enum CodingKeys: String, CodingKey {
+            case hasReplay = "has_replay"
+            case id = "id"
+            case type = "type"
+        }
+
+        /// Type of the session
+        public enum SessionType: String, Codable {
+            case user = "user"
+            case synthetics = "synthetics"
+            case ciTest = "ci_test"
+        }
+    }
+
+    /// The source of this event
+    public enum Source: String, Codable {
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+    }
+
+    /// Synthetics properties
+    public struct Synthetics: Codable {
+        /// Whether the event comes from a SDK instance injected by Synthetics
+        public let injected: Bool?
+
+        /// The identifier of the current Synthetics test results
+        public let resultId: String
+
+        /// The identifier of the current Synthetics test
+        public let testId: String
+
+        enum CodingKeys: String, CodingKey {
+            case injected = "injected"
+            case resultId = "result_id"
+            case testId = "test_id"
+        }
+    }
+
+    /// View properties
+    public struct View: Codable {
+        /// UUID of the view
+        public let id: String
+
+        /// User defined name of the view
+        public var name: String?
+
+        /// URL that linked to the initial view of the page
+        public var referrer: String?
+
+        /// URL of the view
+        public var url: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
+            case referrer = "referrer"
+            case url = "url"
+        }
+    }
+}
+
+/// Schema of all properties of a Resource event
+public struct RUMResourceEvent: RUMDataModel {
+    /// Internal properties
+    public let dd: DD
+
+    /// Action properties
+    public let action: Action?
+
+    /// Application properties
+    public let application: Application
+
+    /// CI Visibility properties
+    public let ciTest: RUMCITest?
+
+    /// Device connectivity properties
+    public let connectivity: RUMConnectivity?
+
+    /// User provided context
+    public internal(set) var context: RUMEventAttributes?
+
+    /// Start of the event in ms from epoch
+    public let date: Int64
+
+    /// Resource properties
+    public var resource: Resource
+
+    /// The service name for this application
+    public let service: String?
+
+    /// Session properties
+    public let session: Session
+
+    /// The source of this event
+    public let source: Source?
+
+    /// Synthetics properties
+    public let synthetics: Synthetics?
+
+    /// RUM event type
+    public let type: String = "resource"
+
+    /// User properties
+    public internal(set) var usr: RUMUser?
+
+    /// View properties
+    public var view: View
+
+    enum CodingKeys: String, CodingKey {
+        case dd = "_dd"
+        case action = "action"
+        case application = "application"
+        case ciTest = "ci_test"
+        case connectivity = "connectivity"
+        case context = "context"
+        case date = "date"
+        case resource = "resource"
+        case service = "service"
+        case session = "session"
+        case source = "source"
+        case synthetics = "synthetics"
+        case type = "type"
+        case usr = "usr"
+        case view = "view"
+    }
+
+    /// Internal properties
+    public struct DD: Codable {
+        /// Browser SDK version
+        public let browserSdkVersion: String?
+
+        /// Version of the RUM event format
+        public let formatVersion: Int64 = 2
+
+        /// Session-related internal properties
+        public let session: Session?
+
+        /// span identifier in decimal format
+        public let spanId: String?
+
+        /// trace identifier in decimal format
+        public let traceId: String?
+
+        enum CodingKeys: String, CodingKey {
+            case browserSdkVersion = "browser_sdk_version"
+            case formatVersion = "format_version"
+            case session = "session"
+            case spanId = "span_id"
+            case traceId = "trace_id"
+        }
+
+        /// Session-related internal properties
+        public struct Session: Codable {
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public let plan: Plan
+
+            enum CodingKeys: String, CodingKey {
+                case plan = "plan"
+            }
+
+            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            public enum Plan: Int, Codable {
+                case plan1 = 1
+                case plan2 = 2
+            }
+        }
+    }
+
+    /// Action properties
+    public struct Action: Codable {
+        /// UUID of the action
+        public let id: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+    }
+
+    /// Application properties
+    public struct Application: Codable {
+        /// UUID of the application
+        public let id: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+    }
+
+    /// Resource properties
+    public struct Resource: Codable {
+        /// Connect phase properties
+        public let connect: Connect?
+
+        /// DNS phase properties
+        public let dns: DNS?
+
+        /// Download phase properties
+        public let download: Download?
+
+        /// Duration of the resource
+        public let duration: Int64
+
+        /// First Byte phase properties
+        public let firstByte: FirstByte?
+
+        /// UUID of the resource
+        public let id: String?
+
+        /// HTTP method of the resource
+        public let method: RUMMethod?
+
+        /// The provider for this resource
+        public let provider: Provider?
+
+        /// Redirect phase properties
+        public let redirect: Redirect?
+
+        /// Size in octet of the resource response body
+        public let size: Int64?
+
+        /// SSL phase properties
+        public let ssl: SSL?
+
+        /// HTTP status code of the resource
+        public let statusCode: Int64?
+
+        /// Resource type
+        public let type: ResourceType
+
+        /// URL of the resource
+        public var url: String
+
+        enum CodingKeys: String, CodingKey {
+            case connect = "connect"
+            case dns = "dns"
+            case download = "download"
+            case duration = "duration"
+            case firstByte = "first_byte"
+            case id = "id"
+            case method = "method"
+            case provider = "provider"
+            case redirect = "redirect"
+            case size = "size"
+            case ssl = "ssl"
+            case statusCode = "status_code"
+            case type = "type"
+            case url = "url"
+        }
+
+        /// Connect phase properties
+        public struct Connect: Codable {
+            /// Duration in ns of the resource connect phase
+            public let duration: Int64
+
+            /// Duration in ns between start of the request and start of the connect phase
+            public let start: Int64
+
+            enum CodingKeys: String, CodingKey {
+                case duration = "duration"
+                case start = "start"
+            }
+        }
+
+        /// DNS phase properties
+        public struct DNS: Codable {
+            /// Duration in ns of the resource dns phase
+            public let duration: Int64
+
+            /// Duration in ns between start of the request and start of the dns phase
+            public let start: Int64
+
+            enum CodingKeys: String, CodingKey {
+                case duration = "duration"
+                case start = "start"
+            }
+        }
+
+        /// Download phase properties
+        public struct Download: Codable {
+            /// Duration in ns of the resource download phase
+            public let duration: Int64
+
+            /// Duration in ns between start of the request and start of the download phase
+            public let start: Int64
+
+            enum CodingKeys: String, CodingKey {
+                case duration = "duration"
+                case start = "start"
+            }
+        }
+
+        /// First Byte phase properties
+        public struct FirstByte: Codable {
+            /// Duration in ns of the resource first byte phase
+            public let duration: Int64
+
+            /// Duration in ns between start of the request and start of the first byte phase
+            public let start: Int64
+
+            enum CodingKeys: String, CodingKey {
+                case duration = "duration"
+                case start = "start"
+            }
+        }
+
+        /// The provider for this resource
+        public struct Provider: Codable {
+            /// The domain name of the provider
+            public let domain: String?
+
+            /// The user friendly name of the provider
+            public let name: String?
+
+            /// The type of provider
+            public let type: ProviderType?
+
+            enum CodingKeys: String, CodingKey {
+                case domain = "domain"
+                case name = "name"
+                case type = "type"
+            }
+
+            /// The type of provider
+            public enum ProviderType: String, Codable {
+                case ad = "ad"
+                case advertising = "advertising"
+                case analytics = "analytics"
+                case cdn = "cdn"
+                case content = "content"
+                case customerSuccess = "customer-success"
+                case firstParty = "first party"
+                case hosting = "hosting"
+                case marketing = "marketing"
+                case other = "other"
+                case social = "social"
+                case tagManager = "tag-manager"
+                case utility = "utility"
+                case video = "video"
+            }
+        }
+
+        /// Redirect phase properties
+        public struct Redirect: Codable {
+            /// Duration in ns of the resource redirect phase
+            public let duration: Int64
+
+            /// Duration in ns between start of the request and start of the redirect phase
+            public let start: Int64
+
+            enum CodingKeys: String, CodingKey {
+                case duration = "duration"
+                case start = "start"
+            }
+        }
+
+        /// SSL phase properties
+        public struct SSL: Codable {
+            /// Duration in ns of the resource ssl phase
+            public let duration: Int64
+
+            /// Duration in ns between start of the request and start of the ssl phase
+            public let start: Int64
+
+            enum CodingKeys: String, CodingKey {
+                case duration = "duration"
+                case start = "start"
+            }
+        }
+
+        /// Resource type
+        public enum ResourceType: String, Codable {
+            case document = "document"
+            case xhr = "xhr"
+            case beacon = "beacon"
+            case fetch = "fetch"
+            case css = "css"
+            case js = "js"
+            case image = "image"
+            case font = "font"
+            case media = "media"
+            case other = "other"
+            case native = "native"
+        }
+    }
+
+    /// Session properties
+    public struct Session: Codable {
+        /// Whether this session has a replay
+        public let hasReplay: Bool?
+
+        /// UUID of the session
+        public let id: String
+
+        /// Type of the session
+        public let type: SessionType
+
+        enum CodingKeys: String, CodingKey {
+            case hasReplay = "has_replay"
+            case id = "id"
+            case type = "type"
+        }
+
+        /// Type of the session
+        public enum SessionType: String, Codable {
+            case user = "user"
+            case synthetics = "synthetics"
+            case ciTest = "ci_test"
+        }
+    }
+
+    /// The source of this event
+    public enum Source: String, Codable {
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+    }
+
+    /// Synthetics properties
+    public struct Synthetics: Codable {
+        /// Whether the event comes from a SDK instance injected by Synthetics
+        public let injected: Bool?
+
+        /// The identifier of the current Synthetics test results
+        public let resultId: String
+
+        /// The identifier of the current Synthetics test
+        public let testId: String
+
+        enum CodingKeys: String, CodingKey {
+            case injected = "injected"
+            case resultId = "result_id"
+            case testId = "test_id"
+        }
+    }
+
+    /// View properties
+    public struct View: Codable {
+        /// UUID of the view
+        public let id: String
+
+        /// User defined name of the view
+        public var name: String?
+
+        /// URL that linked to the initial view of the page
+        public var referrer: String?
+
+        /// URL of the view
+        public var url: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
+            case referrer = "referrer"
+            case url = "url"
+        }
+    }
+}
+
 /// Schema of all properties of a View event
 public struct RUMViewEvent: RUMDataModel {
     /// Internal properties
@@ -17,7 +1240,7 @@ public struct RUMViewEvent: RUMDataModel {
     public let application: Application
 
     /// CI Visibility properties
-    public let ciTest: CiTest?
+    public let ciTest: RUMCITest?
 
     /// Device connectivity properties
     public let connectivity: RUMConnectivity?
@@ -110,16 +1333,6 @@ public struct RUMViewEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
-        }
-    }
-
-    /// CI Visibility properties
-    public struct CiTest: Codable {
-        /// The identifier of the current CI Visibility test execution
-        public let testExecutionId: String
-
-        enum CodingKeys: String, CodingKey {
-            case testExecutionId = "test_execution_id"
         }
     }
 
@@ -396,8 +1609,8 @@ public struct RUMViewEvent: RUMDataModel {
     }
 }
 
-/// Schema of all properties of a Resource event
-public struct RUMResourceEvent: RUMDataModel {
+/// Schema of all properties of a telemetry error event
+public struct TelemetryErrorEvent: RUMDataModel {
     /// Internal properties
     public let dd: DD
 
@@ -405,795 +1618,53 @@ public struct RUMResourceEvent: RUMDataModel {
     public let action: Action?
 
     /// Application properties
-    public let application: Application
-
-    /// CI Visibility properties
-    public let ciTest: CiTest?
-
-    /// Device connectivity properties
-    public let connectivity: RUMConnectivity?
-
-    /// User provided context
-    public internal(set) var context: RUMEventAttributes?
-
-    /// Start of the event in ms from epoch
-    public let date: Int64
-
-    /// Resource properties
-    public var resource: Resource
-
-    /// The service name for this application
-    public let service: String?
-
-    /// Session properties
-    public let session: Session
-
-    /// The source of this event
-    public let source: Source?
-
-    /// Synthetics properties
-    public let synthetics: Synthetics?
-
-    /// RUM event type
-    public let type: String = "resource"
-
-    /// User properties
-    public internal(set) var usr: RUMUser?
-
-    /// View properties
-    public var view: View
-
-    enum CodingKeys: String, CodingKey {
-        case dd = "_dd"
-        case action = "action"
-        case application = "application"
-        case ciTest = "ci_test"
-        case connectivity = "connectivity"
-        case context = "context"
-        case date = "date"
-        case resource = "resource"
-        case service = "service"
-        case session = "session"
-        case source = "source"
-        case synthetics = "synthetics"
-        case type = "type"
-        case usr = "usr"
-        case view = "view"
-    }
-
-    /// Internal properties
-    public struct DD: Codable {
-        /// Browser SDK version
-        public let browserSdkVersion: String?
-
-        /// Version of the RUM event format
-        public let formatVersion: Int64 = 2
-
-        /// Session-related internal properties
-        public let session: Session?
-
-        /// span identifier in decimal format
-        public let spanId: String?
-
-        /// trace identifier in decimal format
-        public let traceId: String?
-
-        enum CodingKeys: String, CodingKey {
-            case browserSdkVersion = "browser_sdk_version"
-            case formatVersion = "format_version"
-            case session = "session"
-            case spanId = "span_id"
-            case traceId = "trace_id"
-        }
-
-        /// Session-related internal properties
-        public struct Session: Codable {
-            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
-            public let plan: Plan
-
-            enum CodingKeys: String, CodingKey {
-                case plan = "plan"
-            }
-
-            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
-            public enum Plan: Int, Codable {
-                case plan1 = 1
-                case plan2 = 2
-            }
-        }
-    }
-
-    /// Action properties
-    public struct Action: Codable {
-        /// UUID of the action
-        public let id: String
-
-        enum CodingKeys: String, CodingKey {
-            case id = "id"
-        }
-    }
-
-    /// Application properties
-    public struct Application: Codable {
-        /// UUID of the application
-        public let id: String
-
-        enum CodingKeys: String, CodingKey {
-            case id = "id"
-        }
-    }
-
-    /// CI Visibility properties
-    public struct CiTest: Codable {
-        /// The identifier of the current CI Visibility test execution
-        public let testExecutionId: String
-
-        enum CodingKeys: String, CodingKey {
-            case testExecutionId = "test_execution_id"
-        }
-    }
-
-    /// Resource properties
-    public struct Resource: Codable {
-        /// Connect phase properties
-        public let connect: Connect?
-
-        /// DNS phase properties
-        public let dns: DNS?
-
-        /// Download phase properties
-        public let download: Download?
-
-        /// Duration of the resource
-        public let duration: Int64
-
-        /// First Byte phase properties
-        public let firstByte: FirstByte?
-
-        /// UUID of the resource
-        public let id: String?
-
-        /// HTTP method of the resource
-        public let method: RUMMethod?
-
-        /// The provider for this resource
-        public let provider: Provider?
-
-        /// Redirect phase properties
-        public let redirect: Redirect?
-
-        /// Size in octet of the resource response body
-        public let size: Int64?
-
-        /// SSL phase properties
-        public let ssl: SSL?
-
-        /// HTTP status code of the resource
-        public let statusCode: Int64?
-
-        /// Resource type
-        public let type: ResourceType
-
-        /// URL of the resource
-        public var url: String
-
-        enum CodingKeys: String, CodingKey {
-            case connect = "connect"
-            case dns = "dns"
-            case download = "download"
-            case duration = "duration"
-            case firstByte = "first_byte"
-            case id = "id"
-            case method = "method"
-            case provider = "provider"
-            case redirect = "redirect"
-            case size = "size"
-            case ssl = "ssl"
-            case statusCode = "status_code"
-            case type = "type"
-            case url = "url"
-        }
-
-        /// Connect phase properties
-        public struct Connect: Codable {
-            /// Duration in ns of the resource connect phase
-            public let duration: Int64
-
-            /// Duration in ns between start of the request and start of the connect phase
-            public let start: Int64
-
-            enum CodingKeys: String, CodingKey {
-                case duration = "duration"
-                case start = "start"
-            }
-        }
-
-        /// DNS phase properties
-        public struct DNS: Codable {
-            /// Duration in ns of the resource dns phase
-            public let duration: Int64
-
-            /// Duration in ns between start of the request and start of the dns phase
-            public let start: Int64
-
-            enum CodingKeys: String, CodingKey {
-                case duration = "duration"
-                case start = "start"
-            }
-        }
-
-        /// Download phase properties
-        public struct Download: Codable {
-            /// Duration in ns of the resource download phase
-            public let duration: Int64
-
-            /// Duration in ns between start of the request and start of the download phase
-            public let start: Int64
-
-            enum CodingKeys: String, CodingKey {
-                case duration = "duration"
-                case start = "start"
-            }
-        }
-
-        /// First Byte phase properties
-        public struct FirstByte: Codable {
-            /// Duration in ns of the resource first byte phase
-            public let duration: Int64
-
-            /// Duration in ns between start of the request and start of the first byte phase
-            public let start: Int64
-
-            enum CodingKeys: String, CodingKey {
-                case duration = "duration"
-                case start = "start"
-            }
-        }
-
-        /// The provider for this resource
-        public struct Provider: Codable {
-            /// The domain name of the provider
-            public let domain: String?
-
-            /// The user friendly name of the provider
-            public let name: String?
-
-            /// The type of provider
-            public let type: ProviderType?
-
-            enum CodingKeys: String, CodingKey {
-                case domain = "domain"
-                case name = "name"
-                case type = "type"
-            }
-
-            /// The type of provider
-            public enum ProviderType: String, Codable {
-                case ad = "ad"
-                case advertising = "advertising"
-                case analytics = "analytics"
-                case cdn = "cdn"
-                case content = "content"
-                case customerSuccess = "customer-success"
-                case firstParty = "first party"
-                case hosting = "hosting"
-                case marketing = "marketing"
-                case other = "other"
-                case social = "social"
-                case tagManager = "tag-manager"
-                case utility = "utility"
-                case video = "video"
-            }
-        }
-
-        /// Redirect phase properties
-        public struct Redirect: Codable {
-            /// Duration in ns of the resource redirect phase
-            public let duration: Int64
-
-            /// Duration in ns between start of the request and start of the redirect phase
-            public let start: Int64
-
-            enum CodingKeys: String, CodingKey {
-                case duration = "duration"
-                case start = "start"
-            }
-        }
-
-        /// SSL phase properties
-        public struct SSL: Codable {
-            /// Duration in ns of the resource ssl phase
-            public let duration: Int64
-
-            /// Duration in ns between start of the request and start of the ssl phase
-            public let start: Int64
-
-            enum CodingKeys: String, CodingKey {
-                case duration = "duration"
-                case start = "start"
-            }
-        }
-
-        /// Resource type
-        public enum ResourceType: String, Codable {
-            case document = "document"
-            case xhr = "xhr"
-            case beacon = "beacon"
-            case fetch = "fetch"
-            case css = "css"
-            case js = "js"
-            case image = "image"
-            case font = "font"
-            case media = "media"
-            case other = "other"
-            case native = "native"
-        }
-    }
-
-    /// Session properties
-    public struct Session: Codable {
-        /// Whether this session has a replay
-        public let hasReplay: Bool?
-
-        /// UUID of the session
-        public let id: String
-
-        /// Type of the session
-        public let type: SessionType
-
-        enum CodingKeys: String, CodingKey {
-            case hasReplay = "has_replay"
-            case id = "id"
-            case type = "type"
-        }
-
-        /// Type of the session
-        public enum SessionType: String, Codable {
-            case user = "user"
-            case synthetics = "synthetics"
-            case ciTest = "ci_test"
-        }
-    }
-
-    /// The source of this event
-    public enum Source: String, Codable {
-        case android = "android"
-        case ios = "ios"
-        case browser = "browser"
-        case flutter = "flutter"
-        case reactNative = "react-native"
-    }
-
-    /// Synthetics properties
-    public struct Synthetics: Codable {
-        /// Whether the event comes from a SDK instance injected by Synthetics
-        public let injected: Bool?
-
-        /// The identifier of the current Synthetics test results
-        public let resultId: String
-
-        /// The identifier of the current Synthetics test
-        public let testId: String
-
-        enum CodingKeys: String, CodingKey {
-            case injected = "injected"
-            case resultId = "result_id"
-            case testId = "test_id"
-        }
-    }
-
-    /// View properties
-    public struct View: Codable {
-        /// UUID of the view
-        public let id: String
-
-        /// User defined name of the view
-        public var name: String?
-
-        /// URL that linked to the initial view of the page
-        public var referrer: String?
-
-        /// URL of the view
-        public var url: String
-
-        enum CodingKeys: String, CodingKey {
-            case id = "id"
-            case name = "name"
-            case referrer = "referrer"
-            case url = "url"
-        }
-    }
-}
-
-/// Schema of all properties of an Action event
-public struct RUMActionEvent: RUMDataModel {
-    /// Internal properties
-    public let dd: DD
-
-    /// Action properties
-    public var action: Action
-
-    /// Application properties
-    public let application: Application
-
-    /// CI Visibility properties
-    public let ciTest: CiTest?
-
-    /// Device connectivity properties
-    public let connectivity: RUMConnectivity?
-
-    /// User provided context
-    public internal(set) var context: RUMEventAttributes?
-
-    /// Start of the event in ms from epoch
-    public let date: Int64
-
-    /// The service name for this application
-    public let service: String?
-
-    /// Session properties
-    public let session: Session
-
-    /// The source of this event
-    public let source: Source?
-
-    /// Synthetics properties
-    public let synthetics: Synthetics?
-
-    /// RUM event type
-    public let type: String = "action"
-
-    /// User properties
-    public internal(set) var usr: RUMUser?
-
-    /// View properties
-    public var view: View
-
-    enum CodingKeys: String, CodingKey {
-        case dd = "_dd"
-        case action = "action"
-        case application = "application"
-        case ciTest = "ci_test"
-        case connectivity = "connectivity"
-        case context = "context"
-        case date = "date"
-        case service = "service"
-        case session = "session"
-        case source = "source"
-        case synthetics = "synthetics"
-        case type = "type"
-        case usr = "usr"
-        case view = "view"
-    }
-
-    /// Internal properties
-    public struct DD: Codable {
-        /// Browser SDK version
-        public let browserSdkVersion: String?
-
-        /// Version of the RUM event format
-        public let formatVersion: Int64 = 2
-
-        /// Session-related internal properties
-        public let session: Session?
-
-        enum CodingKeys: String, CodingKey {
-            case browserSdkVersion = "browser_sdk_version"
-            case formatVersion = "format_version"
-            case session = "session"
-        }
-
-        /// Session-related internal properties
-        public struct Session: Codable {
-            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
-            public let plan: Plan
-
-            enum CodingKeys: String, CodingKey {
-                case plan = "plan"
-            }
-
-            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
-            public enum Plan: Int, Codable {
-                case plan1 = 1
-                case plan2 = 2
-            }
-        }
-    }
-
-    /// Action properties
-    public struct Action: Codable {
-        /// Properties of the crashes of the action
-        public let crash: Crash?
-
-        /// Properties of the errors of the action
-        public let error: Error?
-
-        /// UUID of the action
-        public let id: String?
-
-        /// Duration in ns to the action is considered loaded
-        public let loadingTime: Int64?
-
-        /// Properties of the long tasks of the action
-        public let longTask: LongTask?
-
-        /// Properties of the resources of the action
-        public let resource: Resource?
-
-        /// Action target properties
-        public var target: Target?
-
-        /// Type of the action
-        public let type: ActionType
-
-        enum CodingKeys: String, CodingKey {
-            case crash = "crash"
-            case error = "error"
-            case id = "id"
-            case loadingTime = "loading_time"
-            case longTask = "long_task"
-            case resource = "resource"
-            case target = "target"
-            case type = "type"
-        }
-
-        /// Properties of the crashes of the action
-        public struct Crash: Codable {
-            /// Number of crashes that occurred on the action
-            public let count: Int64
-
-            enum CodingKeys: String, CodingKey {
-                case count = "count"
-            }
-        }
-
-        /// Properties of the errors of the action
-        public struct Error: Codable {
-            /// Number of errors that occurred on the action
-            public let count: Int64
-
-            enum CodingKeys: String, CodingKey {
-                case count = "count"
-            }
-        }
-
-        /// Properties of the long tasks of the action
-        public struct LongTask: Codable {
-            /// Number of long tasks that occurred on the action
-            public let count: Int64
-
-            enum CodingKeys: String, CodingKey {
-                case count = "count"
-            }
-        }
-
-        /// Properties of the resources of the action
-        public struct Resource: Codable {
-            /// Number of resources that occurred on the action
-            public let count: Int64
-
-            enum CodingKeys: String, CodingKey {
-                case count = "count"
-            }
-        }
-
-        /// Action target properties
-        public struct Target: Codable {
-            /// Target name
-            public var name: String
-
-            enum CodingKeys: String, CodingKey {
-                case name = "name"
-            }
-        }
-
-        /// Type of the action
-        public enum ActionType: String, Codable {
-            case custom = "custom"
-            case click = "click"
-            case tap = "tap"
-            case scroll = "scroll"
-            case swipe = "swipe"
-            case applicationStart = "application_start"
-            case back = "back"
-        }
-    }
-
-    /// Application properties
-    public struct Application: Codable {
-        /// UUID of the application
-        public let id: String
-
-        enum CodingKeys: String, CodingKey {
-            case id = "id"
-        }
-    }
-
-    /// CI Visibility properties
-    public struct CiTest: Codable {
-        /// The identifier of the current CI Visibility test execution
-        public let testExecutionId: String
-
-        enum CodingKeys: String, CodingKey {
-            case testExecutionId = "test_execution_id"
-        }
-    }
-
-    /// Session properties
-    public struct Session: Codable {
-        /// Whether this session has a replay
-        public let hasReplay: Bool?
-
-        /// UUID of the session
-        public let id: String
-
-        /// Type of the session
-        public let type: SessionType
-
-        enum CodingKeys: String, CodingKey {
-            case hasReplay = "has_replay"
-            case id = "id"
-            case type = "type"
-        }
-
-        /// Type of the session
-        public enum SessionType: String, Codable {
-            case user = "user"
-            case synthetics = "synthetics"
-            case ciTest = "ci_test"
-        }
-    }
-
-    /// The source of this event
-    public enum Source: String, Codable {
-        case android = "android"
-        case ios = "ios"
-        case browser = "browser"
-        case flutter = "flutter"
-        case reactNative = "react-native"
-    }
-
-    /// Synthetics properties
-    public struct Synthetics: Codable {
-        /// Whether the event comes from a SDK instance injected by Synthetics
-        public let injected: Bool?
-
-        /// The identifier of the current Synthetics test results
-        public let resultId: String
-
-        /// The identifier of the current Synthetics test
-        public let testId: String
-
-        enum CodingKeys: String, CodingKey {
-            case injected = "injected"
-            case resultId = "result_id"
-            case testId = "test_id"
-        }
-    }
-
-    /// View properties
-    public struct View: Codable {
-        /// UUID of the view
-        public let id: String
-
-        /// Is the action starting in the foreground (focus in browser)
-        public let inForeground: Bool?
-
-        /// User defined name of the view
-        public var name: String?
-
-        /// URL that linked to the initial view of the page
-        public var referrer: String?
-
-        /// URL of the view
-        public var url: String
-
-        enum CodingKeys: String, CodingKey {
-            case id = "id"
-            case inForeground = "in_foreground"
-            case name = "name"
-            case referrer = "referrer"
-            case url = "url"
-        }
-    }
-}
-
-/// Schema of all properties of an Error event
-public struct RUMErrorEvent: RUMDataModel {
-    /// Internal properties
-    public let dd: DD
-
-    /// Action properties
-    public let action: Action?
-
-    /// Application properties
-    public let application: Application
-
-    /// CI Visibility properties
-    public let ciTest: CiTest?
-
-    /// Device connectivity properties
-    public let connectivity: RUMConnectivity?
-
-    /// User provided context
-    public internal(set) var context: RUMEventAttributes?
+    public let application: Application?
 
     /// Start of the event in ms from epoch
     public let date: Int64
 
     /// Error properties
-    public var error: Error
+    public let error: Error?
 
-    /// The service name for this application
-    public let service: String?
+    /// Body of the log
+    public let message: String
+
+    /// The SDK generating the telemetry event
+    public let service: String
 
     /// Session properties
-    public let session: Session
+    public let session: Session?
 
-    /// The source of this event
-    public let source: Source?
+    /// Level/severity of the log
+    public let status: String = "error"
 
-    /// Synthetics properties
-    public let synthetics: Synthetics?
-
-    /// RUM event type
-    public let type: String = "error"
-
-    /// User properties
-    public internal(set) var usr: RUMUser?
+    /// The version of the SDK generating the telemetry event
+    public let version: String
 
     /// View properties
-    public var view: View
+    public let view: View?
 
     enum CodingKeys: String, CodingKey {
         case dd = "_dd"
         case action = "action"
         case application = "application"
-        case ciTest = "ci_test"
-        case connectivity = "connectivity"
-        case context = "context"
         case date = "date"
         case error = "error"
+        case message = "message"
         case service = "service"
         case session = "session"
-        case source = "source"
-        case synthetics = "synthetics"
-        case type = "type"
-        case usr = "usr"
+        case status = "status"
+        case version = "version"
         case view = "view"
     }
 
     /// Internal properties
     public struct DD: Codable {
-        /// Browser SDK version
-        public let browserSdkVersion: String?
-
-        /// Version of the RUM event format
-        public let formatVersion: Int64 = 2
-
-        /// Session-related internal properties
-        public let session: Session?
+        /// Event type
+        public let eventType: String = "internal_telemetry"
 
         enum CodingKeys: String, CodingKey {
-            case browserSdkVersion = "browser_sdk_version"
-            case formatVersion = "format_version"
-            case session = "session"
-        }
-
-        /// Session-related internal properties
-        public struct Session: Codable {
-            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
-            public let plan: Plan
-
-            enum CodingKeys: String, CodingKey {
-                case plan = "plan"
-            }
-
-            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
-            public enum Plan: Int, Codable {
-                case plan1 = 1
-                case plan2 = 2
-            }
+            case eventType = "event_type"
         }
     }
 
@@ -1214,198 +1685,30 @@ public struct RUMErrorEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
-        }
-    }
-
-    /// CI Visibility properties
-    public struct CiTest: Codable {
-        /// The identifier of the current CI Visibility test execution
-        public let testExecutionId: String
-
-        enum CodingKeys: String, CodingKey {
-            case testExecutionId = "test_execution_id"
         }
     }
 
     /// Error properties
     public struct Error: Codable {
-        /// Whether the error has been handled manually in the source code or not
-        public let handling: Handling?
+        /// The error type or kind (or code in some cases)
+        public let kind: String?
 
-        /// Handling call stack
-        public let handlingStack: String?
-
-        /// UUID of the error
-        public let id: String?
-
-        /// Whether this error crashed the host application
-        public let isCrash: Bool?
-
-        /// Error message
-        public var message: String
-
-        /// Resource properties of the error
-        public var resource: Resource?
-
-        /// Source of the error
-        public let source: Source
-
-        /// Source type of the error (the language or platform impacting the error stacktrace format)
-        public let sourceType: SourceType?
-
-        /// Stacktrace of the error
-        public var stack: String?
-
-        /// The type of the error
-        public let type: String?
+        /// The stack trace or the complementary information about the error
+        public let stack: String?
 
         enum CodingKeys: String, CodingKey {
-            case handling = "handling"
-            case handlingStack = "handling_stack"
-            case id = "id"
-            case isCrash = "is_crash"
-            case message = "message"
-            case resource = "resource"
-            case source = "source"
-            case sourceType = "source_type"
+            case kind = "kind"
             case stack = "stack"
-            case type = "type"
-        }
-
-        /// Whether the error has been handled manually in the source code or not
-        public enum Handling: String, Codable {
-            case handled = "handled"
-            case unhandled = "unhandled"
-        }
-
-        /// Resource properties of the error
-        public struct Resource: Codable {
-            /// HTTP method of the resource
-            public let method: RUMMethod
-
-            /// The provider for this resource
-            public let provider: Provider?
-
-            /// HTTP Status code of the resource
-            public let statusCode: Int64
-
-            /// URL of the resource
-            public var url: String
-
-            enum CodingKeys: String, CodingKey {
-                case method = "method"
-                case provider = "provider"
-                case statusCode = "status_code"
-                case url = "url"
-            }
-
-            /// The provider for this resource
-            public struct Provider: Codable {
-                /// The domain name of the provider
-                public let domain: String?
-
-                /// The user friendly name of the provider
-                public let name: String?
-
-                /// The type of provider
-                public let type: ProviderType?
-
-                enum CodingKeys: String, CodingKey {
-                    case domain = "domain"
-                    case name = "name"
-                    case type = "type"
-                }
-
-                /// The type of provider
-                public enum ProviderType: String, Codable {
-                    case ad = "ad"
-                    case advertising = "advertising"
-                    case analytics = "analytics"
-                    case cdn = "cdn"
-                    case content = "content"
-                    case customerSuccess = "customer-success"
-                    case firstParty = "first party"
-                    case hosting = "hosting"
-                    case marketing = "marketing"
-                    case other = "other"
-                    case social = "social"
-                    case tagManager = "tag-manager"
-                    case utility = "utility"
-                    case video = "video"
-                }
-            }
-        }
-
-        /// Source of the error
-        public enum Source: String, Codable {
-            case network = "network"
-            case source = "source"
-            case console = "console"
-            case logger = "logger"
-            case agent = "agent"
-            case webview = "webview"
-            case custom = "custom"
-        }
-
-        /// Source type of the error (the language or platform impacting the error stacktrace format)
-        public enum SourceType: String, Codable {
-            case android = "android"
-            case browser = "browser"
-            case ios = "ios"
-            case reactNative = "react-native"
-            case flutter = "flutter"
         }
     }
 
     /// Session properties
     public struct Session: Codable {
-        /// Whether this session has a replay
-        public let hasReplay: Bool?
-
         /// UUID of the session
         public let id: String
 
-        /// Type of the session
-        public let type: SessionType
-
         enum CodingKeys: String, CodingKey {
-            case hasReplay = "has_replay"
             case id = "id"
-            case type = "type"
-        }
-
-        /// Type of the session
-        public enum SessionType: String, Codable {
-            case user = "user"
-            case synthetics = "synthetics"
-            case ciTest = "ci_test"
-        }
-    }
-
-    /// The source of this event
-    public enum Source: String, Codable {
-        case android = "android"
-        case ios = "ios"
-        case browser = "browser"
-        case flutter = "flutter"
-        case reactNative = "react-native"
-    }
-
-    /// Synthetics properties
-    public struct Synthetics: Codable {
-        /// Whether the event comes from a SDK instance injected by Synthetics
-        public let injected: Bool?
-
-        /// The identifier of the current Synthetics test results
-        public let resultId: String
-
-        /// The identifier of the current Synthetics test
-        public let testId: String
-
-        enum CodingKeys: String, CodingKey {
-            case injected = "injected"
-            case resultId = "result_id"
-            case testId = "test_id"
         }
     }
 
@@ -1414,30 +1717,14 @@ public struct RUMErrorEvent: RUMDataModel {
         /// UUID of the view
         public let id: String
 
-        /// Is the error starting in the foreground (focus in browser)
-        public let inForeground: Bool?
-
-        /// User defined name of the view
-        public var name: String?
-
-        /// URL that linked to the initial view of the page
-        public var referrer: String?
-
-        /// URL of the view
-        public var url: String
-
         enum CodingKeys: String, CodingKey {
             case id = "id"
-            case inForeground = "in_foreground"
-            case name = "name"
-            case referrer = "referrer"
-            case url = "url"
         }
     }
 }
 
-/// Schema of all properties of a Long Task event
-public struct RUMLongTaskEvent: RUMDataModel {
+/// Schema of all properties of a telemetry debug event
+public struct TelemetryDebugEvent: RUMDataModel {
     /// Internal properties
     public let dd: DD
 
@@ -1445,93 +1732,49 @@ public struct RUMLongTaskEvent: RUMDataModel {
     public let action: Action?
 
     /// Application properties
-    public let application: Application
-
-    /// CI Visibility properties
-    public let ciTest: CiTest?
-
-    /// Device connectivity properties
-    public let connectivity: RUMConnectivity?
-
-    /// User provided context
-    public internal(set) var context: RUMEventAttributes?
+    public let application: Application?
 
     /// Start of the event in ms from epoch
     public let date: Int64
 
-    /// Long Task properties
-    public let longTask: LongTask
+    /// Body of the log
+    public let message: String
 
-    /// The service name for this application
-    public let service: String?
+    /// The SDK generating the telemetry event
+    public let service: String
 
     /// Session properties
-    public let session: Session
+    public let session: Session?
 
-    /// The source of this event
-    public let source: Source?
+    /// Level/severity of the log
+    public let status: String = "debug"
 
-    /// Synthetics properties
-    public let synthetics: Synthetics?
-
-    /// RUM event type
-    public let type: String = "long_task"
-
-    /// User properties
-    public internal(set) var usr: RUMUser?
+    /// The version of the SDK generating the telemetry event
+    public let version: String
 
     /// View properties
-    public var view: View
+    public let view: View?
 
     enum CodingKeys: String, CodingKey {
         case dd = "_dd"
         case action = "action"
         case application = "application"
-        case ciTest = "ci_test"
-        case connectivity = "connectivity"
-        case context = "context"
         case date = "date"
-        case longTask = "long_task"
+        case message = "message"
         case service = "service"
         case session = "session"
-        case source = "source"
-        case synthetics = "synthetics"
-        case type = "type"
-        case usr = "usr"
+        case status = "status"
+        case version = "version"
         case view = "view"
     }
 
     /// Internal properties
     public struct DD: Codable {
-        /// Browser SDK version
-        public let browserSdkVersion: String?
-
-        /// Version of the RUM event format
-        public let formatVersion: Int64 = 2
-
-        /// Session-related internal properties
-        public let session: Session?
+        /// Event type
+        public let eventType: String = "internal_telemetry"
 
         enum CodingKeys: String, CodingKey {
-            case browserSdkVersion = "browser_sdk_version"
-            case formatVersion = "format_version"
-            case session = "session"
-        }
-
-        /// Session-related internal properties
-        public struct Session: Codable {
-            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
-            public let plan: Plan
-
-            enum CodingKeys: String, CodingKey {
-                case plan = "plan"
-            }
-
-            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
-            public enum Plan: Int, Codable {
-                case plan1 = 1
-                case plan2 = 2
-            }
+            case eventType = "event_type"
         }
     }
 
@@ -1555,83 +1798,13 @@ public struct RUMLongTaskEvent: RUMDataModel {
         }
     }
 
-    /// CI Visibility properties
-    public struct CiTest: Codable {
-        /// The identifier of the current CI Visibility test execution
-        public let testExecutionId: String
-
-        enum CodingKeys: String, CodingKey {
-            case testExecutionId = "test_execution_id"
-        }
-    }
-
-    /// Long Task properties
-    public struct LongTask: Codable {
-        /// Duration in ns of the long task
-        public let duration: Int64
-
-        /// UUID of the long task
-        public let id: String?
-
-        /// Whether this long task is considered a frozen frame
-        public let isFrozenFrame: Bool?
-
-        enum CodingKeys: String, CodingKey {
-            case duration = "duration"
-            case id = "id"
-            case isFrozenFrame = "is_frozen_frame"
-        }
-    }
-
     /// Session properties
     public struct Session: Codable {
-        /// Whether this session has a replay
-        public let hasReplay: Bool?
-
         /// UUID of the session
         public let id: String
 
-        /// Type of the session
-        public let type: SessionType
-
         enum CodingKeys: String, CodingKey {
-            case hasReplay = "has_replay"
             case id = "id"
-            case type = "type"
-        }
-
-        /// Type of the session
-        public enum SessionType: String, Codable {
-            case user = "user"
-            case synthetics = "synthetics"
-            case ciTest = "ci_test"
-        }
-    }
-
-    /// The source of this event
-    public enum Source: String, Codable {
-        case android = "android"
-        case ios = "ios"
-        case browser = "browser"
-        case flutter = "flutter"
-        case reactNative = "react-native"
-    }
-
-    /// Synthetics properties
-    public struct Synthetics: Codable {
-        /// Whether the event comes from a SDK instance injected by Synthetics
-        public let injected: Bool?
-
-        /// The identifier of the current Synthetics test results
-        public let resultId: String
-
-        /// The identifier of the current Synthetics test
-        public let testId: String
-
-        enum CodingKeys: String, CodingKey {
-            case injected = "injected"
-            case resultId = "result_id"
-            case testId = "test_id"
         }
     }
 
@@ -1640,21 +1813,19 @@ public struct RUMLongTaskEvent: RUMDataModel {
         /// UUID of the view
         public let id: String
 
-        /// User defined name of the view
-        public var name: String?
-
-        /// URL that linked to the initial view of the page
-        public var referrer: String?
-
-        /// URL of the view
-        public var url: String
-
         enum CodingKeys: String, CodingKey {
             case id = "id"
-            case name = "name"
-            case referrer = "referrer"
-            case url = "url"
         }
+    }
+}
+
+/// CI Visibility properties
+public struct RUMCITest: Codable {
+    /// The identifier of the current CI Visibility test execution
+    public let testExecutionId: String
+
+    enum CodingKeys: String, CodingKey {
+        case testExecutionId = "test_execution_id"
     }
 }
 
@@ -1821,4 +1992,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/114c173caac5ea15446a157b666acbab05431361
+// Generated from https://github.com/DataDog/rum-events-format/tree/c8a844abb59cb376be2fcdc9deda74dc328af660

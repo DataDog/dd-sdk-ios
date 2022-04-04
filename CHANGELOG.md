@@ -1,3 +1,13 @@
+# Unreleased
+
+* [FEATURE] Web-view tracking. See [#729][]
+* [FEATURE] Integration with CI Visibility Tests. See[#761][]
+* [FEATURE] Add tvOS Support. See [#793][]
+* [BUGFIX] Strip query parameters from span resource. See [#728][]
+* [BUGFIX] Stop reporting pre-warmed application launch time. See [#789][]
+* [BUGFIX] Allow log event dropping. See [#795][]
+* [IMPROVEMENT] Crash Reporting: Filter out unrecognized trailing `???` stack frame in `error.stack`. See [#794][]
+
 # 1.9.0 / 01-26-2022
 
 ### Changes
@@ -317,6 +327,13 @@
 [#715]: https://github.com/DataDog/dd-sdk-ios/issues/715
 [#724]: https://github.com/DataDog/dd-sdk-ios/issues/724
 [#725]: https://github.com/DataDog/dd-sdk-ios/issues/725
+[#728]: https://github.com/DataDog/dd-sdk-ios/issues/728
+[#729]: https://github.com/DataDog/dd-sdk-ios/issues/729
+[#761]: https://github.com/DataDog/dd-sdk-ios/issues/761
+[#789]: https://github.com/DataDog/dd-sdk-ios/issues/789
+[#793]: https://github.com/DataDog/dd-sdk-ios/issues/793
+[#794]: https://github.com/DataDog/dd-sdk-ios/issues/794
+[#795]: https://github.com/DataDog/dd-sdk-ios/issues/795
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu

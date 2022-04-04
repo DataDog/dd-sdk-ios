@@ -169,10 +169,8 @@ internal class CrashReporter {
         }
     }
 
-#if DD_SDK_COMPILED_FOR_TESTING
-    func deinitialize() {
+    internal func deinitialize() {
         // Await asynchronous operations completion to safely sink all pending tasks.
         queue.sync {}
     }
-#endif
 }

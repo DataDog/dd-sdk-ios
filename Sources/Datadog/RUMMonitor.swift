@@ -76,6 +76,7 @@ internal extension RUMErrorSourceType {
 /// Describes the type of a RUM Action.
 public enum RUMUserActionType {
     case tap
+    case click
     case scroll
     case swipe
     case custom
@@ -195,6 +196,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     rumUUIDGenerator: rumFeature.configuration.uuidGenerator,
                     dateCorrector: rumFeature.dateCorrector,
                     crashContextIntegration: RUMWithCrashContextIntegration(),
+                    ciTest: CITestIntegration.active?.rumCITest,
                     vitalCPUReader: rumFeature.vitalCPUReader,
                     vitalMemoryReader: rumFeature.vitalMemoryReader,
                     vitalRefreshRateReader: rumFeature.vitalRefreshRateReader,
@@ -221,6 +223,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         if Datadog.debugRUM {
             self.enableRUMDebugging(true)
         }
+
+        CITestIntegration.active?.startIntegration()
     }
 
     // MARK: - Public DDRUMMonitor conformance

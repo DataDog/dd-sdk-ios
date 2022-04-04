@@ -1,0 +1,50 @@
+{
+    "type": "object",
+    "title": "Foo",
+    "description": "Description of Foo.",
+    "allOf": [
+        { "$ref": "schema-1.json" },
+        { "$ref": "schema-2.json" },
+        {
+            "properties": {
+                "stringEnumProperty": {
+                    "type": "string",
+                    "description": "Description of Foo's `stringEnumProperty`.",
+                    "enum": ["case1", "case2", "case3", "case4"],
+                    "const": "case2"
+                },
+                "integerEnumProperty": {
+                    "type": "number",
+                    "description": "Description of Foo's `integerEnumProperty`.",
+                    "enum": [1, 2, 3, 4],
+                    "const": 3
+                },
+                "arrayProperty": {
+                    "type": "array",
+                    "description": "Description of Foo's `arrayProperty`.",
+                    "items": {
+                        "type": "string",
+                        "enum": ["option1", "option2", "option3", "option4"]
+                    },
+                    "readOnly": false
+                },
+                "propertyWithAdditionalProperties": {
+                    "type": "object",
+                    "description": "Description of a property with nested additional properties.",
+                    "additionalProperties": {
+                         "type": "integer",
+                         "minimum": 0,
+                         "readOnly": true
+                    },
+                    "readOnly": true
+                }
+            },
+            "additionalProperties": {
+                "type": "string",
+                "description": "Additional properties of Foo.",
+                "readOnly": true
+            },
+            "required": ["stringEnumProperty"],
+        }
+    ]
+}

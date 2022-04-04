@@ -20,12 +20,10 @@ internal class UIViewControllerSwizzler {
         viewDidDisappear.swizzle()
     }
 
-#if DD_SDK_COMPILED_FOR_TESTING
-    func unswizzle() {
+    internal func unswizzle() {
         viewDidAppear.unswizzle()
         viewDidDisappear.unswizzle()
     }
-#endif
 
     // MARK: - Swizzlings
 

@@ -28,10 +28,9 @@ private struct RootCommand: ParsableCommand {
 
         func run() {
             do {
-                let schemasFolderURL = URL(fileURLWithPath: path)
-                let schemas = try RUMJSONSchemaFiles(folder: schemasFolderURL)
+                let path = URL(fileURLWithPath: path)
                 let generator = RUMModelsGenerator()
-                print(try generator.printRUMModels(for: schemas, using: .swift))
+                print(try generator.printRUMModels(path: path, using: .swift))
             } catch {
                 print("Failed to generate Swift models: \(error)")
             }
@@ -49,10 +48,9 @@ private struct RootCommand: ParsableCommand {
 
         func run() {
             do {
-                let schemasFolderURL = URL(fileURLWithPath: path)
-                let schemas = try RUMJSONSchemaFiles(folder: schemasFolderURL)
+                let path = URL(fileURLWithPath: path)
                 let generator = RUMModelsGenerator()
-                print(try generator.printRUMModels(for: schemas, using: .objcInterop))
+                print(try generator.printRUMModels(path: path, using: .objcInterop))
             } catch {
                 print("Failed to generate Objc models: \(error)")
             }

@@ -338,13 +338,18 @@ public class Datadog {
         InternalMonitoringFeature.instance?.logsStorage.clearAllData()
     }
 
-#if DD_SDK_COMPILED_FOR_TESTING
     /// Flushes all authorised data for each feature, tears down and deinitializes the SDK.
     /// - It flushes all data authorised for each feature by performing its arbitrary upload (without retrying).
     /// - It completes all pending asynchronous work in each feature.
     ///
     /// This is highly experimental API and only supported in tests.
+#if DD_SDK_COMPILED_FOR_TESTING
     public static func flushAndDeinitialize() {
+        internalFlushAndDeinitialize()
+    }
+#endif
+
+    internal static func internalFlushAndDeinitialize() {
         assert(Datadog.instance != nil, "SDK must be first initialized.")
 
         // Tear down and deinitialize all features:
@@ -370,7 +375,6 @@ public class Datadog {
         // Reset internal loggers:
         userLogger = createNoOpSDKUserLogger()
     }
-#endif
 }
 
 /// Convenience typealias.

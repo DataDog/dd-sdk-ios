@@ -11,13 +11,17 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
     private let commandSubscriber = RUMCommandSubscriberMock()
 
-    private func createHandler(userActionsPredicate: UIKitRUMUserActionsPredicate = DefaultUIKitRUMUserActionsPredicate()) -> UIKitRUMUserActionsHandler {
-        let handler = UIKitRUMUserActionsHandler(dateProvider: dateProvider, predicate: userActionsPredicate)
+    private func touchHandler(with predicate: UITouchRUMUserActionsPredicate = DefaultUIKitRUMUserActionsPredicate()) -> UIKitRUMUserActionsHandler {
+        let handler = UIKitRUMUserActionsHandler(dateProvider: dateProvider, predicate: predicate)
         handler.publish(to: commandSubscriber)
         return handler
     }
 
-    private lazy var handler = createHandler()
+    private func pressHandler(with predicate: UIPressRUMUserActionsPredicate = DefaultUIKitRUMUserActionsPredicate()) -> UIKitRUMUserActionsHandler {
+        let handler = UIKitRUMUserActionsHandler(dateProvider: dateProvider, predicate: predicate)
+        handler.publish(to: commandSubscriber)
+        return handler
+    }
 
     private var mockAppWindow: UIWindow! // swiftlint:disable:this implicitly_unwrapped_optional
 
@@ -35,6 +39,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
 
     func testGivenViewWithAccessibilityIdentifier_whenSingleTouchEnds_itSendsRUMAction() {
         // Given
+        let handler = touchHandler()
         let fixtures: [(view: UIView, expectedRUMActionName: String)] = [
             (
                 view: UIButton()
@@ -64,7 +69,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
             // When
             handler.notify_sendEvent(
                 application: .shared,
-                event: .mockWith(touches: [.mockWith(phase: .ended, view: view)])
+                event: .mockWith(touch: .mockWith(view: view))
             )
 
             // Then
@@ -78,6 +83,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
 
     func testGivenViewWithNoAccessibilityIdentifier_whenSingleTouchEnds_itSendsRUMAction() {
         // Given
+        let handler = touchHandler()
         let fixtures: [(view: UIView, expectedRUMActionName: String)] = [
             (
                 view: UIButton()
@@ -100,7 +106,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
             // When
             handler.notify_sendEvent(
                 application: .shared,
-                event: .mockWith(touches: [.mockWith(phase: .ended, view: view)])
+                event: .mockWith(touch: .mockWith(view: view))
             )
 
             // Then
@@ -116,13 +122,14 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
 
     func testGivenAnyViewWithUnrecognizedHierarchy_whenTouchEnds_itGetsIgnored() {
         // Given
+        let handler = touchHandler()
         let superview = UIView().attached(to: mockAppWindow)
         let view = UIView().attached(to: superview)
 
         // When
         handler.notify_sendEvent(
             application: .shared,
-            event: .mockWith(touches: [.mockWith(phase: .ended, view: view)])
+            event: .mockWith(touch: .mockWith(view: view))
         )
 
         // Then
@@ -133,26 +140,28 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         let mockKeyboardWindow = MockUIRemoteKeyboardWindow(frame: .zero)
 
         // Given
+        let handler = touchHandler()
         let view = UIView().attached(to: mockKeyboardWindow)
 
         // When
         handler.notify_sendEvent(
             application: .shared,
-            event: .mockWith(touches: [.mockWith(phase: .ended, view: view)])
+            event: .mockWith(touch: .mockWith(view: view))
         )
 
         // Then
         XCTAssertNil(commandSubscriber.lastReceivedCommand)
     }
 
-    func testGivenAnyUIControlNotAttachedToAnyWindow_itGetsIgnoredForPrivacyReason() {
+    func testGivenAnyUIControlTouchNotAttachedToAnyWindow_itGetsIgnoredForPrivacyReason() {
         // Given
+        let handler = touchHandler()
         let uiControl = UIControl()
 
         // When
         handler.notify_sendEvent(
             application: .shared,
-            event: .mockWith(touches: [.mockWith(phase: .ended, view: uiControl)])
+            event: .mockWith(touch: .mockWith(view: uiControl))
         )
 
         // Then
@@ -161,10 +170,11 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
 
     func testItIgnoresSingleTouchEventWithPhaseOtherThanEnded() {
         // Given
+        let handler = touchHandler()
         let view = UIControl().attached(to: mockAppWindow)
 
         let ignoredTouchPhases: [UITouch.Phase]
-        if #available(iOS 13.4, *) {
+        if #available(iOS 13.4, tvOS 13.4, *) {
             ignoredTouchPhases = [.began, .moved, .stationary, .cancelled, .regionEntered, .regionMoved, .regionExited]
         } else {
             ignoredTouchPhases = [.began, .moved, .stationary, .cancelled]
@@ -174,7 +184,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
             // When
             handler.notify_sendEvent(
                 application: .shared,
-                event: .mockWith(touches: [.mockWith(phase: touchPhase, view: view)])
+                event: .mockWith(touch: .mockWith(phase: touchPhase, view: view))
             )
 
             // Then
@@ -184,6 +194,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
 
     func testItIgnoresMultitouchEvents() {
         // Given
+        let handler = touchHandler()
         let view = UIControl().attached(to: mockAppWindow)
 
         // When
@@ -191,8 +202,8 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
             application: .shared,
             event: .mockWith(
                 touches: [
-                    .mockWith(phase: .ended, view: view), // 1st touch
-                    .mockWith(phase: .ended, view: view)  // 2nd touch
+                    .mockWith(view: view), // 1st touch
+                    .mockWith(view: view)  // 2nd touch
                 ]
             )
         )
@@ -202,6 +213,9 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
     }
 
     func testItIgnoresEventsWithNoTouch() {
+        // Given
+        let handler = touchHandler()
+
         // When
         handler.notify_sendEvent(
             application: .shared,
@@ -212,18 +226,18 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         XCTAssertNil(commandSubscriber.lastReceivedCommand)
     }
 
-    func testItAppliesUserAttributesAndCustomName() {
+    func testGivenTouchEvent_itAppliesUserAttributesAndCustomName() {
         // Given
         let mockAttributes: [AttributeKey: AttributeValue] = mockRandomAttributes()
-        let handler = createHandler(
-            userActionsPredicate: MockUIKitRUMUserActionsPredicate(
+        let handler = touchHandler(
+            with: MockUIKitRUMUserActionsPredicate(
                 actionOverride: (name: "foobar", attributes: mockAttributes)
             )
         )
         let view = UIButton()
             .attached(to: mockAppWindow)
             .with(accessibilityIdentifier: "Some Button")
-        let event = UIEvent.mockWith(touches: [.mockWith(phase: .ended, view: view)])
+        let event = UIEvent.mockWith(touch: .mockWith(view: view))
 
         // When
         handler.notify_sendEvent(
@@ -237,15 +251,173 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         AssertDictionariesEqual(command!.attributes, mockAttributes)
     }
 
-    func testGivenUserActionPredicateReturnsNil_itDoesntSendAction() {
+    func testGivenUserActionPredicateReturnsNil_itDoesntSendTapAction() {
         // Given
-        let handler = createHandler(
-            userActionsPredicate: MockUIKitRUMUserActionsPredicate(actionOverride: nil)
+        let handler = touchHandler(
+            with: MockUIKitRUMUserActionsPredicate(actionOverride: nil)
         )
         let view = UIButton()
             .attached(to: mockAppWindow)
             .with(accessibilityIdentifier: "Some Button")
-        let event = UIEvent.mockWith(touches: [.mockWith(phase: .ended, view: view)])
+        let event = UIEvent.mockWith(touch: .mockWith(view: view))
+
+        // When
+        handler.notify_sendEvent(
+            application: .shared,
+            event: event
+        )
+
+        // Then
+        XCTAssertNil(commandSubscriber.lastReceivedCommand)
+    }
+
+    // MARK: - Scenarios For Accepting Click Events
+
+    func testGivenUIPress_whenSinglePressEnds_itSendsRUMAction() {
+        // Given
+        let handler = pressHandler()
+        let fixtures: [(event: UIEvent, expect: String)] = [
+            (
+                event: .mockWith(
+                    press: .mockWith(
+                        type: .select,
+                        view: UIView()
+                            .attached(to: mockAppWindow)
+                            .with(accessibilityIdentifier: "Some View")
+                    )
+                ),
+                expect: "UIView(Some View)"
+            ),
+            (
+                event: .mockWith(press: .mockWith(type: .menu, view: UIView().attached(to: mockAppWindow))),
+                expect: "menu"
+            ),
+            (
+                event: .mockWith(press: .mockWith(type: .playPause, view: UIView().attached(to: mockAppWindow))),
+                expect: "play-pause"
+            )
+        ]
+
+        fixtures.forEach { event, expect in
+            // When
+            handler.notify_sendEvent(application: .shared, event: event)
+
+            // Then
+            let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
+            XCTAssertEqual(command?.name, expect)
+            XCTAssertEqual(command?.actionType, .click)
+            XCTAssertEqual(command?.time, .mockDecember15th2019At10AMUTC())
+            XCTAssertEqual(command?.attributes.count, 0)
+        }
+    }
+
+    // MARK: - Scenarios For Ignoring Tap Events
+
+    func testGivenAnyViewPresentedInKeyboardWindow_whenPressEnds_itGetsIgnoredForPrivacyReason() {
+        let mockKeyboardWindow = MockUIRemoteKeyboardWindow(frame: .zero)
+
+        // Given
+        let handler = pressHandler()
+        let view = UIView().attached(to: mockKeyboardWindow)
+
+        // When
+        handler.notify_sendEvent(
+            application: .shared,
+            event: .mockWith(press: .mockWith(view: view))
+        )
+
+        // Then
+        XCTAssertNil(commandSubscriber.lastReceivedCommand)
+    }
+
+    func testGivenAnyUIControlPressNotAttachedToAnyWindow_itGetsIgnoredForPrivacyReason() {
+        // Given
+        let handler = pressHandler()
+        let uiControl = UIControl()
+
+        // When
+        handler.notify_sendEvent(
+            application: .shared,
+            event: .mockWith(press: .mockWith(view: uiControl))
+        )
+
+        // Then
+        XCTAssertNil(commandSubscriber.lastReceivedCommand)
+    }
+
+    func testItIgnoresSinglePressEventWithPhaseOtherThanEnded() {
+        // Given
+        let handler = pressHandler()
+        let view = UIControl().attached(to: mockAppWindow)
+
+        let ignoredPressPhases: [UIPress.Phase] = [.began, .stationary, .cancelled]
+
+        ignoredPressPhases.forEach { phase in
+            // When
+            handler.notify_sendEvent(
+                application: .shared,
+                event: .mockWith(press: .mockWith(phase: phase, view: view))
+            )
+
+            // Then
+            XCTAssertNil(commandSubscriber.lastReceivedCommand)
+        }
+    }
+
+    func testItIgnoresMultiPressEvents() {
+        // Given
+        let handler = pressHandler()
+        let view = UIControl().attached(to: mockAppWindow)
+
+        // When
+        handler.notify_sendEvent(
+            application: .shared,
+            event: .mockWith(
+                presses: [
+                    .mockWith(view: view), // 1st touch
+                    .mockWith(view: view)  // 2nd touch
+                ]
+            )
+        )
+
+        // Then
+        XCTAssertNil(commandSubscriber.lastReceivedCommand)
+    }
+
+    func testGivenPressEvent_ItAppliesUserAttributesAndCustomName() {
+        // Given
+        let mockAttributes: [AttributeKey: AttributeValue] = mockRandomAttributes()
+        let handler = pressHandler(
+            with: MockUIKitRUMUserActionsPredicate(
+                actionOverride: (name: "foobar", attributes: mockAttributes)
+            )
+        )
+        let view = UIButton()
+            .attached(to: mockAppWindow)
+            .with(accessibilityIdentifier: "Some Button")
+        let event = UIEvent.mockWith(press: .mockWith(view: view))
+
+        // When
+        handler.notify_sendEvent(
+            application: .shared,
+            event: event
+        )
+
+        // Then
+        let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
+        XCTAssertEqual(command?.name, "foobar")
+        AssertDictionariesEqual(command!.attributes, mockAttributes)
+    }
+
+    func testGivenUserActionPredicateReturnsNil_itDoesntSendClickAction() {
+        // Given
+        let handler = pressHandler(
+            with: MockUIKitRUMUserActionsPredicate(actionOverride: nil)
+        )
+        let view = UIButton()
+            .attached(to: mockAppWindow)
+            .with(accessibilityIdentifier: "Some Button")
+        let event = UIEvent.mockWith(press: .mockWith(view: view))
 
         // When
         handler.notify_sendEvent(
@@ -275,7 +447,7 @@ private extension UIView {
 /// The mock the keyboard window by having the class name contain "UIRemoteKeyboardWindow" string.
 private class MockUIRemoteKeyboardWindow: UIWindow {}
 
-private class MockUIKitRUMUserActionsPredicate: UIKitRUMUserActionsPredicate {
+private class MockUIKitRUMUserActionsPredicate: UITouchRUMUserActionsPredicate & UIPressRUMUserActionsPredicate {
     private let actionOverride: (name: String, attributes: [AttributeKey: AttributeValue])?
 
     init(actionOverride: (name: String, attributes: [AttributeKey: AttributeValue])?) {
@@ -283,10 +455,14 @@ private class MockUIKitRUMUserActionsPredicate: UIKitRUMUserActionsPredicate {
     }
 
     func rumAction(targetView: UIView) -> RUMAction? {
-        if let action = actionOverride {
-            return RUMAction(name: action.name, attributes: action.attributes)
-        } else {
+        guard let action = actionOverride else {
             return nil
         }
+
+        return RUMAction(name: action.name, attributes: action.attributes)
+    }
+
+    func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction? {
+        return rumAction(targetView: targetView)
     }
 }

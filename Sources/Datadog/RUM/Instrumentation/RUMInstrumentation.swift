@@ -84,12 +84,10 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         longTasks?.publish(to: subscriber)
     }
 
-#if DD_SDK_COMPILED_FOR_TESTING
     /// Removes RUM instrumentation swizzlings and deinitializes this component.
-    func deinitialize() {
+    internal func deinitialize() {
         viewControllerSwizzler?.unswizzle()
         userActionsAutoInstrumentation?.swizzler.unswizzle()
         RUMInstrumentation.instance = nil
     }
-#endif
 }

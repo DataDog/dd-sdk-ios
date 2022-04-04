@@ -19,6 +19,7 @@ internal struct FeaturesConfiguration {
         let environment: String
         let performance: PerformancePreset
         let source: String
+        let origin: String?
         let sdkVersion: String
         let proxyConfiguration: [AnyHashable: Any]?
     }
@@ -171,6 +172,7 @@ extension FeaturesConfiguration {
                 bundleType: appContext.bundleType
             ),
             source: source,
+            origin: CITestIntegration.active?.origin,
             sdkVersion: sdkVersion,
             proxyConfiguration: configuration.proxyConfiguration
         )

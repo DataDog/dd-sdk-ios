@@ -73,9 +73,8 @@ internal class MethodSwizzler<TypedIMP, TypedBlockIMP> {
         }
     }
 
-#if DD_SDK_COMPILED_FOR_TESTING
     /// Removes swizzling and resets the method to its original implementation.
-    func unswizzle() {
+    internal func unswizzle() {
         for foundMethod in swizzledMethods {
             let originalTypedIMP = originalImplementation(of: foundMethod)
             let originalIMP: IMP = unsafeBitCast(originalTypedIMP, to: IMP.self)
@@ -84,7 +83,6 @@ internal class MethodSwizzler<TypedIMP, TypedBlockIMP> {
             activeSwizzlingNames.removeAll { $0 == foundMethod.swizzlingName }
         }
     }
-#endif
 
     // MARK: - Private methods
 
@@ -121,11 +119,9 @@ internal class MethodSwizzler<TypedIMP, TypedBlockIMP> {
     }
 }
 
-#if DD_SDK_COMPILED_FOR_TESTING
-extension MethodSwizzler.FoundMethod {
+internal extension MethodSwizzler.FoundMethod {
     var swizzlingName: String { "\(klass).\(method_getName(method))" }
 }
 
 /// The list of active swizzlings to ensure integrity in unit tests.
 internal var activeSwizzlingNames: [String] = []
-#endif

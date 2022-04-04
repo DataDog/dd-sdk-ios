@@ -10,3 +10,4 @@ A brief description of implementation details of this PR.
 
 - [ ] Feature or bugfix MUST have appropriate tests (unit, integration)
 - [ ] Make sure each commit and the PR mention the Issue number or JIRA reference
+- [ ] Add CHANGELOG entry for user facing change. 

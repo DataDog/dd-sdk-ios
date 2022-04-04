@@ -79,7 +79,7 @@ internal final class InternalMonitoringFeature {
                         device: commonDependencies.mobileDevice
                     ),
                     .ddAPIKeyHeader(clientToken: configuration.clientToken),
-                    .ddEVPOriginHeader(source: configuration.common.source),
+                    .ddEVPOriginHeader(source: configuration.common.origin ?? configuration.common.source),
                     .ddEVPOriginVersionHeader(sdkVersion: configuration.common.sdkVersion),
                     .ddRequestIDHeader(),
                 ],
@@ -149,11 +149,9 @@ internal final class InternalMonitoringFeature {
         self.monitor = InternalMonitor(sdkLogger: internalLogger)
     }
 
-#if DD_SDK_COMPILED_FOR_TESTING
-    func deinitialize() {
+    internal func deinitialize() {
         logsStorage.flushAndTearDown()
         logsUpload.flushAndTearDown()
         InternalMonitoringFeature.instance = nil
     }
-#endif
 }

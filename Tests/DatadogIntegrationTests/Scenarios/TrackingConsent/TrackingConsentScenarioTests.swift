@@ -44,7 +44,7 @@ private class TSPictureScreen: XCUIApplication {
 
 private class TSConsentSettingsScreen: XCUIApplication {
     func selectConsent(value: String) {
-        buttons[value].tap()
+        buttons[value].safeTap()
     }
 
     func tapClose() -> TSHomeScreen {

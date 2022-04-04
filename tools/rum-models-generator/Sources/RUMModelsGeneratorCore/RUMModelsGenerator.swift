@@ -6,40 +6,6 @@
 
 import Foundation
 
-public struct File {
-    internal let name: String
-    internal let content: Data
-}
-
-public extension File {
-    init(url: URL) throws {
-        self.name = url.lastPathComponent
-        self.content = try Data(contentsOf: url)
-    }
-}
-
-public struct RUMJSONSchemaFiles {
-    internal let commonSchema: File
-    internal let actionSchema: File
-    internal let errorSchema: File
-    internal let longTaskSchema: File
-    internal let resourceSchema: File
-    internal let viewSchema: File
-}
-
-public extension RUMJSONSchemaFiles {
-    init(folder url: URL) throws {
-        self.init(
-            commonSchema: try File(url: url.appendingPathComponent("_common-schema.json")),
-            actionSchema: try File(url: url.appendingPathComponent("action-schema.json")),
-            errorSchema: try File(url: url.appendingPathComponent("error-schema.json")),
-            longTaskSchema: try File(url: url.appendingPathComponent("long_task-schema.json")),
-            resourceSchema: try File(url: url.appendingPathComponent("resource-schema.json")),
-            viewSchema: try File(url: url.appendingPathComponent("view-schema.json"))
-        )
-    }
-}
-
 public class RUMModelsGenerator {
     public enum Printer {
         /// Swift code printer.
@@ -51,22 +17,10 @@ public class RUMModelsGenerator {
     public init() {}
 
     public func printRUMModels(
-        for schemaFiles: RUMJSONSchemaFiles,
+        path file: URL,
         using printer: Printer
     ) throws -> String {
-        let mainSchemaFiles = [
-            schemaFiles.viewSchema,
-            schemaFiles.resourceSchema,
-            schemaFiles.actionSchema,
-            schemaFiles.errorSchema,
-            schemaFiles.longTaskSchema,
-        ]
-
-        // Read ambiguous JSON schemas from `*.json` files
-        let jsonSchemas = try JSONSchemaReader().readJSONSchemas(
-            from: mainSchemaFiles,
-            resolvingAgainst: [schemaFiles.commonSchema]
-        )
+        let jsonSchemas = try JSONSchemaReader().readAll(from: file)
 
         // Transform into type-safe JSONObjects
         let jsonObjects = try JSONSchemaToJSONTypeTransformer().transform(jsonSchemas: jsonSchemas)

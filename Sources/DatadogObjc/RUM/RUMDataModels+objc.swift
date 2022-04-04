@@ -12,32 +12,36 @@ import Foundation
 // swiftlint:disable force_unwrapping
 
 @objc
-public class DDRUMViewEvent: NSObject {
-    internal var swiftModel: RUMViewEvent
-    internal var root: DDRUMViewEvent { self }
+public class DDRUMActionEvent: NSObject {
+    internal var swiftModel: RUMActionEvent
+    internal var root: DDRUMActionEvent { self }
 
-    internal init(swiftModel: RUMViewEvent) {
+    internal init(swiftModel: RUMActionEvent) {
         self.swiftModel = swiftModel
     }
 
-    @objc public var dd: DDRUMViewEventDD {
-        DDRUMViewEventDD(root: root)
+    @objc public var dd: DDRUMActionEventDD {
+        DDRUMActionEventDD(root: root)
     }
 
-    @objc public var application: DDRUMViewEventApplication {
-        DDRUMViewEventApplication(root: root)
+    @objc public var action: DDRUMActionEventAction {
+        DDRUMActionEventAction(root: root)
     }
 
-    @objc public var ciTest: DDRUMViewEventCiTest? {
-        root.swiftModel.ciTest != nil ? DDRUMViewEventCiTest(root: root) : nil
+    @objc public var application: DDRUMActionEventApplication {
+        DDRUMActionEventApplication(root: root)
     }
 
-    @objc public var connectivity: DDRUMViewEventRUMConnectivity? {
-        root.swiftModel.connectivity != nil ? DDRUMViewEventRUMConnectivity(root: root) : nil
+    @objc public var ciTest: DDRUMActionEventRUMCITest? {
+        root.swiftModel.ciTest != nil ? DDRUMActionEventRUMCITest(root: root) : nil
     }
 
-    @objc public var context: DDRUMViewEventRUMEventAttributes? {
-        root.swiftModel.context != nil ? DDRUMViewEventRUMEventAttributes(root: root) : nil
+    @objc public var connectivity: DDRUMActionEventRUMConnectivity? {
+        root.swiftModel.connectivity != nil ? DDRUMActionEventRUMConnectivity(root: root) : nil
+    }
+
+    @objc public var context: DDRUMActionEventRUMEventAttributes? {
+        root.swiftModel.context != nil ? DDRUMActionEventRUMEventAttributes(root: root) : nil
     }
 
     @objc public var date: NSNumber {
@@ -48,36 +52,36 @@ public class DDRUMViewEvent: NSObject {
         root.swiftModel.service
     }
 
-    @objc public var session: DDRUMViewEventSession {
-        DDRUMViewEventSession(root: root)
+    @objc public var session: DDRUMActionEventSession {
+        DDRUMActionEventSession(root: root)
     }
 
-    @objc public var source: DDRUMViewEventSource {
+    @objc public var source: DDRUMActionEventSource {
         .init(swift: root.swiftModel.source)
     }
 
-    @objc public var synthetics: DDRUMViewEventSynthetics? {
-        root.swiftModel.synthetics != nil ? DDRUMViewEventSynthetics(root: root) : nil
+    @objc public var synthetics: DDRUMActionEventSynthetics? {
+        root.swiftModel.synthetics != nil ? DDRUMActionEventSynthetics(root: root) : nil
     }
 
     @objc public var type: String {
         root.swiftModel.type
     }
 
-    @objc public var usr: DDRUMViewEventRUMUser? {
-        root.swiftModel.usr != nil ? DDRUMViewEventRUMUser(root: root) : nil
+    @objc public var usr: DDRUMActionEventRUMUser? {
+        root.swiftModel.usr != nil ? DDRUMActionEventRUMUser(root: root) : nil
     }
 
-    @objc public var view: DDRUMViewEventView {
-        DDRUMViewEventView(root: root)
+    @objc public var view: DDRUMActionEventView {
+        DDRUMActionEventView(root: root)
     }
 }
 
 @objc
-public class DDRUMViewEventDD: NSObject {
-    internal let root: DDRUMViewEvent
+public class DDRUMActionEventDD: NSObject {
+    internal let root: DDRUMActionEvent
 
-    internal init(root: DDRUMViewEvent) {
+    internal init(root: DDRUMActionEvent) {
         self.root = root
     }
 
@@ -85,42 +89,38 @@ public class DDRUMViewEventDD: NSObject {
         root.swiftModel.dd.browserSdkVersion
     }
 
-    @objc public var documentVersion: NSNumber {
-        root.swiftModel.dd.documentVersion as NSNumber
-    }
-
     @objc public var formatVersion: NSNumber {
         root.swiftModel.dd.formatVersion as NSNumber
     }
 
-    @objc public var session: DDRUMViewEventDDSession? {
-        root.swiftModel.dd.session != nil ? DDRUMViewEventDDSession(root: root) : nil
+    @objc public var session: DDRUMActionEventDDSession? {
+        root.swiftModel.dd.session != nil ? DDRUMActionEventDDSession(root: root) : nil
     }
 }
 
 @objc
-public class DDRUMViewEventDDSession: NSObject {
-    internal let root: DDRUMViewEvent
+public class DDRUMActionEventDDSession: NSObject {
+    internal let root: DDRUMActionEvent
 
-    internal init(root: DDRUMViewEvent) {
+    internal init(root: DDRUMActionEvent) {
         self.root = root
     }
 
-    @objc public var plan: DDRUMViewEventDDSessionPlan {
+    @objc public var plan: DDRUMActionEventDDSessionPlan {
         .init(swift: root.swiftModel.dd.session!.plan)
     }
 }
 
 @objc
-public enum DDRUMViewEventDDSessionPlan: Int {
-    internal init(swift: RUMViewEvent.DD.Session.Plan) {
+public enum DDRUMActionEventDDSessionPlan: Int {
+    internal init(swift: RUMActionEvent.DD.Session.Plan) {
         switch swift {
         case .plan1: self = .plan1
         case .plan2: self = .plan2
         }
     }
 
-    internal var toSwift: RUMViewEvent.DD.Session.Plan {
+    internal var toSwift: RUMActionEvent.DD.Session.Plan {
         switch self {
         case .plan1: return .plan1
         case .plan2: return .plan2
@@ -132,10 +132,152 @@ public enum DDRUMViewEventDDSessionPlan: Int {
 }
 
 @objc
-public class DDRUMViewEventApplication: NSObject {
-    internal let root: DDRUMViewEvent
+public class DDRUMActionEventAction: NSObject {
+    internal let root: DDRUMActionEvent
 
-    internal init(root: DDRUMViewEvent) {
+    internal init(root: DDRUMActionEvent) {
+        self.root = root
+    }
+
+    @objc public var crash: DDRUMActionEventActionCrash? {
+        root.swiftModel.action.crash != nil ? DDRUMActionEventActionCrash(root: root) : nil
+    }
+
+    @objc public var error: DDRUMActionEventActionError? {
+        root.swiftModel.action.error != nil ? DDRUMActionEventActionError(root: root) : nil
+    }
+
+    @objc public var id: String? {
+        root.swiftModel.action.id
+    }
+
+    @objc public var loadingTime: NSNumber? {
+        root.swiftModel.action.loadingTime as NSNumber?
+    }
+
+    @objc public var longTask: DDRUMActionEventActionLongTask? {
+        root.swiftModel.action.longTask != nil ? DDRUMActionEventActionLongTask(root: root) : nil
+    }
+
+    @objc public var resource: DDRUMActionEventActionResource? {
+        root.swiftModel.action.resource != nil ? DDRUMActionEventActionResource(root: root) : nil
+    }
+
+    @objc public var target: DDRUMActionEventActionTarget? {
+        root.swiftModel.action.target != nil ? DDRUMActionEventActionTarget(root: root) : nil
+    }
+
+    @objc public var type: DDRUMActionEventActionActionType {
+        .init(swift: root.swiftModel.action.type)
+    }
+}
+
+@objc
+public class DDRUMActionEventActionCrash: NSObject {
+    internal let root: DDRUMActionEvent
+
+    internal init(root: DDRUMActionEvent) {
+        self.root = root
+    }
+
+    @objc public var count: NSNumber {
+        root.swiftModel.action.crash!.count as NSNumber
+    }
+}
+
+@objc
+public class DDRUMActionEventActionError: NSObject {
+    internal let root: DDRUMActionEvent
+
+    internal init(root: DDRUMActionEvent) {
+        self.root = root
+    }
+
+    @objc public var count: NSNumber {
+        root.swiftModel.action.error!.count as NSNumber
+    }
+}
+
+@objc
+public class DDRUMActionEventActionLongTask: NSObject {
+    internal let root: DDRUMActionEvent
+
+    internal init(root: DDRUMActionEvent) {
+        self.root = root
+    }
+
+    @objc public var count: NSNumber {
+        root.swiftModel.action.longTask!.count as NSNumber
+    }
+}
+
+@objc
+public class DDRUMActionEventActionResource: NSObject {
+    internal let root: DDRUMActionEvent
+
+    internal init(root: DDRUMActionEvent) {
+        self.root = root
+    }
+
+    @objc public var count: NSNumber {
+        root.swiftModel.action.resource!.count as NSNumber
+    }
+}
+
+@objc
+public class DDRUMActionEventActionTarget: NSObject {
+    internal let root: DDRUMActionEvent
+
+    internal init(root: DDRUMActionEvent) {
+        self.root = root
+    }
+
+    @objc public var name: String {
+        set { root.swiftModel.action.target!.name = newValue }
+        get { root.swiftModel.action.target!.name }
+    }
+}
+
+@objc
+public enum DDRUMActionEventActionActionType: Int {
+    internal init(swift: RUMActionEvent.Action.ActionType) {
+        switch swift {
+        case .custom: self = .custom
+        case .click: self = .click
+        case .tap: self = .tap
+        case .scroll: self = .scroll
+        case .swipe: self = .swipe
+        case .applicationStart: self = .applicationStart
+        case .back: self = .back
+        }
+    }
+
+    internal var toSwift: RUMActionEvent.Action.ActionType {
+        switch self {
+        case .custom: return .custom
+        case .click: return .click
+        case .tap: return .tap
+        case .scroll: return .scroll
+        case .swipe: return .swipe
+        case .applicationStart: return .applicationStart
+        case .back: return .back
+        }
+    }
+
+    case custom
+    case click
+    case tap
+    case scroll
+    case swipe
+    case applicationStart
+    case back
+}
+
+@objc
+public class DDRUMActionEventApplication: NSObject {
+    internal let root: DDRUMActionEvent
+
+    internal init(root: DDRUMActionEvent) {
         self.root = root
     }
 
@@ -145,10 +287,10 @@ public class DDRUMViewEventApplication: NSObject {
 }
 
 @objc
-public class DDRUMViewEventCiTest: NSObject {
-    internal let root: DDRUMViewEvent
+public class DDRUMActionEventRUMCITest: NSObject {
+    internal let root: DDRUMActionEvent
 
-    internal init(root: DDRUMViewEvent) {
+    internal init(root: DDRUMActionEvent) {
         self.root = root
     }
 
@@ -158,31 +300,31 @@ public class DDRUMViewEventCiTest: NSObject {
 }
 
 @objc
-public class DDRUMViewEventRUMConnectivity: NSObject {
-    internal let root: DDRUMViewEvent
+public class DDRUMActionEventRUMConnectivity: NSObject {
+    internal let root: DDRUMActionEvent
 
-    internal init(root: DDRUMViewEvent) {
+    internal init(root: DDRUMActionEvent) {
         self.root = root
     }
 
-    @objc public var cellular: DDRUMViewEventRUMConnectivityCellular? {
-        root.swiftModel.connectivity!.cellular != nil ? DDRUMViewEventRUMConnectivityCellular(root: root) : nil
+    @objc public var cellular: DDRUMActionEventRUMConnectivityCellular? {
+        root.swiftModel.connectivity!.cellular != nil ? DDRUMActionEventRUMConnectivityCellular(root: root) : nil
     }
 
     @objc public var interfaces: [Int] {
-        root.swiftModel.connectivity!.interfaces.map { DDRUMViewEventRUMConnectivityInterfaces(swift: $0).rawValue }
+        root.swiftModel.connectivity!.interfaces.map { DDRUMActionEventRUMConnectivityInterfaces(swift: $0).rawValue }
     }
 
-    @objc public var status: DDRUMViewEventRUMConnectivityStatus {
+    @objc public var status: DDRUMActionEventRUMConnectivityStatus {
         .init(swift: root.swiftModel.connectivity!.status)
     }
 }
 
 @objc
-public class DDRUMViewEventRUMConnectivityCellular: NSObject {
-    internal let root: DDRUMViewEvent
+public class DDRUMActionEventRUMConnectivityCellular: NSObject {
+    internal let root: DDRUMActionEvent
 
-    internal init(root: DDRUMViewEvent) {
+    internal init(root: DDRUMActionEvent) {
         self.root = root
     }
 
@@ -196,7 +338,7 @@ public class DDRUMViewEventRUMConnectivityCellular: NSObject {
 }
 
 @objc
-public enum DDRUMViewEventRUMConnectivityInterfaces: Int {
+public enum DDRUMActionEventRUMConnectivityInterfaces: Int {
     internal init(swift: RUMConnectivity.Interfaces) {
         switch swift {
         case .bluetooth: self = .bluetooth
@@ -237,7 +379,7 @@ public enum DDRUMViewEventRUMConnectivityInterfaces: Int {
 }
 
 @objc
-public enum DDRUMViewEventRUMConnectivityStatus: Int {
+public enum DDRUMActionEventRUMConnectivityStatus: Int {
     internal init(swift: RUMConnectivity.Status) {
         switch swift {
         case .connected: self = .connected
@@ -260,10 +402,10 @@ public enum DDRUMViewEventRUMConnectivityStatus: Int {
 }
 
 @objc
-public class DDRUMViewEventRUMEventAttributes: NSObject {
-    internal let root: DDRUMViewEvent
+public class DDRUMActionEventRUMEventAttributes: NSObject {
+    internal let root: DDRUMActionEvent
 
-    internal init(root: DDRUMViewEvent) {
+    internal init(root: DDRUMActionEvent) {
         self.root = root
     }
 
@@ -273,10 +415,10 @@ public class DDRUMViewEventRUMEventAttributes: NSObject {
 }
 
 @objc
-public class DDRUMViewEventSession: NSObject {
-    internal let root: DDRUMViewEvent
+public class DDRUMActionEventSession: NSObject {
+    internal let root: DDRUMActionEvent
 
-    internal init(root: DDRUMViewEvent) {
+    internal init(root: DDRUMActionEvent) {
         self.root = root
     }
 
@@ -288,14 +430,14 @@ public class DDRUMViewEventSession: NSObject {
         root.swiftModel.session.id
     }
 
-    @objc public var type: DDRUMViewEventSessionSessionType {
+    @objc public var type: DDRUMActionEventSessionSessionType {
         .init(swift: root.swiftModel.session.type)
     }
 }
 
 @objc
-public enum DDRUMViewEventSessionSessionType: Int {
-    internal init(swift: RUMViewEvent.Session.SessionType) {
+public enum DDRUMActionEventSessionSessionType: Int {
+    internal init(swift: RUMActionEvent.Session.SessionType) {
         switch swift {
         case .user: self = .user
         case .synthetics: self = .synthetics
@@ -303,7 +445,7 @@ public enum DDRUMViewEventSessionSessionType: Int {
         }
     }
 
-    internal var toSwift: RUMViewEvent.Session.SessionType {
+    internal var toSwift: RUMActionEvent.Session.SessionType {
         switch self {
         case .user: return .user
         case .synthetics: return .synthetics
@@ -317,8 +459,8 @@ public enum DDRUMViewEventSessionSessionType: Int {
 }
 
 @objc
-public enum DDRUMViewEventSource: Int {
-    internal init(swift: RUMViewEvent.Source?) {
+public enum DDRUMActionEventSource: Int {
+    internal init(swift: RUMActionEvent.Source?) {
         switch swift {
         case nil: self = .none
         case .android?: self = .android
@@ -329,7 +471,7 @@ public enum DDRUMViewEventSource: Int {
         }
     }
 
-    internal var toSwift: RUMViewEvent.Source? {
+    internal var toSwift: RUMActionEvent.Source? {
         switch self {
         case .none: return nil
         case .android: return .android
@@ -349,10 +491,10 @@ public enum DDRUMViewEventSource: Int {
 }
 
 @objc
-public class DDRUMViewEventSynthetics: NSObject {
-    internal let root: DDRUMViewEvent
+public class DDRUMActionEventSynthetics: NSObject {
+    internal let root: DDRUMActionEvent
 
-    internal init(root: DDRUMViewEvent) {
+    internal init(root: DDRUMActionEvent) {
         self.root = root
     }
 
@@ -370,10 +512,10 @@ public class DDRUMViewEventSynthetics: NSObject {
 }
 
 @objc
-public class DDRUMViewEventRUMUser: NSObject {
-    internal let root: DDRUMViewEvent
+public class DDRUMActionEventRUMUser: NSObject {
+    internal let root: DDRUMActionEvent
 
-    internal init(root: DDRUMViewEvent) {
+    internal init(root: DDRUMActionEvent) {
         self.root = root
     }
 
@@ -395,111 +537,19 @@ public class DDRUMViewEventRUMUser: NSObject {
 }
 
 @objc
-public class DDRUMViewEventView: NSObject {
-    internal let root: DDRUMViewEvent
+public class DDRUMActionEventView: NSObject {
+    internal let root: DDRUMActionEvent
 
-    internal init(root: DDRUMViewEvent) {
+    internal init(root: DDRUMActionEvent) {
         self.root = root
-    }
-
-    @objc public var action: DDRUMViewEventViewAction {
-        DDRUMViewEventViewAction(root: root)
-    }
-
-    @objc public var cpuTicksCount: NSNumber? {
-        root.swiftModel.view.cpuTicksCount as NSNumber?
-    }
-
-    @objc public var cpuTicksPerSecond: NSNumber? {
-        root.swiftModel.view.cpuTicksPerSecond as NSNumber?
-    }
-
-    @objc public var crash: DDRUMViewEventViewCrash? {
-        root.swiftModel.view.crash != nil ? DDRUMViewEventViewCrash(root: root) : nil
-    }
-
-    @objc public var cumulativeLayoutShift: NSNumber? {
-        root.swiftModel.view.cumulativeLayoutShift as NSNumber?
-    }
-
-    @objc public var customTimings: [String: NSNumber]? {
-        root.swiftModel.view.customTimings as [String: NSNumber]?
-    }
-
-    @objc public var domComplete: NSNumber? {
-        root.swiftModel.view.domComplete as NSNumber?
-    }
-
-    @objc public var domContentLoaded: NSNumber? {
-        root.swiftModel.view.domContentLoaded as NSNumber?
-    }
-
-    @objc public var domInteractive: NSNumber? {
-        root.swiftModel.view.domInteractive as NSNumber?
-    }
-
-    @objc public var error: DDRUMViewEventViewError {
-        DDRUMViewEventViewError(root: root)
-    }
-
-    @objc public var firstContentfulPaint: NSNumber? {
-        root.swiftModel.view.firstContentfulPaint as NSNumber?
-    }
-
-    @objc public var firstInputDelay: NSNumber? {
-        root.swiftModel.view.firstInputDelay as NSNumber?
-    }
-
-    @objc public var firstInputTime: NSNumber? {
-        root.swiftModel.view.firstInputTime as NSNumber?
-    }
-
-    @objc public var frozenFrame: DDRUMViewEventViewFrozenFrame? {
-        root.swiftModel.view.frozenFrame != nil ? DDRUMViewEventViewFrozenFrame(root: root) : nil
     }
 
     @objc public var id: String {
         root.swiftModel.view.id
     }
 
-    @objc public var inForegroundPeriods: [DDRUMViewEventViewInForegroundPeriods]? {
-        root.swiftModel.view.inForegroundPeriods?.map { DDRUMViewEventViewInForegroundPeriods(swiftModel: $0) }
-    }
-
-    @objc public var isActive: NSNumber? {
-        root.swiftModel.view.isActive as NSNumber?
-    }
-
-    @objc public var isSlowRendered: NSNumber? {
-        root.swiftModel.view.isSlowRendered as NSNumber?
-    }
-
-    @objc public var largestContentfulPaint: NSNumber? {
-        root.swiftModel.view.largestContentfulPaint as NSNumber?
-    }
-
-    @objc public var loadEvent: NSNumber? {
-        root.swiftModel.view.loadEvent as NSNumber?
-    }
-
-    @objc public var loadingTime: NSNumber? {
-        root.swiftModel.view.loadingTime as NSNumber?
-    }
-
-    @objc public var loadingType: DDRUMViewEventViewLoadingType {
-        .init(swift: root.swiftModel.view.loadingType)
-    }
-
-    @objc public var longTask: DDRUMViewEventViewLongTask? {
-        root.swiftModel.view.longTask != nil ? DDRUMViewEventViewLongTask(root: root) : nil
-    }
-
-    @objc public var memoryAverage: NSNumber? {
-        root.swiftModel.view.memoryAverage as NSNumber?
-    }
-
-    @objc public var memoryMax: NSNumber? {
-        root.swiftModel.view.memoryMax as NSNumber?
+    @objc public var inForeground: NSNumber? {
+        root.swiftModel.view.inForeground as NSNumber?
     }
 
     @objc public var name: String? {
@@ -512,20 +562,718 @@ public class DDRUMViewEventView: NSObject {
         get { root.swiftModel.view.referrer }
     }
 
-    @objc public var refreshRateAverage: NSNumber? {
-        root.swiftModel.view.refreshRateAverage as NSNumber?
+    @objc public var url: String {
+        set { root.swiftModel.view.url = newValue }
+        get { root.swiftModel.view.url }
+    }
+}
+
+@objc
+public class DDRUMErrorEvent: NSObject {
+    internal var swiftModel: RUMErrorEvent
+    internal var root: DDRUMErrorEvent { self }
+
+    internal init(swiftModel: RUMErrorEvent) {
+        self.swiftModel = swiftModel
     }
 
-    @objc public var refreshRateMin: NSNumber? {
-        root.swiftModel.view.refreshRateMin as NSNumber?
+    @objc public var dd: DDRUMErrorEventDD {
+        DDRUMErrorEventDD(root: root)
     }
 
-    @objc public var resource: DDRUMViewEventViewResource {
-        DDRUMViewEventViewResource(root: root)
+    @objc public var action: DDRUMErrorEventAction? {
+        root.swiftModel.action != nil ? DDRUMErrorEventAction(root: root) : nil
     }
 
-    @objc public var timeSpent: NSNumber {
-        root.swiftModel.view.timeSpent as NSNumber
+    @objc public var application: DDRUMErrorEventApplication {
+        DDRUMErrorEventApplication(root: root)
+    }
+
+    @objc public var ciTest: DDRUMErrorEventRUMCITest? {
+        root.swiftModel.ciTest != nil ? DDRUMErrorEventRUMCITest(root: root) : nil
+    }
+
+    @objc public var connectivity: DDRUMErrorEventRUMConnectivity? {
+        root.swiftModel.connectivity != nil ? DDRUMErrorEventRUMConnectivity(root: root) : nil
+    }
+
+    @objc public var context: DDRUMErrorEventRUMEventAttributes? {
+        root.swiftModel.context != nil ? DDRUMErrorEventRUMEventAttributes(root: root) : nil
+    }
+
+    @objc public var date: NSNumber {
+        root.swiftModel.date as NSNumber
+    }
+
+    @objc public var error: DDRUMErrorEventError {
+        DDRUMErrorEventError(root: root)
+    }
+
+    @objc public var service: String? {
+        root.swiftModel.service
+    }
+
+    @objc public var session: DDRUMErrorEventSession {
+        DDRUMErrorEventSession(root: root)
+    }
+
+    @objc public var source: DDRUMErrorEventSource {
+        .init(swift: root.swiftModel.source)
+    }
+
+    @objc public var synthetics: DDRUMErrorEventSynthetics? {
+        root.swiftModel.synthetics != nil ? DDRUMErrorEventSynthetics(root: root) : nil
+    }
+
+    @objc public var type: String {
+        root.swiftModel.type
+    }
+
+    @objc public var usr: DDRUMErrorEventRUMUser? {
+        root.swiftModel.usr != nil ? DDRUMErrorEventRUMUser(root: root) : nil
+    }
+
+    @objc public var view: DDRUMErrorEventView {
+        DDRUMErrorEventView(root: root)
+    }
+}
+
+@objc
+public class DDRUMErrorEventDD: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var browserSdkVersion: String? {
+        root.swiftModel.dd.browserSdkVersion
+    }
+
+    @objc public var formatVersion: NSNumber {
+        root.swiftModel.dd.formatVersion as NSNumber
+    }
+
+    @objc public var session: DDRUMErrorEventDDSession? {
+        root.swiftModel.dd.session != nil ? DDRUMErrorEventDDSession(root: root) : nil
+    }
+}
+
+@objc
+public class DDRUMErrorEventDDSession: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var plan: DDRUMErrorEventDDSessionPlan {
+        .init(swift: root.swiftModel.dd.session!.plan)
+    }
+}
+
+@objc
+public enum DDRUMErrorEventDDSessionPlan: Int {
+    internal init(swift: RUMErrorEvent.DD.Session.Plan) {
+        switch swift {
+        case .plan1: self = .plan1
+        case .plan2: self = .plan2
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.DD.Session.Plan {
+        switch self {
+        case .plan1: return .plan1
+        case .plan2: return .plan2
+        }
+    }
+
+    case plan1
+    case plan2
+}
+
+@objc
+public class DDRUMErrorEventAction: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var id: String {
+        root.swiftModel.action!.id
+    }
+}
+
+@objc
+public class DDRUMErrorEventApplication: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var id: String {
+        root.swiftModel.application.id
+    }
+}
+
+@objc
+public class DDRUMErrorEventRUMCITest: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var testExecutionId: String {
+        root.swiftModel.ciTest!.testExecutionId
+    }
+}
+
+@objc
+public class DDRUMErrorEventRUMConnectivity: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var cellular: DDRUMErrorEventRUMConnectivityCellular? {
+        root.swiftModel.connectivity!.cellular != nil ? DDRUMErrorEventRUMConnectivityCellular(root: root) : nil
+    }
+
+    @objc public var interfaces: [Int] {
+        root.swiftModel.connectivity!.interfaces.map { DDRUMErrorEventRUMConnectivityInterfaces(swift: $0).rawValue }
+    }
+
+    @objc public var status: DDRUMErrorEventRUMConnectivityStatus {
+        .init(swift: root.swiftModel.connectivity!.status)
+    }
+}
+
+@objc
+public class DDRUMErrorEventRUMConnectivityCellular: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var carrierName: String? {
+        root.swiftModel.connectivity!.cellular!.carrierName
+    }
+
+    @objc public var technology: String? {
+        root.swiftModel.connectivity!.cellular!.technology
+    }
+}
+
+@objc
+public enum DDRUMErrorEventRUMConnectivityInterfaces: Int {
+    internal init(swift: RUMConnectivity.Interfaces) {
+        switch swift {
+        case .bluetooth: self = .bluetooth
+        case .cellular: self = .cellular
+        case .ethernet: self = .ethernet
+        case .wifi: self = .wifi
+        case .wimax: self = .wimax
+        case .mixed: self = .mixed
+        case .other: self = .other
+        case .unknown: self = .unknown
+        case .none: self = .none
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Interfaces {
+        switch self {
+        case .bluetooth: return .bluetooth
+        case .cellular: return .cellular
+        case .ethernet: return .ethernet
+        case .wifi: return .wifi
+        case .wimax: return .wimax
+        case .mixed: return .mixed
+        case .other: return .other
+        case .unknown: return .unknown
+        case .none: return .none
+        }
+    }
+
+    case bluetooth
+    case cellular
+    case ethernet
+    case wifi
+    case wimax
+    case mixed
+    case other
+    case unknown
+    case none
+}
+
+@objc
+public enum DDRUMErrorEventRUMConnectivityStatus: Int {
+    internal init(swift: RUMConnectivity.Status) {
+        switch swift {
+        case .connected: self = .connected
+        case .notConnected: self = .notConnected
+        case .maybe: self = .maybe
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Status {
+        switch self {
+        case .connected: return .connected
+        case .notConnected: return .notConnected
+        case .maybe: return .maybe
+        }
+    }
+
+    case connected
+    case notConnected
+    case maybe
+}
+
+@objc
+public class DDRUMErrorEventRUMEventAttributes: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var contextInfo: [String: Any] {
+        root.swiftModel.context!.contextInfo.castToObjectiveC()
+    }
+}
+
+@objc
+public class DDRUMErrorEventError: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var handling: DDRUMErrorEventErrorHandling {
+        .init(swift: root.swiftModel.error.handling)
+    }
+
+    @objc public var handlingStack: String? {
+        root.swiftModel.error.handlingStack
+    }
+
+    @objc public var id: String? {
+        root.swiftModel.error.id
+    }
+
+    @objc public var isCrash: NSNumber? {
+        root.swiftModel.error.isCrash as NSNumber?
+    }
+
+    @objc public var message: String {
+        set { root.swiftModel.error.message = newValue }
+        get { root.swiftModel.error.message }
+    }
+
+    @objc public var resource: DDRUMErrorEventErrorResource? {
+        root.swiftModel.error.resource != nil ? DDRUMErrorEventErrorResource(root: root) : nil
+    }
+
+    @objc public var source: DDRUMErrorEventErrorSource {
+        .init(swift: root.swiftModel.error.source)
+    }
+
+    @objc public var sourceType: DDRUMErrorEventErrorSourceType {
+        .init(swift: root.swiftModel.error.sourceType)
+    }
+
+    @objc public var stack: String? {
+        set { root.swiftModel.error.stack = newValue }
+        get { root.swiftModel.error.stack }
+    }
+
+    @objc public var type: String? {
+        root.swiftModel.error.type
+    }
+}
+
+@objc
+public enum DDRUMErrorEventErrorHandling: Int {
+    internal init(swift: RUMErrorEvent.Error.Handling?) {
+        switch swift {
+        case nil: self = .none
+        case .handled?: self = .handled
+        case .unhandled?: self = .unhandled
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.Error.Handling? {
+        switch self {
+        case .none: return nil
+        case .handled: return .handled
+        case .unhandled: return .unhandled
+        }
+    }
+
+    case none
+    case handled
+    case unhandled
+}
+
+@objc
+public class DDRUMErrorEventErrorResource: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var method: DDRUMErrorEventErrorResourceRUMMethod {
+        .init(swift: root.swiftModel.error.resource!.method)
+    }
+
+    @objc public var provider: DDRUMErrorEventErrorResourceProvider? {
+        root.swiftModel.error.resource!.provider != nil ? DDRUMErrorEventErrorResourceProvider(root: root) : nil
+    }
+
+    @objc public var statusCode: NSNumber {
+        root.swiftModel.error.resource!.statusCode as NSNumber
+    }
+
+    @objc public var url: String {
+        set { root.swiftModel.error.resource!.url = newValue }
+        get { root.swiftModel.error.resource!.url }
+    }
+}
+
+@objc
+public enum DDRUMErrorEventErrorResourceRUMMethod: Int {
+    internal init(swift: RUMMethod) {
+        switch swift {
+        case .post: self = .post
+        case .get: self = .get
+        case .head: self = .head
+        case .put: self = .put
+        case .delete: self = .delete
+        case .patch: self = .patch
+        }
+    }
+
+    internal var toSwift: RUMMethod {
+        switch self {
+        case .post: return .post
+        case .get: return .get
+        case .head: return .head
+        case .put: return .put
+        case .delete: return .delete
+        case .patch: return .patch
+        }
+    }
+
+    case post
+    case get
+    case head
+    case put
+    case delete
+    case patch
+}
+
+@objc
+public class DDRUMErrorEventErrorResourceProvider: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var domain: String? {
+        root.swiftModel.error.resource!.provider!.domain
+    }
+
+    @objc public var name: String? {
+        root.swiftModel.error.resource!.provider!.name
+    }
+
+    @objc public var type: DDRUMErrorEventErrorResourceProviderProviderType {
+        .init(swift: root.swiftModel.error.resource!.provider!.type)
+    }
+}
+
+@objc
+public enum DDRUMErrorEventErrorResourceProviderProviderType: Int {
+    internal init(swift: RUMErrorEvent.Error.Resource.Provider.ProviderType?) {
+        switch swift {
+        case nil: self = .none
+        case .ad?: self = .ad
+        case .advertising?: self = .advertising
+        case .analytics?: self = .analytics
+        case .cdn?: self = .cdn
+        case .content?: self = .content
+        case .customerSuccess?: self = .customerSuccess
+        case .firstParty?: self = .firstParty
+        case .hosting?: self = .hosting
+        case .marketing?: self = .marketing
+        case .other?: self = .other
+        case .social?: self = .social
+        case .tagManager?: self = .tagManager
+        case .utility?: self = .utility
+        case .video?: self = .video
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.Error.Resource.Provider.ProviderType? {
+        switch self {
+        case .none: return nil
+        case .ad: return .ad
+        case .advertising: return .advertising
+        case .analytics: return .analytics
+        case .cdn: return .cdn
+        case .content: return .content
+        case .customerSuccess: return .customerSuccess
+        case .firstParty: return .firstParty
+        case .hosting: return .hosting
+        case .marketing: return .marketing
+        case .other: return .other
+        case .social: return .social
+        case .tagManager: return .tagManager
+        case .utility: return .utility
+        case .video: return .video
+        }
+    }
+
+    case none
+    case ad
+    case advertising
+    case analytics
+    case cdn
+    case content
+    case customerSuccess
+    case firstParty
+    case hosting
+    case marketing
+    case other
+    case social
+    case tagManager
+    case utility
+    case video
+}
+
+@objc
+public enum DDRUMErrorEventErrorSource: Int {
+    internal init(swift: RUMErrorEvent.Error.Source) {
+        switch swift {
+        case .network: self = .network
+        case .source: self = .source
+        case .console: self = .console
+        case .logger: self = .logger
+        case .agent: self = .agent
+        case .webview: self = .webview
+        case .custom: self = .custom
+        case .report: self = .report
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.Error.Source {
+        switch self {
+        case .network: return .network
+        case .source: return .source
+        case .console: return .console
+        case .logger: return .logger
+        case .agent: return .agent
+        case .webview: return .webview
+        case .custom: return .custom
+        case .report: return .report
+        }
+    }
+
+    case network
+    case source
+    case console
+    case logger
+    case agent
+    case webview
+    case custom
+    case report
+}
+
+@objc
+public enum DDRUMErrorEventErrorSourceType: Int {
+    internal init(swift: RUMErrorEvent.Error.SourceType?) {
+        switch swift {
+        case nil: self = .none
+        case .android?: self = .android
+        case .browser?: self = .browser
+        case .ios?: self = .ios
+        case .reactNative?: self = .reactNative
+        case .flutter?: self = .flutter
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.Error.SourceType? {
+        switch self {
+        case .none: return nil
+        case .android: return .android
+        case .browser: return .browser
+        case .ios: return .ios
+        case .reactNative: return .reactNative
+        case .flutter: return .flutter
+        }
+    }
+
+    case none
+    case android
+    case browser
+    case ios
+    case reactNative
+    case flutter
+}
+
+@objc
+public class DDRUMErrorEventSession: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var hasReplay: NSNumber? {
+        root.swiftModel.session.hasReplay as NSNumber?
+    }
+
+    @objc public var id: String {
+        root.swiftModel.session.id
+    }
+
+    @objc public var type: DDRUMErrorEventSessionSessionType {
+        .init(swift: root.swiftModel.session.type)
+    }
+}
+
+@objc
+public enum DDRUMErrorEventSessionSessionType: Int {
+    internal init(swift: RUMErrorEvent.Session.SessionType) {
+        switch swift {
+        case .user: self = .user
+        case .synthetics: self = .synthetics
+        case .ciTest: self = .ciTest
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.Session.SessionType {
+        switch self {
+        case .user: return .user
+        case .synthetics: return .synthetics
+        case .ciTest: return .ciTest
+        }
+    }
+
+    case user
+    case synthetics
+    case ciTest
+}
+
+@objc
+public enum DDRUMErrorEventSource: Int {
+    internal init(swift: RUMErrorEvent.Source?) {
+        switch swift {
+        case nil: self = .none
+        case .android?: self = .android
+        case .ios?: self = .ios
+        case .browser?: self = .browser
+        case .flutter?: self = .flutter
+        case .reactNative?: self = .reactNative
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.Source? {
+        switch self {
+        case .none: return nil
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        }
+    }
+
+    case none
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+}
+
+@objc
+public class DDRUMErrorEventSynthetics: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var injected: NSNumber? {
+        root.swiftModel.synthetics!.injected as NSNumber?
+    }
+
+    @objc public var resultId: String {
+        root.swiftModel.synthetics!.resultId
+    }
+
+    @objc public var testId: String {
+        root.swiftModel.synthetics!.testId
+    }
+}
+
+@objc
+public class DDRUMErrorEventRUMUser: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var email: String? {
+        root.swiftModel.usr!.email
+    }
+
+    @objc public var id: String? {
+        root.swiftModel.usr!.id
+    }
+
+    @objc public var name: String? {
+        root.swiftModel.usr!.name
+    }
+
+    @objc public var usrInfo: [String: Any] {
+        root.swiftModel.usr!.usrInfo.castToObjectiveC()
+    }
+}
+
+@objc
+public class DDRUMErrorEventView: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var id: String {
+        root.swiftModel.view.id
+    }
+
+    @objc public var inForeground: NSNumber? {
+        root.swiftModel.view.inForeground as NSNumber?
+    }
+
+    @objc public var name: String? {
+        set { root.swiftModel.view.name = newValue }
+        get { root.swiftModel.view.name }
+    }
+
+    @objc public var referrer: String? {
+        set { root.swiftModel.view.referrer = newValue }
+        get { root.swiftModel.view.referrer }
     }
 
     @objc public var url: String {
@@ -535,139 +1283,451 @@ public class DDRUMViewEventView: NSObject {
 }
 
 @objc
-public class DDRUMViewEventViewAction: NSObject {
-    internal let root: DDRUMViewEvent
+public class DDRUMLongTaskEvent: NSObject {
+    internal var swiftModel: RUMLongTaskEvent
+    internal var root: DDRUMLongTaskEvent { self }
 
-    internal init(root: DDRUMViewEvent) {
-        self.root = root
-    }
-
-    @objc public var count: NSNumber {
-        root.swiftModel.view.action.count as NSNumber
-    }
-}
-
-@objc
-public class DDRUMViewEventViewCrash: NSObject {
-    internal let root: DDRUMViewEvent
-
-    internal init(root: DDRUMViewEvent) {
-        self.root = root
-    }
-
-    @objc public var count: NSNumber {
-        root.swiftModel.view.crash!.count as NSNumber
-    }
-}
-
-@objc
-public class DDRUMViewEventViewError: NSObject {
-    internal let root: DDRUMViewEvent
-
-    internal init(root: DDRUMViewEvent) {
-        self.root = root
-    }
-
-    @objc public var count: NSNumber {
-        root.swiftModel.view.error.count as NSNumber
-    }
-}
-
-@objc
-public class DDRUMViewEventViewFrozenFrame: NSObject {
-    internal let root: DDRUMViewEvent
-
-    internal init(root: DDRUMViewEvent) {
-        self.root = root
-    }
-
-    @objc public var count: NSNumber {
-        root.swiftModel.view.frozenFrame!.count as NSNumber
-    }
-}
-
-@objc
-public class DDRUMViewEventViewInForegroundPeriods: NSObject {
-    internal let swiftModel: RUMViewEvent.View.InForegroundPeriods
-    internal var root: DDRUMViewEventViewInForegroundPeriods { self }
-
-    internal init(swiftModel: RUMViewEvent.View.InForegroundPeriods) {
+    internal init(swiftModel: RUMLongTaskEvent) {
         self.swiftModel = swiftModel
     }
 
-    @objc public var duration: NSNumber {
-        root.swiftModel.duration as NSNumber
+    @objc public var dd: DDRUMLongTaskEventDD {
+        DDRUMLongTaskEventDD(root: root)
     }
 
-    @objc public var start: NSNumber {
-        root.swiftModel.start as NSNumber
+    @objc public var action: DDRUMLongTaskEventAction? {
+        root.swiftModel.action != nil ? DDRUMLongTaskEventAction(root: root) : nil
+    }
+
+    @objc public var application: DDRUMLongTaskEventApplication {
+        DDRUMLongTaskEventApplication(root: root)
+    }
+
+    @objc public var ciTest: DDRUMLongTaskEventRUMCITest? {
+        root.swiftModel.ciTest != nil ? DDRUMLongTaskEventRUMCITest(root: root) : nil
+    }
+
+    @objc public var connectivity: DDRUMLongTaskEventRUMConnectivity? {
+        root.swiftModel.connectivity != nil ? DDRUMLongTaskEventRUMConnectivity(root: root) : nil
+    }
+
+    @objc public var context: DDRUMLongTaskEventRUMEventAttributes? {
+        root.swiftModel.context != nil ? DDRUMLongTaskEventRUMEventAttributes(root: root) : nil
+    }
+
+    @objc public var date: NSNumber {
+        root.swiftModel.date as NSNumber
+    }
+
+    @objc public var longTask: DDRUMLongTaskEventLongTask {
+        DDRUMLongTaskEventLongTask(root: root)
+    }
+
+    @objc public var service: String? {
+        root.swiftModel.service
+    }
+
+    @objc public var session: DDRUMLongTaskEventSession {
+        DDRUMLongTaskEventSession(root: root)
+    }
+
+    @objc public var source: DDRUMLongTaskEventSource {
+        .init(swift: root.swiftModel.source)
+    }
+
+    @objc public var synthetics: DDRUMLongTaskEventSynthetics? {
+        root.swiftModel.synthetics != nil ? DDRUMLongTaskEventSynthetics(root: root) : nil
+    }
+
+    @objc public var type: String {
+        root.swiftModel.type
+    }
+
+    @objc public var usr: DDRUMLongTaskEventRUMUser? {
+        root.swiftModel.usr != nil ? DDRUMLongTaskEventRUMUser(root: root) : nil
+    }
+
+    @objc public var view: DDRUMLongTaskEventView {
+        DDRUMLongTaskEventView(root: root)
     }
 }
 
 @objc
-public enum DDRUMViewEventViewLoadingType: Int {
-    internal init(swift: RUMViewEvent.View.LoadingType?) {
+public class DDRUMLongTaskEventDD: NSObject {
+    internal let root: DDRUMLongTaskEvent
+
+    internal init(root: DDRUMLongTaskEvent) {
+        self.root = root
+    }
+
+    @objc public var browserSdkVersion: String? {
+        root.swiftModel.dd.browserSdkVersion
+    }
+
+    @objc public var formatVersion: NSNumber {
+        root.swiftModel.dd.formatVersion as NSNumber
+    }
+
+    @objc public var session: DDRUMLongTaskEventDDSession? {
+        root.swiftModel.dd.session != nil ? DDRUMLongTaskEventDDSession(root: root) : nil
+    }
+}
+
+@objc
+public class DDRUMLongTaskEventDDSession: NSObject {
+    internal let root: DDRUMLongTaskEvent
+
+    internal init(root: DDRUMLongTaskEvent) {
+        self.root = root
+    }
+
+    @objc public var plan: DDRUMLongTaskEventDDSessionPlan {
+        .init(swift: root.swiftModel.dd.session!.plan)
+    }
+}
+
+@objc
+public enum DDRUMLongTaskEventDDSessionPlan: Int {
+    internal init(swift: RUMLongTaskEvent.DD.Session.Plan) {
         switch swift {
-        case nil: self = .none
-        case .initialLoad?: self = .initialLoad
-        case .routeChange?: self = .routeChange
-        case .activityDisplay?: self = .activityDisplay
-        case .activityRedisplay?: self = .activityRedisplay
-        case .fragmentDisplay?: self = .fragmentDisplay
-        case .fragmentRedisplay?: self = .fragmentRedisplay
-        case .viewControllerDisplay?: self = .viewControllerDisplay
-        case .viewControllerRedisplay?: self = .viewControllerRedisplay
+        case .plan1: self = .plan1
+        case .plan2: self = .plan2
         }
     }
 
-    internal var toSwift: RUMViewEvent.View.LoadingType? {
+    internal var toSwift: RUMLongTaskEvent.DD.Session.Plan {
+        switch self {
+        case .plan1: return .plan1
+        case .plan2: return .plan2
+        }
+    }
+
+    case plan1
+    case plan2
+}
+
+@objc
+public class DDRUMLongTaskEventAction: NSObject {
+    internal let root: DDRUMLongTaskEvent
+
+    internal init(root: DDRUMLongTaskEvent) {
+        self.root = root
+    }
+
+    @objc public var id: String {
+        root.swiftModel.action!.id
+    }
+}
+
+@objc
+public class DDRUMLongTaskEventApplication: NSObject {
+    internal let root: DDRUMLongTaskEvent
+
+    internal init(root: DDRUMLongTaskEvent) {
+        self.root = root
+    }
+
+    @objc public var id: String {
+        root.swiftModel.application.id
+    }
+}
+
+@objc
+public class DDRUMLongTaskEventRUMCITest: NSObject {
+    internal let root: DDRUMLongTaskEvent
+
+    internal init(root: DDRUMLongTaskEvent) {
+        self.root = root
+    }
+
+    @objc public var testExecutionId: String {
+        root.swiftModel.ciTest!.testExecutionId
+    }
+}
+
+@objc
+public class DDRUMLongTaskEventRUMConnectivity: NSObject {
+    internal let root: DDRUMLongTaskEvent
+
+    internal init(root: DDRUMLongTaskEvent) {
+        self.root = root
+    }
+
+    @objc public var cellular: DDRUMLongTaskEventRUMConnectivityCellular? {
+        root.swiftModel.connectivity!.cellular != nil ? DDRUMLongTaskEventRUMConnectivityCellular(root: root) : nil
+    }
+
+    @objc public var interfaces: [Int] {
+        root.swiftModel.connectivity!.interfaces.map { DDRUMLongTaskEventRUMConnectivityInterfaces(swift: $0).rawValue }
+    }
+
+    @objc public var status: DDRUMLongTaskEventRUMConnectivityStatus {
+        .init(swift: root.swiftModel.connectivity!.status)
+    }
+}
+
+@objc
+public class DDRUMLongTaskEventRUMConnectivityCellular: NSObject {
+    internal let root: DDRUMLongTaskEvent
+
+    internal init(root: DDRUMLongTaskEvent) {
+        self.root = root
+    }
+
+    @objc public var carrierName: String? {
+        root.swiftModel.connectivity!.cellular!.carrierName
+    }
+
+    @objc public var technology: String? {
+        root.swiftModel.connectivity!.cellular!.technology
+    }
+}
+
+@objc
+public enum DDRUMLongTaskEventRUMConnectivityInterfaces: Int {
+    internal init(swift: RUMConnectivity.Interfaces) {
+        switch swift {
+        case .bluetooth: self = .bluetooth
+        case .cellular: self = .cellular
+        case .ethernet: self = .ethernet
+        case .wifi: self = .wifi
+        case .wimax: self = .wimax
+        case .mixed: self = .mixed
+        case .other: self = .other
+        case .unknown: self = .unknown
+        case .none: self = .none
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Interfaces {
+        switch self {
+        case .bluetooth: return .bluetooth
+        case .cellular: return .cellular
+        case .ethernet: return .ethernet
+        case .wifi: return .wifi
+        case .wimax: return .wimax
+        case .mixed: return .mixed
+        case .other: return .other
+        case .unknown: return .unknown
+        case .none: return .none
+        }
+    }
+
+    case bluetooth
+    case cellular
+    case ethernet
+    case wifi
+    case wimax
+    case mixed
+    case other
+    case unknown
+    case none
+}
+
+@objc
+public enum DDRUMLongTaskEventRUMConnectivityStatus: Int {
+    internal init(swift: RUMConnectivity.Status) {
+        switch swift {
+        case .connected: self = .connected
+        case .notConnected: self = .notConnected
+        case .maybe: self = .maybe
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Status {
+        switch self {
+        case .connected: return .connected
+        case .notConnected: return .notConnected
+        case .maybe: return .maybe
+        }
+    }
+
+    case connected
+    case notConnected
+    case maybe
+}
+
+@objc
+public class DDRUMLongTaskEventRUMEventAttributes: NSObject {
+    internal let root: DDRUMLongTaskEvent
+
+    internal init(root: DDRUMLongTaskEvent) {
+        self.root = root
+    }
+
+    @objc public var contextInfo: [String: Any] {
+        root.swiftModel.context!.contextInfo.castToObjectiveC()
+    }
+}
+
+@objc
+public class DDRUMLongTaskEventLongTask: NSObject {
+    internal let root: DDRUMLongTaskEvent
+
+    internal init(root: DDRUMLongTaskEvent) {
+        self.root = root
+    }
+
+    @objc public var duration: NSNumber {
+        root.swiftModel.longTask.duration as NSNumber
+    }
+
+    @objc public var id: String? {
+        root.swiftModel.longTask.id
+    }
+
+    @objc public var isFrozenFrame: NSNumber? {
+        root.swiftModel.longTask.isFrozenFrame as NSNumber?
+    }
+}
+
+@objc
+public class DDRUMLongTaskEventSession: NSObject {
+    internal let root: DDRUMLongTaskEvent
+
+    internal init(root: DDRUMLongTaskEvent) {
+        self.root = root
+    }
+
+    @objc public var hasReplay: NSNumber? {
+        root.swiftModel.session.hasReplay as NSNumber?
+    }
+
+    @objc public var id: String {
+        root.swiftModel.session.id
+    }
+
+    @objc public var type: DDRUMLongTaskEventSessionSessionType {
+        .init(swift: root.swiftModel.session.type)
+    }
+}
+
+@objc
+public enum DDRUMLongTaskEventSessionSessionType: Int {
+    internal init(swift: RUMLongTaskEvent.Session.SessionType) {
+        switch swift {
+        case .user: self = .user
+        case .synthetics: self = .synthetics
+        case .ciTest: self = .ciTest
+        }
+    }
+
+    internal var toSwift: RUMLongTaskEvent.Session.SessionType {
+        switch self {
+        case .user: return .user
+        case .synthetics: return .synthetics
+        case .ciTest: return .ciTest
+        }
+    }
+
+    case user
+    case synthetics
+    case ciTest
+}
+
+@objc
+public enum DDRUMLongTaskEventSource: Int {
+    internal init(swift: RUMLongTaskEvent.Source?) {
+        switch swift {
+        case nil: self = .none
+        case .android?: self = .android
+        case .ios?: self = .ios
+        case .browser?: self = .browser
+        case .flutter?: self = .flutter
+        case .reactNative?: self = .reactNative
+        }
+    }
+
+    internal var toSwift: RUMLongTaskEvent.Source? {
         switch self {
         case .none: return nil
-        case .initialLoad: return .initialLoad
-        case .routeChange: return .routeChange
-        case .activityDisplay: return .activityDisplay
-        case .activityRedisplay: return .activityRedisplay
-        case .fragmentDisplay: return .fragmentDisplay
-        case .fragmentRedisplay: return .fragmentRedisplay
-        case .viewControllerDisplay: return .viewControllerDisplay
-        case .viewControllerRedisplay: return .viewControllerRedisplay
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
         }
     }
 
     case none
-    case initialLoad
-    case routeChange
-    case activityDisplay
-    case activityRedisplay
-    case fragmentDisplay
-    case fragmentRedisplay
-    case viewControllerDisplay
-    case viewControllerRedisplay
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
 }
 
 @objc
-public class DDRUMViewEventViewLongTask: NSObject {
-    internal let root: DDRUMViewEvent
+public class DDRUMLongTaskEventSynthetics: NSObject {
+    internal let root: DDRUMLongTaskEvent
 
-    internal init(root: DDRUMViewEvent) {
+    internal init(root: DDRUMLongTaskEvent) {
         self.root = root
     }
 
-    @objc public var count: NSNumber {
-        root.swiftModel.view.longTask!.count as NSNumber
+    @objc public var injected: NSNumber? {
+        root.swiftModel.synthetics!.injected as NSNumber?
+    }
+
+    @objc public var resultId: String {
+        root.swiftModel.synthetics!.resultId
+    }
+
+    @objc public var testId: String {
+        root.swiftModel.synthetics!.testId
     }
 }
 
 @objc
-public class DDRUMViewEventViewResource: NSObject {
-    internal let root: DDRUMViewEvent
+public class DDRUMLongTaskEventRUMUser: NSObject {
+    internal let root: DDRUMLongTaskEvent
 
-    internal init(root: DDRUMViewEvent) {
+    internal init(root: DDRUMLongTaskEvent) {
         self.root = root
     }
 
-    @objc public var count: NSNumber {
-        root.swiftModel.view.resource.count as NSNumber
+    @objc public var email: String? {
+        root.swiftModel.usr!.email
+    }
+
+    @objc public var id: String? {
+        root.swiftModel.usr!.id
+    }
+
+    @objc public var name: String? {
+        root.swiftModel.usr!.name
+    }
+
+    @objc public var usrInfo: [String: Any] {
+        root.swiftModel.usr!.usrInfo.castToObjectiveC()
+    }
+}
+
+@objc
+public class DDRUMLongTaskEventView: NSObject {
+    internal let root: DDRUMLongTaskEvent
+
+    internal init(root: DDRUMLongTaskEvent) {
+        self.root = root
+    }
+
+    @objc public var id: String {
+        root.swiftModel.view.id
+    }
+
+    @objc public var name: String? {
+        set { root.swiftModel.view.name = newValue }
+        get { root.swiftModel.view.name }
+    }
+
+    @objc public var referrer: String? {
+        set { root.swiftModel.view.referrer = newValue }
+        get { root.swiftModel.view.referrer }
+    }
+
+    @objc public var url: String {
+        set { root.swiftModel.view.url = newValue }
+        get { root.swiftModel.view.url }
     }
 }
 
@@ -692,8 +1752,8 @@ public class DDRUMResourceEvent: NSObject {
         DDRUMResourceEventApplication(root: root)
     }
 
-    @objc public var ciTest: DDRUMResourceEventCiTest? {
-        root.swiftModel.ciTest != nil ? DDRUMResourceEventCiTest(root: root) : nil
+    @objc public var ciTest: DDRUMResourceEventRUMCITest? {
+        root.swiftModel.ciTest != nil ? DDRUMResourceEventRUMCITest(root: root) : nil
     }
 
     @objc public var connectivity: DDRUMResourceEventRUMConnectivity? {
@@ -830,7 +1890,7 @@ public class DDRUMResourceEventApplication: NSObject {
 }
 
 @objc
-public class DDRUMResourceEventCiTest: NSObject {
+public class DDRUMResourceEventRUMCITest: NSObject {
     internal let root: DDRUMResourceEvent
 
     internal init(root: DDRUMResourceEvent) {
@@ -1438,36 +2498,32 @@ public class DDRUMResourceEventView: NSObject {
 }
 
 @objc
-public class DDRUMActionEvent: NSObject {
-    internal var swiftModel: RUMActionEvent
-    internal var root: DDRUMActionEvent { self }
+public class DDRUMViewEvent: NSObject {
+    internal var swiftModel: RUMViewEvent
+    internal var root: DDRUMViewEvent { self }
 
-    internal init(swiftModel: RUMActionEvent) {
+    internal init(swiftModel: RUMViewEvent) {
         self.swiftModel = swiftModel
     }
 
-    @objc public var dd: DDRUMActionEventDD {
-        DDRUMActionEventDD(root: root)
+    @objc public var dd: DDRUMViewEventDD {
+        DDRUMViewEventDD(root: root)
     }
 
-    @objc public var action: DDRUMActionEventAction {
-        DDRUMActionEventAction(root: root)
+    @objc public var application: DDRUMViewEventApplication {
+        DDRUMViewEventApplication(root: root)
     }
 
-    @objc public var application: DDRUMActionEventApplication {
-        DDRUMActionEventApplication(root: root)
+    @objc public var ciTest: DDRUMViewEventRUMCITest? {
+        root.swiftModel.ciTest != nil ? DDRUMViewEventRUMCITest(root: root) : nil
     }
 
-    @objc public var ciTest: DDRUMActionEventCiTest? {
-        root.swiftModel.ciTest != nil ? DDRUMActionEventCiTest(root: root) : nil
+    @objc public var connectivity: DDRUMViewEventRUMConnectivity? {
+        root.swiftModel.connectivity != nil ? DDRUMViewEventRUMConnectivity(root: root) : nil
     }
 
-    @objc public var connectivity: DDRUMActionEventRUMConnectivity? {
-        root.swiftModel.connectivity != nil ? DDRUMActionEventRUMConnectivity(root: root) : nil
-    }
-
-    @objc public var context: DDRUMActionEventRUMEventAttributes? {
-        root.swiftModel.context != nil ? DDRUMActionEventRUMEventAttributes(root: root) : nil
+    @objc public var context: DDRUMViewEventRUMEventAttributes? {
+        root.swiftModel.context != nil ? DDRUMViewEventRUMEventAttributes(root: root) : nil
     }
 
     @objc public var date: NSNumber {
@@ -1478,36 +2534,36 @@ public class DDRUMActionEvent: NSObject {
         root.swiftModel.service
     }
 
-    @objc public var session: DDRUMActionEventSession {
-        DDRUMActionEventSession(root: root)
+    @objc public var session: DDRUMViewEventSession {
+        DDRUMViewEventSession(root: root)
     }
 
-    @objc public var source: DDRUMActionEventSource {
+    @objc public var source: DDRUMViewEventSource {
         .init(swift: root.swiftModel.source)
     }
 
-    @objc public var synthetics: DDRUMActionEventSynthetics? {
-        root.swiftModel.synthetics != nil ? DDRUMActionEventSynthetics(root: root) : nil
+    @objc public var synthetics: DDRUMViewEventSynthetics? {
+        root.swiftModel.synthetics != nil ? DDRUMViewEventSynthetics(root: root) : nil
     }
 
     @objc public var type: String {
         root.swiftModel.type
     }
 
-    @objc public var usr: DDRUMActionEventRUMUser? {
-        root.swiftModel.usr != nil ? DDRUMActionEventRUMUser(root: root) : nil
+    @objc public var usr: DDRUMViewEventRUMUser? {
+        root.swiftModel.usr != nil ? DDRUMViewEventRUMUser(root: root) : nil
     }
 
-    @objc public var view: DDRUMActionEventView {
-        DDRUMActionEventView(root: root)
+    @objc public var view: DDRUMViewEventView {
+        DDRUMViewEventView(root: root)
     }
 }
 
 @objc
-public class DDRUMActionEventDD: NSObject {
-    internal let root: DDRUMActionEvent
+public class DDRUMViewEventDD: NSObject {
+    internal let root: DDRUMViewEvent
 
-    internal init(root: DDRUMActionEvent) {
+    internal init(root: DDRUMViewEvent) {
         self.root = root
     }
 
@@ -1515,38 +2571,42 @@ public class DDRUMActionEventDD: NSObject {
         root.swiftModel.dd.browserSdkVersion
     }
 
+    @objc public var documentVersion: NSNumber {
+        root.swiftModel.dd.documentVersion as NSNumber
+    }
+
     @objc public var formatVersion: NSNumber {
         root.swiftModel.dd.formatVersion as NSNumber
     }
 
-    @objc public var session: DDRUMActionEventDDSession? {
-        root.swiftModel.dd.session != nil ? DDRUMActionEventDDSession(root: root) : nil
+    @objc public var session: DDRUMViewEventDDSession? {
+        root.swiftModel.dd.session != nil ? DDRUMViewEventDDSession(root: root) : nil
     }
 }
 
 @objc
-public class DDRUMActionEventDDSession: NSObject {
-    internal let root: DDRUMActionEvent
+public class DDRUMViewEventDDSession: NSObject {
+    internal let root: DDRUMViewEvent
 
-    internal init(root: DDRUMActionEvent) {
+    internal init(root: DDRUMViewEvent) {
         self.root = root
     }
 
-    @objc public var plan: DDRUMActionEventDDSessionPlan {
+    @objc public var plan: DDRUMViewEventDDSessionPlan {
         .init(swift: root.swiftModel.dd.session!.plan)
     }
 }
 
 @objc
-public enum DDRUMActionEventDDSessionPlan: Int {
-    internal init(swift: RUMActionEvent.DD.Session.Plan) {
+public enum DDRUMViewEventDDSessionPlan: Int {
+    internal init(swift: RUMViewEvent.DD.Session.Plan) {
         switch swift {
         case .plan1: self = .plan1
         case .plan2: self = .plan2
         }
     }
 
-    internal var toSwift: RUMActionEvent.DD.Session.Plan {
+    internal var toSwift: RUMViewEvent.DD.Session.Plan {
         switch self {
         case .plan1: return .plan1
         case .plan2: return .plan2
@@ -1558,424 +2618,374 @@ public enum DDRUMActionEventDDSessionPlan: Int {
 }
 
 @objc
-public class DDRUMActionEventAction: NSObject {
-    internal let root: DDRUMActionEvent
+public class DDRUMViewEventApplication: NSObject {
+    internal let root: DDRUMViewEvent
 
-    internal init(root: DDRUMActionEvent) {
+    internal init(root: DDRUMViewEvent) {
         self.root = root
     }
 
-    @objc public var crash: DDRUMActionEventActionCrash? {
-        root.swiftModel.action.crash != nil ? DDRUMActionEventActionCrash(root: root) : nil
+    @objc public var id: String {
+        root.swiftModel.application.id
+    }
+}
+
+@objc
+public class DDRUMViewEventRUMCITest: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
     }
 
-    @objc public var error: DDRUMActionEventActionError? {
-        root.swiftModel.action.error != nil ? DDRUMActionEventActionError(root: root) : nil
+    @objc public var testExecutionId: String {
+        root.swiftModel.ciTest!.testExecutionId
+    }
+}
+
+@objc
+public class DDRUMViewEventRUMConnectivity: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var cellular: DDRUMViewEventRUMConnectivityCellular? {
+        root.swiftModel.connectivity!.cellular != nil ? DDRUMViewEventRUMConnectivityCellular(root: root) : nil
+    }
+
+    @objc public var interfaces: [Int] {
+        root.swiftModel.connectivity!.interfaces.map { DDRUMViewEventRUMConnectivityInterfaces(swift: $0).rawValue }
+    }
+
+    @objc public var status: DDRUMViewEventRUMConnectivityStatus {
+        .init(swift: root.swiftModel.connectivity!.status)
+    }
+}
+
+@objc
+public class DDRUMViewEventRUMConnectivityCellular: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var carrierName: String? {
+        root.swiftModel.connectivity!.cellular!.carrierName
+    }
+
+    @objc public var technology: String? {
+        root.swiftModel.connectivity!.cellular!.technology
+    }
+}
+
+@objc
+public enum DDRUMViewEventRUMConnectivityInterfaces: Int {
+    internal init(swift: RUMConnectivity.Interfaces) {
+        switch swift {
+        case .bluetooth: self = .bluetooth
+        case .cellular: self = .cellular
+        case .ethernet: self = .ethernet
+        case .wifi: self = .wifi
+        case .wimax: self = .wimax
+        case .mixed: self = .mixed
+        case .other: self = .other
+        case .unknown: self = .unknown
+        case .none: self = .none
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Interfaces {
+        switch self {
+        case .bluetooth: return .bluetooth
+        case .cellular: return .cellular
+        case .ethernet: return .ethernet
+        case .wifi: return .wifi
+        case .wimax: return .wimax
+        case .mixed: return .mixed
+        case .other: return .other
+        case .unknown: return .unknown
+        case .none: return .none
+        }
+    }
+
+    case bluetooth
+    case cellular
+    case ethernet
+    case wifi
+    case wimax
+    case mixed
+    case other
+    case unknown
+    case none
+}
+
+@objc
+public enum DDRUMViewEventRUMConnectivityStatus: Int {
+    internal init(swift: RUMConnectivity.Status) {
+        switch swift {
+        case .connected: self = .connected
+        case .notConnected: self = .notConnected
+        case .maybe: self = .maybe
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Status {
+        switch self {
+        case .connected: return .connected
+        case .notConnected: return .notConnected
+        case .maybe: return .maybe
+        }
+    }
+
+    case connected
+    case notConnected
+    case maybe
+}
+
+@objc
+public class DDRUMViewEventRUMEventAttributes: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var contextInfo: [String: Any] {
+        root.swiftModel.context!.contextInfo.castToObjectiveC()
+    }
+}
+
+@objc
+public class DDRUMViewEventSession: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var hasReplay: NSNumber? {
+        root.swiftModel.session.hasReplay as NSNumber?
+    }
+
+    @objc public var id: String {
+        root.swiftModel.session.id
+    }
+
+    @objc public var type: DDRUMViewEventSessionSessionType {
+        .init(swift: root.swiftModel.session.type)
+    }
+}
+
+@objc
+public enum DDRUMViewEventSessionSessionType: Int {
+    internal init(swift: RUMViewEvent.Session.SessionType) {
+        switch swift {
+        case .user: self = .user
+        case .synthetics: self = .synthetics
+        case .ciTest: self = .ciTest
+        }
+    }
+
+    internal var toSwift: RUMViewEvent.Session.SessionType {
+        switch self {
+        case .user: return .user
+        case .synthetics: return .synthetics
+        case .ciTest: return .ciTest
+        }
+    }
+
+    case user
+    case synthetics
+    case ciTest
+}
+
+@objc
+public enum DDRUMViewEventSource: Int {
+    internal init(swift: RUMViewEvent.Source?) {
+        switch swift {
+        case nil: self = .none
+        case .android?: self = .android
+        case .ios?: self = .ios
+        case .browser?: self = .browser
+        case .flutter?: self = .flutter
+        case .reactNative?: self = .reactNative
+        }
+    }
+
+    internal var toSwift: RUMViewEvent.Source? {
+        switch self {
+        case .none: return nil
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        }
+    }
+
+    case none
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+}
+
+@objc
+public class DDRUMViewEventSynthetics: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var injected: NSNumber? {
+        root.swiftModel.synthetics!.injected as NSNumber?
+    }
+
+    @objc public var resultId: String {
+        root.swiftModel.synthetics!.resultId
+    }
+
+    @objc public var testId: String {
+        root.swiftModel.synthetics!.testId
+    }
+}
+
+@objc
+public class DDRUMViewEventRUMUser: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var email: String? {
+        root.swiftModel.usr!.email
     }
 
     @objc public var id: String? {
-        root.swiftModel.action.id
+        root.swiftModel.usr!.id
+    }
+
+    @objc public var name: String? {
+        root.swiftModel.usr!.name
+    }
+
+    @objc public var usrInfo: [String: Any] {
+        root.swiftModel.usr!.usrInfo.castToObjectiveC()
+    }
+}
+
+@objc
+public class DDRUMViewEventView: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var action: DDRUMViewEventViewAction {
+        DDRUMViewEventViewAction(root: root)
+    }
+
+    @objc public var cpuTicksCount: NSNumber? {
+        root.swiftModel.view.cpuTicksCount as NSNumber?
+    }
+
+    @objc public var cpuTicksPerSecond: NSNumber? {
+        root.swiftModel.view.cpuTicksPerSecond as NSNumber?
+    }
+
+    @objc public var crash: DDRUMViewEventViewCrash? {
+        root.swiftModel.view.crash != nil ? DDRUMViewEventViewCrash(root: root) : nil
+    }
+
+    @objc public var cumulativeLayoutShift: NSNumber? {
+        root.swiftModel.view.cumulativeLayoutShift as NSNumber?
+    }
+
+    @objc public var customTimings: [String: NSNumber]? {
+        root.swiftModel.view.customTimings as [String: NSNumber]?
+    }
+
+    @objc public var domComplete: NSNumber? {
+        root.swiftModel.view.domComplete as NSNumber?
+    }
+
+    @objc public var domContentLoaded: NSNumber? {
+        root.swiftModel.view.domContentLoaded as NSNumber?
+    }
+
+    @objc public var domInteractive: NSNumber? {
+        root.swiftModel.view.domInteractive as NSNumber?
+    }
+
+    @objc public var error: DDRUMViewEventViewError {
+        DDRUMViewEventViewError(root: root)
+    }
+
+    @objc public var firstContentfulPaint: NSNumber? {
+        root.swiftModel.view.firstContentfulPaint as NSNumber?
+    }
+
+    @objc public var firstInputDelay: NSNumber? {
+        root.swiftModel.view.firstInputDelay as NSNumber?
+    }
+
+    @objc public var firstInputTime: NSNumber? {
+        root.swiftModel.view.firstInputTime as NSNumber?
+    }
+
+    @objc public var frozenFrame: DDRUMViewEventViewFrozenFrame? {
+        root.swiftModel.view.frozenFrame != nil ? DDRUMViewEventViewFrozenFrame(root: root) : nil
+    }
+
+    @objc public var id: String {
+        root.swiftModel.view.id
+    }
+
+    @objc public var inForegroundPeriods: [DDRUMViewEventViewInForegroundPeriods]? {
+        root.swiftModel.view.inForegroundPeriods?.map { DDRUMViewEventViewInForegroundPeriods(swiftModel: $0) }
+    }
+
+    @objc public var isActive: NSNumber? {
+        root.swiftModel.view.isActive as NSNumber?
+    }
+
+    @objc public var isSlowRendered: NSNumber? {
+        root.swiftModel.view.isSlowRendered as NSNumber?
+    }
+
+    @objc public var largestContentfulPaint: NSNumber? {
+        root.swiftModel.view.largestContentfulPaint as NSNumber?
+    }
+
+    @objc public var loadEvent: NSNumber? {
+        root.swiftModel.view.loadEvent as NSNumber?
     }
 
     @objc public var loadingTime: NSNumber? {
-        root.swiftModel.action.loadingTime as NSNumber?
+        root.swiftModel.view.loadingTime as NSNumber?
     }
 
-    @objc public var longTask: DDRUMActionEventActionLongTask? {
-        root.swiftModel.action.longTask != nil ? DDRUMActionEventActionLongTask(root: root) : nil
+    @objc public var loadingType: DDRUMViewEventViewLoadingType {
+        .init(swift: root.swiftModel.view.loadingType)
     }
 
-    @objc public var resource: DDRUMActionEventActionResource? {
-        root.swiftModel.action.resource != nil ? DDRUMActionEventActionResource(root: root) : nil
+    @objc public var longTask: DDRUMViewEventViewLongTask? {
+        root.swiftModel.view.longTask != nil ? DDRUMViewEventViewLongTask(root: root) : nil
     }
 
-    @objc public var target: DDRUMActionEventActionTarget? {
-        root.swiftModel.action.target != nil ? DDRUMActionEventActionTarget(root: root) : nil
+    @objc public var memoryAverage: NSNumber? {
+        root.swiftModel.view.memoryAverage as NSNumber?
     }
 
-    @objc public var type: DDRUMActionEventActionActionType {
-        .init(swift: root.swiftModel.action.type)
-    }
-}
-
-@objc
-public class DDRUMActionEventActionCrash: NSObject {
-    internal let root: DDRUMActionEvent
-
-    internal init(root: DDRUMActionEvent) {
-        self.root = root
-    }
-
-    @objc public var count: NSNumber {
-        root.swiftModel.action.crash!.count as NSNumber
-    }
-}
-
-@objc
-public class DDRUMActionEventActionError: NSObject {
-    internal let root: DDRUMActionEvent
-
-    internal init(root: DDRUMActionEvent) {
-        self.root = root
-    }
-
-    @objc public var count: NSNumber {
-        root.swiftModel.action.error!.count as NSNumber
-    }
-}
-
-@objc
-public class DDRUMActionEventActionLongTask: NSObject {
-    internal let root: DDRUMActionEvent
-
-    internal init(root: DDRUMActionEvent) {
-        self.root = root
-    }
-
-    @objc public var count: NSNumber {
-        root.swiftModel.action.longTask!.count as NSNumber
-    }
-}
-
-@objc
-public class DDRUMActionEventActionResource: NSObject {
-    internal let root: DDRUMActionEvent
-
-    internal init(root: DDRUMActionEvent) {
-        self.root = root
-    }
-
-    @objc public var count: NSNumber {
-        root.swiftModel.action.resource!.count as NSNumber
-    }
-}
-
-@objc
-public class DDRUMActionEventActionTarget: NSObject {
-    internal let root: DDRUMActionEvent
-
-    internal init(root: DDRUMActionEvent) {
-        self.root = root
-    }
-
-    @objc public var name: String {
-        set { root.swiftModel.action.target!.name = newValue }
-        get { root.swiftModel.action.target!.name }
-    }
-}
-
-@objc
-public enum DDRUMActionEventActionActionType: Int {
-    internal init(swift: RUMActionEvent.Action.ActionType) {
-        switch swift {
-        case .custom: self = .custom
-        case .click: self = .click
-        case .tap: self = .tap
-        case .scroll: self = .scroll
-        case .swipe: self = .swipe
-        case .applicationStart: self = .applicationStart
-        case .back: self = .back
-        }
-    }
-
-    internal var toSwift: RUMActionEvent.Action.ActionType {
-        switch self {
-        case .custom: return .custom
-        case .click: return .click
-        case .tap: return .tap
-        case .scroll: return .scroll
-        case .swipe: return .swipe
-        case .applicationStart: return .applicationStart
-        case .back: return .back
-        }
-    }
-
-    case custom
-    case click
-    case tap
-    case scroll
-    case swipe
-    case applicationStart
-    case back
-}
-
-@objc
-public class DDRUMActionEventApplication: NSObject {
-    internal let root: DDRUMActionEvent
-
-    internal init(root: DDRUMActionEvent) {
-        self.root = root
-    }
-
-    @objc public var id: String {
-        root.swiftModel.application.id
-    }
-}
-
-@objc
-public class DDRUMActionEventCiTest: NSObject {
-    internal let root: DDRUMActionEvent
-
-    internal init(root: DDRUMActionEvent) {
-        self.root = root
-    }
-
-    @objc public var testExecutionId: String {
-        root.swiftModel.ciTest!.testExecutionId
-    }
-}
-
-@objc
-public class DDRUMActionEventRUMConnectivity: NSObject {
-    internal let root: DDRUMActionEvent
-
-    internal init(root: DDRUMActionEvent) {
-        self.root = root
-    }
-
-    @objc public var cellular: DDRUMActionEventRUMConnectivityCellular? {
-        root.swiftModel.connectivity!.cellular != nil ? DDRUMActionEventRUMConnectivityCellular(root: root) : nil
-    }
-
-    @objc public var interfaces: [Int] {
-        root.swiftModel.connectivity!.interfaces.map { DDRUMActionEventRUMConnectivityInterfaces(swift: $0).rawValue }
-    }
-
-    @objc public var status: DDRUMActionEventRUMConnectivityStatus {
-        .init(swift: root.swiftModel.connectivity!.status)
-    }
-}
-
-@objc
-public class DDRUMActionEventRUMConnectivityCellular: NSObject {
-    internal let root: DDRUMActionEvent
-
-    internal init(root: DDRUMActionEvent) {
-        self.root = root
-    }
-
-    @objc public var carrierName: String? {
-        root.swiftModel.connectivity!.cellular!.carrierName
-    }
-
-    @objc public var technology: String? {
-        root.swiftModel.connectivity!.cellular!.technology
-    }
-}
-
-@objc
-public enum DDRUMActionEventRUMConnectivityInterfaces: Int {
-    internal init(swift: RUMConnectivity.Interfaces) {
-        switch swift {
-        case .bluetooth: self = .bluetooth
-        case .cellular: self = .cellular
-        case .ethernet: self = .ethernet
-        case .wifi: self = .wifi
-        case .wimax: self = .wimax
-        case .mixed: self = .mixed
-        case .other: self = .other
-        case .unknown: self = .unknown
-        case .none: self = .none
-        }
-    }
-
-    internal var toSwift: RUMConnectivity.Interfaces {
-        switch self {
-        case .bluetooth: return .bluetooth
-        case .cellular: return .cellular
-        case .ethernet: return .ethernet
-        case .wifi: return .wifi
-        case .wimax: return .wimax
-        case .mixed: return .mixed
-        case .other: return .other
-        case .unknown: return .unknown
-        case .none: return .none
-        }
-    }
-
-    case bluetooth
-    case cellular
-    case ethernet
-    case wifi
-    case wimax
-    case mixed
-    case other
-    case unknown
-    case none
-}
-
-@objc
-public enum DDRUMActionEventRUMConnectivityStatus: Int {
-    internal init(swift: RUMConnectivity.Status) {
-        switch swift {
-        case .connected: self = .connected
-        case .notConnected: self = .notConnected
-        case .maybe: self = .maybe
-        }
-    }
-
-    internal var toSwift: RUMConnectivity.Status {
-        switch self {
-        case .connected: return .connected
-        case .notConnected: return .notConnected
-        case .maybe: return .maybe
-        }
-    }
-
-    case connected
-    case notConnected
-    case maybe
-}
-
-@objc
-public class DDRUMActionEventRUMEventAttributes: NSObject {
-    internal let root: DDRUMActionEvent
-
-    internal init(root: DDRUMActionEvent) {
-        self.root = root
-    }
-
-    @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo.castToObjectiveC()
-    }
-}
-
-@objc
-public class DDRUMActionEventSession: NSObject {
-    internal let root: DDRUMActionEvent
-
-    internal init(root: DDRUMActionEvent) {
-        self.root = root
-    }
-
-    @objc public var hasReplay: NSNumber? {
-        root.swiftModel.session.hasReplay as NSNumber?
-    }
-
-    @objc public var id: String {
-        root.swiftModel.session.id
-    }
-
-    @objc public var type: DDRUMActionEventSessionSessionType {
-        .init(swift: root.swiftModel.session.type)
-    }
-}
-
-@objc
-public enum DDRUMActionEventSessionSessionType: Int {
-    internal init(swift: RUMActionEvent.Session.SessionType) {
-        switch swift {
-        case .user: self = .user
-        case .synthetics: self = .synthetics
-        case .ciTest: self = .ciTest
-        }
-    }
-
-    internal var toSwift: RUMActionEvent.Session.SessionType {
-        switch self {
-        case .user: return .user
-        case .synthetics: return .synthetics
-        case .ciTest: return .ciTest
-        }
-    }
-
-    case user
-    case synthetics
-    case ciTest
-}
-
-@objc
-public enum DDRUMActionEventSource: Int {
-    internal init(swift: RUMActionEvent.Source?) {
-        switch swift {
-        case nil: self = .none
-        case .android?: self = .android
-        case .ios?: self = .ios
-        case .browser?: self = .browser
-        case .flutter?: self = .flutter
-        case .reactNative?: self = .reactNative
-        }
-    }
-
-    internal var toSwift: RUMActionEvent.Source? {
-        switch self {
-        case .none: return nil
-        case .android: return .android
-        case .ios: return .ios
-        case .browser: return .browser
-        case .flutter: return .flutter
-        case .reactNative: return .reactNative
-        }
-    }
-
-    case none
-    case android
-    case ios
-    case browser
-    case flutter
-    case reactNative
-}
-
-@objc
-public class DDRUMActionEventSynthetics: NSObject {
-    internal let root: DDRUMActionEvent
-
-    internal init(root: DDRUMActionEvent) {
-        self.root = root
-    }
-
-    @objc public var injected: NSNumber? {
-        root.swiftModel.synthetics!.injected as NSNumber?
-    }
-
-    @objc public var resultId: String {
-        root.swiftModel.synthetics!.resultId
-    }
-
-    @objc public var testId: String {
-        root.swiftModel.synthetics!.testId
-    }
-}
-
-@objc
-public class DDRUMActionEventRUMUser: NSObject {
-    internal let root: DDRUMActionEvent
-
-    internal init(root: DDRUMActionEvent) {
-        self.root = root
-    }
-
-    @objc public var email: String? {
-        root.swiftModel.usr!.email
-    }
-
-    @objc public var id: String? {
-        root.swiftModel.usr!.id
-    }
-
-    @objc public var name: String? {
-        root.swiftModel.usr!.name
-    }
-
-    @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo.castToObjectiveC()
-    }
-}
-
-@objc
-public class DDRUMActionEventView: NSObject {
-    internal let root: DDRUMActionEvent
-
-    internal init(root: DDRUMActionEvent) {
-        self.root = root
-    }
-
-    @objc public var id: String {
-        root.swiftModel.view.id
-    }
-
-    @objc public var inForeground: NSNumber? {
-        root.swiftModel.view.inForeground as NSNumber?
+    @objc public var memoryMax: NSNumber? {
+        root.swiftModel.view.memoryMax as NSNumber?
     }
 
     @objc public var name: String? {
@@ -1988,715 +2998,20 @@ public class DDRUMActionEventView: NSObject {
         get { root.swiftModel.view.referrer }
     }
 
-    @objc public var url: String {
-        set { root.swiftModel.view.url = newValue }
-        get { root.swiftModel.view.url }
+    @objc public var refreshRateAverage: NSNumber? {
+        root.swiftModel.view.refreshRateAverage as NSNumber?
     }
-}
 
-@objc
-public class DDRUMErrorEvent: NSObject {
-    internal var swiftModel: RUMErrorEvent
-    internal var root: DDRUMErrorEvent { self }
-
-    internal init(swiftModel: RUMErrorEvent) {
-        self.swiftModel = swiftModel
-    }
-
-    @objc public var dd: DDRUMErrorEventDD {
-        DDRUMErrorEventDD(root: root)
-    }
-
-    @objc public var action: DDRUMErrorEventAction? {
-        root.swiftModel.action != nil ? DDRUMErrorEventAction(root: root) : nil
-    }
-
-    @objc public var application: DDRUMErrorEventApplication {
-        DDRUMErrorEventApplication(root: root)
-    }
-
-    @objc public var ciTest: DDRUMErrorEventCiTest? {
-        root.swiftModel.ciTest != nil ? DDRUMErrorEventCiTest(root: root) : nil
-    }
-
-    @objc public var connectivity: DDRUMErrorEventRUMConnectivity? {
-        root.swiftModel.connectivity != nil ? DDRUMErrorEventRUMConnectivity(root: root) : nil
-    }
-
-    @objc public var context: DDRUMErrorEventRUMEventAttributes? {
-        root.swiftModel.context != nil ? DDRUMErrorEventRUMEventAttributes(root: root) : nil
-    }
-
-    @objc public var date: NSNumber {
-        root.swiftModel.date as NSNumber
-    }
-
-    @objc public var error: DDRUMErrorEventError {
-        DDRUMErrorEventError(root: root)
-    }
-
-    @objc public var service: String? {
-        root.swiftModel.service
-    }
-
-    @objc public var session: DDRUMErrorEventSession {
-        DDRUMErrorEventSession(root: root)
-    }
-
-    @objc public var source: DDRUMErrorEventSource {
-        .init(swift: root.swiftModel.source)
-    }
-
-    @objc public var synthetics: DDRUMErrorEventSynthetics? {
-        root.swiftModel.synthetics != nil ? DDRUMErrorEventSynthetics(root: root) : nil
-    }
-
-    @objc public var type: String {
-        root.swiftModel.type
-    }
-
-    @objc public var usr: DDRUMErrorEventRUMUser? {
-        root.swiftModel.usr != nil ? DDRUMErrorEventRUMUser(root: root) : nil
-    }
-
-    @objc public var view: DDRUMErrorEventView {
-        DDRUMErrorEventView(root: root)
-    }
-}
-
-@objc
-public class DDRUMErrorEventDD: NSObject {
-    internal let root: DDRUMErrorEvent
-
-    internal init(root: DDRUMErrorEvent) {
-        self.root = root
-    }
-
-    @objc public var browserSdkVersion: String? {
-        root.swiftModel.dd.browserSdkVersion
-    }
-
-    @objc public var formatVersion: NSNumber {
-        root.swiftModel.dd.formatVersion as NSNumber
-    }
-
-    @objc public var session: DDRUMErrorEventDDSession? {
-        root.swiftModel.dd.session != nil ? DDRUMErrorEventDDSession(root: root) : nil
-    }
-}
-
-@objc
-public class DDRUMErrorEventDDSession: NSObject {
-    internal let root: DDRUMErrorEvent
-
-    internal init(root: DDRUMErrorEvent) {
-        self.root = root
-    }
-
-    @objc public var plan: DDRUMErrorEventDDSessionPlan {
-        .init(swift: root.swiftModel.dd.session!.plan)
-    }
-}
-
-@objc
-public enum DDRUMErrorEventDDSessionPlan: Int {
-    internal init(swift: RUMErrorEvent.DD.Session.Plan) {
-        switch swift {
-        case .plan1: self = .plan1
-        case .plan2: self = .plan2
-        }
-    }
-
-    internal var toSwift: RUMErrorEvent.DD.Session.Plan {
-        switch self {
-        case .plan1: return .plan1
-        case .plan2: return .plan2
-        }
-    }
-
-    case plan1
-    case plan2
-}
-
-@objc
-public class DDRUMErrorEventAction: NSObject {
-    internal let root: DDRUMErrorEvent
-
-    internal init(root: DDRUMErrorEvent) {
-        self.root = root
-    }
-
-    @objc public var id: String {
-        root.swiftModel.action!.id
-    }
-}
-
-@objc
-public class DDRUMErrorEventApplication: NSObject {
-    internal let root: DDRUMErrorEvent
-
-    internal init(root: DDRUMErrorEvent) {
-        self.root = root
-    }
-
-    @objc public var id: String {
-        root.swiftModel.application.id
-    }
-}
-
-@objc
-public class DDRUMErrorEventCiTest: NSObject {
-    internal let root: DDRUMErrorEvent
-
-    internal init(root: DDRUMErrorEvent) {
-        self.root = root
-    }
-
-    @objc public var testExecutionId: String {
-        root.swiftModel.ciTest!.testExecutionId
-    }
-}
-
-@objc
-public class DDRUMErrorEventRUMConnectivity: NSObject {
-    internal let root: DDRUMErrorEvent
-
-    internal init(root: DDRUMErrorEvent) {
-        self.root = root
-    }
-
-    @objc public var cellular: DDRUMErrorEventRUMConnectivityCellular? {
-        root.swiftModel.connectivity!.cellular != nil ? DDRUMErrorEventRUMConnectivityCellular(root: root) : nil
-    }
-
-    @objc public var interfaces: [Int] {
-        root.swiftModel.connectivity!.interfaces.map { DDRUMErrorEventRUMConnectivityInterfaces(swift: $0).rawValue }
-    }
-
-    @objc public var status: DDRUMErrorEventRUMConnectivityStatus {
-        .init(swift: root.swiftModel.connectivity!.status)
-    }
-}
-
-@objc
-public class DDRUMErrorEventRUMConnectivityCellular: NSObject {
-    internal let root: DDRUMErrorEvent
-
-    internal init(root: DDRUMErrorEvent) {
-        self.root = root
-    }
-
-    @objc public var carrierName: String? {
-        root.swiftModel.connectivity!.cellular!.carrierName
-    }
-
-    @objc public var technology: String? {
-        root.swiftModel.connectivity!.cellular!.technology
-    }
-}
-
-@objc
-public enum DDRUMErrorEventRUMConnectivityInterfaces: Int {
-    internal init(swift: RUMConnectivity.Interfaces) {
-        switch swift {
-        case .bluetooth: self = .bluetooth
-        case .cellular: self = .cellular
-        case .ethernet: self = .ethernet
-        case .wifi: self = .wifi
-        case .wimax: self = .wimax
-        case .mixed: self = .mixed
-        case .other: self = .other
-        case .unknown: self = .unknown
-        case .none: self = .none
-        }
-    }
-
-    internal var toSwift: RUMConnectivity.Interfaces {
-        switch self {
-        case .bluetooth: return .bluetooth
-        case .cellular: return .cellular
-        case .ethernet: return .ethernet
-        case .wifi: return .wifi
-        case .wimax: return .wimax
-        case .mixed: return .mixed
-        case .other: return .other
-        case .unknown: return .unknown
-        case .none: return .none
-        }
-    }
-
-    case bluetooth
-    case cellular
-    case ethernet
-    case wifi
-    case wimax
-    case mixed
-    case other
-    case unknown
-    case none
-}
-
-@objc
-public enum DDRUMErrorEventRUMConnectivityStatus: Int {
-    internal init(swift: RUMConnectivity.Status) {
-        switch swift {
-        case .connected: self = .connected
-        case .notConnected: self = .notConnected
-        case .maybe: self = .maybe
-        }
-    }
-
-    internal var toSwift: RUMConnectivity.Status {
-        switch self {
-        case .connected: return .connected
-        case .notConnected: return .notConnected
-        case .maybe: return .maybe
-        }
-    }
-
-    case connected
-    case notConnected
-    case maybe
-}
-
-@objc
-public class DDRUMErrorEventRUMEventAttributes: NSObject {
-    internal let root: DDRUMErrorEvent
-
-    internal init(root: DDRUMErrorEvent) {
-        self.root = root
-    }
-
-    @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo.castToObjectiveC()
-    }
-}
-
-@objc
-public class DDRUMErrorEventError: NSObject {
-    internal let root: DDRUMErrorEvent
-
-    internal init(root: DDRUMErrorEvent) {
-        self.root = root
-    }
-
-    @objc public var handling: DDRUMErrorEventErrorHandling {
-        .init(swift: root.swiftModel.error.handling)
-    }
-
-    @objc public var handlingStack: String? {
-        root.swiftModel.error.handlingStack
-    }
-
-    @objc public var id: String? {
-        root.swiftModel.error.id
-    }
-
-    @objc public var isCrash: NSNumber? {
-        root.swiftModel.error.isCrash as NSNumber?
-    }
-
-    @objc public var message: String {
-        set { root.swiftModel.error.message = newValue }
-        get { root.swiftModel.error.message }
-    }
-
-    @objc public var resource: DDRUMErrorEventErrorResource? {
-        root.swiftModel.error.resource != nil ? DDRUMErrorEventErrorResource(root: root) : nil
-    }
-
-    @objc public var source: DDRUMErrorEventErrorSource {
-        .init(swift: root.swiftModel.error.source)
-    }
-
-    @objc public var sourceType: DDRUMErrorEventErrorSourceType {
-        .init(swift: root.swiftModel.error.sourceType)
-    }
-
-    @objc public var stack: String? {
-        set { root.swiftModel.error.stack = newValue }
-        get { root.swiftModel.error.stack }
-    }
-
-    @objc public var type: String? {
-        root.swiftModel.error.type
-    }
-}
-
-@objc
-public enum DDRUMErrorEventErrorHandling: Int {
-    internal init(swift: RUMErrorEvent.Error.Handling?) {
-        switch swift {
-        case nil: self = .none
-        case .handled?: self = .handled
-        case .unhandled?: self = .unhandled
-        }
-    }
-
-    internal var toSwift: RUMErrorEvent.Error.Handling? {
-        switch self {
-        case .none: return nil
-        case .handled: return .handled
-        case .unhandled: return .unhandled
-        }
-    }
-
-    case none
-    case handled
-    case unhandled
-}
-
-@objc
-public class DDRUMErrorEventErrorResource: NSObject {
-    internal let root: DDRUMErrorEvent
-
-    internal init(root: DDRUMErrorEvent) {
-        self.root = root
-    }
-
-    @objc public var method: DDRUMErrorEventErrorResourceRUMMethod {
-        .init(swift: root.swiftModel.error.resource!.method)
-    }
-
-    @objc public var provider: DDRUMErrorEventErrorResourceProvider? {
-        root.swiftModel.error.resource!.provider != nil ? DDRUMErrorEventErrorResourceProvider(root: root) : nil
-    }
-
-    @objc public var statusCode: NSNumber {
-        root.swiftModel.error.resource!.statusCode as NSNumber
-    }
-
-    @objc public var url: String {
-        set { root.swiftModel.error.resource!.url = newValue }
-        get { root.swiftModel.error.resource!.url }
-    }
-}
-
-@objc
-public enum DDRUMErrorEventErrorResourceRUMMethod: Int {
-    internal init(swift: RUMMethod) {
-        switch swift {
-        case .post: self = .post
-        case .get: self = .get
-        case .head: self = .head
-        case .put: self = .put
-        case .delete: self = .delete
-        case .patch: self = .patch
-        }
-    }
-
-    internal var toSwift: RUMMethod {
-        switch self {
-        case .post: return .post
-        case .get: return .get
-        case .head: return .head
-        case .put: return .put
-        case .delete: return .delete
-        case .patch: return .patch
-        }
-    }
-
-    case post
-    case get
-    case head
-    case put
-    case delete
-    case patch
-}
-
-@objc
-public class DDRUMErrorEventErrorResourceProvider: NSObject {
-    internal let root: DDRUMErrorEvent
-
-    internal init(root: DDRUMErrorEvent) {
-        self.root = root
-    }
-
-    @objc public var domain: String? {
-        root.swiftModel.error.resource!.provider!.domain
-    }
-
-    @objc public var name: String? {
-        root.swiftModel.error.resource!.provider!.name
-    }
-
-    @objc public var type: DDRUMErrorEventErrorResourceProviderProviderType {
-        .init(swift: root.swiftModel.error.resource!.provider!.type)
-    }
-}
-
-@objc
-public enum DDRUMErrorEventErrorResourceProviderProviderType: Int {
-    internal init(swift: RUMErrorEvent.Error.Resource.Provider.ProviderType?) {
-        switch swift {
-        case nil: self = .none
-        case .ad?: self = .ad
-        case .advertising?: self = .advertising
-        case .analytics?: self = .analytics
-        case .cdn?: self = .cdn
-        case .content?: self = .content
-        case .customerSuccess?: self = .customerSuccess
-        case .firstParty?: self = .firstParty
-        case .hosting?: self = .hosting
-        case .marketing?: self = .marketing
-        case .other?: self = .other
-        case .social?: self = .social
-        case .tagManager?: self = .tagManager
-        case .utility?: self = .utility
-        case .video?: self = .video
-        }
-    }
-
-    internal var toSwift: RUMErrorEvent.Error.Resource.Provider.ProviderType? {
-        switch self {
-        case .none: return nil
-        case .ad: return .ad
-        case .advertising: return .advertising
-        case .analytics: return .analytics
-        case .cdn: return .cdn
-        case .content: return .content
-        case .customerSuccess: return .customerSuccess
-        case .firstParty: return .firstParty
-        case .hosting: return .hosting
-        case .marketing: return .marketing
-        case .other: return .other
-        case .social: return .social
-        case .tagManager: return .tagManager
-        case .utility: return .utility
-        case .video: return .video
-        }
-    }
-
-    case none
-    case ad
-    case advertising
-    case analytics
-    case cdn
-    case content
-    case customerSuccess
-    case firstParty
-    case hosting
-    case marketing
-    case other
-    case social
-    case tagManager
-    case utility
-    case video
-}
-
-@objc
-public enum DDRUMErrorEventErrorSource: Int {
-    internal init(swift: RUMErrorEvent.Error.Source) {
-        switch swift {
-        case .network: self = .network
-        case .source: self = .source
-        case .console: self = .console
-        case .logger: self = .logger
-        case .agent: self = .agent
-        case .webview: self = .webview
-        case .custom: self = .custom
-        }
-    }
-
-    internal var toSwift: RUMErrorEvent.Error.Source {
-        switch self {
-        case .network: return .network
-        case .source: return .source
-        case .console: return .console
-        case .logger: return .logger
-        case .agent: return .agent
-        case .webview: return .webview
-        case .custom: return .custom
-        }
-    }
-
-    case network
-    case source
-    case console
-    case logger
-    case agent
-    case webview
-    case custom
-}
-
-@objc
-public enum DDRUMErrorEventErrorSourceType: Int {
-    internal init(swift: RUMErrorEvent.Error.SourceType?) {
-        switch swift {
-        case nil: self = .none
-        case .android?: self = .android
-        case .browser?: self = .browser
-        case .ios?: self = .ios
-        case .reactNative?: self = .reactNative
-        case .flutter?: self = .flutter
-        }
-    }
-
-    internal var toSwift: RUMErrorEvent.Error.SourceType? {
-        switch self {
-        case .none: return nil
-        case .android: return .android
-        case .browser: return .browser
-        case .ios: return .ios
-        case .reactNative: return .reactNative
-        case .flutter: return .flutter
-        }
-    }
-
-    case none
-    case android
-    case browser
-    case ios
-    case reactNative
-    case flutter
-}
-
-@objc
-public class DDRUMErrorEventSession: NSObject {
-    internal let root: DDRUMErrorEvent
-
-    internal init(root: DDRUMErrorEvent) {
-        self.root = root
-    }
-
-    @objc public var hasReplay: NSNumber? {
-        root.swiftModel.session.hasReplay as NSNumber?
-    }
-
-    @objc public var id: String {
-        root.swiftModel.session.id
-    }
-
-    @objc public var type: DDRUMErrorEventSessionSessionType {
-        .init(swift: root.swiftModel.session.type)
-    }
-}
-
-@objc
-public enum DDRUMErrorEventSessionSessionType: Int {
-    internal init(swift: RUMErrorEvent.Session.SessionType) {
-        switch swift {
-        case .user: self = .user
-        case .synthetics: self = .synthetics
-        case .ciTest: self = .ciTest
-        }
-    }
-
-    internal var toSwift: RUMErrorEvent.Session.SessionType {
-        switch self {
-        case .user: return .user
-        case .synthetics: return .synthetics
-        case .ciTest: return .ciTest
-        }
-    }
-
-    case user
-    case synthetics
-    case ciTest
-}
-
-@objc
-public enum DDRUMErrorEventSource: Int {
-    internal init(swift: RUMErrorEvent.Source?) {
-        switch swift {
-        case nil: self = .none
-        case .android?: self = .android
-        case .ios?: self = .ios
-        case .browser?: self = .browser
-        case .flutter?: self = .flutter
-        case .reactNative?: self = .reactNative
-        }
-    }
-
-    internal var toSwift: RUMErrorEvent.Source? {
-        switch self {
-        case .none: return nil
-        case .android: return .android
-        case .ios: return .ios
-        case .browser: return .browser
-        case .flutter: return .flutter
-        case .reactNative: return .reactNative
-        }
-    }
-
-    case none
-    case android
-    case ios
-    case browser
-    case flutter
-    case reactNative
-}
-
-@objc
-public class DDRUMErrorEventSynthetics: NSObject {
-    internal let root: DDRUMErrorEvent
-
-    internal init(root: DDRUMErrorEvent) {
-        self.root = root
-    }
-
-    @objc public var injected: NSNumber? {
-        root.swiftModel.synthetics!.injected as NSNumber?
-    }
-
-    @objc public var resultId: String {
-        root.swiftModel.synthetics!.resultId
-    }
-
-    @objc public var testId: String {
-        root.swiftModel.synthetics!.testId
-    }
-}
-
-@objc
-public class DDRUMErrorEventRUMUser: NSObject {
-    internal let root: DDRUMErrorEvent
-
-    internal init(root: DDRUMErrorEvent) {
-        self.root = root
-    }
-
-    @objc public var email: String? {
-        root.swiftModel.usr!.email
-    }
-
-    @objc public var id: String? {
-        root.swiftModel.usr!.id
-    }
-
-    @objc public var name: String? {
-        root.swiftModel.usr!.name
-    }
-
-    @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo.castToObjectiveC()
-    }
-}
-
-@objc
-public class DDRUMErrorEventView: NSObject {
-    internal let root: DDRUMErrorEvent
-
-    internal init(root: DDRUMErrorEvent) {
-        self.root = root
-    }
-
-    @objc public var id: String {
-        root.swiftModel.view.id
-    }
-
-    @objc public var inForeground: NSNumber? {
-        root.swiftModel.view.inForeground as NSNumber?
+    @objc public var refreshRateMin: NSNumber? {
+        root.swiftModel.view.refreshRateMin as NSNumber?
     }
 
-    @objc public var name: String? {
-        set { root.swiftModel.view.name = newValue }
-        get { root.swiftModel.view.name }
+    @objc public var resource: DDRUMViewEventViewResource {
+        DDRUMViewEventViewResource(root: root)
     }
 
-    @objc public var referrer: String? {
-        set { root.swiftModel.view.referrer = newValue }
-        get { root.swiftModel.view.referrer }
+    @objc public var timeSpent: NSNumber {
+        root.swiftModel.view.timeSpent as NSNumber
     }
 
     @objc public var url: String {
@@ -2706,454 +3021,393 @@ public class DDRUMErrorEventView: NSObject {
 }
 
 @objc
-public class DDRUMLongTaskEvent: NSObject {
-    internal var swiftModel: RUMLongTaskEvent
-    internal var root: DDRUMLongTaskEvent { self }
+public class DDRUMViewEventViewAction: NSObject {
+    internal let root: DDRUMViewEvent
 
-    internal init(swiftModel: RUMLongTaskEvent) {
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var count: NSNumber {
+        root.swiftModel.view.action.count as NSNumber
+    }
+}
+
+@objc
+public class DDRUMViewEventViewCrash: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var count: NSNumber {
+        root.swiftModel.view.crash!.count as NSNumber
+    }
+}
+
+@objc
+public class DDRUMViewEventViewError: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var count: NSNumber {
+        root.swiftModel.view.error.count as NSNumber
+    }
+}
+
+@objc
+public class DDRUMViewEventViewFrozenFrame: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var count: NSNumber {
+        root.swiftModel.view.frozenFrame!.count as NSNumber
+    }
+}
+
+@objc
+public class DDRUMViewEventViewInForegroundPeriods: NSObject {
+    internal let swiftModel: RUMViewEvent.View.InForegroundPeriods
+    internal var root: DDRUMViewEventViewInForegroundPeriods { self }
+
+    internal init(swiftModel: RUMViewEvent.View.InForegroundPeriods) {
         self.swiftModel = swiftModel
-    }
-
-    @objc public var dd: DDRUMLongTaskEventDD {
-        DDRUMLongTaskEventDD(root: root)
-    }
-
-    @objc public var action: DDRUMLongTaskEventAction? {
-        root.swiftModel.action != nil ? DDRUMLongTaskEventAction(root: root) : nil
-    }
-
-    @objc public var application: DDRUMLongTaskEventApplication {
-        DDRUMLongTaskEventApplication(root: root)
-    }
-
-    @objc public var ciTest: DDRUMLongTaskEventCiTest? {
-        root.swiftModel.ciTest != nil ? DDRUMLongTaskEventCiTest(root: root) : nil
-    }
-
-    @objc public var connectivity: DDRUMLongTaskEventRUMConnectivity? {
-        root.swiftModel.connectivity != nil ? DDRUMLongTaskEventRUMConnectivity(root: root) : nil
-    }
-
-    @objc public var context: DDRUMLongTaskEventRUMEventAttributes? {
-        root.swiftModel.context != nil ? DDRUMLongTaskEventRUMEventAttributes(root: root) : nil
-    }
-
-    @objc public var date: NSNumber {
-        root.swiftModel.date as NSNumber
-    }
-
-    @objc public var longTask: DDRUMLongTaskEventLongTask {
-        DDRUMLongTaskEventLongTask(root: root)
-    }
-
-    @objc public var service: String? {
-        root.swiftModel.service
-    }
-
-    @objc public var session: DDRUMLongTaskEventSession {
-        DDRUMLongTaskEventSession(root: root)
-    }
-
-    @objc public var source: DDRUMLongTaskEventSource {
-        .init(swift: root.swiftModel.source)
-    }
-
-    @objc public var synthetics: DDRUMLongTaskEventSynthetics? {
-        root.swiftModel.synthetics != nil ? DDRUMLongTaskEventSynthetics(root: root) : nil
-    }
-
-    @objc public var type: String {
-        root.swiftModel.type
-    }
-
-    @objc public var usr: DDRUMLongTaskEventRUMUser? {
-        root.swiftModel.usr != nil ? DDRUMLongTaskEventRUMUser(root: root) : nil
-    }
-
-    @objc public var view: DDRUMLongTaskEventView {
-        DDRUMLongTaskEventView(root: root)
-    }
-}
-
-@objc
-public class DDRUMLongTaskEventDD: NSObject {
-    internal let root: DDRUMLongTaskEvent
-
-    internal init(root: DDRUMLongTaskEvent) {
-        self.root = root
-    }
-
-    @objc public var browserSdkVersion: String? {
-        root.swiftModel.dd.browserSdkVersion
-    }
-
-    @objc public var formatVersion: NSNumber {
-        root.swiftModel.dd.formatVersion as NSNumber
-    }
-
-    @objc public var session: DDRUMLongTaskEventDDSession? {
-        root.swiftModel.dd.session != nil ? DDRUMLongTaskEventDDSession(root: root) : nil
-    }
-}
-
-@objc
-public class DDRUMLongTaskEventDDSession: NSObject {
-    internal let root: DDRUMLongTaskEvent
-
-    internal init(root: DDRUMLongTaskEvent) {
-        self.root = root
-    }
-
-    @objc public var plan: DDRUMLongTaskEventDDSessionPlan {
-        .init(swift: root.swiftModel.dd.session!.plan)
-    }
-}
-
-@objc
-public enum DDRUMLongTaskEventDDSessionPlan: Int {
-    internal init(swift: RUMLongTaskEvent.DD.Session.Plan) {
-        switch swift {
-        case .plan1: self = .plan1
-        case .plan2: self = .plan2
-        }
-    }
-
-    internal var toSwift: RUMLongTaskEvent.DD.Session.Plan {
-        switch self {
-        case .plan1: return .plan1
-        case .plan2: return .plan2
-        }
-    }
-
-    case plan1
-    case plan2
-}
-
-@objc
-public class DDRUMLongTaskEventAction: NSObject {
-    internal let root: DDRUMLongTaskEvent
-
-    internal init(root: DDRUMLongTaskEvent) {
-        self.root = root
-    }
-
-    @objc public var id: String {
-        root.swiftModel.action!.id
-    }
-}
-
-@objc
-public class DDRUMLongTaskEventApplication: NSObject {
-    internal let root: DDRUMLongTaskEvent
-
-    internal init(root: DDRUMLongTaskEvent) {
-        self.root = root
-    }
-
-    @objc public var id: String {
-        root.swiftModel.application.id
-    }
-}
-
-@objc
-public class DDRUMLongTaskEventCiTest: NSObject {
-    internal let root: DDRUMLongTaskEvent
-
-    internal init(root: DDRUMLongTaskEvent) {
-        self.root = root
-    }
-
-    @objc public var testExecutionId: String {
-        root.swiftModel.ciTest!.testExecutionId
-    }
-}
-
-@objc
-public class DDRUMLongTaskEventRUMConnectivity: NSObject {
-    internal let root: DDRUMLongTaskEvent
-
-    internal init(root: DDRUMLongTaskEvent) {
-        self.root = root
-    }
-
-    @objc public var cellular: DDRUMLongTaskEventRUMConnectivityCellular? {
-        root.swiftModel.connectivity!.cellular != nil ? DDRUMLongTaskEventRUMConnectivityCellular(root: root) : nil
-    }
-
-    @objc public var interfaces: [Int] {
-        root.swiftModel.connectivity!.interfaces.map { DDRUMLongTaskEventRUMConnectivityInterfaces(swift: $0).rawValue }
-    }
-
-    @objc public var status: DDRUMLongTaskEventRUMConnectivityStatus {
-        .init(swift: root.swiftModel.connectivity!.status)
-    }
-}
-
-@objc
-public class DDRUMLongTaskEventRUMConnectivityCellular: NSObject {
-    internal let root: DDRUMLongTaskEvent
-
-    internal init(root: DDRUMLongTaskEvent) {
-        self.root = root
-    }
-
-    @objc public var carrierName: String? {
-        root.swiftModel.connectivity!.cellular!.carrierName
-    }
-
-    @objc public var technology: String? {
-        root.swiftModel.connectivity!.cellular!.technology
-    }
-}
-
-@objc
-public enum DDRUMLongTaskEventRUMConnectivityInterfaces: Int {
-    internal init(swift: RUMConnectivity.Interfaces) {
-        switch swift {
-        case .bluetooth: self = .bluetooth
-        case .cellular: self = .cellular
-        case .ethernet: self = .ethernet
-        case .wifi: self = .wifi
-        case .wimax: self = .wimax
-        case .mixed: self = .mixed
-        case .other: self = .other
-        case .unknown: self = .unknown
-        case .none: self = .none
-        }
-    }
-
-    internal var toSwift: RUMConnectivity.Interfaces {
-        switch self {
-        case .bluetooth: return .bluetooth
-        case .cellular: return .cellular
-        case .ethernet: return .ethernet
-        case .wifi: return .wifi
-        case .wimax: return .wimax
-        case .mixed: return .mixed
-        case .other: return .other
-        case .unknown: return .unknown
-        case .none: return .none
-        }
-    }
-
-    case bluetooth
-    case cellular
-    case ethernet
-    case wifi
-    case wimax
-    case mixed
-    case other
-    case unknown
-    case none
-}
-
-@objc
-public enum DDRUMLongTaskEventRUMConnectivityStatus: Int {
-    internal init(swift: RUMConnectivity.Status) {
-        switch swift {
-        case .connected: self = .connected
-        case .notConnected: self = .notConnected
-        case .maybe: self = .maybe
-        }
-    }
-
-    internal var toSwift: RUMConnectivity.Status {
-        switch self {
-        case .connected: return .connected
-        case .notConnected: return .notConnected
-        case .maybe: return .maybe
-        }
-    }
-
-    case connected
-    case notConnected
-    case maybe
-}
-
-@objc
-public class DDRUMLongTaskEventRUMEventAttributes: NSObject {
-    internal let root: DDRUMLongTaskEvent
-
-    internal init(root: DDRUMLongTaskEvent) {
-        self.root = root
-    }
-
-    @objc public var contextInfo: [String: Any] {
-        root.swiftModel.context!.contextInfo.castToObjectiveC()
-    }
-}
-
-@objc
-public class DDRUMLongTaskEventLongTask: NSObject {
-    internal let root: DDRUMLongTaskEvent
-
-    internal init(root: DDRUMLongTaskEvent) {
-        self.root = root
     }
 
     @objc public var duration: NSNumber {
-        root.swiftModel.longTask.duration as NSNumber
+        root.swiftModel.duration as NSNumber
     }
 
-    @objc public var id: String? {
-        root.swiftModel.longTask.id
-    }
-
-    @objc public var isFrozenFrame: NSNumber? {
-        root.swiftModel.longTask.isFrozenFrame as NSNumber?
+    @objc public var start: NSNumber {
+        root.swiftModel.start as NSNumber
     }
 }
 
 @objc
-public class DDRUMLongTaskEventSession: NSObject {
-    internal let root: DDRUMLongTaskEvent
-
-    internal init(root: DDRUMLongTaskEvent) {
-        self.root = root
-    }
-
-    @objc public var hasReplay: NSNumber? {
-        root.swiftModel.session.hasReplay as NSNumber?
-    }
-
-    @objc public var id: String {
-        root.swiftModel.session.id
-    }
-
-    @objc public var type: DDRUMLongTaskEventSessionSessionType {
-        .init(swift: root.swiftModel.session.type)
-    }
-}
-
-@objc
-public enum DDRUMLongTaskEventSessionSessionType: Int {
-    internal init(swift: RUMLongTaskEvent.Session.SessionType) {
-        switch swift {
-        case .user: self = .user
-        case .synthetics: self = .synthetics
-        case .ciTest: self = .ciTest
-        }
-    }
-
-    internal var toSwift: RUMLongTaskEvent.Session.SessionType {
-        switch self {
-        case .user: return .user
-        case .synthetics: return .synthetics
-        case .ciTest: return .ciTest
-        }
-    }
-
-    case user
-    case synthetics
-    case ciTest
-}
-
-@objc
-public enum DDRUMLongTaskEventSource: Int {
-    internal init(swift: RUMLongTaskEvent.Source?) {
+public enum DDRUMViewEventViewLoadingType: Int {
+    internal init(swift: RUMViewEvent.View.LoadingType?) {
         switch swift {
         case nil: self = .none
-        case .android?: self = .android
-        case .ios?: self = .ios
-        case .browser?: self = .browser
-        case .flutter?: self = .flutter
-        case .reactNative?: self = .reactNative
+        case .initialLoad?: self = .initialLoad
+        case .routeChange?: self = .routeChange
+        case .activityDisplay?: self = .activityDisplay
+        case .activityRedisplay?: self = .activityRedisplay
+        case .fragmentDisplay?: self = .fragmentDisplay
+        case .fragmentRedisplay?: self = .fragmentRedisplay
+        case .viewControllerDisplay?: self = .viewControllerDisplay
+        case .viewControllerRedisplay?: self = .viewControllerRedisplay
         }
     }
 
-    internal var toSwift: RUMLongTaskEvent.Source? {
+    internal var toSwift: RUMViewEvent.View.LoadingType? {
         switch self {
         case .none: return nil
-        case .android: return .android
-        case .ios: return .ios
-        case .browser: return .browser
-        case .flutter: return .flutter
-        case .reactNative: return .reactNative
+        case .initialLoad: return .initialLoad
+        case .routeChange: return .routeChange
+        case .activityDisplay: return .activityDisplay
+        case .activityRedisplay: return .activityRedisplay
+        case .fragmentDisplay: return .fragmentDisplay
+        case .fragmentRedisplay: return .fragmentRedisplay
+        case .viewControllerDisplay: return .viewControllerDisplay
+        case .viewControllerRedisplay: return .viewControllerRedisplay
         }
     }
 
     case none
-    case android
-    case ios
-    case browser
-    case flutter
-    case reactNative
+    case initialLoad
+    case routeChange
+    case activityDisplay
+    case activityRedisplay
+    case fragmentDisplay
+    case fragmentRedisplay
+    case viewControllerDisplay
+    case viewControllerRedisplay
 }
 
 @objc
-public class DDRUMLongTaskEventSynthetics: NSObject {
-    internal let root: DDRUMLongTaskEvent
+public class DDRUMViewEventViewLongTask: NSObject {
+    internal let root: DDRUMViewEvent
 
-    internal init(root: DDRUMLongTaskEvent) {
+    internal init(root: DDRUMViewEvent) {
         self.root = root
     }
 
-    @objc public var injected: NSNumber? {
-        root.swiftModel.synthetics!.injected as NSNumber?
-    }
-
-    @objc public var resultId: String {
-        root.swiftModel.synthetics!.resultId
-    }
-
-    @objc public var testId: String {
-        root.swiftModel.synthetics!.testId
+    @objc public var count: NSNumber {
+        root.swiftModel.view.longTask!.count as NSNumber
     }
 }
 
 @objc
-public class DDRUMLongTaskEventRUMUser: NSObject {
-    internal let root: DDRUMLongTaskEvent
+public class DDRUMViewEventViewResource: NSObject {
+    internal let root: DDRUMViewEvent
 
-    internal init(root: DDRUMLongTaskEvent) {
+    internal init(root: DDRUMViewEvent) {
         self.root = root
     }
 
-    @objc public var email: String? {
-        root.swiftModel.usr!.email
-    }
-
-    @objc public var id: String? {
-        root.swiftModel.usr!.id
-    }
-
-    @objc public var name: String? {
-        root.swiftModel.usr!.name
-    }
-
-    @objc public var usrInfo: [String: Any] {
-        root.swiftModel.usr!.usrInfo.castToObjectiveC()
+    @objc public var count: NSNumber {
+        root.swiftModel.view.resource.count as NSNumber
     }
 }
 
 @objc
-public class DDRUMLongTaskEventView: NSObject {
-    internal let root: DDRUMLongTaskEvent
+public class DDTelemetryErrorEvent: NSObject {
+    internal var swiftModel: TelemetryErrorEvent
+    internal var root: DDTelemetryErrorEvent { self }
 
-    internal init(root: DDRUMLongTaskEvent) {
+    internal init(swiftModel: TelemetryErrorEvent) {
+        self.swiftModel = swiftModel
+    }
+
+    @objc public var dd: DDTelemetryErrorEventDD {
+        DDTelemetryErrorEventDD(root: root)
+    }
+
+    @objc public var action: DDTelemetryErrorEventAction? {
+        root.swiftModel.action != nil ? DDTelemetryErrorEventAction(root: root) : nil
+    }
+
+    @objc public var application: DDTelemetryErrorEventApplication? {
+        root.swiftModel.application != nil ? DDTelemetryErrorEventApplication(root: root) : nil
+    }
+
+    @objc public var date: NSNumber {
+        root.swiftModel.date as NSNumber
+    }
+
+    @objc public var error: DDTelemetryErrorEventError? {
+        root.swiftModel.error != nil ? DDTelemetryErrorEventError(root: root) : nil
+    }
+
+    @objc public var message: String {
+        root.swiftModel.message
+    }
+
+    @objc public var service: String {
+        root.swiftModel.service
+    }
+
+    @objc public var session: DDTelemetryErrorEventSession? {
+        root.swiftModel.session != nil ? DDTelemetryErrorEventSession(root: root) : nil
+    }
+
+    @objc public var status: String {
+        root.swiftModel.status
+    }
+
+    @objc public var version: String {
+        root.swiftModel.version
+    }
+
+    @objc public var view: DDTelemetryErrorEventView? {
+        root.swiftModel.view != nil ? DDTelemetryErrorEventView(root: root) : nil
+    }
+}
+
+@objc
+public class DDTelemetryErrorEventDD: NSObject {
+    internal let root: DDTelemetryErrorEvent
+
+    internal init(root: DDTelemetryErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var eventType: String {
+        root.swiftModel.dd.eventType
+    }
+}
+
+@objc
+public class DDTelemetryErrorEventAction: NSObject {
+    internal let root: DDTelemetryErrorEvent
+
+    internal init(root: DDTelemetryErrorEvent) {
         self.root = root
     }
 
     @objc public var id: String {
-        root.swiftModel.view.id
+        root.swiftModel.action!.id
+    }
+}
+
+@objc
+public class DDTelemetryErrorEventApplication: NSObject {
+    internal let root: DDTelemetryErrorEvent
+
+    internal init(root: DDTelemetryErrorEvent) {
+        self.root = root
     }
 
-    @objc public var name: String? {
-        set { root.swiftModel.view.name = newValue }
-        get { root.swiftModel.view.name }
+    @objc public var id: String {
+        root.swiftModel.application!.id
+    }
+}
+
+@objc
+public class DDTelemetryErrorEventError: NSObject {
+    internal let root: DDTelemetryErrorEvent
+
+    internal init(root: DDTelemetryErrorEvent) {
+        self.root = root
     }
 
-    @objc public var referrer: String? {
-        set { root.swiftModel.view.referrer = newValue }
-        get { root.swiftModel.view.referrer }
+    @objc public var kind: String? {
+        root.swiftModel.error!.kind
     }
 
-    @objc public var url: String {
-        set { root.swiftModel.view.url = newValue }
-        get { root.swiftModel.view.url }
+    @objc public var stack: String? {
+        root.swiftModel.error!.stack
+    }
+}
+
+@objc
+public class DDTelemetryErrorEventSession: NSObject {
+    internal let root: DDTelemetryErrorEvent
+
+    internal init(root: DDTelemetryErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var id: String {
+        root.swiftModel.session!.id
+    }
+}
+
+@objc
+public class DDTelemetryErrorEventView: NSObject {
+    internal let root: DDTelemetryErrorEvent
+
+    internal init(root: DDTelemetryErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var id: String {
+        root.swiftModel.view!.id
+    }
+}
+
+@objc
+public class DDTelemetryDebugEvent: NSObject {
+    internal var swiftModel: TelemetryDebugEvent
+    internal var root: DDTelemetryDebugEvent { self }
+
+    internal init(swiftModel: TelemetryDebugEvent) {
+        self.swiftModel = swiftModel
+    }
+
+    @objc public var dd: DDTelemetryDebugEventDD {
+        DDTelemetryDebugEventDD(root: root)
+    }
+
+    @objc public var action: DDTelemetryDebugEventAction? {
+        root.swiftModel.action != nil ? DDTelemetryDebugEventAction(root: root) : nil
+    }
+
+    @objc public var application: DDTelemetryDebugEventApplication? {
+        root.swiftModel.application != nil ? DDTelemetryDebugEventApplication(root: root) : nil
+    }
+
+    @objc public var date: NSNumber {
+        root.swiftModel.date as NSNumber
+    }
+
+    @objc public var message: String {
+        root.swiftModel.message
+    }
+
+    @objc public var service: String {
+        root.swiftModel.service
+    }
+
+    @objc public var session: DDTelemetryDebugEventSession? {
+        root.swiftModel.session != nil ? DDTelemetryDebugEventSession(root: root) : nil
+    }
+
+    @objc public var status: String {
+        root.swiftModel.status
+    }
+
+    @objc public var version: String {
+        root.swiftModel.version
+    }
+
+    @objc public var view: DDTelemetryDebugEventView? {
+        root.swiftModel.view != nil ? DDTelemetryDebugEventView(root: root) : nil
+    }
+}
+
+@objc
+public class DDTelemetryDebugEventDD: NSObject {
+    internal let root: DDTelemetryDebugEvent
+
+    internal init(root: DDTelemetryDebugEvent) {
+        self.root = root
+    }
+
+    @objc public var eventType: String {
+        root.swiftModel.dd.eventType
+    }
+}
+
+@objc
+public class DDTelemetryDebugEventAction: NSObject {
+    internal let root: DDTelemetryDebugEvent
+
+    internal init(root: DDTelemetryDebugEvent) {
+        self.root = root
+    }
+
+    @objc public var id: String {
+        root.swiftModel.action!.id
+    }
+}
+
+@objc
+public class DDTelemetryDebugEventApplication: NSObject {
+    internal let root: DDTelemetryDebugEvent
+
+    internal init(root: DDTelemetryDebugEvent) {
+        self.root = root
+    }
+
+    @objc public var id: String {
+        root.swiftModel.application!.id
+    }
+}
+
+@objc
+public class DDTelemetryDebugEventSession: NSObject {
+    internal let root: DDTelemetryDebugEvent
+
+    internal init(root: DDTelemetryDebugEvent) {
+        self.root = root
+    }
+
+    @objc public var id: String {
+        root.swiftModel.session!.id
+    }
+}
+
+@objc
+public class DDTelemetryDebugEventView: NSObject {
+    internal let root: DDTelemetryDebugEvent
+
+    internal init(root: DDTelemetryDebugEvent) {
+        self.root = root
+    }
+
+    @objc public var id: String {
+        root.swiftModel.view!.id
     }
 }
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/114c173caac5ea15446a157b666acbab05431361
+// Generated from https://github.com/DataDog/rum-events-format/tree/c8a844abb59cb376be2fcdc9deda74dc328af660

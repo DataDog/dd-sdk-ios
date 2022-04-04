@@ -134,10 +134,8 @@ internal class FilesOrchestrator {
         }
     }
 
-#if DD_SDK_COMPILED_FOR_TESTING
     /// If files age should be ignored for obtaining `ReadableFile`.
-    var ignoreFilesAgeWhenReading = false
-#endif
+    internal var ignoreFilesAgeWhenReading = false
 
     // MARK: - Directory size management
 

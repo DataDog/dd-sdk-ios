@@ -26,7 +26,7 @@ class NetworkConnectionInfoProviderTests: XCTestCase {
     // MARK: - iOS 12+
 
     func testNWPathNetworkConnectionInfoProviderGivesValue() {
-        if #available(iOS 12.0, *) {
+        if #available(iOS 12.0, tvOS 12, *) {
             let provider = NetworkConnectionInfoProvider(
                 wrappedProvider: NWPathNetworkConnectionInfoProvider()
             )
@@ -42,7 +42,7 @@ class NetworkConnectionInfoProviderTests: XCTestCase {
     }
 
     func testNWPathNetworkConnectionInfoProviderCanBeSafelyAccessedFromConcurrentThreads() {
-        if #available(iOS 12.0, *) {
+        if #available(iOS 12.0, tvOS 12, *) {
             let provider = NetworkConnectionInfoProvider(
                 wrappedProvider: NWPathNetworkConnectionInfoProvider()
             )
@@ -54,7 +54,7 @@ class NetworkConnectionInfoProviderTests: XCTestCase {
     }
 
     func testNWPathMonitorHandling() {
-        if #available(iOS 12.0, *) {
+        if #available(iOS 12.0, tvOS 12, *) {
             weak var nwPathMonitorWeakReference: NWPathMonitor?
 
             autoreleasepool {
@@ -102,7 +102,7 @@ class NetworkConnectionInfoConversionTests: XCTestCase {
     typealias Interface = NetworkConnectionInfo.Interface
 
     func testNWPathStatus() {
-        if #available(iOS 12.0, *) {
+        if #available(iOS 12.0, tvOS 12, *) {
             XCTAssertEqual(Reachability(from: .satisfied), .yes)
             XCTAssertEqual(Reachability(from: .unsatisfied), .no)
             XCTAssertEqual(Reachability(from: .requiresConnection), .maybe)
@@ -110,7 +110,7 @@ class NetworkConnectionInfoConversionTests: XCTestCase {
     }
 
     func testNWInterface() {
-        if #available(iOS 12.0, *) {
+        if #available(iOS 12.0, tvOS 12, *) {
             XCTAssertEqual(Array(fromInterfaceTypes: []), [])
             XCTAssertEqual(Array(fromInterfaceTypes: [.wifi]), [.wifi])
             XCTAssertEqual(Array(fromInterfaceTypes: [.wiredEthernet]), [.wiredEthernet])

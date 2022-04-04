@@ -9,7 +9,7 @@ import SwiftUI
 
 /// `SwiftUI.ViewModifier` for RUM which invoke `startView` and `stopView` from the
 /// global RUM Monitor when the modified view appears and disappears.
-@available(iOS 13, *)
+@available(iOS 13, tvOS 13, *)
 internal struct RUMViewModifier: SwiftUI.ViewModifier {
     /// The Content View identifier.
     /// The id will be unique per modified view.
@@ -41,7 +41,7 @@ internal struct RUMViewModifier: SwiftUI.ViewModifier {
     }
 }
 
-@available(iOS 13, *)
+@available(iOS 13, tvOS 13, *)
 public extension SwiftUI.View {
     /// Monitor this view with Datadog RUM. A start and stop events will be logged when this view appears
     /// and disappears.

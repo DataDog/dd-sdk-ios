@@ -613,7 +613,7 @@ extension RUMScopeDependencies {
     static func mockWith(
         appStateListener: AppStateListening = AppStateListenerMock.mockAny(),
         userInfoProvider: RUMUserInfoProvider = RUMUserInfoProvider(userInfoProvider: .mockAny()),
-        launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock(),
+        launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock.mockAny(),
         connectivityInfoProvider: RUMConnectivityInfoProvider = RUMConnectivityInfoProvider(
             networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: nil),
             carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: nil)
@@ -624,6 +624,7 @@ extension RUMScopeDependencies {
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         dateCorrector: DateCorrectorType = DateCorrectorMock(),
         crashContextIntegration: RUMWithCrashContextIntegration? = nil,
+        ciTest: RUMCITest? = nil,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
@@ -637,6 +638,7 @@ extension RUMScopeDependencies {
             rumUUIDGenerator: rumUUIDGenerator,
             dateCorrector: dateCorrector,
             crashContextIntegration: crashContextIntegration,
+            ciTest: ciTest,
             vitalCPUReader: SamplingBasedVitalReaderMock(),
             vitalMemoryReader: SamplingBasedVitalReaderMock(),
             vitalRefreshRateReader: ContinuousVitalReaderMock(),
@@ -656,6 +658,7 @@ extension RUMScopeDependencies {
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
         dateCorrector: DateCorrectorType? = nil,
         crashContextIntegration: RUMWithCrashContextIntegration? = nil,
+        ciTest: RUMCITest? = nil,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
@@ -669,6 +672,7 @@ extension RUMScopeDependencies {
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
             dateCorrector: dateCorrector ?? self.dateCorrector,
             crashContextIntegration: crashContextIntegration ?? self.crashContextIntegration,
+            ciTest: ciTest,
             vitalCPUReader: SamplingBasedVitalReaderMock(),
             vitalMemoryReader: SamplingBasedVitalReaderMock(),
             vitalRefreshRateReader: ContinuousVitalReaderMock(),
@@ -903,7 +907,13 @@ class UIKitRUMViewsHandlerMock: UIViewControllerHandler {
     }
 }
 
-class UIKitRUMUserActionsPredicateMock: UIKitRUMUserActionsPredicate {
+#if os(tvOS)
+typealias UIKitRUMUserActionsPredicateMock = UIPressRUMUserActionsPredicateMock
+#else
+typealias UIKitRUMUserActionsPredicateMock = UITouchRUMUserActionsPredicateMock
+#endif
+
+class UITouchRUMUserActionsPredicateMock: UITouchRUMUserActionsPredicate {
     var resultByView: [UIView: RUMAction] = [:]
     var result: RUMAction?
 
@@ -912,6 +922,19 @@ class UIKitRUMUserActionsPredicateMock: UIKitRUMUserActionsPredicate {
     }
 
     func rumAction(targetView: UIView) -> RUMAction? {
+        return resultByView[targetView] ?? result
+    }
+}
+
+class UIPressRUMUserActionsPredicateMock: UIPressRUMUserActionsPredicate {
+    var resultByView: [UIView: RUMAction] = [:]
+    var result: RUMAction?
+
+    init(result: RUMAction? = nil) {
+        self.result = result
+    }
+
+    func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction? {
         return resultByView[targetView] ?? result
     }
 }

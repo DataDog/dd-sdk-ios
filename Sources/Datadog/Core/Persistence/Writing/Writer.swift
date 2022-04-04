@@ -16,7 +16,5 @@ internal protocol AsyncWriter: Writer {
     /// Queue used for asynchronous writes.
     var queue: DispatchQueue { get }
 
-#if DD_SDK_COMPILED_FOR_TESTING
     func flushAndCancelSynchronously()
-#endif
 }

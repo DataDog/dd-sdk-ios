@@ -53,6 +53,8 @@ public struct SpanEvent: Encodable {
     public let isError: Bool
     /// Name of the component sourcing the span, for iOS SDK it is set to `ios`.
     internal let source: String
+    /// The origin for the Span, it is used to label the spans used created under testing
+    internal let origin: String?
 
     // MARK: - Meta
 
@@ -115,6 +117,8 @@ internal struct SpanEventEncoder {
         case source = "meta._dd.source"
         case applicationVersion = "meta.version"
         case tracerVersion = "meta.tracer.version"
+
+        case origin = "meta._dd.origin"
 
         case userId = "meta.usr.id"
         case userName = "meta.usr.name"
@@ -183,6 +187,8 @@ internal struct SpanEventEncoder {
         try container.encode(span.source, forKey: .source)
         try container.encode(span.tracerVersion, forKey: .tracerVersion)
         try container.encode(span.applicationVersion, forKey: .applicationVersion)
+
+        try span.origin.ifNotNil { try container.encode($0, forKey: .origin) }
 
         try span.userInfo.id.ifNotNil { try container.encode($0, forKey: .userId) }
         try span.userInfo.name.ifNotNil { try container.encode($0, forKey: .userName) }

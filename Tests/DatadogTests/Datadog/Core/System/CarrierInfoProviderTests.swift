@@ -4,8 +4,11 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+#if canImport(CoreTelephony)
+
 import XCTest
 import CoreTelephony
+
 @testable import Datadog
 
 class CarrierInfoProviderTests: XCTestCase {
@@ -162,3 +165,5 @@ class CarrierInfoProviderTests: XCTestCase {
         XCTAssertEqual(initializeFrom(coreTelephonyConstant: "invalid"), .unknown)
     }
 }
+
+#endif

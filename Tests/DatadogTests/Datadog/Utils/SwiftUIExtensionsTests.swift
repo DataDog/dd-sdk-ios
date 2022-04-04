@@ -10,17 +10,17 @@ import XCTest
 import SwiftUI
 @testable import Datadog
 
-@available(iOS 13, *)
+@available(iOS 13, tvOS 13, *)
 class CustomHostingController: UIHostingController<AnyView> {}
 
-@available(iOS 13, *)
+@available(iOS 13, tvOS 13, *)
 final class TestView: View {
     var body = EmptyView()
 }
 
 class SwiftUIExtensionsTests: XCTestCase {
     func testSwiftUIViewTypeDescription() {
-        guard #available(iOS 13, *) else {
+        guard #available(iOS 13, tvOS 13, *) else {
             return
         }
 
@@ -29,7 +29,7 @@ class SwiftUIExtensionsTests: XCTestCase {
     }
 
     func testBundleIsSwiftUI() {
-        guard #available(iOS 13, *) else {
+        guard #available(iOS 13, tvOS 13, *) else {
             return
         }
 
