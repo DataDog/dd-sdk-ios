@@ -49,7 +49,13 @@ internal final class FileWriter: Writer {
         }
     }
 
-    func encode<T: Encodable>(value: T) throws -> Data {
+    /// Encodes the given encodable value and encrypt it if encryption is available.
+    ///
+    /// If encryption is available, encryption result is base64 encoded.
+    ///
+    /// - Parameter value: The value to encode.
+    /// - Returns: Data representation of the value.
+    private func encode<T: Encodable>(value: T) throws -> Data {
         let data = try jsonEncoder.encode(value)
 
         guard let encryption = encryption else {

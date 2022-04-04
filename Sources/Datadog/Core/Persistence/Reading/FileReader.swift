@@ -38,7 +38,7 @@ internal final class FileReader: Reader {
         }
 
         do {
-            let fileData = try decode(data: file.read())
+            let fileData = try decrypt(data: file.read())
             let batchData = dataFormat.prefixData + fileData + dataFormat.suffixData
             return Batch(data: batchData, file: file)
         } catch {
@@ -47,7 +47,16 @@ internal final class FileReader: Reader {
         }
     }
 
-    func decode(data: Data) -> Data {
+    /// Decrypts data if encryption is available.
+    ///
+    /// When encryption is provided, the data is splitted using data-format separator, each slices
+    /// is then decoded from base64 and decrypted. Data is finally re-joined with data-format separator.
+    ///
+    /// If no encryption, the data is returned.
+    ///
+    /// - Parameter data: The data to decrypt.
+    /// - Returns: Decrypted data.
+    private func decrypt(data: Data) -> Data {
         guard let encryption = encryption else {
             return data
         }

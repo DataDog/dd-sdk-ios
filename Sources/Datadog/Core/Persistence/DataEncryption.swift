@@ -18,10 +18,10 @@ public protocol DataEncryption {
 
     /// Decrypts given `Data` with user-chosen encryption.
     ///
-    /// Beware that data to decrypt could be encrypted in a previous
-    /// app launch, so implementation should be aware of the case when decryption could
-    /// fail (for example, key used for encryption is different from key used for decryption, if
-    /// they are unique for every app launch).
+    /// Beware that data to decrypt could be encrypted in a previous app launch, so
+    /// implementation should be aware of the case when decryption could fail (for example,
+    /// key used for encryption is different from key used for decryption, if they are unique
+    /// for every app launch).
     ///
     /// - Parameter data: Data to decrypt.
     /// - Returns: The decrypted data.
