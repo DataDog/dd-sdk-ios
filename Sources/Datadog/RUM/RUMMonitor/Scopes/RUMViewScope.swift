@@ -355,7 +355,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         )
 
-#if DD_SDK_ENABLE_INTERNAL_MONITORING
+#if DD_SDK_ENABLE_INTERNAL_MONITORING && !os(tvOS)
         if #available(iOS 15, *) {
             // Starting MetricKit monitor from here, to ensure that our launch time was already reported
             // in `.applicationStart` action and we could compare both measurements.
@@ -563,7 +563,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 /// THE FOLLOWING IMPLEMENTATION SHALL BE REMOVED ONCE
 /// METRICKIT HAS BEEN EVALUATED.
 ///
-#if DD_SDK_ENABLE_INTERNAL_MONITORING
+#if DD_SDK_ENABLE_INTERNAL_MONITORING && !os(tvOS)
 import MetricKit
 
 /// The MetricMonitor only exists for internal testing, it will log the MetricKit payloads at reception to
