@@ -179,6 +179,7 @@ extension RUMUserActionType {
     var toString: String {
         switch self {
         case .tap: return "tap"
+        case .click: return "click"
         case .scroll: return "scroll"
         case .swipe: return "swipe"
         case .custom: return "custom"

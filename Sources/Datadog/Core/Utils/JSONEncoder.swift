@@ -14,7 +14,7 @@ extension JSONEncoder {
             let formatted = iso8601DateFormatter.string(from: date)
             try container.encode(formatted)
         }
-        if #available(iOS 13.0, OSX 10.15, *) {
+        if #available(iOS 13, tvOS 13, macOS 10.15, *) {
             encoder.outputFormatting = [.withoutEscapingSlashes]
         }
         return encoder

@@ -107,95 +107,191 @@ DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<cli
 {{< /tabs >}}
 {{< /site-region >}}
 
-    To be compliant with the GDPR regulation, the SDK requires the `trackingConsent` value at initialization.
-    The `trackingConsent` can be one of the following values:
+{{< site-region region="us3" >}}
+{{< tabs >}}
+{{% tab "Swift" %}}
 
-    - `.pending` - the SDK starts collecting and batching the data but does not send it to Datadog. The SDK waits for the new tracking consent value to decide what to do with the batched data.
-    - `.granted` - the SDK starts collecting the data and sends it to Datadog.
-    - `.notGranted` - the SDK does not collect any data: logs, traces, and RUM events are not sent to Datadog.
+```swift
+Datadog.initialize(
+    appContext: .init(),
+    trackingConsent: trackingConsent,
+    configuration: Datadog.Configuration
+        .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
+        .set(serviceName: "app-name")
+        .set(endpoint: .us3)
+        .build()
+)
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<client_token>"
+                                                              environment:@"<environment_name>"];
+[builder setWithServiceName:@"app-name"];
+[builder setWithEndpoint:[DDEndpoint us3]];
 
-    To change the tracking consent value after the SDK is initialized, use the `Datadog.set(trackingConsent:)` API call.
-    The SDK changes its behavior according to the new value. For example, if the current tracking consent is `.pending`:
+[DDDatadog initializeWithAppContext:[DDAppContext new]
+                    trackingConsent:trackingConsent
+                      configuration:[builder build]];
+```
+{{% /tab %}}
+{{< /tabs >}}
+{{< /site-region >}}
 
-    - if changed to `.granted`, the SDK will send all current and future data to Datadog;
-    - if changed to `.notGranted`, the SDK will wipe all current data and will not collect any future data.
+{{< site-region region="us5" >}}
+{{< tabs >}}
+{{% tab "Swift" %}}
 
-     When writing your application, you can enable development logs. All internal messages in the SDK with a priority equal to or higher than the provided level are then logged to console logs.
+```swift
+Datadog.initialize(
+    appContext: .init(),
+    trackingConsent: trackingConsent,
+    configuration: Datadog.Configuration
+        .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
+        .set(serviceName: "app-name")
+        .set(endpoint: .us5)
+        .build()
+)
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<client_token>"
+                                                              environment:@"<environment_name>"];
+[builder setWithServiceName:@"app-name"];
+[builder setWithEndpoint:[DDEndpoint us5]];
 
-    {{< tabs >}}
-    {{% tab "Swift" %}}
-    ```swift
-    Datadog.verbosityLevel = .debug
-    ```
-    {{% /tab %}}
-    {{% tab "Objective-C" %}}
-    ```objective-c
-    DDDatadog.verbosityLevel = DDSDKVerbosityLevelDebug;
-    ```
-    {{% /tab %}}
-    {{< /tabs >}}
+[DDDatadog initializeWithAppContext:[DDAppContext new]
+                    trackingConsent:trackingConsent
+                      configuration:[builder build]];
+```
+{{% /tab %}}
+{{< /tabs >}}
+{{< /site-region >}}
+
+{{< site-region region="gov" >}}
+{{< tabs >}}
+{{% tab "Swift" %}}
+
+```swift
+Datadog.initialize(
+    appContext: .init(),
+    trackingConsent: trackingConsent,
+    configuration: Datadog.Configuration
+        .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
+        .set(serviceName: "app-name")
+        .set(endpoint: .us1_fed)
+        .build()
+)
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<client_token>"
+                                                              environment:@"<environment_name>"];
+[builder setWithServiceName:@"app-name"];
+[builder setWithEndpoint:[DDEndpoint us1_fed]];
+
+[DDDatadog initializeWithAppContext:[DDAppContext new]
+                    trackingConsent:trackingConsent
+                      configuration:[builder build]];
+```
+{{% /tab %}}
+{{< /tabs >}}
+{{< /site-region >}}
+
+
+To be compliant with the GDPR regulation, the SDK requires the `trackingConsent` value at initialization.
+The `trackingConsent` can be one of the following values:
+
+- `.pending` - the SDK starts collecting and batching the data but does not send it to Datadog. The SDK waits for the new tracking consent value to decide what to do with the batched data.
+- `.granted` - the SDK starts collecting the data and sends it to Datadog.
+- `.notGranted` - the SDK does not collect any data: logs, traces, and RUM events are not sent to Datadog.
+
+To change the tracking consent value after the SDK is initialized, use the `Datadog.set(trackingConsent:)` API call.
+The SDK changes its behavior according to the new value. For example, if the current tracking consent is `.pending`:
+
+- if changed to `.granted`, the SDK will send all current and future data to Datadog;
+- if changed to `.notGranted`, the SDK will wipe all current data and will not collect any future data.
+
+Before data is uploaded to Datadog, it is stored in cleartext in the cache directory (`Library/Caches`) of your [application sandbox][6], which can't be read by any other app installed on the device.
+
+When writing your application, enable development logs to log to console all internal messages in the SDK with a priority equal to or higher than the provided level. 
+
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+Datadog.verbosityLevel = .debug
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+DDDatadog.verbosityLevel = DDSDKVerbosityLevelDebug;
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 3. Configure the `Logger`:
 
-    {{< tabs >}}
-    {{% tab "Swift" %}}
-    ```swift
-    let logger = Logger.builder
-        .sendNetworkInfo(true)
-        .printLogsToConsole(true, usingFormat: .shortWith(prefix: "[iOS App] "))
-        .build()
-    ```
-    {{% /tab %}}
-    {{% tab "Objective-C" %}}
-    ```objective-c
-    DDLoggerBuilder *builder = [DDLogger builder];
-    [builder sendNetworkInfo:YES];
-    [builder printLogsToConsole:YES];
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+let logger = Logger.builder
+    .sendNetworkInfo(true)
+    .printLogsToConsole(true, usingFormat: .shortWith(prefix: "[iOS App] "))
+    .build()
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+DDLoggerBuilder *builder = [DDLogger builder];
+[builder sendNetworkInfo:YES];
+[builder printLogsToConsole:YES];
 
-    DDLogger *logger = [builder build];
-    ```
-    {{% /tab %}}
-    {{< /tabs >}}
+DDLogger *logger = [builder build];
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 4. Send a custom log entry directly to Datadog with one of the following methods:
 
-    {{< tabs >}}
-    {{% tab "Swift" %}}
-    ```swift
-    logger.debug("A debug message.")
-    logger.info("Some relevant information?")
-    logger.notice("Have you noticed?")
-    logger.warn("An important warning…")
-    logger.error("An error was met!")
-    logger.critical("Something critical happened!")
-    ```
-    {{% /tab %}}
-    {{% tab "Objective-C" %}}
-    ```objective-c
-    [logger debug:@"A debug message."];
-    [logger info:@"Some relevant information?"];
-    [logger notice:@"Have you noticed?"];
-    [logger warn:@"An important warning…"];
-    [logger error:@"An error was met!"];
-    [logger critical:@"Something critical happened!"];
-    ```
-    {{% /tab %}}
-    {{< /tabs >}}
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+logger.debug("A debug message.")
+logger.info("Some relevant information?")
+logger.notice("Have you noticed?")
+logger.warn("An important warning…")
+logger.error("An error was met!")
+logger.critical("Something critical happened!")
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+[logger debug:@"A debug message."];
+[logger info:@"Some relevant information?"];
+[logger notice:@"Have you noticed?"];
+[logger warn:@"An important warning…"];
+[logger error:@"An error was met!"];
+[logger critical:@"Something critical happened!"];
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 5. (Optional) - Provide a map of `attributes` alongside your log message to add attributes to the emitted log. Each entry of the map is added as an attribute.
 
-    {{< tabs >}}
-    {{% tab "Swift" %}}
-    ```swift
-    logger.info("Clicked OK", attributes: ["context": "onboarding flow"])
-    ```
-    {{% /tab %}}
-    {{% tab "Objective-C" %}}
-    ```objective-c
-    [logger info:@"Clicked OK" attributes:@{@"context": @"onboarding flow"}];
-    ```
-    {{% /tab %}}
-    {{< /tabs >}}
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+logger.info("Clicked OK", attributes: ["context": "onboarding flow"])
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+[logger info:@"Clicked OK" attributes:@{@"context": @"onboarding flow"}];
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Advanced logging
 
@@ -316,3 +412,4 @@ logger.removeAttribute(forKey: "device-model")
 [3]: https://docs.datadoghq.com/account_management/api-app-keys/#api-keys
 [4]: https://docs.datadoghq.com/logs/processing/attributes_naming_convention/
 [5]: https://docs.datadoghq.com/tagging/
+[6]: https://support.apple.com/guide/security/security-of-runtime-process-sec15bfe098e/web

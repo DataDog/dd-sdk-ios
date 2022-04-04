@@ -19,14 +19,26 @@ internal protocol LaunchTimeProviderType {
     /// time this variable is requested, the value should represent the time interval between now and the
     /// process start time.
     var launchTime: TimeInterval { get }
+
+    /// Returns `true` if the application is pre-warmed.
+    var isActivePrewarm: Bool { get }
 }
 
 internal class LaunchTimeProvider: LaunchTimeProviderType {
     var launchTime: TimeInterval {
-        // Even if __dd_private_AppLaunchTime() is using a lock behind the scenes, TSAN will report a data race if there are no synchronizations at this level.
+        // Even if __dd_private_AppLaunchTime() is using a lock behind the
+        // scenes, TSAN will report a data race if there are no
+        // synchronizations at this level.
         objc_sync_enter(self)
         let time = __dd_private_AppLaunchTime()
         objc_sync_exit(self)
         return time
+    }
+
+    var isActivePrewarm: Bool {
+        objc_sync_enter(self)
+        let isActivePrewarm = __dd_private_isActivePrewarm()
+        objc_sync_exit(self)
+        return isActivePrewarm
     }
 }

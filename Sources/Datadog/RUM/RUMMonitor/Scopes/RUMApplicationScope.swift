@@ -23,6 +23,8 @@ internal struct RUMScopeDependencies {
     /// Integration with Crash Reporting. It updates the crash context with RUM info.
     /// `nil` if Crash Reporting feature is not enabled.
     let crashContextIntegration: RUMWithCrashContextIntegration?
+    /// Integration with CIApp tests. It contains the CIApp test context when active.
+    let ciTest: RUMCITest?
 
     let vitalCPUReader: SamplingBasedVitalReader
     let vitalMemoryReader: SamplingBasedVitalReader

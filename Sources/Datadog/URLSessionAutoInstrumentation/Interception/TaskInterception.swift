@@ -178,7 +178,7 @@ extension ResourceMetrics {
                 download = DateInterval(start: downloadStart, end: downloadEnd)
             }
 
-            if #available(iOS 13.0, *) {
+            if #available(iOS 13.0, tvOS 13, *) {
                 responseSize = mainTransaction.countOfResponseBodyBytesAfterDecoding
             }
         }

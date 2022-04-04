@@ -4,7 +4,8 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-#if DD_SDK_ENABLE_EXPERIMENTAL_APIS
+#if !os(tvOS)
+
 import Foundation
 import WebKit
 
@@ -25,6 +26,22 @@ public extension WKUserContentController {
     /// - Parameter hosts: a list of hosts instrumented with Browser SDK to capture Datadog events from
     func trackDatadogEvents(in hosts: Set<String>) {
         addDatadogMessageHandler(allowedWebViewHosts: hosts, hostsSanitizer: HostsSanitizer())
+    }
+
+    /// Disables Datadog iOS SDK and Datadog Browser SDK integration.
+    ///
+    /// Removes Datadog's ScriptMessageHandler and UserScript from the caller.
+    /// - Note: This method **must** be called when the webview can be deinitialized.
+    func stopTrackingDatadogEvents() {
+        removeScriptMessageHandler(forName: DatadogMessageHandler.name)
+
+        let nonDatadogUserScripts = userScripts.filter {
+            return !$0.source.starts(with: Self.jsCodePrefix)
+        }
+        removeAllUserScripts()
+        nonDatadogUserScripts.forEach {
+            addUserScript($0)
+        }
     }
 
     internal func addDatadogMessageHandler(allowedWebViewHosts: Set<String>, hostsSanitizer: HostsSanitizing) {
@@ -130,4 +147,5 @@ internal class DatadogMessageHandler: NSObject, WKScriptMessageHandler {
         }
     }
 }
+
 #endif

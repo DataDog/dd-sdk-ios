@@ -7,7 +7,15 @@
 import XCTest
 @testable import Datadog
 
+// TODO: RUMM-2034 Remove this flag once we have a host application for tests
+#if !os(tvOS)
+
 class LaunchTimeProviderTests: XCTestCase {
+    override func tearDown() {
+        super.tearDown()
+        setenv("ActivePrewarm", "", 1)
+    }
+
     func testGivenStartedApplication_whenRequestingLaunchTimeAtAnyTime_itReturnsTheSameValue() {
         // Given
         let provider = LaunchTimeProvider()
@@ -35,4 +43,29 @@ class LaunchTimeProviderTests: XCTestCase {
         )
         // swiftlint:enable opening_brace
     }
+
+    func testIsActivePrewarm_returnsTrue() {
+        // Given
+        let provider = LaunchTimeProvider()
+
+        // When
+        setenv("ActivePrewarm", "1", 1)
+        NSClassFromString("AppLaunchHandler")?.load()
+
+        // Then
+        XCTAssertTrue(provider.isActivePrewarm)
+    }
+
+    func testIsActivePrewarm_returnsFalse() {
+        // Given
+        let provider = LaunchTimeProvider()
+
+        // When
+        NSClassFromString("AppLaunchHandler")?.load()
+
+        // Then
+        XCTAssertFalse(provider.isActivePrewarm)
+    }
 }
+
+#endif

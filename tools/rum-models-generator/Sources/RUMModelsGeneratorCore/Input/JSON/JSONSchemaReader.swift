@@ -8,31 +8,25 @@ import Foundation
 
 /// Reads `JSONSchema` from file.
 internal class JSONSchemaReader {
-    private let jsonDecoder = JSONDecoder()
+    private let decoder: JSONDecoder
 
-    func readJSONSchemas(from schemaFiles: [File], resolvingAgainst referencedSchemaFiles: [File]) throws -> [JSONSchema] {
-        return try schemaFiles.map { schemaFile in
-            return try readJSONSchema(from: schemaFile, resolvingAgainst: referencedSchemaFiles)
-        }
+    init(decoder: JSONDecoder = .init()) {
+        self.decoder = decoder
     }
 
-    func readJSONSchema(from schemaFile: File, resolvingAgainst referencedSchemaFiles: [File]) throws -> JSONSchema {
-        let schema = try withErrorContext(context: "Error while decoding \(schemaFile.name)") {
-            try jsonDecoder.decode(JSONSchema.self, from: schemaFile.content)
+    func read(_ file: URL) throws -> JSONSchema {
+        let schema: JSONSchema = try withErrorContext(context: "Error while decoding \(file)") {
+            let data = try Data(contentsOf: file)
+            return try decoder.decode(JSONSchema.self, from: data)
         }
-        let referencedSchemas = try referencedSchemaFiles
-            .map { schemaFile in
-                return try withErrorContext(context: "Error while decoding \(schemaFile.name)") {
-                    try jsonDecoder.decode(JSONSchema.self, from: schemaFile.content)
-                }
-            }
 
-        // Resolve references to other schemas
-        try referencedSchemas.forEach { try schema.resolveReference(to: $0) }
-
-        // Resolve subschemas
-        schema.resolveSubschemas()
+        try schema.resolveReferences(in: file.deletingLastPathComponent(), using: self)
 
         return schema
+    }
+
+    func readAll(from file: URL) throws -> [JSONSchema] {
+        let schema = try read(file)
+        return schema.subschemas
     }
 }

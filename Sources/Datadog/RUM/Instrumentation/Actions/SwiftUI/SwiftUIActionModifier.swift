@@ -7,6 +7,8 @@
 #if canImport(SwiftUI)
 import SwiftUI
 
+#if !os(tvOS)
+
 /// `SwiftUI.ViewModifier` for RUM which invoke `addUserAction` from the
 /// global RUM Monitor when the modified view receives a tap.
 @available(iOS 13, *)
@@ -48,4 +50,5 @@ public extension SwiftUI.View {
     }
 }
 
+#endif
 #endif

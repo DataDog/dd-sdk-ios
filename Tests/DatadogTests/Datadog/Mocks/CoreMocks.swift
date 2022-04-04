@@ -194,6 +194,7 @@ extension FeaturesConfiguration.Common {
         environment: String = .mockAny(),
         performance: PerformancePreset = .init(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
         source: String = .mockAny(),
+        origin: String? = nil,
         sdkVersion: String = .mockAny(),
         proxyConfiguration: [AnyHashable: Any]? = nil
     ) -> Self {
@@ -205,6 +206,7 @@ extension FeaturesConfiguration.Common {
             environment: environment,
             performance: performance,
             source: source,
+            origin: origin,
             sdkVersion: sdkVersion,
             proxyConfiguration: proxyConfiguration
         )
@@ -489,7 +491,7 @@ extension FeaturesCommonDependencies {
             )
         ),
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
-        launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock(),
+        launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock.mockAny(),
         appStateListener: AppStateListening = AppStateListenerMock.mockAny()
     ) -> FeaturesCommonDependencies {
         let httpClient: HTTPClient
@@ -680,7 +682,22 @@ class DateCorrectorMock: DateCorrectorType {
 }
 
 struct LaunchTimeProviderMock: LaunchTimeProviderType {
-    var launchTime: TimeInterval = 0
+    let launchTime: TimeInterval
+    let isActivePrewarm: Bool
+}
+
+extension LaunchTimeProviderMock {
+    static func mockAny() -> LaunchTimeProviderMock {
+        return mockWith(launchTime: 0, isActivePrewarm: false)
+    }
+
+    static func mockWith(launchTime: TimeInterval, isActivePrewarm: Bool = false) -> LaunchTimeProviderMock {
+        return LaunchTimeProviderMock(launchTime: launchTime, isActivePrewarm: isActivePrewarm)
+    }
+
+    static func mockRandom(launchTime: TimeInterval = .mockRandom(), isActivePrewarm: Bool = .random()) -> LaunchTimeProviderMock {
+        return mockWith(launchTime: launchTime, isActivePrewarm: isActivePrewarm)
+    }
 }
 
 extension AppState: AnyMockable, RandomMockable {

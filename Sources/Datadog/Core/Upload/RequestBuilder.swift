@@ -57,9 +57,17 @@ internal struct RequestBuilder {
 
         /// Standard "User-Agent" header.
         static func userAgentHeader(appName: String, appVersion: String, device: MobileDevice) -> HTTPHeader {
+            let sanitizedAppName: String
+            do {
+                let regex = try NSRegularExpression(pattern: "[^a-zA-Z0-9 -]+")
+                sanitizedAppName = regex.stringByReplacingMatches(in: appName, options: [], range: NSRange((appName.startIndex..<appName.endIndex), in: appName), withTemplate: "").trimmingCharacters(in: .whitespacesAndNewlines)
+            } catch {
+                sanitizedAppName = appName
+            }
+
             return HTTPHeader(
                 field: userAgentHeaderField,
-                value: .constant("\(appName)/\(appVersion) CFNetwork (\(device.model); \(device.osName)/\(device.osVersion))")
+                value: .constant("\(sanitizedAppName)/\(appVersion) CFNetwork (\(device.model); \(device.osName)/\(device.osVersion))")
             )
         }
 

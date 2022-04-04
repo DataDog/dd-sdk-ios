@@ -59,14 +59,12 @@ internal class ConsentAwareDataWriter: AsyncWriter, TrackingConsentObserver {
         }
     }
 
-#if DD_SDK_COMPILED_FOR_TESTING
     private var isCanceled = false
 
-    func flushAndCancelSynchronously() {
+    internal func flushAndCancelSynchronously() {
         queue.sync {
             self.processor = nil
             self.isCanceled = true
         }
     }
-#endif
 }

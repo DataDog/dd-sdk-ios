@@ -319,7 +319,7 @@ class TracerTests: XCTestCase {
         Datadog.instance = Datadog(
             consentProvider: ConsentProvider(initialConsent: .granted),
             userInfoProvider: UserInfoProvider(),
-            launchTimeProvider: LaunchTimeProviderMock()
+            launchTimeProvider: LaunchTimeProviderMock.mockAny()
         )
         defer { Datadog.flushAndDeinitialize() }
 
@@ -1120,86 +1120,6 @@ class TracerTests: XCTestCase {
         URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
 
         Datadog.flushAndDeinitialize()
-    }
-
-    // MARK: - Environment Context
-
-    func testSendingSpansWithNoDirectParentAndEnvironmentContext() throws {
-        TracingFeature.instance = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        defer { TracingFeature.instance?.deinitialize() }
-
-        setenv("x-datadog-trace-id", "111111", 1)
-        setenv("x-datadog-parent-id", "222222", 1)
-
-        let tracer = Tracer.initialize(configuration: .init()).dd
-        let queue = DispatchQueue(label: "\(#function)-queue")
-
-        func makeAPIRequest(completion: @escaping () -> Void) {
-            queue.asyncAfter(deadline: .now() + 1) {
-                completion()
-            }
-        }
-
-        let request1Span = tracer.startSpan(operationName: "/resource/1")
-        makeAPIRequest {
-            request1Span.finish()
-        }
-
-        let request2Span = tracer.startSpan(operationName: "/resource/2")
-        makeAPIRequest {
-            request2Span.finish()
-        }
-        tracer.activeSpan?.finish()
-
-        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 2)
-        XCTAssertEqual(try spanMatchers[0].parentSpanID(), TracingUUID(rawValue: 222_222).toHexadecimalString)
-        XCTAssertEqual(try spanMatchers[0].traceID(), TracingUUID(rawValue: 111_111).toHexadecimalString)
-        XCTAssertEqual(try spanMatchers[1].parentSpanID(), TracingUUID(rawValue: 222_222).toHexadecimalString)
-        XCTAssertEqual(try spanMatchers[1].traceID(), TracingUUID(rawValue: 111_111).toHexadecimalString)
-
-        unsetenv("x-datadog-trace-id")
-        unsetenv("x-datadog-parent-id")
-    }
-
-    func testSendingSpanWithActiveSpanAsAParentAndEnvironmentContext() throws {
-        TracingFeature.instance = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        defer { TracingFeature.instance?.deinitialize() }
-
-        setenv("x-datadog-trace-id", "111111", 1)
-        setenv("x-datadog-parent-id", "222222", 1)
-
-        let tracer = Tracer.initialize(configuration: .init()).dd
-        let queue1 = DispatchQueue(label: "\(#function)-queue1")
-        let queue2 = DispatchQueue(label: "\(#function)-queue2")
-
-        let rootSpan = tracer.startSpan(operationName: "root operation").setActive()
-
-        queue1.sync {
-            let child1Span = tracer.startSpan(operationName: "child 1 operation")
-            child1Span.finish()
-        }
-
-        queue2.sync {
-            let child2Span = tracer.startSpan(operationName: "child 2 operation")
-            child2Span.finish()
-        }
-
-        rootSpan.finish()
-
-        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 3)
-        let rootMatcher = spanMatchers[2]
-        let child1Matcher = spanMatchers[1]
-        let child2Matcher = spanMatchers[0]
-
-        XCTAssertEqual(try rootMatcher.parentSpanID(), TracingUUID(rawValue: 222_222).toHexadecimalString)
-        XCTAssertEqual(try spanMatchers[0].traceID(), TracingUUID(rawValue: 111_111).toHexadecimalString)
-        XCTAssertEqual(try child1Matcher.parentSpanID(), try rootMatcher.spanID())
-        XCTAssertEqual(try child1Matcher.traceID(), TracingUUID(rawValue: 111_111).toHexadecimalString)
-        XCTAssertEqual(try child2Matcher.parentSpanID(), try rootMatcher.spanID())
-        XCTAssertEqual(try child2Matcher.traceID(), TracingUUID(rawValue: 111_111).toHexadecimalString)
-
-        unsetenv("x-datadog-trace-id")
-        unsetenv("x-datadog-parent-id")
     }
 }
 // swiftlint:enable multiline_arguments_brackets

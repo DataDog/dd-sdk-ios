@@ -27,13 +27,18 @@ class ShopistWebviewViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let controller = WKUserContentController()
-        controller.trackDatadogEvents(in: ["shopist.io"])
-        let config = WKWebViewConfiguration()
-        config.userContentController = controller
-
-        webView = WKWebView(frame: UIScreen.main.bounds, configuration: config)
+        webView = WKWebView(frame: UIScreen.main.bounds, configuration: WKWebViewConfiguration())
         view.addSubview(webView)
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        webView.configuration.userContentController.trackDatadogEvents(in: ["shopist.io"])
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        webView.configuration.userContentController.stopTrackingDatadogEvents()
     }
 
     override func viewDidAppear(_ animated: Bool) {

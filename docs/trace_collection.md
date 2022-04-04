@@ -105,221 +105,317 @@ DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<cli
 {{< /tabs >}}
 {{< /site-region >}}
 
-    To be compliant with the GDPR regulation, the SDK requires the `trackingConsent` value at initialization.
-    The `trackingConsent` can be one of the following values:
+{{< site-region region="us3" >}}
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+Datadog.initialize(
+    appContext: .init(),
+    trackingConsent: trackingConsent,
+    configuration: Datadog.Configuration
+        .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
+        .set(serviceName: "app-name")
+        .set(endpoint: .us3)
+        .build()
+)
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<client_token>"
+                                                              environment:@"<environment_name>"];
+[builder setWithServiceName:@"app-name"];
+[builder setWithEndpoint:[DDEndpoint us3]];
 
-    - `.pending` - the SDK starts collecting and batching the data but does not send it to Datadog. The SDK waits for the new tracking consent value to decide what to do with the batched data.
-    - `.granted` - the SDK starts collecting the data and sends it to Datadog.
-    - `.notGranted` - the SDK does not collect any data: logs, traces, and RUM events are not sent to Datadog.
+[DDDatadog initializeWithAppContext:[DDAppContext new]
+                    trackingConsent:trackingConsent
+                      configuration:[builder build]];
+```
+{{% /tab %}}
+{{< /tabs >}}
+{{< /site-region >}}
 
-    To change the tracking consent value after the SDK is initialized, use the `Datadog.set(trackingConsent:)` API call.
-    The SDK changes its behavior according to the new value. For example, if the current tracking consent is `.pending`:
+{{< site-region region="us5" >}}
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+Datadog.initialize(
+    appContext: .init(),
+    trackingConsent: trackingConsent,
+    configuration: Datadog.Configuration
+        .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
+        .set(serviceName: "app-name")
+        .set(endpoint: .us5)
+        .build()
+)
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<client_token>"
+                                                              environment:@"<environment_name>"];
+[builder setWithServiceName:@"app-name"];
+[builder setWithEndpoint:[DDEndpoint us5]];
 
-    - if changed to `.granted`, the SDK will send all current and future data to Datadog;
-    - if changed to `.notGranted`, the SDK will wipe all current data and will not collect any future data.
+[DDDatadog initializeWithAppContext:[DDAppContext new]
+                    trackingConsent:trackingConsent
+                      configuration:[builder build]];
+```
+{{% /tab %}}
+{{< /tabs >}}
+{{< /site-region >}}
 
-    When writing your application, you can enable development logs. All internal messages in the SDK with a priority equal to or higher than the provided level are then logged to console logs.
+{{< site-region region="gov" >}}
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+Datadog.initialize(
+    appContext: .init(),
+    trackingConsent: trackingConsent,
+    configuration: Datadog.Configuration
+        .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
+        .set(serviceName: "app-name")
+        .set(endpoint: .us1_fed)
+        .build()
+)
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<client_token>"
+                                                              environment:@"<environment_name>"];
+[builder setWithServiceName:@"app-name"];
+[builder setWithEndpoint:[DDEndpoint us1_fed]];
 
-    {{< tabs >}}
-    {{% tab "Swift" %}}
-    ```swift
-    Datadog.verbosityLevel = .debug
-    ```
-    {{% /tab %}}
-    {{% tab "Objective-C" %}}
-    DDDatadog.verbosityLevel = DDSDKVerbosityLevelDebug;
-    ```
-    {{% /tab %}}
-    {{< /tabs >}}
+[DDDatadog initializeWithAppContext:[DDAppContext new]
+                    trackingConsent:trackingConsent
+                      configuration:[builder build]];
+```
+{{% /tab %}}
+{{< /tabs >}}
+{{< /site-region >}}
+
+To comply with GDPR regulations, the SDK requires the `trackingConsent` value at initialization.
+
+Use one of the following values for `trackingConsent`:
+
+- `.pending` - the SDK starts collecting and batching the data but does not send it to Datadog. The SDK waits for the new tracking consent value to decide what to do with the batched data.
+- `.granted` - the SDK starts collecting the data and sends it to Datadog.
+- `.notGranted` - the SDK does not collect any data. No logs, traces, or RUM events are sent to Datadog.
+
+To change the tracking consent value after the SDK is initialized, use the `Datadog.set(trackingConsent:)` API call.
+
+The SDK changes its behavior according to the new value.
+
+For example, if the current tracking consent is `.pending`:
+
+- If changed to `.granted`, the SDK sends all current and future data to Datadog.
+- If changed to `.notGranted`, the SDK wipes all current data and does not collect future data.
+
+Before data is uploaded to Datadog, it is stored in cleartext in the cache directory (`Library/Caches`) of your [application sandbox][11], which can't be read by any other app installed on the device.
+
+When writing your application, enable development logs to log to console all internal messages in the SDK with a priority equal to or higher than the provided level.
+
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+Datadog.verbosityLevel = .debug
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+DDDatadog.verbosityLevel = DDSDKVerbosityLevelDebug;
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 3. Datadog tracer implements the [Open Tracing standard][8]. Configure and register the `Tracer` globally as Open Tracing `Global.sharedTracer`. You only need to do it once, usually in your `AppDelegate` code:
 
-    {{< tabs >}}
-    {{% tab "Swift" %}}
-    ```swift
-    Global.sharedTracer = Tracer.initialize(
-        configuration: Tracer.Configuration(
-            sendNetworkInfo: true
-        )
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+Global.sharedTracer = Tracer.initialize(
+    configuration: Tracer.Configuration(
+        sendNetworkInfo: true
     )
-    ```
-    {{% /tab %}}
-    {{% tab "Objective-C" %}}
-    ```objective-c
-    DDTracerConfiguration *configuration = [[DDTracerConfiguration alloc] init];
-    [configuration sendNetworkInfo:YES];
-    DDGlobal.sharedTracer = [[DDTracer alloc] initWithConfiguration:configuration];
-    ```
-    {{% /tab %}}
-    {{< /tabs >}}
+)
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+DDTracerConfiguration *configuration = [[DDTracerConfiguration alloc] init];
+[configuration sendNetworkInfo:YES];
+DDGlobal.sharedTracer = [[DDTracer alloc] initWithConfiguration:configuration];
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 4. Instrument your code using the following methods:
 
-    {{< tabs >}}
-    {{% tab "Swift" %}}
-    ```swift
-    let span = Global.sharedTracer.startSpan(operationName: "<span_name>")
-    // do something you want to measure ...
-    // ... then, when the operation is finished:
-    span.finish()
-    ```
-    {{% /tab %}}
-    {{% tab "Objective-C" %}}
-    ```objective-c
-    id<OTSpan> span = [DDGlobal.sharedTracer startSpan:@"<span_name>"];
-    // do something you want to measure ...
-    // ... then, when the operation is finished:
-    [span finish];
-    ```
-    {{% /tab %}}
-    {{< /tabs >}}
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+let span = Global.sharedTracer.startSpan(operationName: "<span_name>")
+// do something you want to measure ...
+// ... then, when the operation is finished:
+span.finish()
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+id<OTSpan> span = [DDGlobal.sharedTracer startSpan:@"<span_name>"];
+// do something you want to measure ...
+// ... then, when the operation is finished:
+[span finish];
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 5. (Optional) - Set child-parent relationship between your spans:
 
-    {{< tabs >}}
-    {{% tab "Swift" %}}
-    ```swift
-    let responseDecodingSpan = Global.sharedTracer.startSpan(
-        operationName: "response decoding",
-        childOf: networkRequestSpan.context // make it a child of `networkRequestSpan`
-    )
-    // ... decode HTTP response data ...
-    responseDecodingSpan.finish()
-    ```
-    {{% /tab %}}
-    {{% tab "Objective-C" %}}
-    ```objective-c
-    id<OTSpan> responseDecodingSpan = [DDGlobal.sharedTracer startSpan:@"response decoding"
-                                                               childOf:networkRequestSpan.context];
-    // ... decode HTTP response data ...
-    [responseDecodingSpan finish];
-    ```
-    {{% /tab %}}
-    {{< /tabs >}}
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+let responseDecodingSpan = Global.sharedTracer.startSpan(
+    operationName: "response decoding",
+    childOf: networkRequestSpan.context // make it a child of `networkRequestSpan`
+)
+// ... decode HTTP response data ...
+responseDecodingSpan.finish()
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+id<OTSpan> responseDecodingSpan = [DDGlobal.sharedTracer startSpan:@"response decoding"
+                                                            childOf:networkRequestSpan.context];
+// ... decode HTTP response data ...
+[responseDecodingSpan finish];
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 6. (Optional) - Provide additional tags alongside your span:
 
-    {{< tabs >}}
-    {{% tab "Swift" %}}
-    ```swift
-    span.setTag(key: "http.url", value: url)
-    ```
-    {{% /tab %}}
-    {{% tab "Objective-C" %}}
-    ```objective-c
-    [span setTag:@"http.url" value:url];
-    ```
-    {{% /tab %}}
-    {{< /tabs >}}
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+span.setTag(key: "http.url", value: url)
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+[span setTag:@"http.url" value:url];
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 7. (Optional) Attach an error to a span - you can do so by logging the error information using the [standard Open Tracing log fields][9]:
 
-    {{< tabs >}}
-    {{% tab "Swift" %}}
-    ```swift
-    span.log(
-        fields: [
-            OTLogFields.event: "error",
-            OTLogFields.errorKind: "I/O Exception",
-            OTLogFields.message: "File not found",
-            OTLogFields.stack: "FileReader.swift:42",
-        ]
-    )
-    ```
-    {{% /tab %}}
-    {{% tab "Objective-C" %}}
-    ```objective-c
-    [span log:@{
-        @"event": @"error",
-        @"error.kind": @"I/O Exception",
-        @"message": @"File not found",
-        @"stack": @"FileReader.swift:42",
-    }];
-    ```
-    {{% /tab %}}
-    {{< /tabs >}}
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+span.log(
+    fields: [
+        OTLogFields.event: "error",
+        OTLogFields.errorKind: "I/O Exception",
+        OTLogFields.message: "File not found",
+        OTLogFields.stack: "FileReader.swift:42",
+    ]
+)
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+[span log:@{
+    @"event": @"error",
+    @"error.kind": @"I/O Exception",
+    @"message": @"File not found",
+    @"stack": @"FileReader.swift:42",
+}];
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 8. (Optional) To distribute traces between your environments, for example frontend - backend, you can either do it manually or leverage our auto instrumentation.
 
-    * To manually propagate the trace, inject the span context into `URLRequest` headers:
+* To manually propagate the trace, inject the span context into `URLRequest` headers:
 
-    {{< tabs >}}
-    {{% tab "Swift" %}}
-    ```swift
-    var request: URLRequest = ... // the request to your API
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+var request: URLRequest = ... // the request to your API
 
-    let span = Global.sharedTracer.startSpan(operationName: "network request")
+let span = Global.sharedTracer.startSpan(operationName: "network request")
 
-    let headersWriter = HTTPHeadersWriter()
-    Global.sharedTracer.inject(spanContext: span.context, writer: headersWriter)
+let headersWriter = HTTPHeadersWriter()
+Global.sharedTracer.inject(spanContext: span.context, writer: headersWriter)
 
-    for (headerField, value) in headersWriter.tracePropagationHTTPHeaders {
-        request.addValue(value, forHTTPHeaderField: headerField)
-    }
-    ```
-    {{% /tab %}}
-    {{% tab "Objective-C" %}}
-    ```objective-c
-    id<OTSpan> span = [DDGlobal.sharedTracer startSpan:@"network request"];
-    DDHTTPHeadersWriter *headersWriter = [[DDHTTPHeadersWriter alloc] init];
+for (headerField, value) in headersWriter.tracePropagationHTTPHeaders {
+    request.addValue(value, forHTTPHeaderField: headerField)
+}
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+id<OTSpan> span = [DDGlobal.sharedTracer startSpan:@"network request"];
+DDHTTPHeadersWriter *headersWriter = [[DDHTTPHeadersWriter alloc] init];
 
-    NSError *error = nil;
-    [DDGlobal.sharedTracer inject:span.context
-                           format:OT.formatTextMap
-                          carrier:headersWriter
-                            error:&error];
+NSError *error = nil;
+[DDGlobal.sharedTracer inject:span.context
+                        format:OT.formatTextMap
+                        carrier:headersWriter
+                        error:&error];
 
-    for (NSString *key in headersWriter.tracePropagationHTTPHeaders) {
-        NSString *value = headersWriter.tracePropagationHTTPHeaders[key];
-        [request addValue:value forHTTPHeaderField:key];
-    }
-    ```
-    {{% /tab %}}
-    {{< /tabs >}}
+for (NSString *key in headersWriter.tracePropagationHTTPHeaders) {
+    NSString *value = headersWriter.tracePropagationHTTPHeaders[key];
+    [request addValue:value forHTTPHeaderField:key];
+}
+```
+{{% /tab %}}
+{{< /tabs >}}
 
-    This will set additional tracing headers on your request, so that your backend can extract it and continue distributed tracing. Once the request is done, within a completion handler, call `span.finish()`. If your backend is also instrumented with [Datadog APM & Distributed Tracing][10] you will see the entire front-to-back trace in Datadog dashboard.
+This sets additional tracing headers on your request so your backend can extract the request and continue distributed tracing. Once the request is done, call `span.finish()` within a completion handler. If your backend is also instrumented with [Datadog APM & Distributed Tracing][10], the entire front-to-back trace appears in the Datadog dashboard.
 
-    * To have the SDK automatically trace all network requests made to given hosts, specify the `firstPartyHosts` array during Datadog initialization and use the `DDURLSessionDelegate` as a delegate of the `URLSession` instance that you want to monitor:
+* In order for the SDK to automatically trace all network requests made to the given hosts, specify the `firstPartyHosts` array in the Datadog initialization and use `DDURLSessionDelegate` as a delegate of the `URLSession` instance you want to monitor:
 
-    {{< tabs >}}
-    {{% tab "Swift" %}}
-    ```swift
-    Datadog.initialize(
-        appContext: .init(),
-        configuration: Datadog.Configuration
-            .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
-            .trackURLSession(firstPartyHosts: ["example.com", "api.yourdomain.com"])
-            .build()
-    )
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+Datadog.initialize(
+    appContext: .init(),
+    configuration: Datadog.Configuration
+        .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
+        .trackURLSession(firstPartyHosts: ["example.com", "api.yourdomain.com"])
+        .build()
+)
 
-    let session = URLSession(
-        configuration: .default,
-        delegate: DDURLSessionDelegate(),
-        delegateQueue: nil
-    )
-    ```
-    {{% /tab %}}
-    {{% tab "Objective-C" %}}
-    ```objective-c
-    DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<client_token>"
-                                                                  environment:@"<environment_name>"];
+let session = URLSession(
+    configuration: .default,
+    delegate: DDURLSessionDelegate(),
+    delegateQueue: nil
+)
+```
+{{% /tab %}}
+{{% tab "Objective-C" %}}
+```objective-c
+DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<client_token>"
+                                                                environment:@"<environment_name>"];
 
-    [builder trackURLSessionWithFirstPartyHosts:[NSSet setWithArray:@[@"example.com", @"api.yourdomain.com"]]];
+[builder trackURLSessionWithFirstPartyHosts:[NSSet setWithArray:@[@"example.com", @"api.yourdomain.com"]]];
 
-    [DDDatadog initializeWithAppContext:[DDAppContext new]
-                        trackingConsent:trackingConsent
-                          configuration:[builder build]];
+[DDDatadog initializeWithAppContext:[DDAppContext new]
+                    trackingConsent:trackingConsent
+                        configuration:[builder build]];
 
-    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]
-                                                          delegate:[[DDNSURLSessionDelegate alloc] init]
-                                                     delegateQueue:nil];
-    ```
-    {{% /tab %}}
-    {{< /tabs >}}
+NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]
+                                                        delegate:[[DDNSURLSessionDelegate alloc] init]
+                                                    delegateQueue:nil];
+```
+{{% /tab %}}
+{{< /tabs >}}
 
-    This will trace all requests made with this `session` to `example.com` and `api.yourdomain.com` hosts (for example, `https://api.yourdomain.com/v2/users` or `https://subdomain.example.com/image.png`).
+This traces all requests made with this `session` to `example.com` and `api.yourdomain.com` hosts (for example, `https://api.yourdomain.com/v2/users` or `https://subdomain.example.com/image.png`).
 
-    **Note**: Tracing auto instrumentation uses `URLSession` swizzling, but it is opt-in: if you do not specify `firstPartyHosts`, no swizzling is applied.
+**Note**: Tracing auto-instrumentation uses `URLSession` swizzling and is opt-in. If you do not specify `firstPartyHosts`, swizzling is not applied.
 
 
 ## Batch collection
@@ -342,3 +438,4 @@ The data on disk will automatically be discarded if it gets too old to ensure th
 [8]: https://opentracing.io
 [9]: https://github.com/opentracing/specification/blob/master/semantic_conventions.md#log-fields-table
 [10]: https://docs.datadoghq.com/tracing/
+[11]: https://support.apple.com/guide/security/security-of-runtime-process-sec15bfe098e/web

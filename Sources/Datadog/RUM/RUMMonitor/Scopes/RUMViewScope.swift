@@ -10,6 +10,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     struct Constants {
         static let frozenFrameThresholdInNs = (0.07).toInt64Nanoseconds // 70ms
         static let slowRenderingThresholdFPS = 55.0
+        /// The pre-warming detection attribute key
+        static let activePrewarm = "active_pre_warm"
     }
 
     // MARK: - Child Scopes
@@ -123,7 +125,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         // Send "application start" action if this is the very first view tracked in the app
         let hasSentNoViewUpdatesYet = version == 0
-        if isInitialView && hasSentNoViewUpdatesYet {
+        if isInitialView, hasSentNoViewUpdatesYet {
             actionsCount += 1
             if !sendApplicationStartAction() {
                 actionsCount -= 1
@@ -284,10 +286,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let customActionScope = createDiscreteUserActionScope(on: command)
         _ = customActionScope.process(
             command: RUMStopUserActionCommand(
-                                    time: command.time,
-                                    attributes: [:],
-                                    actionType: .custom,
-                                    name: nil
+                time: command.time,
+                attributes: [:],
+                actionType: .custom,
+                name: nil
             )
         )
     }
@@ -303,6 +305,18 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - Sending RUM Events
 
     private func sendApplicationStartAction() -> Bool {
+        var attributes = self.attributes
+        var loadingTime: Int64? = nil
+
+        if dependencies.launchTimeProvider.isActivePrewarm {
+            // Set `active_pre_warm` attribute to true in case
+            // of pre-warmed app
+            attributes[Constants.activePrewarm] = true
+        } else {
+            // Report Application Launch Time only if not pre-warmed
+            loadingTime = dependencies.launchTimeProvider.launchTime.toInt64Nanoseconds
+        }
+
         let eventData = RUMActionEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -312,19 +326,23 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 crash: nil,
                 error: nil,
                 id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
-                loadingTime: dependencies.launchTimeProvider.launchTime.toInt64Nanoseconds,
+                loadingTime: loadingTime,
                 longTask: nil,
                 resource: nil,
                 target: nil,
                 type: .applicationStart
             ),
             application: .init(id: context.rumApplicationID),
-            ciTest: nil,
+            ciTest: dependencies.ciTest,
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: dependencies.serviceName,
-            session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            session: .init(
+                hasReplay: nil,
+                id: context.sessionID.toRUMDataFormat,
+                type: dependencies.ciTest != nil ? .ciTest : .user
+            ),
             source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
@@ -337,7 +355,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         )
 
-#if DD_SDK_ENABLE_INTERNAL_MONITORING
+#if DD_SDK_ENABLE_INTERNAL_MONITORING && !os(tvOS)
         if #available(iOS 15, *) {
             // Starting MetricKit monitor from here, to ensure that our launch time was already reported
             // in `.applicationStart` action and we could compare both measurements.
@@ -371,12 +389,16 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 session: .init(plan: .plan1)
             ),
             application: .init(id: context.rumApplicationID),
-            ciTest: nil,
+            ciTest: dependencies.ciTest,
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             service: dependencies.serviceName,
-            session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            session: .init(
+                hasReplay: nil,
+                id: context.sessionID.toRUMDataFormat,
+                type: dependencies.ciTest != nil ? .ciTest : .user
+            ),
             source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
@@ -440,7 +462,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 .init(id: rumUUID.toRUMDataFormat)
             },
             application: .init(id: context.rumApplicationID),
-            ciTest: nil,
+            ciTest: dependencies.ciTest,
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
@@ -457,7 +479,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 type: command.type
             ),
             service: dependencies.serviceName,
-            session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            session: .init(
+                hasReplay: nil,
+                id: context.sessionID.toRUMDataFormat,
+                type: dependencies.ciTest != nil ? .ciTest : .user
+            ),
             source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
@@ -482,21 +508,24 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         let taskDurationInNs = command.duration.toInt64Nanoseconds
         let isFrozenFrame = taskDurationInNs > Constants.frozenFrameThresholdInNs
-
         let eventData = RUMLongTaskEvent(
             dd: .init(
-              browserSdkVersion: nil,
-              session: .init(plan: .plan1)
+                browserSdkVersion: nil,
+                session: .init(plan: .plan1)
             ),
             action: context.activeUserActionID.flatMap { RUMLongTaskEvent.Action(id: $0.toRUMDataFormat) },
             application: .init(id: context.rumApplicationID),
-            ciTest: nil,
+            ciTest: dependencies.ciTest,
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: command.time - command.duration).timeIntervalSince1970.toInt64Milliseconds,
             longTask: .init(duration: taskDurationInNs, id: nil, isFrozenFrame: isFrozenFrame),
             service: dependencies.serviceName,
-            session: .init(hasReplay: nil, id: context.sessionID.toRUMDataFormat, type: .user),
+            session: .init(
+                hasReplay: nil,
+                id: context.sessionID.toRUMDataFormat,
+                type: dependencies.ciTest != nil ? .ciTest : .user
+            ),
             source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
@@ -534,7 +563,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 /// THE FOLLOWING IMPLEMENTATION SHALL BE REMOVED ONCE
 /// METRICKIT HAS BEEN EVALUATED.
 ///
-#if DD_SDK_ENABLE_INTERNAL_MONITORING
+#if DD_SDK_ENABLE_INTERNAL_MONITORING && !os(tvOS)
 import MetricKit
 
 /// The MetricMonitor only exists for internal testing, it will log the MetricKit payloads at reception to

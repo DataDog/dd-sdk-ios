@@ -9,100 +9,6 @@ import XCTest
 
 final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
     func testTransformingJSONSchemaIntoJSONObject() throws {
-        let referencedSchema1 = """
-        {
-            "$id": "referenced-schema1.json",
-            "type": "object",
-            "properties": {
-                "bar": {
-                    "type": "object",
-                    "description": "Description of Bar.",
-                    "properties": {
-                        "property1": {
-                            "type": "string",
-                            "description": "Description of Bar's `property1`.",
-                            "readOnly": true
-                        }
-                    }
-                }
-            }
-        }
-        """
-
-        let referencedSchema2 = """
-        {
-            "$id": "referenced-schema2.json",
-            "type": "object",
-            "properties": {
-                "bar": {
-                    "type": "object",
-                    "description": "Description of Bar.",
-                    "properties": {
-                        "property2": {
-                            "type": "string",
-                            "description": "Description of Bar's `property2`.",
-                            "readOnly": false
-                        }
-                    },
-                    "required": ["property2"]
-                }
-            }
-        }
-        """
-
-        let mainSchema = """
-        {
-            "type": "object",
-            "title": "Foo",
-            "description": "Description of Foo.",
-            "allOf": [
-                { "$ref": "referenced-schema1.json" },
-                { "$ref": "referenced-schema2.json" },
-                {
-                    "properties": {
-                        "stringEnumProperty": {
-                            "type": "string",
-                            "description": "Description of Foo's `stringEnumProperty`.",
-                            "enum": ["case1", "case2", "case3", "case4"],
-                            "const": "case2"
-                        },
-                        "integerEnumProperty": {
-                            "type": "number",
-                            "description": "Description of Foo's `integerEnumProperty`.",
-                            "enum": [1, 2, 3, 4],
-                            "const": 3
-                        },
-                        "arrayProperty": {
-                            "type": "array",
-                            "description": "Description of Foo's `arrayProperty`.",
-                            "items": {
-                                "type": "string",
-                                "enum": ["option1", "option2", "option3", "option4"]
-                            },
-                            "readOnly": false
-                        },
-                        "propertyWithAdditionalProperties": {
-                            "type": "object",
-                            "description": "Description of a property with nested additional properties.",
-                            "additionalProperties": {
-                                 "type": "integer",
-                                 "minimum": 0,
-                                 "readOnly": true
-                            },
-                            "readOnly": true
-                        }
-                    },
-                    "additionalProperties": {
-                        "type": "string",
-                        "description": "Additional properties of Foo.",
-                        "readOnly": true
-                    },
-                    "required": ["stringEnumProperty"],
-                }
-            ]
-        }
-        """
-
         let expected = JSONObject(
             name: "Foo",
             comment: "Description of Foo.",
@@ -200,16 +106,11 @@ final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
             )
         )
 
-        let jsonSchema = try JSONSchemaReader()
-            .readJSONSchema(
-                from: File(name: "main-schema", content: mainSchema.data(using: .utf8)!),
-                resolvingAgainst: [
-                    File(name: "referenced-schema-1", content: referencedSchema1.data(using: .utf8)!),
-                    File(name: "referenced-schema-2", content: referencedSchema2.data(using: .utf8)!),
-                ]
-            )
+        let file = Bundle.module.url(forResource: "Fixtures/fixture-json-schema-to-json-type-transformer", withExtension: "json")!
 
-        let actual = try JSONSchemaToJSONTypeTransformer().transform(jsonSchemas: [jsonSchema])
+        let jsonSchemas = try JSONSchemaReader().readAll(from: file)
+
+        let actual = try JSONSchemaToJSONTypeTransformer().transform(jsonSchemas: jsonSchemas)
 
         XCTAssertEqual(actual.count, 1)
         XCTAssertEqual(expected, actual[0])

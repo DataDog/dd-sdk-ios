@@ -71,13 +71,13 @@ GENERATOR=".build/x86_64-apple-macosx/release/rum-models-generator"
 # Generate RUM models (Swift) file in temporary location
 mkdir -p ".temp"
 GENERATED_SWIFT_FILE=".temp/RUMDataModels.swift"
-$GENERATOR generate-swift --path "rum-events-format/schemas" > $GENERATED_SWIFT_FILE
+$GENERATOR generate-swift --path "rum-events-format/rum-events-format.json" > $GENERATED_SWIFT_FILE
 echo "// Generated from https://github.com/DataDog/rum-events-format/tree/$SHA" >> $GENERATED_SWIFT_FILE
 
 # Generate RUM models (Objc) file in temporary location
 mkdir -p ".temp"
 GENERATED_OBJC_FILE=".temp/RUMDataModels+objc.swift"
-$GENERATOR generate-objc --path "rum-events-format/schemas" > $GENERATED_OBJC_FILE
+$GENERATOR generate-objc --path "rum-events-format/rum-events-format.json" > $GENERATED_OBJC_FILE
 echo "// Generated from https://github.com/DataDog/rum-events-format/tree/$SHA" >> $GENERATED_OBJC_FILE
 
 if [[ $MODE == $MODE_VERIFY ]]; then

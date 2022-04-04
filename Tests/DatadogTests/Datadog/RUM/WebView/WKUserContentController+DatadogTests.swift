@@ -4,8 +4,11 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+#if !os(tvOS)
+
 import XCTest
 import WebKit
+
 @testable import Datadog
 
 final class DDUserContentController: WKUserContentController {
@@ -21,6 +24,10 @@ final class DDUserContentController: WKUserContentController {
             return $0.name != name
         }
     }
+}
+
+final class MockMessageHandler: NSObject, WKScriptMessageHandler {
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) { }
 }
 
 final class MockScriptMessage: WKScriptMessage {
@@ -94,6 +101,31 @@ class WKUserContentController_DatadogTests: XCTestCase {
 
         let recordedLogMessages = output.allRecordedLogs.map { return $0.message }
         XCTAssertEqual(recordedLogMessages, Array(repeating: "`trackDatadogEvents(in:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.", count: multipleTimes - 1))
+    }
+
+    func testWhenStoppingTracking_itKeepsNonDatadogComponents() throws {
+        let controller = DDUserContentController()
+
+        controller.trackDatadogEvents(in: [])
+
+        let componentCount = 10
+        for i in 0..<componentCount {
+            let userScript = WKUserScript(
+                source: String.mockRandom(),
+                injectionTime: (i % 2 == 0 ? .atDocumentStart : .atDocumentEnd),
+                forMainFrameOnly: i % 2 == 0
+            )
+            controller.addUserScript(userScript)
+            controller.add(MockMessageHandler(), name: String.mockRandom())
+        }
+
+        XCTAssertEqual(controller.userScripts.count, componentCount + 1)
+        XCTAssertEqual(controller.messageHandlers.count, componentCount + 1)
+
+        controller.stopTrackingDatadogEvents()
+
+        XCTAssertEqual(controller.userScripts.count, componentCount)
+        XCTAssertEqual(controller.messageHandlers.count, componentCount)
     }
 
     func testItLogsInvalidWebMessages() throws {
@@ -182,3 +214,5 @@ class WKUserContentController_DatadogTests: XCTestCase {
         }
     }
 }
+
+#endif

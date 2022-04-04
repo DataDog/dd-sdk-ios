@@ -51,9 +51,7 @@ internal final class CrashReportingFeature {
         self.appStateListener = commonDependencies.appStateListener
     }
 
-#if DD_SDK_COMPILED_FOR_TESTING
-    func deinitialize() {
+    internal func deinitialize() {
         CrashReportingFeature.instance = nil
     }
-#endif
 }

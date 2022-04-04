@@ -24,6 +24,8 @@ internal struct SpanEventBuilder {
     let dateCorrector: DateCorrectorType
     /// Source tag to encode in span (e.g. `ios` for native iOS).
     let source: String
+    /// Optional Origin tag to encode in span (e.g. `ciapp-test`).
+    let origin: String?
     /// Span events mapper configured by the user, `nil` if not set.
     let eventsMapper: SpanEventMapper?
 
@@ -69,6 +71,7 @@ internal struct SpanEventBuilder {
             duration: finishTime.timeIntervalSince(startTime),
             isError: tagsReducer.extractedIsError ?? false,
             source: source,
+            origin: origin,
             tracerVersion: sdkVersion,
             applicationVersion: applicationVersion,
             networkConnectionInfo: networkConnectionInfoProvider?.current,

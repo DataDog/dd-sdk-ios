@@ -24,6 +24,7 @@ class MobileDeviceTests: XCTestCase {
         XCTAssertEqual(mobileDevice.osVersion, uiDevice.systemVersion)
     }
 
+    #if os(iOS)
     func testWhenRunningOnMobile_itUsesUIDeviceBatteryState() {
         func mobileDevice(withBatteryState bateryState: UIDevice.BatteryState) -> MobileDevice {
             return MobileDevice(
@@ -85,4 +86,5 @@ class MobileDeviceTests: XCTestCase {
         mobileDevice.resetBatteryStatusMonitoring()
         XCTAssertFalse(uiDevice.isBatteryMonitoringEnabled)
     }
+    #endif
 }

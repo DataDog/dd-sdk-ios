@@ -123,33 +123,53 @@ workflows:
   run_unit_tests:
     description: |-
         Runs unit tests for SDK on iOS Simulator.
+        Runs unit tests for SDK on tvOS Simulator.
         Runs benchmarks for SDK on iOS Simulator.
         Runs unit tests for HTTPServerMock package on macOS.
     steps:
     - xcode-test:
         title: Run unit tests for Datadog - iOS Simulator
         inputs:
-        - scheme: Datadog
-        - simulator_device: iPhone 11
+        - scheme: Datadog iOS
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - is_clean_build: 'yes'
         - test_repetition_mode: 'retry_on_failure'
         - maximum_test_repetitions: 2
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Datadog-unit-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Datadog-ios-unit-tests.html"
     - xcode-test:
         title: Run unit tests for DatadogCrashReporting - iOS Simulator
         inputs:
-        - scheme: DatadogCrashReporting
-        - simulator_device: iPhone 11
+        - scheme: DatadogCrashReporting iOS
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReporting-unit-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReporting-ios-unit-tests.html"
+    - xcode-test:
+        title: Run unit tests for Datadog - tvOS Simulator
+        inputs:
+        - scheme: Datadog tvOS
+        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+        - is_clean_build: 'yes'
+        - test_repetition_mode: 'retry_on_failure'
+        - maximum_test_repetitions: 2
+        - generate_code_coverage_files: 'yes'
+        - project_path: Datadog.xcworkspace
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Datadog-tvos-unit-tests.html"
+    - xcode-test:
+        title: Run unit tests for DatadogCrashReporting - tvOS Simulator
+        inputs:
+        - scheme: DatadogCrashReporting tvOS
+        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+        - generate_code_coverage_files: 'yes'
+        - project_path: Datadog.xcworkspace
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReporting-tvos-unit-tests.html"
     - xcode-test:
         title: Run benchmarks - DatadogBenchmarkTests on iOS Simulator
         inputs:
         - scheme: DatadogBenchmarkTests
-        - simulator_device: iPhone 11
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - should_build_before_test: 'no'
         - is_clean_build: 'no'
         - generate_code_coverage_files: 'yes'
@@ -177,7 +197,7 @@ workflows:
         title: Run integration tests for RUM, Logging and Tracing (on iOS Simulator)
         inputs:
         - scheme: DatadogIntegrationTests
-        - simulator_device: iPhone 11
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - should_build_before_test: 'no'
         - is_clean_build: 'no'
         - generate_code_coverage_files: 'yes'
@@ -188,7 +208,7 @@ workflows:
         title: Run integration tests for Crash Reporting (on iOS Simulator)
         inputs:
         - scheme: DatadogIntegrationTests
-        - simulator_device: iPhone 11
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - should_build_before_test: 'no'
         - is_clean_build: 'no'
         - generate_code_coverage_files: 'yes'
@@ -211,19 +231,28 @@ workflows:
     - xcodebuild:
         title: Check Mac Catalyst compatibility (build SPMProject for Catalyst)
         inputs:
-        - scheme: SPMProject
+        - scheme: App iOS
         - destination: platform=macOS,variant=Mac Catalyst
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj"
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/SPMProject-catalyst-sanity-check.html"
     - xcode-test:
-        title: Run SPMProject tests
+        title: Run SPMProject iOS tests
         inputs:
-        - scheme: SPMProject
-        - simulator_device: iPhone 11
+        - scheme: App iOS
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - is_clean_build: 'yes'
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/SPMProject-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/SPMProject-ios-tests.html"
+    - xcode-test:
+        title: Run SPMProject tvOS tests
+        inputs:
+        - scheme: App tvOS
+        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+        - is_clean_build: 'yes'
+        - cache_level: none
+        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/SPMProject-tvos-tests.html"
     - script:
         title: Test Carthage compatibility
         inputs:
@@ -232,14 +261,23 @@ workflows:
             set -e
             make test-carthage ci=${CI}
     - xcode-test:
-        title: Run CTProject tests
+        title: Run CTProject iOS tests
         inputs:
-        - scheme: CTProject
-        - simulator_device: iPhone 11
+        - scheme: App iOS
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - is_clean_build: 'yes'
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/carthage/CTProject.xcodeproj"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CTProject-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CTProject-ios-tests.html"
+    - xcode-test:
+        title: Run CTProject tvOS tests
+        inputs:
+        - scheme: App tvOS
+        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+        - is_clean_build: 'yes'
+        - cache_level: none
+        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/carthage/CTProject.xcodeproj"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CTProject-tvos-tests.html"
     - script:
         title: Test Cocoapods compatibility
         inputs:
@@ -248,23 +286,41 @@ workflows:
             set -e
             make test-cocoapods ci=${CI}
     - xcode-test:
-        title: Run CPProject tests with 'use_frameworks!'
+        title: Run CPProject tests iOS with 'use_frameworks!'
         inputs:
-        - scheme: CPProjectUseFrameworks
-        - simulator_device: iPhone 11
+        - scheme: App Dynamic iOS
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - is_clean_build: 'yes'
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-use_frameworks-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-ios-dynamic-tests.html"
     - xcode-test:
-        title: Run CPProject tests with no 'use_frameworks!'
+        title: Run CPProject tests iOS with no 'use_frameworks!'
         inputs:
-        - scheme: CPProjectNoUseFrameworks
-        - simulator_device: iPhone 11
+        - scheme: App Static iOS
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - is_clean_build: 'yes'
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-no_use_frameworks-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-ios-static-tests.html"
+    - xcode-test:
+        title: Run CPProject tests tvOS with 'use_frameworks!'
+        inputs:
+        - scheme: App Dynamic tvOS
+        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+        - is_clean_build: 'yes'
+        - cache_level: none
+        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-tvos-dynamic-tests.html"
+    - xcode-test:
+        title: Run CPProject tests tvOS with no 'use_frameworks!'
+        inputs:
+        - scheme: App Static tvOS
+        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+        - is_clean_build: 'yes'
+        - cache_level: none
+        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-tvos-static-tests.html"
 
   create_dogfooding_pr:
     description: |-
@@ -274,9 +330,11 @@ workflows:
         title: Create PR to Datadog mobile app project
         inputs:
         - content: |-
-            #!/usr/bin/env bash
+            #!/usr/bin/env zsh
             set -e
-            make dogfood ci=${CI}
+
+            cd tools/distribution && make
+            venv/bin/python3 dogfood.py
 
   run_e2e_tests:
     description: |-
@@ -286,14 +344,14 @@ workflows:
         title: Run E2E tests for manual instrumentation APIs - iOS Simulator
         inputs:
         - scheme: E2ETests
-        - simulator_device: iPhone 11
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/E2E-tests.html"
     - xcode-test:
         title: Run E2E tests for auto instrumentation APIs - iOS Simulator
         inputs:
         - scheme: E2EInstrumentationTests
-        - simulator_device: iPhone 11
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/E2E-instrumentation-tests.html"
 
@@ -330,7 +388,8 @@ workflows:
             # Use 'DD_RELEASE_GIT_TAG' ENV if available, otherwise 'BITRISE_GIT_TAG' ENV
             GIT_TAG="${DD_RELEASE_GIT_TAG:-$(echo "${BITRISE_GIT_TAG}")}"
 
-            ./tools/distribution/release.py "$GIT_TAG" --only-github
+            cd tools/distribution && make
+            venv/bin/python3 release.py "$GIT_TAG" --only-github
 
   publish_cocoapods_podspecs:
     before_run:
@@ -350,4 +409,35 @@ workflows:
             # Use 'DD_RELEASE_GIT_TAG' ENV if available, otherwise 'BITRISE_GIT_TAG' ENV
             GIT_TAG="${DD_RELEASE_GIT_TAG:-$(echo "${BITRISE_GIT_TAG}")}"
 
-            ./tools/distribution/release.py "$GIT_TAG" --only-cocoapods
+            cd tools/distribution && make
+            venv/bin/python3 release.py "$GIT_TAG" --only-cocoapods
+    - build-router-start:
+        title: Start new CI jobs for running 'update_upstream_sdks'.
+        inputs:
+        - access_token: "$BITRISE_PERSONAL_ACCESS_TOKEN"
+        - workflows: |-
+            update_upstream_sdks
+        - environment_key_list: |-
+            DD_RELEASE_GIT_TAG
+            DD_RELEASE_DRY_RUN
+
+  update_upstream_sdks:
+    before_run:
+    - _make_dependencies  # install tooling
+    after_run:
+    - _notify_failure_on_slack
+    description: |-
+        Updates dd-sdk-ios version in upstream SDKs.
+    steps:
+    - script:
+        title: Run tools/distribution/update_upstream_sdks.py
+        inputs:
+        - content: |-
+            #!/usr/bin/env zsh
+            set -e
+
+            # Use 'DD_RELEASE_GIT_TAG' ENV if available, otherwise 'BITRISE_GIT_TAG' ENV
+            GIT_TAG="${DD_RELEASE_GIT_TAG:-$(echo "${BITRISE_GIT_TAG}")}"
+
+            cd tools/distribution && make
+            venv/bin/python3 update_upstream_sdks.py "$GIT_TAG"

@@ -13,10 +13,10 @@ import os
 import re
 import traceback
 from tempfile import TemporaryDirectory
-from src.git import clone_repo
-from src.assets.gh_asset import GHAsset
-from src.assets.podspec import CPPodspec
-from src.semver import Version
+from src.release.git import clone_repo
+from src.release.assets.gh_asset import GHAsset
+from src.release.assets.podspec import CPPodspec
+from src.release.semver import Version
 
 DD_SDK_IOS_REPO_SSH = 'git@github.com:DataDog/dd-sdk-ios.git'
 DD_SDK_IOS_REPO_NAME = 'dd-sdk-ios'
@@ -113,9 +113,9 @@ if __name__ == "__main__":
 
             # Publish GH Release asset:
             if publish_to_gh:
-                gh_asset = GHAsset(add_xcode_version=add_xcode_version_to_github_asset)
-                gh_asset.validate(git_tag=git_tag)
-                gh_asset.publish(git_tag=git_tag, overwrite_existing=overwrite_github, dry_run=dry_run)
+                gh_asset = GHAsset(add_xcode_version=add_xcode_version_to_github_asset,git_tag=git_tag)
+                gh_asset.validate()
+                gh_asset.publish(overwrite_existing=overwrite_github, dry_run=dry_run)
 
             # Publish CP podspecs:
             if publish_to_cp:

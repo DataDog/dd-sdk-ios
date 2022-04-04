@@ -122,7 +122,22 @@ internal struct DDCrashReportExporter {
             return unavailable // should never be reached
         }
 
-        return string(from: stackFrames)
+        return string(from: sanitized(stackFrames: stackFrames))
+    }
+
+    // MARK: - Sanitizing
+
+    private func sanitized(stackFrames: [StackFrame]) -> [StackFrame] {
+        guard let lastFrame = stackFrames.last else {
+            return stackFrames
+        }
+
+        // RUMM-2025: Often the last frame has no library name nor its base address. This results with
+        // producing malformed frame, e.g. `XX  ???                   0x00000001045f0250  0x000000000 + 4368302672`
+        // which can't be symbolicated. To make it cleaner in UI and to avoid BE symbolication errors, we filter
+        // out such trailing frame. Ref.: https://github.com/microsoft/plcrashreporter/issues/193
+        let sanitizedFrames = lastFrame.libraryBaseAddress == nil ? stackFrames.dropLast() : stackFrames
+        return sanitizedFrames
     }
 
     // MARK: - Exporting threads and binary images
@@ -131,7 +146,7 @@ internal struct DDCrashReportExporter {
         return crashReport.threads.map { thread in
             return DDCrashReport.Thread(
                 name: "Thread \(thread.threadNumber)",
-                stack: string(from: thread.stackFrames),
+                stack: string(from: thread.stackFrames), // we don't sanitize frames in `error.threads[]`
                 crashed: thread.crashed,
                 state: nil // TODO: RUMM-1462 Send registers state for crashed thread
             )
