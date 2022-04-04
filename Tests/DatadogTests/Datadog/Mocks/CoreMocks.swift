@@ -580,7 +580,7 @@ extension FeaturesCommonDependencies {
             carrierInfoProvider: carrierInfoProvider ?? self.carrierInfoProvider,
             launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider,
             appStateListener: appStateListener ?? self.appStateListener,
-            encryption: encryption
+            encryption: encryption ?? self.encryption
         )
     }
 }
