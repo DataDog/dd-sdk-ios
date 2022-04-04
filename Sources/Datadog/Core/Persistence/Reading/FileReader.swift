@@ -61,13 +61,32 @@ internal final class FileReader: Reader {
             return data
         }
 
+        var failure: String? = nil
+        defer {
+            failure.map { userLogger.error($0) }
+        }
+
         return data
             // split data
             .split(separator: dataFormat.separatorByte)
-            // decode base64 - allow failure
-            .compactMap { Data(base64Encoded: $0) }
-            // decrypt data - allow failure
-            .compactMap { try? encryption.decrypt(data: $0) }
+            // decode base64 - report failure
+            .compactMap {
+                if let data = Data(base64Encoded: $0) {
+                    return data
+                }
+
+                failure = "🔥 Failed to decode base64 data before decryption"
+                return nil
+            }
+            // decrypt data - report failure
+            .compactMap { (data: Data) in
+                do {
+                    return try encryption.decrypt(data: data)
+                } catch {
+                    failure = "🔥 Failed to decrypt data with error: \(error)"
+                    return nil
+                }
+            }
             // concat data
             .reduce(Data()) { $0 + $1 + [dataFormat.separatorByte] }
             // drop last separator
