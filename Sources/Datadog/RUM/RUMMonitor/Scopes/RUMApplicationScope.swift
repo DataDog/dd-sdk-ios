@@ -15,6 +15,8 @@ internal struct RUMScopeDependencies {
     let launchTimeProvider: LaunchTimeProviderType
     let connectivityInfoProvider: RUMConnectivityInfoProvider
     let serviceName: String
+    let applicationVersion: String
+    let sdkVersion: String
     let eventBuilder: RUMEventBuilder
     let eventOutput: RUMEventOutput
     let rumUUIDGenerator: RUMUUIDGenerator
@@ -85,7 +87,11 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             startInitialSession()
         }
 
-        if let currentSession = sessionScope {
+        if let teleDebugCommand = command as? RUMTelemetryDebugCommand {
+            sendTelemetryDebugEvent(command: teleDebugCommand)
+        } else if let teleErrorCommand = command as? RUMTelemetryErrorCommand {
+            sendTelemetryErrorEvent(command: teleErrorCommand)
+        } else if let currentSession = sessionScope {
             sessionScope = manage(childScope: sessionScope, byPropagatingCommand: command)
 
             if sessionScope == nil { // if session expired
@@ -122,5 +128,43 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         let sessionID = sessionScope.sessionUUID.rawValue.uuidString
         let isDiscarded = !sessionScope.isSampled
         dependencies.onSessionStart?(sessionID, isDiscarded)
+    }
+
+    private func sendTelemetryDebugEvent(command: RUMTelemetryDebugCommand) {
+        let dateCorrection = dependencies.dateCorrector.currentCorrection
+        let actionId = context.activeUserActionID?.toRUMDataFormat
+        let viewId = context.activeViewID?.toRUMDataFormat
+        let event = TelemetryDebugEvent(
+            dd: TelemetryDebugEvent.DD(),
+            action: actionId.flatMap { .init(id: $0) },
+            application: .init(id: context.rumApplicationID),
+            date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
+            service: "dd-sdk-ios",
+            session: .init(id: context.sessionID.toRUMDataFormat),
+            source: .ios,
+            telemetry: TelemetryDebugEvent.Telemetry(message: command.message),
+            version: dependencies.sdkVersion,
+            view: viewId.flatMap { .init(id: $0) }
+        )
+        dependencies.eventOutput.write(event: event)
+    }
+
+    private func sendTelemetryErrorEvent(command: RUMTelemetryErrorCommand) {
+        let dateCorrection = dependencies.dateCorrector.currentCorrection
+        let actionId = context.activeUserActionID?.toRUMDataFormat
+        let viewId = context.activeViewID?.toRUMDataFormat
+        let event = TelemetryErrorEvent(
+            dd: TelemetryErrorEvent.DD(),
+            action: actionId.flatMap { .init(id: $0) },
+            application: .init(id: context.rumApplicationID),
+            date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
+            service: "dd-sdk-ios",
+            session: .init(id: context.sessionID.toRUMDataFormat),
+            source: .ios,
+            telemetry: TelemetryErrorEvent.Telemetry(error: TelemetryErrorEvent.Telemetry.Error(kind: command.kind, stack: command.stack), message: command.message),
+            version: dependencies.sdkVersion,
+            view: viewId.flatMap { .init(id: $0) }
+        )
+        dependencies.eventOutput.write(event: event)
     }
 }

@@ -584,6 +584,54 @@ class RUMMonitorTests: XCTestCase {
             }
     }
 
+    // MARK: - Sending Telemetry events
+
+    func testStartingView_thenTelemetryDebug() throws {
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(
+                dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+            )
+        )
+        defer { RUMFeature.instance?.deinitialize() }
+
+        let monitor = RUMMonitor.initialize()
+        setGlobalAttributes(of: monitor)
+
+        monitor.startView(viewController: mockView)
+        monitor.addTelemetryDebug(withMessage: "Hello world!")
+        monitor.stopView(viewController: mockView)
+
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
+        try rumEventMatchers.lastRUMEvent(ofType: TelemetryDebugEvent.self).model(ofType: TelemetryDebugEvent.self) { telemetryDebug in
+            XCTAssertEqual(telemetryDebug.telemetry.message, "Hello world!")
+        }
+    }
+
+    func testStartingView_thenTelemetryError() throws {
+        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
+            directories: temporaryFeatureDirectories,
+            dependencies: .mockWith(
+                dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+            )
+        )
+        defer { RUMFeature.instance?.deinitialize() }
+
+        let monitor = RUMMonitor.initialize()
+        setGlobalAttributes(of: monitor)
+
+        monitor.startView(viewController: mockView)
+        monitor.addTelemetryError(withMessage: "Oops", kind: "OutOfMemory", stack: "a\nhay\nneedle\nstack")
+        monitor.stopView(viewController: mockView)
+
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 4)
+        try rumEventMatchers.lastRUMEvent(ofType: TelemetryErrorEvent.self).model(ofType: TelemetryErrorEvent.self) { telemetryError in
+            XCTAssertEqual(telemetryError.telemetry.message, "Oops")
+            XCTAssertEqual(telemetryError.telemetry.error?.kind, "OutOfMemory")
+            XCTAssertEqual(telemetryError.telemetry.error?.stack, "a\nhay\nneedle\nstack")
+        }
+    }
+
     // MARK: - Sending user info
 
     func testWhenUserInfoIsProvided_itIsSendWithAllEvents() throws {

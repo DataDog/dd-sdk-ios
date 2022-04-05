@@ -325,6 +325,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             action: .init(
                 crash: nil,
                 error: nil,
+                frustrationType: nil,
                 id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 loadingTime: loadingTime,
                 longTask: nil,
@@ -346,6 +347,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
+            version: dependencies.applicationVersion,
             view: .init(
                 id: viewUUID.toRUMDataFormat,
                 inForeground: nil,
@@ -395,6 +397,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
+            version: dependencies.applicationVersion,
             view: .init(
                 action: .init(count: actionsCount.toInt64),
                 cpuTicksCount: cpuInfo.greatestDiff,
@@ -480,6 +483,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
+            version: dependencies.applicationVersion,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
                 inForeground: nil,
@@ -522,6 +526,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
+            version: dependencies.applicationVersion,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
                 name: context.activeViewName,

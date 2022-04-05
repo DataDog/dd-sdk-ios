@@ -198,6 +198,7 @@ internal class RUMResourceScope: RUMScope {
             source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
+            version: dependencies.applicationVersion,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
                 name: context.activeViewName,
@@ -255,6 +256,7 @@ internal class RUMResourceScope: RUMScope {
             source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
+            version: dependencies.applicationVersion,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
                 inForeground: nil,
