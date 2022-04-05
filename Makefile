@@ -4,10 +4,10 @@ all: dependencies xcodeproj-httpservermock templates
 DD_SDK_SWIFT_TESTING_VERSION = 1.1.1
 
 define DD_SDK_TESTING_XCCONFIG_CI
-FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]=$(inherited) $(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
-LD_RUNPATH_SEARCH_PATHS[sdk=iphonesimulator*]=$(inherited) $(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
-FRAMEWORK_SEARCH_PATHS[sdk=appletvsimulator*]==$(inherited) $(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/tvos-arm64_x86_64-simulator/\n
-LD_RUNPATH_SEARCH_PATHS[sdk=appletvsimulator*]=$(inherited) $(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/tvos-arm64_x86_64-simulator/\n
+FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
+LD_RUNPATH_SEARCH_PATHS[sdk=iphonesimulator*]=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
+FRAMEWORK_SEARCH_PATHS[sdk=appletvsimulator*]==$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/tvos-arm64_x86_64-simulator/\n
+LD_RUNPATH_SEARCH_PATHS[sdk=appletvsimulator*]=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/tvos-arm64_x86_64-simulator/\n
 OTHER_LDFLAGS=$$(inherited) -framework DatadogSDKTesting\n
 DD_TEST_RUNNER=1\n
 DD_SDK_SWIFT_TESTING_SERVICE=dd-sdk-ios\n
