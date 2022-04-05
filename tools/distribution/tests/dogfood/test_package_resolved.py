@@ -6,8 +6,8 @@
 
 
 import unittest
-from tempfile import TemporaryDirectory, NamedTemporaryFile
-from src.dogfood.package_resolved import PackageResolvedFile
+from tempfile import NamedTemporaryFile
+from src.dogfood.package_resolved import PackageResolvedFile, PackageID, v2_package_id_from_repository_url
 
 
 class PackageResolvedFileTestCase(unittest.TestCase):
@@ -41,28 +41,26 @@ class PackageResolvedFileTestCase(unittest.TestCase):
 
     v2_file_content = b'''
     {
-      "object": {
-        "pins": [
-          {
-            "identity" : "a",
-            "kind" : "remoteSourceControl",
-            "location" : "https://github.com/A-org/a",
-            "state" : {
-              "branch" : "a-branch",
-              "revision" : "a-revision"
-            }
-          },
-          {
-            "identity" : "b",
-            "kind" : "remoteSourceControl",
-            "location" : "https://github.com/B-org/b.git",
-            "state" : {
-              "revision" : "b-revision",
-              "version" : "1.0.0"
-            }
+      "pins": [
+        {
+          "identity" : "a",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/A-org/a",
+          "state" : {
+            "branch" : "a-branch",
+            "revision" : "a-revision"
           }
-        ]
-      },
+        },
+        {
+          "identity" : "b",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/B-org/b.git",
+          "state" : {
+            "revision" : "b-revision",
+            "version" : "1.0.0"
+          }
+        }
+      ],
       "version": 2
     }
     '''
@@ -73,17 +71,20 @@ class PackageResolvedFileTestCase(unittest.TestCase):
             file.seek(0)
 
             package_resolved = PackageResolvedFile(path=file.name)
-            self.assertTrue(package_resolved.has_dependency(package_name='A'))
-            self.assertTrue(package_resolved.has_dependency(package_name='B'))
-            self.assertFalse(package_resolved.has_dependency(package_name='C'))
-            self.assertListEqual(['A', 'B'], package_resolved.read_dependency_names())
+            self.assertTrue(package_resolved.has_dependency(package_id=PackageID(v1='A', v2='a')))
+            self.assertTrue(package_resolved.has_dependency(package_id=PackageID(v1='B', v2='b')))
+            self.assertFalse(package_resolved.has_dependency(package_id=PackageID(v1='C', v2='c')))
+            self.assertListEqual(
+                [PackageID(v1='A', v2='a'), PackageID(v1='B', v2='b')],
+                package_resolved.read_dependency_ids()
+            )
             self.assertDictEqual(
                 {
                     'package': 'A',
                     'repositoryURL': 'https://github.com/A-org/a.git',
                     'state': {'branch': 'a-branch', 'revision': 'a-revision', 'version': None}
                 },
-                package_resolved.read_dependency(package_name='A')
+                package_resolved.read_dependency(package_id=PackageID(v1='A', v2='a'))
             )
             self.assertDictEqual(
                 {
@@ -91,7 +92,7 @@ class PackageResolvedFileTestCase(unittest.TestCase):
                     'repositoryURL': 'https://github.com/B-org/b.git',
                     'state': {'branch': None, 'revision': 'b-revision', 'version': '1.0.0'}
                 },
-                package_resolved.read_dependency(package_name='B')
+                package_resolved.read_dependency(package_id=PackageID(v1='B', v2='b'))
             )
 
     def test_it_changes_version1_files(self):
@@ -101,14 +102,15 @@ class PackageResolvedFileTestCase(unittest.TestCase):
 
             package_resolved = PackageResolvedFile(path=file.name)
             package_resolved.update_dependency(
-                package_name='B', new_branch='b-branch-new', new_revision='b-revision-new', new_version=None
+                package_id=PackageID(v1='B', v2='b'),
+                new_branch='b-branch-new', new_revision='b-revision-new', new_version=None
             )
             package_resolved.add_dependency(
-                package_name='C', repository_url='https://github.com/C-org/c.git',
+                package_id=PackageID(v1='C', v2='c'), repository_url='https://github.com/C-org/c.git',
                 branch='c-branch', revision='c-revision', version=None
             )
             package_resolved.add_dependency(
-                package_name='D', repository_url='https://github.com/D-org/d.git',
+                package_id=PackageID(v1='D', v2='d'), repository_url='https://github.com/D-org/d.git',
                 branch=None, revision='d-revision', version='1.1.0'
             )
             package_resolved.save()
@@ -166,10 +168,13 @@ class PackageResolvedFileTestCase(unittest.TestCase):
             file.seek(0)
 
             package_resolved = PackageResolvedFile(path=file.name)
-            self.assertTrue(package_resolved.has_dependency(package_name='a'))
-            self.assertTrue(package_resolved.has_dependency(package_name='b'))
-            self.assertFalse(package_resolved.has_dependency(package_name='c'))
-            self.assertListEqual(['a', 'b'], package_resolved.read_dependency_names())
+            self.assertTrue(package_resolved.has_dependency(package_id=PackageID(v1=None, v2='a')))
+            self.assertTrue(package_resolved.has_dependency(package_id=PackageID(v1=None, v2='b')))
+            self.assertFalse(package_resolved.has_dependency(package_id=PackageID(v1=None, v2='c')))
+            self.assertListEqual(
+                [PackageID(v1=None, v2='a'), PackageID(v1=None, v2='b')],
+                package_resolved.read_dependency_ids()
+            )
             self.assertDictEqual(
                 {
                     'identity': 'a',
@@ -177,7 +182,7 @@ class PackageResolvedFileTestCase(unittest.TestCase):
                     'location': 'https://github.com/A-org/a',
                     'state': {'branch': 'a-branch', 'revision': 'a-revision'}
                 },
-                package_resolved.read_dependency(package_name='a')
+                package_resolved.read_dependency(package_id=PackageID(v1=None, v2='a'))
             )
             self.assertDictEqual(
                 {
@@ -186,7 +191,7 @@ class PackageResolvedFileTestCase(unittest.TestCase):
                     'location': 'https://github.com/B-org/b.git',
                     'state': {'revision': 'b-revision', 'version': '1.0.0'}
                 },
-                package_resolved.read_dependency(package_name='b')
+                package_resolved.read_dependency(PackageID(v1=None, v2='b'))
             )
 
     def test_it_changes_version2_files(self):
@@ -196,61 +201,66 @@ class PackageResolvedFileTestCase(unittest.TestCase):
 
             package_resolved = PackageResolvedFile(path=file.name)
             package_resolved.update_dependency(
-                package_name='b', new_branch='b-branch-new', new_revision='b-revision-new', new_version=None
+                package_id=PackageID(v1=None, v2='b'), new_branch='b-branch-new',
+                new_revision='b-revision-new', new_version=None
             )
             package_resolved.add_dependency(
-                package_name='c', repository_url='https://github.com/C-org/c.git',
+                package_id=PackageID(v1=None, v2='c'), repository_url='https://github.com/C-org/c.git',
                 branch='c-branch', revision='c-revision', version=None
             )
             package_resolved.add_dependency(
-                package_name='d', repository_url='https://github.com/D-org/d.git',
+                package_id=PackageID(v1=None, v2='d'), repository_url='https://github.com/D-org/d.git',
                 branch=None, revision='d-revision', version='1.1.0'
             )
             package_resolved.save()
 
             actual_new_content = file.read().decode('utf-8')
             expected_new_content = '''{
-  "object": {
-    "pins": [
-      {
-        "identity": "a",
-        "kind": "remoteSourceControl",
-        "location": "https://github.com/A-org/a",
-        "state": {
-          "branch": "a-branch",
-          "revision": "a-revision"
-        }
-      },
-      {
-        "identity": "b",
-        "kind": "remoteSourceControl",
-        "location": "https://github.com/B-org/b.git",
-        "state": {
-          "branch": "b-branch-new",
-          "revision": "b-revision-new"
-        }
-      },
-      {
-        "identity": "c",
-        "kind": "remoteSourceControl",
-        "location": "https://github.com/C-org/c.git",
-        "state": {
-          "branch": "c-branch",
-          "revision": "c-revision"
-        }
-      },
-      {
-        "identity": "d",
-        "kind": "remoteSourceControl",
-        "location": "https://github.com/D-org/d.git",
-        "state": {
-          "revision": "d-revision",
-          "version": "1.1.0"
-        }
+  "pins": [
+    {
+      "identity": "a",
+      "kind": "remoteSourceControl",
+      "location": "https://github.com/A-org/a",
+      "state": {
+        "branch": "a-branch",
+        "revision": "a-revision"
       }
-    ]
-  },
+    },
+    {
+      "identity": "b",
+      "kind": "remoteSourceControl",
+      "location": "https://github.com/B-org/b.git",
+      "state": {
+        "branch": "b-branch-new",
+        "revision": "b-revision-new"
+      }
+    },
+    {
+      "identity": "c",
+      "kind": "remoteSourceControl",
+      "location": "https://github.com/C-org/c.git",
+      "state": {
+        "branch": "c-branch",
+        "revision": "c-revision"
+      }
+    },
+    {
+      "identity": "d",
+      "kind": "remoteSourceControl",
+      "location": "https://github.com/D-org/d.git",
+      "state": {
+        "revision": "d-revision",
+        "version": "1.1.0"
+      }
+    }
+  ],
   "version": 2
 }
 '''
             self.assertEqual(expected_new_content, actual_new_content)
+
+    def test_v2_package_id_from_repository_url(self):
+        self.assertEqual('abc', v2_package_id_from_repository_url(repository_url='https://github.com/A-org/abc.git'))
+        self.assertEqual('abc', v2_package_id_from_repository_url(repository_url='https://github.com/A-org/abc'))
+        self.assertEqual('abc', v2_package_id_from_repository_url(repository_url='git@github.com:DataDog/abc.git'))
+        self.assertEqual('abc', v2_package_id_from_repository_url(repository_url='git@github.com:DataDog/abc'))

@@ -5,32 +5,42 @@
 # -----------------------------------------------------------
 
 import json
+from dataclasses import dataclass
 from copy import deepcopy
 from typing import Optional
 
 
+@dataclass()
 class PackageID:
-    """Identifies package in `package.resolved` file."""
+    """
+    Identifies package in `package.resolved` file.
+    It supports `version: 1` and `version: 2` of `package.resolved` format:
+    - v1 uses package name (e.g. `DatadogSDK`) as package identifier
+    - v2 uses package identity (e.g. `dd-sdk-ios`) as package identifier
+    - v2 is not backward compatible with v1 - the v1 package name cannot be read from v2's `package.resolved`
+    - v1 is forward compatible with v2 - the v2 package identity can be read from `repositoryURL` in v1's `package.resolved`
+    """
+    v1: Optional[str]  # can be `None` if read from v2's `package.resolved`
+    v2: str
 
-    v1: str  # used in `package.resolved` version 1
-    v2: str  # used in `package.resolved` version 2
 
-    def __init__(self, package_name: str, repository_url: str):
-        self.v1 = package_name
-        self.v2 = package_name
+def v2_package_id_from_repository_url(repository_url: str) -> str:
+    """Reads v2 package id from repository URL."""
+    components = repository_url.split('/')  # e.g. ['https:/', '', 'github.com', 'A-org', 'abc.git']
+    return components[-1].split('.')[0]
 
 
 class PackageResolvedContent:
     """An interface for manipulating `package.resolved` content."""
 
-    def has_dependency(self, package_name: str) -> bool:
-        """Checks if dependency with given name exists."""
+    def has_dependency(self, package_id: PackageID) -> bool:
+        """Checks if dependency with given ID exists."""
         pass
 
-    def update_dependency(self, package_name: str, new_branch: Optional[str], new_revision: str, new_version: Optional[str]):
+    def update_dependency(self, package_id: PackageID, new_branch: Optional[str], new_revision: str, new_version: Optional[str]):
         """
         Updates dependency resolution values.
-        :param package_name: the name of the package to update
+        :param package_id: identifies dependency to update
         :param new_branch: the new branch name (pass `None` for `null`)
         :param new_revision: the new revision (pass `None` for `null`)
         :param new_version: the new version name (pass `None` for `null`)
@@ -38,23 +48,23 @@ class PackageResolvedContent:
         """
         pass
 
-    def add_dependency(self, package_name: str, repository_url: str, branch: Optional[str], revision: str, version: Optional[str]):
+    def add_dependency(self, package_id: PackageID, repository_url: str, branch: Optional[str], revision: str, version: Optional[str]):
         """
         Adds new dependency resolution.
         """
         pass
 
-    def read_dependency_names(self) -> [str]:
+    def read_dependency_ids(self) -> [PackageID]:
         """
-        Returns package names for all dependencies.
-        :return: list of package names (strings)
+        Returns package IDs for all dependencies.
+        :return: list of package IDs (PackageIDs)
         """
         pass
 
-    def read_dependency(self, package_name) -> dict:
+    def read_dependency(self, package_id: PackageID) -> dict:
         """
         Returns resolution info for given dependency.
-        :param package_name: the name of dependency
+        :param package_id: the `PackageID` of dependency
         :return: the `pin` object from `Package.resolved`
         """
         pass
@@ -106,47 +116,55 @@ class PackageResolvedFile(PackageResolvedContent):
             print(f'⚙️ Content of {file.name}:')
             print(file.read())
 
-    def has_dependency(self, package_name: str) -> bool:
-        return self.wrapped.has_dependency(package_name)
+    def has_dependency(self, package_id: PackageID) -> bool:
+        return self.wrapped.has_dependency(package_id)
 
-    def update_dependency(self, package_name: str, new_branch: Optional[str], new_revision: str, new_version: Optional[str]):
-        self.wrapped.update_dependency(package_name, new_branch, new_revision, new_version)
+    def update_dependency(self, package_id: PackageID, new_branch: Optional[str], new_revision: str, new_version: Optional[str]):
+        self.wrapped.update_dependency(package_id, new_branch, new_revision, new_version)
 
-    def add_dependency(self, package_name: str, repository_url: str, branch: Optional[str], revision: str, version: Optional[str]):
-        self.wrapped.add_dependency(package_name, repository_url, branch, revision, version)
+    def add_dependency(self, package_id: PackageID, repository_url: str, branch: Optional[str], revision: str, version: Optional[str]):
+        self.wrapped.add_dependency(package_id, repository_url, branch, revision, version)
 
-    def read_dependency_names(self) -> [str]:
-        return self.wrapped.read_dependency_names()
+    def read_dependency_ids(self) -> [PackageID]:
+        return self.wrapped.read_dependency_ids()
 
-    def read_dependency(self, package_name) -> dict:
-        return self.wrapped.read_dependency(package_name)
+    def read_dependency(self, package_id: PackageID) -> dict:
+        return self.wrapped.read_dependency(package_id)
 
 
 class PackageResolvedContentV1(PackageResolvedContent):
     """
-    In `package.resolved` version `1`, sample package pin looks this:
+    Example of `package.resolved` in version `1` looks this::
 
-    {
-        "package": "DatadogSDK",
-        "repositoryURL": "https://github.com/DataDog/dd-sdk-ios",
-        "state": {
-            "branch": "dogfooding",
-            "revision": "4e93a8f1f662d9126074a0f355b4b6d20f9f30a7",
-            "version": null
+        {
+            "object": {
+                "pins": [
+                    {
+                        "package": "DatadogSDK",
+                        "repositoryURL": "https://github.com/DataDog/dd-sdk-ios",
+                        "state": {
+                            "branch": "dogfooding",
+                            "revision": "4e93a8f1f662d9126074a0f355b4b6d20f9f30a7",
+                            "version": null
+                        }
+                    },
+                    ...
+                ]
+            },
+            "version": 1
         }
-    }
     """
 
     def __init__(self, path: str, json_content: dict):
         self.path = path
         self.packages = json_content
 
-    def has_dependency(self, package_name: str):
+    def has_dependency(self, package_id: PackageID):
         pins = self.packages['object']['pins']
-        return package_name in [p['package'] for p in pins]
+        return package_id.v1 in [p['package'] for p in pins]
 
-    def update_dependency(self, package_name: str, new_branch: Optional[str], new_revision: str, new_version: Optional[str]):
-        package = self.__get_package(package_name=package_name)
+    def update_dependency(self, package_id: PackageID, new_branch: Optional[str], new_revision: str, new_version: Optional[str]):
+        package = self.__get_package(package_id=package_id)
 
         old_state = deepcopy(package['state'])
 
@@ -159,22 +177,22 @@ class PackageResolvedContentV1(PackageResolvedContent):
         diff = old_state.items() ^ new_state.items()
 
         if len(diff) > 0:
-            print(f'✏️️ Updated "{package_name}" in {self.path}:')
+            print(f'✏️️ Updated "{package_id.v1}" in {self.path}:')
             print(f'    → old: {old_state}')
             print(f'    → new: {new_state}')
         else:
-            print(f'✏️️ "{package_name}" is up-to-date in {self.path}')
+            print(f'✏️️ "{package_id.v1}" is up-to-date in {self.path}')
 
-    def add_dependency(self, package_name: str, repository_url: str, branch: Optional[str], revision: str, version: Optional[str]):
+    def add_dependency(self, package_id: PackageID, repository_url: str, branch: Optional[str], revision: str, version: Optional[str]):
         pins = self.packages['object']['pins']
 
         # Find the index in `pins` array where the new dependency should be inserted.
         # The `pins` array seems to follow the alphabetical order, but not always
         # - I've seen `Package.resolved` where some dependencies were misplaced.
-        index = next((i for i in range(len(pins)) if pins[i]['package'].lower() > package_name.lower()), len(pins))
+        index = next((i for i in range(len(pins)) if pins[i]['package'].lower() > package_id.v1.lower()), len(pins))
 
         new_pin = {
-            'package': package_name,
+            'package': package_id.v1,
             'repositoryURL': repository_url,
             'state': {
                 'branch': branch,
@@ -185,27 +203,27 @@ class PackageResolvedContentV1(PackageResolvedContent):
 
         pins.insert(index, new_pin)
 
-        print(f'✏️️ Added "{package_name}" at index {index} in {self.path}:')
+        print(f'✏️️ Added "{package_id.v1}" at index {index} in {self.path}:')
         print(f'    → branch: {branch}')
         print(f'    → revision: {revision}')
         print(f'    → version: {version}')
 
-    def read_dependency_names(self):
+    def read_dependency_ids(self):
         pins = self.packages['object']['pins']
-        package_names = [pin['package'] for pin in pins]
-        return package_names
+        package_ids = [PackageID(v1=pin['package'], v2=v2_package_id_from_repository_url(pin['repositoryURL'])) for pin in pins]
+        return package_ids
 
-    def read_dependency(self, package_name):
-        package = self.__get_package(package_name=package_name)
+    def read_dependency(self, package_id: PackageID):
+        package = self.__get_package(package_id=package_id)
         return deepcopy(package)
 
-    def __get_package(self, package_name: str):
+    def __get_package(self, package_id: PackageID):
         pins = self.packages['object']['pins']
-        package_pins = [index for index, p in enumerate(pins) if p['package'] == package_name]
+        package_pins = [index for index, p in enumerate(pins) if p['package'] == package_id.v1]
 
         if len(package_pins) == 0:
             raise Exception(
-                f'{self.path} does not contain pin named "{package_name}"'
+                f'{self.path} does not contain pin named "{package_id.v1}"'
             )
 
         package_pin_index = package_pins[0]
@@ -214,32 +232,38 @@ class PackageResolvedContentV1(PackageResolvedContent):
 
 class PackageResolvedContentV2(PackageResolvedContent):
     """
-    In `package.resolved` version `2`, sample package pin looks this:
+    Example of `package.resolved` in version `2` looks this::
 
-    {
-      "identity" : "dd-sdk-ios",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/DataDog/dd-sdk-ios",
-      "state" : {
-        "branch" : "dogfooding",
-        "revision" : "6f662103771eb4523164e64f7f936bf9276f6bd0"
-      }
-    }
+        {
+            "pins": [
+                {
+                    "identity" : "dd-sdk-ios",
+                    "kind" : "remoteSourceControl",
+                    "location" : "https://github.com/DataDog/dd-sdk-ios",
+                    "state": {
+                        "branch": "dogfooding",
+                        "revision" : "6f662103771eb4523164e64f7f936bf9276f6bd0"
+                    }
+                },
+                ...
+            ]
+            "version": 2
+        }
 
-    It can also have `version`, e.g. `version: 1.0.0` and then `branch` is not set. In V1 it was
-    using `null` value to indicate this mutual exclusion.
+    In v2 `branch` and `version` are mutually exclusive: if one is set, the other
+    is not present (unlike v1, where one was always set to `null`).
     """
 
     def __init__(self, path: str, json_content: dict):
         self.path = path
         self.packages = json_content
 
-    def has_dependency(self, package_name: str):
-        pins = self.packages['object']['pins']
-        return package_name in [p['identity'] for p in pins]
+    def has_dependency(self, package_id: PackageID):
+        pins = self.packages['pins']
+        return package_id.v2 in [p['identity'] for p in pins]
 
-    def update_dependency(self, package_name: str, new_branch: Optional[str], new_revision: str, new_version: Optional[str]):
-        package = self.__get_package(package_name=package_name)
+    def update_dependency(self, package_id: PackageID, new_branch: Optional[str], new_revision: str, new_version: Optional[str]):
+        package = self.__get_package(package_id=package_id)
 
         old_state = deepcopy(package['state'])
 
@@ -263,21 +287,21 @@ class PackageResolvedContentV2(PackageResolvedContent):
         diff = old_state.items() ^ new_state.items()
 
         if len(diff) > 0:
-            print(f'✏️️ Updated "{package_name}" in {self.path}:')
+            print(f'✏️️ Updated "{package_id.v2}" in {self.path}:')
             print(f'    → old: {old_state}')
             print(f'    → new: {new_state}')
         else:
-            print(f'✏️️ "{package_name}" is up-to-date in {self.path}')
+            print(f'✏️️ "{package_id.v2}" is up-to-date in {self.path}')
 
-    def add_dependency(self, package_name: str, repository_url: str, branch: Optional[str], revision: str, version: Optional[str]):
-        pins = self.packages['object']['pins']
+    def add_dependency(self, package_id: PackageID, repository_url: str, branch: Optional[str], revision: str, version: Optional[str]):
+        pins = self.packages['pins']
 
         # Find the index in `pins` array where the new dependency should be inserted.
         # The `pins` array seems to follow the alphabetical order.
-        index = next((i for i in range(len(pins)) if pins[i]['identity'].lower() > package_name.lower()), len(pins))
+        index = next((i for i in range(len(pins)) if pins[i]['identity'].lower() > package_id.v2.lower()), len(pins))
 
         new_pin = {
-            'identity': package_name,
+            'identity': package_id.v2,
             'kind': 'remoteSourceControl',
             'location': repository_url,
             'state': {}
@@ -294,28 +318,28 @@ class PackageResolvedContentV2(PackageResolvedContent):
 
         pins.insert(index, new_pin)
 
-        print(f'✏️️ Added "{package_name}" at index {index} in {self.path}:')
+        print(f'✏️️ Added "{package_id.v2}" at index {index} in {self.path}:')
         print(f'    → branch: {branch}')
         print(f'    → revision: {revision}')
         print(f'    → version: {version}')
 
-    def read_dependency_names(self):
-        pins = self.packages['object']['pins']
-        package_names = [pin['identity'] for pin in pins]
-        return package_names
+    def read_dependency_ids(self) -> [PackageID]:
+        pins = self.packages['pins']
+        package_ids = [PackageID(v1=None, v2=pin['identity']) for pin in pins]
+        return package_ids
 
-    def read_dependency(self, package_name):
-        package = self.__get_package(package_name=package_name)
+    def read_dependency(self, package_id: PackageID):
+        package = self.__get_package(package_id=package_id)
         return deepcopy(package)
 
-    def __get_package(self, package_name: str):
-        pins = self.packages['object']['pins']
-        package_pins = [index for index, p in enumerate(pins) if p['identity'] == package_name]
+    def __get_package(self, package_id: PackageID):
+        pins = self.packages['pins']
+        package_pins = [index for index, p in enumerate(pins) if p['identity'] == package_id.v2]
 
         if len(package_pins) == 0:
             raise Exception(
-                f'{self.path} does not contain pin named "{package_name}"'
+                f'{self.path} does not contain pin named "{package_id.v2}"'
             )
 
         package_pin_index = package_pins[0]
-        return self.packages['object']['pins'][package_pin_index]
+        return self.packages['pins'][package_pin_index]

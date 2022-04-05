@@ -11,7 +11,7 @@ import sys
 import os
 import traceback
 from tempfile import TemporaryDirectory
-from src.dogfood.package_resolved import PackageResolvedFile
+from src.dogfood.package_resolved import PackageResolvedFile, PackageID
 from src.dogfood.dogfooded_commit import DogfoodedCommit
 from src.dogfood.repository import Repository
 from src.utils import remember_cwd
@@ -52,26 +52,26 @@ def dogfood(dry_run: bool, repository_url: str, repository_name: str, repository
             # Update version of `dd-sdk-ios`:
             for package in packages:
                 package.update_dependency(
-                    package_name='DatadogSDK',
+                    package_id=PackageID(v1='DatadogSDK', v2='dd-sdk-ios'),
                     new_branch='dogfooding',
                     new_revision=dd_sdk_ios_commit.hash,
                     new_version=None
                 )
 
                 # Add or update `dd-sdk-ios` dependencies
-                for dependency_name in dd_sdk_ios_package.read_dependency_names():
-                    dependency = dd_sdk_ios_package.read_dependency(package_name=dependency_name)
+                for dependency_id in dd_sdk_ios_package.read_dependency_ids():
+                    dependency = dd_sdk_ios_package.read_dependency(package_id=dependency_id)
 
-                    if package.has_dependency(package_name=dependency_name):
+                    if package.has_dependency(package_id=dependency_id):
                         package.update_dependency(
-                            package_name=dependency_name,
+                            package_id=dependency_id,
                             new_branch=dependency['state']['branch'],
                             new_revision=dependency['state']['revision'],
                             new_version=dependency['state']['version'],
                         )
                     else:
                         package.add_dependency(
-                            package_name=dependency_name,
+                            package_id=dependency_id,
                             repository_url=dependency['repositoryURL'],
                             branch=dependency['state']['branch'],
                             revision=dependency['state']['revision'],
