@@ -28,6 +28,12 @@ def dogfood(dry_run: bool, repository_url: str, repository_name: str, repository
     os.system(f'swift package --package-path {dd_sdk_package_path} resolve')
     dd_sdk_ios_package = PackageResolvedFile(path=f'{dd_sdk_package_path}/Package.resolved')
 
+    if dd_sdk_ios_package.version != 1:
+        raise Exception(
+            f'`dogfood.py` expects the `package.resolved` in `dd-sdk-ios` to use version 1 ' +
+            f'but version {dd_sdk_ios_package.version} was detected. Update `dogfood.py` to use this version.'
+        )
+
     # Clone dependant repo to temporary location and update its `Package.resolved` (one or many) so it points
     # to the current `dd-sdk-ios` commit. After that, push changes to dependant repo and create dogfooding PR.
     with TemporaryDirectory() as temp_dir:
