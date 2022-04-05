@@ -154,7 +154,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.view.name, "ViewName")
         let viewIsActive = try XCTUnwrap(event.view.isActive)
         XCTAssertTrue(viewIsActive)
-        XCTAssertEqual(event.view.timeSpent, 0)
+        XCTAssertEqual(event.view.timeSpent, 1) // Minimum `time_spent of 1 nanosecond
         XCTAssertEqual(event.view.action.count, 1, "The initial view update must have come with `application_start` action sent.")
         XCTAssertEqual(event.view.error.count, 0)
         XCTAssertEqual(event.view.resource.count, 0)
@@ -195,7 +195,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.view.name, "ViewName")
         let viewIsActive = try XCTUnwrap(event.view.isActive)
         XCTAssertTrue(viewIsActive)
-        XCTAssertEqual(event.view.timeSpent, 0)
+        XCTAssertEqual(event.view.timeSpent, 1) // Minimum `time_spent of 1 nanosecond
         XCTAssertEqual(event.view.action.count, isInitialView ? 1 : 0, "It must track application start action only if this is an initial view")
         XCTAssertEqual(event.view.error.count, 0)
         XCTAssertEqual(event.view.resource.count, 0)
