@@ -171,4 +171,31 @@ class FileWriterTests: XCTestCase {
         XCTAssertGreaterThan(writtenData.count, 0)
         XCTAssertLessThanOrEqual(writtenData.count, 300)
     }
+
+    func testItWritesEncryptedDataToSingleFile() throws {
+        // Given 
+        let writer = FileWriter(
+            dataFormat: DataFormat(prefix: "[", suffix: "]", separator: ","),
+            orchestrator: FilesOrchestrator(
+                directory: temporaryDirectory,
+                performance: PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
+                dateProvider: SystemDateProvider()
+            ),
+            encryption: DataEncryptionMock(
+                encrypt: { _ in "foo".utf8Data }
+            )
+        )
+
+        // When
+        writer.write(value: ["key1": "value1"])
+        writer.write(value: ["key2": "value3"])
+        writer.write(value: ["key3": "value3"])
+
+        // Then
+        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+        XCTAssertEqual(
+            try temporaryDirectory.files()[0].read(),
+            "Zm9v,Zm9v,Zm9v".utf8Data // base64(foo) = Zm9v
+        )
+    }
 }

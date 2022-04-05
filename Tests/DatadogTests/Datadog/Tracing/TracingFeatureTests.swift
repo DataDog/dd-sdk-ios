@@ -35,6 +35,7 @@ class TracingFeatureTests: XCTestCase {
         let randomDeviceModel: String = .mockRandom()
         let randomDeviceOSName: String = .mockRandom()
         let randomDeviceOSVersion: String = .mockRandom()
+        let randomEncryption: DataEncryption? = Bool.random() ? DataEncryptionMock() : nil
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
 
@@ -47,7 +48,8 @@ class TracingFeatureTests: XCTestCase {
                     applicationVersion: randomApplicationVersion,
                     source: randomSource,
                     origin: randomOrigin,
-                    sdkVersion: randomSDKVersion
+                    sdkVersion: randomSDKVersion,
+                    encryption: randomEncryption
                 ),
                 uploadURL: randomUploadURL,
                 clientToken: randomClientToken

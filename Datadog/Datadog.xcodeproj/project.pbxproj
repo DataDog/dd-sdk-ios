@@ -981,6 +981,8 @@
 		D2CB6FF327C5369600A62B57 /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6FD127C5348200A62B57 /* DatadogCrashReporting.framework */; };
 		D2DC4BBC27F234D600E4FB96 /* CITestIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11625D727B681D200E428C6 /* CITestIntegration.swift */; };
 		D2DC4BBD27F234E000E4FB96 /* CITestIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E143CCAE27D236F600F4018A /* CITestIntegrationTests.swift */; };
+		D2DC4BF627F484AA00E4FB96 /* DataEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2DC4BF527F484AA00E4FB96 /* DataEncryption.swift */; };
+		D2DC4BF727F484AA00E4FB96 /* DataEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2DC4BF527F484AA00E4FB96 /* DataEncryption.swift */; };
 		D2EFF3D32731822A00D09F33 /* RUMViewsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFF3D22731822A00D09F33 /* RUMViewsHandler.swift */; };
 		D2F1B81126D795F3009F3293 /* DDNoopRUMMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1B81026D795F3009F3293 /* DDNoopRUMMonitor.swift */; };
 		D2F1B81326D8DA68009F3293 /* DDNoopRUMMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1B81226D8DA68009F3293 /* DDNoopRUMMonitorTests.swift */; };
@@ -1736,6 +1738,7 @@
 		D2CB6FB027C5217A00A62B57 /* DatadogObjc.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogObjc.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2CB6FD127C5348200A62B57 /* DatadogCrashReporting.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogCrashReporting.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2CB6FEC27C5352300A62B57 /* DatadogCrashReportingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DatadogCrashReportingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D2DC4BF527F484AA00E4FB96 /* DataEncryption.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataEncryption.swift; sourceTree = "<group>"; };
 		D2EFF3D22731822A00D09F33 /* RUMViewsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewsHandler.swift; sourceTree = "<group>"; };
 		D2F1B81026D795F3009F3293 /* DDNoopRUMMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNoopRUMMonitor.swift; sourceTree = "<group>"; };
 		D2F1B81226D8DA68009F3293 /* DDNoopRUMMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNoopRUMMonitorTests.swift; sourceTree = "<group>"; };
@@ -2098,6 +2101,7 @@
 			children = (
 				61AD4E3724531500006E34EA /* DataFormat.swift */,
 				6137C571271DAD4B00EFC4A1 /* DataOrchestrator.swift */,
+				D2DC4BF527F484AA00E4FB96 /* DataEncryption.swift */,
 				61133BA92423979B00786299 /* FilesOrchestrator.swift */,
 				613E79412577C08900DFCC17 /* Writing */,
 				613E79422577C09B00DFCC17 /* Reading */,
@@ -5020,6 +5024,7 @@
 				61133BDF2423979B00786299 /* SwiftExtensions.swift in Sources */,
 				61D3E0D3277B23F1008BE766 /* KronosDNSResolver.swift in Sources */,
 				6149FB3A2529D17F00EE387A /* InternalURLsFilter.swift in Sources */,
+				D2DC4BF627F484AA00E4FB96 /* DataEncryption.swift in Sources */,
 				611529A525E3DD51004F740E /* ValuePublisher.swift in Sources */,
 				61FFFB89278457D400401A28 /* KronosMonitor.swift in Sources */,
 				618DCFD724C7265300589570 /* RUMUUID.swift in Sources */,
@@ -5590,6 +5595,7 @@
 				D2CB6E4427C50EAE00A62B57 /* UIApplicationSwizzler.swift in Sources */,
 				D2CB6E4527C50EAE00A62B57 /* RUMResourceScope.swift in Sources */,
 				D2CB6E4627C50EAE00A62B57 /* RUMSessionScope.swift in Sources */,
+				D2DC4BF727F484AA00E4FB96 /* DataEncryption.swift in Sources */,
 				D2CB6E4727C50EAE00A62B57 /* TracingUUID.swift in Sources */,
 				D2CB6E4827C50EAE00A62B57 /* ServerDateProvider.swift in Sources */,
 				D2CB6E4927C50EAE00A62B57 /* AttributesSanitizer.swift in Sources */,

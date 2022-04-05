@@ -34,6 +34,23 @@
 
 @end
 
+// MARK: - DDDataEncryption
+
+@interface CustomDDDataEncryption: NSObject <DDDataEncryption>
+@end
+
+@implementation CustomDDDataEncryption
+
+- (NSData * _Nullable)decryptWithData:(NSData * _Nonnull)data error:(NSError * _Nullable __autoreleasing * _Nullable)error {
+    return data;
+}
+
+- (NSData * _Nullable)encryptWithData:(NSData * _Nonnull)data error:(NSError * _Nullable __autoreleasing * _Nullable)error {
+    return data;
+}
+
+@end
+
 // MARK: - Tests
 
 @interface DDConfiguration_apiTests : XCTestCase
@@ -112,6 +129,7 @@
     [builder setWithBatchSize:DDBatchSizeMedium];
     [builder setWithUploadFrequency:DDUploadFrequencyAverage];
     [builder setWithAdditionalConfiguration:@{}];
+    [builder setWithEncryption:[CustomDDDataEncryption new]];
     [builder build];
 }
 

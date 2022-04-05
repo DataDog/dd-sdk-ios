@@ -32,6 +32,7 @@ internal struct FeaturesCommonDependencies {
     let carrierInfoProvider: CarrierInfoProviderType
     let launchTimeProvider: LaunchTimeProviderType
     let appStateListener: AppStateListening
+    let encryption: DataEncryption?
 }
 
 internal struct FeatureStorage {
@@ -82,12 +83,14 @@ internal struct FeatureStorage {
         let unauthorizedFileWriter = FileWriter(
             dataFormat: dataFormat,
             orchestrator: unauthorizedFilesOrchestrator,
+            encryption: commonDependencies.encryption,
             internalMonitor: internalMonitor
         )
 
         let authorizedFileWriter = FileWriter(
             dataFormat: dataFormat,
             orchestrator: authorizedFilesOrchestrator,
+            encryption: commonDependencies.encryption,
             internalMonitor: internalMonitor
         )
 
@@ -116,6 +119,7 @@ internal struct FeatureStorage {
             fileReader: FileReader(
                 dataFormat: dataFormat,
                 orchestrator: authorizedFilesOrchestrator,
+                encryption: commonDependencies.encryption,
                 internalMonitor: internalMonitor
             )
         )

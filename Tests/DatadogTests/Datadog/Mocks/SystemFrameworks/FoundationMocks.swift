@@ -243,6 +243,14 @@ extension String: AnyMockable, RandomMockable {
     static let decimalDigits = "0123456789"
 }
 
+extension Character: AnyMockable, RandomMockable {
+    static func mockAny() -> Character { "c" }
+
+    static func mockRandom() -> Character {
+        String.alphanumerics.randomElement()!
+    }
+}
+
 extension Bool: RandomMockable {
     static func mockRandom() -> Bool {
         return .random()

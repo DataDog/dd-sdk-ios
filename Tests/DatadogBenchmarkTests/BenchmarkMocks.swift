@@ -30,7 +30,8 @@ extension FeaturesCommonDependencies {
             networkConnectionInfoProvider: NetworkConnectionInfoProvider(),
             carrierInfoProvider: CarrierInfoProvider(),
             launchTimeProvider: LaunchTimeProvider(),
-            appStateListener: AppStateListener(dateProvider: SystemDateProvider())
+            appStateListener: AppStateListener(dateProvider: SystemDateProvider()),
+            encryption: nil
         )
     }
 }
