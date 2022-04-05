@@ -104,6 +104,7 @@ class PackageResolvedFile(PackageResolvedContent):
                 self.packages,
                 fp=file,
                 indent=2,  # preserve `swift package` indentation
+                separators=(',', ': ' if self.version == 1 else ' : '),  # v1: `"key": "value"`, v2: `"key" : "value"`
                 sort_keys=True  # preserve `swift package` packages sorting
             )
             file.write('\n')  # add new line to the EOF
@@ -235,19 +236,19 @@ class PackageResolvedContentV2(PackageResolvedContent):
     Example of `package.resolved` in version `2` looks this::
 
         {
-            "pins": [
+            "pins" : [
                 {
                     "identity" : "dd-sdk-ios",
                     "kind" : "remoteSourceControl",
                     "location" : "https://github.com/DataDog/dd-sdk-ios",
-                    "state": {
-                        "branch": "dogfooding",
+                    "state" : {
+                        "branch" : "dogfooding",
                         "revision" : "6f662103771eb4523164e64f7f936bf9276f6bd0"
                     }
                 },
                 ...
             ]
-            "version": 2
+            "version" : 2
         }
 
     In v2 `branch` and `version` are mutually exclusive: if one is set, the other

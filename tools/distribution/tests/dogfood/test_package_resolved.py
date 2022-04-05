@@ -41,7 +41,7 @@ class PackageResolvedFileTestCase(unittest.TestCase):
 
     v2_file_content = b'''
     {
-      "pins": [
+      "pins" : [
         {
           "identity" : "a",
           "kind" : "remoteSourceControl",
@@ -61,7 +61,7 @@ class PackageResolvedFileTestCase(unittest.TestCase):
           }
         }
       ],
-      "version": 2
+      "version" : 2
     }
     '''
 
@@ -216,45 +216,45 @@ class PackageResolvedFileTestCase(unittest.TestCase):
 
             actual_new_content = file.read().decode('utf-8')
             expected_new_content = '''{
-  "pins": [
+  "pins" : [
     {
-      "identity": "a",
-      "kind": "remoteSourceControl",
-      "location": "https://github.com/A-org/a",
-      "state": {
-        "branch": "a-branch",
-        "revision": "a-revision"
+      "identity" : "a",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/A-org/a",
+      "state" : {
+        "branch" : "a-branch",
+        "revision" : "a-revision"
       }
     },
     {
-      "identity": "b",
-      "kind": "remoteSourceControl",
-      "location": "https://github.com/B-org/b.git",
-      "state": {
-        "branch": "b-branch-new",
-        "revision": "b-revision-new"
+      "identity" : "b",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/B-org/b.git",
+      "state" : {
+        "branch" : "b-branch-new",
+        "revision" : "b-revision-new"
       }
     },
     {
-      "identity": "c",
-      "kind": "remoteSourceControl",
-      "location": "https://github.com/C-org/c.git",
-      "state": {
-        "branch": "c-branch",
-        "revision": "c-revision"
+      "identity" : "c",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/C-org/c.git",
+      "state" : {
+        "branch" : "c-branch",
+        "revision" : "c-revision"
       }
     },
     {
-      "identity": "d",
-      "kind": "remoteSourceControl",
-      "location": "https://github.com/D-org/d.git",
-      "state": {
-        "revision": "d-revision",
-        "version": "1.1.0"
+      "identity" : "d",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/D-org/d.git",
+      "state" : {
+        "revision" : "d-revision",
+        "version" : "1.1.0"
       }
     }
   ],
-  "version": 2
+  "version" : 2
 }
 '''
             self.assertEqual(expected_new_content, actual_new_content)
