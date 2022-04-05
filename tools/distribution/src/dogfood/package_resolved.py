@@ -9,6 +9,17 @@ from copy import deepcopy
 from typing import Optional
 
 
+class PackageID:
+    """Identifies package in `package.resolved` file."""
+
+    v1: str  # used in `package.resolved` version 1
+    v2: str  # used in `package.resolved` version 2
+
+    def __init__(self, package_name: str, repository_url: str):
+        self.v1 = package_name
+        self.v2 = package_name
+
+
 class PackageResolvedContent:
     """An interface for manipulating `package.resolved` content."""
 
