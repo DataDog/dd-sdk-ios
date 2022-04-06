@@ -10,11 +10,7 @@ import XCTest
 class RUMApplicationScopeTests: XCTestCase {
     func testRootContext() {
         let scope = RUMApplicationScope(
-            rumApplicationID: "abc-123",
-            dependencies: .mockAny(),
-            sampler: .mockAny(),
-            sdkInitDate: .mockAny(),
-            backgroundEventTrackingEnabled: .mockAny()
+            dependencies: .mockWith(rumApplicationID: "abc-123")
         )
 
         XCTAssertEqual(scope.context.rumApplicationID, "abc-123")
@@ -35,11 +31,11 @@ class RUMApplicationScopeTests: XCTestCase {
         // Given
         let currentTime = Date()
         let scope = RUMApplicationScope(
-            rumApplicationID: .mockAny(),
-            dependencies: .mockWith(onSessionStart: onSessionStart),
-            sampler: .mockRejectAll(),
-            sdkInitDate: currentTime,
-            backgroundEventTrackingEnabled: .mockRandom()
+            dependencies: .mockWith(
+                sessionSampler: .mockRejectAll(),
+                sdkInitDate: Date(),
+                onSessionStart: onSessionStart
+            )
         )
         XCTAssertNil(scope.sessionScope)
 
@@ -50,7 +46,6 @@ class RUMApplicationScopeTests: XCTestCase {
 
         // Then
         let sessionScope = try XCTUnwrap(scope.sessionScope)
-        XCTAssertEqual(sessionScope.backgroundEventTrackingEnabled, scope.backgroundEventTrackingEnabled)
         XCTAssertTrue(sessionScope.isInitialSession, "Starting the very first view in application must create initial session")
     }
 
@@ -67,11 +62,10 @@ class RUMApplicationScopeTests: XCTestCase {
         // Given
         var currentTime = Date()
         let scope = RUMApplicationScope(
-            rumApplicationID: .mockAny(),
-            dependencies: .mockWith(onSessionStart: onSessionStart),
-            sampler: .mockKeepAll(),
-            sdkInitDate: currentTime,
-            backgroundEventTrackingEnabled: .mockAny()
+            dependencies: .mockWith(
+                sdkInitDate: currentTime,
+                onSessionStart: onSessionStart
+            )
         )
 
         let view = createMockViewInWindow()
@@ -102,15 +96,14 @@ class RUMApplicationScopeTests: XCTestCase {
 
     func testWhenSamplingRateIs100_allEventsAreSent() {
         let output = RUMEventOutputMock()
-        let dependencies: RUMScopeDependencies = .mockWith(eventOutput: output)
 
         let currentTime = Date()
         let scope = RUMApplicationScope(
-            rumApplicationID: .mockAny(),
-            dependencies: dependencies,
-            sampler: Sampler(samplingRate: 100),
-            sdkInitDate: currentTime,
-            backgroundEventTrackingEnabled: .mockAny()
+            dependencies: .mockWith(
+                sessionSampler: Sampler(samplingRate: 100),
+                sdkInitDate: currentTime,
+                eventOutput: output
+            )
         )
 
         _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView))
@@ -121,15 +114,14 @@ class RUMApplicationScopeTests: XCTestCase {
 
     func testWhenSamplingRateIs0_noEventsAreSent() {
         let output = RUMEventOutputMock()
-        let dependencies: RUMScopeDependencies = .mockWith(eventOutput: output)
 
         let currentTime = Date()
         let scope = RUMApplicationScope(
-            rumApplicationID: .mockAny(),
-            dependencies: dependencies,
-            sampler: Sampler(samplingRate: 0),
-            sdkInitDate: currentTime,
-            backgroundEventTrackingEnabled: .mockAny()
+            dependencies: .mockWith(
+                sessionSampler: Sampler(samplingRate: 0),
+                sdkInitDate: currentTime,
+                eventOutput: output
+            )
         )
 
         _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView))
@@ -140,15 +132,14 @@ class RUMApplicationScopeTests: XCTestCase {
 
     func testWhenSamplingRateIs50_onlyHalfOfTheEventsAreSent() throws {
         let output = RUMEventOutputMock()
-        let dependencies: RUMScopeDependencies = .mockWith(eventOutput: output)
 
         var currentTime = Date()
         let scope = RUMApplicationScope(
-            rumApplicationID: .mockAny(),
-            dependencies: dependencies,
-            sampler: Sampler(samplingRate: 50),
-            sdkInitDate: currentTime,
-            backgroundEventTrackingEnabled: .mockAny()
+            dependencies: .mockWith(
+                sessionSampler: Sampler(samplingRate: 50),
+                sdkInitDate: currentTime,
+                eventOutput: output
+            )
         )
 
         let simulatedSessionsCount = 400

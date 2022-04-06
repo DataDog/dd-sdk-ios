@@ -18,7 +18,7 @@ class RUMViewScopeTests: XCTestCase {
     )
 
     func testDefaultContext() {
-        let applicationScope: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123")
+        let applicationScope = RUMApplicationScope(dependencies: .mockWith(rumApplicationID: "rum-123"))
         let sessionScope: RUMSessionScope = .mockWith(parent: applicationScope)
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
@@ -41,7 +41,7 @@ class RUMViewScopeTests: XCTestCase {
     }
 
     func testContextWhenViewHasAnActiveUserAction() {
-        let applicationScope: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123")
+        let applicationScope = RUMApplicationScope(dependencies: .mockWith(rumApplicationID: "rum-123"))
         let sessionScope: RUMSessionScope = .mockWith(parent: applicationScope)
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),

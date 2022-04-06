@@ -177,8 +177,11 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     internal convenience init(rumFeature: RUMFeature) {
         self.init(
             applicationScope: RUMApplicationScope(
-                rumApplicationID: rumFeature.configuration.applicationID,
                 dependencies: RUMScopeDependencies(
+                    rumApplicationID: rumFeature.configuration.applicationID,
+                    sessionSampler: rumFeature.configuration.sessionSampler,
+                    sdkInitDate: rumFeature.sdkInitDate,
+                    backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled,
                     appStateListener: rumFeature.appStateListener,
                     userInfoProvider: RUMUserInfoProvider(userInfoProvider: rumFeature.userInfoProvider),
                     launchTimeProvider: rumFeature.launchTimeProvider,
@@ -204,16 +207,13 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     vitalMemoryReader: rumFeature.vitalMemoryReader,
                     vitalRefreshRateReader: rumFeature.vitalRefreshRateReader,
                     onSessionStart: rumFeature.onSessionStart
-                ),
-                sampler: rumFeature.configuration.sessionSampler,
-                sdkInitDate: rumFeature.sdkInitDate,
-                backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled
+                )
             ),
             dateProvider: rumFeature.dateProvider
         )
     }
 
-    internal init(applicationScope: RUMApplicationScope, dateProvider: DateProvider, debugRUMViews: Bool = false) {
+    internal init(applicationScope: RUMApplicationScope, dateProvider: DateProvider) {
         self.applicationScope = applicationScope
         self.dateProvider = dateProvider
         self.contextProvider = RUMCurrentContext(

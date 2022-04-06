@@ -617,6 +617,10 @@ extension RUMScopeDependencies {
     }
 
     static func mockWith(
+        rumApplicationID: String = .mockAny(),
+        sessionSampler: Sampler = .mockKeepAll(),
+        sdkInitDate: Date = .mockAny(),
+        backgroundEventTrackingEnabled: Bool = .mockAny(),
         appStateListener: AppStateListening = AppStateListenerMock.mockAny(),
         userInfoProvider: RUMUserInfoProvider = RUMUserInfoProvider(userInfoProvider: .mockAny()),
         launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock.mockAny(),
@@ -635,6 +639,10 @@ extension RUMScopeDependencies {
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
+            rumApplicationID: rumApplicationID,
+            sessionSampler: sessionSampler,
+            sdkInitDate: sdkInitDate,
+            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
             appStateListener: appStateListener,
             userInfoProvider: userInfoProvider,
             launchTimeProvider: launchTimeProvider,
@@ -658,6 +666,10 @@ extension RUMScopeDependencies {
 
     /// Creates new instance of `RUMScopeDependencies` by replacing individual dependencies.
     func replacing(
+        rumApplicationID: String? = nil,
+        sessionSampler: Sampler? = nil,
+        sdkInitDate: Date? = nil,
+        backgroundEventTrackingEnabled: Bool? = nil,
         appStateListener: AppStateListening? = nil,
         userInfoProvider: RUMUserInfoProvider? = nil,
         launchTimeProvider: LaunchTimeProviderType? = nil,
@@ -673,6 +685,10 @@ extension RUMScopeDependencies {
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
+            rumApplicationID: rumApplicationID ?? self.rumApplicationID,
+            sessionSampler: sessionSampler ?? self.sessionSampler,
+            sdkInitDate: sdkInitDate ?? self.sdkInitDate,
+            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled ?? self.backgroundEventTrackingEnabled,
             appStateListener: appStateListener ?? self.appStateListener,
             userInfoProvider: userInfoProvider ?? self.userInfoProvider,
             launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider,
@@ -697,23 +713,7 @@ extension RUMScopeDependencies {
 
 extension RUMApplicationScope {
     static func mockAny() -> RUMApplicationScope {
-        return mockWith()
-    }
-
-    static func mockWith(
-        rumApplicationID: String = .mockAny(),
-        dependencies: RUMScopeDependencies = .mockAny(),
-        sampler: Sampler = .mockKeepAll(),
-        sdkInitDate: Date = .mockAny(),
-        backgroundEventTrackingEnabled: Bool = .mockAny()
-    ) -> RUMApplicationScope {
-        return RUMApplicationScope(
-            rumApplicationID: rumApplicationID,
-            dependencies: dependencies,
-            sampler: sampler,
-            sdkInitDate: sdkInitDate,
-            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
-        )
+        return RUMApplicationScope(dependencies: .mockAny())
     }
 }
 
@@ -725,18 +725,14 @@ extension RUMSessionScope {
     static func mockWith(
         isInitialSession: Bool = .mockAny(),
         parent: RUMContextProvider = RUMContextProviderMock(),
-        dependencies: RUMScopeDependencies = .mockAny(),
-        sampler: Sampler = .mockKeepAll(),
         startTime: Date = .mockAny(),
-        backgroundEventTrackingEnabled: Bool = .mockAny()
+        dependencies: RUMScopeDependencies = .mockAny()
     ) -> RUMSessionScope {
         return RUMSessionScope(
             isInitialSession: isInitialSession,
             parent: parent,
-            dependencies: dependencies,
-            sampler: sampler,
             startTime: startTime,
-            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
+            dependencies: dependencies
         )
     }
 }

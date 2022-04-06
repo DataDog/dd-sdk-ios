@@ -10,6 +10,11 @@ internal typealias RUMSessionListener = (String, Bool) -> Void
 
 /// Injection container for common dependencies used by all `RUMScopes`.
 internal struct RUMScopeDependencies {
+    let rumApplicationID: String
+    let sessionSampler: Sampler
+    /// The start time of the application, indicated as SDK init. Measured in device time (without NTP correction).
+    let sdkInitDate: Date
+    let backgroundEventTrackingEnabled: Bool
     let appStateListener: AppStateListening
     let userInfoProvider: RUMUserInfoProvider
     let launchTimeProvider: LaunchTimeProviderType
@@ -44,32 +49,14 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Might be re-created later according to session duration constraints.
     private(set) var sessionScope: RUMSessionScope?
 
-    /// RUM Sessions sampler.
-    internal let sampler: Sampler
-
-    /// The start time of the application, indicated as SDK init. Measured in device time (without NTP correction).
-    private let sdkInitDate: Date
-
-    /// Automatically detect background events
-    internal let backgroundEventTrackingEnabled: Bool
-
     // MARK: - Initialization
 
     let dependencies: RUMScopeDependencies
 
-    init(
-        rumApplicationID: String,
-        dependencies: RUMScopeDependencies,
-        sampler: Sampler,
-        sdkInitDate: Date,
-        backgroundEventTrackingEnabled: Bool
-    ) {
+    init(dependencies: RUMScopeDependencies) {
         self.dependencies = dependencies
-        self.sampler = sampler
-        self.sdkInitDate = sdkInitDate
-        self.backgroundEventTrackingEnabled = backgroundEventTrackingEnabled
         self.context = RUMContext(
-            rumApplicationID: rumApplicationID,
+            rumApplicationID: dependencies.rumApplicationID,
             sessionID: .nullUUID,
             activeViewID: nil,
             activeViewPath: nil,
@@ -121,10 +108,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         let initialSession = RUMSessionScope(
             isInitialSession: true,
             parent: self,
-            dependencies: dependencies,
-            sampler: sampler,
-            startTime: sdkInitDate,
-            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
+            startTime: dependencies.sdkInitDate,
+            dependencies: dependencies
         )
         sessionScope = initialSession
         sessionScopeDidUpdate(initialSession)

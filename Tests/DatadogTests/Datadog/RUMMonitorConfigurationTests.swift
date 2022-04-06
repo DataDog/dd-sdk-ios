@@ -41,7 +41,9 @@ class RUMMonitorConfigurationTests: XCTestCase {
         XCTAssertTrue(scopeDependencies.userInfoProvider.userInfoProvider === feature.userInfoProvider)
         XCTAssertTrue(scopeDependencies.connectivityInfoProvider.networkConnectionInfoProvider as AnyObject === feature.networkConnectionInfoProvider as AnyObject)
         XCTAssertTrue(scopeDependencies.connectivityInfoProvider.carrierInfoProvider as AnyObject === feature.carrierInfoProvider as AnyObject)
-        XCTAssertEqual(monitor.applicationScope.sampler.samplingRate, 42.5)
+        XCTAssertEqual(scopeDependencies.sessionSampler.samplingRate, 42.5)
         XCTAssertEqual(monitor.applicationScope.context.rumApplicationID, "rum-123")
+
+        // TODO: RUMM-2029 Leverage this test to cover DI injection
     }
 }
