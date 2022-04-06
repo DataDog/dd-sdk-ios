@@ -37,6 +37,32 @@ class FileReaderTests: XCTestCase {
         XCTAssertEqual(batch?.data, "[ABCD]".utf8Data)
     }
 
+    func testItReadsSingleEncryptedBatch() throws {
+        // Given
+        _ = try temporaryDirectory
+            .createFile(named: Date.mockAny().toFileName)
+            // base64(foo) = Zm9v
+            .append(data: "Zm9v,Zm9v,Zm9v".utf8Data)
+
+        let reader = FileReader(
+            dataFormat: .mockWith(prefix: "[", suffix: "]", separator: ","),
+            orchestrator: FilesOrchestrator(
+                directory: temporaryDirectory,
+                performance: StoragePerformanceMock.readAllFiles,
+                dateProvider: SystemDateProvider()
+            ),
+            encryption: DataEncryptionMock(
+                decrypt: { _ in "bar".utf8Data }
+            )
+        )
+
+        // When
+        let batch = reader.readNextBatch()
+
+        // Then
+        XCTAssertEqual(batch?.data, "[bar,bar,bar]".utf8Data)
+    }
+
     func testItMarksBatchesAsRead() throws {
         let dateProvider = RelativeDateProvider(advancingBySeconds: 60)
         let reader = FileReader(

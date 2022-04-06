@@ -375,8 +375,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         // RUMM-1779 Keep view active as long as we have ongoing resources
         let isActive = isActiveView || !resourceScopes.isEmpty
-
-        let timeSpent = command.time.timeIntervalSince(viewStartTime)
+        // RUMM-2079 `time_spent` can't be lower than 1ns
+        let timeSpent = max(1e-9, command.time.timeIntervalSince(viewStartTime))
         let cpuInfo = vitalInfoSampler.cpu
         let memoryInfo = vitalInfoSampler.memory
         let refreshRateInfo = vitalInfoSampler.refreshRate

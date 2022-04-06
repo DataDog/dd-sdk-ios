@@ -143,6 +143,38 @@ public enum DDUploadFrequency: Int {
 }
 
 @objc
+public protocol DDDataEncryption: AnyObject {
+    /// Encrypts given `Data` with user-chosen encryption.
+    ///
+    /// - Parameter data: Data to encrypt.
+    /// - Returns: The encrypted data.
+    func encrypt(data: Data) throws -> Data
+
+    /// Decrypts given `Data` with user-chosen encryption.
+    ///
+    /// Beware that data to decrypt could be encrypted in a previous
+    /// app launch, so implementation should be aware of the case when decryption could
+    /// fail (for example, key used for encryption is different from key used for decryption, if
+    /// they are unique for every app launch).
+    ///
+    /// - Parameter data: Data to decrypt.
+    /// - Returns: The decrypted data.
+    func decrypt(data: Data) throws -> Data
+}
+
+internal struct DDDataEncryptionBridge: DataEncryption {
+    let objcEncryption: DDDataEncryption
+
+    func encrypt(data: Data) throws -> Data {
+        return try objcEncryption.encrypt(data: data)
+    }
+
+    func decrypt(data: Data) throws -> Data {
+        return try objcEncryption.decrypt(data: data)
+    }
+}
+
+@objc
 public class DDConfiguration: NSObject {
     internal let sdkConfiguration: Datadog.Configuration
 
@@ -360,6 +392,11 @@ public class DDConfigurationBuilder: NSObject {
     @objc
     public func set(proxyConfiguration: [AnyHashable: Any]) {
         _ = sdkBuilder.set(proxyConfiguration: proxyConfiguration)
+    }
+
+    @objc
+    public func set(encryption: DDDataEncryption) {
+        _ = sdkBuilder.set(encryption: DDDataEncryptionBridge(objcEncryption: encryption))
     }
 
     @objc
