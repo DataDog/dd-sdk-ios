@@ -163,7 +163,7 @@ internal final class RUMFeature {
         vitalCPUReader: SamplingBasedVitalReader,
         vitalMemoryReader: SamplingBasedVitalReader,
         vitalRefreshRateReader: ContinuousVitalReader,
-        onSessionStart: RUMSessionListener? = nil
+        onSessionStart: RUMSessionListener?
     ) {
         // Configuration
         self.configuration = configuration

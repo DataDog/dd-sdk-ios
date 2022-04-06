@@ -18,7 +18,8 @@ extension RUMFeature {
             commonDependencies: .mockAny(),
             vitalCPUReader: SamplingBasedVitalReaderMock(),
             vitalMemoryReader: SamplingBasedVitalReaderMock(),
-            vitalRefreshRateReader: ContinuousVitalReaderMock()
+            vitalRefreshRateReader: ContinuousVitalReaderMock(),
+            onSessionStart: nil
         )
     }
 
@@ -61,7 +62,8 @@ extension RUMFeature {
             commonDependencies: dependencies,
             vitalCPUReader: SamplingBasedVitalReaderMock(),
             vitalMemoryReader: SamplingBasedVitalReaderMock(),
-            vitalRefreshRateReader: ContinuousVitalReaderMock()
+            vitalRefreshRateReader: ContinuousVitalReaderMock(),
+            onSessionStart: configuration.onSessionStart
         )
     }
 
@@ -629,6 +631,8 @@ extension RUMScopeDependencies {
             carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: nil)
         ),
         serviceName: String = .mockAny(),
+        applicationVersion: String = .mockAny(),
+        sdkVersion: String = .mockAny(),
         eventBuilder: RUMEventBuilder = RUMEventBuilder(eventsMapper: .mockNoOp()),
         eventOutput: RUMEventOutput = RUMEventOutputMock(),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
@@ -648,8 +652,8 @@ extension RUMScopeDependencies {
             launchTimeProvider: launchTimeProvider,
             connectivityInfoProvider: connectivityInfoProvider,
             serviceName: serviceName,
-            applicationVersion: .mockAny(),
-            sdkVersion: .mockAny(),
+            applicationVersion: applicationVersion,
+            sdkVersion: sdkVersion,
             eventBuilder: eventBuilder,
             eventOutput: eventOutput,
             rumUUIDGenerator: rumUUIDGenerator,
@@ -675,6 +679,8 @@ extension RUMScopeDependencies {
         launchTimeProvider: LaunchTimeProviderType? = nil,
         connectivityInfoProvider: RUMConnectivityInfoProvider? = nil,
         serviceName: String? = nil,
+        applicationVersion: String? = nil,
+        sdkVersion: String? = nil,
         eventBuilder: RUMEventBuilder? = nil,
         eventOutput: RUMEventOutput? = nil,
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
@@ -682,7 +688,7 @@ extension RUMScopeDependencies {
         crashContextIntegration: RUMWithCrashContextIntegration? = nil,
         ciTest: RUMCITest? = nil,
         viewUpdatesSamplerFactory: (() -> RUMViewUpdatesSamplerType)? = nil,
-        onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
+        onSessionStart: RUMSessionListener? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             rumApplicationID: rumApplicationID ?? self.rumApplicationID,
@@ -694,8 +700,8 @@ extension RUMScopeDependencies {
             launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider,
             connectivityInfoProvider: connectivityInfoProvider ?? self.connectivityInfoProvider,
             serviceName: serviceName ?? self.serviceName,
-            applicationVersion: self.applicationVersion,
-            sdkVersion: self.sdkVersion,
+            applicationVersion: applicationVersion ?? self.applicationVersion,
+            sdkVersion: sdkVersion ?? self.sdkVersion,
             eventBuilder: eventBuilder ?? self.eventBuilder,
             eventOutput: eventOutput ?? self.eventOutput,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
@@ -706,7 +712,7 @@ extension RUMScopeDependencies {
             vitalCPUReader: SamplingBasedVitalReaderMock(),
             vitalMemoryReader: SamplingBasedVitalReaderMock(),
             vitalRefreshRateReader: ContinuousVitalReaderMock(),
-            onSessionStart: onSessionStart
+            onSessionStart: onSessionStart ?? self.onSessionStart
         )
     }
 }

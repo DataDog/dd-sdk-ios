@@ -574,12 +574,17 @@ class LoggerTests: XCTestCase {
         LoggingFeature.instance = .mockNoOp()
         defer { LoggingFeature.instance?.deinitialize() }
 
-        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        defer { RUMFeature.instance?.deinitialize() }
+        let rumFeature: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
+        RUMFeature.instance = rumFeature
+        defer { rumFeature.deinitialize() }
 
         // given
         let logger = Logger.builder.build()
-        Global.rum = RUMMonitor.initialize()
+        Global.rum = RUMMonitor(
+            dependencies: RUMScopeDependencies(rumFeature: rumFeature)
+                .replacing(viewUpdatesSamplerFactory: { NoOpRUMViewUpdatesSampler() }),
+            dateProvider: rumFeature.dateProvider
+        )
         Global.rum.startView(viewController: mockView)
         defer { Global.rum = DDNoopRUMMonitor() }
 
