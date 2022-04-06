@@ -6,42 +6,6 @@
 
 import Foundation
 
-internal typealias RUMSessionListener = (String, Bool) -> Void
-
-/// Injection container for common dependencies used by all `RUMScopes`.
-internal struct RUMScopeDependencies {
-    let rumApplicationID: String
-    let sessionSampler: Sampler
-    /// The start time of the application, indicated as SDK init. Measured in device time (without NTP correction).
-    let sdkInitDate: Date
-    let backgroundEventTrackingEnabled: Bool
-    let appStateListener: AppStateListening
-    let userInfoProvider: RUMUserInfoProvider
-    let launchTimeProvider: LaunchTimeProviderType
-    let connectivityInfoProvider: RUMConnectivityInfoProvider
-    let serviceName: String
-    let applicationVersion: String
-    let sdkVersion: String
-    let eventBuilder: RUMEventBuilder
-    let eventOutput: RUMEventOutput
-    let rumUUIDGenerator: RUMUUIDGenerator
-    /// Adjusts RUM events time (device time) to server time.
-    let dateCorrector: DateCorrectorType
-    /// Integration with Crash Reporting. It updates the crash context with RUM info.
-    /// `nil` if Crash Reporting feature is not enabled.
-    let crashContextIntegration: RUMWithCrashContextIntegration?
-    /// Integration with CIApp tests. It contains the CIApp test context when active.
-    let ciTest: RUMCITest?
-    /// Produces `RUMViewUpdatesSamplerType` for each started RUM view scope.
-    let viewUpdatesSamplerFactory: () -> RUMViewUpdatesSamplerType
-
-    let vitalCPUReader: SamplingBasedVitalReader
-    let vitalMemoryReader: SamplingBasedVitalReader
-    let vitalRefreshRateReader: ContinuousVitalReader
-
-    let onSessionStart: RUMSessionListener?
-}
-
 internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     // MARK: - Child Scopes
 

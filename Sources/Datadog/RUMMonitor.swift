@@ -164,7 +164,10 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                         : "`RUMMonitor.initialize()` produces a non-functional monitor, as the RUM feature is disabled."
                 )
             }
-            let monitor = RUMMonitor(rumFeature: rumFeature)
+            let monitor = RUMMonitor(
+                dependencies: RUMScopeDependencies(rumFeature: rumFeature),
+                dateProvider: rumFeature.dateProvider
+            )
             RUMInstrumentation.instance?.publish(to: monitor)
             URLSessionAutoInstrumentation.instance?.publish(to: monitor)
             return monitor
@@ -174,47 +177,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         }
     }
 
-    internal convenience init(rumFeature: RUMFeature) {
-        self.init(
-            applicationScope: RUMApplicationScope(
-                dependencies: RUMScopeDependencies(
-                    rumApplicationID: rumFeature.configuration.applicationID,
-                    sessionSampler: rumFeature.configuration.sessionSampler,
-                    sdkInitDate: rumFeature.sdkInitDate,
-                    backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled,
-                    appStateListener: rumFeature.appStateListener,
-                    userInfoProvider: RUMUserInfoProvider(userInfoProvider: rumFeature.userInfoProvider),
-                    launchTimeProvider: rumFeature.launchTimeProvider,
-                    connectivityInfoProvider: RUMConnectivityInfoProvider(
-                        networkConnectionInfoProvider: rumFeature.networkConnectionInfoProvider,
-                        carrierInfoProvider: rumFeature.carrierInfoProvider
-                    ),
-                    serviceName: rumFeature.configuration.common.serviceName,
-                    applicationVersion: rumFeature.configuration.common.applicationVersion,
-                    sdkVersion: rumFeature.configuration.common.sdkVersion,
-                    eventBuilder: RUMEventBuilder(
-                        eventsMapper: rumFeature.eventsMapper
-                    ),
-                    eventOutput: RUMEventFileOutput(
-                        fileWriter: rumFeature.storage.writer
-                    ),
-                    rumUUIDGenerator: rumFeature.configuration.uuidGenerator,
-                    dateCorrector: rumFeature.dateCorrector,
-                    crashContextIntegration: RUMWithCrashContextIntegration(),
-                    ciTest: CITestIntegration.active?.rumCITest,
-                    viewUpdatesSamplerFactory: { RUMViewUpdatesSampler() },
-                    vitalCPUReader: rumFeature.vitalCPUReader,
-                    vitalMemoryReader: rumFeature.vitalMemoryReader,
-                    vitalRefreshRateReader: rumFeature.vitalRefreshRateReader,
-                    onSessionStart: rumFeature.onSessionStart
-                )
-            ),
-            dateProvider: rumFeature.dateProvider
-        )
-    }
-
-    internal init(applicationScope: RUMApplicationScope, dateProvider: DateProvider) {
-        self.applicationScope = applicationScope
+    internal init(dependencies: RUMScopeDependencies, dateProvider: DateProvider) {
+        self.applicationScope = RUMApplicationScope(dependencies: dependencies)
         self.dateProvider = dateProvider
         self.contextProvider = RUMCurrentContext(
             applicationScope: applicationScope,

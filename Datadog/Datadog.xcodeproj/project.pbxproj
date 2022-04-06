@@ -129,6 +129,8 @@
 		61216B802667C79B0089DCD1 /* LoggingTrackingConsentE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216B7F2667C79B0089DCD1 /* LoggingTrackingConsentE2ETests.swift */; };
 		61216B842667CFF70089DCD1 /* DatadogE2EHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216B7D2667BC220089DCD1 /* DatadogE2EHelpers.swift */; };
 		61216B852667CFFE0089DCD1 /* RUME2EHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216B7826679DD20089DCD1 /* RUME2EHelpers.swift */; };
+		6122514827FDFF82004F5AE4 /* RUMScopeDependencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6122514727FDFF82004F5AE4 /* RUMScopeDependencies.swift */; };
+		6122514927FDFF82004F5AE4 /* RUMScopeDependencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6122514727FDFF82004F5AE4 /* RUMScopeDependencies.swift */; };
 		612556B0268C8D31002BCE74 /* CrashReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612556AF268C8D31002BCE74 /* CrashReport.swift */; };
 		612556BB268DD9BF002BCE74 /* DDCrashReportExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612556BA268DD9BF002BCE74 /* DDCrashReportExporter.swift */; };
 		612556BC26933228002BCE74 /* FoundationMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C202423990D00786299 /* FoundationMocks.swift */; };
@@ -1307,6 +1309,7 @@
 		61216B7A2667A9AE0089DCD1 /* LoggingConfigurationE2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingConfigurationE2ETests.swift; sourceTree = "<group>"; };
 		61216B7D2667BC220089DCD1 /* DatadogE2EHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogE2EHelpers.swift; sourceTree = "<group>"; };
 		61216B7F2667C79B0089DCD1 /* LoggingTrackingConsentE2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingTrackingConsentE2ETests.swift; sourceTree = "<group>"; };
+		6122514727FDFF82004F5AE4 /* RUMScopeDependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMScopeDependencies.swift; sourceTree = "<group>"; };
 		612556AF268C8D31002BCE74 /* CrashReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReport.swift; sourceTree = "<group>"; };
 		612556BA268DD9BF002BCE74 /* DDCrashReportExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDCrashReportExporter.swift; sourceTree = "<group>"; };
 		612983CC2449E62E00D4424B /* LoggingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingFeature.swift; sourceTree = "<group>"; };
@@ -3443,6 +3446,7 @@
 			isa = PBXGroup;
 			children = (
 				61494B7827F3522C0082BBCC /* Utils */,
+				6122514727FDFF82004F5AE4 /* RUMScopeDependencies.swift */,
 				61C3E63D24BF1B91008053F2 /* RUMApplicationScope.swift */,
 				61C2C20624C098FC00C0321C /* RUMSessionScope.swift */,
 				61C2C21124C5951400C0321C /* RUMViewScope.swift */,
@@ -5007,6 +5011,7 @@
 				614B0A4F24EBDC6B00A2A780 /* RUMConnectivityInfoProvider.swift in Sources */,
 				9E68FB55244707FD0013A8AA /* ObjcExceptionHandler.m in Sources */,
 				61494B7A27F352570082BBCC /* RUMViewUpdatesSampler.swift in Sources */,
+				6122514827FDFF82004F5AE4 /* RUMScopeDependencies.swift in Sources */,
 				6141014F251A57AF00E3C2D9 /* UIApplicationSwizzler.swift in Sources */,
 				61494CB124C839460082C633 /* RUMResourceScope.swift in Sources */,
 				61C2C20724C098FC00C0321C /* RUMSessionScope.swift in Sources */,
@@ -5594,6 +5599,7 @@
 				D2CB6E2827C50EAE00A62B57 /* DateProvider.swift in Sources */,
 				D2CB6E2927C50EAE00A62B57 /* KronosInternetAddress.swift in Sources */,
 				D2CB6E2A27C50EAE00A62B57 /* RUMContextProvider.swift in Sources */,
+				6122514927FDFF82004F5AE4 /* RUMScopeDependencies.swift in Sources */,
 				D2CB6E2B27C50EAE00A62B57 /* RUMViewScope.swift in Sources */,
 				D2CB6E2C27C50EAE00A62B57 /* KronosNTPPacket.swift in Sources */,
 				D2CB6E2D27C50EAE00A62B57 /* CrashReportingFeature.swift in Sources */,
