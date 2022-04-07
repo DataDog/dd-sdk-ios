@@ -1,6 +1,6 @@
-# Datadog SDK for iOS
+# Datadog SDK for iOS and tvOS
 
-> Swift and Objective-C libraries to interact with Datadog on iOS.
+> Swift and Objective-C libraries to interact with Datadog on iOS and tvOS.
 
 ## Getting Started
 
@@ -26,7 +26,7 @@ See [Datadog iOS RUM Collection](https://docs.datadoghq.com/real_user_monitoring
 
 ### Alamofire
 
-If you use [Alamofire](https://github.com/Alamofire/Alamofire), review the [`DatadogAlamofireExtension` library](Sources/DatadogExtensions/Alamofire/) to learn how to automatically instrument requests with Datadog SDK.
+If you use [Alamofire](https://github.com/Alamofire/Alamofire), review the [`DatadogAlamofireExtension` library](Sources/DatadogExtensions/Alamofire/) to learn how to automatically instrument requests with the Datadog iOS SDK.
 
 ## Contributing
 
