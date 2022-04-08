@@ -37,9 +37,9 @@ class ExampleApplication: XCUIApplication {
 
     /// Sends a message to `Example` app under test to start and stop the "end view" in current RUM session.
     /// Presence of this view can be used to await end of transmitting RUM session to the mock server.
-    func endRUMSession() {
+    func endRUMSession() throws {
         Thread.sleep(forTimeInterval: 2) // wait a bit so the app under test can complete its animations and transitions
-        MessagePortChannel.createSender()?.send(message: .endRUMSession)
+        try MessagePortChannel.createSender().send(message: .endRUMSession)
     }
 }
 

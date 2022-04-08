@@ -51,7 +51,7 @@ class RUMModalViewsScenarioTests: IntegrationTests, RUMCommonAsserts {
         app.swipeToPullModalDownButThenCancel() // interactive and cancelled dismiss, stay on "Modal"
         app.tapButton(titled: "Dismiss by self.dismiss()") // dismiss to "Screen"
 
-        app.endRUMSession()
+        try app.endRUMSession()
 
         // Get RUM Sessions with expected number of View visits
         let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in

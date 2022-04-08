@@ -38,7 +38,7 @@ class RUMMobileVitalsScenarioTests: IntegrationTests, RUMCommonAsserts {
         app.tapBlockMainThreadButton()
         app.tapNoOpButton()
 
-        app.endRUMSession()
+        try app.endRUMSession()
 
         // Get RUM Sessions with expected number of View visits
         let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in

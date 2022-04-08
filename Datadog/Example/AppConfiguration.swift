@@ -95,7 +95,7 @@ struct UITestsAppConfiguration: AppConfiguration {
         }
 
         // Handle messages received from UITest runner:
-        MessagePortChannel.createReceiver()?.startListening { message in
+        try! MessagePortChannel.createReceiver().startListening { message in
             switch message {
             case .endRUMSession: markRUMSessionAsEnded()
             }

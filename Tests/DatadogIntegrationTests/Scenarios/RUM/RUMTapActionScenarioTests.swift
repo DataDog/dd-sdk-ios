@@ -106,7 +106,7 @@ class RUMTapActionScenarioTests: IntegrationTests, RUMCommonAsserts {
         app.tapNavigationBarButton(named: "Share")
         app.tapNavigationBarButton(named: "Back")
 
-        app.endRUMSession()
+        try app.endRUMSession()
 
         // Get RUM Sessions with expected number of View visits
         let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in

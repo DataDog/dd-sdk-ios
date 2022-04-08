@@ -19,7 +19,7 @@ class RUMScrubbingScenarioTests: IntegrationTests, RUMCommonAsserts {
             )
         )
 
-        app.endRUMSession()
+        try app.endRUMSession()
 
         // Get RUM Session with expected number of RUM Errors
         let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in

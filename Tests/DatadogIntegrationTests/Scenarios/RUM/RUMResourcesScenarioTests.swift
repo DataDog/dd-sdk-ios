@@ -83,7 +83,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         app.tapSend3rdPartyRequests()
 
-        app.endRUMSession()
+        try app.endRUMSession()
 
         // Get custom 1st party request sent to the server
         let firstPartyPOSTRequest = try XCTUnwrap(

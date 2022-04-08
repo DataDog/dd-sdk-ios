@@ -19,8 +19,17 @@ internal class MessagePortChannel {
         case endRUMSession = 0x1111
     }
 
-    static var createSender: () -> Sender? = { Sender() }
-    static var createReceiver: () -> Receiver? = { Receiver() }
+    struct ChannelError: Error, CustomStringConvertible {
+        let description: String
+    }
+
+    static func createSender() throws -> Sender {
+        return try Sender()
+    }
+
+    static func createReceiver() throws -> Receiver {
+        return try Receiver()
+    }
 
     // MARK: - Sending messages
 
@@ -28,20 +37,19 @@ internal class MessagePortChannel {
     internal class Sender {
         private let remotePort: CFMessagePort
 
-        fileprivate init?() {
+        fileprivate init() throws {
             guard let remotePort = CFMessagePortCreateRemote(nil, MessagePortChannel.portName) else {
-                print("⚠️ `MessagePortChannel.Sender` - failed to instantiate remote port")
-                return nil
+                throw ChannelError(description: "⚠️ `MessagePortChannel.Sender` - failed to instantiate remote port")
             }
             self.remotePort = remotePort
         }
 
-        func send(message: Message) {
+        func send(message: Message) throws {
             let timeout: CFTimeInterval = 5.0
             let replyMode = CFRunLoopMode.defaultMode.rawValue // use `default` mode to avaid delivery confirmation
             let deliveryStatus = CFMessagePortSendRequest(remotePort, message.rawValue, nil, timeout, timeout, replyMode, nil)
             if deliveryStatus != kCFMessagePortSuccess {
-                print("⚠️ `MessagePortChannel.Sender` - failed to send '\(message)' message")
+                throw ChannelError(description: "⚠️ `MessagePortChannel.Sender` - failed to send '\(message)' message")
             }
         }
     }
@@ -53,7 +61,7 @@ internal class MessagePortChannel {
         private let localPort: CFMessagePort
         private static var currentListener: ((Message) -> Void)?
 
-        fileprivate init?() {
+        fileprivate init() throws {
             func callback(port: CFMessagePort?, msgid: Int32, data: CFData?, info: UnsafeMutableRawPointer?) -> Unmanaged<CFData>? {
                 if let message = Message(rawValue: msgid) {
                     Receiver.currentListener?(message)
@@ -64,8 +72,7 @@ internal class MessagePortChannel {
             }
 
             guard let localPort = CFMessagePortCreateLocal(nil, MessagePortChannel.portName, callback, nil, nil) else {
-                print("⚠️ `MessagePortChannel.Receiver` - failed to instantiate local port")
-                return nil
+                throw ChannelError(description: "⚠️ `MessagePortChannel.Receiver` - failed to instantiate local port")
             }
             self.localPort = localPort
         }

@@ -48,7 +48,7 @@ class RUMNavigationControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
         app.tapPushNextScreenButton() // go to "Screen2"
         app.swipeInteractiveBackGesture() // swipe back to "Screen1"
 
-        app.endRUMSession()
+        try app.endRUMSession()
 
         // Get RUM Sessions with expected number of View visits
         let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
