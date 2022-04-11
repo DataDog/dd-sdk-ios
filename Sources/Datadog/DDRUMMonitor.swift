@@ -286,6 +286,11 @@ public class DDRUMMonitor {
     /// - Parameter key: key for the attribute that will be removed.
     public func removeAttribute(forKey key: AttributeKey) {}
 
+    // MARK: - RUM Telemetry
+    internal func addTelemetryDebug(withMessage message: String) {}
+
+    internal func addTelemetryError(withMessage message: String, kind: String? = nil, stack: String? = nil) {}
+
     // MARK: - Internal
 
     internal init() {}

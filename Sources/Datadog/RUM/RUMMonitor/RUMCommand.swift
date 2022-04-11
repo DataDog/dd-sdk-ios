@@ -315,3 +315,27 @@ internal struct RUMKeepSessionAliveCommand: RUMCommand {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
 }
+
+// MARK: - RUM Telemetry Events related commands
+
+/// RUM Telemetry Debug event provides observability on the behavior of the SDK at runtime.
+internal struct RUMTelemetryDebugCommand: RUMCommand {
+    let canStartBackgroundView = false
+    let canStartApplicationLaunchView = false
+    var time: Date
+    var attributes: [AttributeKey: AttributeValue]
+
+    let message: String
+}
+
+/// RUM Telemetry Error event provides observability on Errors happening in the SDK at runtime.
+internal struct RUMTelemetryErrorCommand: RUMCommand {
+    let canStartBackgroundView = false
+    let canStartApplicationLaunchView = false
+    var time: Date
+    var attributes: [AttributeKey: AttributeValue]
+
+    let message: String
+    let kind: String?
+    let stack: String?
+}

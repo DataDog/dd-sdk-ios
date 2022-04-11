@@ -73,6 +73,7 @@ extension RUMViewEvent: RandomMockable {
             source: .ios,
             synthetics: nil,
             usr: .mockRandom(),
+            version: .mockAny(),
             view: .init(
                 action: .init(count: .mockRandom()),
                 cpuTicksCount: .mockRandom(),
@@ -160,6 +161,7 @@ extension RUMResourceEvent: RandomMockable {
             source: .ios,
             synthetics: nil,
             usr: .mockRandom(),
+            version: .mockAny(),
             view: .init(
                 id: .mockRandom(),
                 referrer: .mockRandom(),
@@ -179,6 +181,7 @@ extension RUMActionEvent: RandomMockable {
             action: .init(
                 crash: .init(count: .mockRandom()),
                 error: .init(count: .mockRandom()),
+                frustrationType: nil,
                 id: .mockRandom(),
                 loadingTime: .mockRandom(),
                 longTask: .init(count: .mockRandom()),
@@ -200,6 +203,7 @@ extension RUMActionEvent: RandomMockable {
             source: .ios,
             synthetics: nil,
             usr: .mockRandom(),
+            version: .mockAny(),
             view: .init(
                 id: .mockRandom(),
                 inForeground: .random(),
@@ -259,6 +263,7 @@ extension RUMErrorEvent: RandomMockable {
             source: .ios,
             synthetics: nil,
             usr: .mockRandom(),
+            version: .mockAny(),
             view: .init(
                 id: .mockRandom(),
                 inForeground: .random(),
@@ -301,6 +306,7 @@ extension RUMLongTaskEvent: RandomMockable {
             source: .ios,
             synthetics: nil,
             usr: .mockRandom(),
+            version: .mockAny(),
             view: .init(id: .mockRandom(), name: .mockRandom(), referrer: .mockRandom(), url: .mockRandom())
         )
     }
