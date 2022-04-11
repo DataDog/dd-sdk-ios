@@ -83,15 +83,19 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     // MARK: - RUMScope
 
     func process(command: RUMCommand) -> Bool {
+        if let teleDebugCommand = command as? RUMTelemetryDebugCommand {
+            sendTelemetryDebugEvent(command: teleDebugCommand)
+            return true
+        } else if let teleErrorCommand = command as? RUMTelemetryErrorCommand {
+            sendTelemetryErrorEvent(command: teleErrorCommand)
+            return true
+        }
+
         if sessionScope == nil {
             startInitialSession()
         }
 
-        if let teleDebugCommand = command as? RUMTelemetryDebugCommand {
-            sendTelemetryDebugEvent(command: teleDebugCommand)
-        } else if let teleErrorCommand = command as? RUMTelemetryErrorCommand {
-            sendTelemetryErrorEvent(command: teleErrorCommand)
-        } else if let currentSession = sessionScope {
+        if let currentSession = sessionScope {
             sessionScope = manage(childScope: sessionScope, byPropagatingCommand: command)
 
             if sessionScope == nil { // if session expired
@@ -134,13 +138,20 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         let dateCorrection = dependencies.dateCorrector.currentCorrection
         let actionId = context.activeUserActionID?.toRUMDataFormat
         let viewId = context.activeViewID?.toRUMDataFormat
+        let session: TelemetryDebugEvent.Session?
+        if context.sessionID == RUMUUID.nullUUID {
+            session = nil
+        } else {
+            session = .init(id: context.sessionID.toRUMDataFormat)
+        }
+
         let event = TelemetryDebugEvent(
             dd: TelemetryDebugEvent.DD(),
             action: actionId.flatMap { .init(id: $0) },
             application: .init(id: context.rumApplicationID),
             date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
             service: "dd-sdk-ios",
-            session: .init(id: context.sessionID.toRUMDataFormat),
+            session: session,
             source: .ios,
             telemetry: TelemetryDebugEvent.Telemetry(message: command.message),
             version: dependencies.sdkVersion,
