@@ -38,10 +38,11 @@ class RUMMobileVitalsScenarioTests: IntegrationTests, RUMCommonAsserts {
         app.tapBlockMainThreadButton()
         app.tapNoOpButton()
 
+        try app.endRUMSession()
+
         // Get RUM Sessions with expected number of View visits
         let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            let eventCount = try RUMSessionMatcher.singleSession(from: requests)?.longTaskEventMatchers.count
-            return eventCount == 2
+            try RUMSessionMatcher.singleSession(from: requests)?.hasEnded() ?? false
         }
 
         assertRUM(requests: recordedRUMRequests)
@@ -49,26 +50,13 @@ class RUMMobileVitalsScenarioTests: IntegrationTests, RUMCommonAsserts {
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
         sendCIAppLog(session)
 
-        XCTAssertEqual(session.viewVisits[0].viewEvents.count, 5)
+        let lastViewEvent = try XCTUnwrap(session.viewVisits[0].viewEvents.last)
 
-        let viewLongTask1 = try XCTUnwrap(session.viewVisits[0].viewEvents[0].view.longTask) // start view
-        let viewLongTask2 = try XCTUnwrap(session.viewVisits[0].viewEvents[1].view.longTask) // no-op action
-        let viewLongTask3 = try XCTUnwrap(session.viewVisits[0].viewEvents[2].view.longTask) // block main thread
-        let viewLongTask4 = try XCTUnwrap(session.viewVisits[0].viewEvents[3].view.longTask) // no-op action
-        let viewLongTask5 = try XCTUnwrap(session.viewVisits[0].viewEvents[4].view.longTask) // block main thread
+        let cpuTicksPerSecond = try XCTUnwrap(lastViewEvent.view.cpuTicksPerSecond)
+        XCTAssertGreaterThan(cpuTicksPerSecond, 0.0)
 
-        XCTAssertEqual(viewLongTask1.count, viewLongTask2.count, "Add action event should NOT increment long task count")
-        XCTAssertEqual(viewLongTask2.count + 1, viewLongTask3.count, "Block main thread button should increment long task count")
-        XCTAssertEqual(viewLongTask3.count, viewLongTask4.count, "Add action event should NOT increment long task count")
-        XCTAssertEqual(viewLongTask4.count + 1, viewLongTask5.count, "Block main thread button should increment long task count")
-
-        let viewEvent = session.viewVisits[0].viewEvents[2].view
-
-        let cpuTicksPerSec2 = try XCTUnwrap(viewEvent.cpuTicksPerSecond)
-        XCTAssertGreaterThan(cpuTicksPerSec2, 0.0)
-
-        let fps2 = try XCTUnwrap(viewEvent.refreshRateAverage)
-        XCTAssertGreaterThan(fps2, 0.0)
+        let refreshRateAverage = try XCTUnwrap(lastViewEvent.view.refreshRateAverage)
+        XCTAssertGreaterThan(refreshRateAverage, 0.0)
 
         let longTaskEvents = session.viewVisits[0].longTaskEvents
         XCTAssertEqual(longTaskEvents.count, 2)
