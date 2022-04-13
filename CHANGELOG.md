@@ -1,5 +1,9 @@
 # Unreleased
 
+# 1.10.0 / 04-12-2022
+
+### Changes
+
 * [FEATURE] Web-view tracking. See [#729][]
 * [FEATURE] Integration with CI Visibility Tests. See[#761][]
 * [FEATURE] Add tvOS Support. See [#793][]
