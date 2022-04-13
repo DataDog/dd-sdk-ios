@@ -8,6 +8,7 @@
 * [BUGFIX] Stop reporting pre-warmed application launch time. See [#789][]
 * [BUGFIX] Allow log event dropping. See [#795][]
 * [IMPROVEMENT] Crash Reporting: Filter out unrecognized trailing `???` stack frame in `error.stack`. See [#794][]
+* [IMPROVEMENT] Reduce the number of intermediate view events sent in RUM payloads. See [#815][]
 
 # 1.9.0 / 01-26-2022
 
@@ -335,7 +336,8 @@
 [#793]: https://github.com/DataDog/dd-sdk-ios/issues/793
 [#794]: https://github.com/DataDog/dd-sdk-ios/issues/794
 [#795]: https://github.com/DataDog/dd-sdk-ios/issues/795
-[#797]: https://github.com/DataDog/dd-sdk-ios/pull/797
+[#797]: https://github.com/DataDog/dd-sdk-ios/issues/797
+[#815]: https://github.com/DataDog/dd-sdk-ios/issues/815
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu
