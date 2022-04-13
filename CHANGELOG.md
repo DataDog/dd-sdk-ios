@@ -1,5 +1,9 @@
 # Unreleased
 
+# 1.10.0 / 04-12-2022
+
+### Changes
+
 * [FEATURE] Web-view tracking. See [#729][]
 * [BUGFIX] Strip query parameters from span resource. See [#728][]
 
