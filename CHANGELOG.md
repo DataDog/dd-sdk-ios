@@ -1,17 +1,18 @@
 # Unreleased
 
+* [FEATURE] Integration with CI Visibility Tests. See[#761][]
+* [FEATURE] Add tvOS Support. See [#793][]
+* [FEATURE] Add data encryption interface on-disk data storage. See [#797][]
+* [BUGFIX] Stop reporting pre-warmed application launch time. See [#789][]
+* [BUGFIX] Allow log event dropping. See [#795][]
+* [IMPROVEMENT] Crash Reporting: Filter out unrecognized trailing `???` stack frame in `error.stack`. See [#794][]
+
 # 1.10.0 / 04-12-2022
 
 ### Changes
 
 * [FEATURE] Web-view tracking. See [#729][]
-* [FEATURE] Integration with CI Visibility Tests. See[#761][]
-* [FEATURE] Add tvOS Support. See [#793][]
-* [FEATURE] Add data encryption interface on-disk data storage. See [#797][]
 * [BUGFIX] Strip query parameters from span resource. See [#728][]
-* [BUGFIX] Stop reporting pre-warmed application launch time. See [#789][]
-* [BUGFIX] Allow log event dropping. See [#795][]
-* [IMPROVEMENT] Crash Reporting: Filter out unrecognized trailing `???` stack frame in `error.stack`. See [#794][]
 
 # 1.9.0 / 01-26-2022
 
