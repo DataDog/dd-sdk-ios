@@ -74,7 +74,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private let vitalInfoSampler: VitalInfoSampler
 
     /// Samples view update events, so we can minimize the number of events in payload.
-    private let viewUpdatesSampler: RUMViewUpdatesSamplerType
+    private let viewUpdatesThrottler: RUMViewUpdatesThrottlerType
 
     init(
         isInitialView: Bool,
@@ -104,7 +104,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             memoryReader: dependencies.vitalMemoryReader,
             refreshRateReader: dependencies.vitalRefreshRateReader
         )
-        self.viewUpdatesSampler = dependencies.viewUpdatesSamplerFactory()
+        self.viewUpdatesThrottler = dependencies.viewUpdatesThrottlerFactory()
     }
 
     // MARK: - RUMContextProvider
@@ -441,7 +441,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         )
 
         if let event = dependencies.eventBuilder.build(from: eventData) {
-            if viewUpdatesSampler.sample(event: event) {
+            if viewUpdatesThrottler.accept(event: event) {
                 dependencies.eventOutput.write(event: event)
             } else { // if event was dropped by sampler
                 version -= 1

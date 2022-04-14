@@ -6,16 +6,16 @@
 
 import Foundation
 
-internal protocol RUMViewUpdatesSamplerType {
-    func sample(event: RUMViewEvent) -> Bool
+internal protocol RUMViewUpdatesThrottlerType {
+    func accept(event: RUMViewEvent) -> Bool
 }
 
 /// An utility suppressing the number of view updates sent for a single view.
 ///
-/// It uses time-based heuristic for view updates sampling:
+/// It uses time-based heuristic for view updates throttling:
 /// - it suppresses updates which happen more frequent than `viewUpdateThreshold`,
-/// - it always samples (accepts) terminal update for the view.
-internal final class RUMViewUpdatesSampler: RUMViewUpdatesSamplerType {
+/// - it always samples (accepts) first and last update for the view.
+internal final class RUMViewUpdatesThrottler: RUMViewUpdatesThrottlerType {
     struct Constants {
         /// Default suppression interval, in seconds.
         static let defaultViewUpdateThreshold: TimeInterval = 30.0
@@ -32,7 +32,7 @@ internal final class RUMViewUpdatesSampler: RUMViewUpdatesSamplerType {
 
     /// Based on the `viewUpdateThresholdInNs` and `viewUpdate.timeSpent`, it decides if an event should be "sampled" or not.
     /// - Returns: `true` if event should be sent to Datadog and `false` if it should be dropped.
-    func sample(event: RUMViewEvent) -> Bool {
+    func accept(event: RUMViewEvent) -> Bool {
         var sample: Bool
 
         if let lastTimeSpent = lastSampledTimeSpentInNs {

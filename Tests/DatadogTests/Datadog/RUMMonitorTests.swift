@@ -29,7 +29,7 @@ class RUMMonitorTests: XCTestCase {
         let rumFeature = try XCTUnwrap(RUMFeature.instance, "RUM feature must be initialized before creating `RUMMonitor`")
         return RUMMonitor(
             dependencies: RUMScopeDependencies(rumFeature: rumFeature)
-                .replacing(viewUpdatesSamplerFactory: { NoOpRUMViewUpdatesSampler() }),
+                .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
             dateProvider: rumFeature.dateProvider
         )
     }

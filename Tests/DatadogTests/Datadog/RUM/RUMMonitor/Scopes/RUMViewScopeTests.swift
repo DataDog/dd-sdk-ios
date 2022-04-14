@@ -1198,7 +1198,7 @@ class RUMViewScopeTests: XCTestCase {
     // MARK: Suppressing number of view updates
 
     // swiftlint:disable opening_brace
-    func testGivenScopeWithViewUpdatesSampler_whenReceivingStreamOfCommands_thenItSendsLessViewUpdatesThanScopeWithNoSampler() throws {
+    func testGivenScopeWithViewUpdatesThrottler_whenReceivingStreamOfCommands_thenItSendsLessViewUpdatesThanScopeWithNoThrottler() throws {
         let commandsIssuingViewUpdates: [(Date) -> RUMCommand] = [
             // receive resource:
             { date in RUMStartResourceCommand.mockWith(resourceKey: "resource", time: date) },
@@ -1223,23 +1223,23 @@ class RUMViewScopeTests: XCTestCase {
         let samplingDuration = simulationDuration * 0.5 // at least half view updates should be skipped
 
         // Given
-        let sampler = RUMViewUpdatesSampler(viewUpdateThreshold: samplingDuration)
+        let throttler = RUMViewUpdatesThrottler(viewUpdateThreshold: samplingDuration)
         let sampledScopeOutput = RUMEventOutputMock()
         let sampledScope: RUMViewScope = .mockWith(
             parent: parent,
             dependencies: .mockWith(
                 eventOutput: sampledScopeOutput,
-                viewUpdatesSamplerFactory: { sampler }
+                viewUpdatesThrottlerFactory: { throttler }
             )
         )
 
-        let noOpSampler = NoOpRUMViewUpdatesSampler()
+        let noOpThrottler = NoOpRUMViewUpdatesThrottler()
         let notSampledScopeOutput = RUMEventOutputMock()
         let notSampledScope: RUMViewScope = .mockWith(
             parent: parent,
             dependencies: .mockWith(
                 eventOutput: notSampledScopeOutput,
-                viewUpdatesSamplerFactory: { noOpSampler }
+                viewUpdatesThrottlerFactory: { noOpThrottler }
             )
         )
 

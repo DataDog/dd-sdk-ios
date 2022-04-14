@@ -582,7 +582,7 @@ class LoggerTests: XCTestCase {
         let logger = Logger.builder.build()
         Global.rum = RUMMonitor(
             dependencies: RUMScopeDependencies(rumFeature: rumFeature)
-                .replacing(viewUpdatesSamplerFactory: { NoOpRUMViewUpdatesSampler() }),
+                .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
             dateProvider: rumFeature.dateProvider
         )
         Global.rum.startView(viewController: mockView)

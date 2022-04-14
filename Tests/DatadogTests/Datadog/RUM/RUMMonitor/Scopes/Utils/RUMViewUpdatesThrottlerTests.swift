@@ -7,16 +7,16 @@
 import XCTest
 @testable import Datadog
 
-class RUMViewUpdatesSamplerTests: XCTestCase {
+class RUMViewUpdatesThrottlerTests: XCTestCase {
     private let randomViewUpdateThreshold: TimeInterval = .mockRandom(min: 1, max: 10)
-    private lazy var sampler = RUMViewUpdatesSampler(viewUpdateThreshold: randomViewUpdateThreshold)
+    private lazy var throttler = RUMViewUpdatesThrottler(viewUpdateThreshold: randomViewUpdateThreshold)
 
     func testItAcceptsTheFirstEvent() {
-        XCTAssertTrue(sampler.sample(event: .mockRandom()))
+        XCTAssertTrue(throttler.accept(event: .mockRandom()))
     }
 
     func testItAcceptsTheLastEvent() {
-        XCTAssertTrue(sampler.sample(event: .mockRandomWith(viewIsActive: false)))
+        XCTAssertTrue(throttler.accept(event: .mockRandomWith(viewIsActive: false)))
     }
 
     func testItRejectsNextEventWhenItArrivesEarlierThanThreshold() {
@@ -29,8 +29,8 @@ class RUMViewUpdatesSamplerTests: XCTestCase {
             viewTimeSpent: randomViewUpdateThreshold.toInt64Nanoseconds - 1
         )
 
-        XCTAssertTrue(sampler.sample(event: firstEvent), "It should always accepts first event")
-        XCTAssertFalse(sampler.sample(event: nextEvent), "It should reject next event as it arrived earlier than threshold")
+        XCTAssertTrue(throttler.accept(event: firstEvent), "It should always accepts first event")
+        XCTAssertFalse(throttler.accept(event: nextEvent), "It should reject next event as it arrived earlier than threshold")
     }
 
     func testItAcceptsNextEventWhenItArrivesLaterThanThreshold() {
@@ -43,7 +43,7 @@ class RUMViewUpdatesSamplerTests: XCTestCase {
             viewTimeSpent: randomViewUpdateThreshold.toInt64Nanoseconds + 1
         )
 
-        XCTAssertTrue(sampler.sample(event: firstEvent), "It should always accepts first event")
-        XCTAssertTrue(sampler.sample(event: nextEvent), "It should accept next event as it arrived later than threshold")
+        XCTAssertTrue(throttler.accept(event: firstEvent), "It should always accepts first event")
+        XCTAssertTrue(throttler.accept(event: nextEvent), "It should accept next event as it arrived later than threshold")
     }
 }
