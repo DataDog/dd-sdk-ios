@@ -30,19 +30,24 @@ You can perform the following:
 
 Set up the web page you want rendered on your mobile iOS and tvOS application with the Browser SDK first. For more information, see [RUM Browser Monitoring][1].
 
-### Update your existing SDK setup
+### Instrument your web views
 
-1. Download the [latest version][2] of the RUM iOS SDK.
-2. Edit your existing iOS SDK setup from [RUM iOS Monitoring][3].
-3. Add tracking for web views with the following example:
+The RUM iOS SDK provides APIs for you to control web view tracking. To add Web View Tracking, declare the following as an extension of `WKUserContentController`.
 
-   ```
-   // Start tracking
-   webView.configuration.userContentController.trackDatadogEvents(in: hosts)
-   // Stop tracking
-   // Note: This method must be called when the webview is de-initialized.
-   webView.configuration.userContentController.stopTrackingDatadogEvents()
-   ```
+`trackDatadogEvents(in hosts: Set<String>)`
+: Enables RUM event tracking in a web view for certain `hosts`.
+
+`stopTrackingDatadogEvents()`
+: Disables RUM event tracking in a web view. When a web view is about to be de-allocated or you are done with the web view, call this API.
+
+For example:
+
+```
+import WebKit
+import Datadog
+ 
+webView.configuration.userContentController.trackDatadogEvents(in: ["example.com"])
+```
 
 ## Access your web views
 
