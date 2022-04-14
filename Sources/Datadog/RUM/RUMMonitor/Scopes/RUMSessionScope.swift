@@ -46,8 +46,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     let isSampled: Bool
     /// If this is the very first session created in the current app process (`false` for session created upon expiration of a previous one).
     let isInitialSession: Bool
-    /// RUM Session sampler.
-    private let sampler: Sampler
     /// The start time of this Session, measured in device date. In initial session this is the time of SDK init.
     private let sessionStartTime: Date
     /// Time of the last RUM interaction noticed by this Session.
@@ -56,20 +54,17 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     init(
         isInitialSession: Bool,
         parent: RUMContextProvider,
-        dependencies: RUMScopeDependencies,
-        sampler: Sampler,
         startTime: Date,
-        backgroundEventTrackingEnabled: Bool
+        dependencies: RUMScopeDependencies
     ) {
         self.parent = parent
         self.dependencies = dependencies
-        self.sampler = sampler
-        self.isSampled = sampler.sample()
+        self.isSampled = dependencies.sessionSampler.sample()
         self.sessionUUID = isSampled ? dependencies.rumUUIDGenerator.generateUnique() : .nullUUID
         self.isInitialSession = isInitialSession
         self.sessionStartTime = startTime
         self.lastInteractionTime = startTime
-        self.backgroundEventTrackingEnabled = backgroundEventTrackingEnabled
+        self.backgroundEventTrackingEnabled = dependencies.backgroundEventTrackingEnabled
         self.state = RUMSessionState(sessionUUID: sessionUUID.rawValue, isInitialSession: isInitialSession, hasTrackedAnyView: false)
 
         // Update `CrashContext` with recent RUM session state:
@@ -84,10 +79,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.init(
             isInitialSession: false,
             parent: expiredSession.parent,
-            dependencies: expiredSession.dependencies,
-            sampler: expiredSession.sampler,
             startTime: startTime,
-            backgroundEventTrackingEnabled: expiredSession.backgroundEventTrackingEnabled
+            dependencies: expiredSession.dependencies
         )
 
         // Transfer active Views by creating new `RUMViewScopes` for their identity objects:

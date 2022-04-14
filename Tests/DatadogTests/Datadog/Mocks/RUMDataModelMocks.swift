@@ -53,6 +53,14 @@ extension RUMEventAttributes: RandomMockable {
 
 extension RUMViewEvent: RandomMockable {
     static func mockRandom() -> RUMViewEvent {
+        return mockRandomWith()
+    }
+
+    /// Produces random `RUMViewEvent` with setting given fields to certain values.
+    static func mockRandomWith(
+        viewIsActive: Bool? = .random(),
+        viewTimeSpent: Int64 = .mockRandom()
+    ) -> RUMViewEvent {
         return RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -96,11 +104,11 @@ extension RUMViewEvent: RandomMockable {
                         start: .mockRandom()
                     )
                 ],
-                isActive: .random(),
+                isActive: viewIsActive,
                 isSlowRendered: .mockRandom(),
                 largestContentfulPaint: .mockRandom(),
                 loadEvent: .mockRandom(),
-                loadingTime: .mockRandom(),
+                loadingTime: viewTimeSpent,
                 loadingType: nil,
                 longTask: .init(count: .mockRandom()),
                 memoryAverage: .mockRandom(),
@@ -110,7 +118,7 @@ extension RUMViewEvent: RandomMockable {
                 refreshRateAverage: .mockRandom(),
                 refreshRateMin: .mockRandom(),
                 resource: .init(count: .mockRandom()),
-                timeSpent: .mockRandom(),
+                timeSpent: viewTimeSpent,
                 url: .mockRandom()
             )
         )

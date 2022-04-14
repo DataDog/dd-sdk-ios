@@ -18,7 +18,8 @@ extension RUMFeature {
             commonDependencies: .mockAny(),
             vitalCPUReader: SamplingBasedVitalReaderMock(),
             vitalMemoryReader: SamplingBasedVitalReaderMock(),
-            vitalRefreshRateReader: ContinuousVitalReaderMock()
+            vitalRefreshRateReader: ContinuousVitalReaderMock(),
+            onSessionStart: nil
         )
     }
 
@@ -61,7 +62,8 @@ extension RUMFeature {
             commonDependencies: dependencies,
             vitalCPUReader: SamplingBasedVitalReaderMock(),
             vitalMemoryReader: SamplingBasedVitalReaderMock(),
-            vitalRefreshRateReader: ContinuousVitalReaderMock()
+            vitalRefreshRateReader: ContinuousVitalReaderMock(),
+            onSessionStart: configuration.onSessionStart
         )
     }
 
@@ -601,6 +603,12 @@ extension RUMSessionState: AnyMockable, RandomMockable {
 
 // MARK: - RUMScope Mocks
 
+internal struct NoOpRUMViewUpdatesThrottler: RUMViewUpdatesThrottlerType {
+    func accept(event: RUMViewEvent) -> Bool {
+        return true // always send view update
+    }
+}
+
 func mockNoOpSessionListerner() -> RUMSessionListener {
     return { _, _ in }
 }
@@ -611,6 +619,10 @@ extension RUMScopeDependencies {
     }
 
     static func mockWith(
+        rumApplicationID: String = .mockAny(),
+        sessionSampler: Sampler = .mockKeepAll(),
+        sdkInitDate: Date = .mockAny(),
+        backgroundEventTrackingEnabled: Bool = .mockAny(),
         appStateListener: AppStateListening = AppStateListenerMock.mockAny(),
         userInfoProvider: RUMUserInfoProvider = RUMUserInfoProvider(userInfoProvider: .mockAny()),
         launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock.mockAny(),
@@ -619,28 +631,36 @@ extension RUMScopeDependencies {
             carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: nil)
         ),
         serviceName: String = .mockAny(),
+        applicationVersion: String = .mockAny(),
+        sdkVersion: String = .mockAny(),
         eventBuilder: RUMEventBuilder = RUMEventBuilder(eventsMapper: .mockNoOp()),
         eventOutput: RUMEventOutput = RUMEventOutputMock(),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         dateCorrector: DateCorrectorType = DateCorrectorMock(),
         crashContextIntegration: RUMWithCrashContextIntegration? = nil,
         ciTest: RUMCITest? = nil,
+        viewUpdatesThrottlerFactory: @escaping () -> RUMViewUpdatesThrottlerType = { NoOpRUMViewUpdatesThrottler() },
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
+            rumApplicationID: rumApplicationID,
+            sessionSampler: sessionSampler,
+            sdkInitDate: sdkInitDate,
+            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
             appStateListener: appStateListener,
             userInfoProvider: userInfoProvider,
             launchTimeProvider: launchTimeProvider,
             connectivityInfoProvider: connectivityInfoProvider,
             serviceName: serviceName,
-            applicationVersion: .mockAny(),
-            sdkVersion: .mockAny(),
+            applicationVersion: applicationVersion,
+            sdkVersion: sdkVersion,
             eventBuilder: eventBuilder,
             eventOutput: eventOutput,
             rumUUIDGenerator: rumUUIDGenerator,
             dateCorrector: dateCorrector,
             crashContextIntegration: crashContextIntegration,
             ciTest: ciTest,
+            viewUpdatesThrottlerFactory: viewUpdatesThrottlerFactory,
             vitalCPUReader: SamplingBasedVitalReaderMock(),
             vitalMemoryReader: SamplingBasedVitalReaderMock(),
             vitalRefreshRateReader: ContinuousVitalReaderMock(),
@@ -650,60 +670,56 @@ extension RUMScopeDependencies {
 
     /// Creates new instance of `RUMScopeDependencies` by replacing individual dependencies.
     func replacing(
+        rumApplicationID: String? = nil,
+        sessionSampler: Sampler? = nil,
+        sdkInitDate: Date? = nil,
+        backgroundEventTrackingEnabled: Bool? = nil,
         appStateListener: AppStateListening? = nil,
         userInfoProvider: RUMUserInfoProvider? = nil,
         launchTimeProvider: LaunchTimeProviderType? = nil,
         connectivityInfoProvider: RUMConnectivityInfoProvider? = nil,
         serviceName: String? = nil,
+        applicationVersion: String? = nil,
+        sdkVersion: String? = nil,
         eventBuilder: RUMEventBuilder? = nil,
         eventOutput: RUMEventOutput? = nil,
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
         dateCorrector: DateCorrectorType? = nil,
         crashContextIntegration: RUMWithCrashContextIntegration? = nil,
         ciTest: RUMCITest? = nil,
-        onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
+        viewUpdatesThrottlerFactory: (() -> RUMViewUpdatesThrottlerType)? = nil,
+        onSessionStart: RUMSessionListener? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
+            rumApplicationID: rumApplicationID ?? self.rumApplicationID,
+            sessionSampler: sessionSampler ?? self.sessionSampler,
+            sdkInitDate: sdkInitDate ?? self.sdkInitDate,
+            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled ?? self.backgroundEventTrackingEnabled,
             appStateListener: appStateListener ?? self.appStateListener,
             userInfoProvider: userInfoProvider ?? self.userInfoProvider,
             launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider,
             connectivityInfoProvider: connectivityInfoProvider ?? self.connectivityInfoProvider,
             serviceName: serviceName ?? self.serviceName,
-            applicationVersion: self.applicationVersion,
-            sdkVersion: self.sdkVersion,
+            applicationVersion: applicationVersion ?? self.applicationVersion,
+            sdkVersion: sdkVersion ?? self.sdkVersion,
             eventBuilder: eventBuilder ?? self.eventBuilder,
             eventOutput: eventOutput ?? self.eventOutput,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
             dateCorrector: dateCorrector ?? self.dateCorrector,
             crashContextIntegration: crashContextIntegration ?? self.crashContextIntegration,
-            ciTest: ciTest,
+            ciTest: ciTest ?? self.ciTest,
+            viewUpdatesThrottlerFactory: viewUpdatesThrottlerFactory ?? self.viewUpdatesThrottlerFactory,
             vitalCPUReader: SamplingBasedVitalReaderMock(),
             vitalMemoryReader: SamplingBasedVitalReaderMock(),
             vitalRefreshRateReader: ContinuousVitalReaderMock(),
-            onSessionStart: onSessionStart
+            onSessionStart: onSessionStart ?? self.onSessionStart
         )
     }
 }
 
 extension RUMApplicationScope {
     static func mockAny() -> RUMApplicationScope {
-        return mockWith()
-    }
-
-    static func mockWith(
-        rumApplicationID: String = .mockAny(),
-        dependencies: RUMScopeDependencies = .mockAny(),
-        sampler: Sampler = .mockKeepAll(),
-        sdkInitDate: Date = .mockAny(),
-        backgroundEventTrackingEnabled: Bool = .mockAny()
-    ) -> RUMApplicationScope {
-        return RUMApplicationScope(
-            rumApplicationID: rumApplicationID,
-            dependencies: dependencies,
-            sampler: sampler,
-            sdkInitDate: sdkInitDate,
-            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
-        )
+        return RUMApplicationScope(dependencies: .mockAny())
     }
 }
 
@@ -715,18 +731,14 @@ extension RUMSessionScope {
     static func mockWith(
         isInitialSession: Bool = .mockAny(),
         parent: RUMContextProvider = RUMContextProviderMock(),
-        dependencies: RUMScopeDependencies = .mockAny(),
-        sampler: Sampler = .mockKeepAll(),
         startTime: Date = .mockAny(),
-        backgroundEventTrackingEnabled: Bool = .mockAny()
+        dependencies: RUMScopeDependencies = .mockAny()
     ) -> RUMSessionScope {
         return RUMSessionScope(
             isInitialSession: isInitialSession,
             parent: parent,
-            dependencies: dependencies,
-            sampler: sampler,
             startTime: startTime,
-            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
+            dependencies: dependencies
         )
     }
 }
