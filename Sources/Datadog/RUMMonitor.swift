@@ -593,30 +593,6 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         )
     }
 
-    // MARK: - RUM Telemetry
-
-    override internal func addTelemetryDebug(withMessage message: String) {
-        process(
-            command: RUMTelemetryDebugCommand(
-                time: dateProvider.currentDate(),
-                attributes: [:],
-                message: message
-            )
-        )
-    }
-
-    override internal func addTelemetryError(withMessage message: String, kind: String? = nil, stack: String? = nil) {
-        process(
-            command: RUMTelemetryErrorCommand(
-                time: dateProvider.currentDate(),
-                attributes: [:],
-                message: message,
-                kind: kind,
-                stack: stack
-            )
-        )
-    }
-
     // MARK: - Attributes
 
     override public func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
@@ -644,12 +620,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
 
     func process(command: RUMCommand) {
         queue.async {
-            if (command is RUMTelemetryDebugCommand) || (command is RUMTelemetryErrorCommand) {
-                _ = self.applicationScope.process(command: command)
-            } else {
-                let transformedCommand = self.transform(command: command)
-                _ = self.applicationScope.process(command: transformedCommand)
-            }
+            let transformedCommand = self.transform(command: command)
+            _ = self.applicationScope.process(command: transformedCommand)
 
             if let debugging = self.debugging {
                 debugging.debug(applicationScope: self.applicationScope)

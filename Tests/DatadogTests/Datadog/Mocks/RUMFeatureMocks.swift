@@ -86,6 +86,26 @@ extension RUMResourceType {
     static func mockAny() -> RUMResourceType { .image }
 }
 
+// MARK: - RUMTelemetry Mocks
+
+extension RUMTelemetry: AnyMockable {
+    static func mockAny() -> Self { .mockWith() }
+
+    static func mockWith(
+        sdkVersion: String = .mockAny(),
+        applicationID: String = .mockAny(),
+        dateProvider: DateProvider = SystemDateProvider(),
+        dateCorrector: DateCorrectorType = DateCorrectorMock()
+    ) -> Self {
+        .init(
+            sdkVersion: sdkVersion,
+            applicationID: applicationID,
+            dateProvider: dateProvider,
+            dateCorrector: dateCorrector
+        )
+    }
+}
+
 // MARK: - RUMDataModel Mocks
 
 struct RUMDataModelMock: RUMDataModel, RUMSanitizableEvent, EquatableInTests {
