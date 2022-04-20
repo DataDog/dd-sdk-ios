@@ -41,4 +41,13 @@ extension Telemetry {
     func error(_ message: String, stack: String? = nil) {
         error(message, kind: nil, stack: stack)
     }
+
+    /// Collect execution error.
+    ///
+    /// - Parameters:
+    ///   - message: The error message.
+    ///   - stack: The stack trace.
+    func error(_ message: String, error: Error?) {
+        self.error(message, kind: "swift", stack: String(describing: error))
+    }
 }

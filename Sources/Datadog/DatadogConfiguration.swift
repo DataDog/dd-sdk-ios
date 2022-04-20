@@ -269,9 +269,6 @@ extension Datadog {
         private(set) var proxyConfiguration: [AnyHashable: Any]?
         private(set) var encryption: DataEncryption?
 
-        /// The client token autorizing internal monitoring data to be sent to Datadog org.
-        private(set) var internalMonitoringClientToken: String?
-
         /// Creates the builder for configuring the SDK to work with RUM, Logging and Tracing features.
         /// - Parameter rumApplicationID: RUM Application ID obtained on Datadog website.
         /// - Parameter clientToken: the client token (generated for the RUM Application) obtained on Datadog website.
@@ -341,8 +338,7 @@ extension Datadog {
                     batchSize: .medium,
                     uploadFrequency: .average,
                     additionalConfiguration: [:],
-                    proxyConfiguration: nil,
-                    internalMonitoringClientToken: nil
+                    proxyConfiguration: nil
                 )
             }
 
@@ -723,8 +719,9 @@ extension Datadog {
             ///     SWIFT_ACTIVE_COMPILATION_CONDITIONS = DD_SDK_ENABLE_INTERNAL_MONITORING
             ///
             /// - Parameter clientToken: the client token authorised for a Datadog org which should receive the SDK telemetry
+            @available(*, deprecated, message: "Internal monitoring has been removed")
             public func enableInternalMonitoring(clientToken: String) -> Builder {
-                configuration.internalMonitoringClientToken = clientToken
+                // no-op
                 return self
             }
 #endif

@@ -52,14 +52,14 @@ internal final class LoggingFeature {
     static func createStorage(
         directories: FeatureDirectories,
         commonDependencies: FeaturesCommonDependencies,
-        internalMonitor: InternalMonitor? = nil
+        telemetry: Telemetry? = nil
     ) -> FeatureStorage {
         return FeatureStorage(
             featureName: LoggingFeature.featureName,
             dataFormat: LoggingFeature.dataFormat,
             directories: directories,
             commonDependencies: commonDependencies,
-            internalMonitor: internalMonitor
+            telemetry: telemetry
         )
     }
 
@@ -67,7 +67,7 @@ internal final class LoggingFeature {
         storage: FeatureStorage,
         configuration: FeaturesConfiguration.Logging,
         commonDependencies: FeaturesCommonDependencies,
-        internalMonitor: InternalMonitor? = nil
+        telemetry: Telemetry? = nil
     ) -> FeatureUpload {
         return FeatureUpload(
             featureName: LoggingFeature.featureName,
@@ -89,10 +89,10 @@ internal final class LoggingFeature {
                     .ddEVPOriginVersionHeader(sdkVersion: configuration.common.sdkVersion),
                     .ddRequestIDHeader(),
                 ],
-                internalMonitor: internalMonitor
+                telemetry: telemetry
             ),
             commonDependencies: commonDependencies,
-            internalMonitor: internalMonitor
+            telemetry: telemetry
         )
     }
 
@@ -100,18 +100,18 @@ internal final class LoggingFeature {
         directories: FeatureDirectories,
         configuration: FeaturesConfiguration.Logging,
         commonDependencies: FeaturesCommonDependencies,
-        internalMonitor: InternalMonitor? = nil
+        telemetry: Telemetry? = nil
     ) {
         let storage = LoggingFeature.createStorage(
             directories: directories,
             commonDependencies: commonDependencies,
-            internalMonitor: internalMonitor
+            telemetry: telemetry
         )
         let upload = LoggingFeature.createUpload(
             storage: storage,
             configuration: configuration,
             commonDependencies: commonDependencies,
-            internalMonitor: internalMonitor
+            telemetry: telemetry
         )
         self.init(
             storage: storage,

@@ -107,7 +107,8 @@ public class Tracer: OTTracer {
                 dateCorrector: tracingFeature.dateCorrector,
                 source: tracingFeature.configuration.common.source,
                 origin: tracingFeature.configuration.common.origin ,
-                eventsMapper: tracingFeature.configuration.spanEventMapper
+                eventsMapper: tracingFeature.configuration.spanEventMapper,
+                telemetry: tracingFeature.telemetry
             ),
             spanOutput: SpanFileOutput(
                 fileWriter: tracingFeature.storage.writer,

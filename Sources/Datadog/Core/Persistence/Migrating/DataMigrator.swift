@@ -12,13 +12,13 @@ internal protocol DataMigrator {
 internal struct DataMigratorFactory {
     /// Data directories for the feature.
     let directories: FeatureDirectories
-    var internalMonitor: InternalMonitor? = nil
+    var telemetry: Telemetry? = nil
 
     /// Resolves migrator to use when the SDK is started.
     func resolveInitialMigrator() -> DataMigrator {
         return DeleteAllDataMigrator(
             directory: directories.unauthorized,
-            internalMonitor: internalMonitor
+            telemetry: telemetry
         )
     }
 
@@ -28,13 +28,13 @@ internal struct DataMigratorFactory {
         case (.pending, .notGranted):
             return DeleteAllDataMigrator(
                 directory: directories.unauthorized,
-                internalMonitor: internalMonitor
+                telemetry: telemetry
             )
         case (.pending, .granted):
             return MoveDataMigrator(
                 sourceDirectory: directories.unauthorized,
                 destinationDirectory: directories.authorized,
-                internalMonitor: internalMonitor
+                telemetry: telemetry
             )
         default:
             return nil

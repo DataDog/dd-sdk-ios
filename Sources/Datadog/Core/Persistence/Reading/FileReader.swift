@@ -13,7 +13,7 @@ internal final class FileReader: Reader {
     /// Orchestrator producing reference to readable file.
     private let orchestrator: FilesOrchestrator
     private let encryption: DataEncryption?
-    private let internalMonitor: InternalMonitor?
+    private let telemetry: Telemetry?
 
     /// Files marked as read.
     private var filesRead: Set<String> = []
@@ -22,12 +22,12 @@ internal final class FileReader: Reader {
         dataFormat: DataFormat,
         orchestrator: FilesOrchestrator,
         encryption: DataEncryption? = nil,
-        internalMonitor: InternalMonitor? = nil
+        telemetry: Telemetry? = nil
     ) {
         self.dataFormat = dataFormat
         self.orchestrator = orchestrator
         self.encryption = encryption
-        self.internalMonitor = internalMonitor
+        self.telemetry = telemetry
     }
 
     // MARK: - Reading batches
@@ -42,7 +42,7 @@ internal final class FileReader: Reader {
             let batchData = dataFormat.prefixData + fileData + dataFormat.suffixData
             return Batch(data: batchData, file: file)
         } catch {
-            internalMonitor?.sdkLogger.error("Failed to read data from file", error: error)
+            telemetry?.error("Failed to read data from file", error: error)
             return nil
         }
     }

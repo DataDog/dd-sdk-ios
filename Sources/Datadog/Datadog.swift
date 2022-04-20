@@ -172,19 +172,11 @@ public class Datadog {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
 
-        let kronosMonitor: KronosMonitor?
-#if DD_SDK_ENABLE_INTERNAL_MONITORING
-        // Collect Kronos telemetry only if internal monitoring is compiled and enabled
-        kronosMonitor = configuration.internalMonitoring != nil ? KronosInternalMonitor() : nil
-#else
-        kronosMonitor = nil
-#endif
-
         let consentProvider = ConsentProvider(initialConsent: initialTrackingConsent)
         let dateProvider = SystemDateProvider()
         let dateCorrector = DateCorrector(
             deviceDateProvider: dateProvider,
-            serverDateProvider: NTPServerDateProvider(kronosMonitor: kronosMonitor)
+            serverDateProvider: NTPServerDateProvider()
         )
         let userInfoProvider = UserInfoProvider()
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
@@ -205,8 +197,7 @@ public class Datadog {
         userLogger = createSDKUserLogger(configuration: internalLoggerConfiguration)
 
         // Then, initialize features:
-
-        var internalMonitoring: InternalMonitoringFeature?
+        var telemetry: Telemetry?
         var logging: LoggingFeature?
         var tracing: TracingFeature?
         var rum: RUMFeature?
@@ -231,12 +222,27 @@ public class Datadog {
             encryption: configuration.common.encryption
         )
 
-        if let internalMonitoringConfiguration = configuration.internalMonitoring {
-            internalMonitoring = InternalMonitoringFeature(
-                logDirectories: try obtainInternalMonitoringFeatureLogDirectories(),
-                configuration: internalMonitoringConfiguration,
-                commonDependencies: commonDependencies
+        if let rumConfiguration = configuration.rum {
+            telemetry = RUMTelemetry(
+                sdkVersion: configuration.common.sdkVersion,
+                applicationID: rumConfiguration.applicationID,
+                dateProvider: dateProvider,
+                dateCorrector: dateCorrector
             )
+
+            rum = RUMFeature(
+                directories: try obtainRUMFeatureDirectories(),
+                configuration: rumConfiguration,
+                commonDependencies: commonDependencies,
+                telemetry: telemetry
+            )
+
+            if let instrumentationConfiguration = rumConfiguration.instrumentation {
+                rumInstrumentation = RUMInstrumentation(
+                    configuration: instrumentationConfiguration,
+                    dateProvider: dateProvider
+                )
+            }
         }
 
         if let loggingConfiguration = configuration.logging {
@@ -244,7 +250,7 @@ public class Datadog {
                 directories: try obtainLoggingFeatureDirectories(),
                 configuration: loggingConfiguration,
                 commonDependencies: commonDependencies,
-                internalMonitor: internalMonitoring?.monitor
+                telemetry: telemetry
             )
         }
 
@@ -255,29 +261,15 @@ public class Datadog {
                 commonDependencies: commonDependencies,
                 loggingFeatureAdapter: logging.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
                 tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
-                internalMonitor: internalMonitoring?.monitor
+                telemetry: telemetry
             )
-        }
-
-        if let rumConfiguration = configuration.rum {
-            rum = RUMFeature(
-                directories: try obtainRUMFeatureDirectories(),
-                configuration: rumConfiguration,
-                commonDependencies: commonDependencies,
-                internalMonitor: internalMonitoring?.monitor
-            )
-            if let instrumentationConfiguration = rumConfiguration.instrumentation {
-                rumInstrumentation = RUMInstrumentation(
-                    configuration: instrumentationConfiguration,
-                    dateProvider: dateProvider
-                )
-            }
         }
 
         if let crashReportingConfiguration = configuration.crashReporting {
             crashReporting = CrashReportingFeature(
                 configuration: crashReportingConfiguration,
-                commonDependencies: commonDependencies
+                commonDependencies: commonDependencies,
+                telemetry: telemetry
             )
         }
 
@@ -287,8 +279,6 @@ public class Datadog {
                 commonDependencies: commonDependencies
             )
         }
-
-        InternalMonitoringFeature.instance = internalMonitoring
 
         LoggingFeature.instance = logging
         TracingFeature.instance = tracing
@@ -314,12 +304,6 @@ public class Datadog {
             Global.crashReporter = CrashReporter(crashReportingFeature: crashReportingFeature)
             Global.crashReporter?.sendCrashReportIfFound()
         }
-
-        // If Internal Monitoring is enabled and Kronos internal monitor is configured,
-        // export result of NTP sync to IM.
-        if let internalMonitoringFeature = InternalMonitoringFeature.instance {
-            kronosMonitor?.export(to: internalMonitoringFeature.monitor)
-        }
     }
 
     internal init(
@@ -336,7 +320,6 @@ public class Datadog {
         LoggingFeature.instance?.storage.clearAllData()
         TracingFeature.instance?.storage.clearAllData()
         RUMFeature.instance?.storage.clearAllData()
-        InternalMonitoringFeature.instance?.logsStorage.clearAllData()
     }
 
     /// Flushes all authorised data for each feature, tears down and deinitializes the SDK.
@@ -357,8 +340,6 @@ public class Datadog {
         LoggingFeature.instance?.deinitialize()
         TracingFeature.instance?.deinitialize()
         RUMFeature.instance?.deinitialize()
-
-        InternalMonitoringFeature.instance?.deinitialize()
         CrashReportingFeature.instance?.deinitialize()
 
         RUMInstrumentation.instance?.deinitialize()

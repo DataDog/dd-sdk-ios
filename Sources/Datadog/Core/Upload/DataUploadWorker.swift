@@ -24,7 +24,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
     /// Name of the feature this worker is performing uploads for.
     private let featureName: String
     /// A monitor reporting errors through Internal Monitoring feature (if enabled).
-    private let internalMonitor: InternalMonitor?
+    private let telemetry: Telemetry?
 
     /// Delay used to schedule consecutive uploads.
     private var delay: Delay
@@ -39,7 +39,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
         uploadConditions: DataUploadConditions,
         delay: Delay,
         featureName: String,
-        internalMonitor: InternalMonitor? = nil
+        telemetry: Telemetry? = nil
     ) {
         self.queue = queue
         self.fileReader = fileReader
@@ -47,7 +47,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
         self.dataUploader = dataUploader
         self.delay = delay
         self.featureName = featureName
-        self.internalMonitor = internalMonitor
+        self.telemetry = telemetry
 
         let uploadWork = DispatchWorkItem { [weak self] in
             guard let self = self else {
@@ -81,8 +81,8 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 }
 
                 // Send internal monitoring error (if any and if Internal Monitoring is enabled)
-                if let sdkError = uploadStatus.internalMonitoringError {
-                    self.internalMonitor?.sdkLogger.error(sdkError.message, error: sdkError.error, attributes: sdkError.attributes)
+                if let telemetryError = uploadStatus.telemetryError {
+                    self.telemetry?.error(telemetryError.message, error: telemetryError.error)
                 }
             } else {
                 let batchLabel = nextBatch != nil ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")

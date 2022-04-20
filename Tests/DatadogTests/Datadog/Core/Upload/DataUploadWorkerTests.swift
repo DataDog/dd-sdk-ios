@@ -234,7 +234,7 @@ class DataUploadWorkerTests: XCTestCase {
         let mockUserLoggerOutput = LogOutputMock()
         userLogger = .mockWith(logOutput: mockUserLoggerOutput)
 
-        let mockSDKLoggerOutput = LogOutputMock()
+        let mockTelemetry = TelemetryMock()
 
         // Given
         writer.write(value: ["key": "value"])
@@ -254,9 +254,7 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: randomFeatureName,
-            internalMonitor: InternalMonitor(
-                sdkLogger: .mockWith(logOutput: mockSDKLoggerOutput)
-            )
+            telemetry: mockTelemetry
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
@@ -283,11 +281,11 @@ class DataUploadWorkerTests: XCTestCase {
             "An error should be printed to `userLogger`. All captured logs:\n\(mockUserLoggerOutput.dumpAllRecordedLogs())"
         )
 
-        XCTAssertEqual(mockSDKLoggerOutput.allRecordedLogs.count, 1)
+        XCTAssertEqual(mockTelemetry.errors.count, 1)
         XCTAssertEqual(
-            mockSDKLoggerOutput.allRecordedLogs[0].message,
-            randomUploadStatus.internalMonitoringError?.message,
-            "An error should be send to `sdkLogger` for internal monitoring. All captured logs:\n\(mockSDKLoggerOutput.dumpAllRecordedLogs())"
+            mockTelemetry.errors.first?.message,
+            randomUploadStatus.telemetryError?.message,
+            "An error should be send to `sdkLogger` for internal monitoring. \(mockTelemetry)"
         )
     }
 
