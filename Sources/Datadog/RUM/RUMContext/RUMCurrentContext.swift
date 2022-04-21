@@ -25,6 +25,14 @@ internal class RUMCurrentContext: RUMContextProvider {
         }
     }
 
+    // MARK: - Internal
+
+    func async(execute work: @escaping (RUMContext) -> Void) {
+        queue.async {
+            work(self.activeViewContext ?? self.sessionContext ?? self.applicationContext)
+        }
+    }
+
     // MARK: - Private
 
     private var applicationContext: RUMContext {

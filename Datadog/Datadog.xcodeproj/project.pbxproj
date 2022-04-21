@@ -575,6 +575,12 @@
 		D240688627CFA64A00C04F44 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D240688427CFA64A00C04F44 /* LaunchScreen.storyboard */; };
 		D243BBC0276C9D640019C857 /* PLCrashReporterIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D243BBBF276C9D640019C857 /* PLCrashReporterIntegrationTests.swift */; };
 		D244B3A3271EDACD003E1B29 /* SwiftUIExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D244B3A2271EDACD003E1B29 /* SwiftUIExtensionsTests.swift */; };
+		D248ED4228070E2B00B315B4 /* Telemetry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D248ED4128070E2B00B315B4 /* Telemetry.swift */; };
+		D248ED4328070E2B00B315B4 /* Telemetry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D248ED4128070E2B00B315B4 /* Telemetry.swift */; };
+		D248ED452807193B00B315B4 /* RUMTelemetry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D248ED442807193B00B315B4 /* RUMTelemetry.swift */; };
+		D248ED462807193B00B315B4 /* RUMTelemetry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D248ED442807193B00B315B4 /* RUMTelemetry.swift */; };
+		D248ED4A28081D7500B315B4 /* RUMTelemetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D248ED4728081B9B00B315B4 /* RUMTelemetryTests.swift */; };
+		D248ED4B28081D7E00B315B4 /* RUMTelemetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D248ED4728081B9B00B315B4 /* RUMTelemetryTests.swift */; };
 		D24985A22728048B00B4F72D /* SwiftUIViewHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24985A12728048B00B4F72D /* SwiftUIViewHandler.swift */; };
 		D24985A327280FD100B4F72D /* SwiftUIViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D249859F2728042200B4F72D /* SwiftUIViewModifier.swift */; };
 		D24C27EA270C8BEE005DE596 /* DataCompression.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24C27E9270C8BEE005DE596 /* DataCompression.swift */; };
@@ -1743,6 +1749,9 @@
 		D240688527CFA64A00C04F44 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		D243BBBF276C9D640019C857 /* PLCrashReporterIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PLCrashReporterIntegrationTests.swift; sourceTree = "<group>"; };
 		D244B3A2271EDACD003E1B29 /* SwiftUIExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIExtensionsTests.swift; sourceTree = "<group>"; };
+		D248ED4128070E2B00B315B4 /* Telemetry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Telemetry.swift; sourceTree = "<group>"; };
+		D248ED442807193B00B315B4 /* RUMTelemetry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTelemetry.swift; sourceTree = "<group>"; };
+		D248ED4728081B9B00B315B4 /* RUMTelemetryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTelemetryTests.swift; sourceTree = "<group>"; };
 		D249859F2728042200B4F72D /* SwiftUIViewModifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftUIViewModifier.swift; sourceTree = "<group>"; };
 		D24985A12728048B00B4F72D /* SwiftUIViewHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftUIViewHandler.swift; sourceTree = "<group>"; };
 		D24C27E9270C8BEE005DE596 /* DataCompression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCompression.swift; sourceTree = "<group>"; };
@@ -2073,6 +2082,7 @@
 				61BBD19424ED4E9E0023E65F /* FeaturesConfiguration.swift */,
 				614E9EB2244719FA007EE3E1 /* BundleType.swift */,
 				61BB2B1A244A185D009F3F56 /* PerformancePreset.swift */,
+				D248ED4128070E2B00B315B4 /* Telemetry.swift */,
 				9E5D2D4A249137E900763FE4 /* Swizzling */,
 				61133BBF2423979B00786299 /* Attributes */,
 				61133B9F2423979B00786299 /* Utils */,
@@ -3645,8 +3655,9 @@
 		61E5332A24B75C3B003D6C4E /* RUM */ = {
 			isa = PBXGroup;
 			children = (
-				B3FC3C0426526EE900DEED9E /* RUMVitals */,
 				61E5332B24B75C51003D6C4E /* RUMFeature.swift */,
+				D248ED442807193B00B315B4 /* RUMTelemetry.swift */,
+				B3FC3C0426526EE900DEED9E /* RUMVitals */,
 				61E5333224B7A504003D6C4E /* DataModels */,
 				61C3E63124BF143C008053F2 /* RUMMonitor */,
 				6156CB8A24DDA186008CB2B2 /* RUMContext */,
@@ -3663,9 +3674,10 @@
 		61E5332D24B75DC7003D6C4E /* RUM */ = {
 			isa = PBXGroup;
 			children = (
+				61E5332E24B75DE2003D6C4E /* RUMFeatureTests.swift */,
+				D248ED4728081B9B00B315B4 /* RUMTelemetryTests.swift */,
 				9EB4B86A27510AC80041CD03 /* WebView */,
 				B3FC3C1226526F4100DEED9E /* RUMVitals */,
-				61E5332E24B75DE2003D6C4E /* RUMFeatureTests.swift */,
 				618715FA24DC5EE700FC0F69 /* DataModels */,
 				617B953B24BF4D7300E6F443 /* RUMMonitor */,
 				6156CB9124DDAA13008CB2B2 /* RUMContext */,
@@ -4990,6 +5002,7 @@
 				D2EFF3D32731822A00D09F33 /* RUMViewsHandler.swift in Sources */,
 				61133BDD2423979B00786299 /* InternalLoggers.swift in Sources */,
 				6105D1A02508F1600040DD22 /* LoggingWithActiveSpanIntegration.swift in Sources */,
+				D248ED4228070E2B00B315B4 /* Telemetry.swift in Sources */,
 				9EB4B864274FAB410041CD03 /* WebLogEventConsumer.swift in Sources */,
 				61EF78B1257E2E7A00EDCCB3 /* MoveDataMigrator.swift in Sources */,
 				61133BDC2423979B00786299 /* Logger.swift in Sources */,
@@ -5076,6 +5089,7 @@
 				61E909EE24A24DD3005EA2DE /* OTFormat.swift in Sources */,
 				9E26E6B924C87693000B3270 /* RUMDataModels.swift in Sources */,
 				61D3E0D6277B23F1008BE766 /* KronosClock.swift in Sources */,
+				D248ED452807193B00B315B4 /* RUMTelemetry.swift in Sources */,
 				613E793B2577B6EE00DFCC17 /* DataReader.swift in Sources */,
 				614B0A5324EBFE5500A2A780 /* DDRUMMonitor.swift in Sources */,
 				61133BE32423979B00786299 /* UserInfoProvider.swift in Sources */,
@@ -5165,6 +5179,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D248ED4A28081D7500B315B4 /* RUMTelemetryTests.swift in Sources */,
 				61B0387D252724AB00518F3C /* URLSessionSwizzlerTests.swift in Sources */,
 				617CD0DD24CEDDD300B0B557 /* RUMUserActionScopeTests.swift in Sources */,
 				D29889C9273413ED00A4D1A9 /* RUMViewsHandlerTests.swift in Sources */,
@@ -5638,6 +5653,7 @@
 				D2CB6E4027C50EAE00A62B57 /* UIViewControllerSwizzler.swift in Sources */,
 				D2CB6E4127C50EAE00A62B57 /* RUMCurrentContext.swift in Sources */,
 				D2CB6E4227C50EAE00A62B57 /* RUMConnectivityInfoProvider.swift in Sources */,
+				D248ED462807193B00B315B4 /* RUMTelemetry.swift in Sources */,
 				D2CB6E4327C50EAE00A62B57 /* ObjcExceptionHandler.m in Sources */,
 				D2CB6E4427C50EAE00A62B57 /* UIApplicationSwizzler.swift in Sources */,
 				D2CB6E4527C50EAE00A62B57 /* RUMResourceScope.swift in Sources */,
@@ -5704,6 +5720,7 @@
 				D2CB6E8127C50EAE00A62B57 /* DataUploader.swift in Sources */,
 				D2CB6E8227C50EAE00A62B57 /* DeleteAllDataMigrator.swift in Sources */,
 				D2CB6E8327C50EAE00A62B57 /* RUMUserActionScope.swift in Sources */,
+				D248ED4328070E2B00B315B4 /* Telemetry.swift in Sources */,
 				D2CB6E8427C50EAE00A62B57 /* DDNoopRUMMonitor.swift in Sources */,
 				D2CB6E8527C50EAE00A62B57 /* Casting.swift in Sources */,
 				D2CB6E8627C50EAE00A62B57 /* RUMScope.swift in Sources */,
@@ -5782,6 +5799,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D2CB6ED727C520D400A62B57 /* URLSessionSwizzlerTests.swift in Sources */,
+				D248ED4B28081D7E00B315B4 /* RUMTelemetryTests.swift in Sources */,
 				D2CB6ED827C520D400A62B57 /* RUMUserActionScopeTests.swift in Sources */,
 				D2CB6ED927C520D400A62B57 /* RUMViewsHandlerTests.swift in Sources */,
 				D2CB6EDA27C520D400A62B57 /* Casting+Tracing.swift in Sources */,
