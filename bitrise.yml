@@ -55,13 +55,6 @@ workflows:
     - _deploy_artifacts
     - _notify_failure_on_slack
 
-
-  # Temporary workflow for enabling backward compatibility for pre- RUMM-2110 triggers.
-  # TODO: remove this workflow and clean-up triggers when RUMM-2110 is merged into `master` with `1.11.0`.
-  push_to_any_branch:
-    after_run:
-    - push_to_pull_request
-
   push_to_dogfooding:
     after_run:
     - create_dogfooding_pr
