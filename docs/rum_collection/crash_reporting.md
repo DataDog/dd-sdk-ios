@@ -181,7 +181,7 @@ To verify your iOS Crash Reporting and Error Tracking configuration, issue a cra
 
 3. After the crash happens, restart your application and wait for the iOS SDK to upload the crash report in [**Error Tracking**][8].
 
-Note that RUM supports system symbol files for iOS v14+ arm64 and arm64e architecture.
+Note that RUM supports symbolication of system symbol files for iOS v14+ arm64 and arm64e architecture.
 
 ## Further Reading
 
