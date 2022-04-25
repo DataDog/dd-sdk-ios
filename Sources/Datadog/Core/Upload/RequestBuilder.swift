@@ -149,7 +149,7 @@ internal struct RequestBuilder {
             request.httpBody = body
         } else {
             request.httpBody = data
-            telemetry?.error(
+            telemetry?.debug(
                 """
                 Failed to compress request payload
                 - url: \(url)
