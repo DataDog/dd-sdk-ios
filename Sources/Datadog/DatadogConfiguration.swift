@@ -703,29 +703,6 @@ extension Datadog {
                 return self
             }
 
-#if DD_SDK_ENABLE_INTERNAL_MONITORING
-            // MARK: - Internal Monitoring Configuration
-
-            /// Enables the internal monitoring feature.
-            ///
-            /// This feature provides an observability for the SDK performance. All telemetry collected by the internal monitoring feature is sent to
-            /// Datadog instance authorised for given `clientToken`, which can be a different org than the one configured for RUM, Tracing and Logging data.
-            ///
-            /// This feature is opt-in and requires specific configuration to be enabled. **Datadog does not collect any internal telemetry data by default.**
-            ///
-            /// To make this API visible, the `DD_SDK_ENABLE_INTERNAL_MONITORING` compiler flag must be defined in the  "Active Compilation Conditions" Build Setting
-            /// or in the `.xcconfig` set for the build configuration:
-            ///
-            ///     SWIFT_ACTIVE_COMPILATION_CONDITIONS = DD_SDK_ENABLE_INTERNAL_MONITORING
-            ///
-            /// - Parameter clientToken: the client token authorised for a Datadog org which should receive the SDK telemetry
-            @available(*, deprecated, message: "Internal monitoring has been removed")
-            public func enableInternalMonitoring(clientToken: String) -> Builder {
-                // no-op
-                return self
-            }
-#endif
-
             // MARK: - Features Common Configuration
 
             /// Sets the default service name associated with data send to Datadog.
