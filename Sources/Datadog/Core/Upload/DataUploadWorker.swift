@@ -23,7 +23,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
     private let uploadConditions: DataUploadConditions
     /// Name of the feature this worker is performing uploads for.
     private let featureName: String
-    /// A monitor reporting errors through Internal Monitoring feature (if enabled).
+    /// A monitor reporting errors through internal telemetry feature (if enabled).
     private let telemetry: Telemetry?
 
     /// Delay used to schedule consecutive uploads.
@@ -80,7 +80,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     userLogger.error(userErrorMessage)
                 }
 
-                // Send internal monitoring error (if any and if Internal Monitoring is enabled)
+                // Send telemetry error (if enabled)
                 if let telemetryError = uploadStatus.telemetryError {
                     self.telemetry?.error(telemetryError.message, error: telemetryError.error)
                 }

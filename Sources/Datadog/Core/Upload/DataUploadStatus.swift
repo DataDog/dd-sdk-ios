@@ -76,7 +76,7 @@ extension DataUploadStatus {
             needsRetry: statusCode.needsRetry,
             userDebugDescription: "[response code: \(httpResponse.statusCode) (\(statusCode)), request ID: \(ddRequestID ?? "(???)")]",
             userErrorMessage: statusCode == .unauthorized ? "⚠️ The client token you provided seems to be invalid." : nil,
-            telemetryError: createInternalMonitoringErrorIfNeeded(for: httpResponse.statusCode, requestID: ddRequestID)
+            telemetryError: createTelemetryErrorIfNeeded(for: httpResponse.statusCode)
         )
     }
 
@@ -85,7 +85,7 @@ extension DataUploadStatus {
             needsRetry: true, // retry this upload as it failed due to network transport isse
             userDebugDescription: "[error: \(DDError(error: networkError).message)]", // e.g. "[error: A data connection is not currently allowed]"
             userErrorMessage: nil, // nothing actionable for the user
-            telemetryError: createInternalMonitoringErrorIfNeeded(for: networkError)
+            telemetryError: createTelemetryErrorIfNeeded(for: networkError)
         )
     }
 }
@@ -93,11 +93,9 @@ extension DataUploadStatus {
 // MARK: - Internal Telemtry
 
 /// Looks at the `statusCode` and produces error for Internal Monitoring feature if anything is going wrong.
-private func createInternalMonitoringErrorIfNeeded(
-    for statusCode: Int, requestID: String?
-) -> (message: String, error: Error?)? {
+private func createTelemetryErrorIfNeeded(for statusCode: Int) -> (message: String, error: Error?)? {
     guard let responseStatusCode = HTTPResponseStatusCode(rawValue: statusCode) else {
-        // If status code is unexpected, do not produce an error for Internal Monitoring - otherwise monitoring may
+        // If status code is unexpected, do not produce an error for internal Telemetry - otherwise monitoring may
         // become too verbose for old installations if we introduce a new status code in the API.
         return nil
     }
@@ -112,7 +110,7 @@ private func createInternalMonitoringErrorIfNeeded(
     case .badRequest, .payloadTooLarge, .tooManyRequests, .requestTimeout:
         // These codes mean that something wrong is happening either in the SDK or on the server - produce an error.
         return (
-            message: "Data upload finished with status code: \(statusCode), dd_request_id: \(requestID ?? "(???)")",
+            message: "Data upload finished with status code: \(statusCode)",
             error: nil
         )
     case .unexpected:
@@ -137,13 +135,10 @@ private let ignoredNSURLErrorCodes = Set([
 ])
 
 /// Looks at the `networkError` and produces error for Internal Monitoring feature if anything is going wrong.
-private func createInternalMonitoringErrorIfNeeded(
-    for networkError: Error
-) -> (message: String, error: Error?)? {
+private func createTelemetryErrorIfNeeded(for networkError: Error) -> (message: String, error: Error?)? {
     let nsError = networkError as NSError
-    if nsError.domain == NSURLErrorDomain && !ignoredNSURLErrorCodes.contains(nsError.code) {
-        return (message: "Data upload finished with error", error: nsError)
-    } else {
+    guard nsError.domain == NSURLErrorDomain, !ignoredNSURLErrorCodes.contains(nsError.code) else {
         return nil
     }
+    return (message: "Data upload finished with error", error: nsError)
 }

@@ -120,10 +120,9 @@ class DataUploadStatusTests: XCTestCase {
 
     func testWhenUploadFinishesWithResponse_andStatusCodeMeansSDKIssue_itCreatesInternalMonitoringError() throws {
         try alertingStatusCodes.forEach { statusCode in
-            let requestID: String = .mockRandom()
-            let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: requestID)
-            let error = try XCTUnwrap(status.telemetryError, "Internal Monitoring error should be created for status code \(statusCode)")
-            XCTAssertEqual(error.message, "Data upload finished with status code: \(statusCode), dd_request_id: \(requestID)")
+            let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: .mockRandom())
+            let error = try XCTUnwrap(status.telemetryError, "Telemetry error should be created for status code \(statusCode)")
+            XCTAssertEqual(error.message, "Data upload finished with status code: \(statusCode)")
         }
     }
 
