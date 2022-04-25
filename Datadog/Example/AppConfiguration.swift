@@ -40,6 +40,7 @@ struct ExampleAppConfiguration: AppConfiguration {
             .set(serviceName: serviceName)
             .set(batchSize: .small)
             .set(uploadFrequency: .frequent)
+            .set(sampleTelemetry: 100)
 
         if let customLogsURL = Environment.readCustomLogsURL() {
             _ = configuration.set(customLogsEndpoint: customLogsURL)

@@ -11,26 +11,30 @@ import Foundation
 internal protocol Telemetry {
     /// Collects debug information.
     ///
-    /// - Parameter message: The debug message.
-    func debug(_ message: String)
+    /// - Parameters:
+    ///   - id: Identity of the debug log, this can be used to prevent duplicates.
+    ///   - message: The debug message.
+    func debug(id: String, message: String)
 
     /// Collect execution error.
     /// 
     /// - Parameters:
+    ///   - id: Identity of the debug log, this can be used to prevent duplicates.
     ///   - message: The error message.
     ///   - kind: The kind of error.
     ///   - stack: The stack trace.
-    func error(_ message: String, kind: String?, stack: String?)
+    func error(id: String, message: String, kind: String?, stack: String?)
 }
 
 extension Telemetry {
-    /// Collect execution error.
+    /// Collects debug information.
     ///
     /// - Parameters:
-    ///   - message: The error message.
-    ///   - kind: The kind of error.
-    func error(_ message: String, kind: String) {
-        error(message, kind: kind, stack: nil)
+    ///   - message: The debug message.
+    ///   - file: The current file name.
+    ///   - line: The line number in file.
+    func debug(_ message: String, file: String = #fileID, line: Int = #line) {
+        debug(id: "\(file):\(line):\(message)", message: message)
     }
 
     /// Collect execution error.
@@ -38,8 +42,10 @@ extension Telemetry {
     /// - Parameters:
     ///   - message: The error message.
     ///   - stack: The stack trace.
-    func error(_ message: String, stack: String? = nil) {
-        error(message, kind: nil, stack: stack)
+    ///   - file: The current file name.
+    ///   - line: The line number in file.
+    func error(_ message: String, kind: String? = nil, stack: String? = nil, file: String = #fileID, line: Int = #line) {
+        error(id: "\(file):\(line):\(message)", message: message, kind: kind, stack: stack)
     }
 
     /// Collect execution error.
