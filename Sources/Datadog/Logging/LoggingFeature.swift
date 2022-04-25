@@ -52,7 +52,7 @@ internal final class LoggingFeature {
     static func createStorage(
         directories: FeatureDirectories,
         commonDependencies: FeaturesCommonDependencies,
-        telemetry: Telemetry? = nil
+        telemetry: Telemetry?
     ) -> FeatureStorage {
         return FeatureStorage(
             featureName: LoggingFeature.featureName,
@@ -67,7 +67,7 @@ internal final class LoggingFeature {
         storage: FeatureStorage,
         configuration: FeaturesConfiguration.Logging,
         commonDependencies: FeaturesCommonDependencies,
-        telemetry: Telemetry? = nil
+        telemetry: Telemetry?
     ) -> FeatureUpload {
         return FeatureUpload(
             featureName: LoggingFeature.featureName,
@@ -100,7 +100,7 @@ internal final class LoggingFeature {
         directories: FeatureDirectories,
         configuration: FeaturesConfiguration.Logging,
         commonDependencies: FeaturesCommonDependencies,
-        telemetry: Telemetry? = nil
+        telemetry: Telemetry?
     ) {
         let storage = LoggingFeature.createStorage(
             directories: directories,

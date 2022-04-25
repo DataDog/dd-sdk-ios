@@ -28,9 +28,15 @@ extension RUMFeature {
     static func mockWith(
         directories: FeatureDirectories,
         configuration: FeaturesConfiguration.RUM = .mockAny(),
-        dependencies: FeaturesCommonDependencies = .mockAny()
+        dependencies: FeaturesCommonDependencies = .mockAny(),
+        telemetry: Telemetry? = nil
     ) -> RUMFeature {
-        return RUMFeature(directories: directories, configuration: configuration, commonDependencies: dependencies)
+        return RUMFeature(
+            directories: directories,
+            configuration: configuration,
+            commonDependencies: dependencies,
+            telemetry: telemetry
+        )
     }
 
     /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.

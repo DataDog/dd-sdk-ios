@@ -22,9 +22,15 @@ extension LoggingFeature {
     static func mockWith(
         directories: FeatureDirectories,
         configuration: FeaturesConfiguration.Logging = .mockAny(),
-        dependencies: FeaturesCommonDependencies = .mockAny()
+        dependencies: FeaturesCommonDependencies = .mockAny(),
+        telemetry: Telemetry? = nil
     ) -> LoggingFeature {
-        return LoggingFeature(directories: directories, configuration: configuration, commonDependencies: dependencies)
+        return LoggingFeature(
+            directories: directories,
+            configuration: configuration,
+            commonDependencies: dependencies,
+            telemetry: telemetry
+        )
     }
 
     /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.

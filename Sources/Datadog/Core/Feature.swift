@@ -55,7 +55,7 @@ internal struct FeatureStorage {
         dataFormat: DataFormat,
         directories: FeatureDirectories,
         commonDependencies: FeaturesCommonDependencies,
-        telemetry: Telemetry? = nil
+        telemetry: Telemetry?
     ) {
         let readWriteQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-\(featureName)-read-write",
@@ -170,7 +170,7 @@ internal struct FeatureUpload {
         storage: FeatureStorage,
         requestBuilder: RequestBuilder,
         commonDependencies: FeaturesCommonDependencies,
-        telemetry: Telemetry? = nil
+        telemetry: Telemetry?
     ) {
         let uploadQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-\(featureName)-upload",

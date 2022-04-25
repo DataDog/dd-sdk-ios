@@ -27,14 +27,16 @@ extension TracingFeature {
         configuration: FeaturesConfiguration.Tracing = .mockAny(),
         dependencies: FeaturesCommonDependencies = .mockAny(),
         loggingFeature: LoggingFeature? = nil,
-        tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator()
+        tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
+        telemetry: Telemetry? = nil
     ) -> TracingFeature {
         return TracingFeature(
             directories: directories,
             configuration: configuration,
             commonDependencies: dependencies,
             loggingFeatureAdapter: loggingFeature.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
-            tracingUUIDGenerator: tracingUUIDGenerator
+            tracingUUIDGenerator: tracingUUIDGenerator,
+            telemetry: telemetry
         )
     }
 
