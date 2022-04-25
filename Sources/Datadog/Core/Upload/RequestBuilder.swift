@@ -100,7 +100,7 @@ internal struct RequestBuilder {
     private let precomputedHeaders: [String: String]
     /// Computed HTTP headers (their value is different in succeeding requests).
     private let computedHeaders: [String: () -> String]
-    /// A monitor reporting errors through Internal Monitoring feature (if enabled).
+    /// A monitor reporting errors through internal telemetry feature.
     private let telemetry: Telemetry?
 
     // MARK: - Initialization

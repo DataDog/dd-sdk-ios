@@ -62,7 +62,7 @@ internal struct DataUploadStatus {
     /// It is meant to indicate user action that must be taken to fix the upload issue (e.g. if the client token is invalid, it needs to be fixed).
     let userErrorMessage: String?
 
-    /// An optional error logged to the Internal Monitoring feature (if it's enabled).
+    /// An optional error logged to the internal Telemetry feature (if enabled).
     let telemetryError: (message: String, error: Error?)?
 }
 
@@ -92,7 +92,7 @@ extension DataUploadStatus {
 
 // MARK: - Internal Telemtry
 
-/// Looks at the `statusCode` and produces error for Internal Monitoring feature if anything is going wrong.
+/// Looks at the `statusCode` and produces error for internal Telemetry feature if anything is going wrong.
 private func createTelemetryErrorIfNeeded(for statusCode: Int) -> (message: String, error: Error?)? {
     guard let responseStatusCode = HTTPResponseStatusCode(rawValue: statusCode) else {
         // If status code is unexpected, do not produce an error for internal Telemetry - otherwise monitoring may
@@ -118,7 +118,7 @@ private func createTelemetryErrorIfNeeded(for statusCode: Int) -> (message: Stri
     }
 }
 
-/// A list of known NSURLError codes which should not produce error in Internal Monitoring.
+/// A list of known NSURLError codes which should not produce error in Telemetry.
 /// Receiving these codes doesn't mean SDK issue, but the network transportation scenario where the connection interrupted due to external factors.
 /// These list should evolve and we may want to add more codes in there.
 ///
@@ -134,7 +134,7 @@ private let ignoredNSURLErrorCodes = Set([
     NSURLErrorCannotConnectToHost, // -1004
 ])
 
-/// Looks at the `networkError` and produces error for Internal Monitoring feature if anything is going wrong.
+/// Looks at the `networkError` and produces error for internal Telemetry feature if anything is going wrong.
 private func createTelemetryErrorIfNeeded(for networkError: Error) -> (message: String, error: Error?)? {
     let nsError = networkError as NSError
     guard nsError.domain == NSURLErrorDomain, !ignoredNSURLErrorCodes.contains(nsError.code) else {

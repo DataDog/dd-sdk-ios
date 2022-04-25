@@ -130,7 +130,7 @@ class DataUploadStatusTests: XCTestCase {
         let clientIssueStatusCodes = Set(expectedStatusCodes).subtracting(Set(alertingStatusCodes))
         clientIssueStatusCodes.forEach { statusCode in
             let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: nil)
-            XCTAssertNil(status.telemetryError, "Internal Monitoring error should not be created for status code \(statusCode)")
+            XCTAssertNil(status.telemetryError, "Telemetry error should not be created for status code \(statusCode)")
         }
     }
 
@@ -146,7 +146,7 @@ class DataUploadStatusTests: XCTestCase {
         let alertingNSURLErrorCode = NSURLErrorBadURL
         let status = DataUploadStatus(networkError: NSError(domain: NSURLErrorDomain, code: alertingNSURLErrorCode, userInfo: nil))
 
-        let error = try XCTUnwrap(status.telemetryError, "Internal Monitoring error should be created for NSURLError code: \(alertingNSURLErrorCode)")
+        let error = try XCTUnwrap(status.telemetryError, "Telemetry error should be created for NSURLError code: \(alertingNSURLErrorCode)")
         XCTAssertEqual(error.message, "Data upload finished with error")
         let nsError = try XCTUnwrap(error.error) as NSError
         XCTAssertEqual(nsError.code, alertingNSURLErrorCode)
@@ -155,6 +155,6 @@ class DataUploadStatusTests: XCTestCase {
     func testWhenUploadFinishesWithError_andErrorCodeMeansExternalFactors_itDoesNotCreateInternalMonitoringError() {
         let notAlertingNSURLErrorCode = NSURLErrorNetworkConnectionLost
         let status = DataUploadStatus(networkError: NSError(domain: NSURLErrorDomain, code: notAlertingNSURLErrorCode, userInfo: nil))
-        XCTAssertNil(status.telemetryError, "Internal Monitoring error should be created for NSURLError code: \(notAlertingNSURLErrorCode)")
+        XCTAssertNil(status.telemetryError, "Telemetry error should be created for NSURLError code: \(notAlertingNSURLErrorCode)")
     }
 }
