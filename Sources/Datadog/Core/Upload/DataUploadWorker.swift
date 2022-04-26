@@ -75,14 +75,14 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     userLogger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus.userDebugDescription)")
                 }
 
-                // Print user error (if any)
-                if let userErrorMessage = uploadStatus.userErrorMessage {
-                    userLogger.error(userErrorMessage)
-                }
-
-                // Send telemetry error (if enabled)
-                if let telemetryError = uploadStatus.telemetryError {
-                    self.telemetry?.error(telemetryError.message, error: telemetryError.error)
+                switch uploadStatus.error {
+                case .unauthorized:
+                    userLogger.error("⚠️ The client token you provided seems to be invalid.")
+                case let .httpError(statusCode: statusCode):
+                    self.telemetry?.error("Data upload finished with status code: \(statusCode)")
+                case let .networkError(error: error):
+                    self.telemetry?.error("Data upload finished with error", error: error)
+                case .none: break
                 }
             } else {
                 let batchLabel = nextBatch != nil ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")

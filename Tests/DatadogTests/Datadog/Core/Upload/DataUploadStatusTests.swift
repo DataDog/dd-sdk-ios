@@ -89,72 +89,70 @@ class DataUploadStatusTests: XCTestCase {
         XCTAssertEqual(status.userDebugDescription, "[error: \(randomErrorDescription)]")
     }
 
-    // MARK: - Test `.userErrorMessage`
+    // MARK: - Test Upload Error
 
-    func testWhenUploadFinishesWithResponse_andStatusCodeIs401_itCreatesClientTokenErrorMessage() {
-        let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: 401), ddRequestID: nil)
-        XCTAssertEqual(status.userErrorMessage, "⚠️ The client token you provided seems to be invalid.")
-    }
-
-    func testWhenUploadFinishesWithResponse_andStatusCodeIsDifferentThan401_itDoesNotCreateAnyUserErrorMessage() {
-        let statusCodes = Set((100...599)).subtracting([401])
-        statusCodes.forEach { statusCode in
-            let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: nil)
-            XCTAssertNil(status.userErrorMessage)
-        }
-    }
-
-    func testWhenUploadFinishesWithError_itDoesNotCreateAnyUserErrorMessage() {
-        let status = DataUploadStatus(networkError: ErrorMock(.mockRandom()))
-        XCTAssertNil(status.userErrorMessage)
-    }
-
-    // MARK: - Test `.internalMonitoringError`
-
-    private let alertingStatusCodes = [
+    private let alertingStatusCodes: Set = [
         400, // BAD REQUEST
+        401, // UNAUTHORIZED
         413, // PAYLOAD TOO LARGE
         408, // REQUEST TIMEOUT
         429, // TOO MANY REQUESTS
     ]
 
-    func testWhenUploadFinishesWithResponse_andStatusCodeMeansSDKIssue_itCreatesInternalMonitoringError() throws {
-        try alertingStatusCodes.forEach { statusCode in
-            let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: .mockRandom())
-            let error = try XCTUnwrap(status.telemetryError, "Telemetry error should be created for status code \(statusCode)")
-            XCTAssertEqual(error.message, "Data upload finished with status code: \(statusCode)")
+    func testWhenUploadFinishesWithResponse_andStatusCodeIs401_itCreatesError() {
+        let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: 401), ddRequestID: nil)
+        XCTAssertEqual(status.error, .unauthorized)
+    }
+
+    func testWhenUploadFinishesWithResponse_andStatusCodeIsDifferentThan401_itDoesNotCreateAnyError() {
+        Set((100...599)).subtracting(alertingStatusCodes).forEach { statusCode in
+            let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: nil)
+            XCTAssertNil(status.error)
         }
     }
 
-    func testWhenUploadFinishesWithResponse_andStatusCodeMeansClientIssue_itDoesNotCreateInternalMonitoringError() {
+    func testWhenUploadFinishesWithResponse_andStatusCodeMeansSDKIssue_itCreatesHTTPError() {
+        alertingStatusCodes.subtracting([401]).forEach { statusCode in
+            let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: .mockRandom())
+
+            guard case let .httpError(statusCode: receivedStatusCode) = status.error else {
+                return XCTFail("Upload status error should be created for status code: \(statusCode)")
+            }
+
+            XCTAssertEqual(receivedStatusCode, statusCode)
+        }
+    }
+
+    func testWhenUploadFinishesWithResponse_andStatusCodeMeansClientIssue_itDoesNotCreateHTTPError() {
         let clientIssueStatusCodes = Set(expectedStatusCodes).subtracting(Set(alertingStatusCodes))
         clientIssueStatusCodes.forEach { statusCode in
             let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: nil)
-            XCTAssertNil(status.telemetryError, "Telemetry error should not be created for status code \(statusCode)")
+            XCTAssertNil(status.error, "Upload status error should not be created for status code \(statusCode)")
         }
     }
 
-    func testWhenUploadFinishesWithResponse_andUnexpectedStatusCodeMeansClientIssue_itDoesNotCreateInternalMonitoringError() {
+    func testWhenUploadFinishesWithResponse_andUnexpectedStatusCodeMeansClientIssue_itDoesNotCreateHTTPError() {
         let unexpectedStatusCodes = Set((100...599)).subtracting(Set(expectedStatusCodes))
         unexpectedStatusCodes.forEach { statusCode in
             let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: nil)
-            XCTAssertNil(status.telemetryError)
+            XCTAssertNil(status.error)
         }
     }
 
-    func testWhenUploadFinishesWithError_andErrorCodeMeansSDKIssue_itCreatesInternalMonitoringError() throws {
+    func testWhenUploadFinishesWithError_andErrorCodeMeansSDKIssue_itCreatesNetworkError() throws {
         let alertingNSURLErrorCode = NSURLErrorBadURL
         let status = DataUploadStatus(networkError: NSError(domain: NSURLErrorDomain, code: alertingNSURLErrorCode, userInfo: nil))
 
-        let error = try XCTUnwrap(status.telemetryError, "Telemetry error should be created for NSURLError code: \(alertingNSURLErrorCode)")
-        XCTAssertEqual(error.message, "Data upload finished with error")
-        let nsError = try XCTUnwrap(error.error) as NSError
-        XCTAssertEqual(nsError.code, alertingNSURLErrorCode)
+        guard case let .networkError(error: nserror) = status.error else {
+            return XCTFail("Upload status error should be created for NSURLError code: \(alertingNSURLErrorCode)")
+        }
+
+        XCTAssertEqual(nserror.code, alertingNSURLErrorCode)
     }
 
-    func testWhenUploadFinishesWithError_andErrorCodeMeansExternalFactors_itDoesNotCreateInternalMonitoringError() {
+    func testWhenUploadFinishesWithError_andErrorCodeMeansExternalFactors_itDoesNotCreateNetworkError() {
         let notAlertingNSURLErrorCode = NSURLErrorNetworkConnectionLost
         let status = DataUploadStatus(networkError: NSError(domain: NSURLErrorDomain, code: notAlertingNSURLErrorCode, userInfo: nil))
-        XCTAssertNil(status.telemetryError, "Telemetry error should be created for NSURLError code: \(notAlertingNSURLErrorCode)")
+        XCTAssertNil(status.error, "Upload status error should not be created for NSURLError code: \(notAlertingNSURLErrorCode)")
     }
 }

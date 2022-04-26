@@ -847,22 +847,19 @@ extension DataUploadStatus: RandomMockable {
         return DataUploadStatus(
             needsRetry: .random(),
             userDebugDescription: .mockRandom(),
-            userErrorMessage: .mockRandom(),
-            telemetryError: (.mockRandom(), ErrorMock())
+            error: nil
         )
     }
 
     static func mockWith(
         needsRetry: Bool = .mockAny(),
         userDebugDescription: String = .mockAny(),
-        userErrorMessage: String? = nil,
-        telemetryError: (message: String, error: Error?)? = nil
+        error: DataUploadError? = nil
     ) -> DataUploadStatus {
         return DataUploadStatus(
             needsRetry: needsRetry,
             userDebugDescription: userDebugDescription,
-            userErrorMessage: userErrorMessage,
-            telemetryError: telemetryError
+            error: error
         )
     }
 }
