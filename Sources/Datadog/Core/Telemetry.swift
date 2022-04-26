@@ -45,9 +45,34 @@ extension Telemetry {
     /// Collect execution error.
     ///
     /// - Parameters:
+    ///   - error: The error.
+    func error(_ error: DDError) {
+        self.error(error.message, kind: error.type, stack: error.stack)
+    }
+
+    /// Collect execution error.
+    ///
+    /// - Parameters:
     ///   - message: The error message.
-    ///   - stack: The stack trace.
-    func error(_ message: String, error: Error?) {
-        self.error(message, kind: "swift", stack: String(describing: error))
+    ///   - error: The error.
+    func error(_ message: String, error: DDError) {
+        self.error("\(message) - \(error.message)", kind: error.type, stack: error.stack)
+    }
+
+    /// Collect execution error.
+    ///
+    /// - Parameters:
+    ///   - error: The error.
+    func error(_ error: Error) {
+        self.error(DDError(error: error))
+    }
+
+    /// Collect execution error.
+    ///
+    /// - Parameters:
+    ///   - message: The error message.
+    ///   - error: The error.
+    func error(_ message: String, error: Error) {
+        self.error(message, error: DDError(error: error))
     }
 }
