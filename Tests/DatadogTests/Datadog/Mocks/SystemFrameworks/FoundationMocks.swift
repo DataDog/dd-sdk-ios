@@ -270,8 +270,10 @@ extension FixedWidthInteger where Self: RandomMockable {
         return .random(in: min...max)
     }
 
-    static func mockRandom(min: Self = .min, max: Self = .max) -> Self {
-        return .random(in: min...max)
+    static func mockRandom(min: Self = .min, max: Self = .max, otherThan values: Set<Self> = []) -> Self {
+        var random: Self = .random(in: min...max)
+        while values.contains(random) { random = .random(in: min...max) }
+        return random
     }
 }
 

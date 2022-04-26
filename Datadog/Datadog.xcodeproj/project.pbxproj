@@ -353,6 +353,8 @@
 		61B7885D25C180CB002675B5 /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */; };
 		61B7886225C180CB002675B5 /* DDCrashReportingPluginTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B7886125C180CB002675B5 /* DDCrashReportingPluginTests.swift */; };
 		61B7886425C180CB002675B5 /* DatadogCrashReporting.h in Headers */ = {isa = PBXBuildFile; fileRef = 61B7885625C180CB002675B5 /* DatadogCrashReporting.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		61B8BA91281812F60068AFF4 /* KronosInternetAddressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B8BA90281812F60068AFF4 /* KronosInternetAddressTests.swift */; };
+		61B8BA92281812F60068AFF4 /* KronosInternetAddressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B8BA90281812F60068AFF4 /* KronosInternetAddressTests.swift */; };
 		61B9ED1C2461E12000C0DCFF /* SendLogsFixtureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B9ED1A2461E12000C0DCFF /* SendLogsFixtureViewController.swift */; };
 		61B9ED1D2461E12000C0DCFF /* SendTracesFixtureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B9ED1B2461E12000C0DCFF /* SendTracesFixtureViewController.swift */; };
 		61B9ED1F2461E57700C0DCFF /* UITestsHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B9ED1E2461E57700C0DCFF /* UITestsHelpers.swift */; };
@@ -1549,6 +1551,7 @@
 		61B7885C25C180CB002675B5 /* DatadogCrashReportingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DatadogCrashReportingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		61B7886125C180CB002675B5 /* DDCrashReportingPluginTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDCrashReportingPluginTests.swift; sourceTree = "<group>"; };
 		61B7886325C180CB002675B5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		61B8BA90281812F60068AFF4 /* KronosInternetAddressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KronosInternetAddressTests.swift; sourceTree = "<group>"; };
 		61B9ED1A2461E12000C0DCFF /* SendLogsFixtureViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendLogsFixtureViewController.swift; sourceTree = "<group>"; };
 		61B9ED1B2461E12000C0DCFF /* SendTracesFixtureViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendTracesFixtureViewController.swift; sourceTree = "<group>"; };
 		61B9ED1E2461E57700C0DCFF /* UITestsHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestsHelpers.swift; sourceTree = "<group>"; };
@@ -3603,6 +3606,7 @@
 			children = (
 				61D3E0DF277B3D92008BE766 /* KronosNTPPacketTests.swift */,
 				61D3E0E2277B3D92008BE766 /* KronosTimeStorageTests.swift */,
+				61B8BA90281812F60068AFF4 /* KronosInternetAddressTests.swift */,
 			);
 			path = Kronos;
 			sourceTree = "<group>";
@@ -5182,6 +5186,7 @@
 				D248ED4A28081D7500B315B4 /* RUMTelemetryTests.swift in Sources */,
 				61B0387D252724AB00518F3C /* URLSessionSwizzlerTests.swift in Sources */,
 				617CD0DD24CEDDD300B0B557 /* RUMUserActionScopeTests.swift in Sources */,
+				61B8BA91281812F60068AFF4 /* KronosInternetAddressTests.swift in Sources */,
 				D29889C9273413ED00A4D1A9 /* RUMViewsHandlerTests.swift in Sources */,
 				61C5A8A024509C1100DA608C /* Casting+Tracing.swift in Sources */,
 				61133C662423990D00786299 /* LogSanitizerTests.swift in Sources */,
@@ -5801,6 +5806,7 @@
 				D2CB6ED727C520D400A62B57 /* URLSessionSwizzlerTests.swift in Sources */,
 				D248ED4B28081D7E00B315B4 /* RUMTelemetryTests.swift in Sources */,
 				D2CB6ED827C520D400A62B57 /* RUMUserActionScopeTests.swift in Sources */,
+				61B8BA92281812F60068AFF4 /* KronosInternetAddressTests.swift in Sources */,
 				D2CB6ED927C520D400A62B57 /* RUMViewsHandlerTests.swift in Sources */,
 				D2CB6EDA27C520D400A62B57 /* Casting+Tracing.swift in Sources */,
 				D2CB6EDB27C520D400A62B57 /* LogSanitizerTests.swift in Sources */,
