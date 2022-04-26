@@ -1,5 +1,9 @@
 # Unreleased
 
+# 1.11.0-beta1 / 04-26-2022
+
+### Changes
+
 * [FEATURE] Integration with CI Visibility Tests. See[#761][]
 * [FEATURE] Add tvOS Support. See [#793][]
 * [FEATURE] Add data encryption interface on-disk data storage. See [#797][]
