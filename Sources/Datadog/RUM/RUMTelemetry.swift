@@ -13,6 +13,7 @@ import Foundation
 internal final class RUMTelemetry: Telemetry {
     let sdkVersion: String
     let applicationID: String
+    let source: String
     let dateProvider: DateProvider
     let dateCorrector: DateCorrectorType
 
@@ -26,11 +27,13 @@ internal final class RUMTelemetry: Telemetry {
     init(
         sdkVersion: String,
         applicationID: String,
+        source: String,
         dateProvider: DateProvider,
         dateCorrector: DateCorrectorType
     ) {
         self.sdkVersion = sdkVersion
         self.applicationID = applicationID
+        self.source = source
         self.dateProvider = dateProvider
         self.dateCorrector = dateCorrector
     }
@@ -64,7 +67,7 @@ internal final class RUMTelemetry: Telemetry {
                 date: date.timeIntervalSince1970.toInt64Milliseconds,
                 service: "dd-sdk-ios",
                 session: sessionId.map { .init(id: $0) },
-                source: .ios,
+                source: .init(rawValue: self.source) ?? .ios,
                 telemetry: .init(message: message),
                 version: self.sdkVersion,
                 view: viewId.map { .init(id: $0) }
@@ -106,7 +109,7 @@ internal final class RUMTelemetry: Telemetry {
                 date: date.timeIntervalSince1970.toInt64Milliseconds,
                 service: "dd-sdk-ios",
                 session: sessionId.map { .init(id: $0) },
-                source: .ios,
+                source: .init(rawValue: self.source) ?? .ios,
                 telemetry: .init(error: .init(kind: kind, stack: stack), message: message),
                 version: self.sdkVersion,
                 view: viewId.map { .init(id: $0) }

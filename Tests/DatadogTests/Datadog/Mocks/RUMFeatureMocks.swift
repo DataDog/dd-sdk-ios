@@ -96,12 +96,14 @@ extension RUMTelemetry: AnyMockable {
     static func mockWith(
         sdkVersion: String = .mockAny(),
         applicationID: String = .mockAny(),
+        source: String = .mockAnySource(),
         dateProvider: DateProvider = SystemDateProvider(),
         dateCorrector: DateCorrectorType = DateCorrectorMock()
     ) -> Self {
         .init(
             sdkVersion: sdkVersion,
             applicationID: applicationID,
+            source: source,
             dateProvider: dateProvider,
             dateCorrector: dateCorrector
         )
@@ -653,6 +655,7 @@ extension RUMScopeDependencies {
         serviceName: String = .mockAny(),
         applicationVersion: String = .mockAny(),
         sdkVersion: String = .mockAny(),
+        source: String = "ios",
         eventBuilder: RUMEventBuilder = RUMEventBuilder(eventsMapper: .mockNoOp()),
         eventOutput: RUMEventOutput = RUMEventOutputMock(),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
@@ -674,6 +677,7 @@ extension RUMScopeDependencies {
             serviceName: serviceName,
             applicationVersion: applicationVersion,
             sdkVersion: sdkVersion,
+            source: source,
             eventBuilder: eventBuilder,
             eventOutput: eventOutput,
             rumUUIDGenerator: rumUUIDGenerator,
@@ -701,6 +705,7 @@ extension RUMScopeDependencies {
         serviceName: String? = nil,
         applicationVersion: String? = nil,
         sdkVersion: String? = nil,
+        source: String? = nil,
         eventBuilder: RUMEventBuilder? = nil,
         eventOutput: RUMEventOutput? = nil,
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
@@ -722,6 +727,7 @@ extension RUMScopeDependencies {
             serviceName: serviceName ?? self.serviceName,
             applicationVersion: applicationVersion ?? self.applicationVersion,
             sdkVersion: sdkVersion ?? self.sdkVersion,
+            source: source ?? self.source,
             eventBuilder: eventBuilder ?? self.eventBuilder,
             eventOutput: eventOutput ?? self.eventOutput,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,

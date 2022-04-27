@@ -103,6 +103,34 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNil(event.context?.contextInfo[RUMViewScope.Constants.activePrewarm])
     }
 
+    func testWhenConfigurationSourceIsSet_applicationStartUsesTheConfigurationSource() throws {
+        // Given
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let randomSource = String.mockAnySource()
+        let expectedSource = RUMActionEvent.Source(rawValue: randomSource)
+        let scope = RUMViewScope(
+            isInitialView: true,
+            parent: parent,
+            dependencies: dependencies.replacing(
+                launchTimeProvider: LaunchTimeProviderMock.mockWith(launchTime: 2),// 2 seconds
+                source: randomSource
+            ),
+            identity: mockView,
+            path: "UIViewController",
+            name: "ViewName",
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime
+        )
+
+        // When
+        _ = scope.process(command: RUMCommandMock(time: currentTime))
+
+        // Then
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMActionEvent.self).first)
+        XCTAssertEqual(event.source, expectedSource)
+    }
+
     func testWhenActivePrewarm_itSendsApplicationStartAction_withoutLoadingTime() throws {
         // Given
         let scope: RUMViewScope = .mockWith(
@@ -162,6 +190,31 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, randomServiceName)
+    }
+
+    func testWhenInitialViewHasCconfiguredSource_itSendsViewUpdateEventWithConfiguredSource() throws {
+        // GIVEN
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let randomSource = String.mockAnySource()
+        let expectedSource = RUMViewEvent.Source(rawValue: randomSource)
+        let scope = RUMViewScope(
+            isInitialView: true,
+            parent: parent,
+            dependencies: dependencies.replacing(
+                source: randomSource
+            ),
+            identity: mockView,
+            path: "UIViewController",
+            name: "ViewName",
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime
+        )
+
+        _ = scope.process(command: RUMCommandMock(time: currentTime))
+
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMViewEvent.self).first)
+        XCTAssertEqual(event.source, expectedSource)
     }
 
     func testWhenViewIsStarted_itSendsViewUpdateEvent() throws {
@@ -722,10 +775,55 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(viewUpdate.view.error.count, 1)
     }
 
+    func testWhenViewErrorIsAddedWithConfiguredSource_itSendsErrorEventWithCorrectSource() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let configuredSource = String.mockAnySource()
+        let expectedSource = RUMErrorEvent.Source(rawValue: configuredSource)
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: dependencies.replacing(
+                source: configuredSource
+            ),
+            identity: mockView,
+            path: "UIViewController",
+            name: "ViewName",
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: ["foo": "bar"], identity: mockView)
+            )
+        )
+
+        currentTime.addTimeInterval(1)
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentTime, message: "view error", source: .source, stack: nil)
+            )
+        )
+
+        let error = try XCTUnwrap(output.recordedEvents(ofType: RUMErrorEvent.self).last)
+        XCTAssertEqual(error.source, expectedSource)
+        // Configured source should not muck with sourceType, which is set seperately.
+        XCTAssertEqual(error.error.sourceType, .ios)
+    }
+
     func testGivenStartedView_whenCrossPlatformErrorIsAdded_itSendsCorrectErrorEvent() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
-        let scope: RUMViewScope = .mockWith(parent: parent, dependencies: dependencies)
+        let customSource = String.mockAnySource()
+        let expectedSource = RUMErrorEvent.Source(rawValue: customSource)
+        let scope: RUMViewScope = .mockWith(
+            parent: parent,
+            dependencies: dependencies.replacing(
+                source: customSource
+            )
+        )
 
         XCTAssertTrue(
             scope.process(command: RUMStartViewCommand.mockAny())
@@ -733,11 +831,13 @@ class RUMViewScopeTests: XCTestCase {
 
         currentTime.addTimeInterval(1)
 
+        let customSourceType = String.mockAnySource()
+        let expectedSourceType = RUMErrorSourceType.init(rawValue: customSourceType)
         XCTAssertTrue(
             scope.process(
                 command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(
                     attributes: [
-                        CrossPlatformAttributes.errorSourceType: "react-native",
+                        CrossPlatformAttributes.errorSourceType: customSourceType,
                         CrossPlatformAttributes.errorIsCrash: true
                     ]
                 )
@@ -745,14 +845,14 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         let error = try XCTUnwrap(output.recordedEvents(ofType: RUMErrorEvent.self).last)
-        XCTAssertEqual(error.error.sourceType, .reactNative)
+        XCTAssertEqual(error.error.sourceType, expectedSourceType)
         XCTAssertTrue(error.error.isCrash ?? false)
-        XCTAssertEqual(error.source, .ios)
+        XCTAssertEqual(error.source, expectedSource)
         XCTAssertEqual(error.service, randomServiceName)
 
         let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(viewUpdate.view.error.count, 1)
-        XCTAssertEqual(viewUpdate.source, .ios)
+        XCTAssertEqual(viewUpdate.source, RUMViewEvent.Source(rawValue: customSource))
         XCTAssertEqual(viewUpdate.service, randomServiceName)
     }
 
@@ -843,6 +943,44 @@ class RUMViewScopeTests: XCTestCase {
 
         let viewUpdate = try XCTUnwrap(output.recordedEvents(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(viewUpdate.view.longTask?.count, 1)
+    }
+
+    func testWhenLongTaskIsAddedWithConfiguredSource_itSendsLongTaskEventWithConfiguredSource() throws {
+        let startViewDate: Date = .mockDecember15th2019At10AMUTC()
+
+        let customSource = String.mockAnySource()
+        let expectedSource = RUMLongTaskEvent.Source(rawValue: customSource)
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: dependencies.replacing(
+                source: customSource
+            ),
+            identity: mockView,
+            path: "UIViewController",
+            name: "ViewName",
+            attributes: [:],
+            customTimings: [:],
+            startTime: startViewDate
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: startViewDate, attributes: ["foo": "bar"], identity: mockView)
+            )
+        )
+
+        let addLongTaskDate = startViewDate + 1.0
+        let duration: TimeInterval = 1.0
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddLongTaskCommand(time: addLongTaskDate, attributes: ["foo": "bar"], duration: duration)
+            )
+        )
+
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMLongTaskEvent.self).last)
+        XCTAssertEqual(event.source, expectedSource)
     }
 
     // MARK: - Custom Timings Tracking
