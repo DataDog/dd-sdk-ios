@@ -42,6 +42,7 @@ internal final class TracingFeature {
     let userInfoProvider: UserInfoProvider
     let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
     let carrierInfoProvider: CarrierInfoProviderType
+    let telemetry: Telemetry?
 
     // MARK: - Components
 
@@ -59,14 +60,14 @@ internal final class TracingFeature {
     static func createStorage(
         directories: FeatureDirectories,
         commonDependencies: FeaturesCommonDependencies,
-        internalMonitor: InternalMonitor? = nil
+        telemetry: Telemetry?
     ) -> FeatureStorage {
         return FeatureStorage(
             featureName: TracingFeature.featureName,
             dataFormat: TracingFeature.dataFormat,
             directories: directories,
             commonDependencies: commonDependencies,
-            internalMonitor: internalMonitor
+            telemetry: telemetry
         )
     }
 
@@ -74,7 +75,7 @@ internal final class TracingFeature {
         storage: FeatureStorage,
         configuration: FeaturesConfiguration.Tracing,
         commonDependencies: FeaturesCommonDependencies,
-        internalMonitor: InternalMonitor? = nil
+        telemetry: Telemetry?
     ) -> FeatureUpload {
         return FeatureUpload(
             featureName: TracingFeature.featureName,
@@ -94,10 +95,10 @@ internal final class TracingFeature {
                     .ddEVPOriginVersionHeader(sdkVersion: configuration.common.sdkVersion),
                     .ddRequestIDHeader(),
                 ],
-                internalMonitor: internalMonitor
+                telemetry: telemetry
             ),
             commonDependencies: commonDependencies,
-            internalMonitor: internalMonitor
+            telemetry: telemetry
         )
     }
 
@@ -107,18 +108,18 @@ internal final class TracingFeature {
         commonDependencies: FeaturesCommonDependencies,
         loggingFeatureAdapter: LoggingForTracingAdapter?,
         tracingUUIDGenerator: TracingUUIDGenerator,
-        internalMonitor: InternalMonitor? = nil
+        telemetry: Telemetry?
     ) {
         let storage = TracingFeature.createStorage(
             directories: directories,
             commonDependencies: commonDependencies,
-            internalMonitor: internalMonitor
+            telemetry: telemetry
         )
         let upload = TracingFeature.createUpload(
             storage: storage,
             configuration: configuration,
             commonDependencies: commonDependencies,
-            internalMonitor: internalMonitor
+            telemetry: telemetry
         )
         self.init(
             storage: storage,
@@ -126,7 +127,8 @@ internal final class TracingFeature {
             configuration: configuration,
             commonDependencies: commonDependencies,
             loggingFeatureAdapter: loggingFeatureAdapter,
-            tracingUUIDGenerator: tracingUUIDGenerator
+            tracingUUIDGenerator: tracingUUIDGenerator,
+            telemetry: telemetry
         )
     }
 
@@ -136,7 +138,8 @@ internal final class TracingFeature {
         configuration: FeaturesConfiguration.Tracing,
         commonDependencies: FeaturesCommonDependencies,
         loggingFeatureAdapter: LoggingForTracingAdapter?,
-        tracingUUIDGenerator: TracingUUIDGenerator
+        tracingUUIDGenerator: TracingUUIDGenerator,
+        telemetry: Telemetry?
     ) {
         // Configuration
         self.configuration = configuration
@@ -151,6 +154,7 @@ internal final class TracingFeature {
         self.userInfoProvider = commonDependencies.userInfoProvider
         self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider
         self.carrierInfoProvider = commonDependencies.carrierInfoProvider
+        self.telemetry = telemetry
 
         // Initialize stacks
         self.storage = storage

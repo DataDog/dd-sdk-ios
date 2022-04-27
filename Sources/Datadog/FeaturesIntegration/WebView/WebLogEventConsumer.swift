@@ -18,7 +18,6 @@ internal class DefaultWebLogEventConsumer: WebLogEventConsumer {
     }
 
     private let userLogsWriter: Writer
-    private let internalLogsWriter: Writer?
     private let dateCorrector: DateCorrectorType
     private let rumContextProvider: RUMContextProvider?
     private let applicationVersion: String
@@ -37,14 +36,12 @@ internal class DefaultWebLogEventConsumer: WebLogEventConsumer {
 
     init(
         userLogsWriter: Writer,
-        internalLogsWriter: Writer?,
         dateCorrector: DateCorrectorType,
         rumContextProvider: RUMContextProvider?,
         applicationVersion: String,
         environment: String
     ) {
         self.userLogsWriter = userLogsWriter
-        self.internalLogsWriter = internalLogsWriter
         self.dateCorrector = dateCorrector
         self.rumContextProvider = rumContextProvider
         self.applicationVersion = applicationVersion
@@ -74,10 +71,6 @@ internal class DefaultWebLogEventConsumer: WebLogEventConsumer {
         let jsonData = try JSONSerialization.data(withJSONObject: mutableEvent, options: [])
         let encodableEvent = try jsonDecoder.decode(CodableValue.self, from: jsonData)
 
-        if internalLog {
-            internalLogsWriter?.write(value: encodableEvent)
-        } else {
-            userLogsWriter.write(value: encodableEvent)
-        }
+        userLogsWriter.write(value: encodableEvent)
     }
 }

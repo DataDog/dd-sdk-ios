@@ -87,8 +87,7 @@ extension Datadog.Configuration {
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
             additionalConfiguration: additionalConfiguration,
-            proxyConfiguration: proxyConfiguration,
-            internalMonitoringClientToken: internalMonitoringClientToken
+            proxyConfiguration: proxyConfiguration
         )
     }
 }
@@ -168,8 +167,7 @@ extension FeaturesConfiguration {
         tracing: Tracing? = .mockAny(),
         rum: RUM? = .mockAny(),
         crashReporting: CrashReporting = .mockAny(),
-        urlSessionAutoInstrumentation: URLSessionAutoInstrumentation? = .mockAny(),
-        internalMonitoring: InternalMonitoring? = nil
+        urlSessionAutoInstrumentation: URLSessionAutoInstrumentation? = .mockAny()
     ) -> Self {
         return .init(
             common: common,
@@ -177,8 +175,7 @@ extension FeaturesConfiguration {
             tracing: tracing,
             rum: rum,
             urlSessionAutoInstrumentation: urlSessionAutoInstrumentation,
-            crashReporting: crashReporting,
-            internalMonitoring: internalMonitoring
+            crashReporting: crashReporting
         )
     }
 }
@@ -319,28 +316,6 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
             rumAttributesProvider: rumAttributesProvider,
             instrumentTracing: instrumentTracing,
             instrumentRUM: instrumentRUM
-        )
-    }
-}
-
-extension FeaturesConfiguration.InternalMonitoring {
-    static func mockAny() -> Self {
-        return mockWith()
-    }
-
-    static func mockWith(
-        common: FeaturesConfiguration.Common = .mockAny(),
-        sdkServiceName: String = .mockAny(),
-        sdkEnvironment: String = .mockAny(),
-        logsUploadURL: URL = .mockAny(),
-        clientToken: String = .mockAny()
-    ) -> Self {
-        return .init(
-            common: common,
-            sdkServiceName: sdkServiceName,
-            sdkEnvironment: sdkEnvironment,
-            logsUploadURL: logsUploadURL,
-            clientToken: clientToken
         )
     }
 }
@@ -872,22 +847,19 @@ extension DataUploadStatus: RandomMockable {
         return DataUploadStatus(
             needsRetry: .random(),
             userDebugDescription: .mockRandom(),
-            userErrorMessage: .mockRandom(),
-            internalMonitoringError: (.mockRandom(), ErrorMock(), .mockRandom())
+            error: nil
         )
     }
 
     static func mockWith(
         needsRetry: Bool = .mockAny(),
         userDebugDescription: String = .mockAny(),
-        userErrorMessage: String? = nil,
-        internalMonitoringError: (message: String, error: Error?, attributes: [String: String]?)? = nil
+        error: DataUploadError? = nil
     ) -> DataUploadStatus {
         return DataUploadStatus(
             needsRetry: needsRetry,
             userDebugDescription: userDebugDescription,
-            userErrorMessage: userErrorMessage,
-            internalMonitoringError: internalMonitoringError
+            error: error
         )
     }
 }

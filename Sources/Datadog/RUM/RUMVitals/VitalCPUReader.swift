@@ -67,9 +67,9 @@ internal class VitalCPUReader: SamplingBasedVitalReader {
             // as its Swift interface doesn't have integer values
             //
             // NOTE: RUMM-1276 consider using sdkLogger.errorOnce(...) to avoid flooding
-            InternalMonitoringFeature.instance?.monitor.sdkLogger.error(
-                "CPU Vital cannot be read! Error code: \(result)"
-            )
+//            InternalMonitoringFeature.instance?.monitor.sdkLogger.error(
+//                "CPU Vital cannot be read! Error code: \(result)"
+//            )
             return nil
         }
 

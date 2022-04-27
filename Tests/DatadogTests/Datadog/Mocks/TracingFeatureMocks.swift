@@ -15,7 +15,8 @@ extension TracingFeature {
             configuration: .mockAny(),
             commonDependencies: .mockAny(),
             loggingFeatureAdapter: nil,
-            tracingUUIDGenerator: DefaultTracingUUIDGenerator()
+            tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
+            telemetry: nil
         )
     }
 
@@ -26,14 +27,16 @@ extension TracingFeature {
         configuration: FeaturesConfiguration.Tracing = .mockAny(),
         dependencies: FeaturesCommonDependencies = .mockAny(),
         loggingFeature: LoggingFeature? = nil,
-        tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator()
+        tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
+        telemetry: Telemetry? = nil
     ) -> TracingFeature {
         return TracingFeature(
             directories: directories,
             configuration: configuration,
             commonDependencies: dependencies,
             loggingFeatureAdapter: loggingFeature.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
-            tracingUUIDGenerator: tracingUUIDGenerator
+            tracingUUIDGenerator: tracingUUIDGenerator,
+            telemetry: telemetry
         )
     }
 
@@ -44,7 +47,8 @@ extension TracingFeature {
         configuration: FeaturesConfiguration.Tracing = .mockAny(),
         dependencies: FeaturesCommonDependencies = .mockAny(),
         loggingFeature: LoggingFeature? = nil,
-        tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator()
+        tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
+        telemetry: Telemetry? = nil
     ) -> TracingFeature {
         // Get the full feature mock:
         let fullFeature: TracingFeature = .mockWith(
@@ -68,7 +72,8 @@ extension TracingFeature {
             configuration: configuration,
             commonDependencies: dependencies,
             loggingFeatureAdapter: fullFeature.loggingFeatureAdapter,
-            tracingUUIDGenerator: fullFeature.tracingUUIDGenerator
+            tracingUUIDGenerator: fullFeature.tracingUUIDGenerator,
+            telemetry: telemetry
         )
     }
 
@@ -305,7 +310,8 @@ extension SpanEventBuilder {
         source: String = .mockAny(),
         origin: String? = nil,
         sdkVersion: String = .mockAny(),
-        eventsMapper: SpanEventMapper? = nil
+        eventsMapper: SpanEventMapper? = nil,
+        telemetry: Telemetry? = nil
     ) -> SpanEventBuilder {
         return SpanEventBuilder(
             sdkVersion: sdkVersion,
@@ -317,7 +323,8 @@ extension SpanEventBuilder {
             dateCorrector: dateCorrector,
             source: source,
             origin: origin,
-            eventsMapper: eventsMapper
+            eventsMapper: eventsMapper,
+            telemetry: telemetry
         )
     }
 }

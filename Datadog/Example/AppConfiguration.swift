@@ -51,11 +51,6 @@ struct ExampleAppConfiguration: AppConfiguration {
             _ = configuration.set(customRUMEndpoint: customRUMURL)
         }
 
-#if DD_SDK_ENABLE_INTERNAL_MONITORING
-        _ = configuration
-            .enableInternalMonitoring(clientToken: Environment.readClientToken())
-#endif
-
         if let testScenario = testScenario {
             // If the `Example` app was launched with test scenario ENV, apply the scenario configuration
             testScenario.configureSDK(builder: configuration)

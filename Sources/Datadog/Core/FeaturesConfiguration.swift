@@ -82,17 +82,6 @@ internal struct FeaturesConfiguration {
         let crashReportingPlugin: DDCrashReportingPluginType
     }
 
-    struct InternalMonitoring {
-        let common: Common
-        let sdkServiceName: String
-        let sdkEnvironment: String
-        /// Internal monitoring logger's name.
-        let loggerName = "im-logger"
-        let logsUploadURL: URL
-        /// The client token authorized for monitoring org (likely it's different than client token for other features).
-        let clientToken: String
-    }
-
     /// Configuration common to all features.
     let common: Common
     /// Logging feature configuration or `nil` if the feature is disabled.
@@ -105,8 +94,6 @@ internal struct FeaturesConfiguration {
     let urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
     /// Crash Reporting feature configuration or `nil` if the feature was not enabled.
     let crashReporting: CrashReporting?
-    /// Internal Monitoring feature configuration or `nil` if the feature was not enabled.
-    let internalMonitoring: InternalMonitoring?
 }
 
 extension FeaturesConfiguration {
@@ -123,7 +110,6 @@ extension FeaturesConfiguration {
         var rum: RUM?
         var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
         var crashReporting: CrashReporting?
-        var internalMonitoring: InternalMonitoring?
 
         var logsEndpoint = configuration.logsEndpoint
         var tracesEndpoint = configuration.tracesEndpoint
@@ -281,23 +267,12 @@ extension FeaturesConfiguration {
             }
         }
 
-        if let internalMonitoringClientToken = configuration.internalMonitoringClientToken {
-            internalMonitoring = InternalMonitoring(
-                common: common,
-                sdkServiceName: "dd-sdk-ios",
-                sdkEnvironment: "prod",
-                logsUploadURL: try ifValid(endpointURLString: Datadog.Configuration.DatadogEndpoint.us1.logsEndpoint.url),
-                clientToken: try ifValid(clientToken: internalMonitoringClientToken)
-            )
-        }
-
         self.common = common
         self.logging = logging
         self.tracing = tracing
         self.rum = rum
         self.urlSessionAutoInstrumentation = urlSessionAutoInstrumentation
         self.crashReporting = crashReporting
-        self.internalMonitoring = internalMonitoring
     }
 }
 

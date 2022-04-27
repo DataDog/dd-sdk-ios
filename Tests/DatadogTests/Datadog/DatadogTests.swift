@@ -120,7 +120,6 @@ class DatadogTests: XCTestCase {
             XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
-            XCTAssertNil(InternalMonitoringFeature.instance)
             // verify integrations:
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
         }
@@ -132,7 +131,6 @@ class DatadogTests: XCTestCase {
             XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNotNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
-            XCTAssertNil(InternalMonitoringFeature.instance)
             // verify integrations:
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
         }
@@ -145,7 +143,6 @@ class DatadogTests: XCTestCase {
             XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
-            XCTAssertNil(InternalMonitoringFeature.instance)
             // verify integrations:
             XCTAssertNil(TracingFeature.instance?.loggingFeatureAdapter)
         }
@@ -157,7 +154,6 @@ class DatadogTests: XCTestCase {
             XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNotNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
-            XCTAssertNil(InternalMonitoringFeature.instance)
             // verify integrations:
             XCTAssertNil(TracingFeature.instance?.loggingFeatureAdapter)
         }
@@ -170,7 +166,6 @@ class DatadogTests: XCTestCase {
             XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
-            XCTAssertNil(InternalMonitoringFeature.instance)
         }
         verify(configuration: rumBuilder.enableTracing(false).build()) {
             // verify features:
@@ -180,7 +175,6 @@ class DatadogTests: XCTestCase {
             XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNotNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
-            XCTAssertNil(InternalMonitoringFeature.instance)
         }
 
         verify(configuration: defaultBuilder.enableRUM(true).build()) {
@@ -191,7 +185,6 @@ class DatadogTests: XCTestCase {
             XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
-            XCTAssertNil(InternalMonitoringFeature.instance)
             // verify integrations:
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
         }
@@ -203,7 +196,6 @@ class DatadogTests: XCTestCase {
             XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
-            XCTAssertNil(InternalMonitoringFeature.instance)
             // verify integrations:
             XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
         }
@@ -253,7 +245,6 @@ class DatadogTests: XCTestCase {
                 Global.crashReporter?.loggingOrRUMIntegration is CrashReportingWithLoggingIntegration,
                 "When only Logging feature is enabled, the Crash Reporter should send crash reports as Logs"
             )
-            XCTAssertNil(InternalMonitoringFeature.instance)
         }
 
         verify(
@@ -268,7 +259,6 @@ class DatadogTests: XCTestCase {
                 Global.crashReporter?.loggingOrRUMIntegration is CrashReportingWithRUMIntegration,
                 "When only RUM feature is enabled, the Crash Reporter should send crash reports as RUM Events"
             )
-            XCTAssertNil(InternalMonitoringFeature.instance)
         }
 
         verify(
@@ -283,7 +273,6 @@ class DatadogTests: XCTestCase {
                 Global.crashReporter?.loggingOrRUMIntegration is CrashReportingWithRUMIntegration,
                 "When both Logging and RUM features are enabled, the Crash Reporter should send crash reports as RUM Events"
             )
-            XCTAssertNil(InternalMonitoringFeature.instance)
         }
 
         verify(
@@ -297,35 +286,6 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(
                 Global.crashReporter,
                 "When both Logging and RUM are disabled, Crash Reporter should not be registered"
-            )
-            XCTAssertNil(InternalMonitoringFeature.instance)
-        }
-
-        verify(
-            configuration: rumBuilder
-                .enableLogging(.random())
-                .enableTracing(.random())
-                .enableRUM(.random())
-                .enableCrashReporting(using: CrashReportingPluginMock())
-                .enableInternalMonitoring(clientToken: .mockAny())
-                .build()
-        ) {
-            XCTAssertNotNil(
-                InternalMonitoringFeature.instance,
-                "When client token for internal monitoring is set, the Internal Monitoring feature should be enabled"
-            )
-        }
-        verify(
-            configuration: rumBuilder
-                .enableLogging(.random())
-                .enableTracing(.random())
-                .enableRUM(.random())
-                .enableCrashReporting(using: CrashReportingPluginMock())
-                .build()
-        ) {
-            XCTAssertNil(
-                InternalMonitoringFeature.instance,
-                "When client token for internal monitoring is NOT set, the Internal Monitoring feature should be disabled"
             )
         }
     }
@@ -467,7 +427,6 @@ class DatadogTests: XCTestCase {
                 .enableLogging(true)
                 .enableTracing(true)
                 .enableRUM(true)
-                .enableInternalMonitoring(clientToken: "abc")
                 .build()
         )
 
@@ -477,17 +436,14 @@ class DatadogTests: XCTestCase {
         let loggingWriter = try XCTUnwrap(LoggingFeature.instance?.storage.writer as? ConsentAwareDataWriter)
         let tracingWriter = try XCTUnwrap(TracingFeature.instance?.storage.writer as? ConsentAwareDataWriter)
         let rumWriter = try XCTUnwrap(RUMFeature.instance?.storage.writer as? ConsentAwareDataWriter)
-        let internalMonitoringWriter = try XCTUnwrap(InternalMonitoringFeature.instance?.logsStorage.writer as? ConsentAwareDataWriter)
         loggingWriter.queue.sync {}
         tracingWriter.queue.sync {}
         rumWriter.queue.sync {}
-        internalMonitoringWriter.queue.sync {}
 
         let featureDirectories: [FeatureDirectories] = [
             try obtainLoggingFeatureDirectories(),
             try obtainTracingFeatureDirectories(),
-            try obtainRUMFeatureDirectories(),
-            try obtainInternalMonitoringFeatureLogDirectories()
+            try obtainRUMFeatureDirectories()
         ]
 
         let allDirectories: [Directory] = featureDirectories.flatMap { [$0.authorized, $0.unauthorized] }
@@ -495,7 +451,7 @@ class DatadogTests: XCTestCase {
 
         // Given
         let numberOfFiles = try allDirectories.reduce(0, { acc, nextDirectory in return try acc + nextDirectory.files().count })
-        XCTAssertEqual(numberOfFiles, 8, "Each feature stores 2 files - one authorised and one unauthorised")
+        XCTAssertEqual(numberOfFiles, 6, "Each feature stores 2 files - one authorised and one unauthorised")
 
         // When
         Datadog.clearAllData()
@@ -504,7 +460,6 @@ class DatadogTests: XCTestCase {
         (LoggingFeature.instance?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
         (TracingFeature.instance?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
         (RUMFeature.instance?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
-        (InternalMonitoringFeature.instance?.logsStorage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
 
         // Then
         let newNumberOfFiles = try allDirectories.reduce(0, { acc, nextDirectory in return try acc + nextDirectory.files().count })

@@ -64,14 +64,14 @@ internal final class RUMFeature {
     static func createStorage(
         directories: FeatureDirectories,
         commonDependencies: FeaturesCommonDependencies,
-        internalMonitor: InternalMonitor? = nil
+        telemetry: Telemetry?
     ) -> FeatureStorage {
         return FeatureStorage(
             featureName: RUMFeature.featureName,
             dataFormat: RUMFeature.dataFormat,
             directories: directories,
             commonDependencies: commonDependencies,
-            internalMonitor: internalMonitor
+            telemetry: telemetry
         )
     }
 
@@ -79,7 +79,7 @@ internal final class RUMFeature {
         storage: FeatureStorage,
         configuration: FeaturesConfiguration.RUM,
         commonDependencies: FeaturesCommonDependencies,
-        internalMonitor: InternalMonitor? = nil
+        telemetry: Telemetry?
     ) -> FeatureUpload {
         return FeatureUpload(
             featureName: RUMFeature.featureName,
@@ -109,10 +109,10 @@ internal final class RUMFeature {
                     .ddEVPOriginVersionHeader(sdkVersion: configuration.common.sdkVersion),
                     .ddRequestIDHeader(),
                 ],
-                internalMonitor: internalMonitor
+                telemetry: telemetry
             ),
             commonDependencies: commonDependencies,
-            internalMonitor: internalMonitor
+            telemetry: telemetry
         )
     }
 
@@ -120,7 +120,7 @@ internal final class RUMFeature {
         directories: FeatureDirectories,
         configuration: FeaturesConfiguration.RUM,
         commonDependencies: FeaturesCommonDependencies,
-        internalMonitor: InternalMonitor? = nil
+        telemetry: Telemetry?
     ) {
         let eventsMapper = RUMEventsMapper(
             viewEventMapper: configuration.viewEventMapper,
@@ -128,18 +128,18 @@ internal final class RUMFeature {
             resourceEventMapper: configuration.resourceEventMapper,
             actionEventMapper: configuration.actionEventMapper,
             longTaskEventMapper: configuration.longTaskEventMapper,
-            internalMonitor: internalMonitor
+            telemetry: telemetry
         )
         let storage = RUMFeature.createStorage(
             directories: directories,
             commonDependencies: commonDependencies,
-            internalMonitor: internalMonitor
+            telemetry: telemetry
         )
         let upload = RUMFeature.createUpload(
             storage: storage,
             configuration: configuration,
             commonDependencies: commonDependencies,
-            internalMonitor: internalMonitor
+            telemetry: telemetry
         )
         self.init(
             eventsMapper: eventsMapper,

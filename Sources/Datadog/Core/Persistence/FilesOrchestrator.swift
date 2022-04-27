@@ -19,18 +19,18 @@ internal class FilesOrchestrator {
     /// Tracks number of times the file at `lastWritableFileURL` was returned from `getWritableFile()`.
     /// This should correspond with number of objects stored in file, assuming that majority of writes succeed (the difference is negligible).
     private var lastWritableFileUsesCount: Int = 0
-    private let internalMonitor: InternalMonitor?
+    private let telemetry: Telemetry?
 
     init(
         directory: Directory,
         performance: StoragePerformancePreset,
         dateProvider: DateProvider,
-        internalMonitor: InternalMonitor? = nil
+        telemetry: Telemetry? = nil
     ) {
         self.directory = directory
         self.performance = performance
         self.dateProvider = dateProvider
-        self.internalMonitor = internalMonitor
+        self.telemetry = telemetry
     }
 
     // MARK: - `WritableFile` orchestration
@@ -79,7 +79,7 @@ internal class FilesOrchestrator {
                     return lastFile
                 }
             } catch {
-                internalMonitor?.sdkLogger.warn("Failed to reuse last writable file", error: error)
+                telemetry?.error("Failed to reuse last writable file", error: error)
             }
         }
 
@@ -113,7 +113,7 @@ internal class FilesOrchestrator {
 
             return fileIsOldEnough ? oldestFile : nil
         } catch {
-            internalMonitor?.sdkLogger.error("Failed to obtain readable file", error: error)
+            telemetry?.error("Failed to obtain readable file", error: error)
             return nil
         }
     }
@@ -122,7 +122,7 @@ internal class FilesOrchestrator {
         do {
             try readableFile.delete()
         } catch {
-            internalMonitor?.sdkLogger.error("Failed to delete file", error: error)
+            telemetry?.error("Failed to delete file", error: error)
         }
     }
 
@@ -130,7 +130,7 @@ internal class FilesOrchestrator {
         do {
             try directory.deleteAllFiles()
         } catch {
-            internalMonitor?.sdkLogger.error("Failed to delete all readable file", error: error)
+            telemetry?.error("Failed to delete all readable file", error: error)
         }
     }
 

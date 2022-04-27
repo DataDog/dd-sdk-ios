@@ -98,4 +98,53 @@ class RUMTelemetryTests: XCTestCase {
             XCTAssertValidRumUUID(event.session?.id)
         }
     }
+
+    func testTelemetryErrorFormatting() {
+        class TelemetryTest: Telemetry {
+            var record: (message: String, kind: String?, stack: String?)?
+
+            func debug(_ message: String) { }
+
+            func error(_ message: String, kind: String?, stack: String?) {
+                record = (message: message, kind: kind, stack: stack)
+            }
+        }
+
+        let telemetry = TelemetryTest()
+
+        struct SwiftError: Error {
+            let description = "error description"
+        }
+
+        let swiftError = SwiftError()
+
+        let nsError = NSError(
+            domain: "custom-domain",
+            code: 10,
+            userInfo: [
+                NSLocalizedDescriptionKey: "error description"
+            ]
+        )
+
+        telemetry.error(swiftError)
+        XCTAssertEqual(telemetry.record?.message, #"SwiftError(description: "error description")"#)
+        XCTAssertEqual(telemetry.record?.kind, "SwiftError")
+        XCTAssertEqual(telemetry.record?.stack, #"SwiftError(description: "error description")"#)
+
+        telemetry.error(nsError)
+        XCTAssertEqual(telemetry.record?.message, "error description")
+        XCTAssertEqual(telemetry.record?.kind, "custom-domain - 10")
+        XCTAssertEqual(
+            telemetry.record?.stack,
+            """
+            Error Domain=custom-domain Code=10 "error description" UserInfo={NSLocalizedDescription=error description}
+            """
+        )
+
+        telemetry.error("swift error", error: swiftError)
+        XCTAssertEqual(telemetry.record?.message, #"swift error - SwiftError(description: "error description")"#)
+
+        telemetry.error("ns error", error: nsError)
+        XCTAssertEqual(telemetry.record?.message, "ns error - error description")
+    }
 }
