@@ -162,7 +162,7 @@ internal class RUMResourceScope: RUMScope {
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
                     )
                 },
-                duration: resourceDuration.toInt64Nanoseconds,
+                duration: resolveResourceDuration(resourceDuration),
                 firstByte: resourceMetrics?.firstByte.flatMap { metric in
                     .init(
                         duration: metric.duration.toInt64Nanoseconds,
@@ -301,5 +301,17 @@ internal class RUMResourceScope: RUMScope {
 
     private func providerDomain(from url: String) -> String? {
         return URL(string: url)?.host ?? url
+    }
+
+    private func resolveResourceDuration(_ duration: TimeInterval) -> Int64 {
+        if duration <= 0.0 {
+            let negativeDurationWarningMessage =
+            """
+            The computed duration for your resource: \(resourceURL) was 0 or negative. In order to keep the resource event we forced it to 1ns.
+            """
+            userLogger.warn(negativeDurationWarningMessage)
+            return 1 // 1ns
+        }
+        return duration.toInt64Nanoseconds
     }
 }
