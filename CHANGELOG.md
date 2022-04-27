@@ -1,5 +1,7 @@
 # Unreleased
 
+* [BUGFIX] Fix rare problem with bringing up the "Local Network Permission" alert. See [#830][]
+
 # 1.11.0-beta1 / 04-26-2022
 
 ### Changes
@@ -347,6 +349,7 @@
 [#795]: https://github.com/DataDog/dd-sdk-ios/issues/795
 [#797]: https://github.com/DataDog/dd-sdk-ios/issues/797
 [#815]: https://github.com/DataDog/dd-sdk-ios/issues/815
+[#830]: https://github.com/DataDog/dd-sdk-ios/issues/830
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu
