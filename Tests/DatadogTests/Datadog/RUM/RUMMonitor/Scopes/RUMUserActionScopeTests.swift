@@ -66,6 +66,27 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(recordedAction.service, randomServiceName)
     }
 
+    func testGivenCustomSource_whenActionIsSent_itSendsCustomSource() throws {
+        let customSource = String.mockAnySource()
+        let scope = RUMViewScope.mockWith(
+            parent: parent,
+            dependencies: dependencies.replacing(
+                source: customSource
+            ),
+            identity: mockView,
+            attributes: [:],
+            startTime: Date()
+        )
+        XCTAssertTrue(scope.process(command: RUMStartViewCommand.mockWith(identity: mockView)))
+        let mockUserActionCmd = RUMAddUserActionCommand.mockAny()
+        XCTAssertTrue(scope.process(command: mockUserActionCmd))
+        XCTAssertFalse(scope.process(command: RUMStopViewCommand.mockWith(identity: mockView)))
+
+        let recordedActionEvents = try output.recordedEvents(ofType: RUMActionEvent.self)
+        let recordedAction = try XCTUnwrap(recordedActionEvents.last)
+        XCTAssertEqual(recordedAction.source, RUMActionEvent.Source(rawValue: customSource))
+    }
+
     // MARK: - Continuous User Action
 
     func testWhenContinuousUserActionEnds_itSendsActionEvent() throws {

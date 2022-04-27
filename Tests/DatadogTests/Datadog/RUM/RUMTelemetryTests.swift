@@ -27,7 +27,9 @@ class RUMTelemetryTests: XCTestCase {
     // MARK: - Sending Telemetry events
 
     func testSendTelemetryDebug() throws {
+        let configuredSource = String.mockAnySource()
         let telemetry: RUMTelemetry = .mockWith(
+            source: configuredSource,
             dateProvider: RelativeDateProvider(
                 using: .init(timeIntervalSince1970: 0)
             )
@@ -41,13 +43,15 @@ class RUMTelemetryTests: XCTestCase {
             XCTAssertEqual(event.application?.id, telemetry.applicationID)
             XCTAssertEqual(event.version, telemetry.sdkVersion)
             XCTAssertEqual(event.service, "dd-sdk-ios")
-            XCTAssertEqual(event.source, .ios)
+            XCTAssertEqual(event.source, TelemetryDebugEvent.Source(rawValue: configuredSource))
             XCTAssertEqual(event.telemetry.message, "Hello world!")
         }
     }
 
     func testSendTelemetryError() throws {
+        let configuredSource = String.mockAnySource()
         let telemetry: RUMTelemetry = .mockWith(
+            source: configuredSource,
             dateProvider: RelativeDateProvider(
                 using: .init(timeIntervalSince1970: 0)
             )
@@ -60,7 +64,7 @@ class RUMTelemetryTests: XCTestCase {
             XCTAssertEqual(event.application?.id, telemetry.applicationID)
             XCTAssertEqual(event.version, telemetry.sdkVersion)
             XCTAssertEqual(event.service, "dd-sdk-ios")
-            XCTAssertEqual(event.source, .ios)
+            XCTAssertEqual(event.source, TelemetryErrorEvent.Source(rawValue: configuredSource))
             XCTAssertEqual(event.telemetry.message, "Oops")
             XCTAssertEqual(event.telemetry.error?.kind, "OutOfMemory")
             XCTAssertEqual(event.telemetry.error?.stack, "a\nhay\nneedle\nstack")

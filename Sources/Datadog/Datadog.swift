@@ -226,6 +226,7 @@ public class Datadog {
             telemetry = RUMTelemetry(
                 sdkVersion: configuration.common.sdkVersion,
                 applicationID: rumConfiguration.applicationID,
+                source: rumConfiguration.common.source,
                 dateProvider: dateProvider,
                 dateCorrector: dateCorrector
             )

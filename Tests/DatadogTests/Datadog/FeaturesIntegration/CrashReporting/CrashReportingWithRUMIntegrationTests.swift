@@ -425,6 +425,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         let randomCarrierInfo: CarrierInfo = .mockRandom()
         let randomUserInfo: UserInfo = .mockRandom()
         let randomCrashType: String = .mockRandom()
+        let randomSource: String = .mockAnySource()
 
         func test(
             lastRUMSessionState: RUMSessionState,
@@ -457,6 +458,9 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
                 dateProvider: RelativeDateProvider(using: crashDate),
                 dateCorrector: DateCorrectorMock(correctionOffset: dateCorrectionOffset),
                 rumConfiguration: .mockWith(
+                    common: .mockWith(
+                        source: randomSource
+                    ),
                     applicationID: randomRUMAppID,
                     sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled),
                     backgroundEventTrackingEnabled: backgroundEventsTrackingEnabled
@@ -494,6 +498,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             XCTAssertEqual(sentRUMView.view.error.count, 0)
             XCTAssertEqual(sentRUMView.view.resource.count, 0)
             XCTAssertEqual(sentRUMView.view.action.count, 0)
+            XCTAssertEqual(sentRUMView.source, RUMViewEvent.Source(rawValue: randomSource))
             XCTAssertEqual(
                 sentRUMView.date,
                 crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.toInt64Milliseconds - 1,
@@ -505,6 +510,8 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             XCTAssertEqual(sentRUMError.model.application.id, sentRUMView.application.id, "It must be linked to the same application as RUM view")
             XCTAssertEqual(sentRUMError.model.session.id, sentRUMView.session.id, "It must be linked to the same session as RUM view")
             XCTAssertEqual(sentRUMError.model.view.id, sentRUMView.view.id, "It must be linked to the RUM view")
+            XCTAssertEqual(sentRUMError.model.source, RUMErrorEvent.Source(rawValue: randomSource), "Must support configured sources")
+            XCTAssertEqual(sentRUMError.model.error.sourceType, .ios, "Must send .ios as the sourceType")
             XCTAssertEqual(
                 sentRUMError.model.connectivity,
                 RUMConnectivity(networkInfo: randomNetworkConnectionInfo, carrierInfo: randomCarrierInfo),
@@ -655,6 +662,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             XCTAssertNotNil(sentRUMError.additionalAttributes?[DDError.binaryImages], "It must contain crash details")
             XCTAssertNotNil(sentRUMError.additionalAttributes?[DDError.meta], "It must contain crash details")
             XCTAssertNotNil(sentRUMError.additionalAttributes?[DDError.wasTruncated], "It must contain crash details")
+            XCTAssertEqual(sentRUMError.model.error.sourceType, .ios, "Must send .ios as the sourceType")
         }
 
         try test(
