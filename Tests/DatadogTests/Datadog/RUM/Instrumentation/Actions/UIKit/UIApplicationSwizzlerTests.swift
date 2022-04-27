@@ -7,6 +7,9 @@
 import XCTest
 @testable import Datadog
 
+// TODO: RUMM-2034 Remove this flag once we have a host application for tests
+#if !os(tvOS)
+
 class UIApplicationSwizzlerTests: XCTestCase {
     private let handler = UIKitRUMUserActionsHandlerMock()
     private lazy var swizzler = try! UIApplicationSwizzler(handler: handler)
@@ -38,3 +41,5 @@ class UIApplicationSwizzlerTests: XCTestCase {
         waitForExpectations(timeout: 1.5, handler: nil)
     }
 }
+
+#endif

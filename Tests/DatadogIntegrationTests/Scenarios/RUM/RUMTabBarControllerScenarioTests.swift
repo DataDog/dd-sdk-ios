@@ -43,9 +43,11 @@ class RUMTabBarControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
         app.tapTapBarButton(named: "Tab C") // go to "Screen C2"
         app.tapTapBarButton(named: "Tab C") // go to "Screen C1"
 
+        try app.endRUMSession()
+
         // Get RUM Sessions with expected number of View visits
         let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.singleSession(from: requests)?.viewVisits.count == 9
+            try RUMSessionMatcher.singleSession(from: requests)?.hasEnded() ?? false
         }
 
         assertRUM(requests: recordedRUMRequests)

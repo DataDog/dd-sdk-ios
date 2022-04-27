@@ -18,6 +18,7 @@ function files {
 		-not -path "*Carthage/Checkouts/*" \
 		-not -path "./tools/rum-models-generator/rum-events-format/*" \
 		-not -path "*/tools/distribution/venv/*" \
+		-not -path "*/tools/ci/venv/*" \
 		-not -path "./instrumented-tests/DatadogSDKTesting.xcframework/*" \
 		-not -name "OTSpan.swift" \
 		-not -name "OTFormat.swift" \

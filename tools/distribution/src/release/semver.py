@@ -110,3 +110,6 @@ class Version:
 
     def is_newer_than_or_equal(self, other_version: 'Version'):
         return self.is_newer_than(other_version=other_version) or self == other_version
+
+    def is_older_than(self, other_version: 'Version'):
+        return not self.is_newer_than_or_equal(other_version)

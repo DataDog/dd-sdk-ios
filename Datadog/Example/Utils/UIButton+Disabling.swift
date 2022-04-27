@@ -18,11 +18,7 @@ extension UIButton {
         let originalBackgroundColor = self.backgroundColor
 
         self.isEnabled = false
-        if #available(iOS 13.0, *) {
-            self.backgroundColor = .systemGray4
-        } else {
-            self.backgroundColor = .systemGray
-        }
+        self.backgroundColor = .systemGray
 
         return {
             self.isEnabled = true

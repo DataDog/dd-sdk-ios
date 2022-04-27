@@ -49,6 +49,9 @@ public struct RUMActionEvent: RUMDataModel {
     /// User properties
     public internal(set) var usr: RUMUser?
 
+    /// The version for this application
+    public let version: String?
+
     /// View properties
     public var view: View
 
@@ -66,6 +69,7 @@ public struct RUMActionEvent: RUMDataModel {
         case synthetics = "synthetics"
         case type = "type"
         case usr = "usr"
+        case version = "version"
         case view = "view"
     }
 
@@ -111,6 +115,9 @@ public struct RUMActionEvent: RUMDataModel {
         /// Properties of the errors of the action
         public let error: Error?
 
+        /// Action frustration types
+        public let frustrationType: [FrustrationType]?
+
         /// UUID of the action
         public let id: String?
 
@@ -132,6 +139,7 @@ public struct RUMActionEvent: RUMDataModel {
         enum CodingKeys: String, CodingKey {
             case crash = "crash"
             case error = "error"
+            case frustrationType = "frustration_type"
             case id = "id"
             case loadingTime = "loading_time"
             case longTask = "long_task"
@@ -158,6 +166,12 @@ public struct RUMActionEvent: RUMDataModel {
             enum CodingKeys: String, CodingKey {
                 case count = "count"
             }
+        }
+
+        public enum FrustrationType: String, Codable {
+            case rage = "rage"
+            case dead = "dead"
+            case error = "error"
         }
 
         /// Properties of the long tasks of the action
@@ -335,6 +349,9 @@ public struct RUMErrorEvent: RUMDataModel {
     /// User properties
     public internal(set) var usr: RUMUser?
 
+    /// The version for this application
+    public let version: String?
+
     /// View properties
     public var view: View
 
@@ -353,6 +370,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case synthetics = "synthetics"
         case type = "type"
         case usr = "usr"
+        case version = "version"
         case view = "view"
     }
 
@@ -664,6 +682,9 @@ public struct RUMLongTaskEvent: RUMDataModel {
     /// User properties
     public internal(set) var usr: RUMUser?
 
+    /// The version for this application
+    public let version: String?
+
     /// View properties
     public var view: View
 
@@ -682,6 +703,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case synthetics = "synthetics"
         case type = "type"
         case usr = "usr"
+        case version = "version"
         case view = "view"
     }
 
@@ -876,6 +898,9 @@ public struct RUMResourceEvent: RUMDataModel {
     /// User properties
     public internal(set) var usr: RUMUser?
 
+    /// The version for this application
+    public let version: String?
+
     /// View properties
     public var view: View
 
@@ -894,6 +919,7 @@ public struct RUMResourceEvent: RUMDataModel {
         case synthetics = "synthetics"
         case type = "type"
         case usr = "usr"
+        case version = "version"
         case view = "view"
     }
 
@@ -1269,6 +1295,9 @@ public struct RUMViewEvent: RUMDataModel {
     /// User properties
     public internal(set) var usr: RUMUser?
 
+    /// The version for this application
+    public let version: String?
+
     /// View properties
     public var view: View
 
@@ -1285,6 +1314,7 @@ public struct RUMViewEvent: RUMDataModel {
         case synthetics = "synthetics"
         case type = "type"
         case usr = "usr"
+        case version = "version"
         case view = "view"
     }
 
@@ -1623,20 +1653,20 @@ public struct TelemetryErrorEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
-    /// Error properties
-    public let error: Error?
-
-    /// Body of the log
-    public let message: String
-
     /// The SDK generating the telemetry event
     public let service: String
 
     /// Session properties
     public let session: Session?
 
-    /// Level/severity of the log
-    public let status: String = "error"
+    /// The source of this event
+    public let source: Source
+
+    /// The telemetry information
+    public let telemetry: Telemetry
+
+    /// Telemetry event type. Should specify telemetry only.
+    public let type: String = "telemetry"
 
     /// The version of the SDK generating the telemetry event
     public let version: String
@@ -1649,22 +1679,22 @@ public struct TelemetryErrorEvent: RUMDataModel {
         case action = "action"
         case application = "application"
         case date = "date"
-        case error = "error"
-        case message = "message"
         case service = "service"
         case session = "session"
-        case status = "status"
+        case source = "source"
+        case telemetry = "telemetry"
+        case type = "type"
         case version = "version"
         case view = "view"
     }
 
     /// Internal properties
     public struct DD: Codable {
-        /// Event type
-        public let eventType: String = "internal_telemetry"
+        /// Version of the RUM event format
+        public let formatVersion: Int64 = 2
 
         enum CodingKeys: String, CodingKey {
-            case eventType = "event_type"
+            case formatVersion = "format_version"
         }
     }
 
@@ -1688,20 +1718,6 @@ public struct TelemetryErrorEvent: RUMDataModel {
         }
     }
 
-    /// Error properties
-    public struct Error: Codable {
-        /// The error type or kind (or code in some cases)
-        public let kind: String?
-
-        /// The stack trace or the complementary information about the error
-        public let stack: String?
-
-        enum CodingKeys: String, CodingKey {
-            case kind = "kind"
-            case stack = "stack"
-        }
-    }
-
     /// Session properties
     public struct Session: Codable {
         /// UUID of the session
@@ -1709,6 +1725,47 @@ public struct TelemetryErrorEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
+        }
+    }
+
+    /// The source of this event
+    public enum Source: String, Codable {
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+    }
+
+    /// The telemetry information
+    public struct Telemetry: Codable {
+        /// Error properties
+        public let error: Error?
+
+        /// Body of the log
+        public let message: String
+
+        /// Level/severity of the log
+        public let status: String = "error"
+
+        enum CodingKeys: String, CodingKey {
+            case error = "error"
+            case message = "message"
+            case status = "status"
+        }
+
+        /// Error properties
+        public struct Error: Codable {
+            /// The error type or kind (or code in some cases)
+            public let kind: String?
+
+            /// The stack trace or the complementary information about the error
+            public let stack: String?
+
+            enum CodingKeys: String, CodingKey {
+                case kind = "kind"
+                case stack = "stack"
+            }
         }
     }
 
@@ -1737,17 +1794,20 @@ public struct TelemetryDebugEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
-    /// Body of the log
-    public let message: String
-
     /// The SDK generating the telemetry event
     public let service: String
 
     /// Session properties
     public let session: Session?
 
-    /// Level/severity of the log
-    public let status: String = "debug"
+    /// The source of this event
+    public let source: Source
+
+    /// The telemetry information
+    public let telemetry: Telemetry
+
+    /// Telemetry event type. Should specify telemetry only.
+    public let type: String = "telemetry"
 
     /// The version of the SDK generating the telemetry event
     public let version: String
@@ -1760,21 +1820,22 @@ public struct TelemetryDebugEvent: RUMDataModel {
         case action = "action"
         case application = "application"
         case date = "date"
-        case message = "message"
         case service = "service"
         case session = "session"
-        case status = "status"
+        case source = "source"
+        case telemetry = "telemetry"
+        case type = "type"
         case version = "version"
         case view = "view"
     }
 
     /// Internal properties
     public struct DD: Codable {
-        /// Event type
-        public let eventType: String = "internal_telemetry"
+        /// Version of the RUM event format
+        public let formatVersion: Int64 = 2
 
         enum CodingKeys: String, CodingKey {
-            case eventType = "event_type"
+            case formatVersion = "format_version"
         }
     }
 
@@ -1805,6 +1866,29 @@ public struct TelemetryDebugEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
+        }
+    }
+
+    /// The source of this event
+    public enum Source: String, Codable {
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+    }
+
+    /// The telemetry information
+    public struct Telemetry: Codable {
+        /// Body of the log
+        public let message: String
+
+        /// Level/severity of the log
+        public let status: String = "debug"
+
+        enum CodingKeys: String, CodingKey {
+            case message = "message"
+            case status = "status"
         }
     }
 
@@ -1992,4 +2076,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/c8a844abb59cb376be2fcdc9deda74dc328af660
+// Generated from https://github.com/DataDog/rum-events-format/tree/568fc1bcfb0d2775a11c07914120b70a3d5780fe

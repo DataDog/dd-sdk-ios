@@ -63,9 +63,11 @@ class RUMSwiftUIScenarioTests: IntegrationTests, RUMCommonAsserts {
         app.swipeDownInteraction() // go back to "SwiftUI.View 100"
         app.tapTapBar(item: "Navigation View") // go to "SwiftUI.View 3"
 
+        try app.endRUMSession()
+
         // Get RUM Sessions with expected number of View visits
         let requests = try recording.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.singleSession(from: requests)?.viewVisits.count == 9
+            try RUMSessionMatcher.singleSession(from: requests)?.hasEnded() ?? false
         }
 
         assertRUM(requests: requests)

@@ -10,6 +10,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     struct Constants {
         static let frozenFrameThresholdInNs = (0.07).toInt64Nanoseconds // 70ms
         static let slowRenderingThresholdFPS = 55.0
+        /// The pre-warming detection attribute key
+        static let activePrewarm = "active_pre_warm"
     }
 
     // MARK: - Child Scopes
@@ -71,6 +73,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     private let vitalInfoSampler: VitalInfoSampler
 
+    /// Samples view update events, so we can minimize the number of events in payload.
+    private let viewUpdatesThrottler: RUMViewUpdatesThrottlerType
+
     init(
         isInitialView: Bool,
         parent: RUMContextProvider,
@@ -99,6 +104,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             memoryReader: dependencies.vitalMemoryReader,
             refreshRateReader: dependencies.vitalRefreshRateReader
         )
+        self.viewUpdatesThrottler = dependencies.viewUpdatesThrottlerFactory()
     }
 
     // MARK: - RUMContextProvider
@@ -303,6 +309,18 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - Sending RUM Events
 
     private func sendApplicationStartAction() -> Bool {
+        var attributes = self.attributes
+        var loadingTime: Int64? = nil
+
+        if dependencies.launchTimeProvider.isActivePrewarm {
+            // Set `active_pre_warm` attribute to true in case
+            // of pre-warmed app
+            attributes[Constants.activePrewarm] = true
+        } else {
+            // Report Application Launch Time only if not pre-warmed
+            loadingTime = dependencies.launchTimeProvider.launchTime.toInt64Nanoseconds
+        }
+
         let eventData = RUMActionEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -311,8 +329,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             action: .init(
                 crash: nil,
                 error: nil,
+                frustrationType: nil,
                 id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
-                loadingTime: dependencies.launchTimeProvider.launchTime.toInt64Nanoseconds,
+                loadingTime: loadingTime,
                 longTask: nil,
                 resource: nil,
                 target: nil,
@@ -332,6 +351,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
+            version: dependencies.applicationVersion,
             view: .init(
                 id: viewUUID.toRUMDataFormat,
                 inForeground: nil,
@@ -354,8 +374,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         // RUMM-1779 Keep view active as long as we have ongoing resources
         let isActive = isActiveView || !resourceScopes.isEmpty
-
-        let timeSpent = command.time.timeIntervalSince(viewStartTime)
+        // RUMM-2079 `time_spent` can't be lower than 1ns
+        let timeSpent = max(1e-9, command.time.timeIntervalSince(viewStartTime))
         let cpuInfo = vitalInfoSampler.cpu
         let memoryInfo = vitalInfoSampler.memory
         let refreshRateInfo = vitalInfoSampler.refreshRate
@@ -381,6 +401,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
+            version: dependencies.applicationVersion,
             view: .init(
                 action: .init(count: actionsCount.toInt64),
                 cpuTicksCount: cpuInfo.greatestDiff,
@@ -420,11 +441,16 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         )
 
         if let event = dependencies.eventBuilder.build(from: eventData) {
-            dependencies.eventOutput.write(event: event)
+            if viewUpdatesThrottler.accept(event: event) {
+                dependencies.eventOutput.write(event: event)
+            } else { // if event was dropped by sampler
+                version -= 1
+            }
 
-            // Update `CrashContext` with recent RUM view:
+            // Update `CrashContext` with recent RUM view (no matter sampling - we want to always
+            // have recent information if process is interrupted by crash):
             dependencies.crashContextIntegration?.update(lastRUMViewEvent: event)
-        } else {
+        } else { // if event was dropped by mapper
             version -= 1
         }
     }
@@ -466,6 +492,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
+            version: dependencies.applicationVersion,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
                 inForeground: nil,
@@ -508,6 +535,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             source: .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
+            version: dependencies.applicationVersion,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
                 name: context.activeViewName,

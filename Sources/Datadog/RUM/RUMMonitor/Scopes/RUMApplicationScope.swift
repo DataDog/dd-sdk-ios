@@ -6,33 +6,6 @@
 
 import Foundation
 
-internal typealias RUMSessionListener = (String, Bool) -> Void
-
-/// Injection container for common dependencies used by all `RUMScopes`.
-internal struct RUMScopeDependencies {
-    let appStateListener: AppStateListening
-    let userInfoProvider: RUMUserInfoProvider
-    let launchTimeProvider: LaunchTimeProviderType
-    let connectivityInfoProvider: RUMConnectivityInfoProvider
-    let serviceName: String
-    let eventBuilder: RUMEventBuilder
-    let eventOutput: RUMEventOutput
-    let rumUUIDGenerator: RUMUUIDGenerator
-    /// Adjusts RUM events time (device time) to server time.
-    let dateCorrector: DateCorrectorType
-    /// Integration with Crash Reporting. It updates the crash context with RUM info.
-    /// `nil` if Crash Reporting feature is not enabled.
-    let crashContextIntegration: RUMWithCrashContextIntegration?
-    /// Integration with CIApp tests. It contains the CIApp test context when active.
-    let ciTest: RUMCITest?
-
-    let vitalCPUReader: SamplingBasedVitalReader
-    let vitalMemoryReader: SamplingBasedVitalReader
-    let vitalRefreshRateReader: ContinuousVitalReader
-
-    let onSessionStart: RUMSessionListener?
-}
-
 internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     // MARK: - Child Scopes
 
@@ -40,32 +13,14 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Might be re-created later according to session duration constraints.
     private(set) var sessionScope: RUMSessionScope?
 
-    /// RUM Sessions sampler.
-    internal let sampler: Sampler
-
-    /// The start time of the application, indicated as SDK init. Measured in device time (without NTP correction).
-    private let sdkInitDate: Date
-
-    /// Automatically detect background events
-    internal let backgroundEventTrackingEnabled: Bool
-
     // MARK: - Initialization
 
     let dependencies: RUMScopeDependencies
 
-    init(
-        rumApplicationID: String,
-        dependencies: RUMScopeDependencies,
-        sampler: Sampler,
-        sdkInitDate: Date,
-        backgroundEventTrackingEnabled: Bool
-    ) {
+    init(dependencies: RUMScopeDependencies) {
         self.dependencies = dependencies
-        self.sampler = sampler
-        self.sdkInitDate = sdkInitDate
-        self.backgroundEventTrackingEnabled = backgroundEventTrackingEnabled
         self.context = RUMContext(
-            rumApplicationID: rumApplicationID,
+            rumApplicationID: dependencies.rumApplicationID,
             sessionID: .nullUUID,
             activeViewID: nil,
             activeViewPath: nil,
@@ -109,10 +64,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         let initialSession = RUMSessionScope(
             isInitialSession: true,
             parent: self,
-            dependencies: dependencies,
-            sampler: sampler,
-            startTime: sdkInitDate,
-            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled
+            startTime: dependencies.sdkInitDate,
+            dependencies: dependencies
         )
         sessionScope = initialSession
         sessionScopeDidUpdate(initialSession)

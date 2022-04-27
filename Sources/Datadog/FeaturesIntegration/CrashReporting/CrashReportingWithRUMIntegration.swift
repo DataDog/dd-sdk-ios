@@ -256,6 +256,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             source: .ios,
             synthetics: nil,
             usr: lastRUMView.usr,
+            version: lastRUMView.version,
             view: .init(
                 id: lastRUMView.view.id,
                 inForeground: nil,
@@ -288,6 +289,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             source: .ios,
             synthetics: nil,
             usr: original.usr,
+            version: original.version,
             view: .init(
                 action: original.view.action,
                 cpuTicksCount: original.view.cpuTicksCount,
@@ -360,6 +362,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             source: .ios,
             synthetics: nil,
             usr: crashContext.lastUserInfo.flatMap { RUMUser(userInfo: $0) },
+            version: rumConfiguration.common.applicationVersion,
             view: .init(
                 action: .init(count: 0),
                 cpuTicksCount: nil,

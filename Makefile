@@ -1,15 +1,17 @@
 all: dependencies xcodeproj-httpservermock templates
 
 # The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
-DD_SDK_SWIFT_TESTING_VERSION = 1.1.1
+DD_SDK_SWIFT_TESTING_VERSION = 2.0.0
 
 define DD_SDK_TESTING_XCCONFIG_CI
-FRAMEWORK_SEARCH_PATHS=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
-LD_RUNPATH_SEARCH_PATHS=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
+FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
+LD_RUNPATH_SEARCH_PATHS[sdk=iphonesimulator*]=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
+FRAMEWORK_SEARCH_PATHS[sdk=appletvsimulator*]==$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/tvos-arm64_x86_64-simulator/\n
+LD_RUNPATH_SEARCH_PATHS[sdk=appletvsimulator*]=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/tvos-arm64_x86_64-simulator/\n
 OTHER_LDFLAGS=$$(inherited) -framework DatadogSDKTesting\n
 DD_TEST_RUNNER=1\n
 DD_SDK_SWIFT_TESTING_SERVICE=dd-sdk-ios\n
-DD_SDK_SWIFT_TESTING_CLIENT_TOKEN=${DD_SDK_SWIFT_TESTING_CLIENT_TOKEN}\n
+DD_SDK_SWIFT_TESTING_APIKEY=${DD_SDK_SWIFT_TESTING_APIKEY}\n
 DD_SDK_SWIFT_TESTING_ENV=ci\n
 endef
 export DD_SDK_TESTING_XCCONFIG_CI
@@ -49,7 +51,7 @@ dependencies:
 		@echo "⚙️  Installing dependencies..."
 		@brew list swiftlint &>/dev/null || brew install swiftlint
 		@brew upgrade carthage
-		@carthage bootstrap --platform iOS --use-xcframeworks
+		@carthage bootstrap --platform iOS,tvOS --use-xcframeworks
 		@echo $$DD_SDK_BASE_XCCONFIG > xcconfigs/Base.local.xcconfig;
 ifeq (${ci}, true)
 		@echo $$DD_SDK_BASE_XCCONFIG_CI >> xcconfigs/Base.local.xcconfig;
@@ -102,9 +104,9 @@ rum-models-verify:
 api-surface:
 		@cd tools/api-surface/ && swift build --configuration release
 		@echo "Generating api-surface-swift"
-		./tools/api-surface/.build/x86_64-apple-macosx/release/api-surface workspace --workspace-name Datadog.xcworkspace --scheme Datadog --path . > api-surface-swift
+		./tools/api-surface/.build/x86_64-apple-macosx/release/api-surface workspace --workspace-name Datadog.xcworkspace --scheme "Datadog iOS" --path . > api-surface-swift
 		@echo "Generating api-surface-objc"
-		./tools/api-surface/.build/x86_64-apple-macosx/release/api-surface workspace --workspace-name Datadog.xcworkspace --scheme DatadogObjc --path . > api-surface-objc
+		./tools/api-surface/.build/x86_64-apple-macosx/release/api-surface workspace --workspace-name Datadog.xcworkspace --scheme "DatadogObjc iOS" --path . > api-surface-objc
 
 # Generate Datadog monitors terraform definition for E2E tests:
 e2e-monitors-generate:

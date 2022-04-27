@@ -196,7 +196,8 @@ extension FeaturesConfiguration.Common {
         source: String = .mockAny(),
         origin: String? = nil,
         sdkVersion: String = .mockAny(),
-        proxyConfiguration: [AnyHashable: Any]? = nil
+        proxyConfiguration: [AnyHashable: Any]? = nil,
+        encryption: DataEncryption? = nil
     ) -> Self {
         return .init(
             applicationName: applicationName,
@@ -208,7 +209,8 @@ extension FeaturesConfiguration.Common {
             source: source,
             origin: origin,
             sdkVersion: sdkVersion,
-            proxyConfiguration: proxyConfiguration
+            proxyConfiguration: proxyConfiguration,
+            encryption: encryption
         )
     }
 }
@@ -365,6 +367,22 @@ extension AppContext {
     }
 }
 
+struct DataEncryptionMock: DataEncryption {
+    let enc: (Data) throws -> Data
+    let dec: (Data) throws -> Data
+
+    init(
+        encrypt: @escaping (Data) throws -> Data = { $0 },
+        decrypt: @escaping (Data) throws -> Data = { $0 }
+    ) {
+        enc = encrypt
+        dec = decrypt
+    }
+
+    func encrypt(data: Data) throws -> Data { try enc(data) }
+    func decrypt(data: Data) throws -> Data { try dec(data) }
+}
+
 // MARK: - PerformancePreset Mocks
 
 struct StoragePerformanceMock: StoragePerformancePreset {
@@ -491,8 +509,9 @@ extension FeaturesCommonDependencies {
             )
         ),
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
-        launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock(),
-        appStateListener: AppStateListening = AppStateListenerMock.mockAny()
+        launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock.mockAny(),
+        appStateListener: AppStateListening = AppStateListenerMock.mockAny(),
+        encryption: DataEncryption? = nil
     ) -> FeaturesCommonDependencies {
         let httpClient: HTTPClient
 
@@ -527,7 +546,8 @@ extension FeaturesCommonDependencies {
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider,
             launchTimeProvider: launchTimeProvider,
-            appStateListener: appStateListener
+            appStateListener: appStateListener,
+            encryption: encryption
         )
     }
 
@@ -544,7 +564,8 @@ extension FeaturesCommonDependencies {
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType? = nil,
         carrierInfoProvider: CarrierInfoProviderType? = nil,
         launchTimeProvider: LaunchTimeProviderType? = nil,
-        appStateListener: AppStateListening? = nil
+        appStateListener: AppStateListening? = nil,
+        encryption: DataEncryption? = nil
     ) -> FeaturesCommonDependencies {
         return FeaturesCommonDependencies(
             consentProvider: consentProvider ?? self.consentProvider,
@@ -558,7 +579,8 @@ extension FeaturesCommonDependencies {
             networkConnectionInfoProvider: networkConnectionInfoProvider ?? self.networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider ?? self.carrierInfoProvider,
             launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider,
-            appStateListener: appStateListener ?? self.appStateListener
+            appStateListener: appStateListener ?? self.appStateListener,
+            encryption: encryption ?? self.encryption
         )
     }
 }
@@ -613,7 +635,7 @@ extension DataFormat {
     static func mockWith(
         prefix: String = .mockAny(),
         suffix: String = .mockAny(),
-        separator: String = .mockAny()
+        separator: Character = .mockAny()
     ) -> DataFormat {
         return DataFormat(
             prefix: prefix,
@@ -682,7 +704,22 @@ class DateCorrectorMock: DateCorrectorType {
 }
 
 struct LaunchTimeProviderMock: LaunchTimeProviderType {
-    var launchTime: TimeInterval = 0
+    let launchTime: TimeInterval
+    let isActivePrewarm: Bool
+}
+
+extension LaunchTimeProviderMock {
+    static func mockAny() -> LaunchTimeProviderMock {
+        return mockWith(launchTime: 0, isActivePrewarm: false)
+    }
+
+    static func mockWith(launchTime: TimeInterval, isActivePrewarm: Bool = false) -> LaunchTimeProviderMock {
+        return LaunchTimeProviderMock(launchTime: launchTime, isActivePrewarm: isActivePrewarm)
+    }
+
+    static func mockRandom(launchTime: TimeInterval = .mockRandom(), isActivePrewarm: Bool = .random()) -> LaunchTimeProviderMock {
+        return mockWith(launchTime: launchTime, isActivePrewarm: isActivePrewarm)
+    }
 }
 
 extension AppState: AnyMockable, RandomMockable {

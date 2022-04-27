@@ -37,6 +37,7 @@ class RUMFeatureTests: XCTestCase {
         let randomDeviceModel: String = .mockRandom()
         let randomDeviceOSName: String = .mockRandom()
         let randomDeviceOSVersion: String = .mockRandom()
+        let randomEncryption: DataEncryption? = Bool.random() ? DataEncryptionMock() : nil
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
 
@@ -51,7 +52,8 @@ class RUMFeatureTests: XCTestCase {
                     environment: randomEnvironmentName,
                     source: randomSource,
                     origin: randomOrigin,
-                    sdkVersion: randomSDKVersion
+                    sdkVersion: randomSDKVersion,
+                    encryption: randomEncryption
                 ),
                 uploadURL: randomUploadURL,
                 clientToken: randomClientToken

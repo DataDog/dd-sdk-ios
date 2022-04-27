@@ -36,7 +36,7 @@ extension RUMCommonAsserts {
 
             let expectedHeadersRegexes = [
                 #"^Content-Type: text/plain;charset=UTF-8$"#,
-                #"^User-Agent: Example/1.0 CFNetwork \([a-zA-Z ]+; iOS/[0-9.]+\)$"#, // e.g. "User-Agent: Example/1.0 CFNetwork (iPhone; iOS/14.5)"
+                #"^User-Agent: .*/\d+[.\d]* CFNetwork \([a-zA-Z ]+; iOS/[0-9.]+\)$"#, // e.g. "User-Agent: Example/1.0 CFNetwork (iPhone; iOS/14.5)"
                 #"^DD-API-KEY: ui-tests-client-token$"#,
                 #"^DD-EVP-ORIGIN: ios$"#,
                 #"^DD-EVP-ORIGIN-VERSION: [0-9]+.[0-9]+.[0-9]+([-a-z0-9])*$"#, // e.g. "DD-EVP-ORIGIN-VERSION: 1.7.0-beta2"
@@ -86,5 +86,14 @@ extension RUMSessionMatcher {
 
     class func assertViewWasEventuallyInactive(_ viewVisit: ViewVisit) {
         XCTAssertFalse(try XCTUnwrap(viewVisit.viewEvents.last?.view.isActive))
+    }
+
+    /// Checks if RUM session has ended by:
+    /// - checking if it contains "end view" added in response to `ExampleApplication.endRUMSession()`;
+    /// - checking if all other views are marked as "inactive" (meaning they ended up processing their resources).
+    func hasEnded() -> Bool {
+        let hasEndView = viewVisits.last?.name == Environment.Constants.rumSessionEndViewName
+        let hasSomeActiveView = viewVisits.contains(where: { $0.viewEvents.last?.view.isActive == true })
+        return hasEndView && !hasSomeActiveView
     }
 }

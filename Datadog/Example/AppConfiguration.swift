@@ -76,7 +76,11 @@ struct ExampleAppConfiguration: AppConfiguration {
         if let testScenario = testScenario {
             return UIStoryboard(name: type(of: testScenario).storyboardName, bundle: nil)
         }
-        return UIStoryboard(name: "Main", bundle: nil)
+        #if os(iOS)
+        return UIStoryboard(name: "Main iOS", bundle: nil)
+        #else
+        return nil
+        #endif
     }
 }
 
@@ -88,6 +92,13 @@ struct UITestsAppConfiguration: AppConfiguration {
     init() {
         if Environment.shouldClearPersistentData() {
             PersistenceHelpers.deleteAllSDKData()
+        }
+
+        // Handle messages received from UITest runner:
+        try! MessagePortChannel.createReceiver().startListening { message in
+            switch message {
+            case .endRUMSession: markRUMSessionAsEnded()
+            }
         }
     }
 

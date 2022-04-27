@@ -18,7 +18,7 @@ class RUMViewScopeTests: XCTestCase {
     )
 
     func testDefaultContext() {
-        let applicationScope: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123")
+        let applicationScope = RUMApplicationScope(dependencies: .mockWith(rumApplicationID: "rum-123"))
         let sessionScope: RUMSessionScope = .mockWith(parent: applicationScope)
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
@@ -41,7 +41,7 @@ class RUMViewScopeTests: XCTestCase {
     }
 
     func testContextWhenViewHasAnActiveUserAction() {
-        let applicationScope: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123")
+        let applicationScope = RUMApplicationScope(dependencies: .mockWith(rumApplicationID: "rum-123"))
         let sessionScope: RUMSessionScope = .mockWith(parent: applicationScope)
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
@@ -66,12 +66,13 @@ class RUMViewScopeTests: XCTestCase {
     }
 
     func testWhenInitialViewReceivesAnyCommand_itSendsApplicationStartAction() throws {
+        // Given
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
             isInitialView: true,
             parent: parent,
             dependencies: dependencies.replacing(
-                launchTimeProvider: LaunchTimeProviderMock(launchTime: 2) // 2 seconds
+                launchTimeProvider: LaunchTimeProviderMock.mockWith(launchTime: 2) // 2 seconds
             ),
             identity: mockView,
             path: "UIViewController",
@@ -81,8 +82,10 @@ class RUMViewScopeTests: XCTestCase {
             startTime: currentTime
         )
 
+        // When
         _ = scope.process(command: RUMCommandMock(time: currentTime))
 
+        // Then
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMActionEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
@@ -97,6 +100,32 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, randomServiceName)
+        XCTAssertNil(event.context?.contextInfo[RUMViewScope.Constants.activePrewarm])
+    }
+
+    func testWhenActivePrewarm_itSendsApplicationStartAction_withoutLoadingTime() throws {
+        // Given
+        let scope: RUMViewScope = .mockWith(
+            isInitialView: true,
+            parent: parent,
+            dependencies: dependencies.replacing(
+                launchTimeProvider: LaunchTimeProviderMock.mockWith(
+                    launchTime: 2, // 2 seconds
+                    isActivePrewarm: true
+                )
+            ),
+            identity: mockView
+        )
+
+        // When
+        _ = scope.process(command: RUMCommandMock())
+
+        // Then
+        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMActionEvent.self).first)
+        let isActivePrewarm = try XCTUnwrap(event.context?.contextInfo[RUMViewScope.Constants.activePrewarm] as? Bool)
+        XCTAssertEqual(event.action.type, .applicationStart)
+        XCTAssertNil(event.action.loadingTime)
+        XCTAssertTrue(isActivePrewarm)
     }
 
     func testWhenInitialViewReceivesAnyCommand_itSendsViewUpdateEvent() throws {
@@ -125,7 +154,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.view.name, "ViewName")
         let viewIsActive = try XCTUnwrap(event.view.isActive)
         XCTAssertTrue(viewIsActive)
-        XCTAssertEqual(event.view.timeSpent, 0)
+        XCTAssertEqual(event.view.timeSpent, 1) // Minimum `time_spent of 1 nanosecond
         XCTAssertEqual(event.view.action.count, 1, "The initial view update must have come with `application_start` action sent.")
         XCTAssertEqual(event.view.error.count, 0)
         XCTAssertEqual(event.view.resource.count, 0)
@@ -166,7 +195,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.view.name, "ViewName")
         let viewIsActive = try XCTUnwrap(event.view.isActive)
         XCTAssertTrue(viewIsActive)
-        XCTAssertEqual(event.view.timeSpent, 0)
+        XCTAssertEqual(event.view.timeSpent, 1) // Minimum `time_spent of 1 nanosecond
         XCTAssertEqual(event.view.action.count, isInitialView ? 1 : 0, "It must track application start action only if this is an initial view")
         XCTAssertEqual(event.view.error.count, 0)
         XCTAssertEqual(event.view.resource.count, 0)
@@ -1165,6 +1194,94 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.view.action.count, 0, "All actions, including ApplicationStart action should be dropped")
         XCTAssertEqual(event.dd.documentVersion, 1, "It should record only one view update")
     }
+
+    // MARK: Suppressing number of view updates
+
+    // swiftlint:disable opening_brace
+    func testGivenScopeWithViewUpdatesThrottler_whenReceivingStreamOfCommands_thenItSendsLessViewUpdatesThanScopeWithNoThrottler() throws {
+        let commandsIssuingViewUpdates: [(Date) -> RUMCommand] = [
+            // receive resource:
+            { date in RUMStartResourceCommand.mockWith(resourceKey: "resource", time: date) },
+            { date in RUMStopResourceCommand.mockWith(resourceKey: "resource", time: date) },
+            // add action:
+            { date in RUMStartUserActionCommand.mockWith(time: date, actionType: .scroll) },
+            { date in RUMStopUserActionCommand.mockWith(time: date, actionType: .scroll) },
+            // add error:
+            { date in RUMAddCurrentViewErrorCommand.mockWithErrorObject(time: date) },
+            // add long task:
+            { date in RUMAddLongTaskCommand.mockWith(time: date) },
+            // receive timing:
+            { date in RUMAddViewTimingCommand.mockWith(time: date, timingName: .mockRandom()) },
+        ]
+        let stopViewCommand: [(Date) -> RUMCommand] = [
+            { date in RUMStopViewCommand.mockWith(time: date, identity: mockView) }
+        ]
+
+        let commands = (0..<5).flatMap({ _ in commandsIssuingViewUpdates }) + stopViewCommand // loop 5 times through all commands
+        let timeIntervalBetweenCommands = 1.0
+        let simulationDuration = timeIntervalBetweenCommands * Double(commands.count)
+        let samplingDuration = simulationDuration * 0.5 // at least half view updates should be skipped
+
+        // Given
+        let throttler = RUMViewUpdatesThrottler(viewUpdateThreshold: samplingDuration)
+        let sampledScopeOutput = RUMEventOutputMock()
+        let sampledScope: RUMViewScope = .mockWith(
+            parent: parent,
+            dependencies: .mockWith(
+                eventOutput: sampledScopeOutput,
+                viewUpdatesThrottlerFactory: { throttler }
+            )
+        )
+
+        let noOpThrottler = NoOpRUMViewUpdatesThrottler()
+        let notSampledScopeOutput = RUMEventOutputMock()
+        let notSampledScope: RUMViewScope = .mockWith(
+            parent: parent,
+            dependencies: .mockWith(
+                eventOutput: notSampledScopeOutput,
+                viewUpdatesThrottlerFactory: { noOpThrottler }
+            )
+        )
+
+        // When
+        func send(commands: [(Date) -> RUMCommand], to scope: RUMViewScope) {
+            var currentTime = scope.viewStartTime
+            commands.forEach { command in
+                currentTime.addTimeInterval(timeIntervalBetweenCommands)
+                _ = scope.process(command: command(currentTime))
+            }
+        }
+
+        send(commands: commands, to: sampledScope)
+        send(commands: commands, to: notSampledScope)
+
+        // Then
+        let viewUpdatesInSampledScope = try sampledScopeOutput.recordedEvents(ofType: RUMViewEvent.self)
+        let viewUpdatesInNotSampledScope = try notSampledScopeOutput.recordedEvents(ofType: RUMViewEvent.self)
+        XCTAssertLessThan(
+            viewUpdatesInSampledScope.count,
+            viewUpdatesInNotSampledScope.count ,
+            "Sampled scope should send less view updates than not sampled"
+        )
+
+        let actualSamplingRatio = Double(viewUpdatesInSampledScope.count) / Double(viewUpdatesInNotSampledScope.count)
+        let maxExpectedSamplingRatio = samplingDuration / simulationDuration
+        XCTAssertLessThan(
+            actualSamplingRatio,
+            maxExpectedSamplingRatio,
+            "Less than \(maxExpectedSamplingRatio * 100)% of view updates should be sampled"
+        )
+
+        let actualLastUpdate = try XCTUnwrap(viewUpdatesInSampledScope.last)
+        let expectedLastUpdate = try XCTUnwrap(viewUpdatesInNotSampledScope.last)
+        XCTAssertEqual(actualLastUpdate.view.resource.count, expectedLastUpdate.view.resource.count, "It should count all resources")
+        XCTAssertEqual(actualLastUpdate.view.action.count, expectedLastUpdate.view.action.count, "It should count all actions")
+        XCTAssertEqual(actualLastUpdate.view.error.count, expectedLastUpdate.view.error.count, "It should count all errors")
+        XCTAssertEqual(actualLastUpdate.view.longTask?.count, expectedLastUpdate.view.longTask?.count, "It should count all long tasks")
+        XCTAssertEqual(actualLastUpdate.view.customTimings?.count, expectedLastUpdate.view.customTimings?.count, "It should count all view timings")
+        XCTAssertTrue(actualLastUpdate.view.isActive == false, "Terminal view update must always be sent")
+    }
+    // swiftlint:enable opening_brace
 
     // MARK: Integration with Crash Context
 

@@ -87,8 +87,8 @@
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "DATADOG_CLIENT_TOKEN"
-            value = "$(DD_SDK_SWIFT_TESTING_CLIENT_TOKEN)"
+            key = "DD_API_KEY"
+            value = "$(DD_SDK_SWIFT_TESTING_APIKEY)"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable

@@ -35,14 +35,21 @@ struct HTTPServerMockConfiguration: Codable {
 }
 
 internal struct Environment {
+    /// ENV variables shared between UITests and Example targets.
     struct Variable {
         static let testScenarioClassName = "DD_TEST_SCENARIO_CLASS_NAME"
         static let serverMockConfiguration = "DD_TEST_SERVER_MOCK_CONFIGURATION"
     }
+    /// Launch arguments shared between UITests and Example targets.
     struct Argument {
         static let isRunningUnitTests       = "IS_RUNNING_UNIT_TESTS"
         static let isRunningUITests         = "IS_RUNNING_UI_TESTS"
         static let doNotClearPersistentData = "DO_NOT_CLEAR_PERSISTENT_DATA"
+    }
+    /// Common constants shared between UITests and Example targets.
+    struct Constants {
+        /// The name of the view indicating the end of RUM session in RUM-related `TestScenarios`.
+        static let rumSessionEndViewName = "RUMSessionEndView"
     }
     struct InfoPlistKey {
         static let clientToken      = "DatadogClientToken"

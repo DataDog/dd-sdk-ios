@@ -23,6 +23,17 @@ class RUMMonitorTests: XCTestCase {
         super.tearDown()
     }
 
+    /// Creates `RUMMonitor` instance for tests.
+    /// The only difference vs. `RUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
+    private func createTestableRUMMonitor() throws -> DDRUMMonitor {
+        let rumFeature = try XCTUnwrap(RUMFeature.instance, "RUM feature must be initialized before creating `RUMMonitor`")
+        return RUMMonitor(
+            dependencies: RUMScopeDependencies(rumFeature: rumFeature)
+                .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
+            dateProvider: rumFeature.dateProvider
+        )
+    }
+
     // MARK: - Sending RUM events
 
     func testStartingViewIdentifiedByViewController() throws {
@@ -39,7 +50,7 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
@@ -77,7 +88,7 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
 
         monitor.startView(key: "view1-key", name: "View1")
@@ -99,7 +110,7 @@ class RUMMonitorTests: XCTestCase {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
@@ -133,7 +144,7 @@ class RUMMonitorTests: XCTestCase {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
@@ -168,7 +179,7 @@ class RUMMonitorTests: XCTestCase {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
@@ -236,7 +247,7 @@ class RUMMonitorTests: XCTestCase {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
 
         let url: URL = .mockRandom()
@@ -257,7 +268,7 @@ class RUMMonitorTests: XCTestCase {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
@@ -284,7 +295,7 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
 
         let actionName = String.mockRandom()
@@ -315,7 +326,7 @@ class RUMMonitorTests: XCTestCase {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
@@ -378,7 +389,7 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
@@ -443,7 +454,7 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
 
         let view1 = createMockView(viewControllerClassName: "FirstViewController")
@@ -493,7 +504,7 @@ class RUMMonitorTests: XCTestCase {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
 
         let view1 = createMockView(viewControllerClassName: "FirstViewController")
@@ -562,7 +573,7 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
 
         monitor.startView(viewController: mockView)
         monitor.addUserAction(type: .tap, name: "1st action")
@@ -606,7 +617,7 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
 
         monitor.startView(viewController: mockView)
         monitor.startUserAction(type: .scroll, name: .mockAny())
@@ -659,7 +670,7 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
 
         monitor.startView(viewController: mockView)
         monitor.startUserAction(type: .scroll, name: .mockAny())
@@ -700,7 +711,7 @@ class RUMMonitorTests: XCTestCase {
         let view1 = createMockView(viewControllerClassName: "FirstViewController")
         let view2 = createMockView(viewControllerClassName: "SecondViewController")
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
 
         // set global attributes:
         monitor.addAttribute(forKey: "attribute1", value: "value 1")
@@ -740,7 +751,7 @@ class RUMMonitorTests: XCTestCase {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
 
         monitor.addAttribute(forKey: "a1", value: "foo1")
         monitor.addAttribute(forKey: "a2", value: "foo2")
@@ -778,7 +789,7 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
@@ -796,7 +807,7 @@ class RUMMonitorTests: XCTestCase {
 
     // MARK: - RUM New Session
 
-    func testStartingViewCreatesNewSession() {
+    func testStartingViewCreatesNewSession() throws {
         let keepAllSessions: Bool = .random()
 
         let expectation = self.expectation(description: "onSessionStart is called")
@@ -816,7 +827,7 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
         monitor.startView(viewController: mockView)
 
         waitForExpectations(timeout: 0.5)
@@ -846,7 +857,7 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
 
         monitor.startView(viewController: mockView)
         monitor.addUserAction(type: .tap, name: .mockAny())
@@ -905,7 +916,7 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
 
         // When
         monitor.startView(viewController: mockView, name: "view in `.pending` consent changed to `.granted`")
@@ -951,7 +962,7 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
 
         // When
         monitor.addUserAction(type: .custom, name: "A1")
@@ -1031,7 +1042,7 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
 
         monitor.startView(viewController: mockView, name: "OriginalViewName")
         monitor.startResourceLoading(resourceKey: "/resource/1", url: URL(string: "https://foo.com?q=original-resource-url")!)
@@ -1075,7 +1086,7 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
 
         monitor.startView(viewController: mockView)
         monitor.startResourceLoading(resourceKey: "/resource/1", url: .mockAny())
@@ -1132,7 +1143,7 @@ class RUMMonitorTests: XCTestCase {
         defer { Global.crashReporter = nil }
 
         // When
-        let monitor = RUMMonitor.initialize()
+        let monitor = try createTestableRUMMonitor()
         monitor.startView(viewController: mockView, attributes: randomViewEventAttributes)
 
         // Then
@@ -1325,10 +1336,17 @@ class RUMMonitorTests: XCTestCase {
         let mockWindow = UIWindow(frame: .zero)
         let mockUIControl = UIControl()
         mockWindow.addSubview(mockUIControl)
+
         userActionsHandler.notify_sendEvent(
             application: .shared,
-            event: .mockWith(touches: [.mockWith(phase: .ended, view: mockUIControl)])
+            event: .mockWith(touch: .mockWith(view: mockUIControl))
         )
+
+        userActionsHandler.notify_sendEvent(
+            application: .shared,
+            event: .mockWith(press: .mockWith(view: mockUIControl))
+        )
+
         XCTAssertEqual(output.recordedLog?.status, .warn)
         XCTAssertEqual(
             output.recordedLog?.message,

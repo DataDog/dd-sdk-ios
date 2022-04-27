@@ -65,7 +65,7 @@ internal class NetworkConnectionInfoProvider: NetworkConnectionInfoProviderType 
     private let publisher: ValuePublisher<NetworkConnectionInfo?>
 
     convenience init() {
-        if #available(iOS 12, *) {
+        if #available(iOS 12, tvOS 12, *) {
             self.init(wrappedProvider: NWPathNetworkConnectionInfoProvider())
         } else {
             self.init(wrappedProvider: iOS11NetworkConnectionInfoProvider())
@@ -103,7 +103,7 @@ internal class NetworkConnectionInfoProvider: NetworkConnectionInfoProviderType 
 /// We found the pulling model to not be thread-safe: accessing `currentPath` properties lead to occasional crashes.
 /// The `ThreadSafeNWPathMonitor` listens to path updates and synchonizes the values on `.current` property.
 /// This adds the necessary thread-safety and keeps the convenience of pulling.
-@available(iOS 12, *)
+@available(iOS 12, tvOS 12, *)
 internal class NWPathNetworkConnectionInfoProvider: WrappedNetworkConnectionInfoProvider {
     /// Queue synchronizing the reads and updates to `NWPath`.
     private let queue = DispatchQueue(
@@ -122,7 +122,7 @@ internal class NWPathNetworkConnectionInfoProvider: WrappedNetworkConnectionInfo
                 supportsIPv6: path.supportsIPv6,
                 isExpensive: path.isExpensive,
                 isConstrained: {
-                    if #available(iOS 13.0, *) {
+                    if #available(iOS 13, tvOS 13, *) {
                         return path.isConstrained
                     } else {
                         return nil
@@ -175,7 +175,7 @@ internal class iOS11NetworkConnectionInfoProvider: WrappedNetworkConnectionInfoP
 // MARK: - Conversion helpers
 
 extension NetworkConnectionInfo.Reachability {
-    @available(iOS 12, *)
+    @available(iOS 12, tvOS 12, *)
     init(from status: NWPath.Status) {
         switch status {
         case .satisfied: self = .yes
@@ -195,7 +195,7 @@ extension NetworkConnectionInfo.Reachability {
 }
 
 extension Array where Element == NetworkConnectionInfo.Interface {
-    @available(iOS 12, *)
+    @available(iOS 12, tvOS 12, *)
     init(fromInterfaceTypes interfaceTypes: [NWInterface.InterfaceType]) {
         self = interfaceTypes.map { interface in
             switch interface {

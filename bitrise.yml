@@ -1,5 +1,4 @@
----
-format_version: '8'
+format_version: 11
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 project_type: other
 
@@ -7,14 +6,54 @@ project_type: other
 # go to Workflow Editor on Bitrise.io.
 
 workflows:
-  push_to_any_branch:
+  push_to_pull_request:
+    description: |-
+        This workflow is triggered on starting new PR or pushing new changes to existing PRs.
+        By default, it doesn't run any test phases, but this behaviour is overwritten in `choose_workflows.py` when:
+        - one or more `DD_OVERWRITE_RUN_(phase)_TESTS` ENVs are passed to the current CI job:
+            - DD_OVERRIDE_RUN_UNIT_TESTS='1' to run unit tests phase
+            - DD_OVERRIDE_RUN_INTEGRATION_TESTS='1' to run integration tests phase
+            - DD_OVERRIDE_RUN_SMOKE_TESTS='1' to run smoke tests phase
+            - DD_OVERRIDE_TOOLS_TESTS='1' to run tools tests phase
+        - a phase is selected on the checklist in the PR description,
+        - the PR changes a file which matches phase filter (e.g. changing a file in `Sources/*` will trigger unit tests phase)
+    envs:
+      - DD_RUN_UNIT_TESTS: '0'
+      - DD_RUN_INTEGRATION_TESTS: '0'
+      - DD_RUN_SMOKE_TESTS: '0'
+      - DD_RUN_TOOLS_TESTS: '0'
     after_run:
     - _make_dependencies
-    - run_linter
-    - run_unit_tests
-    - run_integration_tests
-    - check_dependency_managers
+    - run_conditioned_workflows
     - _deploy_artifacts
+
+  push_to_develop_or_master:
+    description: |-
+        This workflow is triggered for each new commit pushed to `develop` or `master` branch.
+    envs:
+      - DD_RUN_UNIT_TESTS: '1'
+      - DD_RUN_INTEGRATION_TESTS: '1'
+      - DD_RUN_SMOKE_TESTS: '0'
+      - DD_RUN_TOOLS_TESTS: '0'
+    after_run:
+    - _make_dependencies
+    - run_conditioned_workflows
+    - _deploy_artifacts
+    - _notify_failure_on_slack
+
+  run_nightly_smoke_and_tools_tests:
+    description: |-
+        This workflow is triggered every night.
+    envs:
+      - DD_RUN_UNIT_TESTS: '0'
+      - DD_RUN_INTEGRATION_TESTS: '0'
+      - DD_RUN_SMOKE_TESTS: '1'
+      - DD_RUN_TOOLS_TESTS: '1'
+    after_run:
+    - _make_dependencies
+    - run_conditioned_workflows
+    - _deploy_artifacts
+    - _notify_failure_on_slack
 
   push_to_dogfooding:
     after_run:
@@ -28,12 +67,16 @@ workflows:
     - _notify_failure_on_slack
 
   tagged_commit:
+    description: |-
+        This workflow is triggered on pushing a new release tag.
+    envs:
+      - DD_RUN_UNIT_TESTS: '1'
+      - DD_RUN_INTEGRATION_TESTS: '1'
+      - DD_RUN_SMOKE_TESTS: '1'
+      - DD_RUN_TOOLS_TESTS: '0'
     after_run:
     - _make_dependencies
-    - run_linter
-    - run_unit_tests
-    - run_integration_tests
-    - check_dependency_managers
+    - run_conditioned_workflows
     - _deploy_artifacts
     - start_async_release_jobs
     - _notify_failure_on_slack
@@ -77,6 +120,27 @@ workflows:
         - icon_url: 'https://avatars.githubusercontent.com/t/3555052?s=128&v=4'
         - webhook_url: '${SLACK_INCOMING_WEBHOOK_MOBILE_CI}'
 
+  run_conditioned_workflows:
+    steps:
+    - script:
+        title: Choose which workflows to run
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+
+            cd tools/ci && make
+
+            # The `choose_workflows.py` inspects current ENV variables and Pull Request metadata (if running in PR)
+            # and decides on which from the workflows in `after_run` should be ran. Workflows are opted-in
+            # by modifying `DD_RUN_*` ENV variables with `envman` (ref.: https://github.com/bitrise-io/envman).
+            venv/bin/python3 choose_workflows.py
+    after_run:
+      - run_linter
+      - run_unit_tests
+      - run_integration_tests
+      - run_smoke_tests
+      - run_tools_tests
+
   run_linter:
     description: |-
         Runs swiftlint and license check for all source and test files.
@@ -111,73 +175,87 @@ workflows:
             #!/usr/bin/env bash
             set -e
             ./tools/license/check-license.sh
+
+  run_unit_tests:
+    description: |-
+        Runs unit tests for SDK on iOS Simulator.
+        Runs unit tests for SDK on tvOS Simulator.
+        Only ran if 'DD_RUN_UNIT_TESTS' is '1'.
+    steps:
     - script:
         title: Verify RUM data models
-        is_always_run: true
+        run_if: '{{enveq "DD_RUN_UNIT_TESTS" "1"}}'
         inputs:
         - content: |-
             #!/usr/bin/env zsh
             set -e
             make rum-models-verify ci=${CI}
-
-  run_unit_tests:
-    description: |-
-        Runs unit tests for SDK on iOS Simulator.
-        Runs benchmarks for SDK on iOS Simulator.
-        Runs unit tests for HTTPServerMock package on macOS.
-    steps:
     - xcode-test:
         title: Run unit tests for Datadog - iOS Simulator
+        run_if: '{{enveq "DD_RUN_UNIT_TESTS" "1"}}'
         inputs:
-        - scheme: Datadog
-        - simulator_device: iPhone 11
+        - scheme: Datadog iOS
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - is_clean_build: 'yes'
         - test_repetition_mode: 'retry_on_failure'
         - maximum_test_repetitions: 2
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Datadog-unit-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Datadog-ios-unit-tests.html"
     - xcode-test:
         title: Run unit tests for DatadogCrashReporting - iOS Simulator
+        run_if: '{{enveq "DD_RUN_UNIT_TESTS" "1"}}'
         inputs:
-        - scheme: DatadogCrashReporting
-        - simulator_device: iPhone 11
+        - scheme: DatadogCrashReporting iOS
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReporting-unit-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReporting-ios-unit-tests.html"
+    - xcode-test:
+        title: Run unit tests for Datadog - tvOS Simulator
+        run_if: '{{enveq "DD_RUN_UNIT_TESTS" "1"}}'
+        inputs:
+        - scheme: Datadog tvOS
+        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+        - is_clean_build: 'yes'
+        - test_repetition_mode: 'retry_on_failure'
+        - maximum_test_repetitions: 2
+        - generate_code_coverage_files: 'yes'
+        - project_path: Datadog.xcworkspace
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Datadog-tvos-unit-tests.html"
+    - xcode-test:
+        title: Run unit tests for DatadogCrashReporting - tvOS Simulator
+        run_if: '{{enveq "DD_RUN_UNIT_TESTS" "1"}}'
+        inputs:
+        - scheme: DatadogCrashReporting tvOS
+        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+        - generate_code_coverage_files: 'yes'
+        - project_path: Datadog.xcworkspace
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReporting-tvos-unit-tests.html"
+
+  run_integration_tests:
+    description: |-
+        Build benchmarks for SDK on iOS Simulator.
+        Runs integration tests from Datadog.xcworkspace.
+        Only ran if 'DD_RUN_INTEGRATION_TESTS' is '1'.
+    steps:
     - xcode-test:
         title: Run benchmarks - DatadogBenchmarkTests on iOS Simulator
+        run_if: '{{enveq "DD_RUN_INTEGRATION_TESTS" "1"}}'
         inputs:
         - scheme: DatadogBenchmarkTests
-        - simulator_device: iPhone 11
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - should_build_before_test: 'no'
         - is_clean_build: 'no'
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Benchmark-tests.html"
-    - script:
-        title: Generate HTTPServerMock.xcodeproj
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -e
-            make xcodeproj-httpservermock
-    - xcode-test-mac:
-        title: Run unit tests for HTTPServerMock.xcodeproj - macOS
-        inputs:
-        - scheme: HTTPServerMock-Package
-        - destination: platform=OS X,arch=x86_64
-        - project_path: instrumented-tests/http-server-mock/HTTPServerMock.xcodeproj
-
-  run_integration_tests:
-    description: |-
-        Runs integration tests from Datadog.xcworkspace.
-    steps:
     - xcode-test:
         title: Run integration tests for RUM, Logging and Tracing (on iOS Simulator)
+        run_if: '{{enveq "DD_RUN_INTEGRATION_TESTS" "1"}}'
         inputs:
         - scheme: DatadogIntegrationTests
-        - simulator_device: iPhone 11
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - should_build_before_test: 'no'
         - is_clean_build: 'no'
         - generate_code_coverage_files: 'yes'
@@ -186,9 +264,10 @@ workflows:
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogIntegration-tests.html"
     - xcode-test:
         title: Run integration tests for Crash Reporting (on iOS Simulator)
+        run_if: '{{enveq "DD_RUN_INTEGRATION_TESTS" "1"}}'
         inputs:
         - scheme: DatadogIntegrationTests
-        - simulator_device: iPhone 11
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - should_build_before_test: 'no'
         - is_clean_build: 'no'
         - generate_code_coverage_files: 'yes'
@@ -196,13 +275,15 @@ workflows:
         - xcodebuild_options: -testPlan DatadogCrashReportingIntegrationTests
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReportingIntegration-tests.html"
 
-  check_dependency_managers:
+  run_smoke_tests:
     description: |-
         Uses supported dependency managers to fetch, install and link the SDK
         to test projects.
+        Only ran if 'DD_RUN_SMOKE_TESTS' is '1'.
     steps:
     - script:
         title: Test SPM compatibility
+        run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
         inputs:
         - content: |-
             #!/usr/bin/env bash
@@ -210,61 +291,129 @@ workflows:
             make test-spm ci=${CI}
     - xcodebuild:
         title: Check Mac Catalyst compatibility (build SPMProject for Catalyst)
+        run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
         inputs:
-        - scheme: SPMProject
+        - scheme: App iOS
         - destination: platform=macOS,variant=Mac Catalyst
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj"
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/SPMProject-catalyst-sanity-check.html"
     - xcode-test:
-        title: Run SPMProject tests
+        title: Run SPMProject iOS tests
+        run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
         inputs:
-        - scheme: SPMProject
-        - simulator_device: iPhone 11
+        - scheme: App iOS
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - is_clean_build: 'yes'
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/SPMProject-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/SPMProject-ios-tests.html"
+    - xcode-test:
+        title: Run SPMProject tvOS tests
+        run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
+        inputs:
+        - scheme: App tvOS
+        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+        - is_clean_build: 'yes'
+        - cache_level: none
+        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/SPMProject-tvos-tests.html"
     - script:
         title: Test Carthage compatibility
+        run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
         inputs:
         - content: |-
             #!/usr/bin/env bash
             set -e
             make test-carthage ci=${CI}
     - xcode-test:
-        title: Run CTProject tests
+        title: Run CTProject iOS tests
+        run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
         inputs:
-        - scheme: CTProject
-        - simulator_device: iPhone 11
+        - scheme: App iOS
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - is_clean_build: 'yes'
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/carthage/CTProject.xcodeproj"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CTProject-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CTProject-ios-tests.html"
+    - xcode-test:
+        title: Run CTProject tvOS tests
+        run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
+        inputs:
+        - scheme: App tvOS
+        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+        - is_clean_build: 'yes'
+        - cache_level: none
+        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/carthage/CTProject.xcodeproj"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CTProject-tvos-tests.html"
     - script:
         title: Test Cocoapods compatibility
+        run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
         inputs:
         - content: |-
             #!/usr/bin/env bash
             set -e
             make test-cocoapods ci=${CI}
     - xcode-test:
-        title: Run CPProject tests with 'use_frameworks!'
+        title: Run CPProject tests iOS with 'use_frameworks!'
+        run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
         inputs:
-        - scheme: CPProjectUseFrameworks
-        - simulator_device: iPhone 11
+        - scheme: App Dynamic iOS
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - is_clean_build: 'yes'
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-use_frameworks-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-ios-dynamic-tests.html"
     - xcode-test:
-        title: Run CPProject tests with no 'use_frameworks!'
+        title: Run CPProject tests iOS with no 'use_frameworks!'
+        run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
         inputs:
-        - scheme: CPProjectNoUseFrameworks
-        - simulator_device: iPhone 11
+        - scheme: App Static iOS
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - is_clean_build: 'yes'
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-no_use_frameworks-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-ios-static-tests.html"
+    - xcode-test:
+        title: Run CPProject tests tvOS with 'use_frameworks!'
+        run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
+        inputs:
+        - scheme: App Dynamic tvOS
+        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+        - is_clean_build: 'yes'
+        - cache_level: none
+        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-tvos-dynamic-tests.html"
+    - xcode-test:
+        title: Run CPProject tests tvOS with no 'use_frameworks!'
+        run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
+        inputs:
+        - scheme: App Static tvOS
+        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+        - is_clean_build: 'yes'
+        - cache_level: none
+        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-tvos-static-tests.html"
+
+  run_tools_tests:
+    description: |-
+        Runs tests for internal tools.
+        Only ran if 'DD_RUN_TOOLS_TESTS' is '1'.
+    steps:
+    - script:
+        title: Generate HTTPServerMock.xcodeproj
+        run_if: '{{enveq "DD_RUN_TOOLS_TESTS" "1"}}'
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            make xcodeproj-httpservermock
+    - xcode-test-mac:
+        title: Run unit tests for HTTPServerMock.xcodeproj - macOS
+        run_if: '{{enveq "DD_RUN_TOOLS_TESTS" "1"}}'
+        inputs:
+        - scheme: HTTPServerMock-Package
+        - destination: platform=OS X,arch=x86_64
+        - project_path: instrumented-tests/http-server-mock/HTTPServerMock.xcodeproj
 
   create_dogfooding_pr:
     description: |-
@@ -288,14 +437,14 @@ workflows:
         title: Run E2E tests for manual instrumentation APIs - iOS Simulator
         inputs:
         - scheme: E2ETests
-        - simulator_device: iPhone 11
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/E2E-tests.html"
     - xcode-test:
         title: Run E2E tests for auto instrumentation APIs - iOS Simulator
         inputs:
         - scheme: E2EInstrumentationTests
-        - simulator_device: iPhone 11
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/E2E-instrumentation-tests.html"
 

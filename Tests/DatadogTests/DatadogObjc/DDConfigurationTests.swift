@@ -64,6 +64,7 @@ class DDConfigurationTests: XCTestCase {
             XCTAssertNil(configuration.rumActionEventMapper)
             XCTAssertNil(configuration.rumErrorEventMapper)
             XCTAssertEqual(configuration.additionalConfiguration.count, 0)
+            XCTAssertNil(configuration.encryption)
         }
     }
 
@@ -149,8 +150,9 @@ class DDConfigurationTests: XCTestCase {
         objcBuilder.trackUIKitRUMViews(using: viewPredicate)
         XCTAssertTrue((objcBuilder.build().sdkConfiguration.rumUIKitViewsPredicate as? UIKitRUMViewsPredicateBridge)?.objcPredicate === viewPredicate)
 
-        class ObjCActionPredicate: DDUIKitRUMUserActionsPredicate {
+        class ObjCActionPredicate: DDUIKitRUMUserActionsPredicate & DDUITouchRUMUserActionsPredicate & DDUIPressRUMUserActionsPredicate {
             func rumAction(targetView: UIView) -> DDRUMAction? { nil }
+            func rumAction(press type: UIPress.PressType, targetView: UIView) -> DDRUMAction? { nil }
         }
         let actionPredicate = ObjCActionPredicate()
         objcBuilder.trackUIKitRUMActions(using: actionPredicate)
@@ -196,6 +198,14 @@ class DDConfigurationTests: XCTestCase {
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.proxyConfiguration?[kCFNetworkProxiesHTTPProxy] as? String, "www.example.com")
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.proxyConfiguration?[kCFProxyUsernameKey] as? String, "proxyuser")
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.proxyConfiguration?[kCFProxyPasswordKey] as? String, "proxypass")
+
+        class ObjCDataEncryption: DDDataEncryption {
+            func encrypt(data: Data) throws -> Data { data }
+            func decrypt(data: Data) throws -> Data { data }
+        }
+        let dataEncryption = ObjCDataEncryption()
+        objcBuilder.set(encryption: dataEncryption)
+        XCTAssertTrue((objcBuilder.build().sdkConfiguration.encryption as? DDDataEncryptionBridge)?.objcEncryption === dataEncryption)
     }
 
     func testScrubbingRUMEvents() {
@@ -282,6 +292,31 @@ class DDConfigurationTests: XCTestCase {
         XCTAssertNil(configuration.rumActionEventMapper?(.mockRandom()))
         XCTAssertNil(configuration.rumErrorEventMapper?(.mockRandom()))
         XCTAssertNil(configuration.rumLongTaskEventMapper?(.mockRandom()))
+    }
+
+    func testDataEncryption() throws {
+        // Given
+        class ObjCDataEncryption: DDDataEncryption {
+            let encData: Data = .mockRandom()
+            let decData: Data = .mockRandom()
+            func encrypt(data: Data) throws -> Data { encData }
+            func decrypt(data: Data) throws -> Data { decData }
+        }
+
+        let encryption = ObjCDataEncryption()
+
+        // When
+        let objcBuilder = DDConfiguration.builder(
+            rumApplicationID: "rum-app-id",
+            clientToken: "abc-123",
+            environment: "tests"
+        )
+        objcBuilder.set(encryption: encryption)
+        let configuration = objcBuilder.build().sdkConfiguration
+
+        // Then
+        XCTAssertEqual(try configuration.encryption?.encrypt(data: .mockRandom()), encryption.encData)
+        XCTAssertEqual(try configuration.encryption?.decrypt(data: .mockRandom()), encryption.decData)
     }
 
     func testDeprecatedTrackUIActions() {
