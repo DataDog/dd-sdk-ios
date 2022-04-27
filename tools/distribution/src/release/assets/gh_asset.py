@@ -55,7 +55,7 @@ class DatadogXCFrameworkValidator(XCFrameworkValidator):
             'tvos-arm64/BCSymbolMaps/*.bcsymbolmap',
             'tvos-arm64/dSYMs/*.dSYM',
             'tvos-arm64/**/arm64.swiftinterface',
-            'tvos-arm64/**/arm64-apple-ios.swiftinterface',
+            'tvos-arm64/**/arm64-apple-tvos.swiftinterface',
 
             'tvos-arm64_x86_64-simulator',
             'tvos-arm64_x86_64-simulator/dSYMs/*.dSYM',
@@ -97,7 +97,7 @@ class DatadogObjcXCFrameworkValidator(XCFrameworkValidator):
             'tvos-arm64/BCSymbolMaps/*.bcsymbolmap',
             'tvos-arm64/dSYMs/*.dSYM',
             'tvos-arm64/**/arm64.swiftinterface',
-            'tvos-arm64/**/arm64-apple-ios.swiftinterface',
+            'tvos-arm64/**/arm64-apple-tvos.swiftinterface',
 
             'tvos-arm64_x86_64-simulator',
             'tvos-arm64_x86_64-simulator/**/arm64.swiftinterface',
@@ -136,7 +136,7 @@ class DatadogCrashReportingXCFrameworkValidator(XCFrameworkValidator):
             'tvos-arm64',
             'tvos-arm64/BCSymbolMaps/*.bcsymbolmap',
             'tvos-arm64/**/arm64.swiftinterface',
-            'tvos-arm64/**/arm64-apple-ios.swiftinterface',
+            'tvos-arm64/**/arm64-apple-tvos.swiftinterface',
 
             'tvos-arm64_x86_64-simulator',
             'tvos-arm64_x86_64-simulator/dSYMs/*.dSYM',
