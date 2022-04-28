@@ -22,6 +22,7 @@ internal struct RUMScopeDependencies {
     let serviceName: String
     let applicationVersion: String
     let sdkVersion: String
+    let source: String
     let eventBuilder: RUMEventBuilder
     let eventOutput: RUMEventOutput
     let rumUUIDGenerator: RUMUUIDGenerator
@@ -59,6 +60,7 @@ internal extension RUMScopeDependencies {
             serviceName: rumFeature.configuration.common.serviceName,
             applicationVersion: rumFeature.configuration.common.applicationVersion,
             sdkVersion: rumFeature.configuration.common.sdkVersion,
+            source: rumFeature.configuration.common.source,
             eventBuilder: RUMEventBuilder(
                 eventsMapper: rumFeature.eventsMapper
             ),

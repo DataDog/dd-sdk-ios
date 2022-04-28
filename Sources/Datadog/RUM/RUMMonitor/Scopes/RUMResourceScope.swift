@@ -195,7 +195,7 @@ internal class RUMResourceScope: RUMScope {
                 id: context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: .ios,
+            source: .init(rawValue: dependencies.source) ?? .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             version: dependencies.applicationVersion,
@@ -253,7 +253,7 @@ internal class RUMResourceScope: RUMScope {
                 id: context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: .ios,
+            source: .init(rawValue: dependencies.source) ?? .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             version: dependencies.applicationVersion,
