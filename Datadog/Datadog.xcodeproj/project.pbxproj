@@ -508,6 +508,8 @@
 		9E5B6D2E270C84B4002499B8 /* RUMMonitorE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5B6D2D270C84B4002499B8 /* RUMMonitorE2ETests.swift */; };
 		9E5B6D30270C85AB002499B8 /* RUMUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5B6D2F270C85AB002499B8 /* RUMUtils.swift */; };
 		9E5B6D32270DE9E5002499B8 /* RUMTrackingConsentE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5B6D31270DE9E5002499B8 /* RUMTrackingConsentE2ETests.swift */; };
+		9E5BD8042819742200CB568E /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61B03ECC274FF00E00EB1AE1 /* SwiftUI.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		9E5BD8062819742C00CB568E /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E5BD8052819742C00CB568E /* SwiftUI.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		9E64849D27031071007CCD7B /* RUMGlobalE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E64849C27031071007CCD7B /* RUMGlobalE2ETests.swift */; };
 		9E68FB55244707FD0013A8AA /* ObjcExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */; };
 		9E68FB56244707FD0013A8AA /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1691,6 +1693,7 @@
 		9E5B6D2D270C84B4002499B8 /* RUMMonitorE2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMMonitorE2ETests.swift; sourceTree = "<group>"; };
 		9E5B6D2F270C85AB002499B8 /* RUMUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUtils.swift; sourceTree = "<group>"; };
 		9E5B6D31270DE9E5002499B8 /* RUMTrackingConsentE2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTrackingConsentE2ETests.swift; sourceTree = "<group>"; };
+		9E5BD8052819742C00CB568E /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS15.4.sdk/System/Library/Frameworks/SwiftUI.framework; sourceTree = DEVELOPER_DIR; };
 		9E64849C27031071007CCD7B /* RUMGlobalE2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMGlobalE2ETests.swift; sourceTree = "<group>"; };
 		9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ObjcExceptionHandler.m; sourceTree = "<group>"; };
 		9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjcExceptionHandler.h; sourceTree = "<group>"; };
@@ -1789,6 +1792,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E5BD8042819742200CB568E /* SwiftUI.framework in Frameworks */,
 				D240687827CF982B00C04F44 /* CrashReporter.xcframework in Frameworks */,
 				D240687B27CF982C00C04F44 /* Datadog.framework in Frameworks */,
 				D240687D27CF982D00C04F44 /* DatadogCrashReporting.framework in Frameworks */,
@@ -1867,6 +1871,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E5BD8062819742C00CB568E /* SwiftUI.framework in Frameworks */,
 				D240687027CF971C00C04F44 /* CrashReporter.xcframework in Frameworks */,
 				D240687127CF971C00C04F44 /* Datadog.framework in Frameworks */,
 				D240687227CF971C00C04F44 /* DatadogCrashReporting.framework in Frameworks */,
@@ -2475,6 +2480,7 @@
 			isa = PBXGroup;
 			children = (
 				61B03ECC274FF00E00EB1AE1 /* SwiftUI.framework */,
+				9E5BD8052819742C00CB568E /* SwiftUI.framework */,
 				614ED36B260352DC00C8C519 /* CrashReporter.xcframework */,
 				9E0542CA25F8EBBE007A3D0B /* Kronos.xcframework */,
 			);
