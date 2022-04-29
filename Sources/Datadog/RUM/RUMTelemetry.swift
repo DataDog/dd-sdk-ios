@@ -67,7 +67,7 @@ internal final class RUMTelemetry: Telemetry {
                 date: date.timeIntervalSince1970.toInt64Milliseconds,
                 service: "dd-sdk-ios",
                 session: sessionId.map { .init(id: $0) },
-                source: .init(rawValue: self.source) ?? .ios,
+                source: TelemetryDebugEvent.Source(rawValue: self.source) ?? .ios,
                 telemetry: .init(message: message),
                 version: self.sdkVersion,
                 view: viewId.map { .init(id: $0) }
@@ -109,7 +109,7 @@ internal final class RUMTelemetry: Telemetry {
                 date: date.timeIntervalSince1970.toInt64Milliseconds,
                 service: "dd-sdk-ios",
                 session: sessionId.map { .init(id: $0) },
-                source: .init(rawValue: self.source) ?? .ios,
+                source: TelemetryErrorEvent.Source(rawValue: self.source) ?? .ios,
                 telemetry: .init(error: .init(kind: kind, stack: stack), message: message),
                 version: self.sdkVersion,
                 view: viewId.map { .init(id: $0) }
