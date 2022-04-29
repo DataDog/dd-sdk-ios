@@ -348,7 +348,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 id: context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: .init(rawValue: dependencies.source) ?? .ios,
+            source: RUMActionEvent.Source(rawValue: dependencies.source) ?? .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             version: dependencies.applicationVersion,
@@ -398,7 +398,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 id: context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: .init(rawValue: dependencies.source) ?? .ios,
+            source: RUMViewEvent.Source(rawValue: dependencies.source) ?? .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             version: dependencies.applicationVersion,
@@ -489,7 +489,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 id: context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: .init(rawValue: dependencies.source) ?? .ios,
+            source: RUMErrorEvent.Source(rawValue: dependencies.source) ?? .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             version: dependencies.applicationVersion,
@@ -532,7 +532,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 id: context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: .init(rawValue: dependencies.source) ?? .ios,
+            source: RUMLongTaskEvent.Source(rawValue: dependencies.source) ?? .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             version: dependencies.applicationVersion,
