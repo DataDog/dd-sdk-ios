@@ -359,7 +359,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 id: sessionUUID.toRUMDataFormat,
                 type: CITestIntegration.active != nil ? .ciTest : .user
             ),
-            source: .init(rawValue: rumConfiguration.common.source) ?? .ios,
+            source: RUMViewEvent.Source(rawValue: rumConfiguration.common.source) ?? .ios,
             synthetics: nil,
             usr: crashContext.lastUserInfo.flatMap { RUMUser(userInfo: $0) },
             version: rumConfiguration.common.applicationVersion,
