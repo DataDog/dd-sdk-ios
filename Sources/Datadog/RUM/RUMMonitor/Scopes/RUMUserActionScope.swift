@@ -140,6 +140,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             action: .init(
                 crash: nil,
                 error: .init(count: errorsCount.toInt64),
+                frustrationType: nil,
                 id: actionUUID.toRUMDataFormat,
                 loadingTime: completionTime.timeIntervalSince(actionStartTime).toInt64Nanoseconds,
                 longTask: .init(count: longTasksCount),
@@ -158,9 +159,10 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                 id: context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: .ios,
+            source: RUMActionEvent.Source(rawValue: dependencies.source) ?? .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
+            version: dependencies.applicationVersion,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
                 inForeground: nil,

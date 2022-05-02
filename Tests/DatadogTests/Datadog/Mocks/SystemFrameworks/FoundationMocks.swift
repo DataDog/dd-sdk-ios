@@ -270,8 +270,10 @@ extension FixedWidthInteger where Self: RandomMockable {
         return .random(in: min...max)
     }
 
-    static func mockRandom(min: Self = .min, max: Self = .max) -> Self {
-        return .random(in: min...max)
+    static func mockRandom(min: Self = .min, max: Self = .max, otherThan values: Set<Self> = []) -> Self {
+        var random: Self = .random(in: min...max)
+        while values.contains(random) { random = .random(in: min...max) }
+        return random
     }
 }
 
@@ -345,6 +347,16 @@ struct FailingEncodableMock: Encodable {
 
     func encode(to encoder: Encoder) throws {
         throw ErrorMock(errorMessage)
+    }
+}
+
+extension NSError: AnyMockable, RandomMockable {
+    static func mockAny() -> Self {
+        .init(domain: .mockAny(), code: .mockAny())
+    }
+
+    static func mockRandom() -> Self {
+        .init(domain: .mockRandom(), code: .mockRandom())
     }
 }
 

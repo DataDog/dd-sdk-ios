@@ -72,6 +72,10 @@ public class DDRUMActionEvent: NSObject {
         root.swiftModel.usr != nil ? DDRUMActionEventRUMUser(root: root) : nil
     }
 
+    @objc public var version: String? {
+        root.swiftModel.version
+    }
+
     @objc public var view: DDRUMActionEventView {
         DDRUMActionEventView(root: root)
     }
@@ -147,6 +151,10 @@ public class DDRUMActionEventAction: NSObject {
         root.swiftModel.action.error != nil ? DDRUMActionEventActionError(root: root) : nil
     }
 
+    @objc public var frustrationType: [Int]? {
+        root.swiftModel.action.frustrationType?.map { DDRUMActionEventActionFrustrationType(swift: $0).rawValue }
+    }
+
     @objc public var id: String? {
         root.swiftModel.action.id
     }
@@ -196,6 +204,32 @@ public class DDRUMActionEventActionError: NSObject {
     @objc public var count: NSNumber {
         root.swiftModel.action.error!.count as NSNumber
     }
+}
+
+@objc
+public enum DDRUMActionEventActionFrustrationType: Int {
+    internal init(swift: RUMActionEvent.Action.FrustrationType?) {
+        switch swift {
+        case nil: self = .none
+        case .rage?: self = .rage
+        case .dead?: self = .dead
+        case .error?: self = .error
+        }
+    }
+
+    internal var toSwift: RUMActionEvent.Action.FrustrationType? {
+        switch self {
+        case .none: return nil
+        case .rage: return .rage
+        case .dead: return .dead
+        case .error: return .error
+        }
+    }
+
+    case none
+    case rage
+    case dead
+    case error
 }
 
 @objc
@@ -631,6 +665,10 @@ public class DDRUMErrorEvent: NSObject {
 
     @objc public var usr: DDRUMErrorEventRUMUser? {
         root.swiftModel.usr != nil ? DDRUMErrorEventRUMUser(root: root) : nil
+    }
+
+    @objc public var version: String? {
+        root.swiftModel.version
     }
 
     @objc public var view: DDRUMErrorEventView {
@@ -1347,6 +1385,10 @@ public class DDRUMLongTaskEvent: NSObject {
         root.swiftModel.usr != nil ? DDRUMLongTaskEventRUMUser(root: root) : nil
     }
 
+    @objc public var version: String? {
+        root.swiftModel.version
+    }
+
     @objc public var view: DDRUMLongTaskEventView {
         DDRUMLongTaskEventView(root: root)
     }
@@ -1794,6 +1836,10 @@ public class DDRUMResourceEvent: NSObject {
 
     @objc public var usr: DDRUMResourceEventRUMUser? {
         root.swiftModel.usr != nil ? DDRUMResourceEventRUMUser(root: root) : nil
+    }
+
+    @objc public var version: String? {
+        root.swiftModel.version
     }
 
     @objc public var view: DDRUMResourceEventView {
@@ -2554,6 +2600,10 @@ public class DDRUMViewEvent: NSObject {
         root.swiftModel.usr != nil ? DDRUMViewEventRUMUser(root: root) : nil
     }
 
+    @objc public var version: String? {
+        root.swiftModel.version
+    }
+
     @objc public var view: DDRUMViewEventView {
         DDRUMViewEventView(root: root)
     }
@@ -3182,14 +3232,6 @@ public class DDTelemetryErrorEvent: NSObject {
         root.swiftModel.date as NSNumber
     }
 
-    @objc public var error: DDTelemetryErrorEventError? {
-        root.swiftModel.error != nil ? DDTelemetryErrorEventError(root: root) : nil
-    }
-
-    @objc public var message: String {
-        root.swiftModel.message
-    }
-
     @objc public var service: String {
         root.swiftModel.service
     }
@@ -3198,8 +3240,16 @@ public class DDTelemetryErrorEvent: NSObject {
         root.swiftModel.session != nil ? DDTelemetryErrorEventSession(root: root) : nil
     }
 
-    @objc public var status: String {
-        root.swiftModel.status
+    @objc public var source: DDTelemetryErrorEventSource {
+        .init(swift: root.swiftModel.source)
+    }
+
+    @objc public var telemetry: DDTelemetryErrorEventTelemetry {
+        DDTelemetryErrorEventTelemetry(root: root)
+    }
+
+    @objc public var type: String {
+        root.swiftModel.type
     }
 
     @objc public var version: String {
@@ -3219,8 +3269,8 @@ public class DDTelemetryErrorEventDD: NSObject {
         self.root = root
     }
 
-    @objc public var eventType: String {
-        root.swiftModel.dd.eventType
+    @objc public var formatVersion: NSNumber {
+        root.swiftModel.dd.formatVersion as NSNumber
     }
 }
 
@@ -3251,23 +3301,6 @@ public class DDTelemetryErrorEventApplication: NSObject {
 }
 
 @objc
-public class DDTelemetryErrorEventError: NSObject {
-    internal let root: DDTelemetryErrorEvent
-
-    internal init(root: DDTelemetryErrorEvent) {
-        self.root = root
-    }
-
-    @objc public var kind: String? {
-        root.swiftModel.error!.kind
-    }
-
-    @objc public var stack: String? {
-        root.swiftModel.error!.stack
-    }
-}
-
-@objc
 public class DDTelemetryErrorEventSession: NSObject {
     internal let root: DDTelemetryErrorEvent
 
@@ -3277,6 +3310,73 @@ public class DDTelemetryErrorEventSession: NSObject {
 
     @objc public var id: String {
         root.swiftModel.session!.id
+    }
+}
+
+@objc
+public enum DDTelemetryErrorEventSource: Int {
+    internal init(swift: TelemetryErrorEvent.Source) {
+        switch swift {
+        case .android: self = .android
+        case .ios: self = .ios
+        case .browser: self = .browser
+        case .flutter: self = .flutter
+        case .reactNative: self = .reactNative
+        }
+    }
+
+    internal var toSwift: TelemetryErrorEvent.Source {
+        switch self {
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        }
+    }
+
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+}
+
+@objc
+public class DDTelemetryErrorEventTelemetry: NSObject {
+    internal let root: DDTelemetryErrorEvent
+
+    internal init(root: DDTelemetryErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var error: DDTelemetryErrorEventTelemetryError? {
+        root.swiftModel.telemetry.error != nil ? DDTelemetryErrorEventTelemetryError(root: root) : nil
+    }
+
+    @objc public var message: String {
+        root.swiftModel.telemetry.message
+    }
+
+    @objc public var status: String {
+        root.swiftModel.telemetry.status
+    }
+}
+
+@objc
+public class DDTelemetryErrorEventTelemetryError: NSObject {
+    internal let root: DDTelemetryErrorEvent
+
+    internal init(root: DDTelemetryErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var kind: String? {
+        root.swiftModel.telemetry.error!.kind
+    }
+
+    @objc public var stack: String? {
+        root.swiftModel.telemetry.error!.stack
     }
 }
 
@@ -3318,10 +3418,6 @@ public class DDTelemetryDebugEvent: NSObject {
         root.swiftModel.date as NSNumber
     }
 
-    @objc public var message: String {
-        root.swiftModel.message
-    }
-
     @objc public var service: String {
         root.swiftModel.service
     }
@@ -3330,8 +3426,16 @@ public class DDTelemetryDebugEvent: NSObject {
         root.swiftModel.session != nil ? DDTelemetryDebugEventSession(root: root) : nil
     }
 
-    @objc public var status: String {
-        root.swiftModel.status
+    @objc public var source: DDTelemetryDebugEventSource {
+        .init(swift: root.swiftModel.source)
+    }
+
+    @objc public var telemetry: DDTelemetryDebugEventTelemetry {
+        DDTelemetryDebugEventTelemetry(root: root)
+    }
+
+    @objc public var type: String {
+        root.swiftModel.type
     }
 
     @objc public var version: String {
@@ -3351,8 +3455,8 @@ public class DDTelemetryDebugEventDD: NSObject {
         self.root = root
     }
 
-    @objc public var eventType: String {
-        root.swiftModel.dd.eventType
+    @objc public var formatVersion: NSNumber {
+        root.swiftModel.dd.formatVersion as NSNumber
     }
 }
 
@@ -3396,6 +3500,52 @@ public class DDTelemetryDebugEventSession: NSObject {
 }
 
 @objc
+public enum DDTelemetryDebugEventSource: Int {
+    internal init(swift: TelemetryDebugEvent.Source) {
+        switch swift {
+        case .android: self = .android
+        case .ios: self = .ios
+        case .browser: self = .browser
+        case .flutter: self = .flutter
+        case .reactNative: self = .reactNative
+        }
+    }
+
+    internal var toSwift: TelemetryDebugEvent.Source {
+        switch self {
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        }
+    }
+
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+}
+
+@objc
+public class DDTelemetryDebugEventTelemetry: NSObject {
+    internal let root: DDTelemetryDebugEvent
+
+    internal init(root: DDTelemetryDebugEvent) {
+        self.root = root
+    }
+
+    @objc public var message: String {
+        root.swiftModel.telemetry.message
+    }
+
+    @objc public var status: String {
+        root.swiftModel.telemetry.status
+    }
+}
+
+@objc
 public class DDTelemetryDebugEventView: NSObject {
     internal let root: DDTelemetryDebugEvent
 
@@ -3410,4 +3560,4 @@ public class DDTelemetryDebugEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/c8a844abb59cb376be2fcdc9deda74dc328af660
+// Generated from https://github.com/DataDog/rum-events-format/tree/568fc1bcfb0d2775a11c07914120b70a3d5780fe

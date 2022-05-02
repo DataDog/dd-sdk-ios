@@ -73,6 +73,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     private let vitalInfoSampler: VitalInfoSampler
 
+    /// Samples view update events, so we can minimize the number of events in payload.
+    private let viewUpdatesThrottler: RUMViewUpdatesThrottlerType
+
     init(
         isInitialView: Bool,
         parent: RUMContextProvider,
@@ -101,6 +104,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             memoryReader: dependencies.vitalMemoryReader,
             refreshRateReader: dependencies.vitalRefreshRateReader
         )
+        self.viewUpdatesThrottler = dependencies.viewUpdatesThrottlerFactory()
     }
 
     // MARK: - RUMContextProvider
@@ -325,6 +329,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             action: .init(
                 crash: nil,
                 error: nil,
+                frustrationType: nil,
                 id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 loadingTime: loadingTime,
                 longTask: nil,
@@ -343,9 +348,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 id: context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: .ios,
+            source: RUMActionEvent.Source(rawValue: dependencies.source) ?? .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
+            version: dependencies.applicationVersion,
             view: .init(
                 id: viewUUID.toRUMDataFormat,
                 inForeground: nil,
@@ -399,9 +405,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 id: context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: .ios,
+            source: RUMViewEvent.Source(rawValue: dependencies.source) ?? .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
+            version: dependencies.applicationVersion,
             view: .init(
                 action: .init(count: actionsCount.toInt64),
                 cpuTicksCount: cpuInfo.greatestDiff,
@@ -441,11 +448,16 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         )
 
         if let event = dependencies.eventBuilder.build(from: eventData) {
-            dependencies.eventOutput.write(event: event)
+            if viewUpdatesThrottler.accept(event: event) {
+                dependencies.eventOutput.write(event: event)
+            } else { // if event was dropped by sampler
+                version -= 1
+            }
 
-            // Update `CrashContext` with recent RUM view:
+            // Update `CrashContext` with recent RUM view (no matter sampling - we want to always
+            // have recent information if process is interrupted by crash):
             dependencies.crashContextIntegration?.update(lastRUMViewEvent: event)
-        } else {
+        } else { // if event was dropped by mapper
             version -= 1
         }
     }
@@ -484,9 +496,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 id: context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: .ios,
+            source: RUMErrorEvent.Source(rawValue: dependencies.source) ?? .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
+            version: dependencies.applicationVersion,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
                 inForeground: nil,
@@ -526,9 +539,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 id: context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: .ios,
+            source: RUMLongTaskEvent.Source(rawValue: dependencies.source) ?? .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
+            version: dependencies.applicationVersion,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
                 name: context.activeViewName,

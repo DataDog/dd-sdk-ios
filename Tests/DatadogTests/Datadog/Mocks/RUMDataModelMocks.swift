@@ -53,6 +53,14 @@ extension RUMEventAttributes: RandomMockable {
 
 extension RUMViewEvent: RandomMockable {
     static func mockRandom() -> RUMViewEvent {
+        return mockRandomWith()
+    }
+
+    /// Produces random `RUMViewEvent` with setting given fields to certain values.
+    static func mockRandomWith(
+        viewIsActive: Bool? = .random(),
+        viewTimeSpent: Int64 = .mockRandom()
+    ) -> RUMViewEvent {
         return RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -73,6 +81,7 @@ extension RUMViewEvent: RandomMockable {
             source: .ios,
             synthetics: nil,
             usr: .mockRandom(),
+            version: .mockAny(),
             view: .init(
                 action: .init(count: .mockRandom()),
                 cpuTicksCount: .mockRandom(),
@@ -95,11 +104,11 @@ extension RUMViewEvent: RandomMockable {
                         start: .mockRandom()
                     )
                 ],
-                isActive: .random(),
+                isActive: viewIsActive,
                 isSlowRendered: .mockRandom(),
                 largestContentfulPaint: .mockRandom(),
                 loadEvent: .mockRandom(),
-                loadingTime: .mockRandom(),
+                loadingTime: viewTimeSpent,
                 loadingType: nil,
                 longTask: .init(count: .mockRandom()),
                 memoryAverage: .mockRandom(),
@@ -109,7 +118,7 @@ extension RUMViewEvent: RandomMockable {
                 refreshRateAverage: .mockRandom(),
                 refreshRateMin: .mockRandom(),
                 resource: .init(count: .mockRandom()),
-                timeSpent: .mockRandom(),
+                timeSpent: viewTimeSpent,
                 url: .mockRandom()
             )
         )
@@ -160,6 +169,7 @@ extension RUMResourceEvent: RandomMockable {
             source: .ios,
             synthetics: nil,
             usr: .mockRandom(),
+            version: .mockAny(),
             view: .init(
                 id: .mockRandom(),
                 referrer: .mockRandom(),
@@ -179,6 +189,7 @@ extension RUMActionEvent: RandomMockable {
             action: .init(
                 crash: .init(count: .mockRandom()),
                 error: .init(count: .mockRandom()),
+                frustrationType: nil,
                 id: .mockRandom(),
                 loadingTime: .mockRandom(),
                 longTask: .init(count: .mockRandom()),
@@ -200,6 +211,7 @@ extension RUMActionEvent: RandomMockable {
             source: .ios,
             synthetics: nil,
             usr: .mockRandom(),
+            version: .mockAny(),
             view: .init(
                 id: .mockRandom(),
                 inForeground: .random(),
@@ -259,6 +271,7 @@ extension RUMErrorEvent: RandomMockable {
             source: .ios,
             synthetics: nil,
             usr: .mockRandom(),
+            version: .mockAny(),
             view: .init(
                 id: .mockRandom(),
                 inForeground: .random(),
@@ -301,7 +314,14 @@ extension RUMLongTaskEvent: RandomMockable {
             source: .ios,
             synthetics: nil,
             usr: .mockRandom(),
+            version: .mockAny(),
             view: .init(id: .mockRandom(), name: .mockRandom(), referrer: .mockRandom(), url: .mockRandom())
         )
+    }
+}
+
+extension String {
+    static func mockAnySource() -> String {
+        return ["ios", "android", "browser", "ios", "react-native", "flutter"].randomElement()!
     }
 }

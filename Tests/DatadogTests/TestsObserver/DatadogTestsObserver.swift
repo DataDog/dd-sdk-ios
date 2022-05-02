@@ -49,7 +49,6 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
                     && TracingFeature.instance == nil
                     && RUMFeature.instance == nil
                     && CrashReportingFeature.instance == nil
-                    && InternalMonitoringFeature.instance == nil
             },
             problem: "All features must not be initialized.",
             solution: """

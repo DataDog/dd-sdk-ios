@@ -8,7 +8,7 @@ import XCTest
 @testable import Datadog
 
 class RUMSessionScopeTests: XCTestCase {
-    private let parent: RUMApplicationScope = .mockWith(rumApplicationID: "rum-123")
+    private let parent = RUMApplicationScope(dependencies: .mockWith(rumApplicationID: "rum-123"))
 
     func testDefaultContext() {
         let scope: RUMSessionScope = .mockWith(parent: parent)
@@ -21,7 +21,10 @@ class RUMSessionScopeTests: XCTestCase {
     }
 
     func testContextWhenSessionIsRejectedBySampler() {
-        let scope: RUMSessionScope = .mockWith(parent: parent, sampler: .mockRejectAll())
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            dependencies: .mockWith(sessionSampler: .mockRejectAll())
+       )
 
         XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
         XCTAssertEqual(scope.context.sessionID, .nullUUID)
@@ -32,7 +35,11 @@ class RUMSessionScopeTests: XCTestCase {
 
     func testWhenSessionExceedsMaxDuration_itGetsClosed() {
         var currentTime = Date()
-        let scope: RUMSessionScope = .mockWith(parent: parent, sampler: .mockRandom(), startTime: currentTime)
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: currentTime,
+            dependencies: .mockWith(sessionSampler: .mockRandom())
+        )
 
         XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)))
 
@@ -44,7 +51,11 @@ class RUMSessionScopeTests: XCTestCase {
 
     func testWhenSessionIsInactiveForCertainDuration_itGetsClosed() {
         var currentTime = Date()
-        let scope: RUMSessionScope = .mockWith(parent: parent, sampler: .mockRandom(), startTime: currentTime)
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: currentTime,
+            dependencies: .mockWith(sessionSampler: .mockRandom())
+        )
 
         XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)))
 
@@ -81,11 +92,11 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             isInitialSession: .mockRandom(), // no matter if initial session or not
             parent: parent,
-            dependencies: .mockWith(
-                appStateListener: AppStateListenerMock.mockAppInBackground(since: sessionStartTime) // app in background
-            ),
             startTime: sessionStartTime,
-            backgroundEventTrackingEnabled: true // BET enabled
+            dependencies: .mockWith(
+                backgroundEventTrackingEnabled: true, // BET enabled
+                appStateListener: AppStateListenerMock.mockAppInBackground(since: sessionStartTime) // app in background
+            )
         )
         XCTAssertTrue(scope.viewScopes.isEmpty, "There is no view scope")
 
@@ -107,11 +118,11 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             isInitialSession: .mockRandom(), // no matter if initial session or not
             parent: parent,
-            dependencies: .mockWith(
-                appStateListener: AppStateListenerMock.mockAppInBackground(since: sessionStartTime) // app in background
-            ),
             startTime: sessionStartTime,
-            backgroundEventTrackingEnabled: true // BET enabled
+            dependencies: .mockWith(
+                backgroundEventTrackingEnabled: true, // BET enabled
+                appStateListener: AppStateListenerMock.mockAppInBackground(since: sessionStartTime) // app in background
+            )
         )
 
         var commandTime = sessionStartTime.addingTimeInterval(1)
@@ -140,11 +151,11 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             isInitialSession: .mockRandom(), // no matter if initial session or not
             parent: parent,
-            dependencies: .mockWith(
-                appStateListener: AppStateListenerMock.mockAppInBackground(since: sessionStartTime) // app in background
-            ),
             startTime: sessionStartTime,
-            backgroundEventTrackingEnabled: true // BET enabled
+            dependencies: .mockWith(
+                backgroundEventTrackingEnabled: true, // BET enabled
+                appStateListener: AppStateListenerMock.mockAppInBackground(since: sessionStartTime) // app in background
+            )
         )
         XCTAssertTrue(scope.viewScopes.isEmpty, "There is no view scope")
 
@@ -163,11 +174,11 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             isInitialSession: .mockRandom(), // no matter if initial session or not
             parent: parent,
-            dependencies: .mockWith(
-                appStateListener: AppStateListenerMock.mockRandom(since: sessionStartTime) // no matter of app state (if foreground or background)
-            ),
             startTime: sessionStartTime,
-            backgroundEventTrackingEnabled: false // BET disabled
+            dependencies: .mockWith(
+                backgroundEventTrackingEnabled: false, // BET disabled
+                appStateListener: AppStateListenerMock.mockRandom(since: sessionStartTime) // no matter of app state (if foreground or background)
+            )
         )
         XCTAssertTrue(scope.viewScopes.isEmpty, "There is no view scope")
 
@@ -188,11 +199,11 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             isInitialSession: true, // initial session
             parent: parent,
-            dependencies: .mockWith(
-                appStateListener: AppStateListenerMock.mockAppInForeground(since: sessionStartTime) // app in foreground
-            ),
             startTime: sessionStartTime,
-            backgroundEventTrackingEnabled: .mockRandom() // no matter of BET state
+            dependencies: .mockWith(
+                backgroundEventTrackingEnabled: .mockRandom(), // no matter of BET state
+                appStateListener: AppStateListenerMock.mockAppInForeground(since: sessionStartTime) // app in foreground
+            )
         )
         XCTAssertTrue(scope.viewScopes.isEmpty, "There is no view scope")
 
@@ -214,11 +225,11 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             isInitialSession: false, // not initial session
             parent: parent,
-            dependencies: .mockWith(
-                appStateListener: AppStateListenerMock.mockAppInForeground(since: sessionStartTime) // app in foreground
-            ),
             startTime: sessionStartTime,
-            backgroundEventTrackingEnabled: .mockRandom() // no matter of BET state
+            dependencies: .mockWith(
+                backgroundEventTrackingEnabled: .mockRandom(), // no matter of BET state
+                appStateListener: AppStateListenerMock.mockAppInForeground(since: sessionStartTime) // app in foreground
+            )
         )
         XCTAssertTrue(scope.viewScopes.isEmpty, "There is no view scope")
 
@@ -237,11 +248,11 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             isInitialSession: .mockRandom(), // no matter if initial session or not
             parent: parent,
-            dependencies: .mockWith(
-                appStateListener: AppStateListenerMock.mockRandom(since: sessionStartTime) // no matter of app state (if foreground or background)
-            ),
             startTime: sessionStartTime,
-            backgroundEventTrackingEnabled: .mockRandom() // no matter of BET state
+            dependencies: .mockWith(
+                backgroundEventTrackingEnabled: .mockRandom(), // no matter of BET state
+                appStateListener: AppStateListenerMock.mockRandom(since: sessionStartTime) // no matter of app state (if foreground or background)
+            )
         )
 
         let commandsTime = sessionStartTime.addingTimeInterval(1)
@@ -266,11 +277,11 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             isInitialSession: true, // initial session
             parent: parent,
-            dependencies: .mockWith(
-                appStateListener: AppStateListenerMock.mockAppInForeground(since: sessionStartTime) // app in foreground
-            ),
             startTime: sessionStartTime,
-            backgroundEventTrackingEnabled: true // BET enabled
+            dependencies: .mockWith(
+                backgroundEventTrackingEnabled: true, // BET enabled
+                appStateListener: AppStateListenerMock.mockAppInForeground(since: sessionStartTime) // app in foreground
+            )
         )
         XCTAssertTrue(scope.viewScopes.isEmpty, "There is no view scope")
 
@@ -292,11 +303,11 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             isInitialSession: .mockRandom(), // no matter if initial session or not
             parent: parent,
-            dependencies: .mockWith(
-                appStateListener: AppStateListenerMock.mockAppInBackground(since: sessionStartTime) // app in background
-            ),
             startTime: sessionStartTime,
-            backgroundEventTrackingEnabled: true // BET enabled
+            dependencies: .mockWith(
+                backgroundEventTrackingEnabled: true, // BET enabled
+                appStateListener: AppStateListenerMock.mockAppInBackground(since: sessionStartTime) // app in background
+            )
         )
         XCTAssertTrue(scope.viewScopes.isEmpty, "There is no view scope")
 
@@ -318,11 +329,11 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             isInitialSession: .mockRandom(), // no matter if initial session or not
             parent: parent,
-            dependencies: .mockWith(
-                appStateListener: AppStateListenerMock.mockAppInBackground(since: sessionStartTime) // app in background
-            ),
             startTime: sessionStartTime,
-            backgroundEventTrackingEnabled: false // BET disabled
+            dependencies: .mockWith(
+                backgroundEventTrackingEnabled: false, // BET disabled
+                appStateListener: AppStateListenerMock.mockAppInBackground(since: sessionStartTime) // app in background
+            )
         )
         XCTAssertTrue(scope.viewScopes.isEmpty, "No views tracked before")
 
@@ -340,8 +351,8 @@ class RUMSessionScopeTests: XCTestCase {
     func testWhenSessionIsRejectedBySampler_itDoesNotCreateViewScopes() {
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
-            sampler: .mockRejectAll(),
-            startTime: Date()
+            startTime: Date(),
+            dependencies: .mockWith(sessionSampler: .mockRejectAll())
         )
 
         XCTAssertEqual(scope.viewScopes.count, 0)
@@ -363,12 +374,12 @@ class RUMSessionScopeTests: XCTestCase {
             isInitialSession: randomIsInitialSession,
             parent: parent,
             dependencies: .mockWith(
+                sessionSampler: .mockRandom(), // no matter if sampled or not
                 crashContextIntegration: RUMWithCrashContextIntegration(
                     rumViewEventProvider: .mockRandom(),
                     rumSessionStateProvider: rumSessionStateProvider
                 )
-            ),
-            sampler: .mockRandom() // no matter if sampled or not
+            )
         )
 
         // Then
@@ -390,13 +401,13 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             isInitialSession: randomIsInitialSession,
             parent: parent,
+            startTime: sessionStartTime,
             dependencies: .mockWith(
                 crashContextIntegration: RUMWithCrashContextIntegration(
                     rumViewEventProvider: .mockRandom(),
                     rumSessionStateProvider: rumSessionStateProvider
                 )
-            ),
-            startTime: sessionStartTime
+            )
         )
 
         // When
@@ -420,13 +431,13 @@ class RUMSessionScopeTests: XCTestCase {
         let sessionStartTime = Date()
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
+            startTime: sessionStartTime,
             dependencies: .mockWith(
                 crashContextIntegration: RUMWithCrashContextIntegration(
                     rumViewEventProvider: rumViewEventProvider,
                     rumSessionStateProvider: .mockAny()
                 )
-            ),
-            startTime: sessionStartTime
+            )
         )
 
         // When

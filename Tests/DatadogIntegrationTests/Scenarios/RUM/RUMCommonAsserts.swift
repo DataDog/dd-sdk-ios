@@ -87,4 +87,13 @@ extension RUMSessionMatcher {
     class func assertViewWasEventuallyInactive(_ viewVisit: ViewVisit) {
         XCTAssertFalse(try XCTUnwrap(viewVisit.viewEvents.last?.view.isActive))
     }
+
+    /// Checks if RUM session has ended by:
+    /// - checking if it contains "end view" added in response to `ExampleApplication.endRUMSession()`;
+    /// - checking if all other views are marked as "inactive" (meaning they ended up processing their resources).
+    func hasEnded() -> Bool {
+        let hasEndView = viewVisits.last?.name == Environment.Constants.rumSessionEndViewName
+        let hasSomeActiveView = viewVisits.contains(where: { $0.viewEvents.last?.view.isActive == true })
+        return hasEndView && !hasSomeActiveView
+    }
 }

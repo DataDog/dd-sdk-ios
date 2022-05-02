@@ -58,12 +58,7 @@ internal struct DataUploadStatus {
     /// Upload status description printed to the console if SDK `.debug` verbosity is enabled.
     let userDebugDescription: String
 
-    /// An optional error printed to the console if SDK `.error` (or lower) verbosity is enabled.
-    /// It is meant to indicate user action that must be taken to fix the upload issue (e.g. if the client token is invalid, it needs to be fixed).
-    let userErrorMessage: String?
-
-    /// An optional error logged to the Internal Monitoring feature (if it's enabled).
-    let internalMonitoringError: (message: String, error: Error?, attributes: [String: String]?)?
+    let error: DataUploadError?
 }
 
 extension DataUploadStatus {
@@ -75,8 +70,7 @@ extension DataUploadStatus {
         self.init(
             needsRetry: statusCode.needsRetry,
             userDebugDescription: "[response code: \(httpResponse.statusCode) (\(statusCode)), request ID: \(ddRequestID ?? "(???)")]",
-            userErrorMessage: statusCode == .unauthorized ? "⚠️ The client token you provided seems to be invalid." : nil,
-            internalMonitoringError: createInternalMonitoringErrorIfNeeded(for: httpResponse.statusCode, requestID: ddRequestID)
+            error: DataUploadError(status: httpResponse.statusCode)
         )
     }
 
@@ -84,45 +78,20 @@ extension DataUploadStatus {
         self.init(
             needsRetry: true, // retry this upload as it failed due to network transport isse
             userDebugDescription: "[error: \(DDError(error: networkError).message)]", // e.g. "[error: A data connection is not currently allowed]"
-            userErrorMessage: nil, // nothing actionable for the user
-            internalMonitoringError: createInternalMonitoringErrorIfNeeded(for: networkError)
+            error: DataUploadError(networkError: networkError)
         )
     }
 }
 
-// MARK: - Internal Monitoring
+// MARK: - Data Upload Errors
 
-#if DD_SDK_ENABLE_INTERNAL_MONITORING
-/// Looks at the `statusCode` and produces error for Internal Monitoring feature if anything is going wrong.
-private func createInternalMonitoringErrorIfNeeded(
-    for statusCode: Int, requestID: String?
-) -> (message: String, error: Error?, attributes: [String: String]?)? {
-    guard let responseStatusCode = HTTPResponseStatusCode(rawValue: statusCode) else {
-        // If status code is unexpected, do not produce an error for Internal Monitoring - otherwise monitoring may
-        // become too verbose for old installations if we introduce a new status code in the API.
-        return nil
-    }
-
-    switch responseStatusCode {
-    case .accepted, .unauthorized, .forbidden:
-        // These codes mean either success or the user configuration mistake - do not produce error.
-        return nil
-    case .internalServerError, .serviceUnavailable:
-        // These codes mean Datadog service issue - do not produce SDK error as this is already monitored by other means.
-        return nil
-    case .badRequest, .payloadTooLarge, .tooManyRequests, .requestTimeout:
-        // These codes mean that something wrong is happening either in the SDK or on the server - produce an error.
-        return (
-            message: "Data upload finished with status code: \(statusCode)",
-            error: nil,
-            attributes: ["dd_request_id": requestID ?? "(???)"]
-        )
-    case .unexpected:
-        return nil
-    }
+internal enum DataUploadError: Error, Equatable {
+    case unauthorized
+    case httpError(statusCode: Int)
+    case networkError(error: NSError)
 }
 
-/// A list of known NSURLError codes which should not produce error in Internal Monitoring.
+/// A list of known NSURLError codes which should not produce error in Telemetry.
 /// Receiving these codes doesn't mean SDK issue, but the network transportation scenario where the connection interrupted due to external factors.
 /// These list should evolve and we may want to add more codes in there.
 ///
@@ -138,27 +107,37 @@ private let ignoredNSURLErrorCodes = Set([
     NSURLErrorCannotConnectToHost, // -1004
 ])
 
-/// Looks at the `networkError` and produces error for Internal Monitoring feature if anything is going wrong.
-private func createInternalMonitoringErrorIfNeeded(
-    for networkError: Error
-) -> (message: String, error: Error?, attributes: [String: String]?)? {
-    let nsError = networkError as NSError
-    if nsError.domain == NSURLErrorDomain && !ignoredNSURLErrorCodes.contains(nsError.code) {
-        return (message: "Data upload finished with error", error: nsError, attributes: nil)
-    } else {
-        return nil
+extension DataUploadError {
+    init?(status code: Int) {
+        guard let responseStatusCode = HTTPResponseStatusCode(rawValue: code) else {
+            // If status code is unexpected, do not produce an error for internal Telemetry - otherwise monitoring may
+            // become too verbose for old installations if we introduce a new status code in the API.
+            return nil
+        }
+
+        switch responseStatusCode {
+        case .accepted, .forbidden:
+            // These codes mean either success or the user configuration mistake - do not produce error.
+            return nil
+        case .unauthorized:
+            self = .unauthorized
+        case .internalServerError, .serviceUnavailable:
+            // These codes mean Datadog service issue - do not produce SDK error as this is already monitored by other means.
+            return nil
+        case .badRequest, .payloadTooLarge, .tooManyRequests, .requestTimeout:
+            // These codes mean that something wrong is happening either in the SDK or on the server - produce an error.
+            self = .httpError(statusCode: code)
+        case .unexpected:
+            return nil
+        }
+    }
+
+    init?(networkError: Error) {
+        let nsError = networkError as NSError
+        guard nsError.domain == NSURLErrorDomain, !ignoredNSURLErrorCodes.contains(nsError.code) else {
+            return nil
+        }
+
+        self = .networkError(error: nsError)
     }
 }
-#else
-private func createInternalMonitoringErrorIfNeeded(
-    for statusCode: Int, requestID: String?
-) -> (message: String, error: Error?, attributes: [String: String]?)? {
-    return nil
-}
-
-private func createInternalMonitoringErrorIfNeeded(
-    for networkError: Error
-) -> (message: String, error: Error?, attributes: [String: String]?)? {
-    return nil
-}
-#endif

@@ -40,6 +40,7 @@ struct ExampleAppConfiguration: AppConfiguration {
             .set(serviceName: serviceName)
             .set(batchSize: .small)
             .set(uploadFrequency: .frequent)
+            .set(sampleTelemetry: 100)
 
         if let customLogsURL = Environment.readCustomLogsURL() {
             _ = configuration.set(customLogsEndpoint: customLogsURL)
@@ -50,11 +51,6 @@ struct ExampleAppConfiguration: AppConfiguration {
         if let customRUMURL = Environment.readCustomRUMURL() {
             _ = configuration.set(customRUMEndpoint: customRUMURL)
         }
-
-#if DD_SDK_ENABLE_INTERNAL_MONITORING
-        _ = configuration
-            .enableInternalMonitoring(clientToken: Environment.readClientToken())
-#endif
 
         if let testScenario = testScenario {
             // If the `Example` app was launched with test scenario ENV, apply the scenario configuration
@@ -92,6 +88,13 @@ struct UITestsAppConfiguration: AppConfiguration {
     init() {
         if Environment.shouldClearPersistentData() {
             PersistenceHelpers.deleteAllSDKData()
+        }
+
+        // Handle messages received from UITest runner:
+        try! MessagePortChannel.createReceiver().startListening { message in
+            switch message {
+            case .endRUMSession: markRUMSessionAsEnded()
+            }
         }
     }
 

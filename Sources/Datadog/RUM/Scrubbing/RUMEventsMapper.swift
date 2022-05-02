@@ -19,7 +19,7 @@ internal struct RUMEventsMapper {
     let resourceEventMapper: RUMResourceEventMapper?
     let actionEventMapper: RUMActionEventMapper?
     let longTaskEventMapper: RUMLongTaskEventMapper?
-    var internalMonitor: InternalMonitor? = nil
+    var telemetry: Telemetry? = nil
 
     // MARK: - EventMapper
 
@@ -43,7 +43,7 @@ internal struct RUMEventsMapper {
         case let event as RUMLongTaskEvent:
             return map(event: event, using: longTaskEventMapper) as? T
         default:
-            internalMonitor?.sdkLogger.critical("No `RUMEventMapper` is registered for \(type(of: event))")
+            telemetry?.error("No `RUMEventMapper` is registered for \(type(of: event))")
             return event
         }
     }

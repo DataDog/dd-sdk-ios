@@ -9,7 +9,6 @@ import XCTest
 
 class WebLogEventConsumerTests: XCTestCase {
     let mockUserLogsWriter = FileWriterMock()
-    let mockInternalLogsWriter = FileWriterMock()
     let mockDateCorrector = DateCorrectorMock()
     let mockContextProvider = RUMContextProviderMock(context: .mockWith(rumApplicationID: "123456"))
 
@@ -21,7 +20,6 @@ class WebLogEventConsumerTests: XCTestCase {
         let environment = String.mockRandom()
         let eventConsumer = DefaultWebLogEventConsumer(
             userLogsWriter: mockUserLogsWriter,
-            internalLogsWriter: mockInternalLogsWriter,
             dateCorrector: mockDateCorrector,
             rumContextProvider: mockContextProvider,
             applicationVersion: applicationVersion,
@@ -53,52 +51,6 @@ class WebLogEventConsumerTests: XCTestCase {
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
         AssertDictionariesEqual(writtenJSON, expectedWebLogEvent)
-
-        XCTAssertNil(mockInternalLogsWriter.dataWritten)
-    }
-
-    func testWhenValidWebInternalLogEventPassed_itDecoratesAndPassesToWriter() throws {
-        let mockSessionID: UUID = .mockRandom()
-        mockContextProvider.context.sessionID = RUMUUID(rawValue: mockSessionID)
-        mockDateCorrector.correctionOffset = 123
-        let applicationVersion = String.mockRandom()
-        let environment = String.mockRandom()
-        let eventConsumer = DefaultWebLogEventConsumer(
-            userLogsWriter: mockUserLogsWriter,
-            internalLogsWriter: mockInternalLogsWriter,
-            dateCorrector: mockDateCorrector,
-            rumContextProvider: mockContextProvider,
-            applicationVersion: applicationVersion,
-            environment: environment
-        )
-
-        let webLogEvent: JSON = [
-            "date": 1_635_932_927_012,
-            "error": ["origin": "console"],
-            "message": "console error: error",
-            "session_id": "0110cab4-7471-480e-aa4e-7ce039ced355",
-            "status": "error",
-            "view": ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"]
-        ]
-        let expectedWebLogEvent: JSON = [
-            "date": 1_635_932_927_012 + 123.toInt64Milliseconds,
-            "error": ["origin": "console"],
-            "message": "console error: error",
-            "application_id": "123456",
-            "session_id": mockSessionID.uuidString.lowercased(),
-            "status": "error",
-            "ddtags": "version:\(applicationVersion),env:\(environment)",
-            "view": ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"]
-        ]
-
-        try eventConsumer.consume(event: webLogEvent, internalLog: true)
-
-        let data = try JSONEncoder().encode(mockInternalLogsWriter.dataWritten as? CodableValue)
-        let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
-
-        AssertDictionariesEqual(writtenJSON, expectedWebLogEvent)
-
-        XCTAssertNil(mockUserLogsWriter.dataWritten)
     }
 
     func testWhenContextIsUnavailable_itPassesEventAsIs() throws {
@@ -106,7 +58,6 @@ class WebLogEventConsumerTests: XCTestCase {
         let environment = String.mockRandom()
         let eventConsumer = DefaultWebLogEventConsumer(
             userLogsWriter: mockUserLogsWriter,
-            internalLogsWriter: mockInternalLogsWriter,
             dateCorrector: mockDateCorrector,
             rumContextProvider: nil,
             applicationVersion: applicationVersion,
@@ -130,7 +81,5 @@ class WebLogEventConsumerTests: XCTestCase {
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
         AssertDictionariesEqual(writtenJSON, expectedWebLogEvent)
-
-        XCTAssertNil(mockInternalLogsWriter.dataWritten)
     }
 }

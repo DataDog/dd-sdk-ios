@@ -49,6 +49,7 @@ internal final class KronosDNSResolver {
             let IPs = (addresses.takeUnretainedValue() as NSArray)
                 .compactMap { $0 as? NSData }
                 .compactMap(KronosInternetAddress.init)
+                .filter { ip in !ip.isPrivate } // to avoid querying private IPs, see: https://github.com/DataDog/dd-sdk-ios/issues/647
 
             resolver.completion?(IPs)
             retainedSelf.release()
