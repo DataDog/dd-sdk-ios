@@ -263,6 +263,7 @@ extension Datadog {
         private(set) var rumLongTaskEventMapper: RUMLongTaskEventMapper?
         private(set) var rumResourceAttributesProvider: URLSessionRUMAttributesProvider?
         private(set) var rumBackgroundEventTrackingEnabled: Bool
+        private(set) var rumTelemetrySamplingRate: Float
         private(set) var batchSize: BatchSize
         private(set) var uploadFrequency: UploadFrequency
         private(set) var additionalConfiguration: [String: Any]
@@ -335,6 +336,7 @@ extension Datadog {
                     rumErrorEventMapper: nil,
                     rumResourceAttributesProvider: nil,
                     rumBackgroundEventTrackingEnabled: false,
+                    rumTelemetrySamplingRate: 20,
                     batchSize: .medium,
                     uploadFrequency: .average,
                     additionalConfiguration: [:],
@@ -683,6 +685,15 @@ extension Datadog {
             /// - Parameter enabled: `true` by default
             public func trackBackgroundEvents(_ enabled: Bool = true) -> Builder {
                 configuration.rumBackgroundEventTrackingEnabled = enabled
+                return self
+            }
+
+            /// Sets the sampling rate for Internal Telemetry (info related to the work of the SDK internals). Default value is 20.
+            ///
+            /// - Parameter rate: the sampling rate must be a value between 0 and 100. A value of 0
+            ///                   means no telemetry will be sent, 100 means all telemetry will be kept.
+            public func set(sampleTelemetry rate: Float) -> Builder {
+                configuration.rumTelemetrySamplingRate = rate
                 return self
             }
 

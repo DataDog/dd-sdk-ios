@@ -228,7 +228,8 @@ public class Datadog {
                 applicationID: rumConfiguration.applicationID,
                 source: rumConfiguration.common.source,
                 dateProvider: dateProvider,
-                dateCorrector: dateCorrector
+                dateCorrector: dateCorrector,
+                sampler: rumConfiguration.telemetrySampler
             )
 
             rum = RUMFeature(

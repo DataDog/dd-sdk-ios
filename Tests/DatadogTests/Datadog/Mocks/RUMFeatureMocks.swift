@@ -104,14 +104,16 @@ extension RUMTelemetry: AnyMockable {
         applicationID: String = .mockAny(),
         source: String = .mockAnySource(),
         dateProvider: DateProvider = SystemDateProvider(),
-        dateCorrector: DateCorrectorType = DateCorrectorMock()
+        dateCorrector: DateCorrectorType = DateCorrectorMock(),
+        sampler: Sampler = .init(samplingRate: 100)
     ) -> Self {
         .init(
             sdkVersion: sdkVersion,
             applicationID: applicationID,
             source: source,
             dateProvider: dateProvider,
-            dateCorrector: dateCorrector
+            dateCorrector: dateCorrector,
+            sampler: sampler
         )
     }
 }
@@ -637,7 +639,7 @@ internal struct NoOpRUMViewUpdatesThrottler: RUMViewUpdatesThrottlerType {
     }
 }
 
-func mockNoOpSessionListerner() -> RUMSessionListener {
+func mockNoOpSessionListener() -> RUMSessionListener {
     return { _, _ in }
 }
 
@@ -669,7 +671,7 @@ extension RUMScopeDependencies {
         crashContextIntegration: RUMWithCrashContextIntegration? = nil,
         ciTest: RUMCITest? = nil,
         viewUpdatesThrottlerFactory: @escaping () -> RUMViewUpdatesThrottlerType = { NoOpRUMViewUpdatesThrottler() },
-        onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
+        onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             rumApplicationID: rumApplicationID,

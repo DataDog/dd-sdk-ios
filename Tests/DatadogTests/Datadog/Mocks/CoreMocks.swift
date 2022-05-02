@@ -55,6 +55,7 @@ extension Datadog.Configuration {
         rumLongTaskDurationThreshold: TimeInterval? = nil,
         rumResourceAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         rumBackgroundEventTrackingEnabled: Bool = false,
+        rumTelemetrySamplingRate: Float = 100.0,
         batchSize: BatchSize = .medium,
         uploadFrequency: UploadFrequency = .average,
         additionalConfiguration: [String: Any] = [:],
@@ -84,6 +85,7 @@ extension Datadog.Configuration {
             rumLongTaskDurationThreshold: rumLongTaskDurationThreshold,
             rumResourceAttributesProvider: rumResourceAttributesProvider,
             rumBackgroundEventTrackingEnabled: rumBackgroundEventTrackingEnabled,
+            rumTelemetrySamplingRate: rumTelemetrySamplingRate,
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
             additionalConfiguration: additionalConfiguration,
@@ -257,6 +259,7 @@ extension FeaturesConfiguration.RUM {
         clientToken: String = .mockAny(),
         applicationID: String = .mockAny(),
         sessionSampler: Sampler = Sampler(samplingRate: 100),
+        telemetrySampler: Sampler = Sampler(samplingRate: 100),
         uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         viewEventMapper: RUMViewEventMapper? = nil,
         resourceEventMapper: RUMResourceEventMapper? = nil,
@@ -265,7 +268,7 @@ extension FeaturesConfiguration.RUM {
         longTaskEventMapper: RUMLongTaskEventMapper? = nil,
         instrumentation: FeaturesConfiguration.RUM.Instrumentation? = nil,
         backgroundEventTrackingEnabled: Bool = false,
-        onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
+        onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener()
     ) -> Self {
         return .init(
             common: common,
@@ -273,6 +276,7 @@ extension FeaturesConfiguration.RUM {
             clientToken: clientToken,
             applicationID: applicationID,
             sessionSampler: sessionSampler,
+            telemetrySampler: telemetrySampler,
             uuidGenerator: uuidGenerator,
             viewEventMapper: viewEventMapper,
             resourceEventMapper: resourceEventMapper,
