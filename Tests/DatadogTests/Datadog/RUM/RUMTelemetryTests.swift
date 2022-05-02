@@ -118,12 +118,12 @@ class RUMTelemetryTests: XCTestCase {
 
     func testTelemetryErrorFormatting() {
         class TelemetryTest: Telemetry {
-            var record: (message: String, kind: String?, stack: String?)?
+            var record: (id: String, message: String, kind: String?, stack: String?)?
 
             func debug(id: String, message: String) { }
 
             func error(id: String, message: String, kind: String?, stack: String?) {
-                record = (message: message, kind: kind, stack: stack)
+                record = (id: id, message: message, kind: kind, stack: stack)
             }
         }
 
@@ -143,12 +143,20 @@ class RUMTelemetryTests: XCTestCase {
             ]
         )
 
+        #sourceLocation(file: "File.swift", line: 1)
         telemetry.error(swiftError)
+        #sourceLocation()
+
+        XCTAssertEqual(telemetry.record?.id, #"File.swift:1:SwiftError(description: "error description")"#)
         XCTAssertEqual(telemetry.record?.message, #"SwiftError(description: "error description")"#)
         XCTAssertEqual(telemetry.record?.kind, "SwiftError")
         XCTAssertEqual(telemetry.record?.stack, #"SwiftError(description: "error description")"#)
 
+        #sourceLocation(file: "File.swift", line: 2)
         telemetry.error(nsError)
+        #sourceLocation()
+
+        XCTAssertEqual(telemetry.record?.id, "File.swift:2:error description")
         XCTAssertEqual(telemetry.record?.message, "error description")
         XCTAssertEqual(telemetry.record?.kind, "custom-domain - 10")
         XCTAssertEqual(

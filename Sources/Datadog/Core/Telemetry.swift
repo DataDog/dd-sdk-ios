@@ -33,7 +33,7 @@ extension Telemetry {
     ///   - message: The debug message.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    func debug(_ message: String, file: String = #fileID, line: Int = #line) {
+    func debug(_ message: String, file: String = #file, line: Int = #line) {
         debug(id: "\(file):\(line):\(message)", message: message)
     }
 
@@ -44,7 +44,9 @@ extension Telemetry {
     ///   - stack: The stack trace.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    func error(_ message: String, kind: String? = nil, stack: String? = nil, file: String = #fileID, line: Int = #line) {
+    ///   - file: The current file name.
+    ///   - line: The line number in file.
+    func error(_ message: String, kind: String? = nil, stack: String? = nil, file: String = #file, line: Int = #line) {
         error(id: "\(file):\(line):\(message)", message: message, kind: kind, stack: stack)
     }
 
@@ -52,8 +54,10 @@ extension Telemetry {
     ///
     /// - Parameters:
     ///   - error: The error.
-    func error(_ error: DDError) {
-        self.error(error.message, kind: error.type, stack: error.stack)
+    ///   - file: The current file name.
+    ///   - line: The line number in file.
+    func error(_ error: DDError, file: String = #file, line: Int = #line) {
+        self.error(error.message, kind: error.type, stack: error.stack, file: file, line: line)
     }
 
     /// Collect execution error.
@@ -61,16 +65,20 @@ extension Telemetry {
     /// - Parameters:
     ///   - message: The error message.
     ///   - error: The error.
-    func error(_ message: String, error: DDError) {
-        self.error("\(message) - \(error.message)", kind: error.type, stack: error.stack)
+    ///   - file: The current file name.
+    ///   - line: The line number in file.
+    func error(_ message: String, error: DDError, file: String = #file, line: Int = #line) {
+        self.error("\(message) - \(error.message)", kind: error.type, stack: error.stack, file: file, line: line)
     }
 
     /// Collect execution error.
     ///
     /// - Parameters:
     ///   - error: The error.
-    func error(_ error: Error) {
-        self.error(DDError(error: error))
+    ///   - file: The current file name.
+    ///   - line: The line number in file.
+    func error(_ error: Error, file: String = #file, line: Int = #line) {
+        self.error(DDError(error: error), file: file, line: line)
     }
 
     /// Collect execution error.
@@ -78,7 +86,9 @@ extension Telemetry {
     /// - Parameters:
     ///   - message: The error message.
     ///   - error: The error.
-    func error(_ message: String, error: Error) {
-        self.error(message, error: DDError(error: error))
+    ///   - file: The current file name.
+    ///   - line: The line number in file.
+    func error(_ message: String, error: Error, file: String = #file, line: Int = #line) {
+        self.error(message, error: DDError(error: error), file: file, line: line)
     }
 }
