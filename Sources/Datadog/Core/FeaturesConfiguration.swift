@@ -62,6 +62,7 @@ internal struct FeaturesConfiguration {
         let instrumentation: Instrumentation?
         let backgroundEventTrackingEnabled: Bool
         let onSessionStart: RUMSessionListener?
+        let firstPartyHosts: Set<String>
     }
 
     struct URLSessionAutoInstrumentation {
@@ -184,6 +185,14 @@ extension FeaturesConfiguration {
             )
         }
 
+        var sanitizedHosts: Set<String> = []
+        if let firstPartyHosts = configuration.firstPartyHosts {
+            sanitizedHosts = hostsSanitizer.sanitized(
+                hosts: firstPartyHosts,
+                warningMessage: "The first party host configured for Datadog SDK is not valid"
+            )
+        }
+
         if configuration.rumEnabled {
             let instrumentation = RUM.Instrumentation(
                 uiKitRUMViewsPredicate: configuration.rumUIKitViewsPredicate,
@@ -207,7 +216,8 @@ extension FeaturesConfiguration {
                     longTaskEventMapper: configuration.rumLongTaskEventMapper,
                     instrumentation: instrumentation,
                     backgroundEventTrackingEnabled: configuration.rumBackgroundEventTrackingEnabled,
-                    onSessionStart: configuration.rumSessionsListener
+                    onSessionStart: configuration.rumSessionsListener,
+                    firstPartyHosts: sanitizedHosts
                 )
             } else {
                 let error = ProgrammerError(
@@ -220,13 +230,10 @@ extension FeaturesConfiguration {
             }
         }
 
-        if let firstPartyHosts = configuration.firstPartyHosts {
+        if configuration.firstPartyHosts != nil {
             if configuration.tracingEnabled || configuration.rumEnabled {
                 urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
-                    userDefinedFirstPartyHosts: hostsSanitizer.sanitized(
-                        hosts: firstPartyHosts,
-                        warningMessage: "The first party host configured for Datadog SDK is not valid"
-                    ),
+                    userDefinedFirstPartyHosts: sanitizedHosts,
                     sdkInternalURLs: [
                         logsEndpoint.url,
                         tracesEndpoint.url,

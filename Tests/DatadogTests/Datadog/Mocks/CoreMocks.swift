@@ -268,7 +268,8 @@ extension FeaturesConfiguration.RUM {
         longTaskEventMapper: RUMLongTaskEventMapper? = nil,
         instrumentation: FeaturesConfiguration.RUM.Instrumentation? = nil,
         backgroundEventTrackingEnabled: Bool = false,
-        onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener()
+        onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener(),
+        firstPartyHosts: Set<String> = []
     ) -> Self {
         return .init(
             common: common,
@@ -285,7 +286,8 @@ extension FeaturesConfiguration.RUM {
             longTaskEventMapper: longTaskEventMapper,
             instrumentation: instrumentation,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
-            onSessionStart: onSessionStart
+            onSessionStart: onSessionStart,
+            firstPartyHosts: firstPartyHosts
         )
     }
 }
