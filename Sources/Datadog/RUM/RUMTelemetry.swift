@@ -28,7 +28,7 @@ internal final class RUMTelemetry: Telemetry {
     private var currentSessionID: RUMUUID = .nullUUID
 
     /// Keeps track of event's ids recorded during a user session.
-    private var eventIDs: [String] = []
+    private var eventIDs: Set<String> = []
 
     /// Creates a RUM Telemetry instance.
     ///
@@ -142,7 +142,7 @@ internal final class RUMTelemetry: Telemetry {
 
             // record up de `MaxEventsPerSessions`, discard duplicates
             if self.eventIDs.count < RUMTelemetry.MaxEventsPerSessions, !self.eventIDs.contains(id) {
-                self.eventIDs.append(id)
+                self.eventIDs.insert(id)
                 operation(context, writer)
             }
         }
