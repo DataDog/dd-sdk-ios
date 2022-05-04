@@ -29,20 +29,23 @@ class FileReaderTests: XCTestCase {
         )
         _ = try temporaryDirectory
             .createFile(named: Date.mockAny().toFileName)
-            .append(data: "ABCD".utf8Data)
+            .append(data: .block(.event, data: "ABCD".utf8Data))
 
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
         let batch = reader.readNextBatch()
-
         XCTAssertEqual(batch?.data, "[ABCD]".utf8Data)
     }
 
     func testItReadsSingleEncryptedBatch() throws {
         // Given
+        // base64(foo) = Zm9v
+        let data = Array(repeating: "Zm9v".utf8Data, count: 3)
+            .map { Data.block(.event, data: $0) }
+            .reduce(.init(), +)
+
         _ = try temporaryDirectory
             .createFile(named: Date.mockAny().toFileName)
-            // base64(foo) = Zm9v
-            .append(data: "Zm9v,Zm9v,Zm9v".utf8Data)
+            .append(data: data)
 
         let reader = FileReader(
             dataFormat: .mockWith(prefix: "[", suffix: "]", separator: ","),
@@ -74,13 +77,13 @@ class FileReaderTests: XCTestCase {
             )
         )
         let file1 = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
-        try file1.append(data: "1".utf8Data)
+        try file1.append(data: .block(.event, data: "1".utf8Data))
 
         let file2 = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
-        try file2.append(data: "2".utf8Data)
+        try file2.append(data: .block(.event, data: "2".utf8Data))
 
         let file3 = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
-        try file3.append(data: "3".utf8Data)
+        try file3.append(data: .block(.event, data: "3".utf8Data))
 
         var batch: Batch
         batch = try reader.readNextBatch().unwrapOrThrow()

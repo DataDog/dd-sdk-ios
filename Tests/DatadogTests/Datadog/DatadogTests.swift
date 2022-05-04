@@ -441,9 +441,9 @@ class DatadogTests: XCTestCase {
         rumWriter.queue.sync {}
 
         let featureDirectories: [FeatureDirectories] = [
-            try obtainLoggingFeatureDirectories(),
-            try obtainTracingFeatureDirectories(),
-            try obtainRUMFeatureDirectories()
+            try obtainLoggingFeatureDirectories(version: "v2"),
+            try obtainTracingFeatureDirectories(version: "v2"),
+            try obtainRUMFeatureDirectories(version: "v2")
         ]
 
         let allDirectories: [Directory] = featureDirectories.flatMap { [$0.authorized, $0.unauthorized] }

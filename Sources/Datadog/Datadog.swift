@@ -231,7 +231,7 @@ public class Datadog {
             )
 
             rum = RUMFeature(
-                directories: try obtainRUMFeatureDirectories(),
+                directories: try obtainRUMFeatureDirectories(version: "v2"),
                 configuration: rumConfiguration,
                 commonDependencies: commonDependencies,
                 telemetry: telemetry
@@ -247,7 +247,7 @@ public class Datadog {
 
         if let loggingConfiguration = configuration.logging {
             logging = LoggingFeature(
-                directories: try obtainLoggingFeatureDirectories(),
+                directories: try obtainLoggingFeatureDirectories(version: "v2"),
                 configuration: loggingConfiguration,
                 commonDependencies: commonDependencies,
                 telemetry: telemetry
@@ -256,7 +256,7 @@ public class Datadog {
 
         if let tracingConfiguration = configuration.tracing {
             tracing = TracingFeature(
-                directories: try obtainTracingFeatureDirectories(),
+                directories: try obtainTracingFeatureDirectories(version: "v2"),
                 configuration: tracingConfiguration,
                 commonDependencies: commonDependencies,
                 loggingFeatureAdapter: logging.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },

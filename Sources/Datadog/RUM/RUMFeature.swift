@@ -7,8 +7,7 @@
 import Foundation
 
 /// Obtains subdirectories in `/Library/Caches` where RUM data is stored.
-internal func obtainRUMFeatureDirectories() throws -> FeatureDirectories {
-    let version = "v1"
+internal func obtainRUMFeatureDirectories(version: String) throws -> FeatureDirectories {
     return FeatureDirectories(
         unauthorized: try Directory(withSubdirectoryPath: "com.datadoghq.rum/intermediate-\(version)"),
         authorized: try Directory(withSubdirectoryPath: "com.datadoghq.rum/\(version)")
