@@ -301,7 +301,7 @@ NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConf
 
 ### Track background events
 
-To track events (crashes, network requests etc.) when your application is in the foreground, add during initialization while setting up Datadog configuration:
+To track events (crashes, network requests etc.) when your application is in the background, i.e. there is no active view, add the following snippet during initialization while setting up Datadog configuration:
 
 {{< tabs >}}
 {{% tab "Swift" %}}
