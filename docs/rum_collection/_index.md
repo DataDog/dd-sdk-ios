@@ -299,6 +299,20 @@ NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConf
 {{% /tab %}}
 {{< /tabs >}}
 
+### Track background events
+
+To track events (crashes, network requests etc.) when your application is in the foreground, add during initialization while setting up Datadog configuration:
+
+{{< tabs >}}
+{{% tab "Swift" %}}
+```swift
+.trackBackgroundEvents()
+
+```
+
+<div class="alert alert-info"><p>Note that tracking background events could lead to additional sessions that might impact billing. For questions contact support@datadoghq.com</p>
+</div>
+
 ## iOS Crash Reporting and Error Tracking
 
 Crash Reporting and Error Tracking for iOS displays any issues and latest available errors. You can view error details and attributes including JSON in the RUM Explorer. 
