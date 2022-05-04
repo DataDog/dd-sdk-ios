@@ -153,7 +153,7 @@ internal class JSONSchema: Decodable {
 
     /// Subschemas to be resolved.
     /// https://json-schema.org/draft/2019-09/json-schema-core.html#rfc.section.9.2.1.3
-    private var oneOf: [JSONSchema]?
+    private(set) var oneOf: [JSONSchema]?
 
     // MARK: - Resolving Schema References
 

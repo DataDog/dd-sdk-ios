@@ -12,6 +12,6 @@ extension Datadog.Configuration {
             rumApplicationID: E2EConfig.readRUMApplicationID(),
             clientToken: E2EConfig.readClientToken(),
             environment: E2EConfig.readEnv()
-        )
+        ).set(sampleTelemetry: 100)
     }
 }

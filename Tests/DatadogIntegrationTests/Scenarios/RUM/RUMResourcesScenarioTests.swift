@@ -83,6 +83,8 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         app.tapSend3rdPartyRequests()
 
+        try app.endRUMSession()
+
         // Get custom 1st party request sent to the server
         let firstPartyPOSTRequest = try XCTUnwrap(
             customFirstPartyServerSession
@@ -113,11 +115,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         // Get RUM Sessions with expected number of View visits and Resources
         let rumRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            let session = try RUMSessionMatcher.singleSession(from: requests)
-            let hasAllViews = session?.viewVisits.count == 2
-            let hasAllResources = session?.resourceEventMatchers.count == 4
-            let hasAllErrors = session?.errorEventMatchers.count == 1
-            return hasAllViews && hasAllResources && hasAllErrors
+            try RUMSessionMatcher.singleSession(from: requests)?.hasEnded() ?? false
         }
 
         assertRUM(requests: rumRequests)

@@ -142,11 +142,23 @@ class DDRUMMonitorTests: XCTestCase {
         super.tearDown()
     }
 
+    /// Creates `DDRUMMonitor` instance for tests.
+    /// The only difference vs. `DDRUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
+    private func createTestableDDRUMMonitor() throws -> DatadogObjc.DDRUMMonitor {
+        let rumFeature = try XCTUnwrap(RUMFeature.instance, "RUM feature must be initialized before creating `RUMMonitor`")
+        let swiftMonitor = RUMMonitor(
+            dependencies: RUMScopeDependencies(rumFeature: rumFeature)
+                .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
+            dateProvider: rumFeature.dateProvider
+        )
+        return DatadogObjc.DDRUMMonitor(swiftRUMMonitor: swiftMonitor)
+    }
+
     func testSendingViewEvents() throws {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
         defer { RUMFeature.instance?.deinitialize() }
 
-        let objcRUMMonitor = DatadogObjc.DDRUMMonitor()
+        let objcRUMMonitor = try createTestableDDRUMMonitor()
         let mockView = createMockView(viewControllerClassName: "FirstViewController")
 
         objcRUMMonitor.startView(viewController: mockView, name: "FirstView", attributes: ["event-attribute1": "foo1"])
@@ -181,7 +193,7 @@ class DDRUMMonitorTests: XCTestCase {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
         defer { RUMFeature.instance?.deinitialize() }
 
-        let objcRUMMonitor = DatadogObjc.DDRUMMonitor()
+        let objcRUMMonitor = try createTestableDDRUMMonitor()
 
         objcRUMMonitor.startView(viewController: mockView, name: "SomeView", attributes: ["event-attribute1": "foo1"])
         objcRUMMonitor.addTiming(name: "timing")
@@ -210,7 +222,7 @@ class DDRUMMonitorTests: XCTestCase {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
         defer { RUMFeature.instance?.deinitialize() }
 
-        let objcRUMMonitor = DatadogObjc.DDRUMMonitor()
+        let objcRUMMonitor = try createTestableDDRUMMonitor()
 
         objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
 
@@ -263,7 +275,7 @@ class DDRUMMonitorTests: XCTestCase {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
         defer { RUMFeature.instance?.deinitialize() }
 
-        let objcRUMMonitor = DatadogObjc.DDRUMMonitor()
+        let objcRUMMonitor = try createTestableDDRUMMonitor()
 
         objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
 
@@ -331,7 +343,7 @@ class DDRUMMonitorTests: XCTestCase {
         )
         defer { RUMFeature.instance?.deinitialize() }
 
-        let objcRUMMonitor = DatadogObjc.DDRUMMonitor()
+        let objcRUMMonitor = try createTestableDDRUMMonitor()
 
         objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
 
@@ -365,7 +377,7 @@ class DDRUMMonitorTests: XCTestCase {
         RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
         defer { RUMFeature.instance?.deinitialize() }
 
-        let objcRUMMonitor = DatadogObjc.DDRUMMonitor()
+        let objcRUMMonitor = try createTestableDDRUMMonitor()
         objcRUMMonitor.addAttribute(forKey: "global-attribute1", value: "foo1")
         objcRUMMonitor.addAttribute(forKey: "global-attribute2", value: "foo2")
         objcRUMMonitor.removeAttribute(forKey: "global-attribute2")

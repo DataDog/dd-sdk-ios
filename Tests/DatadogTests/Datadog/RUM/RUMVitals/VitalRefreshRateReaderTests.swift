@@ -34,21 +34,31 @@ class VitalRefreshRateReaderTests: XCTestCase {
 
             run(
                 mainThreadWork: mainThreadWork,
-                until: { measure.currentValue.sampleCount == targetSamplesCount },
+                until: { measure.currentValue.sampleCount >= targetSamplesCount },
                 completion: {
                     reader.unregister(measure)
                     completion.fulfill()
                 }
             )
 
-            wait(for: [completion], timeout: 10)
+            let result = XCTWaiter().wait(for: [completion], timeout: 10)
+
+            switch result {
+            case .completed:
+                break // all good
+            case .timedOut:
+                XCTFail("VitalRefreshRateReader exceededed timeout with \(measure.currentValue.sampleCount)/\(targetSamplesCount) recorded samples")
+            default:
+                XCTFail("XCTWaiter unexpected failure: \(result)")
+            }
         }
 
         // Given
         let lowOverhead = { /* no-op */ } // no overhead in succeeding runloop runs
         let lowOverheadMeasure = VitalPublisher(initialValue: VitalInfo())
 
-        let highOverhead = { Thread.sleep(forTimeInterval: 0.02) } // 0.02 overhead in succeeding runloop runs
+        var highOverheadRunCount = 0
+        let highOverhead = { highOverheadRunCount += 1; Thread.sleep(forTimeInterval: 0.02) } // 0.02 overhead in succeeding runloop runs
         let highOverheadMeasure = VitalPublisher(initialValue: VitalInfo())
 
         // When
@@ -58,7 +68,7 @@ class VitalRefreshRateReaderTests: XCTestCase {
         // Then
         let expectedHighFPS = try XCTUnwrap(lowOverheadMeasure.currentValue.meanValue)
         let expectedLowFPS = try XCTUnwrap(highOverheadMeasure.currentValue.meanValue)
-        XCTAssertGreaterThan(expectedHighFPS, expectedLowFPS, "It must measure higher FPS for lower main thread overhead")
+        XCTAssertGreaterThan(expectedHighFPS, expectedLowFPS, "It must measure higher FPS for lower main thread overhead (hight overhead run count: \(highOverheadRunCount))")
     }
 
     func testAppStateHandling() {

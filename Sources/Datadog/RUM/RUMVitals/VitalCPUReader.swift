@@ -14,7 +14,13 @@ internal class VitalCPUReader: SamplingBasedVitalReader {
     private var totalInactiveTicks: natural_t = 0
     private var utilizedTicksWhenResigningActive: natural_t? = nil
 
-    init(notificationCenter: NotificationCenter = .default) {
+    let telemetry: Telemetry?
+
+    init(
+        notificationCenter: NotificationCenter = .default,
+        telemetry: Telemetry? = nil
+    ) {
+        self.telemetry = telemetry
         notificationCenter.addObserver(self, selector: #selector(appWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
         notificationCenter.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
     }
@@ -65,11 +71,7 @@ internal class VitalCPUReader: SamplingBasedVitalReader {
         if result != KERN_SUCCESS {
             // in case of error, refer to `kern_return.h` (Objc)
             // as its Swift interface doesn't have integer values
-            //
-            // NOTE: RUMM-1276 consider using sdkLogger.errorOnce(...) to avoid flooding
-            InternalMonitoringFeature.instance?.monitor.sdkLogger.error(
-                "CPU Vital cannot be read! Error code: \(result)"
-            )
+            telemetry?.error("CPU Vital cannot be read! Error code: \(result)")
             return nil
         }
 

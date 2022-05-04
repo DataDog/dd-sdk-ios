@@ -43,9 +43,11 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         let screen2 = screen1.tapPushNextScreen()
         screen2.tapPushNextScreen()
 
+        try app.endRUMSession()
+
         // Get RUM Sessions with expected number of View visits
         let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.singleSession(from: requests)?.viewVisits.count == 3
+            try RUMSessionMatcher.singleSession(from: requests)?.hasEnded() ?? false
         }
 
         assertRUM(requests: recordedRUMRequests)
@@ -56,7 +58,6 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         let view1 = session.viewVisits[0]
         XCTAssertEqual(view1.name, "SendRUMFixture1View")
         XCTAssertEqual(view1.path, "Example.SendRUMFixture1ViewController")
-        XCTAssertEqual(view1.viewEvents.count, 6, "First view should receive 6 updates")
         XCTAssertEqual(view1.viewEvents.last?.view.action.count, 2)
         XCTAssertEqual(view1.viewEvents.last?.view.resource.count, 1)
         XCTAssertEqual(view1.viewEvents.last?.view.error.count, 1)

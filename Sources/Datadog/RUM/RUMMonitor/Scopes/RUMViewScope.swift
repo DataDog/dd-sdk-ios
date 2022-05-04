@@ -73,6 +73,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     private let vitalInfoSampler: VitalInfoSampler
 
+    /// Samples view update events, so we can minimize the number of events in payload.
+    private let viewUpdatesThrottler: RUMViewUpdatesThrottlerType
+
     init(
         isInitialView: Bool,
         parent: RUMContextProvider,
@@ -101,6 +104,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             memoryReader: dependencies.vitalMemoryReader,
             refreshRateReader: dependencies.vitalRefreshRateReader
         )
+        self.viewUpdatesThrottler = dependencies.viewUpdatesThrottlerFactory()
     }
 
     // MARK: - RUMContextProvider
@@ -325,6 +329,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             action: .init(
                 crash: nil,
                 error: nil,
+                frustrationType: nil,
                 id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 loadingTime: loadingTime,
                 longTask: nil,
@@ -343,9 +348,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 id: context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: .ios,
+            source: RUMActionEvent.Source(rawValue: dependencies.source) ?? .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
+            version: dependencies.applicationVersion,
             view: .init(
                 id: viewUUID.toRUMDataFormat,
                 inForeground: nil,
@@ -355,13 +361,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         )
 
-#if DD_SDK_ENABLE_INTERNAL_MONITORING && !os(tvOS)
-        if #available(iOS 15, *) {
-            // Starting MetricKit monitor from here, to ensure that our launch time was already reported
-            // in `.applicationStart` action and we could compare both measurements.
-            MetricMonitor.shared.monitorMetricKit(launchTime: dependencies.launchTimeProvider.launchTime)
-        }
-#endif
         if let event = dependencies.eventBuilder.build(from: eventData) {
             dependencies.eventOutput.write(event: event)
             return true
@@ -399,9 +398,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 id: context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: .ios,
+            source: RUMViewEvent.Source(rawValue: dependencies.source) ?? .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
+            version: dependencies.applicationVersion,
             view: .init(
                 action: .init(count: actionsCount.toInt64),
                 cpuTicksCount: cpuInfo.greatestDiff,
@@ -441,11 +441,16 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         )
 
         if let event = dependencies.eventBuilder.build(from: eventData) {
-            dependencies.eventOutput.write(event: event)
+            if viewUpdatesThrottler.accept(event: event) {
+                dependencies.eventOutput.write(event: event)
+            } else { // if event was dropped by sampler
+                version -= 1
+            }
 
-            // Update `CrashContext` with recent RUM view:
+            // Update `CrashContext` with recent RUM view (no matter sampling - we want to always
+            // have recent information if process is interrupted by crash):
             dependencies.crashContextIntegration?.update(lastRUMViewEvent: event)
-        } else {
+        } else { // if event was dropped by mapper
             version -= 1
         }
     }
@@ -484,9 +489,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 id: context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: .ios,
+            source: RUMErrorEvent.Source(rawValue: dependencies.source) ?? .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
+            version: dependencies.applicationVersion,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
                 inForeground: nil,
@@ -526,9 +532,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 id: context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: .ios,
+            source: RUMLongTaskEvent.Source(rawValue: dependencies.source) ?? .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
+            version: dependencies.applicationVersion,
             view: .init(
                 id: context.activeViewID.orNull.toRUMDataFormat,
                 name: context.activeViewName,
@@ -558,226 +565,3 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         return sanitized
     }
 }
-
-///
-/// THE FOLLOWING IMPLEMENTATION SHALL BE REMOVED ONCE
-/// METRICKIT HAS BEEN EVALUATED.
-///
-#if DD_SDK_ENABLE_INTERNAL_MONITORING && !os(tvOS)
-import MetricKit
-
-/// The MetricMonitor only exists for internal testing, it will log the MetricKit payloads at reception to
-/// Internal Monitoring Feature.
-private class MetricMonitor: NSObject, MXMetricManagerSubscriber {
-    static var shared = MetricMonitor()
-
-    /// The launch time reported by the sdk.
-    private var launchTime: TimeInterval = 0
-
-    /// The time when this monitor starts.
-    private var timestamp: Date = .distantPast
-
-    /// Request MetricKit payload by subscribing to MXMetricManager.
-    ///
-    /// - Parameter launchTime: The launch time reported by the sdk.
-    @available(iOS 13.0, *)
-    func monitorMetricKit(launchTime: TimeInterval) {
-        self.launchTime = launchTime
-        self.timestamp = Date()
-        MXMetricManager.shared.add(self)
-
-        InternalMonitoringFeature.instance?.monitor.sdkLogger.info(
-            "Did request MetricKit metrics and diagnostics",
-            attributes: [
-                "application_launch_time": launchTime,
-                "active_pre_warm": ProcessInfo.processInfo.environment["ActivePrewarm"] ?? "(null)",
-                "os_version": ProcessInfo.processInfo.operatingSystemVersionString
-            ]
-        )
-    }
-
-    @available(iOS 13.0, *)
-    func didReceive(_ payloads: [MXMetricPayload]) {
-        let metrics = payloads
-            .map { $0.dictionaryRepresentation() }
-            .map(MetricEncodable.init)
-
-        InternalMonitoringFeature.instance?.monitor.sdkLogger.info(
-            "Did receive MetricKit metrics",
-            attributes: [
-                "application_launch_time": launchTime,
-                "active_pre_warm": ProcessInfo.processInfo.environment["ActivePrewarm"] ?? "(null)",
-                "os_version": ProcessInfo.processInfo.operatingSystemVersionString,
-                "delay": Date().timeIntervalSince(timestamp),
-                "payloads": MetricEncodable(metrics)
-            ]
-        )
-    }
-
-    @available(iOS 14.0, *)
-    func didReceive(_ payloads: [MXDiagnosticPayload]) {
-        let diagnostics = payloads
-            .map { $0.dictionaryRepresentation() }
-            .map(MetricEncodable.init)
-
-        InternalMonitoringFeature.instance?.monitor.sdkLogger.info(
-            "Did receive MetricKit diagnostics",
-            attributes: [
-                "os_version": ProcessInfo.processInfo.operatingSystemVersionString,
-                "delay": Date().timeIntervalSince(timestamp),
-                "payloads": MetricEncodable(diagnostics)
-            ]
-        )
-    }
-}
-
-/**
- https://github.com/Flight-School/AnyCodable
-
- Copyright 2018 Read Evaluate Press, LLC
-
- Permission is hereby granted, free of charge, to any person obtaining a
- copy of this software and associated documentation files (the "Software"),
- to deal in the Software without restriction, including without limitation
- the rights to use, copy, modify, merge, publish, distribute, sublicense,
- and/or sell copies of the Software, and to permit persons to whom the
- Software is furnished to do so, subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- DEALINGS IN THE SOFTWARE
- */
-
-/**
- A type-erased `Encodable` value.
- The `AnyEncodable` type forwards encoding responsibilities
- to an underlying value, hiding its specific underlying type.
- You can encode mixed-type values in dictionaries
- and other collections that require `Encodable` conformance
- by declaring their contained type to be `AnyEncodable`:
-     let dictionary: [String: AnyEncodable] = [
-         "boolean": true,
-         "integer": 42,
-         "double": 3.141592653589793,
-         "string": "string",
-         "array": [1, 2, 3],
-         "nested": [
-             "a": "alpha",
-             "b": "bravo",
-             "c": "charlie"
-         ],
-         "null": nil
-     ]
-     let encoder = JSONEncoder()
-     let json = try! encoder.encode(dictionary)
- */
-private struct MetricEncodable: Encodable {
-    let value: Any
-
-    init<T>(_ value: T?) {
-        self.value = value ?? ()
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-
-        switch value {
-        #if canImport(Foundation)
-        case let number as NSNumber:
-            try encode(nsnumber: number, into: &container)
-        case is NSNull:
-            try container.encodeNil()
-        #endif
-        case is Void:
-            try container.encodeNil()
-        case let bool as Bool:
-            try container.encode(bool)
-        case let int as Int:
-            try container.encode(int)
-        case let int8 as Int8:
-            try container.encode(int8)
-        case let int16 as Int16:
-            try container.encode(int16)
-        case let int32 as Int32:
-            try container.encode(int32)
-        case let int64 as Int64:
-            try container.encode(int64)
-        case let uint as UInt:
-            try container.encode(uint)
-        case let uint8 as UInt8:
-            try container.encode(uint8)
-        case let uint16 as UInt16:
-            try container.encode(uint16)
-        case let uint32 as UInt32:
-            try container.encode(uint32)
-        case let uint64 as UInt64:
-            try container.encode(uint64)
-        case let float as Float:
-            try container.encode(float)
-        case let double as Double:
-            try container.encode(double)
-        case let string as String:
-            try container.encode(string)
-        #if canImport(Foundation)
-        case let date as Date:
-            try container.encode(date)
-        case let url as URL:
-            try container.encode(url)
-        #endif
-        case let array as [Any?]:
-            // DD Logs app fails to render arrays of JSON.
-            // Here we map the array to a dictionary with indexes as keys.
-            var dictionary: [String: MetricEncodable] = [:]
-            array.enumerated().forEach { dictionary["\($0.offset)"] = MetricEncodable($0.element) }
-            try container.encode(dictionary)
-        case let dictionary as [String: Any?]:
-            try container.encode(dictionary.mapValues { MetricEncodable($0) })
-        case let encodable as Encodable:
-            try encodable.encode(to: encoder)
-        default:
-            let context = EncodingError.Context(codingPath: container.codingPath, debugDescription: "AnyEncodable value cannot be encoded")
-            throw EncodingError.invalidValue(value, context)
-        }
-    }
-
-    #if canImport(Foundation)
-    private func encode(nsnumber: NSNumber, into container: inout SingleValueEncodingContainer) throws {
-        switch Character(Unicode.Scalar(UInt8(nsnumber.objCType.pointee))) {
-        case "c", "C":
-            try container.encode(nsnumber.boolValue)
-        case "s":
-            try container.encode(nsnumber.int8Value)
-        case "i":
-            try container.encode(nsnumber.int16Value)
-        case "l":
-            try container.encode(nsnumber.int32Value)
-        case "q":
-            try container.encode(nsnumber.int64Value)
-        case "S":
-            try container.encode(nsnumber.uint8Value)
-        case "I":
-            try container.encode(nsnumber.uint16Value)
-        case "L":
-            try container.encode(nsnumber.uint32Value)
-        case "Q":
-            try container.encode(nsnumber.uint64Value)
-        case "f":
-            try container.encode(nsnumber.floatValue)
-        case "d":
-            try container.encode(nsnumber.doubleValue)
-        default:
-            let context = EncodingError.Context(codingPath: container.codingPath, debugDescription: "NSNumber cannot be encoded because its type is not handled")
-            throw EncodingError.invalidValue(nsnumber, context)
-        }
-    }
-    #endif
-}
-
-#endif

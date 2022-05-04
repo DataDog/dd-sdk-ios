@@ -22,9 +22,15 @@ extension LoggingFeature {
     static func mockWith(
         directories: FeatureDirectories,
         configuration: FeaturesConfiguration.Logging = .mockAny(),
-        dependencies: FeaturesCommonDependencies = .mockAny()
+        dependencies: FeaturesCommonDependencies = .mockAny(),
+        telemetry: Telemetry? = nil
     ) -> LoggingFeature {
-        return LoggingFeature(directories: directories, configuration: configuration, commonDependencies: dependencies)
+        return LoggingFeature(
+            directories: directories,
+            configuration: configuration,
+            commonDependencies: dependencies,
+            telemetry: telemetry
+        )
     }
 
     /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
@@ -283,5 +289,22 @@ class LogOutputMock: LogOutput {
         return allRecordedLogs
             .map { "- \($0)" }
             .joined(separator: "\n")
+    }
+}
+
+/// `Telemtry` recording received telemetry.
+class TelemetryMock: Telemetry, CustomStringConvertible {
+    private(set) var debugs: [String] = []
+    private(set) var errors: [(message: String, kind: String?, stack: String?)] = []
+    private(set) var description: String = "Telemetry logs:"
+
+    func debug(id: String, message: String) {
+        debugs.append(message)
+        description.append("\n- [debug] \(message)")
+    }
+
+    func error(id: String, message: String, kind: String?, stack: String?) {
+        errors.append((message: message, kind: kind, stack: stack))
+        description.append("\n - [error] \(message), kind: \(kind ?? "nil"), stack: \(stack ?? "nil")")
     }
 }

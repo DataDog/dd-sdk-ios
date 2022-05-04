@@ -51,9 +51,11 @@ class RUMModalViewsScenarioTests: IntegrationTests, RUMCommonAsserts {
         app.swipeToPullModalDownButThenCancel() // interactive and cancelled dismiss, stay on "Modal"
         app.tapButton(titled: "Dismiss by self.dismiss()") // dismiss to "Screen"
 
+        try app.endRUMSession()
+
         // Get RUM Sessions with expected number of View visits
         let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.singleSession(from: requests)?.viewVisits.count == 9
+            try RUMSessionMatcher.singleSession(from: requests)?.hasEnded() ?? false
         }
 
         assertRUM(requests: recordedRUMRequests)

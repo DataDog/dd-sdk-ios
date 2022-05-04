@@ -44,3 +44,15 @@ internal extension RUMUserActionType {
         }
     }
 }
+
+internal extension RUMViewEvent.Source {
+    var toErrorEventSource: RUMErrorEvent.Source {
+        switch self {
+        case .ios: return .ios
+        case .android: return .android
+        case .browser: return .browser
+        case .reactNative: return .reactNative
+        case .flutter: return .flutter
+        }
+    }
+}
