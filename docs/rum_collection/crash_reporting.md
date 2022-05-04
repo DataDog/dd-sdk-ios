@@ -77,22 +77,22 @@ Global.rum = RUMMonitor.initialize()
 
 ## Symbolicate crash reports
 
-Crash reports are collected in a raw format and mostly contain memory addresses. To map these addresses into legible symbol information, Datadog requires dYSM files, which are generated in your application's build or distribution process.
+Crash reports are collected in a raw format and mostly contain memory addresses. To map these addresses into legible symbol information, Datadog requires dSYM files, which are generated in your application's build or distribution process.
 
-### Find your dYSM file
+### Find your dSYM file
 
-Every iOS application produces dYSM files for each application module. These files minimize an application's binary size and enable faster download speed. Each application version contains a set of dYSM files. 
+Every iOS application produces dSYM files for each application module. These files minimize an application's binary size and enable faster download speed. Each application version contains a set of dSYM files. 
 
 Depending on your setup, you may need to download dSYM files from App Store Connect or find them on your local machine. 
 
 | Bitcode Enabled | Description                                                                                                                                                                                                                                                                                       |
 |-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Yes             | dSYM files are available once [App Store Connect][6] completes processing your application's build.                                                                                                                                                                                                    |
-| No              | Xcode exports dSYM files to `$DWARF_DSYM_FOLDER_PATH` at the end of your application's build. Ensure that the `DEBUG_INFORMATION_FORMAT` build setting is set to **DWARF with dYSM File**. By default, Xcode projects only set `DEBUG_INFORMATION_FORMAT` to **DWARF with dSYM File** for the Release project configuration. |
+| No              | Xcode exports dSYM files to `$DWARF_DSYM_FOLDER_PATH` at the end of your application's build. Ensure that the `DEBUG_INFORMATION_FORMAT` build setting is set to **DWARF with dSYM File**. By default, Xcode projects only set `DEBUG_INFORMATION_FORMAT` to **DWARF with dSYM File** for the Release project configuration. |
 
-### Upload your dYSM file
+### Upload your dSYM file
 
-By uploading your dYSM file to Datadog, you gain access to the file path, line number, and code snippet of each frame in an error's related stack trace.
+By uploading your dSYM file to Datadog, you gain access to the file path, line number, and code snippet of each frame in an error's related stack trace.
 
 Once your application crashes and you restart the application, the iOS SDK uploads a crash report to Datadog. 
 
