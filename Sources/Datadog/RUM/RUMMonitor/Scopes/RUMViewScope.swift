@@ -234,7 +234,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dateCorrection: dateCorrection,
             url: command.url,
             httpMethod: command.httpMethod,
-            isFirstPartyResource: command.isFirstPartyRequest,
+            isFirstPartyResource: dependencies.firstPartyURLsFilter.isFirstParty(string: command.url),
             resourceKindBasedOnRequest: command.kind,
             spanContext: command.spanContext,
             onResourceEventSent: { [weak self] in

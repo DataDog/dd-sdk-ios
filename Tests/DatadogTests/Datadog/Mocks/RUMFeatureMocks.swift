@@ -362,7 +362,6 @@ extension RUMStartResourceCommand: AnyMockable, RandomMockable {
             url: url,
             httpMethod: httpMethod,
             kind: kind,
-            isFirstPartyRequest: isFirstPartyRequest,
             spanContext: spanContext
         )
     }
