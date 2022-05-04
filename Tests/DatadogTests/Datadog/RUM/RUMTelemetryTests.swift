@@ -27,40 +27,51 @@ class RUMTelemetryTests: XCTestCase {
     // MARK: - Sending Telemetry events
 
     func testSendTelemetryDebug() throws {
+        // Given
+        let configuredSource = String.mockAnySource()
         let telemetry: RUMTelemetry = .mockWith(
+            source: configuredSource,
             dateProvider: RelativeDateProvider(
                 using: .init(timeIntervalSince1970: 0)
             )
         )
 
+        // When
         telemetry.debug("Hello world!")
 
+        // Then
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 1)
         try rumEventMatchers.lastRUMEvent(ofType: TelemetryDebugEvent.self).model(ofType: TelemetryDebugEvent.self) { event in
             XCTAssertEqual(event.date, 0)
             XCTAssertEqual(event.application?.id, telemetry.applicationID)
             XCTAssertEqual(event.version, telemetry.sdkVersion)
             XCTAssertEqual(event.service, "dd-sdk-ios")
-            XCTAssertEqual(event.source, .ios)
+            XCTAssertEqual(event.source, TelemetryDebugEvent.Source(rawValue: configuredSource))
             XCTAssertEqual(event.telemetry.message, "Hello world!")
         }
     }
 
     func testSendTelemetryError() throws {
+        // Given
+        let configuredSource = String.mockAnySource()
         let telemetry: RUMTelemetry = .mockWith(
+            source: configuredSource,
             dateProvider: RelativeDateProvider(
                 using: .init(timeIntervalSince1970: 0)
             )
         )
+
+        // When
         telemetry.error("Oops", kind: "OutOfMemory", stack: "a\nhay\nneedle\nstack")
 
+        // Then
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 1)
         try rumEventMatchers.lastRUMEvent(ofType: TelemetryErrorEvent.self).model(ofType: TelemetryErrorEvent.self) { event in
             XCTAssertEqual(event.date, 0)
             XCTAssertEqual(event.application?.id, telemetry.applicationID)
             XCTAssertEqual(event.version, telemetry.sdkVersion)
             XCTAssertEqual(event.service, "dd-sdk-ios")
-            XCTAssertEqual(event.source, .ios)
+            XCTAssertEqual(event.source, TelemetryErrorEvent.Source(rawValue: configuredSource))
             XCTAssertEqual(event.telemetry.message, "Oops")
             XCTAssertEqual(event.telemetry.error?.kind, "OutOfMemory")
             XCTAssertEqual(event.telemetry.error?.stack, "a\nhay\nneedle\nstack")
@@ -68,12 +79,15 @@ class RUMTelemetryTests: XCTestCase {
     }
 
     func testSendTelemetryDebug_withRUMContext() throws {
+        // Given
         let telemetry: RUMTelemetry = .mockAny()
 
+        // When
         Global.rum.startView(viewController: mockView)
         Global.rum.startUserAction(type: .scroll, name: .mockAny())
         telemetry.debug("telemetry debug")
 
+        // Then
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 3)
         try rumEventMatchers.lastRUMEvent(ofType: TelemetryDebugEvent.self).model(ofType: TelemetryDebugEvent.self) { event in
             XCTAssertEqual(event.telemetry.message, "telemetry debug")
@@ -84,12 +98,15 @@ class RUMTelemetryTests: XCTestCase {
     }
 
     func testSendTelemetryError_withRUMContext() throws {
+        // Given
         let telemetry: RUMTelemetry = .mockAny()
 
+        // When
         Global.rum.startView(viewController: mockView)
         Global.rum.startUserAction(type: .scroll, name: .mockAny())
         telemetry.error("telemetry error")
 
+        // Then
         let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 3)
         try rumEventMatchers.lastRUMEvent(ofType: TelemetryErrorEvent.self).model(ofType: TelemetryErrorEvent.self) { event in
             XCTAssertEqual(event.telemetry.message, "telemetry error")
