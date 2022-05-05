@@ -45,8 +45,6 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertNil(resourceStartCommand.spanContext)
     }
 
-    
-
     func testGivenTaskInterceptionWithSpanContext_whenInterceptionStarts_itStartsRUMResource() throws {
         let receiveCommand = expectation(description: "Receive RUM command")
         commandSubscriber.onCommandReceived = { _ in receiveCommand.fulfill() }
