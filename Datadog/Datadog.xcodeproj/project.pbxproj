@@ -586,6 +586,8 @@
 		D29CDD3228211A2200F7DAA5 /* DataBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29CDD3128211A2200F7DAA5 /* DataBlock.swift */; };
 		D29CDD3328211A2200F7DAA5 /* DataBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29CDD3128211A2200F7DAA5 /* DataBlock.swift */; };
 		D29D5A4D273BF8B400A687C1 /* SwiftUIActionModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */; };
+		D2B3F0442823EE8400C2B5EE /* DataBlockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F0432823EE8300C2B5EE /* DataBlockTests.swift */; };
+		D2B3F0452823EE8400C2B5EE /* DataBlockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F0432823EE8300C2B5EE /* DataBlockTests.swift */; };
 		D2CB6E0C27C50EAE00A62B57 /* Datadog.h in Headers */ = {isa = PBXBuildFile; fileRef = 61133B85242393DE00786299 /* Datadog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D2CB6E0D27C50EAE00A62B57 /* ObjcAppLaunchHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 6179FFD1254ADB1100556A0B /* ObjcAppLaunchHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D2CB6E0E27C50EAE00A62B57 /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1746,6 +1748,7 @@
 		D29889C72734136200A4D1A9 /* RUMViewsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewsHandlerTests.swift; sourceTree = "<group>"; };
 		D29CDD3128211A2200F7DAA5 /* DataBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataBlock.swift; sourceTree = "<group>"; };
 		D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIActionModifier.swift; sourceTree = "<group>"; };
+		D2B3F0432823EE8300C2B5EE /* DataBlockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataBlockTests.swift; sourceTree = "<group>"; };
 		D2CB6ED127C50EAE00A62B57 /* Datadog.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Datadog.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2CB6F8F27C520D400A62B57 /* DatadogTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DatadogTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2CB6FB027C5217A00A62B57 /* DatadogObjc.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogObjc.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -2373,6 +2376,7 @@
 			children = (
 				6137C573271DBF4800EFC4A1 /* DataOrchestratorTests.swift */,
 				61133C2A2423990D00786299 /* FilesOrchestratorTests.swift */,
+				D2B3F0432823EE8300C2B5EE /* DataBlockTests.swift */,
 				619E16D42577C11B00B2516B /* Writing */,
 				619E16D52577C12100B2516B /* Reading */,
 				61EF788E257E287B00EDCCB3 /* Migrating */,
@@ -5255,6 +5259,7 @@
 				61133C482423990D00786299 /* DDDatadogTests.swift in Sources */,
 				613F23FD252B3755006CD2D7 /* URLSessionAutoInstrumentationTests.swift in Sources */,
 				61133C522423990D00786299 /* FoundationMocks.swift in Sources */,
+				D2B3F0442823EE8400C2B5EE /* DataBlockTests.swift in Sources */,
 				61133C5B2423990D00786299 /* DirectoryTests.swift in Sources */,
 				61E5332F24B75DE2003D6C4E /* RUMFeatureTests.swift in Sources */,
 				E1D203FD24C1885C00D1AF3A /* ActiveSpansPoolTests.swift in Sources */,
@@ -5870,6 +5875,7 @@
 				D2CB6F5027C520D400A62B57 /* DDDatadogTests.swift in Sources */,
 				D2CB6F5127C520D400A62B57 /* URLSessionAutoInstrumentationTests.swift in Sources */,
 				D2CB6F5227C520D400A62B57 /* FoundationMocks.swift in Sources */,
+				D2B3F0452823EE8400C2B5EE /* DataBlockTests.swift in Sources */,
 				D2CB6F5327C520D400A62B57 /* DirectoryTests.swift in Sources */,
 				D2CB6F5427C520D400A62B57 /* RUMFeatureTests.swift in Sources */,
 				D2CB6F5527C520D400A62B57 /* ActiveSpansPoolTests.swift in Sources */,
