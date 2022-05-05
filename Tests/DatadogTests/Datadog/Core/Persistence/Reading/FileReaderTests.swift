@@ -29,7 +29,7 @@ class FileReaderTests: XCTestCase {
         )
         _ = try temporaryDirectory
             .createFile(named: Date.mockAny().toFileName)
-            .append(data: .block(.event, data: "ABCD".utf8Data))
+            .append(data: DataBlock(type: .event, data: "ABCD".utf8Data).serialize())
 
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
         let batch = reader.readNextBatch()
@@ -40,7 +40,7 @@ class FileReaderTests: XCTestCase {
         // Given
         // base64(foo) = Zm9v
         let data = Array(repeating: "Zm9v".utf8Data, count: 3)
-            .map { Data.block(.event, data: $0) }
+            .map { DataBlock(type: .event, data: $0).serialize() }
             .reduce(.init(), +)
 
         _ = try temporaryDirectory
@@ -77,13 +77,13 @@ class FileReaderTests: XCTestCase {
             )
         )
         let file1 = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
-        try file1.append(data: .block(.event, data: "1".utf8Data))
+        try file1.append(data: DataBlock(type: .event, data: "1".utf8Data).serialize())
 
         let file2 = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
-        try file2.append(data: .block(.event, data: "2".utf8Data))
+        try file2.append(data: DataBlock(type: .event, data: "2".utf8Data).serialize())
 
         let file3 = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
-        try file3.append(data: .block(.event, data: "3".utf8Data))
+        try file3.append(data: DataBlock(type: .event, data: "3".utf8Data).serialize())
 
         var batch: Batch
         batch = try reader.readNextBatch().unwrapOrThrow()

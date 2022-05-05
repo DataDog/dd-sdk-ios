@@ -52,52 +52,23 @@ internal struct DataBlock {
     }
 }
 
-internal extension Data {
-    /// Returns a Data block in Type-Lenght-Value format.
-    ///
-    /// A block follow TLV with bytes aligned such as:
-    ///
-    ///     +-  2 bytes -+-   4 bytes    -+- n bytes  -|
-    ///     | block type | block size (n) | block data |
-    ///     +------------+----------------+------------+
-    ///
-    /// - Parameters:
-    ///   - type: The data type
-    ///   - data: The data
-    /// - Returns: a byte sequence in TLV format.
-    static func block(_ type: BlockType, data: Data) -> Data {
-        return DataBlock(type: type, data: data).serialize()
-    }
-}
-
 /// A block reader can read TLV formatted blocks from a data input.
 ///
-///
+/// This class provides methods to iteratively retrieve a sequence of
+/// `DataBlock`.
 internal final class DataBlockReader {
     /// The input data stream.
     private let stream: InputStream
 
     /// Reads block from data input.
     ///
+    /// At initilization, the reader will open a stream targeting the input
+    /// data. The stream will be closed when the reader instance is deallocated.
+    ///
     /// - Parameter data: The data input
     init(data: Data) {
         stream = InputStream(data: data)
         stream.open()
-    }
-
-    /// Reads block from url input.
-    ///
-    /// At initilization, the reader will open a stream targeting the input
-    /// url. The stream will be closed when the reader instance is deallocated.
-    ///
-    /// - Parameter url: Data url.
-    init?(url: URL) {
-        guard let stream = InputStream(url: url) else {
-            return nil
-        }
-
-        stream.open()
-        self.stream = stream
     }
 
     deinit {
@@ -118,8 +89,7 @@ internal final class DataBlockReader {
             // to leave the stream in a usuable state if an unkown
             // type was encountered.
             let type = try readType()
-            let size = try readSize()
-            let data = try readData(size: size)
+            let data = try readData()
 
             if let type = BlockType(rawValue: type) {
                 return DataBlock(type: type, data: data)
@@ -143,40 +113,12 @@ internal final class DataBlockReader {
         return blocks
     }
 
-    private func readType() throws -> BlockType.RawValue {
-        let lenght = MemoryLayout<BlockType.RawValue>.size
-        var bytes = [UInt8](repeating: 0, count: lenght)
-        let count = stream.read(&bytes, maxLength: lenght)
-
-        if count < 0 {
-            throw DataBlockError.readOperationFailed(streamError: stream.streamError)
-        }
-
-        guard count == lenght else {
-            throw DataBlockError.invalidByteSequence
-        }
-
-        return bytes.withUnsafeBytes { $0.load(as: UInt16.self) }
-    }
-
-    private func readSize() throws -> BlockSize {
-        let lenght = MemoryLayout<BlockSize>.size
-        var bytes = [UInt8](repeating: 0, count: lenght)
-        let count = stream.read(&bytes, maxLength: lenght)
-
-        if count < 0 {
-            throw DataBlockError.readOperationFailed(streamError: stream.streamError)
-        }
-
-        guard count == lenght else {
-            throw DataBlockError.invalidByteSequence
-        }
-
-        return bytes.withUnsafeBytes { $0.load(as: BlockSize.self) }
-    }
-
-    private func readData(size: BlockSize) throws -> Data {
-        let lenght = Int(size)
+    /// Reads `lenght` bytes from stream.
+    ///
+    /// - Parameter lenght: The number of byte to read
+    /// - Throws: `DataBlockError` while reading the input stream.
+    /// - Returns: Data bytes from stream.
+    private func read(lenght: Int) throws -> Data {
         var bytes = [UInt8](repeating: 0, count: lenght)
         let count = stream.read(&bytes, maxLength: lenght)
 
@@ -189,5 +131,18 @@ internal final class DataBlockReader {
         }
 
         return Data(bytes)
+    }
+
+    /// Reads a block type.
+    private func readType() throws -> BlockType.RawValue {
+        let data = try read(lenght: MemoryLayout<BlockType.RawValue>.size)
+        return data.withUnsafeBytes { $0.load(as: BlockType.RawValue.self) }
+    }
+
+    /// Reads  block data.
+    private func readData() throws -> Data {
+        let data = try read(lenght: MemoryLayout<BlockSize>.size)
+        let size = data.withUnsafeBytes { $0.load(as: BlockSize.self) }
+        return try read(lenght: Int(size))
     }
 }
