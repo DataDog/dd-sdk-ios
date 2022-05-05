@@ -310,7 +310,7 @@ To track events (crashes, network requests etc.) when your application is in the
 
 ```
 
-<div class="alert alert-info"><p>Note that tracking background events could lead to additional sessions that might impact billing. For questions contact support@datadoghq.com</p>
+<div class="alert alert-info"><p>Tracking background events may lead to additional sessions, which can impact billing. For questions, <a href="https://docs.datadoghq.com/help/">contact Datadog support.</a></p>
 </div>
 
 ## iOS Crash Reporting and Error Tracking
