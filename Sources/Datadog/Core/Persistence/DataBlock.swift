@@ -12,7 +12,6 @@ internal typealias BlockSize = UInt32
 /// Block type supported in data stream
 internal enum BlockType: UInt16 {
     case event = 0x00
-    case headerV1 = 0x01
 }
 
 /// Reported errors while manipulateing data blocks.

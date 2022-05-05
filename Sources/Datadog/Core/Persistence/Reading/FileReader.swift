@@ -69,8 +69,6 @@ internal final class FileReader: Reader {
                 switch $0.type {
                 case .event:
                     return $0.data
-                default:
-                    return nil
                 }
             }
             // decrypt data - report failure
