@@ -362,7 +362,6 @@ extension RUMStartResourceCommand: AnyMockable, RandomMockable {
             url: url,
             httpMethod: httpMethod,
             kind: kind,
-            isFirstPartyRequest: isFirstPartyRequest,
             spanContext: spanContext
         )
     }
@@ -664,6 +663,7 @@ extension RUMScopeDependencies {
         applicationVersion: String = .mockAny(),
         sdkVersion: String = .mockAny(),
         source: String = "ios",
+        firstPartyURLsFilter: FirstPartyURLsFilter = FirstPartyURLsFilter(hosts: []),
         eventBuilder: RUMEventBuilder = RUMEventBuilder(eventsMapper: .mockNoOp()),
         eventOutput: RUMEventOutput = RUMEventOutputMock(),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
@@ -686,6 +686,7 @@ extension RUMScopeDependencies {
             applicationVersion: applicationVersion,
             sdkVersion: sdkVersion,
             source: source,
+            firstPartyURLsFilter: firstPartyURLsFilter,
             eventBuilder: eventBuilder,
             eventOutput: eventOutput,
             rumUUIDGenerator: rumUUIDGenerator,
@@ -714,6 +715,7 @@ extension RUMScopeDependencies {
         applicationVersion: String? = nil,
         sdkVersion: String? = nil,
         source: String? = nil,
+        firstPartyUrls: Set<String>? = nil,
         eventBuilder: RUMEventBuilder? = nil,
         eventOutput: RUMEventOutput? = nil,
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
@@ -736,6 +738,7 @@ extension RUMScopeDependencies {
             applicationVersion: applicationVersion ?? self.applicationVersion,
             sdkVersion: sdkVersion ?? self.sdkVersion,
             source: source ?? self.source,
+            firstPartyURLsFilter: firstPartyUrls.map { .init(hosts: $0) } ?? self.firstPartyURLsFilter,
             eventBuilder: eventBuilder ?? self.eventBuilder,
             eventOutput: eventOutput ?? self.eventOutput,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
@@ -868,7 +871,6 @@ extension RUMResourceScope {
             dateCorrection: dateCorrection,
             url: url,
             httpMethod: httpMethod,
-            isFirstPartyResource: isFirstPartyResource,
             resourceKindBasedOnRequest: resourceKindBasedOnRequest,
             spanContext: spanContext,
             onResourceEventSent: onResourceEventSent,

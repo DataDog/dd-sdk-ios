@@ -32,4 +32,15 @@ internal struct FirstPartyURLsFilter {
         }
         return host.range(of: regex, options: .regularExpression) != nil
     }
+
+    // Returns `true` if given `String` can be parsed as a URL and matches the first
+    // party hosts defined by the user; `false` otherwise
+    func isFirstParty(string: String) -> Bool {
+        guard let url = URL(string: string),
+              let regex = self.regex,
+              let host = url.host else {
+            return false
+        }
+        return host.range(of: regex, options: .regularExpression) != nil
+    }
 }

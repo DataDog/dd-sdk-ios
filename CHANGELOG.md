@@ -2,6 +2,8 @@
 
 ### Changes
 
+* [IMPROVEMENT] Allow manually tracked resources in RUM Sessions to detect first party hosts. 
+
 # 1.11.0-beta2 / 05-04-2022
 
 ### Changes

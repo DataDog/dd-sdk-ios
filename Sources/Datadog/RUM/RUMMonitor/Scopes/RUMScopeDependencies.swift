@@ -23,6 +23,7 @@ internal struct RUMScopeDependencies {
     let applicationVersion: String
     let sdkVersion: String
     let source: String
+    let firstPartyURLsFilter: FirstPartyURLsFilter
     let eventBuilder: RUMEventBuilder
     let eventOutput: RUMEventOutput
     let rumUUIDGenerator: RUMUUIDGenerator
@@ -61,6 +62,7 @@ internal extension RUMScopeDependencies {
             applicationVersion: rumFeature.configuration.common.applicationVersion,
             sdkVersion: rumFeature.configuration.common.sdkVersion,
             source: rumFeature.configuration.common.source,
+            firstPartyURLsFilter: FirstPartyURLsFilter(hosts: rumFeature.configuration.firstPartyHosts),
             eventBuilder: RUMEventBuilder(
                 eventsMapper: rumFeature.eventsMapper
             ),
