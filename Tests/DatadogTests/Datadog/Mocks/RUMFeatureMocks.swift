@@ -738,7 +738,7 @@ extension RUMScopeDependencies {
             applicationVersion: applicationVersion ?? self.applicationVersion,
             sdkVersion: sdkVersion ?? self.sdkVersion,
             source: source ?? self.source,
-            firstPartyURLsFilter: firstPartyUrls != nil ? FirstPartyURLsFilter(hosts: firstPartyUrls!) : self.firstPartyURLsFilter,
+            firstPartyURLsFilter: firstPartyUrls.map { .init(hosts: $0) } ?? self.firstPartyURLsFilter,
             eventBuilder: eventBuilder ?? self.eventBuilder,
             eventOutput: eventOutput ?? self.eventOutput,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
