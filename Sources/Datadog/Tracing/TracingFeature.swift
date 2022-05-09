@@ -7,8 +7,16 @@
 import Foundation
 
 /// Obtains subdirectories in `/Library/Caches` where tracing data is stored.
-internal func obtainTracingFeatureDirectories(version: String) throws -> FeatureDirectories {
+internal func obtainTracingFeatureDirectories() throws -> FeatureDirectories {
+    var version = "v1"
+    let deprecated = [
+        try Directory(withSubdirectoryPath: "com.datadoghq.traces/intermediate-\(version)"),
+        try Directory(withSubdirectoryPath: "com.datadoghq.traces/\(version)")
+    ]
+
+    version = "v2"
     return FeatureDirectories(
+        deprecated: deprecated,
         unauthorized: try Directory(withSubdirectoryPath: "com.datadoghq.traces/intermediate-\(version)"),
         authorized: try Directory(withSubdirectoryPath: "com.datadoghq.traces/\(version)")
     )

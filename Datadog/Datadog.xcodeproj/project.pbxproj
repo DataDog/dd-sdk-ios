@@ -588,6 +588,8 @@
 		D29D5A4D273BF8B400A687C1 /* SwiftUIActionModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */; };
 		D2B3F0442823EE8400C2B5EE /* DataBlockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F0432823EE8300C2B5EE /* DataBlockTests.swift */; };
 		D2B3F0452823EE8400C2B5EE /* DataBlockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F0432823EE8300C2B5EE /* DataBlockTests.swift */; };
+		D2B3F04728292D6E00C2B5EE /* DataMigratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F04628292D6E00C2B5EE /* DataMigratorTests.swift */; };
+		D2B3F04828292D6E00C2B5EE /* DataMigratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F04628292D6E00C2B5EE /* DataMigratorTests.swift */; };
 		D2CB6E0C27C50EAE00A62B57 /* Datadog.h in Headers */ = {isa = PBXBuildFile; fileRef = 61133B85242393DE00786299 /* Datadog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D2CB6E0D27C50EAE00A62B57 /* ObjcAppLaunchHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 6179FFD1254ADB1100556A0B /* ObjcAppLaunchHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D2CB6E0E27C50EAE00A62B57 /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1749,6 +1751,7 @@
 		D29CDD3128211A2200F7DAA5 /* DataBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataBlock.swift; sourceTree = "<group>"; };
 		D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIActionModifier.swift; sourceTree = "<group>"; };
 		D2B3F0432823EE8300C2B5EE /* DataBlockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataBlockTests.swift; sourceTree = "<group>"; };
+		D2B3F04628292D6E00C2B5EE /* DataMigratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataMigratorTests.swift; sourceTree = "<group>"; };
 		D2CB6ED127C50EAE00A62B57 /* Datadog.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Datadog.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2CB6F8F27C520D400A62B57 /* DatadogTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DatadogTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2CB6FB027C5217A00A62B57 /* DatadogObjc.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogObjc.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -3720,6 +3723,7 @@
 		61EF788E257E287B00EDCCB3 /* Migrating */ = {
 			isa = PBXGroup;
 			children = (
+				D2B3F04628292D6E00C2B5EE /* DataMigratorTests.swift */,
 				61EF788F257E289A00EDCCB3 /* DeleteAllDataMigratorTests.swift */,
 				61EF78B6257E37D500EDCCB3 /* MoveDataMigratorTests.swift */,
 			);
@@ -5269,6 +5273,7 @@
 				61C5A89E24509C1100DA608C /* WarningsTests.swift in Sources */,
 				9E36D92224373EA700BFBDB7 /* SwiftExtensionsTests.swift in Sources */,
 				61122EEE25B1D75B00F9C7F5 /* RUMEventSanitizerTests.swift in Sources */,
+				D2B3F04728292D6E00C2B5EE /* DataMigratorTests.swift in Sources */,
 				614B0A5124EBDC8000A2A780 /* RUMConnectivityInfoProviderTests.swift in Sources */,
 				611F82032563C66100CB9BDB /* UIKitRUMViewsPredicateTests.swift in Sources */,
 				61133C652423990D00786299 /* LogBuilderTests.swift in Sources */,
@@ -5885,6 +5890,7 @@
 				D2CB6F5927C520D400A62B57 /* WarningsTests.swift in Sources */,
 				D2CB6F5A27C520D400A62B57 /* SwiftExtensionsTests.swift in Sources */,
 				D2CB6F5B27C520D400A62B57 /* RUMEventSanitizerTests.swift in Sources */,
+				D2B3F04828292D6E00C2B5EE /* DataMigratorTests.swift in Sources */,
 				D2CB6F5C27C520D400A62B57 /* RUMConnectivityInfoProviderTests.swift in Sources */,
 				D2CB6F5D27C520D400A62B57 /* UIKitRUMViewsPredicateTests.swift in Sources */,
 				D2CB6F5E27C520D400A62B57 /* LogBuilderTests.swift in Sources */,
