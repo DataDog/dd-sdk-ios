@@ -117,7 +117,6 @@ extension DataUploadError {
 
         switch responseStatusCode {
         case .accepted:
-            // These codes mean either success or the user configuration mistake - do not produce error.
             return nil
         case .unauthorized, .forbidden:
             self = .unauthorized
