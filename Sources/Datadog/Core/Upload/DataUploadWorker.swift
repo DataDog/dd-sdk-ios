@@ -77,7 +77,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
 
                 switch uploadStatus.error {
                 case .unauthorized:
-                    userLogger.error("⚠️ The client token you provided seems to be invalid.")
+                    userLogger.error("⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.")
                 case let .httpError(statusCode: statusCode):
                     self.telemetry?.error("Data upload finished with status code: \(statusCode)")
                 case let .networkError(error: error):

@@ -116,10 +116,9 @@ extension DataUploadError {
         }
 
         switch responseStatusCode {
-        case .accepted, .forbidden:
-            // These codes mean either success or the user configuration mistake - do not produce error.
+        case .accepted:
             return nil
-        case .unauthorized:
+        case .unauthorized, .forbidden:
             self = .unauthorized
         case .internalServerError, .serviceUnavailable:
             // These codes mean Datadog service issue - do not produce SDK error as this is already monitored by other means.
