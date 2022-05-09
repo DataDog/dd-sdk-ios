@@ -21,7 +21,6 @@ class SpanFileOutputTests: XCTestCase {
     func testItWritesSpanToFileAsJSON() throws {
         let output = SpanFileOutput(
             fileWriter: FileWriter(
-                dataFormat: TracingFeature.dataFormat,
                 orchestrator: FilesOrchestrator(
                     directory: temporaryDirectory,
                     performance: PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
@@ -35,7 +34,11 @@ class SpanFileOutputTests: XCTestCase {
         output.write(span: span)
 
         let fileData = try temporaryDirectory.files()[0].read()
-        let matcher = try SpanMatcher.fromJSONObjectData(fileData)
+        let reader = DataBlockReader(data: fileData)
+        let block = try XCTUnwrap(reader.next())
+        XCTAssertEqual(block.type, .event)
+
+        let matcher = try SpanMatcher.fromJSONObjectData(block.data)
         XCTAssertEqual(try matcher.operationName(), span.operationName)
         XCTAssertEqual(try matcher.environment(), output.environment)
         XCTAssertEqual(try matcher.duration(), 2_000_000_000)

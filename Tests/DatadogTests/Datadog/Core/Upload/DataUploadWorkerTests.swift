@@ -17,7 +17,6 @@ class DataUploadWorkerTests: XCTestCase {
         dateProvider: dateProvider
     )
     lazy var writer = FileWriter(
-        dataFormat: .mockWith(prefix: "[", suffix: "]"),
         orchestrator: orchestrator
     )
     lazy var reader = FileReader(

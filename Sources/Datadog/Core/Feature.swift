@@ -81,14 +81,12 @@ internal struct FeatureStorage {
         )
 
         let unauthorizedFileWriter = FileWriter(
-            dataFormat: dataFormat,
             orchestrator: unauthorizedFilesOrchestrator,
             encryption: commonDependencies.encryption,
             telemetry: telemetry
         )
 
         let authorizedFileWriter = FileWriter(
-            dataFormat: dataFormat,
             orchestrator: authorizedFilesOrchestrator,
             encryption: commonDependencies.encryption,
             telemetry: telemetry
