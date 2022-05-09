@@ -38,9 +38,8 @@ class FileReaderTests: XCTestCase {
 
     func testItReadsSingleEncryptedBatch() throws {
         // Given
-        // base64(foo) = Zm9v
-        let data = Array(repeating: "Zm9v".utf8Data, count: 3)
-            .map { DataBlock(type: .event, data: $0).serialize() }
+        let data = try Array(repeating: "foo".utf8Data, count: 3)
+            .map { try DataBlock(type: .event, data: $0).serialize() }
             .reduce(.init(), +)
 
         _ = try temporaryDirectory

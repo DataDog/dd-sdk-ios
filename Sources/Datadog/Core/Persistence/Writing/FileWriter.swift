@@ -42,8 +42,6 @@ internal final class FileWriter: Writer {
 
     /// Encodes the given encodable value and encrypt it if encryption is available.
     ///
-    /// If encryption is available, encryption result is base64 encoded.
-    ///
     /// The returned data format:
     ///
     ///     +- 2 bytes -+-  4 bytes -+- n bytes  -|
@@ -75,6 +73,5 @@ internal final class FileWriter: Writer {
         }
 
         return try encryption.encrypt(data: data)
-            .base64EncodedData()
     }
 }

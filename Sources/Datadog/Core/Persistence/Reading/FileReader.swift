@@ -50,7 +50,7 @@ internal final class FileReader: Reader {
     /// Decodes input data
     ///
     /// The input data is expected to be a stream of `DataBlock`. Only block of type `event` are
-    /// consumed and decrypted if encryptio is available. Decrypted events data are finally joined with
+    /// consumed and decrypted if encryption is available. Decrypted events are finally joined with
     /// data-format separator.
     ///
     /// - Parameter data: The data to decode.
@@ -63,8 +63,8 @@ internal final class FileReader: Reader {
             failure.map { userLogger.error($0) }
         }
 
-        // get event blocks only
         return try reader.all()
+            // get event blocks only
             .compactMap {
                 switch $0.type {
                 case .event:
@@ -77,9 +77,8 @@ internal final class FileReader: Reader {
                     return try decrypt(data: data)
                 } catch {
                     failure = "🔥 Failed to decrypt data with error: \(error)"
+                    return nil
                 }
-
-                return nil
             }
             // concat data
             .reduce(Data()) { $0 + $1 + [dataFormat.separatorByte] }
@@ -96,10 +95,6 @@ internal final class FileReader: Reader {
     private func decrypt(data: Data) throws -> Data {
         guard let encryption = encryption else {
             return data
-        }
-
-        guard let data = Data(base64Encoded: data) else {
-            throw ProgrammerError(description: "Failed to decode base64")
         }
 
         return try encryption.decrypt(data: data)

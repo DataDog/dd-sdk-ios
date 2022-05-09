@@ -208,12 +208,12 @@ class FileWriterTests: XCTestCase {
         let reader = DataBlockReader(data: data)
         var block = try reader.next()
         XCTAssertEqual(block?.type, .event)
-        XCTAssertEqual(block?.data, "Zm9v".utf8Data)
+        XCTAssertEqual(block?.data, "foo".utf8Data)
         block = try reader.next()
         XCTAssertEqual(block?.type, .event)
-        XCTAssertEqual(block?.data, "Zm9v".utf8Data)
+        XCTAssertEqual(block?.data, "foo".utf8Data)
         block = try reader.next()
         XCTAssertEqual(block?.type, .event)
-        XCTAssertEqual(block?.data, "Zm9v".utf8Data)
+        XCTAssertEqual(block?.data, "foo".utf8Data)
     }
 }
