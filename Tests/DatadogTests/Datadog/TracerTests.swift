@@ -11,13 +11,13 @@ import XCTest
 class TracerTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
         XCTAssertNil(LoggingFeature.instance)
         temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
         XCTAssertNil(LoggingFeature.instance)
         temporaryFeatureDirectories.delete()
         super.tearDown()
@@ -316,17 +316,18 @@ class TracerTests: XCTestCase {
     // MARK: - Sending user info
 
     func testSendingUserInfo() throws {
-        Datadog.instance = Datadog(
+        let core = DatadogCore(
             consentProvider: ConsentProvider(initialConsent: .granted),
-            userInfoProvider: UserInfoProvider(),
-            launchTimeProvider: LaunchTimeProviderMock.mockAny()
+            userInfoProvider: UserInfoProvider()
         )
+
+        DatadogRegistry.default = core
         defer { Datadog.flushAndDeinitialize() }
 
         TracingFeature.instance = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
-                userInfoProvider: Datadog.instance!.userInfoProvider
+                userInfoProvider: core.userInfoProvider
             )
         )
         defer { TracingFeature.instance?.deinitialize() }
@@ -993,7 +994,7 @@ class TracerTests: XCTestCase {
         defer { consolePrint = { print($0) } }
 
         // given
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
 
         // when
         let tracer = Tracer.initialize(configuration: .init())

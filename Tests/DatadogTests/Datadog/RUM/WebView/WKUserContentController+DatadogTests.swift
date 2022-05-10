@@ -43,14 +43,14 @@ final class MockScriptMessage: WKScriptMessage {
 class WKUserContentController_DatadogTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
         XCTAssertNil(LoggingFeature.instance)
         XCTAssertNil(RUMFeature.instance)
         temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
         XCTAssertNil(LoggingFeature.instance)
         XCTAssertNil(RUMFeature.instance)
         temporaryFeatureDirectories.delete()

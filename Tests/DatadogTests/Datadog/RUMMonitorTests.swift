@@ -11,13 +11,13 @@ import UIKit
 class RUMMonitorTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
         XCTAssertNil(RUMFeature.instance)
         temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
         XCTAssertNil(RUMFeature.instance)
         temporaryFeatureDirectories.delete()
         super.tearDown()
@@ -1197,7 +1197,7 @@ class RUMMonitorTests: XCTestCase {
         defer { consolePrint = { print($0) } }
 
         // given
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
 
         // when
         let monitor = RUMMonitor.initialize()

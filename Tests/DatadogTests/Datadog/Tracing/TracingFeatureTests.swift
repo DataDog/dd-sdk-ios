@@ -10,13 +10,13 @@ import XCTest
 class TracingFeatureTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
         XCTAssertNil(TracingFeature.instance)
         temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
         XCTAssertNil(TracingFeature.instance)
         temporaryFeatureDirectories.delete()
         super.tearDown()

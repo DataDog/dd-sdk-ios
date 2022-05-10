@@ -401,9 +401,9 @@ public class Logger {
         private func buildOrThrow() throws -> Logger {
             guard let loggingFeature = LoggingFeature.instance else {
                 throw ProgrammerError(
-                    description: Datadog.instance == nil
-                        ? "`Datadog.initialize()` must be called prior to `Logger.builder.build()`."
-                        : "`Logger.builder.build()` produces a non-functional logger, as the logging feature is disabled."
+                    description: Datadog.isInitialized
+                        ? "`Logger.builder.build()` produces a non-functional logger, as the logging feature is disabled."
+                        : "`Datadog.initialize()` must be called prior to `Logger.builder.build()`."
                 )
             }
 

@@ -10,13 +10,13 @@ import XCTest
 class RUMFeatureTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
         XCTAssertNil(RUMFeature.instance)
         temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
         XCTAssertNil(RUMFeature.instance)
         temporaryFeatureDirectories.delete()
         super.tearDown()
