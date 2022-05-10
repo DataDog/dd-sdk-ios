@@ -10,6 +10,7 @@
 /// Those subfolders do not exist by default and should be created and deleted by calling `.create()` and `.delete()` in each test,
 /// which guarantees clear state before and after test.
 let temporaryFeatureDirectories = FeatureDirectories(
+    deprecated: [],
     unauthorized: obtainUniqueTemporaryDirectory(),
     authorized: obtainUniqueTemporaryDirectory()
 )

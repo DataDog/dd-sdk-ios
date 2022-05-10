@@ -8,6 +8,8 @@ import Foundation
 
 /// Lists different types of data directories used by the feature.
 internal struct FeatureDirectories {
+    /// Deprecated data directory that can be deleted safely.
+    let deprecated: [Directory]
     /// Data directory for storing unauthorized data collected without knowing the tracking consent value.
     /// Due to the consent change, data in this directory may be either moved to `authorized` folder or entirely deleted.
     let unauthorized: Directory

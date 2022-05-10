@@ -7,8 +7,16 @@
 import Foundation
 
 /// Obtains subdirectories in `/Library/Caches` where logging data is stored.
-internal func obtainLoggingFeatureDirectories(version: String) throws -> FeatureDirectories {
+internal func obtainLoggingFeatureDirectories() throws -> FeatureDirectories {
+    var version = "v1"
+    let deprecated = [
+        try Directory(withSubdirectoryPath: "com.datadoghq.logs/intermediate-\(version)"),
+        try Directory(withSubdirectoryPath: "com.datadoghq.logs/\(version)")
+    ]
+
+    version = "v2"
     return FeatureDirectories(
+        deprecated: deprecated,
         unauthorized: try Directory(withSubdirectoryPath: "com.datadoghq.logs/intermediate-\(version)"),
         authorized: try Directory(withSubdirectoryPath: "com.datadoghq.logs/\(version)")
     )
