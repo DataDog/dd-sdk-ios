@@ -21,6 +21,7 @@ class RUMStorageBenchmarkTests: XCTestCase {
 
         let storage = RUMFeature.createStorage(
             directories: FeatureDirectories(
+                deprecated: [],
                 unauthorized: obtainUniqueTemporaryDirectory(),
                 authorized: directory
             ),
