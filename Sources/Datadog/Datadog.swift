@@ -117,7 +117,7 @@ public class Datadog {
 
     /// Returns `true` if the Datadog SDK is already initialized, `false` otherwise.
     public static var isInitialized: Bool {
-        return DatadogRegistry.default is DatadogCore
+        return DefaultDatadogCore is DatadogCore
     }
 
     /// Sets current user information.
@@ -133,7 +133,7 @@ public class Datadog {
         email: String? = nil,
         extraInfo: [AttributeKey: AttributeValue] = [:]
     ) {
-        let core = DatadogRegistry.default as? DatadogCore
+        let core = DefaultDatadogCore as? DatadogCore
         core?.userInfoProvider.value = UserInfo(
             id: id,
             name: name,
@@ -145,7 +145,7 @@ public class Datadog {
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     public static func set(trackingConsent: TrackingConsent) {
-        let core = DatadogRegistry.default as? DatadogCore
+        let core = DefaultDatadogCore as? DatadogCore
         core?.consentProvider.changeConsent(to: trackingConsent)
     }
 
@@ -294,7 +294,7 @@ public class Datadog {
         URLSessionAutoInstrumentation.instance?.enable()
 
         // Only after all features were initialized with no error thrown:
-        DatadogRegistry.default = DatadogCore(
+        DefaultDatadogCore = DatadogCore(
             consentProvider: consentProvider,
             userInfoProvider: userInfoProvider
         )
@@ -347,7 +347,7 @@ public class Datadog {
         Global.crashReporter = nil
 
         // Deinitialize `Datadog`:
-        DatadogRegistry.default = NOOPDatadogRegistry()
+        DefaultDatadogCore = NOOPDatadogCore()
 
         // Reset internal loggers:
         userLogger = createNoOpSDKUserLogger()

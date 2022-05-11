@@ -34,7 +34,7 @@ internal final class DatadogCore {
     }
 }
 
-extension DatadogCore: DatadogFeatureRegistry {
+extension DatadogCore: DatadogCoreProtocol {
     func registerFeature(named: String, storage: FeatureStorageConfiguration, upload: FeatureUploadConfiguration) {
         // no-op
     }

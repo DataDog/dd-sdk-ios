@@ -169,8 +169,8 @@ class LoggerTests: XCTestCase {
             userInfoProvider: UserInfoProvider()
         )
 
-        DatadogRegistry.default = core
-        defer { Datadog.flushAndDeinitialize() }
+        DefaultDatadogCore = core
+        defer { DefaultDatadogCore = NOOPDatadogCore() }
 
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directories: temporaryFeatureDirectories,

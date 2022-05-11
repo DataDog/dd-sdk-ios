@@ -321,8 +321,8 @@ class TracerTests: XCTestCase {
             userInfoProvider: UserInfoProvider()
         )
 
-        DatadogRegistry.default = core
-        defer { Datadog.flushAndDeinitialize() }
+        DefaultDatadogCore = core
+        defer { DefaultDatadogCore = NOOPDatadogCore() }
 
         TracingFeature.instance = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,

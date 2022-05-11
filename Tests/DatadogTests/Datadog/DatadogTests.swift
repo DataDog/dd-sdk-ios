@@ -359,8 +359,7 @@ class DatadogTests: XCTestCase {
             configuration: defaultBuilder.build()
         )
 
-        let core = DatadogRegistry.default as? DatadogCore
-
+        let core = DefaultDatadogCore as? DatadogCore
         XCTAssertEqual(core?.consentProvider.currentValue, initialConsent)
 
         Datadog.set(trackingConsent: nextConsent)
@@ -377,7 +376,7 @@ class DatadogTests: XCTestCase {
             configuration: defaultBuilder.build()
         )
 
-        let core = DatadogRegistry.default as? DatadogCore
+        let core = DefaultDatadogCore as? DatadogCore
 
         XCTAssertNotNil(core?.userInfoProvider.value)
         XCTAssertNil(core?.userInfoProvider.value.id)
@@ -414,7 +413,7 @@ class DatadogTests: XCTestCase {
             configuration: defaultBuilder.build()
         )
 
-        let core = DatadogRegistry.default as? DatadogCore
+        let core = DefaultDatadogCore as? DatadogCore
 
         XCTAssertEqual(
             core?.consentProvider.currentValue,
