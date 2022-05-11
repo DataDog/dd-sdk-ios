@@ -88,11 +88,11 @@ Depending on your setup, you may need to download .dSYM files from App Store Con
 | Bitcode Enabled | Description                                                                                                                                                                                                                                                                                       |
 |-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Yes             | dSYM files are available once [App Store Connect][6] completes processing your application's build.                                                                                                                                                                                                    |
-| No              | Xcode exports dSYM files to `$DWARF_DSYM_FOLDER_PATH` at the end of your application's build. Ensure that the `DEBUG_INFORMATION_FORMAT` build setting is set to **DWARF with .d File**. By default, Xcode projects only set `DEBUG_INFORMATION_FORMAT` to **DWARF with dSYM File** for the Release project configuration. |
+| No              | Xcode exports .dSYM files to `$DWARF_DSYM_FOLDER_PATH` at the end of your application's build. Ensure that the `DEBUG_INFORMATION_FORMAT` build setting is set to **DWARF with dSYM File**. By default, Xcode projects only set `DEBUG_INFORMATION_FORMAT` to **DWARF with dSYM File** for the Release project configuration. |
 
-### Upload your dYSM file
+### Upload your dSYM file
 
-By uploading your dYSM file to Datadog, you gain access to the file path and line number of each frame in an error's related stack trace.
+By uploading your .dSYM file to Datadog, you gain access to the file path and line number of each frame in an error's related stack trace.
 
 Once your application crashes and you restart the application, the iOS SDK uploads a crash report to Datadog. 
 
