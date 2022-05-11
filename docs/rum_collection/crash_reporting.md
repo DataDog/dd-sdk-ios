@@ -92,7 +92,7 @@ Depending on your setup, you may need to download dSYM files from App Store Conn
 
 ### Upload your dYSM file
 
-By uploading your dYSM file to Datadog, you gain access to the file path, line number, and code snippet of each frame in an error's related stack trace.
+By uploading your dYSM file to Datadog, you gain access to the file path and line number of each frame in an error's related stack trace.
 
 Once your application crashes and you restart the application, the iOS SDK uploads a crash report to Datadog. 
 
