@@ -21,6 +21,7 @@ class TracingStorageBenchmarkTests: XCTestCase {
 
         let storage = TracingFeature.createStorage(
             directories: FeatureDirectories(
+                deprecated: [],
                 unauthorized: obtainUniqueTemporaryDirectory(),
                 authorized: directory
             ),

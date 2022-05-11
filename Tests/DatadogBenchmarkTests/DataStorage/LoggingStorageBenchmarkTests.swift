@@ -21,6 +21,7 @@ class LoggingStorageBenchmarkTests: XCTestCase {
 
         let storage = LoggingFeature.createStorage(
             directories: FeatureDirectories(
+                deprecated: [],
                 unauthorized: obtainUniqueTemporaryDirectory(),
                 authorized: directory
             ),
