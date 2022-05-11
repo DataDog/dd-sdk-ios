@@ -79,7 +79,7 @@ Global.rum = RUMMonitor.initialize()
 
 Crash reports are collected in a raw format and mostly contain memory addresses. To map these addresses into legible symbol information, Datadog requires .dSYM files, which are generated in your application's build or distribution process.
 
-### Find your .dSYM file
+### Find your dSYM file
 
 Every iOS application produces .dSYM files for each application module. These files minimize an application's binary size and enable faster download speed. Each application version contains a set of .dSYM files. 
 
