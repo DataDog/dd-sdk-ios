@@ -2,6 +2,8 @@
 
 ### Changes
 
+* [IMPROVEMENT] Add tracing sampling rate. See [#851][]
+
 # 1.11.0-beta2 / 05-04-2022
 
 ### Changes
@@ -358,6 +360,7 @@
 [#815]: https://github.com/DataDog/dd-sdk-ios/issues/815
 [#830]: https://github.com/DataDog/dd-sdk-ios/issues/830
 [#832]: https://github.com/DataDog/dd-sdk-ios/issues/832
+[#851]: https://github.com/DataDog/dd-sdk-ios/issues/851
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu
