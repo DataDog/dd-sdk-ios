@@ -8,9 +8,9 @@ import Foundation
 
 internal var DefaultDatadogCore: DatadogCoreProtocol = NOOPDatadogCore()
 
-/// A Datadog Feature registry hold a set of features and is responsible of
-/// managing their storage and upload mechanism. It also provide thread-safe
-/// scope for features.
+/// A Datadog Core holds a set of features and is responsible of
+/// managing their storage and upload mechanism. It also provides a thread-safe
+/// scope for writing events.
 public protocol DatadogCoreProtocol {
     /// Registers a feature by its name and configuration.
     ///

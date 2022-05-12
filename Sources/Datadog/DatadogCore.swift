@@ -11,7 +11,7 @@ import Foundation
 /// The core provides a storage and upload mechanism for each registered
 /// feature based on their respective configuration.
 ///
-/// By complying with `DatadogFeatureRegistry`, the core can
+/// By complying with `DatadogCoreProtocol`, the core can
 /// provide context and writing scopes to features for event recording.
 internal final class DatadogCore {
     /// The user consent provider for collecting PII.
@@ -23,7 +23,7 @@ internal final class DatadogCore {
     /// Creates a core instance.
     ///
     /// - Parameters:
-    ///   - consentProvider: The user consent provider for collecting PII.
+    ///   - consentProvider: The user tracking consent provider.
     ///   - userInfoProvider: User PII.
     init(
         consentProvider: ConsentProvider,
