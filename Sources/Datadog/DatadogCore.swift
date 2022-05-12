@@ -35,11 +35,11 @@ internal final class DatadogCore {
 }
 
 extension DatadogCore: DatadogCoreProtocol {
-    func registerFeature(named: String, storage: FeatureStorageConfiguration, upload: FeatureUploadConfiguration) {
+    func registerFeature(named featureName: String, storage: FeatureStorageConfiguration, upload: FeatureUploadConfiguration) {
         // no-op
     }
 
-    func scope(forFeature named: String) -> FeatureScope? {
+    func scope(forFeature featureName: String) -> FeatureScope? {
         // no-op
         return nil
     }

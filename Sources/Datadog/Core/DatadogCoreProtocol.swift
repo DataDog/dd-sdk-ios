@@ -6,25 +6,24 @@
 
 import Foundation
 
-internal var DefaultDatadogCore: DatadogCoreProtocol = NOOPDatadogCore()
+internal var defaultDatadogCore: DatadogCoreProtocol = NOOPDatadogCore()
 
-/// A Datadog Core holds a set of features and is responsible of
-/// managing their storage and upload mechanism. It also provides a thread-safe
-/// scope for writing events.
+/// A Datadog Core holds a set of features and is responsible of managing their storage
+/// and upload mechanism. It also provides a thread-safe scope for writing events.
 public protocol DatadogCoreProtocol {
     /// Registers a feature by its name and configuration.
     ///
     /// - Parameters:
-    ///   - named: The feature name.
+    ///   - featureName: The feature name.
     ///   - storage: The feature's storage configuration.
     ///   - upload: The feature's upload configuration.
-    func registerFeature(named: String, storage: FeatureStorageConfiguration, upload: FeatureUploadConfiguration)
+    func registerFeature(named featureName: String, storage: FeatureStorageConfiguration, upload: FeatureUploadConfiguration)
 
     /// Returns a Feature scope by its name.
     ///
-    /// - Parameter named: The feature's name.
+    /// - Parameter featureName: The feature's name.
     /// - Returns: The feature if it was previously registered, `nil` otherwise.
-    func scope(forFeature named: String) -> FeatureScope?
+    func scope(forFeature featureName: String) -> FeatureScope?
 }
 
 /// Provide feature specific storage configuration.
@@ -45,10 +44,10 @@ public protocol FeatureScope {
 /// No-op implementation of `DatadogFeatureRegistry`.
 internal struct NOOPDatadogCore: DatadogCoreProtocol {
     /// no-op
-    func registerFeature(named: String, storage: FeatureStorageConfiguration, upload: FeatureUploadConfiguration) {}
+    func registerFeature(named featureName: String, storage: FeatureStorageConfiguration, upload: FeatureUploadConfiguration) {}
 
     /// no-op
-    func scope(forFeature named: String) -> FeatureScope? {
+    func scope(forFeature featureName: String) -> FeatureScope? {
         return nil
     }
 }

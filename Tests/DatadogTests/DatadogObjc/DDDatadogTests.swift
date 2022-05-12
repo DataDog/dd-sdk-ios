@@ -57,7 +57,7 @@ class DDDatadogTests: XCTestCase {
             configuration: DDConfiguration.builder(clientToken: "abcefghi", environment: "tests").build()
         )
 
-        let core = DefaultDatadogCore as? DatadogCore
+        let core = defaultDatadogCore as? DatadogCore
         XCTAssertEqual(core?.consentProvider.currentValue, initialConsent.swift)
 
         DDDatadog.setTrackingConsent(consent: nextConsent.objc)
@@ -76,7 +76,7 @@ class DDDatadogTests: XCTestCase {
             configuration: DDConfiguration.builder(clientToken: "abcefghi", environment: "tests").build()
         )
 
-        let core = DefaultDatadogCore as? DatadogCore
+        let core = defaultDatadogCore as? DatadogCore
         let userInfo = try XCTUnwrap(core?.userInfoProvider)
 
         DDDatadog.setUserInfo(
