@@ -44,6 +44,8 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
     /// Additional header injected to intercepted 1st party requests.
     /// Set to `x-datadog-origin: rum` if both RUM and Tracing instrumentations are enabled and `nil` in all other cases.
     internal let additionalHeadersForFirstPartyRequests: [String: String]?
+    /// Tracing sampling rate
+    internal let samplingRate: Float
 
     // MARK: - Initialization
 
@@ -73,6 +75,7 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
         self.defaultFirstPartyURLsFilter = FirstPartyURLsFilter(hosts: configuration.userDefinedFirstPartyHosts)
         self.internalURLsFilter = InternalURLsFilter(urls: configuration.sdkInternalURLs)
         self.handler = handler
+        self.samplingRate = configuration.samplingRate
 
         if configuration.instrumentTracing {
             self.injectTracingHeadersToFirstPartyRequests = true
@@ -229,7 +232,7 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
             return firstPartyRequest
         }
 
-        let writer = HTTPHeadersWriter()
+        let writer = HTTPHeadersWriter(samplingRate: samplingRate)
         let spanContext = tracer.createSpanContext()
 
         tracer.inject(spanContext: spanContext, writer: writer)

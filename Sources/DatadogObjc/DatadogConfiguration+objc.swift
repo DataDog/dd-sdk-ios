@@ -285,6 +285,11 @@ public class DDConfigurationBuilder: NSObject {
     }
 
     @objc
+    public func set(tracingSamplingRate: Float) {
+        _ = sdkBuilder.set(tracingSamplingRate: tracingSamplingRate)
+    }
+
+    @objc
     public func set(rumSessionsSamplingRate: Float) {
         _ = sdkBuilder.set(rumSessionsSamplingRate: rumSessionsSamplingRate)
     }

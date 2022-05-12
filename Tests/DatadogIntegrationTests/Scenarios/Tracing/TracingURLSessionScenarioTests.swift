@@ -128,7 +128,6 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
             "x-datadog-trace-id: \(try taskWithRequest.traceID().hexadecimalNumberToDecimal)",
             "x-datadog-parent-id: \(try taskWithRequest.spanID().hexadecimalNumberToDecimal)",
             "x-datadog-sampling-priority: 1",
-            "x-datadog-sampled: 1"
         ]
 
         expectedHeaders.forEach { expectedHeader in

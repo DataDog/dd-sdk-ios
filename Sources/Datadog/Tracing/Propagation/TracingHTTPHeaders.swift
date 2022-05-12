@@ -20,11 +20,7 @@ internal struct TracingHTTPHeaders {
 
     /// To make sure that the Agent keeps the trace.
     /// It is used both in Tracing and RUM features.
-    static let ddSamplingPriority = (field: "x-datadog-sampling-priority", value: "1")
-
-    /// Indicates this request is selected for sampling.
-    /// It is used both in Tracing and RUM features.
-    static let ddSampled = (field: "x-datadog-sampled", value: "1")
+    static let samplingPriorityField = "x-datadog-sampling-priority"
 
     /// To make sure the generated traces from RUM don’t affect APM Index Spans counts.
     /// **Note:** it is only added to requests that we create RUM Resource for (it is not injected when RUM feature is disabled and only Tracing is used).

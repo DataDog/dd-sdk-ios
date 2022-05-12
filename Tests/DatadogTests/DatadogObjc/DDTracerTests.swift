@@ -236,7 +236,21 @@ class DDTracerTests: XCTestCase {
             "x-datadog-trace-id": "1",
             "x-datadog-parent-id": "2",
             "x-datadog-sampling-priority": "1",
-            "x-datadog-sampled": "1",
+        ]
+        XCTAssertEqual(objcWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
+    }
+
+    func testInjectingRejectedSpanContextToValidCarrierAndFormat() throws {
+        let objcTracer = DDTracer(swiftTracer: Tracer.mockAny())
+        let objcSpanContext = DDSpanContextObjc(
+            swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2)
+        )
+
+        let objcWriter = DDHTTPHeadersWriter(samplingRate: 0)
+        try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
+
+        let expectedHTTPHeaders = [
+            "x-datadog-sampling-priority": "0",
         ]
         XCTAssertEqual(objcWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
     }
