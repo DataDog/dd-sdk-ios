@@ -162,10 +162,6 @@ public class Datadog {
         static let DebugRUM = "DD_DEBUG_RUM"
     }
 
-    internal let consentProvider: ConsentProvider
-    internal let userInfoProvider: UserInfoProvider
-    internal let launchTimeProvider: LaunchTimeProviderType
-
     private static func initializeOrThrow(
         initialTrackingConsent: TrackingConsent,
         configuration: FeaturesConfiguration
@@ -294,7 +290,7 @@ public class Datadog {
         URLSessionAutoInstrumentation.instance?.enable()
 
         // Only after all features were initialized with no error thrown:
-        DefaultDatadogCore = DatadogCore(
+        defaultDatadogCore = DatadogCore(
             consentProvider: consentProvider,
             userInfoProvider: userInfoProvider
         )
@@ -307,14 +303,7 @@ public class Datadog {
         }
     }
 
-    internal init(
-        consentProvider: ConsentProvider,
-        userInfoProvider: UserInfoProvider,
-        launchTimeProvider: LaunchTimeProviderType
-    ) {
-        self.consentProvider = consentProvider
-        self.userInfoProvider = userInfoProvider
-        self.launchTimeProvider = launchTimeProvider
+    internal init() {
     }
 
     /// Flushes all authorised data for each feature, tears down and deinitializes the SDK.
