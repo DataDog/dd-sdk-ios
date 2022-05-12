@@ -14,7 +14,7 @@ import Foundation
 /// By complying with `DatadogCoreProtocol`, the core can
 /// provide context and writing scopes to features for event recording.
 internal final class DatadogCore {
-    /// The user consent provider for collecting PII.
+    /// The user tracking consent provider.
     let consentProvider: ConsentProvider
 
     /// User PII.

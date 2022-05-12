@@ -22,7 +22,7 @@ public protocol DatadogCoreProtocol {
     /// Returns a Feature scope by its name.
     ///
     /// - Parameter featureName: The feature's name.
-    /// - Returns: The feature if it was previously registered, `nil` otherwise.
+    /// - Returns: The scope for feature that previously registered, `nil` otherwise.
     func scope(forFeature featureName: String) -> FeatureScope?
 }
 

@@ -2051,7 +2051,6 @@
 			children = (
 				9E9EB37624468CE90002C80B /* Datadog.modulemap */,
 				61133BBB2423979B00786299 /* Datadog.swift */,
-				D2B3F04C282A85FD00C2B5EE /* DatadogCore.swift */,
 				61133BB52423979B00786299 /* DatadogConfiguration.swift */,
 				61133BB62423979B00786299 /* Logger.swift */,
 				61E909E824A24DD3005EA2DE /* Global.swift */,
@@ -2070,6 +2069,8 @@
 				61133BB72423979B00786299 /* Utils */,
 				61E909E524A24DD3005EA2DE /* OpenTracing */,
 				61D3E0C7277B237D008BE766 /* Kronos */,
+				D2B3F04F282D3A3800C2B5EE /* DatadogCore */,
+				D2B3F050282D3A5700C2B5EE /* DatadogInternal */,
 			);
 			name = Datadog;
 			path = ../Sources/Datadog;
@@ -2078,7 +2079,6 @@
 		61133B9E2423979B00786299 /* Core */ = {
 			isa = PBXGroup;
 			children = (
-				D2B3F0492829510600C2B5EE /* DatadogCoreProtocol.swift */,
 				614D812B24E3EA15004C9C5D /* Feature.swift */,
 				61BBD19424ED4E9E0023E65F /* FeaturesConfiguration.swift */,
 				614E9EB2244719FA007EE3E1 /* BundleType.swift */,
@@ -4117,6 +4117,22 @@
 				D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */,
 			);
 			path = SwiftUI;
+			sourceTree = "<group>";
+		};
+		D2B3F04F282D3A3800C2B5EE /* DatadogCore */ = {
+			isa = PBXGroup;
+			children = (
+				D2B3F04C282A85FD00C2B5EE /* DatadogCore.swift */,
+			);
+			path = DatadogCore;
+			sourceTree = "<group>";
+		};
+		D2B3F050282D3A5700C2B5EE /* DatadogInternal */ = {
+			isa = PBXGroup;
+			children = (
+				D2B3F0492829510600C2B5EE /* DatadogCoreProtocol.swift */,
+			);
+			path = DatadogInternal;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
