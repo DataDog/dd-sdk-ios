@@ -45,8 +45,8 @@ public class HTTPHeadersWriter: OTHTTPHeadersWriter {
     /// Creates a `HTTPHeadersWriter` to inject traces propagation headers
     /// to network request.
     ///
-    /// - Parameter samplingRate: Tracing sampling rate. 100% (keep all) by default.
-    public init(samplingRate: Float = 100) {
+    /// - Parameter samplingRate: Tracing sampling rate. 20% by default.
+    public init(samplingRate: Float = 20) {
         self.sampler = Sampler(samplingRate: samplingRate)
     }
 

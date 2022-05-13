@@ -329,7 +329,7 @@ extension Datadog {
                     serviceName: nil,
                     firstPartyHosts: nil,
                     spanEventMapper: nil,
-                    tracingSamplingRate: 100.0,
+                    tracingSamplingRate: 20.0,
                     rumSessionsSamplingRate: 100.0,
                     rumSessionsListener: nil,
                     rumUIKitViewsPredicate: nil,
@@ -505,7 +505,7 @@ extension Datadog {
             /// Sets the sampling rate for APM traces created for auto-instrumented `URLSession` requests.
             ///
             /// - Parameter tracingSamplingRate: the sampling rate must be a value between `0.0` and `100.0`. A value of `0.0`
-            /// means no trace will be kept, `100.0` means all traces will be kept (default value is `100.0`).
+            /// means no trace will be kept, `100.0` means all traces will be kept (default value is `20.0`).
             public func set(tracingSamplingRate: Float) -> Builder {
                 configuration.tracingSamplingRate = tracingSamplingRate
                 return self
