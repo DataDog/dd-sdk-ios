@@ -335,7 +335,7 @@ span.log(
 {{% /tab %}}
 {{< /tabs >}}
 
-8. (Optional) To distribute traces between your environments, for example frontend - backend, you can either do it manually or leverage our auto instrumentation.
+8. (Optional) To distribute traces between your environments, for example frontend - backend, you can either do it manually or leverage our auto instrumentation. In both cases, network traces are sampled with an adjustable sampling rate, a sampling of 20% is applied by default.
 
 * To manually propagate the trace, inject the span context into `URLRequest` headers:
 
@@ -346,7 +346,7 @@ var request: URLRequest = ... // the request to your API
 
 let span = Global.sharedTracer.startSpan(operationName: "network request")
 
-let headersWriter = HTTPHeadersWriter()
+let headersWriter = HTTPHeadersWriter(samplingRate: 20)
 Global.sharedTracer.inject(spanContext: span.context, writer: headersWriter)
 
 for (headerField, value) in headersWriter.tracePropagationHTTPHeaders {
@@ -357,7 +357,7 @@ for (headerField, value) in headersWriter.tracePropagationHTTPHeaders {
 {{% tab "Objective-C" %}}
 ```objective-c
 id<OTSpan> span = [DDGlobal.sharedTracer startSpan:@"network request"];
-DDHTTPHeadersWriter *headersWriter = [[DDHTTPHeadersWriter alloc] init];
+DDHTTPHeadersWriter *headersWriter = [[DDHTTPHeadersWriter alloc] initWithSamplingRate:20];
 
 NSError *error = nil;
 [DDGlobal.sharedTracer inject:span.context
@@ -385,6 +385,7 @@ Datadog.initialize(
     configuration: Datadog.Configuration
         .builderUsing(clientToken: "<client_token>", environment: "<environment_name>")
         .trackURLSession(firstPartyHosts: ["example.com", "api.yourdomain.com"])
+        .set(tracingSamplingRate: 20)
         .build()
 )
 
@@ -401,6 +402,7 @@ DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"<cli
                                                                 environment:@"<environment_name>"];
 
 [builder trackURLSessionWithFirstPartyHosts:[NSSet setWithArray:@[@"example.com", @"api.yourdomain.com"]]];
+[builder setWithTracingSamplingRate:20];
 
 [DDDatadog initializeWithAppContext:[DDAppContext new]
                     trackingConsent:trackingConsent
