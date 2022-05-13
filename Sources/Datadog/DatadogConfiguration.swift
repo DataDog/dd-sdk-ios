@@ -502,9 +502,9 @@ extension Datadog {
                 return self
             }
 
-            /// Sets the sampling rate for APM tracing.
+            /// Sets the sampling rate for APM traces created for auto-instrumented `URLSession` requests.
             ///
-            /// - Parameter apmTraceSamplingRate: the sampling rate must be a value between `0.0` and `100.0`. A value of `0.0`
+            /// - Parameter tracingSamplingRate: the sampling rate must be a value between `0.0` and `100.0`. A value of `0.0`
             /// means no trace will be kept, `100.0` means all traces will be kept (default value is `100.0`).
             public func set(tracingSamplingRate: Float) -> Builder {
                 configuration.tracingSamplingRate = tracingSamplingRate

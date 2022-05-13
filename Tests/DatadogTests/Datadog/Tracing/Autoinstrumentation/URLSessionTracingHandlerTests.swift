@@ -16,7 +16,8 @@ class URLSessionTracingHandlerTests: XCTestCase {
                 initialSnapshot: .init(state: .active, date: .mockDecember15th2019At10AMUTC()),
                 recentDate: .mockDecember15th2019At10AMUTC() + 10
             )
-        )
+        ),
+        tracingSampler: .mockKeepAll()
     )
 
     override func setUp() {
@@ -301,5 +302,34 @@ class URLSessionTracingHandlerTests: XCTestCase {
         let recordedSpan = try XCTUnwrap(spanOutput.lastRecordedSpan)
         XCTAssertEqual(recordedSpan.tags[DDTags.foregroundDuration], "10000000000")
         XCTAssertEqual(recordedSpan.tags[DDTags.isBackground], "false")
+    }
+
+    func testGivenRejectingHandler_itDoesNotRecordSpan() throws {
+        let spanNotSentExpectation = expectation(description: "Don't send span")
+        spanNotSentExpectation.isInverted = true
+        spanOutput.onSpanRecorded = { _ in spanNotSentExpectation.fulfill() }
+
+        // Given
+        let handler = URLSessionTracingHandler(
+            appStateListener: AppStateListenerMock.mockAppInForeground(),
+            tracingSampler: .mockRejectAll()
+       )
+
+        let interception = TaskInterception(request: .mockAny(), isFirstParty: true)
+        interception.register(completion: .mockAny())
+        interception.register(
+            metrics: .mockWith(
+                fetch: .init(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 10)
+                )
+            )
+        )
+
+        // When
+        handler.notify_taskInterceptionCompleted(interception: interception)
+
+        // Then
+        wait(for: [spanNotSentExpectation], timeout: 0.5)
     }
 }

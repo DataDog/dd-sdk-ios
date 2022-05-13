@@ -100,14 +100,14 @@ class URLSessionInterceptorTests: XCTestCase {
     private func mockConfiguration(
         tracingInstrumentationEnabled: Bool,
         rumInstrumentationEnabled: Bool,
-        samplingRate: Float = 100
+        tracingSampler: Sampler = .mockKeepAll()
     ) -> FeaturesConfiguration.URLSessionAutoInstrumentation {
         return .mockWith(
             userDefinedFirstPartyHosts: ["first-party.com"],
             sdkInternalURLs: ["https://dd.internal.com"],
             instrumentTracing: tracingInstrumentationEnabled,
             instrumentRUM: rumInstrumentationEnabled,
-            samplingRate: samplingRate
+            tracingSampler: tracingSampler
         )
     }
 
@@ -117,7 +117,7 @@ class URLSessionInterceptorTests: XCTestCase {
             configuration: mockConfiguration(
                 tracingInstrumentationEnabled: true,
                 rumInstrumentationEnabled: true,
-                samplingRate: 100
+                tracingSampler: .mockKeepAll()
             ),
             handler: handler
         )
@@ -175,7 +175,7 @@ class URLSessionInterceptorTests: XCTestCase {
             configuration: mockConfiguration(
                 tracingInstrumentationEnabled: true,
                 rumInstrumentationEnabled: false,
-                samplingRate: 100
+                tracingSampler: .mockKeepAll()
             ),
             handler: handler
         )
@@ -210,7 +210,7 @@ class URLSessionInterceptorTests: XCTestCase {
             configuration: mockConfiguration(
                 tracingInstrumentationEnabled: true,
                 rumInstrumentationEnabled: false,
-                samplingRate: 0
+                tracingSampler: .mockRejectAll()
             ),
             handler: handler
         )

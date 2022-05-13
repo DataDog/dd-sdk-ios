@@ -314,7 +314,7 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
         rumAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         instrumentTracing: Bool = true,
         instrumentRUM: Bool = true,
-        samplingRate: Float = 100
+        tracingSampler: Sampler = .mockKeepAll()
     ) -> Self {
         return .init(
             userDefinedFirstPartyHosts: userDefinedFirstPartyHosts,
@@ -322,7 +322,7 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
             rumAttributesProvider: rumAttributesProvider,
             instrumentTracing: instrumentTracing,
             instrumentRUM: instrumentRUM,
-            samplingRate: samplingRate
+            tracingSampler: tracingSampler
         )
     }
 }

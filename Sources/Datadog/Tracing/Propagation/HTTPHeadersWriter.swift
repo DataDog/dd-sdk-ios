@@ -36,19 +36,26 @@ public class HTTPHeadersWriter: OTHTTPHeadersWriter {
     ///
     public private(set) var tracePropagationHTTPHeaders: [String: String] = [:]
 
-    /// The tracing sampling rate.
+    /// The tracing sampler.
     ///
-    /// This value will decide of the `x-datadog-sampling-priority`
-    /// header field value and if `x-datadog-trace-id` and `x-datadog-parent-id`
-    /// are propagated.
-    private let samplingRate: Float
+    /// This value will decide of the `x-datadog-sampling-priority` header field value
+    /// and if `x-datadog-trace-id` and `x-datadog-parent-id` are propagated.
+    private let sampler: Sampler
 
     /// Creates a `HTTPHeadersWriter` to inject traces propagation headers
     /// to network request.
     ///
     /// - Parameter samplingRate: Tracing sampling rate. 100% (keep all) by default.
     public init(samplingRate: Float = 100) {
-        self.samplingRate = samplingRate
+        self.sampler = Sampler(samplingRate: samplingRate)
+    }
+
+    /// Creates a `HTTPHeadersWriter` to inject traces propagation headers
+    /// to network request.
+    ///
+    /// - Parameter samplingRate: Tracing sampling rate. 100% (keep all) by default.
+    internal init(sampler: Sampler) {
+        self.sampler = sampler
     }
 
     public func inject(spanContext: OTSpanContext) {
@@ -56,7 +63,6 @@ public class HTTPHeadersWriter: OTHTTPHeadersWriter {
             return
         }
 
-        let sampler = Sampler(samplingRate: samplingRate)
         let samplingPriority = sampler.sample()
 
         tracePropagationHTTPHeaders = [
