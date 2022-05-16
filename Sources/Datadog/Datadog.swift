@@ -117,7 +117,7 @@ public class Datadog {
 
     /// Returns `true` if the Datadog SDK is already initialized, `false` otherwise.
     public static var isInitialized: Bool {
-        return instance != nil
+        return defaultDatadogCore is DatadogCore
     }
 
     /// Sets current user information.
@@ -133,7 +133,8 @@ public class Datadog {
         email: String? = nil,
         extraInfo: [AttributeKey: AttributeValue] = [:]
     ) {
-        instance?.userInfoProvider.value = UserInfo(
+        let core = defaultDatadogCore as? DatadogCore
+        core?.userInfoProvider.value = UserInfo(
             id: id,
             name: name,
             email: email,
@@ -144,12 +145,15 @@ public class Datadog {
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     public static func set(trackingConsent: TrackingConsent) {
-        instance?.consentProvider.changeConsent(to: trackingConsent)
+        let core = defaultDatadogCore as? DatadogCore
+        core?.consentProvider.changeConsent(to: trackingConsent)
     }
 
     /// Clears all data that has not already been sent to Datadog servers.
     public static func clearAllData() {
-        instance?.clearAllData()
+        LoggingFeature.instance?.storage.clearAllData()
+        TracingFeature.instance?.storage.clearAllData()
+        RUMFeature.instance?.storage.clearAllData()
     }
 
     // MARK: - Internal
@@ -158,17 +162,11 @@ public class Datadog {
         static let DebugRUM = "DD_DEBUG_RUM"
     }
 
-    internal static var instance: Datadog?
-
-    internal let consentProvider: ConsentProvider
-    internal let userInfoProvider: UserInfoProvider
-    internal let launchTimeProvider: LaunchTimeProviderType
-
     private static func initializeOrThrow(
         initialTrackingConsent: TrackingConsent,
         configuration: FeaturesConfiguration
     ) throws {
-        guard Datadog.instance == nil else {
+        if Datadog.isInitialized {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
 
@@ -292,10 +290,9 @@ public class Datadog {
         URLSessionAutoInstrumentation.instance?.enable()
 
         // Only after all features were initialized with no error thrown:
-        self.instance = Datadog(
+        defaultDatadogCore = DatadogCore(
             consentProvider: consentProvider,
-            userInfoProvider: userInfoProvider,
-            launchTimeProvider: launchTimeProvider
+            userInfoProvider: userInfoProvider
         )
 
         // After everything is set up, if the Crash Reporting feature was enabled,
@@ -306,20 +303,7 @@ public class Datadog {
         }
     }
 
-    internal init(
-        consentProvider: ConsentProvider,
-        userInfoProvider: UserInfoProvider,
-        launchTimeProvider: LaunchTimeProviderType
-    ) {
-        self.consentProvider = consentProvider
-        self.userInfoProvider = userInfoProvider
-        self.launchTimeProvider = launchTimeProvider
-    }
-
-    internal func clearAllData() {
-        LoggingFeature.instance?.storage.clearAllData()
-        TracingFeature.instance?.storage.clearAllData()
-        RUMFeature.instance?.storage.clearAllData()
+    internal init() {
     }
 
     /// Flushes all authorised data for each feature, tears down and deinitializes the SDK.
@@ -334,7 +318,7 @@ public class Datadog {
 #endif
 
     internal static func internalFlushAndDeinitialize() {
-        assert(Datadog.instance != nil, "SDK must be first initialized.")
+        assert(Datadog.isInitialized, "SDK must be first initialized.")
 
         // Tear down and deinitialize all features:
         LoggingFeature.instance?.deinitialize()
@@ -352,7 +336,7 @@ public class Datadog {
         Global.crashReporter = nil
 
         // Deinitialize `Datadog`:
-        Datadog.instance = nil
+        defaultDatadogCore = NOOPDatadogCore()
 
         // Reset internal loggers:
         userLogger = createNoOpSDKUserLogger()

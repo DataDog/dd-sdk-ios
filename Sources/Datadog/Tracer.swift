@@ -80,9 +80,9 @@ public class Tracer: OTTracer {
             }
             guard let tracingFeature = TracingFeature.instance else {
                 throw ProgrammerError(
-                    description: Datadog.instance == nil
-                        ? "`Datadog.initialize()` must be called prior to `Tracer.initialize()`."
-                        : "`Tracer.initialize(configuration:)` produces a non-functional tracer, as the tracing feature is disabled."
+                    description: Datadog.isInitialized
+                        ? "`Tracer.initialize(configuration:)` produces a non-functional tracer, as the tracing feature is disabled."
+                        : "`Datadog.initialize()` must be called prior to `Tracer.initialize()`."
                 )
             }
             return DDTracer(

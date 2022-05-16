@@ -12,13 +12,13 @@ import XCTest
 class DDDatadogTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
         XCTAssertNil(LoggingFeature.instance)
         XCTAssertNil(URLSessionAutoInstrumentation.instance)
     }
 
     override func tearDown() {
-        XCTAssertNil(Datadog.instance)
+        XCTAssertFalse(Datadog.isInitialized)
         XCTAssertNil(LoggingFeature.instance)
         XCTAssertNil(URLSessionAutoInstrumentation.instance)
         super.tearDown()
@@ -36,7 +36,7 @@ class DDDatadogTests: XCTestCase {
             configuration: configBuilder.build()
         )
 
-        XCTAssertNotNil(Datadog.instance)
+        XCTAssertTrue(Datadog.isInitialized)
         XCTAssertEqual(LoggingFeature.instance?.configuration.common.applicationName, "app-name")
         XCTAssertEqual(LoggingFeature.instance?.configuration.common.environment, "tests")
         XCTAssertNotNil(URLSessionAutoInstrumentation.instance)
@@ -57,11 +57,12 @@ class DDDatadogTests: XCTestCase {
             configuration: DDConfiguration.builder(clientToken: "abcefghi", environment: "tests").build()
         )
 
-        XCTAssertEqual(Datadog.instance?.consentProvider.currentValue, initialConsent.swift)
+        let core = defaultDatadogCore as? DatadogCore
+        XCTAssertEqual(core?.consentProvider.currentValue, initialConsent.swift)
 
         DDDatadog.setTrackingConsent(consent: nextConsent.objc)
 
-        XCTAssertEqual(Datadog.instance?.consentProvider.currentValue, nextConsent.swift)
+        XCTAssertEqual(core?.consentProvider.currentValue, nextConsent.swift)
 
         Datadog.flushAndDeinitialize()
     }
@@ -74,7 +75,9 @@ class DDDatadogTests: XCTestCase {
             trackingConsent: randomConsent().objc,
             configuration: DDConfiguration.builder(clientToken: "abcefghi", environment: "tests").build()
         )
-        let userInfo = try XCTUnwrap(Datadog.instance?.userInfoProvider)
+
+        let core = defaultDatadogCore as? DatadogCore
+        let userInfo = try XCTUnwrap(core?.userInfoProvider)
 
         DDDatadog.setUserInfo(
             id: "id",
