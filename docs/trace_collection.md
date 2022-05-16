@@ -335,7 +335,7 @@ span.log(
 {{% /tab %}}
 {{< /tabs >}}
 
-8. (Optional) To distribute traces between your environments, for example frontend - backend, you can either do it manually or leverage our auto instrumentation. In both cases, network traces are sampled with an adjustable sampling rate, a sampling of 20% is applied by default.
+8. (Optional) To distribute traces between your environments, for example frontend - backend, you can either do it manually or leverage our auto instrumentation. In both cases, network traces are sampled with an adjustable sampling rate. A sampling of 20% is applied by default.
 
 * To manually propagate the trace, inject the span context into `URLRequest` headers:
 

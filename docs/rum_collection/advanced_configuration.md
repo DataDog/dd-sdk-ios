@@ -431,7 +431,7 @@ NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConf
 {{% /tab %}}
 {{< /tabs >}}
 
-Also, you can configure first party hosts using `.trackURLSession(firstPartyHosts:)`. This classifies resources that match the given domain as "first party" in RUM and propagates tracing information to your backend (if you have enabled Tracing). Network traces are sampled with an adjustable sampling rate, a sampling of 20% is applied by default.
+Also, you can configure first party hosts using `.trackURLSession(firstPartyHosts:)`. This classifies resources that match the given domain as "first party" in RUM and propagates tracing information to your backend (if you have enabled Tracing). Network traces are sampled with an adjustable sampling rate. A sampling of 20% is applied by default.
 
 For instance, you can configure `example.com` as the first party host and enable both RUM and Tracing features:
 
