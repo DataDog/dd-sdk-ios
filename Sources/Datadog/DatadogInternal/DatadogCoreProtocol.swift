@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal var defaultDatadogCore: DatadogCoreProtocol = NOOPDatadogCore()
+public internal(set) var defaultDatadogCore: DatadogCoreProtocol = NOOPDatadogCore()
 
 /// A Datadog Core holds a set of features and is responsible of managing their storage
 /// and upload mechanism. It also provides a thread-safe scope for writing events.
@@ -24,6 +24,35 @@ public protocol DatadogCoreProtocol {
     /// - Parameter featureName: The feature's name.
     /// - Returns: The scope for feature that previously registered, `nil` otherwise.
     func scope(forFeature featureName: String) -> FeatureScope?
+
+    // MARK: V1 interface
+
+    /// Registers a feature instance by its name.
+    ///
+    /// Passing `nil` will unregister the feature.
+    ///
+    /// - Parameters:
+    ///   - featureName: The feature name.
+    ///   - instance: The feature instance.
+    func registerFeature(named featureName: String, instance: Any?)
+
+    /// Returns a Feature instance by its name.
+    /// 
+    /// - Parameters:
+    ///   - type: The feature instance type.
+    ///   - featureName: The feature's name.
+    /// - Returns: The feature if any.
+    func feature<T>(_ type: T.Type, named featureName: String) -> T?
+}
+
+extension DatadogCoreProtocol {
+    /// Returns a Feature instance by its name.
+    ///
+    /// - Parameter featureName: The feature's name.
+    /// - Returns: The feature if any.
+    func feature<T>(named featureName: String) -> T? {
+        return feature(T.self, named: featureName)
+    }
 }
 
 /// Provide feature specific storage configuration.
@@ -48,6 +77,16 @@ internal struct NOOPDatadogCore: DatadogCoreProtocol {
 
     /// no-op
     func scope(forFeature featureName: String) -> FeatureScope? {
+        return nil
+    }
+
+    // MARK: V1 interface
+
+    /// no-op
+    func registerFeature(named featureName: String, instance: Any?) {}
+
+    /// no-op
+    func feature<T>(_ type: T.Type, named featureName: String) -> T? {
         return nil
     }
 }
