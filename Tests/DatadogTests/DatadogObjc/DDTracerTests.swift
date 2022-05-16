@@ -229,7 +229,7 @@ class DDTracerTests: XCTestCase {
             swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2)
         )
 
-        let objcWriter = DDHTTPHeadersWriter()
+        let objcWriter = DDHTTPHeadersWriter(samplingRate: 100)
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
 
         let expectedHTTPHeaders = [
@@ -259,7 +259,7 @@ class DDTracerTests: XCTestCase {
         let objcTracer = DDTracer(swiftTracer: Tracer.mockAny())
         let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2))
 
-        let objcValidWriter = DDHTTPHeadersWriter()
+        let objcValidWriter = DDHTTPHeadersWriter(samplingRate: 100)
         let objcInvalidFormat = "foo"
         XCTAssertThrowsError(
             try objcTracer.inject(objcSpanContext, format: objcInvalidFormat, carrier: objcValidWriter)
