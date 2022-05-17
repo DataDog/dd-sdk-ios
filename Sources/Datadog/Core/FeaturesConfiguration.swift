@@ -75,6 +75,8 @@ internal struct FeaturesConfiguration {
         let instrumentTracing: Bool
         /// If the RUM instrumentation should be enabled.
         let instrumentRUM: Bool
+        // Tracing sampler
+        let tracingSampler: Sampler
     }
 
     struct CrashReporting {
@@ -246,7 +248,8 @@ extension FeaturesConfiguration {
                     ],
                     rumAttributesProvider: configuration.rumResourceAttributesProvider,
                     instrumentTracing: configuration.tracingEnabled,
-                    instrumentRUM: configuration.rumEnabled
+                    instrumentRUM: configuration.rumEnabled,
+                    tracingSampler: Sampler(samplingRate: debugOverride ? 100.0 : configuration.tracingSamplingRate)
                 )
             } else {
                 let error = ProgrammerError(

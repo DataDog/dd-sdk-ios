@@ -100,6 +100,7 @@
     [builder setWithCustomTracesEndpoint:[NSURL new]];
     [builder setWithCustomRUMEndpoint:[NSURL new]];
     [builder trackURLSessionWithFirstPartyHosts:[NSSet setWithArray:@[]]];
+    [builder setWithTracingSamplingRate:75];
     [builder setWithServiceName:@""];
     [builder setWithRumSessionsSamplingRate:50];
     [builder setOnRUMSessionStart:^(NSString * _Nonnull sessionId, BOOL isDiscarded) {}];

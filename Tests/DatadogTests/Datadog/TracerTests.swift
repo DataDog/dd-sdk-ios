@@ -827,7 +827,7 @@ class TracerTests: XCTestCase {
         let spanContext1 = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
         let spanContext2 = DDSpanContext(traceID: 3, spanID: 4, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
-        let httpHeadersWriter = HTTPHeadersWriter()
+        let httpHeadersWriter = HTTPHeadersWriter(sampler: .mockKeepAll())
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, [:])
 
         // When
@@ -838,7 +838,6 @@ class TracerTests: XCTestCase {
             "x-datadog-trace-id": "1",
             "x-datadog-parent-id": "2",
             "x-datadog-sampling-priority": "1",
-            "x-datadog-sampled": "1",
         ]
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders1)
 
@@ -850,16 +849,32 @@ class TracerTests: XCTestCase {
             "x-datadog-trace-id": "3",
             "x-datadog-parent-id": "4",
             "x-datadog-sampling-priority": "1",
-            "x-datadog-sampled": "1",
         ]
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders2)
+    }
+
+    func testItInjectsRejectedSpanContextWithHTTPHeadersWriter() {
+        let tracer: Tracer = .mockAny()
+        let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
+
+        let httpHeadersWriter = HTTPHeadersWriter(sampler: .mockRejectAll())
+        XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, [:])
+
+        // When
+        tracer.inject(spanContext: spanContext, writer: httpHeadersWriter)
+
+        // Then
+        let expectedHTTPHeaders = [
+            "x-datadog-sampling-priority": "0",
+        ]
+        XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
     }
 
     func testItExtractsSpanContextWithHTTPHeadersReader() {
         let tracer: Tracer = .mockAny()
         let injectedSpanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
-        let httpHeadersWriter = HTTPHeadersWriter()
+        let httpHeadersWriter = HTTPHeadersWriter(sampler: .mockKeepAll())
         tracer.inject(spanContext: injectedSpanContext, writer: httpHeadersWriter)
 
         let httpHeadersReader = HTTPHeadersReader(

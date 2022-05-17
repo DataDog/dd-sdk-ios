@@ -36,14 +36,26 @@ public class HTTPHeadersWriter: OTHTTPHeadersWriter {
     ///
     public private(set) var tracePropagationHTTPHeaders: [String: String] = [:]
 
-    /// Pre-computed headers with constant values.
-    private let constantHTTPHeaders: [String: String]
+    /// The tracing sampler.
+    ///
+    /// This value will decide of the `x-datadog-sampling-priority` header field value
+    /// and if `x-datadog-trace-id` and `x-datadog-parent-id` are propagated.
+    private let sampler: Sampler
 
-    public init() {
-        constantHTTPHeaders = [
-            TracingHTTPHeaders.ddSamplingPriority.field: TracingHTTPHeaders.ddSamplingPriority.value,
-            TracingHTTPHeaders.ddSampled.field: TracingHTTPHeaders.ddSampled.value,
-        ]
+    /// Creates a `HTTPHeadersWriter` to inject traces propagation headers
+    /// to network request.
+    ///
+    /// - Parameter samplingRate: Tracing sampling rate. 20% by default.
+    public init(samplingRate: Float = 20) {
+        self.sampler = Sampler(samplingRate: samplingRate)
+    }
+
+    /// Creates a `HTTPHeadersWriter` to inject traces propagation headers
+    /// to network request.
+    ///
+    /// - Parameter samplingRate: Tracing sampling rate. 100% (keep all) by default.
+    internal init(sampler: Sampler) {
+        self.sampler = sampler
     }
 
     public func inject(spanContext: OTSpanContext) {
@@ -51,8 +63,15 @@ public class HTTPHeadersWriter: OTHTTPHeadersWriter {
             return
         }
 
-        tracePropagationHTTPHeaders = constantHTTPHeaders
-        tracePropagationHTTPHeaders[TracingHTTPHeaders.traceIDField] = String(spanContext.traceID.rawValue)
-        tracePropagationHTTPHeaders[TracingHTTPHeaders.parentSpanIDField] = String(spanContext.spanID.rawValue)
+        let samplingPriority = sampler.sample()
+
+        tracePropagationHTTPHeaders = [
+            TracingHTTPHeaders.samplingPriorityField: samplingPriority ? "1" : "0"
+        ]
+
+        if samplingPriority {
+            tracePropagationHTTPHeaders[TracingHTTPHeaders.traceIDField] = String(spanContext.traceID.rawValue)
+            tracePropagationHTTPHeaders[TracingHTTPHeaders.parentSpanIDField] = String(spanContext.spanID.rawValue)
+        }
     }
 }
