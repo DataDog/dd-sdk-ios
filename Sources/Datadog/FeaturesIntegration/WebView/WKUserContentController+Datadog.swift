@@ -24,8 +24,12 @@ public extension WKUserContentController {
     /// with the RUM session from native SDK.
     ///
     /// - Parameter hosts: a list of hosts instrumented with Browser SDK to capture Datadog events from
-    func trackDatadogEvents(in hosts: Set<String>) {
-        addDatadogMessageHandler(allowedWebViewHosts: hosts, hostsSanitizer: HostsSanitizer())
+    func trackDatadogEvents(in hosts: Set<String>, sdk core: DatadogCoreProtocol = defaultDatadogCore) {
+        addDatadogMessageHandler(
+            allowedWebViewHosts: hosts,
+            hostsSanitizer: HostsSanitizer(),
+            loggingFeature: core.feature(named: LoggingFeature.featureName)
+        )
     }
 
     /// Disables Datadog iOS SDK and Datadog Browser SDK integration.
@@ -44,7 +48,11 @@ public extension WKUserContentController {
         }
     }
 
-    internal func addDatadogMessageHandler(allowedWebViewHosts: Set<String>, hostsSanitizer: HostsSanitizing) {
+    internal func addDatadogMessageHandler(
+        allowedWebViewHosts: Set<String>,
+        hostsSanitizer: HostsSanitizing,
+        loggingFeature: LoggingFeature?
+    ) {
         guard !isTracking else {
               userLogger.warn("`trackDatadogEvents(in:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")
               return
@@ -55,7 +63,7 @@ public extension WKUserContentController {
         let globalRUMMonitor = Global.rum as? RUMMonitor
 
         var logEventConsumer: DefaultWebLogEventConsumer? = nil
-        if let loggingFeature = LoggingFeature.instance {
+        if let loggingFeature = loggingFeature {
             logEventConsumer = DefaultWebLogEventConsumer(
                 userLogsWriter: loggingFeature.storage.writer,
                 dateCorrector: loggingFeature.dateCorrector,

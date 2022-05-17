@@ -25,12 +25,6 @@ internal func obtainLoggingFeatureDirectories() throws -> FeatureDirectories {
 /// Creates and owns componetns enabling logging feature.
 /// Bundles dependencies for other logging-related components created later at runtime  (i.e. `Logger`).
 internal final class LoggingFeature {
-    /// Single, shared instance of `LoggingFeature`.
-    internal static var instance: LoggingFeature?
-
-    /// Tells if the feature was enabled by the user in the SDK configuration.
-    static var isEnabled: Bool { instance != nil }
-
     // MARK: - Configuration
 
     let configuration: FeaturesConfiguration.Logging
@@ -152,6 +146,5 @@ internal final class LoggingFeature {
     internal func deinitialize() {
         storage.flushAndTearDown()
         upload.flushAndTearDown()
-        LoggingFeature.instance = nil
     }
 }

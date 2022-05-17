@@ -151,7 +151,8 @@ public class Datadog {
 
     /// Clears all data that has not already been sent to Datadog servers.
     public static func clearAllData() {
-        LoggingFeature.instance?.storage.clearAllData()
+        let logging = defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName)
+        logging?.storage.clearAllData()
         TracingFeature.instance?.storage.clearAllData()
         RUMFeature.instance?.storage.clearAllData()
     }
@@ -171,12 +172,20 @@ public class Datadog {
         }
 
         let consentProvider = ConsentProvider(initialConsent: initialTrackingConsent)
+        let userInfoProvider = UserInfoProvider()
+
+        // set default DatadogCore then register features
+        defaultDatadogCore = DatadogCore(
+            consentProvider: consentProvider,
+            userInfoProvider: userInfoProvider
+        )
+
         let dateProvider = SystemDateProvider()
         let dateCorrector = DateCorrector(
             deviceDateProvider: dateProvider,
             serverDateProvider: NTPServerDateProvider()
         )
-        let userInfoProvider = UserInfoProvider()
+
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
         let carrierInfoProvider = CarrierInfoProvider()
         let launchTimeProvider = LaunchTimeProvider()
@@ -250,6 +259,8 @@ public class Datadog {
                 commonDependencies: commonDependencies,
                 telemetry: telemetry
             )
+
+            defaultDatadogCore.registerFeature(named: LoggingFeature.featureName, instance: logging)
         }
 
         if let tracingConfiguration = configuration.tracing {
@@ -278,7 +289,6 @@ public class Datadog {
             )
         }
 
-        LoggingFeature.instance = logging
         TracingFeature.instance = tracing
         RUMFeature.instance = rum
         CrashReportingFeature.instance = crashReporting
@@ -289,16 +299,13 @@ public class Datadog {
         URLSessionAutoInstrumentation.instance = urlSessionAutoInstrumentation
         URLSessionAutoInstrumentation.instance?.enable()
 
-        // Only after all features were initialized with no error thrown:
-        defaultDatadogCore = DatadogCore(
-            consentProvider: consentProvider,
-            userInfoProvider: userInfoProvider
-        )
-
         // After everything is set up, if the Crash Reporting feature was enabled,
         // register crash reporter and send crash report if available:
         if let crashReportingFeature = CrashReportingFeature.instance {
-            Global.crashReporter = CrashReporter(crashReportingFeature: crashReportingFeature)
+            Global.crashReporter = CrashReporter(
+                crashReportingFeature: crashReportingFeature,
+                loggingFeature: logging
+            )
             Global.crashReporter?.sendCrashReportIfFound()
         }
     }
@@ -321,7 +328,9 @@ public class Datadog {
         assert(Datadog.isInitialized, "SDK must be first initialized.")
 
         // Tear down and deinitialize all features:
-        LoggingFeature.instance?.deinitialize()
+        let logging = defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName)
+        logging?.deinitialize()
+
         TracingFeature.instance?.deinitialize()
         RUMFeature.instance?.deinitialize()
         CrashReportingFeature.instance?.deinitialize()

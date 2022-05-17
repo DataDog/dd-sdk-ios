@@ -382,9 +382,9 @@ public class Logger {
         }
 
         /// Builds `Logger` object.
-        public func build() -> Logger {
+        public func build(in core: DatadogCoreProtocol = defaultDatadogCore) -> Logger {
             do {
-                return try buildOrThrow()
+                return try buildOrThrow(in: core)
             } catch {
                 consolePrint("\(error)")
                 return Logger(
@@ -398,8 +398,8 @@ public class Logger {
             }
         }
 
-        private func buildOrThrow() throws -> Logger {
-            guard let loggingFeature = LoggingFeature.instance else {
+        private func buildOrThrow(in core: DatadogCoreProtocol) throws -> Logger {
+            guard let loggingFeature = core.feature(LoggingFeature.self, named: LoggingFeature.featureName) else {
                 throw ProgrammerError(
                     description: Datadog.isInitialized
                         ? "`Logger.builder.build()` produces a non-functional logger, as the logging feature is disabled."

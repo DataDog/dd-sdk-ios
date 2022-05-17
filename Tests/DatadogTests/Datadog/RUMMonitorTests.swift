@@ -1139,7 +1139,10 @@ class RUMMonitorTests: XCTestCase {
         defer { CrashReportingFeature.instance?.deinitialize() }
 
         // Given
-        Global.crashReporter = CrashReporter(crashReportingFeature: CrashReportingFeature.instance!)
+        Global.crashReporter = CrashReporter(
+            crashReportingFeature: CrashReportingFeature.instance!,
+            loggingFeature: nil
+        )
         defer { Global.crashReporter = nil }
 
         // When

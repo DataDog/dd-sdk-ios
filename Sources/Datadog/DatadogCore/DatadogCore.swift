@@ -34,6 +34,36 @@ internal final class DatadogCore {
         self.consentProvider = consentProvider
         self.userInfoProvider = userInfoProvider
     }
+
+    /// Sets current user information.
+    ///
+    /// Those will be added to logs, traces and RUM events automatically.
+    /// 
+    /// - Parameters:
+    ///   - id: User ID, if any
+    ///   - name: Name representing the user, if any
+    ///   - email: User's email, if any
+    ///   - extraInfo: User's custom attributes, if any
+    func setUserInfo(
+        id: String? = nil,
+        name: String? = nil,
+        email: String? = nil,
+        extraInfo: [AttributeKey: AttributeValue] = [:]
+    ) {
+        userInfoProvider.value = UserInfo(
+            id: id,
+            name: name,
+            email: email,
+            extraInfo: extraInfo
+        )
+    }
+
+    /// Sets the tracking consent regarding the data collection for the Datadog SDK.
+    /// 
+    /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
+    func set(trackingConsent: TrackingConsent) {
+        consentProvider.changeConsent(to: trackingConsent)
+    }
 }
 
 extension DatadogCore: DatadogCoreProtocol {

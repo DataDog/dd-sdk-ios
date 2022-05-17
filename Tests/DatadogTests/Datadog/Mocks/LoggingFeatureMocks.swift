@@ -64,12 +64,21 @@ extension LoggingFeature {
 
     // MARK: - Expecting Logs Data
 
-    static func waitAndReturnLogMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
-        guard let uploadWorker = LoggingFeature.instance?.upload.uploader as? DataUploadWorkerMock else {
+    func waitAndReturnLogMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
+        guard let uploadWorker = upload.uploader as? DataUploadWorkerMock else {
             preconditionFailure("Retrieving matchers requires that feature is mocked with `.mockByRecordingLogMatchers()`")
         }
         return try uploadWorker.waitAndReturnBatchedData(count: count, file: file, line: line)
             .flatMap { batchData in try LogMatcher.fromArrayOfJSONObjectsData(batchData, file: file, line: line) }
+    }
+
+    // swiftlint:disable:next function_default_parameter_at_end
+    static func waitAndReturnLogMatchers(in core: DatadogCoreProtocol = defaultDatadogCore, count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
+        guard let logging = core.feature(LoggingFeature.self, named: LoggingFeature.featureName) else {
+            preconditionFailure("LoggingFeature is not registered in core")
+        }
+
+        return try logging.waitAndReturnLogMatchers(count: count, file: file, line: line)
     }
 }
 

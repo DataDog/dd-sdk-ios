@@ -9,16 +9,21 @@ import XCTest
 
 // swiftlint:disable multiline_arguments_brackets
 class TracerTests: XCTestCase {
+    let core = DatadogCoreMock()
+
     override func setUp() {
         super.setUp()
         XCTAssertFalse(Datadog.isInitialized)
-        XCTAssertNil(LoggingFeature.instance)
+        XCTAssertNil(TracingFeature.instance)
         temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
+        core.all(LoggingFeature.self).forEach { $0.deinitialize() }
+        core.flush()
+
         XCTAssertFalse(Datadog.isInitialized)
-        XCTAssertNil(LoggingFeature.instance)
+        XCTAssertNil(TracingFeature.instance)
         temporaryFeatureDirectories.delete()
         super.tearDown()
     }
@@ -600,20 +605,21 @@ class TracerTests: XCTestCase {
     // MARK: - Integration With Logging Feature
 
     func testSendingSpanLogs() throws {
-        LoggingFeature.instance = .mockByRecordingLogMatchers(
+        let loggingFeature: LoggingFeature = .mockByRecordingLogMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
         )
-        defer { LoggingFeature.instance?.deinitialize() }
+
+        core.registerFeature(named: LoggingFeature.featureName, instance: loggingFeature)
 
         TracingFeature.instance = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
             ),
-            loggingFeature: LoggingFeature.instance!
+            loggingFeature: loggingFeature
         )
         defer { TracingFeature.instance?.deinitialize() }
 
@@ -623,7 +629,7 @@ class TracerTests: XCTestCase {
         span.log(fields: [OTLogFields.message: "hello", "custom.field": "value"])
         span.log(fields: [OTLogFields.event: "error", OTLogFields.errorKind: "Swift error", OTLogFields.message: "Ops!"])
 
-        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 2)
+        let logMatchers = try loggingFeature.waitAndReturnLogMatchers(count: 2)
 
         let regularLogMatcher = logMatchers[0]
         let errorLogMatcher = logMatchers[1]
@@ -644,20 +650,20 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromArguments() throws {
-        LoggingFeature.instance = .mockByRecordingLogMatchers(
+        let loggingFeature: LoggingFeature = .mockByRecordingLogMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
         )
-        defer { LoggingFeature.instance?.deinitialize() }
+        core.registerFeature(named: LoggingFeature.featureName, instance: loggingFeature)
 
         TracingFeature.instance = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
             ),
-            loggingFeature: LoggingFeature.instance!
+            loggingFeature: loggingFeature
         )
         defer { TracingFeature.instance?.deinitialize() }
 
@@ -667,7 +673,7 @@ class TracerTests: XCTestCase {
         span.log(fields: [OTLogFields.message: "hello", "custom.field": "value"])
         span.setError(kind: "Swift error", message: "Ops!")
 
-        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 2)
+        let logMatchers = try loggingFeature.waitAndReturnLogMatchers(count: 2)
         let errorLogMatcher = logMatchers[1]
 
         errorLogMatcher.assertStatus(equals: "error")
@@ -680,20 +686,20 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromNSError() throws {
-        LoggingFeature.instance = .mockByRecordingLogMatchers(
+        let loggingFeature: LoggingFeature = .mockByRecordingLogMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
         )
-        defer { LoggingFeature.instance?.deinitialize() }
+        core.registerFeature(named: LoggingFeature.featureName, instance: loggingFeature)
 
         TracingFeature.instance = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
             ),
-            loggingFeature: LoggingFeature.instance!
+            loggingFeature: loggingFeature
         )
         defer { TracingFeature.instance?.deinitialize() }
 
@@ -708,7 +714,7 @@ class TracerTests: XCTestCase {
         )
         span.setError(error)
 
-        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 2)
+        let logMatchers = try loggingFeature.waitAndReturnLogMatchers(count: 2)
 
         let errorLogMatcher = logMatchers[1]
 
@@ -722,20 +728,20 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromSwiftError() throws {
-        LoggingFeature.instance = .mockByRecordingLogMatchers(
+        let loggingFeature: LoggingFeature = .mockByRecordingLogMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
         )
-        defer { LoggingFeature.instance?.deinitialize() }
+        core.registerFeature(named: LoggingFeature.featureName, instance: loggingFeature)
 
         TracingFeature.instance = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
             ),
-            loggingFeature: LoggingFeature.instance!
+            loggingFeature: loggingFeature
         )
         defer { TracingFeature.instance?.deinitialize() }
 
@@ -745,7 +751,7 @@ class TracerTests: XCTestCase {
         span.log(fields: [OTLogFields.message: "hello", "custom.field": "value"])
         span.setError(ErrorMock("Ops!"))
 
-        let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 2)
+        let logMatchers = try loggingFeature.waitAndReturnLogMatchers(count: 2)
 
         let errorLogMatcher = logMatchers[1]
 

@@ -45,7 +45,7 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
         ),
         .init(
             assert: {
-                LoggingFeature.instance == nil
+                defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName) == nil
                     && TracingFeature.instance == nil
                     && RUMFeature.instance == nil
                     && CrashReportingFeature.instance == nil

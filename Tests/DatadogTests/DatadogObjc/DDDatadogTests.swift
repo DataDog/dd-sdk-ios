@@ -13,13 +13,15 @@ class DDDatadogTests: XCTestCase {
     override func setUp() {
         super.setUp()
         XCTAssertFalse(Datadog.isInitialized)
-        XCTAssertNil(LoggingFeature.instance)
+        let logging = defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName)
+        XCTAssertNil(logging)
         XCTAssertNil(URLSessionAutoInstrumentation.instance)
     }
 
     override func tearDown() {
         XCTAssertFalse(Datadog.isInitialized)
-        XCTAssertNil(LoggingFeature.instance)
+        let logging = defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName)
+        XCTAssertNil(logging)
         XCTAssertNil(URLSessionAutoInstrumentation.instance)
         super.tearDown()
     }
@@ -37,8 +39,10 @@ class DDDatadogTests: XCTestCase {
         )
 
         XCTAssertTrue(Datadog.isInitialized)
-        XCTAssertEqual(LoggingFeature.instance?.configuration.common.applicationName, "app-name")
-        XCTAssertEqual(LoggingFeature.instance?.configuration.common.environment, "tests")
+
+        let logging = defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName)
+        XCTAssertEqual(logging?.configuration.common.applicationName, "app-name")
+        XCTAssertEqual(logging?.configuration.common.environment, "tests")
         XCTAssertNotNil(URLSessionAutoInstrumentation.instance)
 
         URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()

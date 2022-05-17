@@ -114,7 +114,7 @@ class DatadogTests: XCTestCase {
 
         verify(configuration: defaultBuilder.build()) {
             // verify features:
-            XCTAssertTrue(LoggingFeature.isEnabled)
+            XCTAssertNotNil(defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName))
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
             XCTAssertFalse(CrashReportingFeature.isEnabled)
@@ -125,7 +125,7 @@ class DatadogTests: XCTestCase {
         }
         verify(configuration: rumBuilder.build()) {
             // verify features:
-            XCTAssertTrue(LoggingFeature.isEnabled)
+            XCTAssertNotNil(defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName))
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
             XCTAssertFalse(CrashReportingFeature.isEnabled)
@@ -137,7 +137,7 @@ class DatadogTests: XCTestCase {
 
         verify(configuration: defaultBuilder.enableLogging(false).build()) {
             // verify features:
-            XCTAssertFalse(LoggingFeature.isEnabled)
+            XCTAssertNil(defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName))
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
             XCTAssertFalse(CrashReportingFeature.isEnabled)
@@ -148,7 +148,7 @@ class DatadogTests: XCTestCase {
         }
         verify(configuration: rumBuilder.enableLogging(false).build()) {
             // verify features:
-            XCTAssertFalse(LoggingFeature.isEnabled)
+            XCTAssertNil(defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName))
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
             XCTAssertFalse(CrashReportingFeature.isEnabled)
@@ -160,7 +160,7 @@ class DatadogTests: XCTestCase {
 
         verify(configuration: defaultBuilder.enableTracing(false).build()) {
             // verify features:
-            XCTAssertTrue(LoggingFeature.isEnabled)
+            XCTAssertNotNil(defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName))
             XCTAssertFalse(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
             XCTAssertFalse(CrashReportingFeature.isEnabled)
@@ -169,7 +169,7 @@ class DatadogTests: XCTestCase {
         }
         verify(configuration: rumBuilder.enableTracing(false).build()) {
             // verify features:
-            XCTAssertTrue(LoggingFeature.isEnabled)
+            XCTAssertNotNil(defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName))
             XCTAssertFalse(TracingFeature.isEnabled)
             XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
             XCTAssertFalse(CrashReportingFeature.isEnabled)
@@ -179,7 +179,7 @@ class DatadogTests: XCTestCase {
 
         verify(configuration: defaultBuilder.enableRUM(true).build()) {
             // verify features:
-            XCTAssertTrue(LoggingFeature.isEnabled)
+            XCTAssertNotNil(defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName))
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature cannot be enabled")
             XCTAssertFalse(CrashReportingFeature.isEnabled)
@@ -190,7 +190,7 @@ class DatadogTests: XCTestCase {
         }
         verify(configuration: rumBuilder.enableRUM(false).build()) {
             // verify features:
-            XCTAssertTrue(LoggingFeature.isEnabled)
+            XCTAssertNotNil(defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName))
             XCTAssertTrue(TracingFeature.isEnabled)
             XCTAssertFalse(RUMFeature.isEnabled)
             XCTAssertFalse(CrashReportingFeature.isEnabled)
@@ -314,9 +314,12 @@ class DatadogTests: XCTestCase {
             uploadFrequency: .frequent,
             bundleType: .iOSApp
         )
+
+        let core = defaultDatadogCore
+        let logging = core.feature(LoggingFeature.self, named: LoggingFeature.featureName)
+        XCTAssertEqual(logging?.configuration.common.performance, expectedPerformancePreset)
         XCTAssertEqual(RUMFeature.instance?.configuration.sessionSampler.samplingRate, 100)
         XCTAssertEqual(TracingFeature.instance?.configuration.common.performance, expectedPerformancePreset)
-        XCTAssertEqual(LoggingFeature.instance?.configuration.common.performance, expectedPerformancePreset)
         XCTAssertEqual(Datadog.verbosityLevel, .debug)
 
         // Clear default verbosity after this test
@@ -435,10 +438,13 @@ class DatadogTests: XCTestCase {
                 .build()
         )
 
+        let core = defaultDatadogCore
+        let logging = core.feature(LoggingFeature.self, named: LoggingFeature.featureName)
+
         // On SDK init, underlying `ConsentAwareDataWriter` performs data migration for each feature, which includes
         // data removal in `unauthorised` (`.pending`) directory. To not cause test flakiness, we must ensure that
         // mock data is written only after this operation completes - otherwise, migration may delete mocked files.
-        let loggingWriter = try XCTUnwrap(LoggingFeature.instance?.storage.writer as? ConsentAwareDataWriter)
+        let loggingWriter = try XCTUnwrap(logging?.storage.writer as? ConsentAwareDataWriter)
         let tracingWriter = try XCTUnwrap(TracingFeature.instance?.storage.writer as? ConsentAwareDataWriter)
         let rumWriter = try XCTUnwrap(RUMFeature.instance?.storage.writer as? ConsentAwareDataWriter)
         loggingWriter.queue.sync {}
@@ -462,7 +468,7 @@ class DatadogTests: XCTestCase {
         Datadog.clearAllData()
 
         // Wait for async clear completion in all features:
-        (LoggingFeature.instance?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
+        (logging?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
         (TracingFeature.instance?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
         (RUMFeature.instance?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
 
