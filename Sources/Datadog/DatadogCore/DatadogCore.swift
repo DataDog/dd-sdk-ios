@@ -20,6 +20,8 @@ internal final class DatadogCore {
     /// User PII.
     let userInfoProvider: UserInfoProvider
 
+    private var v1Features: [String: Any] = [:]
+
     /// Creates a core instance.
     ///
     /// - Parameters:
@@ -42,5 +44,15 @@ extension DatadogCore: DatadogCoreProtocol {
     func scope(forFeature featureName: String) -> FeatureScope? {
         // no-op
         return nil
+    }
+
+    // MARK: V1 interface
+
+    func registerFeature(named featureName: String, instance: Any?) {
+        v1Features[featureName] = instance
+    }
+
+    func feature<T>(_ type: T.Type, named featureName: String) -> T? {
+        return v1Features[featureName] as? T
     }
 }
