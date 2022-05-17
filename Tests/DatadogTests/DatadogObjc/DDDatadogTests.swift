@@ -13,16 +13,10 @@ class DDDatadogTests: XCTestCase {
     override func setUp() {
         super.setUp()
         XCTAssertFalse(Datadog.isInitialized)
-        let logging = defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName)
-        XCTAssertNil(logging)
-        XCTAssertNil(URLSessionAutoInstrumentation.instance)
     }
 
     override func tearDown() {
         XCTAssertFalse(Datadog.isInitialized)
-        let logging = defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName)
-        XCTAssertNil(logging)
-        XCTAssertNil(URLSessionAutoInstrumentation.instance)
         super.tearDown()
     }
 
@@ -47,6 +41,9 @@ class DDDatadogTests: XCTestCase {
 
         URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
         Datadog.flushAndDeinitialize()
+
+        XCTAssertNil(defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName))
+        XCTAssertNil(URLSessionAutoInstrumentation.instance)
     }
 
     // MARK: - Changing Tracking Consent

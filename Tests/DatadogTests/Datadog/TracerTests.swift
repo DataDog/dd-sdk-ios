@@ -13,16 +13,11 @@ class TracerTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        XCTAssertFalse(Datadog.isInitialized)
-        XCTAssertNil(TracingFeature.instance)
         temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
         core.flush()
-
-        XCTAssertFalse(Datadog.isInitialized)
-        XCTAssertNil(TracingFeature.instance)
         temporaryFeatureDirectories.delete()
         super.tearDown()
     }
@@ -30,7 +25,7 @@ class TracerTests: XCTestCase {
     // MARK: - Customizing Tracer
 
     func testSendingSpanWithDefaultTracer() throws {
-        TracingFeature.instance = .mockByRecordingSpanMatchers(
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(
                 common: .mockWith(
@@ -47,14 +42,14 @@ class TracerTests: XCTestCase {
             ),
             tracingUUIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1)
         )
-        defer { TracingFeature.instance?.deinitialize() }
+        core.registerFeature(named: TracingFeature.featureName, instance: feature)
 
-        let tracer = Tracer.initialize(configuration: .init())
+        let tracer = Tracer.initialize(configuration: .init(), in: core)
 
         let span = tracer.startSpan(operationName: "operation")
         span.finish(at: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
 
-        let spanMatcher = try TracingFeature.waitAndReturnSpanMatchers(count: 1)[0]
+        let spanMatcher = try feature.waitAndReturnSpanMatchers(count: 1)[0]
         try spanMatcher.assertItFullyMatches(jsonString: """
         {
           "spans": [
@@ -82,20 +77,21 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanWithCustomizedTracer() throws {
-        TracingFeature.instance = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        defer { TracingFeature.instance?.deinitialize() }
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        core.registerFeature(named: TracingFeature.featureName, instance: feature)
 
         let tracer = Tracer.initialize(
             configuration: .init(
                 serviceName: "custom-service-name",
                 sendNetworkInfo: true
-            )
+            ),
+            in: core
         )
 
         let span = tracer.startSpan(operationName: .mockAny())
         span.finish()
 
-        let spanMatcher = try TracingFeature.waitAndReturnSpanMatchers(count: 1)[0]
+        let spanMatcher = try feature.waitAndReturnSpanMatchers(count: 1)[0]
         XCTAssertEqual(try spanMatcher.serviceName(), "custom-service-name")
         XCTAssertNoThrow(try spanMatcher.meta.networkAvailableInterfaces())
         XCTAssertNoThrow(try spanMatcher.meta.networkConnectionIsExpensive())
@@ -112,8 +108,8 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanWithGlobalTags() throws {
-        TracingFeature.instance = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        defer { TracingFeature.instance?.deinitialize() }
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        core.registerFeature(named: TracingFeature.featureName, instance: feature)
 
         let tracer = Tracer.initialize(
             configuration: .init(
@@ -122,14 +118,15 @@ class TracerTests: XCTestCase {
                     "globaltag1": "globalValue1",
                     "globaltag2": "globalValue2"
                 ]
-            )
+            ),
+            in: core
         )
 
         let span = tracer.startSpan(operationName: .mockAny())
         span.setTag(key: "globaltag2", value: "overwrittenValue" )
         span.finish()
 
-        let spanMatcher = try TracingFeature.waitAndReturnSpanMatchers(count: 1)[0]
+        let spanMatcher = try feature.waitAndReturnSpanMatchers(count: 1)[0]
         XCTAssertEqual(try spanMatcher.serviceName(), "custom-service-name")
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.globaltag1"), "globalValue1")
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.globaltag2"), "overwrittenValue")
@@ -138,10 +135,10 @@ class TracerTests: XCTestCase {
     // MARK: - Sending Customized Spans
 
     func testSendingCustomizedSpan() throws {
-        TracingFeature.instance = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        defer { TracingFeature.instance?.deinitialize() }
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        core.registerFeature(named: TracingFeature.featureName, instance: feature)
 
-        let tracer = Tracer.initialize(configuration: .init()).dd
+        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
 
         let span = tracer.startSpan(
             operationName: "operation",
@@ -155,7 +152,7 @@ class TracerTests: XCTestCase {
         span.setTag(key: "tag2", value: 123)
         span.finish(at: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
 
-        let spanMatcher = try TracingFeature.waitAndReturnSpanMatchers(count: 1)[0]
+        let spanMatcher = try feature.waitAndReturnSpanMatchers(count: 1)[0]
         XCTAssertEqual(try spanMatcher.operationName(), "operation")
         XCTAssertEqual(try spanMatcher.resource(), "GET /foo.png")
         XCTAssertEqual(try spanMatcher.startTime(), 1_576_404_000_000_000_000)
@@ -166,10 +163,10 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanWithParentAndBaggageItems() throws {
-        TracingFeature.instance = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        defer { TracingFeature.instance?.deinitialize() }
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        core.registerFeature(named: TracingFeature.featureName, instance: feature)
 
-        let tracer = Tracer.initialize(configuration: .init()).dd
+        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
 
         let rootSpan = tracer.startSpan(operationName: "root operation")
         let childSpan = tracer.startSpan(operationName: "child operation", childOf: rootSpan.context)
@@ -185,7 +182,7 @@ class TracerTests: XCTestCase {
         childSpan.finish()
         rootSpan.finish()
 
-        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 3)
+        let spanMatchers = try feature.waitAndReturnSpanMatchers(count: 3)
         let rootMatcher = spanMatchers[2]
         let childMatcher = spanMatchers[1]
         let grandchildMatcher = spanMatchers[0]
@@ -226,10 +223,10 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanWithActiveSpanAsAParent() throws {
-        TracingFeature.instance = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        defer { TracingFeature.instance?.deinitialize() }
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        core.registerFeature(named: TracingFeature.featureName, instance: feature)
 
-        let tracer = Tracer.initialize(configuration: .init()).dd
+        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
         let queue1 = DispatchQueue(label: "\(#function)-queue1")
         let queue2 = DispatchQueue(label: "\(#function)-queue2")
 
@@ -247,7 +244,7 @@ class TracerTests: XCTestCase {
 
         rootSpan.finish()
 
-        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 3)
+        let spanMatchers = try feature.waitAndReturnSpanMatchers(count: 3)
         let rootMatcher = spanMatchers[2]
         let child1Matcher = spanMatchers[1]
         let child2Matcher = spanMatchers[0]
@@ -258,10 +255,10 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpansWithNoParent() throws {
-        TracingFeature.instance = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        defer { TracingFeature.instance?.deinitialize() }
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        core.registerFeature(named: TracingFeature.featureName, instance: feature)
 
-        let tracer = Tracer.initialize(configuration: .init()).dd
+        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
         let queue = DispatchQueue(label: "\(#function)-queue")
 
         func makeAPIRequest(completion: @escaping () -> Void) {
@@ -281,16 +278,16 @@ class TracerTests: XCTestCase {
         }
         tracer.activeSpan?.finish()
 
-        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 2)
+        let spanMatchers = try feature.waitAndReturnSpanMatchers(count: 2)
         XCTAssertEqual(try spanMatchers[0].parentSpanID(), "0")
         XCTAssertEqual(try spanMatchers[1].parentSpanID(), "0")
     }
 
     func testStartingRootActiveSpanInAsynchronousJobs() throws {
-        TracingFeature.instance = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        defer { TracingFeature.instance?.deinitialize() }
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        core.registerFeature(named: TracingFeature.featureName, instance: feature)
 
-        let tracer = Tracer.initialize(configuration: .init())
+        let tracer = Tracer.initialize(configuration: .init(), in: core)
         let queue = DispatchQueue(label: "\(#function)")
 
         func makeFakeAPIRequest(on queue: DispatchQueue, completion: @escaping () -> Void) {
@@ -305,7 +302,7 @@ class TracerTests: XCTestCase {
         makeFakeAPIRequest(on: queue) {}
         makeFakeAPIRequest(on: queue) {}
 
-        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 4)
+        let spanMatchers = try feature.waitAndReturnSpanMatchers(count: 4)
         let response1Matcher = spanMatchers[0]
         let request1Matcher = spanMatchers[1]
         let response2Matcher = spanMatchers[2]
@@ -328,15 +325,16 @@ class TracerTests: XCTestCase {
         defaultDatadogCore = core
         defer { defaultDatadogCore = NOOPDatadogCore() }
 
-        TracingFeature.instance = .mockByRecordingSpanMatchers(
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 userInfoProvider: core.userInfoProvider
             )
         )
-        defer { TracingFeature.instance?.deinitialize() }
+        defer { feature.deinitialize() }
+        core.registerFeature(named: TracingFeature.featureName, instance: feature)
 
-        let tracer = Tracer.initialize(configuration: .init()).dd
+        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
 
         tracer.startSpan(operationName: "span with no user info").finish()
         tracer.queue.sync {} // wait for processing the span event in `DDSpan`
@@ -361,7 +359,7 @@ class TracerTests: XCTestCase {
         Datadog.setUserInfo(id: nil, name: nil, email: nil)
         tracer.startSpan(operationName: "span with no user info").finish()
 
-        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 4)
+        let spanMatchers = try feature.waitAndReturnSpanMatchers(count: 4)
         XCTAssertNil(try? spanMatchers[0].meta.userID())
         XCTAssertNil(try? spanMatchers[0].meta.userName())
         XCTAssertNil(try? spanMatchers[0].meta.userEmail())
@@ -386,16 +384,17 @@ class TracerTests: XCTestCase {
 
     func testSendingCarrierInfoWhenEnteringAndLeavingCellularServiceRange() throws {
         let carrierInfoProvider = CarrierInfoProviderMock(carrierInfo: nil)
-        TracingFeature.instance = .mockByRecordingSpanMatchers(
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 carrierInfoProvider: carrierInfoProvider
             )
         )
-        defer { TracingFeature.instance?.deinitialize() }
+        core.registerFeature(named: TracingFeature.featureName, instance: feature)
 
         let tracer = Tracer.initialize(
-            configuration: .init(sendNetworkInfo: true)
+            configuration: .init(sendNetworkInfo: true),
+            in: core
         ).dd
 
         // simulate entering cellular service range
@@ -416,7 +415,7 @@ class TracerTests: XCTestCase {
 
         tracer.startSpan(operationName: "span with no carrier info").finish()
 
-        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 2)
+        let spanMatchers = try feature.waitAndReturnSpanMatchers(count: 2)
         XCTAssertEqual(try spanMatchers[0].meta.mobileNetworkCarrierName(), "Carrier")
         XCTAssertEqual(try spanMatchers[0].meta.mobileNetworkCarrierISOCountryCode(), "US")
         XCTAssertEqual(try spanMatchers[0].meta.mobileNetworkCarrierRadioTechnology(), "LTE")
@@ -432,16 +431,17 @@ class TracerTests: XCTestCase {
 
     func testSendingNetworkConnectionInfoWhenReachabilityChanges() throws {
         let networkConnectionInfoProvider = NetworkConnectionInfoProviderMock.mockAny()
-        TracingFeature.instance = .mockByRecordingSpanMatchers(
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 networkConnectionInfoProvider: networkConnectionInfoProvider
             )
         )
-        defer { TracingFeature.instance?.deinitialize() }
+        core.registerFeature(named: TracingFeature.featureName, instance: feature)
 
         let tracer = Tracer.initialize(
-            configuration: .init(sendNetworkInfo: true)
+            configuration: .init(sendNetworkInfo: true),
+            in: core
         ).dd
 
         // simulate reachable network
@@ -473,7 +473,7 @@ class TracerTests: XCTestCase {
 
         tracer.startSpan(operationName: "offline span").finish()
 
-        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 2)
+        let spanMatchers = try feature.waitAndReturnSpanMatchers(count: 2)
         XCTAssertEqual(try spanMatchers[0].meta.networkReachability(), "yes")
         XCTAssertEqual(try spanMatchers[0].meta.networkAvailableInterfaces(), "wifi+cellular")
         XCTAssertEqual(try spanMatchers[0].meta.networkConnectionIsConstrained(), "1")
@@ -492,8 +492,9 @@ class TracerTests: XCTestCase {
     // MARK: - Sending spans with different network and battery conditions
 
     func testGivenBadBatteryConditions_itDoesNotTryToSendTraces() throws {
+        let core = DatadogCoreMock()
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        TracingFeature.instance = .mockWith(
+        let feature: TracingFeature = .mockWith(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 mobileDevice: .mockWith(
@@ -503,18 +504,21 @@ class TracerTests: XCTestCase {
                 )
             )
         )
-        defer { TracingFeature.instance?.deinitialize() }
+        core.registerFeature(named: TracingFeature.featureName, instance: feature)
 
-        let tracer = Tracer.initialize(configuration: .init()).dd
+        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
 
         tracer.startSpan(operationName: .mockAny()).finish()
 
         server.waitAndAssertNoRequestsSent()
+        // flush in sync with ServerMock
+        core.flush()
     }
 
     func testGivenNoNetworkConnection_itDoesNotTryToSendTraces() throws {
+        let core = DatadogCoreMock()
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        TracingFeature.instance = .mockWith(
+        let feature: TracingFeature = .mockWith(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
@@ -522,22 +526,24 @@ class TracerTests: XCTestCase {
                 )
             )
         )
-        defer { TracingFeature.instance?.deinitialize() }
+        core.registerFeature(named: TracingFeature.featureName, instance: feature)
 
-        let tracer = Tracer.initialize(configuration: .init()).dd
+        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
 
         tracer.startSpan(operationName: .mockAny()).finish()
 
         server.waitAndAssertNoRequestsSent()
+        // flush in sync with ServerMock
+        core.flush()
     }
 
     // MARK: - Sending tags
 
     func testSendingSpanTagsOfDifferentEncodableValues() throws {
-        TracingFeature.instance = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        defer { TracingFeature.instance?.deinitialize() }
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        core.registerFeature(named: TracingFeature.featureName, instance: feature)
 
-        let tracer = Tracer.initialize(configuration: .init()).dd
+        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
 
         let span = tracer.startSpan(operationName: "operation", tags: [:], startTime: .mockDecember15th2019At10AMUTC())
 
@@ -581,7 +587,7 @@ class TracerTests: XCTestCase {
 
         span.finish(at: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
 
-        let spanMatcher = try TracingFeature.waitAndReturnSpanMatchers(count: 1)[0]
+        let spanMatcher = try feature.waitAndReturnSpanMatchers(count: 1)[0]
         XCTAssertEqual(try spanMatcher.operationName(), "operation")
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.string"), "hello")
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.bool"), "true")
@@ -604,31 +610,31 @@ class TracerTests: XCTestCase {
     // MARK: - Integration With Logging Feature
 
     func testSendingSpanLogs() throws {
-        let loggingFeature: LoggingFeature = .mockByRecordingLogMatchers(
+        let logging: LoggingFeature = .mockByRecordingLogMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
         )
 
-        core.registerFeature(named: LoggingFeature.featureName, instance: loggingFeature)
+        core.registerFeature(named: LoggingFeature.featureName, instance: logging)
 
-        TracingFeature.instance = .mockByRecordingSpanMatchers(
+        let tracing: TracingFeature = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
             ),
-            loggingFeature: loggingFeature
+            loggingFeature: logging
         )
-        defer { TracingFeature.instance?.deinitialize() }
+        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
 
-        let tracer = Tracer.initialize(configuration: .init())
+        let tracer = Tracer.initialize(configuration: .init(), in: core)
 
         let span = tracer.startSpan(operationName: "operation", startTime: .mockDecember15th2019At10AMUTC())
         span.log(fields: [OTLogFields.message: "hello", "custom.field": "value"])
         span.log(fields: [OTLogFields.event: "error", OTLogFields.errorKind: "Swift error", OTLogFields.message: "Ops!"])
 
-        let logMatchers = try loggingFeature.waitAndReturnLogMatchers(count: 2)
+        let logMatchers = try logging.waitAndReturnLogMatchers(count: 2)
 
         let regularLogMatcher = logMatchers[0]
         let errorLogMatcher = logMatchers[1]
@@ -649,30 +655,30 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromArguments() throws {
-        let loggingFeature: LoggingFeature = .mockByRecordingLogMatchers(
+        let logging: LoggingFeature = .mockByRecordingLogMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
         )
-        core.registerFeature(named: LoggingFeature.featureName, instance: loggingFeature)
+        core.registerFeature(named: LoggingFeature.featureName, instance: logging)
 
-        TracingFeature.instance = .mockByRecordingSpanMatchers(
+        let tracing: TracingFeature = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
             ),
-            loggingFeature: loggingFeature
+            loggingFeature: logging
         )
-        defer { TracingFeature.instance?.deinitialize() }
+        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
 
-        let tracer = Tracer.initialize(configuration: .init())
+        let tracer = Tracer.initialize(configuration: .init(), in: core)
 
         let span = tracer.startSpan(operationName: "operation", startTime: .mockDecember15th2019At10AMUTC())
         span.log(fields: [OTLogFields.message: "hello", "custom.field": "value"])
         span.setError(kind: "Swift error", message: "Ops!")
 
-        let logMatchers = try loggingFeature.waitAndReturnLogMatchers(count: 2)
+        let logMatchers = try logging.waitAndReturnLogMatchers(count: 2)
         let errorLogMatcher = logMatchers[1]
 
         errorLogMatcher.assertStatus(equals: "error")
@@ -685,24 +691,24 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromNSError() throws {
-        let loggingFeature: LoggingFeature = .mockByRecordingLogMatchers(
+        let logging: LoggingFeature = .mockByRecordingLogMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
         )
-        core.registerFeature(named: LoggingFeature.featureName, instance: loggingFeature)
+        core.registerFeature(named: LoggingFeature.featureName, instance: logging)
 
-        TracingFeature.instance = .mockByRecordingSpanMatchers(
+        let tracing: TracingFeature = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
             ),
-            loggingFeature: loggingFeature
+            loggingFeature: logging
         )
-        defer { TracingFeature.instance?.deinitialize() }
+        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
 
-        let tracer = Tracer.initialize(configuration: .init())
+        let tracer = Tracer.initialize(configuration: .init(), in: core)
 
         let span = tracer.startSpan(operationName: "operation", startTime: .mockDecember15th2019At10AMUTC())
         span.log(fields: [OTLogFields.message: "hello", "custom.field": "value"])
@@ -713,7 +719,7 @@ class TracerTests: XCTestCase {
         )
         span.setError(error)
 
-        let logMatchers = try loggingFeature.waitAndReturnLogMatchers(count: 2)
+        let logMatchers = try logging.waitAndReturnLogMatchers(count: 2)
 
         let errorLogMatcher = logMatchers[1]
 
@@ -727,30 +733,30 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromSwiftError() throws {
-        let loggingFeature: LoggingFeature = .mockByRecordingLogMatchers(
+        let logging: LoggingFeature = .mockByRecordingLogMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
         )
-        core.registerFeature(named: LoggingFeature.featureName, instance: loggingFeature)
+        core.registerFeature(named: LoggingFeature.featureName, instance: logging)
 
-        TracingFeature.instance = .mockByRecordingSpanMatchers(
+        let tracing: TracingFeature = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
             ),
-            loggingFeature: loggingFeature
+            loggingFeature: logging
         )
-        defer { TracingFeature.instance?.deinitialize() }
+        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
 
-        let tracer = Tracer.initialize(configuration: .init())
+        let tracer = Tracer.initialize(configuration: .init(), in: core)
 
         let span = tracer.startSpan(operationName: "operation", startTime: .mockDecember15th2019At10AMUTC())
         span.log(fields: [OTLogFields.message: "hello", "custom.field": "value"])
         span.setError(ErrorMock("Ops!"))
 
-        let logMatchers = try loggingFeature.waitAndReturnLogMatchers(count: 2)
+        let logMatchers = try logging.waitAndReturnLogMatchers(count: 2)
 
         let errorLogMatcher = logMatchers[1]
 
@@ -766,14 +772,14 @@ class TracerTests: XCTestCase {
     // MARK: - Integration With RUM Feature
 
     func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingSpan_itContainsCurrentRUMContext() throws {
-        TracingFeature.instance = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        defer { TracingFeature.instance?.deinitialize() }
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        core.registerFeature(named: TracingFeature.featureName, instance: feature)
 
         RUMFeature.instance = .mockNoOp()
         defer { RUMFeature.instance?.deinitialize() }
 
         // given
-        let tracer = Tracer.initialize(configuration: .init()).dd
+        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
         Global.rum = RUMMonitor.initialize()
         Global.rum.startView(viewController: mockView)
         defer { Global.rum = DDNoopRUMMonitor() }
@@ -783,7 +789,7 @@ class TracerTests: XCTestCase {
         span.finish()
 
         // then
-        let spanMatcher = try TracingFeature.waitAndReturnSpanMatchers(count: 1)[0]
+        let spanMatcher = try feature.waitAndReturnSpanMatchers(count: 1)[0]
         XCTAssertEqual(
             try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.applicationID)"),
             try XCTUnwrap(RUMFeature.instance?.configuration.applicationID)
@@ -793,8 +799,8 @@ class TracerTests: XCTestCase {
     }
 
     func testGivenBundlingWithRUMEnabledButRUMMonitorNotRegistered_whenSendingSpan_itPrintsWarning() throws {
-        TracingFeature.instance = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        defer { TracingFeature.instance?.deinitialize() }
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        core.registerFeature(named: TracingFeature.featureName, instance: feature)
 
         RUMFeature.instance = .mockNoOp()
         defer { RUMFeature.instance?.deinitialize() }
@@ -806,7 +812,7 @@ class TracerTests: XCTestCase {
         userLogger = .mockWith(logOutput: output)
 
         // given
-        let tracer = Tracer.initialize(configuration: .init()).dd
+        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
         XCTAssertTrue(Global.rum is DDNoopRUMMonitor)
 
         // when
@@ -820,7 +826,7 @@ class TracerTests: XCTestCase {
                 .contains("RUM feature is enabled, but no `RUMMonitor` is registered. The RUM integration with Tracing will not work.")
         )
 
-        let spanMatcher = try TracingFeature.waitAndReturnSpanMatchers(count: 1)[0]
+        let spanMatcher = try feature.waitAndReturnSpanMatchers(count: 1)[0]
         XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.applicationID)"))
         XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.sessionID)"))
         XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.viewID)"))
@@ -886,22 +892,22 @@ class TracerTests: XCTestCase {
         let serverTimeDifference = TimeInterval.random(in: -5..<5).rounded() // few seconds difference
 
         // When
-        TracingFeature.instance = .mockByRecordingSpanMatchers(
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(using: deviceTime),
                 dateCorrector: DateCorrectorMock(correctionOffset: serverTimeDifference)
             )
         )
-        defer { TracingFeature.instance?.deinitialize() }
+        core.registerFeature(named: TracingFeature.featureName, instance: feature)
 
-        let tracer = Tracer.initialize(configuration: .init())
+        let tracer = Tracer.initialize(configuration: .init(), in: core)
 
         let span = tracer.startSpan(operationName: .mockAny())
         span.finish(at: deviceTime.addingTimeInterval(2)) // 2 seconds long span
 
         // Then
-        let spanMatcher = try TracingFeature.waitAndReturnSpanMatchers(count: 1)[0]
+        let spanMatcher = try feature.waitAndReturnSpanMatchers(count: 1)[0]
         XCTAssertEqual(
             try spanMatcher.startTime(),
             deviceTime.addingTimeInterval(serverTimeDifference).timeIntervalSince1970.toNanoseconds,
@@ -920,13 +926,13 @@ class TracerTests: XCTestCase {
         let consentProvider = ConsentProvider(initialConsent: .pending)
 
         // Given
-        TracingFeature.instance = .mockByRecordingSpanMatchers(
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(consentProvider: consentProvider)
         )
-        defer { TracingFeature.instance?.deinitialize() }
+        core.registerFeature(named: TracingFeature.featureName, instance: feature)
 
-        let tracer = Tracer.initialize(configuration: .init()).dd
+        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
 
         // When
         tracer.startSpan(operationName: "span in `.pending` consent changed to `.granted`").finish()
@@ -944,7 +950,7 @@ class TracerTests: XCTestCase {
         tracer.startSpan(operationName: "another span in `.granted` consent").finish()
 
         // Then
-        let spanMatchers = try TracingFeature.waitAndReturnSpanMatchers(count: 3)
+        let spanMatchers = try feature.waitAndReturnSpanMatchers(count: 3)
         XCTAssertEqual(try spanMatchers[0].operationName(), "span in `.pending` consent changed to `.granted`")
         XCTAssertEqual(try spanMatchers[1].operationName(), "span in `.granted` consent")
         XCTAssertEqual(try spanMatchers[2].operationName(), "another span in `.granted` consent")
@@ -953,10 +959,10 @@ class TracerTests: XCTestCase {
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
-        TracingFeature.instance = .mockNoOp()
-        defer { TracingFeature.instance?.deinitialize() }
+        let feature: TracingFeature = .mockNoOp()
+        core.registerFeature(named: TracingFeature.featureName, instance: feature)
 
-        let tracer = Tracer.initialize(configuration: .init())
+        let tracer = Tracer.initialize(configuration: .init(), in: core)
         var spans: [DDSpan] = []
         let queue = DispatchQueue(label: "spans-array-sync")
 
@@ -1002,7 +1008,7 @@ class TracerTests: XCTestCase {
         XCTAssertFalse(Datadog.isInitialized)
 
         // when
-        let tracer = Tracer.initialize(configuration: .init())
+        let tracer = Tracer.initialize(configuration: .init(), in: core)
 
         // then
         XCTAssertEqual(

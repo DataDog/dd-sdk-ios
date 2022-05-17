@@ -69,7 +69,7 @@ public class Tracer: OTTracer {
     /// Initializes the Datadog Tracer.
     /// - Parameters:
     ///   - configuration: the tracer configuration obtained using `Tracer.Configuration()`.
-    public static func initialize(configuration: Configuration) -> OTTracer {
+    public static func initialize(configuration: Configuration, in core: DatadogCoreProtocol = defaultDatadogCore) -> OTTracer {
         do {
             if Global.sharedTracer is Tracer {
                 throw ProgrammerError(
@@ -78,7 +78,7 @@ public class Tracer: OTTracer {
                     """
                 )
             }
-            guard let tracingFeature = TracingFeature.instance else {
+            guard let tracingFeature = core.feature(TracingFeature.self, named: TracingFeature.featureName) else {
                 throw ProgrammerError(
                     description: Datadog.isInitialized
                         ? "`Tracer.initialize(configuration:)` produces a non-functional tracer, as the tracing feature is disabled."

@@ -632,15 +632,13 @@ class LoggerTests: XCTestCase {
 
     func testGivenBundlingWithTraceEnabledAndTracerRegistered_whenSendingLog_itContainsActiveSpanAttributes() throws {
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
-        defer { feature.deinitialize() }
+        let tracing: TracingFeature = .mockNoOp()
         core.registerFeature(named: LoggingFeature.featureName, instance: feature)
-
-        TracingFeature.instance = .mockNoOp()
-        defer { TracingFeature.instance?.deinitialize() }
+        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
 
         // given
         let logger = Logger.builder.build(in: core)
-        Global.sharedTracer = Tracer.initialize(configuration: .init())
+        Global.sharedTracer = Tracer.initialize(configuration: .init(), in: core)
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
 
         // when
@@ -665,11 +663,9 @@ class LoggerTests: XCTestCase {
 
     func testGivenBundlingWithTraceEnabledButTracerNotRegistered_whenSendingLog_itPrintsWarning() throws {
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
-        defer { feature.deinitialize() }
+        let tracing: TracingFeature = .mockNoOp()
         core.registerFeature(named: LoggingFeature.featureName, instance: feature)
-
-        TracingFeature.instance = .mockNoOp()
-        defer { TracingFeature.instance?.deinitialize() }
+        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
 
         let previousUserLogger = userLogger
         defer { userLogger = previousUserLogger }

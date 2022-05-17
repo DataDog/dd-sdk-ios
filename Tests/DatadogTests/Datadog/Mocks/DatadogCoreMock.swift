@@ -60,3 +60,9 @@ extension LoggingFeature: Flushable {
         deinitialize()
     }
 }
+
+extension TracingFeature: Flushable {
+    func flush() {
+        deinitialize()
+    }
+}

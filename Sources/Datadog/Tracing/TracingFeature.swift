@@ -25,12 +25,6 @@ internal func obtainTracingFeatureDirectories() throws -> FeatureDirectories {
 /// Creates and owns componetns enabling tracing feature.
 /// Bundles dependencies for other tracing-related components created later at runtime  (i.e. `Tracer`).
 internal final class TracingFeature {
-    /// Single, shared instance of `TracingFeatureFeature`.
-    internal static var instance: TracingFeature?
-
-    /// Tells if the feature was enabled by the user in the SDK configuration.
-    static var isEnabled: Bool { instance != nil }
-
     // MARK: - Configuration
 
     let configuration: FeaturesConfiguration.Tracing
@@ -171,6 +165,5 @@ internal final class TracingFeature {
     internal func deinitialize() {
         storage.flushAndTearDown()
         upload.flushAndTearDown()
-        TracingFeature.instance = nil
     }
 }

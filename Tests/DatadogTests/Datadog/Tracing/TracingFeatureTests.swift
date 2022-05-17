@@ -8,16 +8,17 @@ import XCTest
 @testable import Datadog
 
 class TracingFeatureTests: XCTestCase {
+    let core = DatadogCoreMock()
+
     override func setUp() {
         super.setUp()
         XCTAssertFalse(Datadog.isInitialized)
-        XCTAssertNil(TracingFeature.instance)
         temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
         XCTAssertFalse(Datadog.isInitialized)
-        XCTAssertNil(TracingFeature.instance)
+        core.flush()
         temporaryFeatureDirectories.delete()
         super.tearDown()
     }
@@ -40,7 +41,7 @@ class TracingFeatureTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
 
         // Given
-        TracingFeature.instance = .mockWith(
+        let feature: TracingFeature = .mockWith(
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(
                 common: .mockWith(
@@ -58,10 +59,10 @@ class TracingFeatureTests: XCTestCase {
                 mobileDevice: .mockWith(model: randomDeviceModel, osName: randomDeviceOSName, osVersion: randomDeviceOSVersion)
             )
         )
-        defer { TracingFeature.instance?.deinitialize() }
+        core.registerFeature(named: TracingFeature.featureName, instance: feature)
 
         // When
-        let tracer = Tracer.initialize(configuration: .init()).dd
+        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
         let span = tracer.startSpan(operationName: .mockAny())
         span.finish()
 
@@ -89,7 +90,7 @@ class TracingFeatureTests: XCTestCase {
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        TracingFeature.instance = .mockWith(
+        let feature: TracingFeature = .mockWith(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(
@@ -111,9 +112,9 @@ class TracingFeatureTests: XCTestCase {
                 )
             )
         )
-        defer { TracingFeature.instance?.deinitialize() }
+        core.registerFeature(named: TracingFeature.featureName, instance: feature)
 
-        let tracer = Tracer.initialize(configuration: .init()).dd
+        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
 
         tracer.startSpan(operationName: "operation 1").finish()
         tracer.startSpan(operationName: "operation 2").finish()

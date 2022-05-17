@@ -34,7 +34,7 @@ extension TracingFeature {
             directories: directories,
             configuration: configuration,
             commonDependencies: dependencies,
-            loggingFeatureAdapter: loggingFeature.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
+            loggingFeatureAdapter: loggingFeature.map { LoggingForTracingAdapter(loggingFeature: $0) },
             tracingUUIDGenerator: tracingUUIDGenerator,
             telemetry: telemetry
         )
@@ -79,12 +79,21 @@ extension TracingFeature {
 
     // MARK: - Expecting Spans Data
 
-    static func waitAndReturnSpanMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [SpanMatcher] {
-        guard let uploadWorker = TracingFeature.instance?.upload.uploader as? DataUploadWorkerMock else {
+    func waitAndReturnSpanMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [SpanMatcher] {
+        guard let uploadWorker = upload.uploader as? DataUploadWorkerMock else {
             preconditionFailure("Retrieving matchers requires that feature is mocked with `.mockByRecordingSpanMatchers()`")
         }
         return try uploadWorker.waitAndReturnBatchedData(count: count, file: file, line: line)
             .flatMap { batchData in try SpanMatcher.fromNewlineSeparatedJSONObjectsData(batchData) }
+    }
+
+    // swiftlint:disable:next function_default_parameter_at_end
+    static func waitAndReturnSpanMatchers(in core: DatadogCoreProtocol = defaultDatadogCore, count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [SpanMatcher] {
+        guard let tracing = core.feature(TracingFeature.self, named: TracingFeature.featureName) else {
+            preconditionFailure("TracingFeature is not registered in core")
+        }
+
+        return try tracing.waitAndReturnSpanMatchers(count: count, file: file, line: line)
     }
 }
 
