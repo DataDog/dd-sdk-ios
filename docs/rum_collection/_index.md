@@ -311,7 +311,8 @@ Add the following snippet during initialization in your Datadog configuration:
 .trackBackgroundEvents()
 
 ```
-
+{{% /tab %}}
+{{< /tabs >}}
 <div class="alert alert-info"><p>Tracking background events may lead to additional sessions, which can impact billing. For questions, <a href="https://docs.datadoghq.com/help/">contact Datadog support.</a></p>
 </div>
 
