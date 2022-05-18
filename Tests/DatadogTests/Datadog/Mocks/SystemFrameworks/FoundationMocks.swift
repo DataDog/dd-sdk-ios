@@ -350,6 +350,16 @@ struct FailingEncodableMock: Encodable {
     }
 }
 
+extension NSError: AnyMockable, RandomMockable {
+    static func mockAny() -> Self {
+        .init(domain: .mockAny(), code: .mockAny())
+    }
+
+    static func mockRandom() -> Self {
+        .init(domain: .mockRandom(), code: .mockRandom())
+    }
+}
+
 class BundleMock: Bundle {
     // swiftlint:disable identifier_name
     fileprivate var _bundlePath: String = .mockAny()

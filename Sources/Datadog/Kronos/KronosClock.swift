@@ -73,20 +73,17 @@ internal struct KronosClock {
     /// - parameter pool:       NTP pool that will be resolved into multiple NTP servers that will be used for
     ///                         the synchronization.
     /// - parameter samples:    The number of samples to be acquired from each server (default 4).
-    /// - parameter monitor:    Monitor collecting Kronos telemetry - only enabled if Internal Monitoring is configured.
     /// - parameter first:      A closure that will be called after the first valid date is calculated.
     /// - parameter completion: A closure that will be called after _all_ the NTP calls are finished.
     static func sync(
         from pool: String = "time.apple.com",
         samples: Int = 4,
-        monitor: KronosMonitor? = nil,
         first: ((Date, TimeInterval) -> Void)? = nil,
         completion: ((Date?, TimeInterval?) -> Void)? = nil
     ) {
         self.loadFromDefaults()
 
-        monitor?.notifySyncStart(from: pool)
-        KronosNTPClient().query(pool: pool, numberOfSamples: samples, monitor: monitor) { offset, done, total in
+        KronosNTPClient().query(pool: pool, numberOfSamples: samples) { offset, done, total in
             if let offset = offset {
                 self.stableTime = KronosTimeFreeze(offset: offset)
 
@@ -96,7 +93,6 @@ internal struct KronosClock {
             }
 
             if done == total {
-                monitor?.notifySyncEnd(serverOffset: offset)
                 completion?(self.now, offset)
             }
         }

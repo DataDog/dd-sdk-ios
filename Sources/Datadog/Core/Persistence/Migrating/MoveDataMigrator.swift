@@ -11,13 +11,13 @@ import Foundation
 internal struct MoveDataMigrator: DataMigrator {
     let sourceDirectory: Directory
     let destinationDirectory: Directory
-    var internalMonitor: InternalMonitor? = nil
+    var telemetry: Telemetry? = nil
 
     func migrate() {
         do {
             try sourceDirectory.moveAllFiles(to: destinationDirectory)
         } catch {
-            internalMonitor?.sdkLogger.error(
+            telemetry?.error(
                 """
                 🔥 Failed to use `MoveDataMigrator` for source directory \(sourceDirectory.url)
                 and destination directory \(destinationDirectory.url)

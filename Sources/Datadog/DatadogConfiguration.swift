@@ -264,14 +264,12 @@ extension Datadog {
         private(set) var rumLongTaskEventMapper: RUMLongTaskEventMapper?
         private(set) var rumResourceAttributesProvider: URLSessionRUMAttributesProvider?
         private(set) var rumBackgroundEventTrackingEnabled: Bool
+        private(set) var rumTelemetrySamplingRate: Float
         private(set) var batchSize: BatchSize
         private(set) var uploadFrequency: UploadFrequency
         private(set) var additionalConfiguration: [String: Any]
         private(set) var proxyConfiguration: [AnyHashable: Any]?
         private(set) var encryption: DataEncryption?
-
-        /// The client token autorizing internal monitoring data to be sent to Datadog org.
-        private(set) var internalMonitoringClientToken: String?
 
         /// Creates the builder for configuring the SDK to work with RUM, Logging and Tracing features.
         /// - Parameter rumApplicationID: RUM Application ID obtained on Datadog website.
@@ -340,11 +338,11 @@ extension Datadog {
                     rumErrorEventMapper: nil,
                     rumResourceAttributesProvider: nil,
                     rumBackgroundEventTrackingEnabled: false,
+                    rumTelemetrySamplingRate: 20,
                     batchSize: .medium,
                     uploadFrequency: .average,
                     additionalConfiguration: [:],
-                    proxyConfiguration: nil,
-                    internalMonitoringClientToken: nil
+                    proxyConfiguration: nil
                 )
             }
 
@@ -701,6 +699,15 @@ extension Datadog {
                 return self
             }
 
+            /// Sets the sampling rate for Internal Telemetry (info related to the work of the SDK internals). Default value is 20.
+            ///
+            /// - Parameter rate: the sampling rate must be a value between 0 and 100. A value of 0
+            ///                   means no telemetry will be sent, 100 means all telemetry will be kept.
+            public func set(sampleTelemetry rate: Float) -> Builder {
+                configuration.rumTelemetrySamplingRate = rate
+                return self
+            }
+
             // MARK: - Crash Reporting Configuration
 
             /// Enables the crash reporting feature.
@@ -717,28 +724,6 @@ extension Datadog {
                 configuration.crashReportingPlugin = crashReportingPlugin
                 return self
             }
-
-#if DD_SDK_ENABLE_INTERNAL_MONITORING
-            // MARK: - Internal Monitoring Configuration
-
-            /// Enables the internal monitoring feature.
-            ///
-            /// This feature provides an observability for the SDK performance. All telemetry collected by the internal monitoring feature is sent to
-            /// Datadog instance authorised for given `clientToken`, which can be a different org than the one configured for RUM, Tracing and Logging data.
-            ///
-            /// This feature is opt-in and requires specific configuration to be enabled. **Datadog does not collect any internal telemetry data by default.**
-            ///
-            /// To make this API visible, the `DD_SDK_ENABLE_INTERNAL_MONITORING` compiler flag must be defined in the  "Active Compilation Conditions" Build Setting
-            /// or in the `.xcconfig` set for the build configuration:
-            ///
-            ///     SWIFT_ACTIVE_COMPILATION_CONDITIONS = DD_SDK_ENABLE_INTERNAL_MONITORING
-            ///
-            /// - Parameter clientToken: the client token authorised for a Datadog org which should receive the SDK telemetry
-            public func enableInternalMonitoring(clientToken: String) -> Builder {
-                configuration.internalMonitoringClientToken = clientToken
-                return self
-            }
-#endif
 
             // MARK: - Features Common Configuration
 

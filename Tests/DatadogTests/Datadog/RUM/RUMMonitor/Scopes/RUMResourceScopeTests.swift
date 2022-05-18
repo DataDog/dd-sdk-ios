@@ -12,6 +12,7 @@ class RUMResourceScopeTests: XCTestCase {
     private let randomServiceName: String = .mockRandom()
     private lazy var dependencies: RUMScopeDependencies = .mockWith(
         serviceName: randomServiceName,
+        firstPartyURLsFilter: FirstPartyURLsFilter(hosts: ["firstparty.com"]),
         eventOutput: output
     )
     private let context = RUMContext.mockWith(
@@ -53,7 +54,6 @@ class RUMResourceScopeTests: XCTestCase {
             dateCorrection: .zero,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
-            isFirstPartyResource: nil,
             resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200")
         )
@@ -560,7 +560,7 @@ class RUMResourceScopeTests: XCTestCase {
             attributes: [:],
             startTime: currentTime,
             dateCorrection: .zero,
-            url: "https://foo.com/resource/1",
+            url: "https://firstparty.com/resource/1",
             httpMethod: .post,
             isFirstPartyResource: true,
             resourceKindBasedOnRequest: nil,
@@ -581,7 +581,7 @@ class RUMResourceScopeTests: XCTestCase {
         let providerType = try XCTUnwrap(event.resource.provider?.type)
         let providerDomain = try XCTUnwrap(event.resource.provider?.domain)
         XCTAssertEqual(providerType, .firstParty)
-        XCTAssertEqual(providerDomain, "foo.com")
+        XCTAssertEqual(providerDomain, "firstparty.com")
     }
 
     func testGivenStartedThirdartyResource_whenResourceLoadingEnds_itSendsResourceEventWithoutResourceProvider() throws {
@@ -627,7 +627,7 @@ class RUMResourceScopeTests: XCTestCase {
             attributes: [:],
             startTime: currentTime,
             dateCorrection: .zero,
-            url: "https://foo.com/resource/1",
+            url: "https://firstparty.com/resource/1",
             httpMethod: .post,
             isFirstPartyResource: true
         )
@@ -646,7 +646,7 @@ class RUMResourceScopeTests: XCTestCase {
         let providerType = try XCTUnwrap(event.error.resource?.provider?.type)
         let providerDomain = try XCTUnwrap(event.error.resource?.provider?.domain)
         XCTAssertEqual(providerType, .firstParty)
-        XCTAssertEqual(providerDomain, "foo.com")
+        XCTAssertEqual(providerDomain, "firstparty.com")
         XCTAssertEqual(event.error.sourceType, .ios)
     }
 

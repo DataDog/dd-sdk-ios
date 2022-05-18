@@ -56,6 +56,7 @@ extension Datadog.Configuration {
         rumLongTaskDurationThreshold: TimeInterval? = nil,
         rumResourceAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         rumBackgroundEventTrackingEnabled: Bool = false,
+        rumTelemetrySamplingRate: Float = 100.0,
         batchSize: BatchSize = .medium,
         uploadFrequency: UploadFrequency = .average,
         additionalConfiguration: [String: Any] = [:],
@@ -86,11 +87,11 @@ extension Datadog.Configuration {
             rumLongTaskDurationThreshold: rumLongTaskDurationThreshold,
             rumResourceAttributesProvider: rumResourceAttributesProvider,
             rumBackgroundEventTrackingEnabled: rumBackgroundEventTrackingEnabled,
+            rumTelemetrySamplingRate: rumTelemetrySamplingRate,
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
             additionalConfiguration: additionalConfiguration,
-            proxyConfiguration: proxyConfiguration,
-            internalMonitoringClientToken: internalMonitoringClientToken
+            proxyConfiguration: proxyConfiguration
         )
     }
 }
@@ -170,8 +171,7 @@ extension FeaturesConfiguration {
         tracing: Tracing? = .mockAny(),
         rum: RUM? = .mockAny(),
         crashReporting: CrashReporting = .mockAny(),
-        urlSessionAutoInstrumentation: URLSessionAutoInstrumentation? = .mockAny(),
-        internalMonitoring: InternalMonitoring? = nil
+        urlSessionAutoInstrumentation: URLSessionAutoInstrumentation? = .mockAny()
     ) -> Self {
         return .init(
             common: common,
@@ -179,8 +179,7 @@ extension FeaturesConfiguration {
             tracing: tracing,
             rum: rum,
             urlSessionAutoInstrumentation: urlSessionAutoInstrumentation,
-            crashReporting: crashReporting,
-            internalMonitoring: internalMonitoring
+            crashReporting: crashReporting
         )
     }
 }
@@ -262,6 +261,7 @@ extension FeaturesConfiguration.RUM {
         clientToken: String = .mockAny(),
         applicationID: String = .mockAny(),
         sessionSampler: Sampler = .mockKeepAll(),
+        telemetrySampler: Sampler = .mockKeepAll(),
         uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         viewEventMapper: RUMViewEventMapper? = nil,
         resourceEventMapper: RUMResourceEventMapper? = nil,
@@ -270,7 +270,8 @@ extension FeaturesConfiguration.RUM {
         longTaskEventMapper: RUMLongTaskEventMapper? = nil,
         instrumentation: FeaturesConfiguration.RUM.Instrumentation? = nil,
         backgroundEventTrackingEnabled: Bool = false,
-        onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
+        onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener(),
+        firstPartyHosts: Set<String> = []
     ) -> Self {
         return .init(
             common: common,
@@ -278,6 +279,7 @@ extension FeaturesConfiguration.RUM {
             clientToken: clientToken,
             applicationID: applicationID,
             sessionSampler: sessionSampler,
+            telemetrySampler: telemetrySampler,
             uuidGenerator: uuidGenerator,
             viewEventMapper: viewEventMapper,
             resourceEventMapper: resourceEventMapper,
@@ -286,7 +288,8 @@ extension FeaturesConfiguration.RUM {
             longTaskEventMapper: longTaskEventMapper,
             instrumentation: instrumentation,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
-            onSessionStart: onSessionStart
+            onSessionStart: onSessionStart,
+            firstPartyHosts: firstPartyHosts
         )
     }
 }
@@ -323,28 +326,6 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
             instrumentTracing: instrumentTracing,
             instrumentRUM: instrumentRUM,
             tracingSampler: tracingSampler
-        )
-    }
-}
-
-extension FeaturesConfiguration.InternalMonitoring {
-    static func mockAny() -> Self {
-        return mockWith()
-    }
-
-    static func mockWith(
-        common: FeaturesConfiguration.Common = .mockAny(),
-        sdkServiceName: String = .mockAny(),
-        sdkEnvironment: String = .mockAny(),
-        logsUploadURL: URL = .mockAny(),
-        clientToken: String = .mockAny()
-    ) -> Self {
-        return .init(
-            common: common,
-            sdkServiceName: sdkServiceName,
-            sdkEnvironment: sdkEnvironment,
-            logsUploadURL: logsUploadURL,
-            clientToken: clientToken
         )
     }
 }
@@ -876,22 +857,19 @@ extension DataUploadStatus: RandomMockable {
         return DataUploadStatus(
             needsRetry: .random(),
             userDebugDescription: .mockRandom(),
-            userErrorMessage: .mockRandom(),
-            internalMonitoringError: (.mockRandom(), ErrorMock(), .mockRandom())
+            error: nil
         )
     }
 
     static func mockWith(
         needsRetry: Bool = .mockAny(),
         userDebugDescription: String = .mockAny(),
-        userErrorMessage: String? = nil,
-        internalMonitoringError: (message: String, error: Error?, attributes: [String: String]?)? = nil
+        error: DataUploadError? = nil
     ) -> DataUploadStatus {
         return DataUploadStatus(
             needsRetry: needsRetry,
             userDebugDescription: userDebugDescription,
-            userErrorMessage: userErrorMessage,
-            internalMonitoringError: internalMonitoringError
+            error: error
         )
     }
 }

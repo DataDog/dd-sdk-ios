@@ -23,8 +23,8 @@ internal class DataUploadWorker: DataUploadWorkerType {
     private let uploadConditions: DataUploadConditions
     /// Name of the feature this worker is performing uploads for.
     private let featureName: String
-    /// A monitor reporting errors through Internal Monitoring feature (if enabled).
-    private let internalMonitor: InternalMonitor?
+    /// A monitor reporting errors through internal telemetry feature (if enabled).
+    private let telemetry: Telemetry?
 
     /// Delay used to schedule consecutive uploads.
     private var delay: Delay
@@ -39,7 +39,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
         uploadConditions: DataUploadConditions,
         delay: Delay,
         featureName: String,
-        internalMonitor: InternalMonitor? = nil
+        telemetry: Telemetry? = nil
     ) {
         self.queue = queue
         self.fileReader = fileReader
@@ -47,7 +47,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
         self.dataUploader = dataUploader
         self.delay = delay
         self.featureName = featureName
-        self.internalMonitor = internalMonitor
+        self.telemetry = telemetry
 
         let uploadWork = DispatchWorkItem { [weak self] in
             guard let self = self else {
@@ -75,14 +75,14 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     userLogger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus.userDebugDescription)")
                 }
 
-                // Print user error (if any)
-                if let userErrorMessage = uploadStatus.userErrorMessage {
-                    userLogger.error(userErrorMessage)
-                }
-
-                // Send internal monitoring error (if any and if Internal Monitoring is enabled)
-                if let sdkError = uploadStatus.internalMonitoringError {
-                    self.internalMonitor?.sdkLogger.error(sdkError.message, error: sdkError.error, attributes: sdkError.attributes)
+                switch uploadStatus.error {
+                case .unauthorized:
+                    userLogger.error("⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.")
+                case let .httpError(statusCode: statusCode):
+                    self.telemetry?.error("Data upload finished with status code: \(statusCode)")
+                case let .networkError(error: error):
+                    self.telemetry?.error("Data upload finished with error", error: error)
+                case .none: break
                 }
             } else {
                 let batchLabel = nextBatch != nil ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")

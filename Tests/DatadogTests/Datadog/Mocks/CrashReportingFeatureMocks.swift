@@ -11,7 +11,8 @@ extension CrashReportingFeature {
     static func mockNoOp() -> CrashReportingFeature {
         return CrashReportingFeature(
             configuration: .mockWith(crashReportingPlugin: NoopCrashReportingPlugin()),
-            commonDependencies: .mockAny()
+            commonDependencies: .mockAny(),
+            telemetry: nil
         )
     }
 
@@ -21,7 +22,8 @@ extension CrashReportingFeature {
     ) -> CrashReportingFeature {
         return CrashReportingFeature(
             configuration: configuration,
-            commonDependencies: dependencies
+            commonDependencies: dependencies,
+            telemetry: nil
         )
     }
 }

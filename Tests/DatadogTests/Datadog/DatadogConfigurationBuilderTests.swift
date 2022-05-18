@@ -149,6 +149,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.tracingSamplingRate, 75)
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 42.5)
             XCTAssertNotNil(configuration.rumSessionsListener)
+            XCTAssertEqual(configuration.rumTelemetrySamplingRate, 20)
             XCTAssertTrue(configuration.rumUIKitViewsPredicate is UIKitRUMViewsPredicateMock)
             XCTAssertTrue(configuration.rumUIKitUserActionsPredicate is UIKitRUMUserActionsPredicateMock)
             XCTAssertEqual(configuration.rumLongTaskDurationThreshold, 100.0)

@@ -24,7 +24,8 @@ class TracingStorageBenchmarkTests: XCTestCase {
                 unauthorized: obtainUniqueTemporaryDirectory(),
                 authorized: directory
             ),
-            commonDependencies: .mockAny()
+            commonDependencies: .mockAny(),
+            telemetry: nil
         )
         self.writer = storage.writer
         self.reader = storage.reader

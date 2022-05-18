@@ -138,6 +138,10 @@ extension Array where Element == RUMEventMatcher {
         return try filter { matcher in matcher.model(isTypeOf: type) }
             .forEach { matcher in body(try matcher.model()) }
     }
+
+    func compactMap<DM: Decodable>(_ type: DM.Type) throws -> [DM] {
+        return try filter { $0.model(isTypeOf: type) }.map { try $0.model() }
+    }
 }
 
 func XCTAssertValidRumUUID(_ string: String?, file: StaticString = #file, line: UInt = #line) {
