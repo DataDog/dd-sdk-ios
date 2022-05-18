@@ -2,7 +2,11 @@
 
 ### Changes
 
-* [IMPROVEMENT] Allow manually tracked resources in RUM Sessions to detect first party hosts. 
+# 1.11.0-rc1 / 18-05-2022
+
+### Changes
+
+* [IMPROVEMENT] Allow manually tracked resources in RUM Sessions to detect first party hosts. See [#837][]
 * [IMPROVEMENT] Add tracing sampling rate. See [#851][]
 
 # 1.11.0-beta2 / 05-04-2022
@@ -360,6 +364,7 @@
 [#797]: https://github.com/DataDog/dd-sdk-ios/issues/797
 [#815]: https://github.com/DataDog/dd-sdk-ios/issues/815
 [#830]: https://github.com/DataDog/dd-sdk-ios/issues/830
+[#837]: https://github.com/DataDog/dd-sdk-ios/issues/837
 [#832]: https://github.com/DataDog/dd-sdk-ios/issues/832
 [#851]: https://github.com/DataDog/dd-sdk-ios/issues/851
 [@00FA9A]: https://github.com/00FA9A
