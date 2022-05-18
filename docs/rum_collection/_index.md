@@ -12,6 +12,9 @@ further_reading:
   - link: "/real_user_monitoring"
     tag: "Documentation"
     text: "Learn how to explore your RUM data"
+  - link: "/real_user_monitoring/ios/crash_reporting/"
+    tag: "Documentation"
+    text: "See your crash reports and error trends in RUM"
 ---
 
 Datadog Real User Monitoring (RUM) enables you to visualize and analyze the real-time performance and user journeys of your application's individual users. 
@@ -318,10 +321,7 @@ Add the following snippet during initialization in your Datadog configuration:
 
 ## iOS Crash Reporting and Error Tracking
 
-Crash Reporting and Error Tracking for iOS displays any issues and latest available errors. You can view error details and attributes including JSON in the RUM Explorer. 
-
-<div class="alert alert-info"><p>Crash Reporting and Error Tracking is available in beta. To sign up, see <a href="https://docs.datadoghq.com/real_user_monitoring/ios/crash_reporting">Crash Reporting (beta)</a>.</p>
-</div>
+Crash Reporting and Error Tracking for iOS displays any issues and latest available errors. You can view error details and attributes including JSON in the [RUM Explorer][10]. 
 
 ## Further Reading
 
@@ -337,3 +337,4 @@ Crash Reporting and Error Tracking for iOS displays any issues and latest availa
 [7]: https://docs.datadoghq.com/account_management/api-app-keys/#client-tokens
 [8]: https://docs.datadoghq.com/real_user_monitoring/ios/advanced_configuration/#set-tracking-consent-gdpr-compliance
 [9]: https://docs.datadoghq.com/real_user_monitoring/ios/advanced_configuration/#initialization-parameters
+[10]: https://docs.datadoghq.com/real_user_monitoring/explorer/
