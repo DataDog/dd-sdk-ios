@@ -95,8 +95,10 @@ public class Datadog {
                 consolePrint("⚠️ Overriding RUM debugging due to \(LaunchArguments.DebugRUM) launch argument")
                 Datadog.debugRUM = true
             }
-        } catch {
+        } catch let error as ProgrammerError {
             consolePrint("\(error)")
+        } catch {
+            defaultDatadogCore = NOOPDatadogCore()
         }
     }
 
