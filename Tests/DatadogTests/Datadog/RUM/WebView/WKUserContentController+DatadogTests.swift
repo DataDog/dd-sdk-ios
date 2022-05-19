@@ -44,14 +44,12 @@ class WKUserContentController_DatadogTests: XCTestCase {
     override func setUp() {
         super.setUp()
         XCTAssertFalse(Datadog.isInitialized)
-        XCTAssertNil(LoggingFeature.instance)
         XCTAssertNil(RUMFeature.instance)
         temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
         XCTAssertFalse(Datadog.isInitialized)
-        XCTAssertNil(LoggingFeature.instance)
         XCTAssertNil(RUMFeature.instance)
         temporaryFeatureDirectories.delete()
         super.tearDown()
@@ -63,7 +61,11 @@ class WKUserContentController_DatadogTests: XCTestCase {
 
         let initialUserScriptCount = controller.userScripts.count
 
-        controller.addDatadogMessageHandler(allowedWebViewHosts: ["datadoghq.com"], hostsSanitizer: mockSanitizer)
+        controller.addDatadogMessageHandler(
+            allowedWebViewHosts: ["datadoghq.com"],
+            hostsSanitizer: mockSanitizer,
+            loggingFeature: nil
+        )
 
         XCTAssertEqual(controller.userScripts.count, initialUserScriptCount + 1)
         XCTAssertEqual(controller.messageHandlers.map({ $0.name }), ["DatadogEventBridge"])
@@ -88,7 +90,11 @@ class WKUserContentController_DatadogTests: XCTestCase {
 
         let multipleTimes = 5
         (0..<multipleTimes).forEach { _ in
-            controller.addDatadogMessageHandler(allowedWebViewHosts: ["datadoghq.com"], hostsSanitizer: mockSanitizer)
+            controller.addDatadogMessageHandler(
+                allowedWebViewHosts: ["datadoghq.com"],
+                hostsSanitizer: mockSanitizer,
+                loggingFeature: nil
+            )
         }
 
         XCTAssertEqual(controller.userScripts.count, initialUserScriptCount + 1)
@@ -135,7 +141,11 @@ class WKUserContentController_DatadogTests: XCTestCase {
         userLogger = .mockWith(logOutput: output)
 
         let controller = DDUserContentController()
-        controller.addDatadogMessageHandler(allowedWebViewHosts: ["datadoghq.com"], hostsSanitizer: MockHostsSanitizer())
+        controller.addDatadogMessageHandler(
+            allowedWebViewHosts: ["datadoghq.com"],
+            hostsSanitizer: MockHostsSanitizer(),
+            loggingFeature: nil
+        )
 
         let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DatadogMessageHandler
         // non-string body is passed
@@ -149,7 +159,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
 
     func testSendingWebEvents() throws {
         let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-        LoggingFeature.instance = .mockByRecordingLogMatchers(
+        let logging: LoggingFeature = .mockByRecordingLogMatchers(
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(
                 common: .mockWith(
@@ -172,7 +182,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
         )
         Global.rum = RUMMonitor.initialize()
         defer {
-            LoggingFeature.instance?.deinitialize()
+            logging.deinitialize()
             Global.rum = DDNoopRUMMonitor()
             RUMFeature.instance?.deinitialize()
         }
@@ -180,14 +190,15 @@ class WKUserContentController_DatadogTests: XCTestCase {
         let controller = DDUserContentController()
         controller.addDatadogMessageHandler(
             allowedWebViewHosts: ["datadoghq.com"],
-            hostsSanitizer: MockHostsSanitizer()
+            hostsSanitizer: MockHostsSanitizer(),
+            loggingFeature: logging
         )
 
         let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DatadogMessageHandler
         let webLogMessage = MockScriptMessage(body: #"{"eventType":"log","event":{"date":1635932927012,"error":{"origin":"console"},"message":"console error: error","session_id":"0110cab4-7471-480e-aa4e-7ce039ced355","status":"error","view":{"referrer":"","url":"https://datadoghq.dev/browser-sdk-test-playground"}},"tags":["browser_sdk_version:3.6.13"]}"#)
         messageHandler?.userContentController(controller, didReceive: webLogMessage)
 
-        let logMatcher = try LoggingFeature.waitAndReturnLogMatchers(count: 1)[0]
+        let logMatcher = try logging.waitAndReturnLogMatchers(count: 1)[0]
 
         logMatcher.assertValue(forKey: "date", equals: 1_635_932_927_012)
         logMatcher.assertValue(forKey: "ddtags", equals: "version:1.0.0,env:tests")

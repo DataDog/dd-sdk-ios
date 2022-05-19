@@ -8,16 +8,17 @@ import XCTest
 @testable import Datadog
 
 class LoggingFeatureTests: XCTestCase {
+    let core = DatadogCoreMock()
+
     override func setUp() {
         super.setUp()
         XCTAssertFalse(Datadog.isInitialized)
-        XCTAssertNil(LoggingFeature.instance)
         temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
         XCTAssertFalse(Datadog.isInitialized)
-        XCTAssertNil(LoggingFeature.instance)
+        core.flush()
         temporaryFeatureDirectories.delete()
         super.tearDown()
     }
@@ -40,7 +41,7 @@ class LoggingFeatureTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
 
         // Given
-        LoggingFeature.instance = .mockWith(
+        let feature: LoggingFeature = .mockWith(
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(
                 common: .mockWith(
@@ -58,10 +59,10 @@ class LoggingFeatureTests: XCTestCase {
                 mobileDevice: .mockWith(model: randomDeviceModel, osName: randomDeviceOSName, osVersion: randomDeviceOSVersion)
             )
         )
-        defer { LoggingFeature.instance?.deinitialize() }
+        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
 
         // When
-        let logger = Logger.builder.build()
+        let logger = Logger.builder.build(in: core)
         logger.debug(.mockAny())
 
         // Then
@@ -88,7 +89,7 @@ class LoggingFeatureTests: XCTestCase {
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        LoggingFeature.instance = .mockWith(
+        let feature: LoggingFeature = .mockWith(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(
@@ -110,9 +111,9 @@ class LoggingFeatureTests: XCTestCase {
                 )
             )
         )
-        defer { LoggingFeature.instance?.deinitialize() }
+        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
 
-        let logger = Logger.builder.build()
+        let logger = Logger.builder.build(in: core)
         logger.debug("log 1")
         logger.debug("log 2")
         logger.debug("log 3")

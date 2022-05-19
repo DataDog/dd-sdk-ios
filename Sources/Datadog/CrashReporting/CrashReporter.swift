@@ -22,13 +22,16 @@ internal class CrashReporter {
 
     // MARK: - Initialization
 
-    convenience init?(crashReportingFeature: CrashReportingFeature) {
+    convenience init?(
+        crashReportingFeature: CrashReportingFeature,
+        loggingFeature: LoggingFeature?
+    ) {
         let loggingOrRUMIntegration: CrashReportingIntegration?
 
         // If RUM rum is enabled prefer it for sending crash reports, otherwise use Logging feature.
         if let rumFeature = RUMFeature.instance {
             loggingOrRUMIntegration = CrashReportingWithRUMIntegration(rumFeature: rumFeature)
-        } else if let loggingFeature = LoggingFeature.instance {
+        } else if let loggingFeature = loggingFeature {
             loggingOrRUMIntegration = CrashReportingWithLoggingIntegration(loggingFeature: loggingFeature)
         } else {
             loggingOrRUMIntegration = nil
