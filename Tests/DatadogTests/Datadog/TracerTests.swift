@@ -19,7 +19,6 @@ class TracerTests: XCTestCase {
     }
 
     override func tearDown() {
-        core.all(LoggingFeature.self).forEach { $0.deinitialize() }
         core.flush()
 
         XCTAssertFalse(Datadog.isInitialized)

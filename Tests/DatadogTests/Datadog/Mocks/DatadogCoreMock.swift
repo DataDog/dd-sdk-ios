@@ -5,15 +5,24 @@
  */
 
 import Foundation
-import Datadog
+@testable import Datadog
 
-internal final class DatadogCoreMock: DatadogCoreProtocol {
+internal final class DatadogCoreMock: DatadogCoreProtocol, Flushable {
     private var v1Features: [String: Any] = [:]
 
+    /// Flush resgistered features.
+    ///
+    /// The method will also call `flush` on any `Flushable` registered
+    /// feature.
     func flush() {
+        all(Flushable.self).forEach { $0.flush() }
         v1Features = [:]
     }
 
+    /// Gets all registered feature of a given type.
+    ///
+    /// - Parameter type: The desired feature type.
+    /// - Returns: Array of feature.
     func all<T>(_ type: T.Type) -> [T] {
         v1Features.values.compactMap { $0 as? T }
     }
@@ -34,5 +43,20 @@ internal final class DatadogCoreMock: DatadogCoreProtocol {
 
     func feature<T>(_ type: T.Type, named featureName: String) -> T? {
         return v1Features[featureName] as? T
+    }
+}
+
+/// `Flushable` object resets its state on flush.
+///
+/// Calling `flush` method should reset any in-memory and persistent
+/// data to initialised state.
+internal protocol Flushable {
+    /// Flush data and reset state.
+    func flush()
+}
+
+extension LoggingFeature: Flushable {
+    func flush() {
+        deinitialize()
     }
 }

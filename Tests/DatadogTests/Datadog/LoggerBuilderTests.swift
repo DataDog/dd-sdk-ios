@@ -37,7 +37,6 @@ class LoggerBuilderTests: XCTestCase {
     }
 
     override func tearDown() {
-        core.all(LoggingFeature.self).forEach { $0.deinitialize() }
         core.flush()
         temporaryFeatureDirectories.delete()
         super.tearDown()

@@ -18,7 +18,6 @@ class LoggingFeatureTests: XCTestCase {
 
     override func tearDown() {
         XCTAssertFalse(Datadog.isInitialized)
-        core.all(LoggingFeature.self).forEach { $0.deinitialize() }
         core.flush()
         temporaryFeatureDirectories.delete()
         super.tearDown()
