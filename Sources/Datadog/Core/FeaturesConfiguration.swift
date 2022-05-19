@@ -51,6 +51,7 @@ internal struct FeaturesConfiguration {
         let clientToken: String
         let applicationID: String
         let sessionSampler: Sampler
+        let telemetrySampler: Sampler
         let uuidGenerator: RUMUUIDGenerator
         let viewEventMapper: RUMViewEventMapper?
         let resourceEventMapper: RUMResourceEventMapper?
@@ -61,6 +62,7 @@ internal struct FeaturesConfiguration {
         let instrumentation: Instrumentation?
         let backgroundEventTrackingEnabled: Bool
         let onSessionStart: RUMSessionListener?
+        let firstPartyHosts: Set<String>
     }
 
     struct URLSessionAutoInstrumentation {
@@ -75,22 +77,13 @@ internal struct FeaturesConfiguration {
         let instrumentTracing: Bool
         /// If the RUM instrumentation should be enabled.
         let instrumentRUM: Bool
+        // Tracing sampler
+        let tracingSampler: Sampler
     }
 
     struct CrashReporting {
         /// The `DDCrashReportingPluginType` implementation provided by `DatadogCrashReporting` library.
         let crashReportingPlugin: DDCrashReportingPluginType
-    }
-
-    struct InternalMonitoring {
-        let common: Common
-        let sdkServiceName: String
-        let sdkEnvironment: String
-        /// Internal monitoring logger's name.
-        let loggerName = "im-logger"
-        let logsUploadURL: URL
-        /// The client token authorized for monitoring org (likely it's different than client token for other features).
-        let clientToken: String
     }
 
     /// Configuration common to all features.
@@ -105,8 +98,6 @@ internal struct FeaturesConfiguration {
     let urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
     /// Crash Reporting feature configuration or `nil` if the feature was not enabled.
     let crashReporting: CrashReporting?
-    /// Internal Monitoring feature configuration or `nil` if the feature was not enabled.
-    let internalMonitoring: InternalMonitoring?
 }
 
 extension FeaturesConfiguration {
@@ -123,7 +114,6 @@ extension FeaturesConfiguration {
         var rum: RUM?
         var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
         var crashReporting: CrashReporting?
-        var internalMonitoring: InternalMonitoring?
 
         var logsEndpoint = configuration.logsEndpoint
         var tracesEndpoint = configuration.tracesEndpoint
@@ -197,6 +187,14 @@ extension FeaturesConfiguration {
             )
         }
 
+        var sanitizedHosts: Set<String> = []
+        if let firstPartyHosts = configuration.firstPartyHosts {
+            sanitizedHosts = hostsSanitizer.sanitized(
+                hosts: firstPartyHosts,
+                warningMessage: "The first party host configured for Datadog SDK is not valid"
+            )
+        }
+
         if configuration.rumEnabled {
             let instrumentation = RUM.Instrumentation(
                 uiKitRUMViewsPredicate: configuration.rumUIKitViewsPredicate,
@@ -211,6 +209,7 @@ extension FeaturesConfiguration {
                     clientToken: try ifValid(clientToken: configuration.clientToken),
                     applicationID: rumApplicationID,
                     sessionSampler: Sampler(samplingRate: debugOverride ? 100.0 : configuration.rumSessionsSamplingRate),
+                    telemetrySampler: Sampler(samplingRate: configuration.rumTelemetrySamplingRate),
                     uuidGenerator: DefaultRUMUUIDGenerator(),
                     viewEventMapper: configuration.rumViewEventMapper,
                     resourceEventMapper: configuration.rumResourceEventMapper,
@@ -219,7 +218,8 @@ extension FeaturesConfiguration {
                     longTaskEventMapper: configuration.rumLongTaskEventMapper,
                     instrumentation: instrumentation,
                     backgroundEventTrackingEnabled: configuration.rumBackgroundEventTrackingEnabled,
-                    onSessionStart: configuration.rumSessionsListener
+                    onSessionStart: configuration.rumSessionsListener,
+                    firstPartyHosts: sanitizedHosts
                 )
             } else {
                 let error = ProgrammerError(
@@ -232,13 +232,10 @@ extension FeaturesConfiguration {
             }
         }
 
-        if let firstPartyHosts = configuration.firstPartyHosts {
+        if configuration.firstPartyHosts != nil {
             if configuration.tracingEnabled || configuration.rumEnabled {
                 urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
-                    userDefinedFirstPartyHosts: hostsSanitizer.sanitized(
-                        hosts: firstPartyHosts,
-                        warningMessage: "The first party host configured for Datadog SDK is not valid"
-                    ),
+                    userDefinedFirstPartyHosts: sanitizedHosts,
                     sdkInternalURLs: [
                         logsEndpoint.url,
                         tracesEndpoint.url,
@@ -246,7 +243,8 @@ extension FeaturesConfiguration {
                     ],
                     rumAttributesProvider: configuration.rumResourceAttributesProvider,
                     instrumentTracing: configuration.tracingEnabled,
-                    instrumentRUM: configuration.rumEnabled
+                    instrumentRUM: configuration.rumEnabled,
+                    tracingSampler: Sampler(samplingRate: debugOverride ? 100.0 : configuration.tracingSamplingRate)
                 )
             } else {
                 let error = ProgrammerError(
@@ -281,23 +279,12 @@ extension FeaturesConfiguration {
             }
         }
 
-        if let internalMonitoringClientToken = configuration.internalMonitoringClientToken {
-            internalMonitoring = InternalMonitoring(
-                common: common,
-                sdkServiceName: "dd-sdk-ios",
-                sdkEnvironment: "prod",
-                logsUploadURL: try ifValid(endpointURLString: Datadog.Configuration.DatadogEndpoint.us1.logsEndpoint.url),
-                clientToken: try ifValid(clientToken: internalMonitoringClientToken)
-            )
-        }
-
         self.common = common
         self.logging = logging
         self.tracing = tracing
         self.rum = rum
         self.urlSessionAutoInstrumentation = urlSessionAutoInstrumentation
         self.crashReporting = crashReporting
-        self.internalMonitoring = internalMonitoring
     }
 }
 

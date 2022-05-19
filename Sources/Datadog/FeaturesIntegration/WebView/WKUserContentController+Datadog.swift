@@ -58,7 +58,6 @@ public extension WKUserContentController {
         if let loggingFeature = LoggingFeature.instance {
             logEventConsumer = DefaultWebLogEventConsumer(
                 userLogsWriter: loggingFeature.storage.writer,
-                internalLogsWriter: InternalMonitoringFeature.instance?.logsStorage.writer,
                 dateCorrector: loggingFeature.dateCorrector,
                 rumContextProvider: globalRUMMonitor?.contextProvider,
                 applicationVersion: loggingFeature.configuration.common.applicationVersion,

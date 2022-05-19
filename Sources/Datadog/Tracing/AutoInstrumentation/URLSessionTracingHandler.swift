@@ -9,9 +9,12 @@ import Foundation
 internal class URLSessionTracingHandler: URLSessionInterceptionHandler {
     /// Listening to app state changes and use it to report `foreground_duration`
     let appStateListener: AppStateListening
+    /// The Tracing sampler.
+    let tracingSampler: Sampler
 
-    init(appStateListener: AppStateListening) {
+    init(appStateListener: AppStateListening, tracingSampler: Sampler) {
         self.appStateListener = appStateListener
+        self.tracingSampler = tracingSampler
     }
 
     // MARK: - URLSessionInterceptionHandler
@@ -46,13 +49,15 @@ internal class URLSessionTracingHandler: URLSessionInterceptionHandler {
                 operationName: "urlsession.request",
                 startTime: resourceMetrics.fetch.start
             )
-        } else {
+        } else if tracingSampler.sample() {
             // Span context may not be injected on iOS13+ if `URLSession.dataTask(...)` for `URL`
             // was used to create the session task.
             span = tracer.startSpan(
                 operationName: "urlsession.request",
                 startTime: resourceMetrics.fetch.start
             )
+        } else {
+            return
         }
 
         let url = interception.request.url?.absoluteString ?? "unknown_url"

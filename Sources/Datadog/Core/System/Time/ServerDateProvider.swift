@@ -20,11 +20,7 @@ internal class NTPServerDateProvider: ServerDateProvider {
     /// Server offset publisher.
     private let publisher: ValuePublisher<TimeInterval?> = ValuePublisher(initialValue: nil)
 
-    /// Monitor collecting Kronos telemetry - only enabled if Internal Monitoring is configured.
-    private let kronosMonitor: KronosMonitor?
-
-    init(kronosMonitor: KronosMonitor? = nil) {
-        self.kronosMonitor = kronosMonitor
+    init() {
     }
 
     /// Returns the server time offset or `nil` if not yet determined.
@@ -36,7 +32,6 @@ internal class NTPServerDateProvider: ServerDateProvider {
     func synchronize(with pool: String, completion: @escaping (TimeInterval?) -> Void) {
         KronosClock.sync(
             from: pool,
-            monitor: kronosMonitor,
             first: { [weak self] _, offset in
                 self?.publisher.publishAsync(offset)
             },

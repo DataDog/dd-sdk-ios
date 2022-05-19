@@ -17,6 +17,9 @@ internal class CrashReporter {
 
     let crashContextProvider: CrashContextProviderType
 
+    /// Telemetry interface
+    let telemetry: Telemetry?
+
     // MARK: - Initialization
 
     convenience init?(crashReportingFeature: CrashReportingFeature) {
@@ -54,14 +57,16 @@ internal class CrashReporter {
                 rumSessionStateProvider: crashReportingFeature.rumSessionStateProvider,
                 appStateListener: crashReportingFeature.appStateListener
             ),
-            loggingOrRUMIntegration: availableLoggingOrRUMIntegration
+            loggingOrRUMIntegration: availableLoggingOrRUMIntegration,
+            telemetry: crashReportingFeature.telemetry
         )
     }
 
     init(
         crashReportingPlugin: DDCrashReportingPluginType,
         crashContextProvider: CrashContextProviderType,
-        loggingOrRUMIntegration: CrashReportingIntegration
+        loggingOrRUMIntegration: CrashReportingIntegration,
+        telemetry: Telemetry?
     ) {
         self.queue = DispatchQueue(
             label: "com.datadoghq.crash-reporter",
@@ -70,6 +75,7 @@ internal class CrashReporter {
         self.plugin = crashReportingPlugin
         self.loggingOrRUMIntegration = loggingOrRUMIntegration
         self.crashContextProvider = crashContextProvider
+        self.telemetry = telemetry
 
         // Inject current `CrashContext`
         self.inject(currentCrashContext: crashContextProvider.currentCrashContext)
@@ -94,10 +100,6 @@ internal class CrashReporter {
                 }
 
                 userLogger.debug("Loaded pending crash report")
-#if DD_SDK_ENABLE_INTERNAL_MONITORING
-                InternalMonitoringFeature.instance?.monitor.sdkLogger
-                    .debug("Loaded pending crash report", attributes: availableCrashReport.diagnosticInfo)
-#endif
 
                 guard let crashContext = availableCrashReport.context.flatMap({ self.decode(crashContextData: $0) }) else {
                     // `CrashContext` is malformed and and cannot be read. Return `true` to let the crash reporter
@@ -141,8 +143,8 @@ internal class CrashReporter {
                 Error details: \(error)
                 """
             )
-            InternalMonitoringFeature.instance?.monitor.sdkLogger
-                .error("Failed to encode crash report context", error: error)
+
+            telemetry?.error("Failed to encode crash report context", error: error)
             return nil
         }
     }
@@ -159,12 +161,7 @@ internal class CrashReporter {
                 Error details: \(error)
                 """
             )
-#if DD_SDK_ENABLE_INTERNAL_MONITORING
-            let contextUTF8String = String(data: crashContextData, encoding: .utf8)
-            let attributes = ["context_utf8_string": contextUTF8String ?? "none"]
-            InternalMonitoringFeature.instance?.monitor.sdkLogger
-                .error("Failed to decode crash report context", error: error, attributes: attributes)
-#endif
+            telemetry?.error("Failed to decode crash report context", error: error)
             return nil
         }
     }
