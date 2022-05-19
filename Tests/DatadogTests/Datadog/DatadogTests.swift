@@ -115,7 +115,7 @@ class DatadogTests: XCTestCase {
         verify(configuration: defaultBuilder.build()) {
             // verify features:
             XCTAssertNotNil(defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName))
-            XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
+            XCTAssertNil(defaultDatadogCore.feature(RUMFeature.self, named: RUMFeature.featureName), "When using `defaultBuilder` RUM feature should be disabled by default")
             XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
@@ -127,7 +127,7 @@ class DatadogTests: XCTestCase {
         verify(configuration: rumBuilder.build()) {
             // verify features:
             XCTAssertNotNil(defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName))
-            XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
+            XCTAssertNotNil(defaultDatadogCore.feature(RUMFeature.self, named: RUMFeature.featureName), "When using `rumBuilder` RUM feature should be enabled by default")
             XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNotNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
@@ -140,7 +140,7 @@ class DatadogTests: XCTestCase {
         verify(configuration: defaultBuilder.enableLogging(false).build()) {
             // verify features:
             XCTAssertNil(defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName))
-            XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
+            XCTAssertNil(defaultDatadogCore.feature(RUMFeature.self, named: RUMFeature.featureName), "When using `defaultBuilder` RUM feature should be disabled by default")
             XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
@@ -153,7 +153,7 @@ class DatadogTests: XCTestCase {
             // verify features:
             XCTAssertNil(defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName))
             XCTAssertNotNil(defaultDatadogCore.feature(TracingFeature.self, named: TracingFeature.featureName))
-            XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
+            XCTAssertNotNil(defaultDatadogCore.feature(RUMFeature.self, named: RUMFeature.featureName), "When using `rumBuilder` RUM feature should be enabled by default")
             XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNotNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
@@ -167,7 +167,7 @@ class DatadogTests: XCTestCase {
             // verify features:
             XCTAssertNotNil(defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName))
             XCTAssertNil(defaultDatadogCore.feature(TracingFeature.self, named: TracingFeature.featureName))
-            XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
+            XCTAssertNil(defaultDatadogCore.feature(RUMFeature.self, named: RUMFeature.featureName), "When using `defaultBuilder` RUM feature should be disabled by default")
             XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
@@ -176,7 +176,7 @@ class DatadogTests: XCTestCase {
             // verify features:
             XCTAssertNotNil(defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName))
             XCTAssertNil(defaultDatadogCore.feature(TracingFeature.self, named: TracingFeature.featureName))
-            XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
+            XCTAssertNotNil(defaultDatadogCore.feature(RUMFeature.self, named: RUMFeature.featureName), "When using `rumBuilder` RUM feature should be enabled by default")
             XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNotNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
@@ -185,7 +185,7 @@ class DatadogTests: XCTestCase {
         verify(configuration: defaultBuilder.enableRUM(true).build()) {
             // verify features:
             XCTAssertNotNil(defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName))
-            XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature cannot be enabled")
+            XCTAssertNil(defaultDatadogCore.feature(RUMFeature.self, named: RUMFeature.featureName), "When using `defaultBuilder` RUM feature cannot be enabled")
             XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
@@ -197,7 +197,7 @@ class DatadogTests: XCTestCase {
         verify(configuration: rumBuilder.enableRUM(false).build()) {
             // verify features:
             XCTAssertNotNil(defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName))
-            XCTAssertFalse(RUMFeature.isEnabled)
+            XCTAssertNil(defaultDatadogCore.feature(RUMFeature.self, named: RUMFeature.featureName))
             XCTAssertFalse(CrashReportingFeature.isEnabled)
             XCTAssertNil(RUMInstrumentation.instance)
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
@@ -208,27 +208,27 @@ class DatadogTests: XCTestCase {
         }
 
         verify(configuration: rumBuilder.trackUIKitRUMViews().build()) {
-            XCTAssertTrue(RUMFeature.isEnabled)
+            XCTAssertNotNil(defaultDatadogCore.feature(RUMFeature.self, named: RUMFeature.featureName))
             XCTAssertNotNil(RUMInstrumentation.instance?.viewControllerSwizzler)
             XCTAssertNil(RUMInstrumentation.instance?.userActionsAutoInstrumentation)
         }
         verify(
             configuration: rumBuilder.enableRUM(false).trackUIKitRUMViews().build()
         ) {
-            XCTAssertFalse(RUMFeature.isEnabled)
+            XCTAssertNil(defaultDatadogCore.feature(RUMFeature.self, named: RUMFeature.featureName))
             XCTAssertNil(RUMInstrumentation.instance?.viewControllerSwizzler)
             XCTAssertNil(RUMInstrumentation.instance?.userActionsAutoInstrumentation)
         }
 
         verify(configuration: rumBuilder.trackUIKitRUMActions().build()) {
-            XCTAssertTrue(RUMFeature.isEnabled)
+            XCTAssertNotNil(defaultDatadogCore.feature(RUMFeature.self, named: RUMFeature.featureName))
             XCTAssertNil(RUMInstrumentation.instance?.viewControllerSwizzler)
             XCTAssertNotNil(RUMInstrumentation.instance?.userActionsAutoInstrumentation)
         }
         verify(
             configuration: rumBuilder.enableRUM(false).trackUIKitRUMActions().build()
         ) {
-            XCTAssertFalse(RUMFeature.isEnabled)
+            XCTAssertNil(defaultDatadogCore.feature(RUMFeature.self, named: RUMFeature.featureName))
             XCTAssertNil(RUMInstrumentation.instance?.viewControllerSwizzler)
             XCTAssertNil(RUMInstrumentation.instance?.userActionsAutoInstrumentation)
         }
@@ -325,8 +325,9 @@ class DatadogTests: XCTestCase {
         let core = defaultDatadogCore
         let logging = core.feature(LoggingFeature.self, named: LoggingFeature.featureName)
         let tracing = core.feature(TracingFeature.self, named: TracingFeature.featureName)
+        let rum = core.feature(RUMFeature.self, named: RUMFeature.featureName)
         XCTAssertEqual(logging?.configuration.common.performance, expectedPerformancePreset)
-        XCTAssertEqual(RUMFeature.instance?.configuration.sessionSampler.samplingRate, 100)
+        XCTAssertEqual(rum?.configuration.sessionSampler.samplingRate, 100)
         XCTAssertEqual(tracing?.configuration.common.performance, expectedPerformancePreset)
         XCTAssertEqual(Datadog.verbosityLevel, .debug)
 
@@ -449,13 +450,14 @@ class DatadogTests: XCTestCase {
         let core = defaultDatadogCore
         let logging = core.feature(LoggingFeature.self, named: LoggingFeature.featureName)
         let tracing = core.feature(TracingFeature.self, named: TracingFeature.featureName)
+        let rum = core.feature(RUMFeature.self, named: RUMFeature.featureName)
 
         // On SDK init, underlying `ConsentAwareDataWriter` performs data migration for each feature, which includes
         // data removal in `unauthorised` (`.pending`) directory. To not cause test flakiness, we must ensure that
         // mock data is written only after this operation completes - otherwise, migration may delete mocked files.
         let loggingWriter = try XCTUnwrap(logging?.storage.writer as? ConsentAwareDataWriter)
         let tracingWriter = try XCTUnwrap(tracing?.storage.writer as? ConsentAwareDataWriter)
-        let rumWriter = try XCTUnwrap(RUMFeature.instance?.storage.writer as? ConsentAwareDataWriter)
+        let rumWriter = try XCTUnwrap(rum?.storage.writer as? ConsentAwareDataWriter)
         loggingWriter.queue.sync {}
         tracingWriter.queue.sync {}
         rumWriter.queue.sync {}
@@ -479,7 +481,7 @@ class DatadogTests: XCTestCase {
         // Wait for async clear completion in all features:
         (logging?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
         (tracing?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
-        (RUMFeature.instance?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
+        (rum?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
 
         // Then
         let newNumberOfFiles = try allDirectories.reduce(0, { acc, nextDirectory in return try acc + nextDirectory.files().count })

@@ -68,8 +68,8 @@ class LoggerBuilderTests: XCTestCase {
     }
 
     func testDefaultLoggerWithRUMEnabled() throws {
-        RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance?.deinitialize() }
+        let rum: RUMFeature = .mockNoOp()
+        core.registerFeature(named: RUMFeature.featureName, instance: rum)
 
         let logger1 = Logger.builder.build(in: core)
         XCTAssertNotNil(logger1.rumContextIntegration)
@@ -90,8 +90,8 @@ class LoggerBuilderTests: XCTestCase {
     }
 
     func testCustomizedLogger() throws {
-        RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance?.deinitialize() }
+        let rum: RUMFeature = .mockNoOp()
+        core.registerFeature(named: RUMFeature.featureName, instance: rum)
 
         let tracing: TracingFeature = .mockNoOp()
         core.registerFeature(named: TracingFeature.featureName, instance: tracing)

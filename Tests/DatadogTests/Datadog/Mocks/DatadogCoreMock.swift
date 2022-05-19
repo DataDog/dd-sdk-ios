@@ -66,3 +66,9 @@ extension TracingFeature: Flushable {
         deinitialize()
     }
 }
+
+extension RUMFeature: Flushable {
+    func flush() {
+        deinitialize()
+    }
+}

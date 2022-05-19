@@ -411,6 +411,7 @@ public class Logger {
 
             // RUMM-2133 Note: strong feature coupling while migrating to v2.
             // In v2 active span will be provided in context from feature scope.
+            let rumEnabled = core.feature(RUMFeature.self, named: RUMFeature.featureName) != nil
             let tracingEnabled = core.feature(TracingFeature.self, named: TracingFeature.featureName) != nil
 
             return Logger(
@@ -418,7 +419,7 @@ public class Logger {
                 logOutput: logOutput,
                 dateProvider: loggingFeature.dateProvider,
                 identifier: resolveLoggerName(for: loggingFeature),
-                rumContextIntegration: (RUMFeature.isEnabled && bundleWithRUM) ? LoggingWithRUMContextIntegration() : nil,
+                rumContextIntegration: (rumEnabled && bundleWithRUM) ? LoggingWithRUMContextIntegration() : nil,
                 activeSpanIntegration: (tracingEnabled && bundleWithTrace) ? LoggingWithActiveSpanIntegration() : nil
             )
         }

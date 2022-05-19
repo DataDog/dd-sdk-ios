@@ -11,6 +11,7 @@ import Foundation
 /// `RUMTelemetry` complies to `Telemetry` protocol allowing
 /// sending telemetry events accross features.
 internal final class RUMTelemetry: Telemetry {
+    let core: DatadogCoreProtocol
     let sdkVersion: String
     let applicationID: String
     let dateProvider: DateProvider
@@ -19,16 +20,19 @@ internal final class RUMTelemetry: Telemetry {
     /// Creates a RUM Telemetry instance.
     ///
     /// - Parameters:
+    ///   - core: Datadog core instance.
     ///   - sdkVersion: The Datadog SDK version.
     ///   - applicationID: The application ID.
     ///   - dateProvider: Current device time provider.
     ///   - dateCorrector: Date correction for adjusting device time to server time.
     init(
+        in core: DatadogCoreProtocol,
         sdkVersion: String,
         applicationID: String,
         dateProvider: DateProvider,
         dateCorrector: DateCorrectorType
     ) {
+        self.core = core
         self.sdkVersion = sdkVersion
         self.applicationID = applicationID
         self.dateProvider = dateProvider
@@ -43,9 +47,11 @@ internal final class RUMTelemetry: Telemetry {
     ///
     /// - Parameter message: Body of the log
     func debug(_ message: String) {
+        let rum = core.feature(RUMFeature.self, named: RUMFeature.featureName)
+
         guard
             let monitor = Global.rum as? RUMMonitor,
-            let writer = RUMFeature.instance?.storage.writer
+            let writer = rum?.storage.writer
         else {
             return
         }
@@ -85,9 +91,11 @@ internal final class RUMTelemetry: Telemetry {
     ///   - kind: The error type or kind (or code in some cases).
     ///   - stack: The stack trace or the complementary information about the error.
     func error(_ message: String, kind: String?, stack: String?) {
+        let rum = core.feature(RUMFeature.self, named: RUMFeature.featureName)
+
         guard
             let monitor = Global.rum as? RUMMonitor,
-            let writer = RUMFeature.instance?.storage.writer
+            let writer = rum?.storage.writer
         else {
             return
         }

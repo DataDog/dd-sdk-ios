@@ -15,7 +15,10 @@ class RUMMonitorConfigurationTests: XCTestCase {
         temporaryFeatureDirectories.create()
         defer { temporaryFeatureDirectories.delete() }
 
-        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
+        let core = DatadogCoreMock()
+        defer { core.flush() }
+
+        let feature: RUMFeature = .mockByRecordingRUMEventMatchers(
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(
                 common: .mockWith(
@@ -32,11 +35,11 @@ class RUMMonitorConfigurationTests: XCTestCase {
                 carrierInfoProvider: carrierInfoProvider
             )
         )
-        defer { RUMFeature.instance?.deinitialize() }
 
-        let monitor = RUMMonitor.initialize().dd
+        core.registerFeature(named: RUMFeature.featureName, instance: feature)
 
-        let feature = try XCTUnwrap(RUMFeature.instance)
+        let monitor = RUMMonitor.initialize(in: core).dd
+
         let scopeDependencies = monitor.applicationScope.dependencies
 
         XCTAssertTrue(scopeDependencies.userInfoProvider.userInfoProvider === feature.userInfoProvider)

@@ -148,7 +148,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     // MARK: - Initialization
 
     /// Initializes the Datadog RUM Monitor.
-    public static func initialize() -> DDRUMMonitor {
+    public static func initialize(in core: DatadogCoreProtocol = defaultDatadogCore) -> DDRUMMonitor {
         do {
             if Global.rum is RUMMonitor {
                 throw ProgrammerError(
@@ -157,7 +157,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     """
                 )
             }
-            guard let rumFeature = RUMFeature.instance else {
+            guard let rumFeature = core.feature(RUMFeature.self, named: RUMFeature.featureName) else {
                 throw ProgrammerError(
                     description: Datadog.isInitialized
                         ? "`RUMMonitor.initialize()` produces a non-functional monitor, as the RUM feature is disabled."

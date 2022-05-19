@@ -43,14 +43,10 @@ final class MockScriptMessage: WKScriptMessage {
 class WKUserContentController_DatadogTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        XCTAssertFalse(Datadog.isInitialized)
-        XCTAssertNil(RUMFeature.instance)
         temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
-        XCTAssertFalse(Datadog.isInitialized)
-        XCTAssertNil(RUMFeature.instance)
         temporaryFeatureDirectories.delete()
         super.tearDown()
     }
@@ -64,7 +60,8 @@ class WKUserContentController_DatadogTests: XCTestCase {
         controller.addDatadogMessageHandler(
             allowedWebViewHosts: ["datadoghq.com"],
             hostsSanitizer: mockSanitizer,
-            loggingFeature: nil
+            loggingFeature: nil,
+            rumFeature: nil
         )
 
         XCTAssertEqual(controller.userScripts.count, initialUserScriptCount + 1)
@@ -93,7 +90,8 @@ class WKUserContentController_DatadogTests: XCTestCase {
             controller.addDatadogMessageHandler(
                 allowedWebViewHosts: ["datadoghq.com"],
                 hostsSanitizer: mockSanitizer,
-                loggingFeature: nil
+                loggingFeature: nil,
+                rumFeature: nil
             )
         }
 
@@ -144,7 +142,8 @@ class WKUserContentController_DatadogTests: XCTestCase {
         controller.addDatadogMessageHandler(
             allowedWebViewHosts: ["datadoghq.com"],
             hostsSanitizer: MockHostsSanitizer(),
-            loggingFeature: nil
+            loggingFeature: nil,
+            rumFeature: nil
         )
 
         let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DatadogMessageHandler
@@ -158,6 +157,9 @@ class WKUserContentController_DatadogTests: XCTestCase {
     }
 
     func testSendingWebEvents() throws {
+        let core = DatadogCoreMock()
+        defer { core.flush() }
+
         let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
         let logging: LoggingFeature = .mockByRecordingLogMatchers(
             directories: temporaryFeatureDirectories,
@@ -174,24 +176,26 @@ class WKUserContentController_DatadogTests: XCTestCase {
                 dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
             )
         )
-        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
+
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 dateProvider: dateProvider
             )
         )
-        Global.rum = RUMMonitor.initialize()
-        defer {
-            logging.deinitialize()
-            Global.rum = DDNoopRUMMonitor()
-            RUMFeature.instance?.deinitialize()
-        }
+
+        core.registerFeature(named: LoggingFeature.featureName, instance: logging)
+        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+
+        Global.rum = RUMMonitor.initialize(in: core)
+        defer { Global.rum = DDNoopRUMMonitor() }
 
         let controller = DDUserContentController()
         controller.addDatadogMessageHandler(
             allowedWebViewHosts: ["datadoghq.com"],
             hostsSanitizer: MockHostsSanitizer(),
-            loggingFeature: logging
+            loggingFeature: logging,
+            rumFeature: rum
         )
 
         let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DatadogMessageHandler
@@ -218,7 +222,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
         let webRUMMessage = MockScriptMessage(body: #"{"eventType":"view","event":{"application":{"id":"xxx"},"date":1635933113708,"service":"super","session":{"id":"0110cab4-7471-480e-aa4e-7ce039ced355","type":"user"},"type":"view","view":{"action":{"count":0},"cumulative_layout_shift":0,"dom_complete":152800000,"dom_content_loaded":118300000,"dom_interactive":116400000,"error":{"count":0},"first_contentful_paint":121300000,"id":"64308fd4-83f9-48cb-b3e1-1e91f6721230","in_foreground_periods":[],"is_active":true,"largest_contentful_paint":121299000,"load_event":152800000,"loading_time":152800000,"loading_type":"initial_load","long_task":{"count":0},"referrer":"","resource":{"count":3},"time_spent":3120000000,"url":"http://localhost:8080/test.html"},"_dd":{"document_version":2,"drift":0,"format_version":2,"session":{"plan":2}}},"tags":["browser_sdk_version:3.6.13"]}"#)
         messageHandler?.userContentController(controller, didReceive: webRUMMessage)
 
-        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 1)
+        let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 1)
         try rumEventMatchers[0].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.application.id, "abc")
             XCTAssertEqual(rumModel.view.id, "64308fd4-83f9-48cb-b3e1-1e91f6721230")

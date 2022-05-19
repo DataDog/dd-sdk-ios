@@ -70,8 +70,8 @@ class TracerConfigurationTests: XCTestCase {
     }
 
     func testDefaultTracerWithRUMEnabled() {
-        RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance?.deinitialize() }
+        let rum: RUMFeature = .mockNoOp()
+        core.registerFeature(named: RUMFeature.featureName, instance: rum)
 
         let tracer1 = Tracer.initialize(configuration: .init(), in: core).dd
         XCTAssertNotNil(tracer1.rumContextIntegration)

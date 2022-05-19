@@ -75,12 +75,20 @@ extension RUMFeature {
 
     // MARK: - Expecting RUMEvent Data
 
-    static func waitAndReturnRUMEventMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
-        guard let uploadWorker = RUMFeature.instance?.upload.uploader as? DataUploadWorkerMock else {
+    func waitAndReturnRUMEventMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
+        guard let uploadWorker = upload.uploader as? DataUploadWorkerMock else {
             preconditionFailure("Retrieving matchers requires that feature is mocked with `.mockByRecordingRUMEventMatchers()`")
         }
         return try uploadWorker.waitAndReturnBatchedData(count: count, file: file, line: line)
             .flatMap { batchData in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(batchData) }
+    }
+
+    // swiftlint:disable:next function_default_parameter_at_end
+    static func waitAndReturnRUMEventMatchers(in core: DatadogCoreProtocol = defaultDatadogCore, count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
+        guard let rum = core.feature(RUMFeature.self, named: RUMFeature.featureName) else {
+            preconditionFailure("RUMFeature is not registered in core")
+        }
+        return try rum.waitAndReturnRUMEventMatchers(count: count, file: file, line: line)
     }
 }
 
@@ -96,16 +104,18 @@ extension RUMResourceType {
 
 // MARK: - RUMTelemetry Mocks
 
-extension RUMTelemetry: AnyMockable {
-    static func mockAny() -> Self { .mockWith() }
+extension RUMTelemetry {
+    static func mockAny(in core: DatadogCoreProtocol) -> Self { .mockWith(core: core) }
 
     static func mockWith(
+        core: DatadogCoreProtocol,
         sdkVersion: String = .mockAny(),
         applicationID: String = .mockAny(),
         dateProvider: DateProvider = SystemDateProvider(),
         dateCorrector: DateCorrectorType = DateCorrectorMock()
     ) -> Self {
         .init(
+            in: core,
             sdkVersion: sdkVersion,
             applicationID: applicationID,
             dateProvider: dateProvider,

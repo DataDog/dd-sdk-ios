@@ -211,10 +211,10 @@ class CrashReporterTests: XCTestCase {
         plugin.pendingCrashReport = .mockAny()
 
         // When
-        XCTAssertNil(RUMFeature.instance)
         let crashReporter = CrashReporter(
             crashReportingFeature: .mockNoOp(),
-            loggingFeature: nil
+            loggingFeature: nil,
+            rumFeature: nil
         )
 
         // Then

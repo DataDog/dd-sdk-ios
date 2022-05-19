@@ -772,15 +772,14 @@ class TracerTests: XCTestCase {
     // MARK: - Integration With RUM Feature
 
     func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingSpan_itContainsCurrentRUMContext() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
-
-        RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance?.deinitialize() }
+        let tracing: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
+        let rum: RUMFeature = .mockNoOp()
+        core.registerFeature(named: RUMFeature.featureName, instance: rum)
 
         // given
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
-        Global.rum = RUMMonitor.initialize()
+        Global.rum = RUMMonitor.initialize(in: core)
         Global.rum.startView(viewController: mockView)
         defer { Global.rum = DDNoopRUMMonitor() }
 
@@ -789,21 +788,20 @@ class TracerTests: XCTestCase {
         span.finish()
 
         // then
-        let spanMatcher = try feature.waitAndReturnSpanMatchers(count: 1)[0]
+        let spanMatcher = try tracing.waitAndReturnSpanMatchers(count: 1)[0]
         XCTAssertEqual(
             try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.applicationID)"),
-            try XCTUnwrap(RUMFeature.instance?.configuration.applicationID)
+            rum.configuration.applicationID
         )
         XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.sessionID)"))
         XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.viewID)"))
     }
 
     func testGivenBundlingWithRUMEnabledButRUMMonitorNotRegistered_whenSendingSpan_itPrintsWarning() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
-
-        RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance?.deinitialize() }
+        let tracing: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
+        let rum: RUMFeature = .mockNoOp()
+        core.registerFeature(named: RUMFeature.featureName, instance: rum)
 
         let previousUserLogger = userLogger
         defer { userLogger = previousUserLogger }
@@ -826,7 +824,7 @@ class TracerTests: XCTestCase {
                 .contains("RUM feature is enabled, but no `RUMMonitor` is registered. The RUM integration with Tracing will not work.")
         )
 
-        let spanMatcher = try feature.waitAndReturnSpanMatchers(count: 1)[0]
+        let spanMatcher = try tracing.waitAndReturnSpanMatchers(count: 1)[0]
         XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.applicationID)"))
         XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.sessionID)"))
         XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.viewID)"))
