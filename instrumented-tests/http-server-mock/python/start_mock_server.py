@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # -----------------------------------------------------------
 # Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
@@ -6,7 +6,7 @@
 # Copyright 2019-2020 Datadog, Inc.
 # -----------------------------------------------------------
 
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from server_address import get_localhost, get_best_server_address
 import re
 import json
@@ -61,9 +61,9 @@ class HTTPMockServer(BaseHTTPRequestHandler):
         if 'Content-Encoding' in self.headers and self.headers['Content-Encoding'] == 'deflate':
             request_body = zlib.decompress(request_body)
         
-        request = GenericRequest("POST", request_path, self.headers, request_body)
+        request = GenericRequest("POST", request_path, self.headers.as_bytes(), request_body)
         history.add_request(request)
-        return "{}"
+        return bytes()
 
     def __GET_inspect(self, parameters):
         """
@@ -77,10 +77,11 @@ class HTTPMockServer(BaseHTTPRequestHandler):
             inspection_info.append({
                 "method": request.http_method,
                 "path": request.path,
-                "body": base64.b64encode(request.http_body), # use Base64 to not corrupt the JSON
-                "headers": base64.b64encode(str(request.http_headers)) # use Base64 to not corrupt the JSON
+                "body": base64.b64encode(request.http_body).decode("utf-8") , # use Base64 string to not corrupt the JSON
+                "headers": base64.b64encode(request.http_headers).decode("utf-8") # use Base64 string to not corrupt the JSON
             })
-        return json.dumps(inspection_info)
+
+        return json.dumps(inspection_info).encode("utf-8")
 
     def __route(self, routes):
         try:
