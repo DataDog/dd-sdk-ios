@@ -586,6 +586,8 @@
 		D28D5D5527C54B30008E72D0 /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6FD127C5348200A62B57 /* DatadogCrashReporting.framework */; };
 		D29889C9273413ED00A4D1A9 /* RUMViewsHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29889C72734136200A4D1A9 /* RUMViewsHandlerTests.swift */; };
 		D29D5A4D273BF8B400A687C1 /* SwiftUIActionModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */; };
+		D2B3F052282E827700C2B5EE /* DDHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F051282E826A00C2B5EE /* DDHTTPHeadersWriter+apiTests.m */; };
+		D2B3F053282E827B00C2B5EE /* DDHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F051282E826A00C2B5EE /* DDHTTPHeadersWriter+apiTests.m */; };
 		D2CB6E0C27C50EAE00A62B57 /* Datadog.h in Headers */ = {isa = PBXBuildFile; fileRef = 61133B85242393DE00786299 /* Datadog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D2CB6E0D27C50EAE00A62B57 /* ObjcAppLaunchHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 6179FFD1254ADB1100556A0B /* ObjcAppLaunchHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D2CB6E0E27C50EAE00A62B57 /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1746,6 +1748,7 @@
 		D2791EF827170A760046E07A /* RUMSwiftUIScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIScenarioTests.swift; sourceTree = "<group>"; };
 		D29889C72734136200A4D1A9 /* RUMViewsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewsHandlerTests.swift; sourceTree = "<group>"; };
 		D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIActionModifier.swift; sourceTree = "<group>"; };
+		D2B3F051282E826A00C2B5EE /* DDHTTPHeadersWriter+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDHTTPHeadersWriter+apiTests.m"; sourceTree = "<group>"; };
 		D2CB6ED127C50EAE00A62B57 /* Datadog.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Datadog.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2CB6F8F27C520D400A62B57 /* DatadogTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DatadogTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2CB6FB027C5217A00A62B57 /* DatadogObjc.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogObjc.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -3404,6 +3407,7 @@
 				61B5E42026DF85C7000B0A5F /* DDRUMMonitor+apiTests.m */,
 				61B5E42A26DFC433000B0A5F /* DDNSURLSessionDelegate+apiTests.m */,
 				61B5E42426DFAFBC000B0A5F /* DDGlobal+apiTests.m */,
+				D2B3F051282E826A00C2B5EE /* DDHTTPHeadersWriter+apiTests.m */,
 			);
 			path = ObjcAPITests;
 			sourceTree = "<group>";
@@ -5260,6 +5264,7 @@
 				61E5332F24B75DE2003D6C4E /* RUMFeatureTests.swift in Sources */,
 				E1D203FD24C1885C00D1AF3A /* ActiveSpansPoolTests.swift in Sources */,
 				6149FB412529DEBD00EE387A /* InternalURLsFilterTests.swift in Sources */,
+				D2B3F052282E827700C2B5EE /* DDHTTPHeadersWriter+apiTests.m in Sources */,
 				61133C562423990D00786299 /* CarrierInfoProviderTests.swift in Sources */,
 				618DCFDF24C75FD300589570 /* RUMScopeTests.swift in Sources */,
 				61C5A89E24509C1100DA608C /* WarningsTests.swift in Sources */,
@@ -5874,6 +5879,7 @@
 				D2CB6F5427C520D400A62B57 /* RUMFeatureTests.swift in Sources */,
 				D2CB6F5527C520D400A62B57 /* ActiveSpansPoolTests.swift in Sources */,
 				D2CB6F5627C520D400A62B57 /* InternalURLsFilterTests.swift in Sources */,
+				D2B3F053282E827B00C2B5EE /* DDHTTPHeadersWriter+apiTests.m in Sources */,
 				D2CB6F5727C520D400A62B57 /* CarrierInfoProviderTests.swift in Sources */,
 				D2CB6F5827C520D400A62B57 /* RUMScopeTests.swift in Sources */,
 				D2CB6F5927C520D400A62B57 /* WarningsTests.swift in Sources */,

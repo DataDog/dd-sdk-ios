@@ -251,6 +251,7 @@ extension Datadog {
         private(set) var firstPartyHosts: Set<String>?
         private(set) var logEventMapper: LogEventMapper?
         private(set) var spanEventMapper: SpanEventMapper?
+        private(set) var tracingSamplingRate: Float
         private(set) var rumSessionsSamplingRate: Float
         private(set) var rumSessionsListener: RUMSessionListener?
         private(set) var rumUIKitViewsPredicate: UIKitRUMViewsPredicate?
@@ -326,6 +327,7 @@ extension Datadog {
                     serviceName: nil,
                     firstPartyHosts: nil,
                     spanEventMapper: nil,
+                    tracingSamplingRate: 20.0,
                     rumSessionsSamplingRate: 100.0,
                     rumSessionsListener: nil,
                     rumUIKitViewsPredicate: nil,
@@ -495,6 +497,15 @@ extension Datadog {
             /// Use the `trackURLSession(firstPartyHosts:)` API to configure tracing only the hosts that you are interested in.
             public func setSpanEventMapper(_ mapper: @escaping (SpanEvent) -> SpanEvent) -> Builder {
                 configuration.spanEventMapper = mapper
+                return self
+            }
+
+            /// Sets the sampling rate for APM traces created for auto-instrumented `URLSession` requests.
+            ///
+            /// - Parameter tracingSamplingRate: the sampling rate must be a value between `0.0` and `100.0`. A value of `0.0`
+            /// means no trace will be kept, `100.0` means all traces will be kept (default value is `20.0`).
+            public func set(tracingSamplingRate: Float) -> Builder {
+                configuration.tracingSamplingRate = tracingSamplingRate
                 return self
             }
 

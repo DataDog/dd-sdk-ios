@@ -49,6 +49,7 @@ extension Datadog.Configuration {
         rumEndpoint: RUMEndpoint = .us1,
         serviceName: String? = .mockAny(),
         firstPartyHosts: Set<String>? = nil,
+        tracingSamplingRate: Float = 100.0,
         rumSessionsSamplingRate: Float = 100.0,
         rumUIKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
         rumUIKitUserActionsPredicate: UIKitRUMUserActionsPredicate? = nil,
@@ -79,6 +80,7 @@ extension Datadog.Configuration {
             rumEndpoint: rumEndpoint,
             serviceName: serviceName,
             firstPartyHosts: firstPartyHosts,
+            tracingSamplingRate: tracingSamplingRate,
             rumSessionsSamplingRate: rumSessionsSamplingRate,
             rumUIKitViewsPredicate: rumUIKitViewsPredicate,
             rumUIKitUserActionsPredicate: rumUIKitUserActionsPredicate,
@@ -258,8 +260,8 @@ extension FeaturesConfiguration.RUM {
         uploadURL: URL = .mockAny(),
         clientToken: String = .mockAny(),
         applicationID: String = .mockAny(),
-        sessionSampler: Sampler = Sampler(samplingRate: 100),
-        telemetrySampler: Sampler = Sampler(samplingRate: 100),
+        sessionSampler: Sampler = .mockKeepAll(),
+        telemetrySampler: Sampler = .mockKeepAll(),
         uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         viewEventMapper: RUMViewEventMapper? = nil,
         resourceEventMapper: RUMResourceEventMapper? = nil,
@@ -314,14 +316,16 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
         sdkInternalURLs: Set<String> = [],
         rumAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         instrumentTracing: Bool = true,
-        instrumentRUM: Bool = true
+        instrumentRUM: Bool = true,
+        tracingSampler: Sampler = .mockKeepAll()
     ) -> Self {
         return .init(
             userDefinedFirstPartyHosts: userDefinedFirstPartyHosts,
             sdkInternalURLs: sdkInternalURLs,
             rumAttributesProvider: rumAttributesProvider,
             instrumentTracing: instrumentTracing,
-            instrumentRUM: instrumentRUM
+            instrumentRUM: instrumentRUM,
+            tracingSampler: tracingSampler
         )
     }
 }
