@@ -56,6 +56,7 @@ def update_flutter_sdk(ios_sdk_git_tag: str, dry_run: bool):
                 pass
 
             podspec.seek(0)
+            podspec.truncate()
             podspec.write(''.join(lines))
         
         # Update the README.md with the current version
@@ -81,6 +82,7 @@ def update_flutter_sdk(ios_sdk_git_tag: str, dry_run: bool):
                     in_table = True
 
             readme.seek(0)
+            readme.truncate()
             readme.write(''.join(lines))
         
         shell(command='pod repo update')
