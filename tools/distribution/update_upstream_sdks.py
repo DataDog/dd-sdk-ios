@@ -14,7 +14,7 @@ import sys
 import traceback
 from tempfile import TemporaryDirectory
 from src.release.semver import Version
-from src.dogfood.repository import Repository
+from src.dogfood.repository import Repository, default_git_author
 from src.utils import remember_cwd, shell
 
 
@@ -56,6 +56,7 @@ def update_flutter_sdk(ios_sdk_git_tag: str, dry_run: bool):
                 pass
 
             podspec.seek(0)
+            podspec.truncate()
             podspec.write(''.join(lines))
         
         # Update the README.md with the current version
@@ -81,6 +82,7 @@ def update_flutter_sdk(ios_sdk_git_tag: str, dry_run: bool):
                     in_table = True
 
             readme.seek(0)
+            readme.truncate()
             readme.write(''.join(lines))
         
         shell(command='pod repo update')
@@ -109,7 +111,8 @@ def update_flutter_sdk(ios_sdk_git_tag: str, dry_run: bool):
         # Commit changes:
         repository.commit(
             message=f'Update version of dd-sdk-ios to {ios_sdk_git_tag}\n\n'
-                    f'This commit was created by automation from the dd-sdk-ios repo.'
+                    f'This commit was created by automation from the dd-sdk-ios repo.',
+            author=default_git_author
         )
 
         # Push branch and create PR:
