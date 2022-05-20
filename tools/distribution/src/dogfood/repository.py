@@ -10,6 +10,9 @@ from typing import Union
 from git import Repo, Actor
 
 
+default_git_author = Actor(name='mobile-app-ci', email='')
+
+
 class Repository:
     """
     Abstracts operations on the target repository.
@@ -64,7 +67,7 @@ class Repository:
         print('    → commit message:')
         print(message)
         self.repo.git.add(update=True)
-        self.repo.index.commit(message=message, author=author)
+        self.repo.index.commit(message=message, author=author, committer=author)
 
     def push(self):
         """
