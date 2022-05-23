@@ -29,12 +29,14 @@ private class DDURLSessionDelegateMock: DDURLSessionDelegate {
 class DDNSURLSessionDelegateTests: XCTestCase {
     func testInit() {
         let delegate = DDNSURLSessionDelegate()
-        XCTAssertNil(delegate.swiftDelegate.firstPartyURLsFilter)
+        let url = URL(string: "foo.com")
+        XCTAssertFalse(delegate.swiftDelegate.firstPartyURLsFilter.isFirstParty(url: url))
     }
 
     func testInitWithAdditionalFirstPartyHosts() {
         let delegate = DDNSURLSessionDelegate(additionalFirstPartyHosts: ["foo.com"])
-        XCTAssertNotNil(delegate.swiftDelegate.firstPartyURLsFilter)
+        let url = URL(string: "http://foo.com")
+        XCTAssertTrue(delegate.swiftDelegate.firstPartyURLsFilter.isFirstParty(url: url))
     }
 
     func testItForwardsCallsToSwiftDelegate() {

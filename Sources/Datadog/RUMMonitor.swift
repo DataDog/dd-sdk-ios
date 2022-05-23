@@ -172,7 +172,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             )
 
             core.feature(RUMInstrumentation.self)?.publish(to: monitor)
-            URLSessionAutoInstrumentation.instance?.publish(to: monitor)
+            core.feature(URLSessionAutoInstrumentation.self)?.publish(to: monitor)
+
             return monitor
         } catch {
             consolePrint("\(error)")

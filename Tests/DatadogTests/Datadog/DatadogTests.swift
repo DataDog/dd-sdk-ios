@@ -103,13 +103,13 @@ class DatadogTests: XCTestCase {
             verificationBlock()
 
             defaultDatadogCore.feature(RUMInstrumentation.self)?.viewControllerSwizzler?.unswizzle()
-            URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
+            defaultDatadogCore.feature(URLSessionAutoInstrumentation.self)?.swizzler.unswizzle()
             Datadog.flushAndDeinitialize()
         }
 
         defer {
             defaultDatadogCore.feature(RUMInstrumentation.self)?.viewControllerSwizzler?.unswizzle()
-            URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
+            defaultDatadogCore.feature(URLSessionAutoInstrumentation.self)?.swizzler.unswizzle()
         }
 
         verify(configuration: defaultBuilder.build()) {
@@ -118,7 +118,7 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(defaultDatadogCore.feature(RUMFeature.self), "When using `defaultBuilder` RUM feature should be disabled by default")
             XCTAssertNil(defaultDatadogCore.feature(CrashReportingFeature.self))
             XCTAssertNil(defaultDatadogCore.feature(RUMInstrumentation.self))
-            XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNil(defaultDatadogCore.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
             let tracing = defaultDatadogCore.feature(TracingFeature.self)
             XCTAssertNotNil(tracing)
@@ -131,7 +131,7 @@ class DatadogTests: XCTestCase {
             XCTAssertNotNil(defaultDatadogCore.feature(RUMFeature.self), "When using `rumBuilder` RUM feature should be enabled by default")
             XCTAssertNil(defaultDatadogCore.feature(CrashReportingFeature.self))
             XCTAssertNotNil(defaultDatadogCore.feature(RUMInstrumentation.self))
-            XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNil(defaultDatadogCore.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
             let tracing = defaultDatadogCore.feature(TracingFeature.self)
             XCTAssertNotNil(tracing)
@@ -145,7 +145,7 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(defaultDatadogCore.feature(RUMFeature.self), "When using `defaultBuilder` RUM feature should be disabled by default")
             XCTAssertNil(defaultDatadogCore.feature(CrashReportingFeature.self))
             XCTAssertNil(defaultDatadogCore.feature(RUMInstrumentation.self))
-            XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNil(defaultDatadogCore.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
             let tracing = defaultDatadogCore.feature(TracingFeature.self)
             XCTAssertNotNil(tracing)
@@ -159,7 +159,7 @@ class DatadogTests: XCTestCase {
             XCTAssertNotNil(defaultDatadogCore.feature(RUMFeature.self), "When using `rumBuilder` RUM feature should be enabled by default")
             XCTAssertNil(defaultDatadogCore.feature(CrashReportingFeature.self))
             XCTAssertNotNil(defaultDatadogCore.feature(RUMInstrumentation.self))
-            XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNil(defaultDatadogCore.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
             let tracing = defaultDatadogCore.feature(TracingFeature.self)
             XCTAssertNotNil(tracing)
@@ -174,7 +174,7 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(defaultDatadogCore.feature(RUMFeature.self), "When using `defaultBuilder` RUM feature should be disabled by default")
             XCTAssertNil(defaultDatadogCore.feature(CrashReportingFeature.self))
             XCTAssertNil(defaultDatadogCore.feature(RUMInstrumentation.self))
-            XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNil(defaultDatadogCore.feature(URLSessionAutoInstrumentation.self))
             XCTAssertNil((defaultDatadogCore as? DatadogCore)?.telemetry)
         }
         verify(configuration: rumBuilder.enableTracing(false).build()) {
@@ -184,7 +184,7 @@ class DatadogTests: XCTestCase {
             XCTAssertNotNil(defaultDatadogCore.feature(RUMFeature.self), "When using `rumBuilder` RUM feature should be enabled by default")
             XCTAssertNil(defaultDatadogCore.feature(CrashReportingFeature.self))
             XCTAssertNotNil(defaultDatadogCore.feature(RUMInstrumentation.self))
-            XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNil(defaultDatadogCore.feature(URLSessionAutoInstrumentation.self))
             XCTAssertNotNil((defaultDatadogCore as? DatadogCore)?.telemetry)
         }
 
@@ -194,7 +194,7 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(defaultDatadogCore.feature(RUMFeature.self), "When using `defaultBuilder` RUM feature cannot be enabled")
             XCTAssertNil(defaultDatadogCore.feature(CrashReportingFeature.self))
             XCTAssertNil(defaultDatadogCore.feature(RUMInstrumentation.self))
-            XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNil(defaultDatadogCore.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
             let tracing = defaultDatadogCore.feature(TracingFeature.self)
             XCTAssertNotNil(tracing)
@@ -207,7 +207,7 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(defaultDatadogCore.feature(RUMFeature.self))
             XCTAssertNil(defaultDatadogCore.feature(CrashReportingFeature.self))
             XCTAssertNil(defaultDatadogCore.feature(RUMInstrumentation.self))
-            XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNil(defaultDatadogCore.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
             let tracing = defaultDatadogCore.feature(TracingFeature.self)
             XCTAssertNotNil(tracing)
@@ -242,10 +242,10 @@ class DatadogTests: XCTestCase {
         }
 
         verify(configuration: defaultBuilder.trackURLSession(firstPartyHosts: ["example.com"]).build()) {
-            XCTAssertNotNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNotNil(defaultDatadogCore.feature(URLSessionAutoInstrumentation.self))
         }
         verify(configuration: defaultBuilder.trackURLSession().build()) {
-            XCTAssertNotNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNotNil(defaultDatadogCore.feature(URLSessionAutoInstrumentation.self))
         }
 
         verify(

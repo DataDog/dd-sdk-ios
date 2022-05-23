@@ -72,3 +72,9 @@ extension RUMInstrumentation: Flushable {
         deinitialize()
     }
 }
+
+extension URLSessionAutoInstrumentation: Flushable {
+    func flush() {
+        deinitialize()
+    }
+}

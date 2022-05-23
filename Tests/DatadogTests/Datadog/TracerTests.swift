@@ -1128,12 +1128,14 @@ class TracerTests: XCTestCase {
                 .trackURLSession(firstPartyHosts: [.mockAny()])
                 .build()
         )
+        defer { Datadog.flushAndDeinitialize() }
 
         let output = LogOutputMock()
         userLogger = .mockWith(logOutput: output)
 
         // Given
-        let tracingHandler = try XCTUnwrap(URLSessionAutoInstrumentation.instance?.interceptor.handler)
+        let instrumentation = defaultDatadogCore.feature(URLSessionAutoInstrumentation.self)
+        let tracingHandler = try XCTUnwrap(instrumentation?.interceptor.handler)
 
         // When
         XCTAssertTrue(Global.sharedTracer is DDNoopTracer)
@@ -1148,10 +1150,6 @@ class TracerTests: XCTestCase {
             Make sure `Global.sharedTracer = Tracer.initialize()` is called before any network request is send.
             """
         )
-
-        URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
-
-        Datadog.flushAndDeinitialize()
     }
 }
 // swiftlint:enable multiline_arguments_brackets
