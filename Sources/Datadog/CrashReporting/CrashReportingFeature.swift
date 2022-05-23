@@ -8,12 +8,6 @@ import Foundation
 
 /// Creates and owns components enabling Crash Reporting feature.
 internal final class CrashReportingFeature {
-    /// Single, shared instance of `CrashReportingFeature`.
-    static var instance: CrashReportingFeature?
-
-    /// Tells if the feature was enabled by the user in the SDK configuration.
-    static var isEnabled: Bool { instance != nil }
-
     // MARK: - Configuration
 
     let configuration: FeaturesConfiguration.CrashReporting
@@ -53,9 +47,5 @@ internal final class CrashReportingFeature {
         self.rumSessionStateProvider = ValuePublisher(initialValue: nil) // `nil` by default, because there cannot be any RUM session at this ponit
         self.appStateListener = commonDependencies.appStateListener
         self.telemetry = telemetry
-    }
-
-    internal func deinitialize() {
-        CrashReportingFeature.instance = nil
     }
 }

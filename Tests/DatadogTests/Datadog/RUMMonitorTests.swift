@@ -32,8 +32,9 @@ class RUMMonitorTests: XCTestCase {
     /// The only difference vs. `RUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
     private func createTestableRUMMonitor(in core: DatadogCoreProtocol) throws -> DDRUMMonitor {
         let rumFeature: RUMFeature = try XCTUnwrap(core.feature(RUMFeature.self), "RUM feature must be initialized before creating `RUMMonitor`")
+        let crashReportingFeature = core.feature(CrashReportingFeature.self)
         return RUMMonitor(
-            dependencies: RUMScopeDependencies(rumFeature: rumFeature)
+            dependencies: RUMScopeDependencies(rumFeature: rumFeature, crashReportingFeature: crashReportingFeature)
                 .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
             dateProvider: rumFeature.dateProvider
         )
@@ -1141,14 +1142,14 @@ class RUMMonitorTests: XCTestCase {
                 )
             )
         )
-        core.register(feature: rum)
+        let crashReporting: CrashReportingFeature = .mockNoOp()
 
-        CrashReportingFeature.instance = .mockNoOp()
-        defer { CrashReportingFeature.instance?.deinitialize() }
+        core.register(feature: rum)
+        core.register(feature: crashReporting)
 
         // Given
         Global.crashReporter = CrashReporter(
-            crashReportingFeature: CrashReportingFeature.instance!,
+            crashReportingFeature: crashReporting,
             loggingFeature: nil,
             rumFeature: rum
         )

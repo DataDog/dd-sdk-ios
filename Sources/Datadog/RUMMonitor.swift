@@ -164,8 +164,10 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                         : "`Datadog.initialize()` must be called prior to `RUMMonitor.initialize()`."
                 )
             }
+
+            let crashReporting = core.feature(CrashReportingFeature.self)
             let monitor = RUMMonitor(
-                dependencies: RUMScopeDependencies(rumFeature: rumFeature),
+                dependencies: RUMScopeDependencies(rumFeature: rumFeature, crashReportingFeature: crashReporting),
                 dateProvider: rumFeature.dateProvider
             )
 

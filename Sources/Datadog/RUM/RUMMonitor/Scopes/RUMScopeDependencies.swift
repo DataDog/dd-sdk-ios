@@ -43,7 +43,7 @@ internal struct RUMScopeDependencies {
 }
 
 internal extension RUMScopeDependencies {
-    init(rumFeature: RUMFeature) {
+    init(rumFeature: RUMFeature, crashReportingFeature: CrashReportingFeature?) {
         self.init(
             rumApplicationID: rumFeature.configuration.applicationID,
             sessionSampler: rumFeature.configuration.sessionSampler,
@@ -67,7 +67,7 @@ internal extension RUMScopeDependencies {
             ),
             rumUUIDGenerator: rumFeature.configuration.uuidGenerator,
             dateCorrector: rumFeature.dateCorrector,
-            crashContextIntegration: RUMWithCrashContextIntegration(),
+            crashContextIntegration: crashReportingFeature.map { .init(crashReporting: $0) },
             ciTest: CITestIntegration.active?.rumCITest,
             viewUpdatesThrottlerFactory: { RUMViewUpdatesThrottler() },
             vitalCPUReader: rumFeature.vitalCPUReader,
