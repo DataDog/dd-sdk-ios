@@ -46,6 +46,22 @@ public protocol DatadogCoreProtocol {
 }
 
 extension DatadogCoreProtocol {
+    /// Registers a feature instance by its type description.
+    ///
+    /// - Parameter instance: The feaure instance to register
+    func register<T>(feature instance: T?) {
+        registerFeature(named: String(describing: T.self), instance: instance)
+    }
+
+    /// Returns a Feature instance by its type.
+    ///
+    /// - Parameters:
+    ///   - type: The feature instance type.
+    /// - Returns: The feature if any.
+    func feature<T>(_ type: T.Type) -> T? {
+        return feature(T.self, named: String(describing: T.self))
+    }
+
     /// Returns a Feature instance by its name.
     ///
     /// - Parameter featureName: The feature's name.

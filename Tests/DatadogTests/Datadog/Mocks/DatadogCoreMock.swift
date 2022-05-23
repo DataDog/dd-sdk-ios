@@ -72,3 +72,9 @@ extension RUMFeature: Flushable {
         deinitialize()
     }
 }
+
+extension RUMInstrumentation: Flushable {
+    func flush() {
+        deinitialize()
+    }
+}

@@ -1312,14 +1312,16 @@ class RUMMonitorTests: XCTestCase {
                 .trackUIKitRUMActions()
                 .build()
         )
+        defer { Datadog.flushAndDeinitialize() }
 
         let output = LogOutputMock()
         userLogger = .mockWith(logOutput: output)
 
         // Given
         let resourcesHandler = try XCTUnwrap(URLSessionAutoInstrumentation.instance?.interceptor.handler)
-        let viewsHandler = try XCTUnwrap(RUMInstrumentation.instance?.viewsHandler)
-        let userActionsHandler = try XCTUnwrap(RUMInstrumentation.instance?.userActionsAutoInstrumentation?.handler)
+        let rumInstrumentation = try XCTUnwrap(defaultDatadogCore.feature(RUMInstrumentation.self))
+        let viewsHandler = rumInstrumentation.viewsHandler
+        let userActionsHandler = try XCTUnwrap(rumInstrumentation.userActionsAutoInstrumentation?.handler)
 
         // When
         XCTAssertTrue(Global.rum is DDNoopRUMMonitor)
@@ -1369,10 +1371,8 @@ class RUMMonitorTests: XCTestCase {
         )
 
         URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
-        RUMInstrumentation.instance?.viewControllerSwizzler?.unswizzle()
-        RUMInstrumentation.instance?.userActionsAutoInstrumentation?.swizzler.unswizzle()
-
-        Datadog.flushAndDeinitialize()
+        rumInstrumentation.viewControllerSwizzler?.unswizzle()
+        rumInstrumentation.userActionsAutoInstrumentation?.swizzler.unswizzle()
     }
 
     // MARK: - Internal attributes

@@ -168,7 +168,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 dependencies: RUMScopeDependencies(rumFeature: rumFeature),
                 dateProvider: rumFeature.dateProvider
             )
-            RUMInstrumentation.instance?.publish(to: monitor)
+
+            core.feature(RUMInstrumentation.self)?.publish(to: monitor)
             URLSessionAutoInstrumentation.instance?.publish(to: monitor)
             return monitor
         } catch {

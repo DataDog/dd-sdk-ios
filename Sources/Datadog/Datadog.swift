@@ -254,6 +254,8 @@ public class Datadog {
                     configuration: instrumentationConfiguration,
                     dateProvider: dateProvider
                 )
+
+                core.register(feature: rumInstrumentation)
             }
         }
 
@@ -298,8 +300,7 @@ public class Datadog {
 
         CrashReportingFeature.instance = crashReporting
 
-        RUMInstrumentation.instance = rumInstrumentation
-        RUMInstrumentation.instance?.enable()
+        core.feature(RUMInstrumentation.self)?.enable()
 
         URLSessionAutoInstrumentation.instance = urlSessionAutoInstrumentation
         URLSessionAutoInstrumentation.instance?.enable()
@@ -339,12 +340,13 @@ public class Datadog {
         let logging = defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName)
         let tracing = defaultDatadogCore.feature(TracingFeature.self, named: TracingFeature.featureName)
         let rum = defaultDatadogCore.feature(RUMFeature.self, named: RUMFeature.featureName)
+        let rumInstrumentation = defaultDatadogCore.feature(RUMInstrumentation.self)
         logging?.deinitialize()
         tracing?.deinitialize()
         rum?.deinitialize()
+        rumInstrumentation?.deinitialize()
 
         CrashReportingFeature.instance?.deinitialize()
-        RUMInstrumentation.instance?.deinitialize()
         URLSessionAutoInstrumentation.instance?.deinitialize()
 
         // Reset Globals:

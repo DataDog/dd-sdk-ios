@@ -12,21 +12,18 @@ class RUMInstrumentationTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        XCTAssertNil(RUMInstrumentation.instance)
     }
 
     override func tearDown() {
         core.flush()
-        XCTAssertNil(RUMInstrumentation.instance)
         super.tearDown()
     }
 
     func testGivenRUMViewsAutoInstrumentationEnabled_whenRUMMonitorIsRegistered_itSubscribesAsViewsHandler() throws {
         // Given
         let rum: RUMFeature = .mockNoOp()
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
 
-        RUMInstrumentation.instance = RUMInstrumentation(
+        let instrumentation = RUMInstrumentation(
             configuration: .init(
                 uiKitRUMViewsPredicate: UIKitRUMViewsPredicateMock(),
                 uiKitRUMUserActionsPredicate: nil,
@@ -34,23 +31,23 @@ class RUMInstrumentationTests: XCTestCase {
             ),
             dateProvider: SystemDateProvider()
         )
-        defer { RUMInstrumentation.instance?.deinitialize() }
+        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: instrumentation)
 
         // When
         Global.rum = RUMMonitor.initialize(in: core)
         defer { Global.rum = DDNoopRUMMonitor() }
 
         // Then
-        let viewsHandler = RUMInstrumentation.instance?.viewsHandler
-        XCTAssertTrue(viewsHandler?.subscriber === Global.rum)
+        let viewsHandler = instrumentation.viewsHandler
+        XCTAssertTrue(viewsHandler.subscriber === Global.rum)
     }
 
     func testGivenRUMUserActionsAutoInstrumentationEnabled_whenRUMMonitorIsRegistered_itSubscribesAsUserActionsHandler() throws {
         // Given
         let rum: RUMFeature = .mockNoOp()
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
 
-        RUMInstrumentation.instance = RUMInstrumentation(
+        let instrumentation = RUMInstrumentation(
             configuration: .init(
                 uiKitRUMViewsPredicate: nil,
                 uiKitRUMUserActionsPredicate: UIKitRUMUserActionsPredicateMock(),
@@ -58,23 +55,22 @@ class RUMInstrumentationTests: XCTestCase {
             ),
             dateProvider: SystemDateProvider()
         )
-        defer { RUMInstrumentation.instance?.deinitialize() }
+        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: instrumentation)
 
         // When
         Global.rum = RUMMonitor.initialize(in: core)
         defer { Global.rum = DDNoopRUMMonitor() }
 
         // Then
-        let userActionsHandler = RUMInstrumentation.instance?.userActionsAutoInstrumentation?.handler as? UIKitRUMUserActionsHandler
+        let userActionsHandler = instrumentation.userActionsAutoInstrumentation?.handler as? UIKitRUMUserActionsHandler
         XCTAssertTrue(userActionsHandler?.subscriber === Global.rum)
     }
 
     func testGivenRUMLongTasksAutoInstrumentationEnabled_whenRUMMonitorIsRegistered_itSubscribesAsLongTaskObserver() throws {
         // Given
         let rum: RUMFeature = .mockNoOp()
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
-
-        RUMInstrumentation.instance = RUMInstrumentation(
+        let instrumentation = RUMInstrumentation(
             configuration: .init(
                 uiKitRUMViewsPredicate: nil,
                 uiKitRUMUserActionsPredicate: nil,
@@ -82,21 +78,22 @@ class RUMInstrumentationTests: XCTestCase {
             ),
             dateProvider: SystemDateProvider()
         )
-        defer { RUMInstrumentation.instance?.deinitialize() }
+
+        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: instrumentation)
 
         // When
         Global.rum = RUMMonitor.initialize(in: core)
         defer { Global.rum = DDNoopRUMMonitor() }
 
         // Then
-        XCTAssertTrue(RUMInstrumentation.instance?.longTasks?.subscriber === Global.rum)
+        XCTAssertTrue(instrumentation.longTasks?.subscriber === Global.rum)
     }
 
     /// Sanity check for not-allowed configuration.
     func testWhenAllRUMAutoInstrumentationsDisabled_itDoesNotCreateInstrumentationComponents() throws {
         // Given
         let rum: RUMFeature = .mockNoOp()
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
 
         /// This configuration is not allowed by `FeaturesConfiguration` logic. We test it for sanity.
         let notAllowedConfiguration = FeaturesConfiguration.RUM.Instrumentation(
@@ -105,14 +102,16 @@ class RUMInstrumentationTests: XCTestCase {
             longTaskThreshold: nil
         )
 
-        RUMInstrumentation.instance = RUMInstrumentation(
+        let instrumentation = RUMInstrumentation(
             configuration: notAllowedConfiguration,
             dateProvider: SystemDateProvider()
         )
-        defer { RUMInstrumentation.instance?.deinitialize() }
+
+        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: instrumentation)
 
         // Then
-        XCTAssertNil(RUMInstrumentation.instance?.viewControllerSwizzler)
-        XCTAssertNil(RUMInstrumentation.instance?.userActionsAutoInstrumentation)
+        XCTAssertNil(instrumentation.viewControllerSwizzler)
+        XCTAssertNil(instrumentation.userActionsAutoInstrumentation)
     }
 }
