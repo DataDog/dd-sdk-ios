@@ -8,6 +8,8 @@ import XCTest
 @testable import Datadog
 
 class TracerConfigurationTests: XCTestCase {
+    let core = DatadogCoreMock()
+
     private let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
     private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
 
@@ -15,7 +17,7 @@ class TracerConfigurationTests: XCTestCase {
         super.setUp()
         temporaryFeatureDirectories.create()
 
-        TracingFeature.instance = .mockByRecordingSpanMatchers(
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(
                 common: .mockWith(
@@ -30,22 +32,22 @@ class TracerConfigurationTests: XCTestCase {
             ),
             loggingFeature: .mockNoOp()
         )
+
+        core.registerFeature(named: TracingFeature.featureName, instance: feature)
     }
 
     override func tearDown() {
-        TracingFeature.instance?.deinitialize()
+        core.flush()
         temporaryFeatureDirectories.delete()
         super.tearDown()
     }
 
     func testDefaultTracer() throws {
-        let tracer = Tracer.initialize(
-            configuration: .init()
-        ).dd
+        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
 
         XCTAssertNil(tracer.rumContextIntegration)
 
-        let feature = TracingFeature.instance!
+        let feature = try XCTUnwrap(core.feature(TracingFeature.self, named: TracingFeature.featureName))
         XCTAssertEqual((tracer.spanOutput as? SpanFileOutput)?.environment, "tests")
         XCTAssertEqual(tracer.spanBuilder.applicationVersion, "1.2.3")
         XCTAssertEqual(tracer.spanBuilder.serviceName, "service-name")
@@ -71,10 +73,10 @@ class TracerConfigurationTests: XCTestCase {
         RUMFeature.instance = .mockNoOp()
         defer { RUMFeature.instance?.deinitialize() }
 
-        let tracer1 = Tracer.initialize(configuration: .init()).dd
+        let tracer1 = Tracer.initialize(configuration: .init(), in: core).dd
         XCTAssertNotNil(tracer1.rumContextIntegration)
 
-        let tracer2 = Tracer.initialize(configuration: .init(bundleWithRUM: false)).dd
+        let tracer2 = Tracer.initialize(configuration: .init(bundleWithRUM: false), in: core).dd
         XCTAssertNil(tracer2.rumContextIntegration)
     }
 
@@ -84,12 +86,13 @@ class TracerConfigurationTests: XCTestCase {
                 serviceName: "custom-service-name",
                 sendNetworkInfo: true,
                 bundleWithRUM: false
-            )
+            ),
+            in: core
         ).dd
 
         XCTAssertNil(tracer.rumContextIntegration)
 
-        let feature = TracingFeature.instance!
+        let feature = try XCTUnwrap(core.feature(TracingFeature.self, named: TracingFeature.featureName))
         XCTAssertEqual((tracer.spanOutput as? SpanFileOutput)?.environment, "tests")
         XCTAssertEqual(tracer.spanBuilder.applicationVersion, "1.2.3")
         XCTAssertEqual(tracer.spanBuilder.serviceName, "custom-service-name")

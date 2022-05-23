@@ -155,7 +155,8 @@ public class Datadog {
     public static func clearAllData() {
         let logging = defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName)
         logging?.storage.clearAllData()
-        TracingFeature.instance?.storage.clearAllData()
+        let tracing = defaultDatadogCore.feature(TracingFeature.self, named: TracingFeature.featureName)
+        tracing?.storage.clearAllData()
         RUMFeature.instance?.storage.clearAllData()
     }
 
@@ -270,10 +271,12 @@ public class Datadog {
                 directories: try obtainTracingFeatureDirectories(),
                 configuration: tracingConfiguration,
                 commonDependencies: commonDependencies,
-                loggingFeatureAdapter: logging.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
+                loggingFeatureAdapter: logging.map { LoggingForTracingAdapter(loggingFeature: $0) },
                 tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
                 telemetry: telemetry
             )
+
+            defaultDatadogCore.registerFeature(named: TracingFeature.featureName, instance: tracing)
         }
 
         if let crashReportingConfiguration = configuration.crashReporting {
@@ -291,7 +294,6 @@ public class Datadog {
             )
         }
 
-        TracingFeature.instance = tracing
         RUMFeature.instance = rum
         CrashReportingFeature.instance = crashReporting
 
@@ -332,8 +334,8 @@ public class Datadog {
         // Tear down and deinitialize all features:
         let logging = defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName)
         logging?.deinitialize()
-
-        TracingFeature.instance?.deinitialize()
+        let tracing = defaultDatadogCore.feature(TracingFeature.self, named: TracingFeature.featureName)
+        tracing?.deinitialize()
         RUMFeature.instance?.deinitialize()
         CrashReportingFeature.instance?.deinitialize()
 

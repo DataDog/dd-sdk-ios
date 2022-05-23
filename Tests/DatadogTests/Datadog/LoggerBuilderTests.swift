@@ -79,8 +79,8 @@ class LoggerBuilderTests: XCTestCase {
     }
 
     func testDefaultLoggerWithTracingEnabled() throws {
-        TracingFeature.instance = .mockNoOp()
-        defer { TracingFeature.instance?.deinitialize() }
+        let tracing: TracingFeature = .mockNoOp()
+        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
 
         let logger1 = Logger.builder.build(in: core)
         XCTAssertNotNil(logger1.activeSpanIntegration)
@@ -93,8 +93,8 @@ class LoggerBuilderTests: XCTestCase {
         RUMFeature.instance = .mockNoOp()
         defer { RUMFeature.instance?.deinitialize() }
 
-        TracingFeature.instance = .mockNoOp()
-        defer { TracingFeature.instance?.deinitialize() }
+        let tracing: TracingFeature = .mockNoOp()
+        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
 
         let logger = Logger.builder
             .set(serviceName: "custom-service-name")
