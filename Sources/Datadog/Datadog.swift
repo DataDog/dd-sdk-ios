@@ -203,7 +203,10 @@ public class Datadog {
         )
 
         // Set default `DatadogCore`:
-        let core = DatadogCore(dependencies: commonDependencies)
+        let core = DatadogCore(
+            configuration: configuration.common,
+            dependencies: commonDependencies
+        )
 
         // First, initialize internal loggers:
         let internalLoggerConfiguration = InternalLoggerConfiguration(

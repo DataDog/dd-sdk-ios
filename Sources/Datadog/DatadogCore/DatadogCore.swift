@@ -6,18 +6,23 @@
 
 import Foundation
 
-/// Feature-agnostic set of dependencies provided by core to feature modules.
+/// Feature-agnostic SDK configuration.
+internal typealias CoreConfiguration = FeaturesConfiguration.Common
+
+/// Feature-agnostic set of dependencies powering Features storage, upload and event recording.
 internal typealias CoreDependencies = FeaturesCommonDependencies
 
 /// Core implementation of Datadog SDK.
 ///
-/// The core provides a storage and upload mechanism for each registered
-/// feature based on their respective configuration.
+/// The core provides a storage and upload mechanism for each registered Feature
+/// based on their respective configuration.
 ///
 /// By complying with `DatadogCoreProtocol`, the core can
-/// provide context and writing scopes to features for event recording.
+/// provide context and writing scopes to Features for event recording.
 internal final class DatadogCore {
-    /// A set of dependencies provided by core to features.
+    /// The configuration of SDK core.
+    let configuration: CoreConfiguration
+    /// A set of dependencies used by SDK core for powering Features.
     let dependencies: CoreDependencies
 
     private var v1Features: [String: Any] = [:]
@@ -25,8 +30,13 @@ internal final class DatadogCore {
     /// Creates a core instance.
     ///
     /// - Parameters:
-    ///   - dependencies: container bundling all dependencies provided by core to features.
-    init(dependencies: CoreDependencies) {
+    ///   - configuration: the configuration of SDK core.
+    ///   - dependencies: a set of dependencies used by SDK core for powering Features.
+    init(
+        configuration: CoreConfiguration,
+        dependencies: CoreDependencies
+    ) {
+        self.configuration = configuration
         self.dependencies = dependencies
     }
 

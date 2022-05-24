@@ -170,6 +170,7 @@ class LoggerTests: XCTestCase {
 
     func testSendingUserInfo() throws {
         let core = DatadogCore(
+            configuration: .mockAny(),
             dependencies: .mockWith(
                 consentProvider: ConsentProvider(initialConsent: .granted),
                 userInfoProvider: UserInfoProvider()
