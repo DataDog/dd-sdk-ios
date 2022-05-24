@@ -134,7 +134,7 @@ public class Datadog {
         extraInfo: [AttributeKey: AttributeValue] = [:]
     ) {
         let core = defaultDatadogCore as? DatadogCore
-        core?.userInfoProvider.value = UserInfo(
+        core?.setUserInfo(
             id: id,
             name: name,
             email: email,
@@ -146,7 +146,7 @@ public class Datadog {
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     public static func set(trackingConsent: TrackingConsent) {
         let core = defaultDatadogCore as? DatadogCore
-        core?.consentProvider.changeConsent(to: trackingConsent)
+        core?.set(trackingConsent: trackingConsent)
     }
 
     /// Clears all data that has not already been sent to Datadog servers.
@@ -175,13 +175,6 @@ public class Datadog {
 
         let consentProvider = ConsentProvider(initialConsent: initialTrackingConsent)
         let userInfoProvider = UserInfoProvider()
-
-        // set default DatadogCore then register features
-        let core = DatadogCore(
-            consentProvider: consentProvider,
-            userInfoProvider: userInfoProvider
-        )
-
         let dateProvider = SystemDateProvider()
         let dateCorrector = DateCorrector(
             deviceDateProvider: dateProvider,
@@ -192,8 +185,27 @@ public class Datadog {
         let carrierInfoProvider = CarrierInfoProvider()
         let launchTimeProvider = LaunchTimeProvider()
 
-        // First, initialize internal loggers:
+        // Bundle all core dependencies provided by `DatadogCore` to features:
+        let commonDependencies = CoreDependencies(
+            consentProvider: consentProvider,
+            performance: configuration.common.performance,
+            httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
+            mobileDevice: MobileDevice(),
+            sdkInitDate: dateProvider.currentDate(),
+            dateProvider: dateProvider,
+            dateCorrector: dateCorrector,
+            userInfoProvider: userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider,
+            launchTimeProvider: launchTimeProvider,
+            appStateListener: AppStateListener(dateProvider: dateProvider),
+            encryption: configuration.common.encryption
+        )
 
+        // Set default `DatadogCore`:
+        let core = DatadogCore(dependencies: commonDependencies)
+
+        // First, initialize internal loggers:
         let internalLoggerConfiguration = InternalLoggerConfiguration(
             sdkVersion: configuration.common.sdkVersion,
             applicationVersion: configuration.common.applicationVersion,
@@ -214,22 +226,6 @@ public class Datadog {
 
         var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
         var rumInstrumentation: RUMInstrumentation?
-
-        let commonDependencies = FeaturesCommonDependencies(
-            consentProvider: consentProvider,
-            performance: configuration.common.performance,
-            httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
-            mobileDevice: MobileDevice(),
-            sdkInitDate: dateProvider.currentDate(),
-            dateProvider: dateProvider,
-            dateCorrector: dateCorrector,
-            userInfoProvider: userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider,
-            launchTimeProvider: launchTimeProvider,
-            appStateListener: AppStateListener(dateProvider: dateProvider),
-            encryption: configuration.common.encryption
-        )
 
         if let rumConfiguration = configuration.rum {
             telemetry = RUMTelemetry(

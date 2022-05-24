@@ -318,8 +318,10 @@ class TracerTests: XCTestCase {
 
     func testSendingUserInfo() throws {
         let core = DatadogCore(
-            consentProvider: ConsentProvider(initialConsent: .granted),
-            userInfoProvider: UserInfoProvider()
+            dependencies: .mockWith(
+                consentProvider: ConsentProvider(initialConsent: .granted),
+                userInfoProvider: UserInfoProvider()
+            )
         )
 
         defaultDatadogCore = core
@@ -328,7 +330,7 @@ class TracerTests: XCTestCase {
         let feature: TracingFeature = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
-                userInfoProvider: core.userInfoProvider
+                userInfoProvider: core.dependencies.userInfoProvider
             )
         )
         defer { feature.deinitialize() }

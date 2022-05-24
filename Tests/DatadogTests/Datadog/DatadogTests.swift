@@ -372,11 +372,11 @@ class DatadogTests: XCTestCase {
         )
 
         let core = defaultDatadogCore as? DatadogCore
-        XCTAssertEqual(core?.consentProvider.currentValue, initialConsent)
+        XCTAssertEqual(core?.dependencies.consentProvider.currentValue, initialConsent)
 
         Datadog.set(trackingConsent: nextConsent)
 
-        XCTAssertEqual(core?.consentProvider.currentValue, nextConsent)
+        XCTAssertEqual(core?.dependencies.consentProvider.currentValue, nextConsent)
 
         Datadog.flushAndDeinitialize()
     }
@@ -390,11 +390,11 @@ class DatadogTests: XCTestCase {
 
         let core = defaultDatadogCore as? DatadogCore
 
-        XCTAssertNotNil(core?.userInfoProvider.value)
-        XCTAssertNil(core?.userInfoProvider.value.id)
-        XCTAssertNil(core?.userInfoProvider.value.email)
-        XCTAssertNil(core?.userInfoProvider.value.name)
-        XCTAssertEqual(core?.userInfoProvider.value.extraInfo as? [String: Int], [:])
+        XCTAssertNotNil(core?.dependencies.userInfoProvider.value)
+        XCTAssertNil(core?.dependencies.userInfoProvider.value.id)
+        XCTAssertNil(core?.dependencies.userInfoProvider.value.email)
+        XCTAssertNil(core?.dependencies.userInfoProvider.value.name)
+        XCTAssertEqual(core?.dependencies.userInfoProvider.value.extraInfo as? [String: Int], [:])
 
         Datadog.setUserInfo(
             id: "foo",
@@ -403,10 +403,10 @@ class DatadogTests: XCTestCase {
             extraInfo: ["abc": 123]
         )
 
-        XCTAssertEqual(core?.userInfoProvider.value.id, "foo")
-        XCTAssertEqual(core?.userInfoProvider.value.name, "bar")
-        XCTAssertEqual(core?.userInfoProvider.value.email, "foo@bar.com")
-        XCTAssertEqual(core?.userInfoProvider.value.extraInfo as? [String: Int], ["abc": 123])
+        XCTAssertEqual(core?.dependencies.userInfoProvider.value.id, "foo")
+        XCTAssertEqual(core?.dependencies.userInfoProvider.value.name, "bar")
+        XCTAssertEqual(core?.dependencies.userInfoProvider.value.email, "foo@bar.com")
+        XCTAssertEqual(core?.dependencies.userInfoProvider.value.extraInfo as? [String: Int], ["abc": 123])
 
         Datadog.flushAndDeinitialize()
     }
@@ -428,7 +428,7 @@ class DatadogTests: XCTestCase {
         let core = defaultDatadogCore as? DatadogCore
 
         XCTAssertEqual(
-            core?.consentProvider.currentValue,
+            core?.dependencies.consentProvider.currentValue,
             .granted,
             "When using deprecated Datadog initialization API the consent should be set to `.granted`"
         )

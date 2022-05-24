@@ -6,6 +6,9 @@
 
 import Foundation
 
+/// Feature-agnostic set of dependencies provided by core to feature modules.
+internal typealias CoreDependencies = FeaturesCommonDependencies
+
 /// Core implementation of Datadog SDK.
 ///
 /// The core provides a storage and upload mechanism for each registered
@@ -14,25 +17,17 @@ import Foundation
 /// By complying with `DatadogCoreProtocol`, the core can
 /// provide context and writing scopes to features for event recording.
 internal final class DatadogCore {
-    /// The user tracking consent provider.
-    let consentProvider: ConsentProvider
-
-    /// User PII.
-    let userInfoProvider: UserInfoProvider
+    /// A set of dependencies provided by core to features.
+    let dependencies: CoreDependencies
 
     private var v1Features: [String: Any] = [:]
 
     /// Creates a core instance.
     ///
     /// - Parameters:
-    ///   - consentProvider: The user tracking consent provider.
-    ///   - userInfoProvider: User PII.
-    init(
-        consentProvider: ConsentProvider,
-        userInfoProvider: UserInfoProvider
-    ) {
-        self.consentProvider = consentProvider
-        self.userInfoProvider = userInfoProvider
+    ///   - dependencies: container bundling all dependencies provided by core to features.
+    init(dependencies: CoreDependencies) {
+        self.dependencies = dependencies
     }
 
     /// Sets current user information.
@@ -50,7 +45,7 @@ internal final class DatadogCore {
         email: String? = nil,
         extraInfo: [AttributeKey: AttributeValue] = [:]
     ) {
-        userInfoProvider.value = UserInfo(
+        dependencies.userInfoProvider.value = UserInfo(
             id: id,
             name: name,
             email: email,
@@ -62,21 +57,12 @@ internal final class DatadogCore {
     /// 
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     func set(trackingConsent: TrackingConsent) {
-        consentProvider.changeConsent(to: trackingConsent)
+        dependencies.consentProvider.changeConsent(to: trackingConsent)
     }
 }
 
 extension DatadogCore: DatadogCoreProtocol {
-    func registerFeature(named featureName: String, storage: FeatureStorageConfiguration, upload: FeatureUploadConfiguration) {
-        // no-op
-    }
-
-    func scope(forFeature featureName: String) -> FeatureScope? {
-        // no-op
-        return nil
-    }
-
-    // MARK: V1 interface
+    // MARK: - V1 interface
 
     func register<T>(feature instance: T?) {
         let key = String(describing: T.self)

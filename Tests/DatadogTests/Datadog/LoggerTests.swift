@@ -170,14 +170,16 @@ class LoggerTests: XCTestCase {
 
     func testSendingUserInfo() throws {
         let core = DatadogCore(
-            consentProvider: ConsentProvider(initialConsent: .granted),
-            userInfoProvider: UserInfoProvider()
+            dependencies: .mockWith(
+                consentProvider: ConsentProvider(initialConsent: .granted),
+                userInfoProvider: UserInfoProvider()
+            )
         )
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
-                userInfoProvider: core.userInfoProvider
+                userInfoProvider: core.dependencies.userInfoProvider
             )
         )
         defer { feature.deinitialize() }
