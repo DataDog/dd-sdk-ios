@@ -45,9 +45,9 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
         ),
         .init(
             assert: {
-                defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName) == nil
-                    && defaultDatadogCore.feature(TracingFeature.self, named: TracingFeature.featureName) == nil
-                    && defaultDatadogCore.feature(RUMFeature.self, named: RUMFeature.featureName) == nil
+                defaultDatadogCore.feature(LoggingFeature.self) == nil
+                    && defaultDatadogCore.feature(TracingFeature.self) == nil
+                    && defaultDatadogCore.feature(RUMFeature.self) == nil
                     && CrashReportingFeature.instance == nil
             },
             problem: "All features must not be initialized.",

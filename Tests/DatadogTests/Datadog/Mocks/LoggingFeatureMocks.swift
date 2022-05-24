@@ -74,7 +74,7 @@ extension LoggingFeature {
 
     // swiftlint:disable:next function_default_parameter_at_end
     static func waitAndReturnLogMatchers(in core: DatadogCoreProtocol = defaultDatadogCore, count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
-        guard let logging = core.feature(LoggingFeature.self, named: LoggingFeature.featureName) else {
+        guard let logging = core.feature(LoggingFeature.self) else {
             preconditionFailure("LoggingFeature is not registered in core")
         }
 

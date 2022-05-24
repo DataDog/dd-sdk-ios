@@ -151,9 +151,9 @@ public class Datadog {
 
     /// Clears all data that has not already been sent to Datadog servers.
     public static func clearAllData() {
-        let logging = defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName)
-        let tracing = defaultDatadogCore.feature(TracingFeature.self, named: TracingFeature.featureName)
-        let rum = defaultDatadogCore.feature(RUMFeature.self, named: RUMFeature.featureName)
+        let logging = defaultDatadogCore.feature(LoggingFeature.self)
+        let tracing = defaultDatadogCore.feature(TracingFeature.self)
+        let rum = defaultDatadogCore.feature(RUMFeature.self)
         logging?.storage.clearAllData()
         tracing?.storage.clearAllData()
         rum?.storage.clearAllData()
@@ -247,7 +247,7 @@ public class Datadog {
                 telemetry: telemetry
             )
 
-            core.registerFeature(named: RUMFeature.featureName, instance: rum)
+            core.register(feature: rum)
 
             if let instrumentationConfiguration = rumConfiguration.instrumentation {
                 rumInstrumentation = RUMInstrumentation(
@@ -267,7 +267,7 @@ public class Datadog {
                 telemetry: telemetry
             )
 
-            core.registerFeature(named: LoggingFeature.featureName, instance: logging)
+            core.register(feature: logging)
         }
 
         if let tracingConfiguration = configuration.tracing {
@@ -280,7 +280,7 @@ public class Datadog {
                 telemetry: telemetry
             )
 
-            core.registerFeature(named: TracingFeature.featureName, instance: tracing)
+            core.register(feature: tracing)
         }
 
         if let crashReportingConfiguration = configuration.crashReporting {
@@ -337,9 +337,9 @@ public class Datadog {
         assert(Datadog.isInitialized, "SDK must be first initialized.")
 
         // Tear down and deinitialize all features:
-        let logging = defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName)
-        let tracing = defaultDatadogCore.feature(TracingFeature.self, named: TracingFeature.featureName)
-        let rum = defaultDatadogCore.feature(RUMFeature.self, named: RUMFeature.featureName)
+        let logging = defaultDatadogCore.feature(LoggingFeature.self)
+        let tracing = defaultDatadogCore.feature(TracingFeature.self)
+        let rum = defaultDatadogCore.feature(RUMFeature.self)
         let rumInstrumentation = defaultDatadogCore.feature(RUMInstrumentation.self)
         logging?.deinitialize()
         tracing?.deinitialize()

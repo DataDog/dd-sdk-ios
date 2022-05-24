@@ -60,7 +60,7 @@ class RUMFeatureTests: XCTestCase {
                 mobileDevice: .mockWith(model: randomDeviceModel, osName: randomDeviceOSName, osVersion: randomDeviceOSVersion)
             )
         )
-        core.registerFeature(named: RUMFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         // When
         let monitor = RUMMonitor.initialize(in: core)
@@ -120,7 +120,7 @@ class RUMFeatureTests: XCTestCase {
                 )
             )
         )
-        core.registerFeature(named: RUMFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let fileWriter = feature.storage.writer
         fileWriter.write(value: RUMDataModelMock(attribute: "1st event"))

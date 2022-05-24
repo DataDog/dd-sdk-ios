@@ -146,7 +146,7 @@ class DDRUMMonitorTests: XCTestCase {
     /// Creates `DDRUMMonitor` instance for tests.
     /// The only difference vs. `DDRUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
     private func createTestableDDRUMMonitor() throws -> DatadogObjc.DDRUMMonitor {
-        let rumFeature: RUMFeature = try XCTUnwrap(core.feature(named: RUMFeature.featureName), "RUM feature must be initialized before creating `RUMMonitor`")
+        let rumFeature: RUMFeature = try XCTUnwrap(core.feature(RUMFeature.self), "RUM feature must be initialized before creating `RUMMonitor`")
         let swiftMonitor = RUMMonitor(
             dependencies: RUMScopeDependencies(rumFeature: rumFeature)
                 .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
@@ -157,7 +157,7 @@ class DDRUMMonitorTests: XCTestCase {
 
     func testSendingViewEvents() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
         let mockView = createMockView(viewControllerClassName: "FirstViewController")
@@ -192,7 +192,7 @@ class DDRUMMonitorTests: XCTestCase {
 
     func testSendingViewEventsWithTiming() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
 
@@ -221,7 +221,7 @@ class DDRUMMonitorTests: XCTestCase {
         }
 
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
 
@@ -274,7 +274,7 @@ class DDRUMMonitorTests: XCTestCase {
 
     func testSendingErrorEvents() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
 
@@ -342,7 +342,7 @@ class DDRUMMonitorTests: XCTestCase {
                 dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
             )
         )
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
 
@@ -376,7 +376,7 @@ class DDRUMMonitorTests: XCTestCase {
 
     func testSendingGlobalAttributes() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
         objcRUMMonitor.addAttribute(forKey: "global-attribute1", value: "foo1")

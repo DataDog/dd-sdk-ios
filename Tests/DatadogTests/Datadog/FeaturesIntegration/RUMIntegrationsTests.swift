@@ -19,7 +19,7 @@ class RUMIntegrationsTests: XCTestCase {
 
     func testGivenRUMMonitorRegistered_itProvidesRUMContextAttributes() throws {
         let rum: RUMFeature = .mockNoOp()
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         // given
         Global.rum = RUMMonitor.initialize(in: core)
@@ -52,7 +52,7 @@ class RUMIntegrationsTests: XCTestCase {
             vitalRefreshRateReader: ContinuousVitalReaderMock(),
             onSessionStart: nil
         )
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         // given
         Global.rum = RUMMonitor.initialize(in: core)
@@ -91,7 +91,7 @@ class RUMErrorsIntegrationTests: XCTestCase {
 
     func testGivenRUMMonitorRegistered_whenAddingErrorMessage_itSendsRUMErrorForCurrentView() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         // given
         Global.rum = RUMMonitor.initialize(in: core)

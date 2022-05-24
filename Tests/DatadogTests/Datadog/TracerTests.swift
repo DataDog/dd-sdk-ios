@@ -42,7 +42,7 @@ class TracerTests: XCTestCase {
             ),
             tracingUUIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1)
         )
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core)
 
@@ -78,7 +78,7 @@ class TracerTests: XCTestCase {
 
     func testSendingSpanWithCustomizedTracer() throws {
         let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let tracer = Tracer.initialize(
             configuration: .init(
@@ -109,7 +109,7 @@ class TracerTests: XCTestCase {
 
     func testSendingSpanWithGlobalTags() throws {
         let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let tracer = Tracer.initialize(
             configuration: .init(
@@ -136,7 +136,7 @@ class TracerTests: XCTestCase {
 
     func testSendingCustomizedSpan() throws {
         let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
 
@@ -164,7 +164,7 @@ class TracerTests: XCTestCase {
 
     func testSendingSpanWithParentAndBaggageItems() throws {
         let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
 
@@ -224,7 +224,7 @@ class TracerTests: XCTestCase {
 
     func testSendingSpanWithActiveSpanAsAParent() throws {
         let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
         let queue1 = DispatchQueue(label: "\(#function)-queue1")
@@ -256,7 +256,7 @@ class TracerTests: XCTestCase {
 
     func testSendingSpansWithNoParent() throws {
         let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
         let queue = DispatchQueue(label: "\(#function)-queue")
@@ -285,7 +285,7 @@ class TracerTests: XCTestCase {
 
     func testStartingRootActiveSpanInAsynchronousJobs() throws {
         let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core)
         let queue = DispatchQueue(label: "\(#function)")
@@ -332,7 +332,7 @@ class TracerTests: XCTestCase {
             )
         )
         defer { feature.deinitialize() }
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
 
@@ -390,7 +390,7 @@ class TracerTests: XCTestCase {
                 carrierInfoProvider: carrierInfoProvider
             )
         )
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let tracer = Tracer.initialize(
             configuration: .init(sendNetworkInfo: true),
@@ -437,7 +437,7 @@ class TracerTests: XCTestCase {
                 networkConnectionInfoProvider: networkConnectionInfoProvider
             )
         )
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let tracer = Tracer.initialize(
             configuration: .init(sendNetworkInfo: true),
@@ -504,7 +504,7 @@ class TracerTests: XCTestCase {
                 )
             )
         )
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
 
@@ -526,7 +526,7 @@ class TracerTests: XCTestCase {
                 )
             )
         )
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
 
@@ -541,7 +541,7 @@ class TracerTests: XCTestCase {
 
     func testSendingSpanTagsOfDifferentEncodableValues() throws {
         let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
 
@@ -617,7 +617,7 @@ class TracerTests: XCTestCase {
             )
         )
 
-        core.registerFeature(named: LoggingFeature.featureName, instance: logging)
+        core.register(feature: logging)
 
         let tracing: TracingFeature = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
@@ -626,7 +626,7 @@ class TracerTests: XCTestCase {
             ),
             loggingFeature: logging
         )
-        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
+        core.register(feature: tracing)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core)
 
@@ -661,7 +661,7 @@ class TracerTests: XCTestCase {
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
         )
-        core.registerFeature(named: LoggingFeature.featureName, instance: logging)
+        core.register(feature: logging)
 
         let tracing: TracingFeature = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
@@ -670,7 +670,7 @@ class TracerTests: XCTestCase {
             ),
             loggingFeature: logging
         )
-        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
+        core.register(feature: tracing)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core)
 
@@ -697,7 +697,7 @@ class TracerTests: XCTestCase {
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
         )
-        core.registerFeature(named: LoggingFeature.featureName, instance: logging)
+        core.register(feature: logging)
 
         let tracing: TracingFeature = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
@@ -706,7 +706,7 @@ class TracerTests: XCTestCase {
             ),
             loggingFeature: logging
         )
-        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
+        core.register(feature: tracing)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core)
 
@@ -739,7 +739,7 @@ class TracerTests: XCTestCase {
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
         )
-        core.registerFeature(named: LoggingFeature.featureName, instance: logging)
+        core.register(feature: logging)
 
         let tracing: TracingFeature = .mockByRecordingSpanMatchers(
             directories: temporaryFeatureDirectories,
@@ -748,7 +748,7 @@ class TracerTests: XCTestCase {
             ),
             loggingFeature: logging
         )
-        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
+        core.register(feature: tracing)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core)
 
@@ -773,9 +773,9 @@ class TracerTests: XCTestCase {
 
     func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingSpan_itContainsCurrentRUMContext() throws {
         let tracing: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
+        core.register(feature: tracing)
         let rum: RUMFeature = .mockNoOp()
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         // given
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
@@ -799,9 +799,9 @@ class TracerTests: XCTestCase {
 
     func testGivenBundlingWithRUMEnabledButRUMMonitorNotRegistered_whenSendingSpan_itPrintsWarning() throws {
         let tracing: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
+        core.register(feature: tracing)
         let rum: RUMFeature = .mockNoOp()
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let previousUserLogger = userLogger
         defer { userLogger = previousUserLogger }
@@ -897,7 +897,7 @@ class TracerTests: XCTestCase {
                 dateCorrector: DateCorrectorMock(correctionOffset: serverTimeDifference)
             )
         )
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core)
 
@@ -928,7 +928,7 @@ class TracerTests: XCTestCase {
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(consentProvider: consentProvider)
         )
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
 
@@ -958,7 +958,7 @@ class TracerTests: XCTestCase {
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
         let feature: TracingFeature = .mockNoOp()
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core)
         var spans: [DDSpan] = []

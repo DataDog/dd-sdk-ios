@@ -78,11 +78,13 @@ extension DatadogCore: DatadogCoreProtocol {
 
     // MARK: V1 interface
 
-    func registerFeature(named featureName: String, instance: Any?) {
-        v1Features[featureName] = instance
+    func register<T>(feature instance: T?) {
+        let key = String(describing: T.self)
+        v1Features[key] = instance
     }
 
-    func feature<T>(_ type: T.Type, named featureName: String) -> T? {
-        return v1Features[featureName] as? T
+    func feature<T>(_ type: T.Type) -> T? {
+        let key = String(describing: T.self)
+        return v1Features[key] as? T
     }
 }

@@ -31,7 +31,7 @@ class RUMMonitorTests: XCTestCase {
     /// Creates `RUMMonitor` instance for tests.
     /// The only difference vs. `RUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
     private func createTestableRUMMonitor(in core: DatadogCoreProtocol) throws -> DDRUMMonitor {
-        let rumFeature: RUMFeature = try XCTUnwrap(core.feature(named: RUMFeature.featureName), "RUM feature must be initialized before creating `RUMMonitor`")
+        let rumFeature: RUMFeature = try XCTUnwrap(core.feature(RUMFeature.self), "RUM feature must be initialized before creating `RUMMonitor`")
         return RUMMonitor(
             dependencies: RUMScopeDependencies(rumFeature: rumFeature)
                 .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
@@ -53,7 +53,7 @@ class RUMMonitorTests: XCTestCase {
                 dateProvider: dateProvider
             )
         )
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
@@ -91,7 +91,7 @@ class RUMMonitorTests: XCTestCase {
                 dateProvider: dateProvider
             )
         )
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
@@ -113,7 +113,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testStartingView_thenLoadingImageResourceWithRequest() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
@@ -147,7 +147,7 @@ class RUMMonitorTests: XCTestCase {
         }
 
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
@@ -182,7 +182,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testStartingView_thenLoadingNativeResourceWithRequestWithExternalMetrics() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
@@ -250,7 +250,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testStartingView_thenLoadingResourceWithURL() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
@@ -271,7 +271,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testStartingView_thenLoadingResourceWithURLString() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
@@ -298,7 +298,7 @@ class RUMMonitorTests: XCTestCase {
                 dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
             )
         )
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
@@ -329,7 +329,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testStartingView_thenLoadingResources_whileScrolling() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
@@ -392,7 +392,7 @@ class RUMMonitorTests: XCTestCase {
                 dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0.01)
             )
         )
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
@@ -457,7 +457,7 @@ class RUMMonitorTests: XCTestCase {
                 )
             )
         )
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
@@ -507,7 +507,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testStartingLoadingResourcesFromTheFirstView_thenStartingAnotherViewWhichAlsoLoadsResources() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
@@ -576,7 +576,7 @@ class RUMMonitorTests: XCTestCase {
                 dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
             )
         )
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
 
@@ -620,7 +620,7 @@ class RUMMonitorTests: XCTestCase {
                 )
             )
         )
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
 
@@ -673,7 +673,7 @@ class RUMMonitorTests: XCTestCase {
                 )
             )
         )
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
 
@@ -711,7 +711,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testSendingAttributes() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let view1 = createMockView(viewControllerClassName: "FirstViewController")
         let view2 = createMockView(viewControllerClassName: "SecondViewController")
@@ -754,7 +754,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testWhenViewIsStarted_attributesCanBeAddedOrUpdatedButNotRemoved() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
 
@@ -792,7 +792,7 @@ class RUMMonitorTests: XCTestCase {
                 )
             )
         )
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
@@ -833,7 +833,7 @@ class RUMMonitorTests: XCTestCase {
                 onSessionStart: onSessionStart
             )
         )
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor(in: core)
         monitor.startView(viewController: mockView)
@@ -863,7 +863,7 @@ class RUMMonitorTests: XCTestCase {
                 dateCorrector: DateCorrectorMock(correctionOffset: serverTimeDifference)
             )
         )
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
 
@@ -922,7 +922,7 @@ class RUMMonitorTests: XCTestCase {
                 )
             )
         )
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
 
@@ -968,7 +968,7 @@ class RUMMonitorTests: XCTestCase {
                 )
             )
         )
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
 
@@ -1048,7 +1048,7 @@ class RUMMonitorTests: XCTestCase {
                 dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
             )
         )
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
 
@@ -1092,7 +1092,7 @@ class RUMMonitorTests: XCTestCase {
                 longTaskEventMapper: { _ in nil }
             )
         )
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
 
@@ -1141,7 +1141,7 @@ class RUMMonitorTests: XCTestCase {
                 )
             )
         )
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         CrashReportingFeature.instance = .mockNoOp()
         defer { CrashReportingFeature.instance?.deinitialize() }
@@ -1172,7 +1172,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
         let rum: RUMFeature = .mockNoOp()
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         let monitor = RUMMonitor.initialize(in: core)
         let view = mockView
@@ -1379,7 +1379,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testHandlingInternalTimestampAttribute() throws {
         let rum: RUMFeature = .mockNoOp()
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         var mockCommand = RUMCommandMock()
         mockCommand.attributes = [

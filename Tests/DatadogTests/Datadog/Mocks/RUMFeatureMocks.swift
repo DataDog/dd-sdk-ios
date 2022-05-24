@@ -85,7 +85,7 @@ extension RUMFeature {
 
     // swiftlint:disable:next function_default_parameter_at_end
     static func waitAndReturnRUMEventMatchers(in core: DatadogCoreProtocol = defaultDatadogCore, count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
-        guard let rum = core.feature(RUMFeature.self, named: RUMFeature.featureName) else {
+        guard let rum = core.feature(RUMFeature.self) else {
             preconditionFailure("RUMFeature is not registered in core")
         }
         return try rum.waitAndReturnRUMEventMatchers(count: count, file: file, line: line)

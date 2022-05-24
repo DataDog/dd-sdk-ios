@@ -47,7 +47,7 @@ internal final class RUMTelemetry: Telemetry {
     ///
     /// - Parameter message: Body of the log
     func debug(_ message: String) {
-        let rum = core.feature(RUMFeature.self, named: RUMFeature.featureName)
+        let rum = core.feature(RUMFeature.self)
 
         guard
             let monitor = Global.rum as? RUMMonitor,
@@ -91,7 +91,7 @@ internal final class RUMTelemetry: Telemetry {
     ///   - kind: The error type or kind (or code in some cases).
     ///   - stack: The stack trace or the complementary information about the error.
     func error(_ message: String, kind: String?, stack: String?) {
-        let rum = core.feature(RUMFeature.self, named: RUMFeature.featureName)
+        let rum = core.feature(RUMFeature.self)
 
         guard
             let monitor = Global.rum as? RUMMonitor,

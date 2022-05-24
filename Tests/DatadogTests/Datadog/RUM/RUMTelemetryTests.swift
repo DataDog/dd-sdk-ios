@@ -15,7 +15,7 @@ class RUMTelemetryTests: XCTestCase {
         temporaryFeatureDirectories.create()
 
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
         Global.rum = RUMMonitor.initialize(in: core)
     }
 

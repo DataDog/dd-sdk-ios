@@ -31,7 +31,7 @@ class RUMInstrumentationTests: XCTestCase {
             ),
             dateProvider: SystemDateProvider()
         )
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
         core.register(feature: instrumentation)
 
         // When
@@ -55,7 +55,7 @@ class RUMInstrumentationTests: XCTestCase {
             ),
             dateProvider: SystemDateProvider()
         )
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
         core.register(feature: instrumentation)
 
         // When
@@ -79,7 +79,7 @@ class RUMInstrumentationTests: XCTestCase {
             dateProvider: SystemDateProvider()
         )
 
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
         core.register(feature: instrumentation)
 
         // When
@@ -107,7 +107,7 @@ class RUMInstrumentationTests: XCTestCase {
             dateProvider: SystemDateProvider()
         )
 
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
         core.register(feature: instrumentation)
 
         // Then

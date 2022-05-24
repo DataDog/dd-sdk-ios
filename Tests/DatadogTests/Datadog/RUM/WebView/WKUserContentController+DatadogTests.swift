@@ -184,8 +184,8 @@ class WKUserContentController_DatadogTests: XCTestCase {
             )
         )
 
-        core.registerFeature(named: LoggingFeature.featureName, instance: logging)
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: logging)
+        core.register(feature: rum)
 
         Global.rum = RUMMonitor.initialize(in: core)
         defer { Global.rum = DDNoopRUMMonitor() }

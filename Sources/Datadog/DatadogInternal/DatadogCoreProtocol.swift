@@ -27,48 +27,17 @@ public protocol DatadogCoreProtocol {
 
     // MARK: V1 interface
 
-    /// Registers a feature instance by its name.
-    ///
-    /// Passing `nil` will unregister the feature.
-    ///
-    /// - Parameters:
-    ///   - featureName: The feature name.
-    ///   - instance: The feature instance.
-    func registerFeature(named featureName: String, instance: Any?)
-
-    /// Returns a Feature instance by its name.
-    /// 
-    /// - Parameters:
-    ///   - type: The feature instance type.
-    ///   - featureName: The feature's name.
-    /// - Returns: The feature if any.
-    func feature<T>(_ type: T.Type, named featureName: String) -> T?
-}
-
-extension DatadogCoreProtocol {
     /// Registers a feature instance by its type description.
     ///
     /// - Parameter instance: The feaure instance to register
-    func register<T>(feature instance: T?) {
-        registerFeature(named: String(describing: T.self), instance: instance)
-    }
+    func register<T>(feature instance: T?)
 
     /// Returns a Feature instance by its type.
     ///
     /// - Parameters:
     ///   - type: The feature instance type.
     /// - Returns: The feature if any.
-    func feature<T>(_ type: T.Type) -> T? {
-        return feature(T.self, named: String(describing: T.self))
-    }
-
-    /// Returns a Feature instance by its name.
-    ///
-    /// - Parameter featureName: The feature's name.
-    /// - Returns: The feature if any.
-    func feature<T>(named featureName: String) -> T? {
-        return feature(T.self, named: featureName)
-    }
+    func feature<T>(_ type: T.Type) -> T?
 }
 
 /// Provide feature specific storage configuration.
@@ -99,10 +68,10 @@ internal struct NOOPDatadogCore: DatadogCoreProtocol {
     // MARK: V1 interface
 
     /// no-op
-    func registerFeature(named featureName: String, instance: Any?) {}
+    func register<T>(feature instance: T?) {}
 
     /// no-op
-    func feature<T>(_ type: T.Type, named featureName: String) -> T? {
+    func feature<T>(_ type: T.Type) -> T? {
         return nil
     }
 }

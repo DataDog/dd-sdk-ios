@@ -30,7 +30,7 @@ class DDGlobalTests: XCTestCase {
 
     func testWhenTracerIsSet_itSetsSwiftImplementation() {
         let tracing: TracingFeature = .mockNoOp()
-        defaultDatadogCore.registerFeature(named: TracingFeature.featureName, instance: tracing)
+        defaultDatadogCore.register(feature: tracing)
 
         let previousGlobal = (
             objc: DatadogObjc.DDGlobal.sharedTracer,
@@ -57,7 +57,7 @@ class DDGlobalTests: XCTestCase {
 
     func testWhenRUMMonitorIsSet_itSetsSwiftImplementation() {
         let rum: RUMFeature = .mockNoOp()
-        defaultDatadogCore.registerFeature(named: RUMFeature.featureName, instance: rum)
+        defaultDatadogCore.register(feature: rum)
 
         let previousGlobal = (
             objc: DatadogObjc.DDGlobal.rum,

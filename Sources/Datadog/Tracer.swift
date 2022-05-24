@@ -78,7 +78,7 @@ public class Tracer: OTTracer {
                     """
                 )
             }
-            guard let tracingFeature = core.feature(TracingFeature.self, named: TracingFeature.featureName) else {
+            guard let tracingFeature = core.feature(TracingFeature.self) else {
                 throw ProgrammerError(
                     description: Datadog.isInitialized
                         ? "`Tracer.initialize(configuration:)` produces a non-functional tracer, as the tracing feature is disabled."
@@ -88,7 +88,7 @@ public class Tracer: OTTracer {
             return DDTracer(
                 tracingFeature: tracingFeature,
                 tracerConfiguration: configuration,
-                rumEnabled: core.feature(RUMFeature.self, named: RUMFeature.featureName) != nil
+                rumEnabled: core.feature(RUMFeature.self) != nil
             )
         } catch {
             consolePrint("\(error)")

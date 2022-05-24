@@ -40,7 +40,7 @@ class URLSessionAutoInstrumentationTests: XCTestCase {
     func testGivenURLSessionAutoInstrumentationEnabled_whenRUMMonitorIsRegistered_itSubscribesAsResourcesHandler() throws {
         // Given
         let rum: RUMFeature = .mockNoOp()
-        core.registerFeature(named: RUMFeature.featureName, instance: rum)
+        core.register(feature: rum)
 
         URLSessionAutoInstrumentation.instance = URLSessionAutoInstrumentation(
             configuration: .mockAny(),

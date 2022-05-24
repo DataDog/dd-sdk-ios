@@ -29,7 +29,7 @@ class DDLoggerTests: XCTestCase {
 
     func testSendingLogsWithDifferentLevels() throws {
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
-        defaultDatadogCore.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        defaultDatadogCore.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
 
@@ -51,9 +51,7 @@ class DDLoggerTests: XCTestCase {
 
     func testSendingNSError() throws {
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
-        defer { feature.deinitialize() }
-        defaultDatadogCore.registerFeature(named: LoggingFeature.featureName, instance: feature)
-        defer { defaultDatadogCore.registerFeature(named: LoggingFeature.featureName, instance: nil) }
+        defaultDatadogCore.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
 
@@ -85,9 +83,7 @@ class DDLoggerTests: XCTestCase {
 
     func testSendingMessageAttributes() throws {
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
-        defer { feature.deinitialize() }
-        defaultDatadogCore.registerFeature(named: LoggingFeature.featureName, instance: feature)
-        defer { defaultDatadogCore.registerFeature(named: LoggingFeature.featureName, instance: nil) }
+        defaultDatadogCore.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
 
@@ -112,9 +108,7 @@ class DDLoggerTests: XCTestCase {
 
     func testSendingLoggerAttributes() throws {
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
-        defer { feature.deinitialize() }
-        defaultDatadogCore.registerFeature(named: LoggingFeature.featureName, instance: feature)
-        defer { defaultDatadogCore.registerFeature(named: LoggingFeature.featureName, instance: nil) }
+        defaultDatadogCore.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
 
@@ -154,9 +148,7 @@ class DDLoggerTests: XCTestCase {
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(common: .mockWith(environment: "test"))
         )
-        defer { feature.deinitialize() }
-        defaultDatadogCore.registerFeature(named: LoggingFeature.featureName, instance: feature)
-        defer { defaultDatadogCore.registerFeature(named: LoggingFeature.featureName, instance: nil) }
+        defaultDatadogCore.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
 

@@ -36,7 +36,7 @@ class RUMMonitorConfigurationTests: XCTestCase {
             )
         )
 
-        core.registerFeature(named: RUMFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let monitor = RUMMonitor.initialize(in: core).dd
 

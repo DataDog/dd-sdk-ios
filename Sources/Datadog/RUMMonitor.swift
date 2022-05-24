@@ -157,7 +157,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     """
                 )
             }
-            guard let rumFeature = core.feature(RUMFeature.self, named: RUMFeature.featureName) else {
+            guard let rumFeature = core.feature(RUMFeature.self) else {
                 throw ProgrammerError(
                     description: Datadog.isInitialized
                         ? "`RUMMonitor.initialize()` produces a non-functional monitor, as the RUM feature is disabled."
