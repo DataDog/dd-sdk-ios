@@ -261,11 +261,10 @@ public class Datadog {
         }
 
         if let loggingConfiguration = configuration.logging {
-            logging = LoggingFeature(
-                directories: try obtainLoggingFeatureDirectories(),
-                configuration: loggingConfiguration,
-                commonDependencies: commonDependencies,
-                telemetry: telemetry
+            logging = try core.create(
+                storageConfiguration: createV2LoggingStorageConfiguration(),
+                uploadConfiguration: createV2LoggingUploadConfiguration(v1Configuration: loggingConfiguration),
+                featureSpecificConfiguration: loggingConfiguration
             )
 
             core.register(feature: logging)
