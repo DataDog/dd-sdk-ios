@@ -134,7 +134,11 @@ extension BundleType: CaseIterable {
     public static var allCases: [Self] { [.iOSApp, iOSAppExtension] }
 }
 
-extension Datadog.Configuration.DatadogEndpoint {
+extension Datadog.Configuration.DatadogEndpoint: AnyMockable, RandomMockable {
+    static func mockAny() -> Datadog.Configuration.DatadogEndpoint {
+        return .us1
+    }
+
     static func mockRandom() -> Self {
         return [.us1, .us3, .eu1, .us1_fed].randomElement()!
     }
@@ -184,6 +188,7 @@ extension FeaturesConfiguration.Common {
     static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
+        clientToken: String = .mockAny(),
         applicationName: String = .mockAny(),
         applicationVersion: String = .mockAny(),
         applicationBundleIdentifier: String = .mockAny(),
@@ -197,6 +202,7 @@ extension FeaturesConfiguration.Common {
         encryption: DataEncryption? = nil
     ) -> Self {
         return .init(
+            clientToken: clientToken,
             applicationName: applicationName,
             applicationVersion: applicationVersion,
             applicationBundleIdentifier: applicationBundleIdentifier,
@@ -218,13 +224,11 @@ extension FeaturesConfiguration.Logging {
     static func mockWith(
         common: FeaturesConfiguration.Common = .mockAny(),
         uploadURL: URL = .mockAny(),
-        clientToken: String = .mockAny(),
         logEventMapper: LogEventMapper? = nil
     ) -> Self {
         return .init(
             common: common,
             uploadURL: uploadURL,
-            clientToken: clientToken,
             logEventMapper: logEventMapper
         )
     }
@@ -236,13 +240,11 @@ extension FeaturesConfiguration.Tracing {
     static func mockWith(
         common: FeaturesConfiguration.Common = .mockAny(),
         uploadURL: URL = .mockAny(),
-        spanEventMapper: SpanEventMapper? = nil,
-        clientToken: String = .mockAny()
+        spanEventMapper: SpanEventMapper? = nil
     ) -> Self {
         return .init(
             common: common,
             uploadURL: uploadURL,
-            clientToken: clientToken,
             spanEventMapper: spanEventMapper
         )
     }
@@ -254,7 +256,6 @@ extension FeaturesConfiguration.RUM {
     static func mockWith(
         common: FeaturesConfiguration.Common = .mockAny(),
         uploadURL: URL = .mockAny(),
-        clientToken: String = .mockAny(),
         applicationID: String = .mockAny(),
         sessionSampler: Sampler = Sampler(samplingRate: 100),
         uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
@@ -270,7 +271,6 @@ extension FeaturesConfiguration.RUM {
         return .init(
             common: common,
             uploadURL: uploadURL,
-            clientToken: clientToken,
             applicationID: applicationID,
             sessionSampler: sessionSampler,
             uuidGenerator: uuidGenerator,

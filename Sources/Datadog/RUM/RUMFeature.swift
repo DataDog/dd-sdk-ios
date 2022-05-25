@@ -105,7 +105,7 @@ internal final class RUMFeature {
                         appVersion: configuration.common.applicationVersion,
                         device: commonDependencies.mobileDevice
                     ),
-                    .ddAPIKeyHeader(clientToken: configuration.clientToken),
+                    .ddAPIKeyHeader(clientToken: configuration.common.clientToken),
                     .ddEVPOriginHeader(source: configuration.common.origin ?? configuration.common.source),
                     .ddEVPOriginVersionHeader(sdkVersion: configuration.common.sdkVersion),
                     .ddRequestIDHeader(),

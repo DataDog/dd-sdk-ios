@@ -45,6 +45,7 @@ class TracingFeatureTests: XCTestCase {
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(
                 common: .mockWith(
+                    clientToken: randomClientToken,
                     applicationName: randomApplicationName,
                     applicationVersion: randomApplicationVersion,
                     source: randomSource,
@@ -52,8 +53,7 @@ class TracingFeatureTests: XCTestCase {
                     sdkVersion: randomSDKVersion,
                     encryption: randomEncryption
                 ),
-                uploadURL: randomUploadURL,
-                clientToken: randomClientToken
+                uploadURL: randomUploadURL
             ),
             dependencies: .mockWith(
                 mobileDevice: .mockWith(model: randomDeviceModel, osName: randomDeviceOSName, osVersion: randomDeviceOSVersion)
