@@ -28,7 +28,8 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
                 fileWriter: loggingFeature.storage.arbitraryAuthorizedWriter,
                 // The RUM Errors integration is not set for this instance of the `LogFileOutput` we don't want to
                 // issue additional RUM Errors for crash reports. Those are send through `CrashReportingWithRUMIntegration`.
-                rumErrorsIntegration: nil
+                rumErrorsIntegration: nil,
+                reportingThreshold: .debug
             ),
             dateProvider: loggingFeature.dateProvider,
             dateCorrector: loggingFeature.dateCorrector,

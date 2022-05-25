@@ -32,7 +32,8 @@ class LogFileOutputTests: XCTestCase {
                     dateProvider: fileCreationDateProvider
                 )
             ),
-            rumErrorsIntegration: nil
+            rumErrorsIntegration: nil,
+            reportingThreshold: .debug
         )
 
         let log1: LogEvent = .mockWith(status: .info, message: "log message 1")
@@ -54,5 +55,41 @@ class LogFileOutputTests: XCTestCase {
         let log2Matcher = try LogMatcher.fromJSONObjectData(log2Data)
         log2Matcher.assertStatus(equals: "warn")
         log2Matcher.assertMessage(equals: "log message 2")
+    }
+
+    func testItFiltersUnwantedLevels() throws {
+        let discardedCombos: [LogLevel: [LogEvent.Status]] = [.critical: [.error, .warn, .notice, .info, .debug], .error: [.warn, .notice, .info, .debug], .warn: [.notice, .info, .debug], .notice: [.info, .debug], .info: [.debug]]
+        let fileCreationDateProvider = RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC())
+        let logFileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC())
+
+        var failedCombos: [String] = []
+        for (thresholdLevel, logStatuses) in discardedCombos {
+            for (logStatus) in logStatuses {
+                let output = LogFileOutput(
+                    fileWriter: FileWriter(
+                        dataFormat: LoggingFeature.dataFormat,
+                        orchestrator: FilesOrchestrator(
+                            directory: temporaryDirectory,
+                            performance: PerformancePreset.combining(
+                                storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
+                                uploadPerformance: .noOp
+                            ),
+                            dateProvider: fileCreationDateProvider
+                        )
+                    ),
+                    rumErrorsIntegration: nil,
+                    reportingThreshold: thresholdLevel
+                )
+
+                let log: LogEvent = .mockWith(status: logStatus, message: "Lorem ipsum dolor sit amet…")
+                output.write(log: log)
+
+                if temporaryDirectory.hasFile(named: logFileName) {
+                    failedCombos.append("Did not expect to write log with status \(logStatus) (threshold was \(thresholdLevel))")
+                    try temporaryDirectory.file(named: logFileName).delete()
+                }
+            }
+        }
+        XCTAssertEqual(failedCombos, [])
     }
 }

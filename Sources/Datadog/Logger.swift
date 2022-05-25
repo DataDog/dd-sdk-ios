@@ -307,6 +307,7 @@ public class Logger {
         internal var bundleWithTrace = true
         internal var useFileOutput = true
         internal var useConsoleLogFormat: ConsoleLogFormat?
+        internal var datadogReportingThreshold: LogLevel = .debug
 
         /// Sets the service name that will appear in logs.
         /// - Parameter serviceName: the service name  (default value is set to application bundle identifier)
@@ -355,6 +356,14 @@ public class Logger {
         /// - Parameter enabled: `true` by default
         public func sendLogsToDatadog(_ enabled: Bool) -> Builder {
             self.useFileOutput = enabled
+            return self
+        }
+
+        /// set the minim log level reported to Datadog servers.
+        /// Any log with a level equal or above to the threshold will be sent
+        /// - Parameter datadogReportingThreshold: `LogLevel.debug` by default
+        public func set(datadogReportingThreshold: LogLevel) -> Builder {
+            self.datadogReportingThreshold = datadogReportingThreshold
             return self
         }
 
@@ -439,7 +448,8 @@ public class Logger {
                     combine: [
                         LogFileOutput(
                             fileWriter: loggingFeature.storage.writer,
-                            rumErrorsIntegration: LoggingWithRUMErrorsIntegration()
+                            rumErrorsIntegration: LoggingWithRUMErrorsIntegration(),
+                            reportingThreshold: self.datadogReportingThreshold
                         ),
                         LogConsoleOutput(
                             format: format,
@@ -451,7 +461,8 @@ public class Logger {
             case (true, nil):
                 let logOutput = LogFileOutput(
                     fileWriter: loggingFeature.storage.writer,
-                    rumErrorsIntegration: LoggingWithRUMErrorsIntegration()
+                    rumErrorsIntegration: LoggingWithRUMErrorsIntegration(),
+                    reportingThreshold: self.datadogReportingThreshold
                 )
                 return (logBuilder, logOutput)
             case (false, let format?):
