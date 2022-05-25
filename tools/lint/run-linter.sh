@@ -11,6 +11,6 @@ if [[ -z "${XCODE_VERSION_ACTUAL}" ]]; then
 	swiftlint lint --config ./tools/lint/tests.swiftlint.yml --reporter "emoji" --strict
 else
 	# when run by Xcode in Build Phase
-	swiftlint lint --config ./tools/lint/sources.swiftlint.yml --reporter "xcode"
-	swiftlint lint --config ./tools/lint/tests.swiftlint.yml --reporter "xcode"
+	swiftlint lint --config ./tools/lint/sources.swiftlint.yml --reporter "xcode" --fix
+	swiftlint lint --config ./tools/lint/tests.swiftlint.yml --reporter "xcode" --fix
 fi
