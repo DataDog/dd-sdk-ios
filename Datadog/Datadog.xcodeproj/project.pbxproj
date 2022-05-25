@@ -312,7 +312,6 @@
 		6199365B265BB6A6009D7EA8 /* DatadogCrashReporting.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61993668265BBEDC009D7EA8 /* E2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61993667265BBEDC009D7EA8 /* E2ETests.swift */; };
 		619A29F326E64910007D62A3 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 614ED36B260352DC00C8C519 /* CrashReporter.xcframework */; };
-		619E16D82577C1CB00B2516B /* DataProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16D72577C1CB00B2516B /* DataProcessor.swift */; };
 		619E16E92578E73E00B2516B /* DataMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16E82578E73E00B2516B /* DataMigrator.swift */; };
 		619E16F12578E89700B2516B /* DeleteAllDataMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16F02578E89700B2516B /* DeleteAllDataMigrator.swift */; };
 		61A614E8276B2BD000A06CE7 /* RUMOffViewEventsHandlingRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A614E7276B2BD000A06CE7 /* RUMOffViewEventsHandlingRule.swift */; };
@@ -753,7 +752,6 @@
 		D2CB6EAA27C50EAE00A62B57 /* URLSessionSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618E132B25233EC90098C6B0 /* URLSessionSwizzler.swift */; };
 		D2CB6EAB27C50EAE00A62B57 /* VitalMemoryReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3BBBCB0265E71C600943419 /* VitalMemoryReader.swift */; };
 		D2CB6EAC27C50EAE00A62B57 /* DatadogConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB52423979B00786299 /* DatadogConfiguration.swift */; };
-		D2CB6EAD27C50EAE00A62B57 /* DataProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E16D72577C1CB00B2516B /* DataProcessor.swift */; };
 		D2CB6EAE27C50EAE00A62B57 /* DataOrchestrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6137C571271DAD4B00EFC4A1 /* DataOrchestrator.swift */; };
 		D2CB6EAF27C50EAE00A62B57 /* BundleType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614E9EB2244719FA007EE3E1 /* BundleType.swift */; };
 		D2CB6EB027C50EAE00A62B57 /* UIKitRUMViewsPredicate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3CDA62512144600C816E5 /* UIKitRUMViewsPredicate.swift */; };
@@ -1511,7 +1509,6 @@
 		61993667265BBEDC009D7EA8 /* E2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = E2ETests.swift; sourceTree = "<group>"; };
 		61993669265BBEDC009D7EA8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		61993672265BC029009D7EA8 /* E2ETests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = E2ETests.xcconfig; sourceTree = "<group>"; };
-		619E16D72577C1CB00B2516B /* DataProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataProcessor.swift; sourceTree = "<group>"; };
 		619E16E82578E73E00B2516B /* DataMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataMigrator.swift; sourceTree = "<group>"; };
 		619E16F02578E89700B2516B /* DeleteAllDataMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteAllDataMigrator.swift; sourceTree = "<group>"; };
 		61A614E7276B2BD000A06CE7 /* RUMOffViewEventsHandlingRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMOffViewEventsHandlingRule.swift; sourceTree = "<group>"; };
@@ -2739,7 +2736,6 @@
 				6114FE0E257667D40084E372 /* ConsentAwareDataWriter.swift */,
 				6116563A25D2A6C90070EC03 /* ArbitraryDataWriter.swift */,
 				61133BA72423979B00786299 /* FileWriter.swift */,
-				619E16D62577C19F00B2516B /* Processing */,
 			);
 			path = Writing;
 			sourceTree = "<group>";
@@ -3343,14 +3339,6 @@
 				61133C282423990D00786299 /* FileReaderTests.swift */,
 			);
 			path = Reading;
-			sourceTree = "<group>";
-		};
-		619E16D62577C19F00B2516B /* Processing */ = {
-			isa = PBXGroup;
-			children = (
-				619E16D72577C1CB00B2516B /* DataProcessor.swift */,
-			);
-			path = Processing;
 			sourceTree = "<group>";
 		};
 		619E16EF2578E81900B2516B /* Migrating */ = {
@@ -5132,7 +5120,6 @@
 				61B038542527246D00518F3C /* URLSessionSwizzler.swift in Sources */,
 				B3BBBCB2265E71C700943419 /* VitalMemoryReader.swift in Sources */,
 				61133BDB2423979B00786299 /* DatadogConfiguration.swift in Sources */,
-				619E16D82577C1CB00B2516B /* DataProcessor.swift in Sources */,
 				6137C572271DAD4B00EFC4A1 /* DataOrchestrator.swift in Sources */,
 				614E9EB3244719FA007EE3E1 /* BundleType.swift in Sources */,
 				61F3CDA72512144600C816E5 /* UIKitRUMViewsPredicate.swift in Sources */,
@@ -5751,7 +5738,6 @@
 				D2CB6EAA27C50EAE00A62B57 /* URLSessionSwizzler.swift in Sources */,
 				D2CB6EAB27C50EAE00A62B57 /* VitalMemoryReader.swift in Sources */,
 				D2CB6EAC27C50EAE00A62B57 /* DatadogConfiguration.swift in Sources */,
-				D2CB6EAD27C50EAE00A62B57 /* DataProcessor.swift in Sources */,
 				D2CB6EAE27C50EAE00A62B57 /* DataOrchestrator.swift in Sources */,
 				D2CB6EAF27C50EAE00A62B57 /* BundleType.swift in Sources */,
 				D2CB6EB027C50EAE00A62B57 /* UIKitRUMViewsPredicate.swift in Sources */,

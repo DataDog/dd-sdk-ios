@@ -97,10 +97,8 @@ internal struct FeatureStorage {
         let consentAwareDataWriter = ConsentAwareDataWriter(
             consentProvider: commonDependencies.consentProvider,
             readWriteQueue: readWriteQueue,
-            dataProcessorFactory: DataProcessorFactory(
-                unauthorizedFileWriter: unauthorizedFileWriter,
-                authorizedFileWriter: authorizedFileWriter
-            ),
+            unauthorizedWriter: unauthorizedFileWriter,
+            authorizedWriter: authorizedFileWriter,
             dataMigratorFactory: DataMigratorFactory(
                 directories: directories,
                 telemetry: telemetry
@@ -109,9 +107,7 @@ internal struct FeatureStorage {
 
         let arbitraryDataWriter = ArbitraryDataWriter(
             readWriteQueue: readWriteQueue,
-            dataProcessor: DataProcessor(
-                fileWriter: authorizedFileWriter
-            )
+            writer: authorizedFileWriter
         )
 
         let authorisedDataReader = DataReader(
