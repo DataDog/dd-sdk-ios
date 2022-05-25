@@ -25,7 +25,7 @@ class DDTracerTests: XCTestCase {
 
     func testSendingCustomizedSpans() throws {
         let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration()).dd!
 
@@ -131,8 +131,8 @@ class DDTracerTests: XCTestCase {
             loggingFeature: logging
         )
 
-        core.registerFeature(named: TracingFeature.featureName, instance: logging)
-        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
+        core.register(feature: logging)
+        core.register(feature: tracing)
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration())
 
@@ -165,8 +165,8 @@ class DDTracerTests: XCTestCase {
             loggingFeature: logging
         )
 
-        core.registerFeature(named: LoggingFeature.featureName, instance: logging)
-        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
+        core.register(feature: logging)
+        core.register(feature: tracing)
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration())
 
@@ -202,8 +202,8 @@ class DDTracerTests: XCTestCase {
             loggingFeature: logging
         )
 
-        core.registerFeature(named: LoggingFeature.featureName, instance: logging)
-        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
+        core.register(feature: logging)
+        core.register(feature: tracing)
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration())
 
@@ -267,7 +267,7 @@ class DDTracerTests: XCTestCase {
 
     func testsWhenTagsDictionaryContainsInvalidKeys_thenThosesTagsAreDropped() throws {
         let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         // Given
         let objcTracer = DDTracer(configuration: DDTracerConfiguration()).dd!

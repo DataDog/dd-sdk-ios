@@ -34,7 +34,7 @@ class DDDatadogTests: XCTestCase {
 
         XCTAssertTrue(Datadog.isInitialized)
 
-        let logging = defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName)
+        let logging = defaultDatadogCore.feature(LoggingFeature.self)
         XCTAssertEqual(logging?.configuration.common.applicationName, "app-name")
         XCTAssertEqual(logging?.configuration.common.environment, "tests")
         XCTAssertNotNil(URLSessionAutoInstrumentation.instance)
@@ -42,7 +42,7 @@ class DDDatadogTests: XCTestCase {
         URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
         Datadog.flushAndDeinitialize()
 
-        XCTAssertNil(defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName))
+        XCTAssertNil(defaultDatadogCore.feature(LoggingFeature.self))
         XCTAssertNil(URLSessionAutoInstrumentation.instance)
     }
 

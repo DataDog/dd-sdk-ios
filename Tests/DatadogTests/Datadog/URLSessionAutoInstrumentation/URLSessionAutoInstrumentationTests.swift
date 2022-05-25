@@ -8,12 +8,15 @@ import XCTest
 @testable import Datadog
 
 class URLSessionAutoInstrumentationTests: XCTestCase {
+    let core = DatadogCoreMock()
+
     override func setUp() {
         super.setUp()
         XCTAssertNil(URLSessionAutoInstrumentation.instance)
     }
 
     override func tearDown() {
+        core.flush()
         XCTAssertNil(URLSessionAutoInstrumentation.instance)
         super.tearDown()
     }
@@ -36,19 +39,17 @@ class URLSessionAutoInstrumentationTests: XCTestCase {
 
     func testGivenURLSessionAutoInstrumentationEnabled_whenRUMMonitorIsRegistered_itSubscribesAsResourcesHandler() throws {
         // Given
-        RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance?.deinitialize() }
+        let rum: RUMFeature = .mockNoOp()
+        core.register(feature: rum)
 
         URLSessionAutoInstrumentation.instance = URLSessionAutoInstrumentation(
             configuration: .mockAny(),
             commonDependencies: .mockAny()
         )
-        defer {
-            URLSessionAutoInstrumentation.instance?.deinitialize()
-        }
+        defer { URLSessionAutoInstrumentation.instance?.deinitialize() }
 
         // When
-        Global.rum = RUMMonitor.initialize()
+        Global.rum = RUMMonitor.initialize(in: core)
         defer { Global.rum = DDNoopRUMMonitor() }
 
         // Then

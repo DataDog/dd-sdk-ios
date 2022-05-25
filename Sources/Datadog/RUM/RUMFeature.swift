@@ -25,12 +25,6 @@ internal func obtainRUMFeatureDirectories() throws -> FeatureDirectories {
 /// Creates and owns componetns enabling RUM feature.
 /// Bundles dependencies for other RUM-related components created later at runtime  (i.e. `RUMMonitor`).
 internal final class RUMFeature {
-    /// Single, shared instance of `RUMFeature`.
-    internal static var instance: RUMFeature?
-
-    /// Tells if the feature was enabled by the user in the SDK configuration.
-    static var isEnabled: Bool { instance != nil }
-
     // MARK: - Configuration
 
     let configuration: FeaturesConfiguration.RUM
@@ -199,6 +193,5 @@ internal final class RUMFeature {
     internal func deinitialize() {
         storage.flushAndTearDown()
         upload.flushAndTearDown()
-        RUMFeature.instance = nil
     }
 }

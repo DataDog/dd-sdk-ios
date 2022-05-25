@@ -78,7 +78,7 @@ public class Tracer: OTTracer {
                     """
                 )
             }
-            guard let tracingFeature = core.feature(TracingFeature.self, named: TracingFeature.featureName) else {
+            guard let tracingFeature = core.feature(TracingFeature.self) else {
                 throw ProgrammerError(
                     description: Datadog.isInitialized
                         ? "`Tracer.initialize(configuration:)` produces a non-functional tracer, as the tracing feature is disabled."
@@ -87,7 +87,8 @@ public class Tracer: OTTracer {
             }
             return DDTracer(
                 tracingFeature: tracingFeature,
-                tracerConfiguration: configuration
+                tracerConfiguration: configuration,
+                rumEnabled: core.feature(RUMFeature.self) != nil
             )
         } catch {
             consolePrint("\(error)")
@@ -95,7 +96,7 @@ public class Tracer: OTTracer {
         }
     }
 
-    internal convenience init(tracingFeature: TracingFeature, tracerConfiguration: Configuration) {
+    internal convenience init(tracingFeature: TracingFeature, tracerConfiguration: Configuration, rumEnabled: Bool) {
         self.init(
             spanBuilder: SpanEventBuilder(
                 sdkVersion: tracingFeature.configuration.common.sdkVersion,
@@ -120,7 +121,7 @@ public class Tracer: OTTracer {
             dateProvider: tracingFeature.dateProvider,
             tracingUUIDGenerator: tracingFeature.tracingUUIDGenerator,
             globalTags: tracerConfiguration.globalTags,
-            rumContextIntegration: (RUMFeature.isEnabled && tracerConfiguration.bundleWithRUM) ? TracingWithRUMContextIntegration() : nil
+            rumContextIntegration: (rumEnabled && tracerConfiguration.bundleWithRUM) ? TracingWithRUMContextIntegration() : nil
         )
     }
 

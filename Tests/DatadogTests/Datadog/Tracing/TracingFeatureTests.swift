@@ -59,7 +59,7 @@ class TracingFeatureTests: XCTestCase {
                 mobileDevice: .mockWith(model: randomDeviceModel, osName: randomDeviceOSName, osVersion: randomDeviceOSVersion)
             )
         )
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         // When
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
@@ -112,7 +112,7 @@ class TracingFeatureTests: XCTestCase {
                 )
             )
         )
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
 

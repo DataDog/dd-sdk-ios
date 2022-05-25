@@ -28,7 +28,8 @@ public extension WKUserContentController {
         addDatadogMessageHandler(
             allowedWebViewHosts: hosts,
             hostsSanitizer: HostsSanitizer(),
-            loggingFeature: core.feature(named: LoggingFeature.featureName)
+            loggingFeature: core.feature(LoggingFeature.self),
+            rumFeature: core.feature(RUMFeature.self)
         )
     }
 
@@ -51,7 +52,8 @@ public extension WKUserContentController {
     internal func addDatadogMessageHandler(
         allowedWebViewHosts: Set<String>,
         hostsSanitizer: HostsSanitizing,
-        loggingFeature: LoggingFeature?
+        loggingFeature: LoggingFeature?,
+        rumFeature: RUMFeature?
     ) {
         guard !isTracking else {
               userLogger.warn("`trackDatadogEvents(in:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")
@@ -74,7 +76,7 @@ public extension WKUserContentController {
         }
 
         var rumEventConsumer: DefaultWebRUMEventConsumer? = nil
-        if let rumFeature = RUMFeature.instance {
+        if let rumFeature = rumFeature {
             rumEventConsumer = DefaultWebRUMEventConsumer(
                 dataWriter: rumFeature.storage.writer,
                 dateCorrector: rumFeature.dateCorrector,

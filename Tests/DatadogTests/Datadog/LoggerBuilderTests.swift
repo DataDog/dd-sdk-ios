@@ -33,7 +33,7 @@ class LoggerBuilderTests: XCTestCase {
             )
         )
 
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        core.register(feature: feature)
     }
 
     override func tearDown() {
@@ -48,7 +48,7 @@ class LoggerBuilderTests: XCTestCase {
         XCTAssertNil(logger.rumContextIntegration)
         XCTAssertNil(logger.activeSpanIntegration)
 
-        let feature = try XCTUnwrap(core.feature(LoggingFeature.self, named: LoggingFeature.featureName))
+        let feature = try XCTUnwrap(core.feature(LoggingFeature.self))
         XCTAssertTrue(
             logger.logOutput is LogFileOutput,
             "When Logging feature is enabled the Logger should use `LogFileOutput`."
@@ -68,8 +68,8 @@ class LoggerBuilderTests: XCTestCase {
     }
 
     func testDefaultLoggerWithRUMEnabled() throws {
-        RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance?.deinitialize() }
+        let rum: RUMFeature = .mockNoOp()
+        core.register(feature: rum)
 
         let logger1 = Logger.builder.build(in: core)
         XCTAssertNotNil(logger1.rumContextIntegration)
@@ -80,7 +80,7 @@ class LoggerBuilderTests: XCTestCase {
 
     func testDefaultLoggerWithTracingEnabled() throws {
         let tracing: TracingFeature = .mockNoOp()
-        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
+        core.register(feature: tracing)
 
         let logger1 = Logger.builder.build(in: core)
         XCTAssertNotNil(logger1.activeSpanIntegration)
@@ -90,11 +90,11 @@ class LoggerBuilderTests: XCTestCase {
     }
 
     func testCustomizedLogger() throws {
-        RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance?.deinitialize() }
+        let rum: RUMFeature = .mockNoOp()
+        core.register(feature: rum)
 
         let tracing: TracingFeature = .mockNoOp()
-        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
+        core.register(feature: tracing)
 
         let logger = Logger.builder
             .set(serviceName: "custom-service-name")
@@ -107,7 +107,7 @@ class LoggerBuilderTests: XCTestCase {
         XCTAssertNil(logger.rumContextIntegration)
         XCTAssertNil(logger.activeSpanIntegration)
 
-        let feature = try XCTUnwrap(core.feature(LoggingFeature.self, named: LoggingFeature.featureName))
+        let feature = try XCTUnwrap(core.feature(LoggingFeature.self))
         XCTAssertTrue(
             logger.logOutput is LogFileOutput,
             "When Logging feature is enabled the Logger should use `LogFileOutput`."

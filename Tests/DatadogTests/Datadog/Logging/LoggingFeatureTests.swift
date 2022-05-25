@@ -59,7 +59,7 @@ class LoggingFeatureTests: XCTestCase {
                 mobileDevice: .mockWith(model: randomDeviceModel, osName: randomDeviceOSName, osVersion: randomDeviceOSVersion)
             )
         )
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         // When
         let logger = Logger.builder.build(in: core)
@@ -111,7 +111,7 @@ class LoggingFeatureTests: XCTestCase {
                 )
             )
         )
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
         logger.debug("log 1")

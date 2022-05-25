@@ -42,7 +42,7 @@ class LoggerTests: XCTestCase {
         )
         defer { feature.deinitialize() }
 
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
         logger.debug("message")
@@ -66,7 +66,7 @@ class LoggerTests: XCTestCase {
     func testSendingLogWithCustomizedLogger() throws {
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
         defer { feature.deinitialize() }
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let logger = Logger.builder
             .set(serviceName: "custom-service-name")
@@ -103,7 +103,7 @@ class LoggerTests: XCTestCase {
             )
         )
         defer { feature.deinitialize() }
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
         logger.info("message 1")
@@ -119,7 +119,7 @@ class LoggerTests: XCTestCase {
     func testSendingLogsWithDifferentLevels() throws {
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
         defer { feature.deinitialize() }
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
         logger.debug("message")
@@ -143,7 +143,7 @@ class LoggerTests: XCTestCase {
     func testLoggingError() throws {
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
         defer { feature.deinitialize() }
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         struct TestError: Error {
             var description = "Test description"
@@ -182,7 +182,7 @@ class LoggerTests: XCTestCase {
         )
         defer { feature.deinitialize() }
 
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
         logger.debug("message with no user info")
@@ -235,7 +235,7 @@ class LoggerTests: XCTestCase {
             )
         )
         defer { feature.deinitialize() }
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let logger = Logger.builder
             .sendNetworkInfo(true)
@@ -277,7 +277,7 @@ class LoggerTests: XCTestCase {
             )
         )
         defer { feature.deinitialize() }
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let logger = Logger.builder
             .sendNetworkInfo(true)
@@ -332,7 +332,7 @@ class LoggerTests: XCTestCase {
     func testSendingLoggerAttributesOfDifferentEncodableValues() throws {
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
         defer { feature.deinitialize() }
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
 
@@ -397,7 +397,7 @@ class LoggerTests: XCTestCase {
     func testSendingMessageAttributes() throws {
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
         defer { feature.deinitialize() }
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
 
@@ -430,7 +430,7 @@ class LoggerTests: XCTestCase {
             configuration: .mockWith(common: .mockWith(environment: "tests"))
         )
         defer { feature.deinitialize() }
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
 
@@ -476,7 +476,7 @@ class LoggerTests: XCTestCase {
             )
         )
         defer { feature.deinitialize() }
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
         logger.debug("message")
@@ -495,7 +495,7 @@ class LoggerTests: XCTestCase {
             )
         )
         defer { feature.deinitialize() }
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
         logger.debug("message")
@@ -506,19 +506,18 @@ class LoggerTests: XCTestCase {
     // MARK: - Integration With RUM Feature
 
     func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingLog_itContainsCurrentRUMContext() throws {
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(
+        let logging: LoggingFeature = .mockByRecordingLogMatchers(
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(common: .mockWith(environment: "tests"))
         )
-        defer { feature.deinitialize() }
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        core.register(feature: logging)
 
-        RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance?.deinitialize() }
+        let rum: RUMFeature = .mockNoOp()
+        core.register(feature: rum)
 
         // given
         let logger = Logger.builder.build(in: core)
-        Global.rum = RUMMonitor.initialize()
+        Global.rum = RUMMonitor.initialize(in: core)
         Global.rum.startView(viewController: mockView)
         Global.rum.startUserAction(type: .tap, name: .mockAny())
         defer { Global.rum = DDNoopRUMMonitor() }
@@ -527,10 +526,10 @@ class LoggerTests: XCTestCase {
         logger.info("info message")
 
         // then
-        let logMatcher = try feature.waitAndReturnLogMatchers(count: 1)[0]
+        let logMatcher = try logging.waitAndReturnLogMatchers(count: 1)[0]
         logMatcher.assertValue(
             forKeyPath: RUMContextIntegration.Attributes.applicationID,
-            equals: try XCTUnwrap(RUMFeature.instance?.configuration.applicationID)
+            equals: rum.configuration.applicationID
         )
         logMatcher.assertValue(
             forKeyPath: RUMContextIntegration.Attributes.sessionID,
@@ -547,15 +546,14 @@ class LoggerTests: XCTestCase {
     }
 
     func testGivenBundlingWithRUMEnabledButRUMMonitorNotRegistered_whenSendingLog_itPrintsWarning() throws {
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(
+        let logging: LoggingFeature = .mockByRecordingLogMatchers(
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(common: .mockWith(environment: "tests"))
         )
-        defer { feature.deinitialize() }
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        core.register(feature: logging)
 
-        RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance?.deinitialize() }
+        let rum: RUMFeature = .mockNoOp()
+        core.register(feature: rum)
 
         let previousUserLogger = userLogger
         defer { userLogger = previousUserLogger }
@@ -577,7 +575,7 @@ class LoggerTests: XCTestCase {
                 .contains("RUM feature is enabled, but no `RUMMonitor` is registered. The RUM integration with Logging will not work.")
         )
 
-        let logMatcher = try feature.waitAndReturnLogMatchers(count: 1)[0]
+        let logMatcher = try logging.waitAndReturnLogMatchers(count: 1)[0]
         logMatcher.assertNoValue(forKeyPath: RUMContextIntegration.Attributes.applicationID)
         logMatcher.assertNoValue(forKeyPath: RUMContextIntegration.Attributes.sessionID)
         logMatcher.assertNoValue(forKeyPath: RUMContextIntegration.Attributes.viewID)
@@ -585,20 +583,18 @@ class LoggerTests: XCTestCase {
     }
 
     func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorForCurrentView() throws {
-        let feature: LoggingFeature = .mockNoOp()
-        defer { feature.deinitialize() }
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        let logging: LoggingFeature = .mockNoOp()
+        core.register(feature: logging)
 
-        let rumFeature: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        RUMFeature.instance = rumFeature
-        defer { rumFeature.deinitialize() }
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
+        core.register(feature: rum)
 
         // given
         let logger = Logger.builder.build(in: core)
         Global.rum = RUMMonitor(
-            dependencies: RUMScopeDependencies(rumFeature: rumFeature)
+            dependencies: RUMScopeDependencies(rumFeature: rum)
                 .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-            dateProvider: rumFeature.dateProvider
+            dateProvider: rum.dateProvider
         )
         Global.rum.startView(viewController: mockView)
         defer { Global.rum = DDNoopRUMMonitor() }
@@ -613,7 +609,7 @@ class LoggerTests: XCTestCase {
 
         // then
         // [RUMView, RUMAction, RUMError, RUMView, RUMError, RUMView] events sent:
-        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 6)
+        let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 6)
         let rumErrorMatcher1 = rumEventMatchers.first { $0.model(isTypeOf: RUMErrorEvent.self) }
         let rumErrorMatcher2 = rumEventMatchers.last { $0.model(isTypeOf: RUMErrorEvent.self) }
         try XCTUnwrap(rumErrorMatcher1).model(ofType: RUMErrorEvent.self) { rumModel in
@@ -631,10 +627,10 @@ class LoggerTests: XCTestCase {
     // MARK: - Integration With Active Span
 
     func testGivenBundlingWithTraceEnabledAndTracerRegistered_whenSendingLog_itContainsActiveSpanAttributes() throws {
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
+        let logging: LoggingFeature = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
         let tracing: TracingFeature = .mockNoOp()
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
-        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
+        core.register(feature: logging)
+        core.register(feature: tracing)
 
         // given
         let logger = Logger.builder.build(in: core)
@@ -648,7 +644,7 @@ class LoggerTests: XCTestCase {
         logger.info("info message 2")
 
         // then
-        let logMatchers = try feature.waitAndReturnLogMatchers(count: 2)
+        let logMatchers = try logging.waitAndReturnLogMatchers(count: 2)
         logMatchers[0].assertValue(
             forKeyPath: LoggingWithActiveSpanIntegration.Attributes.traceID,
             equals: "\(span.context.dd.traceID.rawValue)"
@@ -664,8 +660,8 @@ class LoggerTests: XCTestCase {
     func testGivenBundlingWithTraceEnabledButTracerNotRegistered_whenSendingLog_itPrintsWarning() throws {
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
         let tracing: TracingFeature = .mockNoOp()
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
-        core.registerFeature(named: TracingFeature.featureName, instance: tracing)
+        core.register(feature: feature)
+        core.register(feature: tracing)
 
         let previousUserLogger = userLogger
         defer { userLogger = previousUserLogger }
@@ -708,7 +704,7 @@ class LoggerTests: XCTestCase {
             )
         )
         defer { feature.deinitialize() }
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
         logger.debug("message")
@@ -731,7 +727,7 @@ class LoggerTests: XCTestCase {
             dependencies: .mockWith(consentProvider: consentProvider)
         )
         defer { feature.deinitialize() }
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
 
@@ -757,7 +753,7 @@ class LoggerTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let feature: LoggingFeature = .mockNoOp()
         defer { feature.deinitialize() }
-        core.registerFeature(named: LoggingFeature.featureName, instance: feature)
+        core.register(feature: feature)
 
         let logger = Logger.builder
             .sendLogsToDatadog(false)

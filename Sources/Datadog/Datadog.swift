@@ -95,10 +95,8 @@ public class Datadog {
                 consolePrint("⚠️ Overriding RUM debugging due to \(LaunchArguments.DebugRUM) launch argument")
                 Datadog.debugRUM = true
             }
-        } catch let error as ProgrammerError {
-            consolePrint("\(error)")
         } catch {
-            defaultDatadogCore = NOOPDatadogCore()
+            consolePrint("\(error)")
         }
     }
 
@@ -153,11 +151,12 @@ public class Datadog {
 
     /// Clears all data that has not already been sent to Datadog servers.
     public static func clearAllData() {
-        let logging = defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName)
+        let logging = defaultDatadogCore.feature(LoggingFeature.self)
+        let tracing = defaultDatadogCore.feature(TracingFeature.self)
+        let rum = defaultDatadogCore.feature(RUMFeature.self)
         logging?.storage.clearAllData()
-        let tracing = defaultDatadogCore.feature(TracingFeature.self, named: TracingFeature.featureName)
         tracing?.storage.clearAllData()
-        RUMFeature.instance?.storage.clearAllData()
+        rum?.storage.clearAllData()
     }
 
     // MARK: - Internal
@@ -178,7 +177,7 @@ public class Datadog {
         let userInfoProvider = UserInfoProvider()
 
         // set default DatadogCore then register features
-        defaultDatadogCore = DatadogCore(
+        let core = DatadogCore(
             consentProvider: consentProvider,
             userInfoProvider: userInfoProvider
         )
@@ -234,6 +233,7 @@ public class Datadog {
 
         if let rumConfiguration = configuration.rum {
             telemetry = RUMTelemetry(
+                in: core,
                 sdkVersion: configuration.common.sdkVersion,
                 applicationID: rumConfiguration.applicationID,
                 dateProvider: dateProvider,
@@ -247,11 +247,15 @@ public class Datadog {
                 telemetry: telemetry
             )
 
+            core.register(feature: rum)
+
             if let instrumentationConfiguration = rumConfiguration.instrumentation {
                 rumInstrumentation = RUMInstrumentation(
                     configuration: instrumentationConfiguration,
                     dateProvider: dateProvider
                 )
+
+                core.register(feature: rumInstrumentation)
             }
         }
 
@@ -263,7 +267,7 @@ public class Datadog {
                 telemetry: telemetry
             )
 
-            defaultDatadogCore.registerFeature(named: LoggingFeature.featureName, instance: logging)
+            core.register(feature: logging)
         }
 
         if let tracingConfiguration = configuration.tracing {
@@ -276,7 +280,7 @@ public class Datadog {
                 telemetry: telemetry
             )
 
-            defaultDatadogCore.registerFeature(named: TracingFeature.featureName, instance: tracing)
+            core.register(feature: tracing)
         }
 
         if let crashReportingConfiguration = configuration.crashReporting {
@@ -294,21 +298,22 @@ public class Datadog {
             )
         }
 
-        RUMFeature.instance = rum
         CrashReportingFeature.instance = crashReporting
 
-        RUMInstrumentation.instance = rumInstrumentation
-        RUMInstrumentation.instance?.enable()
+        core.feature(RUMInstrumentation.self)?.enable()
 
         URLSessionAutoInstrumentation.instance = urlSessionAutoInstrumentation
         URLSessionAutoInstrumentation.instance?.enable()
+
+        defaultDatadogCore = core
 
         // After everything is set up, if the Crash Reporting feature was enabled,
         // register crash reporter and send crash report if available:
         if let crashReportingFeature = CrashReportingFeature.instance {
             Global.crashReporter = CrashReporter(
                 crashReportingFeature: crashReportingFeature,
-                loggingFeature: logging
+                loggingFeature: logging,
+                rumFeature: rum
             )
             Global.crashReporter?.sendCrashReportIfFound()
         }
@@ -332,14 +337,16 @@ public class Datadog {
         assert(Datadog.isInitialized, "SDK must be first initialized.")
 
         // Tear down and deinitialize all features:
-        let logging = defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName)
+        let logging = defaultDatadogCore.feature(LoggingFeature.self)
+        let tracing = defaultDatadogCore.feature(TracingFeature.self)
+        let rum = defaultDatadogCore.feature(RUMFeature.self)
+        let rumInstrumentation = defaultDatadogCore.feature(RUMInstrumentation.self)
         logging?.deinitialize()
-        let tracing = defaultDatadogCore.feature(TracingFeature.self, named: TracingFeature.featureName)
         tracing?.deinitialize()
-        RUMFeature.instance?.deinitialize()
-        CrashReportingFeature.instance?.deinitialize()
+        rum?.deinitialize()
+        rumInstrumentation?.deinitialize()
 
-        RUMInstrumentation.instance?.deinitialize()
+        CrashReportingFeature.instance?.deinitialize()
         URLSessionAutoInstrumentation.instance?.deinitialize()
 
         // Reset Globals:

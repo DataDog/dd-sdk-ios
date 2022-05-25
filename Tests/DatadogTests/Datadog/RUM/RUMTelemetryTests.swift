@@ -8,18 +8,20 @@ import XCTest
 @testable import Datadog
 
 class RUMTelemetryTests: XCTestCase {
+    let core = DatadogCoreMock()
+
     override func setUp() {
         super.setUp()
         temporaryFeatureDirectories.create()
 
-        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        Global.rum = RUMMonitor.initialize()
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
+        core.register(feature: rum)
+        Global.rum = RUMMonitor.initialize(in: core)
     }
 
     override func tearDown() {
-        RUMFeature.instance?.deinitialize()
+        core.flush()
         Global.rum = DDNoopRUMMonitor()
-
         temporaryFeatureDirectories.delete()
         super.tearDown()
     }
@@ -28,6 +30,7 @@ class RUMTelemetryTests: XCTestCase {
 
     func testSendTelemetryDebug() throws {
         let telemetry: RUMTelemetry = .mockWith(
+            core: core,
             dateProvider: RelativeDateProvider(
                 using: .init(timeIntervalSince1970: 0)
             )
@@ -35,7 +38,7 @@ class RUMTelemetryTests: XCTestCase {
 
         telemetry.debug("Hello world!")
 
-        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 1)
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 1)
         try rumEventMatchers.lastRUMEvent(ofType: TelemetryDebugEvent.self).model(ofType: TelemetryDebugEvent.self) { event in
             XCTAssertEqual(event.date, 0)
             XCTAssertEqual(event.application?.id, telemetry.applicationID)
@@ -48,13 +51,14 @@ class RUMTelemetryTests: XCTestCase {
 
     func testSendTelemetryError() throws {
         let telemetry: RUMTelemetry = .mockWith(
+            core: core,
             dateProvider: RelativeDateProvider(
                 using: .init(timeIntervalSince1970: 0)
             )
         )
         telemetry.error("Oops", kind: "OutOfMemory", stack: "a\nhay\nneedle\nstack")
 
-        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 1)
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 1)
         try rumEventMatchers.lastRUMEvent(ofType: TelemetryErrorEvent.self).model(ofType: TelemetryErrorEvent.self) { event in
             XCTAssertEqual(event.date, 0)
             XCTAssertEqual(event.application?.id, telemetry.applicationID)
@@ -68,13 +72,13 @@ class RUMTelemetryTests: XCTestCase {
     }
 
     func testSendTelemetryDebug_withRUMContext() throws {
-        let telemetry: RUMTelemetry = .mockAny()
+        let telemetry: RUMTelemetry = .mockAny(in: core)
 
         Global.rum.startView(viewController: mockView)
         Global.rum.startUserAction(type: .scroll, name: .mockAny())
         telemetry.debug("telemetry debug")
 
-        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 3)
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 3)
         try rumEventMatchers.lastRUMEvent(ofType: TelemetryDebugEvent.self).model(ofType: TelemetryDebugEvent.self) { event in
             XCTAssertEqual(event.telemetry.message, "telemetry debug")
             XCTAssertValidRumUUID(event.action?.id)
@@ -84,13 +88,13 @@ class RUMTelemetryTests: XCTestCase {
     }
 
     func testSendTelemetryError_withRUMContext() throws {
-        let telemetry: RUMTelemetry = .mockAny()
+        let telemetry: RUMTelemetry = .mockAny(in: core)
 
         Global.rum.startView(viewController: mockView)
         Global.rum.startUserAction(type: .scroll, name: .mockAny())
         telemetry.error("telemetry error")
 
-        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 3)
+        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 3)
         try rumEventMatchers.lastRUMEvent(ofType: TelemetryErrorEvent.self).model(ofType: TelemetryErrorEvent.self) { event in
             XCTAssertEqual(event.telemetry.message, "telemetry error")
             XCTAssertValidRumUUID(event.action?.id)

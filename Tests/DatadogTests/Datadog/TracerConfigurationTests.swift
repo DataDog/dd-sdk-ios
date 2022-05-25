@@ -33,7 +33,7 @@ class TracerConfigurationTests: XCTestCase {
             loggingFeature: .mockNoOp()
         )
 
-        core.registerFeature(named: TracingFeature.featureName, instance: feature)
+        core.register(feature: feature)
     }
 
     override func tearDown() {
@@ -47,7 +47,7 @@ class TracerConfigurationTests: XCTestCase {
 
         XCTAssertNil(tracer.rumContextIntegration)
 
-        let feature = try XCTUnwrap(core.feature(TracingFeature.self, named: TracingFeature.featureName))
+        let feature = try XCTUnwrap(core.feature(TracingFeature.self))
         XCTAssertEqual((tracer.spanOutput as? SpanFileOutput)?.environment, "tests")
         XCTAssertEqual(tracer.spanBuilder.applicationVersion, "1.2.3")
         XCTAssertEqual(tracer.spanBuilder.serviceName, "service-name")
@@ -70,8 +70,8 @@ class TracerConfigurationTests: XCTestCase {
     }
 
     func testDefaultTracerWithRUMEnabled() {
-        RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance?.deinitialize() }
+        let rum: RUMFeature = .mockNoOp()
+        core.register(feature: rum)
 
         let tracer1 = Tracer.initialize(configuration: .init(), in: core).dd
         XCTAssertNotNil(tracer1.rumContextIntegration)
@@ -92,7 +92,7 @@ class TracerConfigurationTests: XCTestCase {
 
         XCTAssertNil(tracer.rumContextIntegration)
 
-        let feature = try XCTUnwrap(core.feature(TracingFeature.self, named: TracingFeature.featureName))
+        let feature = try XCTUnwrap(core.feature(TracingFeature.self))
         XCTAssertEqual((tracer.spanOutput as? SpanFileOutput)?.environment, "tests")
         XCTAssertEqual(tracer.spanBuilder.applicationVersion, "1.2.3")
         XCTAssertEqual(tracer.spanBuilder.serviceName, "custom-service-name")

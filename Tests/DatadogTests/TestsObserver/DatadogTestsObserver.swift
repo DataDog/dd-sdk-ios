@@ -45,9 +45,9 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
         ),
         .init(
             assert: {
-                defaultDatadogCore.feature(LoggingFeature.self, named: LoggingFeature.featureName) == nil
-                    && defaultDatadogCore.feature(TracingFeature.self, named: TracingFeature.featureName) == nil
-                    && RUMFeature.instance == nil
+                defaultDatadogCore.feature(LoggingFeature.self) == nil
+                    && defaultDatadogCore.feature(TracingFeature.self) == nil
+                    && defaultDatadogCore.feature(RUMFeature.self) == nil
                     && CrashReportingFeature.instance == nil
             },
             problem: "All features must not be initialized.",
@@ -57,7 +57,7 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
         ),
         .init(
             assert: {
-                RUMInstrumentation.instance == nil && URLSessionAutoInstrumentation.instance == nil
+                defaultDatadogCore.feature(RUMInstrumentation.self) == nil && URLSessionAutoInstrumentation.instance == nil
             },
             problem: "All auto-instrumentation features must not be initialized.",
             solution: """

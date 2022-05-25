@@ -10,14 +10,10 @@ import XCTest
 class RUMFeatureTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        XCTAssertFalse(Datadog.isInitialized)
-        XCTAssertNil(RUMFeature.instance)
         temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
-        XCTAssertFalse(Datadog.isInitialized)
-        XCTAssertNil(RUMFeature.instance)
         temporaryFeatureDirectories.delete()
         super.tearDown()
     }
@@ -39,10 +35,12 @@ class RUMFeatureTests: XCTestCase {
         let randomDeviceOSVersion: String = .mockRandom()
         let randomEncryption: DataEncryption? = Bool.random() ? DataEncryptionMock() : nil
 
+        let core = DatadogCoreMock()
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        defer { core.flush() }
 
         // Given
-        RUMFeature.instance = .mockWith(
+        let feature: RUMFeature = .mockWith(
             directories: temporaryFeatureDirectories,
             configuration: .mockWith(
                 common: .mockWith(
@@ -62,10 +60,10 @@ class RUMFeatureTests: XCTestCase {
                 mobileDevice: .mockWith(model: randomDeviceModel, osName: randomDeviceOSName, osVersion: randomDeviceOSVersion)
             )
         )
-        defer { RUMFeature.instance?.deinitialize() }
+        core.register(feature: feature)
 
         // When
-        let monitor = RUMMonitor.initialize()
+        let monitor = RUMMonitor.initialize(in: core)
         monitor.startView(viewController: mockView) // on starting the first view we sends `application_start` action event
 
         // Then
@@ -96,8 +94,11 @@ class RUMFeatureTests: XCTestCase {
     // MARK: - HTTP Payload
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
+        let core = DatadogCoreMock()
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        RUMFeature.instance = .mockWith(
+        defer { core.flush() }
+
+        let feature: RUMFeature = .mockWith(
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(
@@ -119,9 +120,9 @@ class RUMFeatureTests: XCTestCase {
                 )
             )
         )
-        defer { RUMFeature.instance?.deinitialize() }
+        core.register(feature: feature)
 
-        let fileWriter = try XCTUnwrap(RUMFeature.instance?.storage.writer)
+        let fileWriter = feature.storage.writer
         fileWriter.write(value: RUMDataModelMock(attribute: "1st event"))
         fileWriter.write(value: RUMDataModelMock(attribute: "2nd event"))
         fileWriter.write(value: RUMDataModelMock(attribute: "3rd event"))
