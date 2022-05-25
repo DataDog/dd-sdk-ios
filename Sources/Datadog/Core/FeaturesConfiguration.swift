@@ -122,17 +122,17 @@ extension FeaturesConfiguration {
         }
 
         if let customLogsEndpoint = configuration.customLogsEndpoint {
-            // If `.set(cusstomLogsEndpoint:)` API was used, it should override logs endpoint
+            // If `.set(customLogsEndpoint:)` API was used, it should override logs endpoint
             logsEndpoint = .custom(url: customLogsEndpoint.absoluteString)
         }
 
         if let customTracesEndpoint = configuration.customTracesEndpoint {
-            // If `.set(cusstomLogsEndpoint:)` API was used, it should override traces endpoint
+            // If `.set(customTracesEndpoint:)` API was used, it should override traces endpoint
             tracesEndpoint = .custom(url: customTracesEndpoint.absoluteString)
         }
 
         if let customRUMEndpoint = configuration.customRUMEndpoint {
-            // If `.set(cusstomLogsEndpoint:)` API was used, it should override RUM endpoint
+            // If `.set(customRUMEndpoint:)` API was used, it should override RUM endpoint
             rumEndpoint = .custom(url: customRUMEndpoint.absoluteString)
         }
 

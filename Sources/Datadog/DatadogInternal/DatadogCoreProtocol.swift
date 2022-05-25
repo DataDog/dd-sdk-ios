@@ -11,21 +11,7 @@ public internal(set) var defaultDatadogCore: DatadogCoreProtocol = NOOPDatadogCo
 /// A Datadog Core holds a set of features and is responsible of managing their storage
 /// and upload mechanism. It also provides a thread-safe scope for writing events.
 public protocol DatadogCoreProtocol {
-    /// Registers a feature by its name and configuration.
-    ///
-    /// - Parameters:
-    ///   - featureName: The feature name.
-    ///   - storage: The feature's storage configuration.
-    ///   - upload: The feature's upload configuration.
-    func registerFeature(named featureName: String, storage: FeatureStorageConfiguration, upload: FeatureUploadConfiguration)
-
-    /// Returns a Feature scope by its name.
-    ///
-    /// - Parameter featureName: The feature's name.
-    /// - Returns: The scope for feature that previously registered, `nil` otherwise.
-    func scope(forFeature featureName: String) -> FeatureScope?
-
-    // MARK: V1 interface
+    // MARK: - V1 interface
 
     /// Registers a feature instance by its type description.
     ///
@@ -41,13 +27,44 @@ public protocol DatadogCoreProtocol {
 }
 
 /// Provide feature specific storage configuration.
-public struct FeatureStorageConfiguration {
-    // TODO: RUMM-2133
+internal struct FeatureStorageConfiguration {
+    /// A set of `/Library/Caches` subfolders for managing persisted data.
+    /// Each subfolder can be a path containing subfolders - in that case the SDK will create necessary transitive folders.
+    struct Directories {
+        /// The subfolder for writing authorized data (when tracking consent is granted).
+        let authorized: String
+        /// The subfolder for writing unauthorized data (when tracking consent is pending).
+        let unauthorized: String
+        /// The list of deprecated folders from previous versions of this feature. It will be used by the SDK to perform cleanup.
+        let deprecated: [String]
+    }
+
+    /// The list of directories for managing data for this feature.
+    let directories: Directories
+
+    // MARK: - V1 interface
+
+    /// A human-readable name of this Feature used for naming internal queues specific to this Feature and annotating
+    /// origin of telemetry and verbosity logs produced by the SDK.
+    let featureName: String
 }
 
 /// Provide feature specific upload configuration.
-public struct FeatureUploadConfiguration {
-    // TODO: RUMM-2133
+internal struct FeatureUploadConfiguration {
+    // MARK: - V1 interface
+
+    /// A human-readable name of this Feature used for naming internal queues specific to this Feature and annotating
+    /// origin of telemetry and verbosity logs produced by the SDK.
+    let featureName: String
+
+    /// Creates the V1's `RequetsBuilder` for uploading data in this Feature.
+    /// In V2 interface we will change it to build requests based on V2 context and batch metadata.
+    let createRequestBuilder: (DatadogV1Context, Telemetry?) -> RequestBuilder
+
+    /// Data format for constructing payloads in V1. It is applied by the reader when reading data from batch and before passing
+    /// it to the uploader. It might not be necessary in V2 if we decide to us a factory method for producing payloads (based on
+    /// batched events and batch metadata)
+    let payloadFormat: DataFormat
 }
 
 /// A datadog feature providing thread-safe scope for writing events.
@@ -57,15 +74,7 @@ public protocol FeatureScope {
 
 /// No-op implementation of `DatadogFeatureRegistry`.
 internal struct NOOPDatadogCore: DatadogCoreProtocol {
-    /// no-op
-    func registerFeature(named featureName: String, storage: FeatureStorageConfiguration, upload: FeatureUploadConfiguration) {}
-
-    /// no-op
-    func scope(forFeature featureName: String) -> FeatureScope? {
-        return nil
-    }
-
-    // MARK: V1 interface
+    // MARK: - V1 interface
 
     /// no-op
     func register<T>(feature instance: T?) {}

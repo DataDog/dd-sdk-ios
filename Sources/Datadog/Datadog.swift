@@ -238,6 +238,7 @@ public class Datadog {
                 dateProvider: dateProvider,
                 dateCorrector: dateCorrector
             )
+            core.telemetry = telemetry
 
             rum = RUMFeature(
                 directories: try obtainRUMFeatureDirectories(),

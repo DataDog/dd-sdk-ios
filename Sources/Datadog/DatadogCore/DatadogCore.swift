@@ -12,6 +12,20 @@ internal typealias CoreConfiguration = FeaturesConfiguration.Common
 /// Feature-agnostic set of dependencies powering Features storage, upload and event recording.
 internal typealias CoreDependencies = FeaturesCommonDependencies
 
+/// A shim interface for uniforming V1 Features and letting their generic initialization in `DatadogCore`.
+internal protocol V1Feature {
+    /// The configuration specific to this Feature.
+    /// In V2 this will likely become a part of the public interface for the Feature module.
+    associatedtype Configuration
+
+    init(
+        storage: FeatureStorage,
+        upload: FeatureUpload,
+        configuration: Configuration,
+        commonDependencies: FeaturesCommonDependencies
+    )
+}
+
 /// Core implementation of Datadog SDK.
 ///
 /// The core provides a storage and upload mechanism for each registered Feature
@@ -24,6 +38,8 @@ internal final class DatadogCore {
     let configuration: CoreConfiguration
     /// A set of dependencies used by SDK core for powering Features.
     let dependencies: CoreDependencies
+    /// Telemetry monitor, if configured.
+    var telemetry: Telemetry?
 
     private var v1Features: [String: Any] = [:]
 
@@ -73,6 +89,43 @@ internal final class DatadogCore {
 
 extension DatadogCore: DatadogCoreProtocol {
     // MARK: - V1 interface
+
+    func create<Feature: V1Feature>(
+        storageConfiguration: FeatureStorageConfiguration,
+        uploadConfiguration: FeatureUploadConfiguration,
+        featureSpecificConfiguration: Feature.Configuration
+    ) throws -> Feature {
+        let directories = FeatureDirectories(
+            deprecated: try storageConfiguration.directories.deprecated.map { try Directory(withSubdirectoryPath: $0) },
+            unauthorized: try Directory(withSubdirectoryPath: storageConfiguration.directories.unauthorized),
+            authorized: try Directory(withSubdirectoryPath: storageConfiguration.directories.authorized)
+        )
+
+        let storage = FeatureStorage(
+            featureName: storageConfiguration.featureName,
+            dataFormat: uploadConfiguration.payloadFormat,
+            directories: directories,
+            commonDependencies: dependencies,
+            telemetry: telemetry
+        )
+
+        let v1Context = DatadogV1Context(configuration: configuration, dependencies: dependencies)
+
+        let upload = FeatureUpload(
+            featureName: uploadConfiguration.featureName,
+            storage: storage,
+            requestBuilder: uploadConfiguration.createRequestBuilder(v1Context, telemetry),
+            commonDependencies: dependencies,
+            telemetry: telemetry
+        )
+
+        return Feature(
+            storage: storage,
+            upload: upload,
+            configuration: featureSpecificConfiguration,
+            commonDependencies: dependencies
+        )
+    }
 
     func register<T>(feature instance: T?) {
         let key = String(describing: T.self)
