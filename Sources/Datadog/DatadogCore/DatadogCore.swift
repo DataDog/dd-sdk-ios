@@ -34,6 +34,9 @@ internal protocol V1Feature {
 /// By complying with `DatadogCoreProtocol`, the core can
 /// provide context and writing scopes to Features for event recording.
 internal final class DatadogCore {
+    /// The root directory of this instance of`DatadogCore`.
+    /// It indicates the main location for managing Features data by this instance of the SDK.
+    let rootDirectory: Directory
     /// The configuration of SDK core.
     let configuration: CoreConfiguration
     /// A set of dependencies used by SDK core for powering Features.
@@ -46,12 +49,15 @@ internal final class DatadogCore {
     /// Creates a core instance.
     ///
     /// - Parameters:
+    ///   - directory: the root directory for this instance of SDK.
     ///   - configuration: the configuration of SDK core.
     ///   - dependencies: a set of dependencies used by SDK core for powering Features.
     init(
+        rootDirectory: Directory,
         configuration: CoreConfiguration,
         dependencies: CoreDependencies
     ) {
+        self.rootDirectory = rootDirectory
         self.configuration = configuration
         self.dependencies = dependencies
     }
@@ -96,9 +102,11 @@ extension DatadogCore: DatadogCoreProtocol {
         featureSpecificConfiguration: Feature.Configuration
     ) throws -> Feature {
         let directories = FeatureDirectories(
-            deprecated: try storageConfiguration.directories.deprecated.map { try Directory(withSubdirectoryPath: $0) },
-            unauthorized: try Directory(withSubdirectoryPath: storageConfiguration.directories.unauthorized),
-            authorized: try Directory(withSubdirectoryPath: storageConfiguration.directories.authorized)
+            deprecated: storageConfiguration.directories.deprecated.compactMap { deprecatedPath in
+                try? rootDirectory.subdirectory(path: deprecatedPath) // ignore errors - deprecated paths likely do not exist
+            },
+            unauthorized: try rootDirectory.createSubdirectory(path: storageConfiguration.directories.unauthorized),
+            authorized: try rootDirectory.createSubdirectory(path: storageConfiguration.directories.authorized)
         )
 
         let storage = FeatureStorage(

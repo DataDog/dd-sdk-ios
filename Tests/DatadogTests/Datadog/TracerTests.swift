@@ -318,12 +318,14 @@ class TracerTests: XCTestCase {
 
     func testSendingUserInfo() throws {
         let core = DatadogCore(
+            rootDirectory: temporaryDirectory.create(),
             configuration: .mockAny(),
             dependencies: .mockWith(
                 consentProvider: ConsentProvider(initialConsent: .granted),
                 userInfoProvider: UserInfoProvider()
             )
         )
+        defer { temporaryDirectory.delete() }
 
         defaultDatadogCore = core
         defer { defaultDatadogCore = NOOPDatadogCore() }

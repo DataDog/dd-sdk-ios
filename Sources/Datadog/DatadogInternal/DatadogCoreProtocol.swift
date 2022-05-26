@@ -29,7 +29,7 @@ public protocol DatadogCoreProtocol {
 /// Provide feature specific storage configuration.
 internal struct FeatureStorageConfiguration {
     /// A set of `/Library/Caches` subfolders for managing persisted data.
-    /// Each subfolder can be a path containing subfolders - in that case the SDK will create necessary transitive folders.
+    /// Each subfolder can be a path containing subfolders - in that case the SDK will create necessary intermediate folders.
     struct Directories {
         /// The subfolder for writing authorized data (when tracking consent is granted).
         let authorized: String

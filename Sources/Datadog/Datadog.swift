@@ -204,6 +204,7 @@ public class Datadog {
 
         // Set default `DatadogCore`:
         let core = DatadogCore(
+            rootDirectory: try Directory.cache(),
             configuration: configuration.common,
             dependencies: commonDependencies
         )

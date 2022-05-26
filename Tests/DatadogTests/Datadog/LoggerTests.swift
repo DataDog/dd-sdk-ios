@@ -170,12 +170,14 @@ class LoggerTests: XCTestCase {
 
     func testSendingUserInfo() throws {
         let core = DatadogCore(
+            rootDirectory: temporaryDirectory.create(),
             configuration: .mockAny(),
             dependencies: .mockWith(
                 consentProvider: ConsentProvider(initialConsent: .granted),
                 userInfoProvider: UserInfoProvider()
             )
         )
+        defer { temporaryDirectory.delete() }
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers(
             directories: temporaryFeatureDirectories,
