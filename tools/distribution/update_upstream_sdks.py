@@ -38,75 +38,84 @@ def update_flutter_sdk(ios_sdk_git_tag: str, dry_run: bool):
             temp_dir=clone_dir
         )
         repository.create_branch(f'update/dd-sdk-ios-to-{ios_sdk_git_tag}')
+
+        with remember_cwd():    
+            package_dir = 'packages/datadog_flutter_plugin'
+            print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/{package_dir}')
+            os.chdir(package_dir)
+
+            # Replace `dd-sdk-ios` version in `ios/datadog_sdk.podspec`:
+            with open('ios/datadog_flutter_plugin.podspec', 'r+') as podspec:
+                lines = podspec.readlines()
+                for idx, line in enumerate(lines):
+                    if match := re.match(r'^(\s*)(s\.dependency\s+\'DatadogSDK\').+', line):
+                        indent = match.group(1)
+                        lines[idx] = f"{indent}s.dependency 'DatadogSDK', '{git_tag}'\n"
+                    if match := re.match(r'^(\s*)(s\.dependency\s+\'DatadogSDKCrashReporting\').+', line):
+                        indent = match.group(1)
+                        lines[idx] = f"{indent}s.dependency 'DatadogSDKCrashReporting', '{git_tag}'\n"
+                    pass
+
+                podspec.seek(0)
+                podspec.truncate()
+                podspec.write(''.join(lines))
+            
+            # Update the README.md with the current version
+            with open('README.md', 'r+') as readme:
+                lines = readme.readlines()
+                in_table = False
+                ios_sdk_column = None
+                for idx, line in enumerate(lines):
+                    if in_table:
+                        if line.startswith('[//]: #'):
+                            # All done
+                            break
+                        elif line.startswith('|'):
+                            columns = list(filter(None, map(str.strip, line.split('|'))))
+                            if 'iOS SDK' in columns:
+                                ios_sdk_column = columns.index('iOS SDK')
+                            elif ':-' in columns[0]:
+                                continue
+                            elif ios_sdk_column is not None:
+                                columns[ios_sdk_column] = git_tag
+                                lines[idx] = '| ' + ' | '.join(columns) + ' |\n'
+                    elif line.startswith('[//]: # (SDK Table)'):
+                        in_table = True
+
+                readme.seek(0)
+                readme.truncate()
+                readme.write(''.join(lines))
+            
+            shell(command='pod repo update')
+            shell(command='flutter upgrade')
+
+        packages_dir = 'packages'
+        print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/{packages_dir}')
+        os.chdir(packages_dir)        
         
-        package_dir = 'packages/datadog_flutter_plugin'
-        print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/{package_dir}')
-        os.chdir(package_dir)
+        packages = os.listdir('.')
+        for package in packages:
+            if os.path.exists(f'{package}/example'):
+                # Run `pod update` in `example/ios`
+                with remember_cwd():
+                    print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/{packages_dir}/{package}/example')
+                    os.chdir(f'{package}/example')
+                    shell(command='flutter pub get')
 
-        # Replace `dd-sdk-ios` version in `ios/datadog_sdk.podspec`:
-        with open('ios/datadog_flutter_plugin.podspec', 'r+') as podspec:
-            lines = podspec.readlines()
-            for idx, line in enumerate(lines):
-                if match := re.match(r'^(\s*)(s\.dependency\s+\'DatadogSDK\').+', line):
-                    indent = match.group(1)
-                    lines[idx] = f"{indent}s.dependency 'DatadogSDK', '{git_tag}'\n"
-                if match := re.match(r'^(\s*)(s\.dependency\s+\'DatadogSDKCrashReporting\').+', line):
-                    indent = match.group(1)
-                    lines[idx] = f"{indent}s.dependency 'DatadogSDKCrashReporting', '{git_tag}'\n"
-                pass
+                    print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/{packages_dir}/{package}/example/ios')
+                    os.chdir('ios')
+                    shell(command='pod update')
 
-            podspec.seek(0)
-            podspec.truncate()
-            podspec.write(''.join(lines))
-        
-        # Update the README.md with the current version
-        with open('README.md', 'r+') as readme:
-            lines = readme.readlines()
-            in_table = False
-            ios_sdk_column = None
-            for idx, line in enumerate(lines):
-                if in_table:
-                  if line.startswith('[//]: #'):
-                      # All done
-                      break
-                  elif line.startswith('|'):
-                      columns = list(filter(None, map(str.strip, line.split('|'))))
-                      if 'iOS SDK' in columns:
-                          ios_sdk_column = columns.index('iOS SDK')
-                      elif ':-' in columns[0]:
-                          continue
-                      elif ios_sdk_column is not None:
-                        columns[ios_sdk_column] = git_tag
-                        lines[idx] = '| ' + ' | '.join(columns) + ' |\n'
-                elif line.startswith('[//]: # (SDK Table)'):
-                    in_table = True
+            if os.path.exists(f'{package}/integration_test_app'):
+                # Run `pod update` in `integration_test_app/ios`
+                with remember_cwd():
+                    print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/{packages_dir}/{package}/integration_test_app')
+                    os.chdir(f'{package}/integration_test_app')
+                    shell(command='flutter pub get')
 
-            readme.seek(0)
-            readme.truncate()
-            readme.write(''.join(lines))
-        
-        shell(command='pod repo update')
-        shell(command='flutter upgrade')
-
-        # Run `pod update` in `example/ios`
-        with remember_cwd():
-            print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/{package_dir}/example')
-            os.chdir('example')
-            shell(command='flutter pub get')
-
-            print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/{package_dir}/example/ios')
-            os.chdir('ios')
-            shell(command='pod update')
-
-        # Run `pod update` in `integration_test_app/ios`
-        with remember_cwd():
-            print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/{package_dir}/integration_test_app')
-            os.chdir('integration_test_app')
-            shell(command='flutter pub get')
-
-            print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/{package_dir}/integration_test_app/ios')
-            os.chdir('ios')
-            shell(command='pod update')
+                    print(f'ℹ️️ Changing current directory to: {clone_dir}/{flutter_repo_name}/{packages_dir}/{package}/integration_test_app/ios')
+                    os.chdir('ios')
+                    shell(command='pod update')
 
         # Commit changes:
         repository.commit(
@@ -125,7 +134,6 @@ def update_flutter_sdk(ios_sdk_git_tag: str, dry_run: bool):
             )
 
         print(f'✅️️ Updated `dd-sdk-flutter`.')
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
