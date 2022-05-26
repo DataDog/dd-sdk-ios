@@ -24,10 +24,12 @@ internal func obtainRUMFeatureDirectories() throws -> FeatureDirectories {
 
 /// Creates and owns componetns enabling RUM feature.
 /// Bundles dependencies for other RUM-related components created later at runtime  (i.e. `RUMMonitor`).
-internal final class RUMFeature {
+internal final class RUMFeature: V1Feature {
+    typealias Configuration = FeaturesConfiguration.RUM
+
     // MARK: - Configuration
 
-    let configuration: FeaturesConfiguration.RUM
+    let configuration: Configuration
 
     // MARK: - Dependencies
 
@@ -62,88 +64,22 @@ internal final class RUMFeature {
 
     // MARK: - Initialization
 
-    static func createStorage(
-        directories: FeatureDirectories,
-        commonDependencies: FeaturesCommonDependencies,
-        telemetry: Telemetry?
-    ) -> FeatureStorage {
-        return FeatureStorage(
-            featureName: RUMFeature.featureName,
-            dataFormat: RUMFeature.dataFormat,
-            directories: directories,
-            commonDependencies: commonDependencies,
-            telemetry: telemetry
-        )
-    }
-
-    static func createUpload(
-        storage: FeatureStorage,
-        configuration: FeaturesConfiguration.RUM,
-        commonDependencies: FeaturesCommonDependencies,
-        telemetry: Telemetry?
-    ) -> FeatureUpload {
-        return FeatureUpload(
-            featureName: RUMFeature.featureName,
-            storage: storage,
-            requestBuilder: RequestBuilder(
-                url: configuration.uploadURL,
-                queryItems: [
-                    .ddsource(source: configuration.common.source),
-                    .ddtags(
-                        tags: [
-                            "service:\(configuration.common.serviceName)",
-                            "version:\(configuration.common.applicationVersion)",
-                            "sdk_version:\(configuration.common.sdkVersion)",
-                            "env:\(configuration.common.environment)"
-                        ]
-                    )
-                ],
-                headers: [
-                    .contentTypeHeader(contentType: .textPlainUTF8),
-                    .userAgentHeader(
-                        appName: configuration.common.applicationName,
-                        appVersion: configuration.common.applicationVersion,
-                        device: commonDependencies.mobileDevice
-                    ),
-                    .ddAPIKeyHeader(clientToken: configuration.common.clientToken),
-                    .ddEVPOriginHeader(source: configuration.common.origin ?? configuration.common.source),
-                    .ddEVPOriginVersionHeader(sdkVersion: configuration.common.sdkVersion),
-                    .ddRequestIDHeader(),
-                ],
-                telemetry: telemetry
-            ),
-            commonDependencies: commonDependencies,
-            telemetry: telemetry
-        )
-    }
-
     convenience init(
-        directories: FeatureDirectories,
-        configuration: FeaturesConfiguration.RUM,
+        storage: FeatureStorage,
+        upload: FeatureUpload,
+        configuration: Configuration,
         commonDependencies: FeaturesCommonDependencies,
         telemetry: Telemetry?
     ) {
-        let eventsMapper = RUMEventsMapper(
-            viewEventMapper: configuration.viewEventMapper,
-            errorEventMapper: configuration.errorEventMapper,
-            resourceEventMapper: configuration.resourceEventMapper,
-            actionEventMapper: configuration.actionEventMapper,
-            longTaskEventMapper: configuration.longTaskEventMapper,
-            telemetry: telemetry
-        )
-        let storage = RUMFeature.createStorage(
-            directories: directories,
-            commonDependencies: commonDependencies,
-            telemetry: telemetry
-        )
-        let upload = RUMFeature.createUpload(
-            storage: storage,
-            configuration: configuration,
-            commonDependencies: commonDependencies,
-            telemetry: telemetry
-        )
         self.init(
-            eventsMapper: eventsMapper,
+            eventsMapper: RUMEventsMapper(
+                viewEventMapper: configuration.viewEventMapper,
+                errorEventMapper: configuration.errorEventMapper,
+                resourceEventMapper: configuration.resourceEventMapper,
+                actionEventMapper: configuration.actionEventMapper,
+                longTaskEventMapper: configuration.longTaskEventMapper,
+                telemetry: telemetry
+            ),
             storage: storage,
             upload: upload,
             configuration: configuration,

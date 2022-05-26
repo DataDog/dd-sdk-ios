@@ -243,13 +243,11 @@ public class Datadog {
             )
             core.telemetry = telemetry
 
-            rum = RUMFeature(
-                directories: try obtainRUMFeatureDirectories(),
-                configuration: rumConfiguration,
-                commonDependencies: commonDependencies,
-                telemetry: telemetry
+            rum = try core.create(
+                storageConfiguration: createV2RUMStorageConfiguration(),
+                uploadConfiguration: createV2RUMUploadConfiguration(v1Configuration: rumConfiguration),
+                featureSpecificConfiguration: rumConfiguration
             )
-
             core.register(feature: rum)
 
             if let instrumentationConfiguration = rumConfiguration.instrumentation {
@@ -268,7 +266,6 @@ public class Datadog {
                 uploadConfiguration: createV2LoggingUploadConfiguration(v1Configuration: loggingConfiguration),
                 featureSpecificConfiguration: loggingConfiguration
             )
-
             core.register(feature: logging)
         }
 

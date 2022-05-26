@@ -10,11 +10,11 @@ import XCTest
 class RUMFeatureTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        temporaryFeatureDirectories.create()
+        temporaryDirectory.create()
     }
 
     override func tearDown() {
-        temporaryFeatureDirectories.delete()
+        temporaryDirectory.delete()
         super.tearDown()
     }
 
@@ -41,7 +41,7 @@ class RUMFeatureTests: XCTestCase {
 
         // Given
         let feature: RUMFeature = .mockWith(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             configuration: .mockWith(
                 common: .mockWith(
                     clientToken: randomClientToken,
@@ -99,7 +99,7 @@ class RUMFeatureTests: XCTestCase {
         defer { core.flush() }
 
         let feature: RUMFeature = .mockWith(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 performance: .combining(
                     storagePerformance: StoragePerformanceMock(

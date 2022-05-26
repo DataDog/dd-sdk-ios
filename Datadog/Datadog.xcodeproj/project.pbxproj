@@ -268,6 +268,8 @@
 		616F1FAE283D683500651A3A /* DatadogV1Context.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616F1FAC283D683500651A3A /* DatadogV1Context.swift */; };
 		616F1FB0283E227100651A3A /* LoggingV2Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616F1FAF283E227100651A3A /* LoggingV2Configuration.swift */; };
 		616F1FB1283E227100651A3A /* LoggingV2Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616F1FAF283E227100651A3A /* LoggingV2Configuration.swift */; };
+		616F1FB32840125400651A3A /* RUMV2Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616F1FB22840125300651A3A /* RUMV2Configuration.swift */; };
+		616F1FB42840125400651A3A /* RUMV2Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616F1FB22840125300651A3A /* RUMV2Configuration.swift */; };
 		6170DC1C25C18729003AED5C /* DDCrashReportingPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6170DC1B25C18729003AED5C /* DDCrashReportingPlugin.swift */; };
 		6172472725D673D7007085B3 /* CrashContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6172472625D673D7007085B3 /* CrashContextTests.swift */; };
 		617247AF25DA9BEA007085B3 /* CrashReportingObjcHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = 617247AE25DA9BEA007085B3 /* CrashReportingObjcHelpers.m */; };
@@ -1460,6 +1462,7 @@
 		616CCE15250A467E009FED46 /* RUMInstrumentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMInstrumentation.swift; sourceTree = "<group>"; };
 		616F1FAC283D683500651A3A /* DatadogV1Context.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogV1Context.swift; sourceTree = "<group>"; };
 		616F1FAF283E227100651A3A /* LoggingV2Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingV2Configuration.swift; sourceTree = "<group>"; };
+		616F1FB22840125300651A3A /* RUMV2Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMV2Configuration.swift; sourceTree = "<group>"; };
 		6170DC1B25C18729003AED5C /* DDCrashReportingPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDCrashReportingPlugin.swift; sourceTree = "<group>"; };
 		6170DC2B25C1883E003AED5C /* DatadogCrashReportingTests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DatadogCrashReportingTests.xcconfig; sourceTree = "<group>"; };
 		6172472625D673D7007085B3 /* CrashContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashContextTests.swift; sourceTree = "<group>"; };
@@ -3659,6 +3662,7 @@
 			isa = PBXGroup;
 			children = (
 				61E5332B24B75C51003D6C4E /* RUMFeature.swift */,
+				616F1FB22840125300651A3A /* RUMV2Configuration.swift */,
 				D248ED442807193B00B315B4 /* RUMTelemetry.swift */,
 				B3FC3C0426526EE900DEED9E /* RUMVitals */,
 				61E5333224B7A504003D6C4E /* DataModels */,
@@ -5130,6 +5134,7 @@
 				61C5A88B24509A0C00DA608C /* SpanOutput.swift in Sources */,
 				61133BE42423979B00786299 /* LogEventEncoder.swift in Sources */,
 				B3FC3C0926526F0000DEED9E /* VitalInfo.swift in Sources */,
+				616F1FB32840125400651A3A /* RUMV2Configuration.swift in Sources */,
 				613E81F025A740140084B751 /* RUMEventsMapper.swift in Sources */,
 				61D980BA24E28D0100E03345 /* RUMIntegrations.swift in Sources */,
 				61C5A88424509A0C00DA608C /* DDSpan.swift in Sources */,
@@ -5692,6 +5697,7 @@
 				D2CB6E6627C50EAE00A62B57 /* Reader.swift in Sources */,
 				D2CB6E6727C50EAE00A62B57 /* DDURLSessionDelegate.swift in Sources */,
 				D2CB6E6827C50EAE00A62B57 /* SwiftExtensions.swift in Sources */,
+				616F1FB42840125400651A3A /* RUMV2Configuration.swift in Sources */,
 				D2CB6E6927C50EAE00A62B57 /* KronosDNSResolver.swift in Sources */,
 				D2CB6E6A27C50EAE00A62B57 /* InternalURLsFilter.swift in Sources */,
 				D2CB6E6B27C50EAE00A62B57 /* ValuePublisher.swift in Sources */,

@@ -13,7 +13,8 @@ extension LoggingFeature {
             storage: .mockNoOp(),
             upload: .mockNoOp(),
             configuration: .mockAny(),
-            commonDependencies: .mockAny()
+            commonDependencies: .mockAny(),
+            telemetry: nil
         )
     }
 
@@ -68,7 +69,8 @@ extension LoggingFeature {
             storage: observedStorage,
             upload: mockedUpload,
             configuration: configuration,
-            commonDependencies: dependencies
+            commonDependencies: dependencies,
+            telemetry: nil
         )
     }
 
