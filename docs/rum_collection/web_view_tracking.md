@@ -51,7 +51,7 @@ webView.configuration.userContentController.trackDatadogEvents(in: ["example.com
 
 ## Access your web views
 
-Your web views appear as events and views in the [RUM Explorer][4] with associated `source` and `service` attributes. The `service` attribute indicates the web component the web view is generated from, and the `source` attribute denotes the mobile application's platform, such as iOS. 
+Your web views appear as events and views in the [RUM Explorer][4] with associated `service` and `source` attributes. The `service` attribute indicates the web component the web view is generated from, and the `source` attribute denotes the mobile application's platform, such as iOS. 
 
 Filter on your iOS and tvOS applications, and click a session. A side panel with a list of events in the session appears. 
 
