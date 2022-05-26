@@ -28,7 +28,7 @@ You can perform the following:
 
 ### Prerequisites
 
-Set up the web page you want rendered on your mobile iOS and tvOS application with the Browser SDK first. For more information, see [RUM Browser Monitoring][1].
+Set up the web page you want rendered on your mobile iOS and tvOS application with the RUM Browser SDK first. For more information, see [RUM Browser Monitoring][1].
 
 ### Instrument your web views
 
@@ -51,7 +51,9 @@ webView.configuration.userContentController.trackDatadogEvents(in: ["example.com
 
 ## Access your web views
 
-Your web views appear as events and views in the [RUM Explorer][4]. Filter on your iOS and tvOS applications, and click a session. A side panel with a list of events in the session appears. 
+Your web views appear as events and views in the [RUM Explorer][4] with associated `source` and `service` attributes. The `service` attribute indicates the web component the web view is generated from, and the `source` attribute denotes the mobile application's platform, such as iOS. 
+
+Filter on your iOS and tvOS applications, and click a session. A side panel with a list of events in the session appears. 
 
 {{< img src="real_user_monitoring/ios/ios-webview-tracking.png" alt="Webview events captured in a session in the RUM Explorer" style="width:100%;">}}
 
