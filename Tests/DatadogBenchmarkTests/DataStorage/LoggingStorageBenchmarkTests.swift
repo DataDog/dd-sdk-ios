@@ -19,10 +19,12 @@ class LoggingStorageBenchmarkTests: XCTestCase {
         try super.setUpWithError()
         self.directory = try Directory(withSubdirectoryPath: "logging-benchmark")
 
-        let storage = LoggingFeature.createStorage(
-            directories: FeatureDirectories(
+        let storage = FeatureStorage(
+            featureName: "logging",
+            dataFormat: DataFormat(prefix: "[", suffix: "]", separator: ","),
+            directories: .init(
                 deprecated: [],
-                unauthorized: obtainUniqueTemporaryDirectory(),
+                unauthorized: directory,
                 authorized: directory
             ),
             commonDependencies: .mockAny(),

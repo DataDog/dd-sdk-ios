@@ -28,18 +28,18 @@ public protocol DatadogCoreProtocol {
 
 /// Provide feature specific storage configuration.
 internal struct FeatureStorageConfiguration {
-    /// A set of `/Library/Caches` subfolders for managing persisted data.
-    /// Each subfolder can be a path containing subfolders - in that case the SDK will create necessary intermediate folders.
+    /// A set of paths for managing persisted data for this Feature.
+    /// Each path is relative to the root folder of given SDK instance.
     struct Directories {
-        /// The subfolder for writing authorized data (when tracking consent is granted).
+        /// The path for writing authorized data (when tracking consent is granted).
         let authorized: String
-        /// The subfolder for writing unauthorized data (when tracking consent is pending).
+        /// The path for writing unauthorized data (when tracking consent is pending).
         let unauthorized: String
-        /// The list of deprecated folders from previous versions of this feature. It will be used by the SDK to perform cleanup.
+        /// The list of deprecated paths from previous versions of this feature. It is used to perform cleanup.
         let deprecated: [String]
     }
 
-    /// The list of directories for managing data for this feature.
+    /// Directories storing data for this Feature.
     let directories: Directories
 
     // MARK: - V1 interface
@@ -58,12 +58,11 @@ internal struct FeatureUploadConfiguration {
     let featureName: String
 
     /// Creates the V1's `RequetsBuilder` for uploading data in this Feature.
-    /// In V2 interface we will change it to build requests based on V2 context and batch metadata.
+    /// In V2 we will change it to build requests based on V2 context and batch metadata.
     let createRequestBuilder: (DatadogV1Context, Telemetry?) -> RequestBuilder
 
-    /// Data format for constructing payloads in V1. It is applied by the reader when reading data from batch and before passing
-    /// it to the uploader. It might not be necessary in V2 if we decide to us a factory method for producing payloads (based on
-    /// batched events and batch metadata)
+    /// Data format for constructing Feature payloads in V1. It is applied by the reader when reading data from batch and
+    /// before passing it to the uploader.
     let payloadFormat: DataFormat
 }
 

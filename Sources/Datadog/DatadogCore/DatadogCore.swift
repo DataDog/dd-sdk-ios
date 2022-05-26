@@ -34,12 +34,12 @@ internal protocol V1Feature {
 /// By complying with `DatadogCoreProtocol`, the core can
 /// provide context and writing scopes to Features for event recording.
 internal final class DatadogCore {
-    /// The root directory of this instance of`DatadogCore`.
-    /// It indicates the main location for managing Features data by this instance of the SDK.
+    /// The root location for storing Features data in this instance of the SDK.
+    /// Each Feature creates its own set of subdirectories in `rootDirectory` based on their storage configuration.
     let rootDirectory: Directory
     /// The configuration of SDK core.
     let configuration: CoreConfiguration
-    /// A set of dependencies used by SDK core for powering Features.
+    /// A set of dependencies used by SDK core to power Features.
     let dependencies: CoreDependencies
     /// Telemetry monitor, if configured.
     var telemetry: Telemetry?
@@ -51,7 +51,7 @@ internal final class DatadogCore {
     /// - Parameters:
     ///   - directory: the root directory for this instance of SDK.
     ///   - configuration: the configuration of SDK core.
-    ///   - dependencies: a set of dependencies used by SDK core for powering Features.
+    ///   - dependencies: a set of dependencies used by SDK core to power Features.
     init(
         rootDirectory: Directory,
         configuration: CoreConfiguration,
@@ -96,6 +96,12 @@ internal final class DatadogCore {
 extension DatadogCore: DatadogCoreProtocol {
     // MARK: - V1 interface
 
+    /// Creates V1 Feature using its V2 configuration.
+    ///
+    /// `DatadogCore` uses its core `configuration` to inject feature-agnostic parts of V1 setup.
+    /// Feature-specific part is provided explicitly with `featureSpecificConfiguration`.
+    ///
+    /// - Returns: an instance of V1 feature
     func create<Feature: V1Feature>(
         storageConfiguration: FeatureStorageConfiguration,
         uploadConfiguration: FeatureUploadConfiguration,

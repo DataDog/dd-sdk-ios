@@ -134,11 +134,7 @@ extension BundleType: CaseIterable {
     public static var allCases: [Self] { [.iOSApp, iOSAppExtension] }
 }
 
-extension Datadog.Configuration.DatadogEndpoint: AnyMockable, RandomMockable {
-    static func mockAny() -> Datadog.Configuration.DatadogEndpoint {
-        return .us1
-    }
-
+extension Datadog.Configuration.DatadogEndpoint: RandomMockable {
     static func mockRandom() -> Self {
         return [.us1, .us3, .eu1, .us1_fed].randomElement()!
     }
