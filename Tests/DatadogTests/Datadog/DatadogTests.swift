@@ -473,7 +473,7 @@ class DatadogTests: XCTestCase {
         let featureDirectories: [FeatureDirectories] = [
             try FeatureDirectories(sdkRootDirectory: core.rootDirectory, storageConfiguration: createV2LoggingStorageConfiguration()),
             try obtainTracingFeatureDirectories(),
-            try obtainRUMFeatureDirectories()
+            try FeatureDirectories(sdkRootDirectory: core.rootDirectory, storageConfiguration: createV2RUMStorageConfiguration())
         ]
 
         let allDirectories: [Directory] = featureDirectories.flatMap { [$0.authorized, $0.unauthorized] }

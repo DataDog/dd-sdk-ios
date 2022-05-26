@@ -6,22 +6,6 @@
 
 import Foundation
 
-/// Obtains subdirectories in `/Library/Caches` where RUM data is stored.
-internal func obtainRUMFeatureDirectories() throws -> FeatureDirectories {
-    var version = "v1"
-    let deprecated = [
-        try Directory(withSubdirectoryPath: "com.datadoghq.rum/intermediate-\(version)"),
-        try Directory(withSubdirectoryPath: "com.datadoghq.rum/\(version)")
-    ]
-
-    version = "v2"
-    return FeatureDirectories(
-        deprecated: deprecated,
-        unauthorized: try Directory(withSubdirectoryPath: "com.datadoghq.rum/intermediate-\(version)"),
-        authorized: try Directory(withSubdirectoryPath: "com.datadoghq.rum/\(version)")
-    )
-}
-
 /// Creates and owns componetns enabling RUM feature.
 /// Bundles dependencies for other RUM-related components created later at runtime  (i.e. `RUMMonitor`).
 internal final class RUMFeature: V1Feature {
