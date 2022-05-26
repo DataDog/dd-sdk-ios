@@ -14,11 +14,13 @@ class TracerTests: XCTestCase {
     override func setUp() {
         super.setUp()
         temporaryFeatureDirectories.create()
+        temporaryDirectory.create()
     }
 
     override func tearDown() {
         core.flush()
         temporaryFeatureDirectories.delete()
+        temporaryDirectory.delete()
         super.tearDown()
     }
 
@@ -616,7 +618,7 @@ class TracerTests: XCTestCase {
 
     func testSendingSpanLogs() throws {
         let logging: LoggingFeature = .mockByRecordingLogMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
@@ -661,7 +663,7 @@ class TracerTests: XCTestCase {
 
     func testSendingSpanLogsWithErrorFromArguments() throws {
         let logging: LoggingFeature = .mockByRecordingLogMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
@@ -697,7 +699,7 @@ class TracerTests: XCTestCase {
 
     func testSendingSpanLogsWithErrorFromNSError() throws {
         let logging: LoggingFeature = .mockByRecordingLogMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
@@ -739,7 +741,7 @@ class TracerTests: XCTestCase {
 
     func testSendingSpanLogsWithErrorFromSwiftError() throws {
         let logging: LoggingFeature = .mockByRecordingLogMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )

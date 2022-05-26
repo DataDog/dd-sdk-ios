@@ -19,6 +19,22 @@ internal struct FeatureDirectories {
     let authorized: Directory
 }
 
+extension FeatureDirectories {
+    /// Creates `FeatureDirectories` from V2 storage configuration.
+    /// - Parameters:
+    ///   - sdkRootDirectory: the root directory for SDK instance
+    ///   - storageConfiguration: the storage configuration of Feature
+    init(sdkRootDirectory: Directory, storageConfiguration: FeatureStorageConfiguration) throws {
+        self.init(
+            deprecated: storageConfiguration.directories.deprecated.compactMap { deprecatedPath in
+                try? sdkRootDirectory.subdirectory(path: deprecatedPath) // ignore errors - deprecated paths likely do not exist
+            },
+            unauthorized: try sdkRootDirectory.createSubdirectory(path: storageConfiguration.directories.unauthorized),
+            authorized: try sdkRootDirectory.createSubdirectory(path: storageConfiguration.directories.authorized)
+        )
+    }
+}
+
 /// Container with dependencies common to all features (Logging, Tracing and RUM).
 internal struct FeaturesCommonDependencies {
     let consentProvider: ConsentProvider

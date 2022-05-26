@@ -13,13 +13,13 @@ class LoggingFeatureTests: XCTestCase {
     override func setUp() {
         super.setUp()
         XCTAssertFalse(Datadog.isInitialized)
-        temporaryFeatureDirectories.create()
+        temporaryDirectory.create()
     }
 
     override func tearDown() {
         XCTAssertFalse(Datadog.isInitialized)
         core.flush()
-        temporaryFeatureDirectories.delete()
+        temporaryDirectory.delete()
         super.tearDown()
     }
 
@@ -42,7 +42,7 @@ class LoggingFeatureTests: XCTestCase {
 
         // Given
         let feature: LoggingFeature = .mockWith(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             configuration: .mockWith(
                 common: .mockWith(
                     clientToken: randomClientToken,
@@ -90,7 +90,7 @@ class LoggingFeatureTests: XCTestCase {
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let feature: LoggingFeature = .mockWith(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 performance: .combining(
                     storagePerformance: StoragePerformanceMock(

@@ -455,7 +455,7 @@ class DatadogTests: XCTestCase {
                 .build()
         )
 
-        let core = defaultDatadogCore
+        let core = try XCTUnwrap(defaultDatadogCore as? DatadogCore)
         let logging = core.feature(LoggingFeature.self)
         let tracing = core.feature(TracingFeature.self)
         let rum = core.feature(RUMFeature.self)
@@ -471,7 +471,7 @@ class DatadogTests: XCTestCase {
         rumWriter.queue.sync {}
 
         let featureDirectories: [FeatureDirectories] = [
-            try obtainLoggingFeatureDirectories(),
+            try FeatureDirectories(sdkRootDirectory: core.rootDirectory, storageConfiguration: createV2LoggingStorageConfiguration()),
             try obtainTracingFeatureDirectories(),
             try obtainRUMFeatureDirectories()
         ]

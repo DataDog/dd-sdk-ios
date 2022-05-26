@@ -20,29 +20,39 @@ extension LoggingFeature {
     /// Mocks the feature instance which performs uploads to `URLSession`.
     /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
     static func mockWith(
-        directories: FeatureDirectories,
+        directory: Directory,
         configuration: FeaturesConfiguration.Logging = .mockAny(),
         dependencies: FeaturesCommonDependencies = .mockAny(),
         telemetry: Telemetry? = nil
     ) -> LoggingFeature {
-        return LoggingFeature(
-            directories: directories,
-            configuration: configuration,
-            commonDependencies: dependencies,
-            telemetry: telemetry
+        // Because in V2 Feature Storage and Upload are created by `DatadogCore`, here we ask
+        // dummy V2 core instance to initialize the Feature. It is hacky, yet minimal way of
+        // providing V1 stack for partial V2 architecture in tests.
+        let v2Core = DatadogCore(
+            rootDirectory: directory,
+            configuration: configuration.common,
+            dependencies: dependencies
         )
+        v2Core.telemetry = telemetry
+
+        let feature: LoggingFeature = try! v2Core.create(
+            storageConfiguration: createV2LoggingStorageConfiguration(),
+            uploadConfiguration: createV2LoggingUploadConfiguration(v1Configuration: configuration),
+            featureSpecificConfiguration: configuration
+        )
+        return feature
     }
 
     /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
     /// Use `LogFeature.waitAndReturnLogMatchers()` to inspect and assert recorded `Logs`.
     static func mockByRecordingLogMatchers(
-        directories: FeatureDirectories,
+        directory: Directory,
         configuration: FeaturesConfiguration.Logging = .mockAny(),
         dependencies: FeaturesCommonDependencies = .mockAny()
     ) -> LoggingFeature {
         // Get the full feature mock:
         let fullFeature: LoggingFeature = .mockWith(
-            directories: directories,
+            directory: directory,
             configuration: configuration,
             dependencies: dependencies.replacing(
                 dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`

@@ -101,23 +101,23 @@ extension DatadogCore: DatadogCoreProtocol {
         uploadConfiguration: FeatureUploadConfiguration,
         featureSpecificConfiguration: Feature.Configuration
     ) throws -> Feature {
-        let directories = FeatureDirectories(
-            deprecated: storageConfiguration.directories.deprecated.compactMap { deprecatedPath in
-                try? rootDirectory.subdirectory(path: deprecatedPath) // ignore errors - deprecated paths likely do not exist
-            },
-            unauthorized: try rootDirectory.createSubdirectory(path: storageConfiguration.directories.unauthorized),
-            authorized: try rootDirectory.createSubdirectory(path: storageConfiguration.directories.authorized)
+        let v1Directories = try FeatureDirectories(
+            sdkRootDirectory: rootDirectory,
+            storageConfiguration: storageConfiguration
         )
 
         let storage = FeatureStorage(
             featureName: storageConfiguration.featureName,
             dataFormat: uploadConfiguration.payloadFormat,
-            directories: directories,
+            directories: v1Directories,
             commonDependencies: dependencies,
             telemetry: telemetry
         )
 
-        let v1Context = DatadogV1Context(configuration: configuration, dependencies: dependencies)
+        let v1Context = DatadogV1Context(
+            configuration: configuration,
+            dependencies: dependencies
+        )
 
         let upload = FeatureUpload(
             featureName: uploadConfiguration.featureName,

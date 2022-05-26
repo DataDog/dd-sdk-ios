@@ -13,12 +13,12 @@ class LoggerTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        temporaryFeatureDirectories.create()
+        temporaryDirectory.create()
     }
 
     override func tearDown() {
         core.flush()
-        temporaryFeatureDirectories.delete()
+        temporaryDirectory.delete()
         super.tearDown()
     }
 
@@ -26,7 +26,7 @@ class LoggerTests: XCTestCase {
 
     func testSendingLogWithDefaultLogger() throws {
         let feature: LoggingFeature = .mockByRecordingLogMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             configuration: .mockWith(
                 common: .mockWith(
                     applicationVersion: "1.0.0",
@@ -64,7 +64,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testSendingLogWithCustomizedLogger() throws {
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
+        let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         defer { feature.deinitialize() }
         core.register(feature: feature)
 
@@ -97,7 +97,7 @@ class LoggerTests: XCTestCase {
 
     func testSendingLogsWithDifferentDates() throws {
         let feature: LoggingFeature = .mockByRecordingLogMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC(), advancingBySeconds: 1)
             )
@@ -117,7 +117,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testSendingLogsWithDifferentLevels() throws {
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
+        let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         defer { feature.deinitialize() }
         core.register(feature: feature)
 
@@ -141,7 +141,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Logging an error
 
     func testLoggingError() throws {
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
+        let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         defer { feature.deinitialize() }
         core.register(feature: feature)
 
@@ -180,7 +180,7 @@ class LoggerTests: XCTestCase {
         defer { temporaryDirectory.delete() }
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 userInfoProvider: core.dependencies.userInfoProvider
             )
@@ -234,7 +234,7 @@ class LoggerTests: XCTestCase {
     func testSendingCarrierInfoWhenEnteringAndLeavingCellularServiceRange() throws {
         let carrierInfoProvider = CarrierInfoProviderMock(carrierInfo: nil)
         let feature: LoggingFeature = .mockByRecordingLogMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 carrierInfoProvider: carrierInfoProvider
             )
@@ -276,7 +276,7 @@ class LoggerTests: XCTestCase {
     func testSendingNetworkConnectionInfoWhenReachabilityChanges() throws {
         let networkConnectionInfoProvider = NetworkConnectionInfoProviderMock.mockAny()
         let feature: LoggingFeature = .mockByRecordingLogMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 networkConnectionInfoProvider: networkConnectionInfoProvider
             )
@@ -335,7 +335,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending attributes
 
     func testSendingLoggerAttributesOfDifferentEncodableValues() throws {
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
+        let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         defer { feature.deinitialize() }
         core.register(feature: feature)
 
@@ -400,7 +400,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testSendingMessageAttributes() throws {
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
+        let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         defer { feature.deinitialize() }
         core.register(feature: feature)
 
@@ -431,7 +431,7 @@ class LoggerTests: XCTestCase {
 
     func testSendingTags() throws {
         let feature: LoggingFeature = .mockByRecordingLogMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             configuration: .mockWith(common: .mockWith(environment: "tests"))
         )
         defer { feature.deinitialize() }
@@ -471,7 +471,7 @@ class LoggerTests: XCTestCase {
     func testGivenBadBatteryConditions_itDoesNotTryToSendLogs() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let feature: LoggingFeature = .mockWith(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 mobileDevice: .mockWith(
                     currentBatteryStatus: { () -> MobileDevice.BatteryStatus in
@@ -492,7 +492,7 @@ class LoggerTests: XCTestCase {
     func testGivenNoNetworkConnection_itDoesNotTryToSendLogs() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let feature: LoggingFeature = .mockWith(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
                     networkConnectionInfo: .mockWith(reachability: .no)
@@ -512,7 +512,7 @@ class LoggerTests: XCTestCase {
 
     func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingLog_itContainsCurrentRUMContext() throws {
         let logging: LoggingFeature = .mockByRecordingLogMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             configuration: .mockWith(common: .mockWith(environment: "tests"))
         )
         core.register(feature: logging)
@@ -552,7 +552,7 @@ class LoggerTests: XCTestCase {
 
     func testGivenBundlingWithRUMEnabledButRUMMonitorNotRegistered_whenSendingLog_itPrintsWarning() throws {
         let logging: LoggingFeature = .mockByRecordingLogMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             configuration: .mockWith(common: .mockWith(environment: "tests"))
         )
         core.register(feature: logging)
@@ -588,6 +588,9 @@ class LoggerTests: XCTestCase {
     }
 
     func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorForCurrentView() throws {
+        temporaryFeatureDirectories.create()
+        defer { temporaryFeatureDirectories.delete() }
+
         let logging: LoggingFeature = .mockNoOp()
         core.register(feature: logging)
 
@@ -632,7 +635,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Integration With Active Span
 
     func testGivenBundlingWithTraceEnabledAndTracerRegistered_whenSendingLog_itContainsActiveSpanAttributes() throws {
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
+        let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         let tracing: TracingFeature = .mockNoOp()
         core.register(feature: logging)
         core.register(feature: tracing)
@@ -663,7 +666,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testGivenBundlingWithTraceEnabledButTracerNotRegistered_whenSendingLog_itPrintsWarning() throws {
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(directories: temporaryFeatureDirectories)
+        let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         let tracing: TracingFeature = .mockNoOp()
         core.register(feature: feature)
         core.register(feature: tracing)
@@ -702,7 +705,7 @@ class LoggerTests: XCTestCase {
 
         // When
         let feature: LoggingFeature = .mockByRecordingLogMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(using: deviceTime),
                 dateCorrector: DateCorrectorMock(correctionOffset: serverTimeDifference)
@@ -728,7 +731,7 @@ class LoggerTests: XCTestCase {
 
         // Given
         let feature: LoggingFeature = .mockByRecordingLogMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(consentProvider: consentProvider)
         )
         defer { feature.deinitialize() }
