@@ -13,21 +13,19 @@ class DDTracerTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        temporaryFeatureDirectories.create()
         temporaryDirectory.create()
         defaultDatadogCore = core
     }
 
     override func tearDown() {
         core.flush()
-        temporaryFeatureDirectories.delete()
         temporaryDirectory.delete()
         defaultDatadogCore = NOOPDatadogCore()
         super.tearDown()
     }
 
     func testSendingCustomizedSpans() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         core.register(feature: feature)
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration()).dd!
@@ -127,7 +125,7 @@ class DDTracerTests: XCTestCase {
         )
 
         let tracing: TracingFeature = .mockByRecordingSpanMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
             )
@@ -160,7 +158,7 @@ class DDTracerTests: XCTestCase {
         )
 
         let tracing: TracingFeature = .mockByRecordingSpanMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
             )
@@ -196,7 +194,7 @@ class DDTracerTests: XCTestCase {
         )
 
         let tracing: TracingFeature = .mockByRecordingSpanMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
             )
@@ -280,7 +278,7 @@ class DDTracerTests: XCTestCase {
     // MARK: - Usage errors
 
     func testsWhenTagsDictionaryContainsInvalidKeys_thenThosesTagsAreDropped() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         core.register(feature: feature)
 
         // Given

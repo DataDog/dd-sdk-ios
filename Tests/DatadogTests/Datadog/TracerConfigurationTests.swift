@@ -15,10 +15,10 @@ class TracerConfigurationTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        temporaryFeatureDirectories.create()
+        temporaryDirectory.create()
 
         let feature: TracingFeature = .mockByRecordingSpanMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             configuration: .mockWith(
                 common: .mockWith(
                     applicationVersion: "1.2.3",
@@ -37,7 +37,7 @@ class TracerConfigurationTests: XCTestCase {
 
     override func tearDown() {
         core.flush()
-        temporaryFeatureDirectories.delete()
+        temporaryDirectory.delete()
         super.tearDown()
     }
 

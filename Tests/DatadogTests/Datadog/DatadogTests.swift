@@ -454,7 +454,7 @@ class DatadogTests: XCTestCase {
 
         let featureDirectories: [FeatureDirectories] = [
             try FeatureDirectories(sdkRootDirectory: core.rootDirectory, storageConfiguration: createV2LoggingStorageConfiguration()),
-            try obtainTracingFeatureDirectories(),
+            try FeatureDirectories(sdkRootDirectory: core.rootDirectory, storageConfiguration: createV2TracingStorageConfiguration()),
             try FeatureDirectories(sdkRootDirectory: core.rootDirectory, storageConfiguration: createV2RUMStorageConfiguration())
         ]
 

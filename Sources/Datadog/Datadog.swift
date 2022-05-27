@@ -270,13 +270,11 @@ public class Datadog {
         }
 
         if let tracingConfiguration = configuration.tracing {
-            tracing = TracingFeature(
-                directories: try obtainTracingFeatureDirectories(),
-                configuration: tracingConfiguration,
-                commonDependencies: commonDependencies,
-                telemetry: telemetry
+            tracing = try core.create(
+                storageConfiguration: createV2TracingStorageConfiguration(),
+                uploadConfiguration: createV2TracingUploadConfiguration(v1Configuration: tracingConfiguration),
+                featureSpecificConfiguration: tracingConfiguration
             )
-
             core.register(feature: tracing)
         }
 
