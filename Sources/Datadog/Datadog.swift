@@ -275,7 +275,6 @@ public class Datadog {
                 configuration: tracingConfiguration,
                 commonDependencies: commonDependencies,
                 loggingFeatureAdapter: logging.map { LoggingForTracingAdapter(loggingFeature: $0) },
-                tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
                 telemetry: telemetry
             )
 

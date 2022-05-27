@@ -15,7 +15,6 @@ extension TracingFeature {
             configuration: .mockAny(),
             commonDependencies: .mockAny(),
             loggingFeatureAdapter: nil,
-            tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
             telemetry: nil
         )
     }
@@ -27,7 +26,6 @@ extension TracingFeature {
         configuration: FeaturesConfiguration.Tracing = .mockAny(),
         dependencies: FeaturesCommonDependencies = .mockAny(),
         loggingFeature: LoggingFeature? = nil,
-        tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
         telemetry: Telemetry? = nil
     ) -> TracingFeature {
         return TracingFeature(
@@ -35,7 +33,6 @@ extension TracingFeature {
             configuration: configuration,
             commonDependencies: dependencies,
             loggingFeatureAdapter: loggingFeature.map { LoggingForTracingAdapter(loggingFeature: $0) },
-            tracingUUIDGenerator: tracingUUIDGenerator,
             telemetry: telemetry
         )
     }
@@ -47,7 +44,6 @@ extension TracingFeature {
         configuration: FeaturesConfiguration.Tracing = .mockAny(),
         dependencies: FeaturesCommonDependencies = .mockAny(),
         loggingFeature: LoggingFeature? = nil,
-        tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
         telemetry: Telemetry? = nil
     ) -> TracingFeature {
         // Get the full feature mock:
@@ -57,8 +53,7 @@ extension TracingFeature {
             dependencies: dependencies.replacing(
                 dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
             ),
-            loggingFeature: loggingFeature,
-            tracingUUIDGenerator: tracingUUIDGenerator
+            loggingFeature: loggingFeature
         )
         let uploadWorker = DataUploadWorkerMock()
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
@@ -72,7 +67,6 @@ extension TracingFeature {
             configuration: configuration,
             commonDependencies: dependencies,
             loggingFeatureAdapter: fullFeature.loggingFeatureAdapter,
-            tracingUUIDGenerator: fullFeature.tracingUUIDGenerator,
             telemetry: telemetry
         )
     }

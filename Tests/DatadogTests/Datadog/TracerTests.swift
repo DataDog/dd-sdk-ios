@@ -37,12 +37,12 @@ class TracerTests: XCTestCase {
                     environment: "custom",
                     source: "abc",
                     sdkVersion: "1.2.3"
-                )
+                ),
+                uuidGenerator: RelativeTracingUUIDGenerator(startingFrom: 1)
             ),
             dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
-            ),
-            tracingUUIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1)
+            )
         )
         core.register(feature: feature)
 

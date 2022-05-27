@@ -108,7 +108,6 @@ internal final class TracingFeature {
         configuration: FeaturesConfiguration.Tracing,
         commonDependencies: FeaturesCommonDependencies,
         loggingFeatureAdapter: LoggingForTracingAdapter?,
-        tracingUUIDGenerator: TracingUUIDGenerator,
         telemetry: Telemetry?
     ) {
         let storage = TracingFeature.createStorage(
@@ -128,7 +127,6 @@ internal final class TracingFeature {
             configuration: configuration,
             commonDependencies: commonDependencies,
             loggingFeatureAdapter: loggingFeatureAdapter,
-            tracingUUIDGenerator: tracingUUIDGenerator,
             telemetry: telemetry
         )
     }
@@ -139,7 +137,6 @@ internal final class TracingFeature {
         configuration: FeaturesConfiguration.Tracing,
         commonDependencies: FeaturesCommonDependencies,
         loggingFeatureAdapter: LoggingForTracingAdapter?,
-        tracingUUIDGenerator: TracingUUIDGenerator,
         telemetry: Telemetry?
     ) {
         // Configuration
@@ -151,7 +148,7 @@ internal final class TracingFeature {
         // Bundle dependencies
         self.dateProvider = commonDependencies.dateProvider
         self.dateCorrector = commonDependencies.dateCorrector
-        self.tracingUUIDGenerator = tracingUUIDGenerator
+        self.tracingUUIDGenerator = configuration.uuidGenerator
         self.userInfoProvider = commonDependencies.userInfoProvider
         self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider
         self.carrierInfoProvider = commonDependencies.carrierInfoProvider
