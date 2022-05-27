@@ -19,10 +19,12 @@ class TracingStorageBenchmarkTests: XCTestCase {
         try super.setUpWithError()
         self.directory = try Directory(withSubdirectoryPath: "tracing-benchmark")
 
-        let storage = TracingFeature.createStorage(
-            directories: FeatureDirectories(
+        let storage = FeatureStorage(
+            featureName: "tracing",
+            dataFormat: DataFormat(prefix: "", suffix: "", separator: "\n"),
+            directories: .init(
                 deprecated: [],
-                unauthorized: obtainUniqueTemporaryDirectory(),
+                unauthorized: directory,
                 authorized: directory
             ),
             commonDependencies: .mockAny(),
