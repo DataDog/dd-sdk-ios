@@ -34,10 +34,6 @@ internal final class RUMFeature: V1Feature {
 
     // MARK: - Components
 
-    static let featureName = "rum"
-    /// NOTE: any change to data format requires updating the directory url to be unique
-    static let dataFormat = DataFormat(prefix: "", suffix: "", separator: "\n")
-
     /// RUM files storage.
     let storage: FeatureStorage
     /// RUM upload worker.
