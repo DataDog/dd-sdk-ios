@@ -359,7 +359,7 @@ public class Logger {
             return self
         }
 
-        /// set the minim log level reported to Datadog servers.
+        /// Set the minim log level reported to Datadog servers.
         /// Any log with a level equal or above to the threshold will be sent
         /// - Parameter datadogReportingThreshold: `LogLevel.debug` by default
         public func set(datadogReportingThreshold: LogLevel) -> Builder {
@@ -446,10 +446,12 @@ public class Logger {
             case (true, let format?):
                 let logOutput = CombinedLogOutput(
                     combine: [
-                        LogFileOutput(
-                            fileWriter: loggingFeature.storage.writer,
-                            rumErrorsIntegration: LoggingWithRUMErrorsIntegration(),
-                            reportingThreshold: self.datadogReportingThreshold
+                        ConditionalLogOutput(
+                            conditionedOutput: LogFileOutput(
+                                fileWriter: loggingFeature.storage.writer,
+                                rumErrorsIntegration: LoggingWithRUMErrorsIntegration()
+                            ),
+                            condition: reportLogsAbove(threshold: datadogReportingThreshold)
                         ),
                         LogConsoleOutput(
                             format: format,
@@ -459,10 +461,12 @@ public class Logger {
                 )
                 return (logBuilder, logOutput)
             case (true, nil):
-                let logOutput = LogFileOutput(
-                    fileWriter: loggingFeature.storage.writer,
-                    rumErrorsIntegration: LoggingWithRUMErrorsIntegration(),
-                    reportingThreshold: self.datadogReportingThreshold
+                let logOutput = ConditionalLogOutput(
+                    conditionedOutput: LogFileOutput(
+                        fileWriter: loggingFeature.storage.writer,
+                        rumErrorsIntegration: LoggingWithRUMErrorsIntegration()
+                    ),
+                    condition: reportLogsAbove(threshold: datadogReportingThreshold)
                 )
                 return (logBuilder, logOutput)
             case (false, let format?):
@@ -479,5 +483,13 @@ public class Logger {
         private func resolveLoggerName(for loggingFeature: LoggingFeature) -> String {
             return loggerName ?? loggingFeature.configuration.common.applicationBundleIdentifier
         }
+    }
+}
+
+internal func reportLogsAbove(threshold: LogLevel?) -> (LogEvent) -> Bool {
+    return { log in
+        let logSeverity = LogLevel(from: log.status)?.rawValue ?? 0
+        let thresholdValue = threshold?.rawValue ?? .max
+        return logSeverity >= thresholdValue
     }
 }

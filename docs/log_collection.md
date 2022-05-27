@@ -247,7 +247,7 @@ let logger = Logger.builder
 ```objective-c
 DDLoggerBuilder *builder = [DDLogger builder];
 [builder sendNetworkInfo:YES];
-[builder setWithDatadogReportingThreshold:.info]
+[builder setWithDatadogReportingThreshold:.info];
 [builder printLogsToConsole:YES];
 
 DDLogger *logger = [builder build];

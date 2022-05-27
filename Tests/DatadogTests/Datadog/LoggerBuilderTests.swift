@@ -46,8 +46,13 @@ class LoggerBuilderTests: XCTestCase {
 
         let feature = LoggingFeature.instance!
         XCTAssertTrue(
-            logger.logOutput is LogFileOutput,
-            "When Logging feature is enabled the Logger should use `LogFileOutput`."
+            logger.logOutput is ConditionalLogOutput,
+            "When Logging feature is enabled the Logger should use `ConditionalLogOutput`."
+        )
+        let conditionedOutput = (logger.logOutput as! ConditionalLogOutput).conditionedOutput
+        XCTAssertTrue(
+            conditionedOutput is LogFileOutput,
+            "When Logging feature is enabled the Logger should use `ConditionalLogOutput` with a `LogFileOutput`."
         )
         let logBuilder = try XCTUnwrap(
             logger.logBuilder,
@@ -105,8 +110,13 @@ class LoggerBuilderTests: XCTestCase {
 
         let feature = LoggingFeature.instance!
         XCTAssertTrue(
-            logger.logOutput is LogFileOutput,
-            "When Logging feature is enabled the Logger should use `LogFileOutput`."
+            logger.logOutput is ConditionalLogOutput,
+            "When Logging feature is enabled the Logger should use `ConditionalLogOutput`."
+        )
+        let conditionedOutput = (logger.logOutput as! ConditionalLogOutput).conditionedOutput
+        XCTAssertTrue(
+            conditionedOutput is LogFileOutput,
+            "When Logging feature is enabled the Logger should use `ConditionalLogOutput` with a `LogFileOutput`."
         )
         let logBuilder = try XCTUnwrap(
             logger.logBuilder,
@@ -127,11 +137,13 @@ class LoggerBuilderTests: XCTestCase {
 
         logger = Logger.builder.build()
         XCTAssertNotNil(logger.logBuilder)
-        XCTAssertTrue(logger.logOutput is LogFileOutput)
+        XCTAssertTrue(logger.logOutput is ConditionalLogOutput)
+        XCTAssertTrue((logger.logOutput as! ConditionalLogOutput).conditionedOutput is LogFileOutput)
 
         logger = Logger.builder.sendLogsToDatadog(true).build()
         XCTAssertNotNil(logger.logBuilder)
-        XCTAssertTrue(logger.logOutput is LogFileOutput)
+        XCTAssertTrue(logger.logOutput is ConditionalLogOutput)
+        XCTAssertTrue((logger.logOutput as! ConditionalLogOutput).conditionedOutput is LogFileOutput)
 
         logger = Logger.builder.sendLogsToDatadog(false).build()
         XCTAssertNil(logger.logBuilder)
@@ -141,18 +153,21 @@ class LoggerBuilderTests: XCTestCase {
         var combinedOutputs = try (logger.logOutput as? CombinedLogOutput).unwrapOrThrow().combinedOutputs
         XCTAssertNotNil(logger.logBuilder)
         XCTAssertEqual(combinedOutputs.count, 2)
-        XCTAssertTrue(combinedOutputs[0] is LogFileOutput)
+        XCTAssertTrue(combinedOutputs[0] is ConditionalLogOutput)
+        XCTAssertTrue((combinedOutputs[0] as! ConditionalLogOutput).conditionedOutput is LogFileOutput)
         XCTAssertTrue(combinedOutputs[1] is LogConsoleOutput)
 
         logger = Logger.builder.printLogsToConsole(false).build()
         XCTAssertNotNil(logger.logBuilder)
-        XCTAssertTrue(logger.logOutput is LogFileOutput)
+        XCTAssertTrue(logger.logOutput is ConditionalLogOutput)
+        XCTAssertTrue((logger.logOutput as! ConditionalLogOutput).conditionedOutput is LogFileOutput)
 
         logger = Logger.builder.sendLogsToDatadog(true).printLogsToConsole(true).build()
         combinedOutputs = try (logger.logOutput as? CombinedLogOutput).unwrapOrThrow().combinedOutputs
         XCTAssertNotNil(logger.logBuilder)
         XCTAssertEqual(combinedOutputs.count, 2)
-        XCTAssertTrue(combinedOutputs[0] is LogFileOutput)
+        XCTAssertTrue(combinedOutputs[0] is ConditionalLogOutput)
+        XCTAssertTrue((combinedOutputs[0] as! ConditionalLogOutput).conditionedOutput is LogFileOutput)
         XCTAssertTrue(combinedOutputs[1] is LogConsoleOutput)
 
         logger = Logger.builder.sendLogsToDatadog(false).printLogsToConsole(true).build()
@@ -161,7 +176,8 @@ class LoggerBuilderTests: XCTestCase {
 
         logger = Logger.builder.sendLogsToDatadog(true).printLogsToConsole(false).build()
         XCTAssertNotNil(logger.logBuilder)
-        XCTAssertTrue(logger.logOutput is LogFileOutput)
+        XCTAssertTrue(logger.logOutput is ConditionalLogOutput)
+        XCTAssertTrue((logger.logOutput as! ConditionalLogOutput).conditionedOutput is LogFileOutput)
 
         logger = Logger.builder.sendLogsToDatadog(false).printLogsToConsole(false).build()
         XCTAssertNil(logger.logBuilder)

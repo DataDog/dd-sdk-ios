@@ -11,15 +11,8 @@ internal struct LogFileOutput: LogOutput {
     let fileWriter: Writer
     /// Integration with RUM Errors.
     let rumErrorsIntegration: LoggingWithRUMErrorsIntegration?
-    // Minimum Log Level which can be sent
-    let reportingThreshold: LogLevel
 
     func write(log: LogEvent) {
-        let logLevel: Int = LogLevel(from: log.status)?.rawValue ?? 0
-        if logLevel < reportingThreshold.rawValue {
-            return
-        }
-
         fileWriter.write(value: log)
 
         if log.status == .error || log.status == .critical {

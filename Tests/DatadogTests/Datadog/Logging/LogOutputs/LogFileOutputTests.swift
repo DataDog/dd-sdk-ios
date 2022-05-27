@@ -32,8 +32,7 @@ class LogFileOutputTests: XCTestCase {
                     dateProvider: fileCreationDateProvider
                 )
             ),
-            rumErrorsIntegration: nil,
-            reportingThreshold: .debug
+            rumErrorsIntegration: nil
         )
 
         let log1: LogEvent = .mockWith(status: .info, message: "log message 1")
@@ -65,20 +64,22 @@ class LogFileOutputTests: XCTestCase {
         var failedCombos: [String] = []
         for (thresholdLevel, logStatuses) in discardedCombos {
             for (logStatus) in logStatuses {
-                let output = LogFileOutput(
-                    fileWriter: FileWriter(
-                        dataFormat: LoggingFeature.dataFormat,
-                        orchestrator: FilesOrchestrator(
-                            directory: temporaryDirectory,
-                            performance: PerformancePreset.combining(
-                                storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
-                                uploadPerformance: .noOp
-                            ),
-                            dateProvider: fileCreationDateProvider
-                        )
+                let output = ConditionalLogOutput(
+                    conditionedOutput: LogFileOutput(
+                        fileWriter: FileWriter(
+                            dataFormat: LoggingFeature.dataFormat,
+                            orchestrator: FilesOrchestrator(
+                                directory: temporaryDirectory,
+                                performance: PerformancePreset.combining(
+                                    storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
+                                    uploadPerformance: .noOp
+                                ),
+                                dateProvider: fileCreationDateProvider
+                            )
+                        ),
+                        rumErrorsIntegration: nil
                     ),
-                    rumErrorsIntegration: nil,
-                    reportingThreshold: thresholdLevel
+                    condition: reportLogsAbove(threshold: thresholdLevel)
                 )
 
                 let log: LogEvent = .mockWith(status: logStatus, message: "Lorem ipsum dolor sit amet…")
