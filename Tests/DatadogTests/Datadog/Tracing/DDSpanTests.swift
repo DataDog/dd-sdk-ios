@@ -12,7 +12,7 @@ class DDSpanTests: XCTestCase {
     private let logOutput = LogOutputMock()
     private lazy var mockTracer: Tracer = .mockWith(
         spanOutput: spanOutput,
-        logOutput: .init(logBuilder: .mockAny(), loggingOutput: logOutput)
+        loggingIntegration: .init(logBuilder: .mockAny(), loggingOutput: logOutput)
     )
 
     // MARK: - Sending SpanEvent
@@ -167,7 +167,10 @@ class DDSpanTests: XCTestCase {
         let output = LogOutputMock()
         userLogger = .mockWith(logOutput: output)
 
-        let span: DDSpan = .mockWith(operationName: "the span")
+        let span: DDSpan = .mockWith(
+            tracer: .mockWith(loggingIntegration: .init(logBuilder: .mockAny(), loggingOutput: LogOutputMock())),
+            operationName: "the span"
+        )
         span.finish()
 
         let fixtures: [(() -> Void, String)] = [

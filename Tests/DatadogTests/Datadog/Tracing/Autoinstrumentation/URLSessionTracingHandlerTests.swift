@@ -23,7 +23,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
     override func setUp() {
         Global.sharedTracer = Tracer.mockWith(
             spanOutput: spanOutput,
-            logOutput: .init(
+            loggingIntegration: .init(
                 logBuilder: .mockAny(),
                 loggingOutput: logOutput
             )
@@ -152,11 +152,11 @@ class URLSessionTracingHandlerTests: XCTestCase {
         XCTAssertEqual(log.status, .error)
         XCTAssertEqual(log.message, "network error")
         XCTAssertEqual(
-            log.attributes.internalAttributes?[LoggingForTracingAdapter.TracingAttributes.traceID] as? String,
+            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.traceID] as? String,
             "\(span.traceID.rawValue)"
         )
         XCTAssertEqual(
-            log.attributes.internalAttributes?[LoggingForTracingAdapter.TracingAttributes.spanID] as? String,
+            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.spanID] as? String,
             "\(span.spanID.rawValue)"
         )
         XCTAssertEqual(log.error?.kind, "domain - 123")
@@ -215,11 +215,11 @@ class URLSessionTracingHandlerTests: XCTestCase {
         XCTAssertEqual(log.status, .error)
         XCTAssertEqual(log.message, "404 not found")
         XCTAssertEqual(
-            log.attributes.internalAttributes?[LoggingForTracingAdapter.TracingAttributes.traceID] as? String,
+            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.traceID] as? String,
             "\(span.traceID.rawValue)"
         )
         XCTAssertEqual(
-            log.attributes.internalAttributes?[LoggingForTracingAdapter.TracingAttributes.spanID] as? String,
+            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.spanID] as? String,
             "\(span.spanID.rawValue)"
         )
         XCTAssertEqual(log.error?.kind, "HTTPURLResponse - 404")

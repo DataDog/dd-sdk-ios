@@ -29,12 +29,6 @@ internal final class TracingFeature {
 
     let configuration: FeaturesConfiguration.Tracing
 
-    // MARK: - Integration With Other Features
-
-    /// Integration with Logging feature, which enables the `span.log()` functionality.
-    /// Equals `nil` if Logging feature is disabled.
-    let loggingFeatureAdapter: LoggingForTracingAdapter?
-
     // MARK: - Dependencies
 
     let dateProvider: DateProvider
@@ -107,7 +101,6 @@ internal final class TracingFeature {
         directories: FeatureDirectories,
         configuration: FeaturesConfiguration.Tracing,
         commonDependencies: FeaturesCommonDependencies,
-        loggingFeatureAdapter: LoggingForTracingAdapter?,
         telemetry: Telemetry?
     ) {
         let storage = TracingFeature.createStorage(
@@ -126,7 +119,6 @@ internal final class TracingFeature {
             upload: upload,
             configuration: configuration,
             commonDependencies: commonDependencies,
-            loggingFeatureAdapter: loggingFeatureAdapter,
             telemetry: telemetry
         )
     }
@@ -136,14 +128,10 @@ internal final class TracingFeature {
         upload: FeatureUpload,
         configuration: FeaturesConfiguration.Tracing,
         commonDependencies: FeaturesCommonDependencies,
-        loggingFeatureAdapter: LoggingForTracingAdapter?,
         telemetry: Telemetry?
     ) {
         // Configuration
         self.configuration = configuration
-
-        // Integration with other features
-        self.loggingFeatureAdapter = loggingFeatureAdapter
 
         // Bundle dependencies
         self.dateProvider = commonDependencies.dateProvider

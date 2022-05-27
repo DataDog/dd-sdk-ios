@@ -274,7 +274,6 @@ public class Datadog {
                 directories: try obtainTracingFeatureDirectories(),
                 configuration: tracingConfiguration,
                 commonDependencies: commonDependencies,
-                loggingFeatureAdapter: logging.map { LoggingForTracingAdapter(loggingFeature: $0) },
                 telemetry: telemetry
             )
 

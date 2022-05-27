@@ -130,8 +130,7 @@ class DDTracerTests: XCTestCase {
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
-            ),
-            loggingFeature: logging
+            )
         )
 
         core.register(feature: logging)
@@ -164,8 +163,7 @@ class DDTracerTests: XCTestCase {
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
-            ),
-            loggingFeature: logging
+            )
         )
 
         core.register(feature: logging)
@@ -201,8 +199,7 @@ class DDTracerTests: XCTestCase {
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
-            ),
-            loggingFeature: logging
+            )
         )
 
         core.register(feature: logging)

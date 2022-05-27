@@ -13,8 +13,8 @@ internal struct LogEventSanitizer {
         /// If any of those is used by the user, the attribute will be ignored.
         static let reservedAttributeNames: Set<String> = [
             "host", "message", "status", "service", "source", "ddtags",
-            LoggingForTracingAdapter.TracingAttributes.traceID,
-            LoggingForTracingAdapter.TracingAttributes.spanID,
+            TracingWithLoggingIntegration.TracingAttributes.traceID,
+            TracingWithLoggingIntegration.TracingAttributes.spanID,
             RUMContextIntegration.Attributes.applicationID,
             RUMContextIntegration.Attributes.sessionID,
             RUMContextIntegration.Attributes.viewID,

@@ -112,8 +112,8 @@ class LogSanitizerTests: XCTestCase {
             attributes: .mockWith(
                 internalAttributes: [
                     // reserved attributes:
-                    LoggingForTracingAdapter.TracingAttributes.traceID: mockValue(),
-                    LoggingForTracingAdapter.TracingAttributes.spanID: mockValue(),
+                    TracingWithLoggingIntegration.TracingAttributes.traceID: mockValue(),
+                    TracingWithLoggingIntegration.TracingAttributes.spanID: mockValue(),
 
                     // custom attribute:
                     "attribute1": mockValue(),

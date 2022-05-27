@@ -21,8 +21,8 @@ internal class DDSpan: OTSpan {
     internal let spanBuilder: SpanEventBuilder
     /// Writes the `Span` to file.
     private let spanOutput: SpanOutput
-    /// Writes span logs to output. `nil` if Logging feature is disabled.
-    private let logOutput: LoggingForTracingAdapter.AdaptedLogOutput?
+    /// Writes span logs to Logging Feature. `nil` if Logging feature is disabled.
+    private let loggingIntegration: TracingWithLoggingIntegration?
 
     /// Queue used for synchronizing mutable properties access.
     private let queue: DispatchQueue
@@ -49,7 +49,7 @@ internal class DDSpan: OTSpan {
         self.startTime = startTime
         self.spanBuilder = tracer.spanBuilder
         self.spanOutput = tracer.spanOutput
-        self.logOutput = tracer.logOutput
+        self.loggingIntegration = tracer.loggingIntegration
         self.queue = ddTracer.queue // share the queue among all spans
         self.unsafeOperationName = operationName
         self.unsafeTags = tags
@@ -161,13 +161,13 @@ internal class DDSpan: OTSpan {
     }
 
     private func sendSpanLogs(fields: [String: Encodable], date: Date) {
-        guard let logOutput = logOutput else {
+        guard let loggingIntegration = loggingIntegration else {
             queue.async {
                 userLogger.warn("The log for span \"\(self.unsafeOperationName)\" will not be send, because the Logging feature is disabled.")
             }
             return
         }
-        logOutput.writeLog(withSpanContext: ddContext, fields: fields, date: date)
+        loggingIntegration.writeLog(withSpanContext: ddContext, fields: fields, date: date)
     }
 
     // MARK: - Private

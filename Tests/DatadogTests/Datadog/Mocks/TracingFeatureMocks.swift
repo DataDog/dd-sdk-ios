@@ -14,7 +14,6 @@ extension TracingFeature {
             upload: .mockNoOp(),
             configuration: .mockAny(),
             commonDependencies: .mockAny(),
-            loggingFeatureAdapter: nil,
             telemetry: nil
         )
     }
@@ -25,14 +24,12 @@ extension TracingFeature {
         directories: FeatureDirectories,
         configuration: FeaturesConfiguration.Tracing = .mockAny(),
         dependencies: FeaturesCommonDependencies = .mockAny(),
-        loggingFeature: LoggingFeature? = nil,
         telemetry: Telemetry? = nil
     ) -> TracingFeature {
         return TracingFeature(
             directories: directories,
             configuration: configuration,
             commonDependencies: dependencies,
-            loggingFeatureAdapter: loggingFeature.map { LoggingForTracingAdapter(loggingFeature: $0) },
             telemetry: telemetry
         )
     }
@@ -43,7 +40,6 @@ extension TracingFeature {
         directories: FeatureDirectories,
         configuration: FeaturesConfiguration.Tracing = .mockAny(),
         dependencies: FeaturesCommonDependencies = .mockAny(),
-        loggingFeature: LoggingFeature? = nil,
         telemetry: Telemetry? = nil
     ) -> TracingFeature {
         // Get the full feature mock:
@@ -52,8 +48,7 @@ extension TracingFeature {
             configuration: configuration,
             dependencies: dependencies.replacing(
                 dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
-            ),
-            loggingFeature: loggingFeature
+            )
         )
         let uploadWorker = DataUploadWorkerMock()
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
@@ -66,7 +61,6 @@ extension TracingFeature {
             upload: mockedUpload,
             configuration: configuration,
             commonDependencies: dependencies,
-            loggingFeatureAdapter: fullFeature.loggingFeatureAdapter,
             telemetry: telemetry
         )
     }
@@ -277,23 +271,20 @@ extension Tracer {
     static func mockWith(
         spanBuilder: SpanEventBuilder = .mockAny(),
         spanOutput: SpanOutput = SpanOutputMock(),
-        logOutput: LoggingForTracingAdapter.AdaptedLogOutput = .init(
-            logBuilder: .mockAny(),
-            loggingOutput: LogOutputMock()
-        ),
         dateProvider: DateProvider = SystemDateProvider(),
         tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
         globalTags: [String: Encodable]? = nil,
-        rumContextIntegration: TracingWithRUMContextIntegration? = nil
+        rumContextIntegration: TracingWithRUMContextIntegration? = nil,
+        loggingIntegration: TracingWithLoggingIntegration? = nil
     ) -> Tracer {
         return Tracer(
             spanBuilder: spanBuilder,
             spanOutput: spanOutput,
-            logOutput: logOutput,
             dateProvider: dateProvider,
             tracingUUIDGenerator: tracingUUIDGenerator,
             globalTags: globalTags,
-            rumContextIntegration: rumContextIntegration
+            rumContextIntegration: rumContextIntegration,
+            loggingIntegration: loggingIntegration
         )
     }
 }

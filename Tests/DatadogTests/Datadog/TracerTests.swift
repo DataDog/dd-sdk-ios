@@ -630,8 +630,7 @@ class TracerTests: XCTestCase {
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
-            ),
-            loggingFeature: logging
+            )
         )
         core.register(feature: tracing)
 
@@ -674,8 +673,7 @@ class TracerTests: XCTestCase {
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
-            ),
-            loggingFeature: logging
+            )
         )
         core.register(feature: tracing)
 
@@ -710,8 +708,7 @@ class TracerTests: XCTestCase {
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
-            ),
-            loggingFeature: logging
+            )
         )
         core.register(feature: tracing)
 
@@ -752,8 +749,7 @@ class TracerTests: XCTestCase {
             directories: temporaryFeatureDirectories,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
-            ),
-            loggingFeature: logging
+            )
         )
         core.register(feature: tracing)
 
