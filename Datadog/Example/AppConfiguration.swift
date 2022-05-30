@@ -40,6 +40,7 @@ struct ExampleAppConfiguration: AppConfiguration {
             .set(serviceName: serviceName)
             .set(batchSize: .small)
             .set(uploadFrequency: .frequent)
+            .set(sampleTelemetry: 100)
 
         if let customLogsURL = Environment.readCustomLogsURL() {
             _ = configuration.set(customLogsEndpoint: customLogsURL)
@@ -111,6 +112,7 @@ struct UITestsAppConfiguration: AppConfiguration {
             .set(serviceName: "ui-tests-service-name")
             .set(batchSize: .small)
             .set(uploadFrequency: .frequent)
+            .set(tracingSamplingRate: 100)
 
         let serverMockConfiguration = Environment.serverMockConfiguration()
 

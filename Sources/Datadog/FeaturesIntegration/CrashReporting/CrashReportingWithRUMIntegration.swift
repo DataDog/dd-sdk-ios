@@ -253,7 +253,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 id: lastRUMView.session.id,
                 type: lastRUMView.ciTest != nil ? .ciTest : .user
             ),
-            source: .ios,
+            source: lastRUMView.source?.toErrorEventSource ?? .ios,
             synthetics: nil,
             usr: lastRUMView.usr,
             version: lastRUMView.version,
@@ -286,7 +286,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds - 1, // -1ms to put the crash after view in RUM session
             service: original.service,
             session: original.session,
-            source: .ios,
+            source: original.source ?? .ios,
             synthetics: nil,
             usr: original.usr,
             version: original.version,
@@ -359,7 +359,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 id: sessionUUID.toRUMDataFormat,
                 type: CITestIntegration.active != nil ? .ciTest : .user
             ),
-            source: .ios,
+            source: RUMViewEvent.Source(rawValue: rumConfiguration.common.source) ?? .ios,
             synthetics: nil,
             usr: crashContext.lastUserInfo.flatMap { RUMUser(userInfo: $0) },
             version: rumConfiguration.common.applicationVersion,

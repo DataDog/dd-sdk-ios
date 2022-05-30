@@ -111,15 +111,19 @@ extension RUMTelemetry {
         core: DatadogCoreProtocol,
         sdkVersion: String = .mockAny(),
         applicationID: String = .mockAny(),
+        source: String = .mockAnySource(),
         dateProvider: DateProvider = SystemDateProvider(),
-        dateCorrector: DateCorrectorType = DateCorrectorMock()
+        dateCorrector: DateCorrectorType = DateCorrectorMock(),
+        sampler: Sampler = .init(samplingRate: 100)
     ) -> Self {
         .init(
             in: core,
             sdkVersion: sdkVersion,
             applicationID: applicationID,
+            source: source,
             dateProvider: dateProvider,
-            dateCorrector: dateCorrector
+            dateCorrector: dateCorrector,
+            sampler: sampler
         )
     }
 }
@@ -368,7 +372,6 @@ extension RUMStartResourceCommand: AnyMockable, RandomMockable {
             url: url,
             httpMethod: httpMethod,
             kind: kind,
-            isFirstPartyRequest: isFirstPartyRequest,
             spanContext: spanContext
         )
     }
@@ -645,7 +648,7 @@ internal struct NoOpRUMViewUpdatesThrottler: RUMViewUpdatesThrottlerType {
     }
 }
 
-func mockNoOpSessionListerner() -> RUMSessionListener {
+func mockNoOpSessionListener() -> RUMSessionListener {
     return { _, _ in }
 }
 
@@ -669,6 +672,8 @@ extension RUMScopeDependencies {
         serviceName: String = .mockAny(),
         applicationVersion: String = .mockAny(),
         sdkVersion: String = .mockAny(),
+        source: String = "ios",
+        firstPartyURLsFilter: FirstPartyURLsFilter = FirstPartyURLsFilter(hosts: []),
         eventBuilder: RUMEventBuilder = RUMEventBuilder(eventsMapper: .mockNoOp()),
         eventOutput: RUMEventOutput = RUMEventOutputMock(),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
@@ -676,7 +681,7 @@ extension RUMScopeDependencies {
         crashContextIntegration: RUMWithCrashContextIntegration? = nil,
         ciTest: RUMCITest? = nil,
         viewUpdatesThrottlerFactory: @escaping () -> RUMViewUpdatesThrottlerType = { NoOpRUMViewUpdatesThrottler() },
-        onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListerner()
+        onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             rumApplicationID: rumApplicationID,
@@ -690,6 +695,8 @@ extension RUMScopeDependencies {
             serviceName: serviceName,
             applicationVersion: applicationVersion,
             sdkVersion: sdkVersion,
+            source: source,
+            firstPartyURLsFilter: firstPartyURLsFilter,
             eventBuilder: eventBuilder,
             eventOutput: eventOutput,
             rumUUIDGenerator: rumUUIDGenerator,
@@ -717,6 +724,8 @@ extension RUMScopeDependencies {
         serviceName: String? = nil,
         applicationVersion: String? = nil,
         sdkVersion: String? = nil,
+        source: String? = nil,
+        firstPartyUrls: Set<String>? = nil,
         eventBuilder: RUMEventBuilder? = nil,
         eventOutput: RUMEventOutput? = nil,
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
@@ -738,6 +747,8 @@ extension RUMScopeDependencies {
             serviceName: serviceName ?? self.serviceName,
             applicationVersion: applicationVersion ?? self.applicationVersion,
             sdkVersion: sdkVersion ?? self.sdkVersion,
+            source: source ?? self.source,
+            firstPartyURLsFilter: firstPartyUrls.map { .init(hosts: $0) } ?? self.firstPartyURLsFilter,
             eventBuilder: eventBuilder ?? self.eventBuilder,
             eventOutput: eventOutput ?? self.eventOutput,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
@@ -870,7 +881,6 @@ extension RUMResourceScope {
             dateCorrection: dateCorrection,
             url: url,
             httpMethod: httpMethod,
-            isFirstPartyResource: isFirstPartyResource,
             resourceKindBasedOnRequest: resourceKindBasedOnRequest,
             spanContext: spanContext,
             onResourceEventSent: onResourceEventSent,

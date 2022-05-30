@@ -148,7 +148,7 @@ internal final class RUMFeature {
             upload: upload,
             configuration: configuration,
             commonDependencies: commonDependencies,
-            vitalCPUReader: VitalCPUReader(),
+            vitalCPUReader: VitalCPUReader(telemetry: telemetry),
             vitalMemoryReader: VitalMemoryReader(),
             vitalRefreshRateReader: VitalRefreshRateReader(),
             onSessionStart: configuration.onSessionStart

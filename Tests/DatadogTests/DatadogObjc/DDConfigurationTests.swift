@@ -134,6 +134,9 @@ class DDConfigurationTests: XCTestCase {
         objcBuilder.trackURLSession(firstPartyHosts: ["example.com"])
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.firstPartyHosts, ["example.com"])
 
+        objcBuilder.set(tracingSamplingRate: 75)
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.tracingSamplingRate, 75)
+
         objcBuilder.trackUIKitRUMActions()
         XCTAssertTrue(objcBuilder.build().sdkConfiguration.rumUIKitUserActionsPredicate is DefaultUIKitRUMUserActionsPredicate)
 

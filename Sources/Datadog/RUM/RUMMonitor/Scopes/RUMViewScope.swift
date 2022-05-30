@@ -234,7 +234,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dateCorrection: dateCorrection,
             url: command.url,
             httpMethod: command.httpMethod,
-            isFirstPartyResource: command.isFirstPartyRequest,
             resourceKindBasedOnRequest: command.kind,
             spanContext: command.spanContext,
             onResourceEventSent: { [weak self] in
@@ -348,7 +347,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 id: context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: .ios,
+            source: RUMActionEvent.Source(rawValue: dependencies.source) ?? .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             version: dependencies.applicationVersion,
@@ -398,7 +397,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 id: context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: .ios,
+            source: RUMViewEvent.Source(rawValue: dependencies.source) ?? .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             version: dependencies.applicationVersion,
@@ -489,7 +488,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 id: context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: .ios,
+            source: RUMErrorEvent.Source(rawValue: dependencies.source) ?? .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             version: dependencies.applicationVersion,
@@ -532,7 +531,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 id: context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: .ios,
+            source: RUMLongTaskEvent.Source(rawValue: dependencies.source) ?? .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             version: dependencies.applicationVersion,

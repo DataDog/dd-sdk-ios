@@ -94,6 +94,7 @@ class DataUploadStatusTests: XCTestCase {
     private let alertingStatusCodes: Set = [
         400, // BAD REQUEST
         401, // UNAUTHORIZED
+        403, // FORBIDDEN
         413, // PAYLOAD TOO LARGE
         408, // REQUEST TIMEOUT
         429, // TOO MANY REQUESTS
@@ -112,7 +113,7 @@ class DataUploadStatusTests: XCTestCase {
     }
 
     func testWhenUploadFinishesWithResponse_andStatusCodeMeansSDKIssue_itCreatesHTTPError() {
-        alertingStatusCodes.subtracting([401]).forEach { statusCode in
+        alertingStatusCodes.subtracting([401, 403]).forEach { statusCode in
             let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: statusCode), ddRequestID: .mockRandom())
 
             guard case let .httpError(statusCode: receivedStatusCode) = status.error else {

@@ -49,6 +49,7 @@ internal struct FeaturesConfiguration {
         let uploadURL: URL
         let applicationID: String
         let sessionSampler: Sampler
+        let telemetrySampler: Sampler
         let uuidGenerator: RUMUUIDGenerator
         let viewEventMapper: RUMViewEventMapper?
         let resourceEventMapper: RUMResourceEventMapper?
@@ -59,6 +60,7 @@ internal struct FeaturesConfiguration {
         let instrumentation: Instrumentation?
         let backgroundEventTrackingEnabled: Bool
         let onSessionStart: RUMSessionListener?
+        let firstPartyHosts: Set<String>
     }
 
     struct URLSessionAutoInstrumentation {
@@ -73,6 +75,8 @@ internal struct FeaturesConfiguration {
         let instrumentTracing: Bool
         /// If the RUM instrumentation should be enabled.
         let instrumentRUM: Bool
+        // Tracing sampler
+        let tracingSampler: Sampler
     }
 
     struct CrashReporting {
@@ -180,6 +184,14 @@ extension FeaturesConfiguration {
             )
         }
 
+        var sanitizedHosts: Set<String> = []
+        if let firstPartyHosts = configuration.firstPartyHosts {
+            sanitizedHosts = hostsSanitizer.sanitized(
+                hosts: firstPartyHosts,
+                warningMessage: "The first party host configured for Datadog SDK is not valid"
+            )
+        }
+
         if configuration.rumEnabled {
             let instrumentation = RUM.Instrumentation(
                 uiKitRUMViewsPredicate: configuration.rumUIKitViewsPredicate,
@@ -193,6 +205,7 @@ extension FeaturesConfiguration {
                     uploadURL: try ifValid(endpointURLString: rumEndpoint.url),
                     applicationID: rumApplicationID,
                     sessionSampler: Sampler(samplingRate: debugOverride ? 100.0 : configuration.rumSessionsSamplingRate),
+                    telemetrySampler: Sampler(samplingRate: configuration.rumTelemetrySamplingRate),
                     uuidGenerator: DefaultRUMUUIDGenerator(),
                     viewEventMapper: configuration.rumViewEventMapper,
                     resourceEventMapper: configuration.rumResourceEventMapper,
@@ -201,7 +214,8 @@ extension FeaturesConfiguration {
                     longTaskEventMapper: configuration.rumLongTaskEventMapper,
                     instrumentation: instrumentation,
                     backgroundEventTrackingEnabled: configuration.rumBackgroundEventTrackingEnabled,
-                    onSessionStart: configuration.rumSessionsListener
+                    onSessionStart: configuration.rumSessionsListener,
+                    firstPartyHosts: sanitizedHosts
                 )
             } else {
                 let error = ProgrammerError(
@@ -214,13 +228,10 @@ extension FeaturesConfiguration {
             }
         }
 
-        if let firstPartyHosts = configuration.firstPartyHosts {
+        if configuration.firstPartyHosts != nil {
             if configuration.tracingEnabled || configuration.rumEnabled {
                 urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
-                    userDefinedFirstPartyHosts: hostsSanitizer.sanitized(
-                        hosts: firstPartyHosts,
-                        warningMessage: "The first party host configured for Datadog SDK is not valid"
-                    ),
+                    userDefinedFirstPartyHosts: sanitizedHosts,
                     sdkInternalURLs: [
                         logsEndpoint.url,
                         tracesEndpoint.url,
@@ -228,7 +239,8 @@ extension FeaturesConfiguration {
                     ],
                     rumAttributesProvider: configuration.rumResourceAttributesProvider,
                     instrumentTracing: configuration.tracingEnabled,
-                    instrumentRUM: configuration.rumEnabled
+                    instrumentRUM: configuration.rumEnabled,
+                    tracingSampler: Sampler(samplingRate: debugOverride ? 100.0 : configuration.tracingSamplingRate)
                 )
             } else {
                 let error = ProgrammerError(

@@ -307,7 +307,7 @@ class DataUploadWorkerTests: XCTestCase {
 
         XCTAssertEqual(
             mockUserLoggerOutput.allRecordedLogs[2].message,
-            "⚠️ The client token you provided seems to be invalid.",
+            "⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.",
             "An error should be printed to `userLogger`. All captured logs:\n\(mockUserLoggerOutput.dumpAllRecordedLogs())"
         )
     }

@@ -22,12 +22,13 @@ public class ServerProcessRunner {
     /// Waits until server is reachable.
     /// Returns `ServerProcess` instance if the server is running, `nil` otherwise.
     public func waitUntilServerIsReachable() -> ServerProcess? {
-        let deadline = Date(timeIntervalSinceNow: 5)
+        let deadline = Date(timeIntervalSinceNow: 10)
 
         while Date() < deadline {
             if ping() {
                 return ServerProcess(serverURL: serverURL)
             }
+            Thread.sleep(forTimeInterval: 0.5)
         }
 
         return nil

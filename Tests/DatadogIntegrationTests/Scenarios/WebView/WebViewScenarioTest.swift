@@ -28,11 +28,11 @@ class WebViewScenarioTest: IntegrationTests, RUMCommonAsserts {
 
         // Get single RUM Session with expected number of View visits
         let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.singleSession(from: requests, eventsPatch: patchBrowserResourceEvents)?.viewVisits.count == 2
+            try RUMSessionMatcher.singleSession(from: requests, eventsPatch: patchBrowserEvents)?.viewVisits.count == 2
         }
         assertRUM(requests: recordedRUMRequests)
 
-        let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests, eventsPatch: patchBrowserResourceEvents))
+        let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests, eventsPatch: patchBrowserEvents))
         XCTAssertEqual(session.viewVisits.count, 2, "There should be 2 RUM views - one native and one received from Browser SDK")
 
         // Check iOS SDK events:
@@ -88,17 +88,26 @@ class WebViewScenarioTest: IntegrationTests, RUMCommonAsserts {
 /// Browser SDK v4.1.0 uses lowercase string values for `resource.method` field, whereas RUM format schema
 /// defines it as uppercase string (e.g. `"get"` instead of `"GET"`). Here we patch `resource.method` to be
 /// uppercased, so it can be read and validated in `RUMEventMatcher`.
-///
 /// This can be removed once `resource.method` is fixed in future Browser SDK version.
-private func patchBrowserResourceEvents(_ data: Data) throws -> Data {
+///
+/// RUMM-2022: Browser SDK support action id as string or as array of strings as defined in schema:
+/// https://github.com/DataDog/rum-events-format/blob/master/schemas/rum/_action-child-schema.json#L15L31
+/// This is not yet supported by the Swift schema generator, as a workaround we pick the first id when
+/// we encounter an array
+private func patchBrowserEvents(_ data: Data) throws -> Data {
     var json = try data.toJSONObject()
 
-    if let eventType = json["type"] as? String,
-       eventType == "resource",
+    if "resource" == json["type"] as? String,
        var resource = json["resource"] as? [String: Any],
        let method = resource["method"] as? String {
         resource["method"] = method.uppercased()
         json["resource"] = resource
+    }
+
+    if var action = json["action"] as? [String: Any],
+       let ids = action["id"] as? [String] {
+        action["id"] = ids.first ?? "" // when action is present, an valid string is expected
+        json["action"] = action
     }
 
     return try JSONSerialization.data(withJSONObject: json, options: [])

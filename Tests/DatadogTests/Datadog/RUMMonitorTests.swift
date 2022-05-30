@@ -268,6 +268,7 @@ class RUMMonitorTests: XCTestCase {
         let resourceEvent = session.viewVisits[0].resourceEvents[0]
         XCTAssertEqual(resourceEvent.resource.url, url.absoluteString)
         XCTAssertEqual(resourceEvent.resource.statusCode, 200)
+        XCTAssertNil(resourceEvent.resource.provider?.type)
     }
 
     func testStartingView_thenLoadingResourceWithURLString() throws {
@@ -290,6 +291,57 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(resourceEvent.resource.statusCode, 333)
         XCTAssertEqual(resourceEvent.resource.type, .beacon)
         XCTAssertEqual(resourceEvent.resource.method, .post)
+        XCTAssertNil(resourceEvent.resource.provider?.type)
+    }
+
+    func testLoadingResourceWithURL_thenMarksFirstPartyURLs() throws {
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
+            directories: temporaryFeatureDirectories,
+            configuration: .mockWith(
+                // .mockRandom always uses foo.com
+                firstPartyHosts: ["foo.com"]
+            )
+        )
+        core.register(feature: rum)
+
+        let monitor = try createTestableRUMMonitor()
+        setGlobalAttributes(of: monitor)
+
+        let url: URL = .mockRandom()
+        monitor.startView(viewController: mockView)
+        monitor.startResourceLoading(resourceKey: "/resource/1", url: url)
+        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
+
+        let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 4)
+        verifyGlobalAttributes(in: rumEventMatchers)
+
+        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
+        let resourceEvent = session.viewVisits[0].resourceEvents[0]
+        XCTAssertEqual(resourceEvent.resource.provider?.type, RUMResourceEvent.Resource.Provider.ProviderType.firstParty)
+    }
+
+    func testLoadingResourceWithURLString_thenMarksFirstPartyURLs() throws {
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
+            directories: temporaryFeatureDirectories,
+            configuration: .mockWith(
+                firstPartyHosts: ["foo.com"]
+            )
+        )
+        core.register(feature: rum)
+
+        let monitor = try createTestableRUMMonitor()
+        setGlobalAttributes(of: monitor)
+
+        monitor.startView(viewController: mockView)
+        monitor.startResourceLoading(resourceKey: "/resource/1", httpMethod: .post, urlString: "http://www.foo.com/some/url/string", attributes: [:])
+        monitor.stopResourceLoading(resourceKey: "/resource/1", statusCode: 333, kind: .beacon)
+
+        let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 4)
+        verifyGlobalAttributes(in: rumEventMatchers)
+
+        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
+        let resourceEvent = session.viewVisits[0].resourceEvents[0]
+        XCTAssertEqual(resourceEvent.resource.provider?.type, RUMResourceEvent.Resource.Provider.ProviderType.firstParty)
     }
 
     func testStartingView_thenTappingButton() throws {

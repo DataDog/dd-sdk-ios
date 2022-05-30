@@ -28,7 +28,7 @@ internal class RUMResourceScope: RUMScope {
     /// The HTTP method used to load this Resource.
     private var resourceHTTPMethod: RUMMethod
     /// Whether or not the Resource is provided by a first party host, if that information is available.
-    private let isFirstPartyResource: Bool?
+    private let isFirstPartyResource: Bool
     /// The Resource kind captured when starting the `URLRequest`.
     /// It may be `nil` if it's not possible to predict the kind from resource and the response MIME type is needed.
     private var resourceKindBasedOnRequest: RUMResourceType?
@@ -54,7 +54,6 @@ internal class RUMResourceScope: RUMScope {
         dateCorrection: DateCorrection,
         url: String,
         httpMethod: RUMMethod,
-        isFirstPartyResource: Bool?,
         resourceKindBasedOnRequest: RUMResourceType?,
         spanContext: RUMSpanContext?,
         onResourceEventSent: @escaping () -> Void,
@@ -69,7 +68,7 @@ internal class RUMResourceScope: RUMScope {
         self.resourceLoadingStartTime = startTime
         self.dateCorrection = dateCorrection
         self.resourceHTTPMethod = httpMethod
-        self.isFirstPartyResource = isFirstPartyResource
+        self.isFirstPartyResource = dependencies.firstPartyURLsFilter.isFirstParty(string: url)
         self.resourceKindBasedOnRequest = resourceKindBasedOnRequest
         self.spanContext = spanContext
         self.onResourceEventSent = onResourceEventSent
@@ -195,7 +194,7 @@ internal class RUMResourceScope: RUMScope {
                 id: context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: .ios,
+            source: RUMResourceEvent.Source(rawValue: dependencies.source) ?? .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             version: dependencies.applicationVersion,
@@ -253,7 +252,7 @@ internal class RUMResourceScope: RUMScope {
                 id: context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: .ios,
+            source: RUMErrorEvent.Source(rawValue: dependencies.source) ?? .ios,
             synthetics: nil,
             usr: dependencies.userInfoProvider.current,
             version: dependencies.applicationVersion,
