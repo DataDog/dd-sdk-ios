@@ -148,7 +148,7 @@ class DDRUMMonitorTests: XCTestCase {
     private func createTestableDDRUMMonitor() throws -> DatadogObjc.DDRUMMonitor {
         let rumFeature: RUMFeature = try XCTUnwrap(core.feature(RUMFeature.self), "RUM feature must be initialized before creating `RUMMonitor`")
         let swiftMonitor = RUMMonitor(
-            dependencies: RUMScopeDependencies(rumFeature: rumFeature)
+            dependencies: RUMScopeDependencies(rumFeature: rumFeature, crashReportingFeature: nil)
                 .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
             dateProvider: rumFeature.dateProvider
         )

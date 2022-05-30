@@ -116,7 +116,7 @@ class DatadogTests: XCTestCase {
             // verify features:
             XCTAssertNotNil(defaultDatadogCore.feature(LoggingFeature.self))
             XCTAssertNil(defaultDatadogCore.feature(RUMFeature.self), "When using `defaultBuilder` RUM feature should be disabled by default")
-            XCTAssertFalse(CrashReportingFeature.isEnabled)
+            XCTAssertNil(defaultDatadogCore.feature(CrashReportingFeature.self))
             XCTAssertNil(defaultDatadogCore.feature(RUMInstrumentation.self))
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
             // verify integrations:
@@ -128,7 +128,7 @@ class DatadogTests: XCTestCase {
             // verify features:
             XCTAssertNotNil(defaultDatadogCore.feature(LoggingFeature.self))
             XCTAssertNotNil(defaultDatadogCore.feature(RUMFeature.self), "When using `rumBuilder` RUM feature should be enabled by default")
-            XCTAssertFalse(CrashReportingFeature.isEnabled)
+            XCTAssertNil(defaultDatadogCore.feature(CrashReportingFeature.self))
             XCTAssertNotNil(defaultDatadogCore.feature(RUMInstrumentation.self))
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
             // verify integrations:
@@ -141,7 +141,7 @@ class DatadogTests: XCTestCase {
             // verify features:
             XCTAssertNil(defaultDatadogCore.feature(LoggingFeature.self))
             XCTAssertNil(defaultDatadogCore.feature(RUMFeature.self), "When using `defaultBuilder` RUM feature should be disabled by default")
-            XCTAssertFalse(CrashReportingFeature.isEnabled)
+            XCTAssertNil(defaultDatadogCore.feature(CrashReportingFeature.self))
             XCTAssertNil(defaultDatadogCore.feature(RUMInstrumentation.self))
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
             // verify integrations:
@@ -154,7 +154,7 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(defaultDatadogCore.feature(LoggingFeature.self))
             XCTAssertNotNil(defaultDatadogCore.feature(TracingFeature.self))
             XCTAssertNotNil(defaultDatadogCore.feature(RUMFeature.self), "When using `rumBuilder` RUM feature should be enabled by default")
-            XCTAssertFalse(CrashReportingFeature.isEnabled)
+            XCTAssertNil(defaultDatadogCore.feature(CrashReportingFeature.self))
             XCTAssertNotNil(defaultDatadogCore.feature(RUMInstrumentation.self))
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
             // verify integrations:
@@ -168,7 +168,7 @@ class DatadogTests: XCTestCase {
             XCTAssertNotNil(defaultDatadogCore.feature(LoggingFeature.self))
             XCTAssertNil(defaultDatadogCore.feature(TracingFeature.self))
             XCTAssertNil(defaultDatadogCore.feature(RUMFeature.self), "When using `defaultBuilder` RUM feature should be disabled by default")
-            XCTAssertFalse(CrashReportingFeature.isEnabled)
+            XCTAssertNil(defaultDatadogCore.feature(CrashReportingFeature.self))
             XCTAssertNil(defaultDatadogCore.feature(RUMInstrumentation.self))
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
         }
@@ -177,7 +177,7 @@ class DatadogTests: XCTestCase {
             XCTAssertNotNil(defaultDatadogCore.feature(LoggingFeature.self))
             XCTAssertNil(defaultDatadogCore.feature(TracingFeature.self))
             XCTAssertNotNil(defaultDatadogCore.feature(RUMFeature.self), "When using `rumBuilder` RUM feature should be enabled by default")
-            XCTAssertFalse(CrashReportingFeature.isEnabled)
+            XCTAssertNil(defaultDatadogCore.feature(CrashReportingFeature.self))
             XCTAssertNotNil(defaultDatadogCore.feature(RUMInstrumentation.self))
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
         }
@@ -186,7 +186,7 @@ class DatadogTests: XCTestCase {
             // verify features:
             XCTAssertNotNil(defaultDatadogCore.feature(LoggingFeature.self))
             XCTAssertNil(defaultDatadogCore.feature(RUMFeature.self), "When using `defaultBuilder` RUM feature cannot be enabled")
-            XCTAssertFalse(CrashReportingFeature.isEnabled)
+            XCTAssertNil(defaultDatadogCore.feature(CrashReportingFeature.self))
             XCTAssertNil(defaultDatadogCore.feature(RUMInstrumentation.self))
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
             // verify integrations:
@@ -198,7 +198,7 @@ class DatadogTests: XCTestCase {
             // verify features:
             XCTAssertNotNil(defaultDatadogCore.feature(LoggingFeature.self))
             XCTAssertNil(defaultDatadogCore.feature(RUMFeature.self))
-            XCTAssertFalse(CrashReportingFeature.isEnabled)
+            XCTAssertNil(defaultDatadogCore.feature(CrashReportingFeature.self))
             XCTAssertNil(defaultDatadogCore.feature(RUMInstrumentation.self))
             XCTAssertNil(URLSessionAutoInstrumentation.instance)
             // verify integrations:
@@ -247,7 +247,7 @@ class DatadogTests: XCTestCase {
                 .enableCrashReporting(using: CrashReportingPluginMock())
                 .build()
         ) {
-            XCTAssertNotNil(CrashReportingFeature.instance)
+            XCTAssertNotNil(defaultDatadogCore.feature(CrashReportingFeature.self))
             XCTAssertTrue(
                 Global.crashReporter?.loggingOrRUMIntegration is CrashReportingWithLoggingIntegration,
                 "When only Logging feature is enabled, the Crash Reporter should send crash reports as Logs"
@@ -261,7 +261,7 @@ class DatadogTests: XCTestCase {
                 .enableCrashReporting(using: CrashReportingPluginMock())
                 .build()
         ) {
-            XCTAssertNotNil(CrashReportingFeature.instance)
+            XCTAssertNotNil(defaultDatadogCore.feature(CrashReportingFeature.self))
             XCTAssertTrue(
                 Global.crashReporter?.loggingOrRUMIntegration is CrashReportingWithRUMIntegration,
                 "When only RUM feature is enabled, the Crash Reporter should send crash reports as RUM Events"
@@ -275,7 +275,7 @@ class DatadogTests: XCTestCase {
                 .enableCrashReporting(using: CrashReportingPluginMock())
                 .build()
         ) {
-            XCTAssertNotNil(CrashReportingFeature.instance)
+            XCTAssertNotNil(defaultDatadogCore.feature(CrashReportingFeature.self))
             XCTAssertTrue(
                 Global.crashReporter?.loggingOrRUMIntegration is CrashReportingWithRUMIntegration,
                 "When both Logging and RUM features are enabled, the Crash Reporter should send crash reports as RUM Events"
@@ -289,7 +289,7 @@ class DatadogTests: XCTestCase {
                 .enableCrashReporting(using: CrashReportingPluginMock())
                 .build()
         ) {
-            XCTAssertNil(CrashReportingFeature.instance)
+            XCTAssertNil(defaultDatadogCore.feature(CrashReportingFeature.self))
             XCTAssertNil(
                 Global.crashReporter,
                 "When both Logging and RUM are disabled, Crash Reporter should not be registered"

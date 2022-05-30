@@ -289,6 +289,8 @@ public class Datadog {
                 commonDependencies: commonDependencies,
                 telemetry: telemetry
             )
+
+            core.register(feature: crashReporting)
         }
 
         if let urlSessionAutoInstrumentationConfiguration = configuration.urlSessionAutoInstrumentation {
@@ -297,8 +299,6 @@ public class Datadog {
                 commonDependencies: commonDependencies
             )
         }
-
-        CrashReportingFeature.instance = crashReporting
 
         core.feature(RUMInstrumentation.self)?.enable()
 
@@ -309,12 +309,13 @@ public class Datadog {
 
         // After everything is set up, if the Crash Reporting feature was enabled,
         // register crash reporter and send crash report if available:
-        if let crashReportingFeature = CrashReportingFeature.instance {
+        if let crashReportingFeature = core.feature(CrashReportingFeature.self) {
             Global.crashReporter = CrashReporter(
                 crashReportingFeature: crashReportingFeature,
                 loggingFeature: logging,
                 rumFeature: rum
             )
+
             Global.crashReporter?.sendCrashReportIfFound()
         }
     }
@@ -346,7 +347,6 @@ public class Datadog {
         rum?.deinitialize()
         rumInstrumentation?.deinitialize()
 
-        CrashReportingFeature.instance?.deinitialize()
         URLSessionAutoInstrumentation.instance?.deinitialize()
 
         // Reset Globals:
