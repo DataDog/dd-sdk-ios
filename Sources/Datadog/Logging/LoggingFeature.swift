@@ -8,7 +8,7 @@ import Foundation
 
 /// Creates and owns components enabling logging feature.
 /// Bundles dependencies for other logging-related components created later at runtime  (i.e. `Logger`).
-internal final class LoggingFeature: V1Feature {
+internal final class LoggingFeature: V1FeatureInitializable {
     typealias Configuration = FeaturesConfiguration.Logging
 
     // MARK: - Configuration

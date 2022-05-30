@@ -8,7 +8,7 @@ import Foundation
 
 /// Creates and owns componetns enabling tracing feature.
 /// Bundles dependencies for other tracing-related components created later at runtime  (i.e. `Tracer`).
-internal final class TracingFeature: V1Feature {
+internal final class TracingFeature: V1FeatureInitializable {
     typealias Configuration = FeaturesConfiguration.Tracing
 
     // MARK: - Configuration
