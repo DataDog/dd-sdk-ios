@@ -29,16 +29,16 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDat
     }
 
     var instrumentation: URLSessionAutoInstrumentation? {
-        core.feature(URLSessionAutoInstrumentation.self)
+        core().feature(URLSessionAutoInstrumentation.self)
     }
 
     let firstPartyURLsFilter: FirstPartyURLsFilter
 
-    private let core: DatadogCoreProtocol
+    private let core: () -> DatadogCoreProtocol
 
     @objc
     override public init() {
-        core = defaultDatadogCore
+        core = { defaultDatadogCore }
         firstPartyURLsFilter = FirstPartyURLsFilter(hosts: [])
         super.init()
     }
@@ -64,7 +64,7 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDat
     ///   - core: Datadog SDK core.
     ///   - additionalFirstPartyHosts: additionalFirstPartyHosts: these hosts are tracked **in addition to** what was
     ///                                passed to `DatadogConfiguration.Builder` via `trackURLSession(firstPartyHosts:)`
-    public init(in core: DatadogCoreProtocol, additionalFirstPartyHosts: Set<String>) {
+    public init(in core: @autoclosure @escaping () -> DatadogCoreProtocol, additionalFirstPartyHosts: Set<String>) {
         self.core = core
         self.firstPartyURLsFilter = FirstPartyURLsFilter(hosts: additionalFirstPartyHosts)
         super.init()
