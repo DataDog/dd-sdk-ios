@@ -6,33 +6,60 @@
 
 import Foundation
 
+/// Feature-agnostic SDK configuration.
+internal typealias CoreConfiguration = FeaturesConfiguration.Common
+
+/// Feature-agnostic set of dependencies powering Features storage, upload and event recording.
+internal typealias CoreDependencies = FeaturesCommonDependencies
+
+/// A shim interface for uniforming V1 Features and letting their generic initialization in `DatadogCore`.
+internal protocol V1Feature {
+    /// The configuration specific to this Feature.
+    /// In V2 this will likely become a part of the public interface for the Feature module.
+    associatedtype Configuration
+
+    init(
+        storage: FeatureStorage,
+        upload: FeatureUpload,
+        configuration: Configuration,
+        commonDependencies: FeaturesCommonDependencies
+    )
+}
+
 /// Core implementation of Datadog SDK.
 ///
-/// The core provides a storage and upload mechanism for each registered
-/// feature based on their respective configuration.
+/// The core provides a storage and upload mechanism for each registered Feature
+/// based on their respective configuration.
 ///
 /// By complying with `DatadogCoreProtocol`, the core can
-/// provide context and writing scopes to features for event recording.
+/// provide context and writing scopes to Features for event recording.
 internal final class DatadogCore {
-    /// The user tracking consent provider.
-    let consentProvider: ConsentProvider
-
-    /// User PII.
-    let userInfoProvider: UserInfoProvider
+    /// The root location for storing Features data in this instance of the SDK.
+    /// Each Feature creates its own set of subdirectories in `rootDirectory` based on their storage configuration.
+    let rootDirectory: Directory
+    /// The configuration of SDK core.
+    let configuration: CoreConfiguration
+    /// A set of dependencies used by SDK core to power Features.
+    let dependencies: CoreDependencies
+    /// Telemetry monitor, if configured.
+    var telemetry: Telemetry?
 
     private var v1Features: [String: Any] = [:]
 
     /// Creates a core instance.
     ///
     /// - Parameters:
-    ///   - consentProvider: The user tracking consent provider.
-    ///   - userInfoProvider: User PII.
+    ///   - directory: the root directory for this instance of SDK.
+    ///   - configuration: the configuration of SDK core.
+    ///   - dependencies: a set of dependencies used by SDK core to power Features.
     init(
-        consentProvider: ConsentProvider,
-        userInfoProvider: UserInfoProvider
+        rootDirectory: Directory,
+        configuration: CoreConfiguration,
+        dependencies: CoreDependencies
     ) {
-        self.consentProvider = consentProvider
-        self.userInfoProvider = userInfoProvider
+        self.rootDirectory = rootDirectory
+        self.configuration = configuration
+        self.dependencies = dependencies
     }
 
     /// Sets current user information.
@@ -50,7 +77,7 @@ internal final class DatadogCore {
         email: String? = nil,
         extraInfo: [AttributeKey: AttributeValue] = [:]
     ) {
-        userInfoProvider.value = UserInfo(
+        dependencies.userInfoProvider.value = UserInfo(
             id: id,
             name: name,
             email: email,
@@ -62,21 +89,57 @@ internal final class DatadogCore {
     /// 
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     func set(trackingConsent: TrackingConsent) {
-        consentProvider.changeConsent(to: trackingConsent)
+        dependencies.consentProvider.changeConsent(to: trackingConsent)
     }
 }
 
 extension DatadogCore: DatadogCoreProtocol {
-    func registerFeature(named featureName: String, storage: FeatureStorageConfiguration, upload: FeatureUploadConfiguration) {
-        // no-op
-    }
+    // MARK: - V1 interface
 
-    func scope(forFeature featureName: String) -> FeatureScope? {
-        // no-op
-        return nil
-    }
+    /// Creates V1 Feature using its V2 configuration.
+    ///
+    /// `DatadogCore` uses its core `configuration` to inject feature-agnostic parts of V1 setup.
+    /// Feature-specific part is provided explicitly with `featureSpecificConfiguration`.
+    ///
+    /// - Returns: an instance of V1 feature
+    func create<Feature: V1Feature>(
+        storageConfiguration: FeatureStorageConfiguration,
+        uploadConfiguration: FeatureUploadConfiguration,
+        featureSpecificConfiguration: Feature.Configuration
+    ) throws -> Feature {
+        let v1Directories = try FeatureDirectories(
+            sdkRootDirectory: rootDirectory,
+            storageConfiguration: storageConfiguration
+        )
 
-    // MARK: V1 interface
+        let storage = FeatureStorage(
+            featureName: storageConfiguration.featureName,
+            dataFormat: uploadConfiguration.payloadFormat,
+            directories: v1Directories,
+            commonDependencies: dependencies,
+            telemetry: telemetry
+        )
+
+        let v1Context = DatadogV1Context(
+            configuration: configuration,
+            dependencies: dependencies
+        )
+
+        let upload = FeatureUpload(
+            featureName: uploadConfiguration.featureName,
+            storage: storage,
+            requestBuilder: uploadConfiguration.createRequestBuilder(v1Context, telemetry),
+            commonDependencies: dependencies,
+            telemetry: telemetry
+        )
+
+        return Feature(
+            storage: storage,
+            upload: upload,
+            configuration: featureSpecificConfiguration,
+            commonDependencies: dependencies
+        )
+    }
 
     func register<T>(feature instance: T?) {
         let key = String(describing: T.self)

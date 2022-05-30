@@ -10,15 +10,18 @@ import XCTest
 
 class DDTracerTests: XCTestCase {
     let core = DatadogCoreMock()
+
     override func setUp() {
         super.setUp()
         temporaryFeatureDirectories.create()
+        temporaryDirectory.create()
         defaultDatadogCore = core
     }
 
     override func tearDown() {
         core.flush()
         temporaryFeatureDirectories.delete()
+        temporaryDirectory.delete()
         defaultDatadogCore = NOOPDatadogCore()
         super.tearDown()
     }
@@ -117,7 +120,7 @@ class DDTracerTests: XCTestCase {
 
     func testSendingSpanLogs() throws {
         let logging: LoggingFeature = .mockByRecordingLogMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
@@ -151,7 +154,7 @@ class DDTracerTests: XCTestCase {
 
     func testSendingSpanLogsWithErrorFromArguments() throws {
         let logging: LoggingFeature = .mockByRecordingLogMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
@@ -188,7 +191,7 @@ class DDTracerTests: XCTestCase {
 
     func testSendingSpanLogsWithErrorFromNSError() throws {
         let logging: LoggingFeature = .mockByRecordingLogMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )

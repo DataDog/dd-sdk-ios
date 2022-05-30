@@ -12,6 +12,7 @@ import Foundation
 /// unvalidated and unresolved inputs, it should never be passed to features. Instead, `FeaturesConfiguration` should be used.
 internal struct FeaturesConfiguration {
     struct Common {
+        let clientToken: String
         let applicationName: String
         let applicationVersion: String
         let applicationBundleIdentifier: String
@@ -28,14 +29,12 @@ internal struct FeaturesConfiguration {
     struct Logging {
         let common: Common
         let uploadURL: URL
-        let clientToken: String
         let logEventMapper: LogEventMapper?
     }
 
     struct Tracing {
         let common: Common
         let uploadURL: URL
-        let clientToken: String
         let spanEventMapper: SpanEventMapper?
     }
 
@@ -48,7 +47,6 @@ internal struct FeaturesConfiguration {
 
         let common: Common
         let uploadURL: URL
-        let clientToken: String
         let applicationID: String
         let sessionSampler: Sampler
         let uuidGenerator: RUMUUIDGenerator
@@ -124,17 +122,17 @@ extension FeaturesConfiguration {
         }
 
         if let customLogsEndpoint = configuration.customLogsEndpoint {
-            // If `.set(cusstomLogsEndpoint:)` API was used, it should override logs endpoint
+            // If `.set(customLogsEndpoint:)` API was used, it should override logs endpoint
             logsEndpoint = .custom(url: customLogsEndpoint.absoluteString)
         }
 
         if let customTracesEndpoint = configuration.customTracesEndpoint {
-            // If `.set(cusstomLogsEndpoint:)` API was used, it should override traces endpoint
+            // If `.set(customTracesEndpoint:)` API was used, it should override traces endpoint
             tracesEndpoint = .custom(url: customTracesEndpoint.absoluteString)
         }
 
         if let customRUMEndpoint = configuration.customRUMEndpoint {
-            // If `.set(cusstomLogsEndpoint:)` API was used, it should override RUM endpoint
+            // If `.set(customRUMEndpoint:)` API was used, it should override RUM endpoint
             rumEndpoint = .custom(url: customRUMEndpoint.absoluteString)
         }
 
@@ -148,6 +146,7 @@ extension FeaturesConfiguration {
         }
 
         let common = Common(
+            clientToken: try ifValid(clientToken: configuration.clientToken),
             applicationName: appContext.bundleName ?? appContext.bundleType.rawValue,
             applicationVersion: appContext.bundleVersion ?? "0.0.0",
             applicationBundleIdentifier: appContext.bundleIdentifier ?? "unknown",
@@ -169,7 +168,6 @@ extension FeaturesConfiguration {
             logging = Logging(
                 common: common,
                 uploadURL: try ifValid(endpointURLString: logsEndpoint.url),
-                clientToken: try ifValid(clientToken: configuration.clientToken),
                 logEventMapper: configuration.logEventMapper
             )
         }
@@ -178,7 +176,6 @@ extension FeaturesConfiguration {
             tracing = Tracing(
                 common: common,
                 uploadURL: try ifValid(endpointURLString: tracesEndpoint.url),
-                clientToken: try ifValid(clientToken: configuration.clientToken),
                 spanEventMapper: configuration.spanEventMapper
             )
         }
@@ -194,7 +191,6 @@ extension FeaturesConfiguration {
                 rum = RUM(
                     common: common,
                     uploadURL: try ifValid(endpointURLString: rumEndpoint.url),
-                    clientToken: try ifValid(clientToken: configuration.clientToken),
                     applicationID: rumApplicationID,
                     sessionSampler: Sampler(samplingRate: debugOverride ? 100.0 : configuration.rumSessionsSamplingRate),
                     uuidGenerator: DefaultRUMUUIDGenerator(),

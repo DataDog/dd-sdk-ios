@@ -44,10 +44,12 @@ class WKUserContentController_DatadogTests: XCTestCase {
     override func setUp() {
         super.setUp()
         temporaryFeatureDirectories.create()
+        temporaryDirectory.create()
     }
 
     override func tearDown() {
         temporaryFeatureDirectories.delete()
+        temporaryDirectory.delete()
         super.tearDown()
     }
 
@@ -162,7 +164,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
 
         let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
         let logging: LoggingFeature = .mockByRecordingLogMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             configuration: .mockWith(
                 common: .mockWith(
                     applicationVersion: "1.0.0",

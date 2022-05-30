@@ -27,14 +27,6 @@ internal final class DatadogCoreMock: DatadogCoreProtocol, Flushable {
         v1Features.values.compactMap { $0 as? T }
     }
 
-    /// no-op
-    func registerFeature(named featureName: String, storage: FeatureStorageConfiguration, upload: FeatureUploadConfiguration) {}
-
-    /// no-op
-    func scope(forFeature featureName: String) -> FeatureScope? {
-        return nil
-    }
-
     // MARK: V1 interface
 
     func register<T>(feature instance: T?) {

@@ -13,13 +13,13 @@ class LoggingFeatureTests: XCTestCase {
     override func setUp() {
         super.setUp()
         XCTAssertFalse(Datadog.isInitialized)
-        temporaryFeatureDirectories.create()
+        temporaryDirectory.create()
     }
 
     override func tearDown() {
         XCTAssertFalse(Datadog.isInitialized)
         core.flush()
-        temporaryFeatureDirectories.delete()
+        temporaryDirectory.delete()
         super.tearDown()
     }
 
@@ -42,9 +42,10 @@ class LoggingFeatureTests: XCTestCase {
 
         // Given
         let feature: LoggingFeature = .mockWith(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             configuration: .mockWith(
                 common: .mockWith(
+                    clientToken: randomClientToken,
                     applicationName: randomApplicationName,
                     applicationVersion: randomApplicationVersion,
                     source: randomSource,
@@ -52,8 +53,7 @@ class LoggingFeatureTests: XCTestCase {
                     sdkVersion: randomSDKVersion,
                     encryption: randomEncryption
                 ),
-                uploadURL: randomUploadURL,
-                clientToken: randomClientToken
+                uploadURL: randomUploadURL
             ),
             dependencies: .mockWith(
                 mobileDevice: .mockWith(model: randomDeviceModel, osName: randomDeviceOSName, osVersion: randomDeviceOSVersion)
@@ -90,7 +90,7 @@ class LoggingFeatureTests: XCTestCase {
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let feature: LoggingFeature = .mockWith(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 performance: .combining(
                     storagePerformance: StoragePerformanceMock(
