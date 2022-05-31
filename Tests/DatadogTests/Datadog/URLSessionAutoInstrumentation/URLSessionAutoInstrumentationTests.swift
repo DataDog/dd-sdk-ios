@@ -10,28 +10,24 @@ import XCTest
 class URLSessionAutoInstrumentationTests: XCTestCase {
     let core = DatadogCoreMock()
 
-    override func setUp() {
-        super.setUp()
-        XCTAssertNil(URLSessionAutoInstrumentation.instance)
-    }
-
     override func tearDown() {
         core.flush()
-        XCTAssertNil(URLSessionAutoInstrumentation.instance)
         super.tearDown()
     }
 
     func testWhenURLSessionAutoInstrumentationIsEnabled_thenSharedInterceptorIsAvailable() {
+        defaultDatadogCore = core
+        defer { defaultDatadogCore = NOOPDatadogCore() }
+
         XCTAssertNil(URLSessionInterceptor.shared)
 
         // When
-        URLSessionAutoInstrumentation.instance = URLSessionAutoInstrumentation(
+        let instrumentation = URLSessionAutoInstrumentation(
             configuration: .mockAny(),
             commonDependencies: .mockAny()
         )
-        defer {
-            URLSessionAutoInstrumentation.instance?.deinitialize()
-        }
+
+        core.register(feature: instrumentation)
 
         // Then
         XCTAssertNotNil(URLSessionInterceptor.shared)
@@ -40,20 +36,20 @@ class URLSessionAutoInstrumentationTests: XCTestCase {
     func testGivenURLSessionAutoInstrumentationEnabled_whenRUMMonitorIsRegistered_itSubscribesAsResourcesHandler() throws {
         // Given
         let rum: RUMFeature = .mockNoOp()
-        core.register(feature: rum)
-
-        URLSessionAutoInstrumentation.instance = URLSessionAutoInstrumentation(
+        let instrumentation = URLSessionAutoInstrumentation(
             configuration: .mockAny(),
             commonDependencies: .mockAny()
         )
-        defer { URLSessionAutoInstrumentation.instance?.deinitialize() }
+
+        core.register(feature: rum)
+        core.register(feature: instrumentation)
 
         // When
         Global.rum = RUMMonitor.initialize(in: core)
         defer { Global.rum = DDNoopRUMMonitor() }
 
         // Then
-        let resourcesHandler = URLSessionAutoInstrumentation.instance?.interceptor.handler as? URLSessionRUMResourcesHandler
+        let resourcesHandler = instrumentation?.interceptor.handler as? URLSessionRUMResourcesHandler
         XCTAssertTrue(resourcesHandler?.subscriber === Global.rum)
     }
 }

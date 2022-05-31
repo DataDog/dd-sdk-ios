@@ -57,7 +57,8 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
         ),
         .init(
             assert: {
-                defaultDatadogCore.feature(RUMInstrumentation.self) == nil && URLSessionAutoInstrumentation.instance == nil
+                defaultDatadogCore.feature(RUMInstrumentation.self) == nil
+                && defaultDatadogCore.feature(URLSessionAutoInstrumentation.self) == nil
             },
             problem: "All auto-instrumentation features must not be initialized.",
             solution: """

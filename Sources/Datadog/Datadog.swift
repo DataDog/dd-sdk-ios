@@ -300,12 +300,12 @@ public class Datadog {
                 configuration: urlSessionAutoInstrumentationConfiguration,
                 commonDependencies: commonDependencies
             )
+
+            core.register(feature: urlSessionAutoInstrumentation)
         }
 
         core.feature(RUMInstrumentation.self)?.enable()
-
-        URLSessionAutoInstrumentation.instance = urlSessionAutoInstrumentation
-        URLSessionAutoInstrumentation.instance?.enable()
+        core.feature(URLSessionAutoInstrumentation.self)?.enable()
 
         defaultDatadogCore = core
 
@@ -344,12 +344,12 @@ public class Datadog {
         let tracing = defaultDatadogCore.feature(TracingFeature.self)
         let rum = defaultDatadogCore.feature(RUMFeature.self)
         let rumInstrumentation = defaultDatadogCore.feature(RUMInstrumentation.self)
+        let urlSessionInstrumentation = defaultDatadogCore.feature(URLSessionAutoInstrumentation.self)
         logging?.deinitialize()
         tracing?.deinitialize()
         rum?.deinitialize()
         rumInstrumentation?.deinitialize()
-
-        URLSessionAutoInstrumentation.instance?.deinitialize()
+        urlSessionInstrumentation?.deinitialize()
 
         // Reset Globals:
         Global.sharedTracer = DDNoopGlobals.tracer

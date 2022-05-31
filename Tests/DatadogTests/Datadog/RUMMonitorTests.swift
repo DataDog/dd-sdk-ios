@@ -1371,7 +1371,8 @@ class RUMMonitorTests: XCTestCase {
         userLogger = .mockWith(logOutput: output)
 
         // Given
-        let resourcesHandler = try XCTUnwrap(URLSessionAutoInstrumentation.instance?.interceptor.handler)
+        let urlInstrumentation = try XCTUnwrap(defaultDatadogCore.feature(URLSessionAutoInstrumentation.self))
+        let resourcesHandler = urlInstrumentation.interceptor.handler
         let rumInstrumentation = try XCTUnwrap(defaultDatadogCore.feature(RUMInstrumentation.self))
         let viewsHandler = rumInstrumentation.viewsHandler
         let userActionsHandler = try XCTUnwrap(rumInstrumentation.userActionsAutoInstrumentation?.handler)
@@ -1422,10 +1423,6 @@ class RUMMonitorTests: XCTestCase {
             Make sure `Global.rum = RUMMonitor.initialize()` is called before any action happens.
             """
         )
-
-        URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
-        rumInstrumentation.viewControllerSwizzler?.unswizzle()
-        rumInstrumentation.userActionsAutoInstrumentation?.swizzler.unswizzle()
     }
 
     // MARK: - Internal attributes

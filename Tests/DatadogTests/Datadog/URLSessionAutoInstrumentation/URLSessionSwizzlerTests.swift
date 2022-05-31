@@ -8,19 +8,22 @@ import XCTest
 @testable import Datadog
 
 class URLSessionSwizzlerTests: XCTestCase {
+    let core = DatadogCoreMock()
     private let interceptor = URLSessionInterceptorMock()
 
     override func setUpWithError() throws {
         super.setUp()
-        URLSessionAutoInstrumentation.instance = .init(
+        let instrumentation = URLSessionAutoInstrumentation(
             swizzler: try URLSessionSwizzler(),
             interceptor: interceptor
         )
-        URLSessionAutoInstrumentation.instance?.enable() // swizzle `URLSession`
+
+        instrumentation.enable() // swizzle `URLSession`
+        core.register(feature: instrumentation)
     }
 
     override func tearDown() {
-        URLSessionAutoInstrumentation.instance?.deinitialize() // unswizzle & deinit
+        core.flush()
         super.tearDown()
     }
 
@@ -50,7 +53,8 @@ class URLSessionSwizzlerTests: XCTestCase {
         interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
-        let session = server.getInterceptedURLSession(delegate: DDURLSessionDelegate())
+        let delegate = DDURLSessionDelegate(in: core)
+        let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
         let task = session.dataTask(with: URLRequest(url: .mockRandom())) { _, _, _ in
@@ -92,7 +96,8 @@ class URLSessionSwizzlerTests: XCTestCase {
         interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
-        let session = server.getInterceptedURLSession(delegate: DDURLSessionDelegate())
+        let delegate = DDURLSessionDelegate(in: core)
+        let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
         let task = session.dataTask(with: URL.mockRandom()) { _, _, _ in
@@ -134,7 +139,8 @@ class URLSessionSwizzlerTests: XCTestCase {
         interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
-        let session = server.getInterceptedURLSession(delegate: DDURLSessionDelegate())
+        let delegate = DDURLSessionDelegate(in: core)
+        let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
         let task = session.dataTask(with: URLRequest(url: .mockAny()))
@@ -168,7 +174,8 @@ class URLSessionSwizzlerTests: XCTestCase {
         interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
-        let session = server.getInterceptedURLSession(delegate: DDURLSessionDelegate())
+        let delegate = DDURLSessionDelegate(in: core)
+        let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
         let task = session.dataTask(with: URL.mockRandom())
@@ -196,7 +203,8 @@ class URLSessionSwizzlerTests: XCTestCase {
         interceptor.onTaskCompleted = { _, _ in notifyTaskCompleted.fulfill() }
 
         // Given
-        let nsSession = NSURLSessionBridge(server.getInterceptedURLSession(delegate: DDURLSessionDelegate()))!
+        let delegate = DDURLSessionDelegate(in: core)
+        let nsSession = NSURLSessionBridge(server.getInterceptedURLSession(delegate: delegate))!
 
         // When
         let task1 = nsSession.dataTask(with: URL.mockRandom(), completionHandler: nil)!
@@ -253,7 +261,8 @@ class URLSessionSwizzlerTests: XCTestCase {
         let expectedResponse: HTTPURLResponse = .mockResponseWith(statusCode: 200)
         let expectedData: Data = .mockRandom()
         let server = ServerMock(delivery: .success(response: expectedResponse, data: expectedData))
-        let session = server.getInterceptedURLSession(delegate: DDURLSessionDelegate())
+        let delegate = DDURLSessionDelegate(in: core)
+        let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
         let taskWithURLRequestAndCompletion = session.dataTask(with: URLRequest(url: .mockAny())) { data, response, error in
@@ -321,7 +330,8 @@ class URLSessionSwizzlerTests: XCTestCase {
         // Given
         let expectedError = NSError(domain: "network", code: 999, userInfo: [NSLocalizedDescriptionKey: "some error"])
         let server = ServerMock(delivery: .failure(error: expectedError))
-        let session = server.getInterceptedURLSession(delegate: DDURLSessionDelegate())
+        let delegate = DDURLSessionDelegate(in: core)
+        let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
         let taskWithURLRequestAndCompletion = session.dataTask(with: URLRequest(url: .mockAny())) { data, response, error in

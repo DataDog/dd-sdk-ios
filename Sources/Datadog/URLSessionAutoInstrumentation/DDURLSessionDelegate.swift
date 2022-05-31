@@ -28,37 +28,59 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDat
         return self
     }
 
-    var interceptor: URLSessionInterceptorType? { URLSessionAutoInstrumentation.instance?.interceptor }
-    let firstPartyURLsFilter: FirstPartyURLsFilter?
+    var instrumentation: URLSessionAutoInstrumentation? {
+        core().feature(URLSessionAutoInstrumentation.self)
+    }
+
+    let firstPartyURLsFilter: FirstPartyURLsFilter
+
+    private let core: () -> DatadogCoreProtocol
 
     @objc
     override public init() {
-        firstPartyURLsFilter = nil
+        core = { defaultDatadogCore }
+        firstPartyURLsFilter = FirstPartyURLsFilter(hosts: [])
+        super.init()
     }
 
-    /// Automatically tracked hosts can be customized per instance with this initializer
-    /// - Parameter additionalFirstPartyHosts: these hosts are tracked **in addition to** what was
-    /// passed to `DatadogConfiguration.Builder` via `trackURLSession(firstPartyHosts:)`
+    public convenience init(in core: DatadogCoreProtocol) {
+        self.init(in: core, additionalFirstPartyHosts: [])
+    }
+
+    /// Automatically tracked hosts can be customized per instance with this initializer.
     ///
-    /// **NOTE:** If `trackURLSession(firstPartyHosts:)` is never called, automatic tracking will **not** take place
+    /// **NOTE:** If `trackURLSession(firstPartyHosts:)` is never called, automatic tracking will **not** take place.
+    ///
+    /// - Parameter additionalFirstPartyHosts: these hosts are tracked **in addition to** what was
+    ///             passed to `DatadogConfiguration.Builder` via `trackURLSession(firstPartyHosts:)`
     @objc
-    public init(additionalFirstPartyHosts: Set<String>) {
-        firstPartyURLsFilter = FirstPartyURLsFilter(hosts: additionalFirstPartyHosts)
+    public convenience init(additionalFirstPartyHosts: Set<String>) {
+        self.init(in: defaultDatadogCore, additionalFirstPartyHosts: additionalFirstPartyHosts)
+    }
+
+    /// Automatically tracked hosts can be customized per instance with this initializer.
+    ///
+    /// - Parameters:
+    ///   - core: Datadog SDK core.
+    ///   - additionalFirstPartyHosts: additionalFirstPartyHosts: these hosts are tracked **in addition to** what was
+    ///                                passed to `DatadogConfiguration.Builder` via `trackURLSession(firstPartyHosts:)`
+    public init(in core: @autoclosure @escaping () -> DatadogCoreProtocol, additionalFirstPartyHosts: Set<String>) {
+        self.core = core
+        self.firstPartyURLsFilter = FirstPartyURLsFilter(hosts: additionalFirstPartyHosts)
+        super.init()
     }
 
     open func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
-        interceptor?.taskMetricsCollected(task: task, metrics: metrics)
+        instrumentation?.interceptor.taskMetricsCollected(task: task, metrics: metrics)
     }
 
     open func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         // NOTE: This delegate method is only called for `URLSessionTasks` created without the completion handler.
-
-        interceptor?.taskCompleted(task: task, error: error)
+        instrumentation?.interceptor.taskCompleted(task: task, error: error)
     }
 
     open func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
         // NOTE: This delegate method is only called for `URLSessionTasks` created without the completion handler.
-
-        interceptor?.taskReceivedData(task: dataTask, data: data)
+        instrumentation?.interceptor.taskReceivedData(task: dataTask, data: data)
     }
 }
