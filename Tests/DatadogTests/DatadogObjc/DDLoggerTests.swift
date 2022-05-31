@@ -29,7 +29,7 @@ class DDLoggerTests: XCTestCase {
 
     func testSendingLogsWithDifferentLevels() throws {
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
-        defaultDatadogCore.register(feature: feature)
+        defaultDatadogCore.v1.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
 
@@ -51,7 +51,7 @@ class DDLoggerTests: XCTestCase {
 
     func testSendingNSError() throws {
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
-        defaultDatadogCore.register(feature: feature)
+        defaultDatadogCore.v1.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
 
@@ -83,7 +83,7 @@ class DDLoggerTests: XCTestCase {
 
     func testSendingMessageAttributes() throws {
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
-        defaultDatadogCore.register(feature: feature)
+        defaultDatadogCore.v1.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
 
@@ -108,7 +108,7 @@ class DDLoggerTests: XCTestCase {
 
     func testSendingLoggerAttributes() throws {
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
-        defaultDatadogCore.register(feature: feature)
+        defaultDatadogCore.v1.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
 
@@ -148,7 +148,7 @@ class DDLoggerTests: XCTestCase {
             directory: temporaryDirectory,
             configuration: .mockWith(common: .mockWith(environment: "test"))
         )
-        defaultDatadogCore.register(feature: feature)
+        defaultDatadogCore.v1.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
 

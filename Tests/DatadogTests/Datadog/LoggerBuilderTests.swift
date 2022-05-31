@@ -48,7 +48,7 @@ class LoggerBuilderTests: XCTestCase {
         XCTAssertNil(logger.rumContextIntegration)
         XCTAssertNil(logger.activeSpanIntegration)
 
-        let feature = try XCTUnwrap(core.feature(LoggingFeature.self))
+        let feature = try XCTUnwrap(core.v1.feature(LoggingFeature.self))
         XCTAssertTrue(
             logger.logOutput is LogFileOutput,
             "When Logging feature is enabled the Logger should use `LogFileOutput`."
@@ -107,7 +107,7 @@ class LoggerBuilderTests: XCTestCase {
         XCTAssertNil(logger.rumContextIntegration)
         XCTAssertNil(logger.activeSpanIntegration)
 
-        let feature = try XCTUnwrap(core.feature(LoggingFeature.self))
+        let feature = try XCTUnwrap(core.v1.feature(LoggingFeature.self))
         XCTAssertTrue(
             logger.logOutput is LogFileOutput,
             "When Logging feature is enabled the Logger should use `LogFileOutput`."

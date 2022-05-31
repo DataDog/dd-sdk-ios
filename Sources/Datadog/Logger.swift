@@ -399,7 +399,7 @@ public class Logger {
         }
 
         private func buildOrThrow(in core: DatadogCoreProtocol) throws -> Logger {
-            guard let loggingFeature = core.feature(LoggingFeature.self) else {
+            guard let loggingFeature = core.v1.feature(LoggingFeature.self) else {
                 throw ProgrammerError(
                     description: Datadog.isInitialized
                         ? "`Logger.builder.build()` produces a non-functional logger, as the logging feature is disabled."
@@ -411,8 +411,8 @@ public class Logger {
 
             // RUMM-2133 Note: strong feature coupling while migrating to v2.
             // In v2 active span will be provided in context from feature scope.
-            let rumEnabled = core.feature(RUMFeature.self) != nil
-            let tracingEnabled = core.feature(TracingFeature.self) != nil
+            let rumEnabled = core.v1.feature(RUMFeature.self) != nil
+            let tracingEnabled = core.v1.feature(TracingFeature.self) != nil
 
             return Logger(
                 logBuilder: logBuilder,

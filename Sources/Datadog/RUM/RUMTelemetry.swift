@@ -129,7 +129,7 @@ internal final class RUMTelemetry: Telemetry {
     }
 
     private func record(event id: String, operation: @escaping (RUMContext, Writer) -> Void) {
-        let rum = core.feature(RUMFeature.self)
+        let rum = core.v1.feature(RUMFeature.self)
 
         guard
             sampler.sample(),

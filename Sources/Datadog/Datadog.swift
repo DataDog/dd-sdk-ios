@@ -151,9 +151,9 @@ public class Datadog {
 
     /// Clears all data that has not already been sent to Datadog servers.
     public static func clearAllData() {
-        let logging = defaultDatadogCore.feature(LoggingFeature.self)
-        let tracing = defaultDatadogCore.feature(TracingFeature.self)
-        let rum = defaultDatadogCore.feature(RUMFeature.self)
+        let logging = defaultDatadogCore.v1.feature(LoggingFeature.self)
+        let tracing = defaultDatadogCore.v1.feature(TracingFeature.self)
+        let rum = defaultDatadogCore.v1.feature(RUMFeature.self)
         logging?.storage.clearAllData()
         tracing?.storage.clearAllData()
         rum?.storage.clearAllData()
@@ -297,14 +297,14 @@ public class Datadog {
             core.register(feature: urlSessionAutoInstrumentation)
         }
 
-        core.feature(RUMInstrumentation.self)?.enable()
-        core.feature(URLSessionAutoInstrumentation.self)?.enable()
+        core.v1.feature(RUMInstrumentation.self)?.enable()
+        core.v1.feature(URLSessionAutoInstrumentation.self)?.enable()
 
         defaultDatadogCore = core
 
         // After everything is set up, if the Crash Reporting feature was enabled,
         // register crash reporter and send crash report if available:
-        if let crashReportingFeature = core.feature(CrashReportingFeature.self) {
+        if let crashReportingFeature = core.v1.feature(CrashReportingFeature.self) {
             Global.crashReporter = CrashReporter(
                 crashReportingFeature: crashReportingFeature,
                 loggingFeature: logging,
@@ -333,11 +333,11 @@ public class Datadog {
         assert(Datadog.isInitialized, "SDK must be first initialized.")
 
         // Tear down and deinitialize all features:
-        let logging = defaultDatadogCore.feature(LoggingFeature.self)
-        let tracing = defaultDatadogCore.feature(TracingFeature.self)
-        let rum = defaultDatadogCore.feature(RUMFeature.self)
-        let rumInstrumentation = defaultDatadogCore.feature(RUMInstrumentation.self)
-        let urlSessionInstrumentation = defaultDatadogCore.feature(URLSessionAutoInstrumentation.self)
+        let logging = defaultDatadogCore.v1.feature(LoggingFeature.self)
+        let tracing = defaultDatadogCore.v1.feature(TracingFeature.self)
+        let rum = defaultDatadogCore.v1.feature(RUMFeature.self)
+        let rumInstrumentation = defaultDatadogCore.v1.feature(RUMInstrumentation.self)
+        let urlSessionInstrumentation = defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self)
         logging?.deinitialize()
         tracing?.deinitialize()
         rum?.deinitialize()

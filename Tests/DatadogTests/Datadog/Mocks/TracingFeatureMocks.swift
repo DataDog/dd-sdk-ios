@@ -87,7 +87,7 @@ extension TracingFeature {
 
     // swiftlint:disable:next function_default_parameter_at_end
     static func waitAndReturnSpanMatchers(in core: DatadogCoreProtocol = defaultDatadogCore, count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [SpanMatcher] {
-        guard let tracing = core.feature(TracingFeature.self) else {
+        guard let tracing = core.v1.feature(TracingFeature.self) else {
             preconditionFailure("TracingFeature is not registered in core")
         }
 

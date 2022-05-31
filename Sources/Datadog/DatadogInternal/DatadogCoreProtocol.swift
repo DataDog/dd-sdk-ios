@@ -11,19 +11,6 @@ public internal(set) var defaultDatadogCore: DatadogCoreProtocol = NOOPDatadogCo
 /// A Datadog Core holds a set of features and is responsible of managing their storage
 /// and upload mechanism. It also provides a thread-safe scope for writing events.
 public protocol DatadogCoreProtocol {
-    // MARK: - V1 interface
-
-    /// Registers a feature instance by its type description.
-    ///
-    /// - Parameter instance: The feaure instance to register
-    func register<T>(feature instance: T?)
-
-    /// Returns a Feature instance by its type.
-    ///
-    /// - Parameters:
-    ///   - type: The feature instance type.
-    /// - Returns: The feature if any.
-    func feature<T>(_ type: T.Type) -> T?
 }
 
 /// Provide feature specific storage configuration.
@@ -73,13 +60,4 @@ public protocol FeatureScope {
 
 /// No-op implementation of `DatadogFeatureRegistry`.
 internal struct NOOPDatadogCore: DatadogCoreProtocol {
-    // MARK: - V1 interface
-
-    /// no-op
-    func register<T>(feature instance: T?) {}
-
-    /// no-op
-    func feature<T>(_ type: T.Type) -> T? {
-        return nil
-    }
 }

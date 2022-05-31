@@ -46,7 +46,7 @@ class TracerConfigurationTests: XCTestCase {
 
         XCTAssertNil(tracer.rumContextIntegration)
 
-        let feature = try XCTUnwrap(core.feature(TracingFeature.self))
+        let feature = try XCTUnwrap(core.v1.feature(TracingFeature.self))
         XCTAssertEqual((tracer.spanOutput as? SpanFileOutput)?.environment, "tests")
         XCTAssertEqual(tracer.spanBuilder.applicationVersion, "1.2.3")
         XCTAssertEqual(tracer.spanBuilder.serviceName, "service-name")
@@ -78,7 +78,7 @@ class TracerConfigurationTests: XCTestCase {
 
         XCTAssertNil(tracer.rumContextIntegration)
 
-        let feature = try XCTUnwrap(core.feature(TracingFeature.self))
+        let feature = try XCTUnwrap(core.v1.feature(TracingFeature.self))
         XCTAssertEqual((tracer.spanOutput as? SpanFileOutput)?.environment, "tests")
         XCTAssertEqual(tracer.spanBuilder.applicationVersion, "1.2.3")
         XCTAssertEqual(tracer.spanBuilder.serviceName, "custom-service-name")
@@ -105,13 +105,13 @@ class TracerConfigurationTests: XCTestCase {
         XCTAssertNil(tracingLogBuilder.networkConnectionInfoProvider)
         XCTAssertNil(tracingLogBuilder.carrierInfoProvider)
 
-        let feature = try XCTUnwrap(core.feature(TracingFeature.self))
+        let feature = try XCTUnwrap(core.v1.feature(TracingFeature.self))
         XCTAssertTrue(tracer.loggingIntegration?.logBuilder.userInfoProvider === feature.userInfoProvider)
     }
 
     func testWhenLoggingFeatureIsNotEnabled_itDoesNotUseLogsIntegration() throws {
         // When
-        XCTAssertNil(core.feature(LoggingFeature.self))
+        XCTAssertNil(core.v1.feature(LoggingFeature.self))
 
         // Then
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd

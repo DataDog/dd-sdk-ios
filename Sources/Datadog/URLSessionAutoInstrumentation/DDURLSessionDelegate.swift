@@ -29,7 +29,7 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDat
     }
 
     var instrumentation: URLSessionAutoInstrumentation? {
-        core().feature(URLSessionAutoInstrumentation.self)
+        core().v1.feature(URLSessionAutoInstrumentation.self)
     }
 
     let firstPartyURLsFilter: FirstPartyURLsFilter

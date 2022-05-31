@@ -99,7 +99,7 @@ internal final class DatadogCore {
     }
 }
 
-extension DatadogCore: DatadogCoreProtocol {
+extension DatadogCore: DatadogV1CoreProtocol {
     // MARK: - V1 interface
 
     /// Creates V1 Feature using its V2 configuration.
@@ -158,4 +158,8 @@ extension DatadogCore: DatadogCoreProtocol {
         let key = String(describing: T.self)
         return v1Features[key] as? T
     }
+}
+
+internal protocol V1Feature {
+    var storage: FeatureStorage { get }
 }
