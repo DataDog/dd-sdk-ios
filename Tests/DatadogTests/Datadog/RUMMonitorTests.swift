@@ -296,7 +296,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testLoadingResourceWithURL_thenMarksFirstPartyURLs() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             configuration: .mockWith(
                 // .mockRandom always uses foo.com
                 firstPartyHosts: ["foo.com"]
@@ -322,7 +322,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testLoadingResourceWithURLString_thenMarksFirstPartyURLs() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             configuration: .mockWith(
                 firstPartyHosts: ["foo.com"]
             )
