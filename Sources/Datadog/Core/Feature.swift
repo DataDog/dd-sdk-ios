@@ -70,15 +70,12 @@ internal struct FeatureStorage {
 
     init(
         featureName: String,
+        queue: DispatchQueue,
         dataFormat: DataFormat,
         directories: FeatureDirectories,
         commonDependencies: FeaturesCommonDependencies,
         telemetry: Telemetry?
     ) {
-        let readWriteQueue = DispatchQueue(
-            label: "com.datadoghq.ios-sdk-\(featureName)-read-write",
-            target: .global(qos: .utility)
-        )
         let authorizedFilesOrchestrator = FilesOrchestrator(
             directory: directories.authorized,
             performance: commonDependencies.performance,
@@ -93,7 +90,7 @@ internal struct FeatureStorage {
         )
 
         let dataOrchestrator = DataOrchestrator(
-            queue: readWriteQueue,
+            queue: queue,
             authorizedFilesOrchestrator: authorizedFilesOrchestrator,
             unauthorizedFilesOrchestrator: unauthorizedFilesOrchestrator
         )
@@ -112,7 +109,7 @@ internal struct FeatureStorage {
 
         let consentAwareDataWriter = ConsentAwareDataWriter(
             consentProvider: commonDependencies.consentProvider,
-            readWriteQueue: readWriteQueue,
+            readWriteQueue: queue,
             unauthorizedWriter: unauthorizedFileWriter,
             authorizedWriter: authorizedFileWriter,
             dataMigratorFactory: DataMigratorFactory(
@@ -122,12 +119,12 @@ internal struct FeatureStorage {
         )
 
         let arbitraryDataWriter = ArbitraryDataWriter(
-            readWriteQueue: readWriteQueue,
+            readWriteQueue: queue,
             writer: authorizedFileWriter
         )
 
         let authorisedDataReader = DataReader(
-            readWriteQueue: readWriteQueue,
+            readWriteQueue: queue,
             fileReader: FileReader(
                 dataFormat: dataFormat,
                 orchestrator: authorizedFilesOrchestrator,
