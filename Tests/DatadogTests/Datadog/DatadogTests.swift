@@ -120,9 +120,6 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(defaultDatadogCore.feature(RUMInstrumentation.self))
             XCTAssertNil(defaultDatadogCore.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
-            let tracing = defaultDatadogCore.feature(TracingFeature.self)
-            XCTAssertNotNil(tracing)
-            XCTAssertNotNil(tracing?.loggingFeatureAdapter)
             XCTAssertNil((defaultDatadogCore as? DatadogCore)?.telemetry, "When RUM is disabled, telemetry monitor should not be set")
         }
         verify(configuration: rumBuilder.build()) {
@@ -133,9 +130,6 @@ class DatadogTests: XCTestCase {
             XCTAssertNotNil(defaultDatadogCore.feature(RUMInstrumentation.self))
             XCTAssertNil(defaultDatadogCore.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
-            let tracing = defaultDatadogCore.feature(TracingFeature.self)
-            XCTAssertNotNil(tracing)
-            XCTAssertNotNil(tracing?.loggingFeatureAdapter)
             XCTAssertNotNil((defaultDatadogCore as? DatadogCore)?.telemetry, "When RUM is enabled, telemetry monitor should be set")
         }
 
@@ -147,9 +141,6 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(defaultDatadogCore.feature(RUMInstrumentation.self))
             XCTAssertNil(defaultDatadogCore.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
-            let tracing = defaultDatadogCore.feature(TracingFeature.self)
-            XCTAssertNotNil(tracing)
-            XCTAssertNil(tracing?.loggingFeatureAdapter)
             XCTAssertNil((defaultDatadogCore as? DatadogCore)?.telemetry)
         }
         verify(configuration: rumBuilder.enableLogging(false).build()) {
@@ -161,9 +152,6 @@ class DatadogTests: XCTestCase {
             XCTAssertNotNil(defaultDatadogCore.feature(RUMInstrumentation.self))
             XCTAssertNil(defaultDatadogCore.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
-            let tracing = defaultDatadogCore.feature(TracingFeature.self)
-            XCTAssertNotNil(tracing)
-            XCTAssertNil(tracing?.loggingFeatureAdapter)
             XCTAssertNotNil((defaultDatadogCore as? DatadogCore)?.telemetry)
         }
 
@@ -196,9 +184,6 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(defaultDatadogCore.feature(RUMInstrumentation.self))
             XCTAssertNil(defaultDatadogCore.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
-            let tracing = defaultDatadogCore.feature(TracingFeature.self)
-            XCTAssertNotNil(tracing)
-            XCTAssertNotNil(tracing?.loggingFeatureAdapter)
             XCTAssertNil((defaultDatadogCore as? DatadogCore)?.telemetry)
         }
         verify(configuration: rumBuilder.enableRUM(false).build()) {
@@ -209,9 +194,6 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(defaultDatadogCore.feature(RUMInstrumentation.self))
             XCTAssertNil(defaultDatadogCore.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
-            let tracing = defaultDatadogCore.feature(TracingFeature.self)
-            XCTAssertNotNil(tracing)
-            XCTAssertNotNil(tracing?.loggingFeatureAdapter)
             XCTAssertNil((defaultDatadogCore as? DatadogCore)?.telemetry)
         }
 
@@ -472,7 +454,7 @@ class DatadogTests: XCTestCase {
 
         let featureDirectories: [FeatureDirectories] = [
             try FeatureDirectories(sdkRootDirectory: core.rootDirectory, storageConfiguration: createV2LoggingStorageConfiguration()),
-            try obtainTracingFeatureDirectories(),
+            try FeatureDirectories(sdkRootDirectory: core.rootDirectory, storageConfiguration: createV2TracingStorageConfiguration()),
             try FeatureDirectories(sdkRootDirectory: core.rootDirectory, storageConfiguration: createV2RUMStorageConfiguration())
         ]
 

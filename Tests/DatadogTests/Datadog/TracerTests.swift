@@ -13,13 +13,11 @@ class TracerTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        temporaryFeatureDirectories.create()
         temporaryDirectory.create()
     }
 
     override func tearDown() {
         core.flush()
-        temporaryFeatureDirectories.delete()
         temporaryDirectory.delete()
         super.tearDown()
     }
@@ -28,7 +26,7 @@ class TracerTests: XCTestCase {
 
     func testSendingSpanWithDefaultTracer() throws {
         let feature: TracingFeature = .mockByRecordingSpanMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             configuration: .mockWith(
                 common: .mockWith(
                     applicationVersion: "1.0.0",
@@ -37,12 +35,12 @@ class TracerTests: XCTestCase {
                     environment: "custom",
                     source: "abc",
                     sdkVersion: "1.2.3"
-                )
+                ),
+                uuidGenerator: RelativeTracingUUIDGenerator(startingFrom: 1)
             ),
             dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
-            ),
-            tracingUUIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1)
+            )
         )
         core.register(feature: feature)
 
@@ -79,7 +77,7 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanWithCustomizedTracer() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(
@@ -110,7 +108,7 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanWithGlobalTags() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(
@@ -137,7 +135,7 @@ class TracerTests: XCTestCase {
     // MARK: - Sending Customized Spans
 
     func testSendingCustomizedSpan() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
@@ -165,7 +163,7 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanWithParentAndBaggageItems() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
@@ -225,7 +223,7 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanWithActiveSpanAsAParent() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
@@ -257,7 +255,7 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpansWithNoParent() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
@@ -286,7 +284,7 @@ class TracerTests: XCTestCase {
     }
 
     func testStartingRootActiveSpanInAsynchronousJobs() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core)
@@ -333,7 +331,7 @@ class TracerTests: XCTestCase {
         defer { defaultDatadogCore = NOOPDatadogCore() }
 
         let feature: TracingFeature = .mockByRecordingSpanMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 userInfoProvider: core.dependencies.userInfoProvider
             )
@@ -392,7 +390,7 @@ class TracerTests: XCTestCase {
     func testSendingCarrierInfoWhenEnteringAndLeavingCellularServiceRange() throws {
         let carrierInfoProvider = CarrierInfoProviderMock(carrierInfo: nil)
         let feature: TracingFeature = .mockByRecordingSpanMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 carrierInfoProvider: carrierInfoProvider
             )
@@ -439,7 +437,7 @@ class TracerTests: XCTestCase {
     func testSendingNetworkConnectionInfoWhenReachabilityChanges() throws {
         let networkConnectionInfoProvider = NetworkConnectionInfoProviderMock.mockAny()
         let feature: TracingFeature = .mockByRecordingSpanMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 networkConnectionInfoProvider: networkConnectionInfoProvider
             )
@@ -502,7 +500,7 @@ class TracerTests: XCTestCase {
         let core = DatadogCoreMock()
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let feature: TracingFeature = .mockWith(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 mobileDevice: .mockWith(
                     currentBatteryStatus: { () -> MobileDevice.BatteryStatus in
@@ -526,7 +524,7 @@ class TracerTests: XCTestCase {
         let core = DatadogCoreMock()
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let feature: TracingFeature = .mockWith(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
                     networkConnectionInfo: .mockWith(reachability: .no)
@@ -547,7 +545,7 @@ class TracerTests: XCTestCase {
     // MARK: - Sending tags
 
     func testSendingSpanTagsOfDifferentEncodableValues() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
@@ -627,11 +625,10 @@ class TracerTests: XCTestCase {
         core.register(feature: logging)
 
         let tracing: TracingFeature = .mockByRecordingSpanMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
-            ),
-            loggingFeature: logging
+            )
         )
         core.register(feature: tracing)
 
@@ -671,11 +668,10 @@ class TracerTests: XCTestCase {
         core.register(feature: logging)
 
         let tracing: TracingFeature = .mockByRecordingSpanMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
-            ),
-            loggingFeature: logging
+            )
         )
         core.register(feature: tracing)
 
@@ -707,11 +703,10 @@ class TracerTests: XCTestCase {
         core.register(feature: logging)
 
         let tracing: TracingFeature = .mockByRecordingSpanMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
-            ),
-            loggingFeature: logging
+            )
         )
         core.register(feature: tracing)
 
@@ -749,11 +744,10 @@ class TracerTests: XCTestCase {
         core.register(feature: logging)
 
         let tracing: TracingFeature = .mockByRecordingSpanMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
-            ),
-            loggingFeature: logging
+            )
         )
         core.register(feature: tracing)
 
@@ -779,7 +773,7 @@ class TracerTests: XCTestCase {
     // MARK: - Integration With RUM Feature
 
     func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingSpan_itContainsCurrentRUMContext() throws {
-        let tracing: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        let tracing: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         core.register(feature: tracing)
         let rum: RUMFeature = .mockNoOp()
         core.register(feature: rum)
@@ -805,7 +799,7 @@ class TracerTests: XCTestCase {
     }
 
     func testGivenBundlingWithRUMEnabledButRUMMonitorNotRegistered_whenSendingSpan_itPrintsWarning() throws {
-        let tracing: TracingFeature = .mockByRecordingSpanMatchers(directories: temporaryFeatureDirectories)
+        let tracing: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         core.register(feature: tracing)
         let rum: RUMFeature = .mockNoOp()
         core.register(feature: rum)
@@ -913,7 +907,7 @@ class TracerTests: XCTestCase {
 
         // When
         let feature: TracingFeature = .mockByRecordingSpanMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(using: deviceTime),
                 dateCorrector: DateCorrectorMock(correctionOffset: serverTimeDifference)
@@ -947,7 +941,7 @@ class TracerTests: XCTestCase {
 
         // Given
         let feature: TracingFeature = .mockByRecordingSpanMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(consentProvider: consentProvider)
         )
         core.register(feature: feature)

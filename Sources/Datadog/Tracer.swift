@@ -49,12 +49,12 @@ public class Tracer: OTTracer {
     internal let spanBuilder: SpanEventBuilder
     /// Writes the `Span` to file.
     internal let spanOutput: SpanOutput
-    /// Writes span logs to output. `nil` if Logging feature is disabled.
-    internal let logOutput: LoggingForTracingAdapter.AdaptedLogOutput?
     /// Queue ensuring thread-safety of the `Tracer` and `DDSpan` operations.
     internal let queue: DispatchQueue
-    /// Integration with RUM Context. `nil` if disabled for this Tracer or if the RUM feature disabled.
+    /// Integration with RUM Context. `nil` if disabled for this Tracer or if the RUM feature is disabled.
     internal let rumContextIntegration: TracingWithRUMContextIntegration?
+    /// Integration with Logging. `nil` if the Logging feature is disabled.
+    internal let loggingIntegration: TracingWithLoggingIntegration?
 
     private let dateProvider: DateProvider
     private let tracingUUIDGenerator: TracingUUIDGenerator
@@ -88,7 +88,8 @@ public class Tracer: OTTracer {
             return DDTracer(
                 tracingFeature: tracingFeature,
                 tracerConfiguration: configuration,
-                rumEnabled: core.feature(RUMFeature.self) != nil
+                rumEnabled: core.feature(RUMFeature.self) != nil,
+                loggingFeature: core.feature(LoggingFeature.self)
             )
         } catch {
             consolePrint("\(error)")
@@ -96,7 +97,12 @@ public class Tracer: OTTracer {
         }
     }
 
-    internal convenience init(tracingFeature: TracingFeature, tracerConfiguration: Configuration, rumEnabled: Bool) {
+    internal convenience init(
+        tracingFeature: TracingFeature,
+        tracerConfiguration: Configuration,
+        rumEnabled: Bool,
+        loggingFeature: LoggingFeature?
+    ) {
         self.init(
             spanBuilder: SpanEventBuilder(
                 sdkVersion: tracingFeature.configuration.common.sdkVersion,
@@ -115,28 +121,25 @@ public class Tracer: OTTracer {
                 fileWriter: tracingFeature.storage.writer,
                 environment: tracingFeature.configuration.common.environment
             ),
-            logOutput: tracingFeature
-                .loggingFeatureAdapter?
-                .resolveLogOutput(usingTracingFeature: tracingFeature, tracerConfiguration: tracerConfiguration),
             dateProvider: tracingFeature.dateProvider,
             tracingUUIDGenerator: tracingFeature.tracingUUIDGenerator,
             globalTags: tracerConfiguration.globalTags,
-            rumContextIntegration: (rumEnabled && tracerConfiguration.bundleWithRUM) ? TracingWithRUMContextIntegration() : nil
+            rumContextIntegration: (rumEnabled && tracerConfiguration.bundleWithRUM) ? TracingWithRUMContextIntegration() : nil,
+            loggingIntegration: loggingFeature.map { TracingWithLoggingIntegration(tracingFeature: tracingFeature, tracerConfiguration: tracerConfiguration, loggingFeature: $0) }
         )
     }
 
     internal init(
         spanBuilder: SpanEventBuilder,
         spanOutput: SpanOutput,
-        logOutput: LoggingForTracingAdapter.AdaptedLogOutput?,
         dateProvider: DateProvider,
         tracingUUIDGenerator: TracingUUIDGenerator,
         globalTags: [String: Encodable]?,
-        rumContextIntegration: TracingWithRUMContextIntegration?
+        rumContextIntegration: TracingWithRUMContextIntegration?,
+        loggingIntegration: TracingWithLoggingIntegration?
     ) {
         self.spanBuilder = spanBuilder
         self.spanOutput = spanOutput
-        self.logOutput = logOutput
         self.queue = DispatchQueue(
             label: "com.datadoghq.tracer",
             target: .global(qos: .userInteractive)
@@ -145,6 +148,7 @@ public class Tracer: OTTracer {
         self.tracingUUIDGenerator = tracingUUIDGenerator
         self.globalTags = globalTags
         self.rumContextIntegration = rumContextIntegration
+        self.loggingIntegration = loggingIntegration
     }
 
     // MARK: - Open Tracing interface

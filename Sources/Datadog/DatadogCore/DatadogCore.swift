@@ -12,8 +12,8 @@ internal typealias CoreConfiguration = FeaturesConfiguration.Common
 /// Feature-agnostic set of dependencies powering Features storage, upload and event recording.
 internal typealias CoreDependencies = FeaturesCommonDependencies
 
-/// A shim interface for uniforming V1 Features and letting their generic initialization in `DatadogCore`.
-internal protocol V1Feature {
+/// A shim interface for allowing V1 Features generic initialization in `DatadogCore`.
+internal protocol V1FeatureInitializable {
     /// The configuration specific to this Feature.
     /// In V2 this will likely become a part of the public interface for the Feature module.
     associatedtype Configuration
@@ -103,7 +103,7 @@ extension DatadogCore: DatadogCoreProtocol {
     /// Feature-specific part is provided explicitly with `featureSpecificConfiguration`.
     ///
     /// - Returns: an instance of V1 feature
-    func create<Feature: V1Feature>(
+    func create<Feature: V1FeatureInitializable>(
         storageConfiguration: FeatureStorageConfiguration,
         uploadConfiguration: FeatureUploadConfiguration,
         featureSpecificConfiguration: Feature.Configuration

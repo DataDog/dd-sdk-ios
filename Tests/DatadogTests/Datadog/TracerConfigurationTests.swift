@@ -15,10 +15,10 @@ class TracerConfigurationTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        temporaryFeatureDirectories.create()
+        temporaryDirectory.create()
 
         let feature: TracingFeature = .mockByRecordingSpanMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             configuration: .mockWith(
                 common: .mockWith(
                     applicationVersion: "1.2.3",
@@ -29,8 +29,7 @@ class TracerConfigurationTests: XCTestCase {
             dependencies: .mockWith(
                 networkConnectionInfoProvider: networkConnectionInfoProvider,
                 carrierInfoProvider: carrierInfoProvider
-            ),
-            loggingFeature: .mockNoOp()
+            )
         )
 
         core.register(feature: feature)
@@ -38,7 +37,7 @@ class TracerConfigurationTests: XCTestCase {
 
     override func tearDown() {
         core.flush()
-        temporaryFeatureDirectories.delete()
+        temporaryDirectory.delete()
         super.tearDown()
     }
 
@@ -54,19 +53,6 @@ class TracerConfigurationTests: XCTestCase {
         XCTAssertTrue(tracer.spanBuilder.userInfoProvider === feature.userInfoProvider)
         XCTAssertNil(tracer.spanBuilder.networkConnectionInfoProvider)
         XCTAssertNil(tracer.spanBuilder.carrierInfoProvider)
-
-        XCTAssertTrue(
-            tracer.logOutput?.loggingOutput is LogFileOutput,
-            "When Logging feature is enabled Tracer should use logger pointing to `LogFileOutput`."
-        )
-        let tracingLogBuilder = try XCTUnwrap(tracer.logOutput?.logBuilder)
-        XCTAssertEqual(tracingLogBuilder.applicationVersion, "1.2.3")
-        XCTAssertEqual(tracingLogBuilder.environment, "tests")
-        XCTAssertEqual(tracingLogBuilder.serviceName, "service-name")
-        XCTAssertEqual(tracingLogBuilder.loggerName, "trace")
-        XCTAssertTrue(tracingLogBuilder.userInfoProvider === feature.userInfoProvider)
-        XCTAssertNil(tracingLogBuilder.networkConnectionInfoProvider)
-        XCTAssertNil(tracingLogBuilder.carrierInfoProvider)
     }
 
     func testDefaultTracerWithRUMEnabled() {
@@ -99,18 +85,36 @@ class TracerConfigurationTests: XCTestCase {
         XCTAssertTrue(tracer.spanBuilder.userInfoProvider === feature.userInfoProvider)
         XCTAssertTrue(tracer.spanBuilder.networkConnectionInfoProvider as AnyObject === feature.networkConnectionInfoProvider as AnyObject)
         XCTAssertTrue(tracer.spanBuilder.carrierInfoProvider as AnyObject === feature.carrierInfoProvider as AnyObject)
+    }
 
+    func testWhenLoggingFeatureIsEnabled_itUsesLogsIntegration() throws {
+        // When
+        core.register(feature: LoggingFeature.mockNoOp())
+
+        // Then
+        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
         XCTAssertTrue(
-            tracer.logOutput?.loggingOutput is LogFileOutput,
+            tracer.loggingIntegration?.loggingOutput is LogFileOutput,
             "When Logging feature is enabled Tracer should use logger pointing to `LogFileOutput`."
         )
-        let tracingLogBuilder = try XCTUnwrap(tracer.logOutput?.logBuilder)
+        let tracingLogBuilder = try XCTUnwrap(tracer.loggingIntegration?.logBuilder)
         XCTAssertEqual(tracingLogBuilder.applicationVersion, "1.2.3")
         XCTAssertEqual(tracingLogBuilder.environment, "tests")
-        XCTAssertEqual(tracingLogBuilder.serviceName, "custom-service-name")
+        XCTAssertEqual(tracingLogBuilder.serviceName, "service-name")
         XCTAssertEqual(tracingLogBuilder.loggerName, "trace")
-        XCTAssertTrue(tracingLogBuilder.userInfoProvider === feature.userInfoProvider)
-        XCTAssertTrue(tracingLogBuilder.networkConnectionInfoProvider as AnyObject === feature.networkConnectionInfoProvider as AnyObject)
-        XCTAssertTrue(tracingLogBuilder.carrierInfoProvider as AnyObject === feature.carrierInfoProvider as AnyObject)
+        XCTAssertNil(tracingLogBuilder.networkConnectionInfoProvider)
+        XCTAssertNil(tracingLogBuilder.carrierInfoProvider)
+
+        let feature = try XCTUnwrap(core.feature(TracingFeature.self))
+        XCTAssertTrue(tracer.loggingIntegration?.logBuilder.userInfoProvider === feature.userInfoProvider)
+    }
+
+    func testWhenLoggingFeatureIsNotEnabled_itDoesNotUseLogsIntegration() throws {
+        // When
+        XCTAssertNil(core.feature(LoggingFeature.self))
+
+        // Then
+        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
+        XCTAssertNil(tracer.loggingIntegration)
     }
 }

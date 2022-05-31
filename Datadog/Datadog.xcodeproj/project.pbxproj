@@ -10,6 +10,8 @@
 		61020C2A2757AD91005EEAEA /* BackgroundLocationMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61020C292757AD91005EEAEA /* BackgroundLocationMonitor.swift */; };
 		61020C2C2758E853005EEAEA /* DebugBackgroundEventsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61020C2B2758E853005EEAEA /* DebugBackgroundEventsViewController.swift */; };
 		6105D1A02508F1600040DD22 /* LoggingWithActiveSpanIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6105D19F2508F1600040DD22 /* LoggingWithActiveSpanIntegration.swift */; };
+		6108676D2840FB35002DF3C0 /* TracingV2Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6108676C2840FB35002DF3C0 /* TracingV2Configuration.swift */; };
+		6108676E2840FB35002DF3C0 /* TracingV2Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6108676C2840FB35002DF3C0 /* TracingV2Configuration.swift */; };
 		61098D2B27FEE3F00021237A /* MessagePortChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61098D2A27FEE3F00021237A /* MessagePortChannel.swift */; };
 		61098D2C27FEE3F00021237A /* MessagePortChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61098D2A27FEE3F00021237A /* MessagePortChannel.swift */; };
 		61098D2D27FEE4130021237A /* MessagePortChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61098D2A27FEE3F00021237A /* MessagePortChannel.swift */; };
@@ -122,8 +124,8 @@
 		611EA14E25810E3700BC0E56 /* TSConsentSettingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611EA14D25810E3700BC0E56 /* TSConsentSettingViewController.swift */; };
 		611EA16625825FB300BC0E56 /* TrackingConsentScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611EA16525825FB300BC0E56 /* TrackingConsentScenarioTests.swift */; };
 		611F82032563C66100CB9BDB /* UIKitRUMViewsPredicateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611F82022563C66100CB9BDB /* UIKitRUMViewsPredicateTests.swift */; };
-		61216276247D1CD700AC5D67 /* LoggingForTracingAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216275247D1CD700AC5D67 /* LoggingForTracingAdapter.swift */; };
-		6121627C247D220500AC5D67 /* LoggingForTracingAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216279247D21FE00AC5D67 /* LoggingForTracingAdapterTests.swift */; };
+		61216276247D1CD700AC5D67 /* TracingWithLoggingIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216275247D1CD700AC5D67 /* TracingWithLoggingIntegration.swift */; };
+		6121627C247D220500AC5D67 /* TracingWithLoggingIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216279247D21FE00AC5D67 /* TracingWithLoggingIntegrationTests.swift */; };
 		61216B762666DDA10089DCD1 /* LoggerBuilderE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216B752666DDA10089DCD1 /* LoggerBuilderE2ETests.swift */; };
 		61216B7B2667A9AE0089DCD1 /* LoggingConfigurationE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216B7A2667A9AE0089DCD1 /* LoggingConfigurationE2ETests.swift */; };
 		61216B802667C79B0089DCD1 /* LoggingTrackingConsentE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216B7F2667C79B0089DCD1 /* LoggingTrackingConsentE2ETests.swift */; };
@@ -622,7 +624,7 @@
 		D2CB6E1B27C50EAE00A62B57 /* OTTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909E924A24DD3005EA2DE /* OTTracer.swift */; };
 		D2CB6E1C27C50EAE00A62B57 /* OTReference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909EA24A24DD3005EA2DE /* OTReference.swift */; };
 		D2CB6E1D27C50EAE00A62B57 /* ArbitraryDataWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6116563A25D2A6C90070EC03 /* ArbitraryDataWriter.swift */; };
-		D2CB6E1E27C50EAE00A62B57 /* LoggingForTracingAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216275247D1CD700AC5D67 /* LoggingForTracingAdapter.swift */; };
+		D2CB6E1E27C50EAE00A62B57 /* TracingWithLoggingIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216275247D1CD700AC5D67 /* TracingWithLoggingIntegration.swift */; };
 		D2CB6E1F27C50EAE00A62B57 /* WebRUMEventConsumer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB4B865274FAB4C0041CD03 /* WebRUMEventConsumer.swift */; };
 		D2CB6E2027C50EAE00A62B57 /* Global.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909E824A24DD3005EA2DE /* Global.swift */; };
 		D2CB6E2127C50EAE00A62B57 /* RUMViewsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFF3D22731822A00D09F33 /* RUMViewsHandler.swift */; };
@@ -956,7 +958,7 @@
 		D2CB6F7D27C520D400A62B57 /* CrashContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6172472625D673D7007085B3 /* CrashContextTests.swift */; };
 		D2CB6F7E27C520D400A62B57 /* OTSpanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61BAD46926415FCE001886CA /* OTSpanTests.swift */; };
 		D2CB6F7F27C520D400A62B57 /* DDDatadog+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 61B5E42626DFB145000B0A5F /* DDDatadog+apiTests.m */; };
-		D2CB6F8027C520D400A62B57 /* LoggingForTracingAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216279247D21FE00AC5D67 /* LoggingForTracingAdapterTests.swift */; };
+		D2CB6F8027C520D400A62B57 /* TracingWithLoggingIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216279247D21FE00AC5D67 /* TracingWithLoggingIntegrationTests.swift */; };
 		D2CB6F8127C520D400A62B57 /* MobileDeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C232423990D00786299 /* MobileDeviceTests.swift */; };
 		D2CB6F8227C520D400A62B57 /* RUMEventBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF282024B8981D000B3D9B /* RUMEventBuilderTests.swift */; };
 		D2CB6F8327C520D400A62B57 /* DDConfiguration+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 61B5E42826DFB60A000B0A5F /* DDConfiguration+apiTests.m */; };
@@ -1208,6 +1210,7 @@
 		61020C292757AD91005EEAEA /* BackgroundLocationMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundLocationMonitor.swift; sourceTree = "<group>"; };
 		61020C2B2758E853005EEAEA /* DebugBackgroundEventsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugBackgroundEventsViewController.swift; sourceTree = "<group>"; };
 		6105D19F2508F1600040DD22 /* LoggingWithActiveSpanIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingWithActiveSpanIntegration.swift; sourceTree = "<group>"; };
+		6108676C2840FB35002DF3C0 /* TracingV2Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingV2Configuration.swift; sourceTree = "<group>"; };
 		61098D2A27FEE3F00021237A /* MessagePortChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagePortChannel.swift; sourceTree = "<group>"; };
 		61098D2E27FF16A20021237A /* RUMSessionEndView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSessionEndView.swift; sourceTree = "<group>"; };
 		6111542425C992F8007C84C9 /* CrashReportingScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingScenarios.swift; sourceTree = "<group>"; };
@@ -1320,8 +1323,8 @@
 		611EA14D25810E3700BC0E56 /* TSConsentSettingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TSConsentSettingViewController.swift; sourceTree = "<group>"; };
 		611EA16525825FB300BC0E56 /* TrackingConsentScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingConsentScenarioTests.swift; sourceTree = "<group>"; };
 		611F82022563C66100CB9BDB /* UIKitRUMViewsPredicateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMViewsPredicateTests.swift; sourceTree = "<group>"; };
-		61216275247D1CD700AC5D67 /* LoggingForTracingAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingForTracingAdapter.swift; sourceTree = "<group>"; };
-		61216279247D21FE00AC5D67 /* LoggingForTracingAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingForTracingAdapterTests.swift; sourceTree = "<group>"; };
+		61216275247D1CD700AC5D67 /* TracingWithLoggingIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingWithLoggingIntegration.swift; sourceTree = "<group>"; };
+		61216279247D21FE00AC5D67 /* TracingWithLoggingIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingWithLoggingIntegrationTests.swift; sourceTree = "<group>"; };
 		61216B752666DDA10089DCD1 /* LoggerBuilderE2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerBuilderE2ETests.swift; sourceTree = "<group>"; };
 		61216B7826679DD20089DCD1 /* RUME2EHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUME2EHelpers.swift; sourceTree = "<group>"; };
 		61216B7A2667A9AE0089DCD1 /* LoggingConfigurationE2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingConfigurationE2ETests.swift; sourceTree = "<group>"; };
@@ -2569,7 +2572,7 @@
 			isa = PBXGroup;
 			children = (
 				61D980B924E28D0100E03345 /* RUMIntegrations.swift */,
-				61216275247D1CD700AC5D67 /* LoggingForTracingAdapter.swift */,
+				61216275247D1CD700AC5D67 /* TracingWithLoggingIntegration.swift */,
 				6156CB9724DEFD44008CB2B2 /* LoggingWithRUMIntegration.swift */,
 				6105D19F2508F1600040DD22 /* LoggingWithActiveSpanIntegration.swift */,
 				6156CB9B24E18224008CB2B2 /* TracingWithRUMIntegration.swift */,
@@ -2586,7 +2589,7 @@
 			children = (
 				61D980BB24E293F600E03345 /* RUMIntegrationsTests.swift */,
 				E143CCAE27D236F600F4018A /* CITestIntegrationTests.swift */,
-				61216279247D21FE00AC5D67 /* LoggingForTracingAdapterTests.swift */,
+				61216279247D21FE00AC5D67 /* TracingWithLoggingIntegrationTests.swift */,
 				61FC5F4D25CC2920006BB4DE /* RUMWithCrashContextIntegrationTests.swift */,
 				6182374125D3DFB8006A375B /* CrashReporting */,
 			);
@@ -3497,6 +3500,7 @@
 			isa = PBXGroup;
 			children = (
 				61C5A88F24509AA700DA608C /* TracingFeature.swift */,
+				6108676C2840FB35002DF3C0 /* TracingV2Configuration.swift */,
 				61C5A87924509A0C00DA608C /* DDNoOps.swift */,
 				61C5A87824509A0C00DA608C /* DDSpan.swift */,
 				61C5A87E24509A0C00DA608C /* DDSpanContext.swift */,
@@ -4993,7 +4997,7 @@
 				61E909F024A24DD3005EA2DE /* OTTracer.swift in Sources */,
 				61E909F124A24DD3005EA2DE /* OTReference.swift in Sources */,
 				6116563B25D2A6C90070EC03 /* ArbitraryDataWriter.swift in Sources */,
-				61216276247D1CD700AC5D67 /* LoggingForTracingAdapter.swift in Sources */,
+				61216276247D1CD700AC5D67 /* TracingWithLoggingIntegration.swift in Sources */,
 				9EB4B866274FAB4C0041CD03 /* WebRUMEventConsumer.swift in Sources */,
 				E11625D827B681D200E428C6 /* CITestIntegration.swift in Sources */,
 				61E909EF24A24DD3005EA2DE /* Global.swift in Sources */,
@@ -5006,6 +5010,7 @@
 				61133BDC2423979B00786299 /* Logger.swift in Sources */,
 				6114FE1625766B310084E372 /* TrackingConsent.swift in Sources */,
 				61133BD02423979B00786299 /* DateProvider.swift in Sources */,
+				6108676D2840FB35002DF3C0 /* TracingV2Configuration.swift in Sources */,
 				61D3E0D2277B23F1008BE766 /* KronosInternetAddress.swift in Sources */,
 				6156CB8E24DDA1B5008CB2B2 /* RUMContextProvider.swift in Sources */,
 				61C2C21224C5951400C0321C /* RUMViewScope.swift in Sources */,
@@ -5352,7 +5357,7 @@
 				6172472725D673D7007085B3 /* CrashContextTests.swift in Sources */,
 				61BAD46A26415FCE001886CA /* OTSpanTests.swift in Sources */,
 				61B5E42726DFB145000B0A5F /* DDDatadog+apiTests.m in Sources */,
-				6121627C247D220500AC5D67 /* LoggingForTracingAdapterTests.swift in Sources */,
+				6121627C247D220500AC5D67 /* TracingWithLoggingIntegrationTests.swift in Sources */,
 				61133C532423990D00786299 /* MobileDeviceTests.swift in Sources */,
 				61FF282124B8981D000B3D9B /* RUMEventBuilderTests.swift in Sources */,
 				61B5E42926DFB60A000B0A5F /* DDConfiguration+apiTests.m in Sources */,
@@ -5617,7 +5622,7 @@
 				D2CB6E1B27C50EAE00A62B57 /* OTTracer.swift in Sources */,
 				D2CB6E1C27C50EAE00A62B57 /* OTReference.swift in Sources */,
 				D2CB6E1D27C50EAE00A62B57 /* ArbitraryDataWriter.swift in Sources */,
-				D2CB6E1E27C50EAE00A62B57 /* LoggingForTracingAdapter.swift in Sources */,
+				D2CB6E1E27C50EAE00A62B57 /* TracingWithLoggingIntegration.swift in Sources */,
 				D2CB6E1F27C50EAE00A62B57 /* WebRUMEventConsumer.swift in Sources */,
 				D2CB6E2027C50EAE00A62B57 /* Global.swift in Sources */,
 				D2CB6E2127C50EAE00A62B57 /* RUMViewsHandler.swift in Sources */,
@@ -5756,6 +5761,7 @@
 				D2CB6E9F27C50EAE00A62B57 /* DataCompression.swift in Sources */,
 				D2CB6EA027C50EAE00A62B57 /* SpanOutput.swift in Sources */,
 				D2CB6EA127C50EAE00A62B57 /* LogEventEncoder.swift in Sources */,
+				6108676E2840FB35002DF3C0 /* TracingV2Configuration.swift in Sources */,
 				D2CB6EA227C50EAE00A62B57 /* VitalInfo.swift in Sources */,
 				D2CB6EA327C50EAE00A62B57 /* RUMEventsMapper.swift in Sources */,
 				D2CB6EA427C50EAE00A62B57 /* RUMIntegrations.swift in Sources */,
@@ -5975,7 +5981,7 @@
 				D2CB6F7D27C520D400A62B57 /* CrashContextTests.swift in Sources */,
 				D2CB6F7E27C520D400A62B57 /* OTSpanTests.swift in Sources */,
 				D2CB6F7F27C520D400A62B57 /* DDDatadog+apiTests.m in Sources */,
-				D2CB6F8027C520D400A62B57 /* LoggingForTracingAdapterTests.swift in Sources */,
+				D2CB6F8027C520D400A62B57 /* TracingWithLoggingIntegrationTests.swift in Sources */,
 				D2CB6F8127C520D400A62B57 /* MobileDeviceTests.swift in Sources */,
 				D2CB6F8227C520D400A62B57 /* RUMEventBuilderTests.swift in Sources */,
 				D2CB6F8327C520D400A62B57 /* DDConfiguration+apiTests.m in Sources */,

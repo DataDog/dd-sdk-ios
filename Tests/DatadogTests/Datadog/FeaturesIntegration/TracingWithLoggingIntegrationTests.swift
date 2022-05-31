@@ -7,17 +7,15 @@
 import XCTest
 @testable import Datadog
 
-class LoggingForTracingAdapterTests: XCTestCase {
-    // MARK: - LoggingForTracingAdapter.AdaptedLogOutput
-
+class TracingWithLoggingIntegrationTests: XCTestCase {
     func testWritingLogWithOTMessageField() throws {
         let loggingOutput = LogOutputMock()
-        let tracingOutput = LoggingForTracingAdapter.AdaptedLogOutput(
+        let integration = TracingWithLoggingIntegration(
             logBuilder: .mockAny(),
             loggingOutput: loggingOutput
         )
 
-        tracingOutput.writeLog(
+        integration.writeLog(
             withSpanContext: .mockWith(traceID: 1, spanID: 2),
             fields: [
                 OTLogFields.message: "hello",
@@ -45,12 +43,12 @@ class LoggingForTracingAdapterTests: XCTestCase {
 
     func testWritingLogWithOTErrorField() throws {
         let loggingOutput = LogOutputMock()
-        let tracingOutput = LoggingForTracingAdapter.AdaptedLogOutput(
+        let integration = TracingWithLoggingIntegration(
             logBuilder: .mockAny(),
             loggingOutput: loggingOutput
         )
 
-        tracingOutput.writeLog(
+        integration.writeLog(
             withSpanContext: .mockAny(),
             fields: [OTLogFields.event: "error"],
             date: .mockAny()
@@ -58,7 +56,7 @@ class LoggingForTracingAdapterTests: XCTestCase {
 
         let recordedLog1 = try XCTUnwrap(loggingOutput.recordedLog)
 
-        tracingOutput.writeLog(
+        integration.writeLog(
             withSpanContext: .mockAny(),
             fields: [OTLogFields.errorKind: "Swift error"],
             date: .mockAny()
@@ -66,7 +64,7 @@ class LoggingForTracingAdapterTests: XCTestCase {
 
         let recordedLog2 = try XCTUnwrap(loggingOutput.recordedLog)
 
-        tracingOutput.writeLog(
+        integration.writeLog(
             withSpanContext: .mockAny(),
             fields: [OTLogFields.event: "error", OTLogFields.errorKind: "Swift error"],
             date: .mockAny()
@@ -82,12 +80,12 @@ class LoggingForTracingAdapterTests: XCTestCase {
 
     func testWritingCustomLogWithoutAnyOTFields() throws {
         let loggingOutput = LogOutputMock()
-        let tracingOutput = LoggingForTracingAdapter.AdaptedLogOutput(
+        let integration = TracingWithLoggingIntegration(
             logBuilder: .mockAny(),
             loggingOutput: loggingOutput
         )
 
-        tracingOutput.writeLog(
+        integration.writeLog(
             withSpanContext: .mockWith(traceID: 1, spanID: 2),
             fields: ["custom field": 123],
             date: .mockDecember15th2019At10AMUTC()
