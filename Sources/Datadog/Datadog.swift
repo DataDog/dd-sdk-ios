@@ -308,7 +308,8 @@ public class Datadog {
             Global.crashReporter = CrashReporter(
                 crashReportingFeature: crashReportingFeature,
                 loggingFeature: logging,
-                rumFeature: rum
+                rumFeature: rum,
+                context: core.v1Context
             )
 
             Global.crashReporter?.sendCrashReportIfFound()

@@ -25,17 +25,20 @@ class LoggerTests: XCTestCase {
     // MARK: - Customizing Logger
 
     func testSendingLogWithDefaultLogger() throws {
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(
-            directory: temporaryDirectory,
-            configuration: .mockWith(
-                common: .mockWith(
+        let core = DatadogCoreMock(
+            v1Context: .mockWith(
+                configuration: .mockWith(
                     applicationVersion: "1.0.0",
                     applicationBundleIdentifier: "com.datadoghq.ios-sdk",
                     serviceName: "default-service-name",
                     environment: "tests",
                     sdkVersion: "1.2.3"
                 )
-            ),
+            )
+        )
+
+        let feature: LoggingFeature = .mockByRecordingLogMatchers(
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
             )
@@ -430,11 +433,13 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending tags
 
     func testSendingTags() throws {
+        let core = DatadogCoreMock(v1Context: .mockWith(configuration: .mockWith(environment: "tests")))
+        defer { core.flush() }
+
         let feature: LoggingFeature = .mockByRecordingLogMatchers(
             directory: temporaryDirectory,
-            configuration: .mockWith(common: .mockWith(environment: "tests"))
+            configuration: .mockAny()
         )
-        defer { feature.deinitialize() }
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
@@ -800,7 +805,7 @@ class LoggerTests: XCTestCase {
         XCTAssertFalse(Datadog.isInitialized)
 
         // when
-        let logger = Logger.builder.build(in: core)
+        let logger = Logger.builder.build()
 
         // then
         XCTAssertEqual(

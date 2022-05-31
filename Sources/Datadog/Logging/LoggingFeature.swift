@@ -15,14 +15,6 @@ internal final class LoggingFeature: V1FeatureInitializable {
 
     let configuration: Configuration
 
-    // MARK: - Dependencies
-
-    let dateProvider: DateProvider
-    let dateCorrector: DateCorrectorType
-    let userInfoProvider: UserInfoProvider
-    let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
-    let carrierInfoProvider: CarrierInfoProviderType
-
     // MARK: - Components
 
     /// Log files storage.
@@ -36,18 +28,12 @@ internal final class LoggingFeature: V1FeatureInitializable {
         storage: FeatureStorage,
         upload: FeatureUpload,
         configuration: Configuration,
+        /// TODO: RUMM-2169 Remove `commonDependencies` from `V1FeatureInitializable` interface when all Features are migrated to use `DatadogV1Context`:
         commonDependencies: FeaturesCommonDependencies,
         telemetry: Telemetry?
     ) {
         // Configuration
         self.configuration = configuration
-
-        // Bundle dependencies
-        self.dateProvider = commonDependencies.dateProvider
-        self.dateCorrector = commonDependencies.dateCorrector
-        self.userInfoProvider = commonDependencies.userInfoProvider
-        self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider
-        self.carrierInfoProvider = commonDependencies.carrierInfoProvider
 
         // Initialize stacks
         self.storage = storage
