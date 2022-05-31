@@ -80,17 +80,17 @@ class RUMErrorsIntegrationTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        temporaryFeatureDirectories.create()
+        temporaryDirectory.create()
     }
 
     override func tearDown() {
         core.flush()
-        temporaryFeatureDirectories.delete()
+        temporaryDirectory.delete()
         super.tearDown()
     }
 
     func testGivenRUMMonitorRegistered_whenAddingErrorMessage_itSendsRUMErrorForCurrentView() throws {
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         core.register(feature: rum)
 
         // given

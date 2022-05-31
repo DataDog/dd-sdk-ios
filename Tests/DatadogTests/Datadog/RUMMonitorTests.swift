@@ -13,12 +13,12 @@ class RUMMonitorTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        temporaryFeatureDirectories.create()
+        temporaryDirectory.create()
     }
 
     override func tearDown() {
         core.flush()
-        temporaryFeatureDirectories.delete()
+        temporaryDirectory.delete()
         super.tearDown()
     }
 
@@ -46,7 +46,7 @@ class RUMMonitorTests: XCTestCase {
         let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
         let randomServiceName: String = .mockRandom()
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             configuration: .mockWith(
                 common: .mockWith(serviceName: randomServiceName)
             ),
@@ -87,7 +87,7 @@ class RUMMonitorTests: XCTestCase {
     func testStartingViewIdentifiedByStringKey() throws {
         let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 dateProvider: dateProvider
             )
@@ -113,7 +113,7 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenLoadingImageResourceWithRequest() throws {
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
@@ -147,7 +147,7 @@ class RUMMonitorTests: XCTestCase {
             return // `URLSessionTaskMetrics` mocking doesn't work prior to iOS 13.0
         }
 
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
@@ -182,7 +182,7 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenLoadingNativeResourceWithRequestWithExternalMetrics() throws {
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
@@ -250,7 +250,7 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenLoadingResourceWithURL() throws {
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
@@ -272,7 +272,7 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenLoadingResourceWithURLString() throws {
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
@@ -296,7 +296,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testLoadingResourceWithURL_thenMarksFirstPartyURLs() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             configuration: .mockWith(
                 // .mockRandom always uses foo.com
                 firstPartyHosts: ["foo.com"]
@@ -322,7 +322,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testLoadingResourceWithURLString_thenMarksFirstPartyURLs() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             configuration: .mockWith(
                 firstPartyHosts: ["foo.com"]
             )
@@ -346,7 +346,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testStartingView_thenTappingButton() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
             )
@@ -381,7 +381,7 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenLoadingResources_whileScrolling() throws {
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
@@ -440,7 +440,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testStartingView_thenIssuingErrors_whileScrolling() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0.01)
             )
@@ -502,7 +502,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testStartingAnotherViewBeforeFirstIsStopped_thenLoadingResourcesAfterTapingButton() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(
                     startingFrom: Date(),
@@ -559,7 +559,7 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingLoadingResourcesFromTheFirstView_thenStartingAnotherViewWhichAlsoLoadsResources() throws {
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
@@ -624,7 +624,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testStartingView_thenTappingButton_thenTappingAnotherButton() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
             )
@@ -657,7 +657,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testWhenUserInfoIsProvided_itIsSendWithAllEvents() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 userInfoProvider: .mockWith(
                     userInfo: UserInfo(
@@ -716,7 +716,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testWhenNetworkAndCarrierInfoAreProvided_thenConnectivityInfoIsSendWithAllEvents() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(
                     networkConnectionInfo: .mockWith(reachability: .yes, availableInterfaces: [.cellular])
@@ -763,7 +763,7 @@ class RUMMonitorTests: XCTestCase {
     // MARK: - Sending Attributes
 
     func testSendingAttributes() throws {
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         core.register(feature: rum)
 
         let view1 = createMockView(viewControllerClassName: "FirstViewController")
@@ -806,7 +806,7 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testWhenViewIsStarted_attributesCanBeAddedOrUpdatedButNotRemoved() throws {
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
@@ -837,7 +837,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testStartingView_thenAddingTiming() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(
                     startingFrom: Date(),
@@ -880,7 +880,7 @@ class RUMMonitorTests: XCTestCase {
         defer { core.flush() }
 
         let rum: RUMFeature = .mockWith(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             configuration: .mockWith(
                 sessionSampler: keepAllSessions ? .mockKeepAll() : .mockRejectAll(),
                 onSessionStart: onSessionStart
@@ -910,7 +910,7 @@ class RUMMonitorTests: XCTestCase {
 
         // When
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 dateProvider: dateProvider,
                 dateCorrector: DateCorrectorMock(correctionOffset: serverTimeDifference)
@@ -966,7 +966,7 @@ class RUMMonitorTests: XCTestCase {
 
         // Given
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 consentProvider: consentProvider,
                 dateProvider: RelativeDateProvider(
@@ -1012,7 +1012,7 @@ class RUMMonitorTests: XCTestCase {
 
         // Given
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 sdkInitDate: sdkInitDate,
                 dateProvider: RelativeDateProvider(
@@ -1064,7 +1064,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testModifyingEventsBeforeTheyGetSend() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             configuration: .mockWith(
                 viewEventMapper: { viewEvent in
                     var viewEvent = viewEvent
@@ -1135,7 +1135,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testDroppingEventsBeforeTheyGetSent() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             configuration: .mockWith(
                 resourceEventMapper: { _ in nil },
                 actionEventMapper: { event in
@@ -1182,7 +1182,7 @@ class RUMMonitorTests: XCTestCase {
         let randomViewEventAttributes = mockRandomAttributes()
 
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 userInfoProvider: .mockWith(
                     userInfo: .init(

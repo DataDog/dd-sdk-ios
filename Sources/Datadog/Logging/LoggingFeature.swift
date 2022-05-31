@@ -36,7 +36,8 @@ internal final class LoggingFeature: V1Feature {
         storage: FeatureStorage,
         upload: FeatureUpload,
         configuration: Configuration,
-        commonDependencies: FeaturesCommonDependencies
+        commonDependencies: FeaturesCommonDependencies,
+        telemetry: Telemetry?
     ) {
         // Configuration
         self.configuration = configuration

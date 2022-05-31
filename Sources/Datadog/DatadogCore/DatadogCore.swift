@@ -22,7 +22,8 @@ internal protocol V1Feature {
         storage: FeatureStorage,
         upload: FeatureUpload,
         configuration: Configuration,
-        commonDependencies: FeaturesCommonDependencies
+        commonDependencies: FeaturesCommonDependencies,
+        telemetry: Telemetry?
     )
 }
 
@@ -137,7 +138,8 @@ extension DatadogCore: DatadogCoreProtocol {
             storage: storage,
             upload: upload,
             configuration: featureSpecificConfiguration,
-            commonDependencies: dependencies
+            commonDependencies: dependencies,
+            telemetry: telemetry
         )
     }
 

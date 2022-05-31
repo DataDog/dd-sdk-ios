@@ -12,9 +12,9 @@ class RUMTelemetryTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        temporaryFeatureDirectories.create()
+        temporaryDirectory.create()
 
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         core.register(feature: rum)
         Global.rum = RUMMonitor.initialize(in: core)
     }
@@ -22,7 +22,7 @@ class RUMTelemetryTests: XCTestCase {
     override func tearDown() {
         core.flush()
         Global.rum = DDNoopRUMMonitor()
-        temporaryFeatureDirectories.delete()
+        temporaryDirectory.delete()
         super.tearDown()
     }
 

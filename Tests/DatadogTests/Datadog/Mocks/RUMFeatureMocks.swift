@@ -26,29 +26,39 @@ extension RUMFeature {
     /// Mocks the feature instance which performs uploads to `URLSession`.
     /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
     static func mockWith(
-        directories: FeatureDirectories,
+        directory: Directory,
         configuration: FeaturesConfiguration.RUM = .mockAny(),
         dependencies: FeaturesCommonDependencies = .mockAny(),
         telemetry: Telemetry? = nil
     ) -> RUMFeature {
-        return RUMFeature(
-            directories: directories,
-            configuration: configuration,
-            commonDependencies: dependencies,
-            telemetry: telemetry
+        // Because in V2 Feature Storage and Upload are created by `DatadogCore`, here we ask
+        // dummy V2 core instance to initialize the Feature. It is hacky, yet minimal way of
+        // providing V1 stack for partial V2 architecture in tests.
+        let v2Core = DatadogCore(
+            rootDirectory: directory,
+            configuration: configuration.common,
+            dependencies: dependencies
         )
+        v2Core.telemetry = telemetry
+
+        let feature: RUMFeature = try! v2Core.create(
+            storageConfiguration: createV2RUMStorageConfiguration(),
+            uploadConfiguration: createV2RUMUploadConfiguration(v1Configuration: configuration),
+            featureSpecificConfiguration: configuration
+        )
+        return feature
     }
 
     /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
     /// Use `RUMFeature.waitAndReturnRUMEventMatchers()` to inspect and assert recorded `RUMEvents`.
     static func mockByRecordingRUMEventMatchers(
-        directories: FeatureDirectories,
+        directory: Directory,
         configuration: FeaturesConfiguration.RUM = .mockAny(),
         dependencies: FeaturesCommonDependencies = .mockAny()
     ) -> RUMFeature {
         // Get the full feature mock:
         let fullFeature: RUMFeature = .mockWith(
-            directories: directories,
+            directory: directory,
             configuration: configuration,
             dependencies: dependencies.replacing(
                 dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`

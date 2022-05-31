@@ -19,10 +19,12 @@ class RUMStorageBenchmarkTests: XCTestCase {
         try super.setUpWithError()
         self.directory = try Directory(withSubdirectoryPath: "rum-benchmark")
 
-        let storage = RUMFeature.createStorage(
-            directories: FeatureDirectories(
+        let storage = FeatureStorage(
+            featureName: "rum",
+            dataFormat: DataFormat(prefix: "", suffix: "", separator: "\n"),
+            directories: .init(
                 deprecated: [],
-                unauthorized: obtainUniqueTemporaryDirectory(),
+                unauthorized: directory,
                 authorized: directory
             ),
             commonDependencies: .mockAny(),

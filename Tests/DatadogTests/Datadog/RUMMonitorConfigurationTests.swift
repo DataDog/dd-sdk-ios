@@ -12,14 +12,14 @@ class RUMMonitorConfigurationTests: XCTestCase {
     private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
 
     func testRUMMonitorConfiguration() throws {
-        temporaryFeatureDirectories.create()
-        defer { temporaryFeatureDirectories.delete() }
+        temporaryDirectory.create()
+        defer { temporaryDirectory.delete() }
 
         let core = DatadogCoreMock()
         defer { core.flush() }
 
         let feature: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             configuration: .mockWith(
                 common: .mockWith(
                     applicationVersion: "1.2.3",

@@ -43,12 +43,10 @@ final class MockScriptMessage: WKScriptMessage {
 class WKUserContentController_DatadogTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        temporaryFeatureDirectories.create()
         temporaryDirectory.create()
     }
 
     override func tearDown() {
-        temporaryFeatureDirectories.delete()
         temporaryDirectory.delete()
         super.tearDown()
     }
@@ -180,7 +178,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
         )
 
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directories: temporaryFeatureDirectories,
+            directory: temporaryDirectory,
             dependencies: .mockWith(
                 dateProvider: dateProvider
             )
