@@ -222,7 +222,7 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
             return defaultFirstPartyURLsFilter.isFirstParty(url: request.url)
         }
 
-        return  delegate.firstPartyURLsFilter.isFirstParty(url: request.url) ||
+        return delegate.firstPartyURLsFilter.isFirstParty(url: request.url) ||
                 defaultFirstPartyURLsFilter.isFirstParty(url: request.url)
     }
 
