@@ -47,6 +47,9 @@ internal final class DatadogCore {
 
     private var v1Features: [String: Any] = [:]
 
+    /// The SDK Context for V1.
+    internal let v1Context: DatadogV1Context
+
     /// Creates a core instance.
     ///
     /// - Parameters:
@@ -61,6 +64,7 @@ internal final class DatadogCore {
         self.rootDirectory = rootDirectory
         self.configuration = configuration
         self.dependencies = dependencies
+        self.v1Context = DatadogV1Context(configuration: configuration, dependencies: dependencies)
     }
 
     /// Sets current user information.
@@ -121,11 +125,6 @@ extension DatadogCore: DatadogCoreProtocol {
             telemetry: telemetry
         )
 
-        let v1Context = DatadogV1Context(
-            configuration: configuration,
-            dependencies: dependencies
-        )
-
         let upload = FeatureUpload(
             featureName: uploadConfiguration.featureName,
             storage: storage,
@@ -151,5 +150,9 @@ extension DatadogCore: DatadogCoreProtocol {
     func feature<T>(_ type: T.Type) -> T? {
         let key = String(describing: T.self)
         return v1Features[key] as? T
+    }
+
+    var context: Any {
+        return v1Context
     }
 }

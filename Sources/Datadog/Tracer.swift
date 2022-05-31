@@ -71,6 +71,11 @@ public class Tracer: OTTracer {
     ///   - configuration: the tracer configuration obtained using `Tracer.Configuration()`.
     public static func initialize(configuration: Configuration, in core: DatadogCoreProtocol = defaultDatadogCore) -> OTTracer {
         do {
+            guard let context = (core.context as? DatadogV1Context) else {
+                throw ProgrammerError(
+                    description: "`Datadog.initialize()` must be called prior to `Tracer.initialize()`."
+                )
+            }
             if Global.sharedTracer is Tracer {
                 throw ProgrammerError(
                     description: """
@@ -80,16 +85,15 @@ public class Tracer: OTTracer {
             }
             guard let tracingFeature = core.feature(TracingFeature.self) else {
                 throw ProgrammerError(
-                    description: Datadog.isInitialized
-                        ? "`Tracer.initialize(configuration:)` produces a non-functional tracer, as the tracing feature is disabled."
-                        : "`Datadog.initialize()` must be called prior to `Tracer.initialize()`."
+                    description: "`Tracer.initialize(configuration:)` produces a non-functional tracer, as the tracing feature is disabled."
                 )
             }
             return DDTracer(
                 tracingFeature: tracingFeature,
                 tracerConfiguration: configuration,
                 rumEnabled: core.feature(RUMFeature.self) != nil,
-                loggingFeature: core.feature(LoggingFeature.self)
+                loggingFeature: core.feature(LoggingFeature.self),
+                context: context
             )
         } catch {
             consolePrint("\(error)")
@@ -101,7 +105,8 @@ public class Tracer: OTTracer {
         tracingFeature: TracingFeature,
         tracerConfiguration: Configuration,
         rumEnabled: Bool,
-        loggingFeature: LoggingFeature?
+        loggingFeature: LoggingFeature?,
+        context: DatadogV1Context
     ) {
         self.init(
             spanBuilder: SpanEventBuilder(
@@ -125,7 +130,14 @@ public class Tracer: OTTracer {
             tracingUUIDGenerator: tracingFeature.tracingUUIDGenerator,
             globalTags: tracerConfiguration.globalTags,
             rumContextIntegration: (rumEnabled && tracerConfiguration.bundleWithRUM) ? TracingWithRUMContextIntegration() : nil,
-            loggingIntegration: loggingFeature.map { TracingWithLoggingIntegration(tracingFeature: tracingFeature, tracerConfiguration: tracerConfiguration, loggingFeature: $0) }
+            loggingIntegration: loggingFeature.map {
+                TracingWithLoggingIntegration(
+                    tracingFeature: tracingFeature,
+                    tracerConfiguration: tracerConfiguration,
+                    loggingFeature: $0,
+                    context: context
+                )
+            }
         )
     }
 

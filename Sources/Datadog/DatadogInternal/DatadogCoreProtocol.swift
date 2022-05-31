@@ -24,6 +24,9 @@ public protocol DatadogCoreProtocol {
     ///   - type: The feature instance type.
     /// - Returns: The feature if any.
     func feature<T>(_ type: T.Type) -> T?
+
+    /// The SDK context created upon core initialization.
+    var context: Any { get }
 }
 
 /// Provide feature specific storage configuration.
@@ -81,5 +84,11 @@ internal struct NOOPDatadogCore: DatadogCoreProtocol {
     /// no-op
     func feature<T>(_ type: T.Type) -> T? {
         return nil
+    }
+
+    // no-op
+    var context: Any {
+        struct AnyContext {}
+        return AnyContext()
     }
 }

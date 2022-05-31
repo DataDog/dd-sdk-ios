@@ -25,11 +25,26 @@ public extension WKUserContentController {
     ///
     /// - Parameter hosts: a list of hosts instrumented with Browser SDK to capture Datadog events from
     func trackDatadogEvents(in hosts: Set<String>, sdk core: DatadogCoreProtocol = defaultDatadogCore) {
+        do {
+            try trackDatadogEventsOrThrow(in: hosts, sdk: core)
+        } catch {
+            consolePrint("\(error)")
+        }
+    }
+
+    private func trackDatadogEventsOrThrow(in hosts: Set<String>, sdk core: DatadogCoreProtocol) throws {
+        guard let context = (core.context as? DatadogV1Context) else {
+            throw ProgrammerError(
+                description: "`Datadog.initialize()` must be called prior to `trackDatadogEvents(in:)`."
+            )
+        }
+
         addDatadogMessageHandler(
             allowedWebViewHosts: hosts,
             hostsSanitizer: HostsSanitizer(),
             loggingFeature: core.feature(LoggingFeature.self),
-            rumFeature: core.feature(RUMFeature.self)
+            rumFeature: core.feature(RUMFeature.self),
+            context: context
         )
     }
 
@@ -53,7 +68,8 @@ public extension WKUserContentController {
         allowedWebViewHosts: Set<String>,
         hostsSanitizer: HostsSanitizing,
         loggingFeature: LoggingFeature?,
-        rumFeature: RUMFeature?
+        rumFeature: RUMFeature?,
+        context: DatadogV1Context
     ) {
         guard !isTracking else {
               userLogger.warn("`trackDatadogEvents(in:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")
@@ -68,10 +84,10 @@ public extension WKUserContentController {
         if let loggingFeature = loggingFeature {
             logEventConsumer = DefaultWebLogEventConsumer(
                 userLogsWriter: loggingFeature.storage.writer,
-                dateCorrector: loggingFeature.dateCorrector,
+                dateCorrector: context.dateCorrector,
                 rumContextProvider: globalRUMMonitor?.contextProvider,
-                applicationVersion: loggingFeature.configuration.common.applicationVersion,
-                environment: loggingFeature.configuration.common.environment
+                applicationVersion: context.version,
+                environment: context.env
             )
         }
 

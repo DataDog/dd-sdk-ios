@@ -19,10 +19,9 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
     private let dateProvider: DateProvider
     private let dateCorrector: DateCorrectorType
 
-    /// Global configuration set for the SDK (service name, environment, application version, ...)
-    private let configuration: FeaturesConfiguration.Common
+    private let context: DatadogV1Context
 
-    init(loggingFeature: LoggingFeature) {
+    init(loggingFeature: LoggingFeature, context: DatadogV1Context) {
         self.init(
             logOutput: LogFileOutput(
                 fileWriter: loggingFeature.storage.arbitraryAuthorizedWriter,
@@ -30,9 +29,9 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
                 // issue additional RUM Errors for crash reports. Those are send through `CrashReportingWithRUMIntegration`.
                 rumErrorsIntegration: nil
             ),
-            dateProvider: loggingFeature.dateProvider,
-            dateCorrector: loggingFeature.dateCorrector,
-            configuration: loggingFeature.configuration.common
+            dateProvider: context.dateProvider,
+            dateCorrector: context.dateCorrector,
+            context: context
         )
     }
 
@@ -40,12 +39,12 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
         logOutput: LogOutput,
         dateProvider: DateProvider,
         dateCorrector: DateCorrectorType,
-        configuration: FeaturesConfiguration.Common
+        context: DatadogV1Context
     ) {
         self.logOutput = logOutput
         self.dateProvider = dateProvider
         self.dateCorrector = dateCorrector
-        self.configuration = configuration
+        self.context = context
     }
 
     func send(crashReport: DDCrashReport, with crashContext: CrashContext) {
@@ -85,12 +84,12 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
                 message: crashReport.message,
                 stack: crashReport.stack
             ),
-            serviceName: configuration.serviceName,
-            environment: configuration.environment,
+            serviceName: context.service,
+            environment: context.env,
             loggerName: Constants.loggerName,
-            loggerVersion: configuration.sdkVersion,
+            loggerVersion: context.sdkVersion,
             threadName: nil,
-            applicationVersion: configuration.applicationVersion,
+            applicationVersion: context.version,
             userInfo: .init(
                 id: user?.id,
                 name: user?.name,

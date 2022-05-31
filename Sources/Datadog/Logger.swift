@@ -399,15 +399,18 @@ public class Logger {
         }
 
         private func buildOrThrow(in core: DatadogCoreProtocol) throws -> Logger {
+            guard let context = (core.context as? DatadogV1Context) else {
+                throw ProgrammerError(
+                    description: "`Datadog.initialize()` must be called prior to `Logger.builder.build()`."
+                )
+            }
             guard let loggingFeature = core.feature(LoggingFeature.self) else {
                 throw ProgrammerError(
-                    description: Datadog.isInitialized
-                        ? "`Logger.builder.build()` produces a non-functional logger, as the logging feature is disabled."
-                        : "`Datadog.initialize()` must be called prior to `Logger.builder.build()`."
+                    description: "`Logger.builder.build()` produces a non-functional logger, as the logging feature is disabled."
                 )
             }
 
-            let (logBuilder, logOutput) = resolveLogBuilderAndOutput(for: loggingFeature) ?? (nil, nil)
+            let (logBuilder, logOutput) = resolveLogBuilderAndOutput(for: loggingFeature, context: context) ?? (nil, nil)
 
             // RUMM-2133 Note: strong feature coupling while migrating to v2.
             // In v2 active span will be provided in context from feature scope.
@@ -417,24 +420,24 @@ public class Logger {
             return Logger(
                 logBuilder: logBuilder,
                 logOutput: logOutput,
-                dateProvider: loggingFeature.dateProvider,
-                identifier: resolveLoggerName(for: loggingFeature),
+                dateProvider: context.dateProvider,
+                identifier: resolveLoggerName(with: context),
                 rumContextIntegration: (rumEnabled && bundleWithRUM) ? LoggingWithRUMContextIntegration() : nil,
                 activeSpanIntegration: (tracingEnabled && bundleWithTrace) ? LoggingWithActiveSpanIntegration() : nil
             )
         }
 
-        private func resolveLogBuilderAndOutput(for loggingFeature: LoggingFeature) -> (LogEventBuilder, LogOutput)? {
+        private func resolveLogBuilderAndOutput(for loggingFeature: LoggingFeature, context: DatadogV1Context) -> (LogEventBuilder, LogOutput)? {
             let logBuilder = LogEventBuilder(
-                sdkVersion: loggingFeature.configuration.common.sdkVersion,
-                applicationVersion: loggingFeature.configuration.common.applicationVersion,
-                environment: loggingFeature.configuration.common.environment,
-                serviceName: serviceName ?? loggingFeature.configuration.common.serviceName,
-                loggerName: resolveLoggerName(for: loggingFeature),
-                userInfoProvider: loggingFeature.userInfoProvider,
-                networkConnectionInfoProvider: sendNetworkInfo ? loggingFeature.networkConnectionInfoProvider : nil,
-                carrierInfoProvider: sendNetworkInfo ? loggingFeature.carrierInfoProvider : nil,
-                dateCorrector: loggingFeature.dateCorrector,
+                sdkVersion: context.sdkVersion,
+                applicationVersion: context.version,
+                environment: context.env,
+                serviceName: serviceName ?? context.service,
+                loggerName: resolveLoggerName(with: context),
+                userInfoProvider: context.userInfoProvider,
+                networkConnectionInfoProvider: sendNetworkInfo ? context.networkConnectionInfoProvider : nil,
+                carrierInfoProvider: sendNetworkInfo ? context.carrierInfoProvider : nil,
+                dateCorrector: context.dateCorrector,
                 logEventMapper: loggingFeature.configuration.logEventMapper
             )
 
@@ -470,8 +473,8 @@ public class Logger {
             }
         }
 
-        private func resolveLoggerName(for loggingFeature: LoggingFeature) -> String {
-            return loggerName ?? loggingFeature.configuration.common.applicationBundleIdentifier
+        private func resolveLoggerName(with context: DatadogV1Context) -> String {
+            return loggerName ?? context.applicationBundleIdentifier
         }
     }
 }

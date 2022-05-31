@@ -23,7 +23,12 @@ internal struct TracingWithLoggingIntegration {
     /// Actual `LogOutput` bridged to `LoggingFeature`.
     let loggingOutput: LogOutput
 
-    init(tracingFeature: TracingFeature, tracerConfiguration: Tracer.Configuration, loggingFeature: LoggingFeature) {
+    init(
+        tracingFeature: TracingFeature,
+        tracerConfiguration: Tracer.Configuration,
+        loggingFeature: LoggingFeature,
+        context: DatadogV1Context
+    ) {
         self.init(
             logBuilder: LogEventBuilder(
                 sdkVersion: tracingFeature.configuration.common.sdkVersion,
@@ -34,7 +39,7 @@ internal struct TracingWithLoggingIntegration {
                 userInfoProvider: tracingFeature.userInfoProvider,
                 networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil,
                 carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil,
-                dateCorrector: loggingFeature.dateCorrector,
+                dateCorrector: context.dateCorrector,
                 logEventMapper: loggingFeature.configuration.logEventMapper
             ),
             loggingOutput: LogFileOutput(
