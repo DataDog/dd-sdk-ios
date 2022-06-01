@@ -35,6 +35,19 @@ extension Datadog {
             case rare
         }
 
+        /// Defines the frequency at which Datadog SDK will collect mobile vitals, such as CPU
+        /// and memory usage.
+        public enum VitalsFrequency {
+            /// Collect mobile vitals every 100ms.
+            case frequent
+            /// Collect mobile vitals every 500ms.
+            case average
+            /// Collect mobile vitals every 1000ms.
+            case rare
+            /// Don't provide mobile vitals.
+            case never
+        }
+
         public enum DatadogEndpoint {
             /// US based servers.
             /// Sends data to [app.datadoghq.com](https://app.datadoghq.com/).
@@ -265,6 +278,7 @@ extension Datadog {
         private(set) var rumResourceAttributesProvider: URLSessionRUMAttributesProvider?
         private(set) var rumBackgroundEventTrackingEnabled: Bool
         private(set) var rumTelemetrySamplingRate: Float
+        private(set) var mobileVitalsFrequency: VitalsFrequency
         private(set) var batchSize: BatchSize
         private(set) var uploadFrequency: UploadFrequency
         private(set) var additionalConfiguration: [String: Any]
@@ -339,6 +353,7 @@ extension Datadog {
                     rumResourceAttributesProvider: nil,
                     rumBackgroundEventTrackingEnabled: false,
                     rumTelemetrySamplingRate: 20,
+                    mobileVitalsFrequency: .rare,
                     batchSize: .medium,
                     uploadFrequency: .average,
                     additionalConfiguration: [:],
@@ -705,6 +720,13 @@ extension Datadog {
             ///                   means no telemetry will be sent, 100 means all telemetry will be kept.
             public func set(sampleTelemetry rate: Float) -> Builder {
                 configuration.rumTelemetrySamplingRate = rate
+                return self
+            }
+
+            /// Sets the preferred frequency for collecting mobile vitals.
+            /// - Parameter mobileVitalsFrequency: `.average` by default.
+            public func set(mobileVitalsFrequency: VitalsFrequency) -> Builder {
+                configuration.mobileVitalsFrequency = mobileVitalsFrequency
                 return self
             }
 

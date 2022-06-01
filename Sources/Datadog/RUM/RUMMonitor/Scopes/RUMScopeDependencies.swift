@@ -37,6 +37,7 @@ internal struct RUMScopeDependencies {
     /// Produces `RUMViewUpdatesThrottlerType` for each started RUM view scope.
     let viewUpdatesThrottlerFactory: () -> RUMViewUpdatesThrottlerType
 
+    let vitalFrequency: TimeInterval?
     let vitalCPUReader: SamplingBasedVitalReader
     let vitalMemoryReader: SamplingBasedVitalReader
     let vitalRefreshRateReader: ContinuousVitalReader
@@ -74,6 +75,7 @@ internal extension RUMScopeDependencies {
             crashContextIntegration: RUMWithCrashContextIntegration(),
             ciTest: CITestIntegration.active?.rumCITest,
             viewUpdatesThrottlerFactory: { RUMViewUpdatesThrottler() },
+            vitalFrequency: rumFeature.configuration.vitalsFrequency,
             vitalCPUReader: rumFeature.vitalCPUReader,
             vitalMemoryReader: rumFeature.vitalMemoryReader,
             vitalRefreshRateReader: rumFeature.vitalRefreshRateReader,

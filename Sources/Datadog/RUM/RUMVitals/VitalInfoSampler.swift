@@ -23,8 +23,6 @@ internal final class VitalInfoSampler {
         static let normalizedRefreshRate = 60.0
     }
 
-    private static let frequency: TimeInterval = 1.0
-
     let cpuReader: SamplingBasedVitalReader
     private let cpuPublisher = VitalPublisher(initialValue: VitalInfo())
 
@@ -54,7 +52,7 @@ internal final class VitalInfoSampler {
         cpuReader: SamplingBasedVitalReader,
         memoryReader: SamplingBasedVitalReader,
         refreshRateReader: ContinuousVitalReader,
-        frequency: TimeInterval = VitalInfoSampler.frequency,
+        frequency: TimeInterval?,
         maximumRefreshRate: Double = Double(UIScreen.main.maximumFramesPerSecond)
     ) {
         self.cpuReader = cpuReader
@@ -64,6 +62,10 @@ internal final class VitalInfoSampler {
         self.refreshRateReader = refreshRateReader
         self.refreshRateReader.register(self.refreshRatePublisher)
         self.maximumRefreshRate = maximumRefreshRate
+
+        guard let frequency = frequency else {
+            return
+        }
 
         takeSample()
         let timer = Timer(

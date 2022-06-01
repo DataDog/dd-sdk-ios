@@ -102,7 +102,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.vitalInfoSampler = VitalInfoSampler(
             cpuReader: dependencies.vitalCPUReader,
             memoryReader: dependencies.vitalMemoryReader,
-            refreshRateReader: dependencies.vitalRefreshRateReader
+            refreshRateReader: dependencies.vitalRefreshRateReader,
+            frequency: dependencies.vitalFrequency
         )
         self.viewUpdatesThrottler = dependencies.viewUpdatesThrottlerFactory()
     }

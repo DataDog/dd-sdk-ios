@@ -671,6 +671,7 @@ extension RUMScopeDependencies {
         crashContextIntegration: RUMWithCrashContextIntegration? = nil,
         ciTest: RUMCITest? = nil,
         viewUpdatesThrottlerFactory: @escaping () -> RUMViewUpdatesThrottlerType = { NoOpRUMViewUpdatesThrottler() },
+        vitalFrequency: TimeInterval? = nil,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
@@ -694,6 +695,7 @@ extension RUMScopeDependencies {
             crashContextIntegration: crashContextIntegration,
             ciTest: ciTest,
             viewUpdatesThrottlerFactory: viewUpdatesThrottlerFactory,
+            vitalFrequency: vitalFrequency,
             vitalCPUReader: SamplingBasedVitalReaderMock(),
             vitalMemoryReader: SamplingBasedVitalReaderMock(),
             vitalRefreshRateReader: ContinuousVitalReaderMock(),
@@ -723,6 +725,7 @@ extension RUMScopeDependencies {
         crashContextIntegration: RUMWithCrashContextIntegration? = nil,
         ciTest: RUMCITest? = nil,
         viewUpdatesThrottlerFactory: (() -> RUMViewUpdatesThrottlerType)? = nil,
+        vitalFrequency: TimeInterval? = nil,
         onSessionStart: RUMSessionListener? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
@@ -746,6 +749,7 @@ extension RUMScopeDependencies {
             crashContextIntegration: crashContextIntegration ?? self.crashContextIntegration,
             ciTest: ciTest ?? self.ciTest,
             viewUpdatesThrottlerFactory: viewUpdatesThrottlerFactory ?? self.viewUpdatesThrottlerFactory,
+            vitalFrequency: vitalFrequency ?? self.vitalFrequency,
             vitalCPUReader: SamplingBasedVitalReaderMock(),
             vitalMemoryReader: SamplingBasedVitalReaderMock(),
             vitalRefreshRateReader: ContinuousVitalReaderMock(),
