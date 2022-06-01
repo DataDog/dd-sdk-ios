@@ -45,6 +45,11 @@ internal final class DatadogCore {
     /// Telemetry monitor, if configured.
     var telemetry: Telemetry?
 
+    let readWriteQueue = DispatchQueue(
+        label: "com.datadoghq.ios-sdk-read-write",
+        target: .global(qos: .utility)
+    )
+
     private var v1Features: [String: Any] = [:]
 
     /// Creates a core instance.
@@ -115,6 +120,7 @@ extension DatadogCore: DatadogCoreProtocol {
 
         let storage = FeatureStorage(
             featureName: storageConfiguration.featureName,
+            queue: readWriteQueue,
             dataFormat: uploadConfiguration.payloadFormat,
             directories: v1Directories,
             commonDependencies: dependencies,

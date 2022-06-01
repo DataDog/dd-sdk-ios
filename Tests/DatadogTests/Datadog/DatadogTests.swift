@@ -438,19 +438,11 @@ class DatadogTests: XCTestCase {
         )
 
         let core = try XCTUnwrap(defaultDatadogCore as? DatadogCore)
-        let logging = core.feature(LoggingFeature.self)
-        let tracing = core.feature(TracingFeature.self)
-        let rum = core.feature(RUMFeature.self)
 
         // On SDK init, underlying `ConsentAwareDataWriter` performs data migration for each feature, which includes
         // data removal in `unauthorised` (`.pending`) directory. To not cause test flakiness, we must ensure that
         // mock data is written only after this operation completes - otherwise, migration may delete mocked files.
-        let loggingWriter = try XCTUnwrap(logging?.storage.writer as? ConsentAwareDataWriter)
-        let tracingWriter = try XCTUnwrap(tracing?.storage.writer as? ConsentAwareDataWriter)
-        let rumWriter = try XCTUnwrap(rum?.storage.writer as? ConsentAwareDataWriter)
-        loggingWriter.queue.sync {}
-        tracingWriter.queue.sync {}
-        rumWriter.queue.sync {}
+        core.readWriteQueue.sync {}
 
         let featureDirectories: [FeatureDirectories] = [
             try FeatureDirectories(sdkRootDirectory: core.rootDirectory, storageConfiguration: createV2LoggingStorageConfiguration()),
@@ -469,9 +461,7 @@ class DatadogTests: XCTestCase {
         Datadog.clearAllData()
 
         // Wait for async clear completion in all features:
-        (logging?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
-        (tracing?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
-        (rum?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
+        core.readWriteQueue.sync {}
 
         // Then
         let newNumberOfFiles = try allDirectories.reduce(0, { acc, nextDirectory in return try acc + nextDirectory.files().count })
