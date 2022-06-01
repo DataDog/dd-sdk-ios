@@ -31,8 +31,8 @@ class RUMMonitorTests: XCTestCase {
     /// Creates `RUMMonitor` instance for tests.
     /// The only difference vs. `RUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
     private func createTestableRUMMonitor(in core: DatadogCoreProtocol) throws -> DDRUMMonitor {
-        let rumFeature: RUMFeature = try XCTUnwrap(core.feature(RUMFeature.self), "RUM feature must be initialized before creating `RUMMonitor`")
-        let crashReportingFeature = core.feature(CrashReportingFeature.self)
+        let rumFeature: RUMFeature = try XCTUnwrap(core.v1.feature(RUMFeature.self), "RUM feature must be initialized before creating `RUMMonitor`")
+        let crashReportingFeature = core.v1.feature(CrashReportingFeature.self)
         return RUMMonitor(
             dependencies: RUMScopeDependencies(rumFeature: rumFeature, crashReportingFeature: crashReportingFeature)
                 .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
@@ -1371,9 +1371,9 @@ class RUMMonitorTests: XCTestCase {
         userLogger = .mockWith(logOutput: output)
 
         // Given
-        let urlInstrumentation = try XCTUnwrap(defaultDatadogCore.feature(URLSessionAutoInstrumentation.self))
+        let urlInstrumentation = try XCTUnwrap(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
         let resourcesHandler = urlInstrumentation.interceptor.handler
-        let rumInstrumentation = try XCTUnwrap(defaultDatadogCore.feature(RUMInstrumentation.self))
+        let rumInstrumentation = try XCTUnwrap(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
         let viewsHandler = rumInstrumentation.viewsHandler
         let userActionsHandler = try XCTUnwrap(rumInstrumentation.userActionsAutoInstrumentation?.handler)
 

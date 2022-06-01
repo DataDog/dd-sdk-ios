@@ -28,7 +28,7 @@ internal protocol URLSessionInterceptorType: AnyObject {
 /// An object performing interception of requests sent with `URLSession`.
 public class URLSessionInterceptor: URLSessionInterceptorType {
     public static var shared: URLSessionInterceptor? {
-        let instrumentation = defaultDatadogCore.feature(URLSessionAutoInstrumentation.self)
+        let instrumentation = defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self)
         return instrumentation?.interceptor as? URLSessionInterceptor
     }
 

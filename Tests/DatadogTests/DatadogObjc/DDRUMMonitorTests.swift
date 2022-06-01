@@ -146,7 +146,7 @@ class DDRUMMonitorTests: XCTestCase {
     /// Creates `DDRUMMonitor` instance for tests.
     /// The only difference vs. `DDRUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
     private func createTestableDDRUMMonitor() throws -> DatadogObjc.DDRUMMonitor {
-        let rumFeature: RUMFeature = try XCTUnwrap(core.feature(RUMFeature.self), "RUM feature must be initialized before creating `RUMMonitor`")
+        let rumFeature: RUMFeature = try XCTUnwrap(core.v1.feature(RUMFeature.self), "RUM feature must be initialized before creating `RUMMonitor`")
         let swiftMonitor = RUMMonitor(
             dependencies: RUMScopeDependencies(rumFeature: rumFeature, crashReportingFeature: nil)
                 .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),

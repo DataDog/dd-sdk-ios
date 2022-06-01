@@ -28,8 +28,8 @@ public extension WKUserContentController {
         addDatadogMessageHandler(
             allowedWebViewHosts: hosts,
             hostsSanitizer: HostsSanitizer(),
-            loggingFeature: core.feature(LoggingFeature.self),
-            rumFeature: core.feature(RUMFeature.self)
+            loggingFeature: core.v1.feature(LoggingFeature.self),
+            rumFeature: core.v1.feature(RUMFeature.self)
         )
     }
 

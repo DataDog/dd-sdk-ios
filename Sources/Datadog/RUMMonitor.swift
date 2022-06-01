@@ -157,7 +157,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     """
                 )
             }
-            guard let rumFeature = core.feature(RUMFeature.self) else {
+            guard let rumFeature = core.v1.feature(RUMFeature.self) else {
                 throw ProgrammerError(
                     description: Datadog.isInitialized
                         ? "`RUMMonitor.initialize()` produces a non-functional monitor, as the RUM feature is disabled."
@@ -165,14 +165,14 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 )
             }
 
-            let crashReporting = core.feature(CrashReportingFeature.self)
+            let crashReporting = core.v1.feature(CrashReportingFeature.self)
             let monitor = RUMMonitor(
                 dependencies: RUMScopeDependencies(rumFeature: rumFeature, crashReportingFeature: crashReporting),
                 dateProvider: rumFeature.dateProvider
             )
 
-            core.feature(RUMInstrumentation.self)?.publish(to: monitor)
-            core.feature(URLSessionAutoInstrumentation.self)?.publish(to: monitor)
+            core.v1.feature(RUMInstrumentation.self)?.publish(to: monitor)
+            core.v1.feature(URLSessionAutoInstrumentation.self)?.publish(to: monitor)
 
             return monitor
         } catch {

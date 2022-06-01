@@ -1128,7 +1128,7 @@ class TracerTests: XCTestCase {
         userLogger = .mockWith(logOutput: output)
 
         // Given
-        let instrumentation = defaultDatadogCore.feature(URLSessionAutoInstrumentation.self)
+        let instrumentation = defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self)
         let tracingHandler = try XCTUnwrap(instrumentation?.interceptor.handler)
 
         // When

@@ -34,8 +34,8 @@ class DDDatadogTests: XCTestCase {
 
         XCTAssertTrue(Datadog.isInitialized)
 
-        let logging = defaultDatadogCore.feature(LoggingFeature.self)
-        let urlSessionInstrumentation = defaultDatadogCore.feature(URLSessionAutoInstrumentation.self)
+        let logging = defaultDatadogCore.v1.feature(LoggingFeature.self)
+        let urlSessionInstrumentation = defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self)
         XCTAssertEqual(logging?.configuration.common.applicationName, "app-name")
         XCTAssertEqual(logging?.configuration.common.environment, "tests")
         XCTAssertNotNil(urlSessionInstrumentation)
@@ -43,8 +43,8 @@ class DDDatadogTests: XCTestCase {
         urlSessionInstrumentation?.swizzler.unswizzle()
         Datadog.flushAndDeinitialize()
 
-        XCTAssertNil(defaultDatadogCore.feature(LoggingFeature.self))
-        XCTAssertNil(defaultDatadogCore.feature(URLSessionAutoInstrumentation.self))
+        XCTAssertNil(defaultDatadogCore.v1.feature(LoggingFeature.self))
+        XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
     }
 
     // MARK: - Changing Tracking Consent

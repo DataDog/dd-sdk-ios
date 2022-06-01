@@ -59,7 +59,7 @@ public extension SwiftUI.View {
         in core: DatadogCoreProtocol = defaultDatadogCore
     ) -> some View {
         let path = "\(name)/\(typeDescription.hashValue)"
-        let instrumentation = core.feature(RUMInstrumentation.self)
+        let instrumentation = core.v1.feature(RUMInstrumentation.self)
         return modifier(
             RUMViewModifier(
                 instrumentation: instrumentation,

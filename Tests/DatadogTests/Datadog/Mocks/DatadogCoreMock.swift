@@ -7,7 +7,7 @@
 import Foundation
 @testable import Datadog
 
-internal final class DatadogCoreMock: DatadogCoreProtocol, Flushable {
+internal final class DatadogCoreMock: Flushable {
     private var v1Features: [String: Any] = [:]
 
     /// Flush resgistered features.
@@ -26,7 +26,9 @@ internal final class DatadogCoreMock: DatadogCoreProtocol, Flushable {
     func all<T>(_ type: T.Type) -> [T] {
         v1Features.values.compactMap { $0 as? T }
     }
+}
 
+extension DatadogCoreMock: DatadogV1CoreProtocol {
     // MARK: V1 interface
 
     func register<T>(feature instance: T?) {
