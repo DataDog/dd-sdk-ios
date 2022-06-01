@@ -222,12 +222,10 @@ extension FeaturesConfiguration.Logging {
     static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
-        common: FeaturesConfiguration.Common = .mockAny(),
         uploadURL: URL = .mockAny(),
         logEventMapper: LogEventMapper? = nil
     ) -> Self {
         return .init(
-            common: common,
             uploadURL: uploadURL,
             logEventMapper: logEventMapper
         )

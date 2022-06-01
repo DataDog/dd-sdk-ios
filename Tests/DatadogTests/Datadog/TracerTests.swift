@@ -615,13 +615,16 @@ class TracerTests: XCTestCase {
     // MARK: - Integration With Logging Feature
 
     func testSendingSpanLogs() throws {
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(
-            directory: temporaryDirectory,
-            dependencies: .mockWith(
-                performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+        let core = DatadogCoreMock(
+            v1Context: .mockWith(
+                dependencies: .mockWith(
+                    performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+                )
             )
         )
+        defer { core.flush() }
 
+        let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: logging)
 
         let tracing: TracingFeature = .mockByRecordingSpanMatchers(
@@ -659,12 +662,16 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromArguments() throws {
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(
-            directory: temporaryDirectory,
-            dependencies: .mockWith(
-                performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+        let core = DatadogCoreMock(
+            v1Context: .mockWith(
+                dependencies: .mockWith(
+                    performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+                )
             )
         )
+        defer { core.flush() }
+
+        let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: logging)
 
         let tracing: TracingFeature = .mockByRecordingSpanMatchers(
@@ -694,12 +701,16 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromNSError() throws {
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(
-            directory: temporaryDirectory,
-            dependencies: .mockWith(
-                performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+        let core = DatadogCoreMock(
+            v1Context: .mockWith(
+                dependencies: .mockWith(
+                    performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+                )
             )
         )
+        defer { core.flush() }
+
+        let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: logging)
 
         let tracing: TracingFeature = .mockByRecordingSpanMatchers(
@@ -735,12 +746,16 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromSwiftError() throws {
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(
-            directory: temporaryDirectory,
-            dependencies: .mockWith(
-                performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+        let core = DatadogCoreMock(
+            v1Context: .mockWith(
+                dependencies: .mockWith(
+                    performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+                )
             )
         )
+        defer { core.flush() }
+
+        let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: logging)
 
         let tracing: TracingFeature = .mockByRecordingSpanMatchers(
@@ -1019,7 +1034,7 @@ class TracerTests: XCTestCase {
         defer { consolePrint = { print($0) } }
 
         // given
-        XCTAssertFalse(Datadog.isInitialized)
+        let core = DatadogCoreMock(v1Context: nil)
 
         // when
         let tracer = Tracer.initialize(configuration: .init(), in: core)

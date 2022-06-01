@@ -8,31 +8,29 @@ import XCTest
 @testable import Datadog
 
 class LoggerBuilderTests: XCTestCase {
-    let core = DatadogCoreMock()
-
+    private let userInfoProvider: UserInfoProvider = .mockAny()
     private let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
     private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
-
-    override func setUp() {
-        super.setUp()
-        temporaryDirectory.create()
-
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(
-            directory: temporaryDirectory,
+    private lazy var core = DatadogCoreMock(
+        v1Context: .mockWith(
             configuration: .mockWith(
-                common: .mockWith(
-                    applicationVersion: "1.2.3",
-                    applicationBundleIdentifier: "com.datadog.unit-tests",
-                    serviceName: "service-name",
-                    environment: "tests"
-                )
+                applicationVersion: "1.2.3",
+                applicationBundleIdentifier: "com.datadog.unit-tests",
+                serviceName: "service-name",
+                environment: "tests"
             ),
             dependencies: .mockWith(
+                userInfoProvider: userInfoProvider,
                 networkConnectionInfoProvider: networkConnectionInfoProvider,
                 carrierInfoProvider: carrierInfoProvider
             )
         )
+    )
 
+    override func setUp() {
+        super.setUp()
+        temporaryDirectory.create()
+        let feature: LoggingFeature = .mockNoOp()
         core.register(feature: feature)
     }
 
@@ -47,22 +45,14 @@ class LoggerBuilderTests: XCTestCase {
 
         XCTAssertNil(logger.rumContextIntegration)
         XCTAssertNil(logger.activeSpanIntegration)
+        XCTAssertTrue(logger.logOutput is LogFileOutput)
 
-        let feature = try XCTUnwrap(core.v1.feature(LoggingFeature.self))
-        XCTAssertTrue(
-            logger.logOutput is LogFileOutput,
-            "When Logging feature is enabled the Logger should use `LogFileOutput`."
-        )
-        let logBuilder = try XCTUnwrap(
-            logger.logBuilder,
-            "When Logging feature is enabled the Logger should use `LogBuilder`."
-        )
-
+        let logBuilder = try XCTUnwrap(logger.logBuilder)
         XCTAssertEqual(logBuilder.applicationVersion, "1.2.3")
         XCTAssertEqual(logBuilder.serviceName, "service-name")
         XCTAssertEqual(logBuilder.environment, "tests")
         XCTAssertEqual(logBuilder.loggerName, "com.datadog.unit-tests")
-        XCTAssertTrue(logBuilder.userInfoProvider === feature.userInfoProvider)
+        XCTAssertTrue(logBuilder.userInfoProvider === userInfoProvider)
         XCTAssertNil(logBuilder.networkConnectionInfoProvider)
         XCTAssertNil(logBuilder.carrierInfoProvider)
     }
@@ -106,24 +96,16 @@ class LoggerBuilderTests: XCTestCase {
 
         XCTAssertNil(logger.rumContextIntegration)
         XCTAssertNil(logger.activeSpanIntegration)
+        XCTAssertTrue(logger.logOutput is LogFileOutput)
 
-        let feature = try XCTUnwrap(core.v1.feature(LoggingFeature.self))
-        XCTAssertTrue(
-            logger.logOutput is LogFileOutput,
-            "When Logging feature is enabled the Logger should use `LogFileOutput`."
-        )
-        let logBuilder = try XCTUnwrap(
-            logger.logBuilder,
-            "When Logging feature is enabled the Logger should use `LogBuilder`."
-        )
-
+        let logBuilder = try XCTUnwrap(logger.logBuilder)
         XCTAssertEqual(logBuilder.applicationVersion, "1.2.3")
         XCTAssertEqual(logBuilder.serviceName, "custom-service-name")
         XCTAssertEqual(logBuilder.environment, "tests")
         XCTAssertEqual(logBuilder.loggerName, "custom-logger-name")
-        XCTAssertTrue(logBuilder.userInfoProvider === feature.userInfoProvider)
-        XCTAssertTrue(logBuilder.networkConnectionInfoProvider as AnyObject === feature.networkConnectionInfoProvider as AnyObject)
-        XCTAssertTrue(logBuilder.carrierInfoProvider as AnyObject === feature.carrierInfoProvider as AnyObject)
+        XCTAssertTrue(logBuilder.userInfoProvider === userInfoProvider)
+        XCTAssertTrue(logBuilder.networkConnectionInfoProvider as AnyObject === networkConnectionInfoProvider as AnyObject)
+        XCTAssertTrue(logBuilder.carrierInfoProvider as AnyObject === carrierInfoProvider as AnyObject)
     }
 
     func testUsingDifferentOutputs() throws {

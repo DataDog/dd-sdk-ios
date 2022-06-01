@@ -24,7 +24,7 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
             logOutput: logOutput,
             dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
             dateCorrector: DateCorrectorMock(),
-            configuration: .mockAny()
+            context: .mockAny()
         )
         integration.send(crashReport: crashReport, with: crashContext)
 
@@ -82,7 +82,7 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
             logOutput: logOutput,
             dateProvider: RelativeDateProvider(using: .mockRandomInThePast()),
             dateCorrector: DateCorrectorMock(correctionOffset: dateCorrectionOffset),
-            configuration: configuration
+            context: .mockWith(configuration: configuration)
         )
         integration.send(crashReport: crashReport, with: crashContext)
 

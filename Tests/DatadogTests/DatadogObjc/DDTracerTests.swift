@@ -117,12 +117,21 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogs() throws {
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(
-            directory: temporaryDirectory,
-            dependencies: .mockWith(
-                performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+        let core = DatadogCoreMock(
+            v1Context: .mockWith(
+                dependencies: .mockWith(
+                    performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+                )
             )
         )
+        defaultDatadogCore = core
+        defer {
+            core.flush()
+            defaultDatadogCore = NOOPDatadogCore()
+        }
+
+        let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        core.register(feature: logging)
 
         let tracing: TracingFeature = .mockByRecordingSpanMatchers(
             directory: temporaryDirectory,
@@ -130,8 +139,6 @@ class DDTracerTests: XCTestCase {
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
             )
         )
-
-        core.register(feature: logging)
         core.register(feature: tracing)
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration())
@@ -150,12 +157,21 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromArguments() throws {
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(
-            directory: temporaryDirectory,
-            dependencies: .mockWith(
-                performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+        let core = DatadogCoreMock(
+            v1Context: .mockWith(
+                dependencies: .mockWith(
+                    performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+                )
             )
         )
+        defaultDatadogCore = core
+        defer {
+            core.flush()
+            defaultDatadogCore = NOOPDatadogCore()
+        }
+
+        let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        core.register(feature: logging)
 
         let tracing: TracingFeature = .mockByRecordingSpanMatchers(
             directory: temporaryDirectory,
@@ -163,8 +179,6 @@ class DDTracerTests: XCTestCase {
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
             )
         )
-
-        core.register(feature: logging)
         core.register(feature: tracing)
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration())
@@ -186,12 +200,21 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromNSError() throws {
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(
-            directory: temporaryDirectory,
-            dependencies: .mockWith(
-                performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+        let core = DatadogCoreMock(
+            v1Context: .mockWith(
+                dependencies: .mockWith(
+                    performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
+                )
             )
         )
+        defaultDatadogCore = core
+        defer {
+            core.flush()
+            defaultDatadogCore = NOOPDatadogCore()
+        }
+
+        let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        core.register(feature: logging)
 
         let tracing: TracingFeature = .mockByRecordingSpanMatchers(
             directory: temporaryDirectory,
@@ -199,8 +222,6 @@ class DDTracerTests: XCTestCase {
                 performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
             )
         )
-
-        core.register(feature: logging)
         core.register(feature: tracing)
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration())

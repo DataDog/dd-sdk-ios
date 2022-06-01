@@ -20,10 +20,9 @@ extension LoggingFeature {
 
     /// Mocks the feature instance which performs uploads to `URLSession`.
     /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
-    static func mockWith(
+    private static func mockWith(
         directory: Directory,
-        configuration: FeaturesConfiguration.Logging = .mockAny(),
-        dependencies: FeaturesCommonDependencies = .mockAny(),
+        featureConfiguration: FeaturesConfiguration.Logging = .mockAny(),
         telemetry: Telemetry? = nil
     ) -> LoggingFeature {
         // Because in V2 Feature Storage and Upload are created by `DatadogCore`, here we ask
@@ -31,15 +30,23 @@ extension LoggingFeature {
         // providing V1 stack for partial V2 architecture in tests.
         let v2Core = DatadogCore(
             rootDirectory: directory,
-            configuration: configuration.common,
-            dependencies: dependencies
+            // Here we mock anything for `configuration` and `dependencies` of the dummy core instance.
+            //
+            // These ARE NOT used by the Feature to produce events. Instead, the Feature uses
+            // context provided by standalone `DatadogCoreMock`.
+            //
+            // These ARE only used by the `FeatureStorage` and `FeatureUpload` to store and upload events.
+            // Because storage and upload are responsibilities of core in V2, we don't test it
+            // as part of Feature test.
+            configuration: .mockAny(),
+            dependencies: .mockAny()
         )
         v2Core.telemetry = telemetry
 
         let feature: LoggingFeature = try! v2Core.create(
             storageConfiguration: createV2LoggingStorageConfiguration(),
-            uploadConfiguration: createV2LoggingUploadConfiguration(v1Configuration: configuration),
-            featureSpecificConfiguration: configuration
+            uploadConfiguration: createV2LoggingUploadConfiguration(v1Configuration: featureConfiguration),
+            featureSpecificConfiguration: featureConfiguration
         )
         return feature
     }
@@ -48,16 +55,16 @@ extension LoggingFeature {
     /// Use `LogFeature.waitAndReturnLogMatchers()` to inspect and assert recorded `Logs`.
     static func mockByRecordingLogMatchers(
         directory: Directory,
-        configuration: FeaturesConfiguration.Logging = .mockAny(),
-        dependencies: FeaturesCommonDependencies = .mockAny()
+        featureConfiguration: FeaturesConfiguration.Logging = .mockAny()
     ) -> LoggingFeature {
         // Get the full feature mock:
         let fullFeature: LoggingFeature = .mockWith(
             directory: directory,
-            configuration: configuration,
-            dependencies: dependencies.replacing(
-                dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
-            )
+            featureConfiguration: featureConfiguration
+//            coreConfiguration: coreConfiguration,
+//            coreDependencies: coreDependencies.replacing(
+//                dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
+//            )
         )
         let uploadWorker = DataUploadWorkerMock()
         let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
@@ -65,11 +72,15 @@ extension LoggingFeature {
         let mockedUpload = FeatureUpload(uploader: uploadWorker)
         // Tear down the original upload
         fullFeature.upload.flushAndTearDown()
+
         return LoggingFeature(
             storage: observedStorage,
             upload: mockedUpload,
-            configuration: configuration,
-            commonDependencies: dependencies,
+            configuration: fullFeature.configuration,
+            // Here we mock anything for `commonDependencies`. This is only required by `V1FeatureInitializable` interface but not
+            // used in this Feature implementation. It will be removed after we update the `V1FeatureInitializable` interface
+            // for all other Features:
+            commonDependencies: .mockAny(),
             telemetry: nil
         )
     }
