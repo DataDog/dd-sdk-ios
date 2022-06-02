@@ -45,39 +45,51 @@ internal struct RUMScopeDependencies {
 }
 
 internal extension RUMScopeDependencies {
-    init(rumFeature: RUMFeature, crashReportingFeature: CrashReportingFeature?) {
+    init(
+        rumFeature: RUMFeature,
+        crashReportingFeature: CrashReportingFeature?,
+        context: DatadogV1Context,
+        telemetry: Telemetry?
+    ) {
         self.init(
             rumApplicationID: rumFeature.configuration.applicationID,
             sessionSampler: rumFeature.configuration.sessionSampler,
-            sdkInitDate: rumFeature.sdkInitDate,
+            sdkInitDate: context.sdkInitDate,
             backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled,
-            appStateListener: rumFeature.appStateListener,
-            userInfoProvider: RUMUserInfoProvider(userInfoProvider: rumFeature.userInfoProvider),
-            launchTimeProvider: rumFeature.launchTimeProvider,
+            appStateListener: context.appStateListener,
+            userInfoProvider: RUMUserInfoProvider(userInfoProvider: context.userInfoProvider),
+            launchTimeProvider: context.launchTimeProvider,
             connectivityInfoProvider: RUMConnectivityInfoProvider(
-                networkConnectionInfoProvider: rumFeature.networkConnectionInfoProvider,
-                carrierInfoProvider: rumFeature.carrierInfoProvider
+                networkConnectionInfoProvider: context.networkConnectionInfoProvider,
+                carrierInfoProvider: context.carrierInfoProvider
             ),
-            serviceName: rumFeature.configuration.common.serviceName,
-            applicationVersion: rumFeature.configuration.common.applicationVersion,
-            sdkVersion: rumFeature.configuration.common.sdkVersion,
-            source: rumFeature.configuration.common.source,
+            serviceName: context.service,
+            applicationVersion: context.version,
+            sdkVersion: context.sdkVersion,
+            source: context.source,
             firstPartyURLsFilter: FirstPartyURLsFilter(hosts: rumFeature.configuration.firstPartyHosts),
             eventBuilder: RUMEventBuilder(
-                eventsMapper: rumFeature.eventsMapper
+                eventsMapper: RUMEventsMapper(
+                    viewEventMapper: rumFeature.configuration.viewEventMapper,
+                    errorEventMapper: rumFeature.configuration.errorEventMapper,
+                    resourceEventMapper: rumFeature.configuration.resourceEventMapper,
+                    actionEventMapper: rumFeature.configuration.actionEventMapper,
+                    longTaskEventMapper: rumFeature.configuration.longTaskEventMapper,
+                    telemetry: telemetry
+                )
             ),
             eventOutput: RUMEventFileOutput(
                 fileWriter: rumFeature.storage.writer
             ),
             rumUUIDGenerator: rumFeature.configuration.uuidGenerator,
-            dateCorrector: rumFeature.dateCorrector,
+            dateCorrector: context.dateCorrector,
             crashContextIntegration: crashReportingFeature.map { .init(crashReporting: $0) },
             ciTest: CITestIntegration.active?.rumCITest,
             viewUpdatesThrottlerFactory: { RUMViewUpdatesThrottler() },
-            vitalCPUReader: rumFeature.vitalCPUReader,
-            vitalMemoryReader: rumFeature.vitalMemoryReader,
-            vitalRefreshRateReader: rumFeature.vitalRefreshRateReader,
-            onSessionStart: rumFeature.onSessionStart
+            vitalCPUReader: VitalCPUReader(telemetry: telemetry),
+            vitalMemoryReader: VitalMemoryReader(),
+            vitalRefreshRateReader: VitalRefreshRateReader(),
+            onSessionStart: rumFeature.configuration.onSessionStart
         )
     }
 }

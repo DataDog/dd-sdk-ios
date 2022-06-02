@@ -236,7 +236,7 @@ public class Datadog {
                 in: core,
                 sdkVersion: configuration.common.sdkVersion,
                 applicationID: rumConfiguration.applicationID,
-                source: rumConfiguration.common.source,
+                source: configuration.common.source,
                 dateProvider: dateProvider,
                 dateCorrector: dateCorrector,
                 sampler: rumConfiguration.telemetrySampler

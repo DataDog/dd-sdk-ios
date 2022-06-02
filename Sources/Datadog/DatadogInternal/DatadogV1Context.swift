@@ -61,6 +61,9 @@ internal extension DatadogV1Context {
 
     /// The bundle identifier, read from `Info.plist` (`CFBundleIdentifier`).
     var applicationBundleIdentifier: String { configuration.applicationBundleIdentifier }
+
+    /// Date of SDK initialization measured in device time (without NTP correction).
+    var sdkInitDate: Date { dependencies.sdkInitDate }
 }
 
 // MARK: - Providers
@@ -84,4 +87,10 @@ internal extension DatadogV1Context {
 
     /// User information provider.
     var userInfoProvider: UserInfoProvider { dependencies.userInfoProvider }
+
+    /// Provides the history of app foreground / background states and lets subscribe for their updates.
+    var appStateListener: AppStateListening { dependencies.appStateListener }
+
+    /// Provides the information about application launch time.
+    var launchTimeProvider: LaunchTimeProviderType { dependencies.launchTimeProvider }
 }

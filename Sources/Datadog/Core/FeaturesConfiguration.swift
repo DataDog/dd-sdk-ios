@@ -44,7 +44,6 @@ internal struct FeaturesConfiguration {
             let longTaskThreshold: TimeInterval?
         }
 
-        let common: Common
         let uploadURL: URL
         let applicationID: String
         let sessionSampler: Sampler
@@ -199,7 +198,6 @@ extension FeaturesConfiguration {
 
             if let rumApplicationID = configuration.rumApplicationID {
                 rum = RUM(
-                    common: common,
                     uploadURL: try ifValid(endpointURLString: rumEndpoint.url),
                     applicationID: rumApplicationID,
                     sessionSampler: Sampler(samplingRate: debugOverride ? 100.0 : configuration.rumSessionsSamplingRate),
