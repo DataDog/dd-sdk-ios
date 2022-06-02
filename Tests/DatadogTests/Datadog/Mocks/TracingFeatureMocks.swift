@@ -12,9 +12,7 @@ extension TracingFeature {
         return TracingFeature(
             storage: .mockNoOp(),
             upload: .mockNoOp(),
-            configuration: .mockAny(),
-            commonDependencies: .mockAny(),
-            telemetry: nil
+            configuration: .mockAny()
         )
     }
 
@@ -34,9 +32,7 @@ extension TracingFeature {
         return TracingFeature(
             storage: interceptedStorage,
             upload: .mockNoOp(),
-            configuration: featureConfiguration,
-            commonDependencies: .mockAny(),
-            telemetry: nil
+            configuration: featureConfiguration
         )
     }
 

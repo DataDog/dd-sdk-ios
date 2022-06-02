@@ -27,10 +27,7 @@ internal final class RUMFeature: V1FeatureInitializable {
     init(
         storage: FeatureStorage,
         upload: FeatureUpload,
-        configuration: Configuration,
-        /// TODO: RUMM-2169 Remove `commonDependencies` from `V1FeatureInitializable` interface when all Features are migrated to use `DatadogV1Context`:
-        commonDependencies: FeaturesCommonDependencies,
-        telemetry: Telemetry?
+        configuration: Configuration
     ) {
         // Configuration
         self.configuration = configuration

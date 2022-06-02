@@ -12,9 +12,7 @@ extension LoggingFeature {
         return LoggingFeature(
             storage: .mockNoOp(),
             upload: .mockNoOp(),
-            configuration: .mockAny(),
-            commonDependencies: .mockAny(),
-            telemetry: nil
+            configuration: .mockAny()
         )
     }
 
@@ -34,9 +32,7 @@ extension LoggingFeature {
         return LoggingFeature(
             storage: interceptedStorage,
             upload: .mockNoOp(),
-            configuration: featureConfiguration,
-            commonDependencies: .mockAny(),
-            telemetry: nil
+            configuration: featureConfiguration
         )
     }
 

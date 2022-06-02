@@ -13,9 +13,7 @@ extension RUMFeature {
         return RUMFeature(
             storage: .mockNoOp(),
             upload: .mockNoOp(),
-            configuration: .mockAny(),
-            commonDependencies: .mockAny(),
-            telemetry: nil
+            configuration: .mockAny()
         )
     }
 
@@ -35,9 +33,7 @@ extension RUMFeature {
         return RUMFeature(
             storage: interceptedStorage,
             upload: .mockNoOp(),
-            configuration: featureConfiguration,
-            commonDependencies: .mockAny(),
-            telemetry: nil
+            configuration: featureConfiguration
         )
     }
 
