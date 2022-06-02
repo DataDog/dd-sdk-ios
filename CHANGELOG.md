@@ -1,6 +1,7 @@
 # Unreleased
 
 ### Changes
+* [IMPROVEMENT] Add mobile vitals frequency configuration. See [#876][]
 
 # 1.11.0-rc1 / 18-05-2022
 
@@ -367,6 +368,7 @@
 [#837]: https://github.com/DataDog/dd-sdk-ios/issues/837
 [#832]: https://github.com/DataDog/dd-sdk-ios/issues/832
 [#851]: https://github.com/DataDog/dd-sdk-ios/issues/851
+[#876]: https://github.com/DataDog/dd-sdk-ios/issues/876
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu
