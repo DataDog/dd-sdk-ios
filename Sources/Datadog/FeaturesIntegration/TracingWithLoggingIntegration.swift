@@ -24,21 +24,20 @@ internal struct TracingWithLoggingIntegration {
     let loggingOutput: LogOutput
 
     init(
-        tracingFeature: TracingFeature,
         tracerConfiguration: Tracer.Configuration,
         loggingFeature: LoggingFeature,
         context: DatadogV1Context
     ) {
         self.init(
             logBuilder: LogEventBuilder(
-                sdkVersion: tracingFeature.configuration.common.sdkVersion,
-                applicationVersion: tracingFeature.configuration.common.applicationVersion,
-                environment: tracingFeature.configuration.common.environment,
-                serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.common.serviceName,
+                sdkVersion: context.sdkVersion,
+                applicationVersion: context.version,
+                environment: context.env,
+                serviceName: tracerConfiguration.serviceName ?? context.service,
                 loggerName: "trace",
-                userInfoProvider: tracingFeature.userInfoProvider,
-                networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil,
-                carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil,
+                userInfoProvider: context.userInfoProvider,
+                networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? context.networkConnectionInfoProvider : nil,
+                carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? context.carrierInfoProvider : nil,
                 dateCorrector: context.dateCorrector,
                 logEventMapper: loggingFeature.configuration.logEventMapper
             ),

@@ -34,6 +34,9 @@ internal protocol DatadogV1CoreProtocol: DatadogCoreProtocol {
 
     /// The SDK context created upon core initialization or `nil` if SDK was not yet initialized.
     var context: DatadogV1Context? { get }
+
+    /// Telemetry monitor for this instance of the SDK or `nil` if not configured.
+    var telemetry: Telemetry? { get }
 }
 
 extension NOOPDatadogCore: DatadogV1CoreProtocol {
@@ -48,6 +51,10 @@ extension NOOPDatadogCore: DatadogV1CoreProtocol {
     }
 
     var context: DatadogV1Context? {
+        return nil
+    }
+
+    var telemetry: Telemetry? {
         return nil
     }
 }

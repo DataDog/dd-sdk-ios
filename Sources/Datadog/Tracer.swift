@@ -93,6 +93,7 @@ public class Tracer: OTTracer {
                 tracerConfiguration: configuration,
                 rumEnabled: core.v1.feature(RUMFeature.self) != nil,
                 loggingFeature: core.v1.feature(LoggingFeature.self),
+                telemetry: core.v1.telemetry,
                 context: context
             )
         } catch {
@@ -106,33 +107,33 @@ public class Tracer: OTTracer {
         tracerConfiguration: Configuration,
         rumEnabled: Bool,
         loggingFeature: LoggingFeature?,
+        telemetry: Telemetry?,
         context: DatadogV1Context
     ) {
         self.init(
             spanBuilder: SpanEventBuilder(
-                sdkVersion: tracingFeature.configuration.common.sdkVersion,
-                applicationVersion: tracingFeature.configuration.common.applicationVersion,
-                serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.common.serviceName,
-                userInfoProvider: tracingFeature.userInfoProvider,
-                networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil,
-                carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil,
-                dateCorrector: tracingFeature.dateCorrector,
-                source: tracingFeature.configuration.common.source,
-                origin: tracingFeature.configuration.common.origin ,
+                sdkVersion: context.sdkVersion,
+                applicationVersion: context.version,
+                serviceName: tracerConfiguration.serviceName ?? context.service,
+                userInfoProvider: context.userInfoProvider,
+                networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? context.networkConnectionInfoProvider : nil,
+                carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? context.carrierInfoProvider : nil,
+                dateCorrector: context.dateCorrector,
+                source: context.source,
+                origin: context.ciAppOrigin,
                 eventsMapper: tracingFeature.configuration.spanEventMapper,
-                telemetry: tracingFeature.telemetry
+                telemetry: telemetry
             ),
             spanOutput: SpanFileOutput(
                 fileWriter: tracingFeature.storage.writer,
-                environment: tracingFeature.configuration.common.environment
+                environment: context.env
             ),
-            dateProvider: tracingFeature.dateProvider,
-            tracingUUIDGenerator: tracingFeature.tracingUUIDGenerator,
+            dateProvider: context.dateProvider,
+            tracingUUIDGenerator: tracingFeature.configuration.uuidGenerator,
             globalTags: tracerConfiguration.globalTags,
             rumContextIntegration: (rumEnabled && tracerConfiguration.bundleWithRUM) ? TracingWithRUMContextIntegration() : nil,
             loggingIntegration: loggingFeature.map {
                 TracingWithLoggingIntegration(
-                    tracingFeature: tracingFeature,
                     tracerConfiguration: tracerConfiguration,
                     loggingFeature: $0,
                     context: context
