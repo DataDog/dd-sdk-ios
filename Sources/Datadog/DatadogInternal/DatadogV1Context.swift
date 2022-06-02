@@ -12,6 +12,9 @@ import Foundation
 /// - different values for V1 context need to be read either from common configuration or through shared dependencies (providers);
 /// - V1 context is not asynchronous, and some providers block their threads for getting their value.
 ///
+/// `DatadogV1Context` can be safely captured during component initialization. It will never change during component's lifespan, meaning that:
+/// - exposed static configuration won't change;
+/// - bundled provider references won't change (although the value they provide will be different over time).
 internal struct DatadogV1Context {
     private let configuration: CoreConfiguration
     private let dependencies: CoreDependencies
@@ -20,7 +23,12 @@ internal struct DatadogV1Context {
         self.configuration = configuration
         self.dependencies = dependencies
     }
+}
 
+// MARK: - Configuration
+
+/// This extension bundles different parts of the SDK core configuration.
+internal extension DatadogV1Context {
     // MARK: - Datadog Specific
 
     /// The client token allowing for data uploads to [Datadog Site](https://docs.datadoghq.com/getting_started/site/).
@@ -51,6 +59,29 @@ internal struct DatadogV1Context {
     /// The name of the application, read from `Info.plist` (`CFBundleExecutable`).
     var applicationName: String { configuration.applicationName }
 
+    /// The bundle identifier, read from `Info.plist` (`CFBundleIdentifier`).
+    var applicationBundleIdentifier: String { configuration.applicationBundleIdentifier }
+}
+
+// MARK: - Providers
+
+/// This extension bundles different providers managed by the SDK core.
+internal extension DatadogV1Context {
     /// Current device information.
     var mobileDevice: MobileDevice { dependencies.mobileDevice }
+
+    /// Time provider.
+    var dateProvider: DateProvider { dependencies.dateProvider }
+
+    /// NTP time correction provider.
+    var dateCorrector: DateCorrectorType { dependencies.dateCorrector }
+
+    /// Network information provider.
+    var networkConnectionInfoProvider: NetworkConnectionInfoProviderType { dependencies.networkConnectionInfoProvider }
+
+    /// Carrier information provider.
+    var carrierInfoProvider: CarrierInfoProviderType { dependencies.carrierInfoProvider }
+
+    /// User information provider.
+    var userInfoProvider: UserInfoProvider { dependencies.userInfoProvider }
 }

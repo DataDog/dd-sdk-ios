@@ -214,7 +214,8 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingFeature: .mockNoOp(),
             loggingFeature: nil,
-            rumFeature: nil
+            rumFeature: nil,
+            context: .mockAny()
         )
 
         // Then

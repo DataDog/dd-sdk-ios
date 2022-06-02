@@ -17,7 +17,7 @@ class DDLoggerTests: XCTestCase {
         Datadog.initialize(
             appContext: .mockAny(),
             trackingConsent: .granted,
-            configuration: .mockAny()
+            configuration: .mockWith(environment: "test")
         )
     }
 
@@ -144,10 +144,7 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSettingTagsAndAttributes() throws {
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(
-            directory: temporaryDirectory,
-            configuration: .mockWith(common: .mockWith(environment: "test"))
-        )
+        let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         defaultDatadogCore.v1.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()

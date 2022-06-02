@@ -25,7 +25,8 @@ internal class CrashReporter {
     convenience init?(
         crashReportingFeature: CrashReportingFeature,
         loggingFeature: LoggingFeature?,
-        rumFeature: RUMFeature?
+        rumFeature: RUMFeature?,
+        context: DatadogV1Context
     ) {
         let loggingOrRUMIntegration: CrashReportingIntegration?
 
@@ -33,7 +34,7 @@ internal class CrashReporter {
         if let rumFeature = rumFeature {
             loggingOrRUMIntegration = CrashReportingWithRUMIntegration(rumFeature: rumFeature)
         } else if let loggingFeature = loggingFeature {
-            loggingOrRUMIntegration = CrashReportingWithLoggingIntegration(loggingFeature: loggingFeature)
+            loggingOrRUMIntegration = CrashReportingWithLoggingIntegration(loggingFeature: loggingFeature, context: context)
         } else {
             loggingOrRUMIntegration = nil
         }

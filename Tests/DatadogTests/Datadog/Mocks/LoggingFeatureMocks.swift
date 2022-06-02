@@ -18,58 +18,24 @@ extension LoggingFeature {
         )
     }
 
-    /// Mocks the feature instance which performs uploads to `URLSession`.
-    /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
-    static func mockWith(
-        directory: Directory,
-        configuration: FeaturesConfiguration.Logging = .mockAny(),
-        dependencies: FeaturesCommonDependencies = .mockAny(),
-        telemetry: Telemetry? = nil
-    ) -> LoggingFeature {
-        // Because in V2 Feature Storage and Upload are created by `DatadogCore`, here we ask
-        // dummy V2 core instance to initialize the Feature. It is hacky, yet minimal way of
-        // providing V1 stack for partial V2 architecture in tests.
-        let v2Core = DatadogCore(
-            rootDirectory: directory,
-            configuration: configuration.common,
-            dependencies: dependencies
-        )
-        v2Core.telemetry = telemetry
-
-        let feature: LoggingFeature = try! v2Core.create(
-            storageConfiguration: createV2LoggingStorageConfiguration(),
-            uploadConfiguration: createV2LoggingUploadConfiguration(v1Configuration: configuration),
-            featureSpecificConfiguration: configuration
-        )
-        return feature
-    }
-
-    /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
+    /// Mocks the feature instance which performs writes to `InMemoryWriter`.
     /// Use `LogFeature.waitAndReturnLogMatchers()` to inspect and assert recorded `Logs`.
     static func mockByRecordingLogMatchers(
         directory: Directory,
-        configuration: FeaturesConfiguration.Logging = .mockAny(),
-        dependencies: FeaturesCommonDependencies = .mockAny()
+        featureConfiguration: FeaturesConfiguration.Logging = .mockAny()
     ) -> LoggingFeature {
-        // Get the full feature mock:
-        let fullFeature: LoggingFeature = .mockWith(
-            directory: directory,
-            configuration: configuration,
-            dependencies: dependencies.replacing(
-                dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
-            )
+        // Mock storage with `InMemoryWriter`, used later for retrieving recorded events back:
+        let interceptedStorage = FeatureStorage(
+            writer: InMemoryWriter(),
+            reader: NoOpFileReader(),
+            arbitraryAuthorizedWriter: NoOpFileWriter(),
+            dataOrchestrator: NoOpDataOrchestrator()
         )
-        let uploadWorker = DataUploadWorkerMock()
-        let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
-        // Replace by mocking the `FeatureUpload` and observing the `FeatureStorage`:
-        let mockedUpload = FeatureUpload(uploader: uploadWorker)
-        // Tear down the original upload
-        fullFeature.upload.flushAndTearDown()
         return LoggingFeature(
-            storage: observedStorage,
-            upload: mockedUpload,
-            configuration: configuration,
-            commonDependencies: dependencies,
+            storage: interceptedStorage,
+            upload: .mockNoOp(),
+            configuration: featureConfiguration,
+            commonDependencies: .mockAny(),
             telemetry: nil
         )
     }
@@ -77,11 +43,11 @@ extension LoggingFeature {
     // MARK: - Expecting Logs Data
 
     func waitAndReturnLogMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
-        guard let uploadWorker = upload.uploader as? DataUploadWorkerMock else {
+        guard let inMemoryWriter = storage.writer as? InMemoryWriter else {
             preconditionFailure("Retrieving matchers requires that feature is mocked with `.mockByRecordingLogMatchers()`")
         }
-        return try uploadWorker.waitAndReturnBatchedData(count: count, file: file, line: line)
-            .flatMap { batchData in try LogMatcher.fromArrayOfJSONObjectsData(batchData, file: file, line: line) }
+        return try inMemoryWriter.waitAndReturnEventsData(count: count, file: file, line: line)
+            .map { eventData in try LogMatcher.fromJSONObjectData(eventData) }
     }
 
     // swiftlint:disable:next function_default_parameter_at_end

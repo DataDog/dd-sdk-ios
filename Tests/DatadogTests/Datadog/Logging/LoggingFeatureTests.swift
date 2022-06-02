@@ -8,17 +8,12 @@ import XCTest
 @testable import Datadog
 
 class LoggingFeatureTests: XCTestCase {
-    let core = DatadogCoreMock()
-
     override func setUp() {
         super.setUp()
-        XCTAssertFalse(Datadog.isInitialized)
         temporaryDirectory.create()
     }
 
     override func tearDown() {
-        XCTAssertFalse(Datadog.isInitialized)
-        core.flush()
         temporaryDirectory.delete()
         super.tearDown()
     }
@@ -40,25 +35,30 @@ class LoggingFeatureTests: XCTestCase {
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
 
-        // Given
-        let feature: LoggingFeature = .mockWith(
-            directory: temporaryDirectory,
+        let core = DatadogCore(
+            rootDirectory: temporaryDirectory,
             configuration: .mockWith(
-                common: .mockWith(
-                    clientToken: randomClientToken,
-                    applicationName: randomApplicationName,
-                    applicationVersion: randomApplicationVersion,
-                    source: randomSource,
-                    origin: randomOrigin,
-                    sdkVersion: randomSDKVersion,
-                    encryption: randomEncryption
-                ),
-                uploadURL: randomUploadURL
+                clientToken: randomClientToken,
+                applicationName: randomApplicationName,
+                applicationVersion: randomApplicationVersion,
+                source: randomSource,
+                origin: randomOrigin,
+                sdkVersion: randomSDKVersion,
+                encryption: randomEncryption
             ),
             dependencies: .mockWith(
                 mobileDevice: .mockWith(model: randomDeviceModel, osName: randomDeviceOSName, osVersion: randomDeviceOSVersion)
             )
         )
+
+        // Given
+        let featureConfiguration: LoggingFeature.Configuration = .mockWith(uploadURL: randomUploadURL)
+        let feature: LoggingFeature = try core.create(
+            storageConfiguration: createV2LoggingStorageConfiguration(),
+            uploadConfiguration: createV2LoggingUploadConfiguration(v1Configuration: featureConfiguration),
+            featureSpecificConfiguration: featureConfiguration
+        )
+        defer { feature.flush() }
         core.register(feature: feature)
 
         // When
@@ -89,8 +89,10 @@ class LoggingFeatureTests: XCTestCase {
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let feature: LoggingFeature = .mockWith(
-            directory: temporaryDirectory,
+
+        let core = DatadogCore(
+            rootDirectory: temporaryDirectory,
+            configuration: .mockAny(),
             dependencies: .mockWith(
                 performance: .combining(
                     storagePerformance: StoragePerformanceMock(
@@ -111,6 +113,15 @@ class LoggingFeatureTests: XCTestCase {
                 )
             )
         )
+
+        // Given
+        let featureConfiguration: LoggingFeature.Configuration = .mockAny()
+        let feature: LoggingFeature = try core.create(
+            storageConfiguration: createV2LoggingStorageConfiguration(),
+            uploadConfiguration: createV2LoggingUploadConfiguration(v1Configuration: featureConfiguration),
+            featureSpecificConfiguration: featureConfiguration
+        )
+        defer { feature.flush() }
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)

@@ -27,7 +27,6 @@ internal struct FeaturesConfiguration {
     }
 
     struct Logging {
-        let common: Common
         let uploadURL: URL
         let logEventMapper: LogEventMapper?
     }
@@ -171,7 +170,6 @@ extension FeaturesConfiguration {
 
         if configuration.loggingEnabled {
             logging = Logging(
-                common: common,
                 uploadURL: try ifValid(endpointURLString: logsEndpoint.url),
                 logEventMapper: configuration.logEventMapper
             )

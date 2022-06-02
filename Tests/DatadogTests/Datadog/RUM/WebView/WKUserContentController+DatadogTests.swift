@@ -61,7 +61,8 @@ class WKUserContentController_DatadogTests: XCTestCase {
             allowedWebViewHosts: ["datadoghq.com"],
             hostsSanitizer: mockSanitizer,
             loggingFeature: nil,
-            rumFeature: nil
+            rumFeature: nil,
+            context: .mockAny()
         )
 
         XCTAssertEqual(controller.userScripts.count, initialUserScriptCount + 1)
@@ -91,7 +92,8 @@ class WKUserContentController_DatadogTests: XCTestCase {
                 allowedWebViewHosts: ["datadoghq.com"],
                 hostsSanitizer: mockSanitizer,
                 loggingFeature: nil,
-                rumFeature: nil
+                rumFeature: nil,
+                context: .mockAny()
             )
         }
 
@@ -108,9 +110,10 @@ class WKUserContentController_DatadogTests: XCTestCase {
     }
 
     func testWhenStoppingTracking_itKeepsNonDatadogComponents() throws {
+        let core = DatadogCoreMock(v1Context: .mockAny())
         let controller = DDUserContentController()
 
-        controller.trackDatadogEvents(in: [])
+        controller.trackDatadogEvents(in: [], sdk: core)
 
         let componentCount = 10
         for i in 0..<componentCount {
@@ -135,6 +138,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
     func testItLogsInvalidWebMessages() throws {
         let previousUserLogger = userLogger
         defer { userLogger = previousUserLogger }
+
         let output = LogOutputMock()
         userLogger = .mockWith(logOutput: output)
 
@@ -143,7 +147,8 @@ class WKUserContentController_DatadogTests: XCTestCase {
             allowedWebViewHosts: ["datadoghq.com"],
             hostsSanitizer: MockHostsSanitizer(),
             loggingFeature: nil,
-            rumFeature: nil
+            rumFeature: nil,
+            context: .mockAny()
         )
 
         let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DatadogMessageHandler
@@ -157,25 +162,24 @@ class WKUserContentController_DatadogTests: XCTestCase {
     }
 
     func testSendingWebEvents() throws {
-        let core = DatadogCoreMock()
-        defer { core.flush() }
-
-        let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(
-            directory: temporaryDirectory,
-            configuration: .mockWith(
-                common: .mockWith(
+        let core = DatadogCoreMock(
+            v1Context: .mockWith(
+                configuration: .mockWith(
                     applicationVersion: "1.0.0",
                     applicationBundleIdentifier: "com.datadoghq.ios-sdk",
                     serviceName: "default-service-name",
                     environment: "tests",
                     sdkVersion: "1.2.3"
+                ),
+                dependencies: .mockWith(
+                    dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
                 )
-            ),
-            dependencies: .mockWith(
-                dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
             )
         )
+        defer { core.flush() }
+
+        let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
 
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
             directory: temporaryDirectory,
@@ -195,7 +199,8 @@ class WKUserContentController_DatadogTests: XCTestCase {
             allowedWebViewHosts: ["datadoghq.com"],
             hostsSanitizer: MockHostsSanitizer(),
             loggingFeature: logging,
-            rumFeature: rum
+            rumFeature: rum,
+            context: core.context!
         )
 
         let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DatadogMessageHandler

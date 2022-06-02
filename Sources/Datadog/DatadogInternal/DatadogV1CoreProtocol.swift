@@ -31,6 +31,9 @@ internal protocol DatadogV1CoreProtocol: DatadogCoreProtocol {
     ///   - type: The feature instance type.
     /// - Returns: The feature if any.
     func feature<T>(_ type: T.Type) -> T?
+
+    /// The SDK context created upon core initialization or `nil` if SDK was not yet initialized.
+    var context: DatadogV1Context? { get }
 }
 
 extension NOOPDatadogCore: DatadogV1CoreProtocol {
@@ -41,6 +44,10 @@ extension NOOPDatadogCore: DatadogV1CoreProtocol {
 
     /// no-op
     func feature<T>(_ type: T.Type) -> T? {
+        return nil
+    }
+
+    var context: DatadogV1Context? {
         return nil
     }
 }

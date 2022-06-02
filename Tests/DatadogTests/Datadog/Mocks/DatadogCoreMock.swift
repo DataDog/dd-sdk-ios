@@ -10,6 +10,12 @@ import Foundation
 internal final class DatadogCoreMock: Flushable {
     private var v1Features: [String: Any] = [:]
 
+    var v1Context: DatadogV1Context?
+
+    init(v1Context: DatadogV1Context? = .mockAny()) {
+        self.v1Context = v1Context
+    }
+
     /// Flush resgistered features.
     ///
     /// The method will also call `flush` on any `Flushable` registered
@@ -39,6 +45,10 @@ extension DatadogCoreMock: DatadogV1CoreProtocol {
     func feature<T>(_ type: T.Type) -> T? {
         let key = String(describing: T.self)
         return v1Features[key] as? T
+    }
+
+    var context: DatadogV1Context? {
+        return v1Context
     }
 }
 
@@ -78,5 +88,21 @@ extension RUMInstrumentation: Flushable {
 extension URLSessionAutoInstrumentation: Flushable {
     func flush() {
         deinitialize()
+    }
+}
+
+extension DatadogV1Context: AnyMockable {
+    static func mockAny() -> DatadogV1Context {
+        return mockWith()
+    }
+
+    static func mockWith(
+        configuration: CoreConfiguration = .mockAny(),
+        dependencies: CoreDependencies = .mockAny()
+    ) -> DatadogV1Context {
+        return DatadogV1Context(
+            configuration: configuration,
+            dependencies: dependencies
+        )
     }
 }

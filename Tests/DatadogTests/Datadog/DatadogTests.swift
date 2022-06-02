@@ -287,7 +287,7 @@ class DatadogTests: XCTestCase {
         }
     }
 
-    func testSupplyingDebugLaunchArgument_itOverridesUserSettings() {
+    func testSupplyingDebugLaunchArgument_itOverridesUserSettings() throws {
         let mockProcessInfo = ProcessInfoMock(
             arguments: [Datadog.LaunchArguments.Debug]
         )
@@ -312,11 +312,10 @@ class DatadogTests: XCTestCase {
             bundleType: .iOSApp
         )
 
-        let core = defaultDatadogCore
-        let logging = core.v1.feature(LoggingFeature.self)
+        let core = try XCTUnwrap(defaultDatadogCore as? DatadogCore)
         let tracing = core.v1.feature(TracingFeature.self)
         let rum = core.v1.feature(RUMFeature.self)
-        XCTAssertEqual(logging?.configuration.common.performance, expectedPerformancePreset)
+        XCTAssertEqual(core.configuration.performance, expectedPerformancePreset)
         XCTAssertEqual(rum?.configuration.sessionSampler.samplingRate, 100)
         XCTAssertEqual(tracing?.configuration.common.performance, expectedPerformancePreset)
         XCTAssertEqual(Datadog.verbosityLevel, .debug)
