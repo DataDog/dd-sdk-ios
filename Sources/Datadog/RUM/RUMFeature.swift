@@ -15,12 +15,6 @@ internal final class RUMFeature: V1FeatureInitializable {
 
     let configuration: Configuration
 
-    // MARK: - Dependencies
-
-    let vitalCPUReader: SamplingBasedVitalReader
-    let vitalMemoryReader: SamplingBasedVitalReader
-    let vitalRefreshRateReader: ContinuousVitalReader
-
     // MARK: - Components
 
     /// RUM files storage.
@@ -44,10 +38,6 @@ internal final class RUMFeature: V1FeatureInitializable {
         // Initialize stacks
         self.storage = storage
         self.upload = upload
-
-        self.vitalCPUReader = VitalCPUReader(telemetry: telemetry)
-        self.vitalMemoryReader = VitalMemoryReader()
-        self.vitalRefreshRateReader = VitalRefreshRateReader()
     }
 
     internal func deinitialize() {
