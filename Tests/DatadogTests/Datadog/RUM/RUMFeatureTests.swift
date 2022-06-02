@@ -35,31 +35,34 @@ class RUMFeatureTests: XCTestCase {
         let randomDeviceOSVersion: String = .mockRandom()
         let randomEncryption: DataEncryption? = Bool.random() ? DataEncryptionMock() : nil
 
-        let core = DatadogCoreMock()
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        defer { core.flush() }
 
-        // Given
-        let feature: RUMFeature = .mockWith(
-            directory: temporaryDirectory,
+        let core = DatadogCore(
+            rootDirectory: temporaryDirectory,
             configuration: .mockWith(
-                common: .mockWith(
-                    clientToken: randomClientToken,
-                    applicationName: randomApplicationName,
-                    applicationVersion: randomApplicationVersion,
-                    serviceName: randomServiceName,
-                    environment: randomEnvironmentName,
-                    source: randomSource,
-                    origin: randomOrigin,
-                    sdkVersion: randomSDKVersion,
-                    encryption: randomEncryption
-                ),
-                uploadURL: randomUploadURL
+                clientToken: randomClientToken,
+                applicationName: randomApplicationName,
+                applicationVersion: randomApplicationVersion,
+                serviceName: randomServiceName,
+                environment: randomEnvironmentName,
+                source: randomSource,
+                origin: randomOrigin,
+                sdkVersion: randomSDKVersion,
+                encryption: randomEncryption
             ),
             dependencies: .mockWith(
                 mobileDevice: .mockWith(model: randomDeviceModel, osName: randomDeviceOSName, osVersion: randomDeviceOSVersion)
             )
         )
+
+        // Given
+        let featureConfiguration: RUMFeature.Configuration = .mockWith(uploadURL: randomUploadURL)
+        let feature: RUMFeature = try core.create(
+            storageConfiguration: createV2RUMStorageConfiguration(),
+            uploadConfiguration: createV2RUMUploadConfiguration(v1Configuration: featureConfiguration),
+            featureSpecificConfiguration: featureConfiguration
+        )
+        defer { feature.flush() }
         core.register(feature: feature)
 
         // When
@@ -94,25 +97,24 @@ class RUMFeatureTests: XCTestCase {
     // MARK: - HTTP Payload
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
-        let core = DatadogCoreMock()
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        defer { core.flush() }
 
-        let feature: RUMFeature = .mockWith(
-            directory: temporaryDirectory,
+        let core = DatadogCore(
+            rootDirectory: temporaryDirectory,
+            configuration: .mockAny(),
             dependencies: .mockWith(
                 performance: .combining(
                     storagePerformance: StoragePerformanceMock(
                         maxFileSize: .max,
                         maxDirectorySize: .max,
-                        maxFileAgeForWrite: .distantFuture, // write all spans to single file,
+                        maxFileAgeForWrite: .distantFuture, // write all events to single file,
                         minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
                         maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
                         maxObjectsInFile: 3, // write 3 spans to payload,
                         maxObjectSize: .max
                     ),
                     uploadPerformance: UploadPerformanceMock(
-                        initialUploadDelay: 0.5, // wait enough until spans are written,
+                        initialUploadDelay: 0.5, // wait enough until events are written,
                         minUploadDelay: 1,
                         maxUploadDelay: 1,
                         uploadDelayChangeRate: 0
@@ -120,6 +122,15 @@ class RUMFeatureTests: XCTestCase {
                 )
             )
         )
+
+        // Given
+        let featureConfiguration: RUMFeature.Configuration = .mockAny()
+        let feature: RUMFeature = try core.create(
+            storageConfiguration: createV2RUMStorageConfiguration(),
+            uploadConfiguration: createV2RUMUploadConfiguration(v1Configuration: featureConfiguration),
+            featureSpecificConfiguration: featureConfiguration
+        )
+        defer { feature.flush() }
         core.register(feature: feature)
 
         let fileWriter = feature.storage.writer

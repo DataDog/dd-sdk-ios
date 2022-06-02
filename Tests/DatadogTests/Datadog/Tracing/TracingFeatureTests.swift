@@ -99,14 +99,14 @@ class TracingFeatureTests: XCTestCase {
                     storagePerformance: StoragePerformanceMock(
                         maxFileSize: .max,
                         maxDirectorySize: .max,
-                        maxFileAgeForWrite: .distantFuture, // write all spans to single file,
+                        maxFileAgeForWrite: .distantFuture, // write all events to single file,
                         minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
                         maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
                         maxObjectsInFile: 3, // write 3 spans to payload,
                         maxObjectSize: .max
                     ),
                     uploadPerformance: UploadPerformanceMock(
-                        initialUploadDelay: 0.5, // wait enough until spans are written,
+                        initialUploadDelay: 0.5, // wait enough until events are written,
                         minUploadDelay: 1,
                         maxUploadDelay: 1,
                         uploadDelayChangeRate: 0

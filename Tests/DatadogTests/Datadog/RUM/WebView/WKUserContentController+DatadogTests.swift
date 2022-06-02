@@ -178,17 +178,10 @@ class WKUserContentController_DatadogTests: XCTestCase {
         )
         defer { core.flush() }
 
-        let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
         let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
-
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directory: temporaryDirectory,
-            dependencies: .mockWith(
-                dateProvider: dateProvider
-            )
-        )
-
         core.register(feature: logging)
+
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         core.register(feature: rum)
 
         Global.rum = RUMMonitor.initialize(in: core)

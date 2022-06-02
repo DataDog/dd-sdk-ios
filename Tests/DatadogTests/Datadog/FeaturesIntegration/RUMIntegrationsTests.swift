@@ -42,15 +42,11 @@ class RUMIntegrationsTests: XCTestCase {
 
     func testGivenRUMMonitorRegistered_whenSessionIsRejectedBySampler_itProvidesEmptyRUMContextAttributes() throws {
         let rum = RUMFeature(
-            eventsMapper: .mockNoOp(),
             storage: .mockNoOp(),
             upload: .mockNoOp(),
             configuration: .mockWith(sessionSampler: .mockRejectAll()),
             commonDependencies: .mockAny(),
-            vitalCPUReader: SamplingBasedVitalReaderMock(),
-            vitalMemoryReader: SamplingBasedVitalReaderMock(),
-            vitalRefreshRateReader: ContinuousVitalReaderMock(),
-            onSessionStart: nil
+            telemetry: nil
         )
         core.register(feature: rum)
 
