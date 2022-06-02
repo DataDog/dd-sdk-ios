@@ -13,7 +13,6 @@ class DDTracerTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        temporaryDirectory.create()
         core = DatadogCoreMock()
         defaultDatadogCore = core
     }
@@ -22,12 +21,11 @@ class DDTracerTests: XCTestCase {
         defaultDatadogCore = NOOPDatadogCore()
         core.flush()
         core = nil
-        temporaryDirectory.delete()
         super.tearDown()
     }
 
     func testSendingCustomizedSpans() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: feature)
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration()).dd!
@@ -119,10 +117,10 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogs() throws {
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let logging: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: logging)
 
-        let tracing: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let tracing: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: tracing)
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration())
@@ -141,10 +139,10 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromArguments() throws {
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let logging: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: logging)
 
-        let tracing: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let tracing: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: tracing)
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration())
@@ -166,10 +164,10 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromNSError() throws {
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let logging: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: logging)
 
-        let tracing: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let tracing: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: tracing)
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration())
@@ -247,7 +245,7 @@ class DDTracerTests: XCTestCase {
     // MARK: - Usage errors
 
     func testsWhenTagsDictionaryContainsInvalidKeys_thenThosesTagsAreDropped() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: feature)
 
         // Given

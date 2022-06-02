@@ -69,22 +69,13 @@ class RUMIntegrationsTests: XCTestCase {
 }
 
 class RUMErrorsIntegrationTests: XCTestCase {
-    let core = DatadogCoreMock()
-    private let integration = RUMErrorsIntegration()
-
-    override func setUp() {
-        super.setUp()
-        temporaryDirectory.create()
-    }
-
-    override func tearDown() {
-        core.flush()
-        temporaryDirectory.delete()
-        super.tearDown()
-    }
+    let integration = RUMErrorsIntegration()
 
     func testGivenRUMMonitorRegistered_whenAddingErrorMessage_itSendsRUMErrorForCurrentView() throws {
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
+        let core = DatadogCoreMock()
+        defer { core.flush() }
+
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
         core.register(feature: rum)
 
         // given

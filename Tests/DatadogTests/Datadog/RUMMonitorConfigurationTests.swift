@@ -13,9 +13,6 @@ class RUMMonitorConfigurationTests: XCTestCase {
     private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
 
     func testRUMMonitorConfiguration() throws {
-        temporaryDirectory.create()
-        defer { temporaryDirectory.delete() }
-
         let core = DatadogCoreMock(
             v1Context: .mockWith(
                 configuration: .mockWith(
@@ -34,7 +31,6 @@ class RUMMonitorConfigurationTests: XCTestCase {
         defer { core.flush() }
 
         let feature: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directory: temporaryDirectory,
             featureConfiguration: .mockWith(
                 applicationID: "rum-123",
                 sessionSampler: Sampler(samplingRate: 42.5)

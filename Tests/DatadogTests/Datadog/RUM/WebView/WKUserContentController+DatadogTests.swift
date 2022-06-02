@@ -41,16 +41,6 @@ final class MockScriptMessage: WKScriptMessage {
 }
 
 class WKUserContentController_DatadogTests: XCTestCase {
-    override func setUp() {
-        super.setUp()
-        temporaryDirectory.create()
-    }
-
-    override func tearDown() {
-        temporaryDirectory.delete()
-        super.tearDown()
-    }
-
     func testItAddsUserScriptAndMessageHandler() throws {
         let mockSanitizer = MockHostsSanitizer()
         let controller = DDUserContentController()
@@ -178,10 +168,10 @@ class WKUserContentController_DatadogTests: XCTestCase {
         )
         defer { core.flush() }
 
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let logging: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: logging)
 
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
         core.register(feature: rum)
 
         Global.rum = RUMMonitor.initialize(in: core)
