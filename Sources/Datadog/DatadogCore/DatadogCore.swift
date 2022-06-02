@@ -158,11 +158,46 @@ extension DatadogCore: DatadogV1CoreProtocol {
         return v1Features[key] as? T
     }
 
+    func scope<T>(for featureType: T.Type) -> V1FeatureScope? {
+        let key = String(describing: T.self)
+
+        guard let feature = v1Features[key] as? V1Feature else {
+            return nil
+        }
+
+        return DatadogCoreFeatureScope(
+            context: v1Context,
+            storage: feature.storage,
+            telemetry: telemetry
+        )
+    }
+
     var context: DatadogV1Context? {
         return v1Context
     }
 }
 
+/// A v1 Feature with an associated stroage.
 internal protocol V1Feature {
+    /// The feature's storage.
     var storage: FeatureStorage { get }
+}
+
+/// This Scope complies with `V1FeatureScope` to provide context and writer to
+/// v1 Features.
+///
+/// The execution block is currently running in `sync`, this will change once the
+/// context is provided on it's own queue.
+internal struct DatadogCoreFeatureScope: V1FeatureScope {
+    let context: DatadogV1Context
+    let storage: FeatureStorage
+    let telemetry: Telemetry?
+
+    func execute(_ block: (DatadogV1Context, Writer) throws -> Void) {
+        do {
+            try block(context, storage.writer)
+        } catch {
+            telemetry?.error("Failed to execute feature scope", error: error)
+        }
+    }
 }

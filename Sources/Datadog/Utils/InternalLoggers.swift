@@ -6,16 +6,6 @@
 
 import Foundation
 
-/// Necessary configuration to instantiate `developerLogger` and `userLogger`.
-internal struct InternalLoggerConfiguration {
-    let sdkVersion: String
-    let applicationVersion: String
-    let environment: String
-    let userInfoProvider: UserInfoProvider
-    let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
-    let carrierInfoProvider: CarrierInfoProviderType
-}
-
 /// Global SDK `Logger` using console output.
 /// This logger is meant for debugging purposes when using SDK, hence **it should print useful information to SDK user**.
 /// It is only used when `Datadog.verbosityLevel` value is set.
@@ -27,49 +17,44 @@ internal var userLogger = createNoOpSDKUserLogger()
 
 internal func createNoOpSDKUserLogger() -> Logger {
     return Logger(
-        logBuilder: nil,
-        logOutput: nil,
-        dateProvider: SystemDateProvider(),
+        core: NOOPDatadogCore(),
         identifier: "no-op",
+        serviceName: nil,
+        loggerName: nil,
+        sendNetworkInfo: false,
+        useCoreOutput: false,
+        validation: nil,
         rumContextIntegration: nil,
-        activeSpanIntegration: nil
+        activeSpanIntegration: nil,
+        additionalOutput: nil,
+        logEventMapper: nil
     )
 }
 
 internal func createSDKUserLogger(
-    configuration: InternalLoggerConfiguration,
+    in core: DatadogCoreProtocol,
     consolePrintFunction: @escaping (String) -> Void = { consolePrint($0) },
-    dateProvider: DateProvider = SystemDateProvider(),
     timeZone: TimeZone = .current
 ) -> Logger {
-    let logBuilder = LogEventBuilder(
-        sdkVersion: configuration.sdkVersion,
-        applicationVersion: configuration.applicationVersion,
-        environment: configuration.environment,
+    return Logger(
+        core: core,
+        identifier: "sdk-user",
         serviceName: "sdk-user",
         loggerName: "sdk-user",
-        userInfoProvider: configuration.userInfoProvider,
-        networkConnectionInfoProvider: configuration.networkConnectionInfoProvider,
-        carrierInfoProvider: configuration.carrierInfoProvider,
-        dateCorrector: nil,
-        logEventMapper: nil
-    )
-    let consoleOutput = LogConsoleOutput(
-        format: .shortWith(prefix: "[DATADOG SDK] 🐶 → "),
-        timeZone: timeZone,
-        printingFunction: consolePrintFunction
-    )
-
-    return Logger(
-        logBuilder: logBuilder,
-        logOutput: ConditionalLogOutput(conditionedOutput: consoleOutput) { log in
+        sendNetworkInfo: true,
+        useCoreOutput: false,
+        validation: { log in
             let logSeverity = LogLevel(from: log.status)?.rawValue ?? .max
             let threshold = Datadog.verbosityLevel?.rawValue ?? .max
             return logSeverity >= threshold
         },
-        dateProvider: dateProvider,
-        identifier: "sdk-user",
         rumContextIntegration: nil,
-        activeSpanIntegration: nil
+        activeSpanIntegration: nil,
+        additionalOutput: LogConsoleOutput(
+            format: .shortWith(prefix: "[DATADOG SDK] 🐶 → "),
+            timeZone: timeZone,
+            printingFunction: consolePrintFunction
+        ),
+        logEventMapper: nil
     )
 }

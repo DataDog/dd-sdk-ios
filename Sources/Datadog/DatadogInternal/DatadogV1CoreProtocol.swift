@@ -20,6 +20,12 @@ extension DatadogCoreProtocol {
 internal protocol DatadogV1CoreProtocol: DatadogCoreProtocol {
     // MARK: - V1 interface
 
+    /// The SDK context created upon core initialization or `nil` if SDK was not yet initialized.
+    var context: DatadogV1Context? { get }
+
+    /// Telemetry monitor for this instance of the SDK or `nil` if not configured.
+    var telemetry: Telemetry? { get }
+
     /// Registers a feature instance by its type description.
     ///
     /// - Parameter instance: The feaure instance to register
@@ -32,15 +38,38 @@ internal protocol DatadogV1CoreProtocol: DatadogCoreProtocol {
     /// - Returns: The feature if any.
     func feature<T>(_ type: T.Type) -> T?
 
-    /// The SDK context created upon core initialization or `nil` if SDK was not yet initialized.
-    var context: DatadogV1Context? { get }
+    /// Returns a Feature scope for a given feature type.
+    ///
+    /// A feature instance of the given type must be registered, otherwise return `nil`.
+    ///
+    /// - Parameters:
+    ///   - type: The feature instance type.
+    /// - Returns: The feature scope if available.
+    func scope<T>(for featureType: T.Type) -> V1FeatureScope?
+}
 
-    /// Telemetry monitor for this instance of the SDK or `nil` if not configured.
-    var telemetry: Telemetry? { get }
+/// Feature scope in v1 provide a context and a writer to build a record event.
+internal protocol V1FeatureScope {
+    /// Execute the given block in the feature scope.
+    ///
+    /// The feature scope provide the current Datadog context and event writer
+    /// for the feature to build and record events.
+    ///
+    /// - Parameter block: The block to execute.
+    func execute(_ block: (DatadogV1Context, Writer) throws -> Void)
 }
 
 extension NOOPDatadogCore: DatadogV1CoreProtocol {
     // MARK: - V1 interface
+
+    /// Returns `nil`.
+    var context: DatadogV1Context? {
+        return nil
+    }
+
+    var telemetry: Telemetry? {
+        return nil
+    }
 
     /// no-op
     func register<T>(feature instance: T?) {}
@@ -50,11 +79,8 @@ extension NOOPDatadogCore: DatadogV1CoreProtocol {
         return nil
     }
 
-    var context: DatadogV1Context? {
-        return nil
-    }
-
-    var telemetry: Telemetry? {
+    /// no-op
+    func scope<T>(for featureType: T.Type) -> V1FeatureScope? {
         return nil
     }
 }

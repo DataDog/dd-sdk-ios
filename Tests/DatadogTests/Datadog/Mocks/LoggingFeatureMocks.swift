@@ -174,20 +174,52 @@ extension LogEvent.Error: RandomMockable {
 
 extension Logger {
     static func mockWith(
-        logBuilder: LogEventBuilder = .mockAny(),
-        logOutput: LogOutput = LogOutputMock(),
-        dateProvider: DateProvider = SystemDateProvider(),
+        core: DatadogCoreProtocol,
         identifier: String = .mockAny(),
+        serviceName: String? = nil,
+        loggerName: String? = nil,
+        sendNetworkInfo: Bool = false,
+        useCoreOutput: Bool = true,
+        validation: LogEventValidation? = nil,
         rumContextIntegration: LoggingWithRUMContextIntegration? = nil,
-        activeSpanIntegration: LoggingWithActiveSpanIntegration? = nil
+        activeSpanIntegration: LoggingWithActiveSpanIntegration? = nil,
+        additionalOutput: LogOutput = LogOutputMock(),
+        logEventMapper: LogEventMapper? = nil
     ) -> Logger {
         return Logger(
-            logBuilder: logBuilder,
-            logOutput: logOutput,
-            dateProvider: dateProvider,
+            core: core,
             identifier: identifier,
+            serviceName: serviceName,
+            loggerName: loggerName,
+            sendNetworkInfo: sendNetworkInfo,
+            useCoreOutput: useCoreOutput,
+            validation: validation,
             rumContextIntegration: rumContextIntegration,
-            activeSpanIntegration: activeSpanIntegration
+            activeSpanIntegration: activeSpanIntegration,
+            additionalOutput: additionalOutput,
+            logEventMapper: logEventMapper
+        )
+    }
+
+    static func mockConsoleLogger(
+        output: LogOutput,
+        context: DatadogV1Context = .mockAny()
+    ) -> Logger {
+        let core = DatadogCoreMock(v1Context: context)
+        core.register(feature: LoggingFeature.mockNoOp())
+
+        return Logger(
+            core: core,
+            identifier: "user-logger-mock",
+            serviceName: nil,
+            loggerName: nil,
+            sendNetworkInfo: false,
+            useCoreOutput: false,
+            validation: nil,
+            rumContextIntegration: nil,
+            activeSpanIntegration: nil,
+            additionalOutput: output,
+            logEventMapper: nil
         )
     }
 }

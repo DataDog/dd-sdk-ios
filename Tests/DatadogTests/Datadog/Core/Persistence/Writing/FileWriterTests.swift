@@ -51,7 +51,7 @@ class FileWriterTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output)
+        userLogger = .mockConsoleLogger(output: output)
 
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
@@ -91,7 +91,7 @@ class FileWriterTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output)
+        userLogger = .mockConsoleLogger(output: output)
 
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
@@ -112,7 +112,7 @@ class FileWriterTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output)
+        userLogger = .mockConsoleLogger(output: output)
 
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(

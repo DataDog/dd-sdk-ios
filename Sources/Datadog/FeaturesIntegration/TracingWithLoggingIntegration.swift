@@ -42,12 +42,7 @@ internal struct TracingWithLoggingIntegration {
                 logEventMapper: loggingFeature.configuration.logEventMapper
             ),
             loggingOutput: LogFileOutput(
-                fileWriter: loggingFeature.storage.writer,
-
-                // The RUM Errors integration is not set for this instance of the `LogFileOutput`, as RUM Errors for
-                // spans are managed through more comprehensive `TracingWithRUMErrorsIntegration`.
-                // Having additional integration here would produce duplicated RUM Errors for span errors set through `span.log()` API.
-                rumErrorsIntegration: nil
+                fileWriter: loggingFeature.storage.writer
             )
         )
     }

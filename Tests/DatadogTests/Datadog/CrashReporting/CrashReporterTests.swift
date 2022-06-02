@@ -203,7 +203,7 @@ class CrashReporterTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output)
+        userLogger = .mockConsoleLogger(output: output)
 
         let plugin = CrashReportingPluginMock()
 

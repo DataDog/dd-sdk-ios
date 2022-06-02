@@ -369,7 +369,7 @@ class SpanEventBuilderTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output)
+        userLogger = .mockConsoleLogger(output: output)
 
         let builder: SpanEventBuilder = .mockAny()
 

@@ -58,38 +58,54 @@ public enum LogLevel: Int, Codable {
 public typealias DDLogger = Logger
 
 public class Logger {
-    /// Builds the `Log` from user input; `nil` for no-op logger.
-    internal let logBuilder: LogEventBuilder?
-    /// Writes the `Log` to file; `nil` for no-op logger.
-    internal let logOutput: LogOutput?
-    /// Provides date for log creation.
-    private let dateProvider: DateProvider
+    internal typealias LogEventValidation = (LogEvent) -> Bool
+
+    internal let core: DatadogCoreProtocol
     /// Attributes associated with every log.
     private var loggerAttributes: [String: Encodable] = [:]
     /// Taggs associated with every log.
     private var loggerTags: Set<String> = []
     /// Queue ensuring thread-safety of the `Logger`. It synchronizes tags and attributes mutation.
     private let queue: DispatchQueue
+
+    internal let serviceName: String?
+    internal let loggerName: String?
+    internal let sendNetworkInfo: Bool
+    internal let useCoreOutput: Bool
+    internal let validate: LogEventValidation
+    internal let additionalOutput: LogOutput?
+    /// Log events mapper configured by the user, `nil` if not set.
+    internal let logEventMapper: LogEventMapper?
     /// Integration with RUM Context. `nil` if disabled for this Logger or if the RUM feature disabled.
     internal let rumContextIntegration: LoggingWithRUMContextIntegration?
     /// Integration with Tracing. `nil` if disabled for this Logger or if the Tracing feature disabled.
     internal let activeSpanIntegration: LoggingWithActiveSpanIntegration?
 
     init(
-        logBuilder: LogEventBuilder?,
-        logOutput: LogOutput?,
-        dateProvider: DateProvider,
+        core: DatadogCoreProtocol,
         identifier: String,
+        serviceName: String?,
+        loggerName: String?,
+        sendNetworkInfo: Bool,
+        useCoreOutput: Bool,
+        validation: LogEventValidation?,
         rumContextIntegration: LoggingWithRUMContextIntegration?,
-        activeSpanIntegration: LoggingWithActiveSpanIntegration?
+        activeSpanIntegration: LoggingWithActiveSpanIntegration?,
+        additionalOutput: LogOutput?,
+        logEventMapper: LogEventMapper?
     ) {
-        self.logBuilder = logBuilder
-        self.logOutput = logOutput
-        self.dateProvider = dateProvider
+        self.core = core
         self.queue = DispatchQueue(
             label: "com.datadoghq.logger-\(identifier)",
             target: .global(qos: .userInteractive)
         )
+        self.serviceName = serviceName
+        self.loggerName = loggerName
+        self.sendNetworkInfo = sendNetworkInfo
+        self.useCoreOutput = useCoreOutput
+        self.validate = validation ?? { _ in true }
+        self.additionalOutput = additionalOutput
+        self.logEventMapper = logEventMapper
         self.rumContextIntegration = rumContextIntegration
         self.activeSpanIntegration = activeSpanIntegration
     }
@@ -244,10 +260,6 @@ public class Logger {
     // MARK: - Private
 
     private func log(level: LogLevel, message: String, error: Error?, messageAttributes: [String: Encodable]?) {
-        guard let logBuilder = logBuilder, let logOutput = logOutput else {
-            return // ignore, as the `Logger` is no-op
-        }
-
         var combinedUserAttributes = messageAttributes ?? [:]
         combinedUserAttributes = queue.sync {
             return self.loggerAttributes.merging(combinedUserAttributes) { _, userAttributeValue in
@@ -267,20 +279,41 @@ public class Logger {
             return self.loggerTags
         }
 
-        let log = logBuilder.createLogWith(
-            level: level,
-            message: message,
-            error: error.flatMap { DDError(error: $0) },
-            date: dateProvider.currentDate(),
-            attributes: LogEvent.Attributes(
-                userAttributes: combinedUserAttributes,
-                internalAttributes: combinedInternalAttributes
-            ),
-            tags: tags
-        )
+        core.v1.scope(for: LoggingFeature.self)?.execute { context, writer in
+            let builder = LogEventBuilder(
+                sdkVersion: context.sdkVersion,
+                applicationVersion: context.version,
+                environment: context.env,
+                serviceName: self.serviceName ?? context.service,
+                loggerName: self.loggerName ?? context.applicationBundleIdentifier,
+                userInfoProvider: context.userInfoProvider,
+                networkConnectionInfoProvider: self.sendNetworkInfo ? context.networkConnectionInfoProvider : nil,
+                carrierInfoProvider: self.sendNetworkInfo ? context.carrierInfoProvider : nil,
+                dateCorrector: context.dateCorrector,
+                logEventMapper: self.logEventMapper
+            )
 
-        if let event = log {
-            logOutput.write(log: event)
+            let event = builder.createLogWith(
+                level: level,
+                message: message,
+                error: error.map { DDError(error: $0) },
+                date: context.dateProvider.currentDate(),
+                attributes: .init(
+                    userAttributes: combinedUserAttributes,
+                    internalAttributes: combinedInternalAttributes
+                ),
+                tags: tags
+            )
+
+            guard let log = event, self.validate(log) else {
+                return
+            }
+
+            self.additionalOutput?.write(log: log)
+
+            if self.useCoreOutput {
+                writer.write(value: log)
+            }
         }
     }
 
@@ -305,8 +338,8 @@ public class Logger {
         internal var sendNetworkInfo = false
         internal var bundleWithRUM = true
         internal var bundleWithTrace = true
-        internal var useFileOutput = true
-        internal var useConsoleLogFormat: ConsoleLogFormat?
+        internal var useCoreOutput = true
+        internal var consoleLogFormat: ConsoleLogFormat?
 
         /// Sets the service name that will appear in logs.
         /// - Parameter serviceName: the service name  (default value is set to application bundle identifier)
@@ -354,7 +387,7 @@ public class Logger {
         /// See also: `printLogsToConsole(_:)`.
         /// - Parameter enabled: `true` by default
         public func sendLogsToDatadog(_ enabled: Bool) -> Builder {
-            self.useFileOutput = enabled
+            self.useCoreOutput = enabled
             return self
         }
 
@@ -377,7 +410,7 @@ public class Logger {
         ///   - enabled: `false` by default
         ///   - format: format to use when printing logs to console - either `.short` or `.json` (`.short` is default)
         public func printLogsToConsole(_ enabled: Bool, usingFormat format: ConsoleLogFormat = .short) -> Builder {
-            useConsoleLogFormat = enabled ? format : nil
+            consoleLogFormat = enabled ? format : nil
             return self
         }
 
@@ -388,12 +421,17 @@ public class Logger {
             } catch {
                 consolePrint("\(error)")
                 return Logger(
-                    logBuilder: nil,
-                    logOutput: nil,
-                    dateProvider: SystemDateProvider(),
+                    core: NOOPDatadogCore(),
                     identifier: "no-op",
+                    serviceName: nil,
+                    loggerName: nil,
+                    sendNetworkInfo: false,
+                    useCoreOutput: false,
+                    validation: nil,
                     rumContextIntegration: nil,
-                    activeSpanIntegration: nil
+                    activeSpanIntegration: nil,
+                    additionalOutput: nil,
+                    logEventMapper: nil
                 )
             }
         }
@@ -411,71 +449,42 @@ public class Logger {
                 )
             }
 
-            let (logBuilder, logOutput) = resolveLogBuilderAndOutput(for: loggingFeature, context: context) ?? (nil, nil)
-
             // RUMM-2133 Note: strong feature coupling while migrating to v2.
             // In v2 active span will be provided in context from feature scope.
             let rumEnabled = core.v1.feature(RUMFeature.self) != nil
             let tracingEnabled = core.v1.feature(TracingFeature.self) != nil
 
             return Logger(
-                logBuilder: logBuilder,
-                logOutput: logOutput,
-                dateProvider: context.dateProvider,
-                identifier: resolveLoggerName(with: context),
+                core: core,
+                identifier: loggerName ?? context.applicationBundleIdentifier,
+                serviceName: serviceName,
+                loggerName: loggerName,
+                sendNetworkInfo: sendNetworkInfo,
+                useCoreOutput: useCoreOutput,
+                validation: nil,
                 rumContextIntegration: (rumEnabled && bundleWithRUM) ? LoggingWithRUMContextIntegration() : nil,
-                activeSpanIntegration: (tracingEnabled && bundleWithTrace) ? LoggingWithActiveSpanIntegration() : nil
+                activeSpanIntegration: (tracingEnabled && bundleWithTrace) ? LoggingWithActiveSpanIntegration() : nil,
+                additionalOutput: resolveOuput(),
+                logEventMapper: loggingFeature.configuration.logEventMapper
             )
         }
 
-        private func resolveLogBuilderAndOutput(for loggingFeature: LoggingFeature, context: DatadogV1Context) -> (LogEventBuilder, LogOutput)? {
-            let logBuilder = LogEventBuilder(
-                sdkVersion: context.sdkVersion,
-                applicationVersion: context.version,
-                environment: context.env,
-                serviceName: serviceName ?? context.service,
-                loggerName: resolveLoggerName(with: context),
-                userInfoProvider: context.userInfoProvider,
-                networkConnectionInfoProvider: sendNetworkInfo ? context.networkConnectionInfoProvider : nil,
-                carrierInfoProvider: sendNetworkInfo ? context.carrierInfoProvider : nil,
-                dateCorrector: context.dateCorrector,
-                logEventMapper: loggingFeature.configuration.logEventMapper
-            )
-
-            switch (useFileOutput, useConsoleLogFormat) {
-            case (true, let format?):
-                let logOutput = CombinedLogOutput(
+        private func resolveOuput() -> LogOutput? {
+            switch (useCoreOutput, consoleLogFormat) {
+            case let (true, format?):
+                return CombinedLogOutput(
                     combine: [
-                        LogFileOutput(
-                            fileWriter: loggingFeature.storage.writer,
-                            rumErrorsIntegration: LoggingWithRUMErrorsIntegration()
-                        ),
-                        LogConsoleOutput(
-                            format: format,
-                            timeZone: .current
-                        )
+                        LogConsoleOutput(format: format, timeZone: .current),
+                        LoggingWithRUMErrorsIntegration()
                     ]
                 )
-                return (logBuilder, logOutput)
             case (true, nil):
-                let logOutput = LogFileOutput(
-                    fileWriter: loggingFeature.storage.writer,
-                    rumErrorsIntegration: LoggingWithRUMErrorsIntegration()
-                )
-                return (logBuilder, logOutput)
-            case (false, let format?):
-                let logOutput = LogConsoleOutput(
-                    format: format,
-                    timeZone: .current
-                )
-                return (logBuilder, logOutput)
+                return LoggingWithRUMErrorsIntegration()
+            case let (false, format?):
+                return LogConsoleOutput(format: format, timeZone: .current)
             case (false, nil):
                 return nil
             }
-        }
-
-        private func resolveLoggerName(with context: DatadogV1Context) -> String {
-            return loggerName ?? context.applicationBundleIdentifier
         }
     }
 }

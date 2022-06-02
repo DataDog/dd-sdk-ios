@@ -77,7 +77,7 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             """
         ),
         .init(
-            assert: { userLogger.logBuilder == nil && userLogger.logOutput == nil },
+            assert: { userLogger.core is NOOPDatadogCore },
             problem: "`userLogger` must use no-op implementation.",
             solution: """
             Make sure the `userLogger` is captured before test and reset to the previous implementation after, e.g.:

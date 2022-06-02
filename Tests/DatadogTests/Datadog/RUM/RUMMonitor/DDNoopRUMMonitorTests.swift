@@ -13,7 +13,7 @@ class DDNoopRUMMonitorTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output)
+        userLogger = .mockConsoleLogger(output: output)
 
         // Given
         let noop = DDNoopRUMMonitor()

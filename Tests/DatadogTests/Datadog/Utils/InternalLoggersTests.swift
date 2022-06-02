@@ -8,20 +8,11 @@ import XCTest
 @testable import Datadog
 
 class InternalLoggersTests: XCTestCase {
-    private let internalLoggerConfigurationMock = InternalLoggerConfiguration(
-        sdkVersion: .mockAny(),
-        applicationVersion: .mockAny(),
-        environment: .mockAny(),
-        userInfoProvider: UserInfoProvider.mockAny(),
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockAny(),
-        carrierInfoProvider: CarrierInfoProviderMock.mockAny()
-    )
-
     // MARK: - User Logger
 
     func testWhenSDKIsNotInitialized_itUsesNoOpUserLogger() {
-        XCTAssertNil(userLogger.logBuilder)
-        XCTAssertNil(userLogger.logOutput)
+        XCTAssertNil(userLogger.additionalOutput)
+        XCTAssertFalse(userLogger.useCoreOutput)
     }
 
     func testGivenDefaultSDKConfiguration_whenInitialized_itUsesWorkingUserLogger() {
@@ -31,7 +22,7 @@ class InternalLoggersTests: XCTestCase {
             trackingConsent: .mockRandom(),
             configuration: defaultSDKConfiguration
         )
-        XCTAssertTrue((userLogger.logOutput as? ConditionalLogOutput)?.conditionedOutput is LogConsoleOutput)
+        XCTAssertTrue(userLogger.additionalOutput is LogConsoleOutput)
         Datadog.flushAndDeinitialize()
     }
 
@@ -41,17 +32,26 @@ class InternalLoggersTests: XCTestCase {
             trackingConsent: .mockRandom(),
             configuration: .mockWith(loggingEnabled: false)
         )
-        XCTAssertTrue((userLogger.logOutput as? ConditionalLogOutput)?.conditionedOutput is LogConsoleOutput)
+        XCTAssertTrue(userLogger.additionalOutput is LogConsoleOutput)
         Datadog.flushAndDeinitialize()
     }
 
     func testUserLoggerPrintsMessagesAboveGivenVerbosityLevel() {
         var printedMessages: [String] = []
 
+        let core = DatadogCoreMock(
+            v1Context: .mockWith(
+                dependencies: .mockWith(
+                    dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+                )
+            )
+        )
+        core.register(feature: LoggingFeature.mockNoOp())
+        defer { core.flush() }
+
         let userLogger = createSDKUserLogger(
-            configuration: internalLoggerConfigurationMock,
+            in: core,
             consolePrintFunction: { printedMessages.append($0) },
-            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
             timeZone: .EET
         )
 

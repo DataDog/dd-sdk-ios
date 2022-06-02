@@ -543,7 +543,7 @@ class RUMViewScopeTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let logOutput = LogOutputMock()
-        userLogger = .mockWith(logOutput: logOutput)
+        userLogger = .mockConsoleLogger(output: logOutput)
 
         XCTAssertTrue(
             scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
@@ -604,7 +604,7 @@ class RUMViewScopeTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let logOutput = LogOutputMock()
-        userLogger = .mockWith(logOutput: logOutput)
+        userLogger = .mockConsoleLogger(output: logOutput)
 
         XCTAssertTrue(
             scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView))
@@ -1098,7 +1098,7 @@ class RUMViewScopeTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let logOutput = LogOutputMock()
-        userLogger = .mockWith(logOutput: logOutput)
+        userLogger = .mockConsoleLogger(output: logOutput)
 
         // When
         currentTime.addTimeInterval(0.5)
