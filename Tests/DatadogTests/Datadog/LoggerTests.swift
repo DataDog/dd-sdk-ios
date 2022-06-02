@@ -482,53 +482,6 @@ class LoggerTests: XCTestCase {
         logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd", "env:tests"])
         logMatchers[2].assertTags(equal: ["env:tests"])
     }
-//
-//    // MARK: - Sending logs with different network and battery conditions
-//
-//    func testGivenBadBatteryConditions_itDoesNotTryToSendLogs() throws {
-//        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-//
-//        let core = DatadogCoreMock(
-//            v1Context: .mockWith(
-//                dependencies: .mockWith(
-//                    mobileDevice: .mockWith(
-//                        currentBatteryStatus: { () -> MobileDevice.BatteryStatus in
-//                            .mockWith(state: .charging, level: 0.05, isLowPowerModeEnabled: true)
-//                        }
-//                    )
-//                )
-//            )
-//        )
-//        defer { core.flush() }
-//
-//        let feature: LoggingFeature = .mockWith(directory: temporaryDirectory)
-//        defer { feature.deinitialize() }
-//        core.register(feature: feature)
-//
-//        let logger = Logger.builder.build(in: core)
-//        logger.debug("message")
-//
-//        server.waitAndAssertNoRequestsSent()
-//    }
-
-//    func testGivenNoNetworkConnection_itDoesNotTryToSendLogs() throws {
-//        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-//        let feature: LoggingFeature = .mockWith(
-//            directory: temporaryDirectory,
-//            dependencies: .mockWith(
-//                networkConnectionInfoProvider: NetworkConnectionInfoProviderMock.mockWith(
-//                    networkConnectionInfo: .mockWith(reachability: .no)
-//                )
-//            )
-//        )
-//        defer { feature.deinitialize() }
-//        core.register(feature: feature)
-//
-//        let logger = Logger.builder.build(in: core)
-//        logger.debug("message")
-//
-//        server.waitAndAssertNoRequestsSent()
-//    }
 
     // MARK: - Integration With RUM Feature
 
@@ -755,42 +708,6 @@ class LoggerTests: XCTestCase {
             logDate == deviceTime.addingTimeInterval(serverTimeDifference)
         }
     }
-//
-//    // MARK: - Tracking Consent
-//
-//    func testWhenChangingConsentValues_itUploadsOnlyAuthorizedLogs() throws {
-//        let consentProvider = ConsentProvider(initialConsent: .pending)
-//
-//        // Given
-//        let core = DatadogCoreMock(
-//            v1Context: .mockWith(
-//                dependencies: .mockWith(
-//                    consentProvider: consentProvider
-//                )
-//            )
-//        )
-//        defer { core.flush() }
-//
-//        let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
-//        core.register(feature: logging)
-//
-//        let logger = Logger.builder.build(in: core)
-//
-//        // When
-//        logger.info("message in `.pending` consent changed to `.granted`")
-//        consentProvider.changeConsent(to: .granted)
-//        logger.info("message in `.granted` consent")
-//        consentProvider.changeConsent(to: .notGranted)
-//        logger.info("message in `.notGranted` consent")
-//        consentProvider.changeConsent(to: .granted)
-//        logger.info("another message in `.granted` consent")
-//
-//        // Then
-//        let logMatchers = try logging.waitAndReturnLogMatchers(count: 3)
-//        logMatchers[0].assertMessage(equals: "message in `.pending` consent changed to `.granted`")
-//        logMatchers[1].assertMessage(equals: "message in `.granted` consent")
-//        logMatchers[2].assertMessage(equals: "another message in `.granted` consent")
-//    }
 
     // MARK: - Thread safety
 
