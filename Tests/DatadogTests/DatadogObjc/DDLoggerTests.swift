@@ -11,18 +11,19 @@ import XCTest
 // swiftlint:disable multiline_arguments_brackets
 // swiftlint:disable compiler_protocol_init
 class DDLoggerTests: XCTestCase {
+    private var core: DatadogCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
+
     override func setUp() {
         super.setUp()
         temporaryDirectory.create()
-        Datadog.initialize(
-            appContext: .mockAny(),
-            trackingConsent: .granted,
-            configuration: .mockWith(environment: "test")
-        )
+        core = DatadogCoreMock()
+        defaultDatadogCore = core
     }
 
     override func tearDown() {
-        Datadog.flushAndDeinitialize()
+        defaultDatadogCore = NOOPDatadogCore()
+        core.flush()
+        core = nil
         temporaryDirectory.delete()
         super.tearDown()
     }
@@ -144,6 +145,10 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSettingTagsAndAttributes() throws {
+        core.v1Context = .mockWith(
+            configuration: .mockWith(environment: "test")
+        )
+
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         defaultDatadogCore.v1.register(feature: feature)
 

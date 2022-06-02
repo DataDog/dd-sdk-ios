@@ -8,17 +8,12 @@ import XCTest
 @testable import Datadog
 
 class TracingFeatureTests: XCTestCase {
-    let core = DatadogCoreMock()
-
     override func setUp() {
         super.setUp()
-        XCTAssertFalse(Datadog.isInitialized)
         temporaryDirectory.create()
     }
 
     override func tearDown() {
-        XCTAssertFalse(Datadog.isInitialized)
-        core.flush()
         temporaryDirectory.delete()
         super.tearDown()
     }
@@ -40,25 +35,30 @@ class TracingFeatureTests: XCTestCase {
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
 
-        // Given
-        let feature: TracingFeature = .mockWith(
-            directory: temporaryDirectory,
+        let core = DatadogCore(
+            rootDirectory: temporaryDirectory,
             configuration: .mockWith(
-                common: .mockWith(
-                    clientToken: randomClientToken,
-                    applicationName: randomApplicationName,
-                    applicationVersion: randomApplicationVersion,
-                    source: randomSource,
-                    origin: randomOrigin,
-                    sdkVersion: randomSDKVersion,
-                    encryption: randomEncryption
-                ),
-                uploadURL: randomUploadURL
+                clientToken: randomClientToken,
+                applicationName: randomApplicationName,
+                applicationVersion: randomApplicationVersion,
+                source: randomSource,
+                origin: randomOrigin,
+                sdkVersion: randomSDKVersion,
+                encryption: randomEncryption
             ),
             dependencies: .mockWith(
                 mobileDevice: .mockWith(model: randomDeviceModel, osName: randomDeviceOSName, osVersion: randomDeviceOSVersion)
             )
         )
+
+        // Given
+        let featureConfiguration: TracingFeature.Configuration = .mockWith(uploadURL: randomUploadURL)
+        let feature: TracingFeature = try core.create(
+            storageConfiguration: createV2TracingStorageConfiguration(),
+            uploadConfiguration: createV2TracingUploadConfiguration(v1Configuration: featureConfiguration),
+            featureSpecificConfiguration: featureConfiguration
+        )
+        defer { feature.flush() }
         core.register(feature: feature)
 
         // When
@@ -90,8 +90,10 @@ class TracingFeatureTests: XCTestCase {
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let feature: TracingFeature = .mockWith(
-            directory: temporaryDirectory,
+
+        let core = DatadogCore(
+            rootDirectory: temporaryDirectory,
+            configuration: .mockAny(),
             dependencies: .mockWith(
                 performance: .combining(
                     storagePerformance: StoragePerformanceMock(
@@ -112,6 +114,14 @@ class TracingFeatureTests: XCTestCase {
                 )
             )
         )
+
+        let featureConfiguration: TracingFeature.Configuration = .mockAny()
+        let feature: TracingFeature = try core.create(
+            storageConfiguration: createV2TracingStorageConfiguration(),
+            uploadConfiguration: createV2TracingUploadConfiguration(v1Configuration: featureConfiguration),
+            featureSpecificConfiguration: featureConfiguration
+        )
+        defer { feature.flush() }
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
