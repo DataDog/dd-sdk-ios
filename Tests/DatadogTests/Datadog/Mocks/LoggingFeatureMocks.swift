@@ -18,68 +18,23 @@ extension LoggingFeature {
         )
     }
 
-    /// Mocks the feature instance which performs uploads to `URLSession`.
-    /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
-    private static func mockWith(
-        directory: Directory,
-        featureConfiguration: FeaturesConfiguration.Logging = .mockAny(),
-        telemetry: Telemetry? = nil
-    ) -> LoggingFeature {
-        // Because in V2 Feature Storage and Upload are created by `DatadogCore`, here we ask
-        // dummy V2 core instance to initialize the Feature. It is hacky, yet minimal way of
-        // providing V1 stack for partial V2 architecture in tests.
-        let v2Core = DatadogCore(
-            rootDirectory: directory,
-            // Here we mock anything for `configuration` and `dependencies` of the dummy core instance.
-            //
-            // These ARE NOT used by the Feature to produce events. Instead, the Feature uses
-            // context provided by standalone `DatadogCoreMock`.
-            //
-            // These ARE only used by the `FeatureStorage` and `FeatureUpload` to store and upload events.
-            // Because storage and upload are responsibilities of core in V2, we don't test it
-            // as part of Feature test.
-            configuration: .mockAny(),
-            dependencies: .mockAny()
-        )
-        v2Core.telemetry = telemetry
-
-        let feature: LoggingFeature = try! v2Core.create(
-            storageConfiguration: createV2LoggingStorageConfiguration(),
-            uploadConfiguration: createV2LoggingUploadConfiguration(v1Configuration: featureConfiguration),
-            featureSpecificConfiguration: featureConfiguration
-        )
-        return feature
-    }
-
-    /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
+    /// Mocks the feature instance which performs writes to `InMemoryWriter`.
     /// Use `LogFeature.waitAndReturnLogMatchers()` to inspect and assert recorded `Logs`.
     static func mockByRecordingLogMatchers(
         directory: Directory,
         featureConfiguration: FeaturesConfiguration.Logging = .mockAny()
     ) -> LoggingFeature {
-        // Get the full feature mock:
-        let fullFeature: LoggingFeature = .mockWith(
-            directory: directory,
-            featureConfiguration: featureConfiguration
-//            coreConfiguration: coreConfiguration,
-//            coreDependencies: coreDependencies.replacing(
-//                dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
-//            )
+        // Mock storage with `InMemoryWriter`, used later for retrieving recorded events back:
+        let interceptedStorage = FeatureStorage(
+            writer: InMemoryWriter(),
+            reader: NoOpFileReader(),
+            arbitraryAuthorizedWriter: NoOpFileWriter(),
+            dataOrchestrator: NoOpDataOrchestrator()
         )
-        let uploadWorker = DataUploadWorkerMock()
-        let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
-        // Replace by mocking the `FeatureUpload` and observing the `FeatureStorage`:
-        let mockedUpload = FeatureUpload(uploader: uploadWorker)
-        // Tear down the original upload
-        fullFeature.upload.flushAndTearDown()
-
         return LoggingFeature(
-            storage: observedStorage,
-            upload: mockedUpload,
-            configuration: fullFeature.configuration,
-            // Here we mock anything for `commonDependencies`. This is only required by `V1FeatureInitializable` interface but not
-            // used in this Feature implementation. It will be removed after we update the `V1FeatureInitializable` interface
-            // for all other Features:
+            storage: interceptedStorage,
+            upload: .mockNoOp(),
+            configuration: featureConfiguration,
             commonDependencies: .mockAny(),
             telemetry: nil
         )
@@ -88,11 +43,11 @@ extension LoggingFeature {
     // MARK: - Expecting Logs Data
 
     func waitAndReturnLogMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
-        guard let uploadWorker = upload.uploader as? DataUploadWorkerMock else {
+        guard let inMemoryWriter = storage.writer as? InMemoryWriter else {
             preconditionFailure("Retrieving matchers requires that feature is mocked with `.mockByRecordingLogMatchers()`")
         }
-        return try uploadWorker.waitAndReturnBatchedData(count: count, file: file, line: line)
-            .flatMap { batchData in try LogMatcher.fromArrayOfJSONObjectsData(batchData, file: file, line: line) }
+        return try inMemoryWriter.waitAndReturnEventsData(count: count, file: file, line: line)
+            .map { eventData in try LogMatcher.fromJSONObjectData(eventData) }
     }
 
     // swiftlint:disable:next function_default_parameter_at_end

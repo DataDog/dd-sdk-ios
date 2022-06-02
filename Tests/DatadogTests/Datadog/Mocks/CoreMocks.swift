@@ -4,6 +4,7 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+import XCTest
 @testable import Datadog
 
 // MARK: - Configuration Mocks
@@ -606,6 +607,73 @@ class NoOpFileReader: SyncReader {
     func readNextBatch() -> Batch? { return nil }
     func markBatchAsRead(_ batch: Batch) {}
     func markAllFilesAsReadable() {}
+}
+
+/// `AsyncWriter` stub which records events in-memory and allows reading their data back.
+internal class InMemoryWriter: AsyncWriter {
+    let queue = DispatchQueue(label: "com.datadoghq.InMemoryWriter-\(UUID().uuidString)")
+
+    private let encoder: JSONEncoder = .default()
+    private var events: [Data] = []
+
+    func write<T>(value: T) where T: Encodable {
+        queue.async {
+            do {
+                let eventData = try self.encoder.encode(value)
+                self.events.append(eventData)
+                self.waitAndReturnEventsDataExpectation?.fulfill()
+            } catch {
+                assertionFailure("Failed to encode event: \(value)")
+            }
+        }
+    }
+
+    func flushAndCancelSynchronously() {
+        queue.sync {}
+    }
+
+    // MARK: - Retrieving Recorded Data
+
+    private var waitAndReturnEventsDataExpectation: XCTestExpectation?
+
+    /// Waits until given number of events is written and returns data for these events.
+    /// Passing no `timeout` will result with picking the recommended timeout for unit tests.
+    func waitAndReturnEventsData(count: UInt, timeout: TimeInterval? = nil, file: StaticString = #file, line: UInt = #line) -> [Data] {
+        precondition(waitAndReturnEventsDataExpectation == nil, "The `InMemoryWriter` is already waiting on `waitAndReturnEventsData`.")
+
+        let expectation = XCTestExpectation(description: "Record \(count) events.")
+        if count > 0 {
+            expectation.expectedFulfillmentCount = Int(count)
+        } else {
+            expectation.isInverted = true
+        }
+
+        queue.sync {
+            self.waitAndReturnEventsDataExpectation = expectation
+            self.events.forEach { _ in expectation.fulfill() } // fulfill already recorded events
+        }
+
+        let recommendedTimeout = Double(max(1, count)) * 1 // 1s for each event
+        let timeout = timeout ?? recommendedTimeout
+        let result = XCTWaiter().wait(for: [expectation], timeout: timeout)
+
+        switch result {
+        case .completed:
+            break
+        case .incorrectOrder, .interrupted:
+            fatalError("Can't happen.")
+        case .timedOut:
+            XCTFail("Exceeded timeout of \(timeout)s with recording \(events.count) out of \(count) expected events.", file: file, line: line)
+            return queue.sync { events }
+        case .invertedFulfillment:
+            XCTFail("\(events.count) batches were read, but not expected.", file: file, line: line)
+            return queue.sync { events }
+        @unknown default:
+            fatalError()
+        }
+
+        return queue.sync { events }
+    }
 }
 
 extension DataFormat {
