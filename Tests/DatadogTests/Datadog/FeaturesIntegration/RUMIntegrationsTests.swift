@@ -40,10 +40,8 @@ class RUMIntegrationsTests: XCTestCase {
             upload: .mockNoOp(),
             configuration: .mockWith(sessionSampler: .mockRejectAll()),
             commonDependencies: .mockAny(),
-            vitalCPUReader: SamplingBasedVitalReaderMock(),
-            vitalMemoryReader: SamplingBasedVitalReaderMock(),
-            vitalRefreshRateReader: ContinuousVitalReaderMock(),
-            onSessionStart: nil
+            onSessionStart: nil,
+            telemetry: nil
         )
         defer { RUMFeature.instance?.deinitialize() }
 

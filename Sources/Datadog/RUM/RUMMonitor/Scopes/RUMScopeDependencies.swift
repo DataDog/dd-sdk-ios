@@ -10,6 +10,13 @@ internal typealias RUMSessionListener = (String, Bool) -> Void
 
 /// Dependency container for injecting components to `RUMScopes` hierarchy.
 internal struct RUMScopeDependencies {
+    struct VitalsReaders {
+        let frequency: TimeInterval
+        let cpu: SamplingBasedVitalReader
+        let memory: SamplingBasedVitalReader
+        let refreshRate: ContinuousVitalReader
+    }
+
     let rumApplicationID: String
     let sessionSampler: Sampler
     /// The start time of the application, indicated as SDK init. Measured in device time (without NTP correction).
@@ -37,11 +44,7 @@ internal struct RUMScopeDependencies {
     /// Produces `RUMViewUpdatesThrottlerType` for each started RUM view scope.
     let viewUpdatesThrottlerFactory: () -> RUMViewUpdatesThrottlerType
 
-    let vitalFrequency: TimeInterval?
-    let vitalCPUReader: SamplingBasedVitalReader
-    let vitalMemoryReader: SamplingBasedVitalReader
-    let vitalRefreshRateReader: ContinuousVitalReader
-
+    let vitalsReaders: VitalsReaders?
     let onSessionStart: RUMSessionListener?
 }
 
@@ -75,10 +78,14 @@ internal extension RUMScopeDependencies {
             crashContextIntegration: RUMWithCrashContextIntegration(),
             ciTest: CITestIntegration.active?.rumCITest,
             viewUpdatesThrottlerFactory: { RUMViewUpdatesThrottler() },
-            vitalFrequency: rumFeature.configuration.vitalsFrequency,
-            vitalCPUReader: rumFeature.vitalCPUReader,
-            vitalMemoryReader: rumFeature.vitalMemoryReader,
-            vitalRefreshRateReader: rumFeature.vitalRefreshRateReader,
+            vitalsReaders: rumFeature.configuration.vitalsFrequency.map {
+                .init(
+                    frequency: $0,
+                    cpu: VitalCPUReader(telemetry: rumFeature.telemetry),
+                    memory: VitalMemoryReader(),
+                    refreshRate: VitalRefreshRateReader()
+                )
+            },
             onSessionStart: rumFeature.onSessionStart
         )
     }

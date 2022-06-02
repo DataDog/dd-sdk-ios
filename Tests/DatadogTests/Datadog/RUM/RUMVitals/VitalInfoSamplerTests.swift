@@ -67,31 +67,6 @@ class VitalInfoSamplerTests: XCTestCase {
         }
     }
 
-    func testItDoesNotSamplePeriodically() {
-        let mockCPUReader = SamplingBasedVitalReaderMock()
-        let mockMemoryReader = SamplingBasedVitalReaderMock()
-
-        let sampler = VitalInfoSampler(
-            cpuReader: mockCPUReader,
-            memoryReader: mockMemoryReader,
-            refreshRateReader: ContinuousVitalReaderMock(),
-            frequency: nil
-        )
-
-        mockCPUReader.vitalData = 123.0
-        mockMemoryReader.vitalData = 321.0
-
-        let samplingExpectation = expectation(description: "sampling expectation")
-        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
-            samplingExpectation.fulfill()
-        }
-
-        waitForExpectations(timeout: 1.0) { _ in
-            XCTAssertEqual(sampler.cpu.sampleCount, 0)
-            XCTAssertEqual(sampler.memory.sampleCount, 0)
-        }
-    }
-
     func testItSamplesDataFromBackgroundThreads() {
         // swiftlint:disable implicitly_unwrapped_optional
         var sampler: VitalInfoSampler!
