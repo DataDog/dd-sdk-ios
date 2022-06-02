@@ -9,12 +9,17 @@ import XCTest
 
 // swiftlint:disable multiline_arguments_brackets
 class LoggerTests: XCTestCase {
+    private var core: DatadogCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
+
     override func setUp() {
         super.setUp()
         temporaryDirectory.create()
+        core = DatadogCoreMock()
     }
 
     override func tearDown() {
+        core.flush()
+        core = nil
         temporaryDirectory.delete()
         super.tearDown()
     }
@@ -22,21 +27,18 @@ class LoggerTests: XCTestCase {
     // MARK: - Customizing Logger
 
     func testSendingLogWithDefaultLogger() throws {
-        let core = DatadogCoreMock(
-            v1Context: .mockWith(
-                configuration: .mockWith(
-                    applicationVersion: "1.0.0",
-                    applicationBundleIdentifier: "com.datadoghq.ios-sdk",
-                    serviceName: "default-service-name",
-                    environment: "tests",
-                    sdkVersion: "1.2.3"
-                ),
-                dependencies: .mockWith(
-                    dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
-                )
+        core.v1Context = .mockWith(
+            configuration: .mockWith(
+                applicationVersion: "1.0.0",
+                applicationBundleIdentifier: "com.datadoghq.ios-sdk",
+                serviceName: "default-service-name",
+                environment: "tests",
+                sdkVersion: "1.2.3"
+            ),
+            dependencies: .mockWith(
+                dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
             )
         )
-        defer { core.flush() }
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: feature)
@@ -61,8 +63,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testSendingLogWithCustomizedLogger() throws {
-        let core = DatadogCoreMock(v1Context: .mockAny())
-        defer { core.flush() }
+        core.v1Context = .mockAny()
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: feature)
@@ -95,14 +96,11 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending Customized Logs
 
     func testSendingLogsWithDifferentDates() throws {
-        let core = DatadogCoreMock(
-            v1Context: .mockWith(
-                dependencies: .mockWith(
-                    dateProvider: RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC(), advancingBySeconds: 1)
-                )
+        core.v1Context = .mockWith(
+            dependencies: .mockWith(
+                dateProvider: RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC(), advancingBySeconds: 1)
             )
         )
-        defer { core.flush() }
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: feature)
@@ -119,8 +117,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testSendingLogsWithDifferentLevels() throws {
-        let core = DatadogCoreMock(v1Context: .mockAny())
-        defer { core.flush() }
+        core.v1Context = .mockAny()
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: feature)
@@ -145,8 +142,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Logging an error
 
     func testLoggingError() throws {
-        let core = DatadogCoreMock(v1Context: .mockAny())
-        defer { core.flush() }
+        core.v1Context = .mockAny()
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: feature)
@@ -177,14 +173,11 @@ class LoggerTests: XCTestCase {
     func testSendingUserInfo() throws {
         let userInfoProvider = UserInfoProvider()
 
-        let core = DatadogCoreMock(
-            v1Context: .mockWith(
-                dependencies: .mockWith(
-                    userInfoProvider: userInfoProvider
-                )
+        core.v1Context = .mockWith(
+            dependencies: .mockWith(
+                userInfoProvider: userInfoProvider
             )
         )
-        defer { core.flush() }
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: feature)
@@ -236,14 +229,11 @@ class LoggerTests: XCTestCase {
     func testSendingCarrierInfoWhenEnteringAndLeavingCellularServiceRange() throws {
         let carrierInfoProvider = CarrierInfoProviderMock(carrierInfo: nil)
 
-        let core = DatadogCoreMock(
-            v1Context: .mockWith(
-                dependencies: .mockWith(
-                    carrierInfoProvider: carrierInfoProvider
-                )
+        core.v1Context = .mockWith(
+            dependencies: .mockWith(
+                carrierInfoProvider: carrierInfoProvider
             )
         )
-        defer { core.flush() }
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: feature)
@@ -282,14 +272,11 @@ class LoggerTests: XCTestCase {
     func testSendingNetworkConnectionInfoWhenReachabilityChanges() throws {
         let networkConnectionInfoProvider = NetworkConnectionInfoProviderMock.mockAny()
 
-        let core = DatadogCoreMock(
-            v1Context: .mockWith(
-                dependencies: .mockWith(
-                    networkConnectionInfoProvider: networkConnectionInfoProvider
-                )
+        core.v1Context = .mockWith(
+            dependencies: .mockWith(
+                networkConnectionInfoProvider: networkConnectionInfoProvider
             )
         )
-        defer { core.flush() }
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: feature)
@@ -345,8 +332,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending attributes
 
     func testSendingLoggerAttributesOfDifferentEncodableValues() throws {
-        let core = DatadogCoreMock(v1Context: .mockAny())
-        defer { core.flush() }
+        core.v1Context = .mockAny()
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: feature)
@@ -412,8 +398,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testSendingMessageAttributes() throws {
-        let core = DatadogCoreMock(v1Context: .mockAny())
-        defer { core.flush() }
+        core.v1Context = .mockAny()
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: feature)
@@ -444,12 +429,9 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending tags
 
     func testSendingTags() throws {
-        let core = DatadogCoreMock(
-            v1Context: .mockWith(
-                configuration: .mockWith(environment: "tests")
-            )
+        core.v1Context = .mockWith(
+            configuration: .mockWith(environment: "tests")
         )
-        defer { core.flush() }
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: feature)
@@ -486,8 +468,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Integration With RUM Feature
 
     func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingLog_itContainsCurrentRUMContext() throws {
-        let core = DatadogCoreMock(v1Context: .mockAny())
-        defer { core.flush() }
+        core.v1Context = .mockAny()
 
         let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: logging)
@@ -526,8 +507,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testGivenBundlingWithRUMEnabledButRUMMonitorNotRegistered_whenSendingLog_itPrintsWarning() throws {
-        let core = DatadogCoreMock(v1Context: .mockAny())
-        defer { core.flush() }
+        core.v1Context = .mockAny()
 
         let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: logging)
@@ -563,8 +543,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorForCurrentView() throws {
-        let core = DatadogCoreMock(v1Context: .mockAny())
-        defer { core.flush() }
+        core.v1Context = .mockAny()
 
         let logging: LoggingFeature = .mockNoOp()
         core.register(feature: logging)
@@ -610,8 +589,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Integration With Active Span
 
     func testGivenBundlingWithTraceEnabledAndTracerRegistered_whenSendingLog_itContainsActiveSpanAttributes() throws {
-        let core = DatadogCoreMock(v1Context: .mockAny())
-        defer { core.flush() }
+        core.v1Context = .mockAny()
 
         let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: logging)
@@ -645,8 +623,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testGivenBundlingWithTraceEnabledButTracerNotRegistered_whenSendingLog_itPrintsWarning() throws {
-        let core = DatadogCoreMock(v1Context: .mockAny())
-        defer { core.flush() }
+        core.v1Context = .mockAny()
 
         let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: logging)
@@ -685,15 +662,13 @@ class LoggerTests: XCTestCase {
         // Given
         let deviceTime: Date = .mockDecember15th2019At10AMUTC()
         let serverTimeDifference = TimeInterval.random(in: -5..<5).rounded() // few seconds difference
-        let core = DatadogCoreMock(
-            v1Context: .mockWith(
-                dependencies: .mockWith(
-                    dateProvider: RelativeDateProvider(using: deviceTime),
-                    dateCorrector: DateCorrectorMock(correctionOffset: serverTimeDifference)
-                )
+
+        core.v1Context = .mockWith(
+            dependencies: .mockWith(
+                dateProvider: RelativeDateProvider(using: deviceTime),
+                dateCorrector: DateCorrectorMock(correctionOffset: serverTimeDifference)
             )
         )
-        defer { core.flush() }
 
         // When
         let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
@@ -752,7 +727,7 @@ class LoggerTests: XCTestCase {
         defer { consolePrint = { print($0) } }
 
         // given
-        let core = DatadogCoreMock(v1Context: nil)
+        core.v1Context = nil
 
         // when
         let logger = Logger.builder.build(in: core)
@@ -772,7 +747,7 @@ class LoggerTests: XCTestCase {
         defer { consolePrint = { print($0) } }
 
         // given
-        let core = DatadogCoreMock(v1Context: .mockAny())
+        core.v1Context = .mockAny()
         XCTAssertNil(core.feature(LoggingFeature.self))
 
         // when

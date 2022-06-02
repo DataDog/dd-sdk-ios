@@ -9,7 +9,8 @@ import Foundation
 
 internal final class DatadogCoreMock: Flushable {
     private var v1Features: [String: Any] = [:]
-    private var v1Context: DatadogV1Context?
+
+    var v1Context: DatadogV1Context?
 
     init(v1Context: DatadogV1Context? = .mockAny()) {
         self.v1Context = v1Context

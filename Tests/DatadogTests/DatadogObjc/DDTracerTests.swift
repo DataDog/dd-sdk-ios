@@ -9,18 +9,20 @@ import XCTest
 @testable import DatadogObjc
 
 class DDTracerTests: XCTestCase {
-    let core = DatadogCoreMock()
+    private var core: DatadogCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
         temporaryDirectory.create()
+        core = DatadogCoreMock()
         defaultDatadogCore = core
     }
 
     override func tearDown() {
-        core.flush()
-        temporaryDirectory.delete()
         defaultDatadogCore = NOOPDatadogCore()
+        core.flush()
+        core = nil
+        temporaryDirectory.delete()
         super.tearDown()
     }
 
@@ -117,18 +119,11 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogs() throws {
-        let core = DatadogCoreMock(
-            v1Context: .mockWith(
-                dependencies: .mockWith(
-                    performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
-                )
+        core.v1Context = .mockWith(
+            dependencies: .mockWith(
+                performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
         )
-        defaultDatadogCore = core
-        defer {
-            core.flush()
-            defaultDatadogCore = NOOPDatadogCore()
-        }
 
         let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: logging)
@@ -157,18 +152,11 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromArguments() throws {
-        let core = DatadogCoreMock(
-            v1Context: .mockWith(
-                dependencies: .mockWith(
-                    performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
-                )
+        core.v1Context = .mockWith(
+            dependencies: .mockWith(
+                performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
         )
-        defaultDatadogCore = core
-        defer {
-            core.flush()
-            defaultDatadogCore = NOOPDatadogCore()
-        }
 
         let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: logging)
@@ -200,18 +188,11 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromNSError() throws {
-        let core = DatadogCoreMock(
-            v1Context: .mockWith(
-                dependencies: .mockWith(
-                    performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
-                )
+        core.v1Context = .mockWith(
+            dependencies: .mockWith(
+                performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
             )
         )
-        defaultDatadogCore = core
-        defer {
-            core.flush()
-            defaultDatadogCore = NOOPDatadogCore()
-        }
 
         let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: logging)
