@@ -150,6 +150,11 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     /// Initializes the Datadog RUM Monitor.
     public static func initialize(in core: DatadogCoreProtocol = defaultDatadogCore) -> DDRUMMonitor {
         do {
+            guard let context = core.v1.context else {
+                throw ProgrammerError(
+                    description: "`Datadog.initialize()` must be called prior to `RUMMonitor.initialize()`."
+                )
+            }
             if Global.rum is RUMMonitor {
                 throw ProgrammerError(
                     description: """
@@ -159,16 +164,19 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             }
             guard let rumFeature = core.v1.feature(RUMFeature.self) else {
                 throw ProgrammerError(
-                    description: Datadog.isInitialized
-                        ? "`RUMMonitor.initialize()` produces a non-functional monitor, as the RUM feature is disabled."
-                        : "`Datadog.initialize()` must be called prior to `RUMMonitor.initialize()`."
+                    description: "`RUMMonitor.initialize()` produces a non-functional monitor, as the RUM feature is disabled."
                 )
             }
 
             let crashReporting = core.v1.feature(CrashReportingFeature.self)
             let monitor = RUMMonitor(
-                dependencies: RUMScopeDependencies(rumFeature: rumFeature, crashReportingFeature: crashReporting),
-                dateProvider: rumFeature.dateProvider
+                dependencies: RUMScopeDependencies(
+                    rumFeature: rumFeature,
+                    crashReportingFeature: crashReporting,
+                    context: context,
+                    telemetry: core.v1.telemetry
+                ),
+                dateProvider: context.dateProvider
             )
 
             core.v1.feature(RUMInstrumentation.self)?.publish(to: monitor)

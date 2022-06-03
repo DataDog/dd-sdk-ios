@@ -253,7 +253,6 @@ extension FeaturesConfiguration.RUM {
     static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
-        common: FeaturesConfiguration.Common = .mockAny(),
         uploadURL: URL = .mockAny(),
         applicationID: String = .mockAny(),
         sessionSampler: Sampler = .mockKeepAll(),
@@ -270,7 +269,6 @@ extension FeaturesConfiguration.RUM {
         firstPartyHosts: Set<String> = []
     ) -> Self {
         return .init(
-            common: common,
             uploadURL: uploadURL,
             applicationID: applicationID,
             sessionSampler: sessionSampler,

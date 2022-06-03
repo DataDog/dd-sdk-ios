@@ -30,33 +30,30 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
     /// The output for writing RUM events. It uses the authorized data folder and is synchronized with the eventual
     /// authorized output working simultaneously in the RUM feature.
     private let rumEventOutput: RUMEventOutput
-    private let dateProvider: DateProvider
-    private let dateCorrector: DateCorrectorType
     private let rumConfiguration: FeaturesConfiguration.RUM
+
+    private let context: DatadogV1Context
 
     // MARK: - Initialization
 
-    init(rumFeature: RUMFeature) {
+    init(rumFeature: RUMFeature, context: DatadogV1Context) {
         self.init(
             rumEventOutput: RUMEventFileOutput(
                 fileWriter: rumFeature.storage.arbitraryAuthorizedWriter
             ),
-            dateProvider: rumFeature.dateProvider,
-            dateCorrector: rumFeature.dateCorrector,
-            rumConfiguration: rumFeature.configuration
+            rumConfiguration: rumFeature.configuration,
+            context: context
         )
     }
 
     init(
         rumEventOutput: RUMEventOutput,
-        dateProvider: DateProvider,
-        dateCorrector: DateCorrectorType,
-        rumConfiguration: FeaturesConfiguration.RUM
+        rumConfiguration: FeaturesConfiguration.RUM,
+        context: DatadogV1Context
     ) {
         self.rumEventOutput = rumEventOutput
-        self.dateProvider = dateProvider
-        self.dateCorrector = dateCorrector
         self.rumConfiguration = rumConfiguration
+        self.context = context
     }
 
     // MARK: - CrashReportingIntegration
@@ -69,13 +66,13 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         // The `crashReport.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
         // to the server time before processing. Following use of the current correction is not ideal (it's not the correction
         // from the moment of crash), but this is the best approximation we can get.
-        let currentTimeCorrection = dateCorrector.currentCorrection
+        let currentTimeCorrection = context.dateCorrector.currentCorrection
 
-        let crashDate = crashReport.date ?? dateProvider.currentDate()
+        let crashDate = crashReport.date ?? context.dateProvider.currentDate()
         let adjustedCrashTimings = AdjustedCrashTimings(
             crashDate: crashDate,
             realCrashDate: currentTimeCorrection.applying(to: crashDate),
-            realDateNow: currentTimeCorrection.applying(to: dateProvider.currentDate())
+            realDateNow: currentTimeCorrection.applying(to: context.dateProvider.currentDate())
         )
 
         if let lastRUMViewEvent = crashContext.lastRUMViewEvent {
@@ -353,16 +350,16 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             ),
             context: nil,
             date: startDate.timeIntervalSince1970.toInt64Milliseconds,
-            service: rumConfiguration.common.serviceName,
+            service: context.service,
             session: .init(
                 hasReplay: nil,
                 id: sessionUUID.toRUMDataFormat,
                 type: CITestIntegration.active != nil ? .ciTest : .user
             ),
-            source: RUMViewEvent.Source(rawValue: rumConfiguration.common.source) ?? .ios,
+            source: RUMViewEvent.Source(rawValue: context.source) ?? .ios,
             synthetics: nil,
             usr: crashContext.lastUserInfo.flatMap { RUMUser(userInfo: $0) },
-            version: rumConfiguration.common.applicationVersion,
+            version: context.version,
             view: .init(
                 action: .init(count: 0),
                 cpuTicksCount: nil,

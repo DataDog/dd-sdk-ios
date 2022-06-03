@@ -15,23 +15,6 @@ internal final class RUMFeature: V1FeatureInitializable {
 
     let configuration: Configuration
 
-    // MARK: - Dependencies
-
-    let sdkInitDate: Date
-    let dateProvider: DateProvider
-    let dateCorrector: DateCorrectorType
-    let appStateListener: AppStateListening
-    let userInfoProvider: UserInfoProvider
-    let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
-    let carrierInfoProvider: CarrierInfoProviderType
-    let launchTimeProvider: LaunchTimeProviderType
-
-    let vitalCPUReader: SamplingBasedVitalReader
-    let vitalMemoryReader: SamplingBasedVitalReader
-    let vitalRefreshRateReader: ContinuousVitalReader
-
-    let onSessionStart: RUMSessionListener?
-
     // MARK: - Components
 
     /// RUM files storage.
@@ -39,71 +22,22 @@ internal final class RUMFeature: V1FeatureInitializable {
     /// RUM upload worker.
     let upload: FeatureUpload
 
-    /// RUM events mapper.
-    let eventsMapper: RUMEventsMapper
-
     // MARK: - Initialization
 
-    convenience init(
+    init(
         storage: FeatureStorage,
         upload: FeatureUpload,
         configuration: Configuration,
+        /// TODO: RUMM-2169 Remove `commonDependencies` from `V1FeatureInitializable` interface when all Features are migrated to use `DatadogV1Context`:
         commonDependencies: FeaturesCommonDependencies,
         telemetry: Telemetry?
-    ) {
-        self.init(
-            eventsMapper: RUMEventsMapper(
-                viewEventMapper: configuration.viewEventMapper,
-                errorEventMapper: configuration.errorEventMapper,
-                resourceEventMapper: configuration.resourceEventMapper,
-                actionEventMapper: configuration.actionEventMapper,
-                longTaskEventMapper: configuration.longTaskEventMapper,
-                telemetry: telemetry
-            ),
-            storage: storage,
-            upload: upload,
-            configuration: configuration,
-            commonDependencies: commonDependencies,
-            vitalCPUReader: VitalCPUReader(telemetry: telemetry),
-            vitalMemoryReader: VitalMemoryReader(),
-            vitalRefreshRateReader: VitalRefreshRateReader(),
-            onSessionStart: configuration.onSessionStart
-        )
-    }
-
-    init(
-        eventsMapper: RUMEventsMapper,
-        storage: FeatureStorage,
-        upload: FeatureUpload,
-        configuration: FeaturesConfiguration.RUM,
-        commonDependencies: FeaturesCommonDependencies,
-        vitalCPUReader: SamplingBasedVitalReader,
-        vitalMemoryReader: SamplingBasedVitalReader,
-        vitalRefreshRateReader: ContinuousVitalReader,
-        onSessionStart: RUMSessionListener?
     ) {
         // Configuration
         self.configuration = configuration
 
-        // Bundle dependencies
-        self.sdkInitDate = commonDependencies.sdkInitDate
-        self.dateProvider = commonDependencies.dateProvider
-        self.dateCorrector = commonDependencies.dateCorrector
-        self.appStateListener = commonDependencies.appStateListener
-        self.userInfoProvider = commonDependencies.userInfoProvider
-        self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider
-        self.carrierInfoProvider = commonDependencies.carrierInfoProvider
-        self.launchTimeProvider = commonDependencies.launchTimeProvider
-
         // Initialize stacks
-        self.eventsMapper = eventsMapper
         self.storage = storage
         self.upload = upload
-
-        self.vitalCPUReader = vitalCPUReader
-        self.vitalMemoryReader = vitalMemoryReader
-        self.vitalRefreshRateReader = vitalRefreshRateReader
-        self.onSessionStart = onSessionStart
     }
 
     internal func deinitialize() {

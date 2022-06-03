@@ -130,15 +130,17 @@ class DDRUMMethodTests: XCTestCase {
 }
 
 class DDRUMMonitorTests: XCTestCase {
-    let core = DatadogCoreMock()
+    private var core: DatadogCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
         temporaryDirectory.create()
+        core = DatadogCoreMock()
     }
 
     override func tearDown() {
         core.flush()
+        core = nil
         temporaryDirectory.delete()
         super.tearDown()
     }
@@ -147,10 +149,16 @@ class DDRUMMonitorTests: XCTestCase {
     /// The only difference vs. `DDRUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
     private func createTestableDDRUMMonitor() throws -> DatadogObjc.DDRUMMonitor {
         let rumFeature: RUMFeature = try XCTUnwrap(core.v1.feature(RUMFeature.self), "RUM feature must be initialized before creating `RUMMonitor`")
+        let v1Context = try XCTUnwrap(core.v1.context, "`DatadogCore` must be initialized before creating `RUMMonitor`")
         let swiftMonitor = RUMMonitor(
-            dependencies: RUMScopeDependencies(rumFeature: rumFeature, crashReportingFeature: nil)
-                .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-            dateProvider: rumFeature.dateProvider
+            dependencies: RUMScopeDependencies(
+                rumFeature: rumFeature,
+                crashReportingFeature: nil,
+                context: v1Context,
+                telemetry: core.v1.telemetry
+            )
+            .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
+            dateProvider: v1Context.dateProvider
         )
         return DatadogObjc.DDRUMMonitor(swiftRUMMonitor: swiftMonitor)
     }
@@ -336,12 +344,13 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingActionEvents() throws {
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directory: temporaryDirectory,
+        core.v1Context = .mockWith(
             dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
             )
         )
+
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
         core.register(feature: rum)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()

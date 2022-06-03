@@ -37,7 +37,7 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
 
     init(
         logOutput: LogOutput,
-        dateProvider: DateProvider,
+        dateProvider: DateProvider, // TODO: RUMM-2169 use context for injecting `dateProvider` and `dateCorrector`
         dateCorrector: DateCorrectorType,
         context: DatadogV1Context
     ) {

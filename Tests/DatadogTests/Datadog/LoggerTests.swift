@@ -543,7 +543,8 @@ class LoggerTests: XCTestCase {
     }
 
     func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorForCurrentView() throws {
-        core.v1Context = .mockAny()
+        let v1Context: DatadogV1Context = .mockAny()
+        core.v1Context = v1Context
 
         let logging: LoggingFeature = .mockNoOp()
         core.register(feature: logging)
@@ -554,9 +555,13 @@ class LoggerTests: XCTestCase {
         // given
         let logger = Logger.builder.build(in: core)
         Global.rum = RUMMonitor(
-            dependencies: RUMScopeDependencies(rumFeature: rum, crashReportingFeature: nil)
-                .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-            dateProvider: rum.dateProvider
+            dependencies: RUMScopeDependencies(
+                rumFeature: rum,
+                crashReportingFeature: nil,
+                context: v1Context,
+                telemetry: nil
+            ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
+            dateProvider: v1Context.dateProvider
         )
         Global.rum.startView(viewController: mockView)
         defer { Global.rum = DDNoopRUMMonitor() }

@@ -11,86 +11,44 @@ extension RUMFeature {
     /// Mocks feature instance which performs no writes and no uploads.
     static func mockNoOp() -> RUMFeature {
         return RUMFeature(
-            eventsMapper: .mockNoOp(),
             storage: .mockNoOp(),
             upload: .mockNoOp(),
             configuration: .mockAny(),
             commonDependencies: .mockAny(),
-            vitalCPUReader: SamplingBasedVitalReaderMock(),
-            vitalMemoryReader: SamplingBasedVitalReaderMock(),
-            vitalRefreshRateReader: ContinuousVitalReaderMock(),
-            onSessionStart: nil
+            telemetry: nil
         )
-    }
-
-    /// Mocks the feature instance which performs uploads to `URLSession`.
-    /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
-    static func mockWith(
-        directory: Directory,
-        configuration: FeaturesConfiguration.RUM = .mockAny(),
-        dependencies: FeaturesCommonDependencies = .mockAny(),
-        telemetry: Telemetry? = nil
-    ) -> RUMFeature {
-        // Because in V2 Feature Storage and Upload are created by `DatadogCore`, here we ask
-        // dummy V2 core instance to initialize the Feature. It is hacky, yet minimal way of
-        // providing V1 stack for partial V2 architecture in tests.
-        let v2Core = DatadogCore(
-            rootDirectory: directory,
-            configuration: configuration.common,
-            dependencies: dependencies
-        )
-        v2Core.telemetry = telemetry
-
-        let feature: RUMFeature = try! v2Core.create(
-            storageConfiguration: createV2RUMStorageConfiguration(),
-            uploadConfiguration: createV2RUMUploadConfiguration(v1Configuration: configuration),
-            featureSpecificConfiguration: configuration
-        )
-        return feature
     }
 
     /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
     /// Use `RUMFeature.waitAndReturnRUMEventMatchers()` to inspect and assert recorded `RUMEvents`.
     static func mockByRecordingRUMEventMatchers(
         directory: Directory,
-        configuration: FeaturesConfiguration.RUM = .mockAny(),
-        dependencies: FeaturesCommonDependencies = .mockAny()
+        featureConfiguration: FeaturesConfiguration.RUM = .mockAny()
     ) -> RUMFeature {
-        // Get the full feature mock:
-        let fullFeature: RUMFeature = .mockWith(
-            directory: directory,
-            configuration: configuration,
-            dependencies: dependencies.replacing(
-                dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
-            )
+        // Mock storage with `InMemoryWriter`, used later for retrieving recorded events back:
+        let interceptedStorage = FeatureStorage(
+            writer: InMemoryWriter(),
+            reader: NoOpFileReader(),
+            arbitraryAuthorizedWriter: NoOpFileWriter(),
+            dataOrchestrator: NoOpDataOrchestrator()
         )
-        let uploadWorker = DataUploadWorkerMock()
-        let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
-        // Replace by mocking the `FeatureUpload` and observing the `FeatureStorage`:
-        let mockedUpload = FeatureUpload(uploader: uploadWorker)
-        // Tear down the original upload
-        fullFeature.upload.flushAndTearDown()
         return RUMFeature(
-            eventsMapper: fullFeature.eventsMapper,
-            storage: observedStorage,
-            upload: mockedUpload,
-            configuration: configuration,
-            commonDependencies: dependencies,
-            vitalCPUReader: SamplingBasedVitalReaderMock(),
-            vitalMemoryReader: SamplingBasedVitalReaderMock(),
-            vitalRefreshRateReader: ContinuousVitalReaderMock(),
-            onSessionStart: configuration.onSessionStart
+            storage: interceptedStorage,
+            upload: .mockNoOp(),
+            configuration: featureConfiguration,
+            commonDependencies: .mockAny(),
+            telemetry: nil
         )
     }
 
     // MARK: - Expecting RUMEvent Data
 
     func waitAndReturnRUMEventMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
-        guard let uploadWorker = upload.uploader as? DataUploadWorkerMock else {
+        guard let inMemoryWriter = storage.writer as? InMemoryWriter else {
             preconditionFailure("Retrieving matchers requires that feature is mocked with `.mockByRecordingRUMEventMatchers()`")
         }
-        return try uploadWorker.waitAndReturnBatchedData(count: count, file: file, line: line)
-            .flatMap { batchData in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(batchData) }
+        return try inMemoryWriter.waitAndReturnEventsData(count: count, file: file, line: line)
+            .map { eventData in try RUMEventMatcher.fromJSONObjectData(eventData) }
     }
 
     // swiftlint:disable:next function_default_parameter_at_end

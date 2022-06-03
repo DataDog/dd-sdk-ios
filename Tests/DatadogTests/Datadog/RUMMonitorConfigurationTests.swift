@@ -8,6 +8,7 @@ import XCTest
 @testable import Datadog
 
 class RUMMonitorConfigurationTests: XCTestCase {
+    private let userInfoProvider: UserInfoProvider = .mockAny()
     private let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
     private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
 
@@ -15,36 +16,39 @@ class RUMMonitorConfigurationTests: XCTestCase {
         temporaryDirectory.create()
         defer { temporaryDirectory.delete() }
 
-        let core = DatadogCoreMock()
-        defer { core.flush() }
-
-        let feature: RUMFeature = .mockByRecordingRUMEventMatchers(
-            directory: temporaryDirectory,
-            configuration: .mockWith(
-                common: .mockWith(
+        let core = DatadogCoreMock(
+            v1Context: .mockWith(
+                configuration: .mockWith(
                     applicationVersion: "1.2.3",
                     serviceName: "service-name",
                     environment: "tests",
                     sdkVersion: "3.4.5"
                 ),
-                applicationID: "rum-123",
-                sessionSampler: Sampler(samplingRate: 42.5)
-            ),
-            dependencies: .mockWith(
-                networkConnectionInfoProvider: networkConnectionInfoProvider,
-                carrierInfoProvider: carrierInfoProvider
+                dependencies: .mockWith(
+                    userInfoProvider: userInfoProvider,
+                    networkConnectionInfoProvider: networkConnectionInfoProvider,
+                    carrierInfoProvider: carrierInfoProvider
+                )
             )
         )
+        defer { core.flush() }
 
+        let feature: RUMFeature = .mockByRecordingRUMEventMatchers(
+            directory: temporaryDirectory,
+            featureConfiguration: .mockWith(
+                applicationID: "rum-123",
+                sessionSampler: Sampler(samplingRate: 42.5)
+            )
+        )
         core.register(feature: feature)
 
         let monitor = RUMMonitor.initialize(in: core).dd
 
         let scopeDependencies = monitor.applicationScope.dependencies
 
-        XCTAssertTrue(scopeDependencies.userInfoProvider.userInfoProvider === feature.userInfoProvider)
-        XCTAssertTrue(scopeDependencies.connectivityInfoProvider.networkConnectionInfoProvider as AnyObject === feature.networkConnectionInfoProvider as AnyObject)
-        XCTAssertTrue(scopeDependencies.connectivityInfoProvider.carrierInfoProvider as AnyObject === feature.carrierInfoProvider as AnyObject)
+        XCTAssertTrue(scopeDependencies.userInfoProvider.userInfoProvider === userInfoProvider)
+        XCTAssertTrue(scopeDependencies.connectivityInfoProvider.networkConnectionInfoProvider as AnyObject === networkConnectionInfoProvider as AnyObject)
+        XCTAssertTrue(scopeDependencies.connectivityInfoProvider.carrierInfoProvider as AnyObject === carrierInfoProvider as AnyObject)
         XCTAssertEqual(scopeDependencies.sessionSampler.samplingRate, 42.5)
         XCTAssertEqual(scopeDependencies.serviceName, "service-name")
         XCTAssertEqual(scopeDependencies.applicationVersion, "1.2.3")

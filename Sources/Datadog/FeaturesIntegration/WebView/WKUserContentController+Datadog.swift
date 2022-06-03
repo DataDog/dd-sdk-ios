@@ -95,10 +95,10 @@ public extension WKUserContentController {
         if let rumFeature = rumFeature {
             rumEventConsumer = DefaultWebRUMEventConsumer(
                 dataWriter: rumFeature.storage.writer,
-                dateCorrector: rumFeature.dateCorrector,
+                dateCorrector: context.dateCorrector,
                 contextProvider: globalRUMMonitor?.contextProvider,
                 rumCommandSubscriber: globalRUMMonitor,
-                dateProvider: rumFeature.dateProvider
+                dateProvider: context.dateProvider
             )
         }
 

@@ -32,7 +32,7 @@ internal class CrashReporter {
 
         // If RUM rum is enabled prefer it for sending crash reports, otherwise use Logging feature.
         if let rumFeature = rumFeature {
-            loggingOrRUMIntegration = CrashReportingWithRUMIntegration(rumFeature: rumFeature)
+            loggingOrRUMIntegration = CrashReportingWithRUMIntegration(rumFeature: rumFeature, context: context)
         } else if let loggingFeature = loggingFeature {
             loggingOrRUMIntegration = CrashReportingWithLoggingIntegration(loggingFeature: loggingFeature, context: context)
         } else {
