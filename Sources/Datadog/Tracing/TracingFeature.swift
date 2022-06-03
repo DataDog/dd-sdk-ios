@@ -15,16 +15,6 @@ internal final class TracingFeature: V1FeatureInitializable {
 
     let configuration: Configuration
 
-    // MARK: - Dependencies
-
-    let dateProvider: DateProvider
-    let dateCorrector: DateCorrectorType
-    let tracingUUIDGenerator: TracingUUIDGenerator
-    let userInfoProvider: UserInfoProvider
-    let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
-    let carrierInfoProvider: CarrierInfoProviderType
-    let telemetry: Telemetry?
-
     // MARK: - Components
 
     /// Span files storage.
@@ -38,20 +28,12 @@ internal final class TracingFeature: V1FeatureInitializable {
         storage: FeatureStorage,
         upload: FeatureUpload,
         configuration: FeaturesConfiguration.Tracing,
+        /// TODO: RUMM-2169 Remove `commonDependencies` from `V1FeatureInitializable` interface when all Features are migrated to use `DatadogV1Context`:
         commonDependencies: FeaturesCommonDependencies,
         telemetry: Telemetry?
     ) {
         // Configuration
         self.configuration = configuration
-
-        // Bundle dependencies
-        self.dateProvider = commonDependencies.dateProvider
-        self.dateCorrector = commonDependencies.dateCorrector
-        self.tracingUUIDGenerator = configuration.uuidGenerator
-        self.userInfoProvider = commonDependencies.userInfoProvider
-        self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider
-        self.carrierInfoProvider = commonDependencies.carrierInfoProvider
-        self.telemetry = telemetry
 
         // Initialize stacks
         self.storage = storage

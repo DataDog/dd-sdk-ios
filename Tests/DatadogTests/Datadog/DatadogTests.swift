@@ -313,11 +313,9 @@ class DatadogTests: XCTestCase {
         )
 
         let core = try XCTUnwrap(defaultDatadogCore as? DatadogCore)
-        let tracing = core.v1.feature(TracingFeature.self)
         let rum = core.v1.feature(RUMFeature.self)
         XCTAssertEqual(core.configuration.performance, expectedPerformancePreset)
         XCTAssertEqual(rum?.configuration.sessionSampler.samplingRate, 100)
-        XCTAssertEqual(tracing?.configuration.common.performance, expectedPerformancePreset)
         XCTAssertEqual(Datadog.verbosityLevel, .debug)
 
         // Clear default verbosity after this test

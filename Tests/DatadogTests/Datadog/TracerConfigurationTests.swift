@@ -8,30 +8,28 @@ import XCTest
 @testable import Datadog
 
 class TracerConfigurationTests: XCTestCase {
-    let core = DatadogCoreMock()
-
+    private let userInfoProvider: UserInfoProvider = .mockAny()
     private let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
     private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
-
-    override func setUp() {
-        super.setUp()
-        temporaryDirectory.create()
-
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(
-            directory: temporaryDirectory,
+    private lazy var core = DatadogCoreMock(
+        v1Context: .mockWith(
             configuration: .mockWith(
-                common: .mockWith(
-                    applicationVersion: "1.2.3",
-                    serviceName: "service-name",
-                    environment: "tests"
-                )
+                applicationVersion: "1.2.3",
+                serviceName: "service-name",
+                environment: "tests"
             ),
             dependencies: .mockWith(
+                userInfoProvider: userInfoProvider,
                 networkConnectionInfoProvider: networkConnectionInfoProvider,
                 carrierInfoProvider: carrierInfoProvider
             )
         )
+    )
 
+    override func setUp() {
+        super.setUp()
+        temporaryDirectory.create()
+        let feature: TracingFeature = .mockNoOp()
         core.register(feature: feature)
     }
 
@@ -45,12 +43,10 @@ class TracerConfigurationTests: XCTestCase {
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
 
         XCTAssertNil(tracer.rumContextIntegration)
-
-        let feature = try XCTUnwrap(core.v1.feature(TracingFeature.self))
         XCTAssertEqual((tracer.spanOutput as? SpanFileOutput)?.environment, "tests")
         XCTAssertEqual(tracer.spanBuilder.applicationVersion, "1.2.3")
         XCTAssertEqual(tracer.spanBuilder.serviceName, "service-name")
-        XCTAssertTrue(tracer.spanBuilder.userInfoProvider === feature.userInfoProvider)
+        XCTAssertTrue(tracer.spanBuilder.userInfoProvider === userInfoProvider)
         XCTAssertNil(tracer.spanBuilder.networkConnectionInfoProvider)
         XCTAssertNil(tracer.spanBuilder.carrierInfoProvider)
     }
@@ -77,14 +73,12 @@ class TracerConfigurationTests: XCTestCase {
         ).dd
 
         XCTAssertNil(tracer.rumContextIntegration)
-
-        let feature = try XCTUnwrap(core.v1.feature(TracingFeature.self))
         XCTAssertEqual((tracer.spanOutput as? SpanFileOutput)?.environment, "tests")
         XCTAssertEqual(tracer.spanBuilder.applicationVersion, "1.2.3")
         XCTAssertEqual(tracer.spanBuilder.serviceName, "custom-service-name")
-        XCTAssertTrue(tracer.spanBuilder.userInfoProvider === feature.userInfoProvider)
-        XCTAssertTrue(tracer.spanBuilder.networkConnectionInfoProvider as AnyObject === feature.networkConnectionInfoProvider as AnyObject)
-        XCTAssertTrue(tracer.spanBuilder.carrierInfoProvider as AnyObject === feature.carrierInfoProvider as AnyObject)
+        XCTAssertTrue(tracer.spanBuilder.userInfoProvider === userInfoProvider)
+        XCTAssertTrue(tracer.spanBuilder.networkConnectionInfoProvider as AnyObject === networkConnectionInfoProvider as AnyObject)
+        XCTAssertTrue(tracer.spanBuilder.carrierInfoProvider as AnyObject === carrierInfoProvider as AnyObject)
     }
 
     func testWhenLoggingFeatureIsEnabled_itUsesLogsIntegration() throws {
@@ -104,9 +98,7 @@ class TracerConfigurationTests: XCTestCase {
         XCTAssertEqual(tracingLogBuilder.loggerName, "trace")
         XCTAssertNil(tracingLogBuilder.networkConnectionInfoProvider)
         XCTAssertNil(tracingLogBuilder.carrierInfoProvider)
-
-        let feature = try XCTUnwrap(core.v1.feature(TracingFeature.self))
-        XCTAssertTrue(tracer.loggingIntegration?.logBuilder.userInfoProvider === feature.userInfoProvider)
+        XCTAssertTrue(tracer.loggingIntegration?.logBuilder.userInfoProvider === userInfoProvider)
     }
 
     func testWhenLoggingFeatureIsNotEnabled_itDoesNotUseLogsIntegration() throws {

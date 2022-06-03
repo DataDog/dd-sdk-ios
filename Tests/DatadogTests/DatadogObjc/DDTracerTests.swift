@@ -119,21 +119,10 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogs() throws {
-        core.v1Context = .mockWith(
-            dependencies: .mockWith(
-                performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
-            )
-        )
-
         let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: logging)
 
-        let tracing: TracingFeature = .mockByRecordingSpanMatchers(
-            directory: temporaryDirectory,
-            dependencies: .mockWith(
-                performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
-            )
-        )
+        let tracing: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         core.register(feature: tracing)
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration())
@@ -152,21 +141,10 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromArguments() throws {
-        core.v1Context = .mockWith(
-            dependencies: .mockWith(
-                performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
-            )
-        )
-
         let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: logging)
 
-        let tracing: TracingFeature = .mockByRecordingSpanMatchers(
-            directory: temporaryDirectory,
-            dependencies: .mockWith(
-                performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
-            )
-        )
+        let tracing: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         core.register(feature: tracing)
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration())
@@ -188,21 +166,10 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromNSError() throws {
-        core.v1Context = .mockWith(
-            dependencies: .mockWith(
-                performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .veryQuick)
-            )
-        )
-
         let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
         core.register(feature: logging)
 
-        let tracing: TracingFeature = .mockByRecordingSpanMatchers(
-            directory: temporaryDirectory,
-            dependencies: .mockWith(
-                performance: .combining(storagePerformance: .noOp, uploadPerformance: .noOp)
-            )
-        )
+        let tracing: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
         core.register(feature: tracing)
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration())

@@ -50,6 +50,10 @@ extension DatadogCoreMock: DatadogV1CoreProtocol {
     var context: DatadogV1Context? {
         return v1Context
     }
+
+    var telemetry: Telemetry? {
+        return nil
+    }
 }
 
 /// `Flushable` object resets its state on flush.

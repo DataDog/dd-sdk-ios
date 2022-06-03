@@ -18,71 +18,36 @@ extension TracingFeature {
         )
     }
 
-    /// Mocks the feature instance which performs uploads to `URLSession`.
-    /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
-    static func mockWith(
-        directory: Directory,
-        configuration: FeaturesConfiguration.Tracing = .mockAny(),
-        dependencies: FeaturesCommonDependencies = .mockAny(),
-        telemetry: Telemetry? = nil
-    ) -> TracingFeature {
-        // Because in V2 Feature Storage and Upload are created by `DatadogCore`, here we ask
-        // dummy V2 core instance to initialize the Feature. It is hacky, yet minimal way of
-        // providing V1 stack for partial V2 architecture in tests.
-        let v2Core = DatadogCore(
-            rootDirectory: directory,
-            configuration: configuration.common,
-            dependencies: dependencies
-        )
-        v2Core.telemetry = telemetry
-
-        let feature: TracingFeature = try! v2Core.create(
-            storageConfiguration: createV2TracingStorageConfiguration(),
-            uploadConfiguration: createV2TracingUploadConfiguration(v1Configuration: configuration),
-            featureSpecificConfiguration: configuration
-        )
-        return feature
-    }
-
     /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
     /// Use `TracingFeature.waitAndReturnSpanMatchers()` to inspect and assert recorded `Spans`.
     static func mockByRecordingSpanMatchers(
         directory: Directory,
-        configuration: FeaturesConfiguration.Tracing = .mockAny(),
-        dependencies: FeaturesCommonDependencies = .mockAny(),
-        telemetry: Telemetry? = nil
+        featureConfiguration: FeaturesConfiguration.Tracing = .mockAny()
     ) -> TracingFeature {
-        // Get the full feature mock:
-        let fullFeature: TracingFeature = .mockWith(
-            directory: directory,
-            configuration: configuration,
-            dependencies: dependencies.replacing(
-                dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
-            )
+        // Mock storage with `InMemoryWriter`, used later for retrieving recorded events back:
+        let interceptedStorage = FeatureStorage(
+            writer: InMemoryWriter(),
+            reader: NoOpFileReader(),
+            arbitraryAuthorizedWriter: NoOpFileWriter(),
+            dataOrchestrator: NoOpDataOrchestrator()
         )
-        let uploadWorker = DataUploadWorkerMock()
-        let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
-        // Replace by mocking the `FeatureUpload` and observing the `FeatureStorage`:
-        let mockedUpload = FeatureUpload(uploader: uploadWorker)
-        // Tear down the original upload
-        fullFeature.upload.flushAndTearDown()
         return TracingFeature(
-            storage: observedStorage,
-            upload: mockedUpload,
-            configuration: configuration,
-            commonDependencies: dependencies,
-            telemetry: telemetry
+            storage: interceptedStorage,
+            upload: .mockNoOp(),
+            configuration: featureConfiguration,
+            commonDependencies: .mockAny(),
+            telemetry: nil
         )
     }
 
     // MARK: - Expecting Spans Data
 
     func waitAndReturnSpanMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [SpanMatcher] {
-        guard let uploadWorker = upload.uploader as? DataUploadWorkerMock else {
+        guard let inMemoryWriter = storage.writer as? InMemoryWriter else {
             preconditionFailure("Retrieving matchers requires that feature is mocked with `.mockByRecordingSpanMatchers()`")
         }
-        return try uploadWorker.waitAndReturnBatchedData(count: count, file: file, line: line)
-            .flatMap { batchData in try SpanMatcher.fromNewlineSeparatedJSONObjectsData(batchData) }
+        return try inMemoryWriter.waitAndReturnEventsData(count: count, file: file, line: line)
+            .map { eventData in try SpanMatcher.fromJSONObjectData(eventData) }
     }
 
     // swiftlint:disable:next function_default_parameter_at_end

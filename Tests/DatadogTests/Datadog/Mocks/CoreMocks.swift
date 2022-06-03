@@ -237,13 +237,11 @@ extension FeaturesConfiguration.Tracing {
     static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
-        common: FeaturesConfiguration.Common = .mockAny(),
         uploadURL: URL = .mockAny(),
         uuidGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
         spanEventMapper: SpanEventMapper? = nil
     ) -> Self {
         return .init(
-            common: common,
             uploadURL: uploadURL,
             uuidGenerator: uuidGenerator,
             spanEventMapper: spanEventMapper
