@@ -45,25 +45,11 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
         ),
         .init(
             assert: {
-                defaultDatadogCore.v1.feature(LoggingFeature.self) == nil
-                    && defaultDatadogCore.v1.feature(TracingFeature.self) == nil
-                    && defaultDatadogCore.v1.feature(RUMFeature.self) == nil
-                    && defaultDatadogCore.v1.feature(CrashReportingFeature.self) == nil
+                defaultDatadogCore is NOOPDatadogCore
             },
-            problem: "All features must not be initialized.",
+            problem: "`defaultDatadogCore` must be reset after each test.",
             solution: """
-            Make sure `{Feature}.instance?.deinitialize()` is called before the end of test that uses `{Feature}.instance` mock.
-            """
-        ),
-        .init(
-            assert: {
-                defaultDatadogCore.v1.feature(RUMInstrumentation.self) == nil
-                && defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self) == nil
-            },
-            problem: "All auto-instrumentation features must not be initialized.",
-            solution: """
-            Make sure `{AutoInstrumentationFeature}.instance?.deinitialize()` is called before the end of test that
-            uses `{AutoInstrumentationFeature}.instance` mock.
+            Make sure `defaultDatadogCore` is set to `NOOPDatadogCore` before and after each test.
             """
         ),
         .init(
@@ -101,6 +87,14 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
 
             server.wait<...>(...) // <-- after return, no reference to `server` will exist as it processed all callbacks and got be safely deallocated
             ```
+            """
+        ),
+        .init(
+            assert: { !temporaryDirectory.exists() },
+            problem: "`temporaryDirectory` must not exist.",
+            solution: """
+            Make sure `temporaryDirectory.delete()` is called consistently
+            with `temporaryDirectory.create()`.
             """
         ),
         .init(
