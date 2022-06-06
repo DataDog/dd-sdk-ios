@@ -11,3 +11,4 @@ Find dedicated documentation for the following topics:
 * [Advanced configuration for iOS monitoring](advanced_configuration.md).
 * [Enable crash reporting and error tracking for your iOS applications](crash_reporting.md).
 * [Comprehend your iOS application's health and performance with Mobile Vitals](rum_mobile_vitals.md).
+* [Monitor your iOS application's hybrid views with Web View Tracking](web_view_tracking.md).
