@@ -71,7 +71,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// It can be toggled from inside `RUMResourceScope`/`RUMUserActionScope` callbacks, as they are called from processing `RUMCommand`s inside `process()`.
     private var needsViewUpdate = false
 
-    private let vitalInfoSampler: VitalInfoSampler
+    private let vitalInfoSampler: VitalInfoSampler?
 
     /// Samples view update events, so we can minimize the number of events in payload.
     private let viewUpdatesThrottler: RUMViewUpdatesThrottlerType
@@ -98,12 +98,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.viewName = name
         self.viewStartTime = startTime
         self.dateCorrection = dependencies.dateCorrector.currentCorrection
-
-        self.vitalInfoSampler = VitalInfoSampler(
-            cpuReader: dependencies.vitalCPUReader,
-            memoryReader: dependencies.vitalMemoryReader,
-            refreshRateReader: dependencies.vitalRefreshRateReader
-        )
+        self.vitalInfoSampler = dependencies.vitalsReaders.map {
+            .init(
+                cpuReader: $0.cpu,
+                memoryReader: $0.memory,
+                refreshRateReader: $0.refreshRate,
+                frequency: $0.frequency
+            )
+        }
         self.viewUpdatesThrottler = dependencies.viewUpdatesThrottlerFactory()
     }
 
@@ -375,10 +377,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let isActive = isActiveView || !resourceScopes.isEmpty
         // RUMM-2079 `time_spent` can't be lower than 1ns
         let timeSpent = max(1e-9, command.time.timeIntervalSince(viewStartTime))
-        let cpuInfo = vitalInfoSampler.cpu
-        let memoryInfo = vitalInfoSampler.memory
-        let refreshRateInfo = vitalInfoSampler.refreshRate
-        let isSlowRendered = refreshRateInfo.meanValue.flatMap { $0 < Constants.slowRenderingThresholdFPS }
+        let cpuInfo = vitalInfoSampler?.cpu
+        let memoryInfo = vitalInfoSampler?.memory
+        let refreshRateInfo = vitalInfoSampler?.refreshRate
+        let isSlowRendered = refreshRateInfo?.meanValue.flatMap { $0 < Constants.slowRenderingThresholdFPS }
 
         let eventData = RUMViewEvent(
             dd: .init(
@@ -403,8 +405,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             version: dependencies.applicationVersion,
             view: .init(
                 action: .init(count: actionsCount.toInt64),
-                cpuTicksCount: cpuInfo.greatestDiff,
-                cpuTicksPerSecond: cpuInfo.greatestDiff?.divideIfNotZero(by: Double(timeSpent)),
+                cpuTicksCount: cpuInfo?.greatestDiff,
+                cpuTicksPerSecond: cpuInfo?.greatestDiff?.divideIfNotZero(by: Double(timeSpent)),
                 crash: nil,
                 cumulativeLayoutShift: nil,
                 customTimings: customTimings.reduce(into: [:]) { acc, element in
@@ -427,12 +429,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 loadingTime: nil,
                 loadingType: nil,
                 longTask: .init(count: longTasksCount),
-                memoryAverage: memoryInfo.meanValue,
-                memoryMax: memoryInfo.maxValue,
+                memoryAverage: memoryInfo?.meanValue,
+                memoryMax: memoryInfo?.maxValue,
                 name: viewName,
                 referrer: nil,
-                refreshRateAverage: refreshRateInfo.meanValue,
-                refreshRateMin: refreshRateInfo.minValue,
+                refreshRateAverage: refreshRateInfo?.meanValue,
+                refreshRateMin: refreshRateInfo?.minValue,
                 resource: .init(count: resourcesCount.toInt64),
                 timeSpent: timeSpent.toInt64Nanoseconds,
                 url: viewPath

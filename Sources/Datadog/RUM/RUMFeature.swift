@@ -38,12 +38,8 @@ internal final class RUMFeature {
     let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
     let carrierInfoProvider: CarrierInfoProviderType
     let launchTimeProvider: LaunchTimeProviderType
-
-    let vitalCPUReader: SamplingBasedVitalReader
-    let vitalMemoryReader: SamplingBasedVitalReader
-    let vitalRefreshRateReader: ContinuousVitalReader
-
     let onSessionStart: RUMSessionListener?
+    let telemetry: Telemetry?
 
     // MARK: - Components
 
@@ -147,10 +143,8 @@ internal final class RUMFeature {
             upload: upload,
             configuration: configuration,
             commonDependencies: commonDependencies,
-            vitalCPUReader: VitalCPUReader(telemetry: telemetry),
-            vitalMemoryReader: VitalMemoryReader(),
-            vitalRefreshRateReader: VitalRefreshRateReader(),
-            onSessionStart: configuration.onSessionStart
+            onSessionStart: configuration.onSessionStart,
+            telemetry: telemetry
         )
     }
 
@@ -160,10 +154,8 @@ internal final class RUMFeature {
         upload: FeatureUpload,
         configuration: FeaturesConfiguration.RUM,
         commonDependencies: FeaturesCommonDependencies,
-        vitalCPUReader: SamplingBasedVitalReader,
-        vitalMemoryReader: SamplingBasedVitalReader,
-        vitalRefreshRateReader: ContinuousVitalReader,
-        onSessionStart: RUMSessionListener?
+        onSessionStart: RUMSessionListener?,
+        telemetry: Telemetry?
     ) {
         // Configuration
         self.configuration = configuration
@@ -183,10 +175,8 @@ internal final class RUMFeature {
         self.storage = storage
         self.upload = upload
 
-        self.vitalCPUReader = vitalCPUReader
-        self.vitalMemoryReader = vitalMemoryReader
-        self.vitalRefreshRateReader = vitalRefreshRateReader
         self.onSessionStart = onSessionStart
+        self.telemetry = telemetry
     }
 
     internal func deinitialize() {
