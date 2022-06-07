@@ -40,7 +40,7 @@ internal protocol DatadogV1CoreProtocol: DatadogCoreProtocol {
 
     /// Returns a Feature scope for a given feature type.
     ///
-    /// A feature instance of the given type must be registered, otherwise return `nil`.
+    /// A Feature instance of the given type must be registered, otherwise return `nil`.
     ///
     /// - Parameters:
     ///   - type: The feature instance type.
@@ -52,8 +52,8 @@ internal protocol DatadogV1CoreProtocol: DatadogCoreProtocol {
 internal protocol V1FeatureScope {
     /// Execute the given block in the feature scope.
     ///
-    /// The feature scope provide the current Datadog context and event writer
-    /// for the feature to build and record events.
+    /// The Feature scope provides the current Datadog context and event writer
+    /// for the Feature to build and record events.
     ///
     /// - Parameter block: The block to execute.
     func execute(_ block: (DatadogV1Context, Writer) throws -> Void)
