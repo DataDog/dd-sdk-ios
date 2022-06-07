@@ -21,9 +21,7 @@ internal protocol V1FeatureInitializable {
     init(
         storage: FeatureStorage,
         upload: FeatureUpload,
-        configuration: Configuration,
-        commonDependencies: FeaturesCommonDependencies,
-        telemetry: Telemetry?
+        configuration: Configuration
     )
 }
 
@@ -142,9 +140,7 @@ extension DatadogCore: DatadogV1CoreProtocol {
         return Feature(
             storage: storage,
             upload: upload,
-            configuration: featureSpecificConfiguration,
-            commonDependencies: dependencies,
-            telemetry: telemetry
+            configuration: featureSpecificConfiguration
         )
     }
 

@@ -13,14 +13,12 @@ class TracerTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        temporaryDirectory.create()
         core = DatadogCoreMock()
     }
 
     override func tearDown() {
         core.flush()
         core = nil
-        temporaryDirectory.delete()
         super.tearDown()
     }
 
@@ -42,7 +40,6 @@ class TracerTests: XCTestCase {
         )
 
         let feature: TracingFeature = .mockByRecordingSpanMatchers(
-            directory: temporaryDirectory,
             featureConfiguration: .mockWith(
                 uuidGenerator: RelativeTracingUUIDGenerator(startingFrom: 1)
             )
@@ -82,7 +79,7 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanWithCustomizedTracer() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(
@@ -113,7 +110,7 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanWithGlobalTags() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(
@@ -140,7 +137,7 @@ class TracerTests: XCTestCase {
     // MARK: - Sending Customized Spans
 
     func testSendingCustomizedSpan() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
@@ -168,7 +165,7 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanWithParentAndBaggageItems() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
@@ -228,7 +225,7 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanWithActiveSpanAsAParent() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
@@ -260,7 +257,7 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpansWithNoParent() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
@@ -289,7 +286,7 @@ class TracerTests: XCTestCase {
     }
 
     func testStartingRootActiveSpanInAsynchronousJobs() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core)
@@ -330,7 +327,7 @@ class TracerTests: XCTestCase {
             )
         )
 
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
@@ -391,7 +388,7 @@ class TracerTests: XCTestCase {
             )
         )
 
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(
@@ -440,7 +437,7 @@ class TracerTests: XCTestCase {
             )
         )
 
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(
@@ -496,7 +493,7 @@ class TracerTests: XCTestCase {
     // MARK: - Sending tags
 
     func testSendingSpanTagsOfDifferentEncodableValues() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
@@ -566,10 +563,10 @@ class TracerTests: XCTestCase {
     // MARK: - Integration With Logging Feature
 
     func testSendingSpanLogs() throws {
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let logging: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: logging)
 
-        let tracing: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let tracing: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: tracing)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core)
@@ -599,10 +596,10 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromArguments() throws {
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let logging: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: logging)
 
-        let tracing: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let tracing: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: tracing)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core)
@@ -624,10 +621,10 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromNSError() throws {
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let logging: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: logging)
 
-        let tracing: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let tracing: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: tracing)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core)
@@ -655,10 +652,10 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromSwiftError() throws {
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let logging: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: logging)
 
-        let tracing: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let tracing: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: tracing)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core)
@@ -683,7 +680,7 @@ class TracerTests: XCTestCase {
     // MARK: - Integration With RUM Feature
 
     func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingSpan_itContainsCurrentRUMContext() throws {
-        let tracing: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let tracing: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: tracing)
 
         let rum: RUMFeature = .mockNoOp()
@@ -710,7 +707,7 @@ class TracerTests: XCTestCase {
     }
 
     func testGivenBundlingWithRUMEnabledButRUMMonitorNotRegistered_whenSendingSpan_itPrintsWarning() throws {
-        let tracing: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let tracing: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: tracing)
 
         let rum: RUMFeature = .mockNoOp()
@@ -825,7 +822,7 @@ class TracerTests: XCTestCase {
         )
 
         // When
-        let feature: TracingFeature = .mockByRecordingSpanMatchers(directory: temporaryDirectory)
+        let feature: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core)

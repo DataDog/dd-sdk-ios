@@ -16,8 +16,6 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
     /// The output for writing logs. It uses the authorized data folder and is synchronized with the eventual
     /// authorized output working simultaneously in the Logging feature.
     private let logOutput: LogOutput
-    private let dateProvider: DateProvider
-    private let dateCorrector: DateCorrectorType
 
     private let context: DatadogV1Context
 
@@ -29,21 +27,15 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
                 // issue additional RUM Errors for crash reports. Those are send through `CrashReportingWithRUMIntegration`.
                 rumErrorsIntegration: nil
             ),
-            dateProvider: context.dateProvider,
-            dateCorrector: context.dateCorrector,
             context: context
         )
     }
 
     init(
         logOutput: LogOutput,
-        dateProvider: DateProvider, // TODO: RUMM-2169 use context for injecting `dateProvider` and `dateCorrector`
-        dateCorrector: DateCorrectorType,
         context: DatadogV1Context
     ) {
         self.logOutput = logOutput
-        self.dateProvider = dateProvider
-        self.dateCorrector = dateCorrector
         self.context = context
     }
 
@@ -55,9 +47,9 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
         // The `crashReport.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
         // to the server time before processing. Following use of the current correction is not ideal, but this is the best
         // approximation we can get.
-        let currentTimeCorrection = dateCorrector.currentCorrection
+        let currentTimeCorrection = context.dateCorrector.currentCorrection
 
-        let crashDate = crashReport.date ?? dateProvider.currentDate()
+        let crashDate = crashReport.date ?? context.dateProvider.currentDate()
         let realCrashDate = currentTimeCorrection.applying(to: crashDate)
 
         let log = createLog(from: crashReport, crashContext: crashContext, crashDate: realCrashDate)

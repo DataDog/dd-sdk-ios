@@ -13,14 +13,12 @@ class LoggerTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        temporaryDirectory.create()
         core = DatadogCoreMock()
     }
 
     override func tearDown() {
         core.flush()
         core = nil
-        temporaryDirectory.delete()
         super.tearDown()
     }
 
@@ -40,7 +38,7 @@ class LoggerTests: XCTestCase {
             )
         )
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let feature: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
@@ -65,7 +63,7 @@ class LoggerTests: XCTestCase {
     func testSendingLogWithCustomizedLogger() throws {
         core.v1Context = .mockAny()
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let feature: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: feature)
 
         let logger = Logger.builder
@@ -102,7 +100,7 @@ class LoggerTests: XCTestCase {
             )
         )
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let feature: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
@@ -119,7 +117,7 @@ class LoggerTests: XCTestCase {
     func testSendingLogsWithDifferentLevels() throws {
         core.v1Context = .mockAny()
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let feature: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
@@ -144,7 +142,7 @@ class LoggerTests: XCTestCase {
     func testLoggingError() throws {
         core.v1Context = .mockAny()
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let feature: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: feature)
 
         struct TestError: Error {
@@ -179,7 +177,7 @@ class LoggerTests: XCTestCase {
             )
         )
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let feature: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
@@ -235,7 +233,7 @@ class LoggerTests: XCTestCase {
             )
         )
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let feature: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: feature)
 
         let logger = Logger.builder
@@ -278,7 +276,7 @@ class LoggerTests: XCTestCase {
             )
         )
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let feature: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: feature)
 
         let logger = Logger.builder
@@ -334,7 +332,7 @@ class LoggerTests: XCTestCase {
     func testSendingLoggerAttributesOfDifferentEncodableValues() throws {
         core.v1Context = .mockAny()
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let feature: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
@@ -400,7 +398,7 @@ class LoggerTests: XCTestCase {
     func testSendingMessageAttributes() throws {
         core.v1Context = .mockAny()
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let feature: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
@@ -433,7 +431,7 @@ class LoggerTests: XCTestCase {
             configuration: .mockWith(environment: "tests")
         )
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let feature: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
@@ -470,7 +468,7 @@ class LoggerTests: XCTestCase {
     func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingLog_itContainsCurrentRUMContext() throws {
         core.v1Context = .mockAny()
 
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let logging: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: logging)
 
         let rum: RUMFeature = .mockNoOp()
@@ -509,7 +507,7 @@ class LoggerTests: XCTestCase {
     func testGivenBundlingWithRUMEnabledButRUMMonitorNotRegistered_whenSendingLog_itPrintsWarning() throws {
         core.v1Context = .mockAny()
 
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let logging: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: logging)
 
         let rum: RUMFeature = .mockNoOp()
@@ -549,7 +547,7 @@ class LoggerTests: XCTestCase {
         let logging: LoggingFeature = .mockNoOp()
         core.register(feature: logging)
 
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
         core.register(feature: rum)
 
         // given
@@ -596,7 +594,7 @@ class LoggerTests: XCTestCase {
     func testGivenBundlingWithTraceEnabledAndTracerRegistered_whenSendingLog_itContainsActiveSpanAttributes() throws {
         core.v1Context = .mockAny()
 
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let logging: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: logging)
 
         let tracing: TracingFeature = .mockNoOp()
@@ -630,7 +628,7 @@ class LoggerTests: XCTestCase {
     func testGivenBundlingWithTraceEnabledButTracerNotRegistered_whenSendingLog_itPrintsWarning() throws {
         core.v1Context = .mockAny()
 
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let logging: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: logging)
 
         let tracing: TracingFeature = .mockNoOp()
@@ -676,7 +674,7 @@ class LoggerTests: XCTestCase {
         )
 
         // When
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(directory: temporaryDirectory)
+        let feature: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)

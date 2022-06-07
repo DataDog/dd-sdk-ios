@@ -134,14 +134,12 @@ class DDRUMMonitorTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        temporaryDirectory.create()
         core = DatadogCoreMock()
     }
 
     override func tearDown() {
         core.flush()
         core = nil
-        temporaryDirectory.delete()
         super.tearDown()
     }
 
@@ -164,7 +162,7 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingViewEvents() throws {
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
         core.register(feature: rum)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
@@ -199,7 +197,7 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingViewEventsWithTiming() throws {
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
         core.register(feature: rum)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
@@ -228,7 +226,7 @@ class DDRUMMonitorTests: XCTestCase {
             return // `URLSessionTaskMetrics` mocking doesn't work prior to iOS 13.0
         }
 
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
         core.register(feature: rum)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
@@ -281,7 +279,7 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingErrorEvents() throws {
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
         core.register(feature: rum)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
@@ -350,7 +348,7 @@ class DDRUMMonitorTests: XCTestCase {
             )
         )
 
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
         core.register(feature: rum)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
@@ -384,7 +382,7 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingGlobalAttributes() throws {
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(directory: temporaryDirectory)
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
         core.register(feature: rum)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
