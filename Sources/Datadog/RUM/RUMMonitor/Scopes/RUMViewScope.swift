@@ -330,10 +330,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             action: .init(
                 crash: nil,
                 error: nil,
-                frustrationType: nil,
+                frustration: nil,
                 id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 loadingTime: loadingTime,
                 longTask: nil,
+                position: nil,
                 resource: nil,
                 target: nil,
                 type: .applicationStart
@@ -343,6 +344,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
+            device: nil, // TODO: RUMM-2197 add device and OS info
+            os: nil, // TODO: RUMM-2197 add device and OS info
             service: dependencies.serviceName,
             session: .init(
                 hasReplay: nil,
@@ -393,6 +396,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
+            device: nil, // TODO: RUMM-2197 add device and OS info
+            os: nil, // TODO: RUMM-2197 add device and OS info
             service: dependencies.serviceName,
             session: .init(
                 hasReplay: nil,
@@ -420,6 +425,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 firstInputDelay: nil,
                 firstInputTime: nil,
                 frozenFrame: .init(count: frozenFramesCount),
+                frustration: nil,
                 id: viewUUID.toRUMDataFormat,
                 inForegroundPeriods: nil,
                 isActive: isActive,
@@ -472,6 +478,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
+            device: nil, // TODO: RUMM-2197 add device and OS info
             error: .init(
                 handling: nil,
                 handlingStack: nil,
@@ -484,6 +491,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 stack: command.stack,
                 type: command.type
             ),
+            os: nil, // TODO: RUMM-2197 add device and OS info
             service: dependencies.serviceName,
             session: .init(
                 hasReplay: nil,
@@ -526,7 +534,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: command.time - command.duration).timeIntervalSince1970.toInt64Milliseconds,
+            device: nil, // TODO: RUMM-2197 add device and OS info
             longTask: .init(duration: taskDurationInNs, id: nil, isFrozenFrame: isFrozenFrame),
+            os: nil, // TODO: RUMM-2197 add device and OS info
             service: dependencies.serviceName,
             session: .init(
                 hasReplay: nil,

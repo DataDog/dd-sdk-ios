@@ -140,12 +140,18 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             action: .init(
                 crash: nil,
                 error: .init(count: errorsCount.toInt64),
-                frustrationType: nil,
+                frustration: nil,
                 id: actionUUID.toRUMDataFormat,
                 loadingTime: completionTime.timeIntervalSince(actionStartTime).toInt64Nanoseconds,
                 longTask: .init(count: longTasksCount),
+                position: nil,
                 resource: .init(count: resourcesCount.toInt64),
-                target: .init(name: name),
+                target: .init(
+                    height: nil,
+                    name: name,
+                    selector: nil,
+                    width: nil
+                ),
                 type: actionType.toRUMDataFormat
             ),
             application: .init(id: context.rumApplicationID),
@@ -153,6 +159,8 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: actionStartTime).timeIntervalSince1970.toInt64Milliseconds,
+            device: nil, // TODO: RUMM-2197 add device and OS info
+            os: nil, // TODO: RUMM-2197 add device and OS info
             service: dependencies.serviceName,
             session: .init(
                 hasReplay: nil,
