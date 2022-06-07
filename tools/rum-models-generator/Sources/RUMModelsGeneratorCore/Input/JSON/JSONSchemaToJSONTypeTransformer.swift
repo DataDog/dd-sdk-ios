@@ -7,7 +7,7 @@
 import Foundation
 
 /// Transforms ambiguous `JSONSchema` into type-safe `JSONObject` schema.
-internal class JSONSchemaToJSONTypeTransformer {
+internal class JSONSchemaToJSONTypeTransformer: TypeTransformer<(name: String, schema: JSONSchema)> {
     struct Defaults {
         /// Properties are not required by default.
         static let isRequired = false
@@ -16,7 +16,11 @@ internal class JSONSchemaToJSONTypeTransformer {
     }
 
     func transform(jsonSchemas: [JSONSchema]) throws -> [JSONObject] {
-        return try jsonSchemas.map { try transform(jsonSchema: $0) }
+        precondition(context.current == nil)
+        let transformed = try jsonSchemas.map { try transform(jsonSchema: $0) }
+        precondition(context.current == nil)
+
+        return transformed
     }
 
     private func transform(jsonSchema: JSONSchema) throws -> JSONObject {
@@ -33,12 +37,17 @@ internal class JSONSchemaToJSONTypeTransformer {
     // MARK: - Transforming ambiguous types
 
     private func transformSchemaToAnyType(_ schema: JSONSchema, named name: String) throws -> JSONType {
-        // RUMM-2022: Pick first schema of OneOf to workaround change introduced in
+        context.enter((name, schema))
+        defer { context.leave() }
+
+        // RUMM-2022: Pick first schema of OneOf to workaround `action.id` change introduced in
         // https://github.com/DataDog/rum-events-format/pull/57
         //
         // Supporting multiple types for single property need to be addressed
-        if let oneOf = schema.oneOf?.first {
-            return try transformSchemaToAnyType(oneOf, named: name)
+        if context.parent?.name == "action" && context.current?.name == "id" {
+            if let oneOf = schema.oneOf?.first {
+                return try transformSchemaToAnyType(oneOf, named: name)
+            }
         }
 
         let schemaType = try schema.type
