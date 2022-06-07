@@ -20,6 +20,10 @@ internal class TransformationContext<T> {
 
     var current: T? { stack.last }
     var parent: T? { stack.dropLast().last }
+
+    func predecessor(matching predicate: (T) -> Bool) -> T? {
+        return stack.reversed().first { predicate($0) }
+    }
 }
 
 /// Transforms given type `T`.
