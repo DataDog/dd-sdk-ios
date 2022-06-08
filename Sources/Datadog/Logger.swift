@@ -279,7 +279,7 @@ public class Logger {
             return self.loggerTags
         }
 
-        core.v1.scope(for: LoggingFeature.self)?.execute { context, writer in
+        core.v1.scope(for: LoggingFeature.self)?.eventWriteContext { context, writer in
             let builder = LogEventBuilder(
                 sdkVersion: context.sdkVersion,
                 applicationVersion: context.version,

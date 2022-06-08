@@ -50,13 +50,13 @@ internal protocol DatadogV1CoreProtocol: DatadogCoreProtocol {
 
 /// Feature scope in v1 provide a context and a writer to build a record event.
 internal protocol V1FeatureScope {
-    /// Execute the given block in the feature scope.
+    /// Retrieve the event context and writer.
     ///
     /// The Feature scope provides the current Datadog context and event writer
     /// for the Feature to build and record events.
     ///
     /// - Parameter block: The block to execute.
-    func execute(_ block: (DatadogV1Context, Writer) throws -> Void)
+    func eventWriteContext(_ block: (DatadogV1Context, Writer) throws -> Void)
 }
 
 extension NOOPDatadogCore: DatadogV1CoreProtocol {

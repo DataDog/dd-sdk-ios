@@ -193,7 +193,7 @@ internal struct DatadogCoreFeatureScope: V1FeatureScope {
     let storage: FeatureStorage
     let telemetry: Telemetry?
 
-    func execute(_ block: (DatadogV1Context, Writer) throws -> Void) {
+    func eventWriteContext(_ block: (DatadogV1Context, Writer) throws -> Void) {
         do {
             try block(context, storage.writer)
         } catch {
