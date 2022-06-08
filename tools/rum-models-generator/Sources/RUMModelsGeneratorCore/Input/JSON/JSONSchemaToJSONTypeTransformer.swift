@@ -7,13 +7,17 @@
 import Foundation
 
 /// Transforms ambiguous `JSONSchema` into type-safe `JSONObject` schema.
-internal class JSONSchemaToJSONTypeTransformer: TypeTransformer<(name: String, schema: JSONSchema)> {
+internal class JSONSchemaToJSONTypeTransformer {
     struct Defaults {
         /// Properties are not required by default.
         static let isRequired = false
         /// Properties are read only by default.
         static let isReadOnly = true
     }
+
+    /// Transformation context. It pushes named `JSONSchemas` to and from the `context.stack`
+    /// so we can know the current level of recursive transformation.
+    private let context = TransformationContext<(name: String, schema: JSONSchema)>()
 
     func transform(jsonSchemas: [JSONSchema]) throws -> [JSONObject] {
         precondition(context.current == nil)

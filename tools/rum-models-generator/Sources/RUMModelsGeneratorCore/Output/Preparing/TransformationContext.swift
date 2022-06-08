@@ -25,13 +25,3 @@ internal class TransformationContext<T> {
         return stack.reversed().first { predicate($0) }
     }
 }
-
-/// Transforms given type `T`.
-internal class TypeTransformer<T> {
-    let context = TransformationContext<T>()
-
-    func transform(types: [T]) throws -> [T] {
-        assertionFailure("Must be implemetned by subclasses.")
-        return types
-    }
-}

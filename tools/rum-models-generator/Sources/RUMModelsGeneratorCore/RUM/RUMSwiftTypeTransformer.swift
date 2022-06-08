@@ -7,7 +7,7 @@
 import Foundation
 
 /// Transforms `SwiftTypes` for RUM code generation.
-internal class RUMSwiftTypeTransformer: TypeTransformer<SwiftType> {
+internal class RUMSwiftTypeTransformer {
     /// Types which will shared between all input `types`. Sharing means detaching those types from nested declaration
     /// and putting them at the root level of the resultant `types` array, so the type can be printed without being nested.
     private let sharedTypeNames = [
@@ -23,7 +23,11 @@ internal class RUMSwiftTypeTransformer: TypeTransformer<SwiftType> {
     /// `RUMDataModel` protocol, implemented by all RUM models.
     private let rumDataModelProtocol = SwiftProtocol(name: "RUMDataModel", conformance: [codableProtocol])
 
-    override func transform(types: [SwiftType]) throws -> [SwiftType] {
+    /// Transformation context. It pushes `SwiftTypes` to and from the `context.stack`
+    /// so we can know the current level of recursive transformation.
+    private let context = TransformationContext<SwiftType>()
+
+    func transform(types: [SwiftType]) throws -> [SwiftType] {
         sharedRootTypes = []
 
         precondition(context.current == nil)
