@@ -52,8 +52,8 @@ public class DDRUMActionEvent: NSObject {
         root.swiftModel.device != nil ? DDRUMActionEventRUMDevice(root: root) : nil
     }
 
-    @objc public var os: DDRUMActionEventRUMOS? {
-        root.swiftModel.os != nil ? DDRUMActionEventRUMOS(root: root) : nil
+    @objc public var os: DDRUMActionEventRUMOperatingSystem? {
+        root.swiftModel.os != nil ? DDRUMActionEventRUMOperatingSystem(root: root) : nil
     }
 
     @objc public var service: String? {
@@ -560,7 +560,7 @@ public enum DDRUMActionEventRUMDeviceRUMDeviceType: Int {
 }
 
 @objc
-public class DDRUMActionEventRUMOS: NSObject {
+public class DDRUMActionEventRUMOperatingSystem: NSObject {
     internal let root: DDRUMActionEvent
 
     internal init(root: DDRUMActionEvent) {
@@ -779,8 +779,8 @@ public class DDRUMErrorEvent: NSObject {
         DDRUMErrorEventError(root: root)
     }
 
-    @objc public var os: DDRUMErrorEventRUMOS? {
-        root.swiftModel.os != nil ? DDRUMErrorEventRUMOS(root: root) : nil
+    @objc public var os: DDRUMErrorEventRUMOperatingSystem? {
+        root.swiftModel.os != nil ? DDRUMErrorEventRUMOperatingSystem(root: root) : nil
     }
 
     @objc public var service: String? {
@@ -1367,7 +1367,7 @@ public enum DDRUMErrorEventErrorSourceType: Int {
 }
 
 @objc
-public class DDRUMErrorEventRUMOS: NSObject {
+public class DDRUMErrorEventRUMOperatingSystem: NSObject {
     internal let root: DDRUMErrorEvent
 
     internal init(root: DDRUMErrorEvent) {
@@ -1586,8 +1586,8 @@ public class DDRUMLongTaskEvent: NSObject {
         DDRUMLongTaskEventLongTask(root: root)
     }
 
-    @objc public var os: DDRUMLongTaskEventRUMOS? {
-        root.swiftModel.os != nil ? DDRUMLongTaskEventRUMOS(root: root) : nil
+    @objc public var os: DDRUMLongTaskEventRUMOperatingSystem? {
+        root.swiftModel.os != nil ? DDRUMLongTaskEventRUMOperatingSystem(root: root) : nil
     }
 
     @objc public var service: String? {
@@ -1913,7 +1913,7 @@ public class DDRUMLongTaskEventLongTask: NSObject {
 }
 
 @objc
-public class DDRUMLongTaskEventRUMOS: NSObject {
+public class DDRUMLongTaskEventRUMOperatingSystem: NSObject {
     internal let root: DDRUMLongTaskEvent
 
     internal init(root: DDRUMLongTaskEvent) {
@@ -2124,8 +2124,8 @@ public class DDRUMResourceEvent: NSObject {
         root.swiftModel.device != nil ? DDRUMResourceEventRUMDevice(root: root) : nil
     }
 
-    @objc public var os: DDRUMResourceEventRUMOS? {
-        root.swiftModel.os != nil ? DDRUMResourceEventRUMOS(root: root) : nil
+    @objc public var os: DDRUMResourceEventRUMOperatingSystem? {
+        root.swiftModel.os != nil ? DDRUMResourceEventRUMOperatingSystem(root: root) : nil
     }
 
     @objc public var resource: DDRUMResourceEventResource {
@@ -2442,7 +2442,7 @@ public enum DDRUMResourceEventRUMDeviceRUMDeviceType: Int {
 }
 
 @objc
-public class DDRUMResourceEventRUMOS: NSObject {
+public class DDRUMResourceEventRUMOperatingSystem: NSObject {
     internal let root: DDRUMResourceEvent
 
     internal init(root: DDRUMResourceEvent) {
@@ -2979,8 +2979,8 @@ public class DDRUMViewEvent: NSObject {
         root.swiftModel.device != nil ? DDRUMViewEventRUMDevice(root: root) : nil
     }
 
-    @objc public var os: DDRUMViewEventRUMOS? {
-        root.swiftModel.os != nil ? DDRUMViewEventRUMOS(root: root) : nil
+    @objc public var os: DDRUMViewEventRUMOperatingSystem? {
+        root.swiftModel.os != nil ? DDRUMViewEventRUMOperatingSystem(root: root) : nil
     }
 
     @objc public var service: String? {
@@ -3276,7 +3276,7 @@ public enum DDRUMViewEventRUMDeviceRUMDeviceType: Int {
 }
 
 @objc
-public class DDRUMViewEventRUMOS: NSObject {
+public class DDRUMViewEventRUMOperatingSystem: NSObject {
     internal let root: DDRUMViewEvent
 
     internal init(root: DDRUMViewEvent) {

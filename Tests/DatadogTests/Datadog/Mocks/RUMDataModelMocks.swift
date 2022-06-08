@@ -15,7 +15,7 @@ extension RUMErrorEvent: EquatableInTests {}
 extension RUMLongTaskEvent: EquatableInTests {}
 extension RUMCrashEvent: EquatableInTests {}
 extension RUMDevice: EquatableInTests {}
-extension RUMOS: EquatableInTests {}
+extension RUMOperatingSystem: EquatableInTests {}
 
 extension RUMUser {
     static func mockRandom() -> RUMUser {
@@ -70,8 +70,8 @@ extension RUMDevice.RUMDeviceType: RandomMockable {
     }
 }
 
-extension RUMOS: RandomMockable {
-    static func mockRandom() -> RUMOS {
+extension RUMOperatingSystem: RandomMockable {
+    static func mockRandom() -> RUMOperatingSystem {
         return .init(
             name: .mockRandom(length: 5),
             version: .mockRandom(among: .decimalDigits, length: 2),

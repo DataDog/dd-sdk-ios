@@ -35,7 +35,7 @@ public struct RUMActionEvent: RUMDataModel {
     public let device: RUMDevice?
 
     /// Operating system properties
-    public let os: RUMOS?
+    public let os: RUMOperatingSystem?
 
     /// The service name for this application
     public let service: String?
@@ -383,7 +383,7 @@ public struct RUMErrorEvent: RUMDataModel {
     public var error: Error
 
     /// Operating system properties
-    public let os: RUMOS?
+    public let os: RUMOperatingSystem?
 
     /// The service name for this application
     public let service: String?
@@ -724,7 +724,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     public let longTask: LongTask
 
     /// Operating system properties
-    public let os: RUMOS?
+    public let os: RUMOperatingSystem?
 
     /// The service name for this application
     public let service: String?
@@ -945,7 +945,7 @@ public struct RUMResourceEvent: RUMDataModel {
     public let device: RUMDevice?
 
     /// Operating system properties
-    public let os: RUMOS?
+    public let os: RUMOperatingSystem?
 
     /// Resource properties
     public var resource: Resource
@@ -1353,7 +1353,7 @@ public struct RUMViewEvent: RUMDataModel {
     public let device: RUMDevice?
 
     /// Operating system properties
-    public let os: RUMOS?
+    public let os: RUMOperatingSystem?
 
     /// The service name for this application
     public let service: String?
@@ -2129,7 +2129,7 @@ public struct RUMDevice: Codable {
 }
 
 /// Operating system properties
-public struct RUMOS: Codable {
+public struct RUMOperatingSystem: Codable {
     /// Operating system name, e.g. Android, iOS
     public let name: String
 

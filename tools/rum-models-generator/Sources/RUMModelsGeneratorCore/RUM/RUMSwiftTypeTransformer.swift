@@ -17,7 +17,7 @@ internal class RUMSwiftTypeTransformer {
         "RUMEventAttributes",
         "RUMCITest",
         "RUMDevice",
-        "RUMOS",
+        "RUMOperatingSystem",
     ]
 
     /// `RUMDataModel` protocol, implemented by all RUM models.
@@ -195,7 +195,7 @@ internal class RUMSwiftTypeTransformer {
         }
 
         if fixedName == "OS" {
-            fixedName = "RUMOS"
+            fixedName = "RUMOperatingSystem"
         }
 
         return fixedName
