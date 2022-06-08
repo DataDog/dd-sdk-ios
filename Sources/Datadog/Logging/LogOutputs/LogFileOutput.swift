@@ -14,12 +14,3 @@ internal struct LogFileOutput: LogOutput {
         fileWriter.write(value: log)
     }
 }
-
-extension LoggingWithRUMErrorsIntegration: LogOutput {
-    /// Writes `critical` and `error` logs to RUM.
-    func write(log: LogEvent) {
-        if log.status == .error || log.status == .critical {
-            addError(for: log)
-        }
-    }
-}
