@@ -884,6 +884,7 @@ extension MobileDevice {
     }
 
     static func mockWith(
+        name: String = .mockAny(),
         model: String = .mockAny(),
         osName: String = .mockAny(),
         osVersion: String = .mockAny(),
@@ -892,6 +893,7 @@ extension MobileDevice {
         currentBatteryStatus: @escaping () -> BatteryStatus = { .mockAny() }
     ) -> MobileDevice {
         return MobileDevice(
+            name: name,
             model: model,
             osName: osName,
             osVersion: osVersion,

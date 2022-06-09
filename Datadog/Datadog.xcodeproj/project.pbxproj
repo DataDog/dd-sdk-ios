@@ -482,6 +482,8 @@
 		61FC5F3525CC1898006BB4DE /* CrashContextProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FC5F3425CC1898006BB4DE /* CrashContextProviderTests.swift */; };
 		61FC5F4525CC23C9006BB4DE /* RUMWithCrashContextIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FC5F4425CC23C9006BB4DE /* RUMWithCrashContextIntegration.swift */; };
 		61FC5F4E25CC2920006BB4DE /* RUMWithCrashContextIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FC5F4D25CC2920006BB4DE /* RUMWithCrashContextIntegrationTests.swift */; };
+		61FD9FC92851E67100214BD9 /* Sysctl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FD9FC82851E67100214BD9 /* Sysctl.swift */; };
+		61FD9FCA2851E67100214BD9 /* Sysctl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FD9FC82851E67100214BD9 /* Sysctl.swift */; };
 		61FDBA1326971953001D9D43 /* CrashReportMinifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA1226971953001D9D43 /* CrashReportMinifier.swift */; };
 		61FDBA15269722B4001D9D43 /* CrashReportMinifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA14269722B4001D9D43 /* CrashReportMinifierTests.swift */; };
 		61FDBA1726974CA9001D9D43 /* DDCrashReportBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA1626974CA9001D9D43 /* DDCrashReportBuilderTests.swift */; };
@@ -1670,6 +1672,7 @@
 		61FC5F3425CC1898006BB4DE /* CrashContextProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashContextProviderTests.swift; sourceTree = "<group>"; };
 		61FC5F4425CC23C9006BB4DE /* RUMWithCrashContextIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMWithCrashContextIntegration.swift; sourceTree = "<group>"; };
 		61FC5F4D25CC2920006BB4DE /* RUMWithCrashContextIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMWithCrashContextIntegrationTests.swift; sourceTree = "<group>"; };
+		61FD9FC82851E67100214BD9 /* Sysctl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sysctl.swift; sourceTree = "<group>"; };
 		61FDBA1226971953001D9D43 /* CrashReportMinifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportMinifier.swift; sourceTree = "<group>"; };
 		61FDBA14269722B4001D9D43 /* CrashReportMinifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportMinifierTests.swift; sourceTree = "<group>"; };
 		61FDBA1626974CA9001D9D43 /* DDCrashReportBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDCrashReportBuilderTests.swift; sourceTree = "<group>"; };
@@ -2107,6 +2110,7 @@
 				61E36A10254B2280001AD6F2 /* LaunchTimeProvider.swift */,
 				61133BA22423979B00786299 /* CarrierInfoProvider.swift */,
 				61133BA32423979B00786299 /* MobileDevice.swift */,
+				61FD9FC82851E67100214BD9 /* Sysctl.swift */,
 				61133BA42423979B00786299 /* NetworkConnectionInfoProvider.swift */,
 				61133BA52423979B00786299 /* BatteryStatusProvider.swift */,
 				9ED6A6B325F2901800CB2E29 /* AppStateListener.swift */,
@@ -5046,6 +5050,7 @@
 				61D3E0D6277B23F1008BE766 /* KronosClock.swift in Sources */,
 				D248ED452807193B00B315B4 /* RUMTelemetry.swift in Sources */,
 				613E793B2577B6EE00DFCC17 /* DataReader.swift in Sources */,
+				61FD9FC92851E67100214BD9 /* Sysctl.swift in Sources */,
 				614B0A5324EBFE5500A2A780 /* DDRUMMonitor.swift in Sources */,
 				61133BE32423979B00786299 /* UserInfoProvider.swift in Sources */,
 				9EB4B868275103E40041CD03 /* WebEventBridge.swift in Sources */,
@@ -5606,6 +5611,7 @@
 				D2CB6E4027C50EAE00A62B57 /* UIViewControllerSwizzler.swift in Sources */,
 				D2CB6E4127C50EAE00A62B57 /* RUMCurrentContext.swift in Sources */,
 				D2CB6E4227C50EAE00A62B57 /* RUMConnectivityInfoProvider.swift in Sources */,
+				61FD9FCA2851E67100214BD9 /* Sysctl.swift in Sources */,
 				D248ED462807193B00B315B4 /* RUMTelemetry.swift in Sources */,
 				D2CB6E4327C50EAE00A62B57 /* ObjcExceptionHandler.m in Sources */,
 				D2CB6E4427C50EAE00A62B57 /* UIApplicationSwizzler.swift in Sources */,
