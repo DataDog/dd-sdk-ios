@@ -392,8 +392,6 @@
 		61C5A88724509A0C00DA608C /* Casting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87C24509A0C00DA608C /* Casting.swift */; };
 		61C5A88824509A0C00DA608C /* Warnings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87D24509A0C00DA608C /* Warnings.swift */; };
 		61C5A88924509A0C00DA608C /* DDSpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87E24509A0C00DA608C /* DDSpanContext.swift */; };
-		61C5A88A24509A0C00DA608C /* SpanFileOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A88024509A0C00DA608C /* SpanFileOutput.swift */; };
-		61C5A88B24509A0C00DA608C /* SpanOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A88124509A0C00DA608C /* SpanOutput.swift */; };
 		61C5A88C24509A0C00DA608C /* HTTPHeadersWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A88324509A0C00DA608C /* HTTPHeadersWriter.swift */; };
 		61C5A88E24509A1F00DA608C /* Tracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A88D24509A1F00DA608C /* Tracer.swift */; };
 		61C5A89024509AA700DA608C /* TracingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A88F24509AA700DA608C /* TracingFeature.swift */; };
@@ -435,7 +433,6 @@
 		61E36A11254B2280001AD6F2 /* LaunchTimeProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E36A10254B2280001AD6F2 /* LaunchTimeProvider.swift */; };
 		61E45BCF2450A6EC00F2C652 /* TracingUUIDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45BCE2450A6EC00F2C652 /* TracingUUIDTests.swift */; };
 		61E45BD22450F65B00F2C652 /* SpanEventBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45BD12450F65B00F2C652 /* SpanEventBuilderTests.swift */; };
-		61E45BE5245196EA00F2C652 /* SpanFileOutputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45BE4245196EA00F2C652 /* SpanFileOutputTests.swift */; };
 		61E45BE724519A3700F2C652 /* JSONDataMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45BE624519A3700F2C652 /* JSONDataMatcher.swift */; };
 		61E45ED12451A8730061DAC7 /* SpanMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45ED02451A8730061DAC7 /* SpanMatcher.swift */; };
 		61E5332C24B75C51003D6C4E /* RUMFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E5332B24B75C51003D6C4E /* RUMFeature.swift */; };
@@ -732,7 +729,6 @@
 		D2CB6E8727C50EAE00A62B57 /* LogEventBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC32423979B00786299 /* LogEventBuilder.swift */; };
 		D2CB6E8827C50EAE00A62B57 /* FileReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BAD2423979B00786299 /* FileReader.swift */; };
 		D2CB6E8927C50EAE00A62B57 /* LongTaskObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E359F4D26CD518D001E25E9 /* LongTaskObserver.swift */; };
-		D2CB6E8A27C50EAE00A62B57 /* SpanFileOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A88024509A0C00DA608C /* SpanFileOutput.swift */; };
 		D2CB6E8B27C50EAE00A62B57 /* Attributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3E63424BF1794008053F2 /* Attributes.swift */; };
 		D2CB6E8C27C50EAE00A62B57 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BAC2423979B00786299 /* File.swift */; };
 		D2CB6E8D27C50EAE00A62B57 /* KronosNTPProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0CF277B23F0008BE766 /* KronosNTPProtocol.swift */; };
@@ -754,7 +750,6 @@
 		D2CB6E9D27C50EAE00A62B57 /* RUMEventFileOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF282324B8A1C3000B3D9B /* RUMEventFileOutput.swift */; };
 		D2CB6E9E27C50EAE00A62B57 /* RUMDebugging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B22E5924F3E6B700DC26D2 /* RUMDebugging.swift */; };
 		D2CB6E9F27C50EAE00A62B57 /* DataCompression.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24C27E9270C8BEE005DE596 /* DataCompression.swift */; };
-		D2CB6EA027C50EAE00A62B57 /* SpanOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A88124509A0C00DA608C /* SpanOutput.swift */; };
 		D2CB6EA127C50EAE00A62B57 /* LogEventEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC22423979B00786299 /* LogEventEncoder.swift */; };
 		D2CB6EA227C50EAE00A62B57 /* VitalInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FC3C0626526EFF00DEED9E /* VitalInfo.swift */; };
 		D2CB6EA327C50EAE00A62B57 /* RUMEventsMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613E81EF25A740140084B751 /* RUMEventsMapper.swift */; };
@@ -942,7 +937,6 @@
 		D2CB6F6B27C520D400A62B57 /* RUMDebuggingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61786F7624FCDE04009E6BAB /* RUMDebuggingTests.swift */; };
 		D2CB6F6C27C520D400A62B57 /* RUMInstrumentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F9CA702512450B000A5E61 /* RUMInstrumentationTests.swift */; };
 		D2CB6F6D27C520D400A62B57 /* RUMCurrentContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6156CB9224DDAA34008CB2B2 /* RUMCurrentContextTests.swift */; };
-		D2CB6F6E27C520D400A62B57 /* SpanFileOutputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45BE4245196EA00F2C652 /* SpanFileOutputTests.swift */; };
 		D2CB6F6F27C520D400A62B57 /* RUMResourceScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB424C864680082C633 /* RUMResourceScopeTests.swift */; };
 		D2CB6F7027C520D400A62B57 /* UIKitMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C1C2423990D00786299 /* UIKitMocks.swift */; };
 		D2CB6F7127C520D400A62B57 /* URLSessionTracingHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B03876252724AB00518F3C /* URLSessionTracingHandlerTests.swift */; };
@@ -1599,8 +1593,6 @@
 		61C5A87C24509A0C00DA608C /* Casting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Casting.swift; sourceTree = "<group>"; };
 		61C5A87D24509A0C00DA608C /* Warnings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Warnings.swift; sourceTree = "<group>"; };
 		61C5A87E24509A0C00DA608C /* DDSpanContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDSpanContext.swift; sourceTree = "<group>"; };
-		61C5A88024509A0C00DA608C /* SpanFileOutput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpanFileOutput.swift; sourceTree = "<group>"; };
-		61C5A88124509A0C00DA608C /* SpanOutput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpanOutput.swift; sourceTree = "<group>"; };
 		61C5A88324509A0C00DA608C /* HTTPHeadersWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPHeadersWriter.swift; sourceTree = "<group>"; };
 		61C5A88D24509A1F00DA608C /* Tracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Tracer.swift; sourceTree = "<group>"; };
 		61C5A88F24509AA700DA608C /* TracingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingFeature.swift; sourceTree = "<group>"; };
@@ -1642,7 +1634,6 @@
 		61E36A10254B2280001AD6F2 /* LaunchTimeProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchTimeProvider.swift; sourceTree = "<group>"; };
 		61E45BCE2450A6EC00F2C652 /* TracingUUIDTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingUUIDTests.swift; sourceTree = "<group>"; };
 		61E45BD12450F65B00F2C652 /* SpanEventBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanEventBuilderTests.swift; sourceTree = "<group>"; };
-		61E45BE4245196EA00F2C652 /* SpanFileOutputTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanFileOutputTests.swift; sourceTree = "<group>"; };
 		61E45BE624519A3700F2C652 /* JSONDataMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONDataMatcher.swift; sourceTree = "<group>"; };
 		61E45ED02451A8730061DAC7 /* SpanMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanMatcher.swift; sourceTree = "<group>"; };
 		61E5332B24B75C51003D6C4E /* RUMFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFeature.swift; sourceTree = "<group>"; };
@@ -3510,7 +3501,6 @@
 				61C5A87824509A0C00DA608C /* DDSpan.swift */,
 				61C5A87E24509A0C00DA608C /* DDSpanContext.swift */,
 				61C5A8A324509FAA00DA608C /* Span */,
-				61C5A87F24509A0C00DA608C /* SpanOutputs */,
 				618D9DE5263AD77600A3FAD2 /* Scrubbing */,
 				61C5A88224509A0C00DA608C /* Propagation */,
 				617CEB372456BC2200AD4669 /* UUIDs */,
@@ -3528,15 +3518,6 @@
 				61C5A87D24509A0C00DA608C /* Warnings.swift */,
 			);
 			path = Utils;
-			sourceTree = "<group>";
-		};
-		61C5A87F24509A0C00DA608C /* SpanOutputs */ = {
-			isa = PBXGroup;
-			children = (
-				61C5A88024509A0C00DA608C /* SpanFileOutput.swift */,
-				61C5A88124509A0C00DA608C /* SpanOutput.swift */,
-			);
-			path = SpanOutputs;
 			sourceTree = "<group>";
 		};
 		61C5A88224509A0C00DA608C /* Propagation */ = {
@@ -3557,7 +3538,6 @@
 				61F1A620249A45E400075390 /* DDSpanContextTests.swift */,
 				D2F1B81426D8E5FF009F3293 /* DDNoopTracerTests.swift */,
 				61E45BD02450F64100F2C652 /* Span */,
-				61E45BE3245196D500F2C652 /* SpanOutputs */,
 				617CEB3A2456BC8200AD4669 /* UUIDs */,
 				613F2404252B3791006CD2D7 /* Autoinstrumentation */,
 				61C5A89924509C1100DA608C /* Utils */,
@@ -3657,14 +3637,6 @@
 				61122EE725B1C92500F9C7F5 /* SpanSanitizerTests.swift */,
 			);
 			path = Span;
-			sourceTree = "<group>";
-		};
-		61E45BE3245196D500F2C652 /* SpanOutputs */ = {
-			isa = PBXGroup;
-			children = (
-				61E45BE4245196EA00F2C652 /* SpanFileOutputTests.swift */,
-			);
-			path = SpanOutputs;
 			sourceTree = "<group>";
 		};
 		61E5332A24B75C3B003D6C4E /* RUM */ = {
@@ -5131,7 +5103,6 @@
 				61133BE52423979B00786299 /* LogEventBuilder.swift in Sources */,
 				61133BD42423979B00786299 /* FileReader.swift in Sources */,
 				9E359F4E26CD518D001E25E9 /* LongTaskObserver.swift in Sources */,
-				61C5A88A24509A0C00DA608C /* SpanFileOutput.swift in Sources */,
 				61C3E63524BF1794008053F2 /* Attributes.swift in Sources */,
 				61133BD32423979B00786299 /* File.swift in Sources */,
 				61D3E0D9277B23F1008BE766 /* KronosNTPProtocol.swift in Sources */,
@@ -5153,7 +5124,6 @@
 				61FF282424B8A1C3000B3D9B /* RUMEventFileOutput.swift in Sources */,
 				61B22E5A24F3E6B700DC26D2 /* RUMDebugging.swift in Sources */,
 				D24C27EA270C8BEE005DE596 /* DataCompression.swift in Sources */,
-				61C5A88B24509A0C00DA608C /* SpanOutput.swift in Sources */,
 				61133BE42423979B00786299 /* LogEventEncoder.swift in Sources */,
 				B3FC3C0926526F0000DEED9E /* VitalInfo.swift in Sources */,
 				616F1FB32840125400651A3A /* RUMV2Configuration.swift in Sources */,
@@ -5356,7 +5326,6 @@
 				61786F7724FCDE05009E6BAB /* RUMDebuggingTests.swift in Sources */,
 				61F9CA712512450B000A5E61 /* RUMInstrumentationTests.swift in Sources */,
 				6156CB9324DDAA34008CB2B2 /* RUMCurrentContextTests.swift in Sources */,
-				61E45BE5245196EA00F2C652 /* SpanFileOutputTests.swift in Sources */,
 				61494CB524C864680082C633 /* RUMResourceScopeTests.swift in Sources */,
 				61133C4E2423990D00786299 /* UIKitMocks.swift in Sources */,
 				61B0387B252724AB00518F3C /* URLSessionTracingHandlerTests.swift in Sources */,
@@ -5755,7 +5724,6 @@
 				D2CB6E8727C50EAE00A62B57 /* LogEventBuilder.swift in Sources */,
 				D2CB6E8827C50EAE00A62B57 /* FileReader.swift in Sources */,
 				D2CB6E8927C50EAE00A62B57 /* LongTaskObserver.swift in Sources */,
-				D2CB6E8A27C50EAE00A62B57 /* SpanFileOutput.swift in Sources */,
 				D2CB6E8B27C50EAE00A62B57 /* Attributes.swift in Sources */,
 				D2CB6E8C27C50EAE00A62B57 /* File.swift in Sources */,
 				D2CB6E8D27C50EAE00A62B57 /* KronosNTPProtocol.swift in Sources */,
@@ -5778,7 +5746,6 @@
 				D2CB6E9E27C50EAE00A62B57 /* RUMDebugging.swift in Sources */,
 				616F1FB1283E227100651A3A /* LoggingV2Configuration.swift in Sources */,
 				D2CB6E9F27C50EAE00A62B57 /* DataCompression.swift in Sources */,
-				D2CB6EA027C50EAE00A62B57 /* SpanOutput.swift in Sources */,
 				D2CB6EA127C50EAE00A62B57 /* LogEventEncoder.swift in Sources */,
 				6108676E2840FB35002DF3C0 /* TracingV2Configuration.swift in Sources */,
 				D2CB6EA227C50EAE00A62B57 /* VitalInfo.swift in Sources */,
@@ -5982,7 +5949,6 @@
 				D2CB6F6B27C520D400A62B57 /* RUMDebuggingTests.swift in Sources */,
 				D2CB6F6C27C520D400A62B57 /* RUMInstrumentationTests.swift in Sources */,
 				D2CB6F6D27C520D400A62B57 /* RUMCurrentContextTests.swift in Sources */,
-				D2CB6F6E27C520D400A62B57 /* SpanFileOutputTests.swift in Sources */,
 				D2CB6F6F27C520D400A62B57 /* RUMResourceScopeTests.swift in Sources */,
 				D2CB6F7027C520D400A62B57 /* UIKitMocks.swift in Sources */,
 				D2CB6F7127C520D400A62B57 /* URLSessionTracingHandlerTests.swift in Sources */,

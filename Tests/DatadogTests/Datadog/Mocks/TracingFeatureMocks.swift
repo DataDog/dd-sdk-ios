@@ -310,17 +310,3 @@ extension SpanEventBuilder {
         )
     }
 }
-
-/// `SpanOutput` recording received spans.
-class SpanOutputMock: SpanOutput {
-    var onSpanRecorded: ((SpanEvent) -> Void)?
-
-    var lastRecordedSpan: SpanEvent?
-    var allRecordedSpans: [SpanEvent] = []
-
-    func write(span: SpanEvent) {
-        lastRecordedSpan = span
-        allRecordedSpans.append(span)
-        onSpanRecorded?(span)
-    }
-}
