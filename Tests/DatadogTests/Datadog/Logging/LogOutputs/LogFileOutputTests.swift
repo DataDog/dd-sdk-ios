@@ -30,8 +30,7 @@ class LogFileOutputTests: XCTestCase {
                     ),
                     dateProvider: fileCreationDateProvider
                 )
-            ),
-            rumErrorsIntegration: nil
+            )
         )
 
         let log1: LogEvent = .mockWith(status: .info, message: "log message 1")

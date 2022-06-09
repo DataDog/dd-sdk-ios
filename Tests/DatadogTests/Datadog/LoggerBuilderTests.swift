@@ -45,16 +45,12 @@ class LoggerBuilderTests: XCTestCase {
 
         XCTAssertNil(logger.rumContextIntegration)
         XCTAssertNil(logger.activeSpanIntegration)
-        XCTAssertTrue(logger.logOutput is LogFileOutput)
-
-        let logBuilder = try XCTUnwrap(logger.logBuilder)
-        XCTAssertEqual(logBuilder.applicationVersion, "1.2.3")
-        XCTAssertEqual(logBuilder.serviceName, "service-name")
-        XCTAssertEqual(logBuilder.environment, "tests")
-        XCTAssertEqual(logBuilder.loggerName, "com.datadog.unit-tests")
-        XCTAssertTrue(logBuilder.userInfoProvider === userInfoProvider)
-        XCTAssertNil(logBuilder.networkConnectionInfoProvider)
-        XCTAssertNil(logBuilder.carrierInfoProvider)
+        XCTAssertTrue(logger.useCoreOutput)
+        XCTAssertFalse(logger.sendNetworkInfo)
+        XCTAssertTrue(logger.additionalOutput is LoggingWithRUMErrorsIntegration)
+        XCTAssertNil(logger.logEventMapper)
+        XCTAssertNil(logger.serviceName, "service-name")
+        XCTAssertNil(logger.loggerName, "com.datadog.unit-tests")
     }
 
     func testDefaultLoggerWithRUMEnabled() throws {
@@ -96,61 +92,57 @@ class LoggerBuilderTests: XCTestCase {
 
         XCTAssertNil(logger.rumContextIntegration)
         XCTAssertNil(logger.activeSpanIntegration)
-        XCTAssertTrue(logger.logOutput is LogFileOutput)
-
-        let logBuilder = try XCTUnwrap(logger.logBuilder)
-        XCTAssertEqual(logBuilder.applicationVersion, "1.2.3")
-        XCTAssertEqual(logBuilder.serviceName, "custom-service-name")
-        XCTAssertEqual(logBuilder.environment, "tests")
-        XCTAssertEqual(logBuilder.loggerName, "custom-logger-name")
-        XCTAssertTrue(logBuilder.userInfoProvider === userInfoProvider)
-        XCTAssertTrue(logBuilder.networkConnectionInfoProvider as AnyObject === networkConnectionInfoProvider as AnyObject)
-        XCTAssertTrue(logBuilder.carrierInfoProvider as AnyObject === carrierInfoProvider as AnyObject)
+        XCTAssertTrue(logger.useCoreOutput)
+        XCTAssertTrue(logger.sendNetworkInfo)
+        XCTAssertTrue(logger.additionalOutput is LoggingWithRUMErrorsIntegration)
+        XCTAssertNil(logger.logEventMapper)
+        XCTAssertEqual(logger.serviceName, "custom-service-name")
+        XCTAssertEqual(logger.loggerName, "custom-logger-name")
     }
 
     func testUsingDifferentOutputs() throws {
         var logger: Logger
 
         logger = Logger.builder.build(in: core)
-        XCTAssertNotNil(logger.logBuilder)
-        XCTAssertTrue(logger.logOutput is LogFileOutput)
+        XCTAssertTrue(logger.useCoreOutput)
+        XCTAssertTrue(logger.additionalOutput is LoggingWithRUMErrorsIntegration)
 
         logger = Logger.builder.sendLogsToDatadog(true).build(in: core)
-        XCTAssertNotNil(logger.logBuilder)
-        XCTAssertTrue(logger.logOutput is LogFileOutput)
+        XCTAssertTrue(logger.useCoreOutput)
+        XCTAssertTrue(logger.additionalOutput is LoggingWithRUMErrorsIntegration)
 
         logger = Logger.builder.sendLogsToDatadog(false).build(in: core)
-        XCTAssertNil(logger.logBuilder)
-        XCTAssertNil(logger.logOutput)
+        XCTAssertFalse(logger.useCoreOutput)
+        XCTAssertNil(logger.additionalOutput)
 
         logger = Logger.builder.printLogsToConsole(true).build(in: core)
-        var combinedOutputs = try (logger.logOutput as? CombinedLogOutput).unwrapOrThrow().combinedOutputs
-        XCTAssertNotNil(logger.logBuilder)
+        var combinedOutputs = try XCTUnwrap(logger.additionalOutput as? CombinedLogOutput).combinedOutputs
+        XCTAssertTrue(logger.useCoreOutput)
         XCTAssertEqual(combinedOutputs.count, 2)
-        XCTAssertTrue(combinedOutputs[0] is LogFileOutput)
-        XCTAssertTrue(combinedOutputs[1] is LogConsoleOutput)
+        XCTAssertTrue(combinedOutputs[0] is LogConsoleOutput)
+        XCTAssertTrue(combinedOutputs[1] is LoggingWithRUMErrorsIntegration)
 
         logger = Logger.builder.printLogsToConsole(false).build(in: core)
-        XCTAssertNotNil(logger.logBuilder)
-        XCTAssertTrue(logger.logOutput is LogFileOutput)
+        XCTAssertTrue(logger.useCoreOutput)
+        XCTAssertTrue(logger.additionalOutput is LoggingWithRUMErrorsIntegration)
 
         logger = Logger.builder.sendLogsToDatadog(true).printLogsToConsole(true).build(in: core)
-        combinedOutputs = try (logger.logOutput as? CombinedLogOutput).unwrapOrThrow().combinedOutputs
-        XCTAssertNotNil(logger.logBuilder)
+        combinedOutputs = try XCTUnwrap(logger.additionalOutput as? CombinedLogOutput).combinedOutputs
+        XCTAssertTrue(logger.useCoreOutput)
         XCTAssertEqual(combinedOutputs.count, 2)
-        XCTAssertTrue(combinedOutputs[0] is LogFileOutput)
-        XCTAssertTrue(combinedOutputs[1] is LogConsoleOutput)
+        XCTAssertTrue(combinedOutputs[0] is LogConsoleOutput)
+        XCTAssertTrue(combinedOutputs[1] is LoggingWithRUMErrorsIntegration)
 
         logger = Logger.builder.sendLogsToDatadog(false).printLogsToConsole(true).build(in: core)
-        XCTAssertNotNil(logger.logBuilder)
-        XCTAssertTrue(logger.logOutput is LogConsoleOutput)
+        XCTAssertFalse(logger.useCoreOutput)
+        XCTAssertTrue(logger.additionalOutput is LogConsoleOutput)
 
         logger = Logger.builder.sendLogsToDatadog(true).printLogsToConsole(false).build(in: core)
-        XCTAssertNotNil(logger.logBuilder)
-        XCTAssertTrue(logger.logOutput is LogFileOutput)
+        XCTAssertTrue(logger.useCoreOutput)
+        XCTAssertTrue(logger.additionalOutput is LoggingWithRUMErrorsIntegration)
 
         logger = Logger.builder.sendLogsToDatadog(false).printLogsToConsole(false).build(in: core)
-        XCTAssertNil(logger.logBuilder)
-        XCTAssertNil(logger.logOutput)
+        XCTAssertFalse(logger.useCoreOutput)
+        XCTAssertNil(logger.additionalOutput)
     }
 }

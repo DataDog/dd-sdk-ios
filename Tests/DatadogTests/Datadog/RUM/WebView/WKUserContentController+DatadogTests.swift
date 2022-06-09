@@ -69,7 +69,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output)
+        userLogger = .mockConsoleLogger(output: output)
 
         let mockSanitizer = MockHostsSanitizer()
         let controller = DDUserContentController()
@@ -130,7 +130,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output)
+        userLogger = .mockConsoleLogger(output: output)
 
         let controller = DDUserContentController()
         controller.addDatadogMessageHandler(

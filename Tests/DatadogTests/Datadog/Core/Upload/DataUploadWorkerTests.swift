@@ -231,7 +231,7 @@ class DataUploadWorkerTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let mockUserLoggerOutput = LogOutputMock()
-        userLogger = .mockWith(logOutput: mockUserLoggerOutput)
+        userLogger = .mockConsoleLogger(output: mockUserLoggerOutput)
 
         // Given
         writer.write(value: ["key": "value"])
@@ -278,7 +278,7 @@ class DataUploadWorkerTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let mockUserLoggerOutput = LogOutputMock()
-        userLogger = .mockWith(logOutput: mockUserLoggerOutput)
+        userLogger = .mockConsoleLogger(output: mockUserLoggerOutput)
 
         // Given
         writer.write(value: ["key": "value"])

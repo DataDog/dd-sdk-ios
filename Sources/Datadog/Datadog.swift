@@ -209,19 +209,7 @@ public class Datadog {
             dependencies: commonDependencies
         )
 
-        // First, initialize internal loggers:
-        let internalLoggerConfiguration = InternalLoggerConfiguration(
-            sdkVersion: configuration.common.sdkVersion,
-            applicationVersion: configuration.common.applicationVersion,
-            environment: configuration.common.environment,
-            userInfoProvider: userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
-        )
-
-        userLogger = createSDKUserLogger(configuration: internalLoggerConfiguration)
-
-        // Then, initialize features:
+        // First, initialize features:
         var telemetry: Telemetry?
         var logging: LoggingFeature?
         var tracing: TracingFeature?
@@ -299,6 +287,9 @@ public class Datadog {
 
         core.v1.feature(RUMInstrumentation.self)?.enable()
         core.v1.feature(URLSessionAutoInstrumentation.self)?.enable()
+
+        // Then, initialize internal loggers:
+        userLogger = createSDKUserLogger(in: core)
 
         defaultDatadogCore = core
 

@@ -9,14 +9,8 @@ import Foundation
 /// `LogOutput` writing logs to file.
 internal struct LogFileOutput: LogOutput {
     let fileWriter: Writer
-    /// Integration with RUM Errors.
-    let rumErrorsIntegration: LoggingWithRUMErrorsIntegration?
 
     func write(log: LogEvent) {
         fileWriter.write(value: log)
-
-        if log.status == .error || log.status == .critical {
-            rumErrorsIntegration?.addError(for: log)
-        }
     }
 }

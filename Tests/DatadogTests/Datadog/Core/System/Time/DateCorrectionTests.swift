@@ -29,7 +29,7 @@ class DateCorrectorTests: XCTestCase {
         super.setUp()
         self.previousUserLogger = userLogger
         self.userLogOutput = LogOutputMock()
-        userLogger = .mockWith(logOutput: userLogOutput)
+        userLogger = .mockConsoleLogger(output: userLogOutput)
     }
 
     override func tearDown() {

@@ -517,7 +517,7 @@ class LoggerTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output)
+        userLogger = .mockWith(core: core, additionalOutput: output)
 
         // given
         let logger = Logger.builder.build(in: core)
@@ -638,7 +638,7 @@ class LoggerTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output)
+        userLogger = .mockWith(core: core, additionalOutput: output)
 
         // given
         let logger = Logger.builder.build(in: core)
@@ -695,12 +695,17 @@ class LoggerTests: XCTestCase {
         }
 
         let logger = Logger(
-            logBuilder: .mockAny(),
-            logOutput: NoOpLogOutput(),
-            dateProvider: SystemDateProvider(),
+            core: core,
             identifier: .mockAny(),
+            serviceName: nil,
+            loggerName: nil,
+            sendNetworkInfo: false,
+            useCoreOutput: true,
+            validation: nil,
             rumContextIntegration: nil,
-            activeSpanIntegration: nil
+            activeSpanIntegration: nil,
+            additionalOutput: nil,
+            logEventMapper: nil
         )
 
         DispatchQueue.concurrentPerform(iterations: 900) { iteration in
@@ -740,8 +745,7 @@ class LoggerTests: XCTestCase {
             printFunction.printedMessage,
             "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `Logger.builder.build()`."
         )
-        XCTAssertNil(logger.logBuilder)
-        XCTAssertNil(logger.logOutput)
+        XCTAssertTrue(logger.core is NOOPDatadogCore)
     }
 
     func testGivenLoggingFeatureDisabled_whenInitializingLogger_itPrintsError() {
@@ -761,8 +765,7 @@ class LoggerTests: XCTestCase {
             printFunction.printedMessage,
             "🔥 Datadog SDK usage error: `Logger.builder.build()` produces a non-functional logger, as the logging feature is disabled."
         )
-        XCTAssertNil(logger.logBuilder)
-        XCTAssertNil(logger.logOutput)
+        XCTAssertTrue(logger.core is NOOPDatadogCore)
     }
 
     func testDDLoggerIsLoggerTypealias() {

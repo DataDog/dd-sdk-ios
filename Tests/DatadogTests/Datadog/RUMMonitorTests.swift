@@ -1314,7 +1314,7 @@ class RUMMonitorTests: XCTestCase {
         defer { Datadog.flushAndDeinitialize() }
 
         let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output)
+        userLogger = .mockWith(core: defaultDatadogCore, additionalOutput: output)
 
         // Given
         let urlInstrumentation = try XCTUnwrap(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))

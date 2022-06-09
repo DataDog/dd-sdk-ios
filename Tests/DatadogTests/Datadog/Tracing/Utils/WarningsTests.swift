@@ -9,11 +9,22 @@ import XCTest
 
 class WarningsTests: XCTestCase {
     func testPrintingWarningsOnDifferentConditions() {
+        let core = DatadogCoreMock()
+        core.register(feature: LoggingFeature.mockNoOp())
+        defer { core.flush() }
+
         let previousUserLogger = userLogger
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output, dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()))
+        userLogger = .mockConsoleLogger(
+            output: output,
+            context: .mockWith(
+                dependencies: .mockWith(
+                    dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+                )
+            )
+        )
 
         XCTAssertTrue(warn(if: true, message: "message"))
         XCTAssertEqual(output.recordedLog?.status, .warn)

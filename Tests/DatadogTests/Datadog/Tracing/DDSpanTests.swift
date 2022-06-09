@@ -165,7 +165,7 @@ class DDSpanTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output)
+        userLogger = .mockConsoleLogger(output: output)
 
         let span: DDSpan = .mockWith(
             tracer: .mockWith(loggingIntegration: .init(logBuilder: .mockAny(), loggingOutput: LogOutputMock())),

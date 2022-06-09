@@ -468,7 +468,7 @@ class RUMSessionScopeTests: XCTestCase {
             defer { userLogger = previousUserLogger }
 
             let logOutput = LogOutputMock()
-            userLogger = .mockWith(logOutput: logOutput)
+            userLogger = .mockConsoleLogger(output: logOutput)
 
             // When
             _ = scope.process(command: command)

@@ -717,7 +717,7 @@ class TracerTests: XCTestCase {
         defer { userLogger = previousUserLogger }
 
         let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output)
+        userLogger = .mockConsoleLogger(output: output)
 
         // given
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
@@ -944,7 +944,7 @@ class TracerTests: XCTestCase {
         )
 
         let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output)
+        userLogger = .mockConsoleLogger(output: output)
 
         // when
         let tracer = Tracer.initialize(configuration: .init())
@@ -999,7 +999,7 @@ class TracerTests: XCTestCase {
         defer { Datadog.flushAndDeinitialize() }
 
         let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output)
+        userLogger = .mockConsoleLogger(output: output)
 
         // Given
         let instrumentation = defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self)
