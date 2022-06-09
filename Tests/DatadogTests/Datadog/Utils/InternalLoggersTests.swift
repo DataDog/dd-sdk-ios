@@ -40,7 +40,7 @@ class InternalLoggersTests: XCTestCase {
         var printedMessages: [String] = []
 
         let core = DatadogCoreMock(
-            v1Context: .mockWith(
+            context: .mockWith(
                 dependencies: .mockWith(
                     dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
                 )

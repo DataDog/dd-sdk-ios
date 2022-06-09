@@ -174,7 +174,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     rumFeature: rumFeature,
                     crashReportingFeature: crashReporting,
                     context: context,
-                    telemetry: core.v1.telemetry
+                    telemetry: context.telemetry
                 ),
                 dateProvider: context.dateProvider
             )

@@ -40,8 +40,6 @@ internal final class DatadogCore {
     let configuration: CoreConfiguration
     /// A set of dependencies used by SDK core to power Features.
     let dependencies: CoreDependencies
-    /// Telemetry monitor, if configured.
-    var telemetry: Telemetry?
 
     let readWriteQueue = DispatchQueue(
         label: "com.datadoghq.ios-sdk-read-write",
@@ -51,7 +49,13 @@ internal final class DatadogCore {
     private var v1Features: [String: Any] = [:]
 
     /// The SDK Context for V1.
-    internal let v1Context: DatadogV1Context
+    internal private(set) var v1Context: DatadogV1Context
+
+    /// Telemetry monitor, if configured.
+    var telemetry: Telemetry? {
+        get { v1Context.telemetry }
+        set { v1Context.telemetry = newValue }
+    }
 
     /// Creates a core instance.
     ///

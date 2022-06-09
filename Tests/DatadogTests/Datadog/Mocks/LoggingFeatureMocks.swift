@@ -200,7 +200,7 @@ extension Logger {
         output: LogOutput,
         context: DatadogV1Context = .mockAny()
     ) -> Logger {
-        let core = DatadogCoreMock(v1Context: context)
+        let core = DatadogCoreMock(context: context)
         core.register(feature: LoggingFeature.mockNoOp())
 
         return Logger(

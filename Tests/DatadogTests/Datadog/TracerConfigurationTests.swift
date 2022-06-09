@@ -12,7 +12,7 @@ class TracerConfigurationTests: XCTestCase {
     private let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
     private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
     private lazy var core = DatadogCoreMock(
-        v1Context: .mockWith(
+        context: .mockWith(
             configuration: .mockWith(
                 applicationVersion: "1.2.3",
                 serviceName: "service-name",
@@ -42,13 +42,10 @@ class TracerConfigurationTests: XCTestCase {
     func testDefaultTracer() throws {
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
 
+        XCTAssertNotNil(tracer.core)
+        XCTAssertNil(tracer.serviceName)
+        XCTAssertFalse(tracer.sendNetworkInfo)
         XCTAssertNil(tracer.rumContextIntegration)
-        XCTAssertEqual((tracer.spanOutput as? SpanFileOutput)?.environment, "tests")
-        XCTAssertEqual(tracer.spanBuilder.applicationVersion, "1.2.3")
-        XCTAssertEqual(tracer.spanBuilder.serviceName, "service-name")
-        XCTAssertTrue(tracer.spanBuilder.userInfoProvider === userInfoProvider)
-        XCTAssertNil(tracer.spanBuilder.networkConnectionInfoProvider)
-        XCTAssertNil(tracer.spanBuilder.carrierInfoProvider)
     }
 
     func testDefaultTracerWithRUMEnabled() {
@@ -72,13 +69,10 @@ class TracerConfigurationTests: XCTestCase {
             in: core
         ).dd
 
+        XCTAssertNotNil(tracer.core)
+        XCTAssertEqual(tracer.serviceName, "custom-service-name")
+        XCTAssertTrue(tracer.sendNetworkInfo)
         XCTAssertNil(tracer.rumContextIntegration)
-        XCTAssertEqual((tracer.spanOutput as? SpanFileOutput)?.environment, "tests")
-        XCTAssertEqual(tracer.spanBuilder.applicationVersion, "1.2.3")
-        XCTAssertEqual(tracer.spanBuilder.serviceName, "custom-service-name")
-        XCTAssertTrue(tracer.spanBuilder.userInfoProvider === userInfoProvider)
-        XCTAssertTrue(tracer.spanBuilder.networkConnectionInfoProvider as AnyObject === networkConnectionInfoProvider as AnyObject)
-        XCTAssertTrue(tracer.spanBuilder.carrierInfoProvider as AnyObject === carrierInfoProvider as AnyObject)
     }
 
     func testWhenLoggingFeatureIsEnabled_itUsesLogsIntegration() throws {

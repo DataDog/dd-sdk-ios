@@ -100,7 +100,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
     }
 
     func testWhenStoppingTracking_itKeepsNonDatadogComponents() throws {
-        let core = DatadogCoreMock(v1Context: .mockAny())
+        let core = DatadogCoreMock(context: .mockAny())
         let controller = DDUserContentController()
 
         controller.trackDatadogEvents(in: [], sdk: core)
@@ -153,7 +153,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
 
     func testSendingWebEvents() throws {
         let core = DatadogCoreMock(
-            v1Context: .mockWith(
+            context: .mockWith(
                 configuration: .mockWith(
                     applicationVersion: "1.0.0",
                     applicationBundleIdentifier: "com.datadoghq.ios-sdk",

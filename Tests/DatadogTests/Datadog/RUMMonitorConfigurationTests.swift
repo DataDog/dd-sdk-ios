@@ -14,7 +14,7 @@ class RUMMonitorConfigurationTests: XCTestCase {
 
     func testRUMMonitorConfiguration() throws {
         let core = DatadogCoreMock(
-            v1Context: .mockWith(
+            context: .mockWith(
                 configuration: .mockWith(
                     applicationVersion: "1.2.3",
                     serviceName: "service-name",

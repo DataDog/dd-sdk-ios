@@ -590,6 +590,10 @@
 		D24985A22728048B00B4F72D /* SwiftUIViewHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24985A12728048B00B4F72D /* SwiftUIViewHandler.swift */; };
 		D24985A327280FD100B4F72D /* SwiftUIViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D249859F2728042200B4F72D /* SwiftUIViewModifier.swift */; };
 		D24C27EA270C8BEE005DE596 /* DataCompression.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24C27E9270C8BEE005DE596 /* DataCompression.swift */; };
+		D26F59332851E3440097C455 /* PassthroughCoreMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26F59322851E3440097C455 /* PassthroughCoreMock.swift */; };
+		D26F59342851E3440097C455 /* PassthroughCoreMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26F59322851E3440097C455 /* PassthroughCoreMock.swift */; };
+		D26F59362851E3650097C455 /* Flushable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26F59352851E3650097C455 /* Flushable.swift */; };
+		D26F59372851E3650097C455 /* Flushable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26F59352851E3650097C455 /* Flushable.swift */; };
 		D2791EF927170A760046E07A /* RUMSwiftUIScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2791EF827170A760046E07A /* RUMSwiftUIScenarioTests.swift */; };
 		D28D5D5527C54B30008E72D0 /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6FD127C5348200A62B57 /* DatadogCrashReporting.framework */; };
 		D29889C9273413ED00A4D1A9 /* RUMViewsHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29889C72734136200A4D1A9 /* RUMViewsHandlerTests.swift */; };
@@ -1766,6 +1770,8 @@
 		D249859F2728042200B4F72D /* SwiftUIViewModifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftUIViewModifier.swift; sourceTree = "<group>"; };
 		D24985A12728048B00B4F72D /* SwiftUIViewHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftUIViewHandler.swift; sourceTree = "<group>"; };
 		D24C27E9270C8BEE005DE596 /* DataCompression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCompression.swift; sourceTree = "<group>"; };
+		D26F59322851E3440097C455 /* PassthroughCoreMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassthroughCoreMock.swift; sourceTree = "<group>"; };
+		D26F59352851E3650097C455 /* Flushable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flushable.swift; sourceTree = "<group>"; };
 		D2791EF827170A760046E07A /* RUMSwiftUIScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIScenarioTests.swift; sourceTree = "<group>"; };
 		D29889C72734136200A4D1A9 /* RUMViewsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewsHandlerTests.swift; sourceTree = "<group>"; };
 		D29CDD3128211A2200F7DAA5 /* DataBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataBlock.swift; sourceTree = "<group>"; };
@@ -2357,6 +2363,7 @@
 		61133C192423990D00786299 /* Mocks */ = {
 			isa = PBXGroup;
 			children = (
+				D26F59312851E30B0097C455 /* DatadogInternal */,
 				61C3646F243B5C8300C4D4E6 /* ServerMock.swift */,
 				61F1A6192498A51700075390 /* CoreMocks.swift */,
 				6114FDEB257659E90084E372 /* FeatureDirectoriesMock.swift */,
@@ -2369,7 +2376,6 @@
 				61C3638224361BE200C4D4E6 /* DatadogPrivateMocks.swift */,
 				61F1A61B2498AD2C00075390 /* SystemFrameworks */,
 				614BF37D2670AE9D002379C8 /* AttributesMocks.swift */,
-				D232CAD42832D762001B262C /* DatadogCoreMock.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -4099,6 +4105,16 @@
 			path = UIKit;
 			sourceTree = "<group>";
 		};
+		D26F59312851E30B0097C455 /* DatadogInternal */ = {
+			isa = PBXGroup;
+			children = (
+				D232CAD42832D762001B262C /* DatadogCoreMock.swift */,
+				D26F59322851E3440097C455 /* PassthroughCoreMock.swift */,
+				D26F59352851E3650097C455 /* Flushable.swift */,
+			);
+			path = DatadogInternal;
+			sourceTree = "<group>";
+		};
 		D2791EF32716F16E0046E07A /* SwiftUIInstrumentation */ = {
 			isa = PBXGroup;
 			children = (
@@ -5189,6 +5205,7 @@
 				61B0387D252724AB00518F3C /* URLSessionSwizzlerTests.swift in Sources */,
 				617CD0DD24CEDDD300B0B557 /* RUMUserActionScopeTests.swift in Sources */,
 				61B8BA91281812F60068AFF4 /* KronosInternetAddressTests.swift in Sources */,
+				D26F59332851E3440097C455 /* PassthroughCoreMock.swift in Sources */,
 				D29889C9273413ED00A4D1A9 /* RUMViewsHandlerTests.swift in Sources */,
 				61C5A8A024509C1100DA608C /* Casting+Tracing.swift in Sources */,
 				61133C662423990D00786299 /* LogSanitizerTests.swift in Sources */,
@@ -5265,6 +5282,7 @@
 				61133C6A2423990D00786299 /* DatadogTests.swift in Sources */,
 				9EB4B86C27510AF90041CD03 /* WebEventBridgeTests.swift in Sources */,
 				61B0387C252724AB00518F3C /* DDURLSessionDelegateTests.swift in Sources */,
+				D26F59362851E3650097C455 /* Flushable.swift in Sources */,
 				61AADBDD263C7ECF008ABC6F /* EquatableInTests.swift in Sources */,
 				61133C5E2423990D00786299 /* DataUploadDelayTests.swift in Sources */,
 				61B0387A252724AB00518F3C /* FirstPartyURLsFilterTests.swift in Sources */,
@@ -5813,6 +5831,7 @@
 				D248ED4B28081D7E00B315B4 /* RUMTelemetryTests.swift in Sources */,
 				D2CB6ED827C520D400A62B57 /* RUMUserActionScopeTests.swift in Sources */,
 				61B8BA92281812F60068AFF4 /* KronosInternetAddressTests.swift in Sources */,
+				D26F59342851E3440097C455 /* PassthroughCoreMock.swift in Sources */,
 				D2CB6ED927C520D400A62B57 /* RUMViewsHandlerTests.swift in Sources */,
 				D2CB6EDA27C520D400A62B57 /* Casting+Tracing.swift in Sources */,
 				D2CB6EDB27C520D400A62B57 /* LogSanitizerTests.swift in Sources */,
@@ -5889,6 +5908,7 @@
 				D2CB6F2227C520D400A62B57 /* DatadogTests.swift in Sources */,
 				D2CB6F2327C520D400A62B57 /* WebEventBridgeTests.swift in Sources */,
 				D2CB6F2427C520D400A62B57 /* DDURLSessionDelegateTests.swift in Sources */,
+				D26F59372851E3650097C455 /* Flushable.swift in Sources */,
 				D2CB6F2527C520D400A62B57 /* EquatableInTests.swift in Sources */,
 				D2CB6F2627C520D400A62B57 /* DataUploadDelayTests.swift in Sources */,
 				D2CB6F2727C520D400A62B57 /* FirstPartyURLsFilterTests.swift in Sources */,

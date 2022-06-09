@@ -19,6 +19,9 @@ internal struct DatadogV1Context {
     private let configuration: CoreConfiguration
     private let dependencies: CoreDependencies
 
+    /// Telemetry monitor for this instance of the SDK or `nil` if not configured.
+    internal var telemetry: Telemetry?
+
     init(configuration: CoreConfiguration, dependencies: CoreDependencies) {
         self.configuration = configuration
         self.dependencies = dependencies
