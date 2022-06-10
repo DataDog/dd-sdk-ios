@@ -129,6 +129,7 @@ internal enum RUMInternalErrorSource {
 ///     Global.rum.startView(...)
 ///
 public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
+    internal let core: DatadogCoreProtocol
     /// The root scope of RUM monitoring.
     internal let applicationScope: RUMApplicationScope
     /// Current RUM context provider for integrations with Logging and Tracing.
@@ -170,6 +171,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
 
             let crashReporting = core.v1.feature(CrashReportingFeature.self)
             let monitor = RUMMonitor(
+                core: core,
                 dependencies: RUMScopeDependencies(
                     rumFeature: rumFeature,
                     crashReportingFeature: crashReporting,
@@ -189,7 +191,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         }
     }
 
-    internal init(dependencies: RUMScopeDependencies, dateProvider: DateProvider) {
+    internal init(core: DatadogCoreProtocol, dependencies: RUMScopeDependencies, dateProvider: DateProvider) {
+        self.core = core
         self.applicationScope = RUMApplicationScope(dependencies: dependencies)
         self.dateProvider = dateProvider
         self.contextProvider = RUMCurrentContext(
@@ -593,9 +596,16 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     // MARK: - RUMCommandSubscriber
 
     func process(command: RUMCommand) {
+        guard let scope = core.v1.scope(for: RUMFeature.self) else {
+            return
+        }
+
         queue.async {
             let transformedCommand = self.transform(command: command)
-            _ = self.applicationScope.process(command: transformedCommand)
+
+            scope.eventWriteContext { context, writer in
+                _ = self.applicationScope.process(command: transformedCommand, context: context, writer: writer)
+            }
 
             if let debugging = self.debugging {
                 debugging.debug(applicationScope: self.applicationScope)

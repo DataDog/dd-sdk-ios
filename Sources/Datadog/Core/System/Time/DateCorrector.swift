@@ -12,6 +12,13 @@ internal protocol DateCorrectorType {
     var currentCorrection: DateCorrection { get }
 }
 
+extension DateCorrectorType {
+    /// Applies this correction to given `deviceDate` to represent it in server time.
+    func applying(to deviceDate: Date) -> Date {
+        return currentCorrection.applying(to: deviceDate)
+    }
+}
+
 /// Date correction for adjusting device time to server time.
 internal struct DateCorrection {
     /// The difference between server time and device time known at the time of creating this `DateCorrection`.

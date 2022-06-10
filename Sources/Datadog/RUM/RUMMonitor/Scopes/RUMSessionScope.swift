@@ -112,7 +112,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     // MARK: - RUMScope
 
-    func process(command: RUMCommand) -> Bool {
+    func process(command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Bool {
         if timedOutOrExpired(currentTime: command.time) {
             return false // no longer keep this session
         }
@@ -153,9 +153,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
 
         // Propagate command
-        if !viewScopes.isEmpty {
-            viewScopes = manage(childScopes: viewScopes, byPropagatingCommand: command)
-        }
+        viewScopes = .scopes(byPropagating: command, in: viewScopes, context: context, writer: writer)
 
         if !hasActiveView {
             // If there is no active view, update `CrashContext` accordingly, so eventual crash

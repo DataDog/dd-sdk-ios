@@ -10,7 +10,7 @@ internal protocol RUMScope: AnyObject {
     /// Processes given command. Returns:
     /// * `true` if the scope should be kept open.
     /// * `false` if the scope should be closed.
-    func process(command: RUMCommand) -> Bool
+    func process(command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Bool
 }
 
 extension RUMScope {
@@ -18,22 +18,26 @@ extension RUMScope {
     /// removing it if it gets closed.
     ///
     /// Returns the `childScope` requested to be kept open, `nil` if it requests to close.
-    func manage<S: RUMScope>(childScope: S?, byPropagatingCommand command: RUMCommand) -> S? {
-        if childScope?.process(command: command) == false {
+    static func scope<S: RUMScope>(byPropagating command: RUMCommand, in scope: S?, context: DatadogV1Context, writer: Writer) -> S? {
+        guard
+            let scope = scope,
+            scope.process(command: command, context: context, writer: writer)
+        else {
             return nil
-        } else {
-            return childScope
         }
-    }
 
+        return scope
+    }
+}
+
+extension Array where Element: RUMScope {
     /// Propagates given `command` through array of child scopes and manages their lifecycle by
     /// removing child scopes that get closed.
     ///
     /// Returns the `childScopes` array by removing scopes which requested to be closed.
-    func manage<S: RUMScope>(childScopes: [S], byPropagatingCommand command: RUMCommand) -> [S] {
-        return childScopes.filter { childScope in
-            let shouldBeKept = childScope.process(command: command)
-            return shouldBeKept
+    static func scopes(byPropagating command: RUMCommand, in scopes: [Element], context: DatadogV1Context, writer: Writer) -> [Element] {
+        return scopes.filter { scope in
+            scope.process(command: command, context: context, writer: writer)
         }
     }
 }

@@ -10,6 +10,8 @@ import XCTest
 extension RUMContext: EquatableInTests {}
 
 class RUMCurrentContextTests: XCTestCase {
+    let context: DatadogV1Context = .mockAny()
+    let writer = FileWriterMock()
     private let queue = DispatchQueue(label: "\(#file)")
 
     func testContextAfterInitializingTheApplication() {
@@ -37,7 +39,11 @@ class RUMCurrentContextTests: XCTestCase {
         )
         let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
-        _ = applicationScope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
+        _ = applicationScope.process(
+            command: RUMStartViewCommand.mockWith(identity: mockView),
+            context: context,
+            writer: writer
+        )
 
         try XCTAssertEqual(
             provider.context,
@@ -58,8 +64,16 @@ class RUMCurrentContextTests: XCTestCase {
         )
         let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
-        _ = applicationScope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
-        _ = applicationScope.process(command: RUMAddUserActionCommand.mockWith(actionType: .tap))
+        _ = applicationScope.process(
+            command: RUMStartViewCommand.mockWith(identity: mockView),
+            context: context,
+            writer: writer
+        )
+        _ = applicationScope.process(
+            command: RUMAddUserActionCommand.mockWith(actionType: .tap),
+            context: context,
+            writer: writer
+        )
 
         try XCTAssertEqual(
             provider.context,
@@ -81,11 +95,19 @@ class RUMCurrentContextTests: XCTestCase {
         let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
         let firstView = createMockViewInWindow()
-        _ = applicationScope.process(command: RUMStartViewCommand.mockWith(identity: firstView))
+        _ = applicationScope.process(
+            command: RUMStartViewCommand.mockWith(identity: firstView),
+            context: context,
+            writer: writer
+        )
         let firstContext = provider.context
 
         let secondView = createMockViewInWindow()
-        _ = applicationScope.process(command: RUMStartViewCommand.mockWith(identity: secondView))
+        _ = applicationScope.process(
+            command: RUMStartViewCommand.mockWith(identity: secondView),
+            context: context,
+            writer: writer
+        )
         let secondContext = provider.context
 
         XCTAssertNotEqual(firstContext, secondContext)
@@ -111,12 +133,20 @@ class RUMCurrentContextTests: XCTestCase {
         let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
         let view = createMockViewInWindow()
-        _ = applicationScope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: view))
+        _ = applicationScope.process(
+            command: RUMStartViewCommand.mockWith(time: currentTime, identity: view),
+            context: context,
+            writer: writer
+        )
         let firstContext = provider.context
 
         currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
 
-        _ = applicationScope.process(command: RUMCommandMock(time: currentTime))
+        _ = applicationScope.process(
+            command: RUMCommandMock(time: currentTime),
+            context: context,
+            writer: writer
+        )
         let secondContext = provider.context
 
         XCTAssertNotEqual(firstContext.sessionID, secondContext.sessionID)
@@ -158,7 +188,11 @@ class RUMCurrentContextTests: XCTestCase {
         )
         let provider = RUMCurrentContext(applicationScope: applicationScope, queue: queue)
 
-        _ = applicationScope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
+        _ = applicationScope.process(
+            command: RUMStartViewCommand.mockWith(identity: mockView),
+            context: context,
+            writer: writer
+        )
 
         XCTAssertEqual(
             provider.context,

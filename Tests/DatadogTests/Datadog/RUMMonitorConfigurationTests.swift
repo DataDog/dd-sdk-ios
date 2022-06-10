@@ -13,6 +13,8 @@ class RUMMonitorConfigurationTests: XCTestCase {
     private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
 
     func testRUMMonitorConfiguration() throws {
+        let expectation = expectation(description: "open feature scope")
+
         let core = DatadogCoreMock(
             context: .mockWith(
                 configuration: .mockWith(
@@ -40,15 +42,21 @@ class RUMMonitorConfigurationTests: XCTestCase {
 
         let monitor = RUMMonitor.initialize(in: core).dd
 
-        let scopeDependencies = monitor.applicationScope.dependencies
+        let dependencies = monitor.applicationScope.dependencies
+        monitor.core.v1.scope(for: RUMFeature.self)?.eventWriteContext { context, _ in
+            XCTAssertTrue(context.userInfoProvider === userInfoProvider)
+            XCTAssertTrue(context.networkConnectionInfoProvider as AnyObject === networkConnectionInfoProvider as AnyObject)
+            XCTAssertTrue(context.carrierInfoProvider as AnyObject === carrierInfoProvider as AnyObject)
 
-        XCTAssertTrue(scopeDependencies.userInfoProvider.userInfoProvider === userInfoProvider)
-        XCTAssertTrue(scopeDependencies.connectivityInfoProvider.networkConnectionInfoProvider as AnyObject === networkConnectionInfoProvider as AnyObject)
-        XCTAssertTrue(scopeDependencies.connectivityInfoProvider.carrierInfoProvider as AnyObject === carrierInfoProvider as AnyObject)
-        XCTAssertEqual(scopeDependencies.sessionSampler.samplingRate, 42.5)
-        XCTAssertEqual(scopeDependencies.serviceName, "service-name")
-        XCTAssertEqual(scopeDependencies.applicationVersion, "1.2.3")
-        XCTAssertEqual(scopeDependencies.sdkVersion, "3.4.5")
+            XCTAssertEqual(context.service, "service-name")
+            XCTAssertEqual(context.version, "1.2.3")
+            XCTAssertEqual(context.sdkVersion, "3.4.5")
+
+            expectation.fulfill()
+        }
+
+        XCTAssertEqual(dependencies.sessionSampler.samplingRate, 42.5)
         XCTAssertEqual(monitor.applicationScope.context.rumApplicationID, "rum-123")
+        waitForExpectations(timeout: 0.5)
     }
 }
