@@ -29,6 +29,7 @@ class MobileDeviceTests: XCTestCase {
             notificationCenter: notificationCenter
         )
 
+        XCTAssertEqual(mobileDevice.brand, "Apple")
         XCTAssertEqual(mobileDevice.name, randomUIDeviceModel)
         XCTAssertEqual(mobileDevice.model, randomModel)
         XCTAssertEqual(mobileDevice.osName, randomOSName)
