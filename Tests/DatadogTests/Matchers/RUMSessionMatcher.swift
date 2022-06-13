@@ -249,8 +249,10 @@ private func validate(rumViewEvents: [RUMViewEvent]) throws {
                 description: "All RUM events must use session plan `1` (RUM Lite). Bad view event: \(viewEvent)"
             )
         }
-        try validate(device: viewEvent.device)
-        try validate(os: viewEvent.os)
+        if viewEvent.source == .ios { // validete only mobile events
+            try validate(device: viewEvent.device)
+            try validate(os: viewEvent.os)
+        }
     }
 }
 
@@ -262,8 +264,10 @@ private func validate(rumActionEvents: [RUMActionEvent]) throws {
                 description: "All RUM events must use session plan `1` (RUM Lite). Bad action event: \(actionEvent)"
             )
         }
-        try validate(device: actionEvent.device)
-        try validate(os: actionEvent.os)
+        if actionEvent.source == .ios { // validete only mobile events
+            try validate(device: actionEvent.device)
+            try validate(os: actionEvent.os)
+        }
     }
 }
 
@@ -283,8 +287,10 @@ private func validate(rumResourceEvents: [RUMResourceEvent]) throws {
                 description: "All RUM events must use session plan `1` (RUM Lite). Bad resource event: \(resourceEvent)"
             )
         }
-        try validate(device: resourceEvent.device)
-        try validate(os: resourceEvent.os)
+        if resourceEvent.source == .ios { // validete only mobile events
+            try validate(device: resourceEvent.device)
+            try validate(os: resourceEvent.os)
+        }
     }
 }
 
@@ -296,8 +302,10 @@ private func validate(rumErrorEvents: [RUMErrorEvent]) throws {
                 description: "All RUM events must use session plan `1` (RUM Lite). Bad error event: \(errorEvent)"
             )
         }
-        try validate(device: errorEvent.device)
-        try validate(os: errorEvent.os)
+        if errorEvent.source == .ios { // validete only mobile events
+            try validate(device: errorEvent.device)
+            try validate(os: errorEvent.os)
+        }
     }
 }
 
@@ -309,8 +317,10 @@ private func validate(rumLongTaskEvents: [RUMLongTaskEvent]) throws {
                 description: "All RUM events must use session plan `1` (RUM Lite). Bad long task event: \(longTaskEvent)"
             )
         }
-        try validate(device: longTaskEvent.device)
-        try validate(os: longTaskEvent.os)
+        if longTaskEvent.source == .ios { // validete only mobile events
+            try validate(device: longTaskEvent.device)
+            try validate(os: longTaskEvent.os)
+        }
     }
 }
 
@@ -384,13 +394,13 @@ private func strictValidate(device: RUMDevice) throws {
 /// It asserts that all values make sense for current environment.
 private func strictValidate(os: RUMOperatingSystem) throws {
     #if os(iOS)
-    if os.name != "iOS" && os.name != "iPadOS" {
+    guard os.name == "iOS" || os.name == "iPadOS" else {
         throw RUMSessionConsistencyException(
             description: "When running on iOS or iPadOS the `os.name` must be either 'iOS' or 'iPadOS'"
         )
     }
     #else
-    if os.name != "tvOS" {
+    guard os.name == "tvOS" else {
         throw RUMSessionConsistencyException(
             description: "When running on tvOS the `os.name` must be 'tvOS'"
         )
