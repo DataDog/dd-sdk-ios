@@ -321,7 +321,7 @@ private func validate(device: RUMDevice?) throws {
         )
     }
     #if DD_COMPILED_FOR_INTEGRATION_TESTS
-    strictValidate(device: device)
+    try strictValidate(device: device)
     #endif
 }
 
@@ -332,7 +332,7 @@ private func validate(os: RUMOperatingSystem?) throws {
         )
     }
     #if DD_COMPILED_FOR_INTEGRATION_TESTS
-    strictValidate(os: os)
+    try strictValidate(os: os)
     #endif
 }
 
