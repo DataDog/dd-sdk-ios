@@ -249,6 +249,8 @@ private func validate(rumViewEvents: [RUMViewEvent]) throws {
                 description: "All RUM events must use session plan `1` (RUM Lite). Bad view event: \(viewEvent)"
             )
         }
+        try validate(device: viewEvent.device)
+        try validate(os: viewEvent.os)
     }
 }
 
@@ -260,6 +262,8 @@ private func validate(rumActionEvents: [RUMActionEvent]) throws {
                 description: "All RUM events must use session plan `1` (RUM Lite). Bad action event: \(actionEvent)"
             )
         }
+        try validate(device: actionEvent.device)
+        try validate(os: actionEvent.os)
     }
 }
 
@@ -279,6 +283,8 @@ private func validate(rumResourceEvents: [RUMResourceEvent]) throws {
                 description: "All RUM events must use session plan `1` (RUM Lite). Bad resource event: \(resourceEvent)"
             )
         }
+        try validate(device: resourceEvent.device)
+        try validate(os: resourceEvent.os)
     }
 }
 
@@ -290,6 +296,8 @@ private func validate(rumErrorEvents: [RUMErrorEvent]) throws {
                 description: "All RUM events must use session plan `1` (RUM Lite). Bad error event: \(errorEvent)"
             )
         }
+        try validate(device: errorEvent.device)
+        try validate(os: errorEvent.os)
     }
 }
 
@@ -301,7 +309,93 @@ private func validate(rumLongTaskEvents: [RUMLongTaskEvent]) throws {
                 description: "All RUM events must use session plan `1` (RUM Lite). Bad long task event: \(longTaskEvent)"
             )
         }
+        try validate(device: longTaskEvent.device)
+        try validate(os: longTaskEvent.os)
     }
+}
+
+private func validate(device: RUMDevice?) throws {
+    guard let device = device else {
+        throw RUMSessionConsistencyException(
+            description: "All RUM events must include device information"
+        )
+    }
+    #if DD_COMPILED_FOR_INTEGRATION_TESTS
+    strictValidate(device: device)
+    #endif
+}
+
+private func validate(os: RUMOperatingSystem?) throws {
+    guard let os = os else {
+        throw RUMSessionConsistencyException(
+            description: "All RUM events must include OS information"
+        )
+    }
+    #if DD_COMPILED_FOR_INTEGRATION_TESTS
+    strictValidate(os: os)
+    #endif
+}
+
+// MARK: - Strict Validation (in Integration Tests)
+
+/// Performs strict validation of `RUMDevice` for integration tests.
+/// It asserts that all values make sense for current environment.
+private func strictValidate(device: RUMDevice) throws {
+    guard device.brand == "Apple" else {
+        throw RUMSessionConsistencyException(description: "All RUM events must use `device.brand = Apple` (got `\(device.brand ?? "nil")` instead)")
+    }
+    #if os(iOS)
+    guard device.type == .mobile || device.type == .tablet else {
+        throw RUMSessionConsistencyException(
+            description: "When running on iOS or iPadOS, the `device.type` must be `.mobile` or `.tablet` (got `\(device.type)` instead)"
+        )
+    }
+    let prefixes = ["iPhone", "iPod", "iPad"]
+    guard prefixes.contains(where: { device.name?.hasPrefix($0) ?? false }) else {
+        throw RUMSessionConsistencyException(
+            description: "When running on iOS or iPadOS, the `device.name` must start with one of: \(prefixes) (got `\(device.name ?? "nil")` instead)"
+        )
+    }
+    guard prefixes.contains(where: { device.model?.hasPrefix($0) ?? false }) else {
+        throw RUMSessionConsistencyException(
+            description: "When running on iOS or iPadOS, the `device.model` must start with one of: \(prefixes) (got `\(device.model ?? "nil")` instead)"
+        )
+    }
+    #else
+    guard device.type != .tv else {
+        throw RUMSessionConsistencyException(
+            description: "When running on tvOS, the `device.type` must be `.tv` (got `\(device.type)` instead)"
+        )
+    }
+    guard device.name == "Apple TV" else {
+        throw RUMSessionConsistencyException(
+            description: "When running on tvOS, the `device.name` must be `Apple TV` (got `\(device.name ?? "nil")` instead)"
+        )
+    }
+    guard device.model?.hasPrefix("AppleTV") ?? false else {
+        throw RUMSessionConsistencyException(
+            description: "When running on tvOS, the `device.model` must start with `AppleTV` (got `\(device.model ?? "nil")` instead)"
+        )
+    }
+    #endif
+}
+
+/// Performs strict validation of `RUMOperatingSystem` for integration tests.
+/// It asserts that all values make sense for current environment.
+private func strictValidate(os: RUMOperatingSystem) throws {
+    #if os(iOS)
+    if os.name != "iOS" && os.name != "iPadOS" {
+        throw RUMSessionConsistencyException(
+            description: "When running on iOS or iPadOS the `os.name` must be either 'iOS' or 'iPadOS'"
+        )
+    }
+    #else
+    if os.name != "tvOS" {
+        throw RUMSessionConsistencyException(
+            description: "When running on tvOS the `os.name` must be 'tvOS'"
+        )
+    }
+    #endif
 }
 
 // MARK: - Debugging

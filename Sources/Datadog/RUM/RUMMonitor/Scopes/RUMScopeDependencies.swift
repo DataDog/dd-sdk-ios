@@ -23,6 +23,8 @@ internal struct RUMScopeDependencies {
     let sdkInitDate: Date
     let backgroundEventTrackingEnabled: Bool
     let appStateListener: AppStateListening
+    let deviceInfo: RUMDevice
+    let osInfo: RUMOperatingSystem
     let userInfoProvider: RUMUserInfoProvider
     let launchTimeProvider: LaunchTimeProviderType
     let connectivityInfoProvider: RUMConnectivityInfoProvider
@@ -56,6 +58,11 @@ internal extension RUMScopeDependencies {
             sdkInitDate: rumFeature.sdkInitDate,
             backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled,
             appStateListener: rumFeature.appStateListener,
+            deviceInfo: RUMDevice(
+                from: rumFeature.deviceInfoProvider,
+                telemetry: rumFeature.telemetry
+            ),
+            osInfo: RUMOperatingSystem(from: rumFeature.deviceInfoProvider),
             userInfoProvider: RUMUserInfoProvider(userInfoProvider: rumFeature.userInfoProvider),
             launchTimeProvider: rumFeature.launchTimeProvider,
             connectivityInfoProvider: RUMConnectivityInfoProvider(

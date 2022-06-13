@@ -32,6 +32,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
     private let rumEventOutput: RUMEventOutput
     private let dateProvider: DateProvider
     private let dateCorrector: DateCorrectorType
+    private let deviceInfoProvider: MobileDevice
     private let rumConfiguration: FeaturesConfiguration.RUM
 
     // MARK: - Initialization
@@ -43,6 +44,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             ),
             dateProvider: rumFeature.dateProvider,
             dateCorrector: rumFeature.dateCorrector,
+            deviceInfoProvider: rumFeature.deviceInfoProvider,
             rumConfiguration: rumFeature.configuration
         )
     }
@@ -51,11 +53,13 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         rumEventOutput: RUMEventOutput,
         dateProvider: DateProvider,
         dateCorrector: DateCorrectorType,
+        deviceInfoProvider: MobileDevice,
         rumConfiguration: FeaturesConfiguration.RUM
     ) {
         self.rumEventOutput = rumEventOutput
         self.dateProvider = dateProvider
         self.dateCorrector = dateCorrector
+        self.deviceInfoProvider = deviceInfoProvider
         self.rumConfiguration = rumConfiguration
     }
 
@@ -235,7 +239,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             connectivity: lastRUMView.connectivity,
             context: nil,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds,
-            device: nil, // TODO: RUMM-2197 add device and OS info
+            device: lastRUMView.device,
             error: .init(
                 handling: nil,
                 handlingStack: nil,
@@ -248,7 +252,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 stack: errorStackTrace,
                 type: errorType
             ),
-            os: nil, // TODO: RUMM-2197 add device and OS info
+            os: lastRUMView.os,
             service: lastRUMView.service,
             session: .init(
                 hasReplay: lastRUMView.session.hasReplay,
@@ -286,8 +290,8 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             connectivity: original.connectivity,
             context: original.context,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds - 1, // -1ms to put the crash after view in RUM session
-            device: nil, // TODO: RUMM-2197 add device and OS info
-            os: nil, // TODO: RUMM-2197 add device and OS info
+            device: original.device,
+            os: original.os,
             service: original.service,
             session: original.session,
             source: original.source ?? .ios,
@@ -358,8 +362,12 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             ),
             context: nil,
             date: startDate.timeIntervalSince1970.toInt64Milliseconds,
-            device: nil, // TODO: RUMM-2197 add device and OS info
-            os: nil, // TODO: RUMM-2197 add device and OS info
+            device: .init(from: deviceInfoProvider, telemetry: nil),
+            // RUMM-2197: In very rare cases, the OS info computed below might not be exactly the one
+            // that the app crashed on. This would correspond to a scenario when the device OS was upgraded
+            // before restarting the app after crash. To solve this, the OS information would have to be
+            // persisted in `crashContext` the same way as we do for other dynamic information.
+            os: .init(from: deviceInfoProvider),
             service: rumConfiguration.common.serviceName,
             session: .init(
                 hasReplay: nil,

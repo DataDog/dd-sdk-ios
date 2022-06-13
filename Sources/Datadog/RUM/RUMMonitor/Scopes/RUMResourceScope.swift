@@ -142,8 +142,8 @@ internal class RUMResourceScope: RUMScope {
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: resourceStartTime).timeIntervalSince1970.toInt64Milliseconds,
-            device: nil, // TODO: RUMM-2197 add device and OS info
-            os: nil, // TODO: RUMM-2197 add device and OS info
+            device: dependencies.deviceInfo,
+            os: dependencies.osInfo,
             resource: .init(
                 connect: resourceMetrics?.connect.flatMap { metric in
                     .init(
@@ -231,7 +231,7 @@ internal class RUMResourceScope: RUMScope {
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
-            device: nil,
+            device: dependencies.deviceInfo,
             error: .init(
                 handling: nil,
                 handlingStack: nil,
@@ -249,7 +249,7 @@ internal class RUMResourceScope: RUMScope {
                 stack: command.stack,
                 type: command.errorType
             ),
-            os: nil, // TODO: RUMM-2197 add device and OS info
+            os: dependencies.osInfo,
             service: dependencies.serviceName,
             session: .init(
                 hasReplay: nil,
