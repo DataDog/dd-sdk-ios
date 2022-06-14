@@ -2,6 +2,7 @@
 
 ### Changes
 * [IMPROVEMENT] Add mobile vitals frequency configuration. See [#876][]
+* [IMPROVEMENT] Include the exact model information in RUM `device.model`. See [#888][]
 
 # 1.11.0 / 13-06-2022
 

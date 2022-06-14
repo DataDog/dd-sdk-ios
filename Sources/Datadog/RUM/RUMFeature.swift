@@ -34,6 +34,7 @@ internal final class RUMFeature {
     let dateProvider: DateProvider
     let dateCorrector: DateCorrectorType
     let appStateListener: AppStateListening
+    let deviceInfoProvider: MobileDevice
     let userInfoProvider: UserInfoProvider
     let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
     let carrierInfoProvider: CarrierInfoProviderType
@@ -165,6 +166,7 @@ internal final class RUMFeature {
         self.dateProvider = commonDependencies.dateProvider
         self.dateCorrector = commonDependencies.dateCorrector
         self.appStateListener = commonDependencies.appStateListener
+        self.deviceInfoProvider = commonDependencies.mobileDevice
         self.userInfoProvider = commonDependencies.userInfoProvider
         self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider
         self.carrierInfoProvider = commonDependencies.carrierInfoProvider

@@ -159,8 +159,8 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             connectivity: dependencies.connectivityInfoProvider.current,
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: actionStartTime).timeIntervalSince1970.toInt64Milliseconds,
-            device: nil, // TODO: RUMM-2197 add device and OS info
-            os: nil, // TODO: RUMM-2197 add device and OS info
+            device: dependencies.deviceInfo,
+            os: dependencies.osInfo,
             service: dependencies.serviceName,
             session: .init(
                 hasReplay: nil,

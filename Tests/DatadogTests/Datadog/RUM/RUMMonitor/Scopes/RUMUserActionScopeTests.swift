@@ -10,7 +10,11 @@ import XCTest
 class RUMUserActionScopeTests: XCTestCase {
     private let output = RUMEventOutputMock()
     private let randomServiceName: String = .mockRandom()
+    private let randomDeviceInfo: RUMDevice = .mockRandom()
+    private let randomOSInfo: RUMOperatingSystem = .mockRandom()
     private lazy var dependencies: RUMScopeDependencies = .mockWith(
+        deviceInfo: randomDeviceInfo,
+        osInfo: randomOSInfo,
         serviceName: randomServiceName,
         eventOutput: output
     )
@@ -64,6 +68,8 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(recordedAction.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(recordedAction.source, .ios)
         XCTAssertEqual(recordedAction.service, randomServiceName)
+        XCTAssertEqual(recordedAction.device, randomDeviceInfo)
+        XCTAssertEqual(recordedAction.os, randomOSInfo)
     }
 
     func testGivenCustomSource_whenActionIsSent_itSendsCustomSource() throws {
@@ -131,6 +137,8 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, randomServiceName)
+        XCTAssertEqual(event.device, randomDeviceInfo)
+        XCTAssertEqual(event.os, randomOSInfo)
     }
 
     func testWhenContinuousUserActionExpires_itSendsActionEvent() throws {

@@ -34,7 +34,7 @@ class RUMFeatureTests: XCTestCase {
         let randomSDKVersion: String = .mockRandom(among: .alphanumerics)
         let randomUploadURL: URL = .mockRandom()
         let randomClientToken: String = .mockRandom()
-        let randomDeviceModel: String = .mockRandom()
+        let randomDeviceName: String = .mockRandom()
         let randomDeviceOSName: String = .mockRandom()
         let randomDeviceOSVersion: String = .mockRandom()
         let randomEncryption: DataEncryption? = Bool.random() ? DataEncryptionMock() : nil
@@ -59,7 +59,11 @@ class RUMFeatureTests: XCTestCase {
                 clientToken: randomClientToken
             ),
             dependencies: .mockWith(
-                mobileDevice: .mockWith(model: randomDeviceModel, osName: randomDeviceOSName, osVersion: randomDeviceOSVersion)
+                mobileDevice: .mockWith(
+                    name: randomDeviceName,
+                    osName: randomDeviceOSName,
+                    osVersion: randomDeviceOSVersion
+                )
             )
         )
         defer { RUMFeature.instance?.deinitialize() }
@@ -82,7 +86,7 @@ class RUMFeatureTests: XCTestCase {
         XCTAssertEqual(
             request.allHTTPHeaderFields?["User-Agent"],
             """
-            \(randomApplicationName)/\(randomApplicationVersion) CFNetwork (\(randomDeviceModel); \(randomDeviceOSName)/\(randomDeviceOSVersion))
+            \(randomApplicationName)/\(randomApplicationVersion) CFNetwork (\(randomDeviceName); \(randomDeviceOSName)/\(randomDeviceOSVersion))
             """
         )
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "text/plain;charset=UTF-8")
