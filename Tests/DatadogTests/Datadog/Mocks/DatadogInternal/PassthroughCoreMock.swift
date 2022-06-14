@@ -70,7 +70,12 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, V1FeatureScope,
             return XCTFail("PassthroughCoreMock missing context")
         }
 
-        try? block(context, self)
+        do {
+           try block(context, self)
+        } catch let error {
+           XCTFail("Encountered an error when executing `eventWriteContext`: \(error)")
+        }
+
         expectation?.fulfill()
     }
 
