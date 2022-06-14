@@ -46,6 +46,9 @@ public typealias DDTracer = Tracer
 
 public class Tracer: OTTracer {
     internal let core: DatadogCoreProtocol
+
+    /// The Tracer configuration
+    internal let configuration: Configuration
     /// Span events mapper configured by the user, `nil` if not set.
     internal let spanEventMapper: SpanEventMapper?
     /// Queue ensuring thread-safety of the `Tracer` and `DDSpan` operations.
@@ -56,16 +59,6 @@ public class Tracer: OTTracer {
     internal let loggingIntegration: TracingWithLoggingIntegration?
 
     private let tracingUUIDGenerator: TracingUUIDGenerator
-
-    /// The service name that will appear in traces (if not provided or `nil`, the SDK default `serviceName` will be used).
-    internal let serviceName: String?
-    /// Enriches traces with network connection info.
-    /// This means: reachability status, connection type, mobile carrier name and many more will be added to every span and span logs.
-    /// For full list of network info attributes see `NetworkConnectionInfo` and `CarrierInfo`.
-    /// - Parameter enabled: `false` by default
-    internal let sendNetworkInfo: Bool
-    /// Tags to be set on all spans. They are set at initialization from Tracer.Configuration
-    private let globalTags: [String: Encodable]?
 
     internal let activeSpansPool = ActiveSpansPool()
 
@@ -117,11 +110,9 @@ public class Tracer: OTTracer {
     ) {
         self.init(
             core: core,
-            serviceName: tracerConfiguration.serviceName,
-            sendNetworkInfo: tracerConfiguration.sendNetworkInfo,
+            configuration: tracerConfiguration,
             spanEventMapper: tracingFeature.configuration.spanEventMapper,
             tracingUUIDGenerator: tracingFeature.configuration.uuidGenerator,
-            globalTags: tracerConfiguration.globalTags,
             rumContextIntegration: (rumEnabled && tracerConfiguration.bundleWithRUM) ? TracingWithRUMContextIntegration() : nil,
             loggingIntegration: loggingFeature.map {
                 TracingWithLoggingIntegration(
@@ -135,17 +126,14 @@ public class Tracer: OTTracer {
 
     internal init(
         core: DatadogCoreProtocol,
-        serviceName: String?,
-        sendNetworkInfo: Bool,
+        configuration: Configuration,
         spanEventMapper: SpanEventMapper?,
         tracingUUIDGenerator: TracingUUIDGenerator,
-        globalTags: [String: Encodable]?,
         rumContextIntegration: TracingWithRUMContextIntegration?,
         loggingIntegration: TracingWithLoggingIntegration?
     ) {
         self.core = core
-        self.serviceName = serviceName
-        self.sendNetworkInfo = sendNetworkInfo
+        self.configuration = configuration
         self.spanEventMapper = spanEventMapper
         self.queue = DispatchQueue(
             label: "com.datadoghq.tracer",
@@ -153,7 +141,6 @@ public class Tracer: OTTracer {
         )
 
         self.tracingUUIDGenerator = tracingUUIDGenerator
-        self.globalTags = globalTags
         self.rumContextIntegration = rumContextIntegration
         self.loggingIntegration = loggingIntegration
     }
@@ -208,7 +195,7 @@ public class Tracer: OTTracer {
     }
 
     internal func startSpan(spanContext: DDSpanContext, operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
-        var combinedTags = globalTags ?? [:]
+        var combinedTags = configuration.globalTags ?? [:]
         if let userTags = tags {
             combinedTags.merge(userTags) { _, last in last }
         }

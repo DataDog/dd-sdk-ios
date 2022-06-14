@@ -256,21 +256,17 @@ extension Tracer {
 
     static func mockWith(
         core: DatadogCoreProtocol,
-        serviceName: String? = nil,
-        sendNetworkInfo: Bool = false,
+        configuration: Configuration = .init(),
         spanEventMapper: SpanEventMapper? = nil,
         tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
-        globalTags: [String: Encodable]? = nil,
         rumContextIntegration: TracingWithRUMContextIntegration? = nil,
         loggingIntegration: TracingWithLoggingIntegration? = nil
     ) -> Tracer {
         return Tracer(
             core: core,
-            serviceName: serviceName,
-            sendNetworkInfo: sendNetworkInfo,
+            configuration: configuration,
             spanEventMapper: spanEventMapper,
             tracingUUIDGenerator: tracingUUIDGenerator,
-            globalTags: globalTags,
             rumContextIntegration: rumContextIntegration,
             loggingIntegration: loggingIntegration
         )

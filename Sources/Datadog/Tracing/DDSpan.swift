@@ -135,6 +135,8 @@ internal class DDSpan: OTSpan {
             return
         }
 
+        let configuration = self.ddTracer.configuration
+
         // Baggage items must be accessed outside the `tracer.queue` as it uses that queue for internal sync.
         let baggageItems = ddContext.baggageItems.all
 
@@ -147,10 +149,10 @@ internal class DDSpan: OTSpan {
                 let builder = SpanEventBuilder(
                     sdkVersion: context.sdkVersion,
                     applicationVersion: context.version,
-                    serviceName: self.ddTracer.serviceName ?? context.service,
+                    serviceName: configuration.serviceName ?? context.service,
                     userInfoProvider: context.userInfoProvider,
-                    networkConnectionInfoProvider: self.ddTracer.sendNetworkInfo ? context.networkConnectionInfoProvider : nil,
-                    carrierInfoProvider: self.ddTracer.sendNetworkInfo ? context.carrierInfoProvider : nil,
+                    networkConnectionInfoProvider: configuration.sendNetworkInfo ? context.networkConnectionInfoProvider : nil,
+                    carrierInfoProvider: configuration.sendNetworkInfo ? context.carrierInfoProvider : nil,
                     dateCorrector: context.dateCorrector,
                     source: context.source,
                     origin: context.ciAppOrigin,

@@ -43,8 +43,8 @@ class TracerConfigurationTests: XCTestCase {
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
 
         XCTAssertNotNil(tracer.core)
-        XCTAssertNil(tracer.serviceName)
-        XCTAssertFalse(tracer.sendNetworkInfo)
+        XCTAssertNil(tracer.configuration.serviceName)
+        XCTAssertFalse(tracer.configuration.sendNetworkInfo)
         XCTAssertNil(tracer.rumContextIntegration)
     }
 
@@ -70,8 +70,8 @@ class TracerConfigurationTests: XCTestCase {
         ).dd
 
         XCTAssertNotNil(tracer.core)
-        XCTAssertEqual(tracer.serviceName, "custom-service-name")
-        XCTAssertTrue(tracer.sendNetworkInfo)
+        XCTAssertEqual(tracer.configuration.serviceName, "custom-service-name")
+        XCTAssertTrue(tracer.configuration.sendNetworkInfo)
         XCTAssertNil(tracer.rumContextIntegration)
     }
 
