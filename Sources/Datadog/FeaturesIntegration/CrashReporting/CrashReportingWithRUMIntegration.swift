@@ -235,6 +235,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             connectivity: lastRUMView.connectivity,
             context: nil,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds,
+            device: nil, // TODO: RUMM-2197 add device and OS info
             error: .init(
                 handling: nil,
                 handlingStack: nil,
@@ -247,6 +248,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 stack: errorStackTrace,
                 type: errorType
             ),
+            os: nil, // TODO: RUMM-2197 add device and OS info
             service: lastRUMView.service,
             session: .init(
                 hasReplay: lastRUMView.session.hasReplay,
@@ -284,6 +286,8 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             connectivity: original.connectivity,
             context: original.context,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds - 1, // -1ms to put the crash after view in RUM session
+            device: nil, // TODO: RUMM-2197 add device and OS info
+            os: nil, // TODO: RUMM-2197 add device and OS info
             service: original.service,
             session: original.session,
             source: original.source ?? .ios,
@@ -305,6 +309,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 firstInputDelay: original.view.firstInputDelay,
                 firstInputTime: original.view.firstInputTime,
                 frozenFrame: nil,
+                frustration: nil,
                 id: original.view.id,
                 inForegroundPeriods: original.view.inForegroundPeriods,
                 isActive: false,
@@ -353,6 +358,8 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             ),
             context: nil,
             date: startDate.timeIntervalSince1970.toInt64Milliseconds,
+            device: nil, // TODO: RUMM-2197 add device and OS info
+            os: nil, // TODO: RUMM-2197 add device and OS info
             service: rumConfiguration.common.serviceName,
             session: .init(
                 hasReplay: nil,
@@ -378,6 +385,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 firstInputDelay: nil,
                 firstInputTime: nil,
                 frozenFrame: nil,
+                frustration: nil,
                 id: viewUUID.toRUMDataFormat,
                 inForegroundPeriods: nil,
                 isActive: false, // we know it won't receive updates

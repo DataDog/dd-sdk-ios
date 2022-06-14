@@ -14,6 +14,8 @@ extension RUMActionEvent: EquatableInTests {}
 extension RUMErrorEvent: EquatableInTests {}
 extension RUMLongTaskEvent: EquatableInTests {}
 extension RUMCrashEvent: EquatableInTests {}
+extension RUMDevice: EquatableInTests {}
+extension RUMOperatingSystem: EquatableInTests {}
 
 extension RUMUser {
     static func mockRandom() -> RUMUser {
@@ -51,6 +53,33 @@ extension RUMEventAttributes: RandomMockable {
     }
 }
 
+extension RUMDevice: RandomMockable {
+    static func mockRandom() -> RUMDevice {
+        return .init(
+            brand: .mockRandom(),
+            model: .mockRandom(),
+            name: .mockRandom(),
+            type: .mockRandom()
+        )
+    }
+}
+
+extension RUMDevice.RUMDeviceType: RandomMockable {
+    static func mockRandom() -> RUMDevice.RUMDeviceType {
+        return [.mobile, .desktop, .tablet, .tv, .gamingConsole, .bot, .other].randomElement()!
+    }
+}
+
+extension RUMOperatingSystem: RandomMockable {
+    static func mockRandom() -> RUMOperatingSystem {
+        return .init(
+            name: .mockRandom(length: 5),
+            version: .mockRandom(among: .decimalDigits, length: 2),
+            versionMajor: .mockRandom(among: .decimalDigits, length: 1)
+        )
+    }
+}
+
 extension RUMViewEvent: RandomMockable {
     static func mockRandom() -> RUMViewEvent {
         return mockRandomWith()
@@ -72,6 +101,8 @@ extension RUMViewEvent: RandomMockable {
             connectivity: .mockRandom(),
             context: .mockRandom(),
             date: .mockRandom(),
+            device: .mockRandom(),
+            os: .mockRandom(),
             service: .mockRandom(),
             session: .init(
                 hasReplay: nil,
@@ -97,6 +128,7 @@ extension RUMViewEvent: RandomMockable {
                 firstInputDelay: .mockRandom(),
                 firstInputTime: .mockRandom(),
                 frozenFrame: .init(count: .mockRandom()),
+                frustration: nil,
                 id: .mockRandom(),
                 inForegroundPeriods: [
                     .init(
@@ -140,6 +172,8 @@ extension RUMResourceEvent: RandomMockable {
             connectivity: .mockRandom(),
             context: .mockRandom(),
             date: .mockRandom(),
+            device: .mockRandom(),
+            os: .mockRandom(),
             resource: .init(
                 connect: .init(duration: .mockRandom(), start: .mockRandom()),
                 dns: .init(duration: .mockRandom(), start: .mockRandom()),
@@ -189,12 +223,13 @@ extension RUMActionEvent: RandomMockable {
             action: .init(
                 crash: .init(count: .mockRandom()),
                 error: .init(count: .mockRandom()),
-                frustrationType: nil,
+                frustration: nil,
                 id: .mockRandom(),
                 loadingTime: .mockRandom(),
                 longTask: .init(count: .mockRandom()),
+                position: nil,
                 resource: .init(count: .mockRandom()),
-                target: .init(name: .mockRandom()),
+                target: .init(height: nil, name: .mockRandom(), selector: nil, width: .mockRandom()),
                 type: [.tap, .swipe, .scroll].randomElement()!
             ),
             application: .init(id: .mockRandom()),
@@ -202,6 +237,8 @@ extension RUMActionEvent: RandomMockable {
             connectivity: .mockRandom(),
             context: .mockRandom(),
             date: .mockRandom(),
+            device: .mockRandom(),
+            os: .mockRandom(),
             service: .mockRandom(),
             session: .init(
                 hasReplay: nil,
@@ -241,6 +278,7 @@ extension RUMErrorEvent: RandomMockable {
             connectivity: .mockRandom(),
             context: .mockRandom(),
             date: .mockRandom(),
+            device: .mockRandom(),
             error: .init(
                 handling: nil,
                 handlingStack: nil,
@@ -262,6 +300,7 @@ extension RUMErrorEvent: RandomMockable {
                 stack: .mockRandom(),
                 type: .mockRandom()
             ),
+            os: .mockRandom(),
             service: .mockRandom(),
             session: .init(
                 hasReplay: nil,
@@ -308,7 +347,9 @@ extension RUMLongTaskEvent: RandomMockable {
             connectivity: .mockRandom(),
             context: .mockRandom(),
             date: .mockRandom(),
+            device: .mockRandom(),
             longTask: .init(duration: .mockRandom(), id: .mockRandom(), isFrozenFrame: .mockRandom()),
+            os: .mockRandom(),
             service: .mockRandom(),
             session: .init(hasReplay: false, id: .mockRandom(), type: .user),
             source: .ios,
