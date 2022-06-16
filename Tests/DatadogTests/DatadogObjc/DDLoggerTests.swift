@@ -143,7 +143,7 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSettingTagsAndAttributes() throws {
-        core.v1Context = .mockWith(
+        core.context = .mockWith(
             configuration: .mockWith(environment: "test")
         )
 

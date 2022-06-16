@@ -194,7 +194,7 @@ class DDTracerTests: XCTestCase {
     }
 
     func testInjectingSpanContextToValidCarrierAndFormat() throws {
-        let objcTracer = DDTracer(swiftTracer: Tracer.mockAny())
+        let objcTracer = DDTracer(swiftTracer: Tracer.mockAny(in: core))
         let objcSpanContext = DDSpanContextObjc(
             swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2)
         )
@@ -211,7 +211,7 @@ class DDTracerTests: XCTestCase {
     }
 
     func testInjectingRejectedSpanContextToValidCarrierAndFormat() throws {
-        let objcTracer = DDTracer(swiftTracer: Tracer.mockAny())
+        let objcTracer = DDTracer(swiftTracer: Tracer.mockAny(in: core))
         let objcSpanContext = DDSpanContextObjc(
             swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2)
         )
@@ -226,7 +226,7 @@ class DDTracerTests: XCTestCase {
     }
 
     func testInjectingSpanContextToInvalidCarrierOrFormat() throws {
-        let objcTracer = DDTracer(swiftTracer: Tracer.mockAny())
+        let objcTracer = DDTracer(swiftTracer: Tracer.mockAny(in: core))
         let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2))
 
         let objcValidWriter = DDHTTPHeadersWriter(samplingRate: 100)

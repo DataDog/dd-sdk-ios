@@ -153,7 +153,7 @@ class DDRUMMonitorTests: XCTestCase {
                 rumFeature: rumFeature,
                 crashReportingFeature: nil,
                 context: v1Context,
-                telemetry: core.v1.telemetry
+                telemetry: v1Context.telemetry
             )
             .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
             dateProvider: v1Context.dateProvider
@@ -342,7 +342,7 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingActionEvents() throws {
-        core.v1Context = .mockWith(
+        core.context = .mockWith(
             dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
             )

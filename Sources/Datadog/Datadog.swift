@@ -210,7 +210,6 @@ public class Datadog {
         )
 
         // First, initialize features:
-        var telemetry: Telemetry?
         var logging: LoggingFeature?
         var tracing: TracingFeature?
         var rum: RUMFeature?
@@ -220,7 +219,7 @@ public class Datadog {
         var rumInstrumentation: RUMInstrumentation?
 
         if let rumConfiguration = configuration.rum {
-            telemetry = RUMTelemetry(
+            core.telemetry = RUMTelemetry(
                 in: core,
                 sdkVersion: configuration.common.sdkVersion,
                 applicationID: rumConfiguration.applicationID,
@@ -229,13 +228,13 @@ public class Datadog {
                 dateCorrector: dateCorrector,
                 sampler: rumConfiguration.telemetrySampler
             )
-            core.telemetry = telemetry
 
             rum = try core.create(
                 storageConfiguration: createV2RUMStorageConfiguration(),
                 uploadConfiguration: createV2RUMUploadConfiguration(v1Configuration: rumConfiguration),
                 featureSpecificConfiguration: rumConfiguration
             )
+
             core.register(feature: rum)
 
             if let instrumentationConfiguration = rumConfiguration.instrumentation {
@@ -270,7 +269,7 @@ public class Datadog {
             crashReporting = CrashReportingFeature(
                 configuration: crashReportingConfiguration,
                 commonDependencies: commonDependencies,
-                telemetry: telemetry
+                telemetry: core.telemetry
             )
 
             core.register(feature: crashReporting)

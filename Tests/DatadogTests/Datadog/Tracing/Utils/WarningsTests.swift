@@ -46,7 +46,7 @@ class WarningsTests: XCTestCase {
 
         output.recordedLog = nil
 
-        let succeedingCast: () -> DDSpan? = { warnIfCannotCast(value: DDSpan.mockAny()) }
+        let succeedingCast: () -> DDSpan? = { warnIfCannotCast(value: DDSpan.mockAny(in: core)) }
         XCTAssertNotNil(succeedingCast())
         XCTAssertNil(output.recordedLog)
     }

@@ -45,10 +45,12 @@ public struct DDTags {
 public typealias DDTracer = Tracer
 
 public class Tracer: OTTracer {
-    /// Builds the `Span` from user input.
-    internal let spanBuilder: SpanEventBuilder
-    /// Writes the `Span` to file.
-    internal let spanOutput: SpanOutput
+    internal let core: DatadogCoreProtocol
+
+    /// The Tracer configuration
+    internal let configuration: Configuration
+    /// Span events mapper configured by the user, `nil` if not set.
+    internal let spanEventMapper: SpanEventMapper?
     /// Queue ensuring thread-safety of the `Tracer` and `DDSpan` operations.
     internal let queue: DispatchQueue
     /// Integration with RUM Context. `nil` if disabled for this Tracer or if the RUM feature is disabled.
@@ -56,11 +58,7 @@ public class Tracer: OTTracer {
     /// Integration with Logging. `nil` if the Logging feature is disabled.
     internal let loggingIntegration: TracingWithLoggingIntegration?
 
-    private let dateProvider: DateProvider
     private let tracingUUIDGenerator: TracingUUIDGenerator
-
-    /// Tags to be set on all spans. They are set at initialization from Tracer.Configuration
-    private let globalTags: [String: Encodable]?
 
     internal let activeSpansPool = ActiveSpansPool()
 
@@ -89,11 +87,11 @@ public class Tracer: OTTracer {
                 )
             }
             return DDTracer(
+                core: core,
                 tracingFeature: tracingFeature,
                 tracerConfiguration: configuration,
                 rumEnabled: core.v1.feature(RUMFeature.self) != nil,
                 loggingFeature: core.v1.feature(LoggingFeature.self),
-                telemetry: core.v1.telemetry,
                 context: context
             )
         } catch {
@@ -103,34 +101,18 @@ public class Tracer: OTTracer {
     }
 
     internal convenience init(
+        core: DatadogCoreProtocol,
         tracingFeature: TracingFeature,
         tracerConfiguration: Configuration,
         rumEnabled: Bool,
         loggingFeature: LoggingFeature?,
-        telemetry: Telemetry?,
         context: DatadogV1Context
     ) {
         self.init(
-            spanBuilder: SpanEventBuilder(
-                sdkVersion: context.sdkVersion,
-                applicationVersion: context.version,
-                serviceName: tracerConfiguration.serviceName ?? context.service,
-                userInfoProvider: context.userInfoProvider,
-                networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? context.networkConnectionInfoProvider : nil,
-                carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? context.carrierInfoProvider : nil,
-                dateCorrector: context.dateCorrector,
-                source: context.source,
-                origin: context.ciAppOrigin,
-                eventsMapper: tracingFeature.configuration.spanEventMapper,
-                telemetry: telemetry
-            ),
-            spanOutput: SpanFileOutput(
-                fileWriter: tracingFeature.storage.writer,
-                environment: context.env
-            ),
-            dateProvider: context.dateProvider,
+            core: core,
+            configuration: tracerConfiguration,
+            spanEventMapper: tracingFeature.configuration.spanEventMapper,
             tracingUUIDGenerator: tracingFeature.configuration.uuidGenerator,
-            globalTags: tracerConfiguration.globalTags,
             rumContextIntegration: (rumEnabled && tracerConfiguration.bundleWithRUM) ? TracingWithRUMContextIntegration() : nil,
             loggingIntegration: loggingFeature.map {
                 TracingWithLoggingIntegration(
@@ -143,23 +125,22 @@ public class Tracer: OTTracer {
     }
 
     internal init(
-        spanBuilder: SpanEventBuilder,
-        spanOutput: SpanOutput,
-        dateProvider: DateProvider,
+        core: DatadogCoreProtocol,
+        configuration: Configuration,
+        spanEventMapper: SpanEventMapper?,
         tracingUUIDGenerator: TracingUUIDGenerator,
-        globalTags: [String: Encodable]?,
         rumContextIntegration: TracingWithRUMContextIntegration?,
         loggingIntegration: TracingWithLoggingIntegration?
     ) {
-        self.spanBuilder = spanBuilder
-        self.spanOutput = spanOutput
+        self.core = core
+        self.configuration = configuration
+        self.spanEventMapper = spanEventMapper
         self.queue = DispatchQueue(
             label: "com.datadoghq.tracer",
             target: .global(qos: .userInteractive)
         )
-        self.dateProvider = dateProvider
+
         self.tracingUUIDGenerator = tracingUUIDGenerator
-        self.globalTags = globalTags
         self.rumContextIntegration = rumContextIntegration
         self.loggingIntegration = loggingIntegration
     }
@@ -214,7 +195,7 @@ public class Tracer: OTTracer {
     }
 
     internal func startSpan(spanContext: DDSpanContext, operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
-        var combinedTags = globalTags ?? [:]
+        var combinedTags = configuration.globalTags ?? [:]
         if let userTags = tags {
             combinedTags.merge(userTags) { _, last in last }
         }
@@ -226,7 +207,7 @@ public class Tracer: OTTracer {
             tracer: self,
             context: spanContext,
             operationName: operationName,
-            startTime: startTime ?? dateProvider.currentDate(),
+            startTime: startTime ?? core.v1.context?.dateProvider.currentDate() ?? Date(),
             tags: combinedTags
         )
         return span

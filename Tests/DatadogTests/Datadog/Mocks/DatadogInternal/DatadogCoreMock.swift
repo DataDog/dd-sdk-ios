@@ -5,15 +5,16 @@
  */
 
 import Foundation
+
 @testable import Datadog
 
 internal final class DatadogCoreMock: Flushable {
     private var v1Features: [String: Any] = [:]
 
-    var v1Context: DatadogV1Context?
+    var context: DatadogV1Context?
 
-    init(v1Context: DatadogV1Context? = .mockAny()) {
-        self.v1Context = v1Context
+    init(context: DatadogV1Context? = .mockAny()) {
+        self.context = context
     }
 
     /// Flush resgistered features.
@@ -48,7 +49,7 @@ extension DatadogCoreMock: DatadogV1CoreProtocol {
     }
 
     func scope<T>(for featureType: T.Type) -> V1FeatureScope? {
-        guard let context = v1Context else {
+        guard let context = context else {
             return nil
         }
 
@@ -63,53 +64,6 @@ extension DatadogCoreMock: DatadogV1CoreProtocol {
             storage: feature.storage,
             telemetry: nil
         )
-    }
-
-    var context: DatadogV1Context? {
-        return v1Context
-    }
-
-    var telemetry: Telemetry? {
-        return nil
-    }
-}
-
-/// `Flushable` object resets its state on flush.
-///
-/// Calling `flush` method should reset any in-memory and persistent
-/// data to initialised state.
-internal protocol Flushable {
-    /// Flush data and reset state.
-    func flush()
-}
-
-extension LoggingFeature: Flushable {
-    func flush() {
-        deinitialize()
-    }
-}
-
-extension TracingFeature: Flushable {
-    func flush() {
-        deinitialize()
-    }
-}
-
-extension RUMFeature: Flushable {
-    func flush() {
-        deinitialize()
-    }
-}
-
-extension RUMInstrumentation: Flushable {
-    func flush() {
-        deinitialize()
-    }
-}
-
-extension URLSessionAutoInstrumentation: Flushable {
-    func flush() {
-        deinitialize()
     }
 }
 

@@ -23,9 +23,6 @@ internal protocol DatadogV1CoreProtocol: DatadogCoreProtocol {
     /// The SDK context created upon core initialization or `nil` if SDK was not yet initialized.
     var context: DatadogV1Context? { get }
 
-    /// Telemetry monitor for this instance of the SDK or `nil` if not configured.
-    var telemetry: Telemetry? { get }
-
     /// Registers a feature instance by its type description.
     ///
     /// - Parameter instance: The feaure instance to register
@@ -64,10 +61,6 @@ extension NOOPDatadogCore: DatadogV1CoreProtocol {
 
     /// Returns `nil`.
     var context: DatadogV1Context? {
-        return nil
-    }
-
-    var telemetry: Telemetry? {
         return nil
     }
 

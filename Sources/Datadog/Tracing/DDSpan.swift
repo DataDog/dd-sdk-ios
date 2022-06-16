@@ -17,10 +17,6 @@ internal class DDSpan: OTSpan {
     internal let ddContext: DDSpanContext
     /// Span creation date
     internal let startTime: Date
-    /// Builds the `Span` from user input.
-    internal let spanBuilder: SpanEventBuilder
-    /// Writes the `Span` to file.
-    private let spanOutput: SpanOutput
     /// Writes span logs to Logging Feature. `nil` if Logging feature is disabled.
     private let loggingIntegration: TracingWithLoggingIntegration?
 
@@ -47,8 +43,6 @@ internal class DDSpan: OTSpan {
         self.ddTracer = tracer
         self.ddContext = context
         self.startTime = startTime
-        self.spanBuilder = tracer.spanBuilder
-        self.spanOutput = tracer.spanOutput
         self.loggingIntegration = tracer.loggingIntegration
         self.queue = ddTracer.queue // share the queue among all spans
         self.unsafeOperationName = operationName
@@ -137,6 +131,12 @@ internal class DDSpan: OTSpan {
 
     /// Sends span event for given `DDSpan`.
     private func sendSpan(finishTime: Date) {
+        guard let tracing = ddTracer.core.v1.scope(for: TracingFeature.self) else {
+            return
+        }
+
+        let configuration = self.ddTracer.configuration
+
         // Baggage items must be accessed outside the `tracer.queue` as it uses that queue for internal sync.
         let baggageItems = ddContext.baggageItems.all
 
@@ -145,18 +145,36 @@ internal class DDSpan: OTSpan {
         // attributes encoding to JSON string values (for tags and extra user info). It captures `self` strongly
         // as it is very likely to be deallocated after return.
         queue.async {
-            let span = self.spanBuilder.createSpanEvent(
-                traceID: self.ddContext.traceID,
-                spanID: self.ddContext.spanID,
-                parentSpanID: self.ddContext.parentSpanID,
-                operationName: self.unsafeOperationName,
-                startTime: self.startTime,
-                finishTime: finishTime,
-                tags: self.unsafeTags,
-                baggageItems: baggageItems,
-                logFields: self.unsafeLogFields
-            )
-            self.spanOutput.write(span: span)
+            tracing.eventWriteContext { context, writer in
+                let builder = SpanEventBuilder(
+                    sdkVersion: context.sdkVersion,
+                    applicationVersion: context.version,
+                    serviceName: configuration.serviceName ?? context.service,
+                    userInfoProvider: context.userInfoProvider,
+                    networkConnectionInfoProvider: configuration.sendNetworkInfo ? context.networkConnectionInfoProvider : nil,
+                    carrierInfoProvider: configuration.sendNetworkInfo ? context.carrierInfoProvider : nil,
+                    dateCorrector: context.dateCorrector,
+                    source: context.source,
+                    origin: context.ciAppOrigin,
+                    eventsMapper: self.ddTracer.spanEventMapper,
+                    telemetry: context.telemetry
+                )
+
+                let event = builder.createSpanEvent(
+                    traceID: self.ddContext.traceID,
+                    spanID: self.ddContext.spanID,
+                    parentSpanID: self.ddContext.parentSpanID,
+                    operationName: self.unsafeOperationName,
+                    startTime: self.startTime,
+                    finishTime: finishTime,
+                    tags: self.unsafeTags,
+                    baggageItems: baggageItems,
+                    logFields: self.unsafeLogFields
+                )
+
+                let envelope = SpanEventsEnvelope(span: event, environment: context.env)
+                writer.write(value: envelope)
+            }
         }
     }
 

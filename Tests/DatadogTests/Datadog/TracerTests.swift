@@ -25,7 +25,7 @@ class TracerTests: XCTestCase {
     // MARK: - Customizing Tracer
 
     func testSendingSpanWithDefaultTracer() throws {
-        core.v1Context = .mockWith(
+        core.context = .mockWith(
             configuration: .mockWith(
                 applicationVersion: "1.0.0",
                 applicationBundleIdentifier: "com.datadoghq.ios-sdk",
@@ -321,7 +321,7 @@ class TracerTests: XCTestCase {
     func testSendingUserInfo() throws {
         let userInfoProvider = UserInfoProvider()
 
-        core.v1Context = .mockWith(
+        core.context = .mockWith(
             dependencies: .mockWith(
                 userInfoProvider: userInfoProvider
             )
@@ -382,7 +382,7 @@ class TracerTests: XCTestCase {
     func testSendingCarrierInfoWhenEnteringAndLeavingCellularServiceRange() throws {
         let carrierInfoProvider = CarrierInfoProviderMock(carrierInfo: nil)
 
-        core.v1Context = .mockWith(
+        core.context = .mockWith(
             dependencies: .mockWith(
                 carrierInfoProvider: carrierInfoProvider
             )
@@ -431,7 +431,7 @@ class TracerTests: XCTestCase {
     func testSendingNetworkConnectionInfoWhenReachabilityChanges() throws {
         let networkConnectionInfoProvider = NetworkConnectionInfoProviderMock.mockAny()
 
-        core.v1Context = .mockWith(
+        core.context = .mockWith(
             dependencies: .mockWith(
                 networkConnectionInfoProvider: networkConnectionInfoProvider
             )
@@ -743,7 +743,7 @@ class TracerTests: XCTestCase {
     // MARK: - Injecting span context into carrier
 
     func testItInjectsSpanContextWithHTTPHeadersWriter() {
-        let tracer: Tracer = .mockAny()
+        let tracer: Tracer = .mockAny(in: PassthroughCoreMock())
         let spanContext1 = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
         let spanContext2 = DDSpanContext(traceID: 3, spanID: 4, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
@@ -774,7 +774,7 @@ class TracerTests: XCTestCase {
     }
 
     func testItInjectsRejectedSpanContextWithHTTPHeadersWriter() {
-        let tracer: Tracer = .mockAny()
+        let tracer: Tracer = .mockAny(in: PassthroughCoreMock())
         let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
         let httpHeadersWriter = HTTPHeadersWriter(sampler: .mockRejectAll())
@@ -791,7 +791,7 @@ class TracerTests: XCTestCase {
     }
 
     func testItExtractsSpanContextWithHTTPHeadersReader() {
-        let tracer: Tracer = .mockAny()
+        let tracer: Tracer = .mockAny(in: PassthroughCoreMock())
         let injectedSpanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
         let httpHeadersWriter = HTTPHeadersWriter(sampler: .mockKeepAll())
@@ -814,7 +814,7 @@ class TracerTests: XCTestCase {
         let deviceTime: Date = .mockDecember15th2019At10AMUTC()
         let serverTimeDifference = TimeInterval.random(in: -5..<5).rounded() // few seconds difference
 
-        core.v1Context = .mockWith(
+        core.context = .mockWith(
             dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(using: deviceTime),
                 dateCorrector: DateCorrectorMock(correctionOffset: serverTimeDifference)
@@ -893,7 +893,7 @@ class TracerTests: XCTestCase {
         defer { consolePrint = { print($0) } }
 
         // given
-        core.v1Context = nil
+        core.context = nil
 
         // when
         let tracer = Tracer.initialize(configuration: .init(), in: core)
