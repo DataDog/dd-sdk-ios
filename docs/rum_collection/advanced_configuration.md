@@ -263,7 +263,7 @@ You can use the following methods in `Datadog.Configuration.Builder` when creati
 : Enables tracking `UIViewControllers` as RUM views. You can use default implementation of `predicate` by calling this API with no parameter (`trackUIKitRUMViews()`) or implement [your own `UIKitRUMViewsPredicate`](#automatically-track-views) customized for your app.
 
 `trackUIKitRUMActions(using predicate: UIKitRUMUserActionsPredicate)`
-: Enables tracking user interactions (taps) as RUM actions. You can use default implementation of `predicate` by calling this API with no parameter (`trackUIKitRUMActions()`) or implement [your own `UIKitRUMUserActionsPredicate`](#automatically-track-user-actions) customized for your app.
+: Enables tracking user interactions (taps) as RUM actions. You can use the default implementation of `predicate` by calling this API with no parameter (`trackUIKitRUMActions()`) or implement [your own `UIKitRUMUserActionsPredicate`](#automatically-track-user-actions) customized for your app.
 
 `trackURLSession(firstPartyHosts: Set<String>)`
 : Enables tracking `URLSession` tasks (network requests) as RUM resources. The `firstPartyHosts` parameter defines hosts that are categorized as `first-party` resources (if RUM is enabled) and have tracing information injected (if tracing feature is enabled).
