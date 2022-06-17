@@ -1,5 +1,5 @@
 ---
-title: RUM iOS Monitoring
+title: RUM iOS and tvOS Monitoring
 kind: documentation
 beta: true
 description: "Collect RUM data from your iOS and tvOS applications."
@@ -26,7 +26,7 @@ Datadog Real User Monitoring (RUM) enables you to visualize and analyze the real
 3. Initialize the library.
 4. Initialize the RUM Monitor, `DDURLSessionDelegate`, and start sending data.
 
-**Note:** The minimum supported version for the Datadog iOS SDK is iOS v11+. The iOS SDK also supports tvOS. 
+**Note:** The minimum supported version for the Datadog iOS SDK is iOS v11+. The Datadog iOS SDK also supports tvOS. 
 
 ### Declare SDK as dependency
 
