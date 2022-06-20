@@ -438,6 +438,44 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertNil(longTaskConfigured.rum!.instrumentation!.uiKitRUMUserActionsPredicate)
     }
 
+    func testMobileVitalsFrequency() throws {
+        var custom = try FeaturesConfiguration(
+            configuration: .mockWith(
+                rumEnabled: true,
+                mobileVitalsFrequency: .average
+            ),
+            appContext: .mockAny()
+        )
+        XCTAssertEqual(custom.rum?.vitalsFrequency, 0.5)
+
+        custom = try FeaturesConfiguration(
+            configuration: .mockWith(
+                rumEnabled: true,
+                mobileVitalsFrequency: .frequent
+            ),
+            appContext: .mockAny()
+        )
+        XCTAssertEqual(custom.rum?.vitalsFrequency, 0.1)
+
+        custom = try FeaturesConfiguration(
+            configuration: .mockWith(
+                rumEnabled: true,
+                mobileVitalsFrequency: .rare
+            ),
+            appContext: .mockAny()
+        )
+        XCTAssertEqual(custom.rum?.vitalsFrequency, 1)
+
+        custom = try FeaturesConfiguration(
+            configuration: .mockWith(
+                rumEnabled: true,
+                mobileVitalsFrequency: .never
+            ),
+            appContext: .mockAny()
+        )
+        XCTAssertNil(custom.rum?.vitalsFrequency)
+    }
+
     // MARK: - Crash Reporting Configuration Tests
 
     func testWhenCrashReportingIsDisabled() throws {

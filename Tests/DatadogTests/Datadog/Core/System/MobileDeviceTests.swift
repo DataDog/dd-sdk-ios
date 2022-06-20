@@ -12,22 +12,36 @@ class MobileDeviceTests: XCTestCase {
     private let notificationCenter = NotificationCenter()
 
     func testWhenRunningOnMobile_itUsesUIDeviceInfo() {
-        let uiDevice = UIDeviceMock(
-            model: "model mock",
-            systemName: "system name mock",
-            systemVersion: "system version mock"
-        )
-        let mobileDevice = MobileDevice(uiDevice: uiDevice, processInfo: ProcessInfoMock(), notificationCenter: notificationCenter)
+        let randomUIDeviceModel: String = .mockRandom()
+        let randomModel: String = .mockRandom()
+        let randomOSName: String = .mockRandom()
+        let randomOSVersion: String = .mockRandom()
 
-        XCTAssertEqual(mobileDevice.model, uiDevice.model)
-        XCTAssertEqual(mobileDevice.osName, uiDevice.systemName)
-        XCTAssertEqual(mobileDevice.osVersion, uiDevice.systemVersion)
+        let uiDevice = UIDeviceMock(
+            model: randomUIDeviceModel,
+            systemName: randomOSName,
+            systemVersion: randomOSVersion
+        )
+        let mobileDevice = MobileDevice(
+            model: randomModel,
+            uiDevice: uiDevice,
+            processInfo: ProcessInfoMock(),
+            notificationCenter: notificationCenter
+        )
+
+        XCTAssertEqual(mobileDevice.brand, "Apple")
+        XCTAssertEqual(mobileDevice.name, randomUIDeviceModel)
+        XCTAssertEqual(mobileDevice.model, randomModel)
+        XCTAssertEqual(mobileDevice.osName, randomOSName)
+        XCTAssertEqual(mobileDevice.osVersion, randomOSVersion)
     }
 
     #if os(iOS)
+
     func testWhenRunningOnMobile_itUsesUIDeviceBatteryState() {
         func mobileDevice(withBatteryState bateryState: UIDevice.BatteryState) -> MobileDevice {
             return MobileDevice(
+                model: .mockAny(),
                 uiDevice: UIDeviceMock(batteryState: bateryState),
                 processInfo: ProcessInfoMock(),
                 notificationCenter: notificationCenter
@@ -42,6 +56,7 @@ class MobileDeviceTests: XCTestCase {
     func testWhenRunningOnMobile_itUsesUIDeviceBatteryLevel() {
         let randomBatteryLevel: Float = .random(in: 0...1)
         let mobileDevice = MobileDevice(
+            model: .mockAny(),
             uiDevice: UIDeviceMock(batteryLevel: randomBatteryLevel),
             processInfo: ProcessInfoMock(),
             notificationCenter: notificationCenter
@@ -54,6 +69,7 @@ class MobileDeviceTests: XCTestCase {
         let isLowPowerModeEnabled: Bool = .random()
 
         let mobileDevice = MobileDevice(
+            model: .mockAny(),
             uiDevice: UIDeviceMock(),
             processInfo: ProcessInfoMock(isLowPowerModeEnabled: isLowPowerModeEnabled),
             notificationCenter: notificationCenter
@@ -78,7 +94,12 @@ class MobileDeviceTests: XCTestCase {
 
     func testWhenRunningOnMobile_itTogglesBatteryMonitoring() {
         let uiDevice = UIDeviceMock(isBatteryMonitoringEnabled: false)
-        let mobileDevice = MobileDevice(uiDevice: uiDevice, processInfo: ProcessInfoMock(), notificationCenter: notificationCenter)
+        let mobileDevice = MobileDevice(
+            model: .mockAny(),
+            uiDevice: uiDevice,
+            processInfo: ProcessInfoMock(),
+            notificationCenter: notificationCenter
+        )
 
         XCTAssertFalse(uiDevice.isBatteryMonitoringEnabled)
         mobileDevice.enableBatteryStatusMonitoring()
@@ -86,5 +107,15 @@ class MobileDeviceTests: XCTestCase {
         mobileDevice.resetBatteryStatusMonitoring()
         XCTAssertFalse(uiDevice.isBatteryMonitoringEnabled)
     }
+
+    #elseif os(tvOS)
+
+    func testWhenRunningOnAppleTV_itReportsFullBatteryState() {
+        let device = MobileDevice()
+        XCTAssertEqual(device.currentBatteryStatus().level, 1)
+        XCTAssertEqual(device.currentBatteryStatus().state, .full)
+        XCTAssertFalse(device.currentBatteryStatus().isLowPowerModeEnabled)
+    }
+
     #endif
 }

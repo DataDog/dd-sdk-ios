@@ -10,7 +10,11 @@ import XCTest
 class RUMResourceScopeTests: XCTestCase {
     private let output = RUMEventOutputMock()
     private let randomServiceName: String = .mockRandom()
+    private let randomDeviceInfo: RUMDevice = .mockRandom()
+    private let randomOSInfo: RUMOperatingSystem = .mockRandom()
     private lazy var dependencies: RUMScopeDependencies = .mockWith(
+        deviceInfo: randomDeviceInfo,
+        osInfo: randomOSInfo,
         serviceName: randomServiceName,
         firstPartyURLsFilter: FirstPartyURLsFilter(hosts: ["firstparty.com"]),
         eventOutput: output
@@ -104,6 +108,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.spanId, "200")
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.service, randomServiceName)
+        XCTAssertEqual(event.device, randomDeviceInfo)
+        XCTAssertEqual(event.os, randomOSInfo)
     }
 
     func testGivenConfiguredSoruce_whenResourceLoadingEnds_itSendsResourceEventWithCorrecSource() throws {
@@ -212,6 +218,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.spanId, "200")
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.service, randomServiceName)
+        XCTAssertEqual(event.device, randomDeviceInfo)
+        XCTAssertEqual(event.os, randomOSInfo)
     }
 
     func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEventWithCustomSpanAndTraceId() throws {
@@ -277,6 +285,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.spanId, "200")
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, randomServiceName)
+        XCTAssertEqual(event.device, randomDeviceInfo)
+        XCTAssertEqual(event.os, randomOSInfo)
     }
 
     func testGivenStartedResource_whenResourceLoadingEndsWithError_itSendsErrorEvent() throws {
@@ -333,6 +343,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, randomServiceName)
+        XCTAssertEqual(event.device, randomDeviceInfo)
+        XCTAssertEqual(event.os, randomOSInfo)
     }
 
     func testGivenConfiguredSource_whenResourceLoadingEndsWithError_itSendsErrorEventWithConfiguredSource() throws {
@@ -373,6 +385,8 @@ class RUMResourceScopeTests: XCTestCase {
         let event = try XCTUnwrap(output.recordedEvents(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.source, RUMErrorEvent.Source(rawValue: customSource))
         XCTAssertEqual(event.service, randomServiceName)
+        XCTAssertEqual(event.device, randomDeviceInfo)
+        XCTAssertEqual(event.os, randomOSInfo)
     }
 
     func testGivenStartedResource_whenResourceReceivesMetricsBeforeItEnds_itUsesMetricValuesInSentResourceEvent() throws {
@@ -483,6 +497,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.dd.spanId)
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, randomServiceName)
+        XCTAssertEqual(event.device, randomDeviceInfo)
+        XCTAssertEqual(event.os, randomOSInfo)
     }
 
     func testGivenMultipleResourceScopes_whenSendingResourceEvents_eachEventHasUniqueResourceID() throws {

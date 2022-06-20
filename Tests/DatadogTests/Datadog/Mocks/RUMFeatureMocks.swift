@@ -626,6 +626,8 @@ extension RUMScopeDependencies {
         sdkInitDate: Date = .mockAny(),
         backgroundEventTrackingEnabled: Bool = .mockAny(),
         appStateListener: AppStateListening = AppStateListenerMock.mockAny(),
+        deviceInfo: RUMDevice = .mockRandom(),
+        osInfo: RUMOperatingSystem = .mockRandom(),
         userInfoProvider: RUMUserInfoProvider = RUMUserInfoProvider(userInfoProvider: .mockAny()),
         launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock.mockAny(),
         connectivityInfoProvider: RUMConnectivityInfoProvider = RUMConnectivityInfoProvider(
@@ -644,6 +646,7 @@ extension RUMScopeDependencies {
         crashContextIntegration: RUMWithCrashContextIntegration? = nil,
         ciTest: RUMCITest? = nil,
         viewUpdatesThrottlerFactory: @escaping () -> RUMViewUpdatesThrottlerType = { NoOpRUMViewUpdatesThrottler() },
+        vitalsReaders: VitalsReaders? = nil,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
@@ -652,6 +655,8 @@ extension RUMScopeDependencies {
             sdkInitDate: sdkInitDate,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
             appStateListener: appStateListener,
+            deviceInfo: deviceInfo,
+            osInfo: osInfo,
             userInfoProvider: userInfoProvider,
             launchTimeProvider: launchTimeProvider,
             connectivityInfoProvider: connectivityInfoProvider,
@@ -667,9 +672,7 @@ extension RUMScopeDependencies {
             crashContextIntegration: crashContextIntegration,
             ciTest: ciTest,
             viewUpdatesThrottlerFactory: viewUpdatesThrottlerFactory,
-            vitalCPUReader: SamplingBasedVitalReaderMock(),
-            vitalMemoryReader: SamplingBasedVitalReaderMock(),
-            vitalRefreshRateReader: ContinuousVitalReaderMock(),
+            vitalsReaders: vitalsReaders,
             onSessionStart: onSessionStart
         )
     }
@@ -681,6 +684,8 @@ extension RUMScopeDependencies {
         sdkInitDate: Date? = nil,
         backgroundEventTrackingEnabled: Bool? = nil,
         appStateListener: AppStateListening? = nil,
+        deviceInfo: RUMDevice? = nil,
+        osInfo: RUMOperatingSystem? = nil,
         userInfoProvider: RUMUserInfoProvider? = nil,
         launchTimeProvider: LaunchTimeProviderType? = nil,
         connectivityInfoProvider: RUMConnectivityInfoProvider? = nil,
@@ -696,6 +701,7 @@ extension RUMScopeDependencies {
         crashContextIntegration: RUMWithCrashContextIntegration? = nil,
         ciTest: RUMCITest? = nil,
         viewUpdatesThrottlerFactory: (() -> RUMViewUpdatesThrottlerType)? = nil,
+        vitalsReaders: VitalsReaders? = nil,
         onSessionStart: RUMSessionListener? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
@@ -704,6 +710,8 @@ extension RUMScopeDependencies {
             sdkInitDate: sdkInitDate ?? self.sdkInitDate,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled ?? self.backgroundEventTrackingEnabled,
             appStateListener: appStateListener ?? self.appStateListener,
+            deviceInfo: deviceInfo ?? self.deviceInfo,
+            osInfo: osInfo ?? self.osInfo,
             userInfoProvider: userInfoProvider ?? self.userInfoProvider,
             launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider,
             connectivityInfoProvider: connectivityInfoProvider ?? self.connectivityInfoProvider,
@@ -719,9 +727,7 @@ extension RUMScopeDependencies {
             crashContextIntegration: crashContextIntegration ?? self.crashContextIntegration,
             ciTest: ciTest ?? self.ciTest,
             viewUpdatesThrottlerFactory: viewUpdatesThrottlerFactory ?? self.viewUpdatesThrottlerFactory,
-            vitalCPUReader: SamplingBasedVitalReaderMock(),
-            vitalMemoryReader: SamplingBasedVitalReaderMock(),
-            vitalRefreshRateReader: ContinuousVitalReaderMock(),
+            vitalsReaders: vitalsReaders ?? self.vitalsReaders,
             onSessionStart: onSessionStart ?? self.onSessionStart
         )
     }

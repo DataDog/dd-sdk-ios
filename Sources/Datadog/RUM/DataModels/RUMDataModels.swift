@@ -31,6 +31,12 @@ public struct RUMActionEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Device properties
+    public let device: RUMDevice?
+
+    /// Operating system properties
+    public let os: RUMOperatingSystem?
+
     /// The service name for this application
     public let service: String?
 
@@ -63,6 +69,8 @@ public struct RUMActionEvent: RUMDataModel {
         case connectivity = "connectivity"
         case context = "context"
         case date = "date"
+        case device = "device"
+        case os = "os"
         case service = "service"
         case session = "session"
         case source = "source"
@@ -115,8 +123,8 @@ public struct RUMActionEvent: RUMDataModel {
         /// Properties of the errors of the action
         public let error: Error?
 
-        /// Action frustration types
-        public let frustrationType: [FrustrationType]?
+        /// Action frustration properties
+        public let frustration: Frustration?
 
         /// UUID of the action
         public let id: String?
@@ -126,6 +134,9 @@ public struct RUMActionEvent: RUMDataModel {
 
         /// Properties of the long tasks of the action
         public let longTask: LongTask?
+
+        /// Action position properties
+        public let position: Position?
 
         /// Properties of the resources of the action
         public let resource: Resource?
@@ -139,10 +150,11 @@ public struct RUMActionEvent: RUMDataModel {
         enum CodingKeys: String, CodingKey {
             case crash = "crash"
             case error = "error"
-            case frustrationType = "frustration_type"
+            case frustration = "frustration"
             case id = "id"
             case loadingTime = "loading_time"
             case longTask = "long_task"
+            case position = "position"
             case resource = "resource"
             case target = "target"
             case type = "type"
@@ -168,10 +180,20 @@ public struct RUMActionEvent: RUMDataModel {
             }
         }
 
-        public enum FrustrationType: String, Codable {
-            case rage = "rage"
-            case dead = "dead"
-            case error = "error"
+        /// Action frustration properties
+        public struct Frustration: Codable {
+            /// Action frustration types
+            public let type: [FrustrationType]
+
+            enum CodingKeys: String, CodingKey {
+                case type = "type"
+            }
+
+            public enum FrustrationType: String, Codable {
+                case rageClick = "rage_click"
+                case deadClick = "dead_click"
+                case errorClick = "error_click"
+            }
         }
 
         /// Properties of the long tasks of the action
@@ -181,6 +203,20 @@ public struct RUMActionEvent: RUMDataModel {
 
             enum CodingKeys: String, CodingKey {
                 case count = "count"
+            }
+        }
+
+        /// Action position properties
+        public struct Position: Codable {
+            /// X coordinate of the action (in pixels)
+            public let x: Int64
+
+            /// Y coordinate of the action (in pixels)
+            public let y: Int64
+
+            enum CodingKeys: String, CodingKey {
+                case x = "x"
+                case y = "y"
             }
         }
 
@@ -196,11 +232,23 @@ public struct RUMActionEvent: RUMDataModel {
 
         /// Action target properties
         public struct Target: Codable {
+            /// Height of the target element (in pixels)
+            public let height: Int64?
+
             /// Target name
             public var name: String
 
+            /// CSS selector path of the target element
+            public let selector: String?
+
+            /// Width of the target element (in pixels)
+            public let width: Int64?
+
             enum CodingKeys: String, CodingKey {
+                case height = "height"
                 case name = "name"
+                case selector = "selector"
+                case width = "width"
             }
         }
 
@@ -328,8 +376,14 @@ public struct RUMErrorEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Device properties
+    public let device: RUMDevice?
+
     /// Error properties
     public var error: Error
+
+    /// Operating system properties
+    public let os: RUMOperatingSystem?
 
     /// The service name for this application
     public let service: String?
@@ -363,7 +417,9 @@ public struct RUMErrorEvent: RUMDataModel {
         case connectivity = "connectivity"
         case context = "context"
         case date = "date"
+        case device = "device"
         case error = "error"
+        case os = "os"
         case service = "service"
         case session = "session"
         case source = "source"
@@ -661,8 +717,14 @@ public struct RUMLongTaskEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Device properties
+    public let device: RUMDevice?
+
     /// Long Task properties
     public let longTask: LongTask
+
+    /// Operating system properties
+    public let os: RUMOperatingSystem?
 
     /// The service name for this application
     public let service: String?
@@ -696,7 +758,9 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case connectivity = "connectivity"
         case context = "context"
         case date = "date"
+        case device = "device"
         case longTask = "long_task"
+        case os = "os"
         case service = "service"
         case session = "session"
         case source = "source"
@@ -877,6 +941,12 @@ public struct RUMResourceEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Device properties
+    public let device: RUMDevice?
+
+    /// Operating system properties
+    public let os: RUMOperatingSystem?
+
     /// Resource properties
     public var resource: Resource
 
@@ -912,6 +982,8 @@ public struct RUMResourceEvent: RUMDataModel {
         case connectivity = "connectivity"
         case context = "context"
         case date = "date"
+        case device = "device"
+        case os = "os"
         case resource = "resource"
         case service = "service"
         case session = "session"
@@ -1277,6 +1349,12 @@ public struct RUMViewEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Device properties
+    public let device: RUMDevice?
+
+    /// Operating system properties
+    public let os: RUMOperatingSystem?
+
     /// The service name for this application
     public let service: String?
 
@@ -1308,6 +1386,8 @@ public struct RUMViewEvent: RUMDataModel {
         case connectivity = "connectivity"
         case context = "context"
         case date = "date"
+        case device = "device"
+        case os = "os"
         case service = "service"
         case session = "session"
         case source = "source"
@@ -1462,6 +1542,9 @@ public struct RUMViewEvent: RUMDataModel {
         /// Properties of the frozen frames of the view
         public let frozenFrame: FrozenFrame?
 
+        /// Properties of the frustrations of the view
+        public let frustration: Frustration?
+
         /// UUID of the view
         public let id: String
 
@@ -1531,6 +1614,7 @@ public struct RUMViewEvent: RUMDataModel {
             case firstInputDelay = "first_input_delay"
             case firstInputTime = "first_input_time"
             case frozenFrame = "frozen_frame"
+            case frustration = "frustration"
             case id = "id"
             case inForegroundPeriods = "in_foreground_periods"
             case isActive = "is_active"
@@ -1584,6 +1668,16 @@ public struct RUMViewEvent: RUMDataModel {
         /// Properties of the frozen frames of the view
         public struct FrozenFrame: Codable {
             /// Number of frozen frames that occurred on the view
+            public let count: Int64
+
+            enum CodingKeys: String, CodingKey {
+                case count = "count"
+            }
+        }
+
+        /// Properties of the frustrations of the view
+        public struct Frustration: Codable {
+            /// Number of frustrations that occurred on the view
             public let count: Int64
 
             enum CodingKeys: String, CodingKey {
@@ -2001,6 +2095,57 @@ extension RUMEventAttributes {
     }
 }
 
+/// Device properties
+public struct RUMDevice: Codable {
+    /// Device marketing brand, e.g. Apple, OPPO, Xiaomi, etc.
+    public let brand: String?
+
+    /// Device SKU model, e.g. Samsung SM-988GN, etc. Quite often name and model can be the same.
+    public let model: String?
+
+    /// Device marketing name, e.g. Xiaomi Redmi Note 8 Pro, Pixel 5, etc.
+    public let name: String?
+
+    /// Device type info
+    public let type: RUMDeviceType
+
+    enum CodingKeys: String, CodingKey {
+        case brand = "brand"
+        case model = "model"
+        case name = "name"
+        case type = "type"
+    }
+
+    /// Device type info
+    public enum RUMDeviceType: String, Codable {
+        case mobile = "mobile"
+        case desktop = "desktop"
+        case tablet = "tablet"
+        case tv = "tv"
+        case gamingConsole = "gaming_console"
+        case bot = "bot"
+        case other = "other"
+    }
+}
+
+/// Operating system properties
+public struct RUMOperatingSystem: Codable {
+    /// Operating system name, e.g. Android, iOS
+    public let name: String
+
+    /// Full operating system version, e.g. 8.1.1
+    public let version: String
+
+    /// Major operating system version, e.g. 8
+    public let versionMajor: String
+
+    enum CodingKeys: String, CodingKey {
+        case name = "name"
+        case version = "version"
+        case versionMajor = "version_major"
+    }
+}
+
 /// User properties
 public struct RUMUser: Codable {
     /// Email of the user
@@ -2076,4 +2221,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/568fc1bcfb0d2775a11c07914120b70a3d5780fe
+// Generated from https://github.com/DataDog/rum-events-format/tree/d5a943ad55117da57d0b87f9af417ccbcbd49daf

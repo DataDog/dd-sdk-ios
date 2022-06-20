@@ -58,6 +58,7 @@ extension Datadog.Configuration {
         rumResourceAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         rumBackgroundEventTrackingEnabled: Bool = false,
         rumTelemetrySamplingRate: Float = 100.0,
+        mobileVitalsFrequency: VitalsFrequency = .average,
         batchSize: BatchSize = .medium,
         uploadFrequency: UploadFrequency = .average,
         additionalConfiguration: [String: Any] = [:],
@@ -89,6 +90,7 @@ extension Datadog.Configuration {
             rumResourceAttributesProvider: rumResourceAttributesProvider,
             rumBackgroundEventTrackingEnabled: rumBackgroundEventTrackingEnabled,
             rumTelemetrySamplingRate: rumTelemetrySamplingRate,
+            mobileVitalsFrequency: mobileVitalsFrequency,
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
             additionalConfiguration: additionalConfiguration,
@@ -266,7 +268,8 @@ extension FeaturesConfiguration.RUM {
         instrumentation: FeaturesConfiguration.RUM.Instrumentation? = nil,
         backgroundEventTrackingEnabled: Bool = false,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener(),
-        firstPartyHosts: Set<String> = []
+        firstPartyHosts: Set<String> = [],
+        vitalsFrequency: TimeInterval? = 0.5
     ) -> Self {
         return .init(
             uploadURL: uploadURL,
@@ -282,7 +285,8 @@ extension FeaturesConfiguration.RUM {
             instrumentation: instrumentation,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
             onSessionStart: onSessionStart,
-            firstPartyHosts: firstPartyHosts
+            firstPartyHosts: firstPartyHosts,
+            vitalsFrequency: vitalsFrequency
         )
     }
 }
@@ -940,6 +944,7 @@ extension MobileDevice {
     }
 
     static func mockWith(
+        name: String = .mockAny(),
         model: String = .mockAny(),
         osName: String = .mockAny(),
         osVersion: String = .mockAny(),
@@ -948,6 +953,7 @@ extension MobileDevice {
         currentBatteryStatus: @escaping () -> BatteryStatus = { .mockAny() }
     ) -> MobileDevice {
         return MobileDevice(
+            name: name,
             model: model,
             osName: osName,
             osVersion: osVersion,

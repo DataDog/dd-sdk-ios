@@ -10,8 +10,19 @@ import UIKit
 internal class MobileDevice {
     // MARK: - Info
 
+    /// Device manufacturer name.
+    let brand = "Apple"
+
+    /// Device marketing name, e.g. "iPhone", "iPad", "iPod touch".
+    let name: String
+
+    /// Device model name, e.g. "iPhone10,1", "iPhone13,2".
     let model: String
+
+    /// The name of operating system, e.g. "iOS", "iPadOS", "tvOS".
     let osName: String
+
+    /// The version of the operating system, e.g. "15.4.1".
     let osVersion: String
 
     // MARK: - Battery status monitoring
@@ -37,6 +48,7 @@ internal class MobileDevice {
     let currentBatteryStatus: () -> BatteryStatus
 
     init(
+        name: String,
         model: String,
         osName: String,
         osVersion: String,
@@ -44,6 +56,7 @@ internal class MobileDevice {
         resetBatteryStatusMonitoring: @escaping () -> Void,
         currentBatteryStatus: @escaping () -> BatteryStatus
     ) {
+        self.name = name
         self.model = model
         self.osName = osName
         self.osVersion = osVersion
@@ -53,7 +66,13 @@ internal class MobileDevice {
     }
 
     #if os(iOS)
-    convenience init(uiDevice: UIDevice, processInfo: ProcessInfo, notificationCenter: NotificationCenter) {
+
+    convenience init(
+        model: String,
+        uiDevice: UIDevice,
+        processInfo: ProcessInfo,
+        notificationCenter: NotificationCenter
+    ) {
         let wasBatteryMonitoringEnabled = uiDevice.isBatteryMonitoringEnabled
 
         // We capture this `lowPowerModeMonitor` in `currentBatteryStatus` closure so its lifecycle
@@ -61,7 +80,8 @@ internal class MobileDevice {
         let lowPowerModeMonitor = LowPowerModeMonitor(initialProcessInfo: processInfo, notificationCenter: notificationCenter)
 
         self.init(
-            model: uiDevice.model,
+            name: uiDevice.model,
+            model: model,
             osName: uiDevice.systemName,
             osVersion: uiDevice.systemVersion,
             enableBatteryStatusMonitoring: { uiDevice.isBatteryMonitoringEnabled = true },
@@ -77,19 +97,25 @@ internal class MobileDevice {
     }
 
     convenience init() {
+        let processInfo = ProcessInfo.processInfo
+        let device = UIDevice.current
+
         #if !targetEnvironment(simulator)
-        // Real device
+        // Real iOS device
         self.init(
-            uiDevice: UIDevice.current,
-            processInfo: ProcessInfo.processInfo,
+            model: (try? Sysctl.getModel()) ?? device.model,
+            uiDevice: device,
+            processInfo: processInfo,
             notificationCenter: .default
         )
         #else
+        let model = processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] ?? device.model
         // iOS Simulator - battery monitoring doesn't work on Simulator, so return "always OK" value
         self.init(
-            model: UIDevice.current.model,
-            osName: UIDevice.current.systemName,
-            osVersion: UIDevice.current.systemVersion,
+            name: device.model,
+            model: "\(model) Simulator",
+            osName: device.systemName,
+            osVersion: device.systemVersion,
             enableBatteryStatusMonitoring: {},
             resetBatteryStatusMonitoring: {},
             currentBatteryStatus: { BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false) }
@@ -107,22 +133,48 @@ internal class MobileDevice {
         }
     }
 
-    #else
+    #elseif os(tvOS)
+
     convenience init(
-        uiDevice: UIDevice = .current,
-        processInfo: ProcessInfo = .processInfo,
-        notificationCenter: NotificationCenter = .default
+        model: String,
+        uiDevice: UIDevice,
+        processInfo: ProcessInfo,
+        notificationCenter: NotificationCenter
     ) {
-        // iOS Simulator - battery monitoring doesn't work on tvOS nor Simulator, so return "always OK" value
         self.init(
-            model: uiDevice.model,
+            name: uiDevice.model,
+            model: model,
             osName: uiDevice.systemName,
             osVersion: uiDevice.systemVersion,
+            // Battery monitoring doesn't work on tvOS, so return "always OK" value:
             enableBatteryStatusMonitoring: {},
             resetBatteryStatusMonitoring: {},
             currentBatteryStatus: { BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false) }
         )
     }
+
+    convenience init() {
+        let processInfo = ProcessInfo.processInfo
+        let device = UIDevice.current
+        let model: String
+
+        #if !targetEnvironment(simulator)
+        // Real tvOS device
+        model = (try? Sysctl.getModel()) ?? device.model
+        #else
+        // tvOS Simulator
+        let simulatorModel = processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] ?? device.model
+        model = "\(simulatorModel) Simulator"
+        #endif
+
+        self.init(
+            model: model,
+            uiDevice: device,
+            processInfo: processInfo,
+            notificationCenter: .default
+        )
+    }
+
     #endif
 }
 
