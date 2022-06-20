@@ -1,8 +1,15 @@
 # Unreleased
 
 ### Changes
+
 * [IMPROVEMENT] Add mobile vitals frequency configuration. See [#876][]
 * [IMPROVEMENT] Include the exact model information in RUM `device.model`. See [#888][]
+
+# 1.11.1 / 20-06-2022
+
+### Changes
+
+* [BUGFIX] Fix Mac Catalyst builds compatibility. See [#894][]
 
 # 1.11.0 / 13-06-2022
 
@@ -390,6 +397,7 @@
 [#832]: https://github.com/DataDog/dd-sdk-ios/issues/832
 [#851]: https://github.com/DataDog/dd-sdk-ios/issues/851
 [#876]: https://github.com/DataDog/dd-sdk-ios/issues/876
+[#894]: https://github.com/DataDog/dd-sdk-ios/issues/894
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu
