@@ -2,6 +2,10 @@
 
 ### Changes
 
+# 1.11.1 / 20-06-2022
+
+### Changes
+
 * [BUGFIX] Fix Mac Catalyst builds compatibility. See [#894][]
 
 # 1.11.0 / 13-06-2022
