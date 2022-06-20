@@ -10,7 +10,7 @@ import Foundation
 /// All mutable properties are subject of sanitization.
 public struct LogEvent: Encodable {
     /// The Log event status definitions.
-    public enum Status: String, Encodable, CaseIterable {
+    public enum Status: String, Encodable, CaseIterable, Equatable {
         case debug
         case info
         case notice

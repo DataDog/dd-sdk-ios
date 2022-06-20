@@ -22,6 +22,8 @@
 
 ### Changes
 
+* [FEATURE] Allow filtering outgoing logs with a status threshold. See [#867][]
+
 # 1.11.0-rc1 / 18-05-2022
 
 ### Changes
