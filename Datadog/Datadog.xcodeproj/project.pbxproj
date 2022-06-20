@@ -103,7 +103,7 @@
 		61133C6D2423990D00786299 /* TestsDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C462423990D00786299 /* TestsDirectory.swift */; };
 		61133C6E2423990D00786299 /* DatadogExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C472423990D00786299 /* DatadogExtensions.swift */; };
 		61133C702423993200786299 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; };
-		6114FDEC257659E90084E372 /* FeatureDirectoriesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6114FDEB257659E90084E372 /* FeatureDirectoriesMock.swift */; };
+		6114FDEC257659E90084E372 /* DirectoriesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6114FDEB257659E90084E372 /* DirectoriesMock.swift */; };
 		6114FE0F257667D40084E372 /* ConsentAwareDataWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6114FE0E257667D40084E372 /* ConsentAwareDataWriter.swift */; };
 		6114FE1625766B310084E372 /* TrackingConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6114FE1525766B310084E372 /* TrackingConsent.swift */; };
 		6114FE23257671F00084E372 /* ConsentAwareDataWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6114FE22257671F00084E372 /* ConsentAwareDataWriterTests.swift */; };
@@ -429,6 +429,10 @@
 		61D980BA24E28D0100E03345 /* RUMIntegrations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D980B924E28D0100E03345 /* RUMIntegrations.swift */; };
 		61D980BC24E293F600E03345 /* RUMIntegrationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D980BB24E293F600E03345 /* RUMIntegrationsTests.swift */; };
 		61DA20F026C40121004AFE6D /* DataUploadStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA20EF26C40121004AFE6D /* DataUploadStatusTests.swift */; };
+		61DA8CA928609C5B0074A606 /* Directories.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CA828609C5B0074A606 /* Directories.swift */; };
+		61DA8CAA28609C5B0074A606 /* Directories.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CA828609C5B0074A606 /* Directories.swift */; };
+		61DA8CAC2861C3720074A606 /* DirectoriesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CAB2861C3720074A606 /* DirectoriesTests.swift */; };
+		61DA8CAD2861C3720074A606 /* DirectoriesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CAB2861C3720074A606 /* DirectoriesTests.swift */; };
 		61DB33B225DEDFC200F7EA71 /* CustomObjcViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 61DB33B125DEDFC200F7EA71 /* CustomObjcViewController.m */; };
 		61DC6D922539E3E300FFAA22 /* LoggingCommonAsserts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DC6D912539E3E300FFAA22 /* LoggingCommonAsserts.swift */; };
 		61DE332625C826E4008E3EC2 /* CrashReportingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DE332525C826E4008E3EC2 /* CrashReportingFeature.swift */; };
@@ -835,7 +839,7 @@
 		D2CB6EF727C520D400A62B57 /* URLSessionAutoInstrumentationMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B038B92527257B00518F3C /* URLSessionAutoInstrumentationMocks.swift */; };
 		D2CB6EF827C520D400A62B57 /* LogConsoleOutputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C3E2423990D00786299 /* LogConsoleOutputTests.swift */; };
 		D2CB6EF927C520D400A62B57 /* WebRUMEventConsumerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E53889B2773C4B300A7DC42 /* WebRUMEventConsumerTests.swift */; };
-		D2CB6EFA27C520D400A62B57 /* FeatureDirectoriesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6114FDEB257659E90084E372 /* FeatureDirectoriesMock.swift */; };
+		D2CB6EFA27C520D400A62B57 /* DirectoriesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6114FDEB257659E90084E372 /* DirectoriesMock.swift */; };
 		D2CB6EFB27C520D400A62B57 /* SpanSanitizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61122EE725B1C92500F9C7F5 /* SpanSanitizerTests.swift */; };
 		D2CB6EFC27C520D400A62B57 /* DDGlobal+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 61B5E42426DFAFBC000B0A5F /* DDGlobal+apiTests.m */; };
 		D2CB6EFD27C520D400A62B57 /* LoggingFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FB222C244A21ED00902D19 /* LoggingFeatureMocks.swift */; };
@@ -1310,7 +1314,7 @@
 		61133C452423990D00786299 /* SwiftExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftExtensions.swift; sourceTree = "<group>"; };
 		61133C462423990D00786299 /* TestsDirectory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestsDirectory.swift; sourceTree = "<group>"; };
 		61133C472423990D00786299 /* DatadogExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogExtensions.swift; sourceTree = "<group>"; };
-		6114FDEB257659E90084E372 /* FeatureDirectoriesMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureDirectoriesMock.swift; sourceTree = "<group>"; };
+		6114FDEB257659E90084E372 /* DirectoriesMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectoriesMock.swift; sourceTree = "<group>"; };
 		6114FE0E257667D40084E372 /* ConsentAwareDataWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsentAwareDataWriter.swift; sourceTree = "<group>"; };
 		6114FE1525766B310084E372 /* TrackingConsent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingConsent.swift; sourceTree = "<group>"; };
 		6114FE22257671F00084E372 /* ConsentAwareDataWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsentAwareDataWriterTests.swift; sourceTree = "<group>"; };
@@ -1638,6 +1642,8 @@
 		61D980B924E28D0100E03345 /* RUMIntegrations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMIntegrations.swift; sourceTree = "<group>"; };
 		61D980BB24E293F600E03345 /* RUMIntegrationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMIntegrationsTests.swift; sourceTree = "<group>"; };
 		61DA20EF26C40121004AFE6D /* DataUploadStatusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataUploadStatusTests.swift; sourceTree = "<group>"; };
+		61DA8CA828609C5B0074A606 /* Directories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Directories.swift; sourceTree = "<group>"; };
+		61DA8CAB2861C3720074A606 /* DirectoriesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectoriesTests.swift; sourceTree = "<group>"; };
 		61DB33B025DEDFC200F7EA71 /* CustomObjcViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CustomObjcViewController.h; sourceTree = "<group>"; };
 		61DB33B125DEDFC200F7EA71 /* CustomObjcViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CustomObjcViewController.m; sourceTree = "<group>"; };
 		61DC6D912539E3E300FFAA22 /* LoggingCommonAsserts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingCommonAsserts.swift; sourceTree = "<group>"; };
@@ -2111,6 +2117,7 @@
 		61133B9E2423979B00786299 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				61DA8CA828609C5B0074A606 /* Directories.swift */,
 				614D812B24E3EA15004C9C5D /* Feature.swift */,
 				61BBD19424ED4E9E0023E65F /* FeaturesConfiguration.swift */,
 				614E9EB2244719FA007EE3E1 /* BundleType.swift */,
@@ -2373,7 +2380,7 @@
 				D26F59312851E30B0097C455 /* DatadogInternal */,
 				61C3646F243B5C8300C4D4E6 /* ServerMock.swift */,
 				61F1A6192498A51700075390 /* CoreMocks.swift */,
-				6114FDEB257659E90084E372 /* FeatureDirectoriesMock.swift */,
+				6114FDEB257659E90084E372 /* DirectoriesMock.swift */,
 				61FB222C244A21ED00902D19 /* LoggingFeatureMocks.swift */,
 				61AD4E172451C7FF006E34EA /* TracingFeatureMocks.swift */,
 				61E5333024B75DFC003D6C4E /* RUMFeatureMocks.swift */,
@@ -2390,6 +2397,7 @@
 		61133C212423990D00786299 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				61DA8CAB2861C3720074A606 /* DirectoriesTests.swift */,
 				61EF78C0257F842000EDCCB3 /* FeatureTests.swift */,
 				61BBD19624ED50040023E65F /* FeaturesConfigurationTests.swift */,
 				61345612244756E300E7DA6B /* PerformancePresetTests.swift */,
@@ -5013,6 +5021,7 @@
 				D2EFF3D32731822A00D09F33 /* RUMViewsHandler.swift in Sources */,
 				61133BDD2423979B00786299 /* InternalLoggers.swift in Sources */,
 				6105D1A02508F1600040DD22 /* LoggingWithActiveSpanIntegration.swift in Sources */,
+				61DA8CA928609C5B0074A606 /* Directories.swift in Sources */,
 				D248ED4228070E2B00B315B4 /* Telemetry.swift in Sources */,
 				9EB4B864274FAB410041CD03 /* WebLogEventConsumer.swift in Sources */,
 				61EF78B1257E2E7A00EDCCB3 /* MoveDataMigrator.swift in Sources */,
@@ -5233,7 +5242,7 @@
 				61B038BA2527257B00518F3C /* URLSessionAutoInstrumentationMocks.swift in Sources */,
 				61133C672423990D00786299 /* LogConsoleOutputTests.swift in Sources */,
 				9E53889C2773C4B300A7DC42 /* WebRUMEventConsumerTests.swift in Sources */,
-				6114FDEC257659E90084E372 /* FeatureDirectoriesMock.swift in Sources */,
+				6114FDEC257659E90084E372 /* DirectoriesMock.swift in Sources */,
 				61122EE825B1C92500F9C7F5 /* SpanSanitizerTests.swift in Sources */,
 				61B5E42526DFAFBC000B0A5F /* DDGlobal+apiTests.m in Sources */,
 				61FB222D244A21ED00902D19 /* LoggingFeatureMocks.swift in Sources */,
@@ -5277,6 +5286,7 @@
 				9EB4B86C27510AF90041CD03 /* WebEventBridgeTests.swift in Sources */,
 				61B0387C252724AB00518F3C /* DDURLSessionDelegateTests.swift in Sources */,
 				D26F59362851E3650097C455 /* Flushable.swift in Sources */,
+				61DA8CAC2861C3720074A606 /* DirectoriesTests.swift in Sources */,
 				61AADBDD263C7ECF008ABC6F /* EquatableInTests.swift in Sources */,
 				61133C5E2423990D00786299 /* DataUploadDelayTests.swift in Sources */,
 				61B0387A252724AB00518F3C /* FirstPartyURLsFilterTests.swift in Sources */,
@@ -5759,6 +5769,7 @@
 				D2CB6E9127C50EAE00A62B57 /* KronosTimeFreeze.swift in Sources */,
 				D2CB6E9227C50EAE00A62B57 /* DateFormatting.swift in Sources */,
 				D2CB6E9327C50EAE00A62B57 /* LogUtilityOutputs.swift in Sources */,
+				61DA8CAA28609C5B0074A606 /* Directories.swift in Sources */,
 				D2CB6E9427C50EAE00A62B57 /* RequestBuilder.swift in Sources */,
 				D2CB6E9527C50EAE00A62B57 /* RUMContext.swift in Sources */,
 				D2CB6E9627C50EAE00A62B57 /* RUMOffViewEventsHandlingRule.swift in Sources */,
@@ -5862,7 +5873,7 @@
 				D2CB6EF727C520D400A62B57 /* URLSessionAutoInstrumentationMocks.swift in Sources */,
 				D2CB6EF827C520D400A62B57 /* LogConsoleOutputTests.swift in Sources */,
 				D2CB6EF927C520D400A62B57 /* WebRUMEventConsumerTests.swift in Sources */,
-				D2CB6EFA27C520D400A62B57 /* FeatureDirectoriesMock.swift in Sources */,
+				D2CB6EFA27C520D400A62B57 /* DirectoriesMock.swift in Sources */,
 				D2CB6EFB27C520D400A62B57 /* SpanSanitizerTests.swift in Sources */,
 				D2CB6EFC27C520D400A62B57 /* DDGlobal+apiTests.m in Sources */,
 				D2CB6EFD27C520D400A62B57 /* LoggingFeatureMocks.swift in Sources */,
@@ -5905,6 +5916,7 @@
 				D2CB6F2327C520D400A62B57 /* WebEventBridgeTests.swift in Sources */,
 				D2CB6F2427C520D400A62B57 /* DDURLSessionDelegateTests.swift in Sources */,
 				D26F59372851E3650097C455 /* Flushable.swift in Sources */,
+				61DA8CAD2861C3720074A606 /* DirectoriesTests.swift in Sources */,
 				D2CB6F2527C520D400A62B57 /* EquatableInTests.swift in Sources */,
 				D2CB6F2627C520D400A62B57 /* DataUploadDelayTests.swift in Sources */,
 				D2CB6F2727C520D400A62B57 /* FirstPartyURLsFilterTests.swift in Sources */,

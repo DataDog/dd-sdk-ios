@@ -10,11 +10,10 @@ import Foundation
 internal func createV2RUMStorageConfiguration() -> FeatureStorageConfiguration {
     return FeatureStorageConfiguration(
         directories: .init(
-            authorized: "com.datadoghq.rum/v2",
-            unauthorized: "com.datadoghq.rum/intermediate-v2",
+            authorized: "rum/v2", // relative to `CoreDirectory.coreDirectory`
+            unauthorized: "rum/intermediate-v2", // relative to `CoreDirectory.coreDirectory`
             deprecated: [
-                "com.datadoghq.rum/v1",
-                "com.datadoghq.rum/intermediate-v1",
+                "com.datadoghq.rum", // relative to `CoreDirectory.osDirectory`
             ]
         ),
         featureName: "RUM"

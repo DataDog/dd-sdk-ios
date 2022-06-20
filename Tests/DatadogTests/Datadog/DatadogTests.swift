@@ -442,9 +442,9 @@ class DatadogTests: XCTestCase {
         core.readWriteQueue.sync {}
 
         let featureDirectories: [FeatureDirectories] = [
-            try FeatureDirectories(sdkRootDirectory: core.rootDirectory, storageConfiguration: createV2LoggingStorageConfiguration()),
-            try FeatureDirectories(sdkRootDirectory: core.rootDirectory, storageConfiguration: createV2TracingStorageConfiguration()),
-            try FeatureDirectories(sdkRootDirectory: core.rootDirectory, storageConfiguration: createV2RUMStorageConfiguration())
+            try core.directory.getFeatureDirectories(configuration: createV2LoggingStorageConfiguration()),
+            try core.directory.getFeatureDirectories(configuration: createV2TracingStorageConfiguration()),
+            try core.directory.getFeatureDirectories(configuration: createV2RUMStorageConfiguration()),
         ]
 
         let allDirectories: [Directory] = featureDirectories.flatMap { [$0.authorized, $0.unauthorized] }

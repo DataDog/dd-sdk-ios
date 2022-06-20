@@ -10,11 +10,10 @@ import Foundation
 internal func createV2LoggingStorageConfiguration() -> FeatureStorageConfiguration {
     return FeatureStorageConfiguration(
         directories: .init(
-            authorized: "com.datadoghq.logs/v2",
-            unauthorized: "com.datadoghq.logs/intermediate-v2",
+            authorized: "logging/v2", // relative to `CoreDirectory.coreDirectory`
+            unauthorized: "logging/intermediate-v2", // relative to `CoreDirectory.coreDirectory`
             deprecated: [
-                "com.datadoghq.logs/v1",
-                "com.datadoghq.logs/intermediate-v1",
+                "com.datadoghq.logs", // relative to `CoreDirectory.osDirectory`
             ]
         ),
         featureName: "logging"

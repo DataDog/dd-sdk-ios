@@ -34,8 +34,8 @@ internal protocol V1FeatureInitializable {
 /// provide context and writing scopes to Features for event recording.
 internal final class DatadogCore {
     /// The root location for storing Features data in this instance of the SDK.
-    /// Each Feature creates its own set of subdirectories in `rootDirectory` based on their storage configuration.
-    let rootDirectory: Directory
+    /// For each Feature a set of subdirectories is created inside `CoreDirectory` based on their storage configuration.
+    let directory: CoreDirectory
     /// The configuration of SDK core.
     let configuration: CoreConfiguration
     /// A set of dependencies used by SDK core to power Features.
@@ -60,15 +60,15 @@ internal final class DatadogCore {
     /// Creates a core instance.
     ///
     /// - Parameters:
-    ///   - directory: the root directory for this instance of SDK.
-    ///   - configuration: the configuration of SDK core.
-    ///   - dependencies: a set of dependencies used by SDK core to power Features.
+    ///   - directory: the core directory for this instance of the SDK.
+    ///   - configuration: the configuration of the SDK core.
+    ///   - dependencies: a set of dependencies used by the SDK core to power Features.
     init(
-        rootDirectory: Directory,
+        directory: CoreDirectory,
         configuration: CoreConfiguration,
         dependencies: CoreDependencies
     ) {
-        self.rootDirectory = rootDirectory
+        self.directory = directory
         self.configuration = configuration
         self.dependencies = dependencies
         self.v1Context = DatadogV1Context(configuration: configuration, dependencies: dependencies)
@@ -119,16 +119,13 @@ extension DatadogCore: DatadogV1CoreProtocol {
         uploadConfiguration: FeatureUploadConfiguration,
         featureSpecificConfiguration: Feature.Configuration
     ) throws -> Feature {
-        let v1Directories = try FeatureDirectories(
-            sdkRootDirectory: rootDirectory,
-            storageConfiguration: storageConfiguration
-        )
+        let featureDirectories = try directory.getFeatureDirectories(configuration: storageConfiguration)
 
         let storage = FeatureStorage(
             featureName: storageConfiguration.featureName,
             queue: readWriteQueue,
             dataFormat: uploadConfiguration.payloadFormat,
-            directories: v1Directories,
+            directories: featureDirectories,
             commonDependencies: dependencies,
             telemetry: telemetry
         )
