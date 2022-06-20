@@ -327,7 +327,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: context.dateCorrector.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
+            date: viewStartTime.timeIntervalSince1970.toInt64Milliseconds,
             device: dependencies.deviceInfo,
             os: dependencies.osInfo,
             service: context.service,
@@ -359,19 +359,16 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     private func sendViewUpdateEvent(on command: RUMCommand, context: DatadogV1Context, writer: Writer) {
         version += 1
-
         attributes.merge(rumCommandAttributes: command.attributes)
-        let eventAttributes = RUMEventAttributes(contextInfo: attributes)
 
+        // RUMM-1779 Keep view active as long as we have ongoing resources
+        let isActive = isActiveView || !resourceScopes.isEmpty
         // RUMM-2079 `time_spent` can't be lower than 1ns
         let timeSpent = max(1e-9, command.time.timeIntervalSince(viewStartTime))
         let cpuInfo = vitalInfoSampler?.cpu
         let memoryInfo = vitalInfoSampler?.memory
         let refreshRateInfo = vitalInfoSampler?.refreshRate
         let isSlowRendered = refreshRateInfo?.meanValue.map { $0 < Constants.slowRenderingThresholdFPS }
-
-        // RUMM-1779 Keep view active as long as we have ongoing resources
-        let isActive = isActiveView || !resourceScopes.isEmpty
 
         let viewEvent = RUMViewEvent(
             dd: .init(
@@ -382,8 +379,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             application: .init(id: self.context.rumApplicationID),
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
-            context: eventAttributes,
-            date: context.dateCorrector.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
+            context: .init(contextInfo: attributes),
+            date: viewStartTime.timeIntervalSince1970.toInt64Milliseconds,
             device: dependencies.deviceInfo,
             os: dependencies.osInfo,
             service: context.service,
@@ -452,9 +449,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     private func sendErrorEvent(on command: RUMAddCurrentViewErrorCommand, context: DatadogV1Context, writer: Writer) {
         errorsCount += 1
-
         attributes.merge(rumCommandAttributes: command.attributes)
-        let eventAttributes = RUMEventAttributes(contextInfo: attributes)
 
         let errorEvent = RUMErrorEvent(
             dd: .init(
@@ -467,8 +462,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             application: .init(id: self.context.rumApplicationID),
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
-            context: eventAttributes,
-            date: context.dateCorrector.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
+            context: .init(contextInfo: attributes),
+            date: command.time.timeIntervalSince1970.toInt64Milliseconds,
             device: dependencies.deviceInfo,
             error: .init(
                 handling: nil,
@@ -512,7 +507,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     private func sendLongTaskEvent(on command: RUMAddLongTaskCommand, context: DatadogV1Context, writer: Writer) {
         attributes.merge(rumCommandAttributes: command.attributes)
-        let eventAttributes = RUMEventAttributes(contextInfo: attributes)
 
         let taskDurationInNs = command.duration.toInt64Nanoseconds
         let isFrozenFrame = taskDurationInNs > Constants.frozenFrameThresholdInNs
@@ -526,8 +520,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             application: .init(id: self.context.rumApplicationID),
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
-            context: eventAttributes,
-            date: context.dateCorrector.applying(to: command.time - command.duration).timeIntervalSince1970.toInt64Milliseconds,
+            context: .init(contextInfo: attributes),
+            date: (command.time - command.duration).timeIntervalSince1970.toInt64Milliseconds,
             device: dependencies.deviceInfo,
             longTask: .init(duration: taskDurationInNs, id: nil, isFrozenFrame: isFrozenFrame),
             os: dependencies.osInfo,

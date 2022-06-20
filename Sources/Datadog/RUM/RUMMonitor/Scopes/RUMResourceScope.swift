@@ -133,7 +133,7 @@ internal class RUMResourceScope: RUMScope {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: context.dateCorrector.applying(to: resourceStartTime).timeIntervalSince1970.toInt64Milliseconds,
+            date: resourceStartTime.timeIntervalSince1970.toInt64Milliseconds,
             device: dependencies.deviceInfo,
             os: dependencies.osInfo,
             resource: .init(
@@ -172,7 +172,7 @@ internal class RUMResourceScope: RUMScope {
                     )
                 },
                 size: size,
-                ssl: resourceMetrics?.ssl.flatMap { metric in
+                ssl: resourceMetrics?.ssl.map { metric in
                     .init(
                         duration: metric.duration.toInt64Nanoseconds,
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
@@ -214,14 +214,14 @@ internal class RUMResourceScope: RUMScope {
                 browserSdkVersion: nil,
                 session: .init(plan: .plan1)
             ),
-            action: self.context.activeUserActionID.flatMap { rumUUID in
+            action: self.context.activeUserActionID.map { rumUUID in
                 .init(id: rumUUID.toRUMDataFormat)
             },
             application: .init(id: self.context.rumApplicationID),
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: context.dateCorrector.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
+            date: command.time.timeIntervalSince1970.toInt64Milliseconds,
             device: dependencies.deviceInfo,
             error: .init(
                 handling: nil,
@@ -297,15 +297,13 @@ internal class RUMResourceScope: RUMScope {
     }
 
     private func resolveResourceDuration(_ duration: TimeInterval) -> Int64 {
-        guard duration <= 0.0 else {
-            return duration.toInt64Nanoseconds
+        guard duration > 0.0 else {
+            userLogger.warn("""
+            The computed duration for your resource: \(resourceURL) was 0 or negative. In order to keep the resource event we forced it to 1ns.
+            """)
+            return 1 // 1ns
         }
 
-        let negativeDurationWarningMessage =
-        """
-        The computed duration for your resource: \(resourceURL) was 0 or negative. In order to keep the resource event we forced it to 1ns.
-        """
-        userLogger.warn(negativeDurationWarningMessage)
-        return 1 // 1ns
+        return duration.toInt64Nanoseconds
     }
 }

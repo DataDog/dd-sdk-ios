@@ -147,7 +147,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: context.dateCorrector.applying(to: actionStartTime).timeIntervalSince1970.toInt64Milliseconds,
+            date: actionStartTime.timeIntervalSince1970.toInt64Milliseconds,
             device: dependencies.deviceInfo,
             os: dependencies.osInfo,
             service: context.service,
