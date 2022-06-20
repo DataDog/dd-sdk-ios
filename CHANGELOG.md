@@ -2,6 +2,8 @@
 
 ### Changes
 
+* [BUGFIX] Fix Mac Catalyst builds compatibility. See [#894][]
+
 # 1.11.0 / 13-06-2022
 
 ### Changes
@@ -385,6 +387,7 @@
 [#837]: https://github.com/DataDog/dd-sdk-ios/issues/837
 [#832]: https://github.com/DataDog/dd-sdk-ios/issues/832
 [#851]: https://github.com/DataDog/dd-sdk-ios/issues/851
+[#894]: https://github.com/DataDog/dd-sdk-ios/issues/894
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu
