@@ -67,7 +67,7 @@ internal struct RequestBuilder {
 
             return HTTPHeader(
                 field: userAgentHeaderField,
-                value: .constant("\(sanitizedAppName)/\(appVersion) CFNetwork (\(device.model); \(device.osName)/\(device.osVersion))")
+                value: .constant("\(sanitizedAppName)/\(appVersion) CFNetwork (\(device.name); \(device.osName)/\(device.osVersion))")
             )
         }
 

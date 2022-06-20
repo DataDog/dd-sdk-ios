@@ -22,7 +22,7 @@ extension UIDevice.BatteryState {
 class UIDeviceMock: UIDevice {
     override var model: String { _model }
     override var systemName: String { _systemName }
-    override var systemVersion: String { "mock system version" }
+    override var systemVersion: String { _systemVersion }
 
     private var _model: String
     private var _systemName: String

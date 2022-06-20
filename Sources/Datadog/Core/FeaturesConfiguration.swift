@@ -59,6 +59,7 @@ internal struct FeaturesConfiguration {
         let backgroundEventTrackingEnabled: Bool
         let onSessionStart: RUMSessionListener?
         let firstPartyHosts: Set<String>
+        let vitalsFrequency: TimeInterval?
     }
 
     struct URLSessionAutoInstrumentation {
@@ -211,7 +212,8 @@ extension FeaturesConfiguration {
                     instrumentation: instrumentation,
                     backgroundEventTrackingEnabled: configuration.rumBackgroundEventTrackingEnabled,
                     onSessionStart: configuration.rumSessionsListener,
-                    firstPartyHosts: sanitizedHosts
+                    firstPartyHosts: sanitizedHosts,
+                    vitalsFrequency: configuration.mobileVitalsFrequency.timeInterval
                 )
             } else {
                 let error = ProgrammerError(
@@ -277,6 +279,17 @@ extension FeaturesConfiguration {
         self.rum = rum
         self.urlSessionAutoInstrumentation = urlSessionAutoInstrumentation
         self.crashReporting = crashReporting
+    }
+}
+
+extension Datadog.Configuration.VitalsFrequency {
+    var timeInterval: TimeInterval? {
+        switch self {
+        case .frequent: return 0.1
+        case .average: return 0.5
+        case .rare: return 1
+        case .never: return nil
+        }
     }
 }
 

@@ -20,14 +20,8 @@ internal class TransformationContext<T> {
 
     var current: T? { stack.last }
     var parent: T? { stack.dropLast().last }
-}
 
-/// Transforms given type `T`.
-internal class TypeTransformer<T> {
-    let context = TransformationContext<T>()
-
-    func transform(types: [T]) throws -> [T] {
-        assertionFailure("Must be implemetned by subclasses.")
-        return types
+    func predecessor(matching predicate: (T) -> Bool) -> T? {
+        return stack.reversed().first { predicate($0) }
     }
 }

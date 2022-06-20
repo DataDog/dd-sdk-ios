@@ -10,12 +10,21 @@ internal typealias RUMSessionListener = (String, Bool) -> Void
 
 /// Dependency container for injecting components to `RUMScopes` hierarchy.
 internal struct RUMScopeDependencies {
+    struct VitalsReaders {
+        let frequency: TimeInterval
+        let cpu: SamplingBasedVitalReader
+        let memory: SamplingBasedVitalReader
+        let refreshRate: ContinuousVitalReader
+    }
+
     let rumApplicationID: String
     let sessionSampler: Sampler
     /// The start time of the application, indicated as SDK init. Measured in device time (without NTP correction).
     let sdkInitDate: Date
     let backgroundEventTrackingEnabled: Bool
     let appStateListener: AppStateListening
+    let deviceInfo: RUMDevice
+    let osInfo: RUMOperatingSystem
     let userInfoProvider: RUMUserInfoProvider
     let launchTimeProvider: LaunchTimeProviderType
     let connectivityInfoProvider: RUMConnectivityInfoProvider
@@ -37,10 +46,7 @@ internal struct RUMScopeDependencies {
     /// Produces `RUMViewUpdatesThrottlerType` for each started RUM view scope.
     let viewUpdatesThrottlerFactory: () -> RUMViewUpdatesThrottlerType
 
-    let vitalCPUReader: SamplingBasedVitalReader
-    let vitalMemoryReader: SamplingBasedVitalReader
-    let vitalRefreshRateReader: ContinuousVitalReader
-
+    let vitalsReaders: VitalsReaders?
     let onSessionStart: RUMSessionListener?
 }
 
@@ -57,6 +63,11 @@ internal extension RUMScopeDependencies {
             sdkInitDate: context.sdkInitDate,
             backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled,
             appStateListener: context.appStateListener,
+            deviceInfo: RUMDevice(
+                from: context.mobileDevice,
+                telemetry: telemetry
+            ),
+            osInfo: RUMOperatingSystem(from: context.mobileDevice),
             userInfoProvider: RUMUserInfoProvider(userInfoProvider: context.userInfoProvider),
             launchTimeProvider: context.launchTimeProvider,
             connectivityInfoProvider: RUMConnectivityInfoProvider(
@@ -86,9 +97,14 @@ internal extension RUMScopeDependencies {
             crashContextIntegration: crashReportingFeature.map { .init(crashReporting: $0) },
             ciTest: CITestIntegration.active?.rumCITest,
             viewUpdatesThrottlerFactory: { RUMViewUpdatesThrottler() },
-            vitalCPUReader: VitalCPUReader(telemetry: telemetry),
-            vitalMemoryReader: VitalMemoryReader(),
-            vitalRefreshRateReader: VitalRefreshRateReader(),
+            vitalsReaders: rumFeature.configuration.vitalsFrequency.map {
+                .init(
+                    frequency: $0,
+                    cpu: VitalCPUReader(telemetry: telemetry),
+                    memory: VitalMemoryReader(),
+                    refreshRate: VitalRefreshRateReader()
+                )
+            },
             onSessionStart: rumFeature.configuration.onSessionStart
         )
     }

@@ -351,6 +351,8 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             "The `RUMViewEvent` sent must include crash date corrected by current correction offset and shifted back by 1ms."
         )
         XCTAssertEqual(sendRUMViewEvent.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+        XCTAssertEqual(sendRUMViewEvent.device, lastRUMViewEvent.device)
+        XCTAssertEqual(sendRUMViewEvent.os, lastRUMViewEvent.os)
     }
 
     func testGivenCrashDuringRUMSessionWithActiveView_whenSendingRUMErrorEvent_itIsLinkedToPreviousRUMSessionAndIncludesCrashInformation() throws {

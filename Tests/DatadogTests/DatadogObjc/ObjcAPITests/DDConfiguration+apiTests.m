@@ -127,6 +127,7 @@
     [builder setRUMLongTaskEventMapper:^DDRUMLongTaskEvent * _Nullable(DDRUMLongTaskEvent * _Nonnull longTaskEvent) {
         return nil;
     }];
+    [builder setWithMobileVitalsFrequency:DDVitalsFrequencyFrequent];
     [builder setWithBatchSize:DDBatchSizeMedium];
     [builder setWithUploadFrequency:DDUploadFrequencyAverage];
     [builder setWithAdditionalConfiguration:@{}];

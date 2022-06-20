@@ -57,6 +57,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertNil(configuration.rumErrorEventMapper)
             XCTAssertNil(configuration.rumLongTaskEventMapper)
             XCTAssertNil(configuration.rumResourceAttributesProvider)
+            XCTAssertEqual(configuration.mobileVitalsFrequency, .rare)
             XCTAssertEqual(configuration.batchSize, .medium)
             XCTAssertEqual(configuration.uploadFrequency, .average)
             XCTAssertEqual(configuration.additionalConfiguration.count, 0)
@@ -101,6 +102,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .setRUMActionEventMapper { _ in mockRUMActionEvent }
                 .setRUMLongTaskEventMapper { _ in mockRUMLongTaskEvent }
                 .setRUMResourceAttributesProvider { _, _, _, _ in ["foo": "bar"] }
+                .set(mobileVitalsFrequency: .frequent)
                 .set(batchSize: .small)
                 .set(uploadFrequency: .frequent)
                 .set(additionalConfiguration: ["foo": 42, "bar": "something"])
@@ -162,6 +164,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.rumLongTaskEventMapper?(.mockRandom()), mockRUMLongTaskEvent)
             XCTAssertEqual(configuration.rumResourceAttributesProvider?(.mockAny(), nil, nil, nil) as? [String: String], ["foo": "bar"])
             XCTAssertFalse(configuration.rumBackgroundEventTrackingEnabled)
+            XCTAssertEqual(configuration.mobileVitalsFrequency, .frequent)
             XCTAssertEqual(configuration.batchSize, .small)
             XCTAssertEqual(configuration.uploadFrequency, .frequent)
             XCTAssertEqual(configuration.additionalConfiguration["foo"] as? Int, 42)
