@@ -116,7 +116,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         if timedOutOrExpired(currentTime: command.time) {
             return false // no longer keep this session
         }
-        lastInteractionTime = command.time
+        if command.isUserInteraction {
+            lastInteractionTime = command.time
+        }
 
         if !isSampled {
             return true // discard all events in this session
