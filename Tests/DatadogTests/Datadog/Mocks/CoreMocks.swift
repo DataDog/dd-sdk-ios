@@ -141,7 +141,11 @@ extension BundleType: CaseIterable {
     public static var allCases: [Self] { [.iOSApp, iOSAppExtension] }
 }
 
-extension Datadog.Configuration.DatadogEndpoint: RandomMockable {
+extension Datadog.Configuration.DatadogEndpoint: AnyMockable, RandomMockable {
+    static func mockAny() -> Datadog.Configuration.DatadogEndpoint {
+        return .us1
+    }
+
     static func mockRandom() -> Self {
         return [.us1, .us3, .eu1, .us1_fed].randomElement()!
     }
@@ -191,6 +195,7 @@ extension FeaturesConfiguration.Common {
     static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
+        site: DatadogSite? = .mockAny(),
         clientToken: String = .mockAny(),
         applicationName: String = .mockAny(),
         applicationVersion: String = .mockAny(),
@@ -205,6 +210,7 @@ extension FeaturesConfiguration.Common {
         encryption: DataEncryption? = nil
     ) -> Self {
         return .init(
+            site: site,
             clientToken: clientToken,
             applicationName: applicationName,
             applicationVersion: applicationVersion,

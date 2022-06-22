@@ -44,7 +44,10 @@ internal extension CoreDirectory {
     ///   - configuration: the configuration of SDK instance. It is used to determine unique path of the core
     ///   directory created for this instance of the SDK.
     init(in osDirectory: Directory, from configuration: CoreConfiguration) throws {
-        let sdkInstanceUUID = configuration.clientToken // TODO: RUMM-2203 use hash(clientToken, DD site)
+        let clientToken = configuration.clientToken
+        let site = configuration.site?.rawValue ?? ""
+
+        let sdkInstanceUUID = sha256("\(clientToken)\(site)")
         let path = "com.datadoghq/v2/\(sdkInstanceUUID)"
 
         self.init(
