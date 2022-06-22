@@ -433,6 +433,10 @@
 		61DA8CAA28609C5B0074A606 /* Directories.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CA828609C5B0074A606 /* Directories.swift */; };
 		61DA8CAC2861C3720074A606 /* DirectoriesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CAB2861C3720074A606 /* DirectoriesTests.swift */; };
 		61DA8CAD2861C3720074A606 /* DirectoriesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CAB2861C3720074A606 /* DirectoriesTests.swift */; };
+		61DA8CAF28620C760074A606 /* Cryptography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CAE28620C760074A606 /* Cryptography.swift */; };
+		61DA8CB028620C760074A606 /* Cryptography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CAE28620C760074A606 /* Cryptography.swift */; };
+		61DA8CB2286215DE0074A606 /* CryptographyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CB1286215DE0074A606 /* CryptographyTests.swift */; };
+		61DA8CB3286215DE0074A606 /* CryptographyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CB1286215DE0074A606 /* CryptographyTests.swift */; };
 		61DB33B225DEDFC200F7EA71 /* CustomObjcViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 61DB33B125DEDFC200F7EA71 /* CustomObjcViewController.m */; };
 		61DC6D922539E3E300FFAA22 /* LoggingCommonAsserts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DC6D912539E3E300FFAA22 /* LoggingCommonAsserts.swift */; };
 		61DE332625C826E4008E3EC2 /* CrashReportingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DE332525C826E4008E3EC2 /* CrashReportingFeature.swift */; };
@@ -1644,6 +1648,8 @@
 		61DA20EF26C40121004AFE6D /* DataUploadStatusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataUploadStatusTests.swift; sourceTree = "<group>"; };
 		61DA8CA828609C5B0074A606 /* Directories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Directories.swift; sourceTree = "<group>"; };
 		61DA8CAB2861C3720074A606 /* DirectoriesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectoriesTests.swift; sourceTree = "<group>"; };
+		61DA8CAE28620C760074A606 /* Cryptography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cryptography.swift; sourceTree = "<group>"; };
+		61DA8CB1286215DE0074A606 /* CryptographyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptographyTests.swift; sourceTree = "<group>"; };
 		61DB33B025DEDFC200F7EA71 /* CustomObjcViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CustomObjcViewController.h; sourceTree = "<group>"; };
 		61DB33B125DEDFC200F7EA71 /* CustomObjcViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CustomObjcViewController.m; sourceTree = "<group>"; };
 		61DC6D912539E3E300FFAA22 /* LoggingCommonAsserts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingCommonAsserts.swift; sourceTree = "<group>"; };
@@ -2144,6 +2150,7 @@
 				611529A425E3DD51004F740E /* ValuePublisher.swift */,
 				9EAF0CF7275A2FDC0044E8CA /* HostsSanitizer.swift */,
 				613C6B8F2768FDDE00870CBF /* Sampler.swift */,
+				61DA8CAE28620C760074A606 /* Cryptography.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -3262,6 +3269,7 @@
 				61363D9E24D99BAA0084CD6F /* DDErrorTests.swift */,
 				9EA8A7F0275E1518007D6FDB /* HostsSanitizerTests.swift */,
 				613C6B912768FF3100870CBF /* SamplerTests.swift */,
+				61DA8CB1286215DE0074A606 /* CryptographyTests.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -5158,6 +5166,7 @@
 				D24C27EA270C8BEE005DE596 /* DataCompression.swift in Sources */,
 				61133BE42423979B00786299 /* LogEventEncoder.swift in Sources */,
 				B3FC3C0926526F0000DEED9E /* VitalInfo.swift in Sources */,
+				61DA8CAF28620C760074A606 /* Cryptography.swift in Sources */,
 				616F1FB32840125400651A3A /* RUMV2Configuration.swift in Sources */,
 				613E81F025A740140084B751 /* RUMEventsMapper.swift in Sources */,
 				61D980BA24E28D0100E03345 /* RUMIntegrations.swift in Sources */,
@@ -5252,6 +5261,7 @@
 				61C3638324361BE200C4D4E6 /* DatadogPrivateMocks.swift in Sources */,
 				61AD4E182451C7FF006E34EA /* TracingFeatureMocks.swift in Sources */,
 				9EAF0CF6275A21100044E8CA /* WKUserContentController+DatadogTests.swift in Sources */,
+				61DA8CB2286215DE0074A606 /* CryptographyTests.swift in Sources */,
 				615A4A8924A34FD700233986 /* DDTracerTests.swift in Sources */,
 				615A4A8724A3452800233986 /* DDTracerConfigurationTests.swift in Sources */,
 				613E81F725A743600084B751 /* RUMEventsMapperTests.swift in Sources */,
@@ -5692,6 +5702,7 @@
 				D2CB6E4527C50EAE00A62B57 /* RUMResourceScope.swift in Sources */,
 				D2CB6E4627C50EAE00A62B57 /* RUMSessionScope.swift in Sources */,
 				D2B3F04B2829510600C2B5EE /* DatadogCoreProtocol.swift in Sources */,
+				61DA8CB028620C760074A606 /* Cryptography.swift in Sources */,
 				D2DC4BF727F484AA00E4FB96 /* DataEncryption.swift in Sources */,
 				D2CB6E4727C50EAE00A62B57 /* TracingUUID.swift in Sources */,
 				D2CB6E4827C50EAE00A62B57 /* ServerDateProvider.swift in Sources */,
@@ -5882,6 +5893,7 @@
 				D2CB6F0027C520D400A62B57 /* RUMSessionMatcher.swift in Sources */,
 				D2CB6F0127C520D400A62B57 /* DatadogPrivateMocks.swift in Sources */,
 				D2CB6F0227C520D400A62B57 /* TracingFeatureMocks.swift in Sources */,
+				61DA8CB3286215DE0074A606 /* CryptographyTests.swift in Sources */,
 				D2CB6F0327C520D400A62B57 /* WKUserContentController+DatadogTests.swift in Sources */,
 				D2CB6F0427C520D400A62B57 /* DDTracerTests.swift in Sources */,
 				D2CB6F0527C520D400A62B57 /* DDTracerConfigurationTests.swift in Sources */,

@@ -874,11 +874,11 @@ class TracerTests: XCTestCase {
         testThreadSafety(
             closures: [
                 // swiftlint:disable opening_brace
-                { span in span.setTag(key: .mockRandom(among: "abcde", length: 1), value: "value") },
-                { span in span.setBaggageItem(key: .mockRandom(among: "abcde", length: 1), value: "value") },
-                { span in _ = span.baggageItem(withKey: .mockRandom(among: "abcde")) },
+                { span in span.setTag(key: .mockRandom(among: .alphanumerics, length: 1), value: "value") },
+                { span in span.setBaggageItem(key: .mockRandom(among: .alphanumerics, length: 1), value: "value") },
+                { span in _ = span.baggageItem(withKey: .mockRandom(among: .alphanumerics)) },
                 { span in _ = span.context.forEachBaggageItem { _, _ in return false } },
-                { span in span.log(fields: [.mockRandom(among: "abcde", length: 1): "value"]) },
+                { span in span.log(fields: [.mockRandom(among: .alphanumerics, length: 1): "value"]) },
                 { span in span.finish() }
                 // swiftlint:enable opening_brace
             ]

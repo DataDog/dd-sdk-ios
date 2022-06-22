@@ -866,7 +866,7 @@ extension RequestBuilder.HTTPHeader: RandomMockable, AnyMockable {
     static func mockRandom() -> RequestBuilder.HTTPHeader {
         let all: [RequestBuilder.HTTPHeader] = [
             .contentTypeHeader(contentType: Bool.random() ? .applicationJSON : .textPlainUTF8),
-            .userAgentHeader(appName: .mockRandom(among: .alphanumerics), appVersion: .alphanumerics, device: .mockAny()),
+            .userAgentHeader(appName: .mockRandom(among: .alphanumerics), appVersion: .mockRandom(among: .alphanumerics), device: .mockAny()),
             .ddAPIKeyHeader(clientToken: .mockRandom(among: .alphanumerics)),
             .ddEVPOriginHeader(source: .mockRandom(among: .alphanumerics)),
             .ddEVPOriginVersionHeader(sdkVersion: .mockRandom(among: .alphanumerics)),

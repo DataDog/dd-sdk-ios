@@ -224,14 +224,11 @@ extension String: AnyMockable, RandomMockable {
     }
 
     static func mockRandom(length: Int) -> String {
-        return mockRandom(
-            among: .alphanumerics + " ",
-            length: length
-        )
+        return mockRandom(among: .alphanumericsAndWhitespace, length: length)
     }
 
-    static func mockRandom(among characters: String, length: Int = 10) -> String {
-        return String((0..<length).map { _ in characters.randomElement()! })
+    static func mockRandom(among characters: RandomStringCharacterSet, length: Int = 10) -> String {
+        return characters.random(ofLength: length)
     }
 
     static func mockRepeating(character: Character, times: Int) -> String {
@@ -239,15 +236,64 @@ extension String: AnyMockable, RandomMockable {
         return String(characters)
     }
 
-    static let alphanumerics = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-    static let decimalDigits = "0123456789"
+    enum RandomStringCharacterSet {
+        private static let alphanumericCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        private static let decimalDigitCharacters = "0123456789"
+
+        /// Only letters and numbers (lower and upper cased).
+        case alphanumerics
+        /// Letters, numbers and whitespace (lower and upper cased).
+        case alphanumericsAndWhitespace
+        /// Only numbers.
+        case decimalDigits
+        /// Custom characters.
+        case custom(characters: String)
+        /// All Unicode scalars.
+        case allUnicodes
+
+        func random(ofLength length: Int) -> String {
+            var characters: String
+            switch self {
+            case .alphanumerics:
+                characters = RandomStringCharacterSet.alphanumericCharacters
+            case .alphanumericsAndWhitespace:
+                characters = RandomStringCharacterSet.alphanumericCharacters + " "
+            case .decimalDigits:
+                characters = RandomStringCharacterSet.decimalDigitCharacters
+            case .custom(let customCharacters):
+                characters = customCharacters
+            case .allUnicodes:
+                var view = UnicodeScalarView()
+                (0..<length).forEach { _ in view.append(Unicode.Scalar.mockRandom()) }
+                return String(view)
+            }
+
+            return String((0..<length).map { _ in characters.randomElement()! })
+        }
+    }
 }
 
 extension Character: AnyMockable, RandomMockable {
     static func mockAny() -> Character { "c" }
 
     static func mockRandom() -> Character {
-        String.alphanumerics.randomElement()!
+        return Character(Unicode.Scalar.mockRandom())
+    }
+}
+
+extension Unicode.Scalar: RandomMockable {
+    static func mockRandom() -> Self {
+        // From `Unicode.Scalar.init?(_ v: UInt32))`:
+        //
+        // > - Parameter v: The Unicode code point to use for the scalar. The
+        // > initializer succeeds if `v` is a valid Unicode scalar value---that is,
+        // > if `v` is in the range `0...0xD7FF` or `0xE000...0x10FFFF`. If `v` is
+        // > an invalid Unicode scalar value, the result is `nil`.
+        var codePoint: UInt32 = .mockRandom(min: 0x0, max: 0x10FFFF)
+        while codePoint > 0xD7FF && codePoint < 0xE000 {
+            codePoint = .mockRandom(min: 0x0, max: 0x10FFFF)
+        }
+        return Unicode.Scalar(codePoint)! // force-unwrap as we guarantee `randomCodePoint` is correct
     }
 }
 
