@@ -23,6 +23,8 @@ internal class RUMResourceScope: RUMScope {
     private var resourceURL: String
     /// The start time of this Resource loading.
     private var resourceLoadingStartTime: Date
+    /// Date correction to server time.
+    private let dateCorrection: DateCorrection
     /// The HTTP method used to load this Resource.
     private var resourceHTTPMethod: RUMMethod
     /// Whether or not the Resource is provided by a first party host, if that information is available.
@@ -49,6 +51,7 @@ internal class RUMResourceScope: RUMScope {
         resourceKey: String,
         attributes: [AttributeKey: AttributeValue],
         startTime: Date,
+        dateCorrection: DateCorrection,
         url: String,
         httpMethod: RUMMethod,
         resourceKindBasedOnRequest: RUMResourceType?,
@@ -63,6 +66,7 @@ internal class RUMResourceScope: RUMScope {
         self.attributes = attributes
         self.resourceURL = url
         self.resourceLoadingStartTime = startTime
+        self.dateCorrection = dateCorrection
         self.resourceHTTPMethod = httpMethod
         self.isFirstPartyResource = dependencies.firstPartyURLsFilter.isFirstParty(string: url)
         self.resourceKindBasedOnRequest = resourceKindBasedOnRequest
@@ -133,7 +137,7 @@ internal class RUMResourceScope: RUMScope {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: resourceStartTime.timeIntervalSince1970.toInt64Milliseconds,
+            date: dateCorrection.applying(to: resourceStartTime).timeIntervalSince1970.toInt64Milliseconds,
             device: dependencies.deviceInfo,
             os: dependencies.osInfo,
             resource: .init(
@@ -221,7 +225,7 @@ internal class RUMResourceScope: RUMScope {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: command.time.timeIntervalSince1970.toInt64Milliseconds,
+            date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
             device: dependencies.deviceInfo,
             error: .init(
                 handling: nil,
@@ -298,9 +302,11 @@ internal class RUMResourceScope: RUMScope {
 
     private func resolveResourceDuration(_ duration: TimeInterval) -> Int64 {
         guard duration > 0.0 else {
-            userLogger.warn("""
-            The computed duration for your resource: \(resourceURL) was 0 or negative. In order to keep the resource event we forced it to 1ns.
-            """)
+            userLogger.warn(
+                """
+                The computed duration for your resource: \(resourceURL) was 0 or negative. In order to keep the resource event we forced it to 1ns.
+                """
+            )
             return 1 // 1ns
         }
 

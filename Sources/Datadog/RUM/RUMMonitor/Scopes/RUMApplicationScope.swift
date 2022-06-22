@@ -54,7 +54,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     // MARK: - Private
 
     private func refresh(expiredSession: RUMSessionScope, on command: RUMCommand, context: DatadogV1Context, writer: Writer) {
-        let refreshedSession = RUMSessionScope(from: expiredSession, startTime: command.time)
+        let refreshedSession = RUMSessionScope(from: expiredSession, startTime: command.time, context: context)
         sessionScope = refreshedSession
         sessionScopeDidUpdate(refreshedSession)
         _ = refreshedSession.process(command: command, context: context, writer: writer)

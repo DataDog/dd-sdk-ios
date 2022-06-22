@@ -779,7 +779,8 @@ extension RUMViewScope {
         name: String = .mockAny(),
         attributes: [AttributeKey: AttributeValue] = [:],
         customTimings: [String: Int64] = randomTimings(),
-        startTime: Date = .mockAny()
+        startTime: Date = .mockAny(),
+        dateCorrection: DateCorrection = .zero
     ) -> RUMViewScope {
         return RUMViewScope(
             isInitialView: isInitialView,
@@ -790,7 +791,8 @@ extension RUMViewScope {
             name: name,
             attributes: attributes,
             customTimings: customTimings,
-            startTime: startTime
+            startTime: startTime,
+            dateCorrection: dateCorrection
         )
     }
 }
@@ -802,6 +804,7 @@ extension RUMResourceScope {
         resourceKey: String = .mockAny(),
         attributes: [AttributeKey: AttributeValue] = [:],
         startTime: Date = .mockAny(),
+        dateCorrection: DateCorrection = .zero,
         url: String = .mockAny(),
         httpMethod: RUMMethod = .mockAny(),
         isFirstPartyResource: Bool? = nil,
@@ -816,6 +819,7 @@ extension RUMResourceScope {
             resourceKey: resourceKey,
             attributes: attributes,
             startTime: startTime,
+            dateCorrection: dateCorrection,
             url: url,
             httpMethod: httpMethod,
             resourceKindBasedOnRequest: resourceKindBasedOnRequest,
@@ -835,6 +839,7 @@ extension RUMUserActionScope {
         actionType: RUMUserActionType = [.tap, .scroll, .swipe, .custom].randomElement()!,
         attributes: [AttributeKey: AttributeValue] = [:],
         startTime: Date = .mockAny(),
+        dateCorrection: DateCorrection,
         isContinuous: Bool = .mockAny(),
         onActionEventSent: @escaping () -> Void = {}
     ) -> RUMUserActionScope {
@@ -845,6 +850,7 @@ extension RUMUserActionScope {
                 actionType: actionType,
                 attributes: attributes,
                 startTime: startTime,
+                dateCorrection: dateCorrection,
                 isContinuous: isContinuous,
                 onActionEventSent: onActionEventSent
         )

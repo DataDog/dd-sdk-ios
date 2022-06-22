@@ -601,8 +601,9 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         }
 
         queue.async {
+            let transformedCommand = self.transform(command: command)
+
             scope.eventWriteContext { context, writer in
-                let transformedCommand = self.transform(command: command, context: context)
                 _ = self.applicationScope.process(command: transformedCommand, context: context, writer: writer)
             }
 
@@ -619,7 +620,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     //
     // NOTE: transform() calls self.rumAttributes outside of queue
     // therefore it should be removed once process() is testable
-    func transform(command: RUMCommand, context: DatadogV1Context) -> RUMCommand {
+    func transform(command: RUMCommand) -> RUMCommand {
         var mutableCommand = command
 
         var combinedUserAttributes = self.rumAttributes
@@ -631,10 +632,6 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         }
 
         mutableCommand.attributes = combinedUserAttributes
-
-        // adjust command time using context's date corrector
-        let dateCorrection = context.dateCorrector.currentCorrection
-        mutableCommand.time = dateCorrection.applying(to: mutableCommand.time)
 
         return mutableCommand
     }

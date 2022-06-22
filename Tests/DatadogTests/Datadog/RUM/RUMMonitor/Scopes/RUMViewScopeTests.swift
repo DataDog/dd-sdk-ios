@@ -39,7 +39,8 @@ class RUMViewScopeTests: XCTestCase {
             name: .mockRandom(),
             attributes: [:],
             customTimings: [:],
-            startTime: .mockAny()
+            startTime: .mockAny(),
+            dateCorrection: .zero
         )
 
         XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
@@ -65,7 +66,8 @@ class RUMViewScopeTests: XCTestCase {
             name: .mockRandom(),
             attributes: [:],
             customTimings: [:],
-            startTime: .mockAny()
+            startTime: .mockAny(),
+            dateCorrection: .zero
         )
 
         _ = scope.process(
@@ -98,7 +100,8 @@ class RUMViewScopeTests: XCTestCase {
             name: "ViewName",
             attributes: [:],
             customTimings: [:],
-            startTime: currentTime
+            startTime: currentTime,
+            dateCorrection: .zero
         )
 
         // When
@@ -145,7 +148,8 @@ class RUMViewScopeTests: XCTestCase {
             name: "ViewName",
             attributes: [:],
             customTimings: [:],
-            startTime: currentTime
+            startTime: currentTime,
+            dateCorrection: .zero
         )
 
         // When
@@ -203,7 +207,8 @@ class RUMViewScopeTests: XCTestCase {
             name: "ViewName",
             attributes: [:],
             customTimings: [:],
-            startTime: currentTime
+            startTime: currentTime,
+            dateCorrection: .zero
         )
 
         _ = scope.process(
@@ -250,7 +255,8 @@ class RUMViewScopeTests: XCTestCase {
             name: "ViewName",
             attributes: [:],
             customTimings: [:],
-            startTime: currentTime
+            startTime: currentTime,
+            dateCorrection: .zero
         )
 
         _ = scope.process(
@@ -278,7 +284,8 @@ class RUMViewScopeTests: XCTestCase {
             name: "ViewName",
             attributes: ["foo": "bar", "fizz": "buzz"],
             customTimings: [:],
-            startTime: currentTime
+            startTime: currentTime,
+            dateCorrection: .zero
         )
 
         XCTAssertTrue(
@@ -326,7 +333,8 @@ class RUMViewScopeTests: XCTestCase {
             name: "ViewName",
             attributes: ["foo": "bar"],
             customTimings: [:],
-            startTime: currentTime
+            startTime: currentTime,
+            dateCorrection: .zero
         )
 
         XCTAssertTrue(
@@ -391,7 +399,8 @@ class RUMViewScopeTests: XCTestCase {
             name: "FirstViewName",
             attributes: [:],
             customTimings: [:],
-            startTime: currentTime
+            startTime: currentTime,
+            dateCorrection: .zero
         )
 
         XCTAssertTrue(
@@ -435,7 +444,8 @@ class RUMViewScopeTests: XCTestCase {
             name: "FirstViewName",
             attributes: [:],
             customTimings: [:],
-            startTime: currentTime
+            startTime: currentTime,
+            dateCorrection: .zero
         )
 
         currentTime.addTimeInterval(1)
@@ -479,7 +489,8 @@ class RUMViewScopeTests: XCTestCase {
                 name: name,
                 attributes: [:],
                 customTimings: [:],
-                startTime: .mockAny()
+                startTime: .mockAny(),
+                dateCorrection: .zero
             )
         }
 
@@ -524,7 +535,8 @@ class RUMViewScopeTests: XCTestCase {
             name: .mockAny(),
             attributes: [:],
             customTimings: [:],
-            startTime: Date()
+            startTime: Date(),
+            dateCorrection: .zero
         )
         XCTAssertTrue(
             scope.process(
@@ -590,7 +602,8 @@ class RUMViewScopeTests: XCTestCase {
             name: .mockAny(),
             attributes: [:],
             customTimings: [:],
-            startTime: Date()
+            startTime: Date(),
+            dateCorrection: .zero
         )
 
         // given
@@ -666,7 +679,8 @@ class RUMViewScopeTests: XCTestCase {
             name: .mockAny(),
             attributes: [:],
             customTimings: [:],
-            startTime: Date()
+            startTime: Date(),
+            dateCorrection: .zero
         )
 
         let previousUserLogger = userLogger
@@ -751,7 +765,8 @@ class RUMViewScopeTests: XCTestCase {
             name: .mockAny(),
             attributes: [:],
             customTimings: [:],
-            startTime: currentTime
+            startTime: currentTime,
+            dateCorrection: .zero
         )
 
         let previousUserLogger = userLogger
@@ -834,7 +849,8 @@ class RUMViewScopeTests: XCTestCase {
             name: .mockAny(),
             attributes: [:],
             customTimings: [:],
-            startTime: currentTime
+            startTime: currentTime,
+            dateCorrection: .zero
         )
         _ = scope.process(
                 command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView),
@@ -888,7 +904,8 @@ class RUMViewScopeTests: XCTestCase {
             name: .mockAny(),
             attributes: [:],
             customTimings: [:],
-            startTime: currentTime
+            startTime: currentTime,
+            dateCorrection: .zero
         )
         _ = scope.process(
                 command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView),
@@ -938,7 +955,8 @@ class RUMViewScopeTests: XCTestCase {
             name: "ViewName",
             attributes: [:],
             customTimings: [:],
-            startTime: currentTime
+            startTime: currentTime,
+            dateCorrection: .zero
         )
 
         XCTAssertTrue(
@@ -1003,7 +1021,8 @@ class RUMViewScopeTests: XCTestCase {
             name: "ViewName",
             attributes: [:],
             customTimings: [:],
-            startTime: currentTime
+            startTime: currentTime,
+            dateCorrection: .zero
         )
 
         XCTAssertTrue(
@@ -1101,7 +1120,8 @@ class RUMViewScopeTests: XCTestCase {
             name: .mockAny(),
             attributes: [:],
             customTimings: [:],
-            startTime: Date()
+            startTime: Date(),
+            dateCorrection: .zero
         )
 
         XCTAssertTrue(
@@ -1150,7 +1170,8 @@ class RUMViewScopeTests: XCTestCase {
             name: "ViewName",
             attributes: [:],
             customTimings: [:],
-            startTime: startViewDate
+            startTime: startViewDate,
+            dateCorrection: .zero
         )
 
         XCTAssertTrue(
@@ -1210,7 +1231,8 @@ class RUMViewScopeTests: XCTestCase {
             name: "ViewName",
             attributes: [:],
             customTimings: [:],
-            startTime: startViewDate
+            startTime: startViewDate,
+            dateCorrection: .zero
         )
 
         XCTAssertTrue(
@@ -1249,7 +1271,8 @@ class RUMViewScopeTests: XCTestCase {
             name: .mockAny(),
             attributes: [:],
             customTimings: [:],
-            startTime: currentTime
+            startTime: currentTime,
+            dateCorrection: .zero
         )
         XCTAssertTrue(
             scope.process(
@@ -1310,7 +1333,8 @@ class RUMViewScopeTests: XCTestCase {
             name: .mockAny(),
             attributes: [:],
             customTimings: [:],
-            startTime: currentTime
+            startTime: currentTime,
+            dateCorrection: .zero
         )
         XCTAssertTrue(
             scope.process(
@@ -1355,7 +1379,8 @@ class RUMViewScopeTests: XCTestCase {
             name: .mockAny(),
             attributes: [:],
             customTimings: [:],
-            startTime: currentTime
+            startTime: currentTime,
+            dateCorrection: .zero
         )
         XCTAssertTrue(
             scope.process(
@@ -1410,11 +1435,7 @@ class RUMViewScopeTests: XCTestCase {
     func testGivenViewStartedWithServerTimeDifference_whenDifferentEventsAreSend_itAppliesTheSameCorrectionToAll() throws {
         let initialDeviceTime: Date = .mockDecember15th2019At10AMUTC()
         let initialServerTimeOffset: TimeInterval = 120 // 2 minutes
-        let dateCorrectorMock = DateCorrectorMock(correctionOffset: initialServerTimeOffset)
-
         var currentDeviceTime = initialDeviceTime
-
-        let customContext: DatadogV1Context = .mockWith(dependencies: .mockWith(dateCorrector: dateCorrectorMock))
 
         // Given
         let scope = RUMViewScope(
@@ -1426,51 +1447,52 @@ class RUMViewScopeTests: XCTestCase {
             name: .mockAny(),
             attributes: [:],
             customTimings: [:],
-            startTime: initialDeviceTime
+            startTime: initialDeviceTime,
+            dateCorrection: DateCorrection(serverTimeOffset: initialServerTimeOffset)
         )
 
         // When
         _ = scope.process(
                 command: RUMStartViewCommand.mockWith(time: currentDeviceTime, identity: mockView),
-                context: customContext,
+                context: context,
                 writer: writer
         )
         currentDeviceTime.addTimeInterval(1) // advance device time
 
         _ = scope.process(
             command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1", time: currentDeviceTime),
-            context: customContext,
+            context: context,
             writer: writer
         )
         _ = scope.process(
             command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/2", time: currentDeviceTime),
-            context: customContext,
+            context: context,
             writer: writer
         )
         _ = scope.process(
             command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1", time: currentDeviceTime),
-            context: customContext,
+            context: context,
             writer: writer
         )
         _ = scope.process(
             command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/2", time: currentDeviceTime),
-            context: customContext,
+            context: context,
             writer: writer
         )
         _ = scope.process(
             command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentDeviceTime),
-            context: customContext,
+            context: context,
             writer: writer
         )
         _ = scope.process(
             command: RUMAddUserActionCommand.mockWith(time: currentDeviceTime),
-            context: customContext,
+            context: context,
             writer: writer
         )
 
         _ = scope.process(
                 command: RUMStopViewCommand.mockWith(time: currentDeviceTime, identity: mockView),
-                context: customContext,
+                context: context,
                 writer: writer
         )
 
@@ -1541,7 +1563,8 @@ class RUMViewScopeTests: XCTestCase {
             name: "ViewController",
             attributes: [:],
             customTimings: [:],
-            startTime: Date()
+            startTime: Date(),
+            dateCorrection: .zero
         )
         XCTAssertTrue(
             scope.process(
@@ -1645,7 +1668,8 @@ class RUMViewScopeTests: XCTestCase {
             name: "ViewController",
             attributes: [:],
             customTimings: [:],
-            startTime: Date()
+            startTime: Date(),
+            dateCorrection: .zero
         )
 
         // When
@@ -1773,7 +1797,8 @@ class RUMViewScopeTests: XCTestCase {
             name: "ViewController",
             attributes: [:],
             customTimings: [:],
-            startTime: Date()
+            startTime: Date(),
+            dateCorrection: .zero
         )
 
         // When

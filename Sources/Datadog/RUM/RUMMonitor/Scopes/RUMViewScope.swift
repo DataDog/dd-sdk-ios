@@ -43,6 +43,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     let viewName: String
     /// The start time of this View.
     let viewStartTime: Date
+    /// Date correction to server time.
+    private let dateCorrection: DateCorrection
     /// Tells if this View is the active one.
     /// `true` for every new started View.
     /// `false` if the View was stopped or any other View was started.
@@ -83,7 +85,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         name: String,
         attributes: [AttributeKey: AttributeValue],
         customTimings: [String: Int64],
-        startTime: Date
+        startTime: Date,
+        dateCorrection: DateCorrection
     ) {
         self.parent = parent
         self.dependencies = dependencies
@@ -95,6 +98,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.viewPath = path
         self.viewName = name
         self.viewStartTime = startTime
+        self.dateCorrection = dateCorrection
 
         self.vitalInfoSampler = dependencies.vitalsReaders.map {
             .init(
@@ -216,6 +220,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             resourceKey: command.resourceKey,
             attributes: command.attributes,
             startTime: command.time,
+            dateCorrection: dateCorrection,
             url: command.url,
             httpMethod: command.httpMethod,
             resourceKindBasedOnRequest: command.kind,
@@ -239,6 +244,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             actionType: command.actionType,
             attributes: command.attributes,
             startTime: command.time,
+            dateCorrection: dateCorrection,
             isContinuous: true,
             onActionEventSent: { [weak self] in
                 self?.actionsCount += 1
@@ -255,6 +261,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             actionType: command.actionType,
             attributes: command.attributes,
             startTime: command.time,
+            dateCorrection: dateCorrection,
             isContinuous: false,
             onActionEventSent: { [weak self] in
                 self?.actionsCount += 1
@@ -327,7 +334,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: viewStartTime.timeIntervalSince1970.toInt64Milliseconds,
+            date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             device: dependencies.deviceInfo,
             os: dependencies.osInfo,
             service: context.service,
@@ -380,7 +387,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: viewStartTime.timeIntervalSince1970.toInt64Milliseconds,
+            date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
             device: dependencies.deviceInfo,
             os: dependencies.osInfo,
             service: context.service,
@@ -463,7 +470,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: command.time.timeIntervalSince1970.toInt64Milliseconds,
+            date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
             device: dependencies.deviceInfo,
             error: .init(
                 handling: nil,
@@ -521,7 +528,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: (command.time - command.duration).timeIntervalSince1970.toInt64Milliseconds,
+            date: dateCorrection.applying(to: command.time - command.duration).timeIntervalSince1970.toInt64Milliseconds,
             device: dependencies.deviceInfo,
             longTask: .init(duration: taskDurationInNs, id: nil, isFrozenFrame: isFrozenFrame),
             os: dependencies.osInfo,

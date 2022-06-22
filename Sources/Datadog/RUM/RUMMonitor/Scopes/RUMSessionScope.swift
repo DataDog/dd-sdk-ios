@@ -74,7 +74,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// Creates a new Session upon expiration of the previous one.
     convenience init(
         from expiredSession: RUMSessionScope,
-        startTime: Date
+        startTime: Date,
+        context: DatadogV1Context
     ) {
         self.init(
             isInitialSession: false,
@@ -97,7 +98,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 name: expiredView.viewName,
                 attributes: expiredView.attributes,
                 customTimings: expiredView.customTimings,
-                startTime: startTime
+                startTime: startTime,
+                dateCorrection: context.dateCorrector.currentCorrection
             )
         }
     }
@@ -124,7 +126,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
         if let startViewCommand = command as? RUMStartViewCommand {
             // Start view scope explicitly on receiving "start view" command
-            startView(on: startViewCommand)
+            startView(on: startViewCommand, context: context)
         } else if !hasActiveView {
             // Otherwise, if there is no active view scope, consider starting artificial scope for handling this command
             let handlingRule = RUMOffViewEventsHandlingRule(
@@ -135,9 +137,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
             switch handlingRule {
             case .handleInApplicationLaunchView where command.canStartApplicationLaunchView:
-                startApplicationLaunchView(on: command)
+                startApplicationLaunchView(on: command, context: context)
             case .handleInBackgroundView where command.canStartBackgroundView:
-                startBackgroundView(on: command)
+                startBackgroundView(on: command, context: context)
             default:
                 if !(command is RUMKeepSessionAliveCommand) { // it is expected to receive 'keep alive' while no active view (when tracking WebView events)
                     // As no view scope will handle this command, warn the user on dropping it.
@@ -173,7 +175,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     // MARK: - RUMCommands Processing
 
-    private func startView(on command: RUMStartViewCommand) {
+    private func startView(on command: RUMStartViewCommand, context: DatadogV1Context) {
         let isStartingInitialView = isInitialSession && !state.hasTrackedAnyView
         viewScopes.append(
             RUMViewScope(
@@ -185,12 +187,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 name: command.name,
                 attributes: command.attributes,
                 customTimings: [:],
-                startTime: command.time
+                startTime: command.time,
+                dateCorrection: context.dateCorrector.currentCorrection
             )
         )
     }
 
-    private func startApplicationLaunchView(on command: RUMCommand) {
+    private func startApplicationLaunchView(on command: RUMCommand, context: DatadogV1Context) {
         viewScopes.append(
             RUMViewScope(
                 isInitialView: true,
@@ -201,12 +204,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 name: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName,
                 attributes: command.attributes,
                 customTimings: [:],
-                startTime: sessionStartTime
+                startTime: sessionStartTime,
+                dateCorrection: context.dateCorrector.currentCorrection
             )
         )
     }
 
-    private func startBackgroundView(on command: RUMCommand) {
+    private func startBackgroundView(on command: RUMCommand, context: DatadogV1Context) {
         let isStartingInitialView = isInitialSession && !state.hasTrackedAnyView
         viewScopes.append(
             RUMViewScope(
@@ -218,7 +222,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 name: RUMOffViewEventsHandlingRule.Constants.backgroundViewName,
                 attributes: command.attributes,
                 customTimings: [:],
-                startTime: command.time
+                startTime: command.time,
+                dateCorrection: context.dateCorrector.currentCorrection
             )
         )
     }
