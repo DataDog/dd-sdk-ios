@@ -1252,4 +1252,8 @@ class PrintFunctionMock {
     func print(message: String) {
         printedMessages.append(message)
     }
+
+    func reset() {
+        printedMessages = []
+    }
 }
