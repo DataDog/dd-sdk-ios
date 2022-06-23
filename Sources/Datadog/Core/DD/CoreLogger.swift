@@ -6,12 +6,8 @@
 
 import Foundation
 
-/// The `CoreLogger` for logging information about the functioning of the SDK.
-///
-/// It is meant for debugging purposes when using the SDK, hence **it should print information useful and actionable
-/// to the SDK user**. Think of possible logs that we may want to receive from our users when asking them to enable
-/// SDK verbosity and send us their console log.
-internal struct CoreLogger {
+/// The `CoreLogger` provides methods to collect debug information and detect execution errors of the Datadog SDK.
+internal struct CoreLogger: CoreLoggerType {
     /// The prefix applied to all core logs.
     private static let prefix = "[DATADOG SDK] 🐶 → "
 
@@ -36,15 +32,6 @@ internal struct CoreLogger {
         self.currentVerbosityLevel = verbosityLevel
     }
 
-    /// Print debug message which is meant to self-diagnose possible issues with the SDK.
-    /// It should be used to log all events which might be important for us in diagnosing the SDK
-    /// in user apps (e.g.: printing the SDK version or important aspects of configuration).
-    ///
-    /// No emoji prefix is added by `CoreLogger` when priting this log to the console.
-    ///
-    /// - Parameters:
-    ///   - message: the message
-    ///   - error: eventual `Error` which will be printed in nice format
     func debug(_ message: @autoclosure () -> String, error: Error? = nil) {
         guard let verbosityLevel = currentVerbosityLevel(), LogLevel.debug.rawValue >= verbosityLevel.rawValue else {
             return // if no `Datadog.verbosityLevel` is set or it is set above this level
@@ -53,14 +40,6 @@ internal struct CoreLogger {
         print(message: message(), error: error, emoji: "")
     }
 
-    /// Print error message which indicates **an user error when using the SDK**. It should be used for
-    /// indicating errors that are caused by user fault (e.g. wrong configuration).
-    ///
-    /// The "⚠️" emoji prefix is added by `CoreLogger` when priting this log to the console.
-    ///
-    /// - Parameters:
-    ///   - message: the message
-    ///   - error: eventual `Error` which will be printed in nice format
     func warn(_ message: @autoclosure () -> String, error: Error? = nil) {
         guard let verbosityLevel = currentVerbosityLevel(), LogLevel.warn.rawValue >= verbosityLevel.rawValue else {
             return // if no `Datadog.verbosityLevel` is set or it is set above this level
@@ -69,14 +48,6 @@ internal struct CoreLogger {
         print(message: message(), error: error, emoji: "⚠️")
     }
 
-    /// Print error message which indicates **an error in the SDK**. It shuld be only used for errors
-    /// which are not caused by the user (e.g. due to wrong configuration).
-    ///
-    /// The "🔥" emoji prefix is added by `CoreLogger` when priting this log to the console.
-    ///
-    /// - Parameters:
-    ///   - message: the message
-    ///   - error: eventual `Error` which will be printed in nice format
     func error(_ message: @autoclosure () -> String, error: Error? = nil) {
         guard let verbosityLevel = currentVerbosityLevel(), LogLevel.error.rawValue >= verbosityLevel.rawValue else {
             return // if no `Datadog.verbosityLevel` is set or it is set above this level
@@ -85,14 +56,6 @@ internal struct CoreLogger {
         print(message: message(), error: error, emoji: "🔥")
     }
 
-    /// Print error message which indicates an error which **makes some part of the SDK unfunctional**.
-    /// It can be used to indicate either fatal SDK errors or user fault.
-    ///
-    /// The "⛔️" emoji prefix is added by `CoreLogger` when priting this log to the console.
-    ///
-    /// - Parameters:
-    ///   - message: the message
-    ///   - error: eventual `Error` which will be printed in nice format
     func critical(_ message: @autoclosure () -> String, error: Error? = nil) {
         guard let verbosityLevel = currentVerbosityLevel(), LogLevel.critical.rawValue >= verbosityLevel.rawValue else {
             return // if no `Datadog.verbosityLevel` is set or it is set above this level

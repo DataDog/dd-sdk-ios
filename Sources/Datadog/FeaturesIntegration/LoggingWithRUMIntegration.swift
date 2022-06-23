@@ -14,7 +14,7 @@ internal struct LoggingWithRUMContextIntegration {
     /// Returns `nil` and prints warning if global `RUMMonitor` is not registered.
     var currentRUMContextAttributes: [String: Encodable]? {
         guard let attributes = rumContextIntegration.currentRUMContextAttributes else {
-            userLogger.warn("RUM feature is enabled, but no `RUMMonitor` is registered. The RUM integration with Logging will not work.")
+            dd.logger.warn("RUM feature is enabled, but no `RUMMonitor` is registered. The RUM integration with Logging will not work.")
             return nil
         }
 

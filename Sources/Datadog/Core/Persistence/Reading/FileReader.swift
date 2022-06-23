@@ -60,7 +60,7 @@ internal final class FileReader: Reader {
 
         var failure: String? = nil
         defer {
-            failure.map { userLogger.error($0) }
+            failure.map { dd.logger.error($0) }
         }
 
         return try reader.all()

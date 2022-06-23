@@ -17,7 +17,7 @@ internal struct LoggingWithActiveSpanIntegration {
     /// Returns `nil` and prints warning if global `Tracer` is not registered.
     var activeSpanAttributes: [String: Encodable]? {
         guard let tracer = Global.sharedTracer as? Tracer else {
-            userLogger.warn("Tracing feature is enabled, but no `Tracer` is registered. The Tracing integration with Logging will not work.")
+            dd.logger.warn("Tracing feature is enabled, but no `Tracer` is registered. The Tracing integration with Logging will not work.")
             return nil
         }
 

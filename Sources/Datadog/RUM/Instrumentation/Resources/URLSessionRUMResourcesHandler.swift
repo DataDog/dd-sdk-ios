@@ -54,7 +54,7 @@ internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler, RUM
 
     func notify_taskInterceptionCompleted(interception: TaskInterception) {
         if subscriber == nil {
-            userLogger.warn(
+            dd.logger.warn(
                 """
                 RUM Resource was completed, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work.
                 Make sure `Global.rum = RUMMonitor.initialize()` is called before any network request is send.

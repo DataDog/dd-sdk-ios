@@ -149,7 +149,7 @@ internal struct SpanEventBuilder {
                         throw EncodingError.invalidValue(encodable.value, encodingContext)
                     }
                 } catch let error {
-                    userLogger.error(
+                    dd.logger.error(
                         """
                         Failed to convert span `Encodable` attribute to `String`. The value of `\(key)` will not be sent.
                         """,

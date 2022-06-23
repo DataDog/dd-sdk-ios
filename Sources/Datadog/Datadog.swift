@@ -288,9 +288,6 @@ public class Datadog {
         core.v1.feature(RUMInstrumentation.self)?.enable()
         core.v1.feature(URLSessionAutoInstrumentation.self)?.enable()
 
-        // Then, initialize internal loggers:
-        userLogger = createSDKUserLogger(in: core)
-
         defaultDatadogCore = core
 
         // After everything is set up, if the Crash Reporting feature was enabled,
@@ -344,9 +341,6 @@ public class Datadog {
 
         // Deinitialize `Datadog`:
         defaultDatadogCore = NOOPDatadogCore()
-
-        // Reset internal loggers:
-        userLogger = createNoOpSDKUserLogger()
     }
 }
 

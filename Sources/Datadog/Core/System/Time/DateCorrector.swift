@@ -41,7 +41,7 @@ internal class DateCorrector: DateCorrectorType {
             completion: { offset in
                 if let offset = offset {
                     let difference = (offset * 1_000).rounded() / 1_000
-                    userLogger.info(
+                    dd.logger.debug(
                         """
                         NTP time synchronization completed.
                         Server time will be used for signing events (\(difference)s difference with device time).
@@ -49,7 +49,7 @@ internal class DateCorrector: DateCorrectorType {
                     )
                 } else {
                     let deviceTime = deviceDateProvider.currentDate()
-                    userLogger.warn(
+                    dd.logger.error(
                         """
                         NTP time synchronization failed.
                         Device time will be used for signing events (current device time is \(deviceTime)).

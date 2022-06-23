@@ -302,7 +302,7 @@ internal class RUMResourceScope: RUMScope {
 
     private func resolveResourceDuration(_ duration: TimeInterval) -> Int64 {
         guard duration > 0.0 else {
-            userLogger.warn(
+            dd.logger.warn(
                 """
                 The computed duration for your resource: \(resourceURL) was 0 or negative. In order to keep the resource event we forced it to 1ns.
                 """
