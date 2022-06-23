@@ -14,29 +14,21 @@ internal protocol RUMScope: AnyObject {
 }
 
 extension RUMScope {
-    /// Propagates given `command` to the child scope and manages its lifecycle by
-    /// removing it if it gets closed.
+    /// Propagates given `command` and manages its lifecycle by returning `nil` if it gets closed.
     ///
-    /// Returns the `childScope` requested to be kept open, `nil` if it requests to close.
-    static func scope<S: RUMScope>(byPropagating command: RUMCommand, in scope: S?, context: DatadogV1Context, writer: Writer) -> S? {
-        guard
-            let scope = scope,
-            scope.process(command: command, context: context, writer: writer)
-        else {
-            return nil
-        }
-
-        return scope
+    /// Returns `self`  to be kept open, `nil` if it requests to close.
+    func scope(byPropagating command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Self? {
+        process(command: command, context: context, writer: writer) ? self : nil
     }
 }
 
 extension Array where Element: RUMScope {
-    /// Propagates given `command` through array of child scopes and manages their lifecycle by
-    /// removing child scopes that get closed.
+    /// Propagates given `command` through this array of scopes and manages their lifecycle by
+    /// filtering scopes that get closed.
     ///
     /// Returns the `childScopes` array by removing scopes which requested to be closed.
-    static func scopes(byPropagating command: RUMCommand, in scopes: [Element], context: DatadogV1Context, writer: Writer) -> [Element] {
-        return scopes.filter { scope in
+    func scopes(byPropagating command: RUMCommand, context: DatadogV1Context, writer: Writer) -> [Element] {
+        return filter { scope in
             scope.process(command: command, context: context, writer: writer)
         }
     }

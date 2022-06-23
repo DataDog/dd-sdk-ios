@@ -41,7 +41,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         }
 
         if let currentSession = sessionScope {
-            sessionScope = .scope(byPropagating: command, in: sessionScope, context: context, writer: writer)
+            sessionScope = sessionScope?.scope(byPropagating: command, context: context, writer: writer)
 
             if sessionScope == nil { // if session expired
                 refresh(expiredSession: currentSession, on: command, context: context, writer: writer)

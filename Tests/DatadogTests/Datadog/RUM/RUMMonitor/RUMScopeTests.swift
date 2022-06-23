@@ -23,14 +23,14 @@ class RUMScopeTests: XCTestCase {
     func testWhenPropagatingCommand_itRemovesCompletedScope() {
         // Direct reference
         var scope: CompletableScope? = CompletableScope(isCompleted: true)
-        scope = .scope(byPropagating: RUMCommandMock(), in: scope, context: .mockAny(), writer: FileWriterMock())
+        scope = scope?.scope(byPropagating: RUMCommandMock(), context: .mockAny(), writer: FileWriterMock())
         XCTAssertNil(scope)
     }
 
     func testWhenPropagatingCommand_itKeepsNonCompletedScope() {
         // Direct reference
         var scope: CompletableScope? = CompletableScope(isCompleted: false)
-        scope = .scope(byPropagating: RUMCommandMock(), in: scope, context: .mockAny(), writer: FileWriterMock())
+        scope = scope?.scope(byPropagating: RUMCommandMock(), context: .mockAny(), writer: FileWriterMock())
         XCTAssertNotNil(scope)
     }
 
@@ -42,7 +42,7 @@ class RUMScopeTests: XCTestCase {
             CompletableScope(isCompleted: false)
         ]
 
-        scopes = .scopes(byPropagating: RUMCommandMock(), in: scopes, context: .mockAny(), writer: FileWriterMock())
+        scopes = scopes.scopes(byPropagating: RUMCommandMock(), context: .mockAny(), writer: FileWriterMock())
 
         XCTAssertEqual(scopes.count, 2)
         XCTAssertEqual(scopes.filter { !$0.isCompleted }.count, 2)

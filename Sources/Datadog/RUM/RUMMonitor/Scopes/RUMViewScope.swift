@@ -129,7 +129,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         needsViewUpdate = false
 
         // Propagate to User Action scope
-        userActionScope = .scope(byPropagating: command, in: userActionScope, context: context, writer: writer)
+        userActionScope = userActionScope?.scope(byPropagating: command, context: context, writer: writer)
 
         // Send "application start" action if this is the very first view tracked in the app
         let hasSentNoViewUpdatesYet = version == 0
@@ -192,9 +192,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         // Propagate to Resource scopes
         if let resourceCommand = command as? RUMResourceCommand {
-            resourceScopes[resourceCommand.resourceKey] = .scope(
+            resourceScopes[resourceCommand.resourceKey] = resourceScopes[resourceCommand.resourceKey]?.scope(
                 byPropagating: resourceCommand,
-                in: resourceScopes[resourceCommand.resourceKey],
                 context: context,
                 writer: writer
             )

@@ -155,7 +155,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
 
         // Propagate command
-        viewScopes = .scopes(byPropagating: command, in: viewScopes, context: context, writer: writer)
+        viewScopes = viewScopes.scopes(byPropagating: command, context: context, writer: writer)
 
         if !hasActiveView {
             // If there is no active view, update `CrashContext` accordingly, so eventual crash
