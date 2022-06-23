@@ -36,15 +36,11 @@ class DatadogXCFrameworkValidator(XCFrameworkValidator):
             'ios-arm64',
             'ios-arm64/BCSymbolMaps/*.bcsymbolmap',
             'ios-arm64/dSYMs/*.dSYM',
-            'ios-arm64/**/arm64.swiftinterface',
-            'ios-arm64/**/arm64-apple-ios.swiftinterface',
+            'ios-arm64/**/*.swiftinterface',
 
             'ios-arm64_x86_64-simulator',
             'ios-arm64_x86_64-simulator/dSYMs/*.dSYM',
-            'ios-arm64_x86_64-simulator/**/arm64.swiftinterface',
-            'ios-arm64_x86_64-simulator/**/arm64-apple-ios-simulator.swiftinterface',
-            'ios-arm64_x86_64-simulator/**/x86_64.swiftinterface',
-            'ios-arm64_x86_64-simulator/**/x86_64-apple-ios-simulator.swiftinterface',
+            'ios-arm64_x86_64-simulator/**/*.swiftinterface',
         ])
 
         if in_version.is_older_than(min_tvos_version):
@@ -54,15 +50,11 @@ class DatadogXCFrameworkValidator(XCFrameworkValidator):
             'tvos-arm64',
             'tvos-arm64/BCSymbolMaps/*.bcsymbolmap',
             'tvos-arm64/dSYMs/*.dSYM',
-            'tvos-arm64/**/arm64.swiftinterface',
-            'tvos-arm64/**/arm64-apple-tvos.swiftinterface',
+            'tvos-arm64/**/*.swiftinterface',
 
             'tvos-arm64_x86_64-simulator',
             'tvos-arm64_x86_64-simulator/dSYMs/*.dSYM',
-            'tvos-arm64_x86_64-simulator/**/arm64.swiftinterface',
-            'tvos-arm64_x86_64-simulator/**/arm64-apple-tvos-simulator.swiftinterface',
-            'tvos-arm64_x86_64-simulator/**/x86_64.swiftinterface',
-            'tvos-arm64_x86_64-simulator/**/x86_64-apple-tvos-simulator.swiftinterface',
+            'tvos-arm64_x86_64-simulator/**/*.swiftinterface',
         ])
 
         return True
@@ -79,14 +71,10 @@ class DatadogObjcXCFrameworkValidator(XCFrameworkValidator):
             'ios-arm64',
             'ios-arm64/BCSymbolMaps/*.bcsymbolmap',
             'ios-arm64/dSYMs/*.dSYM',
-            'ios-arm64/**/arm64.swiftinterface',
-            'ios-arm64/**/arm64-apple-ios.swiftinterface',
+            'ios-arm64/**/*.swiftinterface',
 
             'ios-arm64_x86_64-simulator',
-            'ios-arm64_x86_64-simulator/**/arm64.swiftinterface',
-            'ios-arm64_x86_64-simulator/**/arm64-apple-ios-simulator.swiftinterface',
-            'ios-arm64_x86_64-simulator/**/x86_64.swiftinterface',
-            'ios-arm64_x86_64-simulator/**/x86_64-apple-ios-simulator.swiftinterface',
+            'ios-arm64_x86_64-simulator/**/*.swiftinterface',
         ])
 
         if in_version.is_older_than(min_tvos_version):
@@ -96,14 +84,10 @@ class DatadogObjcXCFrameworkValidator(XCFrameworkValidator):
             'tvos-arm64',
             'tvos-arm64/BCSymbolMaps/*.bcsymbolmap',
             'tvos-arm64/dSYMs/*.dSYM',
-            'tvos-arm64/**/arm64.swiftinterface',
-            'tvos-arm64/**/arm64-apple-tvos.swiftinterface',
+            'tvos-arm64/**/*.swiftinterface',
 
             'tvos-arm64_x86_64-simulator',
-            'tvos-arm64_x86_64-simulator/**/arm64.swiftinterface',
-            'tvos-arm64_x86_64-simulator/**/arm64-apple-tvos-simulator.swiftinterface',
-            'tvos-arm64_x86_64-simulator/**/x86_64.swiftinterface',
-            'tvos-arm64_x86_64-simulator/**/x86_64-apple-tvos-simulator.swiftinterface',
+            'tvos-arm64_x86_64-simulator/**/*.swiftinterface',
         ])
 
         return True
@@ -120,13 +104,11 @@ class DatadogCrashReportingXCFrameworkValidator(XCFrameworkValidator):
         dir.assert_it_has_files([
             'ios-arm64',
             'ios-arm64/BCSymbolMaps/*.bcsymbolmap',
-            'ios-arm64/**/arm64.swiftinterface',
-            'ios-arm64/**/arm64-apple-ios.swiftinterface',
+            'ios-arm64/**/*.swiftinterface',
 
             'ios-arm64_x86_64-simulator',
             'ios-arm64_x86_64-simulator/dSYMs/*.dSYM',
-            'ios-arm64_x86_64-simulator/**/x86_64.swiftinterface',
-            'ios-arm64_x86_64-simulator/**/x86_64-apple-ios-simulator.swiftinterface',
+            'ios-arm64_x86_64-simulator/**/*.swiftinterface',
         ])
         
         if in_version.is_older_than(min_tvos_version):
@@ -135,13 +117,11 @@ class DatadogCrashReportingXCFrameworkValidator(XCFrameworkValidator):
         dir.assert_it_has_files([
             'tvos-arm64',
             'tvos-arm64/BCSymbolMaps/*.bcsymbolmap',
-            'tvos-arm64/**/arm64.swiftinterface',
-            'tvos-arm64/**/arm64-apple-tvos.swiftinterface',
+            'tvos-arm64/**/*.swiftinterface',
 
             'tvos-arm64_x86_64-simulator',
             'tvos-arm64_x86_64-simulator/dSYMs/*.dSYM',
-            'tvos-arm64_x86_64-simulator/**/x86_64.swiftinterface',
-            'tvos-arm64_x86_64-simulator/**/x86_64-apple-tvos-simulator.swiftinterface',
+            'tvos-arm64_x86_64-simulator/**/*.swiftinterface',
         ])
 
         return True
@@ -184,18 +164,11 @@ class KronosXCFrameworkValidator(XCFrameworkValidator):
             'ios-arm64_armv7',
             'ios-arm64_armv7/BCSymbolMaps/*.bcsymbolmap',
             'ios-arm64_armv7/dSYMs/*.dSYM',
-            'ios-arm64_armv7/**/arm.swiftinterface',
-            'ios-arm64_armv7/**/arm64-apple-ios.swiftinterface',
-            'ios-arm64_armv7/**/arm64.swiftinterface',
-            'ios-arm64_armv7/**/armv7-apple-ios.swiftinterface',
-            'ios-arm64_armv7/**/armv7.swiftinterface',
+            'ios-arm64_armv7/**/*.swiftinterface',
 
             'ios-arm64_i386_x86_64-simulator',
             'ios-arm64_i386_x86_64-simulator/dSYMs/*.dSYM',
-            'ios-arm64_i386_x86_64-simulator/**/arm64-apple-ios-simulator.swiftinterface',
-            'ios-arm64_i386_x86_64-simulator/**/i386-apple-ios-simulator.swiftinterface',
-            'ios-arm64_i386_x86_64-simulator/**/x86_64-apple-ios-simulator.swiftinterface',
-            'ios-arm64_i386_x86_64-simulator/**/x86_64.swiftinterface',
+            'ios-arm64_i386_x86_64-simulator/**/*.swiftinterface',
         ])
 
         return True
