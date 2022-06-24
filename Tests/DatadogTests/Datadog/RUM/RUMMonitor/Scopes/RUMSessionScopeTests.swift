@@ -70,6 +70,41 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertFalse(scope.process(command: RUMCommandMock(time: currentTime)))
     }
 
+    func testWhenSessionReceivesInteractiveEvent_itStaysAlive() {
+        var currentTime = Date()
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: currentTime,
+            dependencies: .mockWith(sessionSampler: .mockRandom())
+        )
+
+        for _ in 0...10 {
+            // Push time forward by less than the session timeout duration:
+            currentTime.addTimeInterval(0.5 * RUMSessionScope.Constants.sessionTimeoutDuration)
+            XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime, isUserInteraction: true)))
+        }
+
+        XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)))
+    }
+
+    func testWhenSessionReceivesNonInteractiveEvent_itGetsClosed() {
+        var currentTime = Date()
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: currentTime,
+            dependencies: .mockWith(sessionSampler: .mockRandom())
+        )
+
+        for _ in 0...8 {
+            // Push time forward by less than the session timeout duration:
+            currentTime.addTimeInterval(0.1 * RUMSessionScope.Constants.sessionTimeoutDuration)
+            XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime, isUserInteraction: false)))
+        }
+
+        currentTime.addTimeInterval(0.1 * RUMSessionScope.Constants.sessionTimeoutDuration)
+        XCTAssertFalse(scope.process(command: RUMCommandMock(time: currentTime)))
+    }
+
     func testItManagesViewScopeLifecycle() {
         let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
         XCTAssertEqual(scope.viewScopes.count, 0)
