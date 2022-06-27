@@ -107,20 +107,6 @@ extension RUMEventBuilder {
     }
 }
 
-class RUMEventOutputMock: RUMEventOutput {
-    private(set) var recordedEvents: [Any] = []
-
-    func recordedEvents<E>(ofType type: E.Type, file: StaticString = #file, line: UInt = #line) throws -> [E] {
-        return recordedEvents.compactMap { event in event as? E }
-    }
-
-    // MARK: - RUMEventOutput
-
-    func write<Event>(event: Event) where Event: Encodable {
-        recordedEvents.append(event)
-    }
-}
-
 extension RUMEventsMapper {
     static func mockNoOp() -> RUMEventsMapper {
         return mockWith()
@@ -631,7 +617,6 @@ extension RUMScopeDependencies {
         launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock.mockAny(),
         firstPartyURLsFilter: FirstPartyURLsFilter = FirstPartyURLsFilter(hosts: []),
         eventBuilder: RUMEventBuilder = RUMEventBuilder(eventsMapper: .mockNoOp()),
-        eventOutput: RUMEventOutput = RUMEventOutputMock(),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         crashContextIntegration: RUMWithCrashContextIntegration? = nil,
         ciTest: RUMCITest? = nil,
@@ -650,7 +635,6 @@ extension RUMScopeDependencies {
             launchTimeProvider: launchTimeProvider,
             firstPartyURLsFilter: firstPartyURLsFilter,
             eventBuilder: eventBuilder,
-            eventOutput: eventOutput,
             rumUUIDGenerator: rumUUIDGenerator,
             crashContextIntegration: crashContextIntegration,
             ciTest: ciTest,
@@ -672,7 +656,6 @@ extension RUMScopeDependencies {
         launchTimeProvider: LaunchTimeProviderType? = nil,
         firstPartyUrls: Set<String>? = nil,
         eventBuilder: RUMEventBuilder? = nil,
-        eventOutput: RUMEventOutput? = nil,
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
         crashContextIntegration: RUMWithCrashContextIntegration? = nil,
         ciTest: RUMCITest? = nil,
@@ -691,7 +674,6 @@ extension RUMScopeDependencies {
             launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider,
             firstPartyURLsFilter: firstPartyUrls.map { .init(hosts: $0) } ?? self.firstPartyURLsFilter,
             eventBuilder: eventBuilder ?? self.eventBuilder,
-            eventOutput: eventOutput ?? self.eventOutput,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
             crashContextIntegration: crashContextIntegration ?? self.crashContextIntegration,
             ciTest: ciTest ?? self.ciTest,

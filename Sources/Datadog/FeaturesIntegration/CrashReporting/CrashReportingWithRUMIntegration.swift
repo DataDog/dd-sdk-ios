@@ -29,7 +29,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
 
     /// The output for writing RUM events. It uses the authorized data folder and is synchronized with the eventual
     /// authorized output working simultaneously in the RUM feature.
-    private let rumEventOutput: RUMEventOutput
+    private let writer: Writer
     private let rumConfiguration: FeaturesConfiguration.RUM
 
     private let context: DatadogV1Context
@@ -38,20 +38,18 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
 
     init(rumFeature: RUMFeature, context: DatadogV1Context) {
         self.init(
-            rumEventOutput: RUMEventFileOutput(
-                fileWriter: rumFeature.storage.arbitraryAuthorizedWriter
-            ),
+            writer: rumFeature.storage.arbitraryAuthorizedWriter,
             rumConfiguration: rumFeature.configuration,
             context: context
         )
     }
 
     init(
-        rumEventOutput: RUMEventOutput,
+        writer: Writer,
         rumConfiguration: FeaturesConfiguration.RUM,
         context: DatadogV1Context
     ) {
-        self.rumEventOutput = rumEventOutput
+        self.writer = writer
         self.rumConfiguration = rumConfiguration
         self.context = context
     }
@@ -100,7 +98,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             // To avoid inconsistency, we only send the RUM error.
             userLogger.debug("Sending crash as RUM error.")
             let rumError = createRUMError(from: crashReport, and: lastRUMViewEvent, crashDate: crashTimings.realCrashDate)
-            rumEventOutput.write(event: rumError)
+            writer.write(value: rumError)
         }
     }
 
@@ -203,8 +201,8 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         userLogger.debug("Updating RUM view with crash report.")
         let updatedRUMView = updateRUMViewWithNewError(rumView, crashDate: realCrashDate)
         let rumError = createRUMError(from: crashReport, and: updatedRUMView, crashDate: realCrashDate)
-        rumEventOutput.write(event: rumError)
-        rumEventOutput.write(event: updatedRUMView)
+        writer.write(value: rumError)
+        writer.write(value: updatedRUMView)
     }
 
     // MARK: - Building RUM events

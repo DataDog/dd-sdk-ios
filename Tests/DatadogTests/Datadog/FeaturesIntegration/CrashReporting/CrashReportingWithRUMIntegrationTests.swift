@@ -8,7 +8,7 @@ import XCTest
 @testable import Datadog
 
 class CrashReportingWithRUMIntegrationTests: XCTestCase {
-    private let rumEventOutput = RUMEventOutputMock()
+    private let writer = FileWriterMock()
 
     // MARK: - Testing Conditional Uploads
 
@@ -27,7 +27,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         )
 
         let integration = CrashReportingWithRUMIntegration(
-            rumEventOutput: rumEventOutput,
+            writer: writer,
             rumConfiguration: .mockWith(
                 sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
                 backgroundEventTrackingEnabled: .mockRandom() // no matter BET
@@ -44,9 +44,9 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         integration.send(crashReport: crashReport, with: crashContext)
 
         // Then
-        XCTAssertEqual(rumEventOutput.recordedEvents.count, 2, "It must send both RUM error and RUM view")
-        XCTAssertEqual(try rumEventOutput.recordedEvents(ofType: RUMCrashEvent.self).count, 1)
-        XCTAssertEqual(try rumEventOutput.recordedEvents(ofType: RUMViewEvent.self).count, 1)
+        XCTAssertEqual(writer.events.count, 2, "It must send both RUM error and RUM view")
+        XCTAssertEqual(writer.events(ofType: RUMCrashEvent.self).count, 1)
+        XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).count, 1)
     }
 
     func testGivenCrashDuringRUMSessionWithActiveViewCollectedMoreThan4HoursAgo_whenSending_itSendsOnlyRUMError() throws {
@@ -64,7 +64,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         )
 
         let integration = CrashReportingWithRUMIntegration(
-            rumEventOutput: rumEventOutput,
+            writer: writer,
             rumConfiguration: .mockWith(
                 sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
                 backgroundEventTrackingEnabled: .mockRandom() // no matter BET
@@ -80,8 +80,8 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         integration.send(crashReport: crashReport, with: crashContext)
 
         // Then
-        XCTAssertEqual(rumEventOutput.recordedEvents.count, 1, "It must send only RUM error")
-        XCTAssertEqual(try rumEventOutput.recordedEvents(ofType: RUMCrashEvent.self).count, 1)
+        XCTAssertEqual(writer.events.count, 1, "It must send only RUM error")
+        XCTAssertEqual(writer.events(ofType: RUMCrashEvent.self).count, 1)
     }
 
     func testGivenCrashDuringBackgroundRUMSessionWithNoActiveView_whenSending_itSendsBothRUMErrorAndRUMViewEvent() throws {
@@ -98,7 +98,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         )
 
         let integration = CrashReportingWithRUMIntegration(
-            rumEventOutput: rumEventOutput,
+            writer: writer,
             rumConfiguration: .mockWith(
                 sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
                 backgroundEventTrackingEnabled: true // BET enabled
@@ -115,9 +115,9 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         integration.send(crashReport: crashReport, with: crashContext)
 
         // Then
-        XCTAssertEqual(rumEventOutput.recordedEvents.count, 2, "It must send both RUM error and RUM view")
-        XCTAssertEqual(try rumEventOutput.recordedEvents(ofType: RUMCrashEvent.self).count, 1)
-        XCTAssertEqual(try rumEventOutput.recordedEvents(ofType: RUMViewEvent.self).count, 1)
+        XCTAssertEqual(writer.events.count, 2, "It must send both RUM error and RUM view")
+        XCTAssertEqual(writer.events(ofType: RUMCrashEvent.self).count, 1)
+        XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).count, 1)
     }
 
     func testGivenCrashDuringApplicationLaunch_whenSending_itSendsBothRUMErrorAndRUMViewEvent() throws {
@@ -134,7 +134,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         )
 
         let integration = CrashReportingWithRUMIntegration(
-            rumEventOutput: rumEventOutput,
+            writer: writer,
             rumConfiguration: .mockWith(
                 sessionSampler: .mockKeepAll(),
                 backgroundEventTrackingEnabled: true
@@ -151,9 +151,9 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         integration.send(crashReport: crashReport, with: crashContext)
 
         // Then
-        XCTAssertEqual(rumEventOutput.recordedEvents.count, 2, "It must send both RUM error and RUM view")
-        XCTAssertEqual(try rumEventOutput.recordedEvents(ofType: RUMCrashEvent.self).count, 1)
-        XCTAssertEqual(try rumEventOutput.recordedEvents(ofType: RUMViewEvent.self).count, 1)
+        XCTAssertEqual(writer.events.count, 2, "It must send both RUM error and RUM view")
+        XCTAssertEqual(writer.events(ofType: RUMCrashEvent.self).count, 1)
+        XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).count, 1)
     }
 
     func testGivenAnyCrashWithUnauthorizedTrackingConsent_whenSending_itIsDropped() throws {
@@ -165,7 +165,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         )
 
         let integration = CrashReportingWithRUMIntegration(
-            rumEventOutput: rumEventOutput,
+            writer: writer,
             rumConfiguration: .mockWith(
                 sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling
                 backgroundEventTrackingEnabled: .mockRandom() // no matter BET
@@ -182,7 +182,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         integration.send(crashReport: crashReport, with: crashContext)
 
         // Then
-        XCTAssertEqual(rumEventOutput.recordedEvents.count, 0, "Crash must not be send as it doesn't have `.granted` consent")
+        XCTAssertEqual(writer.events.count, 0, "Crash must not be send as it doesn't have `.granted` consent")
     }
 
     func testGivenCrashDuringAppLaunchAndNoSampling_whenSending_itIsDropped() throws {
@@ -199,7 +199,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         )
 
         let integration = CrashReportingWithRUMIntegration(
-            rumEventOutput: rumEventOutput,
+            writer: writer,
             rumConfiguration: .mockWith(
                 sessionSampler: .mockRejectAll(), // no sampling (no session should be sent)
                 backgroundEventTrackingEnabled: true
@@ -215,7 +215,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         integration.send(crashReport: crashReport, with: crashContext)
 
         // Then
-        XCTAssertEqual(rumEventOutput.recordedEvents.count, 0, "Crash must not be send as it is rejected by sampler")
+        XCTAssertEqual(writer.events.count, 0, "Crash must not be send as it is rejected by sampler")
     }
 
     func testGivenCrashDuringAppLaunchInBackgroundAndBETDisabled_whenSending_itIsDropped() throws {
@@ -231,7 +231,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
 
         let dateCorrectionOffset: TimeInterval = .mockRandom()
         let integration = CrashReportingWithRUMIntegration(
-            rumEventOutput: rumEventOutput,
+            writer: writer,
             rumConfiguration: .mockWith(
                 sessionSampler: .mockKeepAll(),
                 backgroundEventTrackingEnabled: false // BET disabled
@@ -248,7 +248,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         integration.send(crashReport: crashReport, with: crashContext)
 
         // Then
-        XCTAssertEqual(rumEventOutput.recordedEvents.count, 0, "Crash must not be send as it happened in background and BET is disabled")
+        XCTAssertEqual(writer.events.count, 0, "Crash must not be send as it happened in background and BET is disabled")
     }
 
     func testGivenCrashDuringSampledRUMSession_whenSending_itIsDropped() throws {
@@ -269,7 +269,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         )
 
         let integration = CrashReportingWithRUMIntegration(
-            rumEventOutput: rumEventOutput,
+            writer: writer,
             rumConfiguration: .mockWith(
                 sessionSampler: .mockRandom(), // no matter current session sampling
                 backgroundEventTrackingEnabled: .mockRandom()
@@ -285,7 +285,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         integration.send(crashReport: crashReport, with: crashContext)
 
         // Then
-        XCTAssertEqual(rumEventOutput.recordedEvents.count, 0, "Crash must not be send as it the session was rejected by sampler")
+        XCTAssertEqual(writer.events.count, 0, "Crash must not be send as it the session was rejected by sampler")
     }
 
     // MARK: - Testing Uploaded Data - Crashes During RUM Session With Active View
@@ -304,7 +304,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         // When
         let dateCorrectionOffset: TimeInterval = .mockRandom()
         let integration = CrashReportingWithRUMIntegration(
-            rumEventOutput: rumEventOutput,
+            writer: writer,
             rumConfiguration: .mockWith(
                 sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
                 backgroundEventTrackingEnabled: .mockRandom() // no matter BET
@@ -319,7 +319,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         integration.send(crashReport: crashReport, with: crashContext)
 
         // Then
-        let sendRUMViewEvent = try rumEventOutput.recordedEvents(ofType: RUMViewEvent.self)[0]
+        let sendRUMViewEvent = writer.events(ofType: RUMViewEvent.self)[0]
 
         XCTAssertTrue(
             sendRUMViewEvent.application.id == lastRUMViewEvent.application.id
@@ -398,7 +398,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         // When
         let dateCorrectionOffset: TimeInterval = .mockRandom(min: 1, max: 5)
         let integration = CrashReportingWithRUMIntegration(
-            rumEventOutput: rumEventOutput,
+            writer: writer,
             rumConfiguration: .mockWith(
                 sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
                 backgroundEventTrackingEnabled: .mockRandom() // no matter BET
@@ -417,7 +417,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         integration.send(crashReport: crashReport, with: crashContext)
 
         // Then
-        let sendRUMErrorEvent = try rumEventOutput.recordedEvents(ofType: RUMCrashEvent.self)[0]
+        let sendRUMErrorEvent = writer.events(ofType: RUMCrashEvent.self)[0]
 
         XCTAssertTrue(
             sendRUMErrorEvent.model.application.id == lastRUMViewEvent.application.id
@@ -473,7 +473,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             expectViewName expectedViewName: String,
             expectViewURL expectedViewURL: String
         ) throws {
-            let rumEventOutput = RUMEventOutputMock()
+            let writer = FileWriterMock()
 
             // Given
             let crashDate: Date = .mockDecember15th2019At10AMUTC()
@@ -493,7 +493,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
 
             let dateCorrectionOffset: TimeInterval = .mockRandom()
             let integration = CrashReportingWithRUMIntegration(
-                rumEventOutput: rumEventOutput,
+                writer: writer,
                 rumConfiguration: .mockWith(
                     applicationID: randomRUMAppID,
                     sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled),
@@ -514,8 +514,8 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             integration.send(crashReport: crashReport, with: crashContext)
 
             // Then
-            let sentRUMView = try rumEventOutput.recordedEvents(ofType: RUMViewEvent.self)[0]
-            let sentRUMError = try rumEventOutput.recordedEvents(ofType: RUMCrashEvent.self)[0]
+            let sentRUMView = writer.events(ofType: RUMViewEvent.self)[0]
+            let sentRUMError = writer.events(ofType: RUMCrashEvent.self)[0]
 
             // Assert RUM view properties
             XCTAssertTrue(
@@ -611,7 +611,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             expectViewName expectedViewName: String,
             expectViewURL expectedViewURL: String
         ) throws {
-            let rumEventOutput = RUMEventOutputMock()
+            let writer = FileWriterMock()
 
             // Given
             let crashDate: Date = .mockDecember15th2019At10AMUTC()
@@ -631,7 +631,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
 
             let dateCorrectionOffset: TimeInterval = .mockRandom()
             let integration = CrashReportingWithRUMIntegration(
-                rumEventOutput: rumEventOutput,
+                writer: writer,
                 rumConfiguration: .mockWith(
                     applicationID: randomRUMAppID,
                     sessionSampler: .mockKeepAll(),
@@ -649,8 +649,8 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             integration.send(crashReport: crashReport, with: crashContext)
 
             // Then
-            let sentRUMView = try rumEventOutput.recordedEvents(ofType: RUMViewEvent.self)[0]
-            let sentRUMError = try rumEventOutput.recordedEvents(ofType: RUMCrashEvent.self)[0]
+            let sentRUMView = writer.events(ofType: RUMViewEvent.self)[0]
+            let sentRUMError = writer.events(ofType: RUMCrashEvent.self)[0]
 
             // Assert RUM view properties
             XCTAssertTrue(

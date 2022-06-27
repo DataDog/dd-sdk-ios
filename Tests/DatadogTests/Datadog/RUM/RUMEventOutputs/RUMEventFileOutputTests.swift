@@ -21,16 +21,14 @@ class RUMEventFileOutputTests: XCTestCase {
     func testItWritesRUMEventToFileAsJSON() throws {
         let fileCreationDateProvider = RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC())
         let builder = RUMEventBuilder(eventsMapper: .mockNoOp())
-        let output = RUMEventFileOutput(
-            fileWriter: FileWriter(
-                orchestrator: FilesOrchestrator(
-                    directory: temporaryDirectory,
-                    performance: PerformancePreset.combining(
-                        storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
-                        uploadPerformance: .noOp
-                    ),
-                    dateProvider: fileCreationDateProvider
-                )
+        let writer = FileWriter(
+            orchestrator: FilesOrchestrator(
+                directory: temporaryDirectory,
+                performance: PerformancePreset.combining(
+                    storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
+                    uploadPerformance: .noOp
+                ),
+                dateProvider: fileCreationDateProvider
             )
         )
 
@@ -39,11 +37,11 @@ class RUMEventFileOutputTests: XCTestCase {
         let event1 = try XCTUnwrap(builder.build(from: dataModel1))
         let event2 = try XCTUnwrap(builder.build(from: dataModel2))
 
-        output.write(event: event1)
+        writer.write(value: event1)
 
         fileCreationDateProvider.advance(bySeconds: 1)
 
-        output.write(event: event2)
+        writer.write(value: event2)
 
         let event1FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC())
         let event1FileData = try temporaryDirectory.file(named: event1FileName).read()

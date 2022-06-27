@@ -28,7 +28,6 @@ internal struct RUMScopeDependencies {
     let launchTimeProvider: LaunchTimeProviderType
     let firstPartyURLsFilter: FirstPartyURLsFilter
     let eventBuilder: RUMEventBuilder
-    let eventOutput: RUMEventOutput
     let rumUUIDGenerator: RUMUUIDGenerator
     /// Integration with Crash Reporting. It updates the crash context with RUM info.
     /// `nil` if Crash Reporting feature is not enabled.
@@ -71,9 +70,6 @@ internal extension RUMScopeDependencies {
                     longTaskEventMapper: rumFeature.configuration.longTaskEventMapper,
                     telemetry: telemetry
                 )
-            ),
-            eventOutput: RUMEventFileOutput(
-                fileWriter: rumFeature.storage.writer
             ),
             rumUUIDGenerator: rumFeature.configuration.uuidGenerator,
             crashContextIntegration: crashReportingFeature.map { .init(crashReporting: $0) },
