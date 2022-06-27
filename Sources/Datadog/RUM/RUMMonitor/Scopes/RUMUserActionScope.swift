@@ -84,27 +84,20 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
     // MARK: - RUMScope
 
-    func process(command: RUMCommand) -> Bool {
-        if let expirationTime = possibleExpirationTime(currentTime: command.time),
-           allResourcesCompletedLoading() {
-            if sendActionEvent(completionTime: expirationTime) {
-                onActionEventSent()
-            }
+    func process(command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Bool {
+        if let expirationTime = possibleExpirationTime(currentTime: command.time), allResourcesCompletedLoading() {
+            sendActionEvent(completionTime: expirationTime, on: nil, context: context, writer: writer)
             return false
         }
 
         lastActivityTime = command.time
         switch command {
         case is RUMStopViewCommand:
-            if sendActionEvent(completionTime: command.time) {
-                onActionEventSent()
-            }
+            sendActionEvent(completionTime: command.time, on: command, context: context, writer: writer)
             return false
         case let command as RUMStopUserActionCommand:
             name = command.name ?? name
-            if sendActionEvent(completionTime: command.time, on: command) {
-                onActionEventSent()
-            }
+            sendActionEvent(completionTime: command.time, on: command, context: context, writer: writer)
             return false
         case is RUMStartResourceCommand:
             activeResourcesCount += 1
@@ -127,12 +120,12 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
     // MARK: - Sending RUM Events
 
-    private func sendActionEvent(completionTime: Date, on command: RUMCommand? = nil) -> Bool {
+    private func sendActionEvent(completionTime: Date, on command: RUMCommand?, context: DatadogV1Context, writer: Writer) {
         if let commandAttributes = command?.attributes {
             attributes.merge(rumCommandAttributes: commandAttributes)
         }
 
-        let eventData = RUMActionEvent(
+        let actionEvent = RUMActionEvent(
             dd: .init(
                 browserSdkVersion: nil,
                 session: .init(plan: .plan1)
@@ -154,37 +147,36 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                 ),
                 type: actionType.toRUMDataFormat
             ),
-            application: .init(id: context.rumApplicationID),
+            application: .init(id: self.context.rumApplicationID),
             ciTest: dependencies.ciTest,
-            connectivity: dependencies.connectivityInfoProvider.current,
+            connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: actionStartTime).timeIntervalSince1970.toInt64Milliseconds,
             device: dependencies.deviceInfo,
             os: dependencies.osInfo,
-            service: dependencies.serviceName,
+            service: context.service,
             session: .init(
                 hasReplay: nil,
-                id: context.sessionID.toRUMDataFormat,
+                id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: RUMActionEvent.Source(rawValue: dependencies.source) ?? .ios,
+            source: .init(rawValue: context.source) ?? .ios,
             synthetics: nil,
-            usr: dependencies.userInfoProvider.current,
-            version: dependencies.applicationVersion,
+            usr: .init(context: context),
+            version: context.version,
             view: .init(
-                id: context.activeViewID.orNull.toRUMDataFormat,
+                id: self.context.activeViewID.orNull.toRUMDataFormat,
                 inForeground: nil,
-                name: context.activeViewName,
+                name: self.context.activeViewName,
                 referrer: nil,
-                url: context.activeViewPath ?? ""
+                url: self.context.activeViewPath ?? ""
             )
         )
 
-        if let event = dependencies.eventBuilder.build(from: eventData) {
-            dependencies.eventOutput.write(event: event)
-            return true
+        if let event = dependencies.eventBuilder.build(from: actionEvent) {
+            writer.write(value: event)
+            onActionEventSent()
         }
-        return false
     }
 
     // MARK: - Private

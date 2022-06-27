@@ -149,6 +149,7 @@ class DDRUMMonitorTests: XCTestCase {
         let rumFeature: RUMFeature = try XCTUnwrap(core.v1.feature(RUMFeature.self), "RUM feature must be initialized before creating `RUMMonitor`")
         let v1Context = try XCTUnwrap(core.v1.context, "`DatadogCore` must be initialized before creating `RUMMonitor`")
         let swiftMonitor = RUMMonitor(
+            core: core,
             dependencies: RUMScopeDependencies(
                 rumFeature: rumFeature,
                 crashReportingFeature: nil,

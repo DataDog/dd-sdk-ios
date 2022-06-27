@@ -25,19 +25,10 @@ internal struct RUMScopeDependencies {
     let appStateListener: AppStateListening
     let deviceInfo: RUMDevice
     let osInfo: RUMOperatingSystem
-    let userInfoProvider: RUMUserInfoProvider
     let launchTimeProvider: LaunchTimeProviderType
-    let connectivityInfoProvider: RUMConnectivityInfoProvider
-    let serviceName: String
-    let applicationVersion: String
-    let sdkVersion: String
-    let source: String
     let firstPartyURLsFilter: FirstPartyURLsFilter
     let eventBuilder: RUMEventBuilder
-    let eventOutput: RUMEventOutput
     let rumUUIDGenerator: RUMUUIDGenerator
-    /// Adjusts RUM events time (device time) to server time.
-    let dateCorrector: DateCorrectorType
     /// Integration with Crash Reporting. It updates the crash context with RUM info.
     /// `nil` if Crash Reporting feature is not enabled.
     let crashContextIntegration: RUMWithCrashContextIntegration?
@@ -68,16 +59,7 @@ internal extension RUMScopeDependencies {
                 telemetry: telemetry
             ),
             osInfo: RUMOperatingSystem(from: context.mobileDevice),
-            userInfoProvider: RUMUserInfoProvider(userInfoProvider: context.userInfoProvider),
             launchTimeProvider: context.launchTimeProvider,
-            connectivityInfoProvider: RUMConnectivityInfoProvider(
-                networkConnectionInfoProvider: context.networkConnectionInfoProvider,
-                carrierInfoProvider: context.carrierInfoProvider
-            ),
-            serviceName: context.service,
-            applicationVersion: context.version,
-            sdkVersion: context.sdkVersion,
-            source: context.source,
             firstPartyURLsFilter: FirstPartyURLsFilter(hosts: rumFeature.configuration.firstPartyHosts),
             eventBuilder: RUMEventBuilder(
                 eventsMapper: RUMEventsMapper(
@@ -89,11 +71,7 @@ internal extension RUMScopeDependencies {
                     telemetry: telemetry
                 )
             ),
-            eventOutput: RUMEventFileOutput(
-                fileWriter: rumFeature.storage.writer
-            ),
             rumUUIDGenerator: rumFeature.configuration.uuidGenerator,
-            dateCorrector: context.dateCorrector,
             crashContextIntegration: crashReportingFeature.map { .init(crashReporting: $0) },
             ciTest: CITestIntegration.active?.rumCITest,
             viewUpdatesThrottlerFactory: { RUMViewUpdatesThrottler() },

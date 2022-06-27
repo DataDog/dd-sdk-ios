@@ -553,6 +553,7 @@ class LoggerTests: XCTestCase {
         // given
         let logger = Logger.builder.build(in: core)
         Global.rum = RUMMonitor(
+            core: core,
             dependencies: RUMScopeDependencies(
                 rumFeature: rum,
                 crashReportingFeature: nil,

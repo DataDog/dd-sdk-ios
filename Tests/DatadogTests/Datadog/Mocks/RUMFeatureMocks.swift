@@ -107,20 +107,6 @@ extension RUMEventBuilder {
     }
 }
 
-class RUMEventOutputMock: RUMEventOutput {
-    private(set) var recordedEvents: [Any] = []
-
-    func recordedEvents<E>(ofType type: E.Type, file: StaticString = #file, line: UInt = #line) throws -> [E] {
-        return recordedEvents.compactMap { event in event as? E }
-    }
-
-    // MARK: - RUMEventOutput
-
-    func write<Event>(event: Event) where Event: Encodable {
-        recordedEvents.append(event)
-    }
-}
-
 extension RUMEventsMapper {
     static func mockNoOp() -> RUMEventsMapper {
         return mockWith()
@@ -628,21 +614,10 @@ extension RUMScopeDependencies {
         appStateListener: AppStateListening = AppStateListenerMock.mockAny(),
         deviceInfo: RUMDevice = .mockRandom(),
         osInfo: RUMOperatingSystem = .mockRandom(),
-        userInfoProvider: RUMUserInfoProvider = RUMUserInfoProvider(userInfoProvider: .mockAny()),
         launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock.mockAny(),
-        connectivityInfoProvider: RUMConnectivityInfoProvider = RUMConnectivityInfoProvider(
-            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: nil),
-            carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: nil)
-        ),
-        serviceName: String = .mockAny(),
-        applicationVersion: String = .mockAny(),
-        sdkVersion: String = .mockAny(),
-        source: String = "ios",
         firstPartyURLsFilter: FirstPartyURLsFilter = FirstPartyURLsFilter(hosts: []),
         eventBuilder: RUMEventBuilder = RUMEventBuilder(eventsMapper: .mockNoOp()),
-        eventOutput: RUMEventOutput = RUMEventOutputMock(),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
-        dateCorrector: DateCorrectorType = DateCorrectorMock(),
         crashContextIntegration: RUMWithCrashContextIntegration? = nil,
         ciTest: RUMCITest? = nil,
         viewUpdatesThrottlerFactory: @escaping () -> RUMViewUpdatesThrottlerType = { NoOpRUMViewUpdatesThrottler() },
@@ -657,18 +632,10 @@ extension RUMScopeDependencies {
             appStateListener: appStateListener,
             deviceInfo: deviceInfo,
             osInfo: osInfo,
-            userInfoProvider: userInfoProvider,
             launchTimeProvider: launchTimeProvider,
-            connectivityInfoProvider: connectivityInfoProvider,
-            serviceName: serviceName,
-            applicationVersion: applicationVersion,
-            sdkVersion: sdkVersion,
-            source: source,
             firstPartyURLsFilter: firstPartyURLsFilter,
             eventBuilder: eventBuilder,
-            eventOutput: eventOutput,
             rumUUIDGenerator: rumUUIDGenerator,
-            dateCorrector: dateCorrector,
             crashContextIntegration: crashContextIntegration,
             ciTest: ciTest,
             viewUpdatesThrottlerFactory: viewUpdatesThrottlerFactory,
@@ -686,18 +653,10 @@ extension RUMScopeDependencies {
         appStateListener: AppStateListening? = nil,
         deviceInfo: RUMDevice? = nil,
         osInfo: RUMOperatingSystem? = nil,
-        userInfoProvider: RUMUserInfoProvider? = nil,
         launchTimeProvider: LaunchTimeProviderType? = nil,
-        connectivityInfoProvider: RUMConnectivityInfoProvider? = nil,
-        serviceName: String? = nil,
-        applicationVersion: String? = nil,
-        sdkVersion: String? = nil,
-        source: String? = nil,
         firstPartyUrls: Set<String>? = nil,
         eventBuilder: RUMEventBuilder? = nil,
-        eventOutput: RUMEventOutput? = nil,
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
-        dateCorrector: DateCorrectorType? = nil,
         crashContextIntegration: RUMWithCrashContextIntegration? = nil,
         ciTest: RUMCITest? = nil,
         viewUpdatesThrottlerFactory: (() -> RUMViewUpdatesThrottlerType)? = nil,
@@ -712,18 +671,10 @@ extension RUMScopeDependencies {
             appStateListener: appStateListener ?? self.appStateListener,
             deviceInfo: deviceInfo ?? self.deviceInfo,
             osInfo: osInfo ?? self.osInfo,
-            userInfoProvider: userInfoProvider ?? self.userInfoProvider,
             launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider,
-            connectivityInfoProvider: connectivityInfoProvider ?? self.connectivityInfoProvider,
-            serviceName: serviceName ?? self.serviceName,
-            applicationVersion: applicationVersion ?? self.applicationVersion,
-            sdkVersion: sdkVersion ?? self.sdkVersion,
-            source: source ?? self.source,
             firstPartyURLsFilter: firstPartyUrls.map { .init(hosts: $0) } ?? self.firstPartyURLsFilter,
             eventBuilder: eventBuilder ?? self.eventBuilder,
-            eventOutput: eventOutput ?? self.eventOutput,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
-            dateCorrector: dateCorrector ?? self.dateCorrector,
             crashContextIntegration: crashContextIntegration ?? self.crashContextIntegration,
             ciTest: ciTest ?? self.ciTest,
             viewUpdatesThrottlerFactory: viewUpdatesThrottlerFactory ?? self.viewUpdatesThrottlerFactory,
@@ -744,6 +695,7 @@ extension RUMSessionScope {
         return mockWith()
     }
 
+    // swiftlint:disable:next function_default_parameter_at_end
     static func mockWith(
         isInitialSession: Bool = .mockAny(),
         parent: RUMContextProvider = RUMContextProviderMock(),
@@ -809,7 +761,8 @@ extension RUMViewScope {
         name: String = .mockAny(),
         attributes: [AttributeKey: AttributeValue] = [:],
         customTimings: [String: Int64] = randomTimings(),
-        startTime: Date = .mockAny()
+        startTime: Date = .mockAny(),
+        dateCorrection: DateCorrection = .zero
     ) -> RUMViewScope {
         return RUMViewScope(
             isInitialView: isInitialView,
@@ -820,7 +773,8 @@ extension RUMViewScope {
             name: name,
             attributes: attributes,
             customTimings: customTimings,
-            startTime: startTime
+            startTime: startTime,
+            dateCorrection: dateCorrection
         )
     }
 }

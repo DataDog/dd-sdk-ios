@@ -8,7 +8,12 @@ import XCTest
 @testable import Datadog
 
 class RUMSessionScopeTests: XCTestCase {
-    private let parent = RUMApplicationScope(dependencies: .mockWith(rumApplicationID: "rum-123"))
+    let context: DatadogV1Context = .mockAny()
+    let writer = FileWriterMock()
+
+    private lazy var parent = RUMApplicationScope(
+        dependencies: .mockWith(rumApplicationID: "rum-123")
+    )
 
     func testDefaultContext() {
         let scope: RUMSessionScope = .mockWith(parent: parent)
@@ -41,12 +46,12 @@ class RUMSessionScopeTests: XCTestCase {
             dependencies: .mockWith(sessionSampler: .mockRandom())
         )
 
-        XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)))
+        XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime), context: context, writer: writer))
 
         // Push time forward by the max session duration:
         currentTime.addTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
 
-        XCTAssertFalse(scope.process(command: RUMCommandMock(time: currentTime)))
+        XCTAssertFalse(scope.process(command: RUMCommandMock(time: currentTime), context: context, writer: writer))
     }
 
     func testWhenSessionIsInactiveForCertainDuration_itGetsClosed() {
@@ -57,30 +62,31 @@ class RUMSessionScopeTests: XCTestCase {
             dependencies: .mockWith(sessionSampler: .mockRandom())
         )
 
-        XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)))
+        XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime), context: context, writer: writer))
 
         // Push time forward by less than the session timeout duration:
         currentTime.addTimeInterval(0.5 * RUMSessionScope.Constants.sessionTimeoutDuration)
 
-        XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime)))
+        XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime), context: context, writer: writer))
 
         // Push time forward by the session timeout duration:
         currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
 
-        XCTAssertFalse(scope.process(command: RUMCommandMock(time: currentTime)))
+        XCTAssertFalse(scope.process(command: RUMCommandMock(time: currentTime), context: context, writer: writer))
     }
 
     func testItManagesViewScopeLifecycle() {
         let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
         XCTAssertEqual(scope.viewScopes.count, 0)
-        _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
+
+        _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView), context: context, writer: writer)
         XCTAssertEqual(scope.viewScopes.count, 1)
-        _ = scope.process(command: RUMStopViewCommand.mockWith(identity: mockView))
+        _ = scope.process(command: RUMStopViewCommand.mockWith(identity: mockView), context: context, writer: writer)
         XCTAssertEqual(scope.viewScopes.count, 0)
 
-        _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView))
+        _ = scope.process(command: RUMStartViewCommand.mockWith(identity: mockView), context: context, writer: writer)
         XCTAssertEqual(scope.viewScopes.count, 1)
-        _ = scope.process(command: RUMStopViewCommand.mockWith(identity: mockView))
+        _ = scope.process(command: RUMStopViewCommand.mockWith(identity: mockView), context: context, writer: writer)
         XCTAssertEqual(scope.viewScopes.count, 0)
     }
 
@@ -103,7 +109,7 @@ class RUMSessionScopeTests: XCTestCase {
         // When
         let commandTime = sessionStartTime.addingTimeInterval(1)
         let command = RUMCommandMock(time: commandTime, canStartBackgroundView: true, canStartApplicationLaunchView: .mockRandom())
-        XCTAssertTrue(scope.process(command: command))
+        XCTAssertTrue(scope.process(command: command, context: context, writer: writer))
 
         // Then
         XCTAssertEqual(scope.viewScopes.count, 1, "It should start background view scope")
@@ -126,9 +132,9 @@ class RUMSessionScopeTests: XCTestCase {
         )
 
         var commandTime = sessionStartTime.addingTimeInterval(1)
-        _ = scope.process(command: RUMStartViewCommand.mockWith(time: commandTime, identity: "view"))
-        _ = scope.process(command: RUMStartResourceCommand.mockAny())
-        _ = scope.process(command: RUMStopViewCommand.mockWith(time: commandTime.addingTimeInterval(0.5), identity: "view"))
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: commandTime, identity: "view"), context: context, writer: writer)
+        _ = scope.process(command: RUMStartResourceCommand.mockAny(), context: context, writer: writer)
+        _ = scope.process(command: RUMStopViewCommand.mockWith(time: commandTime.addingTimeInterval(0.5), identity: "view"), context: context, writer: writer)
 
         XCTAssertEqual(scope.viewScopes.count, 1, "There is one view scope...")
         XCTAssertFalse(scope.viewScopes[0].isActiveView, "... but the view is not active")
@@ -136,7 +142,7 @@ class RUMSessionScopeTests: XCTestCase {
         // When
         commandTime = commandTime.addingTimeInterval(1)
         let command = RUMCommandMock(time: commandTime, canStartBackgroundView: true, canStartApplicationLaunchView: .mockRandom())
-        XCTAssertTrue(scope.process(command: command))
+        XCTAssertTrue(scope.process(command: command, context: context, writer: writer))
 
         // Then
         XCTAssertEqual(scope.viewScopes.count, 2, "It should start background view scope")
@@ -162,7 +168,7 @@ class RUMSessionScopeTests: XCTestCase {
         // When
         let commandTime = sessionStartTime.addingTimeInterval(1)
         let command = RUMCommandMock(time: commandTime, canStartBackgroundView: false, canStartApplicationLaunchView: .mockRandom())
-        XCTAssertTrue(scope.process(command: command))
+        XCTAssertTrue(scope.process(command: command, context: context, writer: writer))
 
         // Then
         XCTAssertTrue(scope.viewScopes.isEmpty, "It should not start any view scope")
@@ -185,7 +191,7 @@ class RUMSessionScopeTests: XCTestCase {
         // When
         let commandTime = sessionStartTime.addingTimeInterval(1)
         let command = RUMCommandMock(time: commandTime, canStartBackgroundView: .mockRandom(), canStartApplicationLaunchView: false)
-        XCTAssertTrue(scope.process(command: command))
+        XCTAssertTrue(scope.process(command: command, context: context, writer: writer))
 
         // Then
         XCTAssertTrue(scope.viewScopes.isEmpty, "It should not start any view scope")
@@ -210,7 +216,7 @@ class RUMSessionScopeTests: XCTestCase {
         // When
         let commandTime = sessionStartTime.addingTimeInterval(1)
         let command = RUMCommandMock(time: commandTime, canStartBackgroundView: .mockRandom(), canStartApplicationLaunchView: true)
-        XCTAssertTrue(scope.process(command: command))
+        XCTAssertTrue(scope.process(command: command, context: context, writer: writer))
 
         // Then
         XCTAssertEqual(scope.viewScopes.count, 1, "It should start application launch view scope")
@@ -236,7 +242,7 @@ class RUMSessionScopeTests: XCTestCase {
         // When
         let commandTime = sessionStartTime.addingTimeInterval(1)
         let command = RUMCommandMock(time: commandTime, canStartBackgroundView: .mockRandom(), canStartApplicationLaunchView: true)
-        XCTAssertTrue(scope.process(command: command))
+        XCTAssertTrue(scope.process(command: command, context: context, writer: writer))
 
         // Then
         XCTAssertTrue(scope.viewScopes.isEmpty, "It should not start any view scope")
@@ -256,14 +262,14 @@ class RUMSessionScopeTests: XCTestCase {
         )
 
         let commandsTime = sessionStartTime.addingTimeInterval(1)
-        _ = scope.process(command: RUMStartViewCommand.mockWith(time: commandsTime, identity: "view"))
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: commandsTime, identity: "view"), context: context, writer: writer)
         XCTAssertFalse(scope.viewScopes.isEmpty, "There is some view scope")
-        _ = scope.process(command: RUMStopViewCommand.mockWith(time: commandsTime.addingTimeInterval(1), identity: "view"))
+        _ = scope.process(command: RUMStopViewCommand.mockWith(time: commandsTime.addingTimeInterval(1), identity: "view"), context: context, writer: writer)
         XCTAssertTrue(scope.viewScopes.isEmpty, "There is no view scope")
 
         // When
         let command = RUMCommandMock(time: commandsTime.addingTimeInterval(2), canStartBackgroundView: false, canStartApplicationLaunchView: true)
-        XCTAssertTrue(scope.process(command: command))
+        XCTAssertTrue(scope.process(command: command, context: context, writer: writer))
 
         // Then
         XCTAssertTrue(scope.viewScopes.isEmpty, "It should not start any view scope")
@@ -288,7 +294,7 @@ class RUMSessionScopeTests: XCTestCase {
         // When
         let commandTime = sessionStartTime.addingTimeInterval(1)
         let command = RUMCommandMock(time: commandTime, canStartBackgroundView: true, canStartApplicationLaunchView: true)
-        XCTAssertTrue(scope.process(command: command))
+        XCTAssertTrue(scope.process(command: command, context: context, writer: writer))
 
         // Then
         XCTAssertEqual(scope.viewScopes.count, 1, "It should start application launch view scope")
@@ -314,7 +320,7 @@ class RUMSessionScopeTests: XCTestCase {
         // When
         let commandTime = sessionStartTime.addingTimeInterval(1)
         let command = RUMCommandMock(time: commandTime, canStartBackgroundView: true, canStartApplicationLaunchView: true)
-        XCTAssertTrue(scope.process(command: command))
+        XCTAssertTrue(scope.process(command: command, context: context, writer: writer))
 
         // Then
         XCTAssertEqual(scope.viewScopes.count, 1, "It should start background view scope")
@@ -340,7 +346,7 @@ class RUMSessionScopeTests: XCTestCase {
         // When
         let commandTime = sessionStartTime.addingTimeInterval(1)
         let command = RUMCommandMock(time: commandTime, canStartBackgroundView: .mockRandom(), canStartApplicationLaunchView: .mockRandom())
-        XCTAssertTrue(scope.process(command: command))
+        XCTAssertTrue(scope.process(command: command, context: context, writer: writer))
 
         // Then
         XCTAssertTrue(scope.viewScopes.isEmpty, "It should not start any view scope (event should be ignored)")
@@ -357,7 +363,7 @@ class RUMSessionScopeTests: XCTestCase {
 
         XCTAssertEqual(scope.viewScopes.count, 0)
         XCTAssertTrue(
-            scope.process(command: RUMStartViewCommand.mockWith(identity: mockView)),
+            scope.process(command: RUMStartViewCommand.mockWith(identity: mockView), context: context, writer: writer),
             "Rejected session should be kept until it expires or reaches the timeout."
         )
         XCTAssertEqual(scope.viewScopes.count, 0)
@@ -411,7 +417,8 @@ class RUMSessionScopeTests: XCTestCase {
         )
 
         // When
-        _ = scope.process(command: RUMStartViewCommand.mockWith(time: sessionStartTime))
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: sessionStartTime), context: context, writer: writer)
+
         XCTAssertFalse(scope.viewScopes.isEmpty, "Session started some view")
 
         // Then
@@ -441,13 +448,14 @@ class RUMSessionScopeTests: XCTestCase {
         )
 
         // When
-        _ = scope.process(command: RUMStartViewCommand.mockWith(time: sessionStartTime, identity: mockView))
+        let command = RUMStartViewCommand.mockWith(time: sessionStartTime, identity: mockView)
+        _ = scope.process(command: command, context: context, writer: writer)
 
         // Then
         XCTAssertNotNil(rumViewEventProvider.currentValue, "Crash context must be include rum view event, because there is an active view")
 
         // When
-        _ = scope.process(command: RUMStopViewCommand.mockWith(time: sessionStartTime.addingTimeInterval(1), identity: mockView))
+        _ = scope.process(command: RUMStopViewCommand.mockWith(time: sessionStartTime.addingTimeInterval(1), identity: mockView), context: context, writer: writer)
 
         // Then
         XCTAssertNil(rumViewEventProvider.currentValue, "Crash context must not include rum view event, because there is no active view")
@@ -471,7 +479,7 @@ class RUMSessionScopeTests: XCTestCase {
             userLogger = .mockConsoleLogger(output: logOutput)
 
             // When
-            _ = scope.process(command: command)
+            _ = scope.process(command: command, context: context, writer: writer)
 
             // Then
             XCTAssertEqual(scope.viewScopes.count, 0)
