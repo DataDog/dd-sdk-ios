@@ -22,21 +22,6 @@ private class ServerDateProviderMock: ServerDateProvider {
 }
 
 class DateCorrectorTests: XCTestCase {
-    private var previousUserLogger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
-    private var userLogOutput: LogOutputMock! // swiftlint:disable:this implicitly_unwrapped_optional
-
-    override func setUp() {
-        super.setUp()
-        self.previousUserLogger = userLogger
-        self.userLogOutput = LogOutputMock()
-        userLogger = .mockConsoleLogger(output: userLogOutput)
-    }
-
-    override func tearDown() {
-        userLogger = self.previousUserLogger
-        super.tearDown()
-    }
-
     func testWhenInitialized_itSynchronizesWithOneOfDatadogNTPServers() {
         let serverDateProvider = ServerDateProviderMock()
         let deviceDateProvider = SystemDateProvider()
@@ -53,6 +38,9 @@ class DateCorrectorTests: XCTestCase {
     }
 
     func testWhenNTPSynchronizationSucceeds_itPrintsInfoMessage() throws {
+        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
+        defer { dd = old }
+
         let serverDateProvider = ServerDateProviderMock(using: -1)
         let deviceDateProvider = RelativeDateProvider(using: .mockRandomInThePast())
 
@@ -60,10 +48,8 @@ class DateCorrectorTests: XCTestCase {
         _ = DateCorrector(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
 
         // Then
-        let log = try XCTUnwrap(userLogOutput.recordedLog)
-        XCTAssertEqual(log.status, .info)
         XCTAssertEqual(
-            log.message,
+            logger.debugLog?.message,
             """
             NTP time synchronization completed.
             Server time will be used for signing events (-1.0s difference with device time).
@@ -72,6 +58,9 @@ class DateCorrectorTests: XCTestCase {
     }
 
     func testWhenNTPSynchronizationFails_itPrintsWarning() throws {
+        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
+        defer { dd = old }
+
         let serverDateProvider = ServerDateProviderMock(using: nil)
         let deviceDateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
 
@@ -79,10 +68,8 @@ class DateCorrectorTests: XCTestCase {
         _ = DateCorrector(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
 
         // Then
-        let log = try XCTUnwrap(userLogOutput.recordedLog)
-        XCTAssertEqual(log.status, .warn)
         XCTAssertEqual(
-            log.message,
+            logger.errorLog?.message,
             """
             NTP time synchronization failed.
             Device time will be used for signing events (current device time is 2019-12-15 10:00:00 +0000).

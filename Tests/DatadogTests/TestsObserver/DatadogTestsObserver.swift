@@ -63,14 +63,14 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             """
         ),
         .init(
-            assert: { userLogger.core is NOOPDatadogCore },
-            problem: "`userLogger` must use no-op implementation.",
+            assert: { dd.logger is CoreLogger },
+            problem: "`dd.logger` must use `CoreLogger` implementation.",
             solution: """
-            Make sure the `userLogger` is captured before test and reset to the previous implementation after, e.g.:
+            Make sure the `dd` bundle is captured before test and reset to the previous implementation after, e.g.:
 
             ```
-            let previousUserLogger = userLogger
-            defer { userLogger = previousUserLogger }
+            let (old, logger) = dd.replacing(logger: CoreLoggerMock())
+            defer { dd = old }
             ```
             """
         ),

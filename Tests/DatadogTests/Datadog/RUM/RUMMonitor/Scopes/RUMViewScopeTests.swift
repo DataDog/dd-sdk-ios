@@ -674,11 +674,8 @@ class RUMViewScopeTests: XCTestCase {
             dateCorrection: .zero
         )
 
-        let previousUserLogger = userLogger
-        defer { userLogger = previousUserLogger }
-
-        let logOutput = LogOutputMock()
-        userLogger = .mockConsoleLogger(output: logOutput)
+        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
+        defer { dd = old }
 
         XCTAssertTrue(
             scope.process(
@@ -710,7 +707,7 @@ class RUMViewScopeTests: XCTestCase {
         )
         XCTAssertEqual(scope.userActionScope?.name, actionName, "View should ignore the next (only non-custom) UA if one is pending.")
         XCTAssertEqual(
-            logOutput.recordedLog?.message,
+            logger.warnLog?.message,
             """
             RUM Action '\(secondAction.actionType)' on '\(secondAction.name)' was dropped, because another action is still active for the same view.
             """
@@ -760,11 +757,8 @@ class RUMViewScopeTests: XCTestCase {
             dateCorrection: .zero
         )
 
-        let previousUserLogger = userLogger
-        defer { userLogger = previousUserLogger }
-
-        let logOutput = LogOutputMock()
-        userLogger = .mockConsoleLogger(output: logOutput)
+        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
+        defer { dd = old }
 
         XCTAssertTrue(
             scope.process(
@@ -798,7 +792,7 @@ class RUMViewScopeTests: XCTestCase {
         )
         XCTAssertEqual(scope.userActionScope?.name, actionName, "View should ignore the next (only non-custom) UA if one is pending.")
         XCTAssertEqual(
-            logOutput.recordedLog?.message,
+            logger.warnLog?.message,
             """
             RUM Action '\(secondAction.actionType)' on '\(secondAction.name)' was dropped, because another action is still active for the same view.
             """
@@ -1366,11 +1360,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertTrue(scope.isActiveView)
         XCTAssertEqual(scope.customTimings.count, 0)
 
-        let previousUserLogger = userLogger
-        defer { userLogger = previousUserLogger }
-
-        let logOutput = LogOutputMock()
-        userLogger = .mockConsoleLogger(output: logOutput)
+        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
+        defer { dd = old }
 
         // When
         currentTime.addTimeInterval(0.5)
@@ -1395,7 +1386,7 @@ class RUMViewScopeTests: XCTestCase {
             [sanitizedTimingName: 500_000_000]
         )
         XCTAssertEqual(
-            logOutput.recordedLog?.message,
+            logger.warnLog?.message,
             """
             Custom timing '\(originalTimingName)' was modified to '\(sanitizedTimingName)' to match Datadog constraints.
             """

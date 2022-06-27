@@ -513,11 +513,8 @@ class LoggerTests: XCTestCase {
         let rum: RUMFeature = .mockNoOp()
         core.register(feature: rum)
 
-        let previousUserLogger = userLogger
-        defer { userLogger = previousUserLogger }
-
-        let output = LogOutputMock()
-        userLogger = .mockWith(core: core, additionalOutput: output)
+        let (old, coreLogger) = dd.replacing(logger: CoreLoggerMock())
+        defer { dd = old }
 
         // given
         let logger = Logger.builder.build(in: core)
@@ -527,9 +524,8 @@ class LoggerTests: XCTestCase {
         logger.info("info message")
 
         // then
-        XCTAssertEqual(output.recordedLog?.status, .warn)
         try XCTAssertTrue(
-            XCTUnwrap(output.recordedLog?.message)
+            XCTUnwrap(coreLogger.warnLog?.message)
                 .contains("RUM feature is enabled, but no `RUMMonitor` is registered. The RUM integration with Logging will not work.")
         )
 
@@ -635,11 +631,8 @@ class LoggerTests: XCTestCase {
         let tracing: TracingFeature = .mockNoOp()
         core.register(feature: tracing)
 
-        let previousUserLogger = userLogger
-        defer { userLogger = previousUserLogger }
-
-        let output = LogOutputMock()
-        userLogger = .mockWith(core: core, additionalOutput: output)
+        let (old, coreLogger) = dd.replacing(logger: CoreLoggerMock())
+        defer { dd = old }
 
         // given
         let logger = Logger.builder.build(in: core)
@@ -649,9 +642,8 @@ class LoggerTests: XCTestCase {
         logger.info("info message")
 
         // then
-        XCTAssertEqual(output.recordedLog?.status, .warn)
         try XCTAssertTrue(
-            XCTUnwrap(output.recordedLog?.message)
+            XCTUnwrap(coreLogger.warnLog?.message)
                 .contains("Tracing feature is enabled, but no `Tracer` is registered. The Tracing integration with Logging will not work.")
         )
 

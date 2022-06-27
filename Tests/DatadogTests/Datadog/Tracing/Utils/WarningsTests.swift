@@ -13,41 +13,27 @@ class WarningsTests: XCTestCase {
         core.register(feature: LoggingFeature.mockNoOp())
         defer { core.flush() }
 
-        let previousUserLogger = userLogger
-        defer { userLogger = previousUserLogger }
-
-        let output = LogOutputMock()
-        userLogger = .mockConsoleLogger(
-            output: output,
-            context: .mockWith(
-                dependencies: .mockWith(
-                    dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
-                )
-            )
-        )
+        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
+        defer { dd = old }
 
         XCTAssertTrue(warn(if: true, message: "message"))
-        XCTAssertEqual(output.recordedLog?.status, .warn)
-        XCTAssertEqual(output.recordedLog?.message, "message")
-        XCTAssertEqual(output.recordedLog?.date, .mockDecember15th2019At10AMUTC())
+        XCTAssertEqual(logger.warnLog?.message, "message")
 
-        output.recordedLog = nil
+        logger.reset()
 
         XCTAssertFalse(warn(if: false, message: "message"))
-        XCTAssertNil(output.recordedLog)
+        XCTAssertNil(logger.warnLog)
 
-        output.recordedLog = nil
+        logger.reset()
 
         let failingCast: () -> DDSpan? = { warnIfCannotCast(value: DDNoopSpan()) }
         XCTAssertNil(failingCast())
-        XCTAssertEqual(output.recordedLog?.status, .warn)
-        XCTAssertEqual(output.recordedLog?.message, "🔥 Using DDNoopSpan while DDSpan was expected.")
-        XCTAssertEqual(output.recordedLog?.date, .mockDecember15th2019At10AMUTC())
+        XCTAssertEqual(logger.warnLog?.message, "🔥 Using DDNoopSpan while DDSpan was expected.")
 
-        output.recordedLog = nil
+        logger.reset()
 
         let succeedingCast: () -> DDSpan? = { warnIfCannotCast(value: DDSpan.mockAny(in: core)) }
         XCTAssertNotNil(succeedingCast())
-        XCTAssertNil(output.recordedLog)
+        XCTAssertNil(logger.warnLog)
     }
 }

@@ -11,13 +11,13 @@ import Foundation
 internal var dd = DD()
 
 /// Bundles core utilities for monitoring performance and execution of the SDK.
-internal final class DD {
+internal struct DD {
     /// The logger providing methods to print debug information and execution errors from Datadog SDK to user console.
     ///
     /// It is meant for debugging purposes when using the SDK, hence **it should log information useful and actionable
     /// to the SDK user**. Think of possible logs that we may want to receive from our users when asking them to enable
     /// SDK verbosity and send us their console log.
-    let logger: CoreLoggerType
+    var logger: CoreLoggerType
 
     // TODO: RUMM-2239 Move `Telemetry` in here
 

@@ -713,11 +713,8 @@ class TracerTests: XCTestCase {
         let rum: RUMFeature = .mockNoOp()
         core.register(feature: rum)
 
-        let previousUserLogger = userLogger
-        defer { userLogger = previousUserLogger }
-
-        let output = LogOutputMock()
-        userLogger = .mockConsoleLogger(output: output)
+        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
+        defer { dd = old }
 
         // given
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
@@ -728,9 +725,8 @@ class TracerTests: XCTestCase {
         span.finish()
 
         // then
-        XCTAssertEqual(output.recordedLog?.status, .warn)
         try XCTAssertTrue(
-            XCTUnwrap(output.recordedLog?.message)
+            XCTUnwrap(logger.warnLog?.message)
                 .contains("RUM feature is enabled, but no `RUMMonitor` is registered. The RUM integration with Tracing will not work.")
         )
 
@@ -943,8 +939,8 @@ class TracerTests: XCTestCase {
                 .build()
         )
 
-        let output = LogOutputMock()
-        userLogger = .mockConsoleLogger(output: output)
+        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
+        defer { dd = old }
 
         // when
         let tracer = Tracer.initialize(configuration: .init())
@@ -953,8 +949,7 @@ class TracerTests: XCTestCase {
 
         // then
         tracer.dd.queue.sync {} // wait synchronizing span's internal state
-        XCTAssertEqual(output.recordedLog?.status, .warn)
-        XCTAssertEqual(output.recordedLog?.message, "The log for span \"foo\" will not be send, because the Logging feature is disabled.")
+        XCTAssertEqual(logger.warnLog?.message, "The log for span \"foo\" will not be send, because the Logging feature is disabled.")
 
         Datadog.flushAndDeinitialize()
     }
@@ -998,8 +993,8 @@ class TracerTests: XCTestCase {
         )
         defer { Datadog.flushAndDeinitialize() }
 
-        let output = LogOutputMock()
-        userLogger = .mockConsoleLogger(output: output)
+        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
+        defer { dd = old }
 
         // Given
         let instrumentation = defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self)
@@ -1010,9 +1005,8 @@ class TracerTests: XCTestCase {
 
         // Then
         tracingHandler.notify_taskInterceptionCompleted(interception: TaskInterception(request: .mockAny(), isFirstParty: true))
-        XCTAssertEqual(output.recordedLog?.status, .warn)
         XCTAssertEqual(
-            output.recordedLog?.message,
+            logger.warnLog?.message,
             """
             `URLSession` request was completed, but no `Tracer` is registered on `Global.sharedTracer`. Tracing auto instrumentation will not work.
             Make sure `Global.sharedTracer = Tracer.initialize()` is called before any network request is send.

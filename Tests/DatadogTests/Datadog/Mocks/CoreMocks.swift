@@ -1257,3 +1257,65 @@ class PrintFunctionMock {
         printedMessages = []
     }
 }
+
+class CoreLoggerMock: CoreLoggerType {
+    private(set) var recordedLogs: [(severity: String, message: String, error: Error?)] = []
+
+    // MARK: - CoreLoggerType
+
+    func debug(_ message: @autoclosure () -> String, error: Error?) {
+        recordedLogs.append(("debug", message(), error))
+    }
+
+    func warn(_ message: @autoclosure () -> String, error: Error?) {
+        recordedLogs.append(("warn", message(), error))
+    }
+
+    func error(_ message: @autoclosure () -> String, error: Error?) {
+        recordedLogs.append(("error", message(), error))
+    }
+
+    func critical(_ message: @autoclosure () -> String, error: Error?) {
+        recordedLogs.append(("critical", message(), error))
+    }
+
+    func reset() {
+        recordedLogs = []
+    }
+
+    // MARK: - Matching
+
+    typealias RecordedLog = (message: String, error: DDError?)
+
+    private func recordedLogs(ofSeverity severity: String) -> [RecordedLog] {
+        return recordedLogs
+            .filter({ $0.severity == severity })
+            .map { ($0.message, $0.error.map({ DDError(error: $0) })) }
+    }
+
+    var debugLogs: [RecordedLog] { recordedLogs(ofSeverity: "debug") }
+    var warnLogs: [RecordedLog] { recordedLogs(ofSeverity: "warn") }
+    var errorLogs: [RecordedLog] { recordedLogs(ofSeverity: "error") }
+    var criticalLogs: [RecordedLog] { recordedLogs(ofSeverity: "critical") }
+
+    var debugLog: RecordedLog? { debugLogs.last }
+    var warnLog: RecordedLog? { warnLogs.last }
+    var errorLog: RecordedLog? { errorLogs.last }
+    var criticalLog: RecordedLog? { criticalLogs.last }
+}
+
+extension DD {
+    /// Syntactic sugar for patching the `dd` bundle by replacing `logger`.
+    ///
+    /// It returns the `logger` and old version of `dd`, so it can be used inline:
+    /// ```
+    /// let (old, logger) = dd.replacing(logger: CoreLoggerMock())
+    /// defer { dd = old }
+    /// ```
+    func replacing<CL: CoreLoggerType>(logger: CL) -> (old: DD, logger: CL) {
+        var new = self
+        new.logger = logger
+        dd = new
+        return (old: self, logger: logger)
+    }
+}
