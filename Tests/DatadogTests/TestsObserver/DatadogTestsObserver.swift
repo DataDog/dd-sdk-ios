@@ -98,9 +98,19 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             """
         ),
         .init(
+            assert: { !temporaryCoreDirectory.coreDirectory.exists()
+                && !temporaryCoreDirectory.osDirectory.exists()
+            },
+            problem: "`temporaryCoreDirectory` must not exist.",
+            solution: """
+            Make sure `temporaryCoreDirectory.delete()` is called consistently
+            with `temporaryCoreDirectory.create()`.
+            """
+        ),
+        .init(
             assert: {
-                temporaryFeatureDirectories.authorized.exists() == false
-                    && temporaryFeatureDirectories.unauthorized.exists() == false
+                !temporaryFeatureDirectories.authorized.exists()
+                    && !temporaryFeatureDirectories.unauthorized.exists()
             },
             problem: "`temporaryFeatureDirectories` must not exist.",
             solution: """

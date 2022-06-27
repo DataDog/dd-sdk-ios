@@ -6,6 +6,10 @@
 
 import Foundation
 
+/// Datadog site that SDK sends data to.
+/// See: https://docs.datadoghq.com/getting_started/site/
+internal typealias DatadogSite = Datadog.Configuration.DatadogEndpoint
+
 /// The SDK context for V1, until the V2 context is created.
 ///
 /// V2-like context can be safely assembled from V1 core components. Unlike in V2, this requires more hassle and is less performant:
@@ -33,6 +37,10 @@ internal struct DatadogV1Context {
 /// This extension bundles different parts of the SDK core configuration.
 internal extension DatadogV1Context {
     // MARK: - Datadog Specific
+
+    /// [Datadog Site](https://docs.datadoghq.com/getting_started/site/) for data uploads. It can be `nil` in V1
+    /// if the SDK is configured using deprecated APIs: `set(logsEndpoint:)`, `set(tracesEndpoint:)` and `set(rumEndpoint:)`.
+    var site: DatadogSite? { configuration.site }
 
     /// The client token allowing for data uploads to [Datadog Site](https://docs.datadoghq.com/getting_started/site/).
     var clientToken: String { configuration.clientToken }

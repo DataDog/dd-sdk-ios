@@ -6,35 +6,6 @@
 
 import Foundation
 
-/// Lists different types of data directories used by the feature.
-internal struct FeatureDirectories {
-    /// Deprecated data directory that can be deleted safely.
-    let deprecated: [Directory]
-    /// Data directory for storing unauthorized data collected without knowing the tracking consent value.
-    /// Due to the consent change, data in this directory may be either moved to `authorized` folder or entirely deleted.
-    let unauthorized: Directory
-    /// Data directory for storing authorized data collected when tracking consent is granted.
-    /// Consent change does not impact data already stored in this folder.
-    /// Data in this folder gets uploaded to the server.
-    let authorized: Directory
-}
-
-extension FeatureDirectories {
-    /// Creates `FeatureDirectories` from V2 storage configuration.
-    /// - Parameters:
-    ///   - sdkRootDirectory: the root directory for SDK instance
-    ///   - storageConfiguration: the storage configuration of Feature
-    init(sdkRootDirectory: Directory, storageConfiguration: FeatureStorageConfiguration) throws {
-        self.init(
-            deprecated: storageConfiguration.directories.deprecated.compactMap { deprecatedPath in
-                try? sdkRootDirectory.subdirectory(path: deprecatedPath) // ignore errors - deprecated paths likely do not exist
-            },
-            unauthorized: try sdkRootDirectory.createSubdirectory(path: storageConfiguration.directories.unauthorized),
-            authorized: try sdkRootDirectory.createSubdirectory(path: storageConfiguration.directories.authorized)
-        )
-    }
-}
-
 /// Container with dependencies common to all features (Logging, Tracing and RUM).
 internal struct FeaturesCommonDependencies {
     let consentProvider: ConsentProvider

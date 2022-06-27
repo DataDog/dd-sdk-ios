@@ -10,11 +10,11 @@ import XCTest
 class RUMFeatureTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        temporaryDirectory.create()
+        temporaryCoreDirectory.create()
     }
 
     override func tearDown() {
-        temporaryDirectory.delete()
+        temporaryCoreDirectory.delete()
         super.tearDown()
     }
 
@@ -38,7 +38,7 @@ class RUMFeatureTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
 
         let core = DatadogCore(
-            rootDirectory: temporaryDirectory,
+            directory: temporaryCoreDirectory,
             configuration: .mockWith(
                 clientToken: randomClientToken,
                 applicationName: randomApplicationName,
@@ -104,7 +104,7 @@ class RUMFeatureTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
 
         let core = DatadogCore(
-            rootDirectory: temporaryDirectory,
+            directory: temporaryCoreDirectory,
             configuration: .mockAny(),
             dependencies: .mockWith(
                 performance: .combining(

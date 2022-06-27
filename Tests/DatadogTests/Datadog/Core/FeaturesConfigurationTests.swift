@@ -152,7 +152,7 @@ class FeaturesConfigurationTests: XCTestCase {
     }
 
     func testClientToken() throws {
-        let clientToken: String = .mockRandom(among: "abcdefgh")
+        let clientToken: String = .mockRandom(among: .alphanumerics)
         let configuration = try createConfiguration(clientToken: clientToken)
 
         XCTAssertEqual(configuration.common.clientToken, clientToken)

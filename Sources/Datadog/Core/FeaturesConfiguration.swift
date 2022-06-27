@@ -12,6 +12,9 @@ import Foundation
 /// unvalidated and unresolved inputs, it should never be passed to features. Instead, `FeaturesConfiguration` should be used.
 internal struct FeaturesConfiguration {
     struct Common {
+        /// [Datadog Site](https://docs.datadoghq.com/getting_started/site/) for data uploads. It can be `nil` in V1
+        /// if the SDK is configured using deprecated APIs: `set(logsEndpoint:)`, `set(tracesEndpoint:)` and `set(rumEndpoint:)`.
+        let site: DatadogSite?
         let clientToken: String
         let applicationName: String
         let applicationVersion: String
@@ -149,6 +152,7 @@ extension FeaturesConfiguration {
         }
 
         let common = Common(
+            site: configuration.datadogEndpoint,
             clientToken: try ifValid(clientToken: configuration.clientToken),
             applicationName: appContext.bundleName ?? appContext.bundleType.rawValue,
             applicationVersion: appContext.bundleVersion ?? "0.0.0",

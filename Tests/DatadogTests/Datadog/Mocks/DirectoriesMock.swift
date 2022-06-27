@@ -6,6 +6,30 @@
 
 @testable import Datadog
 
+/// `CoreDirectory` pointing to subfolders in `/var/folders/`.
+/// This location does not exist by default and should be created and deleted by calling `.create()` and `.delete()` in each test,
+/// which guarantees clear state before and after test.
+let temporaryCoreDirectory = CoreDirectory(
+    osDirectory: obtainUniqueTemporaryDirectory(),
+    coreDirectory: obtainUniqueTemporaryDirectory()
+)
+
+extension CoreDirectory {
+    /// Creates temporary core directory.
+    @discardableResult
+    func create() -> Self {
+        osDirectory.create()
+        coreDirectory.create()
+        return self
+    }
+
+    /// Deletes temporary core directory.
+    func delete() {
+        osDirectory.delete()
+        coreDirectory.delete()
+    }
+}
+
 /// `FeatureDirectories` pointing to subfolders in `/var/folders/`.
 /// Those subfolders do not exist by default and should be created and deleted by calling `.create()` and `.delete()` in each test,
 /// which guarantees clear state before and after test.
