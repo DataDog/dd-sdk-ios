@@ -7,7 +7,11 @@
 import Foundation
 
 extension RUMOperatingSystem {
-    init(from device: MobileDevice) {
+    init(context: DatadogV1Context) {
+        self.init(device: context.device)
+    }
+
+    init(device: DeviceInfo) {
         self.name = device.osName
         self.version = device.osVersion
         self.versionMajor = device.osVersion.split(separator: ".").first.map { String($0) } ?? device.osVersion

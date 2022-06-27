@@ -7,7 +7,11 @@
 import Foundation
 
 extension RUMDevice {
-    init(from device: MobileDevice, telemetry: Telemetry?) {
+    init(context: DatadogV1Context) {
+        self.init(device: context.device, telemetry: context.telemetry)
+    }
+
+    init(device: DeviceInfo, telemetry: Telemetry?) {
         self.init(
             brand: device.brand,
             model: device.model,

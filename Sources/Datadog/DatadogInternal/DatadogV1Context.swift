@@ -67,15 +67,15 @@ internal extension DatadogV1Context {
 
     /// Date of SDK initialization measured in device time (without NTP correction).
     var sdkInitDate: Date { dependencies.sdkInitDate }
+
+    /// Current device information.
+    var device: DeviceInfo { dependencies.deviceInfo }
 }
 
 // MARK: - Providers
 
 /// This extension bundles different providers managed by the SDK core.
 internal extension DatadogV1Context {
-    /// Current device information.
-    var mobileDevice: MobileDevice { dependencies.mobileDevice }
-
     /// Time provider.
     var dateProvider: DateProvider { dependencies.dateProvider }
 

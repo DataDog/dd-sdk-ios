@@ -40,7 +40,8 @@ internal struct FeaturesCommonDependencies {
     let consentProvider: ConsentProvider
     let performance: PerformancePreset
     let httpClient: HTTPClient
-    let mobileDevice: MobileDevice
+    let deviceInfo: DeviceInfo
+    let batteryStatusProvider: BatteryStatusProviderType
     /// Time of SDK initialization, measured in device date.
     let sdkInitDate: Date
     let dateProvider: DateProvider
@@ -187,7 +188,7 @@ internal struct FeatureUpload {
         )
 
         let uploadConditions = DataUploadConditions(
-            batteryStatus: BatteryStatusProvider(mobileDevice: commonDependencies.mobileDevice),
+            batteryStatus: commonDependencies.batteryStatusProvider,
             networkConnectionInfo: commonDependencies.networkConnectionInfoProvider
         )
 

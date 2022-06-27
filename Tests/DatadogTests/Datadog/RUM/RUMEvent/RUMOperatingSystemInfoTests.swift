@@ -13,7 +13,7 @@ class RUMOperatingSystemInfoTests: XCTestCase {
         let randomOSVersion: String = .mockRandom()
 
         let info = RUMOperatingSystem(
-            from: .mockWith(osName: randomOSName, osVersion: randomOSVersion)
+            device: .mockWith(osName: randomOSName, osVersion: randomOSVersion)
         )
 
         XCTAssertEqual(info.name, randomOSName)
@@ -21,19 +21,19 @@ class RUMOperatingSystemInfoTests: XCTestCase {
     }
 
     func testItInfersOSMajorVersion() {
-        var info = RUMOperatingSystem(from: .mockWith(osVersion: "15.4.1"))
+        var info = RUMOperatingSystem(device: .mockWith(osVersion: "15.4.1"))
         XCTAssertEqual(info.versionMajor, "15")
 
-        info = RUMOperatingSystem(from: .mockWith(osVersion: "1.4"))
+        info = RUMOperatingSystem(device: .mockWith(osVersion: "1.4"))
         XCTAssertEqual(info.versionMajor, "1")
 
-        info = RUMOperatingSystem(from: .mockWith(osVersion: "1"))
+        info = RUMOperatingSystem(device: .mockWith(osVersion: "1"))
         XCTAssertEqual(info.versionMajor, "1")
 
-        info = RUMOperatingSystem(from: .mockWith(osVersion: "0.1.2-beta1"))
+        info = RUMOperatingSystem(device: .mockWith(osVersion: "0.1.2-beta1"))
         XCTAssertEqual(info.versionMajor, "0")
 
-        info = RUMOperatingSystem(from: .mockWith(osVersion: "invalid_version"))
+        info = RUMOperatingSystem(device: .mockWith(osVersion: "invalid_version"))
         XCTAssertEqual(info.versionMajor, "invalid_version")
     }
 }

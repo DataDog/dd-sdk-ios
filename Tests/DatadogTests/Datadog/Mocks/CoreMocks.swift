@@ -470,12 +470,8 @@ extension FeaturesCommonDependencies {
             storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
             uploadPerformance: .veryQuick
         ),
-        mobileDevice: MobileDevice = .mockWith(
-            currentBatteryStatus: {
-                // Mock full battery, so it doesn't rely on battery condition for the upload
-                return BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false)
-            }
-        ),
+        deviceInfo: DeviceInfo = .mockAny(),
+        batteryStatusProvider: BatteryStatusProviderType = BatteryStatusProviderMock.mockAny(),
         sdkInitDate: Date = Date(),
         dateProvider: DateProvider = SystemDateProvider(),
         dateCorrector: DateCorrectorType = DateCorrectorMock(),
@@ -520,7 +516,8 @@ extension FeaturesCommonDependencies {
             consentProvider: consentProvider,
             performance: performance,
             httpClient: httpClient,
-            mobileDevice: mobileDevice,
+            deviceInfo: deviceInfo,
+            batteryStatusProvider: batteryStatusProvider,
             sdkInitDate: sdkInitDate,
             dateProvider: dateProvider,
             dateCorrector: dateCorrector,
@@ -538,7 +535,8 @@ extension FeaturesCommonDependencies {
         consentProvider: ConsentProvider? = nil,
         performance: PerformancePreset? = nil,
         httpClient: HTTPClient? = nil,
-        mobileDevice: MobileDevice? = nil,
+        deviceInfo: DeviceInfo? = nil,
+        batteryStatusProvider: BatteryStatusProviderType? = nil,
         sdkInitDate: Date? = nil,
         dateProvider: DateProvider? = nil,
         dateCorrector: DateCorrectorType? = nil,
@@ -553,7 +551,8 @@ extension FeaturesCommonDependencies {
             consentProvider: consentProvider ?? self.consentProvider,
             performance: performance ?? self.performance,
             httpClient: httpClient ?? self.httpClient,
-            mobileDevice: mobileDevice ?? self.mobileDevice,
+            deviceInfo: deviceInfo ?? self.deviceInfo,
+            batteryStatusProvider: batteryStatusProvider ?? self.batteryStatusProvider,
             sdkInitDate: sdkInitDate ?? self.sdkInitDate,
             dateProvider: dateProvider ?? self.dateProvider,
             dateCorrector: dateCorrector ?? self.dateCorrector,
@@ -950,8 +949,8 @@ extension DataUploadStatus: RandomMockable {
     }
 }
 
-extension MobileDevice {
-    static func mockAny() -> MobileDevice {
+extension DeviceInfo {
+    static func mockAny() -> DeviceInfo {
         return .mockWith()
     }
 
@@ -959,19 +958,22 @@ extension MobileDevice {
         name: String = .mockAny(),
         model: String = .mockAny(),
         osName: String = .mockAny(),
-        osVersion: String = .mockAny(),
-        enableBatteryStatusMonitoring: @escaping () -> Void = {},
-        resetBatteryStatusMonitoring: @escaping () -> Void = {},
-        currentBatteryStatus: @escaping () -> BatteryStatus = { .mockAny() }
-    ) -> MobileDevice {
-        return MobileDevice(
+        osVersion: String = .mockAny()
+    ) -> DeviceInfo {
+        return .init(
             name: name,
             model: model,
             osName: osName,
-            osVersion: osVersion,
-            enableBatteryStatusMonitoring: enableBatteryStatusMonitoring,
-            resetBatteryStatusMonitoring: resetBatteryStatusMonitoring,
-            currentBatteryStatus: currentBatteryStatus
+            osVersion: osVersion
+        )
+    }
+
+    static func mockRandom() -> DeviceInfo {
+        return .init(
+            name: .mockRandom(),
+            model: .mockRandom(),
+            osName: .mockRandom(),
+            osVersion: .mockRandom()
         )
     }
 }
@@ -999,8 +1001,12 @@ extension BatteryStatus {
 struct BatteryStatusProviderMock: BatteryStatusProviderType {
     let current: BatteryStatus
 
-    static func mockWith(status: BatteryStatus) -> BatteryStatusProviderMock {
+    static func mockWith(status: BatteryStatus ) -> BatteryStatusProviderMock {
         return BatteryStatusProviderMock(current: status)
+    }
+
+    static func mockAny() -> BatteryStatusProviderMock {
+        return BatteryStatusProviderMock(current: .mockAny())
     }
 }
 
