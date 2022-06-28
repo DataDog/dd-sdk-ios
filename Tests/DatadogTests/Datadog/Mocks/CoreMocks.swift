@@ -1258,10 +1258,10 @@ class PrintFunctionMock {
     }
 }
 
-class CoreLoggerMock: CoreLoggerType {
+class CoreLoggerMock: CoreLogger {
     private(set) var recordedLogs: [(severity: String, message: String, error: Error?)] = []
 
-    // MARK: - CoreLoggerType
+    // MARK: - CoreLogger
 
     func debug(_ message: @autoclosure () -> String, error: Error?) {
         recordedLogs.append(("debug", message(), error))
@@ -1312,7 +1312,7 @@ extension DD {
     /// let dd = DD.mockWith(logger: CoreLoggerMock())
     /// defer { dd.reset() }
     /// ```
-    static func mockWith<CL: CoreLoggerType>(logger: CL) -> DDMock<CL> {
+    static func mockWith<CL: CoreLogger>(logger: CL) -> DDMock<CL> {
         let mock = DDMock(
             oldLogger: DD.logger,
             logger: logger
@@ -1322,8 +1322,8 @@ extension DD {
     }
 }
 
-struct DDMock<CL: CoreLoggerType> {
-    let oldLogger: CoreLoggerType
+struct DDMock<CL: CoreLogger> {
+    let oldLogger: CoreLogger
     let logger: CL
 
     func reset() {

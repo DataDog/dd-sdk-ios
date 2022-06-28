@@ -17,7 +17,7 @@ internal struct DD {
     /// It is meant for debugging purposes when using the SDK, hence **it should log information useful and actionable
     /// to the SDK user**. Think of possible logs that we may want to receive from our users when asking them to enable
     /// SDK verbosity and send us their console log.
-    static var logger: CoreLoggerType = CoreLogger(
+    static var logger: CoreLogger = ConsoleLogger(
         dateProvider: SystemDateProvider(),
         timeZone: .current,
         printFunction: consolePrint,

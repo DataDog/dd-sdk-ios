@@ -63,8 +63,8 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             """
         ),
         .init(
-            assert: { DD.logger is CoreLogger },
-            problem: "`DD.logger` must use `CoreLogger` implementation.",
+            assert: { DD.logger is ConsoleLogger },
+            problem: "`DD.logger` must use `ConsoleLogger` implementation.",
             solution: """
             Make sure the `DD` bundle is reset after test to use previous dependencies, e.g.:
 

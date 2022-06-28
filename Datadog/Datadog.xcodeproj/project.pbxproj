@@ -432,8 +432,8 @@
 		61DA8CB028620C760074A606 /* Cryptography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CAE28620C760074A606 /* Cryptography.swift */; };
 		61DA8CB2286215DE0074A606 /* CryptographyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CB1286215DE0074A606 /* CryptographyTests.swift */; };
 		61DA8CB3286215DE0074A606 /* CryptographyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CB1286215DE0074A606 /* CryptographyTests.swift */; };
-		61DA8CB528643B220074A606 /* CoreLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CB428643B220074A606 /* CoreLogger.swift */; };
-		61DA8CB628643B220074A606 /* CoreLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CB428643B220074A606 /* CoreLogger.swift */; };
+		61DA8CB528643B220074A606 /* ConsoleLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CB428643B220074A606 /* ConsoleLogger.swift */; };
+		61DA8CB628643B220074A606 /* ConsoleLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CB428643B220074A606 /* ConsoleLogger.swift */; };
 		61DA8CB828647A500074A606 /* CoreLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CB728647A500074A606 /* CoreLoggerTests.swift */; };
 		61DA8CB928647A500074A606 /* CoreLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CB728647A500074A606 /* CoreLoggerTests.swift */; };
 		61DB33B225DEDFC200F7EA71 /* CustomObjcViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 61DB33B125DEDFC200F7EA71 /* CustomObjcViewController.m */; };
@@ -464,8 +464,8 @@
 		61E917D3246546BF00E6C631 /* TracerConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E917D2246546BF00E6C631 /* TracerConfigurationTests.swift */; };
 		61E945E02869BEF500A946C4 /* DD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E945DF2869BEF500A946C4 /* DD.swift */; };
 		61E945E12869BEF500A946C4 /* DD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E945DF2869BEF500A946C4 /* DD.swift */; };
-		61E945E32869BF3D00A946C4 /* CoreLoggerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E945E22869BF3D00A946C4 /* CoreLoggerType.swift */; };
-		61E945E42869BF3D00A946C4 /* CoreLoggerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E945E22869BF3D00A946C4 /* CoreLoggerType.swift */; };
+		61E945E32869BF3D00A946C4 /* CoreLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E945E22869BF3D00A946C4 /* CoreLogger.swift */; };
+		61E945E42869BF3D00A946C4 /* CoreLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E945E22869BF3D00A946C4 /* CoreLogger.swift */; };
 		61E95D882695C00200EA3115 /* DDCrashReportExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E95D872695C00200EA3115 /* DDCrashReportExporterTests.swift */; };
 		61ED39D426C2A36B002C0F26 /* DataUploadStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61ED39D326C2A36B002C0F26 /* DataUploadStatus.swift */; };
 		61EF7890257E289A00EDCCB3 /* DeleteAllDataMigratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EF788F257E289A00EDCCB3 /* DeleteAllDataMigratorTests.swift */; };
@@ -1647,7 +1647,7 @@
 		61DA8CAB2861C3720074A606 /* DirectoriesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectoriesTests.swift; sourceTree = "<group>"; };
 		61DA8CAE28620C760074A606 /* Cryptography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cryptography.swift; sourceTree = "<group>"; };
 		61DA8CB1286215DE0074A606 /* CryptographyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptographyTests.swift; sourceTree = "<group>"; };
-		61DA8CB428643B220074A606 /* CoreLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreLogger.swift; sourceTree = "<group>"; };
+		61DA8CB428643B220074A606 /* ConsoleLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleLogger.swift; sourceTree = "<group>"; };
 		61DA8CB728647A500074A606 /* CoreLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreLoggerTests.swift; sourceTree = "<group>"; };
 		61DB33B025DEDFC200F7EA71 /* CustomObjcViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CustomObjcViewController.h; sourceTree = "<group>"; };
 		61DB33B125DEDFC200F7EA71 /* CustomObjcViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CustomObjcViewController.m; sourceTree = "<group>"; };
@@ -1676,7 +1676,7 @@
 		61E917D02465423600E6C631 /* TracerConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracerConfiguration.swift; sourceTree = "<group>"; };
 		61E917D2246546BF00E6C631 /* TracerConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracerConfigurationTests.swift; sourceTree = "<group>"; };
 		61E945DF2869BEF500A946C4 /* DD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DD.swift; sourceTree = "<group>"; };
-		61E945E22869BF3D00A946C4 /* CoreLoggerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreLoggerType.swift; sourceTree = "<group>"; };
+		61E945E22869BF3D00A946C4 /* CoreLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreLogger.swift; sourceTree = "<group>"; };
 		61E95D872695C00200EA3115 /* DDCrashReportExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDCrashReportExporterTests.swift; sourceTree = "<group>"; };
 		61ED39D326C2A36B002C0F26 /* DataUploadStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataUploadStatus.swift; sourceTree = "<group>"; };
 		61EF788F257E289A00EDCCB3 /* DeleteAllDataMigratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteAllDataMigratorTests.swift; sourceTree = "<group>"; };
@@ -3757,8 +3757,8 @@
 			isa = PBXGroup;
 			children = (
 				D248ED4128070E2B00B315B4 /* Telemetry.swift */,
-				61E945E22869BF3D00A946C4 /* CoreLoggerType.swift */,
-				61DA8CB428643B220074A606 /* CoreLogger.swift */,
+				61E945E22869BF3D00A946C4 /* CoreLogger.swift */,
+				61DA8CB428643B220074A606 /* ConsoleLogger.swift */,
 			);
 			path = DD;
 			sourceTree = "<group>";
@@ -5144,7 +5144,7 @@
 				61133BEA2423979B00786299 /* LogConsoleOutput.swift in Sources */,
 				61C5A8A624509FAA00DA608C /* SpanEventEncoder.swift in Sources */,
 				61C5A88E24509A1F00DA608C /* Tracer.swift in Sources */,
-				61DA8CB528643B220074A606 /* CoreLogger.swift in Sources */,
+				61DA8CB528643B220074A606 /* ConsoleLogger.swift in Sources */,
 				61E909EE24A24DD3005EA2DE /* OTFormat.swift in Sources */,
 				9E26E6B924C87693000B3270 /* RUMDataModels.swift in Sources */,
 				61D3E0D6277B23F1008BE766 /* KronosClock.swift in Sources */,
@@ -5156,7 +5156,7 @@
 				9EB4B868275103E40041CD03 /* WebEventBridge.swift in Sources */,
 				D2B3F04D282A85FD00C2B5EE /* DatadogCore.swift in Sources */,
 				61133BE02423979B00786299 /* Datadog.swift in Sources */,
-				61E945E32869BF3D00A946C4 /* CoreLoggerType.swift in Sources */,
+				61E945E32869BF3D00A946C4 /* CoreLogger.swift in Sources */,
 				61133BCB2423979B00786299 /* CarrierInfoProvider.swift in Sources */,
 				61C5A89024509AA700DA608C /* TracingFeature.swift in Sources */,
 				61E5333624B84B43003D6C4E /* RUMMonitor.swift in Sources */,
@@ -5708,6 +5708,7 @@
 				D2CB6E3227C50EAE00A62B57 /* SwiftUIActionModifier.swift in Sources */,
 				D2CB6E3327C50EAE00A62B57 /* OTConstants.swift in Sources */,
 				61DA8CB628643B220074A606 /* CoreLogger.swift in Sources */,
+				61DA8CB628643B220074A606 /* ConsoleLogger.swift in Sources */,
 				D2B3F04E282A85FD00C2B5EE /* DatadogCore.swift in Sources */,
 				D2CB6E3527C50EAE00A62B57 /* SpanEventBuilder.swift in Sources */,
 				D2CB6E3627C50EAE00A62B57 /* ObjcAppLaunchHandler.m in Sources */,
@@ -5862,7 +5863,7 @@
 				D2CB6EC327C50EAE00A62B57 /* TracingUUIDGenerator.swift in Sources */,
 				D2CB6EC427C50EAE00A62B57 /* DataUploadDelay.swift in Sources */,
 				D2CB6EC527C50EAE00A62B57 /* HostsSanitizer.swift in Sources */,
-				61E945E42869BF3D00A946C4 /* CoreLoggerType.swift in Sources */,
+				61E945E42869BF3D00A946C4 /* CoreLogger.swift in Sources */,
 				D2CB6EC627C50EAE00A62B57 /* HTTPHeadersWriter.swift in Sources */,
 				D2CB6EC727C50EAE00A62B57 /* PerformancePreset.swift in Sources */,
 				D2CB6EC827C50EAE00A62B57 /* RUMUserInfoProvider.swift in Sources */,

@@ -12,7 +12,7 @@ class CoreLoggerTests: XCTestCase {
 
     func testItPrintsMessageWithExpectedFormat() {
         // Given
-        let logger = CoreLogger(
+        let logger = ConsoleLogger(
             dateProvider: RelativeDateProvider(
                 using: .mockDecember15th2019At10AMUTC(addingTimeInterval: 4.2)
             ),
@@ -37,7 +37,7 @@ class CoreLoggerTests: XCTestCase {
 
     func testItPrintsErrorWithExpectedFormat() {
         // Given
-        let logger = CoreLogger(
+        let logger = ConsoleLogger(
             dateProvider: RelativeDateProvider(
                 using: .mockDecember15th2019At10AMUTC()
             ),
@@ -79,7 +79,7 @@ class CoreLoggerTests: XCTestCase {
         var verbosityLevel: LogLevel? = nil
 
         // Given
-        let logger = CoreLogger(
+        let logger = ConsoleLogger(
             dateProvider: RelativeDateProvider(
                 using: .mockDecember15th2019At10AMUTC()
             ),
@@ -126,7 +126,7 @@ class CoreLoggerTests: XCTestCase {
         var verbosityLevel: LogLevel? = nil
 
         // Given
-        let logger = CoreLogger(
+        let logger = ConsoleLogger(
             dateProvider: SystemDateProvider(),
             timeZone: .UTC,
             printFunction: mock.print(message:),
