@@ -6,7 +6,7 @@
 
 import Foundation
 
-/// Convenience typealias.
+/// Describe the battery state for mobile devices.
 internal struct BatteryStatus {
     enum State: Equatable {
         case unknown
@@ -15,13 +15,19 @@ internal struct BatteryStatus {
         case full
     }
 
+    /// The charging state of the battery.
     let state: State
+
+    /// The battery power level, range between 0 and 1.
     let level: Float
+
+    /// `true` if the Low Power Mode is enabled.
     let isLowPowerModeEnabled: Bool
 }
 
 /// Shared provider to get current `BatteryStatus`.
 internal protocol BatteryStatusProviderType {
+    /// The current status of the battery.
     var current: BatteryStatus { get }
 }
 
@@ -30,9 +36,15 @@ internal class BatteryStatusProvider: BatteryStatusProviderType {
     private let resetBatteryStatusMonitoring: () -> Void
     /// Returns current `BatteryStatus`.
     private let currentBatteryStatus: () -> BatteryStatus
-
+    /// The current status of the battery.
     var current: BatteryStatus { currentBatteryStatus() }
 
+    /// Creates a battery status provider to monitor the battery.
+    ///
+    /// - Parameters:
+    ///   - enableBatteryStatusMonitoring: closure to enable monitoring.
+    ///   - resetBatteryStatusMonitoring: closure to reset monitoring.
+    ///   - currentBatteryStatus: closure to get the current battery status.
     init(
         enableBatteryStatusMonitoring: () -> Void,
         resetBatteryStatusMonitoring: @escaping () -> Void,
@@ -55,6 +67,7 @@ internal class BatteryStatusProvider: BatteryStatusProviderType {
 /// `.NSProcessInfoPowerStateDidChange` completion handler can sometimes lead to `_os_unfair_lock_recursive_abort` crash. The issue
 /// was reported to Apple, ref.: https://openradar.appspot.com/FB9741207
 private final class LowPowerModeMonitor {
+    /// `true` if the Low Power Mode is enabled.
     var isLowPowerModeEnabled: Bool {
         publisher.currentValue
     }
@@ -63,8 +76,16 @@ private final class LowPowerModeMonitor {
     private let notificationCenter: NotificationCenter
     private var powerStateDidChangeObserver: Any?
 
-    init(initialProcessInfo: ProcessInfo, notificationCenter: NotificationCenter) {
-        self.publisher = ValuePublisher(initialValue: initialProcessInfo.isLowPowerModeEnabled)
+    /// Creates a monitor.
+    ///
+    /// The monitor will strat observing the `NSNotification.Name.NSProcessInfoPowerStateDidChange` at
+    /// initialization. Deallocating the monitor will remove the notification observer.
+    ///
+    /// - Parameters:
+    ///   - initialState: The initiale low power mode state.
+    ///   - notificationCenter: The notification center where to observe the Low Power Mode notification.
+    init(initialState: Bool, notificationCenter: NotificationCenter) {
+        self.publisher = ValuePublisher(initialValue: initialState)
         self.notificationCenter = notificationCenter
         self.powerStateDidChangeObserver = notificationCenter
             .addObserver(
@@ -98,6 +119,9 @@ private final class LowPowerModeMonitor {
 import UIKit
 
 extension BatteryStatusProvider {
+    /// Initialize a default Battery Status Provider.
+    ///
+    /// This initializer take the target plaform in consideration.
     convenience init() {
         #if targetEnvironment(simulator) || os(tvOS)
         // iOS Simulator - battery monitoring doesn't work on Simulator, so return "always OK" value
@@ -116,6 +140,12 @@ extension BatteryStatusProvider {
     }
 
     #if os(iOS)
+    /// Create a Battery Status Provider for iOS devices only.
+    ///
+    /// - Parameters:
+    ///   - device: The `UIDevice` description.
+    ///   - processInfo: The process info.
+    ///   - notificationCenter: The notification center where to observe the Low Power Mode notification.
     convenience init(
         device: UIDevice,
         processInfo: ProcessInfo,
@@ -125,7 +155,10 @@ extension BatteryStatusProvider {
         let wasBatteryMonitoringEnabled = device.isBatteryMonitoringEnabled
         // We capture this `lowPowerModeMonitor` in `currentBatteryStatus` closure so its lifecycle
         // is owned and controlled by `MobileDevice` object.
-        let lowPowerModeMonitor = LowPowerModeMonitor(initialProcessInfo: processInfo, notificationCenter: notificationCenter)
+        let lowPowerModeMonitor = LowPowerModeMonitor(
+            initialState: processInfo.isLowPowerModeEnabled,
+            notificationCenter: notificationCenter
+        )
 
         self.init(
             enableBatteryStatusMonitoring: { device.isBatteryMonitoringEnabled = true },
@@ -144,6 +177,9 @@ extension BatteryStatusProvider {
 
 #if !os(tvOS)
 extension BatteryStatus.State {
+    /// Cast `UIDevice.BatteryState` to `BatteryStatus.State`
+    /// 
+    /// - Parameter state: The state to cast.
     init(_ state: UIDevice.BatteryState) {
         switch state {
         case .unknown:

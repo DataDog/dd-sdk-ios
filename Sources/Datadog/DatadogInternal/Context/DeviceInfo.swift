@@ -6,7 +6,7 @@
 
 import Foundation
 
-/// Describes current mobile device.
+/// Describes current device information.
 internal class DeviceInfo {
     // MARK: - Info
 
@@ -43,6 +43,11 @@ internal class DeviceInfo {
 import UIKit
 
 extension DeviceInfo {
+    /// Creates device info based on UIKit description.
+    ///
+    /// - Parameters:
+    ///   - model: The model name.
+    ///   - device: The `UIDevice` description.
     convenience init(
         model: String,
         device: UIDevice
@@ -55,6 +60,11 @@ extension DeviceInfo {
         )
     }
 
+    /// Creates device info based on UIKit description.
+    ///
+    /// - Parameters:
+    ///   - processInfo: The current process information.
+    ///   - device: The `UIDevice` description.
     convenience init(
         processInfo: ProcessInfo = .processInfo,
         device: UIDevice = .current
