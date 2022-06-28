@@ -513,8 +513,8 @@ class LoggerTests: XCTestCase {
         let rum: RUMFeature = .mockNoOp()
         core.register(feature: rum)
 
-        let (old, coreLogger) = dd.replacing(logger: CoreLoggerMock())
-        defer { dd = old }
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         // given
         let logger = Logger.builder.build(in: core)
@@ -525,7 +525,7 @@ class LoggerTests: XCTestCase {
 
         // then
         try XCTAssertTrue(
-            XCTUnwrap(coreLogger.warnLog?.message)
+            XCTUnwrap(dd.logger.warnLog?.message)
                 .contains("RUM feature is enabled, but no `RUMMonitor` is registered. The RUM integration with Logging will not work.")
         )
 
@@ -631,8 +631,8 @@ class LoggerTests: XCTestCase {
         let tracing: TracingFeature = .mockNoOp()
         core.register(feature: tracing)
 
-        let (old, coreLogger) = dd.replacing(logger: CoreLoggerMock())
-        defer { dd = old }
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         // given
         let logger = Logger.builder.build(in: core)
@@ -643,7 +643,7 @@ class LoggerTests: XCTestCase {
 
         // then
         try XCTAssertTrue(
-            XCTUnwrap(coreLogger.warnLog?.message)
+            XCTUnwrap(dd.logger.warnLog?.message)
                 .contains("Tracing feature is enabled, but no `Tracer` is registered. The Tracing integration with Logging will not work.")
         )
 

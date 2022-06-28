@@ -38,8 +38,8 @@ class DateCorrectorTests: XCTestCase {
     }
 
     func testWhenNTPSynchronizationSucceeds_itPrintsInfoMessage() throws {
-        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
-        defer { dd = old }
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         let serverDateProvider = ServerDateProviderMock(using: -1)
         let deviceDateProvider = RelativeDateProvider(using: .mockRandomInThePast())
@@ -49,7 +49,7 @@ class DateCorrectorTests: XCTestCase {
 
         // Then
         XCTAssertEqual(
-            logger.debugLog?.message,
+            dd.logger.debugLog?.message,
             """
             NTP time synchronization completed.
             Server time will be used for signing events (-1.0s difference with device time).
@@ -58,8 +58,8 @@ class DateCorrectorTests: XCTestCase {
     }
 
     func testWhenNTPSynchronizationFails_itPrintsWarning() throws {
-        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
-        defer { dd = old }
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         let serverDateProvider = ServerDateProviderMock(using: nil)
         let deviceDateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
@@ -69,7 +69,7 @@ class DateCorrectorTests: XCTestCase {
 
         // Then
         XCTAssertEqual(
-            logger.errorLog?.message,
+            dd.logger.errorLog?.message,
             """
             NTP time synchronization failed.
             Device time will be used for signing events (current device time is 2019-12-15 10:00:00 +0000).

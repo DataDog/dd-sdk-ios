@@ -59,13 +59,13 @@ internal class WebEventBridge {
                     internalLog: (eventType == Constants.eventTypeInternalLog)
                 )
             } else {
-                dd.logger.warn("A WebView log is lost because Logging is disabled in the SDK")
+                DD.logger.warn("A WebView log is lost because Logging is disabled in the SDK")
             }
         } else {
             if let consumer = rumEventConsumer {
                 try consumer.consume(event: wrappedEvent)
             } else {
-                dd.logger.warn("A WebView RUM event is lost because RUM is disabled in the SDK")
+                DD.logger.warn("A WebView RUM event is lost because RUM is disabled in the SDK")
            }
         }
     }

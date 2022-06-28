@@ -181,7 +181,7 @@ internal class DDSpan: OTSpan {
     private func sendSpanLogs(fields: [String: Encodable], date: Date) {
         guard let loggingIntegration = loggingIntegration else {
             queue.async {
-                dd.logger.warn("The log for span \"\(self.unsafeOperationName)\" will not be send, because the Logging feature is disabled.")
+                DD.logger.warn("The log for span \"\(self.unsafeOperationName)\" will not be send, because the Logging feature is disabled.")
             }
             return
         }

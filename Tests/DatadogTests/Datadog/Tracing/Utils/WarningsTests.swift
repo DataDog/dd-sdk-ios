@@ -13,27 +13,27 @@ class WarningsTests: XCTestCase {
         core.register(feature: LoggingFeature.mockNoOp())
         defer { core.flush() }
 
-        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
-        defer { dd = old }
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         XCTAssertTrue(warn(if: true, message: "message"))
-        XCTAssertEqual(logger.warnLog?.message, "message")
+        XCTAssertEqual(dd.logger.warnLog?.message, "message")
 
-        logger.reset()
+        dd.logger.reset()
 
         XCTAssertFalse(warn(if: false, message: "message"))
-        XCTAssertNil(logger.warnLog)
+        XCTAssertNil(dd.logger.warnLog)
 
-        logger.reset()
+        dd.logger.reset()
 
         let failingCast: () -> DDSpan? = { warnIfCannotCast(value: DDNoopSpan()) }
         XCTAssertNil(failingCast())
-        XCTAssertEqual(logger.warnLog?.message, "🔥 Using DDNoopSpan while DDSpan was expected.")
+        XCTAssertEqual(dd.logger.warnLog?.message, "🔥 Using DDNoopSpan while DDSpan was expected.")
 
-        logger.reset()
+        dd.logger.reset()
 
         let succeedingCast: () -> DDSpan? = { warnIfCannotCast(value: DDSpan.mockAny(in: core)) }
         XCTAssertNotNil(succeedingCast())
-        XCTAssertNil(logger.warnLog)
+        XCTAssertNil(dd.logger.warnLog)
     }
 }

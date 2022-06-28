@@ -58,7 +58,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
             let isSystemReady = blockersForUpload.isEmpty
             let nextBatch = isSystemReady ? self.fileReader.readNextBatch() : nil
             if let batch = nextBatch {
-                dd.logger.debug("⏳ (\(self.featureName)) Uploading batch...")
+                DD.logger.debug("⏳ (\(self.featureName)) Uploading batch...")
 
                 // Upload batch
                 let uploadStatus = self.dataUploader.upload(data: batch.data)
@@ -67,17 +67,17 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 if uploadStatus.needsRetry {
                     self.delay.increase()
 
-                    dd.logger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus.userDebugDescription)")
+                    DD.logger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus.userDebugDescription)")
                 } else {
                     self.fileReader.markBatchAsRead(batch)
                     self.delay.decrease()
 
-                    dd.logger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus.userDebugDescription)")
+                    DD.logger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus.userDebugDescription)")
                 }
 
                 switch uploadStatus.error {
                 case .unauthorized:
-                    dd.logger.error("⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.")
+                    DD.logger.error("⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.")
                 case let .httpError(statusCode: statusCode):
                     self.telemetry?.error("Data upload finished with status code: \(statusCode)")
                 case let .networkError(error: error):
@@ -86,7 +86,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 }
             } else {
                 let batchLabel = nextBatch != nil ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")
-                dd.logger.debug("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(blockersForUpload.description)")
+                DD.logger.debug("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(blockersForUpload.description)")
 
                 self.delay.increase()
             }

@@ -35,7 +35,7 @@ internal final class FileWriter: Writer {
             let file = try orchestrator.getWritableFile(writeSize: UInt64(data.count))
             try file.append(data: data)
         } catch {
-            dd.logger.error("Failed to write data", error: error)
+            DD.logger.error("Failed to write data", error: error)
             telemetry?.error("Failed to write data to file", error: error)
         }
     }

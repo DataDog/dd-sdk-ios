@@ -63,14 +63,14 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             """
         ),
         .init(
-            assert: { dd.logger is CoreLogger },
-            problem: "`dd.logger` must use `CoreLogger` implementation.",
+            assert: { DD.logger is CoreLogger },
+            problem: "`DD.logger` must use `CoreLogger` implementation.",
             solution: """
-            Make sure the `dd` bundle is captured before test and reset to the previous implementation after, e.g.:
+            Make sure the `DD` bundle is reset after test to use previous dependencies, e.g.:
 
             ```
-            let (old, logger) = dd.replacing(logger: CoreLoggerMock())
-            defer { dd = old }
+            let dd = DD.mockWith(logger: CoreLoggerMock())
+            defer { dd.reset() }
             ```
             """
         ),

@@ -168,8 +168,8 @@ class DDSpanTests: XCTestCase {
     // MARK: - Usage
 
     func testGivenFinishedSpan_whenCallingItsAPI_itPrintsErrors() {
-        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
-        defer { dd = old }
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         let span: DDSpan = .mockWith(
             tracer: .mockWith(
@@ -198,7 +198,7 @@ class DDSpanTests: XCTestCase {
         fixtures.forEach { tracerMethod, expectedConsoleWarning in
             tracerMethod()
             span.tracer().dd.queue.sync {} // wait synchronizing span's internal state
-            XCTAssertEqual(logger.warnLog?.message, expectedConsoleWarning)
+            XCTAssertEqual(dd.logger.warnLog?.message, expectedConsoleWarning)
         }
     }
 }

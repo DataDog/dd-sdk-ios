@@ -72,7 +72,7 @@ public extension WKUserContentController {
         context: DatadogV1Context
     ) {
         guard !isTracking else {
-            dd.logger.warn("`trackDatadogEvents(in:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")
+            DD.logger.warn("`trackDatadogEvents(in:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")
               return
            }
 
@@ -167,7 +167,7 @@ internal class DatadogMessageHandler: NSObject, WKScriptMessageHandler {
             do {
                 try self.eventBridge.consume(messageBody)
             } catch {
-                dd.logger.error("Encountered an error when receiving web view event", error: error)
+                DD.logger.error("Encountered an error when receiving web view event", error: error)
             }
         }
     }

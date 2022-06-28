@@ -472,15 +472,15 @@ class RUMSessionScopeTests: XCTestCase {
             )
             XCTAssertEqual(scope.viewScopes.count, 0)
 
-            let (old, logger) = dd.replacing(logger: CoreLoggerMock())
-            defer { dd = old }
+            let dd = DD.mockWith(logger: CoreLoggerMock())
+            defer { dd.reset() }
 
             // When
             _ = scope.process(command: command, context: context, writer: writer)
 
             // Then
             XCTAssertEqual(scope.viewScopes.count, 0)
-            return logger.warnLog?.message
+            return dd.logger.warnLog?.message
         }
 
         let randomCommand = RUMCommandMock(time: Date(), canStartBackgroundView: false, canStartApplicationLaunchView: false)

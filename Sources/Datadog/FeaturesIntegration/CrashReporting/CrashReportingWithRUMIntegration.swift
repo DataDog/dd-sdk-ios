@@ -80,7 +80,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         } else if rumConfiguration.sessionSampler.sample() { // before producing a new RUM session, we must consider sampling
             sendCrashReportToNewSession(crashReport, crashContext: crashContext, using: adjustedCrashTimings)
         } else {
-            dd.logger.debug("There was a crash in previous session, but it is ignored due to sampling.")
+            DD.logger.debug("There was a crash in previous session, but it is ignored due to sampling.")
         }
     }
 
@@ -96,7 +96,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         } else {
             // We know it is too late for sending RUM view to previous RUM session as it is now stale on backend.
             // To avoid inconsistency, we only send the RUM error.
-            dd.logger.debug("Sending crash as RUM error.")
+            DD.logger.debug("Sending crash as RUM error.")
             let rumError = createRUMError(from: crashReport, and: lastRUMViewEvent, crashDate: crashTimings.realCrashDate)
             writer.write(value: rumError)
         }
@@ -142,7 +142,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 crashContext: crashContext
             )
         case .doNotHandle:
-            dd.logger.debug("There was a crash in background, but it is ignored due to Background Event Tracking disabled or sampling.")
+            DD.logger.debug("There was a crash in background, but it is ignored due to Background Event Tracking disabled or sampling.")
             newRUMView = nil
         }
 
@@ -187,7 +187,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 crashContext: crashContext
             )
         case .doNotHandle:
-            dd.logger.debug("There was a crash in background, but it is ignored due to Background Event Tracking disabled.")
+            DD.logger.debug("There was a crash in background, but it is ignored due to Background Event Tracking disabled.")
             newRUMView = nil
         }
 
@@ -198,7 +198,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
 
     /// Sends given `CrashReport` by linking it to given `rumView` and updating view counts accordingly.
     private func send(crashReport: DDCrashReport, to rumView: RUMViewEvent, using realCrashDate: Date) {
-        dd.logger.debug("Updating RUM view with crash report.")
+        DD.logger.debug("Updating RUM view with crash report.")
         let updatedRUMView = updateRUMViewWithNewError(rumView, crashDate: realCrashDate)
         let rumError = createRUMError(from: crashReport, and: updatedRUMView, crashDate: realCrashDate)
         writer.write(value: rumError)

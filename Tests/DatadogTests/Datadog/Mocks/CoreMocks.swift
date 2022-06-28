@@ -1309,13 +1309,24 @@ extension DD {
     ///
     /// It returns the `logger` and old version of `dd`, so it can be used inline:
     /// ```
-    /// let (old, logger) = dd.replacing(logger: CoreLoggerMock())
-    /// defer { dd = old }
+    /// let dd = DD.mockWith(logger: CoreLoggerMock())
+    /// defer { dd.reset() }
     /// ```
-    func replacing<CL: CoreLoggerType>(logger: CL) -> (old: DD, logger: CL) {
-        var new = self
-        new.logger = logger
-        dd = new
-        return (old: self, logger: logger)
+    static func mockWith<CL: CoreLoggerType>(logger: CL) -> DDMock<CL> {
+        let mock = DDMock(
+            oldLogger: DD.logger,
+            logger: logger
+        )
+        DD.logger = logger
+        return mock
+    }
+}
+
+struct DDMock<CL: CoreLoggerType> {
+    let oldLogger: CoreLoggerType
+    let logger: CL
+
+    func reset() {
+        DD.logger = oldLogger
     }
 }

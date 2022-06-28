@@ -47,8 +47,8 @@ class FileWriterTests: XCTestCase {
     }
 
     func testGivenErrorVerbosity_whenIndividualDataExceedsMaxWriteSize_itDropsDataAndPrintsError() throws {
-        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
-        defer { dd = old }
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
@@ -79,13 +79,13 @@ class FileWriterTests: XCTestCase {
         reader = try DataBlockReader(data: temporaryDirectory.files()[0].read())
         blocks = try XCTUnwrap(reader.all())
         XCTAssertEqual(blocks.count, 1) // same content as before
-        XCTAssertEqual(logger.errorLog?.message, "Failed to write data")
-        XCTAssertEqual(logger.errorLog?.error?.message, "data exceeds the maximum size of 23 bytes.")
+        XCTAssertEqual(dd.logger.errorLog?.message, "Failed to write data")
+        XCTAssertEqual(dd.logger.errorLog?.error?.message, "data exceeds the maximum size of 23 bytes.")
     }
 
     func testGivenErrorVerbosity_whenDataCannotBeEncoded_itPrintsError() throws {
-        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
-        defer { dd = old }
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
@@ -97,13 +97,13 @@ class FileWriterTests: XCTestCase {
 
         writer.write(value: FailingEncodableMock(errorMessage: "failed to encode `FailingEncodable`."))
 
-        XCTAssertEqual(logger.errorLog?.message, "Failed to write data")
-        XCTAssertEqual(logger.errorLog?.error?.message, "failed to encode `FailingEncodable`.")
+        XCTAssertEqual(dd.logger.errorLog?.message, "Failed to write data")
+        XCTAssertEqual(dd.logger.errorLog?.error?.message, "failed to encode `FailingEncodable`.")
     }
 
     func testGivenErrorVerbosity_whenIOExceptionIsThrown_itPrintsError() throws {
-        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
-        defer { dd = old }
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
@@ -118,8 +118,8 @@ class FileWriterTests: XCTestCase {
         writer.write(value: ["won't be written"])
         try? temporaryDirectory.files()[0].makeReadWrite()
 
-        XCTAssertEqual(logger.errorLog?.message, "Failed to write data")
-        XCTAssertTrue(logger.errorLog!.error!.message.contains("You don’t have permission"))
+        XCTAssertEqual(dd.logger.errorLog?.message, "Failed to write data")
+        XCTAssertTrue(dd.logger.errorLog!.error!.message.contains("You don’t have permission"))
     }
 
     /// NOTE: Test added after incident-4797

@@ -7,26 +7,22 @@
 import Foundation
 
 /// Core utilities for monitoring performance and execution of the SDK.
+///
 /// These are meant to be shared by all instances of the SDK and `DatadogCore`.
-internal var dd = DD()
-
-/// Bundles core utilities for monitoring performance and execution of the SDK.
+/// `DD` bundles static dependencies that must be available and functional right away,
+/// so it is possible to monitor any phase of the SDK execution, including its initialization sequence.
 internal struct DD {
     /// The logger providing methods to print debug information and execution errors from Datadog SDK to user console.
     ///
     /// It is meant for debugging purposes when using the SDK, hence **it should log information useful and actionable
     /// to the SDK user**. Think of possible logs that we may want to receive from our users when asking them to enable
     /// SDK verbosity and send us their console log.
-    var logger: CoreLoggerType
+    static var logger: CoreLoggerType = CoreLogger(
+        dateProvider: SystemDateProvider(),
+        timeZone: .current,
+        printFunction: consolePrint,
+        verbosityLevel: { Datadog.verbosityLevel }
+    )
 
     // TODO: RUMM-2239 Move `Telemetry` in here
-
-    init() {
-        self.logger = CoreLogger(
-            dateProvider: SystemDateProvider(),
-            timeZone: .current,
-            printFunction: consolePrint,
-            verbosityLevel: { Datadog.verbosityLevel }
-        )
-    }
 }

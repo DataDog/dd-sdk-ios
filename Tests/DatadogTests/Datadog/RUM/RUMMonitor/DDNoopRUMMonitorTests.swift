@@ -9,8 +9,8 @@ import XCTest
 
 class DDNoopRUMMonitorTests: XCTestCase {
     func testWhenUsingDDNoopRUMMonitorAPIs_itPrintsWarning() {
-        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
-        defer { dd = old }
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         // Given
         let noop = DDNoopRUMMonitor()
@@ -28,8 +28,8 @@ class DDNoopRUMMonitorTests: XCTestCase {
         See https://docs.datadoghq.com/real_user_monitoring/ios
         """
 
-        XCTAssertEqual(logger.criticalLogs.count, 2)
-        logger.criticalLogs.forEach { log in
+        XCTAssertEqual(dd.logger.criticalLogs.count, 2)
+        dd.logger.criticalLogs.forEach { log in
             XCTAssertEqual(log.message, expectedWarningMessage)
         }
     }

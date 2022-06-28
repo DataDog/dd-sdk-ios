@@ -1314,8 +1314,8 @@ class RUMMonitorTests: XCTestCase {
         )
         defer { Datadog.flushAndDeinitialize() }
 
-        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
-        defer { dd = old }
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         // Given
         let urlInstrumentation = try XCTUnwrap(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
@@ -1330,7 +1330,7 @@ class RUMMonitorTests: XCTestCase {
         // Then
         resourcesHandler.notify_taskInterceptionCompleted(interception: TaskInterception(request: .mockAny(), isFirstParty: .mockAny()))
         XCTAssertEqual(
-            logger.warnLog?.message,
+            dd.logger.warnLog?.message,
             """
             RUM Resource was completed, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work.
             Make sure `Global.rum = RUMMonitor.initialize()` is called before any network request is send.
@@ -1339,7 +1339,7 @@ class RUMMonitorTests: XCTestCase {
 
         viewsHandler.notify_viewDidAppear(viewController: mockView, animated: .mockAny())
         XCTAssertEqual(
-            logger.warnLog?.message,
+            dd.logger.warnLog?.message,
             """
             RUM View was started, but no `RUMMonitor` is registered on `Global.rum`. RUM instrumentation will not work.
             Make sure `Global.rum = RUMMonitor.initialize()` is called before any view appears.
@@ -1361,7 +1361,7 @@ class RUMMonitorTests: XCTestCase {
         )
 
         XCTAssertEqual(
-            logger.warnLog?.message,
+            dd.logger.warnLog?.message,
             """
             RUM Action was detected, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work.
             Make sure `Global.rum = RUMMonitor.initialize()` is called before any action happens.

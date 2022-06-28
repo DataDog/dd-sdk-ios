@@ -365,8 +365,8 @@ class SpanEventBuilderTests: XCTestCase {
     }
 
     func testWhenTagValueCannotBeConvertedToString_itPrintsErrorAndSkipsTheTag() {
-        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
-        defer { dd = old }
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         let builder: SpanEventBuilder = .mockAny()
 
@@ -388,11 +388,11 @@ class SpanEventBuilderTests: XCTestCase {
         // Then
         XCTAssertNil(span.tags["failing-tag"])
         XCTAssertEqual(
-            logger.errorLog?.message,
+            dd.logger.errorLog?.message,
             """
             Failed to convert span `Encodable` attribute to `String`. The value of `failing-tag` will not be sent.
             """
         )
-        XCTAssertEqual(logger.errorLog?.error?.message, "Value cannot be encoded.")
+        XCTAssertEqual(dd.logger.errorLog?.error?.message, "Value cannot be encoded.")
     }
 }

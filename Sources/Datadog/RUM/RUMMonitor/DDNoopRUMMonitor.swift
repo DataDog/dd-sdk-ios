@@ -9,7 +9,7 @@ import UIKit
 /// The no-op variant of `DDRUMMonitor`.
 internal class DDNoopRUMMonitor: DDRUMMonitor {
     private func warn() {
-        dd.logger.critical(
+        DD.logger.critical(
             """
             The `Global.rum` was called but no `RUMMonitor` is registered. Configure and register the RUM Monitor globally before invoking the feature:
                 Global.rum = RUMMonitor.initialize()

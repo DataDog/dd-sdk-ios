@@ -674,8 +674,8 @@ class RUMViewScopeTests: XCTestCase {
             dateCorrection: .zero
         )
 
-        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
-        defer { dd = old }
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         XCTAssertTrue(
             scope.process(
@@ -707,7 +707,7 @@ class RUMViewScopeTests: XCTestCase {
         )
         XCTAssertEqual(scope.userActionScope?.name, actionName, "View should ignore the next (only non-custom) UA if one is pending.")
         XCTAssertEqual(
-            logger.warnLog?.message,
+            dd.logger.warnLog?.message,
             """
             RUM Action '\(secondAction.actionType)' on '\(secondAction.name)' was dropped, because another action is still active for the same view.
             """
@@ -757,8 +757,8 @@ class RUMViewScopeTests: XCTestCase {
             dateCorrection: .zero
         )
 
-        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
-        defer { dd = old }
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         XCTAssertTrue(
             scope.process(
@@ -792,7 +792,7 @@ class RUMViewScopeTests: XCTestCase {
         )
         XCTAssertEqual(scope.userActionScope?.name, actionName, "View should ignore the next (only non-custom) UA if one is pending.")
         XCTAssertEqual(
-            logger.warnLog?.message,
+            dd.logger.warnLog?.message,
             """
             RUM Action '\(secondAction.actionType)' on '\(secondAction.name)' was dropped, because another action is still active for the same view.
             """
@@ -1360,8 +1360,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertTrue(scope.isActiveView)
         XCTAssertEqual(scope.customTimings.count, 0)
 
-        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
-        defer { dd = old }
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         // When
         currentTime.addTimeInterval(0.5)
@@ -1386,7 +1386,7 @@ class RUMViewScopeTests: XCTestCase {
             [sanitizedTimingName: 500_000_000]
         )
         XCTAssertEqual(
-            logger.warnLog?.message,
+            dd.logger.warnLog?.message,
             """
             Custom timing '\(originalTimingName)' was modified to '\(sanitizedTimingName)' to match Datadog constraints.
             """

@@ -9,8 +9,8 @@ import XCTest
 
 class DDNoopTracerTests: XCTestCase {
     func testWhenUsingDDNoopTracerAPIs_itPrintsWarning() {
-        let (old, logger) = dd.replacing(logger: CoreLoggerMock())
-        defer { dd = old }
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         // Given
         let noop = DDNoopTracer()
@@ -31,8 +31,8 @@ class DDNoopTracerTests: XCTestCase {
         See https://docs.datadoghq.com/tracing/setup_overview/setup/ios
         """
 
-        XCTAssertEqual(logger.warnLogs.count, 4)
-        logger.warnLogs.forEach { log in
+        XCTAssertEqual(dd.logger.warnLogs.count, 4)
+        dd.logger.warnLogs.forEach { log in
             XCTAssertEqual(log.message, expectedWarningMessage)
         }
     }
