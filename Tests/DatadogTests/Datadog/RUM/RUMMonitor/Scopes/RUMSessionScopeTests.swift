@@ -464,7 +464,7 @@ class RUMSessionScopeTests: XCTestCase {
     // MARK: - Usage
 
     func testGivenSessionWithNoActiveScope_whenReceivingRUMCommandOtherThanKeepSessionAliveCommand_itLogsWarning() throws {
-        func recordLogOnReceiving(command: RUMCommand) -> LogEvent? {
+        func recordWarningOnReceiving(command: RUMCommand) -> String? {
             // Given
             let scope: RUMSessionScope = .mockWith(
                 parent: parent,
@@ -472,25 +472,21 @@ class RUMSessionScopeTests: XCTestCase {
             )
             XCTAssertEqual(scope.viewScopes.count, 0)
 
-            let previousUserLogger = userLogger
-            defer { userLogger = previousUserLogger }
-
-            let logOutput = LogOutputMock()
-            userLogger = .mockConsoleLogger(output: logOutput)
+            let dd = DD.mockWith(logger: CoreLoggerMock())
+            defer { dd.reset() }
 
             // When
             _ = scope.process(command: command, context: context, writer: writer)
 
             // Then
             XCTAssertEqual(scope.viewScopes.count, 0)
-            return logOutput.recordedLog
+            return dd.logger.warnLog?.message
         }
 
         let randomCommand = RUMCommandMock(time: Date(), canStartBackgroundView: false, canStartApplicationLaunchView: false)
-        let randomCommandLog = try XCTUnwrap(recordLogOnReceiving(command: randomCommand))
-        XCTAssertEqual(randomCommandLog.status, .warn)
+        let randomCommandLog = try XCTUnwrap(recordWarningOnReceiving(command: randomCommand))
         XCTAssertEqual(
-            randomCommandLog.message,
+            randomCommandLog,
             """
             \(String(describing: randomCommand)) was detected, but no view is active. To track views automatically, try calling the
             DatadogConfiguration.Builder.trackUIKitRUMViews() method. You can also track views manually using
@@ -499,7 +495,7 @@ class RUMSessionScopeTests: XCTestCase {
         )
 
         let keepAliveCommand = RUMKeepSessionAliveCommand(time: Date(), attributes: [:])
-        let keepAliveLog = recordLogOnReceiving(command: keepAliveCommand)
+        let keepAliveLog = recordWarningOnReceiving(command: keepAliveCommand)
         XCTAssertNil(keepAliveLog, "It shouldn't log warning when receiving `RUMKeepSessionAliveCommand`")
     }
 }

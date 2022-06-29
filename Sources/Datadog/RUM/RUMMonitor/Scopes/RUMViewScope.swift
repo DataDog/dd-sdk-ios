@@ -288,7 +288,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     }
 
     private func reportActionDropped(type: RUMUserActionType, name: String) {
-        userLogger.warn(
+        DD.logger.warn(
             """
             RUM Action '\(type)' on '\(name)' was dropped, because another action is still active for the same view.
             """
@@ -564,7 +564,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let sanitized = customTiming.replacingOccurrences(of: "[^a-zA-Z0-9_.@$-]", with: "_", options: .regularExpression)
 
         if customTiming != sanitized {
-            userLogger.warn(
+            DD.logger.warn(
                 """
                 Custom timing '\(customTiming)' was modified to '\(sanitized)' to match Datadog constraints.
                 """

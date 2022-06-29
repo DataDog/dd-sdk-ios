@@ -1252,4 +1252,69 @@ class PrintFunctionMock {
     func print(message: String) {
         printedMessages.append(message)
     }
+
+    func reset() {
+        printedMessages = []
+    }
+}
+
+class CoreLoggerMock: CoreLogger {
+    private(set) var recordedLogs: [(level: CoreLoggerLevel, message: String, error: Error?)] = []
+
+    // MARK: - CoreLogger
+
+    func log(_ level: CoreLoggerLevel, message: @autoclosure () -> String, error: Error?) {
+        recordedLogs.append((level, message(), error))
+    }
+
+    func reset() {
+        recordedLogs = []
+    }
+
+    // MARK: - Matching
+
+    typealias RecordedLog = (message: String, error: DDError?)
+
+    private func recordedLogs(ofLevel level: CoreLoggerLevel) -> [RecordedLog] {
+        return recordedLogs
+            .filter({ $0.level == level })
+            .map { ($0.message, $0.error.map({ DDError(error: $0) })) }
+    }
+
+    var debugLogs: [RecordedLog] { recordedLogs(ofLevel: .debug) }
+    var warnLogs: [RecordedLog] { recordedLogs(ofLevel: .warn) }
+    var errorLogs: [RecordedLog] { recordedLogs(ofLevel: .error) }
+    var criticalLogs: [RecordedLog] { recordedLogs(ofLevel: .critical) }
+
+    var debugLog: RecordedLog? { debugLogs.last }
+    var warnLog: RecordedLog? { warnLogs.last }
+    var errorLog: RecordedLog? { errorLogs.last }
+    var criticalLog: RecordedLog? { criticalLogs.last }
+}
+
+extension DD {
+    /// Syntactic sugar for patching the `dd` bundle by replacing `logger`.
+    ///
+    /// It returns the `logger` and old version of `dd`, so it can be used inline:
+    /// ```
+    /// let dd = DD.mockWith(logger: CoreLoggerMock())
+    /// defer { dd.reset() }
+    /// ```
+    static func mockWith<CL: CoreLogger>(logger: CL) -> DDMock<CL> {
+        let mock = DDMock(
+            oldLogger: DD.logger,
+            logger: logger
+        )
+        DD.logger = logger
+        return mock
+    }
+}
+
+struct DDMock<CL: CoreLogger> {
+    let oldLogger: CoreLogger
+    let logger: CL
+
+    func reset() {
+        DD.logger = oldLogger
+    }
 }

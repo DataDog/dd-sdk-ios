@@ -65,11 +65,8 @@ class WKUserContentController_DatadogTests: XCTestCase {
     }
 
     func testWhenAddingMessageHandlerMultipleTimes_itIgnoresExtraOnesAndPrintsWarning() throws {
-        let previousUserLogger = userLogger
-        defer { userLogger = previousUserLogger }
-
-        let output = LogOutputMock()
-        userLogger = .mockConsoleLogger(output: output)
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         let mockSanitizer = MockHostsSanitizer()
         let controller = DDUserContentController()
@@ -95,8 +92,10 @@ class WKUserContentController_DatadogTests: XCTestCase {
         XCTAssertEqual(sanitization.hosts, ["datadoghq.com"])
         XCTAssertEqual(sanitization.warningMessage, "The allowed WebView host configured for Datadog SDK is not valid")
 
-        let recordedLogMessages = output.allRecordedLogs.map { return $0.message }
-        XCTAssertEqual(recordedLogMessages, Array(repeating: "`trackDatadogEvents(in:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.", count: multipleTimes - 1))
+        XCTAssertEqual(
+            dd.logger.warnLogs.map({ $0.message }),
+            Array(repeating: "`trackDatadogEvents(in:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.", count: multipleTimes - 1)
+        )
     }
 
     func testWhenStoppingTracking_itKeepsNonDatadogComponents() throws {
@@ -126,11 +125,8 @@ class WKUserContentController_DatadogTests: XCTestCase {
     }
 
     func testItLogsInvalidWebMessages() throws {
-        let previousUserLogger = userLogger
-        defer { userLogger = previousUserLogger }
-
-        let output = LogOutputMock()
-        userLogger = .mockConsoleLogger(output: output)
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         let controller = DDUserContentController()
         controller.addDatadogMessageHandler(
@@ -146,9 +142,8 @@ class WKUserContentController_DatadogTests: XCTestCase {
         messageHandler?.userContentController(controller, didReceive: MockScriptMessage(body: 123))
         messageHandler?.queue.sync { }
 
-        XCTAssertEqual(output.recordedLog?.status, .error)
-        let userLogMessage = try XCTUnwrap(output.recordedLog?.message)
-        XCTAssertEqual(userLogMessage, #"🔥 Web Event Error: invalidMessage(description: "123")"#)
+        XCTAssertEqual(dd.logger.errorLog?.message, "Encountered an error when receiving web view event")
+        XCTAssertEqual(dd.logger.errorLog?.error?.message, #"invalidMessage(description: "123")"#)
     }
 
     func testSendingWebEvents() throws {

@@ -34,7 +34,7 @@ internal struct AttributesSanitizer {
         let sanitizedAttributes: [(String, Value)] = attributes.map { key, value in
             let sanitizedName = sanitize(attributeKey: key, prefixLevels: prefixLevels)
             if sanitizedName != key {
-                userLogger.warn(
+                DD.logger.warn(
                     """
                     \(featureName) attribute '\(key)' was modified to '\(sanitizedName)' to match Datadog constraints.
                     """
@@ -67,7 +67,7 @@ internal struct AttributesSanitizer {
     func limitNumberOf<Value>(attributes: [String: Value], to count: Int) -> [String: Value] {
         if attributes.count > count {
             let extraAttributesCount = attributes.count - count
-            userLogger.warn(
+            DD.logger.warn(
                 """
                 Number of \(featureName) attributes exceeds the limit of \(Constraints.maxNumberOfAttributes).
                 \(extraAttributesCount) attribute(s) will be ignored.
