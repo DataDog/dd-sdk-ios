@@ -12,14 +12,16 @@ class RUMViewScopeTests: XCTestCase {
     let context: DatadogV1Context = .mockWith(
         configuration: .mockWith(serviceName: "test-service"),
         dependencies: .mockWith(
+            deviceInfo: .mockWith(
+                name: "device-name",
+                osName: "device-os"
+            ),
             networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: nil),
             carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: nil)
         )
     )
 
     let writer = FileWriterMock()
-    private let randomDeviceInfo: RUMDevice = .mockRandom()
-    private let randomOSInfo: RUMOperatingSystem = .mockRandom()
 
     private let parent = RUMContextProviderMock()
 
@@ -91,8 +93,6 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: true,
             parent: parent,
             dependencies: .mockWith(
-                deviceInfo: randomDeviceInfo,
-                osInfo: randomOSInfo,
                 launchTimeProvider: LaunchTimeProviderMock.mockWith(launchTime: 2) // 2 seconds
             ),
             identity: mockView,
@@ -126,8 +126,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, "test-service")
-        XCTAssertEqual(event.device, randomDeviceInfo)
-        XCTAssertEqual(event.os, randomOSInfo)
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertNil(event.context?.contextInfo[RUMViewScope.Constants.activePrewarm])
     }
 
@@ -198,10 +198,7 @@ class RUMViewScopeTests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: true,
             parent: parent,
-            dependencies: .mockWith(
-                deviceInfo: randomDeviceInfo,
-                osInfo: randomOSInfo
-            ),
+            dependencies: .mockAny(),
             identity: mockView,
             path: "UIViewController",
             name: "ViewName",
@@ -235,8 +232,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, "test-service")
-        XCTAssertEqual(event.device, randomDeviceInfo)
-        XCTAssertEqual(event.os, randomOSInfo)
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
     }
 
     func testWhenInitialViewHasCconfiguredSource_itSendsViewUpdateEventWithConfiguredSource() throws {
@@ -275,10 +272,7 @@ class RUMViewScopeTests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: isInitialView,
             parent: parent,
-            dependencies: .mockWith(
-                deviceInfo: randomDeviceInfo,
-                osInfo: randomOSInfo
-            ),
+            dependencies: .mockAny(),
             identity: mockView,
             path: "UIViewController",
             name: "ViewName",
@@ -314,8 +308,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar 2", "fizz": "buzz"])
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, "test-service")
-        XCTAssertEqual(event.device, randomDeviceInfo)
-        XCTAssertEqual(event.os, randomOSInfo)
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
     }
 
     func testWhenViewIsStopped_itSendsViewUpdateEvent_andEndsTheScope() throws {
@@ -324,10 +318,7 @@ class RUMViewScopeTests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: isInitialView,
             parent: parent,
-            dependencies: .mockWith(
-                deviceInfo: randomDeviceInfo,
-                osInfo: randomOSInfo
-            ),
+            dependencies: .mockAny(),
             identity: mockView,
             path: "UIViewController",
             name: "ViewName",
@@ -382,8 +373,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, "test-service")
-        XCTAssertEqual(event.device, randomDeviceInfo)
-        XCTAssertEqual(event.os, randomOSInfo)
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
     }
 
     func testWhenAnotherViewIsStarted_itEndsTheScope() throws {
@@ -840,10 +831,7 @@ class RUMViewScopeTests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: false,
             parent: parent,
-            dependencies: .mockWith(
-                deviceInfo: randomDeviceInfo,
-                osInfo: randomOSInfo
-            ),
+            dependencies: .mockAny(),
             identity: mockView,
             path: .mockAny(),
             name: .mockAny(),
@@ -886,8 +874,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(firstActionEvent.action.target?.name, customActionName)
         XCTAssertEqual(firstActionEvent.source, .ios)
         XCTAssertEqual(firstActionEvent.service, "test-service")
-        XCTAssertEqual(firstActionEvent.device, randomDeviceInfo)
-        XCTAssertEqual(firstActionEvent.os, randomOSInfo)
+        XCTAssertEqual(firstActionEvent.device?.name, "device-name")
+        XCTAssertEqual(firstActionEvent.os?.name, "device-os")
     }
 
     func testGivenViewWithNoPendingAction_whenCustomActionIsAdded_itSendsItInstantly() throws {
@@ -895,10 +883,7 @@ class RUMViewScopeTests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: false,
             parent: parent,
-            dependencies: .mockWith(
-                deviceInfo: randomDeviceInfo,
-                osInfo: randomOSInfo
-            ),
+            dependencies: .mockAny(),
             identity: mockView,
             path: .mockAny(),
             name: .mockAny(),
@@ -935,8 +920,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(firstActionEvent.action.target?.name, customActionName)
         XCTAssertEqual(firstActionEvent.source, .ios)
         XCTAssertEqual(firstActionEvent.service, "test-service")
-        XCTAssertEqual(firstActionEvent.device, randomDeviceInfo)
-        XCTAssertEqual(firstActionEvent.os, randomOSInfo)
+        XCTAssertEqual(firstActionEvent.device?.name, "device-name")
+        XCTAssertEqual(firstActionEvent.os?.name, "device-os")
     }
 
     // MARK: - Error Tracking
@@ -946,10 +931,7 @@ class RUMViewScopeTests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(
-                deviceInfo: randomDeviceInfo,
-                osInfo: randomOSInfo
-            ),
+            dependencies: .mockAny(),
             identity: mockView,
             path: "UIViewController",
             name: "ViewName",
@@ -999,8 +981,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(error.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(error.source, .ios)
         XCTAssertEqual(error.service, "test-service")
-        XCTAssertEqual(error.device, randomDeviceInfo)
-        XCTAssertEqual(error.os, randomOSInfo)
+        XCTAssertEqual(error.device?.name, "device-name")
+        XCTAssertEqual(error.os?.name, "device-os")
 
         let viewUpdate = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(viewUpdate.view.error.count, 1)
@@ -1063,10 +1045,7 @@ class RUMViewScopeTests: XCTestCase {
 
         let scope: RUMViewScope = .mockWith(
             parent: parent,
-            dependencies: .mockWith(
-                deviceInfo: randomDeviceInfo,
-                osInfo: randomOSInfo
-            )
+            dependencies: .mockAny()
         )
 
         XCTAssertTrue(
@@ -1099,15 +1078,11 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertTrue(error.error.isCrash ?? false)
         XCTAssertEqual(error.source, expectedSource)
         XCTAssertEqual(error.service, "test-service")
-        XCTAssertEqual(error.device, randomDeviceInfo)
-        XCTAssertEqual(error.os, randomOSInfo)
 
         let viewUpdate = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(viewUpdate.view.error.count, 1)
         XCTAssertEqual(viewUpdate.source, RUMViewEvent.Source(rawValue: customSource))
         XCTAssertEqual(viewUpdate.service, "test-service")
-        XCTAssertEqual(viewUpdate.device, randomDeviceInfo)
-        XCTAssertEqual(viewUpdate.os, randomOSInfo)
     }
 
     func testWhenResourceIsFinishedWithError_itSendsViewUpdateEvent() throws {
@@ -1161,10 +1136,7 @@ class RUMViewScopeTests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(
-                deviceInfo: randomDeviceInfo,
-                osInfo: randomOSInfo
-            ),
+            dependencies: .mockAny(),
             identity: mockView,
             path: "UIViewController",
             name: "ViewName",
@@ -1209,8 +1181,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.view.id, scope.viewUUID.toRUMDataFormat)
         XCTAssertNil(event.synthetics)
         XCTAssertEqual(event.service, "test-service")
-        XCTAssertEqual(event.device, randomDeviceInfo)
-        XCTAssertEqual(event.os, randomOSInfo)
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
 
         let viewUpdate = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(viewUpdate.view.longTask?.count, 1)

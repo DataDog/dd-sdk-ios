@@ -334,8 +334,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
-            device: dependencies.deviceInfo,
-            os: dependencies.osInfo,
+            device: .init(context: context),
+            os: .init(context: context),
             service: context.service,
             session: .init(
                 hasReplay: nil,
@@ -387,8 +387,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
-            device: dependencies.deviceInfo,
-            os: dependencies.osInfo,
+            device: .init(context: context),
+            os: .init(context: context),
             service: context.service,
             session: .init(
                 hasReplay: nil,
@@ -470,7 +470,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
-            device: dependencies.deviceInfo,
+            device: .init(context: context),
             error: .init(
                 handling: nil,
                 handlingStack: nil,
@@ -483,7 +483,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 stack: command.stack,
                 type: command.type
             ),
-            os: dependencies.osInfo,
+            os: .init(context: context),
             service: context.service,
             session: .init(
                 hasReplay: nil,
@@ -528,9 +528,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
             date: dateCorrection.applying(to: command.time - command.duration).timeIntervalSince1970.toInt64Milliseconds,
-            device: dependencies.deviceInfo,
+            device: .init(context: context),
             longTask: .init(duration: taskDurationInNs, id: nil, isFrozenFrame: isFrozenFrame),
-            os: dependencies.osInfo,
+            os: .init(context: context),
             service: context.service,
             session: .init(
                 hasReplay: nil,

@@ -35,7 +35,7 @@ internal func createV2LoggingUploadConfiguration(v1Configuration: FeaturesConfig
                     .userAgentHeader(
                         appName: v1Context.applicationName,
                         appVersion: v1Context.version,
-                        device: v1Context.mobileDevice
+                        device: v1Context.device
                     ),
                     .ddAPIKeyHeader(clientToken: v1Context.clientToken),
                     .ddEVPOriginHeader(source: v1Context.ciAppOrigin ?? v1Context.source),

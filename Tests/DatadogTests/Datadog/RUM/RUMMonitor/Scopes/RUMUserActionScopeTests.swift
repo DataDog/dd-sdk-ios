@@ -8,11 +8,17 @@ import XCTest
 @testable import Datadog
 
 class RUMUserActionScopeTests: XCTestCase {
-    let context: DatadogV1Context = .mockWith(configuration: .mockWith(serviceName: "test-service"))
-    let writer = FileWriterMock()
+    let context: DatadogV1Context = .mockWith(
+        configuration: .mockWith(serviceName: "test-service"),
+        dependencies: .mockWith(
+            deviceInfo: .mockWith(
+                name: "device-name",
+                osName: "device-os"
+            )
+        )
+    )
 
-    private let randomDeviceInfo: RUMDevice = .mockRandom()
-    private let randomOSInfo: RUMOperatingSystem = .mockRandom()
+    let writer = FileWriterMock()
 
     private let parent = RUMContextProviderMock(
         context: .mockWith(
@@ -28,12 +34,7 @@ class RUMUserActionScopeTests: XCTestCase {
     func testDefaultContext() {
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
-            dependencies: .mockAny(),
-            name: .mockAny(),
             actionType: .swipe,
-            attributes: [:],
-            startTime: .mockAny(),
-            dateCorrection: .zero,
             isContinuous: .mockAny()
         )
 
@@ -47,10 +48,7 @@ class RUMUserActionScopeTests: XCTestCase {
     func testGivenActiveUserAction_whenViewIsStopped_itSendsUserActionEvent() throws {
         let scope = RUMViewScope.mockWith(
             parent: parent,
-            dependencies: .mockWith(
-                deviceInfo: randomDeviceInfo,
-                osInfo: randomOSInfo
-            ),
+            dependencies: .mockAny(),
             identity: mockView,
             attributes: [:],
             startTime: Date()
@@ -85,8 +83,8 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(recordedAction.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(recordedAction.source, .ios)
         XCTAssertEqual(recordedAction.service, "test-service")
-        XCTAssertEqual(recordedAction.device, randomDeviceInfo)
-        XCTAssertEqual(recordedAction.os, randomOSInfo)
+        XCTAssertEqual(recordedAction.device?.name, "device-name")
+        XCTAssertEqual(recordedAction.os?.name, "device-os")
     }
 
     func testGivenCustomSource_whenActionIsSent_itSendsCustomSource() throws {
@@ -95,9 +93,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
         let scope = RUMViewScope.mockWith(
             parent: parent,
-            dependencies: .mockAny(),
             identity: mockView,
-            attributes: [:],
             startTime: Date()
         )
         XCTAssertTrue(
@@ -135,15 +131,8 @@ class RUMUserActionScopeTests: XCTestCase {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
-            dependencies: .mockWith(
-                deviceInfo: randomDeviceInfo,
-                osInfo: randomOSInfo
-            ),
-            name: .mockAny(),
             actionType: .swipe,
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             isContinuous: true
         )
 
@@ -178,20 +167,17 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, "test-service")
-        XCTAssertEqual(event.device, randomDeviceInfo)
-        XCTAssertEqual(event.os, randomOSInfo)
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
     }
 
     func testWhenContinuousUserActionExpires_itSendsActionEvent() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
-            dependencies: .mockAny(),
-            name: .mockAny(),
             actionType: .swipe,
-            attributes: [:],
+
             startTime: currentTime,
-            dateCorrection: .zero,
             isContinuous: true
         )
 
@@ -225,12 +211,8 @@ class RUMUserActionScopeTests: XCTestCase {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
-            dependencies: .mockAny(),
-            name: .mockAny(),
             actionType: .scroll,
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             isContinuous: true
         )
 
@@ -287,12 +269,8 @@ class RUMUserActionScopeTests: XCTestCase {
         var currentTime = Date()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
-            dependencies: .mockAny(),
-            name: .mockAny(),
             actionType: .scroll,
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             isContinuous: true
         )
 
@@ -324,12 +302,8 @@ class RUMUserActionScopeTests: XCTestCase {
         var currentTime = Date()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
-            dependencies: .mockAny(),
-            name: .mockAny(),
             actionType: .scroll,
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             isContinuous: true
         )
 
@@ -363,12 +337,8 @@ class RUMUserActionScopeTests: XCTestCase {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
-            dependencies: .mockAny(),
-            name: .mockAny(),
             actionType: .swipe,
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             isContinuous: false
         )
 
@@ -404,12 +374,8 @@ class RUMUserActionScopeTests: XCTestCase {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
-            dependencies: .mockAny(),
-            name: .mockAny(),
             actionType: .scroll,
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             isContinuous: false
         )
 
@@ -471,12 +437,8 @@ class RUMUserActionScopeTests: XCTestCase {
         var currentTime = Date()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
-            dependencies: .mockAny(),
-            name: .mockAny(),
             actionType: .scroll,
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             isContinuous: false
         )
 
@@ -511,12 +473,8 @@ class RUMUserActionScopeTests: XCTestCase {
         var currentTime = Date()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
-            dependencies: .mockAny(),
-            name: .mockAny(),
             actionType: .scroll,
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             isContinuous: false
         )
 
@@ -552,12 +510,8 @@ class RUMUserActionScopeTests: XCTestCase {
         var callbackCalled = false
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
-            dependencies: .mockAny(),
-            name: .mockAny(),
             actionType: .tap,
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             isContinuous: false,
             onActionEventSent: {
                 callbackCalled = true
@@ -598,11 +552,8 @@ class RUMUserActionScopeTests: XCTestCase {
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: dependencies,
-            name: .mockAny(),
             actionType: .tap,
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             isContinuous: false,
             onActionEventSent: {
                 callbackCalled = true

@@ -8,13 +8,17 @@ import XCTest
 @testable import Datadog
 
 class RUMResourceScopeTests: XCTestCase {
-    let datadogContext: DatadogV1Context = .mockWith(configuration: .mockWith(serviceName: "test-service"))
-    private let randomDeviceInfo: RUMDevice = .mockRandom()
-    private let randomOSInfo: RUMOperatingSystem = .mockRandom()
+    let datadogContext: DatadogV1Context = .mockWith(
+        configuration: .mockWith(serviceName: "test-service"),
+        dependencies: .mockWith(
+            deviceInfo: .mockWith(
+                name: "device-name",
+                osName: "device-os"
+            )
+        )
+    )
 
-    private lazy var dependencies: RUMScopeDependencies = .mockWith(
-        deviceInfo: randomDeviceInfo,
-        osInfo: randomOSInfo,
+    private let dependencies: RUMScopeDependencies = .mockWith(
         firstPartyURLsFilter: FirstPartyURLsFilter(hosts: ["firstparty.com"])
     )
 
@@ -53,7 +57,6 @@ class RUMResourceScopeTests: XCTestCase {
             context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
@@ -109,8 +112,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.spanId, "200")
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.service, "test-service")
-        XCTAssertEqual(event.device, randomDeviceInfo)
-        XCTAssertEqual(event.os, randomOSInfo)
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
     }
 
     func testGivenConfiguredSoruce_whenResourceLoadingEnds_itSendsResourceEventWithCorrecSource() throws {
@@ -124,11 +127,9 @@ class RUMResourceScopeTests: XCTestCase {
             context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
-            isFirstPartyResource: nil,
             resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200")
         )
@@ -168,7 +169,6 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
-            isFirstPartyResource: nil,
             resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200")
         )
@@ -221,8 +221,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.spanId, "200")
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.service, "test-service")
-        XCTAssertEqual(event.device, randomDeviceInfo)
-        XCTAssertEqual(event.os, randomOSInfo)
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
     }
 
     func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEventWithCustomSpanAndTraceId() throws {
@@ -236,10 +236,7 @@ class RUMResourceScopeTests: XCTestCase {
             attributes: [CrossPlatformAttributes.traceID: "100", CrossPlatformAttributes.spanID: "200"],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
-            httpMethod: .post,
-            isFirstPartyResource: nil,
-            resourceKindBasedOnRequest: nil,
-            spanContext: nil
+            httpMethod: .post
         )
 
         currentTime.addTimeInterval(2)
@@ -289,8 +286,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.spanId, "200")
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, "test-service")
-        XCTAssertEqual(event.device, randomDeviceInfo)
-        XCTAssertEqual(event.os, randomOSInfo)
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
     }
 
     func testGivenStartedResource_whenResourceLoadingEndsWithError_itSendsErrorEvent() throws {
@@ -301,7 +298,6 @@ class RUMResourceScopeTests: XCTestCase {
             context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .post
@@ -348,8 +344,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, "test-service")
-        XCTAssertEqual(event.device, randomDeviceInfo)
-        XCTAssertEqual(event.os, randomOSInfo)
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
     }
 
     func testGivenConfiguredSource_whenResourceLoadingEndsWithError_itSendsErrorEventWithConfiguredSource() throws {
@@ -365,7 +361,6 @@ class RUMResourceScopeTests: XCTestCase {
             context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .post
@@ -393,8 +388,6 @@ class RUMResourceScopeTests: XCTestCase {
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.source, .init(rawValue: source))
         XCTAssertEqual(event.service, "test-service")
-        XCTAssertEqual(event.device, randomDeviceInfo)
-        XCTAssertEqual(event.os, randomOSInfo)
     }
 
     func testGivenStartedResource_whenResourceReceivesMetricsBeforeItEnds_itUsesMetricValuesInSentResourceEvent() throws {
@@ -405,7 +398,6 @@ class RUMResourceScopeTests: XCTestCase {
             context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .post
@@ -506,8 +498,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.dd.spanId)
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, "test-service")
-        XCTAssertEqual(event.device, randomDeviceInfo)
-        XCTAssertEqual(event.os, randomOSInfo)
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
     }
 
     func testGivenMultipleResourceScopes_whenSendingResourceEvents_eachEventHasUniqueResourceID() throws {
@@ -517,8 +509,6 @@ class RUMResourceScopeTests: XCTestCase {
                 context: rumContext,
                 dependencies: dependencies,
                 resourceKey: resourceKey,
-                attributes: [:],
-                startTime: .mockAny(),
                 url: url
             )
         }
@@ -557,11 +547,8 @@ class RUMResourceScopeTests: XCTestCase {
             context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: Date(),
-            url: .mockAny(),
             httpMethod: .post,
-            isFirstPartyResource: nil,
             resourceKindBasedOnRequest: kindBasedOnRequest
         )
 
@@ -590,12 +577,10 @@ class RUMResourceScopeTests: XCTestCase {
             context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
             url: "https://firstparty.com/resource/1",
             httpMethod: .post,
             isFirstPartyResource: true,
-            resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200")
         )
 
@@ -626,12 +611,10 @@ class RUMResourceScopeTests: XCTestCase {
             context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
             isFirstPartyResource: false,
-            resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200")
         )
 
@@ -659,7 +642,6 @@ class RUMResourceScopeTests: XCTestCase {
             context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
             url: "https://firstparty.com/resource/1",
             httpMethod: .post,
@@ -694,7 +676,6 @@ class RUMResourceScopeTests: XCTestCase {
             context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
@@ -726,7 +707,6 @@ class RUMResourceScopeTests: XCTestCase {
             context: rumContext,
             dependencies: dependencies,
             resourceKey: resourceKey,
-            attributes: [:],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
@@ -764,12 +744,9 @@ class RUMResourceScopeTests: XCTestCase {
             context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
-            isFirstPartyResource: nil,
-            resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200"),
             onResourceEventSent: {
                 onResourceEventSentCalled = true
@@ -780,12 +757,9 @@ class RUMResourceScopeTests: XCTestCase {
             context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/2",
-            attributes: [:],
             startTime: currentTime,
             url: "https://foo.com/resource/2",
             httpMethod: .post,
-            isFirstPartyResource: nil,
-            resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200"),
             onErrorEventSent: {
                 onErrorEventSentCalled = true
@@ -847,12 +821,9 @@ class RUMResourceScopeTests: XCTestCase {
             context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
-            isFirstPartyResource: nil,
-            resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200"),
             onResourceEventSent: {
                 onResourceEventSentCalled = true
@@ -863,12 +834,9 @@ class RUMResourceScopeTests: XCTestCase {
             context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/2",
-            attributes: [:],
             startTime: currentTime,
             url: "https://foo.com/resource/2",
             httpMethod: .post,
-            isFirstPartyResource: nil,
-            resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200"),
             onErrorEventSent: {
                 onErrorEventSentCalled = true

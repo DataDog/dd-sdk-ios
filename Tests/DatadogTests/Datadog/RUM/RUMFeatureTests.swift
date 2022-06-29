@@ -51,7 +51,7 @@ class RUMFeatureTests: XCTestCase {
                 encryption: randomEncryption
             ),
             dependencies: .mockWith(
-                mobileDevice: .mockWith(
+                deviceInfo: .mockWith(
                     name: randomDeviceName,
                     osName: randomDeviceOSName,
                     osVersion: randomDeviceOSVersion
