@@ -7,7 +7,7 @@
 import Foundation
 
 /// Describes current device information.
-internal class DeviceInfo {
+internal struct DeviceInfo {
     // MARK: - Info
 
     /// Device manufacturer name.
@@ -48,7 +48,7 @@ extension DeviceInfo {
     /// - Parameters:
     ///   - model: The model name.
     ///   - device: The `UIDevice` description.
-    convenience init(
+    init(
         model: String,
         device: UIDevice
     ) {
@@ -65,7 +65,7 @@ extension DeviceInfo {
     /// - Parameters:
     ///   - processInfo: The current process information.
     ///   - device: The `UIDevice` description.
-    convenience init(
+    init(
         processInfo: ProcessInfo = .processInfo,
         device: UIDevice = .current
     ) {
