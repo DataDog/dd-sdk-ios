@@ -32,36 +32,14 @@ internal struct ConsoleLogger: CoreLogger {
         self.currentVerbosityLevel = verbosityLevel
     }
 
-    func debug(_ message: @autoclosure () -> String, error: Error? = nil) {
-        guard let verbosityLevel = currentVerbosityLevel(), LogLevel.debug.rawValue >= verbosityLevel.rawValue else {
+    // MARK: - CoreLogger
+
+    func log(_ level: CoreLoggerLevel, message: @autoclosure () -> String, error: Error?) {
+        guard let verbosityLevel = currentVerbosityLevel(), level.toV1LogLevel.rawValue >= verbosityLevel.rawValue else {
             return // if no `Datadog.verbosityLevel` is set or it is set above this level
         }
 
-        print(message: message(), error: error, emoji: "")
-    }
-
-    func warn(_ message: @autoclosure () -> String, error: Error? = nil) {
-        guard let verbosityLevel = currentVerbosityLevel(), LogLevel.warn.rawValue >= verbosityLevel.rawValue else {
-            return // if no `Datadog.verbosityLevel` is set or it is set above this level
-        }
-
-        print(message: message(), error: error, emoji: "⚠️")
-    }
-
-    func error(_ message: @autoclosure () -> String, error: Error? = nil) {
-        guard let verbosityLevel = currentVerbosityLevel(), LogLevel.error.rawValue >= verbosityLevel.rawValue else {
-            return // if no `Datadog.verbosityLevel` is set or it is set above this level
-        }
-
-        print(message: message(), error: error, emoji: "🔥")
-    }
-
-    func critical(_ message: @autoclosure () -> String, error: Error? = nil) {
-        guard let verbosityLevel = currentVerbosityLevel(), LogLevel.critical.rawValue >= verbosityLevel.rawValue else {
-            return // if no `Datadog.verbosityLevel` is set or it is set above this level
-        }
-
-        print(message: message(), error: error, emoji: "⛔️")
+        print(message: message(), error: error, emoji: level.emojiPrefix)
     }
 
     // MARK: - Private

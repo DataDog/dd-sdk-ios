@@ -7,7 +7,7 @@
 import XCTest
 @testable import Datadog
 
-class CoreLoggerTests: XCTestCase {
+class ConsoleLoggerTests: XCTestCase {
     private let mock = PrintFunctionMock()
 
     func testItPrintsMessageWithExpectedFormat() {
@@ -89,10 +89,9 @@ class CoreLoggerTests: XCTestCase {
         )
 
         func logMessageUsingAllLevels() {
-            logger.debug(.mockRandom())
-            logger.warn(.mockRandom())
-            logger.error(.mockRandom())
-            logger.critical(.mockRandom())
+            CoreLoggerLevel.allCases.forEach { level in
+                logger.log(level, message: .mockRandom(), error: nil)
+            }
         }
 
         // When & Then
@@ -105,6 +104,16 @@ class CoreLoggerTests: XCTestCase {
         mock.reset()
         logMessageUsingAllLevels()
         XCTAssertEqual(mock.printedMessages.count, 4)
+
+        verbosityLevel = .info
+        mock.reset()
+        logMessageUsingAllLevels()
+        XCTAssertEqual(mock.printedMessages.count, 3)
+
+        verbosityLevel = .notice
+        mock.reset()
+        logMessageUsingAllLevels()
+        XCTAssertEqual(mock.printedMessages.count, 3)
 
         verbosityLevel = .warn
         mock.reset()

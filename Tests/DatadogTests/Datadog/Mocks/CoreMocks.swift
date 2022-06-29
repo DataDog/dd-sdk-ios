@@ -1259,24 +1259,12 @@ class PrintFunctionMock {
 }
 
 class CoreLoggerMock: CoreLogger {
-    private(set) var recordedLogs: [(severity: String, message: String, error: Error?)] = []
+    private(set) var recordedLogs: [(level: CoreLoggerLevel, message: String, error: Error?)] = []
 
     // MARK: - CoreLogger
 
-    func debug(_ message: @autoclosure () -> String, error: Error?) {
-        recordedLogs.append(("debug", message(), error))
-    }
-
-    func warn(_ message: @autoclosure () -> String, error: Error?) {
-        recordedLogs.append(("warn", message(), error))
-    }
-
-    func error(_ message: @autoclosure () -> String, error: Error?) {
-        recordedLogs.append(("error", message(), error))
-    }
-
-    func critical(_ message: @autoclosure () -> String, error: Error?) {
-        recordedLogs.append(("critical", message(), error))
+    func log(_ level: CoreLoggerLevel, message: @autoclosure () -> String, error: Error?) {
+        recordedLogs.append((level, message(), error))
     }
 
     func reset() {
@@ -1287,16 +1275,16 @@ class CoreLoggerMock: CoreLogger {
 
     typealias RecordedLog = (message: String, error: DDError?)
 
-    private func recordedLogs(ofSeverity severity: String) -> [RecordedLog] {
+    private func recordedLogs(ofLevel level: CoreLoggerLevel) -> [RecordedLog] {
         return recordedLogs
-            .filter({ $0.severity == severity })
+            .filter({ $0.level == level })
             .map { ($0.message, $0.error.map({ DDError(error: $0) })) }
     }
 
-    var debugLogs: [RecordedLog] { recordedLogs(ofSeverity: "debug") }
-    var warnLogs: [RecordedLog] { recordedLogs(ofSeverity: "warn") }
-    var errorLogs: [RecordedLog] { recordedLogs(ofSeverity: "error") }
-    var criticalLogs: [RecordedLog] { recordedLogs(ofSeverity: "critical") }
+    var debugLogs: [RecordedLog] { recordedLogs(ofLevel: .debug) }
+    var warnLogs: [RecordedLog] { recordedLogs(ofLevel: .warn) }
+    var errorLogs: [RecordedLog] { recordedLogs(ofLevel: .error) }
+    var criticalLogs: [RecordedLog] { recordedLogs(ofLevel: .critical) }
 
     var debugLog: RecordedLog? { debugLogs.last }
     var warnLog: RecordedLog? { warnLogs.last }
