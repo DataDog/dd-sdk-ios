@@ -6,12 +6,6 @@
 
 import Foundation
 
-/// Calculates the date correction for adjusting device time to server time.
-internal protocol DateCorrector {
-    /// Returns recent date correction for adjusting device time to server time.
-    var offset: TimeInterval { get }
-}
-
 internal class ServerDateCorrector: DateCorrector {
     /// Server offset publisher.
     private let publisher: ValuePublisher<TimeInterval?> = ValuePublisher(initialValue: nil)

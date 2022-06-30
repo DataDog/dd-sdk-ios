@@ -146,7 +146,7 @@ internal final class RUMViewsHandler {
 
         subscriber.process(
             command: RUMStartViewCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 identity: identity,
                 name: view.name,
                 path: view.path,
@@ -162,7 +162,7 @@ internal final class RUMViewsHandler {
 
         subscriber?.process(
             command: RUMStopViewCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: [:],
                 identity: identity
             )

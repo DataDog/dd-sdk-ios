@@ -190,7 +190,7 @@ public class Datadog {
             httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
             deviceInfo: .init(),
             batteryStatusProvider: BatteryStatusProvider(),
-            sdkInitDate: dateProvider.currentDate(),
+            sdkInitDate: dateProvider.now,
             dateProvider: dateProvider,
             dateCorrector: dateCorrector,
             userInfoProvider: userInfoProvider,

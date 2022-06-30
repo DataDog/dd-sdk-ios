@@ -68,7 +68,7 @@ internal final class RUMTelemetry: Telemetry {
     ///   - id: Identity of the debug log, this can be used to prevent duplicates.
     ///   - message: The debug message.
     func debug(id: String, message: String) {
-        let date = dateProvider.currentDate().addingTimeInterval(dateCorrector.offset)
+        let date = dateProvider.now.addingTimeInterval(dateCorrector.offset)
 
         record(event: id) { context, writer in
             let actionId = context.activeUserActionID?.toRUMDataFormat
@@ -104,7 +104,7 @@ internal final class RUMTelemetry: Telemetry {
     ///   - kind: The error type or kind (or code in some cases).
     ///   - stack: The stack trace or the complementary information about the error.
     func error(id: String, message: String, kind: String?, stack: String?) {
-        let date = dateProvider.currentDate().addingTimeInterval(dateCorrector.offset)
+        let date = dateProvider.now.addingTimeInterval(dateCorrector.offset)
 
         record(event: id) { context, writer in
             let actionId = context.activeUserActionID?.toRUMDataFormat

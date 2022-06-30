@@ -39,7 +39,7 @@ internal class LongTaskObserver: RUMCommandPublisher {
             guard let strongSelf = self else {
                 return
             }
-            let now = strongSelf.dateProvider.currentDate()
+            let now = strongSelf.dateProvider.now
             strongSelf.processActivity(block_act, at: now)
             strongSelf.lastActivity = (kind: block_act, date: now)
         }
@@ -54,7 +54,7 @@ internal class LongTaskObserver: RUMCommandPublisher {
             guard let strongSelf = self else {
                 return
             }
-            strongSelf.processActivity(block_act, at: strongSelf.dateProvider.currentDate())
+            strongSelf.processActivity(block_act, at: strongSelf.dateProvider.now)
             strongSelf.lastActivity = nil
         }
     }

@@ -88,8 +88,8 @@ class DateCorrectorTests: XCTestCase {
         // Then
         XCTAssertTrue(
             datesEqual(
-                deviceDateProvider.currentDate().addingTimeInterval(corrector.offset),
-                deviceDateProvider.currentDate().addingTimeInterval(serverOffset)
+                deviceDateProvider.now.addingTimeInterval(corrector.offset),
+                deviceDateProvider.now.addingTimeInterval(serverOffset)
             ),
             "The device current time should be corrected to the server time."
         )

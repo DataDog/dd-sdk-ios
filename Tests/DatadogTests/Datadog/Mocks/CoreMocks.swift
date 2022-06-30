@@ -731,7 +731,7 @@ class RelativeDateProvider: DateProvider {
     }
 
     /// Returns current date and advances next date by `timeInterval`.
-    func currentDate() -> Date {
+    var now: Date {
         defer {
             queue.async {
                 self.date.addTimeInterval(self.timeInterval)

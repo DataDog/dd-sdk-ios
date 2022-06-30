@@ -46,7 +46,7 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
         // approximation we can get.
         let currentTimeCorrection = context.dateCorrector.offset
 
-        let crashDate = crashReport.date ?? context.dateProvider.currentDate()
+        let crashDate = crashReport.date ?? context.dateProvider.now
         let realCrashDate = crashDate.addingTimeInterval(currentTimeCorrection)
 
         let log = createLog(from: crashReport, crashContext: crashContext, crashDate: realCrashDate)

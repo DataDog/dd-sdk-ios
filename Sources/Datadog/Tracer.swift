@@ -207,7 +207,7 @@ public class Tracer: OTTracer {
             tracer: self,
             context: spanContext,
             operationName: operationName,
-            startTime: startTime ?? core.v1.context?.dateProvider.currentDate() ?? Date(),
+            startTime: startTime ?? core.v1.context?.dateProvider.now ?? Date(),
             tags: combinedTags
         )
         return span

@@ -56,7 +56,7 @@ internal struct ConsoleLogger: CoreLogger {
 
     private func buildMessageString(message: @autoclosure () -> String, emoji: String) -> String {
         let prefix = ConsoleLogger.prefix
-        let time = dateFormatter.string(from: dateProvider.currentDate())
+        let time = dateFormatter.string(from: dateProvider.now)
 
         if !emoji.isEmpty {
             return "\(prefix)\(time) \(emoji) \(message())"
