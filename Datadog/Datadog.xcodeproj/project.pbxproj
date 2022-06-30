@@ -1030,8 +1030,14 @@
 		D2DC4BBD27F234E000E4FB96 /* CITestIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E143CCAE27D236F600F4018A /* CITestIntegrationTests.swift */; };
 		D2DC4BF627F484AA00E4FB96 /* DataEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2DC4BF527F484AA00E4FB96 /* DataEncryption.swift */; };
 		D2DC4BF727F484AA00E4FB96 /* DataEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2DC4BF527F484AA00E4FB96 /* DataEncryption.swift */; };
+		D2EFA868286DA85700F1FAA6 /* DatadogContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFA867286DA85700F1FAA6 /* DatadogContextProvider.swift */; };
+		D2EFA869286DA85700F1FAA6 /* DatadogContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFA867286DA85700F1FAA6 /* DatadogContextProvider.swift */; };
 		D2EFA86B286DCDBB00F1FAA6 /* DateCorrector.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFA86A286DCDBB00F1FAA6 /* DateCorrector.swift */; };
 		D2EFA86C286DCDBB00F1FAA6 /* DateCorrector.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFA86A286DCDBB00F1FAA6 /* DateCorrector.swift */; };
+		D2EFA871286DFF7900F1FAA6 /* DatadogContextMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFA870286DFF7900F1FAA6 /* DatadogContextMock.swift */; };
+		D2EFA872286DFF7900F1FAA6 /* DatadogContextMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFA870286DFF7900F1FAA6 /* DatadogContextMock.swift */; };
+		D2EFA875286E011900F1FAA6 /* DatadogContextProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFA874286E011900F1FAA6 /* DatadogContextProviderTests.swift */; };
+		D2EFA876286E011900F1FAA6 /* DatadogContextProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFA874286E011900F1FAA6 /* DatadogContextProviderTests.swift */; };
 		D2EFF3D32731822A00D09F33 /* RUMViewsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFF3D22731822A00D09F33 /* RUMViewsHandler.swift */; };
 		D2F1B81126D795F3009F3293 /* DDNoopRUMMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1B81026D795F3009F3293 /* DDNoopRUMMonitor.swift */; };
 		D2F1B81326D8DA68009F3293 /* DDNoopRUMMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1B81226D8DA68009F3293 /* DDNoopRUMMonitorTests.swift */; };
@@ -1811,7 +1817,10 @@
 		D2CB6FEC27C5352300A62B57 /* DatadogCrashReportingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DatadogCrashReportingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2D37DBE2846335F00FB4348 /* DatadogV1CoreProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogV1CoreProtocol.swift; sourceTree = "<group>"; };
 		D2DC4BF527F484AA00E4FB96 /* DataEncryption.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataEncryption.swift; sourceTree = "<group>"; };
+		D2EFA867286DA85700F1FAA6 /* DatadogContextProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogContextProvider.swift; sourceTree = "<group>"; };
 		D2EFA86A286DCDBB00F1FAA6 /* DateCorrector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateCorrector.swift; sourceTree = "<group>"; };
+		D2EFA870286DFF7900F1FAA6 /* DatadogContextMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogContextMock.swift; sourceTree = "<group>"; };
+		D2EFA874286E011900F1FAA6 /* DatadogContextProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogContextProviderTests.swift; sourceTree = "<group>"; };
 		D2EFF3D22731822A00D09F33 /* RUMViewsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewsHandler.swift; sourceTree = "<group>"; };
 		D2F1B81026D795F3009F3293 /* DDNoopRUMMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNoopRUMMonitor.swift; sourceTree = "<group>"; };
 		D2F1B81226D8DA68009F3293 /* DDNoopRUMMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNoopRUMMonitorTests.swift; sourceTree = "<group>"; };
@@ -2361,6 +2370,7 @@
 			children = (
 				61133C192423990D00786299 /* Mocks */,
 				D2956CAE2869D516007D5462 /* DatadogInternal */,
+				D2EFA873286E010100F1FAA6 /* DatadogCore */,
 				61133C412423990D00786299 /* DatadogTests.swift */,
 				61F8CC082469295500FE2908 /* DatadogConfigurationBuilderTests.swift */,
 				61133C382423990D00786299 /* LoggerTests.swift */,
@@ -4126,6 +4136,7 @@
 			children = (
 				D232CAD42832D762001B262C /* DatadogCoreMock.swift */,
 				D26F59322851E3440097C455 /* PassthroughCoreMock.swift */,
+				D2EFA870286DFF7900F1FAA6 /* DatadogContextMock.swift */,
 				D26F59352851E3650097C455 /* Flushable.swift */,
 			);
 			path = DatadogInternal;
@@ -4200,6 +4211,7 @@
 		D2B3F04F282D3A3800C2B5EE /* DatadogCore */ = {
 			isa = PBXGroup;
 			children = (
+				D2EFA866286DA82700F1FAA6 /* Context */,
 				D2B3F04C282A85FD00C2B5EE /* DatadogCore.swift */,
 			);
 			path = DatadogCore;
@@ -4215,6 +4227,22 @@
 				616F1FAC283D683500651A3A /* DatadogV1Context.swift */,
 			);
 			path = DatadogInternal;
+			sourceTree = "<group>";
+		};
+		D2EFA866286DA82700F1FAA6 /* Context */ = {
+			isa = PBXGroup;
+			children = (
+				D2EFA867286DA85700F1FAA6 /* DatadogContextProvider.swift */,
+			);
+			path = Context;
+			sourceTree = "<group>";
+		};
+		D2EFA873286E010100F1FAA6 /* DatadogCore */ = {
+			isa = PBXGroup;
+			children = (
+				D2EFA874286E011900F1FAA6 /* DatadogContextProviderTests.swift */,
+			);
+			path = DatadogCore;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -5071,6 +5099,7 @@
 				6105D1A02508F1600040DD22 /* LoggingWithActiveSpanIntegration.swift in Sources */,
 				61DA8CA928609C5B0074A606 /* Directories.swift in Sources */,
 				D248ED4228070E2B00B315B4 /* Telemetry.swift in Sources */,
+				D2EFA868286DA85700F1FAA6 /* DatadogContextProvider.swift in Sources */,
 				9EB4B864274FAB410041CD03 /* WebLogEventConsumer.swift in Sources */,
 				61EF78B1257E2E7A00EDCCB3 /* MoveDataMigrator.swift in Sources */,
 				61133BDC2423979B00786299 /* Logger.swift in Sources */,
@@ -5281,6 +5310,7 @@
 				D2135330270CA722000315AD /* DataCompressionTests.swift in Sources */,
 				61DB33B225DEDFC200F7EA71 /* CustomObjcViewController.m in Sources */,
 				61D980BC24E293F600E03345 /* RUMIntegrationsTests.swift in Sources */,
+				D2EFA875286E011900F1FAA6 /* DatadogContextProviderTests.swift in Sources */,
 				61363D9F24D99BAA0084CD6F /* DDErrorTests.swift in Sources */,
 				61411B1024EC15AC0012EAB2 /* Casting+RUM.swift in Sources */,
 				D2956CB42869DE1F007D5462 /* BatteryStatusTests.swift in Sources */,
@@ -5426,6 +5456,7 @@
 				6141CE672806B41C00EBB879 /* RUMViewUpdatesThrottlerTests.swift in Sources */,
 				61F3CDAB25121FB500C816E5 /* UIViewControllerSwizzlerTests.swift in Sources */,
 				9E989A4225F640D100235FC3 /* AppStateListenerTests.swift in Sources */,
+				D2EFA871286DFF7900F1FAA6 /* DatadogContextMock.swift in Sources */,
 				617B954024BF4DB300E6F443 /* RUMApplicationScopeTests.swift in Sources */,
 				61F2724925C943C500D54BF8 /* CrashReporterTests.swift in Sources */,
 				6172472725D673D7007085B3 /* CrashContextTests.swift in Sources */,
@@ -5722,6 +5753,7 @@
 				D2CB6E3327C50EAE00A62B57 /* OTConstants.swift in Sources */,
 				61DA8CB628643B220074A606 /* ConsoleLogger.swift in Sources */,
 				61DA8CB628643B220074A606 /* ConsoleLogger.swift in Sources */,
+				D2EFA869286DA85700F1FAA6 /* DatadogContextProvider.swift in Sources */,
 				D2B3F04E282A85FD00C2B5EE /* DatadogCore.swift in Sources */,
 				D2CB6E3527C50EAE00A62B57 /* SpanEventBuilder.swift in Sources */,
 				D2CB6E3627C50EAE00A62B57 /* ObjcAppLaunchHandler.m in Sources */,
@@ -5916,6 +5948,7 @@
 				D2CB6EEA27C520D400A62B57 /* LogMatcher.swift in Sources */,
 				D2CB6EEB27C520D400A62B57 /* DataCompressionTests.swift in Sources */,
 				D2CB6EEC27C520D400A62B57 /* CustomObjcViewController.m in Sources */,
+				D2EFA876286E011900F1FAA6 /* DatadogContextProviderTests.swift in Sources */,
 				D2CB6EED27C520D400A62B57 /* RUMIntegrationsTests.swift in Sources */,
 				D2CB6EEE27C520D400A62B57 /* DDErrorTests.swift in Sources */,
 				D2956CB52869DE1F007D5462 /* BatteryStatusTests.swift in Sources */,
@@ -6061,6 +6094,7 @@
 				6141CE682806B41C00EBB879 /* RUMViewUpdatesThrottlerTests.swift in Sources */,
 				D2CB6F7927C520D400A62B57 /* UIViewControllerSwizzlerTests.swift in Sources */,
 				D2CB6F7A27C520D400A62B57 /* AppStateListenerTests.swift in Sources */,
+				D2EFA872286DFF7900F1FAA6 /* DatadogContextMock.swift in Sources */,
 				D2CB6F7B27C520D400A62B57 /* RUMApplicationScopeTests.swift in Sources */,
 				D2CB6F7C27C520D400A62B57 /* CrashReporterTests.swift in Sources */,
 				D2CB6F7D27C520D400A62B57 /* CrashContextTests.swift in Sources */,

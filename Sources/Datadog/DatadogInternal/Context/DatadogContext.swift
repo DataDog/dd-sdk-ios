@@ -7,4 +7,52 @@
 import Foundation
 
 internal struct DatadogContext {
+    // MARK: - Datadog Specific
+
+    /// [Datadog Site](https://docs.datadoghq.com/getting_started/site/) for data uploads. It can be `nil` in V1
+    /// if the SDK is configured using deprecated APIs:
+    /// `set(logsEndpoint:)`, `set(tracesEndpoint:)` and `set(rumEndpoint:)`.
+    let site: DatadogSite?
+
+    /// The client token allowing for data uploads to [Datadog Site](https://docs.datadoghq.com/getting_started/site/).
+    let clientToken: String
+
+    /// The name of the service that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
+    let service: String
+
+    /// The name of the environment that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
+    let env: String
+
+    /// The version of the application that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
+    let version: String
+
+    /// Denotes the mobile application's platform, such as `"ios"` or `"flutter"` that data is generated from.
+    ///  - See: Datadog [Reserved Attributes](https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#reserved-attributes).
+    let source: String
+
+    /// The version of Datadog iOS SDK.
+    let sdkVersion: String
+
+    /// The name of [CI Visibility](https://docs.datadoghq.com/continuous_integration/) origin.
+    /// It is only set if the SDK is running with a context passed from [Swift Tests](https://docs.datadoghq.com/continuous_integration/setup_tests/swift/?tab=swiftpackagemanager) library.
+    let ciAppOrigin: String?
+
+    /// Interval between device and server time.
+    ///
+    /// The value can change as the device continue to sync with the server.
+    var serverTimeOffset: TimeInterval
+
+    // MARK: - Application Specific
+
+    /// The name of the application, read from `Info.plist` (`CFBundleExecutable`).
+    let applicationName: String
+
+    /// The bundle identifier, read from `Info.plist` (`CFBundleIdentifier`).
+    let applicationBundleIdentifier: String
+
+    /// Date of SDK initialization measured in device time (without NTP correction).
+    let sdkInitDate: Date
+
+    /// Current device information.
+    let device: DeviceInfo
 }
