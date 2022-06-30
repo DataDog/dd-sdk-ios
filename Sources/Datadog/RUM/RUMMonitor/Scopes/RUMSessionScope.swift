@@ -99,7 +99,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 attributes: expiredView.attributes,
                 customTimings: expiredView.customTimings,
                 startTime: startTime,
-                dateCorrection: context.dateCorrector.currentCorrection
+                serverTimeOffset: context.dateCorrector.offset
             )
         }
     }
@@ -188,7 +188,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 attributes: command.attributes,
                 customTimings: [:],
                 startTime: command.time,
-                dateCorrection: context.dateCorrector.currentCorrection
+                serverTimeOffset: context.dateCorrector.offset
             )
         )
     }
@@ -205,7 +205,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 attributes: command.attributes,
                 customTimings: [:],
                 startTime: sessionStartTime,
-                dateCorrection: context.dateCorrector.currentCorrection
+                serverTimeOffset: context.dateCorrector.offset
             )
         )
     }
@@ -223,7 +223,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 attributes: command.attributes,
                 customTimings: [:],
                 startTime: command.time,
-                dateCorrection: context.dateCorrector.currentCorrection
+                serverTimeOffset: context.dateCorrector.offset
             )
         )
     }

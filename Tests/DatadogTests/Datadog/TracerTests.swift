@@ -813,7 +813,7 @@ class TracerTests: XCTestCase {
         core.context = .mockWith(
             dependencies: .mockWith(
                 dateProvider: RelativeDateProvider(using: deviceTime),
-                dateCorrector: DateCorrectorMock(correctionOffset: serverTimeDifference)
+                dateCorrector: DateCorrectorMock(offset: serverTimeDifference)
             )
         )
 

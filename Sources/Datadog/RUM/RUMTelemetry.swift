@@ -22,7 +22,7 @@ internal final class RUMTelemetry: Telemetry {
     let applicationID: String
     let source: String
     let dateProvider: DateProvider
-    let dateCorrector: DateCorrectorType
+    let dateCorrector: DateCorrector
     let sampler: Sampler
 
     /// Keeps track of current session
@@ -46,7 +46,7 @@ internal final class RUMTelemetry: Telemetry {
         applicationID: String,
         source: String,
         dateProvider: DateProvider,
-        dateCorrector: DateCorrectorType,
+        dateCorrector: DateCorrector,
         sampler: Sampler
     ) {
         self.core = core
@@ -68,7 +68,7 @@ internal final class RUMTelemetry: Telemetry {
     ///   - id: Identity of the debug log, this can be used to prevent duplicates.
     ///   - message: The debug message.
     func debug(id: String, message: String) {
-        let date = dateCorrector.currentCorrection.applying(to: dateProvider.currentDate())
+        let date = dateProvider.currentDate().addingTimeInterval(dateCorrector.offset)
 
         record(event: id) { context, writer in
             let actionId = context.activeUserActionID?.toRUMDataFormat
@@ -104,7 +104,7 @@ internal final class RUMTelemetry: Telemetry {
     ///   - kind: The error type or kind (or code in some cases).
     ///   - stack: The stack trace or the complementary information about the error.
     func error(id: String, message: String, kind: String?, stack: String?) {
-        let date = dateCorrector.currentCorrection.applying(to: dateProvider.currentDate())
+        let date = dateProvider.currentDate().addingTimeInterval(dateCorrector.offset)
 
         record(event: id) { context, writer in
             let actionId = context.activeUserActionID?.toRUMDataFormat

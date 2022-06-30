@@ -8,44 +8,30 @@ import XCTest
 @testable import Datadog
 
 private class ServerDateProviderMock: ServerDateProvider {
-    private(set) var synchronizedNTPPool: String? = nil
-    var offset: TimeInterval? = nil
+    private(set) var update: (TimeInterval) -> Void
+    private(set) var completion: (TimeInterval?) -> Void
 
-    init(using offset: TimeInterval? = nil) {
-        self.offset = offset
+    init() {
+        update = { _ in }
+        completion = { _ in }
     }
 
-    func synchronize(with pool: String, completion: @escaping (TimeInterval?) -> Void) {
-        synchronizedNTPPool = pool
-        completion(self.offset)
+    func synchronize(update: @escaping (TimeInterval) -> Void, completion:  @escaping (TimeInterval?) -> Void) {
+        self.update = update
+        self.completion = completion
     }
 }
 
 class DateCorrectorTests: XCTestCase {
-    func testWhenInitialized_itSynchronizesWithOneOfDatadogNTPServers() {
-        let serverDateProvider = ServerDateProviderMock()
-        let deviceDateProvider = SystemDateProvider()
-
-        var randomlyChosenServers: Set<String> = []
-
-        (0..<100).forEach { _ in
-            _ = DateCorrector(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
-            randomlyChosenServers.insert(serverDateProvider.synchronizedNTPPool!)
-        }
-
-        let allAvailableServers = Set(DateCorrector.datadogNTPServers)
-        XCTAssertEqual(randomlyChosenServers, allAvailableServers, "Each time Datadog NTP server should be picked randomly.")
-    }
-
     func testWhenNTPSynchronizationSucceeds_itPrintsInfoMessage() throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
-        let serverDateProvider = ServerDateProviderMock(using: -1)
-        let deviceDateProvider = RelativeDateProvider(using: .mockRandomInThePast())
+        let serverDateProvider = ServerDateProviderMock()
 
         // When
-        _ = DateCorrector(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
+        _ = ServerDateCorrector(serverDateProvider: serverDateProvider)
+        serverDateProvider.completion(-1)
 
         // Then
         XCTAssertEqual(
@@ -61,47 +47,48 @@ class DateCorrectorTests: XCTestCase {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
-        let serverDateProvider = ServerDateProviderMock(using: nil)
-        let deviceDateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+        let serverDateProvider = ServerDateProviderMock()
 
         // When
-        _ = DateCorrector(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
+        _ = ServerDateCorrector(serverDateProvider: serverDateProvider)
+        serverDateProvider.completion(nil)
 
         // Then
         XCTAssertEqual(
             dd.logger.errorLog?.message,
             """
             NTP time synchronization failed.
-            Device time will be used for signing events (current device time is 2019-12-15 10:00:00 +0000).
+            Device time will be used for signing events.
             """
         )
     }
 
     func testWhenServerTimeIsNotAvailable_itDoesNoCorrection() {
-        let serverDateProvider = ServerDateProviderMock(using: nil)
-        let deviceDateProvider = RelativeDateProvider(using: .mockAny())
+        let serverDateProvider = ServerDateProviderMock()
 
         // When
-        let corrector = DateCorrector(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
+        let corrector = ServerDateCorrector(serverDateProvider: serverDateProvider)
+        serverDateProvider.completion(nil)
 
         // Then
         let randomDeviceTime: Date = .mockRandomInThePast()
-        XCTAssertEqual(corrector.currentCorrection.applying(to: randomDeviceTime), randomDeviceTime)
+        XCTAssertEqual(randomDeviceTime.addingTimeInterval(corrector.offset), randomDeviceTime)
     }
 
     func testWhenServerTimeIsAvailable_itCorrectsDatesByTimeDifference() {
-        let serverDateProvider = ServerDateProviderMock(using: .mockRandomInThePast())
+        let serverDateProvider = ServerDateProviderMock()
         let deviceDateProvider = RelativeDateProvider(using: .mockRandomInThePast())
 
-        var serverOffset: TimeInterval { serverDateProvider.offset! }
+        var serverOffset: TimeInterval = .mockRandomInThePast()
 
         // When
-        let corrector = DateCorrector(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
+        let corrector = ServerDateCorrector(serverDateProvider: serverDateProvider)
+        serverDateProvider.update(serverOffset)
 
         // Then
         XCTAssertTrue(
             datesEqual(
-                corrector.currentCorrection.applying(to: deviceDateProvider.currentDate()),
+                deviceDateProvider.currentDate().addingTimeInterval(corrector.offset),
                 deviceDateProvider.currentDate().addingTimeInterval(serverOffset)
             ),
             "The device current time should be corrected to the server time."
@@ -110,16 +97,18 @@ class DateCorrectorTests: XCTestCase {
         let randomDeviceTime: Date = .mockRandomInThePast()
         XCTAssertTrue(
             datesEqual(
-                corrector.currentCorrection.applying(to: randomDeviceTime),
+                randomDeviceTime.addingTimeInterval(corrector.offset),
                 randomDeviceTime.addingTimeInterval(serverOffset)
             ),
             "Any device time should be corrected by the server-to-device time difference."
         )
 
-        serverDateProvider.offset = .mockRandomInThePast()
+        serverOffset = .mockRandomInThePast()
+        serverDateProvider.update(serverOffset)
+
         XCTAssertTrue(
             datesEqual(
-                corrector.currentCorrection.applying(to: randomDeviceTime),
+                randomDeviceTime.addingTimeInterval(corrector.offset),
                 randomDeviceTime.addingTimeInterval(serverOffset)
             ),
             "When the server time goes on, any next correction should include new server-to-device time difference."
@@ -135,12 +124,12 @@ class DateCorrectorTests: XCTestCase {
     // MARK: - Thread Safety
 
     func testRandomlyCallingCorrectionConcurrentlyDoesNotCrash() {
-        let serverDateProvider = ServerDateProviderMock(using: .mockRandomInThePast())
-        let deviceDateProvider = RelativeDateProvider(using: .mockRandomInThePast())
-        let corrector = DateCorrector(deviceDateProvider: deviceDateProvider, serverDateProvider: serverDateProvider)
+        let serverDateProvider = ServerDateProviderMock()
+        let corrector = ServerDateCorrector(serverDateProvider: serverDateProvider)
+        serverDateProvider.completion(.mockRandomInThePast())
 
         DispatchQueue.concurrentPerform(iterations: 50) { iteration in
-            _ = corrector.currentCorrection.applying(to: .mockRandomInThePast())
+            _ = Date.mockRandomInThePast().addingTimeInterval(corrector.offset)
         }
     }
 }

@@ -44,7 +44,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// The start time of this View.
     let viewStartTime: Date
     /// Date correction to server time.
-    private let dateCorrection: DateCorrection
+    private let serverTimeOffset: TimeInterval
     /// Tells if this View is the active one.
     /// `true` for every new started View.
     /// `false` if the View was stopped or any other View was started.
@@ -86,7 +86,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         attributes: [AttributeKey: AttributeValue],
         customTimings: [String: Int64],
         startTime: Date,
-        dateCorrection: DateCorrection
+        serverTimeOffset: TimeInterval
     ) {
         self.parent = parent
         self.dependencies = dependencies
@@ -98,7 +98,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.viewPath = path
         self.viewName = name
         self.viewStartTime = startTime
-        self.dateCorrection = dateCorrection
+        self.serverTimeOffset = serverTimeOffset
 
         self.vitalInfoSampler = dependencies.vitalsReaders.map {
             .init(
@@ -219,7 +219,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             resourceKey: command.resourceKey,
             attributes: command.attributes,
             startTime: command.time,
-            dateCorrection: dateCorrection,
+            serverTimeOffset: serverTimeOffset,
             url: command.url,
             httpMethod: command.httpMethod,
             resourceKindBasedOnRequest: command.kind,
@@ -243,7 +243,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             actionType: command.actionType,
             attributes: command.attributes,
             startTime: command.time,
-            dateCorrection: dateCorrection,
+            serverTimeOffset: serverTimeOffset,
             isContinuous: true,
             onActionEventSent: { [weak self] in
                 self?.actionsCount += 1
@@ -260,7 +260,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             actionType: command.actionType,
             attributes: command.attributes,
             startTime: command.time,
-            dateCorrection: dateCorrection,
+            serverTimeOffset: serverTimeOffset,
             isContinuous: false,
             onActionEventSent: { [weak self] in
                 self?.actionsCount += 1
@@ -333,7 +333,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
+            date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context),
             os: .init(context: context),
             service: context.service,
@@ -386,7 +386,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
+            date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context),
             os: .init(context: context),
             service: context.service,
@@ -469,7 +469,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
+            date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context),
             error: .init(
                 handling: nil,
@@ -527,7 +527,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: dateCorrection.applying(to: command.time - command.duration).timeIntervalSince1970.toInt64Milliseconds,
+            date: (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context),
             longTask: .init(duration: taskDurationInNs, id: nil, isFrozenFrame: isFrozenFrame),
             os: .init(context: context),

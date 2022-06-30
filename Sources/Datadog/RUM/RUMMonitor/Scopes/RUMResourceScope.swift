@@ -24,7 +24,7 @@ internal class RUMResourceScope: RUMScope {
     /// The start time of this Resource loading.
     private var resourceLoadingStartTime: Date
     /// Date correction to server time.
-    private let dateCorrection: DateCorrection
+    private let serverTimeOffset: TimeInterval
     /// The HTTP method used to load this Resource.
     private var resourceHTTPMethod: RUMMethod
     /// Whether or not the Resource is provided by a first party host, if that information is available.
@@ -51,7 +51,7 @@ internal class RUMResourceScope: RUMScope {
         resourceKey: String,
         attributes: [AttributeKey: AttributeValue],
         startTime: Date,
-        dateCorrection: DateCorrection,
+        serverTimeOffset: TimeInterval,
         url: String,
         httpMethod: RUMMethod,
         resourceKindBasedOnRequest: RUMResourceType?,
@@ -66,7 +66,7 @@ internal class RUMResourceScope: RUMScope {
         self.attributes = attributes
         self.resourceURL = url
         self.resourceLoadingStartTime = startTime
-        self.dateCorrection = dateCorrection
+        self.serverTimeOffset = serverTimeOffset
         self.resourceHTTPMethod = httpMethod
         self.isFirstPartyResource = dependencies.firstPartyURLsFilter.isFirstParty(string: url)
         self.resourceKindBasedOnRequest = resourceKindBasedOnRequest
@@ -137,7 +137,7 @@ internal class RUMResourceScope: RUMScope {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: dateCorrection.applying(to: resourceStartTime).timeIntervalSince1970.toInt64Milliseconds,
+            date: resourceStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context),
             os: .init(context: context),
             resource: .init(
@@ -225,7 +225,7 @@ internal class RUMResourceScope: RUMScope {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
+            date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context),
             error: .init(
                 handling: nil,

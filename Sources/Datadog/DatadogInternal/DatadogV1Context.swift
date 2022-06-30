@@ -88,7 +88,7 @@ internal extension DatadogV1Context {
     var dateProvider: DateProvider { dependencies.dateProvider }
 
     /// NTP time correction provider.
-    var dateCorrector: DateCorrectorType { dependencies.dateCorrector }
+    var dateCorrector: DateCorrector { dependencies.dateCorrector }
 
     /// Network information provider.
     var networkConnectionInfoProvider: NetworkConnectionInfoProviderType { dependencies.networkConnectionInfoProvider }

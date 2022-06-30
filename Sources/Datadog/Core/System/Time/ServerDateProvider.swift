@@ -10,53 +10,40 @@ import Foundation
 internal protocol ServerDateProvider {
     /// Start the clock synchronisation with NTP server.
     /// Calls the `completion` by passing it the server time offset when the synchronization succeeds or`nil` if it fails.
-    func synchronize(with pool: String, completion: @escaping (TimeInterval?) -> Void)
-    /// Returns the server time offset or `nil` if not yet determined.
-    /// This offset gets more precise while synchronization is pending.
-    var offset: TimeInterval? { get }
+    func synchronize(update: @escaping (TimeInterval) -> Void, completion:  @escaping (TimeInterval?) -> Void)
 }
 
 internal class NTPServerDateProvider: ServerDateProvider {
-    /// Server offset publisher.
-    private let publisher: ValuePublisher<TimeInterval?> = ValuePublisher(initialValue: nil)
+    static let datadogNTPServers = [
+        "0.datadog.pool.ntp.org",
+        "1.datadog.pool.ntp.org",
+        "2.datadog.pool.ntp.org",
+        "3.datadog.pool.ntp.org"
+    ]
 
     init() {
     }
 
-    /// Returns the server time offset or `nil` if not yet determined.
-    /// This offset gets more precise while synchronization is pending.
-    var offset: TimeInterval? {
-        return publisher.currentValue
-    }
-
-    func synchronize(with pool: String, completion: @escaping (TimeInterval?) -> Void) {
+    func synchronize(update: @escaping (TimeInterval) -> Void, completion:  @escaping (TimeInterval?) -> Void) {
         KronosClock.sync(
-            from: pool,
-            first: { [weak self] _, offset in
-                self?.publisher.publishAsync(offset)
+            from: NTPServerDateProvider.datadogNTPServers.randomElement()!, // swiftlint:disable:this force_unwrapping
+            first: { _, offset in
+                update(offset)
             },
-            completion: { [weak self] now, offset in
-                guard let self = self else {
-                    return
-                }
-
+            completion: { now, offset in
                 // Kronos only notifies for the first and last samples.
                 // In case, the last sample does not return an offset, we calculate the offset
                 // from the returned `now` parameter. The `now` parameter in this callback
                 // is `Clock.now` and it can be either offset computed from prior samples or persisted
                 // in user defaults from previous app session.
-                if let offset = offset {
-                    self.publisher.publishAsync(offset)
-                } else if let now = now {
-                    self.publisher.publishAsync(now.timeIntervalSinceNow)
-                }
-
-                completion(self.publisher.currentValue)
+                completion(offset ?? now?.timeIntervalSinceNow)
             }
         )
 
         // `Kronos.sync` first loads the previous state from the `UserDefaults` if any.
         // We can invoke `Clock.now` to retrieve the stored offset.
-        publisher.publishAsync(KronosClock.now?.timeIntervalSinceNow)
+        if let offset = KronosClock.now?.timeIntervalSinceNow {
+            update(offset)
+        }
     }
 }

@@ -6,10 +6,8 @@
 
 @testable import Datadog
 
-private struct DateCorrectorMock: DateCorrectorType {
-    var currentCorrection: DateCorrection {
-        return DateCorrection(serverTimeOffset: 0)
-    }
+private struct DateCorrectorMock: DateCorrector {
+    let offset: TimeInterval = 0
 }
 
 extension PerformancePreset {

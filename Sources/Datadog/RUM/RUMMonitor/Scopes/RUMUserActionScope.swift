@@ -32,7 +32,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     /// The start time of this User Action.
     private let actionStartTime: Date
     /// Date correction to server time.
-    private let dateCorrection: DateCorrection
+    private let serverTimeOffset: TimeInterval
     /// Tells if this action is continuous over time, like "scroll" (or discrete, like "tap").
     internal let isContinuous: Bool
     /// Time of the last RUM activity noticed by this User Action (i.e. Resource loading).
@@ -57,7 +57,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         actionType: RUMUserActionType,
         attributes: [AttributeKey: AttributeValue],
         startTime: Date,
-        dateCorrection: DateCorrection,
+        serverTimeOffset: TimeInterval,
         isContinuous: Bool,
         onActionEventSent: @escaping () -> Void
     ) {
@@ -68,7 +68,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         self.attributes = attributes
         self.actionUUID = dependencies.rumUUIDGenerator.generateUnique()
         self.actionStartTime = startTime
-        self.dateCorrection = dateCorrection
+        self.serverTimeOffset = serverTimeOffset
         self.isContinuous = isContinuous
         self.lastActivityTime = startTime
         self.onActionEventSent = onActionEventSent
@@ -151,7 +151,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: dateCorrection.applying(to: actionStartTime).timeIntervalSince1970.toInt64Milliseconds,
+            date: actionStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context),
             os: .init(context: context),
             service: context.service,

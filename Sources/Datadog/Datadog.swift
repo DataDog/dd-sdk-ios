@@ -176,11 +176,9 @@ public class Datadog {
         let consentProvider = ConsentProvider(initialConsent: initialTrackingConsent)
         let userInfoProvider = UserInfoProvider()
         let dateProvider = SystemDateProvider()
-        let dateCorrector = DateCorrector(
-            deviceDateProvider: dateProvider,
+        let dateCorrector = ServerDateCorrector(
             serverDateProvider: NTPServerDateProvider()
         )
-
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
         let carrierInfoProvider = CarrierInfoProvider()
         let launchTimeProvider = LaunchTimeProvider()

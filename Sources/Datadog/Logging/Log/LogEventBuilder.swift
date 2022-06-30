@@ -25,7 +25,7 @@ internal struct LogEventBuilder {
     /// Shared mobile carrier info provider (or `nil` if disabled for given logger).
     let carrierInfoProvider: CarrierInfoProviderType?
     /// Adjusts log's time (device time) to server time.
-    let dateCorrector: DateCorrectorType?
+    let dateCorrector: DateCorrector?
     /// Log events mapper configured by the user, `nil` if not set.
     let logEventMapper: LogEventMapper?
 
@@ -33,7 +33,7 @@ internal struct LogEventBuilder {
         let user = userInfoProvider.value
 
         let log = LogEvent(
-            date: dateCorrector?.currentCorrection.applying(to: date) ?? date,
+            date: dateCorrector.map { date.addingTimeInterval($0.offset) } ?? date,
             status: level.asLogStatus,
             message: message,
             error: error.map {

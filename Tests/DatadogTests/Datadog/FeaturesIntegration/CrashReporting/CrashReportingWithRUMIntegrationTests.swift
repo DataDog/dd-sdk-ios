@@ -35,7 +35,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             context: .mockWith(
                 dependencies: .mockWith(
                     dateProvider: RelativeDateProvider(using: currentDate),
-                    dateCorrector: DateCorrectorMock(correctionOffset: 0)
+                    dateCorrector: DateCorrectorMock(offset: 0)
                 )
             )
         )
@@ -106,7 +106,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             context: .mockWith(
                 dependencies: .mockWith(
                     dateProvider: RelativeDateProvider(using: currentDate),
-                    dateCorrector: DateCorrectorMock(correctionOffset: 0)
+                    dateCorrector: DateCorrectorMock(offset: 0)
                 )
             )
         )
@@ -142,7 +142,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             context: .mockWith(
                 dependencies: .mockWith(
                     dateProvider: RelativeDateProvider(using: currentDate),
-                    dateCorrector: DateCorrectorMock(correctionOffset: 0)
+                    dateCorrector: DateCorrectorMock(offset: 0)
                 )
             )
         )
@@ -239,7 +239,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             context: .mockWith(
                 dependencies: .mockWith(
                     dateProvider: RelativeDateProvider(using: crashDate),
-                    dateCorrector: DateCorrectorMock(correctionOffset: dateCorrectionOffset)
+                    dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
                 )
             )
         )
@@ -312,7 +312,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             context: .mockWith(
                 dependencies: .mockWith(
                     dateProvider: RelativeDateProvider(using: crashDate),
-                    dateCorrector: DateCorrectorMock(correctionOffset: dateCorrectionOffset)
+                    dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
                 )
             )
         )
@@ -410,7 +410,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
                             .mockRandom(min: 10, max: 2 * CrashReportingWithRUMIntegration.Constants.viewEventAvailabilityThreshold) // simulate restarting app from 10s to 8h later
                         )
                     ),
-                    dateCorrector: DateCorrectorMock(correctionOffset: dateCorrectionOffset)
+                    dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
                 )
             )
         )
@@ -505,7 +505,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
                     ),
                     dependencies: .mockWith(
                         dateProvider: RelativeDateProvider(using: crashDate),
-                        dateCorrector: DateCorrectorMock(correctionOffset: dateCorrectionOffset)
+                        dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
                     )
                 )
             )
@@ -640,7 +640,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
                 context: .mockWith(
                     dependencies: .mockWith(
                         dateProvider: RelativeDateProvider(using: crashDate),
-                        dateCorrector: DateCorrectorMock(correctionOffset: dateCorrectionOffset)
+                        dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
                     )
                 )
             )

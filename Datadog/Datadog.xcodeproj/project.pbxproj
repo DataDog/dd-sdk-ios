@@ -384,7 +384,7 @@
 		61C3E63924BF19B4008053F2 /* RUMContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3E63824BF19B4008053F2 /* RUMContext.swift */; };
 		61C3E63B24BF1A4B008053F2 /* RUMCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3E63A24BF1A4B008053F2 /* RUMCommand.swift */; };
 		61C3E63E24BF1B91008053F2 /* RUMApplicationScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3E63D24BF1B91008053F2 /* RUMApplicationScope.swift */; };
-		61C576C6256E65BD00295F7C /* DateCorrector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C576C5256E65BD00295F7C /* DateCorrector.swift */; };
+		61C576C6256E65BD00295F7C /* ServerDateCorrector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C576C5256E65BD00295F7C /* ServerDateCorrector.swift */; };
 		61C5A88424509A0C00DA608C /* DDSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87824509A0C00DA608C /* DDSpan.swift */; };
 		61C5A88524509A0C00DA608C /* DDNoOps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87924509A0C00DA608C /* DDNoOps.swift */; };
 		61C5A88624509A0C00DA608C /* TracingUUIDGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87B24509A0C00DA608C /* TracingUUIDGenerator.swift */; };
@@ -642,7 +642,7 @@
 		D2CB6E1227C50EAE00A62B57 /* SwiftUIViewHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24985A12728048B00B4F72D /* SwiftUIViewHandler.swift */; };
 		D2CB6E1327C50EAE00A62B57 /* SwiftUIViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D249859F2728042200B4F72D /* SwiftUIViewModifier.swift */; };
 		D2CB6E1427C50EAE00A62B57 /* SwiftUIExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FCA238271D896E0020286F /* SwiftUIExtensions.swift */; };
-		D2CB6E1527C50EAE00A62B57 /* DateCorrector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C576C5256E65BD00295F7C /* DateCorrector.swift */; };
+		D2CB6E1527C50EAE00A62B57 /* ServerDateCorrector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C576C5256E65BD00295F7C /* ServerDateCorrector.swift */; };
 		D2CB6E1627C50EAE00A62B57 /* RUMWithCrashContextIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FC5F4425CC23C9006BB4DE /* RUMWithCrashContextIntegration.swift */; };
 		D2CB6E1727C50EAE00A62B57 /* OTSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909E624A24DD3005EA2DE /* OTSpan.swift */; };
 		D2CB6E1827C50EAE00A62B57 /* RUMViewIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF9A4425AC5DEA001058CC /* RUMViewIdentity.swift */; };
@@ -1603,7 +1603,7 @@
 		61C3E63824BF19B4008053F2 /* RUMContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMContext.swift; sourceTree = "<group>"; };
 		61C3E63A24BF1A4B008053F2 /* RUMCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMCommand.swift; sourceTree = "<group>"; };
 		61C3E63D24BF1B91008053F2 /* RUMApplicationScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMApplicationScope.swift; sourceTree = "<group>"; };
-		61C576C5256E65BD00295F7C /* DateCorrector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateCorrector.swift; sourceTree = "<group>"; };
+		61C576C5256E65BD00295F7C /* ServerDateCorrector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerDateCorrector.swift; sourceTree = "<group>"; };
 		61C5A87824509A0C00DA608C /* DDSpan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDSpan.swift; sourceTree = "<group>"; };
 		61C5A87924509A0C00DA608C /* DDNoOps.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDNoOps.swift; sourceTree = "<group>"; };
 		61C5A87B24509A0C00DA608C /* TracingUUIDGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TracingUUIDGenerator.swift; sourceTree = "<group>"; };
@@ -3517,7 +3517,7 @@
 			children = (
 				61133BA82423979B00786299 /* DateProvider.swift */,
 				61BCB81E256EB77F0039887B /* ServerDateProvider.swift */,
-				61C576C5256E65BD00295F7C /* DateCorrector.swift */,
+				61C576C5256E65BD00295F7C /* ServerDateCorrector.swift */,
 			);
 			path = Time;
 			sourceTree = "<group>";
@@ -5048,7 +5048,7 @@
 				D24985A22728048B00B4F72D /* SwiftUIViewHandler.swift in Sources */,
 				D24985A327280FD100B4F72D /* SwiftUIViewModifier.swift in Sources */,
 				D2FCA239271D896E0020286F /* SwiftUIExtensions.swift in Sources */,
-				61C576C6256E65BD00295F7C /* DateCorrector.swift in Sources */,
+				61C576C6256E65BD00295F7C /* ServerDateCorrector.swift in Sources */,
 				61FC5F4525CC23C9006BB4DE /* RUMWithCrashContextIntegration.swift in Sources */,
 				61E909ED24A24DD3005EA2DE /* OTSpan.swift in Sources */,
 				61FF9A4525AC5DEA001058CC /* RUMViewIdentity.swift in Sources */,
@@ -5682,7 +5682,7 @@
 				D29CDD3328211A2200F7DAA5 /* DataBlock.swift in Sources */,
 				D2CB6E1327C50EAE00A62B57 /* SwiftUIViewModifier.swift in Sources */,
 				D2CB6E1427C50EAE00A62B57 /* SwiftUIExtensions.swift in Sources */,
-				D2CB6E1527C50EAE00A62B57 /* DateCorrector.swift in Sources */,
+				D2CB6E1527C50EAE00A62B57 /* ServerDateCorrector.swift in Sources */,
 				D2CB6E1627C50EAE00A62B57 /* RUMWithCrashContextIntegration.swift in Sources */,
 				D2CB6E1727C50EAE00A62B57 /* OTSpan.swift in Sources */,
 				D2CB6E1827C50EAE00A62B57 /* RUMViewIdentity.swift in Sources */,

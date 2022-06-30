@@ -44,10 +44,10 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
         // The `crashReport.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
         // to the server time before processing. Following use of the current correction is not ideal, but this is the best
         // approximation we can get.
-        let currentTimeCorrection = context.dateCorrector.currentCorrection
+        let currentTimeCorrection = context.dateCorrector.offset
 
         let crashDate = crashReport.date ?? context.dateProvider.currentDate()
-        let realCrashDate = currentTimeCorrection.applying(to: crashDate)
+        let realCrashDate = crashDate.addingTimeInterval(currentTimeCorrection)
 
         let log = createLog(from: crashReport, crashContext: crashContext, crashDate: realCrashDate)
         logOutput.write(log: log)

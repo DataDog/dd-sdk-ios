@@ -21,7 +21,7 @@ internal struct SpanEventBuilder {
     /// Shared mobile carrier info provider (or `nil` if disabled for given tracer).
     let carrierInfoProvider: CarrierInfoProviderType?
     /// Adjusts span's time (device time) to server time.
-    let dateCorrector: DateCorrectorType
+    let dateCorrector: DateCorrector
     /// Source tag to encode in span (e.g. `ios` for native iOS).
     let source: String
     /// Optional Origin tag to encode in span (e.g. `ciapp-test`).
@@ -69,7 +69,7 @@ internal struct SpanEventBuilder {
             operationName: operationName,
             serviceName: serviceName,
             resource: tagsReducer.extractedResourceName ?? operationName,
-            startTime: dateCorrector.currentCorrection.applying(to: startTime),
+            startTime: startTime.addingTimeInterval(dateCorrector.offset),
             duration: finishTime.timeIntervalSince(startTime),
             isError: tagsReducer.extractedIsError ?? false,
             source: source,

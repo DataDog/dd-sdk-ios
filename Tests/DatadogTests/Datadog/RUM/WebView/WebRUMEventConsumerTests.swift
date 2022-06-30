@@ -17,7 +17,7 @@ class WebRUMEventConsumerTests: XCTestCase {
     func testWhenValidWebRUMEventPassed_itDecoratesAndPassesToWriter() throws {
         let mockSessionID = UUID(uuidString: "e9796469-c2a1-43d6-b0f6-65c47d33cf5f")!
         mockContextProvider.context.sessionID = RUMUUID(rawValue: mockSessionID)
-        mockDateCorrector.correctionOffset = 123
+        mockDateCorrector.offset = 123
         let eventConsumer = DefaultWebRUMEventConsumer(
             dataWriter: mockWriter,
             dateCorrector: mockDateCorrector,
