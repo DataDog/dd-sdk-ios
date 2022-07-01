@@ -6,37 +6,16 @@
 
 import Foundation
 
+/// Provides a thread-safe access to server time offset.
 internal class ServerDateCorrector: DateCorrector {
     /// Server offset publisher.
-    private let publisher: ValuePublisher<TimeInterval?> = ValuePublisher(initialValue: nil)
+    private let publisher: ValuePublisher<TimeInterval> = ValuePublisher(initialValue: 0)
 
     init(serverDateProvider: ServerDateProvider) {
-        serverDateProvider.synchronize(
-            update: publisher.publishAsync,
-            completion: { [weak self] offset in
-                self?.publisher.publishAsync(offset)
-
-                if let offset = offset {
-                    let difference = (offset * 1_000).rounded() / 1_000
-                    DD.logger.debug(
-                        """
-                        NTP time synchronization completed.
-                        Server time will be used for signing events (\(difference)s difference with device time).
-                        """
-                    )
-                } else {
-                    DD.logger.error(
-                        """
-                        NTP time synchronization failed.
-                        Device time will be used for signing events.
-                        """
-                    )
-                }
-            }
-        )
+        serverDateProvider.synchronize(update: publisher.publishAsync)
     }
 
     var offset: TimeInterval {
-        return publisher.currentValue ?? 0
+        return publisher.currentValue
     }
 }
