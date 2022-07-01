@@ -57,7 +57,7 @@ class LoggerTests: XCTestCase {
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:00.000Z",
           "version": "1.0.0",
-          "ddtags": "env:tests"
+          "ddtags": "env:tests,version:1.0.0"
         }
         """)
     }
@@ -418,7 +418,7 @@ class LoggerTests: XCTestCase {
     func testSendingTags() throws {
         LoggingFeature.instance = .mockByRecordingLogMatchers(
             directories: temporaryFeatureDirectories,
-            configuration: .mockWith(common: .mockWith(environment: "tests"))
+            configuration: .mockWith(common: .mockWith(applicationVersion: "1.2.3", environment: "tests"))
         )
         defer { LoggingFeature.instance?.deinitialize() }
 
@@ -446,9 +446,9 @@ class LoggerTests: XCTestCase {
         logger.info("info message 3")
 
         let logMatchers = try LoggingFeature.waitAndReturnLogMatchers(count: 3)
-        logMatchers[0].assertTags(equal: ["tag1", "env:tests"])
-        logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd", "env:tests"])
-        logMatchers[2].assertTags(equal: ["env:tests"])
+        logMatchers[0].assertTags(equal: ["tag1", "env:tests", "version:1.2.3"])
+        logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd", "env:tests", "version:1.2.3"])
+        logMatchers[2].assertTags(equal: ["env:tests", "version:1.2.3"])
     }
 
     // MARK: - Sending logs with different network and battery conditions
