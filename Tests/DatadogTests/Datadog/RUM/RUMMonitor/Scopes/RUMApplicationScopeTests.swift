@@ -36,7 +36,6 @@ class RUMApplicationScopeTests: XCTestCase {
         let scope = RUMApplicationScope(
             dependencies: .mockWith(
                 sessionSampler: .mockRejectAll(),
-                sdkInitDate: Date(),
                 onSessionStart: onSessionStart
             )
         )
@@ -67,7 +66,6 @@ class RUMApplicationScopeTests: XCTestCase {
         var currentTime = Date()
         let scope = RUMApplicationScope(
             dependencies: .mockWith(
-                sdkInitDate: currentTime,
                 onSessionStart: onSessionStart
             )
         )
@@ -111,8 +109,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let currentTime = Date()
         let scope = RUMApplicationScope(
             dependencies: .mockWith(
-                sessionSampler: Sampler(samplingRate: 100),
-                sdkInitDate: currentTime
+                sessionSampler: Sampler(samplingRate: 100)
             )
         )
 
@@ -134,8 +131,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let currentTime = Date()
         let scope = RUMApplicationScope(
             dependencies: .mockWith(
-                sessionSampler: Sampler(samplingRate: 0),
-                sdkInitDate: currentTime
+                sessionSampler: Sampler(samplingRate: 0)
             )
         )
 
@@ -157,8 +153,7 @@ class RUMApplicationScopeTests: XCTestCase {
         var currentTime = Date()
         let scope = RUMApplicationScope(
             dependencies: .mockWith(
-                sessionSampler: Sampler(samplingRate: 50),
-                sdkInitDate: currentTime
+                sessionSampler: Sampler(samplingRate: 50)
             )
         )
 

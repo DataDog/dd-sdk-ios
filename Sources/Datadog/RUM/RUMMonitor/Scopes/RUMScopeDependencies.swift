@@ -19,8 +19,6 @@ internal struct RUMScopeDependencies {
 
     let rumApplicationID: String
     let sessionSampler: Sampler
-    /// The start time of the application, indicated as SDK init. Measured in device time (without NTP correction).
-    let sdkInitDate: Date
     let backgroundEventTrackingEnabled: Bool
     let appStateListener: AppStateListening
     let launchTimeProvider: LaunchTimeProviderType
@@ -49,7 +47,6 @@ internal extension RUMScopeDependencies {
         self.init(
             rumApplicationID: rumFeature.configuration.applicationID,
             sessionSampler: rumFeature.configuration.sessionSampler,
-            sdkInitDate: context.sdkInitDate,
             backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled,
             appStateListener: context.appStateListener,
             launchTimeProvider: context.launchTimeProvider,
