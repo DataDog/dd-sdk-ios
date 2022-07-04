@@ -23,8 +23,16 @@ internal class RUMResourceScope: RUMScope {
     private var resourceURL: String
     /// The start time of this Resource loading.
     private var resourceLoadingStartTime: Date
-    /// Date correction to server time.
+
+    /// Server time offset for date correction.
+    ///
+    /// The offset should be applied to event's timestamp for synchronizing
+    /// local time with server time. This time interval value can be added to
+    /// any date that needs to be synced. e.g:
+    ///
+    ///     date.addingTimeInterval(serverTimeOffset)
     private let serverTimeOffset: TimeInterval
+
     /// The HTTP method used to load this Resource.
     private var resourceHTTPMethod: RUMMethod
     /// Whether or not the Resource is provided by a first party host, if that information is available.

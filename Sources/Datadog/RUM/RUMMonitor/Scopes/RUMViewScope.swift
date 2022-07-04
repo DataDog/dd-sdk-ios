@@ -43,8 +43,19 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     let viewName: String
     /// The start time of this View.
     let viewStartTime: Date
-    /// Date correction to server time.
+
+    /// Server time offset for date correction.
+    ///
+    /// The offset should be applied to event's timestamp for synchronizing
+    /// local time with server time. This time interval value can be added to
+    /// any date that needs to be synced. e.g:
+    ///
+    ///     date.addingTimeInterval(serverTimeOffset)
+    ///
+    /// The server time offset is freezed per view scope so all child event time
+    /// stay relatives to the scope.
     private let serverTimeOffset: TimeInterval
+
     /// Tells if this View is the active one.
     /// `true` for every new started View.
     /// `false` if the View was stopped or any other View was started.

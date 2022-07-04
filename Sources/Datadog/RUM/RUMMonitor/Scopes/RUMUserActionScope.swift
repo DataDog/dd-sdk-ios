@@ -31,8 +31,16 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     let actionUUID: RUMUUID
     /// The start time of this User Action.
     private let actionStartTime: Date
-    /// Date correction to server time.
+
+    /// Server time offset for date correction.
+    ///
+    /// The offset should be applied to event's timestamp for synchronizing
+    /// local time with server time. This time interval value can be added to
+    /// any date that needs to be synced. e.g:
+    ///
+    ///     date.addingTimeInterval(serverTimeOffset)
     private let serverTimeOffset: TimeInterval
+
     /// Tells if this action is continuous over time, like "scroll" (or discrete, like "tap").
     internal let isContinuous: Bool
     /// Time of the last RUM activity noticed by this User Action (i.e. Resource loading).
