@@ -75,13 +75,13 @@ class FileReaderTests: XCTestCase {
                 dateProvider: dateProvider
             )
         )
-        let file1 = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
+        let file1 = try temporaryDirectory.createFile(named: dateProvider.now.toFileName)
         try file1.append(data: DataBlock(type: .event, data: "1".utf8Data).serialize())
 
-        let file2 = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
+        let file2 = try temporaryDirectory.createFile(named: dateProvider.now.toFileName)
         try file2.append(data: DataBlock(type: .event, data: "2".utf8Data).serialize())
 
-        let file3 = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
+        let file3 = try temporaryDirectory.createFile(named: dateProvider.now.toFileName)
         try file3.append(data: DataBlock(type: .event, data: "3".utf8Data).serialize())
 
         var batch: Batch

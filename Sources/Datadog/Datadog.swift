@@ -176,11 +176,9 @@ public class Datadog {
         let consentProvider = ConsentProvider(initialConsent: initialTrackingConsent)
         let userInfoProvider = UserInfoProvider()
         let dateProvider = SystemDateProvider()
-        let dateCorrector = DateCorrector(
-            deviceDateProvider: dateProvider,
+        let dateCorrector = ServerDateCorrector(
             serverDateProvider: NTPServerDateProvider()
         )
-
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
         let carrierInfoProvider = CarrierInfoProvider()
         let launchTimeProvider = LaunchTimeProvider()
@@ -192,7 +190,7 @@ public class Datadog {
             httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
             deviceInfo: .init(),
             batteryStatusProvider: BatteryStatusProvider(),
-            sdkInitDate: dateProvider.currentDate(),
+            sdkInitDate: dateProvider.now,
             dateProvider: dateProvider,
             dateCorrector: dateCorrector,
             userInfoProvider: userInfoProvider,

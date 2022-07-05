@@ -15,7 +15,7 @@ class WebLogEventConsumerTests: XCTestCase {
     func testWhenValidWebLogEventPassed_itDecoratesAndPassesToWriter() throws {
         let mockSessionID: UUID = .mockRandom()
         mockContextProvider.context.sessionID = RUMUUID(rawValue: mockSessionID)
-        mockDateCorrector.correctionOffset = 123
+        mockDateCorrector.offset = 123
         let applicationVersion = String.mockRandom()
         let environment = String.mockRandom()
         let eventConsumer = DefaultWebLogEventConsumer(

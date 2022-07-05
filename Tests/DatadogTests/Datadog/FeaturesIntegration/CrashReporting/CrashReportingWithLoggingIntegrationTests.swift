@@ -87,7 +87,7 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
                 configuration: configuration,
                 dependencies: .mockWith(
                     dateProvider: RelativeDateProvider(using: .mockRandomInThePast()),
-                    dateCorrector: DateCorrectorMock(correctionOffset: dateCorrectionOffset)
+                    dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
                 )
             )
         )

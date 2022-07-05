@@ -218,7 +218,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     ) {
         process(
             command: RUMStartViewCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 identity: viewController,
                 name: path,
                 path: path,
@@ -234,7 +234,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     ) {
         process(
             command: RUMStartViewCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 identity: viewController,
                 name: name,
                 path: nil,
@@ -249,7 +249,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     ) {
         process(
             command: RUMStopViewCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 identity: viewController
             )
@@ -263,7 +263,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     ) {
         process(
             command: RUMStartViewCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 identity: key,
                 name: name ?? key,
                 path: key,
@@ -278,7 +278,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     ) {
         process(
             command: RUMStopViewCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 identity: key
             )
@@ -290,7 +290,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     ) {
         process(
             command: RUMAddViewTimingCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: [:],
                 timingName: name
             )
@@ -326,7 +326,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     ) {
         process(
             command: RUMAddCurrentViewErrorCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 message: message,
                 type: type,
                 stack: stack,
@@ -343,7 +343,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     ) {
         process(
             command: RUMAddCurrentViewErrorCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 error: error,
                 source: RUMInternalErrorSource(source),
                 attributes: attributes
@@ -359,7 +359,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         process(
             command: RUMStartResourceCommand(
                 resourceKey: resourceKey,
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 url: request.url?.absoluteString ?? "unknown_url",
                 httpMethod: RUMMethod(httpMethod: request.httpMethod),
@@ -377,7 +377,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         process(
             command: RUMStartResourceCommand(
                 resourceKey: resourceKey,
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 url: url.absoluteString,
                 httpMethod: .get,
@@ -396,7 +396,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         process(
             command: RUMStartResourceCommand(
                 resourceKey: resourceKey,
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 url: urlString,
                 httpMethod: httpMethod,
@@ -414,7 +414,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         process(
             command: RUMAddResourceMetricsCommand(
                 resourceKey: resourceKey,
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 metrics: ResourceMetrics(taskMetrics: metrics)
             )
@@ -436,7 +436,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         process(
             command: RUMAddResourceMetricsCommand(
                 resourceKey: resourceKey,
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 metrics: ResourceMetrics(
                     fetch: ResourceMetrics.DateInterval(start: fetch.start, end: fetch.end),
@@ -471,7 +471,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         process(
             command: RUMStopResourceCommand(
                 resourceKey: resourceKey,
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 kind: resourceKind,
                 httpStatusCode: statusCode,
@@ -490,7 +490,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         process(
             command: RUMStopResourceCommand(
                 resourceKey: resourceKey,
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 kind: kind,
                 httpStatusCode: statusCode,
@@ -508,7 +508,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         process(
             command: RUMStopResourceWithErrorCommand(
                 resourceKey: resourceKey,
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 error: error,
                 source: .network,
                 httpStatusCode: (response as? HTTPURLResponse)?.statusCode,
@@ -527,7 +527,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         process(
             command: RUMStopResourceWithErrorCommand(
                 resourceKey: resourceKey,
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 message: errorMessage,
                 type: type,
                 source: .network,
@@ -540,7 +540,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     override public func startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStartUserActionCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 actionType: type,
                 name: name
@@ -551,7 +551,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     override public func stopUserAction(type: RUMUserActionType, name: String?, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStopUserActionCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 actionType: type,
                 name: name
@@ -562,7 +562,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     override public func addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMAddUserActionCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 actionType: type,
                 name: name

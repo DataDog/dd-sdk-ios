@@ -480,7 +480,7 @@ extension FeaturesCommonDependencies {
         batteryStatusProvider: BatteryStatusProviderType = BatteryStatusProviderMock.mockAny(),
         sdkInitDate: Date = Date(),
         dateProvider: DateProvider = SystemDateProvider(),
-        dateCorrector: DateCorrectorType = DateCorrectorMock(),
+        dateCorrector: DateCorrector = DateCorrectorMock(),
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
             networkConnectionInfo: .mockWith(
@@ -545,7 +545,7 @@ extension FeaturesCommonDependencies {
         batteryStatusProvider: BatteryStatusProviderType? = nil,
         sdkInitDate: Date? = nil,
         dateProvider: DateProvider? = nil,
-        dateCorrector: DateCorrectorType? = nil,
+        dateCorrector: DateCorrector? = nil,
         userInfoProvider: UserInfoProvider? = nil,
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType? = nil,
         carrierInfoProvider: CarrierInfoProviderType? = nil,
@@ -731,7 +731,7 @@ class RelativeDateProvider: DateProvider {
     }
 
     /// Returns current date and advances next date by `timeInterval`.
-    func currentDate() -> Date {
+    var now: Date {
         defer {
             queue.async {
                 self.date.addTimeInterval(self.timeInterval)
@@ -750,22 +750,12 @@ class RelativeDateProvider: DateProvider {
     }
 }
 
-extension DateCorrection {
-    static var zero: DateCorrection {
-        return DateCorrection(serverTimeOffset: 0)
-    }
-}
+/// `DateCorrector` mock, correcting dates by adding predefined offset.
+class DateCorrectorMock: DateCorrector {
+    var offset: TimeInterval
 
-/// `DateCorrectorType` mock, correcting dates by adding predefined offset.
-class DateCorrectorMock: DateCorrectorType {
-    var correctionOffset: TimeInterval
-
-    init(correctionOffset: TimeInterval = 0) {
-        self.correctionOffset = correctionOffset
-    }
-
-    var currentCorrection: DateCorrection {
-        return DateCorrection(serverTimeOffset: correctionOffset)
+    init(offset: TimeInterval = 0) {
+        self.offset = offset
     }
 }
 

@@ -76,7 +76,7 @@ extension RUMTelemetry {
         applicationID: String = .mockAny(),
         source: String = .mockAnySource(),
         dateProvider: DateProvider = SystemDateProvider(),
-        dateCorrector: DateCorrectorType = DateCorrectorMock(),
+        dateCorrector: DateCorrector = DateCorrectorMock(),
         sampler: Sampler = .init(samplingRate: 100)
     ) -> Self {
         .init(
@@ -609,7 +609,6 @@ extension RUMScopeDependencies {
     static func mockWith(
         rumApplicationID: String = .mockAny(),
         sessionSampler: Sampler = .mockKeepAll(),
-        sdkInitDate: Date = .mockAny(),
         backgroundEventTrackingEnabled: Bool = .mockAny(),
         appStateListener: AppStateListening = AppStateListenerMock.mockAny(),
         launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock.mockAny(),
@@ -625,7 +624,6 @@ extension RUMScopeDependencies {
         return RUMScopeDependencies(
             rumApplicationID: rumApplicationID,
             sessionSampler: sessionSampler,
-            sdkInitDate: sdkInitDate,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
             appStateListener: appStateListener,
             launchTimeProvider: launchTimeProvider,
@@ -644,7 +642,6 @@ extension RUMScopeDependencies {
     func replacing(
         rumApplicationID: String? = nil,
         sessionSampler: Sampler? = nil,
-        sdkInitDate: Date? = nil,
         backgroundEventTrackingEnabled: Bool? = nil,
         appStateListener: AppStateListening? = nil,
         launchTimeProvider: LaunchTimeProviderType? = nil,
@@ -660,7 +657,6 @@ extension RUMScopeDependencies {
         return RUMScopeDependencies(
             rumApplicationID: rumApplicationID ?? self.rumApplicationID,
             sessionSampler: sessionSampler ?? self.sessionSampler,
-            sdkInitDate: sdkInitDate ?? self.sdkInitDate,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled ?? self.backgroundEventTrackingEnabled,
             appStateListener: appStateListener ?? self.appStateListener,
             launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider,
@@ -754,7 +750,7 @@ extension RUMViewScope {
         attributes: [AttributeKey: AttributeValue] = [:],
         customTimings: [String: Int64] = randomTimings(),
         startTime: Date = .mockAny(),
-        dateCorrection: DateCorrection = .zero
+        serverTimeOffset: TimeInterval = .zero
     ) -> RUMViewScope {
         return RUMViewScope(
             isInitialView: isInitialView,
@@ -766,7 +762,7 @@ extension RUMViewScope {
             attributes: attributes,
             customTimings: customTimings,
             startTime: startTime,
-            dateCorrection: dateCorrection
+            serverTimeOffset: serverTimeOffset
         )
     }
 }
@@ -778,7 +774,7 @@ extension RUMResourceScope {
         resourceKey: String = .mockAny(),
         attributes: [AttributeKey: AttributeValue] = [:],
         startTime: Date = .mockAny(),
-        dateCorrection: DateCorrection = .zero,
+        serverTimeOffset: TimeInterval = .zero,
         url: String = .mockAny(),
         httpMethod: RUMMethod = .mockAny(),
         isFirstPartyResource: Bool? = nil,
@@ -793,7 +789,7 @@ extension RUMResourceScope {
             resourceKey: resourceKey,
             attributes: attributes,
             startTime: startTime,
-            dateCorrection: dateCorrection,
+            serverTimeOffset: serverTimeOffset,
             url: url,
             httpMethod: httpMethod,
             resourceKindBasedOnRequest: resourceKindBasedOnRequest,
@@ -813,7 +809,7 @@ extension RUMUserActionScope {
         actionType: RUMUserActionType = [.tap, .scroll, .swipe, .custom].randomElement()!,
         attributes: [AttributeKey: AttributeValue] = [:],
         startTime: Date = .mockAny(),
-        dateCorrection: DateCorrection = .zero,
+        serverTimeOffset: TimeInterval = .zero,
         isContinuous: Bool = .mockAny(),
         onActionEventSent: @escaping () -> Void = {}
     ) -> RUMUserActionScope {
@@ -824,7 +820,7 @@ extension RUMUserActionScope {
                 actionType: actionType,
                 attributes: attributes,
                 startTime: startTime,
-                dateCorrection: dateCorrection,
+                serverTimeOffset: serverTimeOffset,
                 isContinuous: isContinuous,
                 onActionEventSent: onActionEventSent
         )

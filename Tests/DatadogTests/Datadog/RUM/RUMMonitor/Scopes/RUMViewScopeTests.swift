@@ -42,7 +42,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: .mockAny(),
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
 
         XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
@@ -69,7 +69,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: .mockAny(),
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
 
         _ = scope.process(
@@ -101,7 +101,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
 
         // When
@@ -149,7 +149,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
 
         // When
@@ -205,7 +205,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
 
         _ = scope.process(
@@ -253,7 +253,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
 
         _ = scope.process(
@@ -279,7 +279,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: ["foo": "bar", "fizz": "buzz"],
             customTimings: [:],
             startTime: currentTime,
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
 
         XCTAssertTrue(
@@ -325,7 +325,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: ["foo": "bar"],
             customTimings: [:],
             startTime: currentTime,
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
 
         XCTAssertTrue(
@@ -391,7 +391,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
 
         XCTAssertTrue(
@@ -436,7 +436,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
 
         currentTime.addTimeInterval(1)
@@ -481,7 +481,7 @@ class RUMViewScopeTests: XCTestCase {
                 attributes: [:],
                 customTimings: [:],
                 startTime: .mockAny(),
-                dateCorrection: .zero
+                serverTimeOffset: .zero
             )
         }
 
@@ -527,7 +527,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: Date(),
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
         XCTAssertTrue(
             scope.process(
@@ -594,7 +594,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: Date(),
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
 
         // given
@@ -671,7 +671,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: Date(),
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
 
         let dd = DD.mockWith(logger: CoreLoggerMock())
@@ -754,7 +754,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
 
         let dd = DD.mockWith(logger: CoreLoggerMock())
@@ -832,7 +832,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
         _ = scope.process(
                 command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView),
@@ -884,7 +884,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
         _ = scope.process(
                 command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView),
@@ -932,7 +932,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
 
         XCTAssertTrue(
@@ -998,7 +998,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
 
         XCTAssertTrue(
@@ -1090,7 +1090,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: Date(),
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
 
         XCTAssertTrue(
@@ -1137,7 +1137,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: startViewDate,
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
 
         XCTAssertTrue(
@@ -1198,7 +1198,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: startViewDate,
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
 
         XCTAssertTrue(
@@ -1238,7 +1238,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
         XCTAssertTrue(
             scope.process(
@@ -1300,7 +1300,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
         XCTAssertTrue(
             scope.process(
@@ -1346,7 +1346,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
         XCTAssertTrue(
             scope.process(
@@ -1411,7 +1411,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: initialDeviceTime,
-            dateCorrection: DateCorrection(serverTimeOffset: initialServerTimeOffset)
+            serverTimeOffset: initialServerTimeOffset
         )
 
         // When
@@ -1527,7 +1527,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: Date(),
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
         XCTAssertTrue(
             scope.process(
@@ -1632,7 +1632,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: Date(),
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
 
         // When
@@ -1761,7 +1761,7 @@ class RUMViewScopeTests: XCTestCase {
             attributes: [:],
             customTimings: [:],
             startTime: Date(),
-            dateCorrection: .zero
+            serverTimeOffset: .zero
         )
 
         // When

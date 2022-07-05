@@ -52,7 +52,7 @@ internal class FilesOrchestrator {
             // objects, resulting with a flat allocations graph in a long term.
             try purgeFilesDirectoryIfNeeded()
 
-            let newFileName = fileNameFrom(fileCreationDate: dateProvider.currentDate())
+            let newFileName = fileNameFrom(fileCreationDate: dateProvider.now)
             let newFile = try directory.createFile(named: newFileName)
             lastWritableFileName = newFile.name
             lastWritableFileUsesCount = 1
@@ -69,7 +69,7 @@ internal class FilesOrchestrator {
             do {
                 let lastFile = try directory.file(named: lastFileName)
                 let lastFileCreationDate = fileCreationDateFrom(fileName: lastFile.name)
-                let lastFileAge = dateProvider.currentDate().timeIntervalSince(lastFileCreationDate)
+                let lastFileAge = dateProvider.now.timeIntervalSince(lastFileCreationDate)
 
                 let fileIsRecentEnough = lastFileAge <= performance.maxFileAgeForWrite
                 let fileHasRoomForMore = (try lastFile.size() + writeSize) <= performance.maxFileSize
@@ -108,7 +108,7 @@ internal class FilesOrchestrator {
             }
             #endif
 
-            let oldestFileAge = dateProvider.currentDate().timeIntervalSince(creationDate)
+            let oldestFileAge = dateProvider.now.timeIntervalSince(creationDate)
             let fileIsOldEnough = oldestFileAge >= performance.minFileAgeForRead
 
             return fileIsOldEnough ? oldestFile : nil
@@ -163,7 +163,7 @@ internal class FilesOrchestrator {
     }
 
     private func deleteFileIfItsObsolete(file: File, fileCreationDate: Date) throws -> (file: File, creationDate: Date)? {
-        let fileAge = dateProvider.currentDate().timeIntervalSince(fileCreationDate)
+        let fileAge = dateProvider.now.timeIntervalSince(fileCreationDate)
 
         if fileAge > performance.maxFileAgeForRead {
             try file.delete()

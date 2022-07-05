@@ -284,7 +284,7 @@ extension SpanEventBuilder {
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
-        dateCorrector: DateCorrectorType = DateCorrectorMock(),
+        dateCorrector: DateCorrector = DateCorrectorMock(),
         source: String = .mockAny(),
         origin: String? = nil,
         sdkVersion: String = .mockAny(),

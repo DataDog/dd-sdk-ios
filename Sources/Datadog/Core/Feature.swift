@@ -16,7 +16,7 @@ internal struct FeaturesCommonDependencies {
     /// Time of SDK initialization, measured in device date.
     let sdkInitDate: Date
     let dateProvider: DateProvider
-    let dateCorrector: DateCorrectorType
+    let dateCorrector: DateCorrector
     let userInfoProvider: UserInfoProvider
     let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
     let carrierInfoProvider: CarrierInfoProviderType

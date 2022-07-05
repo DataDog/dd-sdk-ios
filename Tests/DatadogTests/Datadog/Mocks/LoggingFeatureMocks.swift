@@ -233,7 +233,7 @@ extension LogEventBuilder {
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
-        dateCorrector: DateCorrectorType? = nil,
+        dateCorrector: DateCorrector? = nil,
         logEventMapper: LogEventMapper? = nil
     ) -> LogEventBuilder {
         return LogEventBuilder(

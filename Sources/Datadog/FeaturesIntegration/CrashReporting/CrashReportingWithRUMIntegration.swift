@@ -64,13 +64,13 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         // The `crashReport.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
         // to the server time before processing. Following use of the current correction is not ideal (it's not the correction
         // from the moment of crash), but this is the best approximation we can get.
-        let currentTimeCorrection = context.dateCorrector.currentCorrection
+        let currentTimeCorrection = context.dateCorrector.offset
 
-        let crashDate = crashReport.date ?? context.dateProvider.currentDate()
+        let crashDate = crashReport.date ?? context.dateProvider.now
         let adjustedCrashTimings = AdjustedCrashTimings(
             crashDate: crashDate,
-            realCrashDate: currentTimeCorrection.applying(to: crashDate),
-            realDateNow: currentTimeCorrection.applying(to: context.dateProvider.currentDate())
+            realCrashDate: crashDate.addingTimeInterval(currentTimeCorrection),
+            realDateNow: context.dateProvider.now.addingTimeInterval(currentTimeCorrection)
         )
 
         if let lastRUMViewEvent = crashContext.lastRUMViewEvent {

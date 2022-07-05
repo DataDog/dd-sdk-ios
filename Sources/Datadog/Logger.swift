@@ -297,7 +297,7 @@ public class Logger {
                 level: level,
                 message: message,
                 error: error.map { DDError(error: $0) },
-                date: context.dateProvider.currentDate(),
+                date: context.dateProvider.now,
                 attributes: .init(
                     userAttributes: combinedUserAttributes,
                     internalAttributes: combinedInternalAttributes

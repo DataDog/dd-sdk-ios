@@ -8,7 +8,7 @@ import Foundation
 
 internal class DefaultWebRUMEventConsumer: WebRUMEventConsumer {
     private let dataWriter: Writer
-    private let dateCorrector: DateCorrectorType
+    private let dateCorrector: DateCorrector
     private let contextProvider: RUMContextProvider?
     private let rumCommandSubscriber: RUMCommandSubscriber?
     private let dateProvider: DateProvider
@@ -17,7 +17,7 @@ internal class DefaultWebRUMEventConsumer: WebRUMEventConsumer {
 
     init(
         dataWriter: Writer,
-        dateCorrector: DateCorrectorType,
+        dateCorrector: DateCorrector,
         contextProvider: RUMContextProvider?,
         rumCommandSubscriber: RUMCommandSubscriber?,
         dateProvider: DateProvider
@@ -32,7 +32,7 @@ internal class DefaultWebRUMEventConsumer: WebRUMEventConsumer {
     func consume(event: JSON) throws {
         rumCommandSubscriber?.process(
             command: RUMKeepSessionAliveCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: [:]
             )
         )
@@ -97,7 +97,7 @@ internal class DefaultWebRUMEventConsumer: WebRUMEventConsumer {
         if let found = found {
             return found.offset
         }
-        let offset = dateCorrector.currentCorrection.serverTimeOffset.toInt64Milliseconds
+        let offset = dateCorrector.offset.toInt64Milliseconds
         viewIDOffsetPairs.insert((viewID: viewID, offset: offset), at: 0)
         return offset
     }

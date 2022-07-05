@@ -913,7 +913,7 @@ class RUMMonitorTests: XCTestCase {
         core.context = .mockWith(
             dependencies: .mockWith(
                 dateProvider: dateProvider,
-                dateCorrector: DateCorrectorMock(correctionOffset: serverTimeDifference)
+                dateCorrector: DateCorrectorMock(offset: serverTimeDifference)
             )
         )
 
