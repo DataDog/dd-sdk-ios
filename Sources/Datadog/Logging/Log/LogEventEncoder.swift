@@ -216,7 +216,8 @@ internal struct LogEventEncoder {
 
         // Encode tags
         var tags = log.tags ?? []
-        tags.append("env:\(log.environment)") // include default tag
+        tags.append("env:\(log.environment)") // include default env tag
+        tags.append("version:\(log.applicationVersion)") // include default version tag
         let tagsString = tags.joined(separator: ",")
         try container.encode(tagsString, forKey: .tags)
     }
