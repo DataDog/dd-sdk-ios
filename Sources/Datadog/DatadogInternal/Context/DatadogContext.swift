@@ -55,4 +55,12 @@ internal struct DatadogContext {
 
     /// Current device information.
     let device: DeviceInfo
+
+    // MARK: - Device Specific
+
+    /// Network information.
+    var networkConnectionInfo: NetworkConnectionInfo?
+
+    /// Carrier information.
+    var carrierInfo: CarrierInfo?
 }

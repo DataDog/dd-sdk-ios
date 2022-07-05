@@ -35,47 +35,61 @@ internal final class DatadogContextProvider {
         attributes: .concurrent
     )
 
+    private var subscriptions: [ContextValueSubscription] = []
+    private var networkConnectionInfoReader: AnyContextValueReader<NetworkConnectionInfo?>
+    private var carrierInfoReader: AnyContextValueReader<CarrierInfo?>
+
     /// Creates a context provider to perform reads and writes on the
     /// shared Datadog context.
     ///
     /// - Parameters:
-    ///   - context: The context inital value.
-    ///   - serverDateProvider: The server date provider to synchronize the `serverTimeOffset`
-    ///                         parameter.
+    ///   - context:                        The context inital context value.
+    ///   - serverOffsetPublisher:          The server date publisher to synchronize the `context.serverTimeOffset`
+    ///                                     parameter.
+    ///   - networkConnectionInfoPublisher: The network info publisher to synchronize the
+    ///                                     `context.networkConnectionInfo` parameter.
+    ///   - carrierInfoPublisher:           The carrier info publisher to synchronize the `context.carrierInfo`
+    ///                                     parameter.
     init(
         context: DatadogContext,
-        serverDateProvider: ServerDateProvider
+        serverOffsetPublisher: ServerOffsetPublisher,
+        networkConnectionInfoPublisher: AnyNetworkConnectionInfoPublisher,
+        carrierInfoPublisher: AnyCarrierInfoPublisher
     ) {
         self.context = context
-        self.sync(with: serverDateProvider)
+        self.context.serverTimeOffset = serverOffsetPublisher.initialValue
+        self.networkConnectionInfoReader = networkConnectionInfoPublisher.eraseToAnyReader()
+        self.carrierInfoReader = carrierInfoPublisher.eraseToAnyReader()
+
+        self.subscriptions = [
+            serverOffsetPublisher.subscribe { offset in
+                self.write { $0.serverTimeOffset = offset }
+            },
+            networkConnectionInfoPublisher.set(queue: queue).subscribe { info in
+                self.write { $0.networkConnectionInfo = info }
+            },
+            carrierInfoPublisher.subscribe { info in
+                self.write { $0.carrierInfo = info }
+            },
+        ]
+    }
+
+    deinit {
+        subscriptions.forEach { $0.cancel() }
     }
 
     /// Reads to the `context` asynchronously, without blocking the caller thread.
     func read(block: @escaping (DatadogContext) -> Void) {
-        queue.async { block(self.context) }
-    }
-
-    /// Reads to the `context` synchronously, without blocking the caller thread.
-    func read() -> DatadogContext {
-        queue.sync { self.context }
+        queue.async {
+            var context = self.context
+            self.networkConnectionInfoReader.read { context.networkConnectionInfo = $0 }
+            self.carrierInfoReader.read { context.carrierInfo = $0 }
+            block(context)
+        }
     }
 
     /// Writes to the `context` asynchronously, without blocking the caller thread.
     func write(block: @escaping (inout DatadogContext) -> Void) {
         queue.async(flags: .barrier) { block(&self.context) }
-    }
-}
-
-extension DatadogContextProvider {
-    /// Synchronise the context with the given server date provider.
-    ///
-    /// This method does not keep a strong reference to the provider,
-    /// it only calls the `synchronize` method.
-    ///
-    /// - Parameter provider: The server date provider.
-    func sync(with provider: ServerDateProvider) {
-        provider.synchronize { offset in
-            self.write { $0.serverTimeOffset = offset }
-        }
     }
 }

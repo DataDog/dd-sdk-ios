@@ -111,12 +111,11 @@ class NetworkConnectionInfoConversionTests: XCTestCase {
 
     func testNWInterface() {
         if #available(iOS 12.0, tvOS 12, *) {
-            XCTAssertEqual(Array(fromInterfaceTypes: []), [])
-            XCTAssertEqual(Array(fromInterfaceTypes: [.wifi]), [.wifi])
-            XCTAssertEqual(Array(fromInterfaceTypes: [.wiredEthernet]), [.wiredEthernet])
-            XCTAssertEqual(Array(fromInterfaceTypes: [.wifi, .wifi]), [.wifi, .wifi])
-            XCTAssertEqual(Array(fromInterfaceTypes: [.wifi, .cellular]), [.wifi, .cellular])
-            XCTAssertEqual(Array(fromInterfaceTypes: [.loopback, .other]), [.loopback, .other])
+            XCTAssertEqual(Interface(.wifi), .wifi)
+            XCTAssertEqual(Interface(.wiredEthernet), .wiredEthernet)
+            XCTAssertEqual(Interface(.loopback), .loopback)
+            XCTAssertEqual(Interface(.cellular), .cellular)
+            XCTAssertEqual(Interface(.other), .other)
         }
     }
 
@@ -133,12 +132,12 @@ class NetworkConnectionInfoConversionTests: XCTestCase {
 
     func testSCInterface() {
         let cellular = SCNetworkReachabilityFlags(arrayLiteral: .isWWAN)
-        XCTAssertEqual(Array(fromReachabilityFlags: cellular), [.cellular])
+        XCTAssertEqual(Interface(cellular), .cellular)
 
         let null: SCNetworkReachabilityFlags? = nil
-        XCTAssertNil(Array(fromReachabilityFlags: null))
+        XCTAssertNil(Interface(null))
 
         let nonCellularReachable = SCNetworkReachabilityFlags(arrayLiteral: .reachable)
-        XCTAssertNil(Array(fromReachabilityFlags: nonCellularReachable))
+        XCTAssertNil(Interface(nonCellularReachable))
     }
 }

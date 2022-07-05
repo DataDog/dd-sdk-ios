@@ -7,28 +7,13 @@
 import XCTest
 @testable import Datadog
 
-final class ServerDateProviderMock: ServerDateProvider {
-    private var update: (TimeInterval) -> Void = { _ in }
-
-    var offset: TimeInterval = .zero {
-        didSet { update(offset) }
-    }
-
-    func synchronize(update: @escaping (TimeInterval) -> Void) {
-        self.update = update
-    }
-}
-
 class DatadogContextProviderTests: XCTestCase {
     let context: DatadogContext = .mockAny()
 
     // MARK: - Thread Safety
 
     func testConcurrentReadWrite() {
-        let provider = DatadogContextProvider(
-            context: context,
-            serverDateProvider: ServerDateProviderMock()
-        )
+        let provider: DatadogContextProvider = .mockWith(context: context)
 
         DispatchQueue.concurrentPerform(iterations: 50) { iteration in
             provider.read { _ in }
@@ -36,27 +21,59 @@ class DatadogContextProviderTests: XCTestCase {
         }
     }
 
-    func testServerDateProvider() {
-        // Given
-        let serverDateProvider = ServerDateProviderMock()
+    // MARK: - Test Propagation
 
-        let provider = DatadogContextProvider(
+    func testServerOffsetPropagation() throws {
+        // Given
+        let kronos = KronosClockMock()
+
+        let provider: DatadogContextProvider = .mockWith(
             context: context,
-            serverDateProvider: serverDateProvider
+            serverOffsetPublisher: .init(kronos: kronos)
         )
 
         // When
-        serverDateProvider.offset = -1
+        let offset: TimeInterval = .mockRandomInThePast()
+        kronos.update(offset: offset)
 
         // Then
-        var context = provider.read()
-        XCTAssertEqual(context.serverTimeOffset, -1)
+        let context = try provider.read()
+        XCTAssertEqual(context.serverTimeOffset, offset)
+    }
+
+    func testNetworkInfoPropagation() throws {
+        // Given
+        let publisher = NetworkConnectionInfoPublisherMock()
+
+        let provider: DatadogContextProvider = .mockWith(
+            context: context,
+            networkConnectionInfoPublisher: publisher.eraseToAnyPublisher()
+        )
 
         // When
-        serverDateProvider.offset = 1
+        let networkConnectionInfo: NetworkConnectionInfo = .mockRandom()
+        publisher.networkConnectionInfo = networkConnectionInfo
 
         // Then
-        context = provider.read()
-        XCTAssertEqual(context.serverTimeOffset, 1)
+        let context = try provider.read()
+        XCTAssertEqual(context.networkConnectionInfo, networkConnectionInfo)
+    }
+
+    func testCarrierInfoPropagation() throws {
+        // Given
+        let publisher = CarrierInfoPublisherMock()
+
+        let provider: DatadogContextProvider = .mockWith(
+            context: context,
+            carrierInfoPublisher: .init(publisher)
+        )
+
+        // When
+        let carrierInfo: CarrierInfo = .mockRandom()
+        publisher.carrierInfo = carrierInfo
+
+        // Then
+        let context = try provider.read()
+        XCTAssertEqual(context.carrierInfo, carrierInfo)
     }
 }
