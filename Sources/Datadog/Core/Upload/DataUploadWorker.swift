@@ -23,8 +23,6 @@ internal class DataUploadWorker: DataUploadWorkerType {
     private let uploadConditions: DataUploadConditions
     /// Name of the feature this worker is performing uploads for.
     private let featureName: String
-    /// A monitor reporting errors through internal telemetry feature (if enabled).
-    private let telemetry: Telemetry?
 
     /// Delay used to schedule consecutive uploads.
     private var delay: Delay
@@ -38,8 +36,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
         dataUploader: DataUploaderType,
         uploadConditions: DataUploadConditions,
         delay: Delay,
-        featureName: String,
-        telemetry: Telemetry? = nil
+        featureName: String
     ) {
         self.queue = queue
         self.fileReader = fileReader
@@ -47,7 +44,6 @@ internal class DataUploadWorker: DataUploadWorkerType {
         self.dataUploader = dataUploader
         self.delay = delay
         self.featureName = featureName
-        self.telemetry = telemetry
 
         let uploadWork = DispatchWorkItem { [weak self] in
             guard let self = self else {
@@ -79,9 +75,9 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 case .unauthorized:
                     DD.logger.error("⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.")
                 case let .httpError(statusCode: statusCode):
-                    self.telemetry?.error("Data upload finished with status code: \(statusCode)")
+                    DD.telemetry.error("Data upload finished with status code: \(statusCode)")
                 case let .networkError(error: error):
-                    self.telemetry?.error("Data upload finished with error", error: error)
+                    DD.telemetry.error("Data upload finished with error", error: error)
                 case .none: break
                 }
             } else {

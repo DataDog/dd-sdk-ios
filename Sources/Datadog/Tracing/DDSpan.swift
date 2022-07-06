@@ -156,8 +156,7 @@ internal class DDSpan: OTSpan {
                     dateCorrector: context.dateCorrector,
                     source: context.source,
                     origin: context.ciAppOrigin,
-                    eventsMapper: self.ddTracer.spanEventMapper,
-                    telemetry: context.telemetry
+                    eventsMapper: self.ddTracer.spanEventMapper
                 )
 
                 let event = builder.createSpanEvent(

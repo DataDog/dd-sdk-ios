@@ -218,7 +218,7 @@ public class Datadog {
         var rumInstrumentation: RUMInstrumentation?
 
         if let rumConfiguration = configuration.rum {
-            core.telemetry = RUMTelemetry(
+            DD.telemetry = RUMTelemetry(
                 in: core,
                 sdkVersion: configuration.common.sdkVersion,
                 applicationID: rumConfiguration.applicationID,
@@ -267,8 +267,7 @@ public class Datadog {
         if let crashReportingConfiguration = configuration.crashReporting {
             crashReporting = CrashReportingFeature(
                 configuration: crashReportingConfiguration,
-                commonDependencies: commonDependencies,
-                telemetry: core.telemetry
+                commonDependencies: commonDependencies
             )
 
             core.register(feature: crashReporting)
@@ -336,6 +335,7 @@ public class Datadog {
         Global.rum = DDNoopRUMMonitor()
         Global.crashReporter?.deinitialize()
         Global.crashReporter = nil
+        DD.telemetry = NoOpTelemetry()
 
         // Deinitialize `Datadog`:
         defaultDatadogCore = NOOPDatadogCore()

@@ -25,8 +25,7 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
-            loggingOrRUMIntegration: integration,
-            telemetry: nil
+            loggingOrRUMIntegration: integration
         )
 
         // Then
@@ -58,8 +57,7 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
-            loggingOrRUMIntegration: integration,
-            telemetry: nil
+            loggingOrRUMIntegration: integration
         )
 
         // Then
@@ -86,8 +84,7 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
-            loggingOrRUMIntegration: integration,
-            telemetry: nil
+            loggingOrRUMIntegration: integration
         )
 
         // Then
@@ -113,8 +110,7 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(initialCrashContext: initialCrashContext),
-            loggingOrRUMIntegration: CrashReportingIntegrationMock(),
-            telemetry: nil
+            loggingOrRUMIntegration: CrashReportingIntegrationMock()
         )
 
         try withExtendedLifetime(crashReporter) {
@@ -137,8 +133,7 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: crashContextProvider,
-            loggingOrRUMIntegration: CrashReportingIntegrationMock(),
-            telemetry: nil
+            loggingOrRUMIntegration: CrashReportingIntegrationMock()
         )
 
         try withExtendedLifetime(crashReporter) {
@@ -179,8 +174,7 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: crashContextProvider,
-            loggingOrRUMIntegration: CrashReportingIntegrationMock(),
-            telemetry: nil
+            loggingOrRUMIntegration: CrashReportingIntegrationMock()
         )
 
         // swiftlint:disable opening_brace

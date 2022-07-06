@@ -175,8 +175,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 dependencies: RUMScopeDependencies(
                     rumFeature: rumFeature,
                     crashReportingFeature: crashReporting,
-                    context: context,
-                    telemetry: context.telemetry
+                    context: context
                 ),
                 dateProvider: context.dateProvider
             )

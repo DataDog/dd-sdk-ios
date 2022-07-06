@@ -92,3 +92,8 @@ extension Telemetry {
         self.error(message, error: DDError(error: error), file: file, line: line)
     }
 }
+
+internal struct NoOpTelemetry: Telemetry {
+    func debug(id: String, message: String) {}
+    func error(id: String, message: String, kind: String?, stack: String?) {}
+}

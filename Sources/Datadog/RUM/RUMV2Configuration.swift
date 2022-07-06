@@ -24,7 +24,7 @@ internal func createV2RUMStorageConfiguration() -> FeatureStorageConfiguration {
 internal func createV2RUMUploadConfiguration(v1Configuration: FeaturesConfiguration.RUM) -> FeatureUploadConfiguration {
     return FeatureUploadConfiguration(
         featureName: "RUM",
-        createRequestBuilder: { v1Context, telemetry in
+        createRequestBuilder: { v1Context in
             return RequestBuilder(
                 url: v1Configuration.uploadURL,
                 queryItems: [
@@ -49,8 +49,7 @@ internal func createV2RUMUploadConfiguration(v1Configuration: FeaturesConfigurat
                     .ddEVPOriginHeader(source: v1Context.ciAppOrigin ?? v1Context.source),
                     .ddEVPOriginVersionHeader(sdkVersion: v1Context.sdkVersion),
                     .ddRequestIDHeader(),
-                ],
-                telemetry: telemetry
+                ]
             )
         },
         payloadFormat: DataFormat(prefix: "", suffix: "", separator: "\n")

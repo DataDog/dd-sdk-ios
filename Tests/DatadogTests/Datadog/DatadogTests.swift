@@ -120,7 +120,7 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
             XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
-            XCTAssertNil((defaultDatadogCore as? DatadogCore)?.telemetry, "When RUM is disabled, telemetry monitor should not be set")
+            XCTAssertTrue(DD.telemetry is NoOpTelemetry, "When RUM is disabled, telemetry monitor should not be set")
         }
         verify(configuration: rumBuilder.build()) {
             // verify features:
@@ -130,7 +130,7 @@ class DatadogTests: XCTestCase {
             XCTAssertNotNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
             XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
-            XCTAssertNotNil((defaultDatadogCore as? DatadogCore)?.telemetry, "When RUM is enabled, telemetry monitor should be set")
+            XCTAssertTrue(DD.telemetry is RUMTelemetry, "When RUM is enabled, telemetry monitor should be set")
         }
 
         verify(configuration: defaultBuilder.enableLogging(false).build()) {
@@ -141,7 +141,7 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
             XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
-            XCTAssertNil((defaultDatadogCore as? DatadogCore)?.telemetry)
+            XCTAssertTrue(DD.telemetry is NoOpTelemetry)
         }
         verify(configuration: rumBuilder.enableLogging(false).build()) {
             // verify features:
@@ -152,7 +152,7 @@ class DatadogTests: XCTestCase {
             XCTAssertNotNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
             XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
-            XCTAssertNotNil((defaultDatadogCore as? DatadogCore)?.telemetry)
+            XCTAssertTrue(DD.telemetry is RUMTelemetry)
         }
 
         verify(configuration: defaultBuilder.enableTracing(false).build()) {
@@ -163,7 +163,7 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(defaultDatadogCore.v1.feature(CrashReportingFeature.self))
             XCTAssertNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
             XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
-            XCTAssertNil((defaultDatadogCore as? DatadogCore)?.telemetry)
+            XCTAssertTrue(DD.telemetry is NoOpTelemetry)
         }
         verify(configuration: rumBuilder.enableTracing(false).build()) {
             // verify features:
@@ -173,7 +173,7 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(defaultDatadogCore.v1.feature(CrashReportingFeature.self))
             XCTAssertNotNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
             XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
-            XCTAssertNotNil((defaultDatadogCore as? DatadogCore)?.telemetry)
+            XCTAssertTrue(DD.telemetry is RUMTelemetry)
         }
 
         verify(configuration: defaultBuilder.enableRUM(true).build()) {
@@ -184,7 +184,7 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
             XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
-            XCTAssertNil((defaultDatadogCore as? DatadogCore)?.telemetry)
+            XCTAssertTrue(DD.telemetry is NoOpTelemetry)
         }
         verify(configuration: rumBuilder.enableRUM(false).build()) {
             // verify features:
@@ -194,7 +194,7 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
             XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
-            XCTAssertNil((defaultDatadogCore as? DatadogCore)?.telemetry)
+            XCTAssertTrue(DD.telemetry is NoOpTelemetry)
         }
 
         verify(configuration: rumBuilder.trackUIKitRUMViews().build()) {

@@ -579,8 +579,7 @@ class LoggerTests: XCTestCase {
             dependencies: RUMScopeDependencies(
                 rumFeature: rum,
                 crashReportingFeature: nil,
-                context: v1Context,
-                telemetry: nil
+                context: v1Context
             ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
             dateProvider: v1Context.dateProvider
         )

@@ -49,7 +49,7 @@ internal struct FeatureUploadConfiguration {
 
     /// Creates the V1's `RequetsBuilder` for uploading data in this Feature.
     /// In V2 we will change it to build requests based on V2 context and batch metadata.
-    let createRequestBuilder: (DatadogV1Context, Telemetry?) -> RequestBuilder
+    let createRequestBuilder: (DatadogV1Context) -> RequestBuilder
 
     /// Data format for constructing Feature payloads in V1. It is applied by the reader when reading data from batch and
     /// before passing it to the uploader.

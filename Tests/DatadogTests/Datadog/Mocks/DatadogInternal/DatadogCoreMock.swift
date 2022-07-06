@@ -61,8 +61,7 @@ extension DatadogCoreMock: DatadogV1CoreProtocol {
 
         return DatadogCoreFeatureScope(
             context: context,
-            storage: feature.storage,
-            telemetry: nil
+            storage: feature.storage
         )
     }
 }

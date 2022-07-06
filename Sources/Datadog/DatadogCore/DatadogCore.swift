@@ -51,12 +51,6 @@ internal final class DatadogCore {
     /// The SDK Context for V1.
     internal private(set) var v1Context: DatadogV1Context
 
-    /// Telemetry monitor, if configured.
-    var telemetry: Telemetry? {
-        get { v1Context.telemetry }
-        set { v1Context.telemetry = newValue }
-    }
-
     /// Creates a core instance.
     ///
     /// - Parameters:
@@ -126,16 +120,14 @@ extension DatadogCore: DatadogV1CoreProtocol {
             queue: readWriteQueue,
             dataFormat: uploadConfiguration.payloadFormat,
             directories: featureDirectories,
-            commonDependencies: dependencies,
-            telemetry: telemetry
+            commonDependencies: dependencies
         )
 
         let upload = FeatureUpload(
             featureName: uploadConfiguration.featureName,
             storage: storage,
-            requestBuilder: uploadConfiguration.createRequestBuilder(v1Context, telemetry),
-            commonDependencies: dependencies,
-            telemetry: telemetry
+            requestBuilder: uploadConfiguration.createRequestBuilder(v1Context),
+            commonDependencies: dependencies
         )
 
         return Feature(
@@ -164,8 +156,7 @@ extension DatadogCore: DatadogV1CoreProtocol {
 
         return DatadogCoreFeatureScope(
             context: v1Context,
-            storage: feature.storage,
-            telemetry: telemetry
+            storage: feature.storage
         )
     }
 
@@ -188,13 +179,12 @@ internal protocol V1Feature {
 internal struct DatadogCoreFeatureScope: V1FeatureScope {
     let context: DatadogV1Context
     let storage: FeatureStorage
-    let telemetry: Telemetry?
 
     func eventWriteContext(_ block: (DatadogV1Context, Writer) throws -> Void) {
         do {
             try block(context, storage.writer)
         } catch {
-            telemetry?.error("Failed to execute feature scope", error: error)
+            DD.telemetry.error("Failed to execute feature scope", error: error)
         }
     }
 }

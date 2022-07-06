@@ -33,8 +33,7 @@ class RUMMonitorTests: XCTestCase {
             dependencies: RUMScopeDependencies(
                 rumFeature: rumFeature,
                 crashReportingFeature: crashReportingFeature,
-                context: v1Context,
-                telemetry: v1Context.telemetry
+                context: v1Context
             ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
             dateProvider: v1Context.dateProvider
         )
