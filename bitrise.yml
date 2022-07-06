@@ -289,14 +289,18 @@ workflows:
             #!/usr/bin/env bash
             set -e
             make test-spm ci=${CI}
-    - xcodebuild:
+    - script:
         title: Check Mac Catalyst compatibility (build SPMProject for Catalyst)
         run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
         inputs:
-        - scheme: App iOS
-        - destination: platform=macOS,variant=Mac Catalyst
-        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/SPMProject-catalyst-sanity-check.html"
+        - content: |-
+            #!/usr/bin/env bash
+            set -euxo pipefail
+
+            xcodebuild build -scheme "App iOS" \
+                -project "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj" \
+                -destination "platform=macOS,variant=Mac Catalyst" \
+                | xcpretty
     - xcode-test:
         title: Run SPMProject iOS tests
         run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'

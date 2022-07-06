@@ -19,6 +19,16 @@ public enum DDSDKVerbosityLevel: Int {
 }
 
 @objc
+public enum DDLogLevel: Int {
+    case debug
+    case info
+    case notice
+    case warn
+    case error
+    case critical
+}
+
+@objc
 public class DDLogger: NSObject {
     internal let sdkLogger: Logger
 
@@ -187,6 +197,18 @@ public class DDLoggerBuilder: NSObject {
     @objc
     public func printLogsToConsole(_ enabled: Bool) {
         _ = sdkBuilder.printLogsToConsole(enabled)
+    }
+
+    @objc
+    public func set(datadogReportingThreshold: DDLogLevel) {
+        switch datadogReportingThreshold {
+        case .debug: _ = sdkBuilder.set(datadogReportingThreshold: .debug)
+        case .info: _ = sdkBuilder.set(datadogReportingThreshold: .info)
+        case .notice: _ = sdkBuilder.set(datadogReportingThreshold: .notice)
+        case .warn: _ = sdkBuilder.set(datadogReportingThreshold: .warn)
+        case .error: _ = sdkBuilder.set(datadogReportingThreshold: .error)
+        case .critical: _ = sdkBuilder.set(datadogReportingThreshold: .critical)
+        }
     }
 
     @objc

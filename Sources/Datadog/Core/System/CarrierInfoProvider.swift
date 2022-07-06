@@ -50,7 +50,7 @@ internal protocol CarrierInfoProviderType {
 extension CarrierInfo.RadioAccessTechnology {
     init(ctRadioAccessTechnologyConstant: String) {
         switch ctRadioAccessTechnologyConstant {
-        #if os(iOS)
+        #if os(iOS) && !targetEnvironment(macCatalyst)
         case CTRadioAccessTechnologyGPRS: self = .GPRS
         case CTRadioAccessTechnologyEdge: self = .Edge
         case CTRadioAccessTechnologyWCDMA: self = .WCDMA
@@ -74,7 +74,7 @@ internal class CarrierInfoProvider: CarrierInfoProviderType {
     private let wrappedProvider: CarrierInfoProviderType
 
     convenience init() {
-        #if os(iOS)
+        #if os(iOS) && !targetEnvironment(macCatalyst)
         if #available(iOS 12.0, *) {
             self.init(wrappedProvider: iOS12CarrierInfoProvider(networkInfo: CTTelephonyNetworkInfo()))
         } else {
@@ -106,7 +106,7 @@ internal struct NOPCarrierInfoProvider: CarrierInfoProviderType {
     func subscribe<Observer>(_ subscriber: Observer) where Observer: ValueObserver, Observer.ObservedValue == CarrierInfo? {}
 }
 
-#if os(iOS)
+#if os(iOS) && !targetEnvironment(macCatalyst)
 /// Carrier info provider for iOS 12 and above.
 /// It reads `CarrierInfo?` from `CTTelephonyNetworkInfo` only when `CTCarrier` has changed (e.g. when the SIM card was swapped).
 @available(iOS 12, *)

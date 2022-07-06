@@ -58,7 +58,8 @@ public enum LogLevel: Int, Codable {
 public typealias DDLogger = Logger
 
 public class Logger {
-    internal typealias LogEventValidation = (LogEvent) -> Bool
+    /// Filters logs by their status.
+    internal typealias LogsFilter = (LogEvent.Status) -> Bool
 
     internal let core: DatadogCoreProtocol
     /// Attributes associated with every log.
@@ -72,7 +73,8 @@ public class Logger {
     internal let loggerName: String?
     internal let sendNetworkInfo: Bool
     internal let useCoreOutput: Bool
-    internal let validate: LogEventValidation
+    /// Filters logs by their status.
+    internal let logsFilter: LogsFilter
     internal let additionalOutput: LogOutput?
     /// Log events mapper configured by the user, `nil` if not set.
     internal let logEventMapper: LogEventMapper?
@@ -88,7 +90,7 @@ public class Logger {
         loggerName: String?,
         sendNetworkInfo: Bool,
         useCoreOutput: Bool,
-        validation: LogEventValidation?,
+        logsFilter: @escaping LogsFilter,
         rumContextIntegration: LoggingWithRUMContextIntegration?,
         activeSpanIntegration: LoggingWithActiveSpanIntegration?,
         additionalOutput: LogOutput?,
@@ -103,7 +105,7 @@ public class Logger {
         self.loggerName = loggerName
         self.sendNetworkInfo = sendNetworkInfo
         self.useCoreOutput = useCoreOutput
-        self.validate = validation ?? { _ in true }
+        self.logsFilter = logsFilter
         self.additionalOutput = additionalOutput
         self.logEventMapper = logEventMapper
         self.rumContextIntegration = rumContextIntegration
@@ -305,7 +307,7 @@ public class Logger {
                 tags: tags
             )
 
-            guard let log = event, self.validate(log) else {
+            guard let log = event, self.logsFilter(log.status) else {
                 return
             }
 
@@ -340,6 +342,7 @@ public class Logger {
         internal var bundleWithTrace = true
         internal var useCoreOutput = true
         internal var consoleLogFormat: ConsoleLogFormat?
+        internal var datadogReportingThreshold: LogLevel = .debug
 
         /// Sets the service name that will appear in logs.
         /// - Parameter serviceName: the service name  (default value is set to application bundle identifier)
@@ -391,6 +394,14 @@ public class Logger {
             return self
         }
 
+        /// Set the minim log level reported to Datadog servers.
+        /// Any log with a level equal or above to the threshold will be sent
+        /// - Parameter datadogReportingThreshold: `LogLevel.debug` by default
+        public func set(datadogReportingThreshold: LogLevel) -> Builder {
+            self.datadogReportingThreshold = datadogReportingThreshold
+            return self
+        }
+
         /// Format to use when printing logs to console if `printLogsToConsole(_:)` is enabled.
         public enum ConsoleLogFormat {
             /// Prints short representation of log.
@@ -427,7 +438,7 @@ public class Logger {
                     loggerName: nil,
                     sendNetworkInfo: false,
                     useCoreOutput: false,
-                    validation: nil,
+                    logsFilter: { _ in false },
                     rumContextIntegration: nil,
                     activeSpanIntegration: nil,
                     additionalOutput: nil,
@@ -454,6 +465,13 @@ public class Logger {
             let rumEnabled = core.v1.feature(RUMFeature.self) != nil
             let tracingEnabled = core.v1.feature(TracingFeature.self) != nil
 
+            let threshold = datadogReportingThreshold
+            let filter: LogsFilter = { logStatus in
+                let logSeverity = LogLevel(from: logStatus)?.rawValue ?? 0
+                let thresholdValue = threshold.rawValue
+                return logSeverity >= thresholdValue
+            }
+
             return Logger(
                 core: core,
                 identifier: loggerName ?? context.applicationBundleIdentifier,
@@ -461,7 +479,7 @@ public class Logger {
                 loggerName: loggerName,
                 sendNetworkInfo: sendNetworkInfo,
                 useCoreOutput: useCoreOutput,
-                validation: nil,
+                logsFilter: filter,
                 rumContextIntegration: (rumEnabled && bundleWithRUM) ? LoggingWithRUMContextIntegration() : nil,
                 activeSpanIntegration: (tracingEnabled && bundleWithTrace) ? LoggingWithActiveSpanIntegration() : nil,
                 additionalOutput: resolveOuput(),

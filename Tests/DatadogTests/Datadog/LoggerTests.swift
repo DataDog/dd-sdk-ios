@@ -55,7 +55,7 @@ class LoggerTests: XCTestCase {
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:00.000Z",
           "version": "1.0.0",
-          "ddtags": "env:tests"
+          "ddtags": "env:tests,version:1.0.0"
         }
         """)
     }
@@ -135,6 +135,29 @@ class LoggerTests: XCTestCase {
         logMatchers[3].assertStatus(equals: "warn")
         logMatchers[4].assertStatus(equals: "error")
         logMatchers[5].assertStatus(equals: "critical")
+    }
+
+    func testSendingLogsAboveCertainLevel() throws {
+        core.context = .mockAny()
+
+        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        core.register(feature: feature)
+
+        let logger = Logger.builder
+            .set(datadogReportingThreshold: .warn)
+            .build(in: core)
+
+        logger.debug("message")
+        logger.info("message")
+        logger.notice("message")
+        logger.warn("message")
+        logger.error("message")
+        logger.critical("message")
+
+        let logMatchers = try feature.waitAndReturnLogMatchers(count: 3)
+        logMatchers[0].assertStatus(equals: "warn")
+        logMatchers[1].assertStatus(equals: "error")
+        logMatchers[2].assertStatus(equals: "critical")
     }
 
     // MARK: - Logging an error
@@ -428,7 +451,10 @@ class LoggerTests: XCTestCase {
 
     func testSendingTags() throws {
         core.context = .mockWith(
-            configuration: .mockWith(environment: "tests")
+            configuration: .mockWith(
+                applicationVersion: "1.2.3",
+                environment: "tests"
+            )
         )
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers()
@@ -458,9 +484,9 @@ class LoggerTests: XCTestCase {
         logger.info("info message 3")
 
         let logMatchers = try feature.waitAndReturnLogMatchers(count: 3)
-        logMatchers[0].assertTags(equal: ["tag1", "env:tests"])
-        logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd", "env:tests"])
-        logMatchers[2].assertTags(equal: ["env:tests"])
+        logMatchers[0].assertTags(equal: ["tag1", "env:tests", "version:1.2.3"])
+        logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd", "env:tests", "version:1.2.3"])
+        logMatchers[2].assertTags(equal: ["env:tests", "version:1.2.3"])
     }
 
     // MARK: - Integration With RUM Feature
@@ -694,7 +720,7 @@ class LoggerTests: XCTestCase {
             loggerName: nil,
             sendNetworkInfo: false,
             useCoreOutput: true,
-            validation: nil,
+            logsFilter: { _ in true },
             rumContextIntegration: nil,
             activeSpanIntegration: nil,
             additionalOutput: nil,
