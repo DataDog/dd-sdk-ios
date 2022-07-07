@@ -144,7 +144,10 @@ class DDLoggerTests: XCTestCase {
 
     func testSettingTagsAndAttributes() throws {
         core.context = .mockWith(
-            configuration: .mockWith(environment: "test")
+            configuration: .mockWith(
+                applicationVersion: "1.2.3",
+                environment: "test"
+            )
         )
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers()
@@ -169,7 +172,7 @@ class DDLoggerTests: XCTestCase {
         let logMatcher = try feature.waitAndReturnLogMatchers(count: 1)[0]
         logMatcher.assertValue(forKeyPath: "foo", equals: "bar")
         logMatcher.assertNoValue(forKey: "bizz")
-        logMatcher.assertTags(equal: ["foo:bar", "foobar", "env:test"])
+        logMatcher.assertTags(equal: ["foo:bar", "foobar", "env:test", "version:1.2.3"])
     }
 }
 // swiftlint:enable multiline_arguments_brackets

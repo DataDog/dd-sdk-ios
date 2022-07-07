@@ -51,6 +51,7 @@ class LoggerBuilderTests: XCTestCase {
         XCTAssertNil(logger.logEventMapper)
         XCTAssertNil(logger.serviceName, "service-name")
         XCTAssertNil(logger.loggerName, "com.datadog.unit-tests")
+        LogEvent.Status.allCases.forEach { XCTAssertTrue(logger.logsFilter($0)) }
     }
 
     func testDefaultLoggerWithRUMEnabled() throws {
@@ -88,6 +89,7 @@ class LoggerBuilderTests: XCTestCase {
             .sendNetworkInfo(true)
             .bundleWithRUM(false)
             .bundleWithTrace(false)
+            .set(datadogReportingThreshold: .error)
             .build(in: core)
 
         XCTAssertNil(logger.rumContextIntegration)
@@ -98,6 +100,11 @@ class LoggerBuilderTests: XCTestCase {
         XCTAssertNil(logger.logEventMapper)
         XCTAssertEqual(logger.serviceName, "custom-service-name")
         XCTAssertEqual(logger.loggerName, "custom-logger-name")
+
+        let rejectedLogStatuses: [LogEvent.Status] = [.debug, .info, .notice, .warn]
+        let acceptedLogStatuses: [LogEvent.Status] = [.error, .critical]
+        rejectedLogStatuses.forEach { XCTAssertFalse(logger.logsFilter($0)) }
+        acceptedLogStatuses.forEach { XCTAssertTrue(logger.logsFilter($0)) }
     }
 
     func testUsingDifferentOutputs() throws {

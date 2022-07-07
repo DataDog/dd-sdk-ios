@@ -136,6 +136,7 @@ struct RUMCommandMock: RUMCommand {
     var attributes: [AttributeKey: AttributeValue] = [:]
     var canStartBackgroundView = false
     var canStartApplicationLaunchView = false
+    var isUserInteraction = false
 }
 
 /// Creates random `RUMCommand` from available ones.

@@ -239,6 +239,7 @@ DDDatadog.verbosityLevel = DDSDKVerbosityLevelDebug;
 let logger = Logger.builder
     .sendNetworkInfo(true)
     .printLogsToConsole(true, usingFormat: .shortWith(prefix: "[iOS App] "))
+    .set(datadogReportingThreshold: .info)
     .build()
 ```
 {{% /tab %}}
@@ -246,6 +247,7 @@ let logger = Logger.builder
 ```objective-c
 DDLoggerBuilder *builder = [DDLogger builder];
 [builder sendNetworkInfo:YES];
+[builder setWithDatadogReportingThreshold:.info];
 [builder printLogsToConsole:YES];
 
 DDLogger *logger = [builder build];

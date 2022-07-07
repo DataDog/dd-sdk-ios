@@ -1,8 +1,16 @@
 # Unreleased
 
 ### Changes
+
 * [IMPROVEMENT] Add mobile vitals frequency configuration. See [#876][]
 * [IMPROVEMENT] Include the exact model information in RUM `device.model`. See [#888][]
+* [FEATURE] Allow filtering outgoing logs with a status threshold. See [#867][]
+
+# 1.11.1 / 20-06-2022
+
+### Changes
+
+* [BUGFIX] Fix Mac Catalyst builds compatibility. See [#894][]
 
 # 1.11.0 / 13-06-2022
 
@@ -19,8 +27,6 @@
 * [IMPROVEMENT] Add tracing sampling rate. See [#851][]
 * [IMPROVEMENT] Crash Reporting: Filter out unrecognized trailing `???` stack frame in `error.stack`. See [#794][]
 * [IMPROVEMENT] Reduce the number of intermediate view events sent in RUM payloads. See [#815][]
-
-### Changes
 
 # 1.11.0-rc1 / 18-05-2022
 
@@ -388,6 +394,7 @@
 [#832]: https://github.com/DataDog/dd-sdk-ios/issues/832
 [#851]: https://github.com/DataDog/dd-sdk-ios/issues/851
 [#876]: https://github.com/DataDog/dd-sdk-ios/issues/876
+[#894]: https://github.com/DataDog/dd-sdk-ios/issues/894
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu
