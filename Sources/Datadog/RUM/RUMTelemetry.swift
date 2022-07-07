@@ -17,11 +17,12 @@ internal final class RUMTelemetry: Telemetry {
     /// Maximium number of telemetry events allowed per user sessions.
     static let MaxEventsPerSessions: Int = 100
 
+    let core: DatadogCoreProtocol
     let sdkVersion: String
     let applicationID: String
     let source: String
     let dateProvider: DateProvider
-    let dateCorrector: DateCorrectorType
+    let dateCorrector: DateCorrector
     let sampler: Sampler
 
     /// Keeps track of current session
@@ -33,19 +34,22 @@ internal final class RUMTelemetry: Telemetry {
     /// Creates a RUM Telemetry instance.
     ///
     /// - Parameters:
+    ///   - core: Datadog core instance.
     ///   - sdkVersion: The Datadog SDK version.
     ///   - applicationID: The application ID.
     ///   - dateProvider: Current device time provider.
     ///   - dateCorrector: Date correction for adjusting device time to server time.
     ///   - sampler: Telemetry events sampler.
     init(
+        in core: DatadogCoreProtocol,
         sdkVersion: String,
         applicationID: String,
         source: String,
         dateProvider: DateProvider,
-        dateCorrector: DateCorrectorType,
+        dateCorrector: DateCorrector,
         sampler: Sampler
     ) {
+        self.core = core
         self.sdkVersion = sdkVersion
         self.applicationID = applicationID
         self.source = source
@@ -64,7 +68,7 @@ internal final class RUMTelemetry: Telemetry {
     ///   - id: Identity of the debug log, this can be used to prevent duplicates.
     ///   - message: The debug message.
     func debug(id: String, message: String) {
-        let date = dateCorrector.currentCorrection.applying(to: dateProvider.currentDate())
+        let date = dateProvider.now.addingTimeInterval(dateCorrector.offset)
 
         record(event: id) { context, writer in
             let actionId = context.activeUserActionID?.toRUMDataFormat
@@ -100,7 +104,7 @@ internal final class RUMTelemetry: Telemetry {
     ///   - kind: The error type or kind (or code in some cases).
     ///   - stack: The stack trace or the complementary information about the error.
     func error(id: String, message: String, kind: String?, stack: String?) {
-        let date = dateCorrector.currentCorrection.applying(to: dateProvider.currentDate())
+        let date = dateProvider.now.addingTimeInterval(dateCorrector.offset)
 
         record(event: id) { context, writer in
             let actionId = context.activeUserActionID?.toRUMDataFormat
@@ -125,10 +129,12 @@ internal final class RUMTelemetry: Telemetry {
     }
 
     private func record(event id: String, operation: @escaping (RUMContext, Writer) -> Void) {
+        let rum = core.v1.feature(RUMFeature.self)
+
         guard
             sampler.sample(),
             let monitor = Global.rum as? RUMMonitor,
-            let writer = RUMFeature.instance?.storage.writer
+            let writer = rum?.storage.writer
         else {
             return
         }

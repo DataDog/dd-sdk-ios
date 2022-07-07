@@ -15,7 +15,7 @@ class WebLogEventConsumerTests: XCTestCase {
     func testWhenValidWebLogEventPassed_itDecoratesAndPassesToWriter() throws {
         let mockSessionID: UUID = .mockRandom()
         mockContextProvider.context.sessionID = RUMUUID(rawValue: mockSessionID)
-        mockDateCorrector.correctionOffset = 123
+        mockDateCorrector.offset = 123
         let applicationVersion = String.mockRandom()
         let environment = String.mockRandom()
         let eventConsumer = DefaultWebLogEventConsumer(
@@ -47,7 +47,7 @@ class WebLogEventConsumerTests: XCTestCase {
 
         try eventConsumer.consume(event: webLogEvent, internalLog: false)
 
-        let data = try JSONEncoder().encode(mockUserLogsWriter.dataWritten as? CodableValue)
+        let data = try JSONEncoder().encode(mockUserLogsWriter.events.first as? CodableValue)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
         AssertDictionariesEqual(writtenJSON, expectedWebLogEvent)
@@ -77,7 +77,7 @@ class WebLogEventConsumerTests: XCTestCase {
 
         try eventConsumer.consume(event: webLogEvent, internalLog: false)
 
-        let data = try JSONEncoder().encode(mockUserLogsWriter.dataWritten as? CodableValue)
+        let data = try JSONEncoder().encode(mockUserLogsWriter.events.first as? CodableValue)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
         AssertDictionariesEqual(writtenJSON, expectedWebLogEvent)

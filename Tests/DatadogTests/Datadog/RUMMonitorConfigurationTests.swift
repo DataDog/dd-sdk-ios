@@ -8,44 +8,55 @@ import XCTest
 @testable import Datadog
 
 class RUMMonitorConfigurationTests: XCTestCase {
+    private let userInfoProvider: UserInfoProvider = .mockAny()
     private let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
     private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
 
     func testRUMMonitorConfiguration() throws {
-        temporaryFeatureDirectories.create()
-        defer { temporaryFeatureDirectories.delete() }
+        let expectation = expectation(description: "open feature scope")
 
-        RUMFeature.instance = .mockByRecordingRUMEventMatchers(
-            directories: temporaryFeatureDirectories,
-            configuration: .mockWith(
-                common: .mockWith(
+        let core = DatadogCoreMock(
+            context: .mockWith(
+                configuration: .mockWith(
                     applicationVersion: "1.2.3",
                     serviceName: "service-name",
                     environment: "tests",
                     sdkVersion: "3.4.5"
                 ),
-                applicationID: "rum-123",
-                sessionSampler: Sampler(samplingRate: 42.5)
-            ),
-            dependencies: .mockWith(
-                networkConnectionInfoProvider: networkConnectionInfoProvider,
-                carrierInfoProvider: carrierInfoProvider
+                dependencies: .mockWith(
+                    userInfoProvider: userInfoProvider,
+                    networkConnectionInfoProvider: networkConnectionInfoProvider,
+                    carrierInfoProvider: carrierInfoProvider
+                )
             )
         )
-        defer { RUMFeature.instance?.deinitialize() }
+        defer { core.flush() }
 
-        let monitor = RUMMonitor.initialize().dd
+        let feature: RUMFeature = .mockByRecordingRUMEventMatchers(
+            featureConfiguration: .mockWith(
+                applicationID: "rum-123",
+                sessionSampler: Sampler(samplingRate: 42.5)
+            )
+        )
+        core.register(feature: feature)
 
-        let feature = try XCTUnwrap(RUMFeature.instance)
-        let scopeDependencies = monitor.applicationScope.dependencies
+        let monitor = RUMMonitor.initialize(in: core).dd
 
-        XCTAssertTrue(scopeDependencies.userInfoProvider.userInfoProvider === feature.userInfoProvider)
-        XCTAssertTrue(scopeDependencies.connectivityInfoProvider.networkConnectionInfoProvider as AnyObject === feature.networkConnectionInfoProvider as AnyObject)
-        XCTAssertTrue(scopeDependencies.connectivityInfoProvider.carrierInfoProvider as AnyObject === feature.carrierInfoProvider as AnyObject)
-        XCTAssertEqual(scopeDependencies.sessionSampler.samplingRate, 42.5)
-        XCTAssertEqual(scopeDependencies.serviceName, "service-name")
-        XCTAssertEqual(scopeDependencies.applicationVersion, "1.2.3")
-        XCTAssertEqual(scopeDependencies.sdkVersion, "3.4.5")
+        let dependencies = monitor.applicationScope.dependencies
+        monitor.core.v1.scope(for: RUMFeature.self)?.eventWriteContext { context, _ in
+            XCTAssertTrue(context.userInfoProvider === userInfoProvider)
+            XCTAssertTrue(context.networkConnectionInfoProvider as AnyObject === networkConnectionInfoProvider as AnyObject)
+            XCTAssertTrue(context.carrierInfoProvider as AnyObject === carrierInfoProvider as AnyObject)
+
+            XCTAssertEqual(context.service, "service-name")
+            XCTAssertEqual(context.version, "1.2.3")
+            XCTAssertEqual(context.sdkVersion, "3.4.5")
+
+            expectation.fulfill()
+        }
+
+        XCTAssertEqual(dependencies.sessionSampler.samplingRate, 42.5)
         XCTAssertEqual(monitor.applicationScope.context.rumApplicationID, "rum-123")
+        waitForExpectations(timeout: 0.5)
     }
 }

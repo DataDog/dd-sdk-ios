@@ -6,7 +6,5 @@
 
 import Foundation
 
-/// An interface for writing spans to some destination.
-internal protocol SpanOutput {
-    func write(span: SpanEvent)
+internal struct DatadogContext {
 }

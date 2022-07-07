@@ -12,8 +12,13 @@ class DirectoryTests: XCTestCase {
 
     // MARK: - Directory creation
 
+    func testItObtainsCacheDirectory() throws {
+        let directory = try Directory.cache()
+        XCTAssertTrue(fileManager.fileExists(atPath: directory.url.path))
+    }
+
     func testGivenSubdirectoryName_itCreatesIt() throws {
-        let directory = try Directory(withSubdirectoryPath: uniqueSubdirectoryName())
+        let directory = try Directory.cache().createSubdirectory(path: uniqueSubdirectoryName())
         defer { directory.delete() }
 
         XCTAssertTrue(fileManager.fileExists(atPath: directory.url.path))
@@ -21,7 +26,7 @@ class DirectoryTests: XCTestCase {
 
     func testGivenSubdirectoryPath_itCreatesIt() throws {
         let path = uniqueSubdirectoryName() + "/subdirectory/another-subdirectory"
-        let directory = try Directory(withSubdirectoryPath: path)
+        let directory = try Directory.cache().createSubdirectory(path: path)
         defer { directory.delete() }
 
         XCTAssertTrue(fileManager.fileExists(atPath: directory.url.path))
@@ -29,15 +34,42 @@ class DirectoryTests: XCTestCase {
 
     func testWhenDirectoryExists_itDoesNothing() throws {
         let path = uniqueSubdirectoryName() + "/subdirectory/another-subdirectory"
-        let originalDirectory = try Directory(withSubdirectoryPath: path)
+        let originalDirectory = try Directory.cache().createSubdirectory(path: path)
         defer { originalDirectory.delete() }
         _ = try originalDirectory.createFile(named: "abcd")
 
         // Try again when directory exists
-        let retrievedDirectory = try Directory(withSubdirectoryPath: path)
+        let retrievedDirectory = try Directory.cache().createSubdirectory(path: path)
 
         XCTAssertEqual(retrievedDirectory.url, originalDirectory.url)
         XCTAssertTrue(fileManager.fileExists(atPath: retrievedDirectory.url.appendingPathComponent("abcd").path))
+    }
+
+    func testItReturnsSubdirectoryAtPathWhenItExists() throws {
+        let directory = temporaryDirectory
+        directory.create()
+        defer { directory.delete() }
+
+        let uniqueName = uniqueSubdirectoryName()
+        let expectedDirectory = try directory.createSubdirectory(path: uniqueName)
+        let actualDirectory = try directory.subdirectory(path: uniqueName)
+
+        XCTAssertEqual(expectedDirectory.url, actualDirectory.url)
+    }
+
+    func testItThrowsWhenAskedForSubdirectoryWhichDoesNotExist() throws {
+        let directory = temporaryDirectory
+        directory.create()
+        defer { directory.delete() }
+
+        XCTAssertThrowsError(try directory.subdirectory(path: "abc")) { error in
+            XCTAssertTrue(error is InternalError, "It should throw as directory at given path doesn't exist")
+        }
+
+        _ = try directory.createFile(named: "file-instead-of-directory")
+        XCTAssertThrowsError(try directory.subdirectory(path: "file-instead-of-directory")) { error in
+            XCTAssertTrue(error is InternalError, "It should throw as given path is a file, not directory")
+        }
     }
 
     // MARK: - Files manipulation

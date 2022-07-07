@@ -22,6 +22,13 @@ internal struct RUMConnectivityInfoProvider {
 }
 
 extension RUMConnectivity {
+    init?(context: DatadogV1Context) {
+        self.init(
+            networkInfo: context.networkConnectionInfoProvider.current,
+            carrierInfo: context.carrierInfoProvider.current
+        )
+    }
+
     init?(networkInfo: NetworkConnectionInfo?, carrierInfo: CarrierInfo?) {
         guard let networkInfo = networkInfo else {
             return nil

@@ -14,7 +14,7 @@ internal struct LoggingWithRUMContextIntegration {
     /// Returns `nil` and prints warning if global `RUMMonitor` is not registered.
     var currentRUMContextAttributes: [String: Encodable]? {
         guard let attributes = rumContextIntegration.currentRUMContextAttributes else {
-            userLogger.warn("RUM feature is enabled, but no `RUMMonitor` is registered. The RUM integration with Logging will not work.")
+            DD.logger.warn("RUM feature is enabled, but no `RUMMonitor` is registered. The RUM integration with Logging will not work.")
             return nil
         }
 
@@ -33,5 +33,14 @@ internal struct LoggingWithRUMErrorsIntegration {
             stack: log.error?.stack,
             source: .logger
         )
+    }
+}
+
+extension LoggingWithRUMErrorsIntegration: LogOutput {
+    /// Writes `critical` and `error` logs to RUM.
+    func write(log: LogEvent) {
+        if log.status == .error || log.status == .critical {
+            addError(for: log)
+        }
     }
 }

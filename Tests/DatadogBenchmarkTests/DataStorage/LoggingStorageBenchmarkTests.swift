@@ -18,18 +18,23 @@ class LoggingStorageBenchmarkTests: XCTestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
         self.directory = try Directory(withSubdirectoryPath: "logging-benchmark")
+        self.queue = DispatchQueue(label: "logging-benchmark")
 
-        let storage = LoggingFeature.createStorage(
-            directories: FeatureDirectories(
-                unauthorized: obtainUniqueTemporaryDirectory(),
+        let storage = FeatureStorage(
+            featureName: "logging",
+            queue: queue,
+            dataFormat: DataFormat(prefix: "[", suffix: "]", separator: ","),
+            directories: .init(
+                deprecated: [],
+                unauthorized: directory,
                 authorized: directory
             ),
             commonDependencies: .mockAny(),
             telemetry: nil
         )
+
         self.writer = storage.writer
         self.reader = storage.reader
-        self.queue = (storage.writer as! ConsentAwareDataWriter).queue
 
         XCTAssertTrue(try directory.files().isEmpty)
     }

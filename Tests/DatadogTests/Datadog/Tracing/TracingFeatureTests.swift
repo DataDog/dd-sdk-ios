@@ -10,15 +10,11 @@ import XCTest
 class TracingFeatureTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        XCTAssertNil(Datadog.instance)
-        XCTAssertNil(TracingFeature.instance)
-        temporaryFeatureDirectories.create()
+        temporaryCoreDirectory.create()
     }
 
     override func tearDown() {
-        XCTAssertNil(Datadog.instance)
-        XCTAssertNil(TracingFeature.instance)
-        temporaryFeatureDirectories.delete()
+        temporaryCoreDirectory.delete()
         super.tearDown()
     }
 
@@ -39,33 +35,38 @@ class TracingFeatureTests: XCTestCase {
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
 
-        // Given
-        TracingFeature.instance = .mockWith(
-            directories: temporaryFeatureDirectories,
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
             configuration: .mockWith(
-                common: .mockWith(
-                    applicationName: randomApplicationName,
-                    applicationVersion: randomApplicationVersion,
-                    source: randomSource,
-                    origin: randomOrigin,
-                    sdkVersion: randomSDKVersion,
-                    encryption: randomEncryption
-                ),
-                uploadURL: randomUploadURL,
-                clientToken: randomClientToken
+                clientToken: randomClientToken,
+                applicationName: randomApplicationName,
+                applicationVersion: randomApplicationVersion,
+                source: randomSource,
+                origin: randomOrigin,
+                sdkVersion: randomSDKVersion,
+                encryption: randomEncryption
             ),
             dependencies: .mockWith(
-                mobileDevice: .mockWith(
+                deviceInfo: .mockWith(
                     name: randomDeviceName,
                     osName: randomDeviceOSName,
                     osVersion: randomDeviceOSVersion
                 )
             )
         )
-        defer { TracingFeature.instance?.deinitialize() }
+
+        // Given
+        let featureConfiguration: TracingFeature.Configuration = .mockWith(uploadURL: randomUploadURL)
+        let feature: TracingFeature = try core.create(
+            storageConfiguration: createV2TracingStorageConfiguration(),
+            uploadConfiguration: createV2TracingUploadConfiguration(v1Configuration: featureConfiguration),
+            featureSpecificConfiguration: featureConfiguration
+        )
+        defer { feature.flush() }
+        core.register(feature: feature)
 
         // When
-        let tracer = Tracer.initialize(configuration: .init()).dd
+        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
         let span = tracer.startSpan(operationName: .mockAny())
         span.finish()
 
@@ -93,21 +94,23 @@ class TracingFeatureTests: XCTestCase {
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        TracingFeature.instance = .mockWith(
-            directories: temporaryFeatureDirectories,
+
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            configuration: .mockAny(),
             dependencies: .mockWith(
                 performance: .combining(
                     storagePerformance: StoragePerformanceMock(
                         maxFileSize: .max,
                         maxDirectorySize: .max,
-                        maxFileAgeForWrite: .distantFuture, // write all spans to single file,
+                        maxFileAgeForWrite: .distantFuture, // write all events to single file,
                         minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
                         maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
                         maxObjectsInFile: 3, // write 3 spans to payload,
                         maxObjectSize: .max
                     ),
                     uploadPerformance: UploadPerformanceMock(
-                        initialUploadDelay: 0.5, // wait enough until spans are written,
+                        initialUploadDelay: 0.5, // wait enough until events are written,
                         minUploadDelay: 1,
                         maxUploadDelay: 1,
                         uploadDelayChangeRate: 0
@@ -115,9 +118,17 @@ class TracingFeatureTests: XCTestCase {
                 )
             )
         )
-        defer { TracingFeature.instance?.deinitialize() }
 
-        let tracer = Tracer.initialize(configuration: .init()).dd
+        let featureConfiguration: TracingFeature.Configuration = .mockAny()
+        let feature: TracingFeature = try core.create(
+            storageConfiguration: createV2TracingStorageConfiguration(),
+            uploadConfiguration: createV2TracingUploadConfiguration(v1Configuration: featureConfiguration),
+            featureSpecificConfiguration: featureConfiguration
+        )
+        defer { feature.flush() }
+        core.register(feature: feature)
+
+        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
 
         tracer.startSpan(operationName: "operation 1").finish()
         tracer.startSpan(operationName: "operation 2").finish()

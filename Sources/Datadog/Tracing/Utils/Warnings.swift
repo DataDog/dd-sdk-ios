@@ -9,7 +9,7 @@ import Foundation
 /// Returns `true` if the warning was raised. `false` otherwise.
 internal func warn(if condition: @autoclosure () -> Bool, message: String) -> Bool {
     if condition() {
-        userLogger.warn(message)
+        DD.logger.warn(message)
         return true
     } else {
         return false
@@ -19,7 +19,7 @@ internal func warn(if condition: @autoclosure () -> Bool, message: String) -> Bo
 /// Returns `nil` if the warning was raised. `T` otherwise.
 internal func warnIfCannotCast<T>(value: Any) -> T? {
     guard let castedValue = value as? T else {
-        userLogger.warn("🔥 Using \(type(of: value as Any)) while \(T.self) was expected.")
+        DD.logger.warn("🔥 Using \(type(of: value as Any)) while \(T.self) was expected.")
         return nil
     }
     return castedValue

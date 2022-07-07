@@ -12,64 +12,46 @@ extension LoggingFeature {
         return LoggingFeature(
             storage: .mockNoOp(),
             upload: .mockNoOp(),
-            configuration: .mockAny(),
-            commonDependencies: .mockAny()
+            configuration: .mockAny()
         )
     }
 
-    /// Mocks the feature instance which performs uploads to `URLSession`.
-    /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
-    static func mockWith(
-        directories: FeatureDirectories,
-        configuration: FeaturesConfiguration.Logging = .mockAny(),
-        dependencies: FeaturesCommonDependencies = .mockAny(),
-        telemetry: Telemetry? = nil
-    ) -> LoggingFeature {
-        return LoggingFeature(
-            directories: directories,
-            configuration: configuration,
-            commonDependencies: dependencies,
-            telemetry: telemetry
-        )
-    }
-
-    /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
+    /// Mocks the feature instance which performs writes to `InMemoryWriter`.
     /// Use `LogFeature.waitAndReturnLogMatchers()` to inspect and assert recorded `Logs`.
     static func mockByRecordingLogMatchers(
-        directories: FeatureDirectories,
-        configuration: FeaturesConfiguration.Logging = .mockAny(),
-        dependencies: FeaturesCommonDependencies = .mockAny()
+        featureConfiguration: FeaturesConfiguration.Logging = .mockAny()
     ) -> LoggingFeature {
-        // Get the full feature mock:
-        let fullFeature: LoggingFeature = .mockWith(
-            directories: directories,
-            configuration: configuration,
-            dependencies: dependencies.replacing(
-                dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
-            )
+        // Mock storage with `InMemoryWriter`, used later for retrieving recorded events back:
+        let interceptedStorage = FeatureStorage(
+            writer: InMemoryWriter(),
+            reader: NoOpFileReader(),
+            arbitraryAuthorizedWriter: NoOpFileWriter(),
+            dataOrchestrator: NoOpDataOrchestrator()
         )
-        let uploadWorker = DataUploadWorkerMock()
-        let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
-        // Replace by mocking the `FeatureUpload` and observing the `FeatureStorage`:
-        let mockedUpload = FeatureUpload(uploader: uploadWorker)
-        // Tear down the original upload
-        fullFeature.upload.flushAndTearDown()
         return LoggingFeature(
-            storage: observedStorage,
-            upload: mockedUpload,
-            configuration: configuration,
-            commonDependencies: dependencies
+            storage: interceptedStorage,
+            upload: .mockNoOp(),
+            configuration: featureConfiguration
         )
     }
 
     // MARK: - Expecting Logs Data
 
-    static func waitAndReturnLogMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
-        guard let uploadWorker = LoggingFeature.instance?.upload.uploader as? DataUploadWorkerMock else {
+    func waitAndReturnLogMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
+        guard let inMemoryWriter = storage.writer as? InMemoryWriter else {
             preconditionFailure("Retrieving matchers requires that feature is mocked with `.mockByRecordingLogMatchers()`")
         }
-        return try uploadWorker.waitAndReturnBatchedData(count: count, file: file, line: line)
-            .flatMap { batchData in try LogMatcher.fromArrayOfJSONObjectsData(batchData, file: file, line: line) }
+        return try inMemoryWriter.waitAndReturnEventsData(count: count, file: file, line: line)
+            .map { eventData in try LogMatcher.fromJSONObjectData(eventData) }
+    }
+
+    // swiftlint:disable:next function_default_parameter_at_end
+    static func waitAndReturnLogMatchers(in core: DatadogCoreProtocol = defaultDatadogCore, count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
+        guard let logging = core.v1.feature(LoggingFeature.self) else {
+            preconditionFailure("LoggingFeature is not registered in core")
+        }
+
+        return try logging.waitAndReturnLogMatchers(count: count, file: file, line: line)
     }
 }
 
@@ -187,20 +169,52 @@ extension LogEvent.Error: RandomMockable {
 
 extension Logger {
     static func mockWith(
-        logBuilder: LogEventBuilder = .mockAny(),
-        logOutput: LogOutput = LogOutputMock(),
-        dateProvider: DateProvider = SystemDateProvider(),
+        core: DatadogCoreProtocol,
         identifier: String = .mockAny(),
+        serviceName: String? = nil,
+        loggerName: String? = nil,
+        sendNetworkInfo: Bool = false,
+        useCoreOutput: Bool = true,
+        logsFilter: @escaping LogsFilter = { _ in true },
         rumContextIntegration: LoggingWithRUMContextIntegration? = nil,
-        activeSpanIntegration: LoggingWithActiveSpanIntegration? = nil
+        activeSpanIntegration: LoggingWithActiveSpanIntegration? = nil,
+        additionalOutput: LogOutput = LogOutputMock(),
+        logEventMapper: LogEventMapper? = nil
     ) -> Logger {
         return Logger(
-            logBuilder: logBuilder,
-            logOutput: logOutput,
-            dateProvider: dateProvider,
+            core: core,
             identifier: identifier,
+            serviceName: serviceName,
+            loggerName: loggerName,
+            sendNetworkInfo: sendNetworkInfo,
+            useCoreOutput: useCoreOutput,
+            logsFilter: logsFilter,
             rumContextIntegration: rumContextIntegration,
-            activeSpanIntegration: activeSpanIntegration
+            activeSpanIntegration: activeSpanIntegration,
+            additionalOutput: additionalOutput,
+            logEventMapper: logEventMapper
+        )
+    }
+
+    static func mockConsoleLogger(
+        output: LogOutput,
+        context: DatadogV1Context = .mockAny()
+    ) -> Logger {
+        let core = DatadogCoreMock(context: context)
+        core.register(feature: LoggingFeature.mockNoOp())
+
+        return Logger(
+            core: core,
+            identifier: "user-logger-mock",
+            serviceName: nil,
+            loggerName: nil,
+            sendNetworkInfo: false,
+            useCoreOutput: false,
+            logsFilter: { _ in true },
+            rumContextIntegration: nil,
+            activeSpanIntegration: nil,
+            additionalOutput: output,
+            logEventMapper: nil
         )
     }
 }
@@ -219,7 +233,7 @@ extension LogEventBuilder {
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
-        dateCorrector: DateCorrectorType? = nil,
+        dateCorrector: DateCorrector? = nil,
         logEventMapper: LogEventMapper? = nil
     ) -> LogEventBuilder {
         return LogEventBuilder(

@@ -21,7 +21,7 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
     /// A list of checks ensuring global state integrity before and after each tests.
     private let checks: [TestIntegrityCheck] = [
         .init(
-            assert: { Datadog.instance == nil },
+            assert: { !Datadog.isInitialized },
             problem: "`Datadog` must not be initialized.",
             solution: """
             Make sure `Datadog.flushAndDeinitialize()` is called before the end of test that uses `Datadog.initialize()`.
@@ -45,24 +45,11 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
         ),
         .init(
             assert: {
-                LoggingFeature.instance == nil
-                    && TracingFeature.instance == nil
-                    && RUMFeature.instance == nil
-                    && CrashReportingFeature.instance == nil
+                defaultDatadogCore is NOOPDatadogCore
             },
-            problem: "All features must not be initialized.",
+            problem: "`defaultDatadogCore` must be reset after each test.",
             solution: """
-            Make sure `{Feature}.instance?.deinitialize()` is called before the end of test that uses `{Feature}.instance` mock.
-            """
-        ),
-        .init(
-            assert: {
-                RUMInstrumentation.instance == nil && URLSessionAutoInstrumentation.instance == nil
-            },
-            problem: "All auto-instrumentation features must not be initialized.",
-            solution: """
-            Make sure `{AutoInstrumentationFeature}.instance?.deinitialize()` is called before the end of test that
-            uses `{AutoInstrumentationFeature}.instance` mock.
+            Make sure `defaultDatadogCore` is set to `NOOPDatadogCore` before and after each test.
             """
         ),
         .init(
@@ -76,14 +63,14 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             """
         ),
         .init(
-            assert: { userLogger.logBuilder == nil && userLogger.logOutput == nil },
-            problem: "`userLogger` must use no-op implementation.",
+            assert: { DD.logger is ConsoleLogger },
+            problem: "`DD.logger` must use `ConsoleLogger` implementation.",
             solution: """
-            Make sure the `userLogger` is captured before test and reset to the previous implementation after, e.g.:
+            Make sure the `DD` bundle is reset after test to use previous dependencies, e.g.:
 
             ```
-            let previousUserLogger = userLogger
-            defer { userLogger = previousUserLogger }
+            let dd = DD.mockWith(logger: CoreLoggerMock())
+            defer { dd.reset() }
             ```
             """
         ),
@@ -103,9 +90,27 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             """
         ),
         .init(
+            assert: { !temporaryDirectory.exists() },
+            problem: "`temporaryDirectory` must not exist.",
+            solution: """
+            Make sure `temporaryDirectory.delete()` is called consistently
+            with `temporaryDirectory.create()`.
+            """
+        ),
+        .init(
+            assert: { !temporaryCoreDirectory.coreDirectory.exists()
+                && !temporaryCoreDirectory.osDirectory.exists()
+            },
+            problem: "`temporaryCoreDirectory` must not exist.",
+            solution: """
+            Make sure `temporaryCoreDirectory.delete()` is called consistently
+            with `temporaryCoreDirectory.create()`.
+            """
+        ),
+        .init(
             assert: {
-                temporaryFeatureDirectories.authorized.exists() == false
-                    && temporaryFeatureDirectories.unauthorized.exists() == false
+                !temporaryFeatureDirectories.authorized.exists()
+                    && !temporaryFeatureDirectories.unauthorized.exists()
             },
             problem: "`temporaryFeatureDirectories` must not exist.",
             solution: """

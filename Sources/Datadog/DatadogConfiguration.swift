@@ -48,7 +48,7 @@ extension Datadog {
             case never
         }
 
-        public enum DatadogEndpoint {
+        public enum DatadogEndpoint: String {
             /// US based servers.
             /// Sends data to [app.datadoghq.com](https://app.datadoghq.com/).
             case us1

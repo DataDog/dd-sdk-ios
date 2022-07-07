@@ -8,6 +8,8 @@ import XCTest
 @testable import Datadog
 
 class FeatureStorageTests: XCTestCase {
+    let queue = DispatchQueue(label: "feature-storage-test")
+
     override func setUp() {
         super.setUp()
         temporaryFeatureDirectories.create()
@@ -24,6 +26,7 @@ class FeatureStorageTests: XCTestCase {
         // Given
         let storage = FeatureStorage(
             featureName: .mockAny(),
+            queue: queue,
             dataFormat: DataFormat(prefix: "", suffix: "", separator: "#"),
             directories: temporaryFeatureDirectories,
             commonDependencies: .mockWith(consentProvider: consentProvider),
@@ -64,6 +67,7 @@ class FeatureStorageTests: XCTestCase {
         // Given
         let storage = FeatureStorage(
             featureName: .mockAny(),
+            queue: queue,
             dataFormat: DataFormat(prefix: "", suffix: "", separator: "#"),
             directories: temporaryFeatureDirectories,
             commonDependencies: .mockWith(consentProvider: .init(initialConsent: .granted)),
@@ -95,6 +99,7 @@ class FeatureStorageTests: XCTestCase {
         // Given
         let storage = FeatureStorage(
             featureName: .mockAny(),
+            queue: queue,
             dataFormat: DataFormat(prefix: "", suffix: "", separator: "#"),
             directories: temporaryFeatureDirectories,
             commonDependencies: .mockWith(consentProvider: .init(initialConsent: .granted)),

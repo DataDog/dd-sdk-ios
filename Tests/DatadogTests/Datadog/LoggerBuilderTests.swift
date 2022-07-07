@@ -8,71 +8,57 @@ import XCTest
 @testable import Datadog
 
 class LoggerBuilderTests: XCTestCase {
+    private let userInfoProvider: UserInfoProvider = .mockAny()
     private let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
     private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
-
-    override func setUp() {
-        super.setUp()
-        temporaryFeatureDirectories.create()
-
-        LoggingFeature.instance = .mockByRecordingLogMatchers(
-            directories: temporaryFeatureDirectories,
+    private lazy var core = DatadogCoreMock(
+        context: .mockWith(
             configuration: .mockWith(
-                common: .mockWith(
-                    applicationVersion: "1.2.3",
-                    applicationBundleIdentifier: "com.datadog.unit-tests",
-                    serviceName: "service-name",
-                    environment: "tests"
-                )
+                applicationVersion: "1.2.3",
+                applicationBundleIdentifier: "com.datadog.unit-tests",
+                serviceName: "service-name",
+                environment: "tests"
             ),
             dependencies: .mockWith(
+                userInfoProvider: userInfoProvider,
                 networkConnectionInfoProvider: networkConnectionInfoProvider,
                 carrierInfoProvider: carrierInfoProvider
             )
         )
+    )
+
+    override func setUp() {
+        super.setUp()
+        temporaryDirectory.create()
+        let feature: LoggingFeature = .mockNoOp()
+        core.register(feature: feature)
     }
 
     override func tearDown() {
-        LoggingFeature.instance?.deinitialize()
-        temporaryFeatureDirectories.delete()
+        core.flush()
+        temporaryDirectory.delete()
         super.tearDown()
     }
 
     func testDefaultLogger() throws {
-        let logger = Logger.builder.build()
+        let logger = Logger.builder.build(in: core)
 
         XCTAssertNil(logger.rumContextIntegration)
         XCTAssertNil(logger.activeSpanIntegration)
-
-        let feature = LoggingFeature.instance!
-        XCTAssertTrue(
-            logger.logOutput is ConditionalLogOutput,
-            "When Logging feature is enabled the Logger should use `ConditionalLogOutput`."
-        )
-        let conditionedOutput = (logger.logOutput as! ConditionalLogOutput).conditionedOutput
-        XCTAssertTrue(
-            conditionedOutput is LogFileOutput,
-            "When Logging feature is enabled the Logger should use `ConditionalLogOutput` with a `LogFileOutput`."
-        )
-        let logBuilder = try XCTUnwrap(
-            logger.logBuilder,
-            "When Logging feature is enabled the Logger should use `LogBuilder`."
-        )
-
-        XCTAssertEqual(logBuilder.applicationVersion, "1.2.3")
-        XCTAssertEqual(logBuilder.serviceName, "service-name")
-        XCTAssertEqual(logBuilder.environment, "tests")
-        XCTAssertEqual(logBuilder.loggerName, "com.datadog.unit-tests")
-        XCTAssertTrue(logBuilder.userInfoProvider === feature.userInfoProvider)
-        XCTAssertNil(logBuilder.networkConnectionInfoProvider)
-        XCTAssertNil(logBuilder.carrierInfoProvider)
+        XCTAssertTrue(logger.useCoreOutput)
+        XCTAssertFalse(logger.sendNetworkInfo)
+        XCTAssertTrue(logger.additionalOutput is LoggingWithRUMErrorsIntegration)
+        XCTAssertNil(logger.logEventMapper)
+        XCTAssertNil(logger.serviceName, "service-name")
+        XCTAssertNil(logger.loggerName, "com.datadog.unit-tests")
+        LogEvent.Status.allCases.forEach { XCTAssertTrue(logger.logsFilter($0)) }
     }
 
     func testDefaultLoggerWithRUMEnabled() throws {
-        RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance?.deinitialize() }
+        let rum: RUMFeature = .mockNoOp()
+        core.register(feature: rum)
 
-        let logger1 = Logger.builder.build()
+        let logger1 = Logger.builder.build(in: core)
         XCTAssertNotNil(logger1.rumContextIntegration)
 
         let logger2 = Logger.builder.bundleWithRUM(false).build()
@@ -80,22 +66,22 @@ class LoggerBuilderTests: XCTestCase {
     }
 
     func testDefaultLoggerWithTracingEnabled() throws {
-        TracingFeature.instance = .mockNoOp()
-        defer { TracingFeature.instance?.deinitialize() }
+        let tracing: TracingFeature = .mockNoOp()
+        core.register(feature: tracing)
 
-        let logger1 = Logger.builder.build()
+        let logger1 = Logger.builder.build(in: core)
         XCTAssertNotNil(logger1.activeSpanIntegration)
 
-        let logger2 = Logger.builder.bundleWithTrace(false).build()
+        let logger2 = Logger.builder.bundleWithTrace(false).build(in: core)
         XCTAssertNil(logger2.activeSpanIntegration)
     }
 
     func testCustomizedLogger() throws {
-        RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance?.deinitialize() }
+        let rum: RUMFeature = .mockNoOp()
+        core.register(feature: rum)
 
-        TracingFeature.instance = .mockNoOp()
-        defer { TracingFeature.instance?.deinitialize() }
+        let tracing: TracingFeature = .mockNoOp()
+        core.register(feature: tracing)
 
         let logger = Logger.builder
             .set(serviceName: "custom-service-name")
@@ -103,84 +89,67 @@ class LoggerBuilderTests: XCTestCase {
             .sendNetworkInfo(true)
             .bundleWithRUM(false)
             .bundleWithTrace(false)
-            .build()
+            .set(datadogReportingThreshold: .error)
+            .build(in: core)
 
         XCTAssertNil(logger.rumContextIntegration)
         XCTAssertNil(logger.activeSpanIntegration)
+        XCTAssertTrue(logger.useCoreOutput)
+        XCTAssertTrue(logger.sendNetworkInfo)
+        XCTAssertTrue(logger.additionalOutput is LoggingWithRUMErrorsIntegration)
+        XCTAssertNil(logger.logEventMapper)
+        XCTAssertEqual(logger.serviceName, "custom-service-name")
+        XCTAssertEqual(logger.loggerName, "custom-logger-name")
 
-        let feature = LoggingFeature.instance!
-        XCTAssertTrue(
-            logger.logOutput is ConditionalLogOutput,
-            "When Logging feature is enabled the Logger should use `ConditionalLogOutput`."
-        )
-        let conditionedOutput = (logger.logOutput as! ConditionalLogOutput).conditionedOutput
-        XCTAssertTrue(
-            conditionedOutput is LogFileOutput,
-            "When Logging feature is enabled the Logger should use `ConditionalLogOutput` with a `LogFileOutput`."
-        )
-        let logBuilder = try XCTUnwrap(
-            logger.logBuilder,
-            "When Logging feature is enabled the Logger should use `LogBuilder`."
-        )
-
-        XCTAssertEqual(logBuilder.applicationVersion, "1.2.3")
-        XCTAssertEqual(logBuilder.serviceName, "custom-service-name")
-        XCTAssertEqual(logBuilder.environment, "tests")
-        XCTAssertEqual(logBuilder.loggerName, "custom-logger-name")
-        XCTAssertTrue(logBuilder.userInfoProvider === feature.userInfoProvider)
-        XCTAssertTrue(logBuilder.networkConnectionInfoProvider as AnyObject === feature.networkConnectionInfoProvider as AnyObject)
-        XCTAssertTrue(logBuilder.carrierInfoProvider as AnyObject === feature.carrierInfoProvider as AnyObject)
+        let rejectedLogStatuses: [LogEvent.Status] = [.debug, .info, .notice, .warn]
+        let acceptedLogStatuses: [LogEvent.Status] = [.error, .critical]
+        rejectedLogStatuses.forEach { XCTAssertFalse(logger.logsFilter($0)) }
+        acceptedLogStatuses.forEach { XCTAssertTrue(logger.logsFilter($0)) }
     }
 
     func testUsingDifferentOutputs() throws {
         var logger: Logger
 
-        logger = Logger.builder.build()
-        XCTAssertNotNil(logger.logBuilder)
-        XCTAssertTrue(logger.logOutput is ConditionalLogOutput)
-        XCTAssertTrue((logger.logOutput as! ConditionalLogOutput).conditionedOutput is LogFileOutput)
+        logger = Logger.builder.build(in: core)
+        XCTAssertTrue(logger.useCoreOutput)
+        XCTAssertTrue(logger.additionalOutput is LoggingWithRUMErrorsIntegration)
 
-        logger = Logger.builder.sendLogsToDatadog(true).build()
-        XCTAssertNotNil(logger.logBuilder)
-        XCTAssertTrue(logger.logOutput is ConditionalLogOutput)
-        XCTAssertTrue((logger.logOutput as! ConditionalLogOutput).conditionedOutput is LogFileOutput)
+        logger = Logger.builder.sendLogsToDatadog(true).build(in: core)
+        XCTAssertTrue(logger.useCoreOutput)
+        XCTAssertTrue(logger.additionalOutput is LoggingWithRUMErrorsIntegration)
 
-        logger = Logger.builder.sendLogsToDatadog(false).build()
-        XCTAssertNil(logger.logBuilder)
-        XCTAssertNil(logger.logOutput)
+        logger = Logger.builder.sendLogsToDatadog(false).build(in: core)
+        XCTAssertFalse(logger.useCoreOutput)
+        XCTAssertNil(logger.additionalOutput)
 
-        logger = Logger.builder.printLogsToConsole(true).build()
-        var combinedOutputs = try (logger.logOutput as? CombinedLogOutput).unwrapOrThrow().combinedOutputs
-        XCTAssertNotNil(logger.logBuilder)
+        logger = Logger.builder.printLogsToConsole(true).build(in: core)
+        var combinedOutputs = try XCTUnwrap(logger.additionalOutput as? CombinedLogOutput).combinedOutputs
+        XCTAssertTrue(logger.useCoreOutput)
         XCTAssertEqual(combinedOutputs.count, 2)
-        XCTAssertTrue(combinedOutputs[0] is ConditionalLogOutput)
-        XCTAssertTrue((combinedOutputs[0] as! ConditionalLogOutput).conditionedOutput is LogFileOutput)
-        XCTAssertTrue(combinedOutputs[1] is LogConsoleOutput)
+        XCTAssertTrue(combinedOutputs[0] is LogConsoleOutput)
+        XCTAssertTrue(combinedOutputs[1] is LoggingWithRUMErrorsIntegration)
 
-        logger = Logger.builder.printLogsToConsole(false).build()
-        XCTAssertNotNil(logger.logBuilder)
-        XCTAssertTrue(logger.logOutput is ConditionalLogOutput)
-        XCTAssertTrue((logger.logOutput as! ConditionalLogOutput).conditionedOutput is LogFileOutput)
+        logger = Logger.builder.printLogsToConsole(false).build(in: core)
+        XCTAssertTrue(logger.useCoreOutput)
+        XCTAssertTrue(logger.additionalOutput is LoggingWithRUMErrorsIntegration)
 
-        logger = Logger.builder.sendLogsToDatadog(true).printLogsToConsole(true).build()
-        combinedOutputs = try (logger.logOutput as? CombinedLogOutput).unwrapOrThrow().combinedOutputs
-        XCTAssertNotNil(logger.logBuilder)
+        logger = Logger.builder.sendLogsToDatadog(true).printLogsToConsole(true).build(in: core)
+        combinedOutputs = try XCTUnwrap(logger.additionalOutput as? CombinedLogOutput).combinedOutputs
+        XCTAssertTrue(logger.useCoreOutput)
         XCTAssertEqual(combinedOutputs.count, 2)
-        XCTAssertTrue(combinedOutputs[0] is ConditionalLogOutput)
-        XCTAssertTrue((combinedOutputs[0] as! ConditionalLogOutput).conditionedOutput is LogFileOutput)
-        XCTAssertTrue(combinedOutputs[1] is LogConsoleOutput)
+        XCTAssertTrue(combinedOutputs[0] is LogConsoleOutput)
+        XCTAssertTrue(combinedOutputs[1] is LoggingWithRUMErrorsIntegration)
 
-        logger = Logger.builder.sendLogsToDatadog(false).printLogsToConsole(true).build()
-        XCTAssertNotNil(logger.logBuilder)
-        XCTAssertTrue(logger.logOutput is LogConsoleOutput)
+        logger = Logger.builder.sendLogsToDatadog(false).printLogsToConsole(true).build(in: core)
+        XCTAssertFalse(logger.useCoreOutput)
+        XCTAssertTrue(logger.additionalOutput is LogConsoleOutput)
 
-        logger = Logger.builder.sendLogsToDatadog(true).printLogsToConsole(false).build()
-        XCTAssertNotNil(logger.logBuilder)
-        XCTAssertTrue(logger.logOutput is ConditionalLogOutput)
-        XCTAssertTrue((logger.logOutput as! ConditionalLogOutput).conditionedOutput is LogFileOutput)
+        logger = Logger.builder.sendLogsToDatadog(true).printLogsToConsole(false).build(in: core)
+        XCTAssertTrue(logger.useCoreOutput)
+        XCTAssertTrue(logger.additionalOutput is LoggingWithRUMErrorsIntegration)
 
-        logger = Logger.builder.sendLogsToDatadog(false).printLogsToConsole(false).build()
-        XCTAssertNil(logger.logBuilder)
-        XCTAssertNil(logger.logOutput)
+        logger = Logger.builder.sendLogsToDatadog(false).printLogsToConsole(false).build(in: core)
+        XCTAssertFalse(logger.useCoreOutput)
+        XCTAssertNil(logger.additionalOutput)
     }
 }

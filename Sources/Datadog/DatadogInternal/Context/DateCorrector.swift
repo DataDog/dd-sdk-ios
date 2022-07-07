@@ -6,13 +6,8 @@
 
 import Foundation
 
-/// Provides current device time information.
-internal protocol DateProvider {
-    /// Current device time.
-    func currentDate() -> Date
-}
-
-internal struct SystemDateProvider: DateProvider {
-    @inlinable
-    func currentDate() -> Date { return Date() }
+/// Calculates the date correction for adjusting device time to server time.
+internal protocol DateCorrector {
+    /// Returns recent date correction for adjusting device time to server time.
+    var offset: TimeInterval { get }
 }

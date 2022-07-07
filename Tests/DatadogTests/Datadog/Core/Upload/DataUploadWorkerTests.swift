@@ -17,7 +17,6 @@ class DataUploadWorkerTests: XCTestCase {
         dateProvider: dateProvider
     )
     lazy var writer = FileWriter(
-        dataFormat: .mockWith(prefix: "[", suffix: "]"),
         orchestrator: orchestrator
     )
     lazy var reader = FileReader(
@@ -228,11 +227,8 @@ class DataUploadWorkerTests: XCTestCase {
     // MARK: - Notifying Upload Progress
 
     func testWhenDataIsBeingUploaded_itPrintsUploadProgressInformation() {
-        let previousUserLogger = userLogger
-        defer { userLogger = previousUserLogger }
-
-        let mockUserLoggerOutput = LogOutputMock()
-        userLogger = .mockWith(logOutput: mockUserLoggerOutput)
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         // Given
         writer.write(value: ["key": "value"])
@@ -259,27 +255,24 @@ class DataUploadWorkerTests: XCTestCase {
 
         // Then
         let expectedSummary = randomUploadStatus.needsRetry ? "not delivered, will be retransmitted" : "accepted, won't be retransmitted"
-        XCTAssertEqual(mockUserLoggerOutput.allRecordedLogs.count, 2)
+        XCTAssertEqual(dd.logger.debugLogs.count, 2)
 
         XCTAssertEqual(
-            mockUserLoggerOutput.allRecordedLogs[0].message,
+            dd.logger.debugLogs[0].message,
             "⏳ (\(randomFeatureName)) Uploading batch...",
-            "Batch start information should be printed to `userLogger`. All captured logs:\n\(mockUserLoggerOutput.dumpAllRecordedLogs())"
+            "Batch start information should be printed to `userLogger`. All captured logs:\n\(dd.logger.recordedLogs)"
         )
 
         XCTAssertEqual(
-            mockUserLoggerOutput.allRecordedLogs[1].message,
+            dd.logger.debugLogs[1].message,
             "   → (\(randomFeatureName)) \(expectedSummary): \(randomUploadStatus.userDebugDescription)",
-            "Batch completion information should be printed to `userLogger`. All captured logs:\n\(mockUserLoggerOutput.dumpAllRecordedLogs())"
+            "Batch completion information should be printed to `userLogger`. All captured logs:\n\(dd.logger.recordedLogs)"
         )
     }
 
     func testWhenDataIsBeingUploaded_itPrintsUnauthoriseMessage_toUserLogger() {
-        let previousUserLogger = userLogger
-        defer { userLogger = previousUserLogger }
-
-        let mockUserLoggerOutput = LogOutputMock()
-        userLogger = .mockWith(logOutput: mockUserLoggerOutput)
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         // Given
         writer.write(value: ["key": "value"])
@@ -304,12 +297,10 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(mockUserLoggerOutput.allRecordedLogs.count, 3)
-
         XCTAssertEqual(
-            mockUserLoggerOutput.allRecordedLogs[2].message,
+            dd.logger.errorLog?.message,
             "⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.",
-            "An error should be printed to `userLogger`. All captured logs:\n\(mockUserLoggerOutput.dumpAllRecordedLogs())"
+            "An error should be printed to `userLogger`. All captured logs:\n\(dd.logger.recordedLogs)"
         )
     }
 

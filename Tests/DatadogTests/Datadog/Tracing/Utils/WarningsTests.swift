@@ -9,34 +9,31 @@ import XCTest
 
 class WarningsTests: XCTestCase {
     func testPrintingWarningsOnDifferentConditions() {
-        let previousUserLogger = userLogger
-        defer { userLogger = previousUserLogger }
+        let core = DatadogCoreMock()
+        core.register(feature: LoggingFeature.mockNoOp())
+        defer { core.flush() }
 
-        let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output, dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()))
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         XCTAssertTrue(warn(if: true, message: "message"))
-        XCTAssertEqual(output.recordedLog?.status, .warn)
-        XCTAssertEqual(output.recordedLog?.message, "message")
-        XCTAssertEqual(output.recordedLog?.date, .mockDecember15th2019At10AMUTC())
+        XCTAssertEqual(dd.logger.warnLog?.message, "message")
 
-        output.recordedLog = nil
+        dd.logger.reset()
 
         XCTAssertFalse(warn(if: false, message: "message"))
-        XCTAssertNil(output.recordedLog)
+        XCTAssertNil(dd.logger.warnLog)
 
-        output.recordedLog = nil
+        dd.logger.reset()
 
         let failingCast: () -> DDSpan? = { warnIfCannotCast(value: DDNoopSpan()) }
         XCTAssertNil(failingCast())
-        XCTAssertEqual(output.recordedLog?.status, .warn)
-        XCTAssertEqual(output.recordedLog?.message, "🔥 Using DDNoopSpan while DDSpan was expected.")
-        XCTAssertEqual(output.recordedLog?.date, .mockDecember15th2019At10AMUTC())
+        XCTAssertEqual(dd.logger.warnLog?.message, "🔥 Using DDNoopSpan while DDSpan was expected.")
 
-        output.recordedLog = nil
+        dd.logger.reset()
 
-        let succeedingCast: () -> DDSpan? = { warnIfCannotCast(value: DDSpan.mockAny()) }
+        let succeedingCast: () -> DDSpan? = { warnIfCannotCast(value: DDSpan.mockAny(in: core)) }
         XCTAssertNotNil(succeedingCast())
-        XCTAssertNil(output.recordedLog)
+        XCTAssertNil(dd.logger.warnLog)
     }
 }

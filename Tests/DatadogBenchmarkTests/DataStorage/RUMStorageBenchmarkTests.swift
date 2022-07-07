@@ -18,10 +18,15 @@ class RUMStorageBenchmarkTests: XCTestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
         self.directory = try Directory(withSubdirectoryPath: "rum-benchmark")
+        self.queue = DispatchQueue(label: "rum-benchmark")
 
-        let storage = RUMFeature.createStorage(
-            directories: FeatureDirectories(
-                unauthorized: obtainUniqueTemporaryDirectory(),
+        let storage = FeatureStorage(
+            featureName: "rum",
+            queue: queue,
+            dataFormat: DataFormat(prefix: "", suffix: "", separator: "\n"),
+            directories: .init(
+                deprecated: [],
+                unauthorized: directory,
                 authorized: directory
             ),
             commonDependencies: .mockAny(),
@@ -29,7 +34,6 @@ class RUMStorageBenchmarkTests: XCTestCase {
         )
         self.writer = storage.writer
         self.reader = storage.reader
-        self.queue = (storage.writer as! ConsentAwareDataWriter).queue
 
         XCTAssertTrue(try directory.files().isEmpty)
     }

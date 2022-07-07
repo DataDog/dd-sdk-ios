@@ -22,21 +22,26 @@ internal class CrashReporter {
 
     // MARK: - Initialization
 
-    convenience init?(crashReportingFeature: CrashReportingFeature) {
+    convenience init?(
+        crashReportingFeature: CrashReportingFeature,
+        loggingFeature: LoggingFeature?,
+        rumFeature: RUMFeature?,
+        context: DatadogV1Context
+    ) {
         let loggingOrRUMIntegration: CrashReportingIntegration?
 
         // If RUM rum is enabled prefer it for sending crash reports, otherwise use Logging feature.
-        if let rumFeature = RUMFeature.instance {
-            loggingOrRUMIntegration = CrashReportingWithRUMIntegration(rumFeature: rumFeature)
-        } else if let loggingFeature = LoggingFeature.instance {
-            loggingOrRUMIntegration = CrashReportingWithLoggingIntegration(loggingFeature: loggingFeature)
+        if let rumFeature = rumFeature {
+            loggingOrRUMIntegration = CrashReportingWithRUMIntegration(rumFeature: rumFeature, context: context)
+        } else if let loggingFeature = loggingFeature {
+            loggingOrRUMIntegration = CrashReportingWithLoggingIntegration(loggingFeature: loggingFeature, context: context)
         } else {
             loggingOrRUMIntegration = nil
         }
 
         guard let availableLoggingOrRUMIntegration = loggingOrRUMIntegration else {
             // This case is not reachable in higher abstraction but we add sanity warning.
-            userLogger.error(
+            DD.logger.error(
                 """
                 In order to use Crash Reporting, RUM or Logging feature must be enabled.
                 Make sure `.enableRUM(true)` or `.enableLogging(true)` are configured
@@ -95,11 +100,11 @@ internal class CrashReporter {
         queue.async {
             self.plugin.readPendingCrashReport { [weak self] crashReport in
                 guard let self = self, let availableCrashReport = crashReport else {
-                    userLogger.debug("No pending crash available")
+                    DD.logger.debug("No pending crash available")
                     return false
                 }
 
-                userLogger.debug("Loaded pending crash report")
+                DD.logger.debug("Loaded pending crash report")
 
                 guard let crashContext = availableCrashReport.context.flatMap({ self.decode(crashContextData: $0) }) else {
                     // `CrashContext` is malformed and and cannot be read. Return `true` to let the crash reporter
@@ -135,13 +140,12 @@ internal class CrashReporter {
         do {
             return try crashContextEncoder.encode(crashContext)
         } catch {
-            userLogger.warn(
+            DD.logger.error(
                 """
                 Failed to encode crash report context. The app state information associated with eventual crash
                 report may be not in sync with the current state of the application.
-
-                Error details: \(error)
-                """
+                """,
+                error: error
             )
 
             telemetry?.error("Failed to encode crash report context", error: error)
@@ -153,13 +157,12 @@ internal class CrashReporter {
         do {
             return try crashContextDecoder.decode(CrashContext.self, from: crashContextData)
         } catch {
-            userLogger.error(
+            DD.logger.error(
                 """
                 Failed to decode crash report context. The app state information associated with the crash
                 report won't be in sync with the state of the application when it crashed.
-
-                Error details: \(error)
-                """
+                """,
+                error: error
             )
             telemetry?.error("Failed to decode crash report context", error: error)
             return nil

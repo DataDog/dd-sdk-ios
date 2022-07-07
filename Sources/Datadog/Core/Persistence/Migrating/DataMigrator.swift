@@ -9,6 +9,15 @@ internal protocol DataMigrator {
     func migrate()
 }
 
+/// Hold multiple migrators.
+internal struct MultiDataMigrator: DataMigrator {
+    let migrators: [DataMigrator]
+
+    func migrate() {
+        migrators.forEach { $0.migrate() }
+    }
+}
+
 internal struct DataMigratorFactory {
     /// Data directories for the feature.
     let directories: FeatureDirectories
@@ -16,9 +25,17 @@ internal struct DataMigratorFactory {
 
     /// Resolves migrator to use when the SDK is started.
     func resolveInitialMigrator() -> DataMigrator {
-        return DeleteAllDataMigrator(
+        let unauthorized = DeleteAllDataMigrator(
             directory: directories.unauthorized,
             telemetry: telemetry
+        )
+
+        let deprecated = directories.deprecated.map {
+            DeleteAllDataMigrator(directory: $0, telemetry: telemetry)
+        }
+
+        return MultiDataMigrator(
+            migrators: [unauthorized] + deprecated
         )
     }
 

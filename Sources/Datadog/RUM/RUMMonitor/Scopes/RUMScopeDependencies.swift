@@ -19,25 +19,12 @@ internal struct RUMScopeDependencies {
 
     let rumApplicationID: String
     let sessionSampler: Sampler
-    /// The start time of the application, indicated as SDK init. Measured in device time (without NTP correction).
-    let sdkInitDate: Date
     let backgroundEventTrackingEnabled: Bool
     let appStateListener: AppStateListening
-    let deviceInfo: RUMDevice
-    let osInfo: RUMOperatingSystem
-    let userInfoProvider: RUMUserInfoProvider
     let launchTimeProvider: LaunchTimeProviderType
-    let connectivityInfoProvider: RUMConnectivityInfoProvider
-    let serviceName: String
-    let applicationVersion: String
-    let sdkVersion: String
-    let source: String
     let firstPartyURLsFilter: FirstPartyURLsFilter
     let eventBuilder: RUMEventBuilder
-    let eventOutput: RUMEventOutput
     let rumUUIDGenerator: RUMUUIDGenerator
-    /// Adjusts RUM events time (device time) to server time.
-    let dateCorrector: DateCorrectorType
     /// Integration with Crash Reporting. It updates the crash context with RUM info.
     /// `nil` if Crash Reporting feature is not enabled.
     let crashContextIntegration: RUMWithCrashContextIntegration?
@@ -51,49 +38,42 @@ internal struct RUMScopeDependencies {
 }
 
 internal extension RUMScopeDependencies {
-    init(rumFeature: RUMFeature) {
+    init(
+        rumFeature: RUMFeature,
+        crashReportingFeature: CrashReportingFeature?,
+        context: DatadogV1Context,
+        telemetry: Telemetry?
+    ) {
         self.init(
             rumApplicationID: rumFeature.configuration.applicationID,
             sessionSampler: rumFeature.configuration.sessionSampler,
-            sdkInitDate: rumFeature.sdkInitDate,
             backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled,
-            appStateListener: rumFeature.appStateListener,
-            deviceInfo: RUMDevice(
-                from: rumFeature.deviceInfoProvider,
-                telemetry: rumFeature.telemetry
-            ),
-            osInfo: RUMOperatingSystem(from: rumFeature.deviceInfoProvider),
-            userInfoProvider: RUMUserInfoProvider(userInfoProvider: rumFeature.userInfoProvider),
-            launchTimeProvider: rumFeature.launchTimeProvider,
-            connectivityInfoProvider: RUMConnectivityInfoProvider(
-                networkConnectionInfoProvider: rumFeature.networkConnectionInfoProvider,
-                carrierInfoProvider: rumFeature.carrierInfoProvider
-            ),
-            serviceName: rumFeature.configuration.common.serviceName,
-            applicationVersion: rumFeature.configuration.common.applicationVersion,
-            sdkVersion: rumFeature.configuration.common.sdkVersion,
-            source: rumFeature.configuration.common.source,
+            appStateListener: context.appStateListener,
+            launchTimeProvider: context.launchTimeProvider,
             firstPartyURLsFilter: FirstPartyURLsFilter(hosts: rumFeature.configuration.firstPartyHosts),
             eventBuilder: RUMEventBuilder(
-                eventsMapper: rumFeature.eventsMapper
-            ),
-            eventOutput: RUMEventFileOutput(
-                fileWriter: rumFeature.storage.writer
+                eventsMapper: RUMEventsMapper(
+                    viewEventMapper: rumFeature.configuration.viewEventMapper,
+                    errorEventMapper: rumFeature.configuration.errorEventMapper,
+                    resourceEventMapper: rumFeature.configuration.resourceEventMapper,
+                    actionEventMapper: rumFeature.configuration.actionEventMapper,
+                    longTaskEventMapper: rumFeature.configuration.longTaskEventMapper,
+                    telemetry: telemetry
+                )
             ),
             rumUUIDGenerator: rumFeature.configuration.uuidGenerator,
-            dateCorrector: rumFeature.dateCorrector,
-            crashContextIntegration: RUMWithCrashContextIntegration(),
+            crashContextIntegration: crashReportingFeature.map { .init(crashReporting: $0) },
             ciTest: CITestIntegration.active?.rumCITest,
             viewUpdatesThrottlerFactory: { RUMViewUpdatesThrottler() },
             vitalsReaders: rumFeature.configuration.vitalsFrequency.map {
                 .init(
                     frequency: $0,
-                    cpu: VitalCPUReader(telemetry: rumFeature.telemetry),
+                    cpu: VitalCPUReader(telemetry: telemetry),
                     memory: VitalMemoryReader(),
                     refreshRate: VitalRefreshRateReader()
                 )
             },
-            onSessionStart: rumFeature.onSessionStart
+            onSessionStart: rumFeature.configuration.onSessionStart
         )
     }
 }

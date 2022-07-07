@@ -8,19 +8,22 @@ import XCTest
 @testable import Datadog
 
 class DDURLSessionDelegateTests: XCTestCase {
+    let core = DatadogCoreMock()
     private let interceptor = URLSessionInterceptorMock()
-    private let delegate = DDURLSessionDelegate()
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-        URLSessionAutoInstrumentation.instance = .init(
+        let instrumentation = URLSessionAutoInstrumentation(
             swizzler: try URLSessionSwizzler(),
             interceptor: interceptor
         )
+
+        instrumentation.enable() // swizzle `URLSession`
+        core.register(feature: instrumentation)
     }
 
     override func tearDown() {
-        URLSessionAutoInstrumentation.instance?.deinitialize()
+        core.flush()
         super.tearDown()
     }
 
@@ -37,6 +40,7 @@ class DDURLSessionDelegateTests: XCTestCase {
         interceptor.onTaskMetricsCollected = { _, _ in notifyTaskMetricsCollected.fulfill() }
 
         // Given
+        let delegate = DDURLSessionDelegate(in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -59,6 +63,7 @@ class DDURLSessionDelegateTests: XCTestCase {
         interceptor.onTaskMetricsCollected = { _, _ in notifyTaskMetricsCollected.fulfill() }
 
         // Given
+        let delegate = DDURLSessionDelegate(in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -90,6 +95,7 @@ class DDURLSessionDelegateTests: XCTestCase {
         let dateBeforeAnyRequests = Date()
 
         // Given
+        let delegate = DDURLSessionDelegate(in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -147,6 +153,7 @@ class DDURLSessionDelegateTests: XCTestCase {
         let dateBeforeAnyRequests = Date()
 
         // Given
+        let delegate = DDURLSessionDelegate(in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When

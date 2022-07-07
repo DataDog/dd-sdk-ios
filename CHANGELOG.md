@@ -4,6 +4,7 @@
 
 * [IMPROVEMENT] Add mobile vitals frequency configuration. See [#876][]
 * [IMPROVEMENT] Include the exact model information in RUM `device.model`. See [#888][]
+* [FEATURE] Allow filtering outgoing logs with a status threshold. See [#867][]
 
 # 1.11.1 / 20-06-2022
 
@@ -26,10 +27,6 @@
 * [IMPROVEMENT] Add tracing sampling rate. See [#851][]
 * [IMPROVEMENT] Crash Reporting: Filter out unrecognized trailing `???` stack frame in `error.stack`. See [#794][]
 * [IMPROVEMENT] Reduce the number of intermediate view events sent in RUM payloads. See [#815][]
-
-### Changes
-
-* [FEATURE] Allow filtering outgoing logs with a status threshold. See [#867][]
 
 # 1.11.0-rc1 / 18-05-2022
 

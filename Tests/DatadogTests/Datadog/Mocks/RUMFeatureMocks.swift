@@ -11,72 +11,47 @@ extension RUMFeature {
     /// Mocks feature instance which performs no writes and no uploads.
     static func mockNoOp() -> RUMFeature {
         return RUMFeature(
-            eventsMapper: .mockNoOp(),
             storage: .mockNoOp(),
             upload: .mockNoOp(),
-            configuration: .mockAny(),
-            commonDependencies: .mockAny(),
-            onSessionStart: nil,
-            telemetry: nil
-        )
-    }
-
-    /// Mocks the feature instance which performs uploads to `URLSession`.
-    /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
-    static func mockWith(
-        directories: FeatureDirectories,
-        configuration: FeaturesConfiguration.RUM = .mockAny(),
-        dependencies: FeaturesCommonDependencies = .mockAny(),
-        telemetry: Telemetry? = nil
-    ) -> RUMFeature {
-        return RUMFeature(
-            directories: directories,
-            configuration: configuration,
-            commonDependencies: dependencies,
-            telemetry: telemetry
+            configuration: .mockAny()
         )
     }
 
     /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
     /// Use `RUMFeature.waitAndReturnRUMEventMatchers()` to inspect and assert recorded `RUMEvents`.
     static func mockByRecordingRUMEventMatchers(
-        directories: FeatureDirectories,
-        configuration: FeaturesConfiguration.RUM = .mockAny(),
-        dependencies: FeaturesCommonDependencies = .mockAny()
+        featureConfiguration: FeaturesConfiguration.RUM = .mockAny()
     ) -> RUMFeature {
-        // Get the full feature mock:
-        let fullFeature: RUMFeature = .mockWith(
-            directories: directories,
-            configuration: configuration,
-            dependencies: dependencies.replacing(
-                dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
-            )
+        // Mock storage with `InMemoryWriter`, used later for retrieving recorded events back:
+        let interceptedStorage = FeatureStorage(
+            writer: InMemoryWriter(),
+            reader: NoOpFileReader(),
+            arbitraryAuthorizedWriter: NoOpFileWriter(),
+            dataOrchestrator: NoOpDataOrchestrator()
         )
-        let uploadWorker = DataUploadWorkerMock()
-        let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
-        // Replace by mocking the `FeatureUpload` and observing the `FeatureStorage`:
-        let mockedUpload = FeatureUpload(uploader: uploadWorker)
-        // Tear down the original upload
-        fullFeature.upload.flushAndTearDown()
         return RUMFeature(
-            eventsMapper: fullFeature.eventsMapper,
-            storage: observedStorage,
-            upload: mockedUpload,
-            configuration: configuration,
-            commonDependencies: dependencies,
-            onSessionStart: configuration.onSessionStart,
-            telemetry: nil
+            storage: interceptedStorage,
+            upload: .mockNoOp(),
+            configuration: featureConfiguration
         )
     }
 
     // MARK: - Expecting RUMEvent Data
 
-    static func waitAndReturnRUMEventMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
-        guard let uploadWorker = RUMFeature.instance?.upload.uploader as? DataUploadWorkerMock else {
+    func waitAndReturnRUMEventMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
+        guard let inMemoryWriter = storage.writer as? InMemoryWriter else {
             preconditionFailure("Retrieving matchers requires that feature is mocked with `.mockByRecordingRUMEventMatchers()`")
         }
-        return try uploadWorker.waitAndReturnBatchedData(count: count, file: file, line: line)
-            .flatMap { batchData in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(batchData) }
+        return try inMemoryWriter.waitAndReturnEventsData(count: count, file: file, line: line)
+            .map { eventData in try RUMEventMatcher.fromJSONObjectData(eventData) }
+    }
+
+    // swiftlint:disable:next function_default_parameter_at_end
+    static func waitAndReturnRUMEventMatchers(in core: DatadogCoreProtocol = defaultDatadogCore, count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
+        guard let rum = core.v1.feature(RUMFeature.self) else {
+            preconditionFailure("RUMFeature is not registered in core")
+        }
+        return try rum.waitAndReturnRUMEventMatchers(count: count, file: file, line: line)
     }
 }
 
@@ -92,18 +67,20 @@ extension RUMResourceType {
 
 // MARK: - RUMTelemetry Mocks
 
-extension RUMTelemetry: AnyMockable {
-    static func mockAny() -> Self { .mockWith() }
+extension RUMTelemetry {
+    static func mockAny(in core: DatadogCoreProtocol) -> Self { .mockWith(core: core) }
 
     static func mockWith(
+        core: DatadogCoreProtocol,
         sdkVersion: String = .mockAny(),
         applicationID: String = .mockAny(),
         source: String = .mockAnySource(),
         dateProvider: DateProvider = SystemDateProvider(),
-        dateCorrector: DateCorrectorType = DateCorrectorMock(),
+        dateCorrector: DateCorrector = DateCorrectorMock(),
         sampler: Sampler = .init(samplingRate: 100)
     ) -> Self {
         .init(
+            in: core,
             sdkVersion: sdkVersion,
             applicationID: applicationID,
             source: source,
@@ -127,20 +104,6 @@ struct RUMDataModelMock: RUMDataModel, RUMSanitizableEvent, EquatableInTests {
 extension RUMEventBuilder {
     static func mockAny() -> RUMEventBuilder {
         return RUMEventBuilder(eventsMapper: .mockNoOp())
-    }
-}
-
-class RUMEventOutputMock: RUMEventOutput {
-    private(set) var recordedEvents: [Any] = []
-
-    func recordedEvents<E>(ofType type: E.Type, file: StaticString = #file, line: UInt = #line) throws -> [E] {
-        return recordedEvents.compactMap { event in event as? E }
-    }
-
-    // MARK: - RUMEventOutput
-
-    func write<Event>(event: Event) where Event: Encodable {
-        recordedEvents.append(event)
     }
 }
 
@@ -647,26 +610,12 @@ extension RUMScopeDependencies {
     static func mockWith(
         rumApplicationID: String = .mockAny(),
         sessionSampler: Sampler = .mockKeepAll(),
-        sdkInitDate: Date = .mockAny(),
         backgroundEventTrackingEnabled: Bool = .mockAny(),
         appStateListener: AppStateListening = AppStateListenerMock.mockAny(),
-        deviceInfo: RUMDevice = .mockRandom(),
-        osInfo: RUMOperatingSystem = .mockRandom(),
-        userInfoProvider: RUMUserInfoProvider = RUMUserInfoProvider(userInfoProvider: .mockAny()),
         launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock.mockAny(),
-        connectivityInfoProvider: RUMConnectivityInfoProvider = RUMConnectivityInfoProvider(
-            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: nil),
-            carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: nil)
-        ),
-        serviceName: String = .mockAny(),
-        applicationVersion: String = .mockAny(),
-        sdkVersion: String = .mockAny(),
-        source: String = "ios",
         firstPartyURLsFilter: FirstPartyURLsFilter = FirstPartyURLsFilter(hosts: []),
         eventBuilder: RUMEventBuilder = RUMEventBuilder(eventsMapper: .mockNoOp()),
-        eventOutput: RUMEventOutput = RUMEventOutputMock(),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
-        dateCorrector: DateCorrectorType = DateCorrectorMock(),
         crashContextIntegration: RUMWithCrashContextIntegration? = nil,
         ciTest: RUMCITest? = nil,
         viewUpdatesThrottlerFactory: @escaping () -> RUMViewUpdatesThrottlerType = { NoOpRUMViewUpdatesThrottler() },
@@ -676,23 +625,12 @@ extension RUMScopeDependencies {
         return RUMScopeDependencies(
             rumApplicationID: rumApplicationID,
             sessionSampler: sessionSampler,
-            sdkInitDate: sdkInitDate,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
             appStateListener: appStateListener,
-            deviceInfo: deviceInfo,
-            osInfo: osInfo,
-            userInfoProvider: userInfoProvider,
             launchTimeProvider: launchTimeProvider,
-            connectivityInfoProvider: connectivityInfoProvider,
-            serviceName: serviceName,
-            applicationVersion: applicationVersion,
-            sdkVersion: sdkVersion,
-            source: source,
             firstPartyURLsFilter: firstPartyURLsFilter,
             eventBuilder: eventBuilder,
-            eventOutput: eventOutput,
             rumUUIDGenerator: rumUUIDGenerator,
-            dateCorrector: dateCorrector,
             crashContextIntegration: crashContextIntegration,
             ciTest: ciTest,
             viewUpdatesThrottlerFactory: viewUpdatesThrottlerFactory,
@@ -705,23 +643,12 @@ extension RUMScopeDependencies {
     func replacing(
         rumApplicationID: String? = nil,
         sessionSampler: Sampler? = nil,
-        sdkInitDate: Date? = nil,
         backgroundEventTrackingEnabled: Bool? = nil,
         appStateListener: AppStateListening? = nil,
-        deviceInfo: RUMDevice? = nil,
-        osInfo: RUMOperatingSystem? = nil,
-        userInfoProvider: RUMUserInfoProvider? = nil,
         launchTimeProvider: LaunchTimeProviderType? = nil,
-        connectivityInfoProvider: RUMConnectivityInfoProvider? = nil,
-        serviceName: String? = nil,
-        applicationVersion: String? = nil,
-        sdkVersion: String? = nil,
-        source: String? = nil,
         firstPartyUrls: Set<String>? = nil,
         eventBuilder: RUMEventBuilder? = nil,
-        eventOutput: RUMEventOutput? = nil,
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
-        dateCorrector: DateCorrectorType? = nil,
         crashContextIntegration: RUMWithCrashContextIntegration? = nil,
         ciTest: RUMCITest? = nil,
         viewUpdatesThrottlerFactory: (() -> RUMViewUpdatesThrottlerType)? = nil,
@@ -731,23 +658,12 @@ extension RUMScopeDependencies {
         return RUMScopeDependencies(
             rumApplicationID: rumApplicationID ?? self.rumApplicationID,
             sessionSampler: sessionSampler ?? self.sessionSampler,
-            sdkInitDate: sdkInitDate ?? self.sdkInitDate,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled ?? self.backgroundEventTrackingEnabled,
             appStateListener: appStateListener ?? self.appStateListener,
-            deviceInfo: deviceInfo ?? self.deviceInfo,
-            osInfo: osInfo ?? self.osInfo,
-            userInfoProvider: userInfoProvider ?? self.userInfoProvider,
             launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider,
-            connectivityInfoProvider: connectivityInfoProvider ?? self.connectivityInfoProvider,
-            serviceName: serviceName ?? self.serviceName,
-            applicationVersion: applicationVersion ?? self.applicationVersion,
-            sdkVersion: sdkVersion ?? self.sdkVersion,
-            source: source ?? self.source,
             firstPartyURLsFilter: firstPartyUrls.map { .init(hosts: $0) } ?? self.firstPartyURLsFilter,
             eventBuilder: eventBuilder ?? self.eventBuilder,
-            eventOutput: eventOutput ?? self.eventOutput,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
-            dateCorrector: dateCorrector ?? self.dateCorrector,
             crashContextIntegration: crashContextIntegration ?? self.crashContextIntegration,
             ciTest: ciTest ?? self.ciTest,
             viewUpdatesThrottlerFactory: viewUpdatesThrottlerFactory ?? self.viewUpdatesThrottlerFactory,
@@ -768,6 +684,7 @@ extension RUMSessionScope {
         return mockWith()
     }
 
+    // swiftlint:disable:next function_default_parameter_at_end
     static func mockWith(
         isInitialSession: Bool = .mockAny(),
         parent: RUMContextProvider = RUMContextProviderMock(),
@@ -833,7 +750,8 @@ extension RUMViewScope {
         name: String = .mockAny(),
         attributes: [AttributeKey: AttributeValue] = [:],
         customTimings: [String: Int64] = randomTimings(),
-        startTime: Date = .mockAny()
+        startTime: Date = .mockAny(),
+        serverTimeOffset: TimeInterval = .zero
     ) -> RUMViewScope {
         return RUMViewScope(
             isInitialView: isInitialView,
@@ -844,7 +762,8 @@ extension RUMViewScope {
             name: name,
             attributes: attributes,
             customTimings: customTimings,
-            startTime: startTime
+            startTime: startTime,
+            serverTimeOffset: serverTimeOffset
         )
     }
 }
@@ -856,7 +775,7 @@ extension RUMResourceScope {
         resourceKey: String = .mockAny(),
         attributes: [AttributeKey: AttributeValue] = [:],
         startTime: Date = .mockAny(),
-        dateCorrection: DateCorrection = .zero,
+        serverTimeOffset: TimeInterval = .zero,
         url: String = .mockAny(),
         httpMethod: RUMMethod = .mockAny(),
         isFirstPartyResource: Bool? = nil,
@@ -871,7 +790,7 @@ extension RUMResourceScope {
             resourceKey: resourceKey,
             attributes: attributes,
             startTime: startTime,
-            dateCorrection: dateCorrection,
+            serverTimeOffset: serverTimeOffset,
             url: url,
             httpMethod: httpMethod,
             resourceKindBasedOnRequest: resourceKindBasedOnRequest,
@@ -891,7 +810,7 @@ extension RUMUserActionScope {
         actionType: RUMUserActionType = [.tap, .scroll, .swipe, .custom].randomElement()!,
         attributes: [AttributeKey: AttributeValue] = [:],
         startTime: Date = .mockAny(),
-        dateCorrection: DateCorrection,
+        serverTimeOffset: TimeInterval = .zero,
         isContinuous: Bool = .mockAny(),
         onActionEventSent: @escaping () -> Void = {}
     ) -> RUMUserActionScope {
@@ -902,7 +821,7 @@ extension RUMUserActionScope {
                 actionType: actionType,
                 attributes: attributes,
                 startTime: startTime,
-                dateCorrection: dateCorrection,
+                serverTimeOffset: serverTimeOffset,
                 isContinuous: isContinuous,
                 onActionEventSent: onActionEventSent
         )

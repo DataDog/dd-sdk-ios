@@ -12,15 +12,11 @@ import XCTest
 class DDDatadogTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        XCTAssertNil(Datadog.instance)
-        XCTAssertNil(LoggingFeature.instance)
-        XCTAssertNil(URLSessionAutoInstrumentation.instance)
+        XCTAssertFalse(Datadog.isInitialized)
     }
 
     override func tearDown() {
-        XCTAssertNil(Datadog.instance)
-        XCTAssertNil(LoggingFeature.instance)
-        XCTAssertNil(URLSessionAutoInstrumentation.instance)
+        XCTAssertFalse(Datadog.isInitialized)
         super.tearDown()
     }
 
@@ -36,13 +32,18 @@ class DDDatadogTests: XCTestCase {
             configuration: configBuilder.build()
         )
 
-        XCTAssertNotNil(Datadog.instance)
-        XCTAssertEqual(LoggingFeature.instance?.configuration.common.applicationName, "app-name")
-        XCTAssertEqual(LoggingFeature.instance?.configuration.common.environment, "tests")
-        XCTAssertNotNil(URLSessionAutoInstrumentation.instance)
+        XCTAssertTrue(Datadog.isInitialized)
 
-        URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
+        let urlSessionInstrumentation = defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self)
+        XCTAssertEqual(defaultDatadogCore.v1.context?.applicationName, "app-name")
+        XCTAssertEqual(defaultDatadogCore.v1.context?.env, "tests")
+        XCTAssertNotNil(urlSessionInstrumentation)
+
+        urlSessionInstrumentation?.swizzler.unswizzle()
         Datadog.flushAndDeinitialize()
+
+        XCTAssertNil(defaultDatadogCore.v1.feature(LoggingFeature.self))
+        XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
     }
 
     // MARK: - Changing Tracking Consent
@@ -57,11 +58,12 @@ class DDDatadogTests: XCTestCase {
             configuration: DDConfiguration.builder(clientToken: "abcefghi", environment: "tests").build()
         )
 
-        XCTAssertEqual(Datadog.instance?.consentProvider.currentValue, initialConsent.swift)
+        let core = defaultDatadogCore as? DatadogCore
+        XCTAssertEqual(core?.dependencies.consentProvider.currentValue, initialConsent.swift)
 
         DDDatadog.setTrackingConsent(consent: nextConsent.objc)
 
-        XCTAssertEqual(Datadog.instance?.consentProvider.currentValue, nextConsent.swift)
+        XCTAssertEqual(core?.dependencies.consentProvider.currentValue, nextConsent.swift)
 
         Datadog.flushAndDeinitialize()
     }
@@ -74,7 +76,9 @@ class DDDatadogTests: XCTestCase {
             trackingConsent: randomConsent().objc,
             configuration: DDConfiguration.builder(clientToken: "abcefghi", environment: "tests").build()
         )
-        let userInfo = try XCTUnwrap(Datadog.instance?.userInfoProvider)
+
+        let core = defaultDatadogCore as? DatadogCore
+        let userInfo = try XCTUnwrap(core?.dependencies.userInfoProvider)
 
         DDDatadog.setUserInfo(
             id: "id",

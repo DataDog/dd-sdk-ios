@@ -56,7 +56,7 @@ internal struct RequestBuilder {
         }
 
         /// Standard "User-Agent" header.
-        static func userAgentHeader(appName: String, appVersion: String, device: MobileDevice) -> HTTPHeader {
+        static func userAgentHeader(appName: String, appVersion: String, device: DeviceInfo) -> HTTPHeader {
             let sanitizedAppName: String
             do {
                 let regex = try NSRegularExpression(pattern: "[^a-zA-Z0-9 -]+")

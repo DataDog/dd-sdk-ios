@@ -14,7 +14,7 @@ internal struct TracingWithRUMContextIntegration {
     /// Returns `nil` and prints warning if global `RUMMonitor` is not registered.
     var currentRUMContextTags: [String: Encodable]? {
         guard let attributes = rumContextIntegration.currentRUMContextAttributes else {
-            userLogger.warn("RUM feature is enabled, but no `RUMMonitor` is registered. The RUM integration with Tracing will not work.")
+            DD.logger.warn("RUM feature is enabled, but no `RUMMonitor` is registered. The RUM integration with Tracing will not work.")
             return nil
         }
 
