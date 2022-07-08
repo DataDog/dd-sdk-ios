@@ -21,12 +21,19 @@ import Network
 /// This adds the necessary thread-safety and keeps the convenience of pulling.
 @available(iOS 12, tvOS 12, *)
 internal struct NWPathMonitorPublisher: ContextValuePublisher {
+    private static let defaultQueue = DispatchQueue(
+        label: "com.datadoghq.nw-path-monitor-publisher",
+        target: .global(qos: .utility)
+    )
+
     let initialValue: NetworkConnectionInfo
 
     private let monitor: NWPathMonitor
     private let queue: DispatchQueue
 
-    init(monitor: NWPathMonitor, queue: DispatchQueue) {
+    init(
+        monitor: NWPathMonitor = .init(),
+        queue: DispatchQueue = NWPathMonitorPublisher.defaultQueue) {
         self.monitor = monitor
         self.queue = queue
         self.initialValue = .init(
@@ -37,15 +44,6 @@ internal struct NWPathMonitorPublisher: ContextValuePublisher {
             isExpensive: nil,
             isConstrained: nil
         )
-    }
-
-    init(monitor: NWPathMonitor = .init()) {
-        let queue = DispatchQueue(
-            label: "com.datadoghq.nw-path-monitor-publisher",
-            target: .global(qos: .utility)
-        )
-
-        self.init(monitor: monitor, queue: queue)
     }
 
     func publish(to receiver: @escaping ContextValueReceiver<NetworkConnectionInfo>) {
