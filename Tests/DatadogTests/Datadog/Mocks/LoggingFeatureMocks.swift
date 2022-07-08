@@ -195,28 +195,6 @@ extension Logger {
             logEventMapper: logEventMapper
         )
     }
-
-    static func mockConsoleLogger(
-        output: LogOutput,
-        context: DatadogV1Context = .mockAny()
-    ) -> Logger {
-        let core = DatadogCoreMock(context: context)
-        core.register(feature: LoggingFeature.mockNoOp())
-
-        return Logger(
-            core: core,
-            identifier: "user-logger-mock",
-            serviceName: nil,
-            loggerName: nil,
-            sendNetworkInfo: false,
-            useCoreOutput: false,
-            logsFilter: { _ in true },
-            rumContextIntegration: nil,
-            activeSpanIntegration: nil,
-            additionalOutput: output,
-            logEventMapper: nil
-        )
-    }
 }
 
 extension LogEventBuilder {
