@@ -7,7 +7,7 @@
 import Foundation
 
 /// The `CoreLogger` printing to debugger console.
-internal struct ConsoleLogger: CoreLogger {
+internal struct InternalLogger: CoreLogger {
     /// The prefix applied to all core logs.
     private static let prefix = "[DATADOG SDK] 🐶 → "
 
@@ -55,7 +55,7 @@ internal struct ConsoleLogger: CoreLogger {
     }
 
     private func buildMessageString(message: @autoclosure () -> String, emoji: String) -> String {
-        let prefix = ConsoleLogger.prefix
+        let prefix = InternalLogger.prefix
         let time = dateFormatter.string(from: dateProvider.now)
 
         if !emoji.isEmpty {
