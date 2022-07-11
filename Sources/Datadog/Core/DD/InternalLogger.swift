@@ -23,7 +23,7 @@ internal struct InternalLogger: CoreLogger {
     init(
         dateProvider: DateProvider,
         timeZone: TimeZone,
-        printFunction: @escaping (String) -> Void ,
+        printFunction: @escaping (String) -> Void,
         verbosityLevel: @escaping () -> LogLevel?
     ) {
         self.dateProvider = dateProvider

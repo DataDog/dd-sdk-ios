@@ -6,35 +6,55 @@
 
 import Foundation
 
-/// Builds `Log` representation (for later serialization) from data received from user.
+/// Builds `LogEvent` from data received from the user and provided internally by the SDK.
 internal struct LogEventBuilder {
-    /// SDK version to encode in the log.
-    let sdkVersion: String
-    /// Application version to write in log.
-    let applicationVersion: String
-    /// Environment to write in log.
-    let environment: String
-    /// Service name to write in log.
-    let serviceName: String
-    /// Logger name to write in log.
+    /// The `service` value for logs.
+    /// See: [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
+    let service: String
+    /// The `logger.name` value for logs.
     let loggerName: String
-    /// Shared user info provider.
-    let userInfoProvider: UserInfoProvider
-    /// Shared network connection info provider (or `nil` if disabled for given logger).
-    let networkConnectionInfoProvider: NetworkConnectionInfoProviderType?
-    /// Shared mobile carrier info provider (or `nil` if disabled for given logger).
-    let carrierInfoProvider: CarrierInfoProviderType?
-    /// Adjusts log's time (device time) to server time.
-    let dateCorrector: DateCorrector?
-    /// Log events mapper configured by the user, `nil` if not set.
-    let logEventMapper: LogEventMapper?
+    /// Whether to send the network info in `network.client.*` log attributes.
+    let sendNetworkInfo: Bool
+    /// Allows for modifying (or dropping) logs before they get sent.
+    let eventMapper: LogEventMapper?
 
-    func createLogWith(level: LogLevel, message: String, error: DDError?, date: Date, attributes: LogEvent.Attributes, tags: Set<String>) -> LogEvent? {
-        let user = userInfoProvider.value
+    /// Creates `LogEvent`.
+    ///
+    /// To ensure that logs include precise and correct information, some parameters must be collected synchronously on the caller thread
+    /// whereas other don't. For example, it is important to sign logs with a `date` read exactly from the moment of public API call, but
+    /// network info and other parts of the SDK `context` can be provided asynchronously.
+    ///
+    /// This is to guarantee the right order of logs in Datadog app when using multiple loggers on the same thread and to make sure
+    /// that reported application context is accurate for the moment of log creation.
+    ///
+    /// - Parameters:
+    ///   - date: date of creating the log
+    ///   - status: the status of the log
+    ///   - message: the message of the log
+    ///   - error: eventual error to associate with log
+    ///   - attributes: attributes to associate with log (user and internal attributes, separate)
+    ///   - tags: tags to associate with log
+    ///   - context: SDK context from the moment of creating log
+    ///   - threadName: the name of the thread on which the log is created.
+    ///
+    /// - Returns: the `LogEvent` or `nil` if the log was dropped by the user (from event mapper API).
+    ///
+    /// - Note: `date` and `threadName` must be collected on the user thread.
+    func createLogEvent(
+        date: Date,
+        status: LogEvent.Status,
+        message: String,
+        error: DDError?,
+        attributes: LogEvent.Attributes,
+        tags: Set<String>,
+        context: DatadogV1Context,
+        threadName: String
+    ) -> LogEvent? {
+        let userInfo = context.userInfoProvider.value
 
         let log = LogEvent(
-            date: dateCorrector.map { date.addingTimeInterval($0.offset) } ?? date,
-            status: level.asLogStatus,
+            date: date.addingTimeInterval(context.dateCorrector.offset),
+            status: status,
             message: message,
             error: error.map {
                 .init(
@@ -43,36 +63,37 @@ internal struct LogEventBuilder {
                     stack: $0.stack
                 )
             },
-            serviceName: serviceName,
-            environment: environment,
+            serviceName: service,
+            environment: context.env,
             loggerName: loggerName,
-            loggerVersion: sdkVersion,
-            threadName: getCurrentThreadName(),
-            applicationVersion: applicationVersion,
+            loggerVersion: context.sdkVersion,
+            threadName: threadName,
+            applicationVersion: context.version,
             userInfo: .init(
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                extraInfo: user.extraInfo
+                id: userInfo.id,
+                name: userInfo.name,
+                email: userInfo.email,
+                extraInfo: userInfo.extraInfo
             ),
-            networkConnectionInfo: networkConnectionInfoProvider?.current,
-            mobileCarrierInfo: carrierInfoProvider?.current,
+            networkConnectionInfo: sendNetworkInfo ? context.networkConnectionInfoProvider.current : nil,
+            mobileCarrierInfo: sendNetworkInfo ? context.carrierInfoProvider.current : nil,
             attributes: attributes,
             tags: !tags.isEmpty ? Array(tags) : nil
         )
 
-        if let mapper = logEventMapper {
+        if let mapper = eventMapper {
             return mapper(log)
         }
 
         return log
     }
+}
 
-    private func getCurrentThreadName() -> String {
-        if let customName = Thread.current.name, !customName.isEmpty {
-            return customName
-        } else {
-            return Thread.isMainThread ? "main" : "background"
-        }
+/// Returns the name of current thread if available or the nature of thread otherwise: `"main" | "background"`.
+internal func getCurrentThreadName() -> String {
+    if let customName = Thread.current.name, !customName.isEmpty {
+        return customName
+    } else {
+        return Thread.isMainThread ? "main" : "background"
     }
 }
