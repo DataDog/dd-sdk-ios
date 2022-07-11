@@ -8,4 +8,5 @@ import Foundation
 
 /// A draft interface of SR feature.
 public class SessionReplayFeature {
+    public static let testBool = true
 }
