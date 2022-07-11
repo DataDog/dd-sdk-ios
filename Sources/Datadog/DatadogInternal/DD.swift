@@ -33,5 +33,5 @@ internal struct DD {
     ///
     /// Regardless internal optimisations, **it should be used wisely to report only useful
     /// and actionable events** that are key to SDK observability.
-    static var telemetry: Telemetry = NoOpTelemetry()
+    static var telemetry: Telemetry = NOPTelemetry()
 }

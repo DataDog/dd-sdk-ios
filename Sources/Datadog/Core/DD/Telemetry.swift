@@ -93,7 +93,7 @@ extension Telemetry {
     }
 }
 
-internal struct NoOpTelemetry: Telemetry {
+internal struct NOPTelemetry: Telemetry {
     func debug(id: String, message: String) {}
     func error(id: String, message: String, kind: String?, stack: String?) {}
 }

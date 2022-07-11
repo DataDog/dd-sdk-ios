@@ -335,7 +335,7 @@ public class Datadog {
         Global.rum = DDNoopRUMMonitor()
         Global.crashReporter?.deinitialize()
         Global.crashReporter = nil
-        DD.telemetry = NoOpTelemetry()
+        DD.telemetry = NOPTelemetry()
 
         // Deinitialize `Datadog`:
         defaultDatadogCore = NOOPDatadogCore()
