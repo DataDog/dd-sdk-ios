@@ -13,7 +13,7 @@ class DatadogContextProviderTests: XCTestCase {
     // MARK: - Thread Safety
 
     func testConcurrentReadWrite() {
-        let provider: DatadogContextProvider = .mockWith(context: context)
+        let provider = DatadogContextProvider(context: context)
 
         DispatchQueue.concurrentPerform(iterations: 50) { iteration in
             provider.read { _ in }
@@ -23,57 +23,59 @@ class DatadogContextProviderTests: XCTestCase {
 
     // MARK: - Test Propagation
 
-    func testServerOffsetPropagation() throws {
+    func testPublisherPropagation() throws {
         // Given
-        let kronos = KronosClockMock()
+        let serverOffsetPublisher = ContextValuePublisherMock<TimeInterval>(initialValue: 0)
+        let networkConnectionInfoPublisher = ContextValuePublisherMock<NetworkConnectionInfo?>()
+        let carrierInfoPublisher = ContextValuePublisherMock<CarrierInfo?>()
 
-        let provider: DatadogContextProvider = .mockWith(
-            context: context,
-            serverOffsetPublisher: .init(kronos: kronos)
-        )
+        let provider = DatadogContextProvider(context: context)
+        provider.subscribe(\.serverTimeOffset, to: serverOffsetPublisher)
+        provider.subscribe(\.networkConnectionInfo, to: networkConnectionInfoPublisher)
+        provider.subscribe(\.carrierInfo, to: carrierInfoPublisher)
 
         // When
-        let offset: TimeInterval = .mockRandomInThePast()
-        kronos.update(offset: offset)
+        let serverTimeOffset: TimeInterval = .mockRandomInThePast()
+        serverOffsetPublisher.value = serverTimeOffset
 
-        // Then
-        let context = try provider.read()
-        XCTAssertEqual(context.serverTimeOffset, offset)
-    }
-
-    func testNetworkInfoPropagation() throws {
-        // Given
-        let publisher = NetworkConnectionInfoPublisherMock()
-
-        let provider: DatadogContextProvider = .mockWith(
-            context: context,
-            networkConnectionInfoPublisher: publisher.eraseToAnyPublisher()
-        )
-
-        // When
         let networkConnectionInfo: NetworkConnectionInfo = .mockRandom()
-        publisher.networkConnectionInfo = networkConnectionInfo
+        networkConnectionInfoPublisher.value = networkConnectionInfo
+
+        let carrierInfo: CarrierInfo = .mockRandom()
+        carrierInfoPublisher.value = carrierInfo
 
         // Then
         let context = try provider.read()
+        XCTAssertEqual(context.serverTimeOffset, serverTimeOffset)
         XCTAssertEqual(context.networkConnectionInfo, networkConnectionInfo)
+        XCTAssertEqual(context.carrierInfo, carrierInfo)
     }
 
-    func testCarrierInfoPropagation() throws {
+    func testReaderPropagation() throws {
         // Given
-        let publisher = CarrierInfoPublisherMock()
+        let serverOffsetReader = ContextValueReaderMock<TimeInterval>(initialValue: 0)
+        let networkConnectionInfoReader = ContextValueReaderMock<NetworkConnectionInfo?>()
+        let carrierInfoReader = ContextValueReaderMock<CarrierInfo?>()
 
-        let provider: DatadogContextProvider = .mockWith(
-            context: context,
-            carrierInfoPublisher: .init(publisher)
-        )
+        let provider = DatadogContextProvider(context: context)
+        provider.assign(reader: serverOffsetReader, to: \.serverTimeOffset)
+        provider.assign(reader: networkConnectionInfoReader, to: \.networkConnectionInfo)
+        provider.assign(reader: carrierInfoReader, to: \.carrierInfo)
 
         // When
+        let serverTimeOffset: TimeInterval = .mockRandomInThePast()
+        serverOffsetReader.value = serverTimeOffset
+
+        let networkConnectionInfo: NetworkConnectionInfo = .mockRandom()
+        networkConnectionInfoReader.value = networkConnectionInfo
+
         let carrierInfo: CarrierInfo = .mockRandom()
-        publisher.carrierInfo = carrierInfo
+        carrierInfoReader.value = carrierInfo
 
         // Then
         let context = try provider.read()
+        XCTAssertEqual(context.serverTimeOffset, serverTimeOffset)
+        XCTAssertEqual(context.networkConnectionInfo, networkConnectionInfo)
         XCTAssertEqual(context.carrierInfo, carrierInfo)
     }
 }

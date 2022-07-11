@@ -6,54 +6,6 @@
 
 import Foundation
 
-internal protocol NetworkConnectionInfoPublisher: ContextValuePublisher, ContextValueReader where Value == NetworkConnectionInfo? {
-    func set(queue: DispatchQueue) -> Self
-}
-
-internal struct AnyNetworkConnectionInfoPublisher: NetworkConnectionInfoPublisher {
-    private let publisher: AnyContextValuePublisher<NetworkConnectionInfo?>
-    private let reader: AnyContextValueReader<NetworkConnectionInfo?>
-    private let setQueue: (DispatchQueue) -> AnyNetworkConnectionInfoPublisher
-
-    init<Publisher>(_ publisher: Publisher) where Publisher: NetworkConnectionInfoPublisher {
-        self.publisher = publisher.eraseToAnyPublisher()
-        self.reader = publisher.eraseToAnyReader()
-        self.setQueue = { publisher.set(queue: $0).eraseToAnyPublisher() }
-    }
-
-    init() {
-        if #available(iOS 12, tvOS 12, *) {
-            self.init(NWPathMonitorPublisher())
-        } else {
-            self.init(SCNetworkReachabilityReader())
-        }
-    }
-
-    func set(queue: DispatchQueue) -> Self {
-        .init(setQueue(queue))
-    }
-
-    func read(_ receiver: ContextValueReceiver<NetworkConnectionInfo?>) {
-        reader.read(receiver)
-    }
-
-    func publish(to receiver: @escaping ContextValueReceiver<NetworkConnectionInfo?>) {
-        publisher.publish(to: receiver)
-    }
-
-    func cancel() {
-        publisher.cancel()
-    }
-}
-
-extension NetworkConnectionInfoPublisher {
-    var initialValue: NetworkConnectionInfo? { nil }
-
-    func eraseToAnyPublisher() -> AnyNetworkConnectionInfoPublisher {
-        return AnyNetworkConnectionInfoPublisher(self)
-    }
-}
-
 // MARK: - iOS 12+
 
 import Network
@@ -68,39 +20,29 @@ import Network
 /// The `ThreadSafeNWPathMonitor` listens to path updates and synchonizes the values on `.current` property.
 /// This adds the necessary thread-safety and keeps the convenience of pulling.
 @available(iOS 12, tvOS 12, *)
-private class NWPathMonitorPublisher: NetworkConnectionInfoPublisher {
+internal struct NWPathMonitorPublisher: ContextValuePublisher {
+    let initialValue: NetworkConnectionInfo? = nil
+
     private let monitor: NWPathMonitor
-    private var queue: DispatchQueue = .global(qos: .utility)
+    private let queue: DispatchQueue
+
+    init(monitor: NWPathMonitor, queue: DispatchQueue) {
+        self.monitor = monitor
+        self.queue = queue
+    }
 
     init(monitor: NWPathMonitor = .init()) {
-        self.monitor = monitor
-    }
+        let queue = DispatchQueue(
+            label: "com.datadoghq.nw-path-monitor-publisher",
+            target: .global(qos: .utility)
+        )
 
-    func set(queue: DispatchQueue) -> Self {
-        self.queue = queue
-        return self
-    }
-
-    func read(_ receive: ContextValueReceiver<NetworkConnectionInfo?>) {
-        // no-op
+        self.init(monitor: monitor, queue: queue)
     }
 
     func publish(to receiver: @escaping ContextValueReceiver<NetworkConnectionInfo?>) {
-        monitor.pathUpdateHandler = { path in
-            let info = NetworkConnectionInfo(
-                reachability: NetworkConnectionInfo.Reachability(from: path.status),
-                availableInterfaces: path.availableInterfaces.map { .init($0.type) },
-                supportsIPv4: path.supportsIPv4,
-                supportsIPv6: path.supportsIPv6,
-                isExpensive: path.isExpensive,
-                isConstrained: {
-                    guard #available(iOS 13, tvOS 13, *) else {
-                        return nil
-                    }
-                    return path.isConstrained
-                }()
-            )
-
+        monitor.pathUpdateHandler = {
+            let info = NetworkConnectionInfo($0)
             receiver(info)
         }
 
@@ -112,9 +54,28 @@ private class NWPathMonitorPublisher: NetworkConnectionInfoPublisher {
     }
 }
 
+extension NetworkConnectionInfo {
+    @available(iOS 12, tvOS 12, *)
+    init(_ path: NWPath) {
+        self.init(
+            reachability: NetworkConnectionInfo.Reachability(path.status),
+            availableInterfaces: path.availableInterfaces.map { .init($0.type) },
+            supportsIPv4: path.supportsIPv4,
+            supportsIPv6: path.supportsIPv6,
+            isExpensive: path.isExpensive,
+            isConstrained: {
+                guard #available(iOS 13, tvOS 13, *) else {
+                    return nil
+                }
+                return path.isConstrained
+            }()
+        )
+    }
+}
+
 extension NetworkConnectionInfo.Reachability {
     @available(iOS 12, tvOS 12, *)
-    init(from status: NWPath.Status) {
+    init(_ status: NWPath.Status) {
         switch status {
         case .satisfied: self = .yes
         case .requiresConnection: self = .maybe
@@ -142,47 +103,46 @@ extension NetworkConnectionInfo.Interface {
 
 import SystemConfiguration
 
-private final class SCNetworkReachabilityReader: NetworkConnectionInfoPublisher {
+internal struct SCNetworkReachabilityReader: ContextValueReader {
+    let initialValue: NetworkConnectionInfo?
+
     private let reachability: SCNetworkReachability
+
+    init(reachability: SCNetworkReachability) {
+        self.initialValue = NetworkConnectionInfo(reachability)
+        self.reachability = reachability
+    }
 
     init() {
         var zero = sockaddr()
         zero.sa_len = UInt8(MemoryLayout<sockaddr>.size)
         zero.sa_family = sa_family_t(AF_INET)
-        self.reachability = SCNetworkReachabilityCreateWithAddress(nil, &zero)! // swiftlint:disable:this force_unwrapping
+        let reachability = SCNetworkReachabilityCreateWithAddress(nil, &zero)! // swiftlint:disable:this force_unwrapping
+        self.init(reachability: reachability)
     }
 
-    func read(_ receive: ContextValueReceiver<NetworkConnectionInfo?>) {
+    func read(to receiver: inout NetworkConnectionInfo?) {
+        receiver = NetworkConnectionInfo(reachability)
+    }
+}
+
+extension NetworkConnectionInfo {
+    init(_ reachability: SCNetworkReachability) {
         var retrieval = SCNetworkReachabilityFlags()
         let flags = (SCNetworkReachabilityGetFlags(reachability, &retrieval)) ? retrieval : nil
-        let info = NetworkConnectionInfo(
-            reachability: NetworkConnectionInfo.Reachability(from: flags),
+        self.init(
+            reachability: .init(flags),
             availableInterfaces: NetworkConnectionInfo.Interface(flags).map { [$0] },
             supportsIPv4: nil,
             supportsIPv6: nil,
             isExpensive: nil,
             isConstrained: nil
         )
-
-        receive(info)
-    }
-
-    func set(queue: DispatchQueue) -> Self {
-        // no-op
-        return self
-    }
-
-    func publish(to receiver: @escaping ContextValueReceiver<NetworkConnectionInfo?>) {
-        // no-op
-    }
-
-    func cancel() {
-        // no-op
     }
 }
 
 extension NetworkConnectionInfo.Reachability {
-    init(from flags: SCNetworkReachabilityFlags?) {
+    init(_ flags: SCNetworkReachabilityFlags?) {
         switch flags?.contains(.reachable) {
         case .none: self = .maybe
         case .some(true): self = .yes

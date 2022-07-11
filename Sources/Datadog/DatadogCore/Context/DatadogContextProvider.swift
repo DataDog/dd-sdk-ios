@@ -35,43 +35,17 @@ internal final class DatadogContextProvider {
         attributes: .concurrent
     )
 
-    private var subscriptions: [ContextValueSubscription] = []
-    private var networkConnectionInfoReader: AnyContextValueReader<NetworkConnectionInfo?>
-    private var carrierInfoReader: AnyContextValueReader<CarrierInfo?>
+    private var subscriptions: [ContextValueSubscription]
+    private var reader: KeyPathContextValueReader<DatadogContext>
 
     /// Creates a context provider to perform reads and writes on the
     /// shared Datadog context.
     ///
-    /// - Parameters:
-    ///   - context:                        The context inital context value.
-    ///   - serverOffsetPublisher:          The server date publisher to synchronize the `context.serverTimeOffset`
-    ///                                     parameter.
-    ///   - networkConnectionInfoPublisher: The network info publisher to synchronize the
-    ///                                     `context.networkConnectionInfo` parameter.
-    ///   - carrierInfoPublisher:           The carrier info publisher to synchronize the `context.carrierInfo`
-    ///                                     parameter.
-    init(
-        context: DatadogContext,
-        serverOffsetPublisher: ServerOffsetPublisher,
-        networkConnectionInfoPublisher: AnyNetworkConnectionInfoPublisher,
-        carrierInfoPublisher: AnyCarrierInfoPublisher
-    ) {
+    /// - Parameter context: The inital context value.
+    init(context: DatadogContext) {
         self.context = context
-        self.context.serverTimeOffset = serverOffsetPublisher.initialValue
-        self.networkConnectionInfoReader = networkConnectionInfoPublisher.eraseToAnyReader()
-        self.carrierInfoReader = carrierInfoPublisher.eraseToAnyReader()
-
-        self.subscriptions = [
-            serverOffsetPublisher.subscribe { offset in
-                self.write { $0.serverTimeOffset = offset }
-            },
-            networkConnectionInfoPublisher.set(queue: queue).subscribe { info in
-                self.write { $0.networkConnectionInfo = info }
-            },
-            carrierInfoPublisher.subscribe { info in
-                self.write { $0.carrierInfo = info }
-            },
-        ]
+        self.subscriptions = []
+        self.reader = KeyPathContextValueReader()
     }
 
     deinit {
@@ -82,8 +56,7 @@ internal final class DatadogContextProvider {
     func read(block: @escaping (DatadogContext) -> Void) {
         queue.async {
             var context = self.context
-            self.networkConnectionInfoReader.read { context.networkConnectionInfo = $0 }
-            self.carrierInfoReader.read { context.carrierInfo = $0 }
+            self.reader.read(to: &context)
             block(context)
         }
     }
@@ -91,5 +64,27 @@ internal final class DatadogContextProvider {
     /// Writes to the `context` asynchronously, without blocking the caller thread.
     func write(block: @escaping (inout DatadogContext) -> Void) {
         queue.async(flags: .barrier) { block(&self.context) }
+    }
+
+    /// Subscribes a context's key path to a publisher.
+    ///
+    /// - Parameters:
+    ///   - keyPath: A context's key path that supports reading from and writing to the resulting value.
+    ///   - publisher: The context value publisher.
+    func subscribe<Publisher>(_ keyPath: WritableKeyPath<DatadogContext, Publisher.Value>, to publisher: Publisher) where Publisher: ContextValuePublisher {
+        let subscription = publisher.subscribe { value in
+            self.write { $0[keyPath: keyPath] = value }
+        }
+
+        subscriptions.append(subscription)
+    }
+
+    /// Assigns a value reader to a context property.
+    ///
+    /// - Parameters:
+    ///   - reader: The value reader.
+    ///   - keyPath: A context's key path that supports reading from and writing to the resulting value.
+    func assign<Reader>(reader: Reader, to keyPath: WritableKeyPath<DatadogContext, Reader.Value>) where Reader: ContextValueReader {
+        self.reader.append(reader: reader, receiver: keyPath)
     }
 }

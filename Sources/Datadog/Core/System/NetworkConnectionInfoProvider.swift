@@ -81,7 +81,7 @@ internal class NWPathNetworkConnectionInfoProvider: WrappedNetworkConnectionInfo
         self.monitor = monitor
         monitor.pathUpdateHandler = { [weak self] path in
             self?.unsafeCurrentNetworkConnectionInfo = NetworkConnectionInfo(
-                reachability: NetworkConnectionInfo.Reachability(from: path.status),
+                reachability: NetworkConnectionInfo.Reachability(path.status),
                 availableInterfaces: path.availableInterfaces.map { .init($0.type) },
                 supportsIPv4: path.supportsIPv4,
                 supportsIPv6: path.supportsIPv6,
@@ -126,7 +126,7 @@ internal class iOS11NetworkConnectionInfoProvider: WrappedNetworkConnectionInfoP
         var retrieval = SCNetworkReachabilityFlags()
         let flags = (SCNetworkReachabilityGetFlags(reachability, &retrieval)) ? retrieval : nil
         return NetworkConnectionInfo(
-            reachability: NetworkConnectionInfo.Reachability(from: flags),
+            reachability: NetworkConnectionInfo.Reachability(flags),
             availableInterfaces: NetworkConnectionInfo.Interface(flags).map { [$0] },
             supportsIPv4: nil,
             supportsIPv6: nil,

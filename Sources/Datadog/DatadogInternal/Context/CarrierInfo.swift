@@ -6,7 +6,7 @@
 
 import Foundation
 
-/// Network connection details specific to cellular radio access.
+/// Carrier details specific to cellular radio access.
 public struct CarrierInfo: Equatable {
     // swiftlint:disable identifier_name
     public enum RadioAccessTechnology: String, Codable, CaseIterable {

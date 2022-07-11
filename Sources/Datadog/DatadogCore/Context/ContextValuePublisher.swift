@@ -33,7 +33,7 @@ internal protocol ContextValuePublisher {
     /// The initial value of the publisher.
     var initialValue: Value { get }
 
-    /// Tells a publisher that it may send more values to the subscriber.
+    /// Start sending values to a receiver.
     func publish(to receiver: @escaping ContextValueReceiver<Value>)
 
     /// Cancels publications.
@@ -70,7 +70,7 @@ internal protocol ContextValueSubscription {
     func cancel()
 }
 
-/// Attach a ``ContextValueReceiver`` to a ``ContextValuePublisher`` to create
+/// Attaches a ``ContextValueReceiver`` to a ``ContextValuePublisher`` to create
 /// ``ContextValueSubscription`` instance.
 ///
 /// An instance of ``ContextValueBlockSubscription`` is returned when subrcribing to a
@@ -114,7 +114,7 @@ extension ContextValuePublisher {
     ///         print(value)
     ///     }
     ///
-    /// When no more value are required, the subscription can be cancelled.
+    /// When no more values are required, the subscription can be cancelled.
     ///
     ///     subscription.cancel()
     ///
@@ -183,5 +183,37 @@ extension ContextValuePublisher {
     /// - Returns: An ``AnyContextValuePublisher`` wrapping this publisher.
     func eraseToAnyPublisher() -> AnyContextValuePublisher<Value> {
         return AnyContextValuePublisher(self)
+    }
+}
+
+// MARK: - No-op
+
+/// A no-operation publisher.
+///
+/// ``NOPContextValuePublisher`` is a concrete implementation of ``ContextValuePublisher``
+/// that has no effect when invoking ``ContextValuePublisher/read``.
+///
+/// You can use ``NOContextValuePublisher`` as a placeholder.
+internal struct NOPContextValuePublisher<Value>: ContextValuePublisher {
+    /// The initial value of the reader.
+    let initialValue: Value
+
+    /// Creates a type-erasing reader to wrap the provided reader.
+    ///
+    /// - Parameter reader: A reader to wrap with a type-eraser.
+    init(initialValue: Value) {
+        self.initialValue = initialValue
+    }
+
+    init() where Value: ExpressibleByNilLiteral {
+        self.initialValue = nil
+    }
+
+    func publish(to receiver: @escaping ContextValueReceiver<Value>) {
+        // no-op
+    }
+
+    func cancel() {
+        // no-op
     }
 }

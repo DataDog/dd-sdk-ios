@@ -9,20 +9,6 @@ import XCTest
 @testable import Datadog
 
 extension DatadogContextProvider {
-    static func mockWith(
-        context: DatadogContext = .mockAny(),
-        serverOffsetPublisher: ServerOffsetPublisher = .mockAny(),
-        networkConnectionInfoPublisher: AnyNetworkConnectionInfoPublisher = .mockAny(),
-        carrierInfoPublisher: AnyCarrierInfoPublisher = .mockAny()
-    ) -> Self {
-        .init(
-            context: context,
-            serverOffsetPublisher: serverOffsetPublisher,
-            networkConnectionInfoPublisher: networkConnectionInfoPublisher,
-            carrierInfoPublisher: carrierInfoPublisher
-        )
-    }
-
     /// Reads to the `context` synchronously.
     func read(timeout: DispatchTimeInterval = .seconds(5)) throws -> DatadogContext {
         let semaphore = DispatchSemaphore(value: 0)

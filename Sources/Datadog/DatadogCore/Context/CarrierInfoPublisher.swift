@@ -7,89 +7,15 @@
 import Foundation
 
 #if os(iOS)
+
 import CoreTelephony
-#endif
 
-extension CarrierInfo.RadioAccessTechnology {
-    init(_ radioAccessTechnology: String) {
-        switch radioAccessTechnology {
-        #if os(iOS) && !targetEnvironment(macCatalyst)
-        case CTRadioAccessTechnologyGPRS: self = .GPRS
-        case CTRadioAccessTechnologyEdge: self = .Edge
-        case CTRadioAccessTechnologyWCDMA: self = .WCDMA
-        case CTRadioAccessTechnologyHSDPA: self = .HSDPA
-        case CTRadioAccessTechnologyHSUPA: self = .HSUPA
-        case CTRadioAccessTechnologyCDMA1x: self = .CDMA1x
-        case CTRadioAccessTechnologyCDMAEVDORev0: self = .CDMAEVDORev0
-        case CTRadioAccessTechnologyCDMAEVDORevA: self = .CDMAEVDORevA
-        case CTRadioAccessTechnologyCDMAEVDORevB: self = .CDMAEVDORevB
-        case CTRadioAccessTechnologyeHRPD: self = .eHRPD
-        case CTRadioAccessTechnologyLTE: self = .LTE
-        #endif
-        default: self = .unknown
-        }
-    }
-}
+// MARK: - iOS 12+
 
-/// Platform-agnostic carrier info provider. It wraps the platform-specific provider inside.
-internal struct AnyCarrierInfoPublisher: ContextValuePublisher, ContextValueReader {
-    var initialValue: CarrierInfo? { publisher.initialValue }
-
-    private let publisher: AnyContextValuePublisher<CarrierInfo?>
-    private let reader: AnyContextValueReader<CarrierInfo?>
-
-    init<Publisher>(_ publisher: Publisher) where Publisher: ContextValuePublisher, Publisher: ContextValueReader, Publisher.Value == CarrierInfo? {
-        self.publisher = publisher.eraseToAnyPublisher()
-        self.reader = publisher.eraseToAnyReader()
-    }
-
-    init() {
-        #if os(iOS)
-        if #available(iOS 12.0, *) {
-            self.init(iOS12CarrierInfoPublisher())
-        } else {
-            self.init(iOS11CarrierInfoReader())
-        }
-        #else
-        self.init(NOPCarrierInfoPublisher())
-        #endif
-    }
-
-    func read(_ receiver: ContextValueReceiver<CarrierInfo?>) {
-        reader.read(receiver)
-    }
-
-    func publish(to receiver: @escaping ContextValueReceiver<CarrierInfo?>) {
-        publisher.publish(to: receiver)
-    }
-
-    func cancel() {
-        publisher.cancel()
-    }
-}
-
-/// Dummy provider for platforms which doesn't support carrier info.
-internal struct NOPCarrierInfoPublisher: ContextValuePublisher, ContextValueReader {
-    let initialValue: CarrierInfo? = nil
-
-    func read(_ receiver: ContextValueReceiver<CarrierInfo?>) {
-        // no-op
-    }
-
-    func publish(to receiver: @escaping ContextValueReceiver<CarrierInfo?>) {
-        // no-op
-    }
-
-    func cancel() {
-        // no-op
-    }
-}
-
-#if os(iOS)
 /// Carrier info provider for iOS 12 and above.
 /// It reads `CarrierInfo?` from `CTTelephonyNetworkInfo` only when `CTCarrier` has changed (e.g. when the SIM card was swapped).
 @available(iOS 12, *)
-internal final class iOS12CarrierInfoPublisher: ContextValuePublisher, ContextValueReader {
+internal struct iOS12CarrierInfoPublisher: ContextValuePublisher {
     let initialValue: CarrierInfo?
 
     private let networkInfo: CTTelephonyNetworkInfo
@@ -97,10 +23,6 @@ internal final class iOS12CarrierInfoPublisher: ContextValuePublisher, ContextVa
     init(networkInfo: CTTelephonyNetworkInfo = .init()) {
         self.networkInfo = networkInfo
         self.initialValue = CarrierInfo(networkInfo, service: networkInfo.serviceCurrentRadioAccessTechnology?.keys.first)
-    }
-
-    func read(_ receiver: ContextValueReceiver<CarrierInfo?>) {
-        // no-op
     }
 
     func publish(to receiver: @escaping ContextValueReceiver<CarrierInfo?>) {
@@ -139,9 +61,11 @@ extension CarrierInfo {
     }
 }
 
+// MARK: - iOS 11
+
 /// Carrier info provider for iOS 11.
 /// It reads `CarrierInfo?` from `CTTelephonyNetworkInfo` each time.
-internal final class iOS11CarrierInfoReader: ContextValuePublisher, ContextValueReader {
+internal struct iOS11CarrierInfoReader: ContextValueReader {
     let initialValue: CarrierInfo?
 
     private let networkInfo: CTTelephonyNetworkInfo
@@ -151,17 +75,8 @@ internal final class iOS11CarrierInfoReader: ContextValuePublisher, ContextValue
         self.initialValue = CarrierInfo(networkInfo)
     }
 
-    func read(_ receiver: ContextValueReceiver<CarrierInfo?>) {
-        let info = CarrierInfo(networkInfo)
-        receiver(info)
-    }
-
-    func publish(to receiver: @escaping ContextValueReceiver<CarrierInfo?>) {
-        // no-op
-    }
-
-    func cancel() {
-        // no-op
+    func read(to receiver: inout CarrierInfo?) {
+        receiver = CarrierInfo(networkInfo)
     }
 }
 
@@ -180,6 +95,27 @@ extension CarrierInfo {
             carrierAllowsVOIP: carrier.allowsVOIP,
             radioAccessTechnology: .init(radioTechnology)
         )
+    }
+}
+
+extension CarrierInfo.RadioAccessTechnology {
+    init(_ radioAccessTechnology: String) {
+        switch radioAccessTechnology {
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        case CTRadioAccessTechnologyGPRS: self = .GPRS
+        case CTRadioAccessTechnologyEdge: self = .Edge
+        case CTRadioAccessTechnologyWCDMA: self = .WCDMA
+        case CTRadioAccessTechnologyHSDPA: self = .HSDPA
+        case CTRadioAccessTechnologyHSUPA: self = .HSUPA
+        case CTRadioAccessTechnologyCDMA1x: self = .CDMA1x
+        case CTRadioAccessTechnologyCDMAEVDORev0: self = .CDMAEVDORev0
+        case CTRadioAccessTechnologyCDMAEVDORevA: self = .CDMAEVDORevA
+        case CTRadioAccessTechnologyCDMAEVDORevB: self = .CDMAEVDORevB
+        case CTRadioAccessTechnologyeHRPD: self = .eHRPD
+        case CTRadioAccessTechnologyLTE: self = .LTE
+        #endif
+        default: self = .unknown
+        }
     }
 }
 

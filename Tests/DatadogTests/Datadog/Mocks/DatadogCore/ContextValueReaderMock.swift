@@ -7,14 +7,10 @@
 import Foundation
 @testable import Datadog
 
-internal class ContextValuePublisherMock<Value>: ContextValuePublisher {
+internal class ContextValueReaderMock<Value>: ContextValueReader {
     let initialValue: Value
 
-    var value: Value {
-        didSet { receiver?(value) }
-    }
-
-    private var receiver: ContextValueReceiver<Value>?
+    var value: Value
 
     init(initialValue: Value) {
         self.initialValue = initialValue
@@ -26,21 +22,17 @@ internal class ContextValuePublisherMock<Value>: ContextValuePublisher {
         value = nil
     }
 
-    func publish(to receiver: @escaping ContextValueReceiver<Value>) {
-        self.receiver = receiver
-    }
-
-    func cancel() {
-        receiver = nil
+    func read(to receiver: inout Value) {
+        receiver = value
     }
 }
 
-extension ContextValuePublisher {
-    static func mockAny() -> ContextValuePublisherMock<Value> where Value: ExpressibleByNilLiteral {
+extension ContextValueReader {
+    static func mockAny() -> ContextValueReaderMock<Value> where Value: ExpressibleByNilLiteral {
         .init()
     }
 
-    static func mockWith(initialValue: Value) -> ContextValuePublisherMock<Value> {
+    static func mockWith(initialValue: Value) -> ContextValueReaderMock<Value> {
         .init(initialValue: initialValue)
     }
 }

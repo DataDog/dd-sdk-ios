@@ -103,9 +103,9 @@ class NetworkConnectionInfoConversionTests: XCTestCase {
 
     func testNWPathStatus() {
         if #available(iOS 12.0, tvOS 12, *) {
-            XCTAssertEqual(Reachability(from: .satisfied), .yes)
-            XCTAssertEqual(Reachability(from: .unsatisfied), .no)
-            XCTAssertEqual(Reachability(from: .requiresConnection), .maybe)
+            XCTAssertEqual(Reachability(.satisfied), .yes)
+            XCTAssertEqual(Reachability(.unsatisfied), .no)
+            XCTAssertEqual(Reachability(.requiresConnection), .maybe)
         }
     }
 
@@ -121,13 +121,13 @@ class NetworkConnectionInfoConversionTests: XCTestCase {
 
     func testSCReachability() {
         let reachable = SCNetworkReachabilityFlags(arrayLiteral: .reachable)
-        XCTAssertEqual(Reachability(from: reachable), .yes)
+        XCTAssertEqual(Reachability(reachable), .yes)
 
         let unreachable = SCNetworkReachabilityFlags(arrayLiteral: .connectionOnDemand)
-        XCTAssertEqual(Reachability(from: unreachable), .no)
+        XCTAssertEqual(Reachability(unreachable), .no)
 
         let null: SCNetworkReachabilityFlags? = nil
-        XCTAssertEqual(Reachability(from: null), .maybe)
+        XCTAssertEqual(Reachability(null), .maybe)
     }
 
     func testSCInterface() {
