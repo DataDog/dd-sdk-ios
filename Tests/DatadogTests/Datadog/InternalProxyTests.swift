@@ -83,21 +83,19 @@ class InternalProxyTests: XCTestCase {
         core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
-        Global.rum = monitor
 
-        let duration: TimeInterval = .mockAny()
+        let duration: TimeInterval = .mockRandom()
+        let internalProxy = _InternalProxy(monitor: monitor as? RUMMonitor)
 
         // When
         monitor.startView(viewController: mockView)
-        Datadog._internal._rum?.addLongTask(at: Date(), duration: duration)
+        internalProxy._rum?.addLongTask(at: Date(), duration: duration)
 
-        let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 2)
+        let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 3)
 
         // Then
         let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
         let longTask = session.viewVisits[0].longTaskEvents.first
         XCTAssertEqual(longTask?.longTask.duration, duration.toInt64Nanoseconds)
-
-        Global.rum = DDNoopRUMMonitor()
     }
 }
