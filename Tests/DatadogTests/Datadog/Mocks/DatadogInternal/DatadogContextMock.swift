@@ -25,6 +25,7 @@ extension DatadogContext: AnyMockable {
         applicationBundleIdentifier: String = .mockAny(),
         sdkInitDate: Date = .mockRandomInThePast(),
         device: DeviceInfo = .mockAny(),
+        userInfo: UserInfo = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo = .mockAny(),
         carrierInfo: CarrierInfo? = .mockAny()
     ) -> DatadogContext {
@@ -42,6 +43,7 @@ extension DatadogContext: AnyMockable {
             applicationBundleIdentifier: applicationBundleIdentifier,
             sdkInitDate: sdkInitDate,
             device: device,
+            userInfo: userInfo,
             networkConnectionInfo: networkConnectionInfo,
             carrierInfo: carrierInfo
         )
