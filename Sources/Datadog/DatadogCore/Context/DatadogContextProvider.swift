@@ -20,6 +20,21 @@ import Foundation
 ///
 /// The provider performs reads concurrently but uses barrier block for
 /// write operations.
+///
+/// The context provider has the ability to a assign a value reader that complies to
+/// ``ContextValueReader`` to a specific context property. e.g.:
+///
+///     let reader = ServerOffsetReader<TimeInterval>(initialValue: 0)
+///     provider.assign(reader: reader, to: \.serverTimeOffset)
+///
+///
+/// The context provider can subscribe a context property to a publisher that complies
+/// to ``ContextValuePublisher``. e.g.:
+///
+///     let publisher = ServerOffsetPublisher<TimeInterval>(initialValue: 0)
+///     provider.subscribe(\.serverTimeOffset, to: publisher)
+///
+/// All subscriptions will be cancelled when the provider is deallocated.
 internal final class DatadogContextProvider {
     /// The current `context`.
     ///
@@ -53,6 +68,8 @@ internal final class DatadogContextProvider {
     }
 
     /// Reads to the `context` asynchronously, without blocking the caller thread.
+    ///
+    /// - Parameter block: The block closure called with the current context.
     func read(block: @escaping (DatadogContext) -> Void) {
         queue.async {
             var context = self.context
@@ -62,11 +79,19 @@ internal final class DatadogContextProvider {
     }
 
     /// Writes to the `context` asynchronously, without blocking the caller thread.
+    ///
+    /// - Parameter block: The block closure called with the current context.
     func write(block: @escaping (inout DatadogContext) -> Void) {
         queue.async(flags: .barrier) { block(&self.context) }
     }
 
-    /// Subscribes a context's key path to a publisher.
+    /// Subscribes a context's property to a publisher.
+    ///
+    /// The context provider can subscribe a context property to a publisher that complies
+    /// to ``ContextValuePublisher``. e.g.:
+    ///
+    ///     let publisher = ServerOffsetPublisher<TimeInterval>(initialValue: 0)
+    ///     provider.subscribe(\.serverTimeOffset, to: publisher)
     ///
     /// - Parameters:
     ///   - keyPath: A context's key path that supports reading from and writing to the resulting value.
@@ -80,6 +105,12 @@ internal final class DatadogContextProvider {
     }
 
     /// Assigns a value reader to a context property.
+    ///
+    /// The context provider has the ability to a assign a value reader that complies to
+    /// ``ContextValueReader`` to a specific context property. e.g.:
+    ///
+    ///     let reader = ServerOffsetReader<TimeInterval>(initialValue: 0)
+    ///     provider.assign(reader: reader, to: \.serverTimeOffset)
     ///
     /// - Parameters:
     ///   - reader: The value reader.
