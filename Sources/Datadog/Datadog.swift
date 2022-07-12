@@ -340,6 +340,13 @@ public class Datadog {
         // Deinitialize `Datadog`:
         defaultDatadogCore = NOOPDatadogCore()
     }
+
+    // MARK: - Internal Proxy - exposure of internal classes (Mostly used for cross platform libraries)
+
+    static var _internal: _InternalProxy = {
+        let monitor = Global.rum as? RUMMonitor
+        return _InternalProxy(monitor: monitor)
+    }()
 }
 
 /// Convenience typealias.
