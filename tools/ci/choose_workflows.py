@@ -32,6 +32,20 @@ def should_run_unit_tests(ctx: CIContext) -> bool:
     )
 
 
+def should_run_sr_unit_tests(ctx: CIContext) -> bool:
+    print('⚙️ Resolving `unit tests` phase for Session Replay:')
+    return should_run_phase(
+        ctx=ctx,
+        trigger_env=context.trigger_env.DD_RUN_SR_UNIT_TESTS,
+        build_env=context.build_env.DD_OVERRIDE_RUN_SR_UNIT_TESTS,
+        pr_keyword='[x] Run unit tests for Session Replay',
+        pr_path_prefixes=[
+            'session-replay/',
+        ],
+        pr_file_extensions=[]
+    )
+
+
 def should_run_integration_tests(ctx: CIContext) -> bool:
     print('⚙️ Resolving `integration tests` phase:')
     return should_run_phase(
@@ -147,6 +161,9 @@ if __name__ == "__main__":
 
         if should_run_unit_tests(context):
             export_env('DD_RUN_UNIT_TESTS', '1', dry_run=dry_run)
+
+        if should_run_sr_unit_tests(context):
+            export_env('DD_RUN_SR_UNIT_TESTS', '1', dry_run=dry_run)
 
         if should_run_integration_tests(context):
             export_env('DD_RUN_INTEGRATION_TESTS', '1', dry_run=dry_run)
