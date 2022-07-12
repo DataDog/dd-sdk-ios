@@ -29,8 +29,7 @@ class FeatureStorageTests: XCTestCase {
             queue: queue,
             dataFormat: DataFormat(prefix: "", suffix: "", separator: "#"),
             directories: temporaryFeatureDirectories,
-            commonDependencies: .mockWith(consentProvider: consentProvider),
-            telemetry: nil
+            commonDependencies: .mockWith(consentProvider: consentProvider)
         )
 
         // When
@@ -70,8 +69,7 @@ class FeatureStorageTests: XCTestCase {
             queue: queue,
             dataFormat: DataFormat(prefix: "", suffix: "", separator: "#"),
             directories: temporaryFeatureDirectories,
-            commonDependencies: .mockWith(consentProvider: .init(initialConsent: .granted)),
-            telemetry: nil
+            commonDependencies: .mockWith(consentProvider: .init(initialConsent: .granted))
         )
 
         // When
@@ -102,8 +100,7 @@ class FeatureStorageTests: XCTestCase {
             queue: queue,
             dataFormat: DataFormat(prefix: "", suffix: "", separator: "#"),
             directories: temporaryFeatureDirectories,
-            commonDependencies: .mockWith(consentProvider: .init(initialConsent: .granted)),
-            telemetry: nil
+            commonDependencies: .mockWith(consentProvider: .init(initialConsent: .granted))
         )
 
         // When

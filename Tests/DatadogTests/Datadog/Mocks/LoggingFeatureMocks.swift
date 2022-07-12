@@ -305,20 +305,3 @@ class LogOutputMock: LogOutput {
             .joined(separator: "\n")
     }
 }
-
-/// `Telemtry` recording received telemetry.
-class TelemetryMock: Telemetry, CustomStringConvertible {
-    private(set) var debugs: [String] = []
-    private(set) var errors: [(message: String, kind: String?, stack: String?)] = []
-    private(set) var description: String = "Telemetry logs:"
-
-    func debug(id: String, message: String) {
-        debugs.append(message)
-        description.append("\n- [debug] \(message)")
-    }
-
-    func error(id: String, message: String, kind: String?, stack: String?) {
-        errors.append((message: message, kind: kind, stack: stack))
-        description.append("\n - [error] \(message), kind: \(kind ?? "nil"), stack: \(stack ?? "nil")")
-    }
-}

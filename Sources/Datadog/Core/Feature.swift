@@ -45,20 +45,17 @@ internal struct FeatureStorage {
         queue: DispatchQueue,
         dataFormat: DataFormat,
         directories: FeatureDirectories,
-        commonDependencies: FeaturesCommonDependencies,
-        telemetry: Telemetry?
+        commonDependencies: FeaturesCommonDependencies
     ) {
         let authorizedFilesOrchestrator = FilesOrchestrator(
             directory: directories.authorized,
             performance: commonDependencies.performance,
-            dateProvider: commonDependencies.dateProvider,
-            telemetry: telemetry
+            dateProvider: commonDependencies.dateProvider
         )
         let unauthorizedFilesOrchestrator = FilesOrchestrator(
             directory: directories.unauthorized,
             performance: commonDependencies.performance,
-            dateProvider: commonDependencies.dateProvider,
-            telemetry: telemetry
+            dateProvider: commonDependencies.dateProvider
         )
 
         let dataOrchestrator = DataOrchestrator(
@@ -69,14 +66,12 @@ internal struct FeatureStorage {
 
         let unauthorizedFileWriter = FileWriter(
             orchestrator: unauthorizedFilesOrchestrator,
-            encryption: commonDependencies.encryption,
-            telemetry: telemetry
+            encryption: commonDependencies.encryption
         )
 
         let authorizedFileWriter = FileWriter(
             orchestrator: authorizedFilesOrchestrator,
-            encryption: commonDependencies.encryption,
-            telemetry: telemetry
+            encryption: commonDependencies.encryption
         )
 
         let consentAwareDataWriter = ConsentAwareDataWriter(
@@ -85,8 +80,7 @@ internal struct FeatureStorage {
             unauthorizedWriter: unauthorizedFileWriter,
             authorizedWriter: authorizedFileWriter,
             dataMigratorFactory: DataMigratorFactory(
-                directories: directories,
-                telemetry: telemetry
+                directories: directories
             )
         )
 
@@ -100,8 +94,7 @@ internal struct FeatureStorage {
             fileReader: FileReader(
                 dataFormat: dataFormat,
                 orchestrator: authorizedFilesOrchestrator,
-                encryption: commonDependencies.encryption,
-                telemetry: telemetry
+                encryption: commonDependencies.encryption
             )
         )
 
@@ -150,8 +143,7 @@ internal struct FeatureUpload {
         featureName: String,
         storage: FeatureStorage,
         requestBuilder: RequestBuilder,
-        commonDependencies: FeaturesCommonDependencies,
-        telemetry: Telemetry?
+        commonDependencies: FeaturesCommonDependencies
     ) {
         let uploadQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-\(featureName)-upload",
@@ -175,8 +167,7 @@ internal struct FeatureUpload {
                 dataUploader: dataUploader,
                 uploadConditions: uploadConditions,
                 delay: DataUploadDelay(performance: commonDependencies.performance),
-                featureName: featureName,
-                telemetry: telemetry
+                featureName: featureName
             )
         )
     }

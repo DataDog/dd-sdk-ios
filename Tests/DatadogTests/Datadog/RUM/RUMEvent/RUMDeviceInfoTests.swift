@@ -13,8 +13,7 @@ class RUMDeviceInfoTests: XCTestCase {
         let randomName: String = .mockRandom()
 
         let info = RUMDevice(
-            device: .mockWith(name: randomName, model: randomModel),
-            telemetry: nil
+            device: .mockWith(name: randomName, model: randomModel)
         )
 
         XCTAssertEqual(info.brand, "Apple")
@@ -24,24 +23,19 @@ class RUMDeviceInfoTests: XCTestCase {
 
     func testItInfersDeviceTypeFromDeviceModel() {
         let iPhone = RUMDevice(
-            device: .mockWith(model: "iPhone" + String.mockRandom(among: .alphanumerics, length: 2)),
-            telemetry: nil
+            device: .mockWith(model: "iPhone" + String.mockRandom(among: .alphanumerics, length: 2))
         )
         let iPod = RUMDevice(
-            device: .mockWith(model: "iPod" + String.mockRandom(among: .alphanumerics, length: 2)),
-            telemetry: nil
+            device: .mockWith(model: "iPod" + String.mockRandom(among: .alphanumerics, length: 2))
         )
         let iPad = RUMDevice(
-            device: .mockWith(model: "iPad" + String.mockRandom(among: .alphanumerics, length: 2)),
-            telemetry: nil
+            device: .mockWith(model: "iPad" + String.mockRandom(among: .alphanumerics, length: 2))
         )
         let appleTV = RUMDevice(
-            device: .mockWith(model: "AppleTV" + String.mockRandom(among: .alphanumerics, length: 2)),
-            telemetry: nil
+            device: .mockWith(model: "AppleTV" + String.mockRandom(among: .alphanumerics, length: 2))
         )
         let unknownDevice = RUMDevice(
-            device: .mockWith(model: .mockRandom()),
-            telemetry: nil
+            device: .mockWith(model: .mockRandom())
         )
 
         XCTAssertEqual(iPhone.type, .mobile)

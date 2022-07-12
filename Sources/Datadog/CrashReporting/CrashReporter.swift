@@ -17,9 +17,6 @@ internal class CrashReporter {
 
     let crashContextProvider: CrashContextProviderType
 
-    /// Telemetry interface
-    let telemetry: Telemetry?
-
     // MARK: - Initialization
 
     convenience init?(
@@ -62,16 +59,14 @@ internal class CrashReporter {
                 rumSessionStateProvider: crashReportingFeature.rumSessionStateProvider,
                 appStateListener: crashReportingFeature.appStateListener
             ),
-            loggingOrRUMIntegration: availableLoggingOrRUMIntegration,
-            telemetry: crashReportingFeature.telemetry
+            loggingOrRUMIntegration: availableLoggingOrRUMIntegration
         )
     }
 
     init(
         crashReportingPlugin: DDCrashReportingPluginType,
         crashContextProvider: CrashContextProviderType,
-        loggingOrRUMIntegration: CrashReportingIntegration,
-        telemetry: Telemetry?
+        loggingOrRUMIntegration: CrashReportingIntegration
     ) {
         self.queue = DispatchQueue(
             label: "com.datadoghq.crash-reporter",
@@ -80,7 +75,6 @@ internal class CrashReporter {
         self.plugin = crashReportingPlugin
         self.loggingOrRUMIntegration = loggingOrRUMIntegration
         self.crashContextProvider = crashContextProvider
-        self.telemetry = telemetry
 
         // Inject current `CrashContext`
         self.inject(currentCrashContext: crashContextProvider.currentCrashContext)
@@ -148,7 +142,7 @@ internal class CrashReporter {
                 error: error
             )
 
-            telemetry?.error("Failed to encode crash report context", error: error)
+            DD.telemetry.error("Failed to encode crash report context", error: error)
             return nil
         }
     }
@@ -164,7 +158,7 @@ internal class CrashReporter {
                 """,
                 error: error
             )
-            telemetry?.error("Failed to decode crash report context", error: error)
+            DD.telemetry.error("Failed to decode crash report context", error: error)
             return nil
         }
     }
