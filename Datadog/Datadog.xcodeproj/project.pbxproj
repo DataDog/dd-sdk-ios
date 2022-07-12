@@ -650,6 +650,10 @@
 		D2A1EE30287DA4F200D28DFB /* UserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE2E287DA4F200D28DFB /* UserInfo.swift */; };
 		D2A1EE32287DA51900D28DFB /* UserInfoPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE31287DA51900D28DFB /* UserInfoPublisher.swift */; };
 		D2A1EE33287DA51900D28DFB /* UserInfoPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE31287DA51900D28DFB /* UserInfoPublisher.swift */; };
+		D2A1EE29287D914900D28DFB /* LaunchTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE28287D914900D28DFB /* LaunchTime.swift */; };
+		D2A1EE2A287D914900D28DFB /* LaunchTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE28287D914900D28DFB /* LaunchTime.swift */; };
+		D2A1EE2C287D91D900D28DFB /* LaunchTimeReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE2B287D91D900D28DFB /* LaunchTimeReader.swift */; };
+		D2A1EE2D287D91D900D28DFB /* LaunchTimeReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE2B287D91D900D28DFB /* LaunchTimeReader.swift */; };
 		D2A1EE35287EB8DB00D28DFB /* KronosClockPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE34287EB8DB00D28DFB /* KronosClockPublisherTests.swift */; };
 		D2A1EE36287EB8DB00D28DFB /* KronosClockPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE34287EB8DB00D28DFB /* KronosClockPublisherTests.swift */; };
 		D2A1EE38287EEB7400D28DFB /* NetworkConnectionInfoPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE37287EBE4200D28DFB /* NetworkConnectionInfoPublisherTests.swift */; };
@@ -658,6 +662,8 @@
 		D2A1EE3C287EECC200D28DFB /* CarrierInfoPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE3A287EECA800D28DFB /* CarrierInfoPublisherTests.swift */; };
 		D2A1EE442886B8B400D28DFB /* UserInfoPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE432886B8B400D28DFB /* UserInfoPublisherTests.swift */; };
 		D2A1EE452886B8B400D28DFB /* UserInfoPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE432886B8B400D28DFB /* UserInfoPublisherTests.swift */; };
+		D2A1EE3E2885D7EC00D28DFB /* LaunchTimeReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE3D2885D7EC00D28DFB /* LaunchTimeReaderTests.swift */; };
+		D2A1EE3F2885D7EC00D28DFB /* LaunchTimeReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE3D2885D7EC00D28DFB /* LaunchTimeReaderTests.swift */; };
 		D2B3F0442823EE8400C2B5EE /* DataBlockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F0432823EE8300C2B5EE /* DataBlockTests.swift */; };
 		D2B3F0452823EE8400C2B5EE /* DataBlockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F0432823EE8300C2B5EE /* DataBlockTests.swift */; };
 		D2B3F04728292D6E00C2B5EE /* DataMigratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F04628292D6E00C2B5EE /* DataMigratorTests.swift */; };
@@ -1852,10 +1858,13 @@
 		D2A1EE25287C35DE00D28DFB /* ContextValueReaderMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextValueReaderMock.swift; sourceTree = "<group>"; };
 		D2A1EE2E287DA4F200D28DFB /* UserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInfo.swift; sourceTree = "<group>"; };
 		D2A1EE31287DA51900D28DFB /* UserInfoPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInfoPublisher.swift; sourceTree = "<group>"; };
+		D2A1EE28287D914900D28DFB /* LaunchTime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchTime.swift; sourceTree = "<group>"; };
+		D2A1EE2B287D91D900D28DFB /* LaunchTimeReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchTimeReader.swift; sourceTree = "<group>"; };
 		D2A1EE34287EB8DB00D28DFB /* KronosClockPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KronosClockPublisherTests.swift; sourceTree = "<group>"; };
 		D2A1EE37287EBE4200D28DFB /* NetworkConnectionInfoPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkConnectionInfoPublisherTests.swift; sourceTree = "<group>"; };
 		D2A1EE3A287EECA800D28DFB /* CarrierInfoPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierInfoPublisherTests.swift; sourceTree = "<group>"; };
 		D2A1EE432886B8B400D28DFB /* UserInfoPublisherTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserInfoPublisherTests.swift; sourceTree = "<group>"; };
+		D2A1EE3D2885D7EC00D28DFB /* LaunchTimeReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchTimeReaderTests.swift; sourceTree = "<group>"; };
 		D2B3F0432823EE8300C2B5EE /* DataBlockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataBlockTests.swift; sourceTree = "<group>"; };
 		D2B3F04628292D6E00C2B5EE /* DataMigratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataMigratorTests.swift; sourceTree = "<group>"; };
 		D2B3F0492829510600C2B5EE /* DatadogCoreProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogCoreProtocol.swift; sourceTree = "<group>"; };
@@ -4226,6 +4235,7 @@
 				D20605AB2874C2040047275C /* NetworkConnectionInfo.swift */,
 				D20605AE2874DAD70047275C /* CarrierInfo.swift */,
 				D2A1EE2E287DA4F200D28DFB /* UserInfo.swift */,
+				D2A1EE28287D914900D28DFB /* LaunchTime.swift */,
 			);
 			path = Context;
 			sourceTree = "<group>";
@@ -4305,6 +4315,7 @@
 				D20605A82874C1CD0047275C /* NetworkConnectionInfoPublisher.swift */,
 				D20605B12874E1660047275C /* CarrierInfoPublisher.swift */,
 				D2A1EE31287DA51900D28DFB /* UserInfoPublisher.swift */,
+				D2A1EE2B287D91D900D28DFB /* LaunchTimeReader.swift */,
 			);
 			path = Context;
 			sourceTree = "<group>";
@@ -4317,6 +4328,7 @@
 				D2A1EE3A287EECA800D28DFB /* CarrierInfoPublisherTests.swift */,
 				D2A1EE37287EBE4200D28DFB /* NetworkConnectionInfoPublisherTests.swift */,
 				D2A1EE432886B8B400D28DFB /* UserInfoPublisherTests.swift */,
+				D2A1EE3D2885D7EC00D28DFB /* LaunchTimeReaderTests.swift */,
 			);
 			path = DatadogCore;
 			sourceTree = "<group>";
@@ -5205,6 +5217,7 @@
 				6139CD712589FAFD007E8BB7 /* Retrying.swift in Sources */,
 				61BBD19524ED4E9E0023E65F /* FeaturesConfiguration.swift in Sources */,
 				618D9DE7263AD78900A3FAD2 /* SpanEventMapper.swift in Sources */,
+				D2A1EE29287D914900D28DFB /* LaunchTime.swift in Sources */,
 				6114FE2F257687310084E372 /* ConsentProvider.swift in Sources */,
 				616F1FB0283E227100651A3A /* LoggingV2Configuration.swift in Sources */,
 				61F3CDA52511190E00C816E5 /* UIViewControllerSwizzler.swift in Sources */,
@@ -5280,6 +5293,7 @@
 				61133BE02423979B00786299 /* Datadog.swift in Sources */,
 				61E945E32869BF3D00A946C4 /* CoreLogger.swift in Sources */,
 				61133BCB2423979B00786299 /* CarrierInfoProvider.swift in Sources */,
+				D2A1EE2C287D91D900D28DFB /* LaunchTimeReader.swift in Sources */,
 				61C5A89024509AA700DA608C /* TracingFeature.swift in Sources */,
 				61E5333624B84B43003D6C4E /* RUMMonitor.swift in Sources */,
 				6156CB9824DEFD44008CB2B2 /* LoggingWithRUMIntegration.swift in Sources */,
@@ -5557,6 +5571,7 @@
 				61B5E42726DFB145000B0A5F /* DDDatadog+apiTests.m in Sources */,
 				6121627C247D220500AC5D67 /* TracingWithLoggingIntegrationTests.swift in Sources */,
 				61FF282124B8981D000B3D9B /* RUMEventBuilderTests.swift in Sources */,
+				D2A1EE3E2885D7EC00D28DFB /* LaunchTimeReaderTests.swift in Sources */,
 				61FD9FD22853562B00214BD9 /* RUMDeviceInfoTests.swift in Sources */,
 				61B5E42926DFB60A000B0A5F /* DDConfiguration+apiTests.m in Sources */,
 				D232CAD52832D762001B262C /* DatadogCoreMock.swift in Sources */,
@@ -5936,6 +5951,7 @@
 				D2CB6E7E27C50EAE00A62B57 /* RUMMonitor.swift in Sources */,
 				D2CB6E7F27C50EAE00A62B57 /* LoggingWithRUMIntegration.swift in Sources */,
 				D2CB6E8027C50EAE00A62B57 /* WKUserContentController+Datadog.swift in Sources */,
+				D2A1EE2D287D91D900D28DFB /* LaunchTimeReader.swift in Sources */,
 				D2CB6E8127C50EAE00A62B57 /* DataUploader.swift in Sources */,
 				D2CB6E8227C50EAE00A62B57 /* DeleteAllDataMigrator.swift in Sources */,
 				D2CB6E8327C50EAE00A62B57 /* RUMUserActionScope.swift in Sources */,
@@ -5958,6 +5974,7 @@
 				D2CB6E9227C50EAE00A62B57 /* DateFormatting.swift in Sources */,
 				D2CB6E9327C50EAE00A62B57 /* LogUtilityOutputs.swift in Sources */,
 				61DA8CAA28609C5B0074A606 /* Directories.swift in Sources */,
+				D2A1EE2A287D914900D28DFB /* LaunchTime.swift in Sources */,
 				D2CB6E9427C50EAE00A62B57 /* RequestBuilder.swift in Sources */,
 				D2CB6E9527C50EAE00A62B57 /* RUMContext.swift in Sources */,
 				D2CB6E9627C50EAE00A62B57 /* RUMOffViewEventsHandlingRule.swift in Sources */,
@@ -6212,6 +6229,7 @@
 				D2CB6F7F27C520D400A62B57 /* DDDatadog+apiTests.m in Sources */,
 				D2CB6F8027C520D400A62B57 /* TracingWithLoggingIntegrationTests.swift in Sources */,
 				D2CB6F8227C520D400A62B57 /* RUMEventBuilderTests.swift in Sources */,
+				D2A1EE3F2885D7EC00D28DFB /* LaunchTimeReaderTests.swift in Sources */,
 				61FD9FD12853562A00214BD9 /* RUMDeviceInfoTests.swift in Sources */,
 				D2CB6F8327C520D400A62B57 /* DDConfiguration+apiTests.m in Sources */,
 				D232CAD62832D762001B262C /* DatadogCoreMock.swift in Sources */,

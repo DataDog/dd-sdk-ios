@@ -26,6 +26,7 @@ extension DatadogContext: AnyMockable {
         sdkInitDate: Date = .mockRandomInThePast(),
         device: DeviceInfo = .mockAny(),
         userInfo: UserInfo = .mockAny(),
+        launchTime: LaunchTime = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo = .mockAny(),
         carrierInfo: CarrierInfo? = .mockAny()
     ) -> DatadogContext {
@@ -44,8 +45,18 @@ extension DatadogContext: AnyMockable {
             sdkInitDate: sdkInitDate,
             device: device,
             userInfo: userInfo,
+            launchTime: launchTime,
             networkConnectionInfo: networkConnectionInfo,
             carrierInfo: carrierInfo
+        )
+    }
+}
+
+extension LaunchTime: AnyMockable {
+    static func mockAny() -> LaunchTime {
+        .init(
+            launchTime: .mockAny(),
+            isActivePrewarm: .mockAny()
         )
     }
 }
