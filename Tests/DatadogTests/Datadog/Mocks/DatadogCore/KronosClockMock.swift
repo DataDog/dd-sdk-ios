@@ -44,7 +44,3 @@ internal class KronosClockMock: KronosClockProtocol {
         self.completion = completion
     }
 }
-
-extension ServerOffsetPublisher: AnyMockable {
-    static func mockAny() -> Self { .init(kronos: KronosClockMock()) }
-}

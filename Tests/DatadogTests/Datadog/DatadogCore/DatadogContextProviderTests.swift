@@ -12,13 +12,86 @@ class DatadogContextProviderTests: XCTestCase {
 
     // MARK: - Thread Safety
 
+    func testThreadSafety() {
+        let serverOffsetPublisher = ContextValuePublisherMock<TimeInterval>(initialValue: 0)
+        let networkConnectionInfoPublisher = ContextValuePublisherMock<NetworkConnectionInfo?>()
+        let carrierInfoPublisher = ContextValuePublisherMock<CarrierInfo?>()
+
+        let serverOffsetReader = ContextValueReaderMock<TimeInterval>(initialValue: 0)
+        let networkConnectionInfoReader = ContextValueReaderMock<NetworkConnectionInfo?>()
+        let carrierInfoReader = ContextValueReaderMock<CarrierInfo?>()
+
+        let provider = DatadogContextProvider(context: context)
+
+        provider.subscribe(\.serverTimeOffset, to: serverOffsetPublisher)
+        provider.subscribe(\.networkConnectionInfo, to: networkConnectionInfoPublisher)
+        provider.subscribe(\.carrierInfo, to: carrierInfoPublisher)
+
+        provider.assign(reader: serverOffsetReader, to: \.serverTimeOffset)
+        provider.assign(reader: networkConnectionInfoReader, to: \.networkConnectionInfo)
+        provider.assign(reader: carrierInfoReader, to: \.carrierInfo)
+
+        // swiftlint:disable opening_brace
+        callConcurrently(
+            closures: [
+                { serverOffsetReader.value = .mockRandom() },
+                { networkConnectionInfoReader.value = .mockRandom() },
+                { carrierInfoReader.value = .mockRandom() },
+                { serverOffsetPublisher.value = .mockRandom() },
+                { networkConnectionInfoPublisher.value = .mockRandom() },
+                { carrierInfoPublisher.value = .mockRandom() },
+                { provider.read { _ in } },
+                { provider.write { $0 = .mockAny() } }
+            ],
+            iterations: 1_000
+        )
+        // swiftlint:enable opening_brace
+
+        _ = serverOffsetPublisher
+        _ = networkConnectionInfoPublisher
+        _ = carrierInfoPublisher
+
+        _ = serverOffsetReader
+        _ = networkConnectionInfoReader
+        _ = carrierInfoReader
+
+        _ = provider
+    }
+
     func testConcurrentReadWrite() {
         let provider = DatadogContextProvider(context: context)
 
-        DispatchQueue.concurrentPerform(iterations: 50) { iteration in
-            provider.read { _ in }
-            provider.write { $0 = .mockAny() }
-        }
+        let serverOffsetPublisher = ContextValuePublisherMock<TimeInterval>(initialValue: 0)
+        let networkConnectionInfoPublisher = ContextValuePublisherMock<NetworkConnectionInfo?>()
+        let carrierInfoPublisher = ContextValuePublisherMock<CarrierInfo?>()
+
+        let serverOffsetReader = ContextValueReaderMock<TimeInterval>(initialValue: 0)
+        let networkConnectionInfoReader = ContextValueReaderMock<NetworkConnectionInfo?>()
+        let carrierInfoReader = ContextValueReaderMock<CarrierInfo?>()
+
+        provider.subscribe(\.serverTimeOffset, to: serverOffsetPublisher)
+        provider.subscribe(\.networkConnectionInfo, to: networkConnectionInfoPublisher)
+        provider.subscribe(\.carrierInfo, to: carrierInfoPublisher)
+
+        provider.assign(reader: serverOffsetReader, to: \.serverTimeOffset)
+        provider.assign(reader: networkConnectionInfoReader, to: \.networkConnectionInfo)
+        provider.assign(reader: carrierInfoReader, to: \.carrierInfo)
+
+        // swiftlint:disable opening_brace
+        callConcurrently(
+            closures: [
+                { serverOffsetReader.value = .mockRandom() },
+                { networkConnectionInfoReader.value = .mockRandom() },
+                { carrierInfoReader.value = .mockRandom() },
+                { serverOffsetPublisher.value = .mockRandom() },
+                { networkConnectionInfoPublisher.value = .mockRandom() },
+                { carrierInfoPublisher.value = .mockRandom() },
+                { provider.read { _ in } },
+                { provider.write { $0 = .mockAny() } }
+            ],
+            iterations: 1_000
+        )
+        // swiftlint:enable opening_brace
     }
 
     // MARK: - Test Propagation

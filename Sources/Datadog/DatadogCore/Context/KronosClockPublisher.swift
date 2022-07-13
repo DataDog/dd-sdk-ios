@@ -6,6 +6,7 @@
 
 import Foundation
 
+/// Datadog NTP hostnames from https://www.ntppool.org/
 internal let DatadogNTPServers = [
     "0.datadog.pool.ntp.org",
     "1.datadog.pool.ntp.org",
@@ -13,16 +14,30 @@ internal let DatadogNTPServers = [
     "3.datadog.pool.ntp.org"
 ]
 
-internal final class ServerOffsetPublisher: ContextValuePublisher {
+/// The Kronos Clock Publisher provides updates on time offset between the
+/// local time and one of the Datadog's NTP pool.
+///
+/// This publisher uses a modified version of the ``MobileNativeFoundation/Kronos``
+/// see. https://github.com/MobileNativeFoundation/Kronos
+///
+/// The ``KronosClockPublisher/publish`` will start syncing with one of the pool
+/// picked randomly from ``DatadogNTPServers``.
+///
+/// The time offset is defined in seconds.
+internal final class KronosClockPublisher: ContextValuePublisher {
+    /// The initial offset is 0.
     let initialValue: TimeInterval = .zero
 
     private var kronos: KronosClockProtocol?
 
+    /// Creates a publisher using the given `KronosClock` implementation.
+    ///
+    /// - Parameter kronos: An object complying with `KronosClockProtocol`.
     init(kronos: KronosClockProtocol = KronosClock()) {
         self.kronos = kronos
     }
 
-    func publish(to receiver: @escaping (TimeInterval) -> Void) {
+    func publish(to receiver: @escaping ContextValueReceiver<TimeInterval>) {
         kronos?.sync(
             from: DatadogNTPServers.randomElement()!, // swiftlint:disable:this force_unwrapping
             first: { _, offset in
