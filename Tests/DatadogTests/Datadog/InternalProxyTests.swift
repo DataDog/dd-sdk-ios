@@ -77,7 +77,25 @@ class InternalProxyTests: XCTestCase {
         XCTAssertEqual(error?.stack, stack)
     }
 
-    func testProxyAddLongTaskCallsRumMonitor() throws {
+    func testProxyAddLongTaskSendsCommand() {
+        // Given
+        let mockCommandSubscriber = RUMCommandSubscriberMock()
+
+        let duration: TimeInterval = .mockRandom()
+        let date = Date()
+        let internalProxy = _InternalProxy(rumSubscriber: mockCommandSubscriber)
+
+        // When
+        internalProxy._rum?.addLongTask(at: date, duration: duration)
+
+        // Then
+        let longTaskCommand = mockCommandSubscriber.lastReceivedCommand as? RUMAddLongTaskCommand
+        XCTAssertNotNil(longTaskCommand)
+        XCTAssertEqual(longTaskCommand?.time, date)
+        XCTAssertEqual(longTaskCommand?.duration, duration)
+    }
+
+    func testProxyAddLongTaskSendsLongTasks() throws {
         // Given
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
         core.register(feature: rum)
@@ -85,7 +103,7 @@ class InternalProxyTests: XCTestCase {
         let monitor = try createTestableRUMMonitor()
 
         let duration: TimeInterval = .mockRandom()
-        let internalProxy = _InternalProxy(monitor: monitor as? RUMMonitor)
+        let internalProxy = _InternalProxy(rumSubscriber: monitor as? RUMCommandSubscriber)
 
         // When
         monitor.startView(viewController: mockView)

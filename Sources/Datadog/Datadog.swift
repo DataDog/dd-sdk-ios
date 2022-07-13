@@ -287,6 +287,8 @@ public class Datadog {
 
         defaultDatadogCore = core
 
+        _internal = _InternalProxy(rumSubscriber: Global.rum as? RUMCommandSubscriber)
+
         // After everything is set up, if the Crash Reporting feature was enabled,
         // register crash reporter and send crash report if available:
         if let crashReportingFeature = core.v1.feature(CrashReportingFeature.self) {
@@ -337,16 +339,16 @@ public class Datadog {
         Global.crashReporter = nil
         DD.telemetry = NOPTelemetry()
 
+        // Reset internal
+        _internal = _InternalProxy(rumSubscriber: nil)
+
         // Deinitialize `Datadog`:
         defaultDatadogCore = NOOPDatadogCore()
     }
 
     // MARK: - Internal Proxy - exposure of internal classes (Mostly used for cross platform libraries)
 
-    static var _internal: _InternalProxy = {
-        let monitor = Global.rum as? RUMMonitor
-        return _InternalProxy(monitor: monitor)
-    }()
+    public internal(set) static var _internal = _InternalProxy(rumSubscriber: nil)
 }
 
 /// Convenience typealias.

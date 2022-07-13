@@ -18,9 +18,9 @@ public class _InternalProxy {
     let _telemtry = _TelemetryProxy()
     let _rum: _RumProxy?
 
-    init(monitor: RUMMonitor?) {
-        if let monitor = monitor {
-            _rum = _RumProxy(monitor: monitor)
+    init(rumSubscriber: RUMCommandSubscriber?) {
+        if let rumSubscriber = rumSubscriber {
+            _rum = _RumProxy(rumSubscriber: rumSubscriber)
         } else {
             _rum = nil
         }
@@ -40,15 +40,15 @@ public class _TelemetryProxy {
 }
 
 public class _RumProxy {
-    private let monitor: RUMMonitor
+    private let rumSubscriber: RUMCommandSubscriber
 
-    init(monitor: RUMMonitor) {
-        self.monitor = monitor
+    init(rumSubscriber: RUMCommandSubscriber) {
+        self.rumSubscriber = rumSubscriber
     }
 
     func addLongTask(at: Date, duration: TimeInterval, attributes: [AttributeKey: AttributeValue] = [:]) {
         let longTaskCommand = RUMAddLongTaskCommand(time: at, attributes: attributes, duration: duration)
 
-        monitor.process(command: longTaskCommand)
+        rumSubscriber.process(command: longTaskCommand)
     }
 }
