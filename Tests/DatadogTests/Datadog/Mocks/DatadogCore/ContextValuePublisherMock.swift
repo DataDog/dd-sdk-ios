@@ -8,30 +8,38 @@ import Foundation
 @testable import Datadog
 
 internal class ContextValuePublisherMock<Value>: ContextValuePublisher {
+    private let queue = DispatchQueue(
+        label: "com.datadoghq.context-value-publisher-mock"
+    )
+
     let initialValue: Value
 
     var value: Value {
-        didSet { receiver?(value) }
+        get { queue.sync { _value } }
+        set { queue.sync { _value = newValue } }
     }
 
     private var receiver: ContextValueReceiver<Value>?
+    private var _value: Value {
+        didSet { receiver?(_value) }
+    }
 
     init(initialValue: Value) {
         self.initialValue = initialValue
-        self.value = initialValue
+        self._value = initialValue
     }
 
     init() where Value: ExpressibleByNilLiteral {
         initialValue = nil
-        value = nil
+        _value = nil
     }
 
     func publish(to receiver: @escaping ContextValueReceiver<Value>) {
-        self.receiver = receiver
+        queue.sync { self.receiver = receiver }
     }
 
     func cancel() {
-        receiver = nil
+        queue.sync { receiver = nil }
     }
 }
 

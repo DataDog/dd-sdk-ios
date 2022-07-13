@@ -8,22 +8,31 @@ import Foundation
 @testable import Datadog
 
 internal class ContextValueReaderMock<Value>: ContextValueReader {
+    private let queue = DispatchQueue(
+        label: "com.datadoghq.context-value-reader-mock"
+    )
+
     let initialValue: Value
 
-    var value: Value
+    var value: Value {
+        get { queue.sync { _value } }
+        set { queue.sync { _value = newValue } }
+    }
+
+    private var _value: Value
 
     init(initialValue: Value) {
         self.initialValue = initialValue
-        self.value = initialValue
+        self._value = initialValue
     }
 
     init() where Value: ExpressibleByNilLiteral {
         initialValue = nil
-        value = nil
+        _value = nil
     }
 
     func read(to receiver: inout Value) {
-        receiver = value
+        receiver = queue.sync { _value }
     }
 }
 
