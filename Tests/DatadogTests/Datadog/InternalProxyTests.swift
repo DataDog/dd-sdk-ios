@@ -10,36 +10,6 @@ import XCTest
 @testable import Datadog
 
 class InternalProxyTests: XCTestCase {
-    private var core: DatadogCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
-
-    override func setUp() {
-        super.setUp()
-        core = DatadogCoreMock()
-    }
-
-    override func tearDown() {
-        core.flush()
-        core = nil
-        super.tearDown()
-    }
-
-    /// Creates `RUMMonitor` instance for tests.
-    /// The only difference vs. `RUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
-    private func createTestableRUMMonitor() throws -> DDRUMMonitor {
-        let rumFeature: RUMFeature = try XCTUnwrap(core.v1.feature(RUMFeature.self), "RUM feature must be initialized before creating `RUMMonitor`")
-        let crashReportingFeature = core.v1.feature(CrashReportingFeature.self)
-        let v1Context = try XCTUnwrap(core.v1.context, "`DatadogCore` must be initialized before creating `RUMMonitor`")
-        return RUMMonitor(
-            core: core,
-            dependencies: RUMScopeDependencies(
-                rumFeature: rumFeature,
-                crashReportingFeature: crashReportingFeature,
-                context: v1Context
-            ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-            dateProvider: v1Context.dateProvider
-        )
-    }
-
     func testProxyDebugCallsTelemetryDebug() {
         // Given
         let dd = DD.mockWith(telemetry: TelemetryMock())
@@ -75,45 +45,5 @@ class InternalProxyTests: XCTestCase {
         XCTAssertEqual(error?.message, message)
         XCTAssertEqual(error?.kind, kind)
         XCTAssertEqual(error?.stack, stack)
-    }
-
-    func testProxyAddLongTaskSendsCommand() {
-        // Given
-        let mockCommandSubscriber = RUMCommandSubscriberMock()
-
-        let duration: TimeInterval = .mockRandom()
-        let date = Date()
-        let internalProxy = _InternalProxy(rumSubscriber: mockCommandSubscriber)
-
-        // When
-        internalProxy._rum?.addLongTask(at: date, duration: duration)
-
-        // Then
-        let longTaskCommand = mockCommandSubscriber.lastReceivedCommand as? RUMAddLongTaskCommand
-        XCTAssertNotNil(longTaskCommand)
-        XCTAssertEqual(longTaskCommand?.time, date)
-        XCTAssertEqual(longTaskCommand?.duration, duration)
-    }
-
-    func testProxyAddLongTaskSendsLongTasks() throws {
-        // Given
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
-        core.register(feature: rum)
-
-        let monitor = try createTestableRUMMonitor()
-
-        let duration: TimeInterval = .mockRandom()
-        let internalProxy = _InternalProxy(rumSubscriber: monitor as? RUMCommandSubscriber)
-
-        // When
-        monitor.startView(viewController: mockView)
-        internalProxy._rum?.addLongTask(at: Date(), duration: duration)
-
-        let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 3)
-
-        // Then
-        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
-        let longTask = session.viewVisits[0].longTaskEvents.first
-        XCTAssertEqual(longTask?.longTask.duration, duration.toInt64Nanoseconds)
     }
 }

@@ -286,6 +286,10 @@ public class DDRUMMonitor {
     /// - Parameter key: key for the attribute that will be removed.
     public func removeAttribute(forKey key: AttributeKey) {}
 
+    public var _internal: _RUMInternalProxy? {
+        get { return nil }
+    }
+
     // MARK: - Internal
 
     internal init() {}
