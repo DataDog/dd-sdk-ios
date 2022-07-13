@@ -38,9 +38,14 @@ internal final class RemoteLogger: LoggerProtocol {
     private let dateProvider: DateProvider
     /// Builds log events.
     private let builder: LogEventBuilder
-    /// Integration with RUM Context. `nil` if disabled for this logger or if the RUM feature disabled.
+    /// Integration with RUM. It is used to correlate Logs with RUM events by injecting RUM context to `LogEvent`.
+    /// Can be `nil` if the integration is disabled for this logger or if RUM feature is disabled.
     internal let rumContextIntegration: LoggingWithRUMContextIntegration?
-    /// Integration with Tracing. `nil` if disabled for this logger or if the Tracing feature disabled.
+    /// Integration with RUM. It is used to send RUM errors for logs of high severity (`.error` and above).
+    /// Can be `nil` if RUM feature is disabled.
+    internal let rumErrorsIntegration: LoggingWithRUMErrorsIntegration?
+    /// Integration with Tracing. It is used to correlate Logs with Spans by injecting `Span` context to `LogEvent`.
+    /// Can be `nil` if the integration is disabled for this logger or if Tracing feature is disabled.
     internal let activeSpanIntegration: LoggingWithActiveSpanIntegration?
 
     init(
@@ -48,6 +53,7 @@ internal final class RemoteLogger: LoggerProtocol {
         configuration: Configuration,
         dateProvider: DateProvider,
         rumContextIntegration: LoggingWithRUMContextIntegration?,
+        rumErrorsIntegration: LoggingWithRUMErrorsIntegration?,
         activeSpanIntegration: LoggingWithActiveSpanIntegration?
     ) {
         self.core = core
@@ -64,6 +70,7 @@ internal final class RemoteLogger: LoggerProtocol {
             eventMapper: configuration.eventMapper
         )
         self.rumContextIntegration = rumContextIntegration
+        self.rumErrorsIntegration = rumErrorsIntegration
         self.activeSpanIntegration = activeSpanIntegration
     }
 
@@ -102,41 +109,48 @@ internal final class RemoteLogger: LoggerProtocol {
             return
         }
 
-        // on public API caller thread:
+        // on user thread:
         let date = dateProvider.now
         let threadName = getCurrentThreadName()
 
-        queue.async {
-            // on Logger thread:
-            let userAttributes = self.unsafeAttributes.merging(attributes ?? [:]) { $1 } // prefer message attributes
-            let userTags = self.unsafeTags
-
+        // SDK context must be requested on the user thread to ensure that it provides values
+        // that are up-to-date for the caller.
+        self.core.v1.scope(for: LoggingFeature.self)?.eventWriteContext { context, writer in
+            var userAttributes: [String: Encodable] = [:]
             var internalAttributes: [String: Encodable] = [:]
-            if let rumContextAttributes = self.rumContextIntegration?.currentRUMContextAttributes {
-                internalAttributes.merge(rumContextAttributes) { $1 }
-            }
-            if let activeSpanAttributes = self.activeSpanIntegration?.activeSpanAttributes {
-                internalAttributes.merge(activeSpanAttributes) { $1 }
+            var userTags: Set<String> = []
+
+            queue.sync {
+                userAttributes = self.unsafeAttributes.merging(attributes ?? [:]) { $1 } // prefer message attributes
+                userTags = self.unsafeTags
+
+                if let rumContextAttributes = self.rumContextIntegration?.currentRUMContextAttributes {
+                    internalAttributes.merge(rumContextAttributes) { $1 }
+                }
+                if let activeSpanAttributes = self.activeSpanIntegration?.activeSpanAttributes {
+                    internalAttributes.merge(activeSpanAttributes) { $1 }
+                }
             }
 
-            self.core.v1.scope(for: LoggingFeature.self)?.eventWriteContext { context, writer in
-                // on SDK context thread:
-                let log = self.builder.createLogEvent(
-                    date: date,
-                    status: level.asLogStatus,
-                    message: message,
-                    error: error.map { DDError(error: $0) },
-                    attributes: .init(
-                        userAttributes: userAttributes,
-                        internalAttributes: internalAttributes
-                    ),
-                    tags: userTags,
-                    context: context,
-                    threadName: threadName
-                )
+            let log = self.builder.createLogEvent(
+                date: date,
+                level: level,
+                message: message,
+                error: error.map { DDError(error: $0) },
+                attributes: .init(
+                    userAttributes: userAttributes,
+                    internalAttributes: internalAttributes
+                ),
+                tags: userTags,
+                context: context,
+                threadName: threadName
+            )
 
-                if let log = log {
-                    writer.write(value: log)
+            if let log = log {
+                writer.write(value: log)
+
+                if log.status == .error || log.status == .critical {
+                    self.rumErrorsIntegration?.addError(for: log)
                 }
             }
         }

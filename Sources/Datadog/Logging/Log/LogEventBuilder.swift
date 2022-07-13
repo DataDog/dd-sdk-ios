@@ -29,7 +29,7 @@ internal struct LogEventBuilder {
     ///
     /// - Parameters:
     ///   - date: date of creating the log
-    ///   - status: the status of the log
+    ///   - level: the severity level of the log
     ///   - message: the message of the log
     ///   - error: eventual error to associate with log
     ///   - attributes: attributes to associate with log (user and internal attributes, separate)
@@ -42,7 +42,7 @@ internal struct LogEventBuilder {
     /// - Note: `date` and `threadName` must be collected on the user thread.
     func createLogEvent(
         date: Date,
-        status: LogEvent.Status,
+        level: LogLevel,
         message: String,
         error: DDError?,
         attributes: LogEvent.Attributes,
@@ -54,7 +54,7 @@ internal struct LogEventBuilder {
 
         let log = LogEvent(
             date: date.addingTimeInterval(context.dateCorrector.offset),
-            status: status,
+            status: level.asLogStatus,
             message: message,
             error: error.map {
                 .init(
@@ -95,5 +95,18 @@ internal func getCurrentThreadName() -> String {
         return customName
     } else {
         return Thread.isMainThread ? "main" : "background"
+    }
+}
+
+internal extension LogLevel {
+    var asLogStatus: LogEvent.Status {
+        switch self {
+        case .debug:    return .debug
+        case .info:     return .info
+        case .notice:   return .notice
+        case .warn:     return .warn
+        case .error:    return .error
+        case .critical: return .critical
+        }
     }
 }

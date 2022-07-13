@@ -57,6 +57,23 @@ extension LoggingFeature {
 
 // MARK: - Log Mocks
 
+extension LogLevel: AnyMockable, RandomMockable {
+    static func mockAny() -> LogLevel {
+        return .debug
+    }
+
+    static func mockRandom() -> LogLevel {
+        return [
+            LogLevel.debug,
+            LogLevel.info,
+            LogLevel.notice,
+            LogLevel.warn,
+            LogLevel.error,
+            LogLevel.critical,
+        ].randomElement()!
+    }
+}
+
 extension LogEvent: EquatableInTests {}
 
 extension LogEvent: AnyMockable, RandomMockable {
@@ -167,64 +184,22 @@ extension LogEvent.Error: RandomMockable {
 
 // MARK: - Component Mocks
 
-extension Logger {
-    static func mockWith(
-        core: DatadogCoreProtocol,
-        identifier: String = .mockAny(),
-        serviceName: String? = nil,
-        loggerName: String? = nil,
-        sendNetworkInfo: Bool = false,
-        useCoreOutput: Bool = true,
-        logsFilter: @escaping LogsFilter = { _ in true },
-        rumContextIntegration: LoggingWithRUMContextIntegration? = nil,
-        activeSpanIntegration: LoggingWithActiveSpanIntegration? = nil,
-        additionalOutput: LogOutput = LogOutputMock(),
-        logEventMapper: LogEventMapper? = nil
-    ) -> Logger {
-        return Logger(
-            core: core,
-            identifier: identifier,
-            serviceName: serviceName,
-            loggerName: loggerName,
-            sendNetworkInfo: sendNetworkInfo,
-            useCoreOutput: useCoreOutput,
-            logsFilter: logsFilter,
-            rumContextIntegration: rumContextIntegration,
-            activeSpanIntegration: activeSpanIntegration,
-            additionalOutput: additionalOutput,
-            logEventMapper: logEventMapper
-        )
-    }
-}
-
-extension LogEventBuilder {
+extension LogEventBuilder: AnyMockable {
     static func mockAny() -> LogEventBuilder {
         return mockWith()
     }
 
     static func mockWith(
-        sdkVersion: String = .mockAny(),
-        applicationVersion: String = .mockAny(),
-        environment: String = .mockAny(),
-        serviceName: String = .mockAny(),
+        service: String = .mockAny(),
         loggerName: String = .mockAny(),
-        userInfoProvider: UserInfoProvider = .mockAny(),
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
-        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
-        dateCorrector: DateCorrector? = nil,
-        logEventMapper: LogEventMapper? = nil
+        sendNetworkInfo: Bool = .mockAny(),
+        eventMapper: LogEventMapper? = nil
     ) -> LogEventBuilder {
         return LogEventBuilder(
-            sdkVersion: sdkVersion,
-            applicationVersion: applicationVersion,
-            environment: environment,
-            serviceName: serviceName,
+            service: service,
             loggerName: loggerName,
-            userInfoProvider: userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider,
-            dateCorrector: dateCorrector,
-            logEventMapper: logEventMapper
+            sendNetworkInfo: sendNetworkInfo,
+            eventMapper: eventMapper
         )
     }
 }

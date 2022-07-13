@@ -15,19 +15,6 @@ public enum LogLevel: Int, Codable {
     case warn
     case error
     case critical
-
-    // MARK: - `LogLevel` <> `Log.Status` conversion
-
-    internal var asLogStatus: LogEvent.Status {
-        switch self {
-        case .debug:    return .debug
-        case .info:     return .info
-        case .notice:   return .notice
-        case .warn:     return .warn
-        case .error:    return .error
-        case .critical: return .critical
-        }
-    }
 }
 
 /// Because `Logger` is a common name widely used across different projects, the `Datadog.Logger` may conflict when
@@ -350,7 +337,7 @@ public class Logger: LoggerProtocol {
             do {
                 return Logger(v2Logger: try buildOrThrow(in: core))
             } catch {
-                DD.logger.critical("Failed to build `Logger`", error: error)
+                DD.logger.critical("Failed to build `Logger`.", error: error)
                 return Logger(v2Logger: NOPLogger())
             }
         }
@@ -387,8 +374,9 @@ public class Logger: LoggerProtocol {
                 return RemoteLogger(
                     core: core,
                     configuration: configuration,
-                    dateProvider: SystemDateProvider(),
+                    dateProvider: context.dateProvider,
                     rumContextIntegration: (rumEnabled && bundleWithRUM) ? LoggingWithRUMContextIntegration() : nil,
+                    rumErrorsIntegration: rumEnabled ? LoggingWithRUMErrorsIntegration() : nil,
                     activeSpanIntegration: (tracingEnabled && bundleWithTrace) ? LoggingWithActiveSpanIntegration() : nil
                 )
             }()
@@ -405,7 +393,7 @@ public class Logger: LoggerProtocol {
 
                 return ConsoleLogger(
                     configuration: configuration,
-                    dateProvider: SystemDateProvider(),
+                    dateProvider: context.dateProvider,
                     printFunction: consolePrint
                 )
             }()

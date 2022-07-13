@@ -75,10 +75,10 @@ internal struct TracingWithLoggingIntegration {
 
         let threadName = getCurrentThreadName()
 
-        self.core.v1.scope(for: LoggingFeature.self)?.eventWriteContext { context, writer in
+        core.v1.scope(for: LoggingFeature.self)?.eventWriteContext { context, writer in
             let log = logBuilder.createLogEvent(
                 date: date,
-                status: level.asLogStatus,
+                level: level,
                 message: message,
                 error: extractedError,
                 attributes: .init(

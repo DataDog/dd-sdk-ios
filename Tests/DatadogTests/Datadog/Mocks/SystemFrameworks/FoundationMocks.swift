@@ -108,9 +108,15 @@ extension Array {
     }
 }
 
+extension Array: AnyMockable where Element: AnyMockable {
+    static func mockAny() -> [Element] {
+        return (0..<10).map { _ in .mockAny() }
+    }
+}
+
 extension Array: RandomMockable where Element: RandomMockable {
     static func mockRandom() -> [Element] {
-        return Array(repeating: .mockRandom(), count: 10)
+        return (0..<10).map { _ in .mockRandom() }
     }
 }
 
@@ -123,6 +129,18 @@ extension Dictionary: AnyMockable where Key: AnyMockable, Value: AnyMockable {
 extension Dictionary: RandomMockable where Key: RandomMockable, Value: RandomMockable {
     static func mockRandom() -> Dictionary {
         return [Key.mockRandom(): Value.mockRandom()]
+    }
+}
+
+extension Set: AnyMockable where Element: AnyMockable {
+    static func mockAny() -> Set<Element> {
+        return Set([Element.mockAny()])
+    }
+}
+
+extension Set: RandomMockable where Element: RandomMockable {
+    static func mockRandom() -> Set<Element> {
+        return Set([Element].mockRandom())
     }
 }
 

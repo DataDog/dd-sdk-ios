@@ -36,7 +36,7 @@ internal final class ConsoleLogger: LoggerProtocol {
         case .short:
             self.prefix = ""
         case .shortWith(let prefix):
-            self.prefix = prefix
+            self.prefix = "\(prefix) "
         }
 
         self.printFunction = printFunction
