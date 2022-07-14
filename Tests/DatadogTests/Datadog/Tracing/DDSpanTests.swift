@@ -8,8 +8,6 @@ import XCTest
 @testable import Datadog
 
 class DDSpanTests: XCTestCase {
-    private let logOutput = LogOutputMock()
-
     // MARK: - Sending SpanEvent
 
     func testWhenSpanIsFinished_itWritesSpanEventToCore() throws {
@@ -30,14 +28,14 @@ class DDSpanTests: XCTestCase {
     // MARK: - Sending Span Logs
 
     func testWhenLoggingSpanEvent_itWritesLogToLogOutput() throws {
-        let writeSpanLogsExpectation = expectation(description: "write 2 logs")
-        writeSpanLogsExpectation.expectedFulfillmentCount = 2
-        logOutput.onLogRecorded  = { _ in writeSpanLogsExpectation.fulfill() }
+        let core = PassthroughCoreMock()
+        core.expectation = expectation(description: "write span event")
+        core.expectation?.expectedFulfillmentCount = 2
 
         // Given
         let tracer: Tracer = .mockWith(
-            core: PassthroughCoreMock(),
-            loggingIntegration: .init(logBuilder: .mockAny(), loggingOutput: logOutput)
+            core: core,
+            loggingIntegration: .init(core: core, logBuilder: .mockAny())
         )
         let span: DDSpan = .mockWith(tracer: tracer)
 
@@ -50,11 +48,11 @@ class DDSpanTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
-        XCTAssertEqual(logOutput.allRecordedLogs.count, 2)
-        let log1 = try XCTUnwrap(logOutput.allRecordedLogs[0])
-        let log2 = try XCTUnwrap(logOutput.allRecordedLogs[1])
-        AssertDictionariesEqual(log1.attributes.userAttributes, log1Fields)
-        AssertDictionariesEqual(log2.attributes.userAttributes, log2Fields)
+
+        let logs: [LogEvent] = core.events()
+        XCTAssertEqual(logs.count, 2, "It should send 2 logs")
+        AssertDictionariesEqual(logs[0].attributes.userAttributes, log1Fields)
+        AssertDictionariesEqual(logs[1].attributes.userAttributes, log2Fields)
     }
 
     // MARK: - Customizing SpanEvents
@@ -171,10 +169,11 @@ class DDSpanTests: XCTestCase {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
+        let core = PassthroughCoreMock()
         let span: DDSpan = .mockWith(
             tracer: .mockWith(
-                core: PassthroughCoreMock(),
-                loggingIntegration: .init(logBuilder: .mockAny(), loggingOutput: LogOutputMock())
+                core: core,
+                loggingIntegration: .init(core: core, logBuilder: .mockAny())
             ),
             operationName: "the span"
         )

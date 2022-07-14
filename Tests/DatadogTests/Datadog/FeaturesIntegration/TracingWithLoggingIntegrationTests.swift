@@ -8,13 +8,15 @@ import XCTest
 @testable import Datadog
 
 class TracingWithLoggingIntegrationTests: XCTestCase {
-    func testWritingLogWithOTMessageField() throws {
-        let loggingOutput = LogOutputMock()
-        let integration = TracingWithLoggingIntegration(
-            logBuilder: .mockAny(),
-            loggingOutput: loggingOutput
-        )
+    private let core = PassthroughCoreMock()
 
+    func testSendingLogWithOTMessageField() throws {
+        core.expectation = expectation(description: "Send log")
+
+        // Given
+        let integration = TracingWithLoggingIntegration(core: core, logBuilder: .mockAny())
+
+        // When
         integration.writeLog(
             withSpanContext: .mockWith(traceID: 1, spanID: 2),
             fields: [
@@ -24,16 +26,19 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
             date: .mockDecember15th2019At10AMUTC()
         )
 
-        let recordedLog = try XCTUnwrap(loggingOutput.recordedLog)
-        XCTAssertEqual(recordedLog.date, .mockDecember15th2019At10AMUTC())
-        XCTAssertEqual(recordedLog.status, .info)
-        XCTAssertEqual(recordedLog.message, "hello")
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let log: LogEvent = try XCTUnwrap(core.events().last, "It should send log")
+        XCTAssertEqual(log.date, .mockDecember15th2019At10AMUTC())
+        XCTAssertEqual(log.status, .info)
+        XCTAssertEqual(log.message, "hello")
         XCTAssertEqual(
-            recordedLog.attributes.userAttributes as? [String: Int],
+            log.attributes.userAttributes as? [String: Int],
             ["custom field": 123]
         )
         XCTAssertEqual(
-            recordedLog.attributes.internalAttributes as? [String: String],
+            log.attributes.internalAttributes as? [String: String],
             [
                 "dd.span_id": "2",
                 "dd.trace_id": "1"
@@ -42,19 +47,18 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
     }
 
     func testWritingLogWithOTErrorField() throws {
-        let loggingOutput = LogOutputMock()
-        let integration = TracingWithLoggingIntegration(
-            logBuilder: .mockAny(),
-            loggingOutput: loggingOutput
-        )
+        core.expectation = expectation(description: "Send 3 logs")
+        core.expectation?.expectedFulfillmentCount = 3
 
+        // Given
+        let integration = TracingWithLoggingIntegration(core: core, logBuilder: .mockAny())
+
+        // When
         integration.writeLog(
             withSpanContext: .mockAny(),
             fields: [OTLogFields.event: "error"],
             date: .mockAny()
         )
-
-        let recordedLog1 = try XCTUnwrap(loggingOutput.recordedLog)
 
         integration.writeLog(
             withSpanContext: .mockAny(),
@@ -62,45 +66,49 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
             date: .mockAny()
         )
 
-        let recordedLog2 = try XCTUnwrap(loggingOutput.recordedLog)
-
         integration.writeLog(
             withSpanContext: .mockAny(),
             fields: [OTLogFields.event: "error", OTLogFields.errorKind: "Swift error"],
             date: .mockAny()
         )
 
-        let recordedLog3 = try XCTUnwrap(loggingOutput.recordedLog)
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
 
-        [recordedLog1, recordedLog2, recordedLog3].forEach { log in
+        let logs: [LogEvent] = try XCTUnwrap(core.events())
+        XCTAssertEqual(logs.count, 3, "It should send 3 logs")
+        logs.forEach { log in
             XCTAssertEqual(log.status, .error)
             XCTAssertEqual(log.message, "Span event")
         }
     }
 
     func testWritingCustomLogWithoutAnyOTFields() throws {
-        let loggingOutput = LogOutputMock()
-        let integration = TracingWithLoggingIntegration(
-            logBuilder: .mockAny(),
-            loggingOutput: loggingOutput
-        )
+        core.expectation = expectation(description: "Send log")
 
+        // Given
+        let integration = TracingWithLoggingIntegration(core: core, logBuilder: .mockAny())
+
+        // When
         integration.writeLog(
             withSpanContext: .mockWith(traceID: 1, spanID: 2),
             fields: ["custom field": 123],
             date: .mockDecember15th2019At10AMUTC()
         )
 
-        let recordedLog = try XCTUnwrap(loggingOutput.recordedLog)
-        XCTAssertEqual(recordedLog.date, .mockDecember15th2019At10AMUTC())
-        XCTAssertEqual(recordedLog.status, .info)
-        XCTAssertEqual(recordedLog.message, "Span event", "It should use default message.")
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let log: LogEvent = try XCTUnwrap(core.events().last, "It should send log")
+        XCTAssertEqual(log.date, .mockDecember15th2019At10AMUTC())
+        XCTAssertEqual(log.status, .info)
+        XCTAssertEqual(log.message, "Span event", "It should use default message.")
         XCTAssertEqual(
-            recordedLog.attributes.userAttributes as? [String: Int],
+            log.attributes.userAttributes as? [String: Int],
             ["custom field": 123]
         )
         XCTAssertEqual(
-            recordedLog.attributes.internalAttributes as? [String: String],
+            log.attributes.internalAttributes as? [String: String],
             [
                 "dd.span_id": "2",
                 "dd.trace_id": "1"

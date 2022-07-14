@@ -1209,7 +1209,15 @@ internal class ValueObserverMock<Value>: ValueObserver {
     }
 }
 
-extension DDError: RandomMockable {
+extension DDError: AnyMockable, RandomMockable {
+    static func mockAny() -> DDError {
+        return DDError(
+            type: .mockAny(),
+            message: .mockAny(),
+            stack: .mockAny()
+        )
+    }
+
     static func mockRandom() -> DDError {
         return DDError(
             type: .mockRandom(),
@@ -1249,16 +1257,18 @@ class PrintFunctionMock {
 }
 
 class CoreLoggerMock: CoreLogger {
+    private let queue = DispatchQueue(label: "core-logger-mock")
     private(set) var recordedLogs: [(level: CoreLoggerLevel, message: String, error: Error?)] = []
 
     // MARK: - CoreLogger
 
     func log(_ level: CoreLoggerLevel, message: @autoclosure () -> String, error: Error?) {
-        recordedLogs.append((level, message(), error))
+        let newLog = (level, message(), error)
+        queue.async { self.recordedLogs.append(newLog) }
     }
 
     func reset() {
-        recordedLogs = []
+        queue.async { self.recordedLogs = [] }
     }
 
     // MARK: - Matching
@@ -1266,9 +1276,11 @@ class CoreLoggerMock: CoreLogger {
     typealias RecordedLog = (message: String, error: DDError?)
 
     private func recordedLogs(ofLevel level: CoreLoggerLevel) -> [RecordedLog] {
-        return recordedLogs
-            .filter({ $0.level == level })
-            .map { ($0.message, $0.error.map({ DDError(error: $0) })) }
+        return queue.sync {
+            recordedLogs
+                .filter({ $0.level == level })
+                .map { ($0.message, $0.error.map({ DDError(error: $0) })) }
+        }
     }
 
     var debugLogs: [RecordedLog] { recordedLogs(ofLevel: .debug) }
