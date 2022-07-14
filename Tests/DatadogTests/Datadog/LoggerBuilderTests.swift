@@ -43,15 +43,15 @@ class LoggerBuilderTests: XCTestCase {
     func testDefaultLogger() throws {
         let logger = Logger.builder.build(in: core)
 
-        XCTAssertNil(logger.rumContextIntegration)
-        XCTAssertNil(logger.activeSpanIntegration)
-        XCTAssertTrue(logger.useCoreOutput)
-        XCTAssertFalse(logger.sendNetworkInfo)
-        XCTAssertTrue(logger.additionalOutput is LoggingWithRUMErrorsIntegration)
-        XCTAssertNil(logger.logEventMapper)
-        XCTAssertNil(logger.serviceName, "service-name")
-        XCTAssertNil(logger.loggerName, "com.datadog.unit-tests")
-        LogEvent.Status.allCases.forEach { XCTAssertTrue(logger.logsFilter($0)) }
+        let remoteLogger = try XCTUnwrap(logger.v2Logger as? RemoteLogger)
+        XCTAssertEqual(remoteLogger.configuration.service, "service-name")
+        XCTAssertEqual(remoteLogger.configuration.loggerName, "com.datadog.unit-tests")
+        XCTAssertFalse(remoteLogger.configuration.sendNetworkInfo)
+        XCTAssertEqual(remoteLogger.configuration.threshold, .debug)
+        XCTAssertNil(remoteLogger.configuration.eventMapper)
+        XCTAssertNil(remoteLogger.rumContextIntegration)
+        XCTAssertNil(remoteLogger.rumErrorsIntegration)
+        XCTAssertNil(remoteLogger.activeSpanIntegration)
     }
 
     func testDefaultLoggerWithRUMEnabled() throws {
@@ -59,10 +59,10 @@ class LoggerBuilderTests: XCTestCase {
         core.register(feature: rum)
 
         let logger1 = Logger.builder.build(in: core)
-        XCTAssertNotNil(logger1.rumContextIntegration)
+        XCTAssertNotNil((logger1.v2Logger as? RemoteLogger)?.rumContextIntegration)
 
         let logger2 = Logger.builder.bundleWithRUM(false).build()
-        XCTAssertNil(logger2.rumContextIntegration)
+        XCTAssertNil((logger2.v2Logger as? RemoteLogger)?.rumContextIntegration)
     }
 
     func testDefaultLoggerWithTracingEnabled() throws {
@@ -70,10 +70,10 @@ class LoggerBuilderTests: XCTestCase {
         core.register(feature: tracing)
 
         let logger1 = Logger.builder.build(in: core)
-        XCTAssertNotNil(logger1.activeSpanIntegration)
+        XCTAssertNotNil((logger1.v2Logger as? RemoteLogger)?.activeSpanIntegration)
 
         let logger2 = Logger.builder.bundleWithTrace(false).build(in: core)
-        XCTAssertNil(logger2.activeSpanIntegration)
+        XCTAssertNil((logger2.v2Logger as? RemoteLogger)?.activeSpanIntegration)
     }
 
     func testCustomizedLogger() throws {
@@ -92,64 +92,49 @@ class LoggerBuilderTests: XCTestCase {
             .set(datadogReportingThreshold: .error)
             .build(in: core)
 
-        XCTAssertNil(logger.rumContextIntegration)
-        XCTAssertNil(logger.activeSpanIntegration)
-        XCTAssertTrue(logger.useCoreOutput)
-        XCTAssertTrue(logger.sendNetworkInfo)
-        XCTAssertTrue(logger.additionalOutput is LoggingWithRUMErrorsIntegration)
-        XCTAssertNil(logger.logEventMapper)
-        XCTAssertEqual(logger.serviceName, "custom-service-name")
-        XCTAssertEqual(logger.loggerName, "custom-logger-name")
-
-        let rejectedLogStatuses: [LogEvent.Status] = [.debug, .info, .notice, .warn]
-        let acceptedLogStatuses: [LogEvent.Status] = [.error, .critical]
-        rejectedLogStatuses.forEach { XCTAssertFalse(logger.logsFilter($0)) }
-        acceptedLogStatuses.forEach { XCTAssertTrue(logger.logsFilter($0)) }
+        let remoteLogger = try XCTUnwrap(logger.v2Logger as? RemoteLogger)
+        XCTAssertEqual(remoteLogger.configuration.service, "custom-service-name")
+        XCTAssertEqual(remoteLogger.configuration.loggerName, "custom-logger-name")
+        XCTAssertTrue(remoteLogger.configuration.sendNetworkInfo)
+        XCTAssertEqual(remoteLogger.configuration.threshold, .error)
+        XCTAssertNil(remoteLogger.configuration.eventMapper)
+        XCTAssertNil(remoteLogger.rumContextIntegration)
+        XCTAssertNotNil(remoteLogger.rumErrorsIntegration, "When RUM is enabled, `rumErrorsIntegration` should be available")
+        XCTAssertNil(remoteLogger.activeSpanIntegration)
     }
 
-    func testUsingDifferentOutputs() throws {
+    func testCombiningInternalLoggers() throws {
         var logger: Logger
 
         logger = Logger.builder.build(in: core)
-        XCTAssertTrue(logger.useCoreOutput)
-        XCTAssertTrue(logger.additionalOutput is LoggingWithRUMErrorsIntegration)
+        XCTAssertTrue(logger.v2Logger is RemoteLogger)
 
         logger = Logger.builder.sendLogsToDatadog(true).build(in: core)
-        XCTAssertTrue(logger.useCoreOutput)
-        XCTAssertTrue(logger.additionalOutput is LoggingWithRUMErrorsIntegration)
+        XCTAssertTrue(logger.v2Logger is RemoteLogger)
 
         logger = Logger.builder.sendLogsToDatadog(false).build(in: core)
-        XCTAssertFalse(logger.useCoreOutput)
-        XCTAssertNil(logger.additionalOutput)
+        XCTAssertTrue(logger.v2Logger is NOPLogger)
 
         logger = Logger.builder.printLogsToConsole(true).build(in: core)
-        var combinedOutputs = try XCTUnwrap(logger.additionalOutput as? CombinedLogOutput).combinedOutputs
-        XCTAssertTrue(logger.useCoreOutput)
-        XCTAssertEqual(combinedOutputs.count, 2)
-        XCTAssertTrue(combinedOutputs[0] is LogConsoleOutput)
-        XCTAssertTrue(combinedOutputs[1] is LoggingWithRUMErrorsIntegration)
+        var combinedLogger = try XCTUnwrap(logger.v2Logger as? CombinedLogger)
+        XCTAssertTrue(combinedLogger.combinedLoggers[0] is RemoteLogger)
+        XCTAssertTrue(combinedLogger.combinedLoggers[1] is ConsoleLogger)
 
         logger = Logger.builder.printLogsToConsole(false).build(in: core)
-        XCTAssertTrue(logger.useCoreOutput)
-        XCTAssertTrue(logger.additionalOutput is LoggingWithRUMErrorsIntegration)
+        XCTAssertTrue(logger.v2Logger is RemoteLogger)
 
         logger = Logger.builder.sendLogsToDatadog(true).printLogsToConsole(true).build(in: core)
-        combinedOutputs = try XCTUnwrap(logger.additionalOutput as? CombinedLogOutput).combinedOutputs
-        XCTAssertTrue(logger.useCoreOutput)
-        XCTAssertEqual(combinedOutputs.count, 2)
-        XCTAssertTrue(combinedOutputs[0] is LogConsoleOutput)
-        XCTAssertTrue(combinedOutputs[1] is LoggingWithRUMErrorsIntegration)
+        combinedLogger = try XCTUnwrap(logger.v2Logger as? CombinedLogger)
+        XCTAssertTrue(combinedLogger.combinedLoggers[0] is RemoteLogger)
+        XCTAssertTrue(combinedLogger.combinedLoggers[1] is ConsoleLogger)
 
         logger = Logger.builder.sendLogsToDatadog(false).printLogsToConsole(true).build(in: core)
-        XCTAssertFalse(logger.useCoreOutput)
-        XCTAssertTrue(logger.additionalOutput is LogConsoleOutput)
+        XCTAssertTrue(logger.v2Logger is ConsoleLogger)
 
         logger = Logger.builder.sendLogsToDatadog(true).printLogsToConsole(false).build(in: core)
-        XCTAssertTrue(logger.useCoreOutput)
-        XCTAssertTrue(logger.additionalOutput is LoggingWithRUMErrorsIntegration)
+        XCTAssertTrue(logger.v2Logger is RemoteLogger)
 
         logger = Logger.builder.sendLogsToDatadog(false).printLogsToConsole(false).build(in: core)
-        XCTAssertFalse(logger.useCoreOutput)
-        XCTAssertNil(logger.additionalOutput)
+        XCTAssertTrue(logger.v2Logger is NOPLogger)
     }
 }

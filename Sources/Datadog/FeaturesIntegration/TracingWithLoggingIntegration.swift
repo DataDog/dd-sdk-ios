@@ -18,38 +18,31 @@ internal struct TracingWithLoggingIntegration {
         static let defaultErrorProperty = "Unknown"
     }
 
-    /// Log builder using Tracing configuration.
+    /// `DatadogCore` instance managing this integration.
+    let core: DatadogCoreProtocol
+    /// Builds log events.
     let logBuilder: LogEventBuilder
-    /// Actual `LogOutput` bridged to `LoggingFeature`.
-    let loggingOutput: LogOutput
 
     init(
+        core: DatadogCoreProtocol,
+        context: DatadogV1Context,
         tracerConfiguration: Tracer.Configuration,
-        loggingFeature: LoggingFeature,
-        context: DatadogV1Context
+        loggingFeature: LoggingFeature
     ) {
         self.init(
+            core: core,
             logBuilder: LogEventBuilder(
-                sdkVersion: context.sdkVersion,
-                applicationVersion: context.version,
-                environment: context.env,
-                serviceName: tracerConfiguration.serviceName ?? context.service,
+                service: tracerConfiguration.serviceName ?? context.service,
                 loggerName: "trace",
-                userInfoProvider: context.userInfoProvider,
-                networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? context.networkConnectionInfoProvider : nil,
-                carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? context.carrierInfoProvider : nil,
-                dateCorrector: context.dateCorrector,
-                logEventMapper: loggingFeature.configuration.logEventMapper
-            ),
-            loggingOutput: LogFileOutput(
-                fileWriter: loggingFeature.storage.writer
+                sendNetworkInfo: tracerConfiguration.sendNetworkInfo,
+                eventMapper: loggingFeature.configuration.logEventMapper
             )
         )
     }
 
-    init(logBuilder: LogEventBuilder, loggingOutput: LogOutput) {
+    init(core: DatadogCoreProtocol, logBuilder: LogEventBuilder) {
+        self.core = core
         self.logBuilder = logBuilder
-        self.loggingOutput = loggingOutput
     }
 
     func writeLog(withSpanContext spanContext: DDSpanContext, fields: [String: Encodable], date: Date) {
@@ -80,20 +73,26 @@ internal struct TracingWithLoggingIntegration {
             )
         }
 
-        let log = logBuilder.createLogWith(
-            level: level,
-            message: message,
-            error: extractedError,
-            date: date,
-            attributes: LogEvent.Attributes(
-                userAttributes: userAttributes,
-                internalAttributes: internalAttributes
-            ),
-            tags: []
-        )
+        let threadName = getCurrentThreadName()
 
-        if let event = log {
-            loggingOutput.write(log: event)
+        core.v1.scope(for: LoggingFeature.self)?.eventWriteContext { context, writer in
+            let log = logBuilder.createLogEvent(
+                date: date,
+                level: level,
+                message: message,
+                error: extractedError,
+                attributes: .init(
+                    userAttributes: userAttributes,
+                    internalAttributes: internalAttributes
+                ),
+                tags: [],
+                context: context,
+                threadName: threadName
+            )
+
+            if let log = log {
+                writer.write(value: log)
+            }
         }
     }
 }
