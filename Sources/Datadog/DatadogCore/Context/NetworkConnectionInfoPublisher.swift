@@ -21,7 +21,7 @@ import Network
 /// This adds the necessary thread-safety and keeps the convenience of pulling.
 @available(iOS 12, tvOS 12, *)
 internal struct NWPathMonitorPublisher: ContextValuePublisher {
-    let initialValue: NetworkConnectionInfo? = nil
+    let initialValue: NetworkConnectionInfo
 
     private let monitor: NWPathMonitor
     private let queue: DispatchQueue
@@ -29,6 +29,14 @@ internal struct NWPathMonitorPublisher: ContextValuePublisher {
     init(monitor: NWPathMonitor, queue: DispatchQueue) {
         self.monitor = monitor
         self.queue = queue
+        self.initialValue = .init(
+            reachability: .maybe,
+            availableInterfaces: nil,
+            supportsIPv4: nil,
+            supportsIPv6: nil,
+            isExpensive: nil,
+            isConstrained: nil
+        )
     }
 
     init(monitor: NWPathMonitor = .init()) {
@@ -40,7 +48,7 @@ internal struct NWPathMonitorPublisher: ContextValuePublisher {
         self.init(monitor: monitor, queue: queue)
     }
 
-    func publish(to receiver: @escaping ContextValueReceiver<NetworkConnectionInfo?>) {
+    func publish(to receiver: @escaping ContextValueReceiver<NetworkConnectionInfo>) {
         monitor.pathUpdateHandler = {
             let info = NetworkConnectionInfo($0)
             receiver(info)
@@ -104,7 +112,7 @@ extension NetworkConnectionInfo.Interface {
 import SystemConfiguration
 
 internal struct SCNetworkReachabilityReader: ContextValueReader {
-    let initialValue: NetworkConnectionInfo?
+    let initialValue: NetworkConnectionInfo
 
     private let reachability: SCNetworkReachability
 
@@ -121,7 +129,7 @@ internal struct SCNetworkReachabilityReader: ContextValueReader {
         self.init(reachability: reachability)
     }
 
-    func read(to receiver: inout NetworkConnectionInfo?) {
+    func read(to receiver: inout NetworkConnectionInfo) {
         receiver = NetworkConnectionInfo(reachability)
     }
 }

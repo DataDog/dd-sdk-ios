@@ -36,9 +36,20 @@ class NetworkConnectionInfoPublisherTests: XCTestCase {
 
     func testSCNetworkReachabilityReadValue() {
         let reader = SCNetworkReachabilityReader()
-        var info: NetworkConnectionInfo? = nil
+        var info = NetworkConnectionInfo(
+            reachability: .maybe,
+            availableInterfaces: nil,
+            supportsIPv4: false,
+            supportsIPv6: false,
+            isExpensive: false,
+            isConstrained: false
+        )
+
         reader.read(to: &info)
-        XCTAssertNotNil(info)
+        XCTAssertNil(info.supportsIPv4)
+        XCTAssertNil(info.supportsIPv6)
+        XCTAssertNil(info.isExpensive)
+        XCTAssertNil(info.isConstrained)
     }
 }
 

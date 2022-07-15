@@ -59,8 +59,14 @@ internal struct DatadogContext {
     // MARK: - Device Specific
 
     /// Network information.
-    var networkConnectionInfo: NetworkConnectionInfo?
+    ///
+    /// Represents the current state of the device network connectivity and interface.
+    var networkConnectionInfo: NetworkConnectionInfo
 
     /// Carrier information.
+    ///
+    /// Represents the current telephony service info of the device.
+    /// This value can be `nil` of no service is currently registered, or if the device does
+    /// not support telephony services.
     var carrierInfo: CarrierInfo?
 }
