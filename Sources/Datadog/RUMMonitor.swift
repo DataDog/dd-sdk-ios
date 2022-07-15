@@ -201,7 +201,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
 
         super.init()
 
-        _internalProxy = _RUMInternalProxy(subscriber: self)
+        _internal = _RUMInternalProxy(subscriber: self)
 
         if Datadog.debugRUM {
             self.enableRUMDebugging(true)
@@ -583,12 +583,6 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         queue.async {
             self.rumAttributes[key] = nil
         }
-    }
-
-    // MARK: - Internal Proxy
-    var _internalProxy: _RUMInternalProxy?
-    override public var _internal: _RUMInternalProxy? {
-        get { return _internalProxy }
     }
 
     // MARK: - Internal
