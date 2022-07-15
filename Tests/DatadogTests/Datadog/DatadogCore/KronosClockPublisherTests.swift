@@ -24,14 +24,44 @@ class KronosClockPublisherTests: XCTestCase {
         XCTAssertEqual(pools, Set(DatadogNTPServers), "Each time Datadog NTP server should be picked randomly.")
     }
 
-    func testWhenSyncSucceedsOnce_itPrintsInfoMessage() throws {
+    func testWhenSyncSucceedsOnce_itPublishesOffset() throws {
+        let expectation = expectation(description: "kronos publisher publishes offset")
+
+        // Given
+        let kronos = KronosClockMock()
+        let publisher = KronosClockPublisher(kronos: kronos)
+
+        // When
+        publisher.publish {
+            // Then
+            XCTAssertEqual($0, -1)
+            expectation.fulfill()
+        }
+
+        kronos.update(offset: -1)
+
+        // KronosClockMock publishes in sync
+        waitForExpectations(timeout: 0)
+    }
+
+    func testWhenSyncCompletesSuccessfully_itPublishesOffset() throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
-        // When
+        let expectation = expectation(description: "kronos publisher publishes offset")
+        expectation.expectedFulfillmentCount = 2
+
+        // Given
         let kronos = KronosClockMock()
         let publisher = KronosClockPublisher(kronos: kronos)
-        publisher.publish { XCTAssertEqual($0, -1) }
+
+        // When
+        publisher.publish {
+            // Then
+            XCTAssertEqual($0, -1)
+            expectation.fulfill()
+        }
+
         kronos.update(offset: -1)
         kronos.complete()
 
@@ -43,16 +73,28 @@ class KronosClockPublisherTests: XCTestCase {
             Server time will be used for signing events (-1.0s difference with device time).
             """
         )
+
+        // KronosClockMock publishes in sync
+        waitForExpectations(timeout: 0)
     }
 
-    func testWhenSyncFails_itPrintsWarning() throws {
+    func testWhenSyncFails_itPublishesZero() throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
-        // When
+        let expectation = expectation(description: "kronos publisher publishes 0")
+
+        // Given
         let kronos = KronosClockMock()
         let publisher = KronosClockPublisher(kronos: kronos)
-        publisher.publish { XCTAssertEqual($0, 0) }
+
+        // When
+        publisher.publish {
+            // Then
+            XCTAssertEqual($0, .zero)
+            expectation.fulfill()
+        }
+
         kronos.complete()
 
         // Then
@@ -63,5 +105,8 @@ class KronosClockPublisherTests: XCTestCase {
             Device time will be used for signing events.
             """
         )
+
+        // KronosClockMock publishes in sync
+        waitForExpectations(timeout: 0)
     }
 }
