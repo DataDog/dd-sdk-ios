@@ -201,6 +201,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
 
         super.init()
 
+        _internal = _RUMInternalProxy(subscriber: self)
+
         if Datadog.debugRUM {
             self.enableRUMDebugging(true)
         }
