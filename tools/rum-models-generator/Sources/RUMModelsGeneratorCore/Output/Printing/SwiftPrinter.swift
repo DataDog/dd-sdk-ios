@@ -44,12 +44,6 @@ public class SwiftPrinter: BasePrinter {
         writeLine("}")
     }
 
-    private func printComment(_ comment: String?) {
-        comment.ifNotNil { comment in
-            writeLine("/// \(comment)")
-        }
-    }
-
     private func printPropertiesList(_ properties: [SwiftStruct.Property]) throws {
         try properties.enumerated().forEach { index, property in
             let accessLevel = "public"
@@ -278,22 +272,6 @@ public class SwiftPrinter: BasePrinter {
         }
     }
 
-    private func printNestedTypes(in swiftStruct: SwiftStruct) throws {
-        let nestedTypes = swiftStruct.properties.map { $0.type }
-        try nestedTypes.forEach { type in
-            let nestedStruct = (type as? SwiftStruct) ?? ((type as? SwiftArray)?.element as? SwiftStruct)
-            let nestedEnum = (type as? SwiftEnum) ?? ((type as? SwiftArray)?.element as? SwiftEnum)
-
-            if let nestedStruct = nestedStruct {
-                writeEmptyLine()
-                try printStruct(nestedStruct)
-            } else if let nestedEnum = nestedEnum {
-                writeEmptyLine()
-                try printEnum(nestedEnum)
-            }
-        }
-    }
-
     private func printEnum(_ enumeration: SwiftEnum) throws {
         let implementedProtocols = enumeration.conformance.map { $0.name }
         let conformance = implementedProtocols.isEmpty ? "" : ", \(implementedProtocols.joined(separator: ", "))"
@@ -320,7 +298,121 @@ public class SwiftPrinter: BasePrinter {
         writeLine("}")
     }
 
+    private func printAssociatedTypeEnum(_ enumeration: SwiftAssociatedTypeEnum) throws {
+        func printEncodingImplemenation() {
+            writeLine("public func encode(to encoder: Encoder) throws {")
+            indentRight()
+                writeLine("// Encode only the associated value, without encoding enum case")
+                writeLine("var container = encoder.singleValueContainer()")
+                writeEmptyLine()
+                writeLine("switch self {")
+
+                enumeration.cases.forEach { `case` in
+                    writeLine("case .\(`case`.label)(let value):")
+                    indentRight()
+                        writeLine("try container.encode(value)")
+                    indentLeft()
+                }
+
+            writeLine("}")
+            indentLeft()
+            writeLine("}")
+        }
+
+        func printDecodingImplemenation() throws {
+            writeLine("public init(from decoder: Decoder) throws {")
+            indentRight()
+                writeLine("// Decode enum case from associated value")
+                writeLine("let container = try decoder.singleValueContainer()")
+                writeEmptyLine()
+
+                try enumeration.cases.forEach { `case` in
+                    writeLine("if let value = try? container.decode(\(try typeDeclaration(`case`.associatedType)).self) {")
+                    indentRight()
+                        writeLine("self = .\(`case`.label)(value: value)")
+                        writeLine("return")
+                    indentLeft()
+                    writeLine("}")
+                }
+
+                writeLine("let error = DecodingError.Context(")
+                indentRight()
+                    writeLine("codingPath: container.codingPath,")
+                    writeLine("debugDescription: \"\"\"")
+                    writeLine("Failed to decode `\(enumeration.name)`.")
+                    writeLine("Ran out of possibilities when trying to decode the value of associated type.")
+                    writeLine("\"\"\"")
+                indentLeft()
+                writeLine(")")
+                writeLine("throw DecodingError.typeMismatch(\(enumeration.name).self, error)")
+
+            indentLeft()
+            writeLine("}")
+        }
+
+        let implementedProtocols = enumeration.conformance.map { $0.name }
+        let conformance = implementedProtocols.isEmpty ? "" : ": \(implementedProtocols.joined(separator: ", "))"
+
+        printComment(enumeration.comment)
+        writeLine("public enum \(enumeration.name)\(conformance) {")
+        indentRight()
+        try enumeration.cases.forEach { `case` in
+            let associatedTypeDeclaration = try typeDeclaration(`case`.associatedType)
+            writeLine("case \(`case`.label)(value: \(associatedTypeDeclaration))")
+        }
+
+        if enumeration.conforms(to: codableProtocol) {
+            writeEmptyLine()
+            writeLine("// MARK: - Codable")
+            writeEmptyLine()
+            printEncodingImplemenation()
+            writeEmptyLine()
+            try printDecodingImplemenation()
+        }
+
+        try printNestedTypes(in: enumeration)
+        indentLeft()
+        writeLine("}")
+    }
+
+    // MARK: - Printing nested types
+
+    private func printNestedTypes(in swiftStruct: SwiftStruct) throws {
+        let nestedTypes = swiftStruct.properties.map { $0.type }
+        try print(nestedTypes: nestedTypes)
+    }
+
+    private func printNestedTypes(in swiftAssociatedTypeEnum: SwiftAssociatedTypeEnum) throws {
+        let nestedTypes = swiftAssociatedTypeEnum.cases.map { $0.associatedType }
+        try print(nestedTypes: nestedTypes)
+    }
+
+    private func print(nestedTypes: [SwiftType]) throws {
+        try nestedTypes.forEach { type in
+            let nestedStruct = (type as? SwiftStruct) ?? ((type as? SwiftArray)?.element as? SwiftStruct)
+            let nestedEnum = (type as? SwiftEnum) ?? ((type as? SwiftArray)?.element as? SwiftEnum)
+            let nestedAssociatedTypeEnum = (type as? SwiftAssociatedTypeEnum) ?? ((type as? SwiftArray)?.element as? SwiftAssociatedTypeEnum)
+
+            if let nestedStruct = nestedStruct {
+                writeEmptyLine()
+                try printStruct(nestedStruct)
+            } else if let nestedEnum = nestedEnum {
+                writeEmptyLine()
+                try printEnum(nestedEnum)
+            } else if let nestedAssociatedTypeEnum = nestedAssociatedTypeEnum {
+                writeEmptyLine()
+                try printAssociatedTypeEnum(nestedAssociatedTypeEnum)
+            }
+        }
+    }
+
     // MARK: - Helpers
+
+    private func printComment(_ comment: String?) {
+        comment.ifNotNil { comment in
+            writeLine("/// \(comment)")
+        }
+    }
 
     private func typeDeclaration(_ type: SwiftType) throws -> String {
         switch type {
@@ -344,6 +436,8 @@ public class SwiftPrinter: BasePrinter {
             return "[\(try typeDeclaration(swiftDictionary.key)): \(try typeDeclaration(swiftDictionary.value))]"
         case let swiftEnum as SwiftEnum:
             return swiftEnum.name
+        case let swiftAssociatedTypeEnum as SwiftAssociatedTypeEnum:
+            return swiftAssociatedTypeEnum.name
         case let swiftStruct as SwiftStruct:
             return swiftStruct.name
         case let swiftTypeReference as SwiftTypeReference:

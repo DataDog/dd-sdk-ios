@@ -152,11 +152,13 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
             conformance: []
         )
 
-        let actual = try JSONToSwiftTypeTransformer().transform(jsonObjects: [object])
+        let actual = try JSONToSwiftTypeTransformer().transform(jsonType: object)
 
         XCTAssertEqual(actual.count, 1)
         XCTAssertEqual(expected, actual[0])
     }
+
+    // MARK: - Transforming `additionalProperties`
 
     func testTransformingNestedJSONObjectWithIntAdditionalPropertiesIntoSwiftDictionaryInsideRootStruct() throws {
         let object = JSONObject(
@@ -201,7 +203,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
             conformance: []
         )
 
-        let actual = try JSONToSwiftTypeTransformer().transform(jsonObjects: [object])
+        let actual = try JSONToSwiftTypeTransformer().transform(jsonType: object)
 
         XCTAssertEqual(actual.count, 1)
         XCTAssertEqual(expected, actual[0])
@@ -267,7 +269,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
             conformance: []
         )
 
-        let actual = try JSONToSwiftTypeTransformer().transform(jsonObjects: [object])
+        let actual = try JSONToSwiftTypeTransformer().transform(jsonType: object)
 
         XCTAssertEqual(actual.count, 1)
         XCTAssertEqual(expected, actual[0])
@@ -350,7 +352,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
             conformance: []
         )
 
-        let actual = try JSONToSwiftTypeTransformer().transform(jsonObjects: [object])
+        let actual = try JSONToSwiftTypeTransformer().transform(jsonType: object)
 
         XCTAssertEqual(actual.count, 1)
         XCTAssertEqual(expected, actual[0])
@@ -377,10 +379,10 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
             )
         )
 
-        XCTAssertThrowsError(try JSONToSwiftTypeTransformer().transform(jsonObjects: [object])) { error in
+        XCTAssertThrowsError(try JSONToSwiftTypeTransformer().transform(jsonType: object)) { error in
             let exceptionDescription = (error as? Exception)?.description ?? ""
             XCTAssertTrue(
-                exceptionDescription.contains("Transforming root object")
+                exceptionDescription.contains("Transforming root `JSONObject`")
                 && exceptionDescription.contains("is not supported")
             )
         }
@@ -431,9 +433,284 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
             conformance: []
         )
 
-        let actual = try JSONToSwiftTypeTransformer().transform(jsonObjects: [object])
+        let actual = try JSONToSwiftTypeTransformer().transform(jsonType: object)
 
         XCTAssertEqual(actual.count, 1)
         XCTAssertEqual(expected, actual[0])
+    }
+
+    // MARK: - Transforming `JSONOneOfs`
+
+    func testTransformingRootJSONOneOfs() throws {
+        let oneOfs = JSONOneOfs(
+            name: "RootMultitype",
+            comment: "Root description",
+            types: [
+                JSONOneOfs.OneOf(
+                    name: "Child1",
+                    type: JSONObject(
+                        name: "Child1",
+                        comment: nil,
+                        properties: [
+                            JSONObject.Property(
+                                name: "child1Property",
+                                comment: nil,
+                                type: JSONPrimitive.integer,
+                                defaultValue: nil,
+                                isRequired: true,
+                                isReadOnly: true
+                            )
+                        ]
+                    )
+                ),
+                JSONOneOfs.OneOf(
+                    name: "Child2",
+                    type: JSONObject(
+                        name: "Child2",
+                        comment: nil,
+                        properties: [
+                            JSONObject.Property(
+                                name: "child2Property",
+                                comment: nil,
+                                type: JSONPrimitive.integer,
+                                defaultValue: nil,
+                                isRequired: true,
+                                isReadOnly: true
+                            )
+                        ]
+                    )
+                )
+            ]
+        )
+
+        let expected: [SwiftStruct] = [
+            SwiftStruct(
+                name: "Child1",
+                comment: nil,
+                properties: [
+                    SwiftStruct.Property(
+                        name: "child1Property",
+                        comment: nil,
+                        type: SwiftPrimitive<Int>(),
+                        isOptional: false,
+                        mutability: .immutable,
+                        defaultValue: nil,
+                        codingKey: .static(value: "child1Property")
+                    )
+                ],
+                conformance: []
+            ),
+            SwiftStruct(
+                name: "Child2",
+                comment: nil,
+                properties: [
+                    SwiftStruct.Property(
+                        name: "child2Property",
+                        comment: nil,
+                        type: SwiftPrimitive<Int>(),
+                        isOptional: false,
+                        mutability: .immutable,
+                        defaultValue: nil,
+                        codingKey: .static(value: "child2Property")
+                    )
+                ],
+                conformance: []
+            )
+        ]
+
+        let actual = try JSONToSwiftTypeTransformer().transform(jsonType: oneOfs)
+
+        XCTAssertEqual(expected, actual)
+    }
+
+    func testTransformingNestedJSONOneOfs() throws {
+        let object = JSONObject(
+            name: "RootObject",
+            comment: nil,
+            properties: [
+                JSONObject.Property(
+                    name: "oneOfTypeProperty",
+                    comment: "OneOf property description",
+                    type: JSONOneOfs(
+                        name: "NestedOneOf",
+                        comment: "OneOf property description",
+                        types: [
+                            JSONOneOfs.OneOf(
+                                name: "Child1",
+                                type: JSONObject(
+                                    name: "Child1",
+                                    comment: nil,
+                                    properties: [
+                                        JSONObject.Property(
+                                            name: "child1Property",
+                                            comment: nil,
+                                            type: JSONPrimitive.integer,
+                                            defaultValue: nil,
+                                            isRequired: true,
+                                            isReadOnly: true
+                                        )
+                                    ]
+                                )
+                            ),
+                            JSONOneOfs.OneOf(
+                                name: "Child2",
+                                type: JSONObject(
+                                    name: "Child2",
+                                    comment: nil,
+                                    properties: [
+                                        JSONObject.Property(
+                                            name: "child2Property",
+                                            comment: nil,
+                                            type: JSONPrimitive.integer,
+                                            defaultValue: nil,
+                                            isRequired: true,
+                                            isReadOnly: true
+                                        )
+                                    ]
+                                )
+                            )
+                        ]
+                    ),
+                    defaultValue: nil,
+                    isRequired: true,
+                    isReadOnly: true
+                )
+            ]
+        )
+
+        let expected = SwiftStruct(
+            name: "RootObject",
+            comment: nil,
+            properties: [
+                SwiftStruct.Property(
+                    name: "oneOfTypeProperty",
+                    comment: "OneOf property description",
+                    type: SwiftAssociatedTypeEnum(
+                        name: "NestedOneOf",
+                        comment: "OneOf property description",
+                        cases: [
+                            SwiftAssociatedTypeEnum.Case(
+                                label: "Child1",
+                                associatedType: SwiftStruct(
+                                    name: "Child1",
+                                    comment: nil,
+                                    properties: [
+                                        SwiftStruct.Property(
+                                            name: "child1Property",
+                                            comment: nil,
+                                            type: SwiftPrimitive<Int>(),
+                                            isOptional: false,
+                                            mutability: .immutable,
+                                            defaultValue: nil,
+                                            codingKey: .static(value: "child1Property")
+                                        )
+                                    ],
+                                    conformance: []
+                                )
+                            ),
+                            SwiftAssociatedTypeEnum.Case(
+                                label: "Child2",
+                                associatedType:  SwiftStruct(
+                                    name: "Child2",
+                                    comment: nil,
+                                    properties: [
+                                        SwiftStruct.Property(
+                                            name: "child2Property",
+                                            comment: nil,
+                                            type: SwiftPrimitive<Int>(),
+                                            isOptional: false,
+                                            mutability: .immutable,
+                                            defaultValue: nil,
+                                            codingKey: .static(value: "child2Property")
+                                        )
+                                    ],
+                                    conformance: []
+                                )
+                            )
+                        ],
+                        conformance: []
+                    ),
+                    isOptional: false,
+                    mutability: .immutable,
+                    defaultValue: nil,
+                    codingKey: .static(value: "oneOfTypeProperty")
+                )
+            ],
+            conformance: []
+        )
+
+        let actual = try JSONToSwiftTypeTransformer().transform(jsonType: object)
+
+        XCTAssertEqual(actual.count, 1)
+        XCTAssertEqual(expected, actual[0])
+    }
+
+    func testTransformingRootJSONOneOfsWithNestedJSONOneOfs() throws {
+        let rootOneOfs = JSONOneOfs(
+            name: "Root oneOf",
+            comment: "Root oneOf comment",
+            types: [
+                JSONOneOfs.OneOf(
+                    name: "Root 1",
+                    type: JSONOneOfs(
+                        name: "Nested oneOf",
+                        comment: "Nested oneOf comment",
+                        types: [
+                            JSONOneOfs.OneOf(
+                                name: "Nested 1A",
+                                type: JSONObject(
+                                    name: "Nested 1A",
+                                    comment: nil,
+                                    properties: []
+                                )
+                            ),
+                            JSONOneOfs.OneOf(
+                                name: "Nested 1B",
+                                type: JSONObject(
+                                    name: "Nested 1B",
+                                    comment: nil,
+                                    properties: []
+                                )
+                            ),
+                        ]
+                    )
+                ),
+                JSONOneOfs.OneOf(
+                    name: "Root 2",
+                    type: JSONOneOfs(
+                        name: "Nested oneOf",
+                        comment: "Nested oneOf comment",
+                        types: [
+                            JSONOneOfs.OneOf(
+                                name: "Nested 2A",
+                                type: JSONObject(
+                                    name: "Nested 2A",
+                                    comment: nil,
+                                    properties: []
+                                )
+                            ),
+                            JSONOneOfs.OneOf(
+                                name: "Nested 2B",
+                                type: JSONObject(
+                                    name: "Nested 2B",
+                                    comment: nil,
+                                    properties: []
+                                )
+                            ),
+                        ]
+                    )
+                )
+            ]
+        )
+
+        let expected: [SwiftStruct] = [
+            SwiftStruct(name: "Nested 1A", comment: nil, properties: [], conformance: []),
+            SwiftStruct(name: "Nested 1B", comment: nil, properties: [], conformance: []),
+            SwiftStruct(name: "Nested 2A", comment: nil, properties: [], conformance: []),
+            SwiftStruct(name: "Nested 2B", comment: nil, properties: [], conformance: []),
+        ]
+
+        let actual = try JSONToSwiftTypeTransformer().transform(jsonType: rootOneOfs)
+        XCTAssertEqual(expected, actual)
     }
 }

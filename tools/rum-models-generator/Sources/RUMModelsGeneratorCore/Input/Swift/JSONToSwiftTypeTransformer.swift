@@ -8,17 +8,52 @@ import Foundation
 
 /// Transforms `JSONObject` schema into `SwiftStruct` schema.
 internal class JSONToSwiftTypeTransformer {
-    func transform(jsonObjects: [JSONObject]) throws -> [SwiftStruct] {
-        return try jsonObjects.map { try transform(jsonObject: $0) }
+    func transform(jsonType: JSONType) throws -> [SwiftStruct] {
+        return try transform(rootJSONType: jsonType)
     }
 
-    private func transform(jsonObject: JSONObject) throws -> SwiftStruct {
-        if jsonObject.additionalProperties != nil {
-            throw Exception.unimplemented("Transforming root object \(jsonObject) with `additionalProperties` is not supported.")
+    // MARK: - Transforming root types
+
+    func transform(rootJSONType: JSONType) throws -> [SwiftStruct] {
+        switch rootJSONType {
+        case let jsonObject as JSONObject:
+            return [try transform(rootJSONObject: jsonObject)]
+        case let jsonOneOfs as JSONOneOfs:
+            return try transform(rootJSONOneOfs: jsonOneOfs)
+        default:
+            throw Exception.unimplemented("Transforming root object of type `\(type(of: rootJSONType))` is not supported.")
         }
-        var `struct` = try transformJSONToStruct(jsonObject)
+    }
+
+    private func transform(rootJSONObject: JSONObject) throws -> SwiftStruct {
+        guard rootJSONObject.additionalProperties == nil else {
+            throw Exception.unimplemented("Transforming root `JSONObject` with `additionalProperties` is not supported.")
+        }
+        var `struct` = try transformJSONObjectToStruct(rootJSONObject)
         `struct` = resolveTransitiveMutableProperties(in: `struct`)
         return `struct`
+    }
+
+    private func transform(rootJSONOneOfs: JSONOneOfs) throws -> [SwiftStruct] {
+        let numberOfTypes = rootJSONOneOfs.types.count
+        let jsonObjects = rootJSONOneOfs.types.compactMap { $0.type as? JSONObject }
+        let jsonOneOfs = rootJSONOneOfs.types.compactMap { $0.type as? JSONOneOfs }
+
+        let onlyJSONObjects = jsonObjects.count == numberOfTypes
+        let onlyJSONOneOfs = jsonOneOfs.count == numberOfTypes
+
+        guard onlyJSONObjects || onlyJSONOneOfs else {
+            let mixedTypes = rootJSONOneOfs.types.map { "\(type(of: $0))" }
+            throw Exception.unimplemented("Transforming root `JSONOneOfs` with mixed `oneOf` types is not supported (mixed types: [\(mixedTypes)]).")
+        }
+
+        if onlyJSONOneOfs {
+            return try jsonOneOfs.flatMap { jsonOneOf in try transform(rootJSONOneOfs: jsonOneOf) }
+        } else if onlyJSONObjects {
+            return try jsonObjects.map { jsonObject in try transform(rootJSONObject: jsonObject) }
+        } else {
+            throw Exception.inconsistency("Expected all `oneOfs` to be `JSONObject` or `JSONOneOfs`")
+        }
     }
 
     // MARK: - Transforming ambiguous types
@@ -33,8 +68,10 @@ internal class JSONToSwiftTypeTransformer {
             return transformJSONToEnum(jsonEnumeration)
         case let jsonObject as JSONObject:
             return try transformJSONObject(jsonObject)
+        case let jsonOneOfs as JSONOneOfs:
+            return try transformJSONOneOfs(jsonOneOfs)
         default:
-            throw Exception.unimplemented("Transforming \(json) into `SwiftType` is not supported.")
+            throw Exception.unimplemented("Transforming `\(type(of: json))` into `SwiftType` is not supported.")
         }
     }
 
@@ -81,7 +118,7 @@ internal class JSONToSwiftTypeTransformer {
                 // RUMM-1420: we noticed that `additionalProperties` is used for custom user attributes which need to be
                 // sanitized by the SDK, hence it's very practical for us to generate `.mutableInternally` modifier for those.
                 let mutability: SwiftStruct.Property.Mutability = additionalProperties.isReadOnly ? .mutableInternally : .mutable
-                var `struct` = try transformJSONToStruct(jsonObject)
+                var `struct` = try transformJSONObjectToStruct(jsonObject)
                 `struct`.properties.append(
                     SwiftStruct.Property(
                         name: additionalPropertyName,
@@ -104,11 +141,11 @@ internal class JSONToSwiftTypeTransformer {
                 )
             }
         } else {
-            return try transformJSONToStruct(jsonObject)
+            return try transformJSONObjectToStruct(jsonObject)
         }
     }
 
-    private func transformJSONToStruct(_ jsonObject: JSONObject) throws -> SwiftStruct {
+    private func transformJSONObjectToStruct(_ jsonObject: JSONObject) throws -> SwiftStruct {
         /// Reads Struct properties.
         func readProperties(from objectProperties: [JSONObject.Property]) throws -> [SwiftStruct.Property] {
             /// Reads Struct property default value.
@@ -145,6 +182,55 @@ internal class JSONToSwiftTypeTransformer {
             name: jsonObject.name,
             comment: jsonObject.comment,
             properties: try readProperties(from: jsonObject.properties),
+            conformance: []
+        )
+    }
+
+    /// The `oneOf` schema appearing in nested (not root) context gets transformed into Swift enum
+    /// with associated values. Each `case` represents a single sub-suchema from `oneOf` array.
+    ///
+    /// Following default and fallback for determining `case` names (labels) are implemented:
+    /// - If **all** `oneOf` sub-schemas define their `title` **and** all titles are unique, enum cases will be
+    /// named by sub-schema titles.
+    /// - Otherwise, if **all** `oneOf` sub-schemas represent different `types`, enum cases will be named by
+    /// the name of sub-schema `type`.
+    /// - If none of above is met, an incompatibility error will be thrown.
+    private func transformJSONOneOfs(_ jsonOneOfs: JSONOneOfs) throws -> SwiftAssociatedTypeEnum {
+        // Determine case labels:
+        let caseLabels: [String]
+
+        // Build names from sub-schemas `title` (given by `oneOf.name`):
+        let labelsFromNames = jsonOneOfs.types.compactMap { oneOf in oneOf.name }
+        // Check if labels from names are present and if all are unique:
+        let areLabelsFromNamesUnique = Set(labelsFromNames).count == jsonOneOfs.types.count
+
+        if areLabelsFromNamesUnique {
+            caseLabels = labelsFromNames
+        } else {
+            // Fallback to inferring names from sub-schemas `type`:
+            func labelNameFromType(of jsonType: JSONType) throws -> String {
+                switch jsonType {
+                case let jsonPrimitive as JSONPrimitive:
+                    return jsonPrimitive.rawValue // e.g. `bool` or `double`
+                case let jsonArray as JSONArray:
+                    return try labelNameFromType(of: jsonArray.element) + "sArray" // e.g. `doublesArray`, `foosArray`
+                default:
+                    throw Exception.unimplemented("Building `SwiftAssociatedTypeEnum` case label for \(type(of: jsonType)) is not supported")
+                }
+            }
+
+            caseLabels = try jsonOneOfs.types.map { oneOf in try labelNameFromType(of: oneOf.type) }
+        }
+
+        return SwiftAssociatedTypeEnum(
+            name: jsonOneOfs.name,
+            comment: jsonOneOfs.comment,
+            cases: try zip(jsonOneOfs.types, caseLabels).map { oneOf, caseLabel in
+                return SwiftAssociatedTypeEnum.Case(
+                    label: caseLabel,
+                    associatedType: try transformJSONToAnyType(oneOf.type)
+                )
+            },
             conformance: []
         )
     }

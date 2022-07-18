@@ -1,4 +1,5 @@
 {
+    "title": "Schema title",
     "additionalProperties": true,
     "properties": {
         "foo": {

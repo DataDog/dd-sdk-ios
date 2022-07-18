@@ -15,43 +15,20 @@ internal class JSONSchemaToJSONTypeTransformer {
         static let isReadOnly = true
     }
 
-    /// Transformation context. It pushes named `JSONSchemas` to and from the `context.stack`
-    /// so we can know the current level of recursive transformation.
-    private let context = TransformationContext<(name: String, schema: JSONSchema)>()
-
-    func transform(jsonSchemas: [JSONSchema]) throws -> [JSONObject] {
-        precondition(context.current == nil)
-        let transformed = try jsonSchemas.map { try transform(jsonSchema: $0) }
-        precondition(context.current == nil)
-
-        return transformed
-    }
-
-    private func transform(jsonSchema: JSONSchema) throws -> JSONObject {
+    func transform(jsonSchema: JSONSchema) throws -> JSONType {
         let schemaTitle = try jsonSchema.title
-            .unwrapOrThrow(.inconsistency("`JSONSchema` must define `title`."))
-        let inferredType = try transformSchemaToAnyType(jsonSchema, named: schemaTitle)
-        let objectType = try (inferredType as? JSONObject)
             .unwrapOrThrow(
-                .illegal("`JSONSchema` describes \(type(of: inferredType)) instead of `JSONObject`.")
+                .inconsistency("`JSONSchema` must define `title`.")
             )
-        return objectType
+
+        return try transformSchemaToAnyType(jsonSchema, named: schemaTitle)
     }
 
     // MARK: - Transforming ambiguous types
 
     private func transformSchemaToAnyType(_ schema: JSONSchema, named name: String) throws -> JSONType {
-        context.enter((name, schema))
-        defer { context.leave() }
-
-        // RUMM-2022: Pick first schema of OneOf to workaround `action.id` change introduced in
-        // https://github.com/DataDog/rum-events-format/pull/57
-        //
-        // Supporting multiple types for single property need to be addressed
-        if context.parent?.name == "action" && context.current?.name == "id" {
-            if let oneOf = schema.oneOf?.first {
-                return try transformSchemaToAnyType(oneOf, named: name)
-            }
+        if schema.oneOf != nil {
+            return try transformSchemasToOneOfs(schema, named: name)
         }
 
         let schemaType = try schema.type
@@ -161,6 +138,23 @@ internal class JSONSchemaToJSONTypeTransformer {
             comment: schema.description,
             properties: properties,
             additionalProperties: additionalProperties
+        )
+    }
+
+    /// Transforms multiple non-homogeneous schemas (such as `oneOf: []`) into single `JSONOneOfs`.
+    private func transformSchemasToOneOfs(_ schema: JSONSchema, named name: String) throws -> JSONOneOfs {
+        let oneOfSchemas = try schema.oneOf
+            .unwrapOrThrow(.inconsistency("`JSONOneOfs` schema must define `oneOf`."))
+
+        return JSONOneOfs(
+            name: name,
+            comment: schema.description,
+            types: try oneOfSchemas.map { subschema in
+                return JSONOneOfs.OneOf(
+                    name: subschema.title,
+                    type: try transformSchemaToAnyType(subschema, named: subschema.title ?? name)
+                )
+            }
         )
     }
 }

@@ -424,4 +424,143 @@ final class SwiftPrinterTests: XCTestCase {
 
         XCTAssertEqual(expected, actual)
     }
+
+    func testPrintingSwiftStructWithAssociatedTypeEnum() throws {
+        let `struct` = SwiftStruct(
+            name: "Foo",
+            comment: nil,
+            properties: [
+                SwiftStruct.Property(
+                    name: "fooProperty",
+                    comment: nil,
+                    type: SwiftPrimitive<Int>(),
+                    isOptional: false,
+                    mutability: .immutable,
+                    defaultValue: nil,
+                    codingKey: .static(value: "foo_property")
+                ),
+                SwiftStruct.Property(
+                    name: "associatedTypeEnum",
+                    comment: nil,
+                    type: SwiftAssociatedTypeEnum(
+                        name: "AssociatedTypeEnum",
+                        comment: "`AssociatedTypeEnum` comment",
+                        cases: [
+                            SwiftAssociatedTypeEnum.Case(
+                                label: "singleNumber",
+                                associatedType: SwiftPrimitive<Int>()
+                            ),
+                            SwiftAssociatedTypeEnum.Case(
+                                label: "multipleStrings",
+                                associatedType: SwiftArray(element: SwiftPrimitive<String>())
+                            ),
+                            SwiftAssociatedTypeEnum.Case(
+                                label: "someStruct",
+                                associatedType: SwiftStruct(
+                                    name: "SomeStruct",
+                                    comment: "`SomeStruct` comment",
+                                    properties: [
+                                        SwiftStruct.Property(
+                                            name: "someStructProperty",
+                                            comment: nil,
+                                            type: SwiftPrimitive<Bool>(),
+                                            isOptional: false,
+                                            mutability: .immutable,
+                                            defaultValue: nil,
+                                            codingKey: .static(value: "some_struct_property")
+                                        )
+                                    ],
+                                    conformance: [codableProtocol]
+                                )
+                            )
+                        ],
+                        conformance: [codableProtocol]
+                    ),
+                    isOptional: true,
+                    mutability: .mutable,
+                    defaultValue: nil,
+                    codingKey: .static(value: "associated_type_enum")
+                )
+            ],
+            conformance: [codableProtocol]
+        )
+
+        let printer = SwiftPrinter()
+        let actual = try printer.print(swiftTypes: [`struct`])
+
+        let expected = """
+
+        public struct Foo: Codable {
+            public let fooProperty: Int
+
+            public var associatedTypeEnum: AssociatedTypeEnum?
+
+            enum CodingKeys: String, CodingKey {
+                case fooProperty = "foo_property"
+                case associatedTypeEnum = "associated_type_enum"
+            }
+
+            /// `AssociatedTypeEnum` comment
+            public enum AssociatedTypeEnum: Codable {
+                case singleNumber(value: Int)
+                case multipleStrings(value: [String])
+                case someStruct(value: SomeStruct)
+
+                // MARK: - Codable
+
+                public func encode(to encoder: Encoder) throws {
+                    // Encode only the associated value, without encoding enum case
+                    var container = encoder.singleValueContainer()
+
+                    switch self {
+                    case .singleNumber(let value):
+                        try container.encode(value)
+                    case .multipleStrings(let value):
+                        try container.encode(value)
+                    case .someStruct(let value):
+                        try container.encode(value)
+                    }
+                }
+
+                public init(from decoder: Decoder) throws {
+                    // Decode enum case from associated value
+                    let container = try decoder.singleValueContainer()
+
+                    if let value = try? container.decode(Int.self) {
+                        self = .singleNumber(value: value)
+                        return
+                    }
+                    if let value = try? container.decode([String].self) {
+                        self = .multipleStrings(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(SomeStruct.self) {
+                        self = .someStruct(value: value)
+                        return
+                    }
+                    let error = DecodingError.Context(
+                        codingPath: container.codingPath,
+                        debugDescription: \"\"\"
+                        Failed to decode `AssociatedTypeEnum`.
+                        Ran out of possibilities when trying to decode the value of associated type.
+                        \"\"\"
+                    )
+                    throw DecodingError.typeMismatch(AssociatedTypeEnum.self, error)
+                }
+
+                /// `SomeStruct` comment
+                public struct SomeStruct: Codable {
+                    public let someStructProperty: Bool
+
+                    enum CodingKeys: String, CodingKey {
+                        case someStructProperty = "some_struct_property"
+                    }
+                }
+            }
+        }
+
+        """
+
+        XCTAssertEqual(expected, actual)
+    }
 }

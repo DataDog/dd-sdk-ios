@@ -20,13 +20,13 @@ public class RUMModelsGenerator {
         path file: URL,
         using printer: Printer
     ) throws -> String {
-        let jsonSchemas = try JSONSchemaReader().readAll(from: file)
+        let jsonSchema = try JSONSchemaReader().read(file)
 
-        // Transform into type-safe JSONObjects
-        let jsonObjects = try JSONSchemaToJSONTypeTransformer().transform(jsonSchemas: jsonSchemas)
+        // Transform into type-safe JSONTypes
+        let jsonType = try JSONSchemaToJSONTypeTransformer().transform(jsonSchema: jsonSchema)
 
         // Transform into type-safe SwiftType schemas
-        let swiftTypes = try JSONToSwiftTypeTransformer().transform(jsonObjects: jsonObjects)
+        let swiftTypes = try JSONToSwiftTypeTransformer().transform(jsonType: jsonType)
 
         // Apply RUM models customization (e.g. naming conventions) to SwiftType schemas
         let rumModels = try RUMSwiftTypeTransformer().transform(types: swiftTypes)

@@ -67,10 +67,34 @@ internal struct JSONObject: JSONType {
     }
 }
 
+/// Represents non-homogeneous type which can be read from `oneOf` JSON schema.
+/// Ref.: https://json-schema.org/draft/2019-09/json-schema-core.html#rfc.section.9.2.1.3
+///
+/// An example can be schema defining `oneOf` with an array of possible subschemas, where each
+/// describes a different `JSONObject`.
+internal struct JSONOneOfs: JSONType {
+    /// A type that this `JSONOneOfs` can represent.
+    struct OneOf {
+        let name: String?
+        let type: JSONType
+    }
+
+    let name: String
+    let comment: String?
+    /// An array of possible types that this `JSONOneOfs` represents.
+    let types: [OneOf]
+}
+
 // MARK: - Equatable
 
 extension JSONObject: Equatable {
     static func == (lhs: JSONObject, rhs: JSONObject) -> Bool {
+        return String(describing: lhs) == String(describing: rhs)
+    }
+}
+
+extension JSONOneOfs: Equatable {
+    static func == (lhs: JSONOneOfs, rhs: JSONOneOfs) -> Bool {
         return String(describing: lhs) == String(describing: rhs)
     }
 }
