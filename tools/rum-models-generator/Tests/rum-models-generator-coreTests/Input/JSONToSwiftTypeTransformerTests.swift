@@ -610,7 +610,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                             ),
                             SwiftAssociatedTypeEnum.Case(
                                 label: "Child2",
-                                associatedType:  SwiftStruct(
+                                associatedType: SwiftStruct(
                                     name: "Child2",
                                     comment: nil,
                                     properties: [

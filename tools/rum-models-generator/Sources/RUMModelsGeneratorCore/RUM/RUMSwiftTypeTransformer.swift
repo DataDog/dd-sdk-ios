@@ -18,6 +18,8 @@ internal class RUMSwiftTypeTransformer {
         "RUMCITest",
         "RUMDevice",
         "RUMOperatingSystem",
+        "RUMDisplay",
+        "RUMActionID",
     ]
 
     /// `RUMDataModel` protocol, implemented by all RUM models.
@@ -213,6 +215,18 @@ internal class RUMSwiftTypeTransformer {
 
         if fixedName == "OS" {
             fixedName = "RUMOperatingSystem"
+        }
+
+        if fixedName == "Display" {
+            fixedName = "RUMDisplay"
+        }
+
+        // Since https://github.com/DataDog/rum-events-format/pull/57 `action.id` can be either
+        // single `String` or an array of `[String]`. This is handled by generating Swift enum with
+        // two cases and different associated types. To not duplicate generated code in each nested
+        // context we generate single root type: `RUMActionID`.
+        if fixedName == "ID", let parentStructName = (context.parent as? SwiftStruct)?.name, parentStructName == "action" {
+            fixedName = "RUMActionID"
         }
 
         return fixedName

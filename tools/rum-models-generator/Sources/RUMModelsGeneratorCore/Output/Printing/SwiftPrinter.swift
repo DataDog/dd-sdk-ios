@@ -18,6 +18,8 @@ public class SwiftPrinter: BasePrinter {
                 try printExtensionsWithCodableImplementation(`struct`)
             } else if let `enum` = type as? SwiftEnum {
                 try printEnum(`enum`)
+            } else if let associatedTypeEnum = type as? SwiftAssociatedTypeEnum {
+                try printAssociatedTypeEnum(associatedTypeEnum)
             } else {
                 throw Exception.illegal("\(type) cannot be printed as root declaration.")
             }
