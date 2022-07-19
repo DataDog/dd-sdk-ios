@@ -12,8 +12,7 @@ internal struct LaunchTime {
     /// to receiving `UIApplication.didBecomeActiveNotification` notification.
     ///
     /// If the `UIApplication.didBecomeActiveNotification` has not yet been received by the
-    /// time this variable is requested, the value should represent the time interval between now and the
-    /// process start time.
+    /// time this value is provided, it will represent the time interval between now and the process start time.
     let launchTime: TimeInterval
 
     /// Returns `true` if the application is pre-warmed.
