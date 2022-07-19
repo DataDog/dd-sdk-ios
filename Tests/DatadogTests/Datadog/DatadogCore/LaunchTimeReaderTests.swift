@@ -7,7 +7,7 @@
 import XCTest
 @testable import Datadog
 
-class LaunchTimeProviderTests: XCTestCase {
+class LaunchTimeReaderTests: XCTestCase {
     override func tearDown() {
         super.tearDown()
         setenv("ActivePrewarm", "", 1)
@@ -15,52 +15,64 @@ class LaunchTimeProviderTests: XCTestCase {
 
     func testGivenStartedApplication_whenRequestingLaunchTimeAtAnyTime_itReturnsTheSameValue() {
         // Given
-        let provider = LaunchTimeProvider()
+        let reader = LaunchTimeReader()
 
         // When
         var values: [TimeInterval] = []
         (0..<10).forEach { _ in
             Thread.sleep(forTimeInterval: 0.01)
-            values.append(provider.launchTime)
+            var launchTime = LaunchTime(launchTime: .mockRandom(), isActivePrewarm: false)
+            reader.read(to: &launchTime)
+            values.append(launchTime.launchTime)
         }
 
         // Then
         let uniqueValues = Set(values)
         XCTAssertEqual(uniqueValues.count, 1, "All collected `launchTime` values should be the same.")
-        XCTAssertGreaterThan(values[0], TimeInterval(0))
+        XCTAssertGreaterThan(values[0], 0)
     }
 
     func testThreadSafety() {
-        let provider = LaunchTimeProvider()
+        let reader = LaunchTimeReader()
 
         // swiftlint:disable opening_brace
         callConcurrently(
-            closures: [{ _ = provider.launchTime }],
-            iterations: 100
+            closures: [
+                {
+                    var launchTime: LaunchTime = .mockAny()
+                    reader.read(to: &launchTime)
+                }
+            ],
+            iterations: 1_000
         )
         // swiftlint:enable opening_brace
     }
 
     func testIsActivePrewarm_returnsTrue() {
         // Given
-        let provider = LaunchTimeProvider()
+        let reader = LaunchTimeReader()
 
         // When
         setenv("ActivePrewarm", "1", 1)
         NSClassFromString("AppLaunchHandler")?.load()
 
+        var launchTime = LaunchTime(launchTime: 0, isActivePrewarm: false)
+        reader.read(to: &launchTime)
+
         // Then
-        XCTAssertTrue(provider.isActivePrewarm)
+        XCTAssertTrue(launchTime.isActivePrewarm)
     }
 
     func testIsActivePrewarm_returnsFalse() {
         // Given
-        let provider = LaunchTimeProvider()
+        let reader = LaunchTimeReader()
 
         // When
         NSClassFromString("AppLaunchHandler")?.load()
+        var launchTime = LaunchTime(launchTime: 0, isActivePrewarm: true)
+        reader.read(to: &launchTime)
 
         // Then
-        XCTAssertFalse(provider.isActivePrewarm)
+        XCTAssertFalse(launchTime.isActivePrewarm)
     }
 }

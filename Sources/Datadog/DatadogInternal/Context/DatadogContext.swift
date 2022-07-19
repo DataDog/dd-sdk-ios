@@ -59,6 +59,9 @@ internal struct DatadogContext {
     /// Current user information.
     var userInfo: UserInfo
 
+    /// Application launch time..
+    var launchTime: LaunchTime
+
     // MARK: - Device Specific
 
     /// Network information.
