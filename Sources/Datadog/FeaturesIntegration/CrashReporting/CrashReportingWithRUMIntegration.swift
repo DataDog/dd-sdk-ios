@@ -231,6 +231,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             context: nil,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds,
             device: lastRUMView.device,
+            display: nil,
             error: .init(
                 handling: nil,
                 handlingStack: nil,
@@ -282,6 +283,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             context: original.context,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds - 1, // -1ms to put the crash after view in RUM session
             device: original.device,
+            display: nil,
             os: original.os,
             service: original.service,
             session: original.session,
@@ -354,6 +356,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             context: nil,
             date: startDate.timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context),
+            display: nil,
             // RUMM-2197: In very rare cases, the OS info computed below might not be exactly the one
             // that the app crashed on. This would correspond to a scenario when the device OS was upgraded
             // before restarting the app after crash. To solve this, the OS information would have to be

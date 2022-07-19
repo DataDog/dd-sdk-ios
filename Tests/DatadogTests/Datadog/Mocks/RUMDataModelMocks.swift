@@ -64,6 +64,16 @@ extension RUMDevice: RandomMockable {
     }
 }
 
+extension RUMActionID: RandomMockable {
+    static func mockRandom() -> RUMActionID {
+        if Bool.random() {
+            return .string(value: .mockRandom())
+        } else {
+            return .stringsArray(value: .mockRandom())
+        }
+    }
+}
+
 extension RUMDevice.RUMDeviceType: RandomMockable {
     static func mockRandom() -> RUMDevice.RUMDeviceType {
         return [.mobile, .desktop, .tablet, .tv, .gamingConsole, .bot, .other].randomElement()!
@@ -102,6 +112,7 @@ extension RUMViewEvent: RandomMockable {
             context: .mockRandom(),
             date: .mockRandom(),
             device: .mockRandom(),
+            display: nil,
             os: .mockRandom(),
             service: .mockRandom(),
             session: .init(
@@ -173,6 +184,7 @@ extension RUMResourceEvent: RandomMockable {
             context: .mockRandom(),
             date: .mockRandom(),
             device: .mockRandom(),
+            display: nil,
             os: .mockRandom(),
             resource: .init(
                 connect: .init(duration: .mockRandom(), start: .mockRandom()),
@@ -238,6 +250,7 @@ extension RUMActionEvent: RandomMockable {
             context: .mockRandom(),
             date: .mockRandom(),
             device: .mockRandom(),
+            display: nil,
             os: .mockRandom(),
             service: .mockRandom(),
             session: .init(
@@ -279,6 +292,7 @@ extension RUMErrorEvent: RandomMockable {
             context: .mockRandom(),
             date: .mockRandom(),
             device: .mockRandom(),
+            display: nil,
             error: .init(
                 handling: nil,
                 handlingStack: nil,
@@ -348,6 +362,7 @@ extension RUMLongTaskEvent: RandomMockable {
             context: .mockRandom(),
             date: .mockRandom(),
             device: .mockRandom(),
+            display: nil,
             longTask: .init(duration: .mockRandom(), id: .mockRandom(), isFrozenFrame: .mockRandom()),
             os: .mockRandom(),
             service: .mockRandom(),
