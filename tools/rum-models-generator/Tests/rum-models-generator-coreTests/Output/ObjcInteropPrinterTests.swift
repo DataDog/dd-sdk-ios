@@ -1897,6 +1897,127 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         XCTAssertEqual(expected, actual)
     }
+
+    func testPrintingObjcInteropForSwiftStructsWithReferencedAssociatedTypeEnum() throws {
+        let fooStruct = SwiftStruct(
+            name: "Foo",
+            comment: nil,
+            properties: [
+                .mock(
+                    propertyName: "bar",
+                    type: SwiftStruct(
+                        name: "Bar",
+                        comment: nil,
+                        properties: [
+                            .mock(
+                                propertyName: "sharedEnumeration",
+                                type: SwiftTypeReference(referencedTypeName: "SharedAssociatedTypeEnum"),
+                                isOptional: false,
+                                mutability: .immutable
+                            ),
+                        ],
+                        conformance: []
+                    ),
+                    isOptional: false,
+                    mutability: .mutable
+                ),
+            ],
+            conformance: []
+        )
+
+        let sharedAssociatedTypeEnum = SwiftAssociatedTypeEnum(
+            name: "SharedAssociatedTypeEnum",
+            comment: nil,
+            cases: [
+                SwiftAssociatedTypeEnum.Case(label: "singleNumber", associatedType: SwiftPrimitive<Int>()),
+                SwiftAssociatedTypeEnum.Case(label: "multipleNumbers", associatedType: SwiftArray(element: SwiftPrimitive<Int>())),
+                SwiftAssociatedTypeEnum.Case(label: "mapOfNumbers", associatedType: SwiftDictionary(value: SwiftPrimitive<Int>())),
+            ],
+            conformance: []
+        )
+
+        let expected = """
+        // MARK: - Swift
+
+        public struct Foo {
+            public var bar: Bar
+
+            public struct Bar {
+                public let sharedEnumeration: SharedAssociatedTypeEnum
+            }
+        }
+
+        public enum SharedAssociatedTypeEnum {
+            case singleNumber(value: Int)
+            case multipleNumbers(value: [Int])
+            case mapOfNumbers(value: [String: Int])
+        }
+
+        // MARK: - ObjcInterop
+
+        @objc
+        public class DDFoo: NSObject {
+            internal var swiftModel: Foo
+            internal var root: DDFoo { self }
+
+            internal init(swiftModel: Foo) {
+                self.swiftModel = swiftModel
+            }
+
+            @objc public var bar: DDFooBar {
+                DDFooBar(root: root)
+            }
+        }
+
+        @objc
+        public class DDFooBar: NSObject {
+            internal let root: DDFoo
+
+            internal init(root: DDFoo) {
+                self.root = root
+            }
+
+            @objc public var sharedEnumeration: DDFooBarSharedAssociatedTypeEnum {
+                DDFooBarSharedAssociatedTypeEnum(root: root)
+            }
+        }
+
+        @objc
+        public class DDFooBarSharedAssociatedTypeEnum: NSObject {
+            internal let root: DDFoo
+
+            internal init(root: DDFoo) {
+                self.root = root
+            }
+
+            @objc public var singleNumber: NSNumber? {
+                guard case .singleNumber(let value) = root.swiftModel.bar.sharedEnumeration else {
+                    return nil
+                }
+                return value as NSNumber
+            }
+
+            @objc public var multipleNumbers: [NSNumber]? {
+                guard case .multipleNumbers(let value) = root.swiftModel.bar.sharedEnumeration else {
+                    return nil
+                }
+                return value as [NSNumber]
+            }
+
+            @objc public var mapOfNumbers: [String: NSNumber]? {
+                guard case .mapOfNumbers(let value) = root.swiftModel.bar.sharedEnumeration else {
+                    return nil
+                }
+                return value as [String: NSNumber]
+            }
+        }
+
+        """
+
+        let actual = try printSwiftWithObjcInterop(for: [fooStruct, sharedAssociatedTypeEnum])
+
+        XCTAssertEqual(expected, actual)
+    }
 }
 
 extension SwiftStruct.Property {

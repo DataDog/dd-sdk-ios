@@ -61,6 +61,8 @@ internal class ObjcInteropPrinter: BasePrinter {
             try print(objcInteropNestedTransitiveClass: nestedTransitiveClass)
         case let enumeration as ObjcInteropEnum:
             try print(objcInteropEnum: enumeration)
+        case let nestedAssociatedTypeEnum as ObjcInteropAssociatedTypeEnum:
+            try print(objcInteropNestedAssociatedTypeEnum: nestedAssociatedTypeEnum)
         default:
             throw Exception.unimplemented("Cannot print `ObjcInteropType`: \(type(of: objcInteropType))")
         }
@@ -174,6 +176,52 @@ internal class ObjcInteropPrinter: BasePrinter {
         writeLine("}")
     }
 
+    private func print(objcInteropNestedAssociatedTypeEnum: ObjcInteropAssociatedTypeEnum) throws {
+        let propertyWrapper = objcInteropNestedAssociatedTypeEnum.parentProperty
+        let swiftProperty = propertyWrapper.bridgedSwiftProperty
+        let className = objcTypeNamesPrefix + objcInteropNestedAssociatedTypeEnum.objcTypeName
+        let rootClassName = objcTypeNamesPrefix + objcInteropNestedAssociatedTypeEnum.objcRootClass.objcTypeName
+
+        if swiftProperty.mutability == .mutable {
+            throw Exception.unimplemented("Generating mutable `ObjcInteropAssociatedTypeEnum` is not supported: \(swiftProperty.type).")
+        }
+
+        writeEmptyLine()
+        writeLine("@objc")
+        writeLine("public class \(className): NSObject {")
+        indentRight()
+        writeLine("internal let root: \(rootClassName)")
+            writeEmptyLine()
+            writeLine("internal init(root: \(rootClassName)) {")
+            indentRight()
+                writeLine("self.root = root")
+            indentLeft()
+            writeLine("}")
+
+            // Generate optional computed `var` for each enumeration `case` and its associated value:
+            try zip(
+                objcInteropNestedAssociatedTypeEnum.bridgedSwiftAssociatedTypeEnum.cases,
+                objcInteropNestedAssociatedTypeEnum.associatedObjcInteropTypes
+            ).forEach { swiftEnumCase, objcInteropAssociatedType in
+                let objcTypeName = try objcInteropTypeName(for: objcInteropAssociatedType)
+                let asObjcCast = try swiftToObjcCast(for: objcInteropAssociatedType, isOptional: swiftProperty.isOptional) ?? ""
+
+                writeEmptyLine()
+                writeLine("@objc public var \(swiftEnumCase.label): \(objcTypeName)? {")
+                indentRight()
+                    writeLine("guard case .\(swiftEnumCase.label)(let value) = root.swiftModel.\(propertyWrapper.keyPath) else {")
+                    indentRight()
+                        writeLine("return nil")
+                    indentLeft()
+                    writeLine("}")
+                    writeLine("return value\(asObjcCast)")
+                indentLeft()
+                writeLine("}")
+            }
+        indentLeft()
+        writeLine("}")
+    }
+
     // MARK: - Printing Property Wrappers
 
     private func print(objcInteropPropertyWrapper: ObjcInteropPropertyWrapper) throws {
@@ -190,6 +238,8 @@ internal class ObjcInteropPrinter: BasePrinter {
             try printPropertyAccessingNestedStructArray(wrapper)
         case let wrapper as ObjcInteropPropertyWrapperManagingSwiftStructProperty:
             try printPrimitivePropertyWrapper(wrapper)
+        case let wrapper as ObjcInteropPropertyWrapperAccessingNestedAssociatedTypeEnum:
+            try printPropertyAccessingNestedAssociatedTypeEnum(wrapper)
         default:
             throw Exception.illegal("Unrecognized property wrapper: \(type(of: objcInteropPropertyWrapper))")
         }
@@ -356,6 +406,38 @@ internal class ObjcInteropPrinter: BasePrinter {
             indentLeft()
             writeLine("}")
         }
+    }
+
+    private func printPropertyAccessingNestedAssociatedTypeEnum(_ propertyWrapper: ObjcInteropPropertyWrapperAccessingNestedAssociatedTypeEnum) throws {
+        let nestedObjcAssociatedTypeEnum = propertyWrapper.objcNestedAssociatedTypeEnum! // swiftlint:disable:this force_unwrapping
+
+        // Generate accessor to the referenced wrapper, e.g.:
+        // ```
+        // @objc public var bar: DDFooBar? {
+        //     root.swiftModel.bar != nil ? DDFooBar(root: root) : nil
+        // }
+        // ```
+        let swiftProperty = propertyWrapper.bridgedSwiftProperty
+        let objcPropertyName = swiftProperty.name
+        let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
+        let objcClassName = objcTypeNamesPrefix + nestedObjcAssociatedTypeEnum.objcTypeName
+        writeLine("@objc public var \(objcPropertyName): \(objcClassName)\(objcPropertyOptionality) {")
+        indentRight()
+            if swiftProperty.isOptional {
+                // The property is optional, so the accessor must be returned only if the wrapped value is `!= nil`, e.g.:
+                // ```
+                // root.swiftModel.bar != nil ? DDFooBar(root: root) : nil
+                // ```
+                writeLine("root.swiftModel.\(propertyWrapper.keyPath) != nil ? \(objcClassName)(root: root) : nil")
+            } else {
+                // The property is non-optional, so accessor can be provided without considering `nil` value:
+                // ```
+                // DDFooBar(root: root)
+                // ```
+                writeLine("\(objcClassName)(root: root)")
+            }
+        indentLeft()
+        writeLine("}")
     }
 
     // MARK: - Generating names
