@@ -127,6 +127,16 @@ extension ApplicationStatePublisher {
         UIApplication.managedShared?.applicationState ?? .active // fallback to most expected state
     }
 
+    /// Creates a Application state publisher for publishing application state
+    /// history.
+    ///
+    /// **Note**: It must be called on the main thread.
+    ///
+    /// - Parameters:
+    ///   - applicationState: The current shared `UIApplication` state.
+    ///   - queue: The queue for publishing the history.
+    ///   - dateProvider: The date provider for the Application state snapshot timestamp.
+    ///   - notificationCenter: The notification center where this publisher observes `UIApplication` notifications.
     convenience init(
         applicationState: UIApplication.State = ApplicationStatePublisher.currentApplicationState,
         queue: DispatchQueue = ApplicationStatePublisher.defaultQueue,
