@@ -15,31 +15,6 @@ public enum LogLevel: Int, Codable {
     case warn
     case error
     case critical
-
-    // MARK: - `LogLevel` <> `Log.Status` conversion
-
-    internal var asLogStatus: LogEvent.Status {
-        switch self {
-        case .debug:    return .debug
-        case .info:     return .info
-        case .notice:   return .notice
-        case .warn:     return .warn
-        case .error:    return .error
-        case .critical: return .critical
-        }
-    }
-
-    internal init?(from logStatus: LogEvent.Status) {
-        switch logStatus {
-        case .debug:    self = .debug
-        case .info:     self = .info
-        case .notice:   self = .notice
-        case .warn:     self = .warn
-        case .error:    self = .error
-        case .critical: self = .critical
-        case .emergency: return nil // unavailable in public `LogLevel` API.
-        }
-    }
 }
 
 /// Because `Logger` is a common name widely used across different projects, the `Datadog.Logger` may conflict when
@@ -57,271 +32,187 @@ public enum LogLevel: Int, Codable {
 ///
 public typealias DDLogger = Logger
 
-public class Logger {
-    /// Filters logs by their status.
-    internal typealias LogsFilter = (LogEvent.Status) -> Bool
-
-    internal let core: DatadogCoreProtocol
-    /// Attributes associated with every log.
-    private var loggerAttributes: [String: Encodable] = [:]
-    /// Taggs associated with every log.
-    private var loggerTags: Set<String> = []
-    /// Queue ensuring thread-safety of the `Logger`. It synchronizes tags and attributes mutation.
-    private let queue: DispatchQueue
-
-    internal let serviceName: String?
-    internal let loggerName: String?
-    internal let sendNetworkInfo: Bool
-    internal let useCoreOutput: Bool
-    /// Filters logs by their status.
-    internal let logsFilter: LogsFilter
-    internal let additionalOutput: LogOutput?
-    /// Log events mapper configured by the user, `nil` if not set.
-    internal let logEventMapper: LogEventMapper?
-    /// Integration with RUM Context. `nil` if disabled for this Logger or if the RUM feature disabled.
-    internal let rumContextIntegration: LoggingWithRUMContextIntegration?
-    /// Integration with Tracing. `nil` if disabled for this Logger or if the Tracing feature disabled.
-    internal let activeSpanIntegration: LoggingWithActiveSpanIntegration?
-
-    init(
-        core: DatadogCoreProtocol,
-        identifier: String,
-        serviceName: String?,
-        loggerName: String?,
-        sendNetworkInfo: Bool,
-        useCoreOutput: Bool,
-        logsFilter: @escaping LogsFilter,
-        rumContextIntegration: LoggingWithRUMContextIntegration?,
-        activeSpanIntegration: LoggingWithActiveSpanIntegration?,
-        additionalOutput: LogOutput?,
-        logEventMapper: LogEventMapper?
-    ) {
-        self.core = core
-        self.queue = DispatchQueue(
-            label: "com.datadoghq.logger-\(identifier)",
-            target: .global(qos: .userInteractive)
-        )
-        self.serviceName = serviceName
-        self.loggerName = loggerName
-        self.sendNetworkInfo = sendNetworkInfo
-        self.useCoreOutput = useCoreOutput
-        self.logsFilter = logsFilter
-        self.additionalOutput = additionalOutput
-        self.logEventMapper = logEventMapper
-        self.rumContextIntegration = rumContextIntegration
-        self.activeSpanIntegration = activeSpanIntegration
-    }
-
-    // MARK: - Logging
-
-    /// Sends a DEBUG log message.
+public protocol LoggerProtocol {
+    /// General purpose logging method.
+    /// Sends a log with certain `level`, `message`, `error` and `attributes`.
+    ///
+    /// Although it can be used directly, it is more convenient and recommended to use specific methods declared on `Logger`:
+    /// * `debug(_:error:attributes:)`
+    /// * `info(_:error:attributes:)`
+    /// * ...
+    ///
     /// - Parameters:
+    ///   - level: the log level
     ///   - message: the message to be logged
-    ///   - error: `Error` instance to be logged with its properties
-    ///   - attributes: a dictionary of attributes to add for this message. If an attribute with
-    /// the same key already exist in this logger, it will be overridden (just for this message).
-    public func debug(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
-        log(level: .debug, message: message, error: error, messageAttributes: attributes)
-    }
-
-    /// Sends an INFO log message.
-    /// - Parameters:
-    ///   - message: the message to be logged
-    ///   - error: `Error` instance to be logged with its properties
-    ///   - attributes: a dictionary of attributes to add for this message. If an attribute with
-    /// the same key already exist in this logger, it will be overridden (just for this message).
-    public func info(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
-        log(level: .info, message: message, error: error, messageAttributes: attributes)
-    }
-
-    /// Sends a NOTICE log message.
-    /// - Parameters:
-    ///   - message: the message to be logged
-    ///   - error: `Error` instance to be logged with its properties
-    ///   - attributes: a dictionary of attributes to add for this message. If an attribute with
-    /// the same key already exist in this logger, it will be overridden (just for this message).
-    public func notice(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
-        log(level: .notice, message: message, error: error, messageAttributes: attributes)
-    }
-
-    /// Sends a WARN log message.
-    /// - Parameters:
-    ///   - message: the message to be logged
-    ///   - error: `Error` instance to be logged with its properties
-    ///   - attributes: a dictionary of attributes to add for this message. If an attribute with
-    /// the same key already exist in this logger, it will be overridden (just for this message).
-    public func warn(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
-        log(level: .warn, message: message, error: error, messageAttributes: attributes)
-    }
-
-    /// Sends an ERROR log message.
-    /// - Parameters:
-    ///   - message: the message to be logged
-    ///   - error: `Error` instance to be logged with its properties
-    ///   - attributes: a dictionary of attributes to add for this message. If an attribute with
-    /// the same key already exist in this logger, it will be overridden (just for this message).
-    public func error(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
-        log(level: .error, message: message, error: error, messageAttributes: attributes)
-    }
-
-    /// Sends a CRITICAL log message.
-    /// - Parameters:
-    ///   - message: the message to be logged
-    ///   - error: `Error` instance to be logged with its properties
-    ///   - attributes: a dictionary of attributes to add for this message. If an attribute with
-    /// the same key already exist in this logger, it will be overridden (just for this message).
-    public func critical(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
-        log(level: .critical, message: message, error: error, messageAttributes: attributes)
-    }
+    ///   - error: the error information (optional)
+    ///   - attributes: a dictionary of attributes (optional) to add for this message. If an attribute with
+    /// the same key already exist in this logger, it will be overridden (only for this message).
+    func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable]?)
 
     // MARK: - Attributes
 
     /// Adds a custom attribute to all future logs sent by this logger.
     /// - Parameters:
-    ///   - key: key for this attribute. See `AttributeKey` documentation for information about
-    ///   nesting attribute values using dot `.` syntax.
-    ///   - value: any value that conforms to `Encodable`. See `AttributeValue` documentation
-    ///   for information about nested encoding containers limitation.
-    public func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
-        queue.async {
-            self.loggerAttributes[key] = value
-        }
-    }
+    ///   - key: the attribute key. See `AttributeKey` documentation for information on nesting attributes with dot `.` syntax.
+    ///   - value: the attribute value that conforms to `Encodable`. See `AttributeValue` documentation
+    ///   for information on nested encoding containers limitation.
+    func addAttribute(forKey key: AttributeKey, value: AttributeValue)
 
     /// Removes the custom attribute from all future logs sent by this logger.
-    /// Previous logs won't lose this attribute if they were created prior to this call.
-    /// - Parameter key: key for the attribute that will be removed.
-    public func removeAttribute(forKey key: AttributeKey) {
-        queue.async {
-            self.loggerAttributes.removeValue(forKey: key)
-        }
-    }
+    ///
+    /// Previous logs won't lose this attribute if sent prior to this call.
+    /// - Parameter key: the key of an attribute that will be removed.
+    func removeAttribute(forKey key: AttributeKey)
 
     // MARK: - Tags
 
-    /// Adds a tag to all future logs sent by this logger.
-    /// The tag will be in the format `key:value`.
+    /// Adds a `"key:value"` tag to all future logs sent by this logger.
     ///
-    /// Tags must start with a letter and after that may contain the following characters:
-    /// Alphanumerics, Underscores, Minuses, Colons, Periods, Slashes. Other special characters
-    /// are converted to underscores.
-    /// Tags must be lowercase, and can be at most 200 characters. If the tag is
-    /// longer, only the first 200 characters will be used.
+    /// Tags must start with a letter and
+    /// * may contain: alphanumerics, underscores, minuses, colons, periods and slashes;
+    /// * other special characters are converted to underscores;
+    /// * must be lowercase
+    /// * and can be at most 200 characters long (tags exceeding this limit will be truncated to first 200 characters).
     ///
-    /// # Reference
-    /// [Defining Tags](https://docs.datadoghq.com/tagging/#defining-tags)
+    /// See also: [Defining Tags](https://docs.datadoghq.com/tagging/#defining-tags)
     ///
-    /// - Parameter key: key for the tag
-    /// - Parameter value: value of the tag
-    public func addTag(withKey key: String, value: String) {
-        queue.async {
-            let prefix = "\(key):"
-            self.loggerTags.insert("\(prefix)\(value)")
-        }
-    }
+    /// - Parameter key: tag key
+    /// - Parameter value: tag value
+    func addTag(withKey key: String, value: String)
 
     /// Remove all tags with the given key from all future logs sent by this logger.
-    /// Previous logs won't lose this tag if they were created prior to this call.
     ///
-    /// - Parameter key: key of the tag to remove
-    public func removeTag(withKey key: String) {
-        queue.async {
-            let prefix = "\(key):"
-            self.loggerTags = self.loggerTags.filter { !$0.hasPrefix(prefix) }
-        }
-    }
+    /// Previous logs won't lose this tag if created prior to this call.
+    ///
+    /// - Parameter key: the key of the tag to remove
+    func removeTag(withKey key: String)
 
-    /// Adds a tag to all future logs sent by this logger.
+    /// Adds the tag to all future logs sent by this logger.
     ///
-    /// Tags must start with a letter and after that may contain the following characters:
-    /// Alphanumerics, Underscores, Minuses, Colons, Periods, Slashes. Other special characters
-    /// are converted to underscores.
-    /// Tags must be lowercase, and can be at most 200 characters. If the tag is
-    /// longer, only the first 200 characters will be used.
+    /// Tags must start with a letter and
+    /// * may contain: alphanumerics, underscores, minuses, colons, periods and slashes;
+    /// * other special characters are converted to underscores;
+    /// * must be lowercase
+    /// * and can be at most 200 characters long (tags exceeding this limit will be truncated to first 200 characters).
     ///
-    /// # Reference
-    /// [Defining Tags](https://docs.datadoghq.com/tagging/#defining-tags)
+    /// See also: [Defining Tags](https://docs.datadoghq.com/tagging/#defining-tags)
     ///
     /// - Parameter tag: value of the tag
-    public func add(tag: String) {
-        queue.async {
-            self.loggerTags.insert(tag)
-        }
-    }
+    func add(tag: String)
 
-    /// Removes a tag from all future logs sent by this logger.
-    /// Previous logs won't lose the this tag if they were created prior to this call.
+    /// Removes the tag from all future logs sent by this logger.
     ///
-    /// - Parameter tag: value of the tag to remove
-    public func remove(tag: String) {
-        queue.async {
-            self.loggerTags.remove(tag)
-        }
+    /// Previous logs won't lose the this tag if created prior to this call.
+    ///
+    /// - Parameter tag: the value of the tag to remove
+    func remove(tag: String)
+}
+
+public extension LoggerProtocol {
+    /// Sends a DEBUG log message.
+    /// - Parameters:
+    ///   - message: the message to be logged
+    ///   - error: the error information (optional)
+    ///   - attributes: a dictionary of attributes (optional) to add for this message. If an attribute with
+    /// the same key already exist in this logger, it will be overridden (only for this message).
+    func debug(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
+        log(level: .debug, message: message, error: error, attributes: attributes)
     }
 
-    // MARK: - Private
+    /// Sends an INFO log message.
+    /// - Parameters:
+    ///   - message: the message to be logged
+    ///   - error: the error information (optional)
+    ///   - attributes: a dictionary of attributes (optional) to add for this message. If an attribute with
+    /// the same key already exist in this logger, it will be overridden (only for this message).
+    func info(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
+        log(level: .info, message: message, error: error, attributes: attributes)
+    }
 
-    private func log(level: LogLevel, message: String, error: Error?, messageAttributes: [String: Encodable]?) {
-        var combinedUserAttributes = messageAttributes ?? [:]
-        combinedUserAttributes = queue.sync {
-            return self.loggerAttributes.merging(combinedUserAttributes) { _, userAttributeValue in
-                return userAttributeValue // use message attribute when the same key appears also in logger attributes
-            }
-        }
+    /// Sends a NOTICE log message.
+    /// - Parameters:
+    ///   - message: the message to be logged
+    ///   - error: the error information (optional)
+    ///   - attributes: a dictionary of attributes (optional) to add for this message. If an attribute with
+    /// the same key already exist in this logger, it will be overridden (only for this message).
+    func notice(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
+        log(level: .notice, message: message, error: error, attributes: attributes)
+    }
 
-        var combinedInternalAttributes: [String: Encodable] = [:]
-        if let rumContextAttributes = rumContextIntegration?.currentRUMContextAttributes {
-            combinedInternalAttributes.merge(rumContextAttributes) { $1 }
-        }
-        if let activeSpanAttributes = activeSpanIntegration?.activeSpanAttributes {
-            combinedInternalAttributes.merge(activeSpanAttributes) { $1 }
-        }
+    /// Sends a WARN log message.
+    /// - Parameters:
+    ///   - message: the message to be logged
+    ///   - error: the error information (optional)
+    ///   - attributes: a dictionary of attributes (optional) to add for this message. If an attribute with
+    /// the same key already exist in this logger, it will be overridden (only for this message).
+    func warn(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
+        log(level: .warn, message: message, error: error, attributes: attributes)
+    }
 
-        let tags = queue.sync {
-            return self.loggerTags
-        }
+    /// Sends an ERROR log message.
+    /// - Parameters:
+    ///   - message: the message to be logged
+    ///   - error: the error information (optional)
+    ///   - attributes: a dictionary of attributes (optional) to add for this message. If an attribute with
+    /// the same key already exist in this logger, it will be overridden (only for this message).
+    func error(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
+        log(level: .error, message: message, error: error, attributes: attributes)
+    }
 
-        core.v1.scope(for: LoggingFeature.self)?.eventWriteContext { context, writer in
-            let builder = LogEventBuilder(
-                sdkVersion: context.sdkVersion,
-                applicationVersion: context.version,
-                environment: context.env,
-                serviceName: self.serviceName ?? context.service,
-                loggerName: self.loggerName ?? context.applicationBundleIdentifier,
-                userInfoProvider: context.userInfoProvider,
-                networkConnectionInfoProvider: self.sendNetworkInfo ? context.networkConnectionInfoProvider : nil,
-                carrierInfoProvider: self.sendNetworkInfo ? context.carrierInfoProvider : nil,
-                dateCorrector: context.dateCorrector,
-                logEventMapper: self.logEventMapper
-            )
+    /// Sends a CRITICAL log message.
+    /// - Parameters:
+    ///   - message: the message to be logged
+    ///   - error: the error information (optional)
+    ///   - attributes: a dictionary of attributes (optional) to add for this message. If an attribute with
+    /// the same key already exist in this logger, it will be overridden (only for this message).
+    func critical(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil) {
+        log(level: .critical, message: message, error: error, attributes: attributes)
+    }
+}
 
-            let event = builder.createLogWith(
-                level: level,
-                message: message,
-                error: error.map { DDError(error: $0) },
-                date: context.dateProvider.now,
-                attributes: .init(
-                    userAttributes: combinedUserAttributes,
-                    internalAttributes: combinedInternalAttributes
-                ),
-                tags: tags
-            )
+/// Datadog logger.
+public class Logger: LoggerProtocol {
+    /// An internal shim to V2 Logger.
+    /// Needed for backward compatibility of V1 `Logger` APIs.
+    internal let v2Logger: LoggerProtocol
 
-            guard let log = event, self.logsFilter(log.status) else {
-                return
-            }
+    init(v2Logger: LoggerProtocol) {
+        self.v2Logger = v2Logger
+    }
 
-            self.additionalOutput?.write(log: log)
+    // MARK: - LoggerProtocol
 
-            if self.useCoreOutput {
-                writer.write(value: log)
-            }
-        }
+    public func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable]?) {
+        v2Logger.log(level: level, message: message, error: error, attributes: attributes)
+    }
+
+    public func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
+        v2Logger.addAttribute(forKey: key, value: value)
+    }
+
+    public func removeAttribute(forKey key: AttributeKey) {
+        v2Logger.removeAttribute(forKey: key)
+    }
+
+    public func addTag(withKey key: String, value: String) {
+        v2Logger.addTag(withKey: key, value: value)
+    }
+
+    public func removeTag(withKey key: String) {
+        v2Logger.removeTag(withKey: key)
+    }
+
+    public func add(tag: String) {
+        v2Logger.add(tag: tag)
+    }
+
+    public func remove(tag: String) {
+        v2Logger.remove(tag: tag)
     }
 
     // MARK: - Logger.Builder
 
-    /// Creates logger builder.
+    /// Creates `Logger` builder.
     public static var builder: Builder {
         return Builder()
     }
@@ -335,25 +226,25 @@ public class Logger {
     ///           .build()
     ///
     public class Builder {
-        internal var serviceName: String?
-        internal var loggerName: String?
+        internal var serviceName: String? = nil
+        internal var loggerName: String? = nil
         internal var sendNetworkInfo = false
         internal var bundleWithRUM = true
         internal var bundleWithTrace = true
-        internal var useCoreOutput = true
-        internal var consoleLogFormat: ConsoleLogFormat?
+        internal var sendLogsToDatadog = true
+        internal var consoleLogFormat: ConsoleLogFormat? = nil
         internal var datadogReportingThreshold: LogLevel = .debug
 
         /// Sets the service name that will appear in logs.
         /// - Parameter serviceName: the service name  (default value is set to application bundle identifier)
-        public func set(serviceName: String) -> Builder {
+        public func set(serviceName: String) -> Self {
             self.serviceName = serviceName
             return self
         }
 
         /// Sets the logger name that will appear in logs.
         /// - Parameter loggerName: the logger custom name (default value is set to main bundle identifier)
-        public func set(loggerName: String) -> Builder {
+        public func set(loggerName: String) -> Self {
             self.loggerName = loggerName
             return self
         }
@@ -362,7 +253,7 @@ public class Logger {
         /// This means: reachability status, connection type, mobile carrier name and many more will be added to each log.
         /// For full list of network info attributes see `NetworkConnectionInfo` and `CarrierInfo`.
         /// - Parameter enabled: `false` by default
-        public func sendNetworkInfo(_ enabled: Bool) -> Builder {
+        public func sendNetworkInfo(_ enabled: Bool) -> Self {
             sendNetworkInfo = enabled
             return self
         }
@@ -371,7 +262,7 @@ public class Logger {
         /// If enabled all the logs will be enriched with the current RUM View information and
         /// it will be possible to see all the logs sent during a specific View lifespan in the RUM Explorer.
         /// - Parameter enabled: `true` by default
-        public func bundleWithRUM(_ enabled: Bool) -> Builder {
+        public func bundleWithRUM(_ enabled: Bool) -> Self {
             bundleWithRUM = enabled
             return self
         }
@@ -380,7 +271,7 @@ public class Logger {
         /// If enabled all the logs will be bundled with the `Global.sharedTracer.activeSpan` trace and
         /// it will be possible to see all the logs sent during that specific trace.
         /// - Parameter enabled: `true` by default
-        public func bundleWithTrace(_ enabled: Bool) -> Builder {
+        public func bundleWithTrace(_ enabled: Bool) -> Self {
             bundleWithTrace = enabled
             return self
         }
@@ -389,15 +280,19 @@ public class Logger {
         /// Can be used to disable sending logs in development.
         /// See also: `printLogsToConsole(_:)`.
         /// - Parameter enabled: `true` by default
-        public func sendLogsToDatadog(_ enabled: Bool) -> Builder {
-            self.useCoreOutput = enabled
+        public func sendLogsToDatadog(_ enabled: Bool) -> Self {
+            self.sendLogsToDatadog = enabled
             return self
         }
 
         /// Set the minim log level reported to Datadog servers.
-        /// Any log with a level equal or above to the threshold will be sent
+        /// Any log with a level equal or above the threshold will be sent.
+        ///
+        /// Note: this setting doesn't impact logs printed to the console if `printLogsToConsole(_:)`
+        /// is used - all logs will be printed, no matter of their level.
+        ///
         /// - Parameter datadogReportingThreshold: `LogLevel.debug` by default
-        public func set(datadogReportingThreshold: LogLevel) -> Builder {
+        public func set(datadogReportingThreshold: LogLevel) -> Self {
             self.datadogReportingThreshold = datadogReportingThreshold
             return self
         }
@@ -408,10 +303,22 @@ public class Logger {
             case short
             /// Prints short representation of log with given prefix.
             case shortWith(prefix: String)
-            /// Prints JSON representation of log.
-            case json
-            /// Prints JSON representation of log with given prefix.
-            case jsonWith(prefix: String)
+
+            // MARK: - Deprecated
+
+            @available(*, deprecated, message: """
+            JSON format is no longer supported for console logs and this API will be removed in future versions
+            of the SDK. The `.short` format will be used instead.
+            """)
+            public static let json: ConsoleLogFormat = .short
+
+            @available(*, deprecated, message: """
+            JSON format is no longer supported for console logs and this API will be removed in future versions
+            of the SDK. The `.shortWith(prefix:)` format will be used instead.
+            """)
+            public static func jsonWith(prefix: String) -> ConsoleLogFormat {
+                return .shortWith(prefix: prefix)
+            }
         }
 
         /// Enables  logs to be printed to debugger console.
@@ -420,7 +327,7 @@ public class Logger {
         /// - Parameters:
         ///   - enabled: `false` by default
         ///   - format: format to use when printing logs to console - either `.short` or `.json` (`.short` is default)
-        public func printLogsToConsole(_ enabled: Bool, usingFormat format: ConsoleLogFormat = .short) -> Builder {
+        public func printLogsToConsole(_ enabled: Bool, usingFormat format: ConsoleLogFormat = .short) -> Self {
             consoleLogFormat = enabled ? format : nil
             return self
         }
@@ -428,26 +335,14 @@ public class Logger {
         /// Builds `Logger` object.
         public func build(in core: DatadogCoreProtocol = defaultDatadogCore) -> Logger {
             do {
-                return try buildOrThrow(in: core)
+                return Logger(v2Logger: try buildOrThrow(in: core))
             } catch {
-                consolePrint("\(error)")
-                return Logger(
-                    core: NOOPDatadogCore(),
-                    identifier: "no-op",
-                    serviceName: nil,
-                    loggerName: nil,
-                    sendNetworkInfo: false,
-                    useCoreOutput: false,
-                    logsFilter: { _ in false },
-                    rumContextIntegration: nil,
-                    activeSpanIntegration: nil,
-                    additionalOutput: nil,
-                    logEventMapper: nil
-                )
+                DD.logger.critical("Failed to build `Logger`.", error: error)
+                return Logger(v2Logger: NOPLogger())
             }
         }
 
-        private func buildOrThrow(in core: DatadogCoreProtocol) throws -> Logger {
+        private func buildOrThrow(in core: DatadogCoreProtocol) throws -> LoggerProtocol {
             guard let context = core.v1.context else {
                 throw ProgrammerError(
                     description: "`Datadog.initialize()` must be called prior to `Logger.builder.build()`."
@@ -460,49 +355,105 @@ public class Logger {
                 )
             }
 
-            // RUMM-2133 Note: strong feature coupling while migrating to v2.
-            // In v2 active span will be provided in context from feature scope.
-            let rumEnabled = core.v1.feature(RUMFeature.self) != nil
-            let tracingEnabled = core.v1.feature(TracingFeature.self) != nil
+            let remoteLogger: RemoteLogger? = {
+                guard sendLogsToDatadog else {
+                    return nil
+                }
 
-            let threshold = datadogReportingThreshold
-            let filter: LogsFilter = { logStatus in
-                let logSeverity = LogLevel(from: logStatus)?.rawValue ?? 0
-                let thresholdValue = threshold.rawValue
-                return logSeverity >= thresholdValue
-            }
-
-            return Logger(
-                core: core,
-                identifier: loggerName ?? context.applicationBundleIdentifier,
-                serviceName: serviceName,
-                loggerName: loggerName,
-                sendNetworkInfo: sendNetworkInfo,
-                useCoreOutput: useCoreOutput,
-                logsFilter: filter,
-                rumContextIntegration: (rumEnabled && bundleWithRUM) ? LoggingWithRUMContextIntegration() : nil,
-                activeSpanIntegration: (tracingEnabled && bundleWithTrace) ? LoggingWithActiveSpanIntegration() : nil,
-                additionalOutput: resolveOuput(),
-                logEventMapper: loggingFeature.configuration.logEventMapper
-            )
-        }
-
-        private func resolveOuput() -> LogOutput? {
-            switch (useCoreOutput, consoleLogFormat) {
-            case let (true, format?):
-                return CombinedLogOutput(
-                    combine: [
-                        LogConsoleOutput(format: format, timeZone: .current),
-                        LoggingWithRUMErrorsIntegration()
-                    ]
+                let configuration = RemoteLogger.Configuration(
+                    service: serviceName ?? context.service,
+                    loggerName: loggerName ?? context.applicationBundleIdentifier,
+                    sendNetworkInfo: sendNetworkInfo,
+                    threshold: datadogReportingThreshold,
+                    eventMapper: loggingFeature.configuration.logEventMapper
                 )
-            case (true, nil):
-                return LoggingWithRUMErrorsIntegration()
-            case let (false, format?):
-                return LogConsoleOutput(format: format, timeZone: .current)
-            case (false, nil):
-                return nil
+
+                let rumEnabled = core.v1.feature(RUMFeature.self) != nil
+                let tracingEnabled = core.v1.feature(TracingFeature.self) != nil
+
+                return RemoteLogger(
+                    core: core,
+                    configuration: configuration,
+                    dateProvider: context.dateProvider,
+                    rumContextIntegration: (rumEnabled && bundleWithRUM) ? LoggingWithRUMContextIntegration() : nil,
+                    rumErrorsIntegration: rumEnabled ? LoggingWithRUMErrorsIntegration() : nil,
+                    activeSpanIntegration: (tracingEnabled && bundleWithTrace) ? LoggingWithActiveSpanIntegration() : nil
+                )
+            }()
+
+            let consoleLogger: ConsoleLogger? = {
+                guard let consoleLogFormat = consoleLogFormat else {
+                    return nil
+                }
+
+                let configuration = ConsoleLogger.Configuration(
+                    timeZone: .current,
+                    format: consoleLogFormat
+                )
+
+                return ConsoleLogger(
+                    configuration: configuration,
+                    dateProvider: context.dateProvider,
+                    printFunction: consolePrint
+                )
+            }()
+
+            switch (remoteLogger, consoleLogger) {
+            case (let remoteLogger?, nil):
+                return remoteLogger
+
+            case (nil, let consoleLogger?):
+                return consoleLogger
+
+            case (let remoteLogger?, let consoleLogger?):
+                return CombinedLogger(combinedLoggers: [remoteLogger, consoleLogger])
+
+            case (nil, nil): // when user explicitly produces a no-op logger
+                return NOPLogger()
             }
         }
     }
+}
+
+/// Combines multiple loggers together into single `Logger` interface.
+internal struct CombinedLogger: LoggerProtocol {
+    let combinedLoggers: [LoggerProtocol]
+
+    func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable]?) {
+        combinedLoggers.forEach { $0.log(level: level, message: message, error: error, attributes: attributes) }
+    }
+
+    func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
+        combinedLoggers.forEach { $0.addAttribute(forKey: key, value: value) }
+    }
+
+    func removeAttribute(forKey key: AttributeKey) {
+        combinedLoggers.forEach { $0.removeAttribute(forKey: key) }
+    }
+
+    func addTag(withKey key: String, value: String) {
+        combinedLoggers.forEach { $0.addTag(withKey: key, value: value) }
+    }
+
+    func removeTag(withKey key: String) {
+        combinedLoggers.forEach { $0.removeTag(withKey: key) }
+    }
+
+    func add(tag: String) {
+        combinedLoggers.forEach { $0.add(tag: tag) }
+    }
+
+    func remove(tag: String) {
+        combinedLoggers.forEach { $0.remove(tag: tag) }
+    }
+}
+
+internal struct NOPLogger: LoggerProtocol {
+    func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable]?) {}
+    func addAttribute(forKey key: AttributeKey, value: AttributeValue) {}
+    func removeAttribute(forKey key: AttributeKey) {}
+    func addTag(withKey key: String, value: String) {}
+    func removeTag(withKey key: String) {}
+    func add(tag: String) {}
+    func remove(tag: String) {}
 }

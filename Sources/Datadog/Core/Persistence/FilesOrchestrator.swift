@@ -19,18 +19,15 @@ internal class FilesOrchestrator {
     /// Tracks number of times the file at `lastWritableFileURL` was returned from `getWritableFile()`.
     /// This should correspond with number of objects stored in file, assuming that majority of writes succeed (the difference is negligible).
     private var lastWritableFileUsesCount: Int = 0
-    private let telemetry: Telemetry?
 
     init(
         directory: Directory,
         performance: StoragePerformancePreset,
-        dateProvider: DateProvider,
-        telemetry: Telemetry? = nil
+        dateProvider: DateProvider
     ) {
         self.directory = directory
         self.performance = performance
         self.dateProvider = dateProvider
-        self.telemetry = telemetry
     }
 
     // MARK: - `WritableFile` orchestration
@@ -79,7 +76,7 @@ internal class FilesOrchestrator {
                     return lastFile
                 }
             } catch {
-                telemetry?.error("Failed to reuse last writable file", error: error)
+                DD.telemetry.error("Failed to reuse last writable file", error: error)
             }
         }
 
@@ -113,7 +110,7 @@ internal class FilesOrchestrator {
 
             return fileIsOldEnough ? oldestFile : nil
         } catch {
-            telemetry?.error("Failed to obtain readable file", error: error)
+            DD.telemetry.error("Failed to obtain readable file", error: error)
             return nil
         }
     }
@@ -122,7 +119,7 @@ internal class FilesOrchestrator {
         do {
             try readableFile.delete()
         } catch {
-            telemetry?.error("Failed to delete file", error: error)
+            DD.telemetry.error("Failed to delete file", error: error)
         }
     }
 
@@ -130,7 +127,7 @@ internal class FilesOrchestrator {
         do {
             try directory.deleteAllFiles()
         } catch {
-            telemetry?.error("Failed to delete all readable file", error: error)
+            DD.telemetry.error("Failed to delete all readable file", error: error)
         }
     }
 

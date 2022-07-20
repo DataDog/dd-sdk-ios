@@ -29,8 +29,7 @@ class RUMStorageBenchmarkTests: XCTestCase {
                 unauthorized: directory,
                 authorized: directory
             ),
-            commonDependencies: .mockAny(),
-            telemetry: nil
+            commonDependencies: .mockAny()
         )
         self.writer = storage.writer
         self.reader = storage.reader

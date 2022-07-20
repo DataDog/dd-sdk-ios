@@ -13,17 +13,14 @@ internal final class FileWriter: Writer {
     /// JSON encoder used to encode data.
     private let jsonEncoder: JSONEncoder
     private let encryption: DataEncryption?
-    private let telemetry: Telemetry?
 
     init(
         orchestrator: FilesOrchestrator,
-        encryption: DataEncryption? = nil,
-        telemetry: Telemetry? = nil
+        encryption: DataEncryption? = nil
     ) {
         self.orchestrator = orchestrator
         self.jsonEncoder = .default()
         self.encryption = encryption
-        self.telemetry = telemetry
     }
 
     // MARK: - Writing data
@@ -36,7 +33,7 @@ internal final class FileWriter: Writer {
             try file.append(data: data)
         } catch {
             DD.logger.error("Failed to write data", error: error)
-            telemetry?.error("Failed to write data to file", error: error)
+            DD.telemetry.error("Failed to write data to file", error: error)
         }
     }
 

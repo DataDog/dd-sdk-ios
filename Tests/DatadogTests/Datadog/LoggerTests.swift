@@ -579,8 +579,7 @@ class LoggerTests: XCTestCase {
             dependencies: RUMScopeDependencies(
                 rumFeature: rum,
                 crashReportingFeature: nil,
-                context: v1Context,
-                telemetry: nil
+                context: v1Context
             ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
             dateProvider: v1Context.dateProvider
         )
@@ -709,23 +708,10 @@ class LoggerTests: XCTestCase {
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
-        struct NoOpLogOutput: LogOutput {
-            func write(log: LogEvent) {}
-        }
+        let feature: LoggingFeature = .mockNoOp()
+        core.register(feature: feature)
 
-        let logger = Logger(
-            core: core,
-            identifier: .mockAny(),
-            serviceName: nil,
-            loggerName: nil,
-            sendNetworkInfo: false,
-            useCoreOutput: true,
-            logsFilter: { _ in true },
-            rumContextIntegration: nil,
-            activeSpanIntegration: nil,
-            additionalOutput: nil,
-            logEventMapper: nil
-        )
+        let logger = Logger.builder.build(in: core)
 
         DispatchQueue.concurrentPerform(iterations: 900) { iteration in
             let modulo = iteration % 3
@@ -749,9 +735,8 @@ class LoggerTests: XCTestCase {
     // MARK: - Usage
 
     func testGivenDatadogNotInitialized_whenInitializingLogger_itPrintsError() {
-        let printFunction = PrintFunctionMock()
-        consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         // given
         core.context = nil
@@ -761,16 +746,19 @@ class LoggerTests: XCTestCase {
 
         // then
         XCTAssertEqual(
-            printFunction.printedMessage,
+            dd.logger.criticalLog?.message,
+            "Failed to build `Logger`."
+        )
+        XCTAssertEqual(
+            dd.logger.criticalLog?.error?.message,
             "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `Logger.builder.build()`."
         )
-        XCTAssertTrue(logger.core is NOOPDatadogCore)
+        XCTAssertTrue(logger.v2Logger is NOPLogger)
     }
 
     func testGivenLoggingFeatureDisabled_whenInitializingLogger_itPrintsError() {
-        let printFunction = PrintFunctionMock()
-        consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         // given
         core.context = .mockAny()
@@ -781,10 +769,14 @@ class LoggerTests: XCTestCase {
 
         // then
         XCTAssertEqual(
-            printFunction.printedMessage,
+            dd.logger.criticalLog?.message,
+            "Failed to build `Logger`."
+        )
+        XCTAssertEqual(
+            dd.logger.criticalLog?.error?.message,
             "🔥 Datadog SDK usage error: `Logger.builder.build()` produces a non-functional logger, as the logging feature is disabled."
         )
-        XCTAssertTrue(logger.core is NOOPDatadogCore)
+        XCTAssertTrue(logger.v2Logger is NOPLogger)
     }
 
     func testDDLoggerIsLoggerTypealias() {

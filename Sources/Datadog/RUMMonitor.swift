@@ -175,8 +175,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 dependencies: RUMScopeDependencies(
                     rumFeature: rumFeature,
                     crashReportingFeature: crashReporting,
-                    context: context,
-                    telemetry: context.telemetry
+                    context: context
                 ),
                 dateProvider: context.dateProvider
             )
@@ -201,6 +200,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         )
 
         super.init()
+
+        _internal = _RUMInternalProxy(subscriber: self)
 
         if Datadog.debugRUM {
             self.enableRUMDebugging(true)

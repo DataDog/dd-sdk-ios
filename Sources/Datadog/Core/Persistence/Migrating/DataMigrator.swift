@@ -21,17 +21,13 @@ internal struct MultiDataMigrator: DataMigrator {
 internal struct DataMigratorFactory {
     /// Data directories for the feature.
     let directories: FeatureDirectories
-    var telemetry: Telemetry? = nil
 
     /// Resolves migrator to use when the SDK is started.
     func resolveInitialMigrator() -> DataMigrator {
-        let unauthorized = DeleteAllDataMigrator(
-            directory: directories.unauthorized,
-            telemetry: telemetry
-        )
+        let unauthorized = DeleteAllDataMigrator(directory: directories.unauthorized)
 
         let deprecated = directories.deprecated.map {
-            DeleteAllDataMigrator(directory: $0, telemetry: telemetry)
+            DeleteAllDataMigrator(directory: $0)
         }
 
         return MultiDataMigrator(
@@ -43,15 +39,11 @@ internal struct DataMigratorFactory {
     func resolveMigratorForConsentChange(from previousValue: TrackingConsent, to newValue: TrackingConsent) -> DataMigrator? {
         switch (previousValue, newValue) {
         case (.pending, .notGranted):
-            return DeleteAllDataMigrator(
-                directory: directories.unauthorized,
-                telemetry: telemetry
-            )
+            return DeleteAllDataMigrator(directory: directories.unauthorized)
         case (.pending, .granted):
             return MoveDataMigrator(
                 sourceDirectory: directories.unauthorized,
-                destinationDirectory: directories.authorized,
-                telemetry: telemetry
+                destinationDirectory: directories.authorized
             )
         default:
             return nil

@@ -7,12 +7,12 @@
 import XCTest
 @testable import Datadog
 
-class ConsoleLoggerTests: XCTestCase {
+class InternalLoggerTests: XCTestCase {
     private let mock = PrintFunctionMock()
 
     func testItPrintsMessageWithExpectedFormat() {
         // Given
-        let logger = ConsoleLogger(
+        let logger = InternalLogger(
             dateProvider: RelativeDateProvider(
                 using: .mockDecember15th2019At10AMUTC(addingTimeInterval: 4.2)
             ),
@@ -37,7 +37,7 @@ class ConsoleLoggerTests: XCTestCase {
 
     func testItPrintsErrorWithExpectedFormat() {
         // Given
-        let logger = ConsoleLogger(
+        let logger = InternalLogger(
             dateProvider: RelativeDateProvider(
                 using: .mockDecember15th2019At10AMUTC()
             ),
@@ -79,7 +79,7 @@ class ConsoleLoggerTests: XCTestCase {
         var verbosityLevel: LogLevel? = nil
 
         // Given
-        let logger = ConsoleLogger(
+        let logger = InternalLogger(
             dateProvider: RelativeDateProvider(
                 using: .mockDecember15th2019At10AMUTC()
             ),
@@ -135,7 +135,7 @@ class ConsoleLoggerTests: XCTestCase {
         var verbosityLevel: LogLevel? = nil
 
         // Given
-        let logger = ConsoleLogger(
+        let logger = InternalLogger(
             dateProvider: SystemDateProvider(),
             timeZone: .UTC,
             printFunction: mock.print(message:),

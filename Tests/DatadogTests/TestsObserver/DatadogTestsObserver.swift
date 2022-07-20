@@ -63,13 +63,25 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             """
         ),
         .init(
-            assert: { DD.logger is ConsoleLogger },
-            problem: "`DD.logger` must use `ConsoleLogger` implementation.",
+            assert: { DD.logger is InternalLogger },
+            problem: "`DD.logger` must use `InternalLogger` implementation.",
             solution: """
             Make sure the `DD` bundle is reset after test to use previous dependencies, e.g.:
 
             ```
             let dd = DD.mockWith(logger: CoreLoggerMock())
+            defer { dd.reset() }
+            ```
+            """
+        ),
+        .init(
+            assert: { DD.telemetry is NOPTelemetry },
+            problem: "`DD.telemetry` must use `NOPTelemetry` implementation.",
+            solution: """
+            Make sure the `DD` bundle is reset after test to use previous dependencies, e.g.:
+
+            ```
+            let dd = DD.mockWith(telemetry: TelemetryMock())
             defer { dd.reset() }
             ```
             """
