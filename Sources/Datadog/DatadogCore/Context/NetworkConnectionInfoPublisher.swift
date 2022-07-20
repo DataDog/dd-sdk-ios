@@ -33,7 +33,8 @@ internal struct NWPathMonitorPublisher: ContextValuePublisher {
 
     init(
         monitor: NWPathMonitor = .init(),
-        queue: DispatchQueue = NWPathMonitorPublisher.defaultQueue) {
+        queue: DispatchQueue = NWPathMonitorPublisher.defaultQueue
+    ) {
         self.monitor = monitor
         self.queue = queue
         self.initialValue = .init(
