@@ -792,6 +792,24 @@ extension AppState: AnyMockable, RandomMockable {
     }
 }
 
+extension AppStateHistory: AnyMockable {
+    static func mockAny() -> Self {
+        return mockAppInForeground(since: .mockDecember15th2019At10AMUTC())
+    }
+
+    static func mockAppInForeground(since date: Date = Date()) -> Self {
+        return .init(initialSnapshot: .init(state: .active, date: date), recentDate: date)
+    }
+
+    static func mockAppInBackground(since date: Date = Date()) -> Self {
+        return .init(initialSnapshot: .init(state: .background, date: date), recentDate: date)
+    }
+
+    static func mockRandom(since date: Date = Date()) -> Self {
+        return Bool.random() ? mockAppInForeground(since: date) : mockAppInBackground(since: date)
+    }
+}
+
 class AppStateListenerMock: AppStateListening, AnyMockable {
     let history: AppStateHistory
 
@@ -805,18 +823,20 @@ class AppStateListenerMock: AppStateListening, AnyMockable {
 
     static func mockAppInForeground(since date: Date = Date()) -> Self {
         return .init(
-            history: .init(initialSnapshot: .init(state: .active, date: date), recentDate: date)
+            history: .mockAppInForeground(since: date)
         )
     }
 
     static func mockAppInBackground(since date: Date = Date()) -> Self {
         return .init(
-            history: .init(initialSnapshot: .init(state: .background, date: date), recentDate: date)
+            history: .mockAppInBackground(since: date)
         )
     }
 
     static func mockRandom(since date: Date = Date()) -> Self {
-        return Bool.random() ? mockAppInForeground(since: date) : mockAppInBackground(since: date)
+        return .init(
+            history: .mockRandom(since: date)
+        )
     }
 
     func subscribe<Observer: AppStateHistoryObserver>(_ subscriber: Observer) where Observer.ObservedValue == AppStateHistory {}

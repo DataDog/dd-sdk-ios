@@ -27,6 +27,7 @@ extension DatadogContext: AnyMockable {
         device: DeviceInfo = .mockAny(),
         userInfo: UserInfo = .mockAny(),
         launchTime: LaunchTime = .mockAny(),
+        applicationStateHistory: AppStateHistory = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo = .mockAny(),
         carrierInfo: CarrierInfo? = .mockAny()
     ) -> DatadogContext {
@@ -46,6 +47,7 @@ extension DatadogContext: AnyMockable {
             device: device,
             userInfo: userInfo,
             launchTime: launchTime,
+            applicationStateHistory: applicationStateHistory,
             networkConnectionInfo: networkConnectionInfo,
             carrierInfo: carrierInfo
         )

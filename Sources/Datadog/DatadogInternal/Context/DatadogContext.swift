@@ -62,6 +62,9 @@ internal struct DatadogContext {
     /// Application launch time..
     var launchTime: LaunchTime
 
+    /// Provides the history of app foreground / background states.
+    var applicationStateHistory: AppStateHistory
+
     // MARK: - Device Specific
 
     /// Network information.
