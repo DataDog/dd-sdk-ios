@@ -2,14 +2,8 @@
 title: iOS Crash Reporting and Error Tracking
 kind: documentation
 beta: true
-further_reading:
-  - link: "https://datadoghq.com/blog/ios-crash-reporting-datadog/"
-    tag: "Blog"
-    text: "Introducing iOS Crash Reporting and Error Tracking"
-  - link: "/real_user_monitoring"
-    tag: "Documentation"
-    text: "Learn how to explore your RUM data"
 ---
+
 ## Overview
 
 Enable iOS Crash Reporting and Error Tracking to get comprehensive crash reports and error trends with Real User Monitoring. With this feature, you can access:
