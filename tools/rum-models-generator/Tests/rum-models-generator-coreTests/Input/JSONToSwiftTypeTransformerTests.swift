@@ -713,4 +713,55 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
         let actual = try JSONToSwiftTypeTransformer().transform(jsonType: rootOneOfs)
         XCTAssertEqual(expected, actual)
     }
+
+    func testTransformingRootJSONOneOfsWithMixedOneOfTypes() throws {
+        let rootOneOfs = JSONOneOfs(
+            name: "Root oneOf",
+            comment: "Root oneOf comment",
+            types: [
+                JSONOneOfs.OneOf(
+                    name: "Root 1",
+                    type: JSONOneOfs(
+                        name: "Nested oneOf",
+                        comment: "Nested oneOf comment",
+                        types: [
+                            JSONOneOfs.OneOf(
+                                name: "Nested oneOf A",
+                                type: JSONObject(
+                                    name: "JSONObject 1A",
+                                    comment: nil,
+                                    properties: []
+                                )
+                            ),
+                            JSONOneOfs.OneOf(
+                                name: "Nested oneOf B",
+                                type: JSONObject(
+                                    name: "JSONObject 1B",
+                                    comment: nil,
+                                    properties: []
+                                )
+                            ),
+                        ]
+                    )
+                ),
+                JSONOneOfs.OneOf(
+                    name: "Root 2",
+                    type: JSONObject(
+                        name: "JSONObject 2",
+                        comment: nil,
+                        properties: []
+                    )
+                )
+            ]
+        )
+
+        let expected: [SwiftStruct] = [
+            SwiftStruct(name: "JSONObject 1A", comment: nil, properties: [], conformance: []),
+            SwiftStruct(name: "JSONObject 1B", comment: nil, properties: [], conformance: []),
+            SwiftStruct(name: "JSONObject 2", comment: nil, properties: [], conformance: []),
+        ]
+
+        let actual = try JSONToSwiftTypeTransformer().transform(jsonType: rootOneOfs)
+        XCTAssertEqual(expected, actual)
+    }
 }
