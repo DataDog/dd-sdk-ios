@@ -8,8 +8,6 @@ import Foundation
 
 /// Reads data from files.
 internal final class FileReader: Reader {
-    /// Data reading format.
-    private let dataFormat: DataFormat
     /// Orchestrator producing reference to readable file.
     private let orchestrator: FilesOrchestrator
     private let encryption: DataEncryption?
@@ -18,11 +16,9 @@ internal final class FileReader: Reader {
     private var filesRead: Set<String> = []
 
     init(
-        dataFormat: DataFormat,
         orchestrator: FilesOrchestrator,
         encryption: DataEncryption? = nil
     ) {
-        self.dataFormat = dataFormat
         self.orchestrator = orchestrator
         self.encryption = encryption
     }
@@ -35,9 +31,8 @@ internal final class FileReader: Reader {
         }
 
         do {
-            let fileData = try decode(data: file.read())
-            let batchData = dataFormat.prefixData + fileData + dataFormat.suffixData
-            return Batch(data: batchData, file: file)
+            let payloads = try decode(data: file.read())
+            return Batch(payloads: payloads, file: file)
         } catch {
             DD.telemetry.error("Failed to read data from file", error: error)
             return nil
@@ -52,7 +47,7 @@ internal final class FileReader: Reader {
     ///
     /// - Parameter data: The data to decode.
     /// - Returns: The decoded and formatted data.
-    private func decode(data: Data) throws -> Data {
+    private func decode(data: Data) throws -> [Data] {
         let reader = DataBlockReader(data: data)
 
         var failure: String? = nil
@@ -77,10 +72,6 @@ internal final class FileReader: Reader {
                     return nil
                 }
             }
-            // concat data
-            .reduce(Data()) { $0 + $1 + [dataFormat.separatorByte] }
-            // drop last separator
-            .dropLast()
     }
 
     /// Decrypts data if encryption is available.

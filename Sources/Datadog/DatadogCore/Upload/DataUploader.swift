@@ -8,7 +8,7 @@ import Foundation
 
 /// A type that performs data uploads.
 internal protocol DataUploaderType {
-    func upload(data: Data) -> DataUploadStatus
+    func upload(payloads: [Data], context: DatadogV1Context) -> DataUploadStatus
 }
 
 /// Synchronously uploads data to server using `HTTPClient`.
@@ -17,17 +17,19 @@ internal final class DataUploader: DataUploaderType {
     private static let unreachableUploadStatus = DataUploadStatus(needsRetry: false, userDebugDescription: "", error: nil)
 
     private let httpClient: HTTPClient
-    private let requestBuilder: RequestBuilder
+    private let requestBuilder: FeatureRequestBuilder
 
-    init(httpClient: HTTPClient, requestBuilder: RequestBuilder) {
+    init(httpClient: HTTPClient, requestBuilder: FeatureRequestBuilder) {
         self.httpClient = httpClient
         self.requestBuilder = requestBuilder
     }
 
     /// Uploads data synchronously (will block current thread) and returns the upload status.
     /// Uses timeout configured for `HTTPClient`.
-    func upload(data: Data) -> DataUploadStatus {
-        let (request, ddRequestID) = createRequest(with: data)
+    func upload(payloads: [Data], context: DatadogV1Context) -> DataUploadStatus {
+        let request = requestBuilder.request(for: payloads, with: context)
+        let requestID = request.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.ddRequestIDHeaderField)
+
         var uploadStatus: DataUploadStatus?
 
         let semaphore = DispatchSemaphore(value: 0)
@@ -35,7 +37,7 @@ internal final class DataUploader: DataUploaderType {
         httpClient.send(request: request) { result in
             switch result {
             case .success(let httpResponse):
-                uploadStatus = DataUploadStatus(httpResponse: httpResponse, ddRequestID: ddRequestID)
+                uploadStatus = DataUploadStatus(httpResponse: httpResponse, ddRequestID: requestID)
             case .failure(let error):
                 uploadStatus = DataUploadStatus(networkError: error)
             }
@@ -46,11 +48,5 @@ internal final class DataUploader: DataUploaderType {
         _ = semaphore.wait(timeout: .distantFuture)
 
         return uploadStatus ?? DataUploader.unreachableUploadStatus
-    }
-
-    private func createRequest(with data: Data) -> (request: URLRequest, ddRequestID: String?) {
-        let request = requestBuilder.uploadRequest(with: data)
-        let requestID = request.value(forHTTPHeaderField: RequestBuilder.HTTPHeader.ddRequestIDHeaderField)
-        return (request: request, ddRequestID: requestID)
     }
 }

@@ -23,7 +23,6 @@ class LoggingStorageBenchmarkTests: XCTestCase {
         let storage = FeatureStorage(
             featureName: "logging",
             queue: queue,
-            dataFormat: DataFormat(prefix: "[", suffix: "]", separator: ","),
             directories: .init(
                 deprecated: [],
                 unauthorized: directory,

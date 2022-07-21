@@ -110,7 +110,7 @@ extension DatadogCore: DatadogV1CoreProtocol {
     /// - Returns: an instance of V1 feature
     func create<Feature: V1FeatureInitializable>(
         storageConfiguration: FeatureStorageConfiguration,
-        uploadConfiguration: FeatureUploadConfiguration,
+        uploadConfiguration: FeatureV1UploadConfiguration,
         featureSpecificConfiguration: Feature.Configuration
     ) throws -> Feature {
         let featureDirectories = try directory.getFeatureDirectories(configuration: storageConfiguration)
@@ -118,15 +118,15 @@ extension DatadogCore: DatadogV1CoreProtocol {
         let storage = FeatureStorage(
             featureName: storageConfiguration.featureName,
             queue: readWriteQueue,
-            dataFormat: uploadConfiguration.payloadFormat,
             directories: featureDirectories,
             commonDependencies: dependencies
         )
 
         let upload = FeatureUpload(
             featureName: uploadConfiguration.featureName,
-            storage: storage,
-            requestBuilder: uploadConfiguration.createRequestBuilder(v1Context),
+            context: v1Context,
+            fileReader: storage.reader,
+            requestBuilder: uploadConfiguration.requestBuilder,
             commonDependencies: dependencies
         )
 
@@ -147,7 +147,7 @@ extension DatadogCore: DatadogV1CoreProtocol {
         return v1Features[key] as? T
     }
 
-    func scope<T>(for featureType: T.Type) -> V1FeatureScope? {
+    func scope<T>(for featureType: T.Type) -> FeatureV1Scope? {
         let key = String(describing: T.self)
 
         guard let feature = v1Features[key] as? V1Feature else {
@@ -176,7 +176,7 @@ internal protocol V1Feature {
 ///
 /// The execution block is currently running in `sync`, this will change once the
 /// context is provided on it's own queue.
-internal struct DatadogCoreFeatureScope: V1FeatureScope {
+internal struct DatadogCoreFeatureScope: FeatureV1Scope {
     let context: DatadogV1Context
     let storage: FeatureStorage
 

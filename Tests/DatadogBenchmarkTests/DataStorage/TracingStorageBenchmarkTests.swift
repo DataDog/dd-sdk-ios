@@ -23,7 +23,6 @@ class TracingStorageBenchmarkTests: XCTestCase {
         let storage = FeatureStorage(
             featureName: "tracing",
             queue: queue,
-            dataFormat: DataFormat(prefix: "", suffix: "", separator: "\n"),
             directories: .init(
                 deprecated: [],
                 unauthorized: directory,

@@ -121,8 +121,8 @@ class DataUploadConditionsTests: XCTestCase {
         file: StaticString = #file,
         line: UInt = #line
     ) {
-        let conditions = DataUploadConditions(batteryStatus: battery, networkConnectionInfo: network)
-        let canPerformUpload = conditions.blockersForUpload().isEmpty
+        let conditions = DataUploadConditions(batteryStatus: battery)
+        let canPerformUpload = conditions.blockersForUpload(with: network.current).isEmpty
         XCTAssertEqual(
             value,
             canPerformUpload,

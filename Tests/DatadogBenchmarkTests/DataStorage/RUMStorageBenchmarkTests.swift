@@ -23,7 +23,6 @@ class RUMStorageBenchmarkTests: XCTestCase {
         let storage = FeatureStorage(
             featureName: "rum",
             queue: queue,
-            dataFormat: DataFormat(prefix: "", suffix: "", separator: "\n"),
             directories: .init(
                 deprecated: [],
                 unauthorized: directory,
