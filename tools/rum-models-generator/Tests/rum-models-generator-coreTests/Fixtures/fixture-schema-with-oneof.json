@@ -1,0 +1,52 @@
+{
+    "title": "Schema title",
+    "description": "Schema description",
+    "type": "object",
+    "oneOf": [
+        {
+            "title": "A",
+            "description": "A description",
+            "type": "object",
+            "properties": {
+                "propertyInA": {
+                    "type": "string"
+                }
+            }
+        },
+        {
+            "title": "B",
+            "description": "B description",
+            "type": "object",
+            "properties": {
+                "propertyInB": {
+                    "type": "integer"
+                }
+            }
+        },
+        {
+            "title": "C",
+            "description": "C description",
+            "type": "object",
+            "oneOf": [
+                {
+                    "title": "C1",
+                    "type": "object",
+                    "properties": {
+                        "propertyInC1": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                {
+                    "title": "C2",
+                    "type": "object",
+                    "properties": {
+                        "propertyInC2": {
+                            "type": "string"
+                        }
+                    }
+                },
+            ]
+        }
+    ]
+}

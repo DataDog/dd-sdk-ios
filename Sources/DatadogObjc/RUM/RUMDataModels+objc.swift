@@ -52,6 +52,10 @@ public class DDRUMActionEvent: NSObject {
         root.swiftModel.device != nil ? DDRUMActionEventRUMDevice(root: root) : nil
     }
 
+    @objc public var display: DDRUMActionEventRUMDisplay? {
+        root.swiftModel.display != nil ? DDRUMActionEventRUMDisplay(root: root) : nil
+    }
+
     @objc public var os: DDRUMActionEventRUMOperatingSystem? {
         root.swiftModel.os != nil ? DDRUMActionEventRUMOperatingSystem(root: root) : nil
     }
@@ -560,6 +564,36 @@ public enum DDRUMActionEventRUMDeviceRUMDeviceType: Int {
 }
 
 @objc
+public class DDRUMActionEventRUMDisplay: NSObject {
+    internal let root: DDRUMActionEvent
+
+    internal init(root: DDRUMActionEvent) {
+        self.root = root
+    }
+
+    @objc public var viewport: DDRUMActionEventRUMDisplayViewport? {
+        root.swiftModel.display!.viewport != nil ? DDRUMActionEventRUMDisplayViewport(root: root) : nil
+    }
+}
+
+@objc
+public class DDRUMActionEventRUMDisplayViewport: NSObject {
+    internal let root: DDRUMActionEvent
+
+    internal init(root: DDRUMActionEvent) {
+        self.root = root
+    }
+
+    @objc public var height: NSNumber {
+        root.swiftModel.display!.viewport!.height as NSNumber
+    }
+
+    @objc public var width: NSNumber {
+        root.swiftModel.display!.viewport!.width as NSNumber
+    }
+}
+
+@objc
 public class DDRUMActionEventRUMOperatingSystem: NSObject {
     internal let root: DDRUMActionEvent
 
@@ -775,6 +809,10 @@ public class DDRUMErrorEvent: NSObject {
         root.swiftModel.device != nil ? DDRUMErrorEventRUMDevice(root: root) : nil
     }
 
+    @objc public var display: DDRUMErrorEventRUMDisplay? {
+        root.swiftModel.display != nil ? DDRUMErrorEventRUMDisplay(root: root) : nil
+    }
+
     @objc public var error: DDRUMErrorEventError {
         DDRUMErrorEventError(root: root)
     }
@@ -878,8 +916,31 @@ public class DDRUMErrorEventAction: NSObject {
         self.root = root
     }
 
-    @objc public var id: String {
-        root.swiftModel.action!.id
+    @objc public var id: DDRUMErrorEventActionRUMActionID {
+        DDRUMErrorEventActionRUMActionID(root: root)
+    }
+}
+
+@objc
+public class DDRUMErrorEventActionRUMActionID: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var string: String? {
+        guard case .string(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
+    }
+
+    @objc public var stringsArray: [String]? {
+        guard case .stringsArray(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
     }
 }
 
@@ -1082,6 +1143,36 @@ public enum DDRUMErrorEventRUMDeviceRUMDeviceType: Int {
     case gamingConsole
     case bot
     case other
+}
+
+@objc
+public class DDRUMErrorEventRUMDisplay: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var viewport: DDRUMErrorEventRUMDisplayViewport? {
+        root.swiftModel.display!.viewport != nil ? DDRUMErrorEventRUMDisplayViewport(root: root) : nil
+    }
+}
+
+@objc
+public class DDRUMErrorEventRUMDisplayViewport: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var height: NSNumber {
+        root.swiftModel.display!.viewport!.height as NSNumber
+    }
+
+    @objc public var width: NSNumber {
+        root.swiftModel.display!.viewport!.width as NSNumber
+    }
 }
 
 @objc
@@ -1582,6 +1673,10 @@ public class DDRUMLongTaskEvent: NSObject {
         root.swiftModel.device != nil ? DDRUMLongTaskEventRUMDevice(root: root) : nil
     }
 
+    @objc public var display: DDRUMLongTaskEventRUMDisplay? {
+        root.swiftModel.display != nil ? DDRUMLongTaskEventRUMDisplay(root: root) : nil
+    }
+
     @objc public var longTask: DDRUMLongTaskEventLongTask {
         DDRUMLongTaskEventLongTask(root: root)
     }
@@ -1685,8 +1780,31 @@ public class DDRUMLongTaskEventAction: NSObject {
         self.root = root
     }
 
-    @objc public var id: String {
-        root.swiftModel.action!.id
+    @objc public var id: DDRUMLongTaskEventActionRUMActionID {
+        DDRUMLongTaskEventActionRUMActionID(root: root)
+    }
+}
+
+@objc
+public class DDRUMLongTaskEventActionRUMActionID: NSObject {
+    internal let root: DDRUMLongTaskEvent
+
+    internal init(root: DDRUMLongTaskEvent) {
+        self.root = root
+    }
+
+    @objc public var string: String? {
+        guard case .string(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
+    }
+
+    @objc public var stringsArray: [String]? {
+        guard case .stringsArray(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
     }
 }
 
@@ -1889,6 +2007,36 @@ public enum DDRUMLongTaskEventRUMDeviceRUMDeviceType: Int {
     case gamingConsole
     case bot
     case other
+}
+
+@objc
+public class DDRUMLongTaskEventRUMDisplay: NSObject {
+    internal let root: DDRUMLongTaskEvent
+
+    internal init(root: DDRUMLongTaskEvent) {
+        self.root = root
+    }
+
+    @objc public var viewport: DDRUMLongTaskEventRUMDisplayViewport? {
+        root.swiftModel.display!.viewport != nil ? DDRUMLongTaskEventRUMDisplayViewport(root: root) : nil
+    }
+}
+
+@objc
+public class DDRUMLongTaskEventRUMDisplayViewport: NSObject {
+    internal let root: DDRUMLongTaskEvent
+
+    internal init(root: DDRUMLongTaskEvent) {
+        self.root = root
+    }
+
+    @objc public var height: NSNumber {
+        root.swiftModel.display!.viewport!.height as NSNumber
+    }
+
+    @objc public var width: NSNumber {
+        root.swiftModel.display!.viewport!.width as NSNumber
+    }
 }
 
 @objc
@@ -2124,6 +2272,10 @@ public class DDRUMResourceEvent: NSObject {
         root.swiftModel.device != nil ? DDRUMResourceEventRUMDevice(root: root) : nil
     }
 
+    @objc public var display: DDRUMResourceEventRUMDisplay? {
+        root.swiftModel.display != nil ? DDRUMResourceEventRUMDisplay(root: root) : nil
+    }
+
     @objc public var os: DDRUMResourceEventRUMOperatingSystem? {
         root.swiftModel.os != nil ? DDRUMResourceEventRUMOperatingSystem(root: root) : nil
     }
@@ -2235,8 +2387,31 @@ public class DDRUMResourceEventAction: NSObject {
         self.root = root
     }
 
-    @objc public var id: String {
-        root.swiftModel.action!.id
+    @objc public var id: DDRUMResourceEventActionRUMActionID {
+        DDRUMResourceEventActionRUMActionID(root: root)
+    }
+}
+
+@objc
+public class DDRUMResourceEventActionRUMActionID: NSObject {
+    internal let root: DDRUMResourceEvent
+
+    internal init(root: DDRUMResourceEvent) {
+        self.root = root
+    }
+
+    @objc public var string: String? {
+        guard case .string(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
+    }
+
+    @objc public var stringsArray: [String]? {
+        guard case .stringsArray(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
     }
 }
 
@@ -2439,6 +2614,36 @@ public enum DDRUMResourceEventRUMDeviceRUMDeviceType: Int {
     case gamingConsole
     case bot
     case other
+}
+
+@objc
+public class DDRUMResourceEventRUMDisplay: NSObject {
+    internal let root: DDRUMResourceEvent
+
+    internal init(root: DDRUMResourceEvent) {
+        self.root = root
+    }
+
+    @objc public var viewport: DDRUMResourceEventRUMDisplayViewport? {
+        root.swiftModel.display!.viewport != nil ? DDRUMResourceEventRUMDisplayViewport(root: root) : nil
+    }
+}
+
+@objc
+public class DDRUMResourceEventRUMDisplayViewport: NSObject {
+    internal let root: DDRUMResourceEvent
+
+    internal init(root: DDRUMResourceEvent) {
+        self.root = root
+    }
+
+    @objc public var height: NSNumber {
+        root.swiftModel.display!.viewport!.height as NSNumber
+    }
+
+    @objc public var width: NSNumber {
+        root.swiftModel.display!.viewport!.width as NSNumber
+    }
 }
 
 @objc
@@ -2979,6 +3184,10 @@ public class DDRUMViewEvent: NSObject {
         root.swiftModel.device != nil ? DDRUMViewEventRUMDevice(root: root) : nil
     }
 
+    @objc public var display: DDRUMViewEventRUMDisplay? {
+        root.swiftModel.display != nil ? DDRUMViewEventRUMDisplay(root: root) : nil
+    }
+
     @objc public var os: DDRUMViewEventRUMOperatingSystem? {
         root.swiftModel.os != nil ? DDRUMViewEventRUMOperatingSystem(root: root) : nil
     }
@@ -3273,6 +3482,36 @@ public enum DDRUMViewEventRUMDeviceRUMDeviceType: Int {
     case gamingConsole
     case bot
     case other
+}
+
+@objc
+public class DDRUMViewEventRUMDisplay: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var viewport: DDRUMViewEventRUMDisplayViewport? {
+        root.swiftModel.display!.viewport != nil ? DDRUMViewEventRUMDisplayViewport(root: root) : nil
+    }
+}
+
+@objc
+public class DDRUMViewEventRUMDisplayViewport: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var height: NSNumber {
+        root.swiftModel.display!.viewport!.height as NSNumber
+    }
+
+    @objc public var width: NSNumber {
+        root.swiftModel.display!.viewport!.width as NSNumber
+    }
 }
 
 @objc
@@ -3737,6 +3976,10 @@ public class DDTelemetryErrorEvent: NSObject {
         root.swiftModel.date as NSNumber
     }
 
+    @objc public var experimentalFeatures: [String]? {
+        root.swiftModel.experimentalFeatures
+    }
+
     @objc public var service: String {
         root.swiftModel.service
     }
@@ -3923,6 +4166,10 @@ public class DDTelemetryDebugEvent: NSObject {
         root.swiftModel.date as NSNumber
     }
 
+    @objc public var experimentalFeatures: [String]? {
+        root.swiftModel.experimentalFeatures
+    }
+
     @objc public var service: String {
         root.swiftModel.service
     }
@@ -4065,4 +4312,4 @@ public class DDTelemetryDebugEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/d5a943ad55117da57d0b87f9af417ccbcbd49daf
+// Generated from https://github.com/DataDog/rum-events-format/tree/39ff6329b9ab1f72da47fd9a46bfdde454e1fda9

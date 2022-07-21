@@ -198,23 +198,6 @@ internal class JSONSchema: Decodable {
         }
     }
 
-    // MARK: - Resolving Subschemas
-
-    /// Find all sub-schemas recursively, including self for types `object` and `array`.
-    var subschemas: [JSONSchema] {
-        let root: [JSONSchema]
-
-        if type == .object, let props = properties, !props.isEmpty {
-            root = [self]
-        } else if type == .array, let items = items {
-            root = [items]
-        } else {
-            root = []
-        }
-
-        return oneOf?.reduce(root) { $0 + $1.subschemas } ?? root
-    }
-
     // MARK: - Schemas Merging
 
     /// Merges all attributes of `otherSchema` into this schema.

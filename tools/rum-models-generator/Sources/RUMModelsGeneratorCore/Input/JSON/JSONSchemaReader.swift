@@ -24,9 +24,4 @@ internal class JSONSchemaReader {
 
         return schema
     }
-
-    func readAll(from file: URL) throws -> [JSONSchema] {
-        let schema = try read(file)
-        return schema.subschemas
-    }
 }

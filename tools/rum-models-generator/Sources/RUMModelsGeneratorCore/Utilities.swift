@@ -9,23 +9,31 @@ import Foundation
 internal struct Exception: Error, CustomStringConvertible {
     let description: String
 
-    init(_ description: String) {
-        self.description = description
+    init(
+        _ reason: String,
+        file: StaticString,
+        line: UInt
+    ) {
+        // `file` includes slash-separated path, take only the last component:
+        let fileName = "\(file)".split(separator: "/").last ?? "\(file)"
+        let sourceReference = "🧭 Thrown in \(fileName):\(line)"
+
+        self.description = "\(reason)\n\n\(sourceReference)"
     }
 
-    static func inconsistency(_ reason: String) -> Exception {
-        Exception("🐞 Inconsistency: \"\(reason)\".")
+    static func inconsistency(_ reason: String, file: StaticString = #fileID, line: UInt = #line) -> Exception {
+        Exception("🐞 Inconsistency: \"\(reason)\".", file: file, line: line)
     }
 
-    static func illegal(_ operation: String) -> Exception {
-        Exception("⛔️ Illegal operation: \"\(operation)\".")
+    static func illegal(_ operation: String, file: StaticString = #fileID, line: UInt = #line) -> Exception {
+        Exception("⛔️ Illegal operation: \"\(operation)\".", file: file, line: line)
     }
 
-    static func unimplemented(_ operation: String) -> Exception {
-        Exception("🚧 Unimplemented: \"\(operation)\".")
+    static func unimplemented(_ operation: String, file: StaticString = #fileID, line: UInt = #line) -> Exception {
+        Exception("🚧 Unimplemented: \"\(operation)\".", file: file, line: line)
     }
 
-    static func moreContext(_ moreContext: String, for error: Error) -> Exception {
+    static func moreContext(_ moreContext: String, for error: Error, file: StaticString = #fileID, line: UInt = #line) -> Exception {
         if let decodingError = error as? DecodingError {
             return Exception(
                 """
@@ -35,7 +43,9 @@ internal struct Exception: Error, CustomStringConvertible {
                 🔎 Pretty error: \(pretty(error: decodingError))
 
                 ⚙️ Original error: \(decodingError)
-                """
+                """,
+                file: file,
+                line: line
             )
         } else {
             return Exception(
@@ -44,7 +54,9 @@ internal struct Exception: Error, CustomStringConvertible {
                 🛑 \(moreContext)
 
                 ⚙️ Original error: \(error)
-                """
+                """,
+                file: file,
+                line: line
             )
         }
     }

@@ -409,7 +409,7 @@ class RUMMonitorTests: XCTestCase {
         }
         var userActionID: String?
         try rumEventMatchers[2].model(ofType: RUMResourceEvent.self) { rumModel in
-            userActionID = rumModel.action?.id
+            userActionID = rumModel.action?.id.stringValue
             XCTAssertEqual(rumModel.resource.statusCode, 200)
             XCTAssertEqual(rumModel.resource.method, .get)
         }

@@ -30,3 +30,9 @@ extension SwiftEnum: SwiftReflectable {
         return conformance.contains { $0.conforms(to: swiftProtocol) }
     }
 }
+
+extension SwiftAssociatedTypeEnum: SwiftReflectable {
+    func conforms(to swiftProtocol: SwiftProtocol) -> Bool {
+        return conformance.contains { $0.conforms(to: swiftProtocol) }
+    }
+}

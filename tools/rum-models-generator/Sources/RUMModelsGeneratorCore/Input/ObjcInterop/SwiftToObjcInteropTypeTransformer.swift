@@ -119,6 +119,19 @@ internal class SwiftToObjcInteropTypeTransformer {
                             bridgedSwiftEnum: swiftEnum
                         )
                         return propertyWrapper
+                    case let swiftAssociatedTypeEnum as SwiftAssociatedTypeEnum:
+                        let propertyWrapper = ObjcInteropPropertyWrapperAccessingNestedAssociatedTypeEnum(
+                            owner: objcClass,
+                            swiftProperty: swiftProperty
+                        )
+                        propertyWrapper.objcNestedAssociatedTypeEnum = ObjcInteropReferencedAssociatedTypeEnum(
+                            owner: propertyWrapper,
+                            bridgedSwiftAssociatedTypeEnum: swiftAssociatedTypeEnum,
+                            associatedObjcInteropTypes: try swiftAssociatedTypeEnum.cases.map { swiftEnumCase in
+                                try objcInteropType(for: swiftEnumCase.associatedType)
+                            }
+                        )
+                        return propertyWrapper
                     default:
                         throw Exception.illegal("Illegal reference type: \(swifTypeReference)")
                     }

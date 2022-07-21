@@ -41,6 +41,7 @@ internal struct SwiftDictionary: SwiftType {
     var value: SwiftPrimitiveType
 }
 
+/// An `enum` with raw-type cases.
 internal struct SwiftEnum: SwiftType {
     struct Case: SwiftType, SwiftPropertyDefaultValue {
         enum RawValue {
@@ -49,6 +50,19 @@ internal struct SwiftEnum: SwiftType {
         }
         var label: String
         var rawValue: RawValue
+    }
+
+    var name: String
+    var comment: String?
+    var cases: [Case]
+    var conformance: [SwiftProtocol]
+}
+
+/// An `enum` with associated-type cases.
+internal struct SwiftAssociatedTypeEnum: SwiftType {
+    struct Case: SwiftType, SwiftPropertyDefaultValue {
+        var label: String
+        var associatedType: SwiftType
     }
 
     var name: String
@@ -115,7 +129,8 @@ extension SwiftType {
     var typeName: String? {
         let `struct` = self as? SwiftStruct
         let `enum` = self as? SwiftEnum
-        return `struct`?.name ?? `enum`?.name
+        let associatedTypeEnum = self as? SwiftAssociatedTypeEnum
+        return `struct`?.name ?? `enum`?.name ?? associatedTypeEnum?.name
     }
 }
 

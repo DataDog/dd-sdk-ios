@@ -18,6 +18,8 @@ internal class RUMSwiftTypeTransformer {
         "RUMCITest",
         "RUMDevice",
         "RUMOperatingSystem",
+        "RUMDisplay",
+        "RUMActionID",
     ]
 
     /// `RUMDataModel` protocol, implemented by all RUM models.
@@ -31,7 +33,7 @@ internal class RUMSwiftTypeTransformer {
         sharedRootTypes = []
 
         precondition(context.current == nil)
-        let transformed = try types.map { try transformAny(type: $0) }
+        let transformed = try types.map { try transformAny(swiftType: $0) }
         precondition(context.current == nil)
 
         return transformed + sharedRootTypes
@@ -39,11 +41,11 @@ internal class RUMSwiftTypeTransformer {
 
     // MARK: - Type Transformations
 
-    private func transformAny(type: SwiftType) throws -> SwiftType {
-        context.enter(type)
+    private func transformAny(swiftType: SwiftType) throws -> SwiftType {
+        context.enter(swiftType)
         defer { context.leave() }
 
-        switch type {
+        switch swiftType {
         case let primitive as SwiftPrimitiveType:
             return transform(primitive: primitive)
         case let array as SwiftArray:
@@ -53,11 +55,14 @@ internal class RUMSwiftTypeTransformer {
         case let `enum` as SwiftEnum:
             let transformed = transform(enum: `enum`)
             return isSharedType(transformed) ? try replaceWithSharedTypeReference(transformed) : transformed
+        case let associatedTypeEnum as SwiftAssociatedTypeEnum:
+            let transformed = transform(associatedTypeEnum: associatedTypeEnum)
+            return isSharedType(transformed) ? try replaceWithSharedTypeReference(transformed) : transformed
         case let `struct` as SwiftStruct:
             let transformed = try transform(struct: `struct`)
             return isSharedType(transformed) ? try replaceWithSharedTypeReference(transformed) : transformed
         default:
-            return type
+            throw Exception.unimplemented("RUM transformation is not implemented for \(type(of: swiftType))")
         }
     }
 
@@ -77,7 +82,7 @@ internal class RUMSwiftTypeTransformer {
 
     private func transform(array: SwiftArray) throws -> SwiftArray {
         var array = array
-        array.element = try transformAny(type: array.element)
+        array.element = try transformAny(swiftType: array.element)
         return array
     }
 
@@ -95,6 +100,20 @@ internal class RUMSwiftTypeTransformer {
         return `enum`
     }
 
+    private func transform(associatedTypeEnum: SwiftAssociatedTypeEnum) -> SwiftAssociatedTypeEnum {
+        func transform(enumCase: SwiftAssociatedTypeEnum.Case) -> SwiftAssociatedTypeEnum.Case {
+            var enumCase = enumCase
+            enumCase.label = format(enumCaseName: enumCase.label)
+            return enumCase
+        }
+
+        var associatedTypeEnum = associatedTypeEnum
+        associatedTypeEnum.name = format(enumName: associatedTypeEnum.name)
+        associatedTypeEnum.cases = associatedTypeEnum.cases.map { transform(enumCase: $0) }
+        associatedTypeEnum.conformance = [codableProtocol] // Conform all enums to `Codable`
+        return associatedTypeEnum
+    }
+
     private func transform(`struct`: SwiftStruct) throws -> SwiftStruct {
         func transform(structProperty: SwiftStruct.Property) throws -> SwiftStruct.Property {
             func transform(defaultValue: SwiftPropertyDefaultValue) -> SwiftPropertyDefaultValue {
@@ -108,7 +127,7 @@ internal class RUMSwiftTypeTransformer {
 
             var structProperty = structProperty
             structProperty.name = format(propertyName: structProperty.name)
-            structProperty.type = try transformAny(type: structProperty.type)
+            structProperty.type = try transformAny(swiftType: structProperty.type)
             structProperty.defaultValue = structProperty.defaultValue.ifNotNil { transform(defaultValue: $0) }
             return structProperty
         }
@@ -196,6 +215,18 @@ internal class RUMSwiftTypeTransformer {
 
         if fixedName == "OS" {
             fixedName = "RUMOperatingSystem"
+        }
+
+        if fixedName == "Display" {
+            fixedName = "RUMDisplay"
+        }
+
+        // Since https://github.com/DataDog/rum-events-format/pull/57 `action.id` can be either
+        // single `String` or an array of `[String]`. This is handled by generating Swift enum with
+        // two cases and different associated types. To not duplicate generated code in each nested
+        // context we generate single root type: `RUMActionID`.
+        if fixedName == "ID", let parentStructName = (context.parent as? SwiftStruct)?.name, parentStructName == "action" {
+            fixedName = "RUMActionID"
         }
 
         return fixedName
