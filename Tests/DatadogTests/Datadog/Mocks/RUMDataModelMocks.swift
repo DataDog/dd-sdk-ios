@@ -74,6 +74,17 @@ extension RUMActionID: RandomMockable {
     }
 }
 
+extension RUMActionID {
+    var stringValue: String? {
+        switch self {
+        case .string(let value):
+            return value
+        default:
+            return nil
+        }
+    }
+}
+
 extension RUMDevice.RUMDeviceType: RandomMockable {
     static func mockRandom() -> RUMDevice.RUMDeviceType {
         return [.mobile, .desktop, .tablet, .tv, .gamingConsole, .bot, .other].randomElement()!

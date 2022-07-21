@@ -82,6 +82,24 @@ extension ObjcInteropEnum: ObjcInteropReflectable {
     }
 }
 
+extension ObjcInteropAssociatedTypeEnum: ObjcInteropReflectable {
+    private var parentClass: ObjcInteropClass {
+        return parentProperty.owner
+    }
+
+    var objcRootClass: ObjcInteropRootClass {
+        return (parentClass as! ObjcInteropReflectable).objcRootClass
+    }
+
+    var objcTypeName: String {
+        return (parentClass as! ObjcInteropReflectable).objcTypeName + bridgedSwiftAssociatedTypeEnum.name
+    }
+
+    var swiftTypeName: String {
+        return (parentClass as! ObjcInteropReflectable).swiftTypeName + "." + bridgedSwiftAssociatedTypeEnum.name
+    }
+}
+
 extension ObjcInteropPropertyWrapper {
     /// A key-path referencing this property, e.g. if this property is called `property` and belongs to class `Bar`,
     /// stored on property named `bar` in class `Foo`, then the `keyPath` is `bar.property`.
