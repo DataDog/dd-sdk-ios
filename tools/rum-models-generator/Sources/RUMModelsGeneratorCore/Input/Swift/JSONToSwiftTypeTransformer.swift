@@ -41,7 +41,7 @@ internal class JSONToSwiftTypeTransformer {
 
         guard (jsonObjects.count + jsonOneOfs.count) == numberOfTypes else {
             let mixedTypes = rootJSONOneOfs.types.map { "\(type(of: $0))" }
-            throw Exception.unimplemented("Transforming root `JSONOneOfs` with mixed `oneOf` types is not supported (mixed types: \(mixedTypes)).", in: debuggingStack)
+            throw Exception.unimplemented("Transforming root `JSONOneOfs` with mixed `oneOf` types is not supported (mixed types: \(mixedTypes)).")
         }
 
         let transformedJSONOneOfs = try jsonOneOfs.flatMap { jsonOneOf in try transform(rootJSONOneOfs: jsonOneOf) }
