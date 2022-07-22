@@ -86,7 +86,6 @@ internal class JSONSchema: Decodable {
             if self.type == nil && self.properties != nil {
                 self.type = .object
             }
-
         } catch let keyedContainerError as DecodingError {
             // If data in this `decoder` cannot be represented as keyed container, perhaps it encodes
             // a single value. Check known schema values:
