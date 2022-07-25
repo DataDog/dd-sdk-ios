@@ -511,6 +511,10 @@ public class DDRUMActionEventRUMDevice: NSObject {
         self.root = root
     }
 
+    @objc public var architecture: String? {
+        root.swiftModel.device!.architecture
+    }
+
     @objc public var brand: String? {
         root.swiftModel.device!.brand
     }
@@ -1091,6 +1095,10 @@ public class DDRUMErrorEventRUMDevice: NSObject {
 
     internal init(root: DDRUMErrorEvent) {
         self.root = root
+    }
+
+    @objc public var architecture: String? {
+        root.swiftModel.device!.architecture
     }
 
     @objc public var brand: String? {
@@ -1957,6 +1965,10 @@ public class DDRUMLongTaskEventRUMDevice: NSObject {
         self.root = root
     }
 
+    @objc public var architecture: String? {
+        root.swiftModel.device!.architecture
+    }
+
     @objc public var brand: String? {
         root.swiftModel.device!.brand
     }
@@ -2562,6 +2574,10 @@ public class DDRUMResourceEventRUMDevice: NSObject {
 
     internal init(root: DDRUMResourceEvent) {
         self.root = root
+    }
+
+    @objc public var architecture: String? {
+        root.swiftModel.device!.architecture
     }
 
     @objc public var brand: String? {
@@ -3430,6 +3446,10 @@ public class DDRUMViewEventRUMDevice: NSObject {
 
     internal init(root: DDRUMViewEvent) {
         self.root = root
+    }
+
+    @objc public var architecture: String? {
+        root.swiftModel.device!.architecture
     }
 
     @objc public var brand: String? {
@@ -4312,4 +4332,4 @@ public class DDTelemetryDebugEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/39ff6329b9ab1f72da47fd9a46bfdde454e1fda9
+// Generated from https://github.com/DataDog/rum-events-format/tree/9e0f8b2ab26ce0e33b058d7d5d3663ab043847f5

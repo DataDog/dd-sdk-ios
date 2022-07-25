@@ -56,6 +56,7 @@ extension RUMEventAttributes: RandomMockable {
 extension RUMDevice: RandomMockable {
     static func mockRandom() -> RUMDevice {
         return .init(
+            architecture: .mockRandom(),
             brand: .mockRandom(),
             model: .mockRandom(),
             name: .mockRandom(),

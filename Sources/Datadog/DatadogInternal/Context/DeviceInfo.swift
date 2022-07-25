@@ -25,22 +25,28 @@ internal struct DeviceInfo {
     /// The version of the operating system, e.g. "15.4.1".
     let osVersion: String
 
+    /// The architecture of the device
+    let architecture: String
+
     init(
         name: String,
         model: String,
         osName: String,
-        osVersion: String
+        osVersion: String,
+        architecture: String
     ) {
         self.name = name
         self.model = model
         self.osName = osName
         self.osVersion = osVersion
+        self.architecture = architecture
     }
 }
 
 #if canImport(UIKit)
 
 import UIKit
+import MachO
 
 extension DeviceInfo {
     /// Creates device info based on UIKit description.
@@ -50,13 +56,15 @@ extension DeviceInfo {
     ///   - device: The `UIDevice` description.
     init(
         model: String,
-        device: UIDevice
+        device: UIDevice,
+        architecture: String
     ) {
         self.init(
             name: device.model,
             model: model,
             osName: device.systemName,
-            osVersion: device.systemVersion
+            osVersion: device.systemVersion,
+            architecture: architecture
         )
     }
 
@@ -69,13 +77,19 @@ extension DeviceInfo {
         processInfo: ProcessInfo = .processInfo,
         device: UIDevice = .current
     ) {
+        var architecture = "unknown"
+        if let archInfo = NXGetLocalArchInfo()?.pointee {
+            architecture = String(utf8String: archInfo.name) ?? "unknown"
+        }
+
         #if !targetEnvironment(simulator)
         // Real iOS device
         self.init(
             name: device.model,
             model: (try? Sysctl.getModel()) ?? device.model,
             osName: device.systemName,
-            osVersion: device.systemVersion
+            osVersion: device.systemVersion,
+            architecture: architecture
         )
         #else
         let model = processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] ?? device.model
@@ -84,7 +98,8 @@ extension DeviceInfo {
             name: device.model,
             model: "\(model) Simulator",
             osName: device.systemName,
-            osVersion: device.systemVersion
+            osVersion: device.systemVersion,
+            architecture: architecture
         )
         #endif
     }

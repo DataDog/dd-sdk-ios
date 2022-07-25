@@ -2125,6 +2125,9 @@ extension RUMEventAttributes {
 
 /// Device properties
 public struct RUMDevice: Codable {
+    /// The CPU architecture of the device that is reporting the error
+    public let architecture: String?
+
     /// Device marketing brand, e.g. Apple, OPPO, Xiaomi, etc.
     public let brand: String?
 
@@ -2138,6 +2141,7 @@ public struct RUMDevice: Codable {
     public let type: RUMDeviceType
 
     enum CodingKeys: String, CodingKey {
+        case architecture = "architecture"
         case brand = "brand"
         case model = "model"
         case name = "name"
@@ -2315,4 +2319,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/39ff6329b9ab1f72da47fd9a46bfdde454e1fda9
+// Generated from https://github.com/DataDog/rum-events-format/tree/9e0f8b2ab26ce0e33b058d7d5d3663ab043847f5

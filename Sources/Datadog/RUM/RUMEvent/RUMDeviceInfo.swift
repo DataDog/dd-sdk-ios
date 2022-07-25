@@ -13,6 +13,7 @@ extension RUMDevice {
 
     init(device: DeviceInfo) {
         self.init(
+            architecture: device.architecture,
             brand: device.brand,
             model: device.model,
             name: device.name,
