@@ -8,7 +8,7 @@ import Foundation
 
 /// Generates Swift code from `SwiftTypes`.
 public class SwiftPrinter: BasePrinter, CodePrinter {
-    public override init() {}
+    override public init() {}
 
     // MARK: - CodePrinter
 

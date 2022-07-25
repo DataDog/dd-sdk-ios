@@ -4,7 +4,6 @@
 * Copyright 2019-2020 Datadog, Inc.
 */
 
-
 import Difference
 import XCTest
 @testable import CodeGeneration
