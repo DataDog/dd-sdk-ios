@@ -6,6 +6,10 @@
 
 import Foundation
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 /// Feature-agnostic SDK configuration.
 internal typealias CoreConfiguration = FeaturesConfiguration.Common
 
@@ -51,21 +55,30 @@ internal final class DatadogCore {
     /// The SDK Context for V1.
     internal private(set) var v1Context: DatadogV1Context
 
+    private let contextProvider: DatadogContextProvider
+    private let userInfoPublisher = UserInfoPublisher()
+
     /// Creates a core instance.
     ///
     /// - Parameters:
-    ///   - directory: the core directory for this instance of the SDK.
-    ///   - configuration: the configuration of the SDK core.
-    ///   - dependencies: a set of dependencies used by the SDK core to power Features.
+    ///   - directory: The core directory for this instance of the SDK.
+    ///   - configuration: The configuration of the SDK core.
+    ///   - dependencies: A set of dependencies used by the SDK core to power Features.
+    ///   - v1Context: The v1 context.
+    ///   - contextProvider: The core context provider.
     init(
         directory: CoreDirectory,
         configuration: CoreConfiguration,
-        dependencies: CoreDependencies
+        dependencies: CoreDependencies,
+        v1Context: DatadogV1Context,
+        contextProvider: DatadogContextProvider
     ) {
         self.directory = directory
         self.configuration = configuration
         self.dependencies = dependencies
-        self.v1Context = DatadogV1Context(configuration: configuration, dependencies: dependencies)
+        self.v1Context = v1Context
+        self.contextProvider = contextProvider
+        self.contextProvider.subscribe(\.userInfo, to: userInfoPublisher)
     }
 
     /// Sets current user information.
@@ -83,12 +96,15 @@ internal final class DatadogCore {
         email: String? = nil,
         extraInfo: [AttributeKey: AttributeValue] = [:]
     ) {
-        dependencies.userInfoProvider.value = UserInfo(
+        let userInfo = UserInfo(
             id: id,
             name: name,
             email: email,
             extraInfo: extraInfo
         )
+
+        userInfoPublisher.current = userInfo
+        dependencies.userInfoProvider.value = userInfo
     }
 
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.
@@ -124,7 +140,7 @@ extension DatadogCore: DatadogV1CoreProtocol {
 
         let upload = FeatureUpload(
             featureName: uploadConfiguration.featureName,
-            context: v1Context,
+            contextProvider: contextProvider,
             fileReader: storage.reader,
             requestBuilder: uploadConfiguration.requestBuilder,
             commonDependencies: dependencies
@@ -186,5 +202,65 @@ internal struct DatadogCoreFeatureScope: FeatureV1Scope {
         } catch {
             DD.telemetry.error("Failed to execute feature scope", error: error)
         }
+    }
+}
+
+extension DatadogContextProvider {
+    /// Extension to create a context provider based on v1 configuration and dependencies.
+    ///
+    /// This initiliazer is necessary while migrating to v2, but this will be move up to the
+    /// configuration of the core SDK.
+    ///
+    /// - Parameters:
+    ///   - configuration: v1 configuration
+    ///   - dependencies: v1 dependencies.
+    convenience init(configuration: CoreConfiguration, dependencies: CoreDependencies) {
+        let context = DatadogContext(
+            site: configuration.site,
+            clientToken: configuration.clientToken,
+            service: configuration.serviceName,
+            env: configuration.environment,
+            version: configuration.applicationVersion,
+            source: configuration.source,
+            sdkVersion: configuration.sdkVersion,
+            ciAppOrigin: configuration.origin,
+            serverTimeOffset: .zero,
+            applicationName: configuration.applicationName,
+            applicationBundleIdentifier: configuration.applicationBundleIdentifier,
+            sdkInitDate: dependencies.sdkInitDate,
+            device: dependencies.deviceInfo,
+            isLowPowerModeEnabled: false
+        )
+
+        self.init(context: context)
+
+        subscribe(\.serverTimeOffset, to: KronosClockPublisher())
+        assign(reader: LaunchTimeReader(), to: \.launchTime)
+
+        if #available(iOS 12, tvOS 12, *) {
+            subscribe(\.networkConnectionInfo, to: NWPathMonitorPublisher())
+        } else {
+            assign(reader: SCNetworkReachabilityReader(), to: \.networkConnectionInfo)
+        }
+
+        #if os(iOS)
+        if #available(iOS 12, *) {
+            subscribe(\.carrierInfo, to: iOS12CarrierInfoPublisher())
+        } else {
+            assign(reader: iOS11CarrierInfoReader(), to: \.carrierInfo)
+        }
+        #endif
+
+        #if os(iOS) && !targetEnvironment(simulator)
+        assign(reader: BatteryStatusReader(), to: \.batteryStatus)
+        #endif
+
+        #if os(iOS) || os(tvOS)
+        DispatchQueue.main.async {
+            // must be call on the main thread to read `UIApplication.State`
+            let applicationStatePublisher = ApplicationStatePublisher(dateProvider: dependencies.dateProvider)
+            self.subscribe(\.applicationStateHistory, to: applicationStatePublisher)
+        }
+        #endif
     }
 }

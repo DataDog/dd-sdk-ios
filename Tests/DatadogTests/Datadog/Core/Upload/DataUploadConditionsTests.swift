@@ -14,32 +14,25 @@ class DataUploadConditionsTests: XCTestCase {
         `repeat`(times: 100) {
             assert(
                 canPerformUploadReturns: true,
-                forBattery: .mockWith(
-                    status: BatteryStatusV1(
-                        state: .mockRandom(), level: Constants.minBatteryLevel + 0.01, isLowPowerModeEnabled: false
-                    )
+                forBattery: BatteryStatus(
+                    state: .mockRandom(), level: Constants.minBatteryLevel + 0.01
                 ),
-                forNetwork: .mockWith(
-                    networkConnectionInfo: .mockWith(reachability: .mockRandom(within: [.yes, .maybe]))
-                )
+                isLowPowerModeEnabled: false,
+                forNetwork: .mockWith(reachability: .mockRandom(within: [.yes, .maybe]))
             )
             assert(
                 canPerformUploadReturns: true,
-                forBattery: .mockWith(
-                    status: BatteryStatusV1(
-                        state: .mockRandom(within: [.charging, .full]), level: .random(in: 0...100), isLowPowerModeEnabled: false
-                    )
+                forBattery: BatteryStatus(
+                    state: .mockRandom(within: [.charging, .full]), level: .random(in: 0...100)
                 ),
-                forNetwork: .mockWith(
-                    networkConnectionInfo: .mockWith(reachability: .mockRandom(within: [.yes, .maybe]))
-                )
+                isLowPowerModeEnabled: false,
+                forNetwork: .mockWith(reachability: .mockRandom(within: [.yes, .maybe]))
             )
             assert(
                 canPerformUploadReturns: true,
                 forBattery: nil,
-                forNetwork: .mockWith(
-                    networkConnectionInfo: .mockWith(reachability: .mockRandom(within: [.yes, .maybe]))
-                )
+                isLowPowerModeEnabled: false,
+                forNetwork: .mockWith(reachability: .mockRandom(within: [.yes, .maybe]))
             )
         }
     }
@@ -48,52 +41,41 @@ class DataUploadConditionsTests: XCTestCase {
         `repeat`(times: 100) {
             assert(
                 canPerformUploadReturns: false,
-                forBattery: .mockWith(
-                    status: BatteryStatusV1(
-                        state: .mockRandom(within: [.unplugged, .charging, .full]), level: .random(in: 0...100), isLowPowerModeEnabled: .random()
-                    )
+                forBattery: BatteryStatus(
+                    state: .mockRandom(within: [.unplugged, .charging, .full]), level: .random(in: 0...100)
                 ),
-                forNetwork: .mockWith(
-                    networkConnectionInfo: .mockWith(reachability: .no)
-                )
+                isLowPowerModeEnabled: .random(),
+                forNetwork: .mockWith(reachability: .no)
             )
             assert(
                 canPerformUploadReturns: false,
-                forBattery: .mockWith(
-                    status: BatteryStatusV1(
-                        state: .mockRandom(within: [.unplugged, .charging, .full]), level: .random(in: 0...100), isLowPowerModeEnabled: .random()
-                    )
+                forBattery: BatteryStatus(
+                    state: .mockRandom(within: [.unplugged, .charging, .full]), level: .random(in: 0...100)
                 ),
-                forNetwork: .mockWith(networkConnectionInfo: nil)
+                isLowPowerModeEnabled: .random(),
+                forNetwork: nil
             )
             assert(
                 canPerformUploadReturns: false,
-                forBattery: .mockWith(
-                    status: BatteryStatusV1(
-                        state: .mockRandom(within: [.unplugged, .charging, .full]), level: .random(in: 0...100), isLowPowerModeEnabled: true
-                    )
+                forBattery: BatteryStatus(
+                    state: .mockRandom(within: [.unplugged, .charging, .full]), level: .random(in: 0...100)
                 ),
-                forNetwork: .mockWith(
-                    networkConnectionInfo: .mockWith(reachability: .mockRandom())
-                )
+                isLowPowerModeEnabled: true,
+                forNetwork: .mockWith(reachability: .mockRandom())
             )
             assert(
                 canPerformUploadReturns: false,
-                forBattery: .mockWith(
-                    status: BatteryStatusV1(
-                        state: .unplugged, level: Constants.minBatteryLevel - 0.01, isLowPowerModeEnabled: .random()
-                    )
+                forBattery: BatteryStatus(
+                    state: .unplugged, level: Constants.minBatteryLevel - 0.01
                 ),
-                forNetwork: .mockWith(
-                    networkConnectionInfo: .mockWith(reachability: .mockRandom())
-                )
+                isLowPowerModeEnabled: .random(),
+                forNetwork: .mockWith(reachability: .mockRandom())
             )
             assert(
                 canPerformUploadReturns: false,
                 forBattery: nil,
-                forNetwork: .mockWith(
-                    networkConnectionInfo: .mockWith(reachability: .no)
-                )
+                isLowPowerModeEnabled: .random(),
+                forNetwork: .mockWith(reachability: .no)
             )
         }
     }
@@ -102,31 +84,28 @@ class DataUploadConditionsTests: XCTestCase {
         `repeat`(times: 10) {
             assert(
                 canPerformUploadReturns: true,
-                forBattery: .mockWith(
-                    status: BatteryStatusV1(
-                        state: .unknown, level: .random(in: -100...100), isLowPowerModeEnabled: .random()
-                    )
-                ),
-                forNetwork: .mockWith(
-                    networkConnectionInfo: .mockWith(reachability: .mockRandom(within: [.yes, .maybe]))
-                )
+                forBattery: BatteryStatus(state: .unknown, level: .random(in: -100...100)),
+                isLowPowerModeEnabled: .random(),
+                forNetwork: .mockWith(reachability: .mockRandom(within: [.yes, .maybe]))
             )
         }
     }
 
     private func assert(
         canPerformUploadReturns value: Bool,
-        forBattery battery: BatteryStatusProviderMock?,
-        forNetwork network: NetworkConnectionInfoProviderMock,
+        forBattery battery: BatteryStatus?,
+        isLowPowerModeEnabled: Bool,
+        forNetwork network: NetworkConnectionInfo?,
         file: StaticString = #file,
         line: UInt = #line
     ) {
-        let conditions = DataUploadConditions(batteryStatus: battery)
-        let canPerformUpload = conditions.blockersForUpload(with: network.current).isEmpty
+        let context: DatadogContext = .mockWith(networkConnectionInfo: network, batteryStatus: battery, isLowPowerModeEnabled: isLowPowerModeEnabled)
+        let conditions = DataUploadConditions()
+        let canPerformUpload = conditions.blockersForUpload(with: context).isEmpty
         XCTAssertEqual(
             value,
             canPerformUpload,
-            "Expected `\(value)` but got `\(!value)` for:\n\(String(describing: battery?.current)) and\n\(String(describing: network.current))",
+            "Expected `\(value)` but got `\(!value)` for:\n\(String(describing: battery)) and\n\(String(describing: network))",
             file: file,
             line: line
         )

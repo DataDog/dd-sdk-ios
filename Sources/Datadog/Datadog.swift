@@ -189,7 +189,6 @@ public class Datadog {
             performance: configuration.common.performance,
             httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
             deviceInfo: .init(),
-            batteryStatusProvider: BatteryStatusProvider(),
             sdkInitDate: dateProvider.now,
             dateProvider: dateProvider,
             dateCorrector: dateCorrector,
@@ -205,7 +204,9 @@ public class Datadog {
         let core = DatadogCore(
             directory: try CoreDirectory(in: Directory.cache(), from: configuration.common),
             configuration: configuration.common,
-            dependencies: commonDependencies
+            dependencies: commonDependencies,
+            v1Context: DatadogV1Context(configuration: configuration.common, dependencies: commonDependencies),
+            contextProvider: DatadogContextProvider(configuration: configuration.common, dependencies: commonDependencies)
         )
 
         // First, initialize features:

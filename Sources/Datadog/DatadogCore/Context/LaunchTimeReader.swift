@@ -11,7 +11,7 @@ import _Datadog_Private
 #endif
 
 internal struct LaunchTimeReader: ContextValueReader {
-    let initialValue: LaunchTime
+    let initialValue: LaunchTime?
 
     /// Lock object to sync launch time read.
     let lock: Any
@@ -22,7 +22,7 @@ internal struct LaunchTimeReader: ContextValueReader {
         self.lock = lock
     }
 
-    func read(to receiver: inout LaunchTime) {
+    func read(to receiver: inout LaunchTime?) {
         receiver = __dd_private_objc_sync_LaunchTime(lock)
     }
 }

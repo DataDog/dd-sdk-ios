@@ -8,7 +8,7 @@ import Foundation
 
 /// Publishes the current `UserInfo` value to receiver.
 internal final class UserInfoPublisher: ContextValuePublisher {
-    let initialValue: UserInfo = .empty
+    let initialValue: UserInfo? = .empty
 
     private var receiver: ContextValueReceiver<UserInfo>?
 
@@ -16,7 +16,7 @@ internal final class UserInfoPublisher: ContextValuePublisher {
         didSet { receiver?(current) }
     }
 
-    func publish(to receiver: @escaping ContextValueReceiver<UserInfo>) {
+    func publish(to receiver: @escaping ContextValueReceiver<UserInfo?>) {
         self.receiver = receiver
     }
 

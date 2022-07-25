@@ -26,7 +26,7 @@ internal struct FeatureRequestBuilderMock: FeatureRequestBuilder {
         self.format = format
     }
 
-    func request(for events: [Data], with context: DatadogV1Context) -> URLRequest {
+    func request(for events: [Data], with context: DatadogContext) -> URLRequest {
         let builder = URLRequestBuilder(url: url, queryItems: queryItems, headers: headers)
         let data = format.format(events)
         return builder.uploadRequest(with: data)

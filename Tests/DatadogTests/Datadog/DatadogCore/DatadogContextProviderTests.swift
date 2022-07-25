@@ -15,7 +15,7 @@ class DatadogContextProviderTests: XCTestCase {
     func testPublisherPropagation() throws {
         // Given
         let serverOffsetPublisher = ContextValuePublisherMock<TimeInterval>(initialValue: 0)
-        let networkConnectionInfoPublisher = ContextValuePublisherMock<NetworkConnectionInfo>(initialValue: .mockAny())
+        let networkConnectionInfoPublisher = ContextValuePublisherMock<NetworkConnectionInfo?>()
         let carrierInfoPublisher = ContextValuePublisherMock<CarrierInfo?>()
 
         let provider = DatadogContextProvider(context: context)
@@ -34,7 +34,7 @@ class DatadogContextProviderTests: XCTestCase {
         carrierInfoPublisher.value = carrierInfo
 
         // Then
-        let context = try provider.read()
+        let context = provider.read()
         XCTAssertEqual(context.serverTimeOffset, serverTimeOffset)
         XCTAssertEqual(context.networkConnectionInfo, networkConnectionInfo)
         XCTAssertEqual(context.carrierInfo, carrierInfo)
@@ -43,7 +43,7 @@ class DatadogContextProviderTests: XCTestCase {
     func testReaderPropagation() throws {
         // Given
         let serverOffsetReader = ContextValueReaderMock<TimeInterval>(initialValue: 0)
-        let networkConnectionInfoReader = ContextValueReaderMock<NetworkConnectionInfo>(initialValue: .mockAny())
+        let networkConnectionInfoReader = ContextValueReaderMock<NetworkConnectionInfo?>()
         let carrierInfoReader = ContextValueReaderMock<CarrierInfo?>()
 
         let provider = DatadogContextProvider(context: context)
@@ -62,7 +62,7 @@ class DatadogContextProviderTests: XCTestCase {
         carrierInfoReader.value = carrierInfo
 
         // Then
-        let context = try provider.read()
+        let context = provider.read()
         XCTAssertEqual(context.serverTimeOffset, serverTimeOffset)
         XCTAssertEqual(context.networkConnectionInfo, networkConnectionInfo)
         XCTAssertEqual(context.carrierInfo, carrierInfo)
@@ -72,11 +72,11 @@ class DatadogContextProviderTests: XCTestCase {
 
     func testThreadSafety() {
         let serverOffsetPublisher = ContextValuePublisherMock<TimeInterval>(initialValue: 0)
-        let networkConnectionInfoPublisher = ContextValuePublisherMock<NetworkConnectionInfo>(initialValue: .mockAny())
+        let networkConnectionInfoPublisher = ContextValuePublisherMock<NetworkConnectionInfo?>()
         let carrierInfoPublisher = ContextValuePublisherMock<CarrierInfo?>()
 
         let serverOffsetReader = ContextValueReaderMock<TimeInterval>(initialValue: 0)
-        let networkConnectionInfoReader = ContextValueReaderMock<NetworkConnectionInfo>(initialValue: .mockAny())
+        let networkConnectionInfoReader = ContextValueReaderMock<NetworkConnectionInfo?>()
         let carrierInfoReader = ContextValueReaderMock<CarrierInfo?>()
 
         let provider = DatadogContextProvider(context: context)

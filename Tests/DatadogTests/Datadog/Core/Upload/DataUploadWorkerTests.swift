@@ -53,7 +53,7 @@ class DataUploadWorkerTests: XCTestCase {
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: dataUploader,
-            context: .mockWith(dependencies: .mockWith(httpClient: httpClient)),
+            contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
             featureName: .mockAny()
@@ -84,7 +84,7 @@ class DataUploadWorkerTests: XCTestCase {
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: mockDataUploader,
-            context: .mockAny(),
+            contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockAny()
@@ -112,7 +112,7 @@ class DataUploadWorkerTests: XCTestCase {
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: mockDataUploader,
-            context: .mockAny(),
+            contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockAny()
@@ -151,7 +151,7 @@ class DataUploadWorkerTests: XCTestCase {
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: dataUploader,
-            context: .mockWith(dependencies: .mockWith(httpClient: httpClient)),
+            contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.neverUpload(),
             delay: mockDelay,
             featureName: .mockAny()
@@ -187,7 +187,7 @@ class DataUploadWorkerTests: XCTestCase {
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: dataUploader,
-            context: .mockWith(dependencies: .mockWith(httpClient: httpClient)),
+            contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: mockDelay,
             featureName: .mockAny()
@@ -223,7 +223,7 @@ class DataUploadWorkerTests: XCTestCase {
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: dataUploader,
-            context: .mockWith(dependencies: .mockWith(httpClient: httpClient)),
+            contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: mockDelay,
             featureName: .mockAny()
@@ -256,7 +256,7 @@ class DataUploadWorkerTests: XCTestCase {
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: mockDataUploader,
-            context: .mockAny(),
+            contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: randomFeatureName
@@ -300,7 +300,7 @@ class DataUploadWorkerTests: XCTestCase {
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: mockDataUploader,
-            context: .mockAny(),
+            contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockRandom()
@@ -334,7 +334,7 @@ class DataUploadWorkerTests: XCTestCase {
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: mockDataUploader,
-            context: .mockAny(),
+            contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockRandom()
@@ -370,7 +370,7 @@ class DataUploadWorkerTests: XCTestCase {
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: mockDataUploader,
-            context: .mockAny(),
+            contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockRandom()
@@ -404,7 +404,7 @@ class DataUploadWorkerTests: XCTestCase {
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: dataUploader,
-            context: .mockWith(dependencies: .mockWith(httpClient: httpClient)),
+            contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.neverUpload(),
             delay: MockDelay(),
             featureName: .mockAny()
@@ -431,7 +431,7 @@ class DataUploadWorkerTests: XCTestCase {
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: dataUploader,
-            context: .mockWith(dependencies: .mockWith(httpClient: httpClient)),
+            contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
             featureName: .mockAny()
@@ -477,18 +477,10 @@ struct MockDelay: Delay {
 
 private extension DataUploadConditions {
     static func alwaysUpload() -> DataUploadConditions {
-        return DataUploadConditions(
-            batteryStatus: BatteryStatusProviderMock.mockWith(
-                status: BatteryStatusV1(state: .full, level: 100, isLowPowerModeEnabled: false) // always upload
-            )
-        )
+        return DataUploadConditions(minBatteryLevel: 0)
     }
 
     static func neverUpload() -> DataUploadConditions {
-        return DataUploadConditions(
-            batteryStatus: BatteryStatusProviderMock.mockWith(
-                status: BatteryStatusV1(state: .unplugged, level: 0, isLowPowerModeEnabled: true) // never upload
-            )
-        )
+        return DataUploadConditions(minBatteryLevel: 1)
     }
 }

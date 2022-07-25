@@ -36,25 +36,34 @@ class RUMFeatureTests: XCTestCase {
         let randomEncryption: DataEncryption? = Bool.random() ? DataEncryptionMock() : nil
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
             configuration: .mockWith(
-                clientToken: randomClientToken,
-                applicationName: randomApplicationName,
-                applicationVersion: randomApplicationVersion,
-                serviceName: randomServiceName,
-                environment: randomEnvironmentName,
-                source: randomSource,
-                origin: randomOrigin,
-                sdkVersion: randomSDKVersion,
                 encryption: randomEncryption
             ),
             dependencies: .mockWith(
-                deviceInfo: .mockWith(
-                    name: randomDeviceName,
-                    osName: randomDeviceOSName,
-                    osVersion: randomDeviceOSVersion
+                httpClient: httpClient
+            ),
+            v1Context: .mockWith(
+                dependencies: .mockWith(httpClient: httpClient)
+            ),
+            contextProvider: .mockWith(
+                context: .mockWith(
+                    clientToken: randomClientToken,
+                    service: randomServiceName,
+                    env: randomEnvironmentName,
+                    version: randomApplicationVersion,
+                    source: randomSource,
+                    sdkVersion: randomSDKVersion,
+                    ciAppOrigin: randomOrigin,
+                    applicationName: randomApplicationName,
+                    device: .mockWith(
+                        name: randomDeviceName,
+                        osName: randomDeviceOSName,
+                        osVersion: randomDeviceOSVersion
+                    )
                 )
             )
         )
@@ -102,6 +111,7 @@ class RUMFeatureTests: XCTestCase {
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -123,8 +133,13 @@ class RUMFeatureTests: XCTestCase {
                         maxUploadDelay: 1,
                         uploadDelayChangeRate: 0
                     )
-                )
-            )
+                ),
+                httpClient: httpClient
+            ),
+            v1Context: .mockWith(
+                dependencies: .mockWith(httpClient: httpClient)
+            ),
+            contextProvider: .mockAny()
         )
 
         // Given

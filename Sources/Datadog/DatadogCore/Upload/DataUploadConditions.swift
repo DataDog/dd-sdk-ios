@@ -9,7 +9,7 @@ import Foundation
 /// Tells if data upload can be performed based on given system conditions.
 internal struct DataUploadConditions {
     enum Blocker {
-        case battery(level: Int, state: BatteryStatusV1.State)
+        case battery(level: Int, state: BatteryStatus.State)
         case lowPowerModeOn
         case networkReachability(description: String)
     }
@@ -19,47 +19,42 @@ internal struct DataUploadConditions {
         static let minBatteryLevel: Float = 0.1
     }
 
-    let batteryStatus: BatteryStatusProviderType?
+    /// Battery level above which data upload can be performed.
+    let minBatteryLevel: Float
 
-    func blockersForUpload(with network: NetworkConnectionInfo?) -> [Blocker] {
-        let batteryStatus = self.batteryStatus?.current
-        guard let network = network else {
+    init(minBatteryLevel: Float = Constants.minBatteryLevel) {
+        self.minBatteryLevel = minBatteryLevel
+    }
+
+    func blockersForUpload(with context: DatadogContext) -> [Blocker] {
+        guard let network = context.networkConnectionInfo else {
             // when `NetworkConnectionInfo` is not yet available
             return [.networkReachability(description: "unknown")]
         }
 
         let networkIsReachable = network.reachability == .yes || network.reachability == .maybe
-        let blockers: [Blocker] = networkIsReachable ? [] : [.networkReachability(description: network.reachability.rawValue)]
+        var blockers: [Blocker] = networkIsReachable ? [] : [.networkReachability(description: network.reachability.rawValue)]
 
-        if let batteryStatus = batteryStatus {
-            return blockers + blockersForUploadWith(batteryStatus)
-        }
-
-        return blockers
-    }
-
-    private func blockersForUploadWith(_ batteryStatus: BatteryStatusV1) -> [Blocker] {
-        let state = batteryStatus.state
-        if state == .unknown {
+        guard let battery = context.batteryStatus, battery.state != .unknown else {
             // Note: in RUMS-132 we got the report on `.unknown` battery state reporing `-1` battery level on iPad device
             // plugged to Mac through lightning cable. As `.unkown` may lead to other unreliable values,
             // it seems safer to arbitrary allow uploads in such case.
-            return []
+            return blockers
         }
 
-        var blockers = [Blocker]()
-        let batteryFullOrCharging = state == .full || state == .charging
-        let batteryLevelIsEnough = batteryStatus.level > Constants.minBatteryLevel
+        let batteryFullOrCharging = battery.state == .full || battery.state == .charging
+        let batteryLevelIsEnough = battery.level > minBatteryLevel
+
         if !(batteryFullOrCharging || batteryLevelIsEnough) {
             blockers.append(
                 .battery(
-                    level: Int(batteryStatus.level * 100),
-                    state: batteryStatus.state
+                    level: Int(battery.level * 100),
+                    state: battery.state
                 )
             )
         }
 
-        if batteryStatus.isLowPowerModeEnabled {
+        if context.isLowPowerModeEnabled {
             blockers.append(.lowPowerModeOn)
         }
 

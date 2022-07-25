@@ -57,20 +57,20 @@ internal struct DatadogContext {
     let device: DeviceInfo
 
     /// Current user information.
-    var userInfo: UserInfo
+    var userInfo: UserInfo?
 
-    /// Application launch time..
-    var launchTime: LaunchTime
+    /// Application launch time.
+    var launchTime: LaunchTime?
 
     /// Provides the history of app foreground / background states.
-    var applicationStateHistory: AppStateHistory
+    var applicationStateHistory: AppStateHistory?
 
     // MARK: - Device Specific
 
     /// Network information.
     ///
     /// Represents the current state of the device network connectivity and interface.
-    var networkConnectionInfo: NetworkConnectionInfo
+    var networkConnectionInfo: NetworkConnectionInfo?
 
     /// Carrier information.
     ///

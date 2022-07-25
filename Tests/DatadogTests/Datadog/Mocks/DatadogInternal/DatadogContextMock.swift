@@ -26,9 +26,9 @@ extension DatadogContext: AnyMockable {
         sdkInitDate: Date = .mockRandomInThePast(),
         device: DeviceInfo = .mockAny(),
         userInfo: UserInfo = .mockAny(),
-        launchTime: LaunchTime = .mockAny(),
-        applicationStateHistory: AppStateHistory = .mockAny(),
-        networkConnectionInfo: NetworkConnectionInfo = .mockAny(),
+        launchTime: LaunchTime? = .mockAny(),
+        applicationStateHistory: AppStateHistory? = .mockAny(),
+        networkConnectionInfo: NetworkConnectionInfo? = .mockAny(),
         carrierInfo: CarrierInfo? = .mockAny(),
         batteryStatus: BatteryStatus? = .mockAny(),
         isLowPowerModeEnabled: Bool = false

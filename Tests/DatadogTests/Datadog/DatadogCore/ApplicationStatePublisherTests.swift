@@ -32,10 +32,10 @@ class ApplicationStatePublisherTests: XCTestCase {
         // When
         let notification = supportedNotifications.randomElement()!
 
-        publisher.publish {
+        publisher.publish { state in
             // Then
             XCTAssertEqual(
-                $0.currentSnapshot.state,
+                state?.currentSnapshot.state,
                 notification.expectedState,
                 "It must record \(notification.expectedState) after receiving '\(notification.name)'"
             )
@@ -60,14 +60,14 @@ class ApplicationStatePublisherTests: XCTestCase {
             notificationCenter: notificationCenter
         )
 
-        var receivedHistoryStates: [AppState] = []
+        var receivedHistoryStates: [AppState?] = []
         let expectedNotifications = (0..<expectation.expectedFulfillmentCount).map { _ in
             supportedNotifications.randomElement()!
         }
 
         // When
-        publisher.publish {
-            receivedHistoryStates.append($0.currentSnapshot.state)
+        publisher.publish { state in
+            receivedHistoryStates.append(state?.currentSnapshot.state)
             expectation.fulfill()
         }
 
