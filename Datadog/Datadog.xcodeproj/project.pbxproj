@@ -44,7 +44,7 @@
 		61133BCA2423979B00786299 /* CodableValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA02423979B00786299 /* CodableValue.swift */; };
 		61133BCB2423979B00786299 /* CarrierInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA22423979B00786299 /* CarrierInfoProvider.swift */; };
 		61133BCD2423979B00786299 /* NetworkConnectionInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA42423979B00786299 /* NetworkConnectionInfoProvider.swift */; };
-		61133BCE2423979B00786299 /* BatteryStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA52423979B00786299 /* BatteryStatus.swift */; };
+		61133BCE2423979B00786299 /* BatteryStatusV1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA52423979B00786299 /* BatteryStatusV1.swift */; };
 		61133BCF2423979B00786299 /* FileWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA72423979B00786299 /* FileWriter.swift */; };
 		61133BD02423979B00786299 /* DateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA82423979B00786299 /* DateProvider.swift */; };
 		61133BD12423979B00786299 /* FilesOrchestrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA92423979B00786299 /* FilesOrchestrator.swift */; };
@@ -640,6 +640,12 @@
 		D24C27EA270C8BEE005DE596 /* DataCompression.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24C27E9270C8BEE005DE596 /* DataCompression.swift */; };
 		D2553807288AA84F00727FAD /* UploadMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2553806288AA84F00727FAD /* UploadMock.swift */; };
 		D2553808288AA84F00727FAD /* UploadMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2553806288AA84F00727FAD /* UploadMock.swift */; };
+		D2553826288F0B1A00727FAD /* BatteryStatusReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2553825288F0B1A00727FAD /* BatteryStatusReader.swift */; };
+		D2553827288F0B1A00727FAD /* BatteryStatusReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2553825288F0B1A00727FAD /* BatteryStatusReader.swift */; };
+		D2553829288F0B2400727FAD /* LowPowerModePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2553828288F0B2300727FAD /* LowPowerModePublisher.swift */; };
+		D255382A288F0B2400727FAD /* LowPowerModePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2553828288F0B2300727FAD /* LowPowerModePublisher.swift */; };
+		D255382C288F161500727FAD /* BatteryStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = D255382B288F161500727FAD /* BatteryStatus.swift */; };
+		D255382D288F161500727FAD /* BatteryStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = D255382B288F161500727FAD /* BatteryStatus.swift */; };
 		D26C49AF2886DC7B00802B2D /* ApplicationStatePublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26C49AE2886DC7B00802B2D /* ApplicationStatePublisherTests.swift */; };
 		D26C49B02886DC7B00802B2D /* ApplicationStatePublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26C49AE2886DC7B00802B2D /* ApplicationStatePublisherTests.swift */; };
 		D26C49B22886E10E00802B2D /* AppStateHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26C49B12886E10E00802B2D /* AppStateHistoryTests.swift */; };
@@ -662,8 +668,8 @@
 		D2956CAD2869D1F2007D5462 /* DeviceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2956CAB2869D1F2007D5462 /* DeviceInfo.swift */; };
 		D2956CB12869D54E007D5462 /* DeviceInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2956CB02869D54E007D5462 /* DeviceInfoTests.swift */; };
 		D2956CB22869D54E007D5462 /* DeviceInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2956CB02869D54E007D5462 /* DeviceInfoTests.swift */; };
-		D2956CB42869DE1F007D5462 /* BatteryStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2956CB32869DE1F007D5462 /* BatteryStatusTests.swift */; };
-		D2956CB52869DE1F007D5462 /* BatteryStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2956CB32869DE1F007D5462 /* BatteryStatusTests.swift */; };
+		D2956CB42869DE1F007D5462 /* BatteryStatusV1Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2956CB32869DE1F007D5462 /* BatteryStatusV1Tests.swift */; };
+		D2956CB52869DE1F007D5462 /* BatteryStatusV1Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2956CB32869DE1F007D5462 /* BatteryStatusV1Tests.swift */; };
 		D29889C9273413ED00A4D1A9 /* RUMViewsHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29889C72734136200A4D1A9 /* RUMViewsHandlerTests.swift */; };
 		D29CDD3228211A2200F7DAA5 /* DataBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29CDD3128211A2200F7DAA5 /* DataBlock.swift */; };
 		D29CDD3328211A2200F7DAA5 /* DataBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29CDD3128211A2200F7DAA5 /* DataBlock.swift */; };
@@ -852,7 +858,7 @@
 		D2CB6EAE27C50EAE00A62B57 /* DataOrchestrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6137C571271DAD4B00EFC4A1 /* DataOrchestrator.swift */; };
 		D2CB6EAF27C50EAE00A62B57 /* BundleType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614E9EB2244719FA007EE3E1 /* BundleType.swift */; };
 		D2CB6EB027C50EAE00A62B57 /* UIKitRUMViewsPredicate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3CDA62512144600C816E5 /* UIKitRUMViewsPredicate.swift */; };
-		D2CB6EB127C50EAE00A62B57 /* BatteryStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA52423979B00786299 /* BatteryStatus.swift */; };
+		D2CB6EB127C50EAE00A62B57 /* BatteryStatusV1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA52423979B00786299 /* BatteryStatusV1.swift */; };
 		D2CB6EB227C50EAE00A62B57 /* Sampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613C6B8F2768FDDE00870CBF /* Sampler.swift */; };
 		D2CB6EB327C50EAE00A62B57 /* KronosNTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0CE277B23F0008BE766 /* KronosNTPClient.swift */; };
 		D2CB6EB427C50EAE00A62B57 /* VitalInfoSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9973F0268DF69500D8059B /* VitalInfoSampler.swift */; };
@@ -1326,7 +1332,7 @@
 		61133BA02423979B00786299 /* CodableValue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CodableValue.swift; sourceTree = "<group>"; };
 		61133BA22423979B00786299 /* CarrierInfoProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CarrierInfoProvider.swift; sourceTree = "<group>"; };
 		61133BA42423979B00786299 /* NetworkConnectionInfoProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkConnectionInfoProvider.swift; sourceTree = "<group>"; };
-		61133BA52423979B00786299 /* BatteryStatus.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BatteryStatus.swift; sourceTree = "<group>"; };
+		61133BA52423979B00786299 /* BatteryStatusV1.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BatteryStatusV1.swift; sourceTree = "<group>"; };
 		61133BA72423979B00786299 /* FileWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileWriter.swift; sourceTree = "<group>"; };
 		61133BA82423979B00786299 /* DateProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DateProvider.swift; sourceTree = "<group>"; };
 		61133BA92423979B00786299 /* FilesOrchestrator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FilesOrchestrator.swift; sourceTree = "<group>"; };
@@ -1872,6 +1878,9 @@
 		D24985A12728048B00B4F72D /* SwiftUIViewHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftUIViewHandler.swift; sourceTree = "<group>"; };
 		D24C27E9270C8BEE005DE596 /* DataCompression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCompression.swift; sourceTree = "<group>"; };
 		D2553806288AA84F00727FAD /* UploadMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadMock.swift; sourceTree = "<group>"; };
+		D2553825288F0B1A00727FAD /* BatteryStatusReader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BatteryStatusReader.swift; sourceTree = "<group>"; };
+		D2553828288F0B2300727FAD /* LowPowerModePublisher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LowPowerModePublisher.swift; sourceTree = "<group>"; };
+		D255382B288F161500727FAD /* BatteryStatus.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BatteryStatus.swift; sourceTree = "<group>"; };
 		D26C49AE2886DC7B00802B2D /* ApplicationStatePublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationStatePublisherTests.swift; sourceTree = "<group>"; };
 		D26C49B12886E10E00802B2D /* AppStateHistoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateHistoryTests.swift; sourceTree = "<group>"; };
 		D26C49B52889416300802B2D /* UploadPerformancePreset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadPerformancePreset.swift; sourceTree = "<group>"; };
@@ -1883,7 +1892,7 @@
 		D2956CA72869BA23007D5462 /* DatadogContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogContext.swift; sourceTree = "<group>"; };
 		D2956CAB2869D1F2007D5462 /* DeviceInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInfo.swift; sourceTree = "<group>"; };
 		D2956CB02869D54E007D5462 /* DeviceInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInfoTests.swift; sourceTree = "<group>"; };
-		D2956CB32869DE1F007D5462 /* BatteryStatusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryStatusTests.swift; sourceTree = "<group>"; };
+		D2956CB32869DE1F007D5462 /* BatteryStatusV1Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryStatusV1Tests.swift; sourceTree = "<group>"; };
 		D29889C72734136200A4D1A9 /* RUMViewsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewsHandlerTests.swift; sourceTree = "<group>"; };
 		D29CDD3128211A2200F7DAA5 /* DataBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataBlock.swift; sourceTree = "<group>"; };
 		D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIActionModifier.swift; sourceTree = "<group>"; };
@@ -4226,7 +4235,7 @@
 			children = (
 				D26C49BE288982DA00802B2D /* FeatureUpload.swift */,
 				D26C49B52889416300802B2D /* UploadPerformancePreset.swift */,
-				61133BA52423979B00786299 /* BatteryStatus.swift */,
+				61133BA52423979B00786299 /* BatteryStatusV1.swift */,
 				61133BB32423979B00786299 /* DataUploadDelay.swift */,
 				61ED39D326C2A36B002C0F26 /* DataUploadStatus.swift */,
 				61133BB12423979B00786299 /* DataUploadWorker.swift */,
@@ -4282,6 +4291,7 @@
 				D2A1EE2E287DA4F200D28DFB /* UserInfo.swift */,
 				D2A1EE28287D914900D28DFB /* LaunchTime.swift */,
 				D20605CC28770C3B0047275C /* AppState.swift */,
+				D255382B288F161500727FAD /* BatteryStatus.swift */,
 			);
 			path = Context;
 			sourceTree = "<group>";
@@ -4298,7 +4308,7 @@
 			isa = PBXGroup;
 			children = (
 				D2956CB02869D54E007D5462 /* DeviceInfoTests.swift */,
-				D2956CB32869DE1F007D5462 /* BatteryStatusTests.swift */,
+				D2956CB32869DE1F007D5462 /* BatteryStatusV1Tests.swift */,
 				D26C49B12886E10E00802B2D /* AppStateHistoryTests.swift */,
 			);
 			path = Context;
@@ -4367,6 +4377,8 @@
 				D2A1EE31287DA51900D28DFB /* UserInfoPublisher.swift */,
 				D2A1EE2B287D91D900D28DFB /* LaunchTimeReader.swift */,
 				D2A1EE22287740B500D28DFB /* ApplicationStatePublisher.swift */,
+				D2553825288F0B1A00727FAD /* BatteryStatusReader.swift */,
+				D2553828288F0B2300727FAD /* LowPowerModePublisher.swift */,
 			);
 			path = Context;
 			sourceTree = "<group>";
@@ -5250,6 +5262,7 @@
 				6108676D2840FB35002DF3C0 /* TracingV2Configuration.swift in Sources */,
 				61D3E0D2277B23F1008BE766 /* KronosInternetAddress.swift in Sources */,
 				6156CB8E24DDA1B5008CB2B2 /* RUMContextProvider.swift in Sources */,
+				D2553826288F0B1A00727FAD /* BatteryStatusReader.swift in Sources */,
 				61C2C21224C5951400C0321C /* RUMViewScope.swift in Sources */,
 				61D3E0D5277B23F1008BE766 /* KronosNTPPacket.swift in Sources */,
 				61DE332625C826E4008E3EC2 /* CrashReportingFeature.swift in Sources */,
@@ -5263,6 +5276,7 @@
 				6179FFD3254ADB1700556A0B /* ObjcAppLaunchHandler.m in Sources */,
 				F637AED22697404200516F32 /* UIKitRUMUserActionsPredicate.swift in Sources */,
 				D29CDD3228211A2200F7DAA5 /* DataBlock.swift in Sources */,
+				D2553829288F0B2400727FAD /* LowPowerModePublisher.swift in Sources */,
 				616C0A9E28573DFF00C13264 /* RUMOperatingSystemInfo.swift in Sources */,
 				61AD4E3824531500006E34EA /* DataFormat.swift in Sources */,
 				D26C49C32889A72B00802B2D /* FeatureRequestBuilder.swift in Sources */,
@@ -5289,6 +5303,7 @@
 				617CEB392456BC3A00AD4669 /* TracingUUID.swift in Sources */,
 				D2956CA82869BA23007D5462 /* DatadogContext.swift in Sources */,
 				61BCB81F256EB77F0039887B /* NTPServerDateProvider.swift in Sources */,
+				D255382C288F161500727FAD /* BatteryStatus.swift in Sources */,
 				61122EDA25B1BA9700F9C7F5 /* AttributesSanitizer.swift in Sources */,
 				618715F924DC13A100FC0F69 /* RUMDataModelsMapping.swift in Sources */,
 				61C3638524361E9200C4D4E6 /* Globals.swift in Sources */,
@@ -5405,7 +5420,7 @@
 				6194E4B928785BFD00EB6307 /* RemoteLogger.swift in Sources */,
 				614E9EB3244719FA007EE3E1 /* BundleType.swift in Sources */,
 				61F3CDA72512144600C816E5 /* UIKitRUMViewsPredicate.swift in Sources */,
-				61133BCE2423979B00786299 /* BatteryStatus.swift in Sources */,
+				61133BCE2423979B00786299 /* BatteryStatusV1.swift in Sources */,
 				613C6B902768FDDE00870CBF /* Sampler.swift in Sources */,
 				61D3E0D8277B23F1008BE766 /* KronosNTPClient.swift in Sources */,
 				D20605B22874E1660047275C /* CarrierInfoPublisher.swift in Sources */,
@@ -5473,7 +5488,7 @@
 				D2EFA875286E011900F1FAA6 /* DatadogContextProviderTests.swift in Sources */,
 				61363D9F24D99BAA0084CD6F /* DDErrorTests.swift in Sources */,
 				61411B1024EC15AC0012EAB2 /* Casting+RUM.swift in Sources */,
-				D2956CB42869DE1F007D5462 /* BatteryStatusTests.swift in Sources */,
+				D2956CB42869DE1F007D5462 /* BatteryStatusV1Tests.swift in Sources */,
 				61FF283024BC5E2D000B3D9B /* RUMEventFileOutputTests.swift in Sources */,
 				61D3E0E7277B3D92008BE766 /* KronosTimeStorageTests.swift in Sources */,
 				9E986C302677B91400D62490 /* VitalRefreshRateReaderTests.swift in Sources */,
@@ -5925,8 +5940,8 @@
 				D2D37DC02846335F00FB4348 /* DatadogV1CoreProtocol.swift in Sources */,
 				D2CB6E3127C50EAE00A62B57 /* FileWriter.swift in Sources */,
 				D2CB6E3227C50EAE00A62B57 /* SwiftUIActionModifier.swift in Sources */,
+				D255382D288F161500727FAD /* BatteryStatus.swift in Sources */,
 				D2CB6E3327C50EAE00A62B57 /* OTConstants.swift in Sources */,
-				61DA8CB628643B220074A606 /* InternalLogger.swift in Sources */,
 				61DA8CB628643B220074A606 /* InternalLogger.swift in Sources */,
 				D2EFA869286DA85700F1FAA6 /* DatadogContextProvider.swift in Sources */,
 				D2B3F04E282A85FD00C2B5EE /* DatadogCore.swift in Sources */,
@@ -6050,9 +6065,11 @@
 				D2CB6E9727C50EAE00A62B57 /* DataUploadStatus.swift in Sources */,
 				D20605AD2874C2040047275C /* NetworkConnectionInfo.swift in Sources */,
 				D2CB6E9827C50EAE00A62B57 /* LogFileOutput.swift in Sources */,
+				D255382A288F0B2400727FAD /* LowPowerModePublisher.swift in Sources */,
 				D2CB6E9927C50EAE00A62B57 /* DataUploadWorker.swift in Sources */,
 				D2CB6E9A27C50EAE00A62B57 /* KronosTimeStorage.swift in Sources */,
 				D2CB6E9B27C50EAE00A62B57 /* FilesOrchestrator.swift in Sources */,
+				D2553827288F0B1A00727FAD /* BatteryStatusReader.swift in Sources */,
 				D2CB6E9C27C50EAE00A62B57 /* NetworkConnectionInfoProvider.swift in Sources */,
 				D2CB6E9E27C50EAE00A62B57 /* RUMDebugging.swift in Sources */,
 				616F1FB1283E227100651A3A /* LoggingV2Configuration.swift in Sources */,
@@ -6077,7 +6094,7 @@
 				D2CB6EAF27C50EAE00A62B57 /* BundleType.swift in Sources */,
 				616C0A9F28573DFF00C13264 /* RUMOperatingSystemInfo.swift in Sources */,
 				D2CB6EB027C50EAE00A62B57 /* UIKitRUMViewsPredicate.swift in Sources */,
-				D2CB6EB127C50EAE00A62B57 /* BatteryStatus.swift in Sources */,
+				D2CB6EB127C50EAE00A62B57 /* BatteryStatusV1.swift in Sources */,
 				D2CB6EB227C50EAE00A62B57 /* Sampler.swift in Sources */,
 				D2CB6EB327C50EAE00A62B57 /* KronosNTPClient.swift in Sources */,
 				D2CB6EB427C50EAE00A62B57 /* VitalInfoSampler.swift in Sources */,
@@ -6142,7 +6159,7 @@
 				D2EFA876286E011900F1FAA6 /* DatadogContextProviderTests.swift in Sources */,
 				D2CB6EED27C520D400A62B57 /* RUMIntegrationsTests.swift in Sources */,
 				D2CB6EEE27C520D400A62B57 /* DDErrorTests.swift in Sources */,
-				D2956CB52869DE1F007D5462 /* BatteryStatusTests.swift in Sources */,
+				D2956CB52869DE1F007D5462 /* BatteryStatusV1Tests.swift in Sources */,
 				D2CB6EEF27C520D400A62B57 /* Casting+RUM.swift in Sources */,
 				D2CB6EF127C520D400A62B57 /* RUMEventFileOutputTests.swift in Sources */,
 				D2CB6EF227C520D400A62B57 /* KronosTimeStorageTests.swift in Sources */,

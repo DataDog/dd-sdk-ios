@@ -78,4 +78,10 @@ internal struct DatadogContext {
     /// This value can be `nil` of no service is currently registered, or if the device does
     /// not support telephony services.
     var carrierInfo: CarrierInfo?
+
+    /// `true` if the Low Power Mode is enabled.
+    var batteryStatus: BatteryStatus?
+
+    /// `true` if the Low Power Mode is enabled.
+    var isLowPowerModeEnabled: Bool
 }

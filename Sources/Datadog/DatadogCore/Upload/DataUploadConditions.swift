@@ -9,7 +9,7 @@ import Foundation
 /// Tells if data upload can be performed based on given system conditions.
 internal struct DataUploadConditions {
     enum Blocker {
-        case battery(level: Int, state: BatteryStatus.State)
+        case battery(level: Int, state: BatteryStatusV1.State)
         case lowPowerModeOn
         case networkReachability(description: String)
     }
@@ -38,7 +38,7 @@ internal struct DataUploadConditions {
         return blockers
     }
 
-    private func blockersForUploadWith(_ batteryStatus: BatteryStatus) -> [Blocker] {
+    private func blockersForUploadWith(_ batteryStatus: BatteryStatusV1) -> [Blocker] {
         let state = batteryStatus.state
         if state == .unknown {
             // Note: in RUMS-132 we got the report on `.unknown` battery state reporing `-1` battery level on iPad device

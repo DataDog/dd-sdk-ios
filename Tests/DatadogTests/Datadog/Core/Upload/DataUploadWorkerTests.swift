@@ -479,7 +479,7 @@ private extension DataUploadConditions {
     static func alwaysUpload() -> DataUploadConditions {
         return DataUploadConditions(
             batteryStatus: BatteryStatusProviderMock.mockWith(
-                status: BatteryStatus(state: .full, level: 100, isLowPowerModeEnabled: false) // always upload
+                status: BatteryStatusV1(state: .full, level: 100, isLowPowerModeEnabled: false) // always upload
             )
         )
     }
@@ -487,7 +487,7 @@ private extension DataUploadConditions {
     static func neverUpload() -> DataUploadConditions {
         return DataUploadConditions(
             batteryStatus: BatteryStatusProviderMock.mockWith(
-                status: BatteryStatus(state: .unplugged, level: 0, isLowPowerModeEnabled: true) // never upload
+                status: BatteryStatusV1(state: .unplugged, level: 0, isLowPowerModeEnabled: true) // never upload
             )
         )
     }
