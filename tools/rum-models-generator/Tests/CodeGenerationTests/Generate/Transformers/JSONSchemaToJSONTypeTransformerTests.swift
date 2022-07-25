@@ -5,7 +5,7 @@
 */
 
 import XCTest
-@testable import RUMModelsGeneratorCore
+@testable import CodeGeneration
 
 final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
     func testTransformingJSONSchemaIntoJSONObject() throws {

@@ -5,9 +5,22 @@
 */
 
 import Foundation
+import CodeGeneration
 
-/// Transforms `SwiftTypes` for RUM code generation.
-internal class RUMSwiftTypeTransformer {
+/// Adjusts naming and structure of generated code for RUM.
+public class RUMCodeDecorator: CodeDecorator {
+    public init() {}
+
+    // MARK: - CodeDecorator
+
+    public func decorate(code: GeneratedCode) throws -> GeneratedCode {
+        return GeneratedCode(
+            swiftTypes: try transform(types: code.swiftTypes)
+        )
+    }
+
+    // MARK: - Internal
+
     /// Types which will shared between all input `types`. Sharing means detaching those types from nested declaration
     /// and putting them at the root level of the resultant `types` array, so the type can be printed without being nested.
     private let sharedTypeNames = [
@@ -268,4 +281,29 @@ internal class RUMSwiftTypeTransformer {
 
         return SwiftTypeReference(referencedTypeName: name)
     }
+}
+
+// MARK: - Utilities
+
+extension String {
+    private var camelCased: String {
+        guard !isEmpty else {
+            return ""
+        }
+
+        let words = components(separatedBy: CharacterSet.alphanumerics.inverted)
+        let first = words.first! // swiftlint:disable:this force_unwrapping
+        let rest = words.dropFirst().map { $0.uppercasingFirst }
+        return ([first] + rest).joined(separator: "")
+    }
+
+    /// Uppercases the first character.
+    var uppercasingFirst: String { prefix(1).uppercased() + dropFirst() }
+    /// Lowercases the first character.
+    var lowercasingFirst: String { prefix(1).lowercased() + dropFirst() }
+
+    /// "lowerCamelCased" notation.
+    var lowerCamelCased: String { camelCased.lowercasingFirst }
+    /// "UpperCamelCased" notation.
+    var upperCamelCased: String { camelCased.uppercasingFirst }
 }

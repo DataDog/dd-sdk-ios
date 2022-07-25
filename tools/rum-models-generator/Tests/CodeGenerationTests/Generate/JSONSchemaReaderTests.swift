@@ -5,7 +5,7 @@
 */
 
 import XCTest
-@testable import RUMModelsGeneratorCore
+@testable import CodeGeneration
 
 final class JSONSchemaReaderTests: XCTestCase {
     func testReadingSchemaWithTypedAdditionalProperties() throws {

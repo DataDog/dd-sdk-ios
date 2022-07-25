@@ -5,9 +5,10 @@
 */
 
 import XCTest
-@testable import RUMModelsGeneratorCore
+@testable import CodeGeneration
+@testable import CodeDecoration
 
-final class RUMSwiftTypeTransformerTests: XCTestCase {
+final class RUMCodeDecoratorTests: XCTestCase {
     func testTransformingUsingRUMNamesAndConventions() throws {
         let `struct` = SwiftStruct(
             name: "FooBar",
@@ -99,7 +100,8 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
             conformance: []
         )
 
-        let actual = try RUMSwiftTypeTransformer().transform(types: [`struct`])
+        let actual = try RUMCodeDecorator()
+            .decorate(code: GeneratedCode(swiftTypes: [`struct`]))
 
         let expected = [
             SwiftStruct(
@@ -193,7 +195,7 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
             )
         ]
 
-        XCTAssertEqual(expected, try XCTUnwrap(actual as? [SwiftStruct]))
+        XCTAssertEqual(expected, try XCTUnwrap(actual.swiftTypes as? [SwiftStruct]))
     }
 
     func testTransformingSharedTypes() throws {
@@ -247,7 +249,8 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
             conformance: []
         )
 
-        let actual = try RUMSwiftTypeTransformer().transform(types: [`struct`])
+        let actual = try RUMCodeDecorator()
+            .decorate(code: GeneratedCode(swiftTypes: [`struct`]))
 
         let expected: [SwiftType] = [
             SwiftStruct(
@@ -304,6 +307,6 @@ final class RUMSwiftTypeTransformerTests: XCTestCase {
             )
         ]
 
-        XCTAssertEqual(expected, actual)
+        XCTAssertEqual(expected, actual.swiftTypes)
     }
 }

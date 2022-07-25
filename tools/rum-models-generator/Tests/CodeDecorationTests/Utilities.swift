@@ -4,24 +4,10 @@
 * Copyright 2019-2020 Datadog, Inc.
 */
 
-import Foundation
+
 import Difference
 import XCTest
-@testable import RUMModelsGeneratorCore
-
-public func XCTAssertEqual<T: Equatable>(
-    _ expected: T,
-    _ received: T,
-    file: StaticString = #filePath,
-    line: UInt = #line
-) {
-    XCTAssertTrue(
-        expected == received,
-        "Found difference for \n" + diff(expected, received).joined(separator: ", "),
-        file: file,
-        line: line
-    )
-}
+@testable import CodeGeneration
 
 public func XCTAssertEqual(
     _ expected: [SwiftType],

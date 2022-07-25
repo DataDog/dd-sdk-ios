@@ -7,8 +7,18 @@
 import Foundation
 
 /// Generates Swift code from `SwiftTypes`.
-public class SwiftPrinter: BasePrinter {
-    public func print(swiftTypes: [SwiftType]) throws -> String {
+public class SwiftPrinter: BasePrinter, CodePrinter {
+    public override init() {}
+
+    // MARK: - CodePrinter
+
+    public func print(code: GeneratedCode) throws -> String {
+        return try print(swiftTypes: code.swiftTypes)
+    }
+
+    // MARK: - Internal
+
+    internal func print(swiftTypes: [SwiftType]) throws -> String {
         reset()
 
         try swiftTypes.forEach { type in

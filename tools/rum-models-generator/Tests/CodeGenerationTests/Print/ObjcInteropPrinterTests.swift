@@ -5,7 +5,7 @@
 */
 
 import XCTest
-@testable import RUMModelsGeneratorCore
+@testable import CodeGeneration
 
 final class ObjcInteropPrinterTests: XCTestCase {
     /// Prints Swift code along with its `@objc` interop code.
