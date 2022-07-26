@@ -44,12 +44,5 @@ let package = Package(
             name: "CodeDecoration",
             dependencies: ["CodeGeneration"]
         ),
-        .testTarget(
-            name: "CodeDecorationTests",
-            dependencies: [
-                "CodeDecoration",
-                "Difference"
-            ]
-        ),
     ]
 )

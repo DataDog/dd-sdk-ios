@@ -1,15 +1,14 @@
 /*
-* Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
-* This product includes software developed at Datadog (https://www.datadoghq.com/).
-* Copyright 2019-2020 Datadog, Inc.
-*/
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-2020 Datadog, Inc.
+ */
 
 import XCTest
 @testable import CodeGeneration
-@testable import CodeDecoration
 
-final class RUMCodeDecoratorTests: XCTestCase {
-    func testTransformingUsingRUMNamesAndConventions() throws {
+final class SwiftCodeDecoratorTests: XCTestCase {
+    func testDecoratingWithSwiftNamingConventions() throws {
         let `struct` = SwiftStruct(
             name: "FooBar",
             comment: "Description of FooBar.",
@@ -100,7 +99,7 @@ final class RUMCodeDecoratorTests: XCTestCase {
             conformance: []
         )
 
-        let actual = try RUMCodeDecorator()
+        let actual = try SwiftCodeDecorator()
             .decorate(code: GeneratedCode(swiftTypes: [`struct`]))
 
         let expected = [
@@ -112,7 +111,7 @@ final class RUMCodeDecoratorTests: XCTestCase {
                         name: "bar",
                         comment: "Description of Bar.",
                         type: SwiftStruct(
-                            name: "BAR",
+                            name: "Bar",
                             comment: "Description of Bar.",
                             properties: [
                                 SwiftStruct.Property(
@@ -184,14 +183,14 @@ final class RUMCodeDecoratorTests: XCTestCase {
                     SwiftStruct.Property(
                         name: "propertiesByNames",
                         comment: "Description of Foobar's `propertiesByNames`",
-                        type: SwiftDictionary(value: SwiftPrimitive<Int64>()),
+                        type: SwiftDictionary(value: SwiftPrimitive<Int>()),
                         isOptional: true,
                         mutability: .mutable,
                         defaultValue: nil,
                         codingKey: .static(value: "propertiesByNames")
                     )
                 ],
-                conformance: [SwiftProtocol(name: "RUMDataModel", conformance: [codableProtocol])]
+                conformance: [codableProtocol]
             )
         ]
 
@@ -204,10 +203,10 @@ final class RUMCodeDecoratorTests: XCTestCase {
             comment: nil,
             properties: [
                 SwiftStruct.Property(
-                    name: "connectivity",
+                    name: "commonStruct1",
                     comment: nil,
                     type: SwiftStruct(
-                        name: "connectivity",
+                        name: "commonStruct1",
                         comment: nil,
                         properties: [],
                         conformance: []
@@ -215,13 +214,13 @@ final class RUMCodeDecoratorTests: XCTestCase {
                     isOptional: true,
                     mutability: .immutable,
                     defaultValue: nil,
-                    codingKey: .static(value: "connectivity")
+                    codingKey: .static(value: "commonStruct1")
                 ),
                 SwiftStruct.Property(
-                    name: "usr",
+                    name: "commonStruct2",
                     comment: nil,
                     type: SwiftStruct(
-                        name: "usr",
+                        name: "commonStruct2",
                         comment: nil,
                         properties: [],
                         conformance: []
@@ -229,13 +228,13 @@ final class RUMCodeDecoratorTests: XCTestCase {
                     isOptional: true,
                     mutability: .immutable,
                     defaultValue: nil,
-                    codingKey: .static(value: "usr")
+                    codingKey: .static(value: "commonStruct2")
                 ),
                 SwiftStruct.Property(
-                    name: "method",
+                    name: "commonEnum",
                     comment: nil,
                     type: SwiftEnum(
-                        name: "method",
+                        name: "commonEnum",
                         comment: nil,
                         cases: [],
                         conformance: []
@@ -243,14 +242,20 @@ final class RUMCodeDecoratorTests: XCTestCase {
                     isOptional: true,
                     mutability: .immutable,
                     defaultValue: nil,
-                    codingKey: .static(value: "method")
+                    codingKey: .static(value: "commonEnum")
                 )
             ],
             conformance: []
         )
 
-        let actual = try RUMCodeDecorator()
-            .decorate(code: GeneratedCode(swiftTypes: [`struct`]))
+        let decorator = SwiftCodeDecorator(
+            sharedTypeNames: [
+                "CommonStruct1",
+                "CommonStruct2",
+                "CommonEnum",
+            ]
+        )
+        let actual = try decorator.decorate(code: GeneratedCode(swiftTypes: [`struct`]))
 
         let expected: [SwiftType] = [
             SwiftStruct(
@@ -258,49 +263,49 @@ final class RUMCodeDecoratorTests: XCTestCase {
                 comment: nil,
                 properties: [
                     SwiftStruct.Property(
-                        name: "connectivity",
+                        name: "commonStruct1",
                         comment: nil,
-                        type: SwiftTypeReference(referencedTypeName: "RUMConnectivity"),
+                        type: SwiftTypeReference(referencedTypeName: "CommonStruct1"),
                         isOptional: true,
                         mutability: .immutable,
                         defaultValue: nil,
-                        codingKey: .static(value: "connectivity")
+                        codingKey: .static(value: "commonStruct1")
                     ),
                     SwiftStruct.Property(
-                        name: "usr",
+                        name: "commonStruct2",
                         comment: nil,
-                        type: SwiftTypeReference(referencedTypeName: "RUMUser"),
+                        type: SwiftTypeReference(referencedTypeName: "CommonStruct2"),
                         isOptional: true,
                         mutability: .immutable,
                         defaultValue: nil,
-                        codingKey: .static(value: "usr")
+                        codingKey: .static(value: "commonStruct2")
                     ),
                     SwiftStruct.Property(
-                        name: "method",
+                        name: "commonEnum",
                         comment: nil,
-                        type: SwiftTypeReference(referencedTypeName: "RUMMethod"),
+                        type: SwiftTypeReference(referencedTypeName: "CommonEnum"),
                         isOptional: true,
                         mutability: .immutable,
                         defaultValue: nil,
-                        codingKey: .static(value: "method")
+                        codingKey: .static(value: "commonEnum")
                     )
                 ],
-                conformance: [SwiftProtocol(name: "RUMDataModel", conformance: [codableProtocol])]
+                conformance: [codableProtocol]
             ),
             SwiftStruct(
-                name: "RUMConnectivity",
+                name: "CommonStruct1",
                 comment: nil,
                 properties: [],
                 conformance: [codableProtocol]
             ),
             SwiftStruct(
-                name: "RUMUser",
+                name: "CommonStruct2",
                 comment: nil,
                 properties: [],
                 conformance: [codableProtocol]
             ),
             SwiftEnum(
-                name: "RUMMethod",
+                name: "CommonEnum",
                 comment: nil,
                 cases: [],
                 conformance: [codableProtocol]
