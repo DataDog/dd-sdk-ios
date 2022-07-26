@@ -31,8 +31,8 @@ internal final class FileReader: Reader {
         }
 
         do {
-            let payloads = try decode(data: file.read())
-            return Batch(payloads: payloads, file: file)
+            let events = try decode(data: file.read())
+            return Batch(events: events, file: file)
         } catch {
             DD.telemetry.error("Failed to read data from file", error: error)
             return nil

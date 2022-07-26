@@ -35,8 +35,8 @@ class DataUploaderBenchmarkTests: BenchmarkTests {
         measure(metrics: [XCTMemoryMetric()]) {
             // in each, 10 requests are done:
             (0..<10).forEach { _ in
-                let payloads = [Data(repeating: 0x41, count: 10 * 1_024 * 1_024)]
-                _ = dataUploader.upload(payloads: payloads, context: context)
+                let events = [Data(repeating: 0x41, count: 10 * 1_024 * 1_024)]
+                _ = dataUploader.upload(events: events, context: context)
             }
             // After all, the baseline asserts `0kB` or less grow in Physical Memory.
             // This makes sure that no request data is leaked (e.g. due to internal caching).

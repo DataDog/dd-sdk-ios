@@ -37,7 +37,7 @@ internal struct TracingRequestBuilder: FeatureRequestBuilder {
     /// The tracing request body format.
     let format = DataFormat(prefix: "", suffix: "", separator: "\n")
 
-    func request(for payloads: [Data], with context: /* DatadogContext */ DatadogV1Context) -> URLRequest {
+    func request(for events: [Data], with context: /* DatadogContext */ DatadogV1Context) -> URLRequest {
         let builder = URLRequestBuilder(
             url: intake,
             queryItems: [],
@@ -55,7 +55,7 @@ internal struct TracingRequestBuilder: FeatureRequestBuilder {
             ]
         )
 
-        let data = format.format(payloads)
+        let data = format.format(events)
         return builder.uploadRequest(with: data)
     }
 }

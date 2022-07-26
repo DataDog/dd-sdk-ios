@@ -32,7 +32,7 @@ class FileReaderTests: XCTestCase {
 
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
         let batch = reader.readNextBatch()
-        XCTAssertEqual(batch?.payloads, ["ABCD".utf8Data])
+        XCTAssertEqual(batch?.events, ["ABCD".utf8Data])
     }
 
     func testItReadsSingleEncryptedBatch() throws {
@@ -60,7 +60,7 @@ class FileReaderTests: XCTestCase {
         let batch = reader.readNextBatch()
 
         // Then
-        XCTAssertEqual(batch?.payloads, ["bar","bar","bar"].map { $0.utf8Data })
+        XCTAssertEqual(batch?.events, ["bar","bar","bar"].map { $0.utf8Data })
     }
 
     func testItMarksBatchesAsRead() throws {
@@ -83,15 +83,15 @@ class FileReaderTests: XCTestCase {
 
         var batch: Batch
         batch = try reader.readNextBatch().unwrapOrThrow()
-        XCTAssertEqual(batch.payloads.first, "1".utf8Data)
+        XCTAssertEqual(batch.events.first, "1".utf8Data)
         reader.markBatchAsRead(batch)
 
         batch = try reader.readNextBatch().unwrapOrThrow()
-        XCTAssertEqual(batch.payloads.first, "2".utf8Data)
+        XCTAssertEqual(batch.events.first, "2".utf8Data)
         reader.markBatchAsRead(batch)
 
         batch = try reader.readNextBatch().unwrapOrThrow()
-        XCTAssertEqual(batch.payloads.first, "3".utf8Data)
+        XCTAssertEqual(batch.events.first, "3".utf8Data)
         reader.markBatchAsRead(batch)
 
         XCTAssertNil(reader.readNextBatch())

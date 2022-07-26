@@ -7,12 +7,12 @@
 import Foundation
 
 /// The `FeatureRequestBuilder` defines an interface for building a single `URLRequest`
-/// for a list of data payloads and the current core context.
+/// for a list of data events and the current core context.
 ///
 /// The core implementation can use the interface for creating requests targetting datadog intake
 /// of a given feature.
 /* public */ internal protocol FeatureRequestBuilder {
-    /// Builds a `URLRequest` for a list of payloads and the current core context to be uploaded
+    /// Builds a `URLRequest` for a list of events and the current core context to be uploaded
     /// to the feature intake.
     ///
     /// The returned request must include all necessary information, including HTTP headers and
@@ -21,7 +21,7 @@ import Foundation
     ///
     /// - Parameters:
     ///   - context: The current core context.
-    ///   - payloads: The payloads to upload.
+    ///   - events: The events data to upload.
     /// - Returns: The URL request.
-    func request(for payloads: [Data], with context: /* DatadogContext */ DatadogV1Context) -> URLRequest
+    func request(for events: [Data], with context: /* DatadogContext */ DatadogV1Context) -> URLRequest
 }

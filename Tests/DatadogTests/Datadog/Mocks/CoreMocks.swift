@@ -894,7 +894,7 @@ struct DataUploaderMock: DataUploaderType {
 
     var onUpload: (() -> Void)? = nil
 
-    func upload(payloads: [Data], context: DatadogV1Context) -> DataUploadStatus {
+    func upload(events: [Data], context: DatadogV1Context) -> DataUploadStatus {
         onUpload?()
         return uploadStatus
     }

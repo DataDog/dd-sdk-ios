@@ -131,7 +131,7 @@ class FeatureStorageTests: XCTestCase {
 
         (0..<limit).forEach { _ in
             if let nextBatch = storage.reader.readNextBatch() {
-                dataAuthorizedForUpload.append(contentsOf: nextBatch.payloads)
+                dataAuthorizedForUpload.append(contentsOf: nextBatch.events)
                 storage.reader.markBatchAsRead(nextBatch)
             }
         }

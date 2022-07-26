@@ -65,7 +65,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
 
                 // Upload batch
                 let uploadStatus = self.dataUploader.upload(
-                    payloads: batch.payloads,
+                    events: batch.events,
                     context: context
                 )
 
@@ -118,7 +118,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
     internal func flushSynchronously() {
         queue.sync {
             while let nextBatch = self.fileReader.readNextBatch() {
-                _ = self.dataUploader.upload(payloads: nextBatch.payloads, context: self.context)
+                _ = self.dataUploader.upload(events: nextBatch.events, context: self.context)
                 self.fileReader.markBatchAsRead(nextBatch)
             }
         }

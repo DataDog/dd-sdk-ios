@@ -58,14 +58,14 @@ extension FeaturesConfiguration.Common {
 struct FeatureRequestBuilderMock: FeatureRequestBuilder {
     let dataFormat = DataFormat(prefix: "", suffix: "", separator: "\n")
 
-    func request(for payloads: [Data], with context: DatadogV1Context) -> URLRequest {
+    func request(for events: [Data], with context: DatadogV1Context) -> URLRequest {
         let builder = URLRequestBuilder(
             url: .mockAny(),
             queryItems: [.ddtags(tags: ["foo:bar"])],
             headers: []
         )
 
-        let data = dataFormat.format(payloads)
+        let data = dataFormat.format(events)
         return builder.uploadRequest(with: data)
     }
 }
