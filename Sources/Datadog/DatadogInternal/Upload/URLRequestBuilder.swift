@@ -102,7 +102,7 @@ import Foundation
 
     /// Creates `URLRequest` for uploading given `data` to Datadog.
     /// - Parameter data: data to be uploaded
-    /// - Returns: the `URLRequest` object and `DD-REQUEST-ID` header value (for debugging).
+    /// - Returns: Returns: the `URLRequest` object.
     func uploadRequest(with data: Data) -> URLRequest {
         var request = URLRequest(url: url)
         var headers: [String: String] = [:]
