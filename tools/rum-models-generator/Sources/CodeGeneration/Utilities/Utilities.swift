@@ -6,8 +6,8 @@
 
 import Foundation
 
-internal struct Exception: Error, CustomStringConvertible {
-    let description: String
+public struct Exception: Error, CustomStringConvertible {
+    public let description: String
 
     init(
         _ reason: String,
@@ -21,15 +21,15 @@ internal struct Exception: Error, CustomStringConvertible {
         self.description = "\(reason)\n\n\(sourceReference)"
     }
 
-    static func inconsistency(_ reason: String, file: StaticString = #fileID, line: UInt = #line) -> Exception {
+    public static func inconsistency(_ reason: String, file: StaticString = #fileID, line: UInt = #line) -> Exception {
         Exception("🐞 Inconsistency: \"\(reason)\".", file: file, line: line)
     }
 
-    static func illegal(_ operation: String, file: StaticString = #fileID, line: UInt = #line) -> Exception {
+    public static func illegal(_ operation: String, file: StaticString = #fileID, line: UInt = #line) -> Exception {
         Exception("⛔️ Illegal operation: \"\(operation)\".", file: file, line: line)
     }
 
-    static func unimplemented(_ operation: String, file: StaticString = #fileID, line: UInt = #line) -> Exception {
+    public static func unimplemented(_ operation: String, file: StaticString = #fileID, line: UInt = #line) -> Exception {
         Exception("🚧 Unimplemented: \"\(operation)\".", file: file, line: line)
     }
 
@@ -62,7 +62,7 @@ internal struct Exception: Error, CustomStringConvertible {
     }
 }
 
-internal extension Optional {
+public extension Optional {
     func unwrapOrThrow(_ exception: Exception) throws -> Wrapped {
         switch self {
         case .some(let unwrappedValue):
@@ -79,29 +79,6 @@ internal extension Optional {
             return nil
         }
     }
-}
-
-extension String {
-    private var camelCased: String {
-        guard !isEmpty else {
-            return ""
-        }
-
-        let words = components(separatedBy: CharacterSet.alphanumerics.inverted)
-        let first = words.first! // swiftlint:disable:this force_unwrapping
-        let rest = words.dropFirst().map { $0.uppercasingFirst }
-        return ([first] + rest).joined(separator: "")
-    }
-
-    /// Uppercases the first character.
-    var uppercasingFirst: String { prefix(1).uppercased() + dropFirst() }
-    /// Lowercases the first character.
-    var lowercasingFirst: String { prefix(1).lowercased() + dropFirst() }
-
-    /// "lowerCamelCased" notation.
-    var lowerCamelCased: String { camelCased.lowercasingFirst }
-    /// "UpperCamelCased" notation.
-    var upperCamelCased: String { camelCased.uppercasingFirst }
 }
 
 extension Array where Element: Hashable {

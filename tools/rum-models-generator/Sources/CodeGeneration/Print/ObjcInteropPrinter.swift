@@ -35,13 +35,23 @@ import Foundation
 ///         public var integer: NSNumber { foo.integer as NSNumber }
 ///     }
 ///
-internal class ObjcInteropPrinter: BasePrinter {
-    /// The prefix used for types exposed to Obj-c.
-    private let objcTypeNamesPrefix: String
-
-    init(objcTypeNamesPrefix: String) {
+public class ObjcInteropPrinter: BasePrinter, CodePrinter {
+    public init(objcTypeNamesPrefix: String) {
         self.objcTypeNamesPrefix = objcTypeNamesPrefix
     }
+
+    // MARK: - CodePrinter
+
+    public func print(code: GeneratedCode) throws -> String {
+        let objcInteropTransformer = SwiftToObjcInteropTypeTransformer()
+        let objcInteropTypes = try objcInteropTransformer.transform(swiftTypes: code.swiftTypes)
+        return try print(objcInteropTypes: objcInteropTypes)
+    }
+
+    // MARK: - Internal
+
+    /// The prefix used for types exposed to Obj-c.
+    private let objcTypeNamesPrefix: String
 
     func print(objcInteropTypes: [ObjcInteropType]) throws -> String {
         reset()
