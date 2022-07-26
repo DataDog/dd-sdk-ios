@@ -39,21 +39,15 @@ internal class JSONToSwiftTypeTransformer {
         let jsonObjects = rootJSONOneOfs.types.compactMap { $0.type as? JSONObject }
         let jsonOneOfs = rootJSONOneOfs.types.compactMap { $0.type as? JSONOneOfs }
 
-        let onlyJSONObjects = jsonObjects.count == numberOfTypes
-        let onlyJSONOneOfs = jsonOneOfs.count == numberOfTypes
-
-        guard onlyJSONObjects || onlyJSONOneOfs else {
+        guard (jsonObjects.count + jsonOneOfs.count) == numberOfTypes else {
             let mixedTypes = rootJSONOneOfs.types.map { "\(type(of: $0))" }
-            throw Exception.unimplemented("Transforming root `JSONOneOfs` with mixed `oneOf` types is not supported (mixed types: [\(mixedTypes)]).")
+            throw Exception.unimplemented("Transforming root `JSONOneOfs` with mixed `oneOf` types is not supported (mixed types: \(mixedTypes)).")
         }
 
-        if onlyJSONOneOfs {
-            return try jsonOneOfs.flatMap { jsonOneOf in try transform(rootJSONOneOfs: jsonOneOf) }
-        } else if onlyJSONObjects {
-            return try jsonObjects.map { jsonObject in try transform(rootJSONObject: jsonObject) }
-        } else {
-            throw Exception.inconsistency("Expected all `oneOfs` to be `JSONObject` or `JSONOneOfs`")
-        }
+        let transformedJSONOneOfs = try jsonOneOfs.flatMap { jsonOneOf in try transform(rootJSONOneOfs: jsonOneOf) }
+        let transformedJSONObjects = try jsonObjects.map { jsonObject in try transform(rootJSONObject: jsonObject) }
+
+        return transformedJSONOneOfs + transformedJSONObjects
     }
 
     // MARK: - Transforming ambiguous types

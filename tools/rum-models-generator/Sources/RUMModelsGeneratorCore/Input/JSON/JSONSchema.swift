@@ -79,6 +79,13 @@ internal class JSONSchema: Decodable {
             self.ref = try keyedContainer.decodeIfPresent(String.self, forKey: .ref)
             self.allOf = try keyedContainer.decodeIfPresent([JSONSchema].self, forKey: .allOf)
             self.oneOf = try keyedContainer.decodeIfPresent([JSONSchema].self, forKey: .oneOf)
+
+            // RUMM-2266 Patch:
+            // If schema doesn't define `type`, but defines `properties`, it is safe to assume
+            // that its `.object` schema:
+            if self.type == nil && self.properties != nil {
+                self.type = .object
+            }
         } catch let keyedContainerError as DecodingError {
             // If data in this `decoder` cannot be represented as keyed container, perhaps it encodes
             // a single value. Check known schema values:
