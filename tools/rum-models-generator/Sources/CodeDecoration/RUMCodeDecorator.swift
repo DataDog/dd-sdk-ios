@@ -30,7 +30,7 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
 
     // MARK: - Types customiation
 
-    public override func transform(primitive: SwiftPrimitiveType) -> SwiftPrimitiveType {
+    override public func transform(primitive: SwiftPrimitiveType) -> SwiftPrimitiveType {
         if primitive is SwiftPrimitive<Int> {
             return SwiftPrimitive<Int64>() // Replace all `Int` with `Int64`
         } else {
@@ -38,7 +38,7 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
         }
     }
 
-    public override func transform(struct: SwiftStruct) throws -> SwiftStruct {
+    override public func transform(struct: SwiftStruct) throws -> SwiftStruct {
         var `struct` = try super.transform(struct: `struct`)
 
         if context.parent == nil {
@@ -50,7 +50,7 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
 
     // MARK: - Naming Conventions
 
-    public override func format(enumCaseName: String) -> String {
+    override public func format(enumCaseName: String) -> String {
         // When generating enum cases for Resource's HTTP method, force lowercase
         // (`.get`, `.post`, ...)
         if (context.current as? SwiftEnum)?.name.lowercased() == "method" {
@@ -60,7 +60,7 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
         return super.format(enumCaseName: enumCaseName)
     }
 
-    public override func fix(typeName: String) -> String {
+    override public func fix(typeName: String) -> String {
         var fixedName = super.fix(typeName: typeName)
 
         // If the type name uses an abbreviation, keep it uppercased.

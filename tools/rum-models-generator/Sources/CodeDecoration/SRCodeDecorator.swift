@@ -31,7 +31,7 @@ public class SRCodeDecorator: SwiftCodeDecorator {
 
     // MARK: - Types customiation
 
-    public override func transform(primitive: SwiftPrimitiveType) -> SwiftPrimitiveType {
+    override public func transform(primitive: SwiftPrimitiveType) -> SwiftPrimitiveType {
         if primitive is SwiftPrimitive<Int> {
             return SwiftPrimitive<Int64>() // Replace all `Int` with `Int64`
         } else {
@@ -39,7 +39,7 @@ public class SRCodeDecorator: SwiftCodeDecorator {
         }
     }
 
-    public override func transform(struct: SwiftStruct) throws -> SwiftStruct {
+    override public func transform(struct: SwiftStruct) throws -> SwiftStruct {
         var `struct` = try super.transform(struct: `struct`)
 
         if context.parent == nil {
@@ -51,7 +51,7 @@ public class SRCodeDecorator: SwiftCodeDecorator {
 
     // MARK: - Naming Conventions
 
-    public override func fix(typeName: String) -> String {
+    override public func fix(typeName: String) -> String {
         var fixedName = super.fix(typeName: typeName)
 
         // If the type name uses an abbreviation, keep it uppercased:
@@ -61,7 +61,7 @@ public class SRCodeDecorator: SwiftCodeDecorator {
 
         // Ensure all root types have `SR` prefix:
         let isRootType = context.parent == nil
-        if isRootType && !fixedName.uppercased().hasPrefix("SR") {
+        if isRootType && fixedName.uppercased().hasPrefix("SR") == false {
             fixedName = "SR" + fixedName
         }
 
