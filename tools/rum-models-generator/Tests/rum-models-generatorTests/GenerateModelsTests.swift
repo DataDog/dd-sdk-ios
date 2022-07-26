@@ -48,7 +48,10 @@ final class GenerateModelsTests: XCTestCase {
 //        let swiftCode = try ModelsGenerator()
 //            .generateCode(from: schema)
 //            .decorate(using: SRCodeDecorator())
-//            .print(using: OutputTemplate(header: "", footer: ""), and: SwiftPrinter())
+//            .print(
+//                using: OutputTemplate(header: "", footer: ""),
+//                and: SwiftPrinter(configuration: .init(accessLevel: .internal))
+//            )
 //        print(swiftCode)
 //        print("<<<<<<<<<<<<<<<<<< Swift <<<<<<<<<<<<<<<<<<<<<<")
 //    }
