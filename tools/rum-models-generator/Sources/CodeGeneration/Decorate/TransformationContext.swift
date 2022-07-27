@@ -7,7 +7,7 @@
 import Foundation
 
 /// Manages stack of nested types for their transformation.
-internal class TransformationContext<T> {
+public class TransformationContext<T> {
     private var stack: [T] = []
 
     func enter(_ type: T) {
@@ -18,10 +18,10 @@ internal class TransformationContext<T> {
         stack = stack.dropLast()
     }
 
-    var current: T? { stack.last }
-    var parent: T? { stack.dropLast().last }
+    public var current: T? { stack.last }
+    public var parent: T? { stack.dropLast().last }
 
-    func predecessor(matching predicate: (T) -> Bool) -> T? {
+    public func predecessor(matching predicate: (T) -> Bool) -> T? {
         return stack.reversed().first { predicate($0) }
     }
 }

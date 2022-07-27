@@ -26,7 +26,11 @@ internal func generateRUMSwiftModels(from schema: URL) throws -> String {
             """,
         footer: ""
     )
-    let printer = SwiftPrinter()
+    let printer = SwiftPrinter(
+        configuration: .init(
+            accessLevel: .public
+        )
+    )
 
     return try generator
         .generateCode(from: schema)

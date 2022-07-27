@@ -137,3 +137,28 @@ private func pretty(context: DecodingError.Context) -> String {
         → underlyingError: \(String(describing: context.underlyingError))
     """
 }
+
+// MARK: - String formatting
+
+public extension String {
+    var camelCased: String {
+        guard !isEmpty else {
+            return ""
+        }
+
+        let words = components(separatedBy: CharacterSet.alphanumerics.inverted)
+        let first = words.first! // swiftlint:disable:this force_unwrapping
+        let rest = words.dropFirst().map { $0.uppercasingFirst }
+        return ([first] + rest).joined(separator: "")
+    }
+
+    /// Uppercases the first character.
+    var uppercasingFirst: String { prefix(1).uppercased() + dropFirst() }
+    /// Lowercases the first character.
+    var lowercasingFirst: String { prefix(1).lowercased() + dropFirst() }
+
+    /// "lowerCamelCased" notation.
+    var lowerCamelCased: String { camelCased.lowercasingFirst }
+    /// "UpperCamelCased" notation.
+    var upperCamelCased: String { camelCased.uppercasingFirst }
+}
