@@ -36,7 +36,7 @@ fileprivate extension Request {
         self.path = intermediateRequest.path
         self.httpMethod = intermediateRequest.method
         self.httpHeaders = headersString
-            .split(separator: "\r\n")
+            .split(separator: "\n")
             .map { String($0) }
         self.httpBody = bodyData
     }

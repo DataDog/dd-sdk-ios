@@ -12,68 +12,67 @@ extension LoggingFeature {
         return LoggingFeature(
             storage: .mockNoOp(),
             upload: .mockNoOp(),
-            configuration: .mockAny(),
-            commonDependencies: .mockAny()
+            configuration: .mockAny()
         )
     }
 
-    /// Mocks the feature instance which performs uploads to `URLSession`.
-    /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
-    static func mockWith(
-        directories: FeatureDirectories,
-        configuration: FeaturesConfiguration.Logging = .mockAny(),
-        dependencies: FeaturesCommonDependencies = .mockAny(),
-        telemetry: Telemetry? = nil
-    ) -> LoggingFeature {
-        return LoggingFeature(
-            directories: directories,
-            configuration: configuration,
-            commonDependencies: dependencies,
-            telemetry: telemetry
-        )
-    }
-
-    /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
+    /// Mocks the feature instance which performs writes to `InMemoryWriter`.
     /// Use `LogFeature.waitAndReturnLogMatchers()` to inspect and assert recorded `Logs`.
     static func mockByRecordingLogMatchers(
-        directories: FeatureDirectories,
-        configuration: FeaturesConfiguration.Logging = .mockAny(),
-        dependencies: FeaturesCommonDependencies = .mockAny()
+        featureConfiguration: FeaturesConfiguration.Logging = .mockAny()
     ) -> LoggingFeature {
-        // Get the full feature mock:
-        let fullFeature: LoggingFeature = .mockWith(
-            directories: directories,
-            configuration: configuration,
-            dependencies: dependencies.replacing(
-                dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
-            )
+        // Mock storage with `InMemoryWriter`, used later for retrieving recorded events back:
+        let interceptedStorage = FeatureStorage(
+            writer: InMemoryWriter(),
+            reader: NoOpFileReader(),
+            arbitraryAuthorizedWriter: NoOpFileWriter(),
+            dataOrchestrator: NoOpDataOrchestrator()
         )
-        let uploadWorker = DataUploadWorkerMock()
-        let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
-        // Replace by mocking the `FeatureUpload` and observing the `FeatureStorage`:
-        let mockedUpload = FeatureUpload(uploader: uploadWorker)
-        // Tear down the original upload
-        fullFeature.upload.flushAndTearDown()
         return LoggingFeature(
-            storage: observedStorage,
-            upload: mockedUpload,
-            configuration: configuration,
-            commonDependencies: dependencies
+            storage: interceptedStorage,
+            upload: .mockNoOp(),
+            configuration: featureConfiguration
         )
     }
 
     // MARK: - Expecting Logs Data
 
-    static func waitAndReturnLogMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
-        guard let uploadWorker = LoggingFeature.instance?.upload.uploader as? DataUploadWorkerMock else {
+    func waitAndReturnLogMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
+        guard let inMemoryWriter = storage.writer as? InMemoryWriter else {
             preconditionFailure("Retrieving matchers requires that feature is mocked with `.mockByRecordingLogMatchers()`")
         }
-        return try uploadWorker.waitAndReturnBatchedData(count: count, file: file, line: line)
-            .flatMap { batchData in try LogMatcher.fromArrayOfJSONObjectsData(batchData, file: file, line: line) }
+        return try inMemoryWriter.waitAndReturnEventsData(count: count, file: file, line: line)
+            .map { eventData in try LogMatcher.fromJSONObjectData(eventData) }
+    }
+
+    // swiftlint:disable:next function_default_parameter_at_end
+    static func waitAndReturnLogMatchers(in core: DatadogCoreProtocol = defaultDatadogCore, count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
+        guard let logging = core.v1.feature(LoggingFeature.self) else {
+            preconditionFailure("LoggingFeature is not registered in core")
+        }
+
+        return try logging.waitAndReturnLogMatchers(count: count, file: file, line: line)
     }
 }
 
 // MARK: - Log Mocks
+
+extension LogLevel: AnyMockable, RandomMockable {
+    static func mockAny() -> LogLevel {
+        return .debug
+    }
+
+    static func mockRandom() -> LogLevel {
+        return [
+            LogLevel.debug,
+            LogLevel.info,
+            LogLevel.notice,
+            LogLevel.warn,
+            LogLevel.error,
+            LogLevel.critical,
+        ].randomElement()!
+    }
+}
 
 extension LogEvent: EquatableInTests {}
 
@@ -185,54 +184,22 @@ extension LogEvent.Error: RandomMockable {
 
 // MARK: - Component Mocks
 
-extension Logger {
-    static func mockWith(
-        logBuilder: LogEventBuilder = .mockAny(),
-        logOutput: LogOutput = LogOutputMock(),
-        dateProvider: DateProvider = SystemDateProvider(),
-        identifier: String = .mockAny(),
-        rumContextIntegration: LoggingWithRUMContextIntegration? = nil,
-        activeSpanIntegration: LoggingWithActiveSpanIntegration? = nil
-    ) -> Logger {
-        return Logger(
-            logBuilder: logBuilder,
-            logOutput: logOutput,
-            dateProvider: dateProvider,
-            identifier: identifier,
-            rumContextIntegration: rumContextIntegration,
-            activeSpanIntegration: activeSpanIntegration
-        )
-    }
-}
-
-extension LogEventBuilder {
+extension LogEventBuilder: AnyMockable {
     static func mockAny() -> LogEventBuilder {
         return mockWith()
     }
 
     static func mockWith(
-        sdkVersion: String = .mockAny(),
-        applicationVersion: String = .mockAny(),
-        environment: String = .mockAny(),
-        serviceName: String = .mockAny(),
+        service: String = .mockAny(),
         loggerName: String = .mockAny(),
-        userInfoProvider: UserInfoProvider = .mockAny(),
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
-        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
-        dateCorrector: DateCorrectorType? = nil,
-        logEventMapper: LogEventMapper? = nil
+        sendNetworkInfo: Bool = .mockAny(),
+        eventMapper: LogEventMapper? = nil
     ) -> LogEventBuilder {
         return LogEventBuilder(
-            sdkVersion: sdkVersion,
-            applicationVersion: applicationVersion,
-            environment: environment,
-            serviceName: serviceName,
+            service: service,
             loggerName: loggerName,
-            userInfoProvider: userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider,
-            dateCorrector: dateCorrector,
-            logEventMapper: logEventMapper
+            sendNetworkInfo: sendNetworkInfo,
+            eventMapper: eventMapper
         )
     }
 }
@@ -289,22 +256,5 @@ class LogOutputMock: LogOutput {
         return allRecordedLogs
             .map { "- \($0)" }
             .joined(separator: "\n")
-    }
-}
-
-/// `Telemtry` recording received telemetry.
-class TelemetryMock: Telemetry, CustomStringConvertible {
-    private(set) var debugs: [String] = []
-    private(set) var errors: [(message: String, kind: String?, stack: String?)] = []
-    private(set) var description: String = "Telemetry logs:"
-
-    func debug(id: String, message: String) {
-        debugs.append(message)
-        description.append("\n- [debug] \(message)")
-    }
-
-    func error(id: String, message: String, kind: String?, stack: String?) {
-        errors.append((message: message, kind: kind, stack: stack))
-        description.append("\n - [error] \(message), kind: \(kind ?? "nil"), stack: \(stack ?? "nil")")
     }
 }

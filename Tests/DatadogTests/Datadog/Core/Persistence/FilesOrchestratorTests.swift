@@ -37,7 +37,7 @@ class FilesOrchestratorTests: XCTestCase {
         _ = try orchestrator.getWritableFile(writeSize: 1)
 
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
-        XCTAssertNotNil(try temporaryDirectory.file(named: dateProvider.currentDate().toFileName))
+        XCTAssertNotNil(try temporaryDirectory.file(named: dateProvider.now.toFileName))
     }
 
     func testGivenDefaultWriteConditions_whenUsedNextTime_itReusesWritableFile() throws {
@@ -173,7 +173,7 @@ class FilesOrchestratorTests: XCTestCase {
     func testGivenDefaultReadConditions_whenFileIsOldEnough_itReturnsReadableFile() throws {
         let dateProvider = RelativeDateProvider()
         let orchestrator = configureOrchestrator(using: dateProvider)
-        let file = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
+        let file = try temporaryDirectory.createFile(named: dateProvider.now.toFileName)
 
         dateProvider.advance(bySeconds: 1 + performance.minFileAgeForRead)
         XCTAssertEqual(orchestrator.getReadableFile()?.name, file.name)
@@ -182,7 +182,7 @@ class FilesOrchestratorTests: XCTestCase {
     func testGivenDefaultReadConditions_whenFileIsTooYoung_itReturnsNoFile() throws {
         let dateProvider = RelativeDateProvider()
         let orchestrator = configureOrchestrator(using: dateProvider)
-        _ = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
+        _ = try temporaryDirectory.createFile(named: dateProvider.now.toFileName)
 
         dateProvider.advance(bySeconds: 0.5 * performance.minFileAgeForRead)
         XCTAssertNil(orchestrator.getReadableFile())
@@ -191,7 +191,7 @@ class FilesOrchestratorTests: XCTestCase {
     func testGivenDefaultReadConditions_whenThereAreSeveralFiles_itReturnsTheOldestOne() throws {
         let dateProvider = RelativeDateProvider(advancingBySeconds: 1)
         let orchestrator = configureOrchestrator(using: dateProvider)
-        let fileNames = (0..<4).map { _ in dateProvider.currentDate().toFileName }
+        let fileNames = (0..<4).map { _ in dateProvider.now.toFileName }
         try fileNames.forEach { fileName in _ = try temporaryDirectory.createFile(named: fileName) }
 
         dateProvider.advance(bySeconds: 1 + performance.minFileAgeForRead)
@@ -209,7 +209,7 @@ class FilesOrchestratorTests: XCTestCase {
     func testGivenDefaultReadConditions_whenThereAreSeveralFiles_itExcludesGivenFileNames() throws {
         let dateProvider = RelativeDateProvider(advancingBySeconds: 1)
         let orchestrator = configureOrchestrator(using: dateProvider)
-        let fileNames = (0..<4).map { _ in dateProvider.currentDate().toFileName }
+        let fileNames = (0..<4).map { _ in dateProvider.now.toFileName }
         try fileNames.forEach { fileName in _ = try temporaryDirectory.createFile(named: fileName) }
 
         dateProvider.advance(bySeconds: 1 + performance.minFileAgeForRead)
@@ -223,7 +223,7 @@ class FilesOrchestratorTests: XCTestCase {
     func testGivenDefaultReadConditions_whenFileIsTooOld_itGetsDeleted() throws {
         let dateProvider = RelativeDateProvider()
         let orchestrator = configureOrchestrator(using: dateProvider)
-        _ = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
+        _ = try temporaryDirectory.createFile(named: dateProvider.now.toFileName)
 
         dateProvider.advance(bySeconds: 2 * performance.maxFileAgeForRead)
 
@@ -234,7 +234,7 @@ class FilesOrchestratorTests: XCTestCase {
     func testItDeletesReadableFile() throws {
         let dateProvider = RelativeDateProvider()
         let orchestrator = configureOrchestrator(using: dateProvider)
-        _ = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
+        _ = try temporaryDirectory.createFile(named: dateProvider.now.toFileName)
 
         dateProvider.advance(bySeconds: 1 + performance.minFileAgeForRead)
 
@@ -251,7 +251,7 @@ class FilesOrchestratorTests: XCTestCase {
 
         try (0..<numberOfFiles).forEach { _ in
             dateProvider.advance(bySeconds: 1 + performance.minFileAgeForRead)
-            _ = try temporaryDirectory.createFile(named: dateProvider.currentDate().toFileName)
+            _ = try temporaryDirectory.createFile(named: dateProvider.now.toFileName)
         }
 
         XCTAssertEqual(try temporaryDirectory.files().count, numberOfFiles, "Directory should contain \(numberOfFiles) before deletion")

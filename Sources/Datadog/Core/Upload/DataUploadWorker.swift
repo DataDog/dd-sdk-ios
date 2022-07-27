@@ -23,8 +23,6 @@ internal class DataUploadWorker: DataUploadWorkerType {
     private let uploadConditions: DataUploadConditions
     /// Name of the feature this worker is performing uploads for.
     private let featureName: String
-    /// A monitor reporting errors through internal telemetry feature (if enabled).
-    private let telemetry: Telemetry?
 
     /// Delay used to schedule consecutive uploads.
     private var delay: Delay
@@ -38,8 +36,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
         dataUploader: DataUploaderType,
         uploadConditions: DataUploadConditions,
         delay: Delay,
-        featureName: String,
-        telemetry: Telemetry? = nil
+        featureName: String
     ) {
         self.queue = queue
         self.fileReader = fileReader
@@ -47,7 +44,6 @@ internal class DataUploadWorker: DataUploadWorkerType {
         self.dataUploader = dataUploader
         self.delay = delay
         self.featureName = featureName
-        self.telemetry = telemetry
 
         let uploadWork = DispatchWorkItem { [weak self] in
             guard let self = self else {
@@ -58,7 +54,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
             let isSystemReady = blockersForUpload.isEmpty
             let nextBatch = isSystemReady ? self.fileReader.readNextBatch() : nil
             if let batch = nextBatch {
-                userLogger.debug("⏳ (\(self.featureName)) Uploading batch...")
+                DD.logger.debug("⏳ (\(self.featureName)) Uploading batch...")
 
                 // Upload batch
                 let uploadStatus = self.dataUploader.upload(data: batch.data)
@@ -67,26 +63,26 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 if uploadStatus.needsRetry {
                     self.delay.increase()
 
-                    userLogger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus.userDebugDescription)")
+                    DD.logger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus.userDebugDescription)")
                 } else {
                     self.fileReader.markBatchAsRead(batch)
                     self.delay.decrease()
 
-                    userLogger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus.userDebugDescription)")
+                    DD.logger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus.userDebugDescription)")
                 }
 
                 switch uploadStatus.error {
                 case .unauthorized:
-                    userLogger.error("⚠️ The client token you provided seems to be invalid.")
+                    DD.logger.error("⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.")
                 case let .httpError(statusCode: statusCode):
-                    self.telemetry?.error("Data upload finished with status code: \(statusCode)")
+                    DD.telemetry.error("Data upload finished with status code: \(statusCode)")
                 case let .networkError(error: error):
-                    self.telemetry?.error("Data upload finished with error", error: error)
+                    DD.telemetry.error("Data upload finished with error", error: error)
                 case .none: break
                 }
             } else {
                 let batchLabel = nextBatch != nil ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")
-                userLogger.debug("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(blockersForUpload.description)")
+                DD.logger.debug("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(blockersForUpload.description)")
 
                 self.delay.increase()
             }

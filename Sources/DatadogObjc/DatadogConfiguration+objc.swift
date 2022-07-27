@@ -143,6 +143,23 @@ public enum DDUploadFrequency: Int {
 }
 
 @objc
+public enum DDVitalsFrequency: Int {
+    case frequent
+    case average
+    case rare
+    case never
+
+    internal var swiftType: Datadog.Configuration.VitalsFrequency {
+        switch self {
+        case .frequent: return .frequent
+        case .average: return .average
+        case .rare: return .rare
+        case .never: return .never
+        }
+    }
+}
+
+@objc
 public protocol DDDataEncryption: AnyObject {
     /// Encrypts given `Data` with user-chosen encryption.
     ///
@@ -285,6 +302,11 @@ public class DDConfigurationBuilder: NSObject {
     }
 
     @objc
+    public func set(tracingSamplingRate: Float) {
+        _ = sdkBuilder.set(tracingSamplingRate: tracingSamplingRate)
+    }
+
+    @objc
     public func set(rumSessionsSamplingRate: Float) {
         _ = sdkBuilder.set(rumSessionsSamplingRate: rumSessionsSamplingRate)
     }
@@ -372,6 +394,11 @@ public class DDConfigurationBuilder: NSObject {
             let objcEvent = DDRUMLongTaskEvent(swiftModel: swiftEvent)
             return mapper(objcEvent)?.swiftModel
         }
+    }
+
+    @objc
+    public func set(mobileVitalsFrequency: DDVitalsFrequency) {
+        _ = sdkBuilder.set(mobileVitalsFrequency: mobileVitalsFrequency.swiftType)
     }
 
     @objc

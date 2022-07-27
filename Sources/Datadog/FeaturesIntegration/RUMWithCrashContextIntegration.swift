@@ -14,15 +14,11 @@ internal struct RUMWithCrashContextIntegration {
     private weak var rumViewEventProvider: ValuePublisher<RUMViewEvent?>?
     private weak var rumSessionStateProvider: ValuePublisher<RUMSessionState?>?
 
-    init?() {
-        if let crashReportingFeature = CrashReportingFeature.instance {
-            self.init(
-                rumViewEventProvider: crashReportingFeature.rumViewEventProvider,
-                rumSessionStateProvider: crashReportingFeature.rumSessionStateProvider
-            )
-        } else {
-            return nil
-        }
+    init(crashReporting: CrashReportingFeature) {
+        self.init(
+            rumViewEventProvider: crashReporting.rumViewEventProvider,
+            rumSessionStateProvider: crashReporting.rumSessionStateProvider
+        )
     }
 
     init(

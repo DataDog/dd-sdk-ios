@@ -8,14 +8,21 @@ import XCTest
 @testable import Datadog
 
 class RUMIntegrationsTests: XCTestCase {
+    let core = DatadogCoreMock()
+
     private let integration = RUMContextIntegration()
 
+    override func tearDown() {
+        core.flush()
+        super.tearDown()
+    }
+
     func testGivenRUMMonitorRegistered_itProvidesRUMContextAttributes() throws {
-        RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance?.deinitialize() }
+        let rum: RUMFeature = .mockNoOp()
+        core.register(feature: rum)
 
         // given
-        Global.rum = RUMMonitor.initialize()
+        Global.rum = RUMMonitor.initialize(in: core)
         Global.rum.startView(viewController: mockView)
         Global.rum.startUserAction(type: .tap, name: .mockAny())
         defer { Global.rum = DDNoopRUMMonitor() }
@@ -26,7 +33,7 @@ class RUMIntegrationsTests: XCTestCase {
         XCTAssertEqual(attributes.count, 4)
         XCTAssertEqual(
             attributes["application_id"] as? String,
-            try XCTUnwrap(RUMFeature.instance?.configuration.applicationID)
+            rum.configuration.applicationID
         )
         XCTAssertValidRumUUID(attributes["session_id"] as? String)
         XCTAssertValidRumUUID(attributes["view.id"] as? String)
@@ -34,21 +41,15 @@ class RUMIntegrationsTests: XCTestCase {
     }
 
     func testGivenRUMMonitorRegistered_whenSessionIsRejectedBySampler_itProvidesEmptyRUMContextAttributes() throws {
-        RUMFeature.instance = RUMFeature(
-            eventsMapper: .mockNoOp(),
+        let rum = RUMFeature(
             storage: .mockNoOp(),
             upload: .mockNoOp(),
-            configuration: .mockWith(sessionSampler: .mockRejectAll()),
-            commonDependencies: .mockAny(),
-            vitalCPUReader: SamplingBasedVitalReaderMock(),
-            vitalMemoryReader: SamplingBasedVitalReaderMock(),
-            vitalRefreshRateReader: ContinuousVitalReaderMock(),
-            onSessionStart: nil
+            configuration: .mockWith(sessionSampler: .mockRejectAll())
         )
-        defer { RUMFeature.instance?.deinitialize() }
+        core.register(feature: rum)
 
         // given
-        Global.rum = RUMMonitor.initialize()
+        Global.rum = RUMMonitor.initialize(in: core)
         Global.rum.startView(viewController: mockView)
         defer { Global.rum = DDNoopRUMMonitor() }
 
@@ -59,9 +60,6 @@ class RUMIntegrationsTests: XCTestCase {
     }
 
     func testWhenRUMMonitorIsNotRegistered_itReturnsNil() throws {
-        RUMFeature.instance = .mockNoOp()
-        defer { RUMFeature.instance?.deinitialize() }
-
         // when
         XCTAssertTrue(Global.rum is DDNoopRUMMonitor)
 
@@ -71,24 +69,17 @@ class RUMIntegrationsTests: XCTestCase {
 }
 
 class RUMErrorsIntegrationTests: XCTestCase {
-    private let integration = RUMErrorsIntegration()
-
-    override func setUp() {
-        super.setUp()
-        temporaryFeatureDirectories.create()
-    }
-
-    override func tearDown() {
-        super.tearDown()
-        temporaryFeatureDirectories.delete()
-    }
+    let integration = RUMErrorsIntegration()
 
     func testGivenRUMMonitorRegistered_whenAddingErrorMessage_itSendsRUMErrorForCurrentView() throws {
-        RUMFeature.instance = .mockByRecordingRUMEventMatchers(directories: temporaryFeatureDirectories)
-        defer { RUMFeature.instance?.deinitialize() }
+        let core = DatadogCoreMock()
+        defer { core.flush() }
+
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
+        core.register(feature: rum)
 
         // given
-        Global.rum = RUMMonitor.initialize()
+        Global.rum = RUMMonitor.initialize(in: core)
         Global.rum.startView(viewController: mockView)
         defer { Global.rum = DDNoopRUMMonitor() }
 
@@ -96,7 +87,7 @@ class RUMErrorsIntegrationTests: XCTestCase {
         integration.addError(with: "error message", type: "Error type", stack: "Foo.swift:10", source: .logger)
 
         // then
-        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(count: 3) // [RUMView, RUMAction, RUMError] events sent
+        let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 3) // [RUMView, RUMAction, RUMError] events sent
         let rumErrorMatcher = rumEventMatchers.first { $0.model(isTypeOf: RUMErrorEvent.self) }
         try XCTUnwrap(rumErrorMatcher).model(ofType: RUMErrorEvent.self) { rumModel in
             XCTAssertEqual(rumModel.error.message, "error message")

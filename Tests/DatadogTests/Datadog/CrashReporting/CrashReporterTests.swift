@@ -25,8 +25,7 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
-            loggingOrRUMIntegration: integration,
-            telemetry: nil
+            loggingOrRUMIntegration: integration
         )
 
         // Then
@@ -58,8 +57,7 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
-            loggingOrRUMIntegration: integration,
-            telemetry: nil
+            loggingOrRUMIntegration: integration
         )
 
         // Then
@@ -86,8 +84,7 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
-            loggingOrRUMIntegration: integration,
-            telemetry: nil
+            loggingOrRUMIntegration: integration
         )
 
         // Then
@@ -113,8 +110,7 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(initialCrashContext: initialCrashContext),
-            loggingOrRUMIntegration: CrashReportingIntegrationMock(),
-            telemetry: nil
+            loggingOrRUMIntegration: CrashReportingIntegrationMock()
         )
 
         try withExtendedLifetime(crashReporter) {
@@ -137,8 +133,7 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: crashContextProvider,
-            loggingOrRUMIntegration: CrashReportingIntegrationMock(),
-            telemetry: nil
+            loggingOrRUMIntegration: CrashReportingIntegrationMock()
         )
 
         try withExtendedLifetime(crashReporter) {
@@ -179,8 +174,7 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: crashContextProvider,
-            loggingOrRUMIntegration: CrashReportingIntegrationMock(),
-            telemetry: nil
+            loggingOrRUMIntegration: CrashReportingIntegrationMock()
         )
 
         // swiftlint:disable opening_brace
@@ -199,11 +193,8 @@ class CrashReporterTests: XCTestCase {
     // MARK: - Usage
 
     func testGivenPendingCrashReport_whenLoggingOrRUMIntegrationCannotBeObtained_itCannotBeInstantiated() {
-        let previousUserLogger = userLogger
-        defer { userLogger = previousUserLogger }
-
-        let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output)
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         let plugin = CrashReportingPluginMock()
 
@@ -211,15 +202,17 @@ class CrashReporterTests: XCTestCase {
         plugin.pendingCrashReport = .mockAny()
 
         // When
-        XCTAssertNil(LoggingFeature.instance)
-        XCTAssertNil(RUMFeature.instance)
-        let crashReporter = CrashReporter(crashReportingFeature: .mockNoOp())
+        let crashReporter = CrashReporter(
+            crashReportingFeature: .mockNoOp(),
+            loggingFeature: nil,
+            rumFeature: nil,
+            context: .mockAny()
+        )
 
         // Then
         XCTAssertNil(crashReporter)
-        XCTAssertEqual(output.recordedLog?.status, .error)
         XCTAssertEqual(
-            output.recordedLog?.message,
+            dd.logger.errorLog?.message,
             """
             In order to use Crash Reporting, RUM or Logging feature must be enabled.
             Make sure `.enableRUM(true)` or `.enableLogging(true)` are configured

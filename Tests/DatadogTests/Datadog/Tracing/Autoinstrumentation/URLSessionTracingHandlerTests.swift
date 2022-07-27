@@ -8,23 +8,28 @@ import XCTest
 @testable import Datadog
 
 class URLSessionTracingHandlerTests: XCTestCase {
-    private let spanOutput = SpanOutputMock()
-    private let logOutput = LogOutputMock()
+    private let core = PassthroughCoreMock()
     private let handler = URLSessionTracingHandler(
         appStateListener: AppStateListenerMock(
             history: .init(
                 initialSnapshot: .init(state: .active, date: .mockDecember15th2019At10AMUTC()),
                 recentDate: .mockDecember15th2019At10AMUTC() + 10
             )
-        )
+        ),
+        tracingSampler: .mockKeepAll()
     )
 
     override func setUp() {
         Global.sharedTracer = Tracer.mockWith(
-            spanOutput: spanOutput,
-            logOutput: .init(
-                logBuilder: .mockAny(),
-                loggingOutput: logOutput
+            core: core,
+            loggingIntegration: .init(
+                core: core,
+                logBuilder: .init(
+                    service: .mockAny(),
+                    loggerName: .mockAny(),
+                    sendNetworkInfo: .mockAny(),
+                    eventMapper: nil
+                )
             )
         )
         super.setUp()
@@ -36,8 +41,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
     }
 
     func testGivenFirstPartyInterceptionWithSpanContext_whenInterceptionCompletes_itUsesInjectedSpanContext() throws {
-        let spanSentExpectation = expectation(description: "Send span")
-        spanOutput.onSpanRecorded = { _ in spanSentExpectation.fulfill() }
+        core.expectation = expectation(description: "Send span")
 
         // Given
         let interception = TaskInterception(request: .mockAny(), isFirstParty: true)
@@ -60,20 +64,21 @@ class URLSessionTracingHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let span = try XCTUnwrap(spanOutput.lastRecordedSpan)
+        let envelope: SpanEventsEnvelope? = core.events().last
+        let span = try XCTUnwrap(envelope?.spans.first)
+
         XCTAssertEqual(span.traceID.rawValue, 100)
         XCTAssertEqual(span.spanID.rawValue, 200)
         XCTAssertEqual(span.operationName, "urlsession.request")
         XCTAssertFalse(span.isError)
         XCTAssertEqual(span.duration, 1)
 
-        let log = logOutput.recordedLog
+        let log: LogEvent? = core.events().last
         XCTAssertNil(log)
     }
 
     func testGivenFirstPartyInterceptionWithNoError_whenInterceptionCompletes_itEncodesRequestInfoInSpan() throws {
-        let spanSentExpectation = expectation(description: "Send span")
-        spanOutput.onSpanRecorded = { _ in spanSentExpectation.fulfill() }
+        core.expectation = expectation(description: "Send span")
 
         // Given
         let request: URLRequest = .mockWith(httpMethod: "POST")
@@ -94,7 +99,8 @@ class URLSessionTracingHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let span = try XCTUnwrap(spanOutput.lastRecordedSpan)
+        let envelope: SpanEventsEnvelope? = core.events().last
+        let span = try XCTUnwrap(envelope?.spans.first)
         XCTAssertEqual(span.operationName, "urlsession.request")
         XCTAssertFalse(span.isError)
         XCTAssertEqual(span.duration, 2)
@@ -104,16 +110,23 @@ class URLSessionTracingHandlerTests: XCTestCase {
         XCTAssertEqual(span.tags[OTTags.httpStatusCode], "200")
         XCTAssertEqual(span.tags.count, 5)
 
-        let log = logOutput.recordedLog
+        let log: LogEvent? = core.events().last
         XCTAssertNil(log)
     }
 
     func testGivenFirstPartyInterceptionWithNetworkError_whenInterceptionCompletes_itEncodesRequestInfoInSpanAndSendsLog() throws {
-        let spanSentExpectation = expectation(description: "Send span")
-        spanOutput.onSpanRecorded = { _ in spanSentExpectation.fulfill() }
+        core.expectation = expectation(description: "Send span and log")
+        core.expectation?.expectedFulfillmentCount = 2
 
         // Given
-        let request: URLRequest = .mockWith(url: "https://www.example.com", queryParams: [URLQueryItem(name: "foo", value: "42"), URLQueryItem(name: "lang", value: "en")], httpMethod: "GET")
+        let request: URLRequest = .mockWith(
+            url: "https://www.example.com",
+            queryParams: [
+                URLQueryItem(name: "foo", value: "42"),
+                URLQueryItem(name: "lang", value: "en")
+            ],
+            httpMethod: "GET"
+        )
         let error = NSError(domain: "domain", code: 123, userInfo: [NSLocalizedDescriptionKey: "network error"])
         let interception = TaskInterception(request: request, isFirstParty: true)
         interception.register(completion: .mockWith(response: nil, error: error))
@@ -132,7 +145,8 @@ class URLSessionTracingHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let span = try XCTUnwrap(spanOutput.lastRecordedSpan)
+        let envelope: SpanEventsEnvelope? = core.events().last
+        let span = try XCTUnwrap(envelope?.spans.first)
         XCTAssertEqual(span.operationName, "urlsession.request")
         XCTAssertEqual(span.resource, "https://www.example.com")
         XCTAssertEqual(span.duration, 30)
@@ -147,15 +161,15 @@ class URLSessionTracingHandlerTests: XCTestCase {
         XCTAssertEqual(span.tags[DDTags.errorMessage], "network error")
         XCTAssertEqual(span.tags.count, 7)
 
-        let log = try XCTUnwrap(logOutput.recordedLog, "It should send error log")
+        let log: LogEvent = try XCTUnwrap(core.events().last, "It should send error log")
         XCTAssertEqual(log.status, .error)
         XCTAssertEqual(log.message, "network error")
         XCTAssertEqual(
-            log.attributes.internalAttributes?[LoggingForTracingAdapter.TracingAttributes.traceID] as? String,
+            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.traceID] as? String,
             "\(span.traceID.rawValue)"
         )
         XCTAssertEqual(
-            log.attributes.internalAttributes?[LoggingForTracingAdapter.TracingAttributes.spanID] as? String,
+            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.spanID] as? String,
             "\(span.spanID.rawValue)"
         )
         XCTAssertEqual(log.error?.kind, "domain - 123")
@@ -172,8 +186,8 @@ class URLSessionTracingHandlerTests: XCTestCase {
     }
 
     func testGivenFirstPartyInterceptionWithClientError_whenInterceptionCompletes_itEncodesRequestInfoInSpanAndSendsLog() throws {
-        let spanSentExpectation = expectation(description: "Send span")
-        spanOutput.onSpanRecorded = { _ in spanSentExpectation.fulfill() }
+        core.expectation = expectation(description: "Send span and log")
+        core.expectation?.expectedFulfillmentCount = 2
 
         // Given
         let request: URLRequest = .mockWith(httpMethod: "GET")
@@ -194,7 +208,8 @@ class URLSessionTracingHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let span = try XCTUnwrap(spanOutput.lastRecordedSpan)
+        let envelope: SpanEventsEnvelope? = core.events().last
+        let span = try XCTUnwrap(envelope?.spans.first)
         XCTAssertEqual(span.operationName, "urlsession.request")
         XCTAssertEqual(span.resource, "404")
         XCTAssertEqual(span.duration, 2)
@@ -210,15 +225,15 @@ class URLSessionTracingHandlerTests: XCTestCase {
         )
         XCTAssertEqual(span.tags.count, 8)
 
-        let log = try XCTUnwrap(logOutput.recordedLog, "It should send error log")
+        let log: LogEvent = try XCTUnwrap(core.events().last, "It should send error log")
         XCTAssertEqual(log.status, .error)
         XCTAssertEqual(log.message, "404 not found")
         XCTAssertEqual(
-            log.attributes.internalAttributes?[LoggingForTracingAdapter.TracingAttributes.traceID] as? String,
+            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.traceID] as? String,
             "\(span.traceID.rawValue)"
         )
         XCTAssertEqual(
-            log.attributes.internalAttributes?[LoggingForTracingAdapter.TracingAttributes.spanID] as? String,
+            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.spanID] as? String,
             "\(span.spanID.rawValue)"
         )
         XCTAssertEqual(log.error?.kind, "HTTPURLResponse - 404")
@@ -235,9 +250,8 @@ class URLSessionTracingHandlerTests: XCTestCase {
     }
 
     func testGivenFirstPartyIncompleteInterception_whenInterceptionCompletes_itDoesNotSendTheSpan() throws {
-        let spanNotSentExpectation = expectation(description: "Do not send span")
-        spanNotSentExpectation.isInverted = true
-        spanOutput.onSpanRecorded = { _ in spanNotSentExpectation.fulfill() }
+        core.expectation = expectation(description: "Do not send span")
+        core.expectation?.isInverted = true
 
         // Given
         let incompleteInterception = TaskInterception(request: .mockAny(), isFirstParty: true)
@@ -248,13 +262,12 @@ class URLSessionTracingHandlerTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
-        XCTAssertNil(spanOutput.lastRecordedSpan)
+        XCTAssertTrue(core.events.isEmpty)
     }
 
     func testGivenThirdPartyInterception_whenInterceptionCompletes_itDoesNotSendTheSpan() throws {
-        let spanNotSentExpectation = expectation(description: "Do not send span")
-        spanNotSentExpectation.isInverted = true
-        spanOutput.onSpanRecorded = { _ in spanNotSentExpectation.fulfill() }
+        core.expectation = expectation(description: "Do not send span")
+        core.expectation?.isInverted = true
 
         // Given
         let interception = TaskInterception(request: .mockAny(), isFirstParty: false)
@@ -273,13 +286,11 @@ class URLSessionTracingHandlerTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
-        XCTAssertNil(spanOutput.lastRecordedSpan)
-        XCTAssertNil(logOutput.recordedLog)
+        XCTAssertTrue(core.events.isEmpty)
     }
 
     func testGivenAnyInterception_itAddsAppStateInformationToSpan() throws {
-        let spanSentExpectation = expectation(description: "Send span")
-        spanOutput.onSpanRecorded = { _ in spanSentExpectation.fulfill() }
+        core.expectation = expectation(description: "Send span")
 
         // Given
         let interception = TaskInterception(request: .mockAny(), isFirstParty: true)
@@ -298,8 +309,37 @@ class URLSessionTracingHandlerTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
-        let recordedSpan = try XCTUnwrap(spanOutput.lastRecordedSpan)
-        XCTAssertEqual(recordedSpan.tags[DDTags.foregroundDuration], "10000000000")
-        XCTAssertEqual(recordedSpan.tags[DDTags.isBackground], "false")
+        let envelope: SpanEventsEnvelope? = core.events().last
+        let span = try XCTUnwrap(envelope?.spans.first)
+        XCTAssertEqual(span.tags[DDTags.foregroundDuration], "10000000000")
+        XCTAssertEqual(span.tags[DDTags.isBackground], "false")
+    }
+
+    func testGivenRejectingHandler_itDoesNotRecordSpan() throws {
+        core.expectation = expectation(description: "Do not send span")
+        core.expectation?.isInverted = true
+
+        // Given
+        let handler = URLSessionTracingHandler(
+            appStateListener: AppStateListenerMock.mockAppInForeground(),
+            tracingSampler: .mockRejectAll()
+       )
+
+        let interception = TaskInterception(request: .mockAny(), isFirstParty: true)
+        interception.register(completion: .mockAny())
+        interception.register(
+            metrics: .mockWith(
+                fetch: .init(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 10)
+                )
+            )
+        )
+
+        // When
+        handler.notify_taskInterceptionCompleted(interception: interception)
+
+        // Then
+        waitForExpectations(timeout: 0.5)
     }
 }

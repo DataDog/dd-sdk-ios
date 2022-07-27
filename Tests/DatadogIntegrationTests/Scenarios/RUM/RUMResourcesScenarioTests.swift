@@ -105,10 +105,6 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
             "`x-datadog-sampling-priority: 1` header must be set for `firstPartyPOSTResourceURL`"
         )
         XCTAssertTrue(
-            firstPartyPOSTRequest.httpHeaders.contains("x-datadog-sampled: 1"),
-            "`x-datadog-sampled: 1` header must be set for `firstPartyPOSTResourceURL`"
-        )
-        XCTAssertTrue(
             firstPartyPOSTRequest.httpHeaders.contains("x-datadog-origin: rum"),
             "`x-datadog-origin: rum` header must be set for `firstPartyPOSTResourceURL`"
         )

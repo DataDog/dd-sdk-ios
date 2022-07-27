@@ -21,15 +21,13 @@ internal struct SpanEventBuilder {
     /// Shared mobile carrier info provider (or `nil` if disabled for given tracer).
     let carrierInfoProvider: CarrierInfoProviderType?
     /// Adjusts span's time (device time) to server time.
-    let dateCorrector: DateCorrectorType
+    let dateCorrector: DateCorrector
     /// Source tag to encode in span (e.g. `ios` for native iOS).
     let source: String
     /// Optional Origin tag to encode in span (e.g. `ciapp-test`).
     let origin: String?
     /// Span events mapper configured by the user, `nil` if not set.
     let eventsMapper: SpanEventMapper?
-    /// Telemetry interface
-    let telemetry: Telemetry?
 
     func createSpanEvent(
         traceID: TracingUUID,
@@ -69,7 +67,7 @@ internal struct SpanEventBuilder {
             operationName: operationName,
             serviceName: serviceName,
             resource: tagsReducer.extractedResourceName ?? operationName,
-            startTime: dateCorrector.currentCorrection.applying(to: startTime),
+            startTime: startTime.addingTimeInterval(dateCorrector.offset),
             duration: finishTime.timeIntervalSince(startTime),
             isError: tagsReducer.extractedIsError ?? false,
             source: source,
@@ -131,7 +129,7 @@ internal struct SpanEventBuilder {
                                 codingPath: [],
                                 debugDescription: "Failed to use temporary array container when encoding span tag '\(key)' to JSON string."
                             )
-                            telemetry?.error(encodingContext.debugDescription)
+                            DD.telemetry.error(encodingContext.debugDescription)
                             throw EncodingError.invalidValue(encodable.value, encodingContext)
                         }
 
@@ -145,11 +143,11 @@ internal struct SpanEventBuilder {
                             codingPath: [],
                             debugDescription: "Failed to read utf-8 JSON data when encoding span tag '\(key)' to JSON string."
                         )
-                        telemetry?.error(encodingContext.debugDescription)
+                        DD.telemetry.error(encodingContext.debugDescription)
                         throw EncodingError.invalidValue(encodable.value, encodingContext)
                     }
                 } catch let error {
-                    userLogger.error(
+                    DD.logger.error(
                         """
                         Failed to convert span `Encodable` attribute to `String`. The value of `\(key)` will not be sent.
                         """,

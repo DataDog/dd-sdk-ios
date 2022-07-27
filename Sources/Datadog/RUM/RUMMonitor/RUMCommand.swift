@@ -17,6 +17,8 @@ internal protocol RUMCommand {
     var canStartBackgroundView: Bool { get }
     /// Whether or not receiving this command should start the "ApplicationLaunch" view if no view was yet started in current app process.
     var canStartApplicationLaunchView: Bool { get }
+    /// Whether or not this command is considered a user intaraction
+    var isUserInteraction: Bool { get }
 }
 
 // MARK: - RUM View related commands
@@ -26,6 +28,7 @@ internal struct RUMStartViewCommand: RUMCommand {
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, it should start its own view, not the "Background"
     let canStartApplicationLaunchView = false // no, it should start its own view, not the "ApplicationLaunch"
+    let isUserInteraction = true // a new View means there was a navigation, it's considered a User interaction
 
     /// The value holding stable identity of the RUM View.
     let identity: RUMViewIdentifiable
@@ -56,6 +59,7 @@ internal struct RUMStopViewCommand: RUMCommand {
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't expect receiving it without an active view
     let canStartApplicationLaunchView = false // no, we don't expect receiving it without an active view
+    let isUserInteraction = false // a view can be stopped and in most cases should not be considered an interaction (if it's stopped because the user navigate inside the same app, the startView will happen shortly after this)
 
     /// The value holding stable identity of the RUM View.
     let identity: RUMViewIdentifiable
@@ -66,6 +70,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we want to track errors in "Background" view
     let canStartApplicationLaunchView = true // yes, we want to track errors in "ApplicationLaunch" view
+    let isUserInteraction = false // an error is not an interactive event
 
     /// The error message.
     let message: String
@@ -124,6 +129,7 @@ internal struct RUMAddViewTimingCommand: RUMCommand {
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, it doesn't make sense to start "Background" view on receiving custom timing, as it will be `0ns` timing
     let canStartApplicationLaunchView = false // no, it doesn't make sense to start "ApplicationLaunch" view on receiving custom timing, as it will be `0ns` timing
+    let isUserInteraction = false // a custom view timing is not an interactive event
 
     /// The name of the timing. It will be used as a JSON key, whereas the value will be the timing duration,
     /// measured since the start of the View.
@@ -150,6 +156,7 @@ internal struct RUMStartResourceCommand: RUMResourceCommand {
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we want to track resources in "Background" view
     let canStartApplicationLaunchView = true // yes, we want to track resources in "ApplicationLaunch" view
+    let isUserInteraction = false // a resource is not an interactive event
 
     /// Resource url
     let url: String
@@ -157,8 +164,6 @@ internal struct RUMStartResourceCommand: RUMResourceCommand {
     let httpMethod: RUMMethod
     /// A type of the Resource if it's possible to determine on start (when the response MIME is not yet known).
     let kind: RUMResourceType?
-    /// Whether or not the resource url targets a first party host, if that information is available.
-    let isFirstPartyRequest: Bool?
     /// Span context passed to the RUM backend in order to generate the APM span for underlying resource.
     let spanContext: RUMSpanContext?
 }
@@ -169,6 +174,7 @@ internal struct RUMAddResourceMetricsCommand: RUMResourceCommand {
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartResourceCommand`)
     let canStartApplicationLaunchView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartResourceCommand`)
+    let isUserInteraction = false // an error is not an interactive event
 
     /// Resource metrics.
     let metrics: ResourceMetrics
@@ -180,6 +186,7 @@ internal struct RUMStopResourceCommand: RUMResourceCommand {
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartResourceCommand`)
     let canStartApplicationLaunchView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartResourceCommand`)
+    let isUserInteraction = false // a resource is not an interactive event
 
     /// A type of the Resource
     let kind: RUMResourceType
@@ -195,6 +202,7 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartResourceCommand`)
     let canStartApplicationLaunchView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartResourceCommand`)
+    let isUserInteraction = false // a resource is not an interactive event
 
     /// The error message.
     let errorMessage: String
@@ -268,6 +276,7 @@ internal struct RUMStartUserActionCommand: RUMUserActionCommand {
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we want to track actions in "Background" view (e.g. it makes sense for custom actions)
     let canStartApplicationLaunchView = true // yes, we want to track actions in "ApplicationLaunch" view (e.g. it makes sense for custom actions)
+    let isUserInteraction = true // a user action definitely is a User Interacgion
 
     let actionType: RUMUserActionType
     let name: String
@@ -279,6 +288,7 @@ internal struct RUMStopUserActionCommand: RUMUserActionCommand {
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartUserActionCommand`)
     let canStartApplicationLaunchView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartUserActionCommand`)
+    let isUserInteraction = true // a user action definitely is a User Interacgion
 
     let actionType: RUMUserActionType
     let name: String?
@@ -290,6 +300,7 @@ internal struct RUMAddUserActionCommand: RUMUserActionCommand {
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we want to track actions in "Background" view (e.g. it makes sense for custom actions)
     let canStartApplicationLaunchView = true // yes, we want to track actions in "ApplicationLaunch" view (e.g. it makes sense for custom actions)
+    let isUserInteraction = true // a user action definitely is a User Interacgion
 
     let actionType: RUMUserActionType
     let name: String
@@ -302,6 +313,7 @@ internal struct RUMAddLongTaskCommand: RUMCommand {
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't expect receiving long tasks in "Background" view
     let canStartApplicationLaunchView = true // yes, we want to track long tasks in "ApplicationLaunch" view (e.g. any hitches before presenting first UI)
+    let isUserInteraction = false // a long task is not an interactive event
 
     let duration: TimeInterval
 }
@@ -312,6 +324,7 @@ internal struct RUMAddLongTaskCommand: RUMCommand {
 internal struct RUMKeepSessionAliveCommand: RUMCommand {
     let canStartBackgroundView = false
     let canStartApplicationLaunchView = false
+    let isUserInteraction = false
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
 }

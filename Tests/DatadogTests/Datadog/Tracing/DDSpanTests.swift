@@ -8,21 +8,15 @@ import XCTest
 @testable import Datadog
 
 class DDSpanTests: XCTestCase {
-    private let spanOutput = SpanOutputMock()
-    private let logOutput = LogOutputMock()
-    private lazy var mockTracer: Tracer = .mockWith(
-        spanOutput: spanOutput,
-        logOutput: .init(logBuilder: .mockAny(), loggingOutput: logOutput)
-    )
-
     // MARK: - Sending SpanEvent
 
-    func testWhenSpanIsFinished_itWritesSpanEventToSpanOutput() throws {
+    func testWhenSpanIsFinished_itWritesSpanEventToCore() throws {
         let writeSpansExpectation = expectation(description: "write span event")
-        spanOutput.onSpanRecorded = { _ in writeSpansExpectation.fulfill() }
+        let core = PassthroughCoreMock(expectation: writeSpansExpectation)
 
         // Given
-        let span: DDSpan = .mockWith(tracer: mockTracer)
+        let tracer: Tracer = .mockWith(core: core)
+        let span: DDSpan = .mockWith(tracer: tracer)
 
         // When
         span.finish()
@@ -34,12 +28,16 @@ class DDSpanTests: XCTestCase {
     // MARK: - Sending Span Logs
 
     func testWhenLoggingSpanEvent_itWritesLogToLogOutput() throws {
-        let writeSpanLogsExpectation = expectation(description: "write 2 logs")
-        writeSpanLogsExpectation.expectedFulfillmentCount = 2
-        logOutput.onLogRecorded  = { _ in writeSpanLogsExpectation.fulfill() }
+        let core = PassthroughCoreMock()
+        core.expectation = expectation(description: "write span event")
+        core.expectation?.expectedFulfillmentCount = 2
 
         // Given
-        let span: DDSpan = .mockWith(tracer: mockTracer)
+        let tracer: Tracer = .mockWith(
+            core: core,
+            loggingIntegration: .init(core: core, logBuilder: .mockAny())
+        )
+        let span: DDSpan = .mockWith(tracer: tracer)
 
         // When
         let log1Fields = mockRandomAttributes()
@@ -50,24 +48,25 @@ class DDSpanTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
-        XCTAssertEqual(logOutput.allRecordedLogs.count, 2)
-        let log1 = try XCTUnwrap(logOutput.allRecordedLogs[0])
-        let log2 = try XCTUnwrap(logOutput.allRecordedLogs[1])
-        AssertDictionariesEqual(log1.attributes.userAttributes, log1Fields)
-        AssertDictionariesEqual(log2.attributes.userAttributes, log2Fields)
+
+        let logs: [LogEvent] = core.events()
+        XCTAssertEqual(logs.count, 2, "It should send 2 logs")
+        AssertDictionariesEqual(logs[0].attributes.userAttributes, log1Fields)
+        AssertDictionariesEqual(logs[1].attributes.userAttributes, log2Fields)
     }
 
     // MARK: - Customizing SpanEvents
 
-    func testWhenSettingCustomOperationName_itOverwritesOriginalName() {
+    func testWhenSettingCustomOperationName_itOverwritesOriginalName() throws {
         let writeSpansExpectation = expectation(description: "write 2 span events")
         writeSpansExpectation.expectedFulfillmentCount = 2
-        spanOutput.onSpanRecorded = { _ in writeSpansExpectation.fulfill() }
+        let core = PassthroughCoreMock(expectation: writeSpansExpectation)
 
         // Given
         let defaultOperationName: String = .mockRandom()
-        let defaultSpan: DDSpan = .mockWith(tracer: mockTracer, operationName: defaultOperationName)
-        let customizedSpan: DDSpan = .mockWith(tracer: mockTracer, operationName: defaultOperationName)
+        let tracer: Tracer = .mockWith(core: core)
+        let defaultSpan: DDSpan = .mockWith(tracer: tracer, operationName: defaultOperationName)
+        let customizedSpan: DDSpan = .mockWith(tracer: tracer, operationName: defaultOperationName)
 
         // When
         let customizedOperationName: String = .mockRandom()
@@ -78,20 +77,22 @@ class DDSpanTests: XCTestCase {
         customizedSpan.finish()
 
         waitForExpectations(timeout: 0.5, handler: nil)
-        XCTAssertEqual(spanOutput.allRecordedSpans.count, 2)
-        XCTAssertEqual(spanOutput.allRecordedSpans[0].operationName, defaultOperationName)
-        XCTAssertEqual(spanOutput.allRecordedSpans[1].operationName, customizedOperationName)
+        let events: [SpanEventsEnvelope] = core.events()
+        XCTAssertEqual(events.count, 2)
+        XCTAssertEqual(events[0].spans.first?.operationName, defaultOperationName)
+        XCTAssertEqual(events[1].spans.first?.operationName, customizedOperationName)
     }
 
-    func testWhenSettingCustomTags_theyAreMergedWithDefaultTags() {
+    func testWhenSettingCustomTags_theyAreMergedWithDefaultTags() throws {
         let writeSpansExpectation = expectation(description: "write 2 span events")
         writeSpansExpectation.expectedFulfillmentCount = 2
-        spanOutput.onSpanRecorded = { _ in writeSpansExpectation.fulfill() }
+        let core = PassthroughCoreMock(expectation: writeSpansExpectation)
 
         // Given
         let defaultTags: [String: String] = .mockRandom()
-        let defaultSpan: DDSpan = .mockWith(tracer: mockTracer, tags: defaultTags)
-        let customizedSpan: DDSpan = .mockWith(tracer: mockTracer, tags: defaultTags)
+        let tracer: Tracer = .mockWith(core: core)
+        let defaultSpan: DDSpan = .mockWith(tracer: tracer, tags: defaultTags)
+        let customizedSpan: DDSpan = .mockWith(tracer: tracer, tags: defaultTags)
 
         // When
         let customTags: [String: String] = .mockRandom()
@@ -104,9 +105,10 @@ class DDSpanTests: XCTestCase {
         customizedSpan.finish()
 
         waitForExpectations(timeout: 0.5, handler: nil)
-        XCTAssertEqual(spanOutput.allRecordedSpans.count, 2)
-        XCTAssertEqual(spanOutput.allRecordedSpans[0].tags, defaultTags)
-        XCTAssertEqual(spanOutput.allRecordedSpans[1].tags, defaultTags.merging(customTags) { _, custom in custom })
+        let events: [SpanEventsEnvelope] = core.events()
+        XCTAssertEqual(events.count, 2)
+        XCTAssertEqual(events[0].spans.first?.tags, defaultTags)
+        XCTAssertEqual(events[1].spans.first?.tags, defaultTags.merging(customTags) { _, custom in custom })
     }
 
     func testSettingBaggageItems() {
@@ -114,6 +116,7 @@ class DDSpanTests: XCTestCase {
 
         // Given
         let span: DDSpan = .mockWith(
+            core: PassthroughCoreMock(),
             context: .mockWith(baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: nil))
         )
         XCTAssertEqual(span.ddContext.baggageItems.all, [:])
@@ -130,12 +133,13 @@ class DDSpanTests: XCTestCase {
 
     // MARK: - Thread Safety
 
-    func testSpanCanBeSafelyAccessedFromDifferentThreads() {
+    func testSpanCanBeSafelyAccessedFromDifferentThreads() throws {
         let writeSpansExpectation = expectation(description: "write span event")
-        spanOutput.onSpanRecorded = { _ in writeSpansExpectation.fulfill() }
+        let core = PassthroughCoreMock(expectation: writeSpansExpectation)
 
         // Given
-        let span: DDSpan = .mockWith(tracer: mockTracer)
+        let tracer: Tracer = .mockWith(core: core)
+        let span: DDSpan = .mockWith(tracer: tracer)
 
         // When
         callConcurrently(
@@ -154,20 +158,25 @@ class DDSpanTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 2, handler: nil)
-        XCTAssertEqual(spanOutput.allRecordedSpans.count, 1)
-        XCTAssertEqual(spanOutput.allRecordedSpans[0].tags.count, 200, "It should contain 200 tags (100 explicit tags + 100 baggage items as tags)")
+        let events: [SpanEventsEnvelope] = core.events()
+        XCTAssertEqual(events.count, 1)
+        XCTAssertEqual(events[0].spans.first?.tags.count, 200, "It should contain 200 tags (100 explicit tags + 100 baggage items as tags)")
     }
 
     // MARK: - Usage
 
     func testGivenFinishedSpan_whenCallingItsAPI_itPrintsErrors() {
-        let previousUserLogger = userLogger
-        defer { userLogger = previousUserLogger }
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
-        let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output)
-
-        let span: DDSpan = .mockWith(operationName: "the span")
+        let core = PassthroughCoreMock()
+        let span: DDSpan = .mockWith(
+            tracer: .mockWith(
+                core: core,
+                loggingIntegration: .init(core: core, logBuilder: .mockAny())
+            ),
+            operationName: "the span"
+        )
         span.finish()
 
         let fixtures: [(() -> Void, String)] = [
@@ -188,8 +197,7 @@ class DDSpanTests: XCTestCase {
         fixtures.forEach { tracerMethod, expectedConsoleWarning in
             tracerMethod()
             span.tracer().dd.queue.sync {} // wait synchronizing span's internal state
-            XCTAssertEqual(output.recordedLog?.status, .warn)
-            XCTAssertEqual(output.recordedLog?.message, expectedConsoleWarning)
+            XCTAssertEqual(dd.logger.warnLog?.message, expectedConsoleWarning)
         }
     }
 }

@@ -10,30 +10,26 @@ internal protocol RUMScope: AnyObject {
     /// Processes given command. Returns:
     /// * `true` if the scope should be kept open.
     /// * `false` if the scope should be closed.
-    func process(command: RUMCommand) -> Bool
+    func process(command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Bool
 }
 
 extension RUMScope {
-    /// Propagates given `command` to the child scope and manages its lifecycle by
-    /// removing it if it gets closed.
+    /// Propagates given `command` and manages its lifecycle by returning `nil` if it gets closed.
     ///
-    /// Returns the `childScope` requested to be kept open, `nil` if it requests to close.
-    func manage<S: RUMScope>(childScope: S?, byPropagatingCommand command: RUMCommand) -> S? {
-        if childScope?.process(command: command) == false {
-            return nil
-        } else {
-            return childScope
-        }
+    /// Returns `self`  to be kept open, `nil` if it requests to close.
+    func scope(byPropagating command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Self? {
+        process(command: command, context: context, writer: writer) ? self : nil
     }
+}
 
-    /// Propagates given `command` through array of child scopes and manages their lifecycle by
-    /// removing child scopes that get closed.
+extension Array where Element: RUMScope {
+    /// Propagates given `command` through this array of scopes and manages their lifecycle by
+    /// filtering scopes that get closed.
     ///
     /// Returns the `childScopes` array by removing scopes which requested to be closed.
-    func manage<S: RUMScope>(childScopes: [S], byPropagatingCommand command: RUMCommand) -> [S] {
-        return childScopes.filter { childScope in
-            let shouldBeKept = childScope.process(command: command)
-            return shouldBeKept
+    func scopes(byPropagating command: RUMCommand, context: DatadogV1Context, writer: Writer) -> [Element] {
+        return filter { scope in
+            scope.process(command: command, context: context, writer: writer)
         }
     }
 }

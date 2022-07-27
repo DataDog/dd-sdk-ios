@@ -43,8 +43,19 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     let viewName: String
     /// The start time of this View.
     let viewStartTime: Date
-    /// Date correction to server time.
-    private let dateCorrection: DateCorrection
+
+    /// Server time offset for date correction.
+    ///
+    /// The offset should be applied to event's timestamp for synchronizing
+    /// local time with server time. This time interval value can be added to
+    /// any date that needs to be synced. e.g:
+    ///
+    ///     date.addingTimeInterval(serverTimeOffset)
+    ///
+    /// The server time offset is freezed per view scope so all child event time
+    /// stay relatives to the scope.
+    private let serverTimeOffset: TimeInterval
+
     /// Tells if this View is the active one.
     /// `true` for every new started View.
     /// `false` if the View was stopped or any other View was started.
@@ -71,7 +82,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// It can be toggled from inside `RUMResourceScope`/`RUMUserActionScope` callbacks, as they are called from processing `RUMCommand`s inside `process()`.
     private var needsViewUpdate = false
 
-    private let vitalInfoSampler: VitalInfoSampler
+    private let vitalInfoSampler: VitalInfoSampler?
 
     /// Samples view update events, so we can minimize the number of events in payload.
     private let viewUpdatesThrottler: RUMViewUpdatesThrottlerType
@@ -85,7 +96,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         name: String,
         attributes: [AttributeKey: AttributeValue],
         customTimings: [String: Int64],
-        startTime: Date
+        startTime: Date,
+        serverTimeOffset: TimeInterval
     ) {
         self.parent = parent
         self.dependencies = dependencies
@@ -97,13 +109,16 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.viewPath = path
         self.viewName = name
         self.viewStartTime = startTime
-        self.dateCorrection = dependencies.dateCorrector.currentCorrection
+        self.serverTimeOffset = serverTimeOffset
 
-        self.vitalInfoSampler = VitalInfoSampler(
-            cpuReader: dependencies.vitalCPUReader,
-            memoryReader: dependencies.vitalMemoryReader,
-            refreshRateReader: dependencies.vitalRefreshRateReader
-        )
+        self.vitalInfoSampler = dependencies.vitalsReaders.map {
+            .init(
+                cpuReader: $0.cpu,
+                memoryReader: $0.memory,
+                refreshRateReader: $0.refreshRate,
+                frequency: $0.frequency
+            )
+        }
         self.viewUpdatesThrottler = dependencies.viewUpdatesThrottlerFactory()
     }
 
@@ -120,22 +135,17 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     // MARK: - RUMScope
 
-    func process(command: RUMCommand) -> Bool {
+    func process(command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Bool {
         // Tells if the View did change and an update event should be send.
         needsViewUpdate = false
 
         // Propagate to User Action scope
-        userActionScope = manage(childScope: userActionScope, byPropagatingCommand: command)
+        userActionScope = userActionScope?.scope(byPropagating: command, context: context, writer: writer)
 
         // Send "application start" action if this is the very first view tracked in the app
         let hasSentNoViewUpdatesYet = version == 0
         if isInitialView, hasSentNoViewUpdatesYet {
-            actionsCount += 1
-            if !sendApplicationStartAction() {
-                actionsCount -= 1
-            } else {
-                needsViewUpdate = true
-            }
+            sendApplicationStartAction(context: context, writer: writer)
         }
 
         // Apply side effects
@@ -173,7 +183,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         case let command as RUMAddUserActionCommand where isActiveView:
             if command.actionType == .custom {
                 // send it instantly without waiting for child events (e.g. resource associated to this action)
-                sendDiscreteCustomUserAction(on: command)
+                sendDiscreteCustomUserAction(on: command, context: context, writer: writer)
             } else if userActionScope == nil {
                 addDiscreteUserAction(on: command)
             } else {
@@ -182,22 +192,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         // Error command
         case let command as RUMAddCurrentViewErrorCommand where isActiveView:
-            errorsCount += 1
-            if sendErrorEvent(on: command) {
-                needsViewUpdate = true
-            } else {
-                errorsCount -= 1
-            }
+            sendErrorEvent(on: command, context: context, writer: writer)
 
         case let command as RUMAddLongTaskCommand where isActiveView:
-            if sendLongTaskEvent(on: command) {
-                longTasksCount += 1
-                if command.duration.toInt64Nanoseconds > Constants.frozenFrameThresholdInNs {
-                    frozenFramesCount += 1
-                }
-
-                needsViewUpdate = true
-            }
+            sendLongTaskEvent(on: command, context: context, writer: writer)
 
         default:
             break
@@ -205,15 +203,16 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         // Propagate to Resource scopes
         if let resourceCommand = command as? RUMResourceCommand {
-            resourceScopes[resourceCommand.resourceKey] = manage(
-                childScope: resourceScopes[resourceCommand.resourceKey],
-                byPropagatingCommand: resourceCommand
+            resourceScopes[resourceCommand.resourceKey] = resourceScopes[resourceCommand.resourceKey]?.scope(
+                byPropagating: resourceCommand,
+                context: context,
+                writer: writer
             )
         }
 
         // Consider scope state and completion
         if needsViewUpdate {
-            sendViewUpdateEvent(on: command)
+            sendViewUpdateEvent(on: command, context: context, writer: writer)
         }
 
         let hasNoPendingResources = resourceScopes.isEmpty
@@ -231,10 +230,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             resourceKey: command.resourceKey,
             attributes: command.attributes,
             startTime: command.time,
-            dateCorrection: dateCorrection,
+            serverTimeOffset: serverTimeOffset,
             url: command.url,
             httpMethod: command.httpMethod,
-            isFirstPartyResource: command.isFirstPartyRequest,
             resourceKindBasedOnRequest: command.kind,
             spanContext: command.spanContext,
             onResourceEventSent: { [weak self] in
@@ -256,7 +254,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             actionType: command.actionType,
             attributes: command.attributes,
             startTime: command.time,
-            dateCorrection: dateCorrection,
+            serverTimeOffset: serverTimeOffset,
             isContinuous: true,
             onActionEventSent: { [weak self] in
                 self?.actionsCount += 1
@@ -273,7 +271,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             actionType: command.actionType,
             attributes: command.attributes,
             startTime: command.time,
-            dateCorrection: dateCorrection,
+            serverTimeOffset: serverTimeOffset,
             isContinuous: false,
             onActionEventSent: { [weak self] in
                 self?.actionsCount += 1
@@ -286,7 +284,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         userActionScope = createDiscreteUserActionScope(on: command)
     }
 
-    private func sendDiscreteCustomUserAction(on command: RUMAddUserActionCommand) {
+    private func sendDiscreteCustomUserAction(on command: RUMAddUserActionCommand, context: DatadogV1Context, writer: Writer) {
         let customActionScope = createDiscreteUserActionScope(on: command)
         _ = customActionScope.process(
             command: RUMStopUserActionCommand(
@@ -294,12 +292,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 attributes: [:],
                 actionType: .custom,
                 name: nil
-            )
+            ),
+            context: context,
+            writer: writer
         )
     }
 
     private func reportActionDropped(type: RUMUserActionType, name: String) {
-        userLogger.warn(
+        DD.logger.warn(
             """
             RUM Action '\(type)' on '\(name)' was dropped, because another action is still active for the same view.
             """
@@ -308,7 +308,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     // MARK: - Sending RUM Events
 
-    private func sendApplicationStartAction() -> Bool {
+    private func sendApplicationStartAction(context: DatadogV1Context, writer: Writer) {
+        actionsCount += 1
+
         var attributes = self.attributes
         var loadingTime: Int64? = nil
 
@@ -321,7 +323,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             loadingTime = dependencies.launchTimeProvider.launchTime.toInt64Nanoseconds
         }
 
-        let eventData = RUMActionEvent(
+        let actionEvent = RUMActionEvent(
             dd: .init(
                 browserSdkVersion: nil,
                 session: .init(plan: .plan1)
@@ -329,29 +331,33 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             action: .init(
                 crash: nil,
                 error: nil,
-                frustrationType: nil,
+                frustration: nil,
                 id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 loadingTime: loadingTime,
                 longTask: nil,
+                position: nil,
                 resource: nil,
                 target: nil,
                 type: .applicationStart
             ),
-            application: .init(id: context.rumApplicationID),
+            application: .init(id: self.context.rumApplicationID),
             ciTest: dependencies.ciTest,
-            connectivity: dependencies.connectivityInfoProvider.current,
+            connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
-            service: dependencies.serviceName,
+            date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            device: .init(context: context),
+            display: nil,
+            os: .init(context: context),
+            service: context.service,
             session: .init(
                 hasReplay: nil,
-                id: context.sessionID.toRUMDataFormat,
+                id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: RUMActionEvent.Source(rawValue: dependencies.source) ?? .ios,
+            source: .init(rawValue: context.source) ?? .ios,
             synthetics: nil,
-            usr: dependencies.userInfoProvider.current,
-            version: dependencies.applicationVersion,
+            usr: .init(context: context),
+            version: context.version,
             view: .init(
                 id: viewUUID.toRUMDataFormat,
                 inForeground: nil,
@@ -361,14 +367,15 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         )
 
-        if let event = dependencies.eventBuilder.build(from: eventData) {
-            dependencies.eventOutput.write(event: event)
-            return true
+        if let event = dependencies.eventBuilder.build(from: actionEvent) {
+            writer.write(value: event)
+            needsViewUpdate = true
+        } else {
+            actionsCount -= 1
         }
-        return false
     }
 
-    private func sendViewUpdateEvent(on command: RUMCommand) {
+    private func sendViewUpdateEvent(on command: RUMCommand, context: DatadogV1Context, writer: Writer) {
         version += 1
         attributes.merge(rumCommandAttributes: command.attributes)
 
@@ -376,36 +383,39 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let isActive = isActiveView || !resourceScopes.isEmpty
         // RUMM-2079 `time_spent` can't be lower than 1ns
         let timeSpent = max(1e-9, command.time.timeIntervalSince(viewStartTime))
-        let cpuInfo = vitalInfoSampler.cpu
-        let memoryInfo = vitalInfoSampler.memory
-        let refreshRateInfo = vitalInfoSampler.refreshRate
-        let isSlowRendered = refreshRateInfo.meanValue.flatMap { $0 < Constants.slowRenderingThresholdFPS }
+        let cpuInfo = vitalInfoSampler?.cpu
+        let memoryInfo = vitalInfoSampler?.memory
+        let refreshRateInfo = vitalInfoSampler?.refreshRate
+        let isSlowRendered = refreshRateInfo?.meanValue.map { $0 < Constants.slowRenderingThresholdFPS }
 
-        let eventData = RUMViewEvent(
+        let viewEvent = RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
                 documentVersion: version.toInt64,
                 session: .init(plan: .plan1)
             ),
-            application: .init(id: context.rumApplicationID),
+            application: .init(id: self.context.rumApplicationID),
             ciTest: dependencies.ciTest,
-            connectivity: dependencies.connectivityInfoProvider.current,
+            connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: dateCorrection.applying(to: viewStartTime).timeIntervalSince1970.toInt64Milliseconds,
-            service: dependencies.serviceName,
+            date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            device: .init(context: context),
+            display: nil,
+            os: .init(context: context),
+            service: context.service,
             session: .init(
                 hasReplay: nil,
-                id: context.sessionID.toRUMDataFormat,
+                id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: RUMViewEvent.Source(rawValue: dependencies.source) ?? .ios,
+            source: .init(rawValue: context.source) ?? .ios,
             synthetics: nil,
-            usr: dependencies.userInfoProvider.current,
-            version: dependencies.applicationVersion,
+            usr: .init(context: context),
+            version: context.version,
             view: .init(
                 action: .init(count: actionsCount.toInt64),
-                cpuTicksCount: cpuInfo.greatestDiff,
-                cpuTicksPerSecond: cpuInfo.greatestDiff?.divideIfNotZero(by: Double(timeSpent)),
+                cpuTicksCount: cpuInfo?.greatestDiff,
+                cpuTicksPerSecond: cpuInfo?.greatestDiff?.divideIfNotZero(by: Double(timeSpent)),
                 crash: nil,
                 cumulativeLayoutShift: nil,
                 customTimings: customTimings.reduce(into: [:]) { acc, element in
@@ -419,6 +429,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 firstInputDelay: nil,
                 firstInputTime: nil,
                 frozenFrame: .init(count: frozenFramesCount),
+                frustration: nil,
                 id: viewUUID.toRUMDataFormat,
                 inForegroundPeriods: nil,
                 isActive: isActive,
@@ -428,21 +439,21 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 loadingTime: nil,
                 loadingType: nil,
                 longTask: .init(count: longTasksCount),
-                memoryAverage: memoryInfo.meanValue,
-                memoryMax: memoryInfo.maxValue,
+                memoryAverage: memoryInfo?.meanValue,
+                memoryMax: memoryInfo?.maxValue,
                 name: viewName,
                 referrer: nil,
-                refreshRateAverage: refreshRateInfo.meanValue,
-                refreshRateMin: refreshRateInfo.minValue,
+                refreshRateAverage: refreshRateInfo?.meanValue,
+                refreshRateMin: refreshRateInfo?.minValue,
                 resource: .init(count: resourcesCount.toInt64),
                 timeSpent: timeSpent.toInt64Nanoseconds,
                 url: viewPath
             )
         )
 
-        if let event = dependencies.eventBuilder.build(from: eventData) {
+        if let event = dependencies.eventBuilder.build(from: viewEvent) {
             if viewUpdatesThrottler.accept(event: event) {
-                dependencies.eventOutput.write(event: event)
+                writer.write(value: event)
             } else { // if event was dropped by sampler
                 version -= 1
             }
@@ -455,22 +466,25 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
     }
 
-    private func sendErrorEvent(on command: RUMAddCurrentViewErrorCommand) -> Bool {
+    private func sendErrorEvent(on command: RUMAddCurrentViewErrorCommand, context: DatadogV1Context, writer: Writer) {
+        errorsCount += 1
         attributes.merge(rumCommandAttributes: command.attributes)
 
-        let eventData = RUMErrorEvent(
+        let errorEvent = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
                 session: .init(plan: .plan1)
             ),
-            action: context.activeUserActionID.flatMap { rumUUID in
-                .init(id: rumUUID.toRUMDataFormat)
+            action: self.context.activeUserActionID.map { rumUUID in
+                .init(id: .string(value: rumUUID.toRUMDataFormat))
             },
-            application: .init(id: context.rumApplicationID),
+            application: .init(id: self.context.rumApplicationID),
             ciTest: dependencies.ciTest,
-            connectivity: dependencies.connectivityInfoProvider.current,
+            connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
+            date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            device: .init(context: context),
+            display: nil,
             error: .init(
                 handling: nil,
                 handlingStack: nil,
@@ -483,79 +497,91 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 stack: command.stack,
                 type: command.type
             ),
-            service: dependencies.serviceName,
+            os: .init(context: context),
+            service: context.service,
             session: .init(
                 hasReplay: nil,
-                id: context.sessionID.toRUMDataFormat,
+                id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: RUMErrorEvent.Source(rawValue: dependencies.source) ?? .ios,
+            source: .init(rawValue: context.source) ?? .ios,
             synthetics: nil,
-            usr: dependencies.userInfoProvider.current,
-            version: dependencies.applicationVersion,
+            usr: .init(context: context),
+            version: context.version,
             view: .init(
-                id: context.activeViewID.orNull.toRUMDataFormat,
+                id: self.context.activeViewID.orNull.toRUMDataFormat,
                 inForeground: nil,
-                name: context.activeViewName,
+                name: self.context.activeViewName,
                 referrer: nil,
-                url: context.activeViewPath ?? ""
+                url: self.context.activeViewPath ?? ""
             )
         )
 
-        if let event = dependencies.eventBuilder.build(from: eventData) {
-            dependencies.eventOutput.write(event: event)
-            return true
+        if let event = dependencies.eventBuilder.build(from: errorEvent) {
+            writer.write(value: event)
+            needsViewUpdate = true
+        } else {
+            errorsCount -= 1
         }
-        return false
     }
 
-    private func sendLongTaskEvent(on command: RUMAddLongTaskCommand) -> Bool {
+    private func sendLongTaskEvent(on command: RUMAddLongTaskCommand, context: DatadogV1Context, writer: Writer) {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let taskDurationInNs = command.duration.toInt64Nanoseconds
         let isFrozenFrame = taskDurationInNs > Constants.frozenFrameThresholdInNs
-        let eventData = RUMLongTaskEvent(
+
+        let longTaskEvent = RUMLongTaskEvent(
             dd: .init(
                 browserSdkVersion: nil,
                 session: .init(plan: .plan1)
             ),
-            action: context.activeUserActionID.flatMap { RUMLongTaskEvent.Action(id: $0.toRUMDataFormat) },
-            application: .init(id: context.rumApplicationID),
+            action: self.context.activeUserActionID.map {
+                .init(id: .string(value: $0.toRUMDataFormat))
+            },
+            application: .init(id: self.context.rumApplicationID),
             ciTest: dependencies.ciTest,
-            connectivity: dependencies.connectivityInfoProvider.current,
+            connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: dateCorrection.applying(to: command.time - command.duration).timeIntervalSince1970.toInt64Milliseconds,
+            date: (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            device: .init(context: context),
+            display: nil,
             longTask: .init(duration: taskDurationInNs, id: nil, isFrozenFrame: isFrozenFrame),
-            service: dependencies.serviceName,
+            os: .init(context: context),
+            service: context.service,
             session: .init(
                 hasReplay: nil,
-                id: context.sessionID.toRUMDataFormat,
+                id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: RUMLongTaskEvent.Source(rawValue: dependencies.source) ?? .ios,
+            source: .init(rawValue: context.source) ?? .ios,
             synthetics: nil,
-            usr: dependencies.userInfoProvider.current,
-            version: dependencies.applicationVersion,
+            usr: .init(context: context),
+            version: context.version,
             view: .init(
-                id: context.activeViewID.orNull.toRUMDataFormat,
-                name: context.activeViewName,
+                id: self.context.activeViewID.orNull.toRUMDataFormat,
+                name: self.context.activeViewName,
                 referrer: nil,
-                url: context.activeViewPath ?? ""
+                url: self.context.activeViewPath ?? ""
             )
         )
 
-        if let event = dependencies.eventBuilder.build(from: eventData) {
-            dependencies.eventOutput.write(event: event)
-            return true
+        if let event = dependencies.eventBuilder.build(from: longTaskEvent) {
+            writer.write(value: event)
+            longTasksCount += 1
+            needsViewUpdate = true
+
+            if command.duration.toInt64Nanoseconds > Constants.frozenFrameThresholdInNs {
+                frozenFramesCount += 1
+            }
         }
-        return false
     }
 
     private func sanitizeCustomTimingName(customTiming: String) -> String {
         let sanitized = customTiming.replacingOccurrences(of: "[^a-zA-Z0-9_.@$-]", with: "_", options: .regularExpression)
 
         if customTiming != sanitized {
-            userLogger.warn(
+            DD.logger.warn(
                 """
                 Custom timing '\(customTiming)' was modified to '\(sanitized)' to match Datadog constraints.
                 """

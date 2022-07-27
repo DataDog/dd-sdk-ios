@@ -8,8 +8,6 @@ import Foundation
 
 /// `URLSession` Auto Instrumentation feature.
 internal final class URLSessionAutoInstrumentation: RUMCommandPublisher {
-    static var instance: URLSessionAutoInstrumentation?
-
     let swizzler: URLSessionSwizzler
     let interceptor: URLSessionInterceptorType
 
@@ -51,6 +49,5 @@ internal final class URLSessionAutoInstrumentation: RUMCommandPublisher {
     /// Removes `URLSession` swizzling and deinitializes this component.
     internal func deinitialize() {
         swizzler.unswizzle()
-        URLSessionAutoInstrumentation.instance = nil
     }
 }

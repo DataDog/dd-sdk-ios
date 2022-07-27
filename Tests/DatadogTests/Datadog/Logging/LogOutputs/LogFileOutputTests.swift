@@ -22,7 +22,6 @@ class LogFileOutputTests: XCTestCase {
         let fileCreationDateProvider = RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC())
         let output = LogFileOutput(
             fileWriter: FileWriter(
-                dataFormat: LoggingFeature.dataFormat,
                 orchestrator: FilesOrchestrator(
                     directory: temporaryDirectory,
                     performance: PerformancePreset.combining(
@@ -31,8 +30,7 @@ class LogFileOutputTests: XCTestCase {
                     ),
                     dateProvider: fileCreationDateProvider
                 )
-            ),
-            rumErrorsIntegration: nil
+            )
         )
 
         let log1: LogEvent = .mockWith(status: .info, message: "log message 1")
@@ -44,14 +42,22 @@ class LogFileOutputTests: XCTestCase {
         output.write(log: log2)
 
         let log1FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC())
-        let log1Data = try temporaryDirectory.file(named: log1FileName).read()
-        let log1Matcher = try LogMatcher.fromJSONObjectData(log1Data)
+        let log1FileData = try temporaryDirectory.file(named: log1FileName).read()
+        var reader = DataBlockReader(data: log1FileData)
+        let logBlock1 = try XCTUnwrap(reader.next())
+        XCTAssertEqual(logBlock1.type, .event)
+
+        let log1Matcher = try LogMatcher.fromJSONObjectData(logBlock1.data)
         log1Matcher.assertStatus(equals: "info")
         log1Matcher.assertMessage(equals: "log message 1")
 
         let log2FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
-        let log2Data = try temporaryDirectory.file(named: log2FileName).read()
-        let log2Matcher = try LogMatcher.fromJSONObjectData(log2Data)
+        let log2FileData = try temporaryDirectory.file(named: log2FileName).read()
+        reader = DataBlockReader(data: log2FileData)
+        let logBlock2 = try XCTUnwrap(reader.next())
+        XCTAssertEqual(logBlock2.type, .event)
+
+        let log2Matcher = try LogMatcher.fromJSONObjectData(logBlock2.data)
         log2Matcher.assertStatus(equals: "warn")
         log2Matcher.assertMessage(equals: "log message 2")
     }

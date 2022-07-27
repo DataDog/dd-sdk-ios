@@ -145,7 +145,7 @@ internal class AppStateListener: AppStateListening {
 
     var history: AppStateHistory {
         var current = publisher.currentValue
-        current.recentDate = dateProvider.currentDate()
+        current.recentDate = dateProvider.now
         return current
     }
 
@@ -164,7 +164,7 @@ internal class AppStateListener: AppStateListening {
     ) {
         let currentSnapshot = Snapshot(
             state: AppState(uiApplicationState: initialAppState),
-            date: dateProvider.currentDate()
+            date: dateProvider.now
         )
         self.dateProvider = dateProvider
         self.notificationCenter = notificationCenter
@@ -209,7 +209,7 @@ internal class AppStateListener: AppStateListening {
     }
 
     private func registerChange(to newState: AppState) {
-        let now = dateProvider.currentDate()
+        let now = dateProvider.now
         var value = publisher.currentValue
         value.snapshots.append(Snapshot(state: newState, date: now))
         publisher.publishAsync(value)

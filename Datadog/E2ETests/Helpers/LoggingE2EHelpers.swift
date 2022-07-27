@@ -30,8 +30,6 @@ extension Logger {
 extension Logger.Builder.ConsoleLogFormat {
     static func random() -> Logger.Builder.ConsoleLogFormat {
         let allFormats: [Logger.Builder.ConsoleLogFormat] = [
-            .json,
-            .jsonWith(prefix: .mockRandom()),
             .short,
             .shortWith(prefix: .mockRandom())
         ]

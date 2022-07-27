@@ -53,7 +53,7 @@ class RequestBuilderTests: XCTestCase {
                     appName: "FoobarApp",
                     appVersion: "1.2.3",
                     device: .mockWith(
-                        model: "iPhone",
+                        name: "iPhone",
                         osName: "iOS",
                         osVersion: "13.3.1"
                     )
@@ -73,7 +73,7 @@ class RequestBuilderTests: XCTestCase {
                     appName: "Foobar 電話 𝛼β",
                     appVersion: "1.2.3",
                     device: .mockWith(
-                        model: "iPhone",
+                        name: "iPhone",
                         osName: "iOS",
                         osVersion: "13.3.1"
                     )

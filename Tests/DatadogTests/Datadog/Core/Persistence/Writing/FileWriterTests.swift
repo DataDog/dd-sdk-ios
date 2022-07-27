@@ -20,7 +20,6 @@ class FileWriterTests: XCTestCase {
 
     func testItWritesDataToSingleFile() throws {
         let writer = FileWriter(
-            dataFormat: DataFormat(prefix: "[", suffix: "]", separator: ","),
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
                 performance: PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
@@ -29,25 +28,29 @@ class FileWriterTests: XCTestCase {
         )
 
         writer.write(value: ["key1": "value1"])
-        writer.write(value: ["key2": "value3"])
+        writer.write(value: ["key2": "value2"])
         writer.write(value: ["key3": "value3"])
 
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
-        XCTAssertEqual(
-            try temporaryDirectory.files()[0].read(),
-            #"{"key1":"value1"},{"key2":"value3"},{"key3":"value3"}"#.utf8Data
-        )
+        let data = try temporaryDirectory.files()[0].read()
+
+        let reader = DataBlockReader(data: data)
+        var block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, #"{"key1":"value1"}"#.utf8Data)
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, #"{"key2":"value2"}"#.utf8Data)
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, #"{"key3":"value3"}"#.utf8Data)
     }
 
     func testGivenErrorVerbosity_whenIndividualDataExceedsMaxWriteSize_itDropsDataAndPrintsError() throws {
-        let previousUserLogger = userLogger
-        defer { userLogger = previousUserLogger }
-
-        let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output)
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         let writer = FileWriter(
-            dataFormat: .mockWith(prefix: "[", suffix: "]"),
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
                 performance: StoragePerformanceMock(
@@ -57,7 +60,7 @@ class FileWriterTests: XCTestCase {
                     minFileAgeForRead: .mockAny(),
                     maxFileAgeForRead: .mockAny(),
                     maxObjectsInFile: .max,
-                    maxObjectSize: 17 // 17 bytes is enough to write {"key1":"value1"} JSON
+                    maxObjectSize: 23 // 23 bytes is enough for TLV with {"key1":"value1"} JSON
                 ),
                 dateProvider: SystemDateProvider()
             )
@@ -65,24 +68,26 @@ class FileWriterTests: XCTestCase {
 
         writer.write(value: ["key1": "value1"]) // will be written
 
-        XCTAssertEqual(try temporaryDirectory.files()[0].read(), #"{"key1":"value1"}"#.utf8Data)
+        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+        var reader = try DataBlockReader(data: temporaryDirectory.files()[0].read())
+        var blocks = try XCTUnwrap(reader.all())
+        XCTAssertEqual(blocks.count, 1)
+        XCTAssertEqual(blocks[0].data, #"{"key1":"value1"}"#.utf8Data)
 
-        writer.write(value: ["key2": "value3 that makes it exceed 17 bytes"]) // will be dropped
+        writer.write(value: ["key2": "value3 that makes it exceed 23 bytes"]) // will be dropped
 
-        XCTAssertEqual(try temporaryDirectory.files()[0].read(), #"{"key1":"value1"}"#.utf8Data) // same content as before
-        XCTAssertEqual(output.recordedLog?.status, .error)
-        XCTAssertEqual(output.recordedLog?.message, "🔥 Failed to write data: data exceeds the maximum size of 17 bytes.")
+        reader = try DataBlockReader(data: temporaryDirectory.files()[0].read())
+        blocks = try XCTUnwrap(reader.all())
+        XCTAssertEqual(blocks.count, 1) // same content as before
+        XCTAssertEqual(dd.logger.errorLog?.message, "Failed to write data")
+        XCTAssertEqual(dd.logger.errorLog?.error?.message, "data exceeds the maximum size of 23 bytes.")
     }
 
     func testGivenErrorVerbosity_whenDataCannotBeEncoded_itPrintsError() throws {
-        let previousUserLogger = userLogger
-        defer { userLogger = previousUserLogger }
-
-        let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output)
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         let writer = FileWriter(
-            dataFormat: .mockAny(),
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
                 performance: PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
@@ -92,19 +97,15 @@ class FileWriterTests: XCTestCase {
 
         writer.write(value: FailingEncodableMock(errorMessage: "failed to encode `FailingEncodable`."))
 
-        XCTAssertEqual(output.recordedLog?.status, .error)
-        XCTAssertEqual(output.recordedLog?.message, "🔥 Failed to write data: failed to encode `FailingEncodable`.")
+        XCTAssertEqual(dd.logger.errorLog?.message, "Failed to write data")
+        XCTAssertEqual(dd.logger.errorLog?.error?.message, "failed to encode `FailingEncodable`.")
     }
 
     func testGivenErrorVerbosity_whenIOExceptionIsThrown_itPrintsError() throws {
-        let previousUserLogger = userLogger
-        defer { userLogger = previousUserLogger }
-
-        let output = LogOutputMock()
-        userLogger = .mockWith(logOutput: output)
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         let writer = FileWriter(
-            dataFormat: .mockAny(),
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
                 performance: PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
@@ -117,15 +118,13 @@ class FileWriterTests: XCTestCase {
         writer.write(value: ["won't be written"])
         try? temporaryDirectory.files()[0].makeReadWrite()
 
-        XCTAssertEqual(output.recordedLog?.status, .error)
-        XCTAssertNotNil(output.recordedLog?.message)
-        XCTAssertTrue(output.recordedLog!.message.contains("You don’t have permission"))
+        XCTAssertEqual(dd.logger.errorLog?.message, "Failed to write data")
+        XCTAssertTrue(dd.logger.errorLog!.error!.message.contains("You don’t have permission"))
     }
 
     /// NOTE: Test added after incident-4797
     func testWhenIOExceptionsHappenRandomly_theFileIsNeverMalformed() throws {
         let writer = FileWriter(
-            dataFormat: DataFormat(prefix: "[", suffix: "]", separator: ","),
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
                 performance: StoragePerformanceMock(
@@ -162,20 +161,21 @@ class FileWriterTests: XCTestCase {
 
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
 
-        let fileData = try temporaryDirectory.files()[0].read()
-        let jsonDecoder = JSONDecoder()
+        let data = try temporaryDirectory.files()[0].read()
+        let blocks = try DataBlockReader(data: data).all()
 
         // Assert that data written is not malformed
-        let writtenData = try jsonDecoder.decode([Foo].self, from: "[".utf8Data + fileData + "]".utf8Data)
+        let jsonDecoder = JSONDecoder()
+        let events = try blocks.map { try jsonDecoder.decode(Foo.self, from: $0.data) }
+
         // Assert that some (including all) `Foo`s were written
-        XCTAssertGreaterThan(writtenData.count, 0)
-        XCTAssertLessThanOrEqual(writtenData.count, 300)
+        XCTAssertGreaterThan(events.count, 0)
+        XCTAssertLessThanOrEqual(events.count, 300)
     }
 
     func testItWritesEncryptedDataToSingleFile() throws {
         // Given 
         let writer = FileWriter(
-            dataFormat: DataFormat(prefix: "[", suffix: "]", separator: ","),
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
                 performance: PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
@@ -193,9 +193,17 @@ class FileWriterTests: XCTestCase {
 
         // Then
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
-        XCTAssertEqual(
-            try temporaryDirectory.files()[0].read(),
-            "Zm9v,Zm9v,Zm9v".utf8Data // base64(foo) = Zm9v
-        )
+        let data = try temporaryDirectory.files()[0].read()
+
+        let reader = DataBlockReader(data: data)
+        var block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, "foo".utf8Data)
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, "foo".utf8Data)
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, "foo".utf8Data)
     }
 }

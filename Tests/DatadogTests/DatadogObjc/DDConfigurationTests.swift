@@ -57,6 +57,7 @@ class DDConfigurationTests: XCTestCase {
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 100.0)
             XCTAssertNil(configuration.rumUIKitViewsPredicate)
             XCTAssertNil(configuration.rumUIKitUserActionsPredicate)
+            XCTAssertEqual(configuration.mobileVitalsFrequency, .rare)
             XCTAssertEqual(configuration.batchSize, .medium)
             XCTAssertEqual(configuration.uploadFrequency, .average)
             XCTAssertNil(configuration.rumViewEventMapper)
@@ -134,6 +135,9 @@ class DDConfigurationTests: XCTestCase {
         objcBuilder.trackURLSession(firstPartyHosts: ["example.com"])
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.firstPartyHosts, ["example.com"])
 
+        objcBuilder.set(tracingSamplingRate: 75)
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.tracingSamplingRate, 75)
+
         objcBuilder.trackUIKitRUMActions()
         XCTAssertTrue(objcBuilder.build().sdkConfiguration.rumUIKitUserActionsPredicate is DefaultUIKitRUMUserActionsPredicate)
 
@@ -178,6 +182,9 @@ class DDConfigurationTests: XCTestCase {
 
         objcBuilder.set(batchSize: .small)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.batchSize, .small)
+
+        objcBuilder.set(mobileVitalsFrequency: .frequent)
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.mobileVitalsFrequency, .frequent)
 
         objcBuilder.set(batchSize: .large)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.batchSize, .large)

@@ -24,6 +24,16 @@ internal struct RUMUserInfoProvider {
 }
 
 extension RUMUser {
+    init?(context: DatadogV1Context) {
+        let userInfo = context.userInfoProvider.value
+
+        if userInfo.id == nil, userInfo.name == nil, userInfo.email == nil, userInfo.extraInfo.isEmpty {
+            return nil
+        }
+
+        self.init(userInfo: userInfo)
+    }
+
     init(userInfo: UserInfo) {
         self.init(
             email: userInfo.email,

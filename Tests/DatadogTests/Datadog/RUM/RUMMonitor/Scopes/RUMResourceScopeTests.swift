@@ -8,13 +8,21 @@ import XCTest
 @testable import Datadog
 
 class RUMResourceScopeTests: XCTestCase {
-    private let output = RUMEventOutputMock()
-    private let randomServiceName: String = .mockRandom()
-    private lazy var dependencies: RUMScopeDependencies = .mockWith(
-        serviceName: randomServiceName,
-        eventOutput: output
+    let datadogContext: DatadogV1Context = .mockWith(
+        configuration: .mockWith(serviceName: "test-service"),
+        dependencies: .mockWith(
+            deviceInfo: .mockWith(
+                name: "device-name",
+                osName: "device-os"
+            )
+        )
     )
-    private let context = RUMContext.mockWith(
+
+    private let dependencies: RUMScopeDependencies = .mockWith(
+        firstPartyURLsFilter: FirstPartyURLsFilter(hosts: ["firstparty.com"])
+    )
+
+    private let rumContext = RUMContext.mockWith(
         rumApplicationID: "rum-123",
         sessionID: .mockRandom(),
         activeViewID: .mockRandom(),
@@ -23,21 +31,22 @@ class RUMResourceScopeTests: XCTestCase {
         activeUserActionID: .mockRandom()
     )
 
+    let writer = FileWriterMock()
+
     func testDefaultContext() {
         let scope = RUMResourceScope.mockWith(
-            context: context,
+            context: rumContext,
             dependencies: .mockAny(),
             resourceKey: .mockAny(),
             attributes: [:],
-            startTime: .mockAny(),
-            dateCorrection: .zero
+            startTime: .mockAny()
         )
 
-        XCTAssertEqual(scope.context.rumApplicationID, context.rumApplicationID)
-        XCTAssertEqual(scope.context.sessionID, context.sessionID)
-        XCTAssertEqual(scope.context.activeViewID, try XCTUnwrap(context.activeViewID))
-        XCTAssertEqual(scope.context.activeViewPath, try XCTUnwrap(context.activeViewPath))
-        XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(context.activeUserActionID))
+        XCTAssertEqual(scope.context.rumApplicationID, rumContext.rumApplicationID)
+        XCTAssertEqual(scope.context.sessionID, rumContext.sessionID)
+        XCTAssertEqual(scope.context.activeViewID, try XCTUnwrap(rumContext.activeViewID))
+        XCTAssertEqual(scope.context.activeViewPath, try XCTUnwrap(rumContext.activeViewPath))
+        XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(rumContext.activeUserActionID))
     }
 
     func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEvent() throws {
@@ -45,15 +54,12 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: context,
+            context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
-            isFirstPartyResource: nil,
             resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200")
         )
@@ -70,18 +76,20 @@ class RUMResourceScopeTests: XCTestCase {
                     kind: .image,
                     httpStatusCode: 200,
                     size: 1_024
-                )
+                ),
+                context: datadogContext,
+                writer: writer
             )
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMResourceEvent.self).first)
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
         XCTAssertEqual(event.source, .ios)
-        XCTAssertEqual(event.view.id, context.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.id, rumContext.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.view.url, "FooViewController")
         XCTAssertEqual(event.view.name, "FooViewName")
         XCTAssertValidRumUUID(event.resource.id)
@@ -98,31 +106,30 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.ssl)
         XCTAssertNil(event.resource.firstByte)
         XCTAssertNil(event.resource.download)
-        XCTAssertEqual(try XCTUnwrap(event.action?.id), context.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.dd.traceId, "100")
         XCTAssertEqual(event.dd.spanId, "200")
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
-        XCTAssertEqual(event.service, randomServiceName)
+        XCTAssertEqual(event.service, "test-service")
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
     }
 
     func testGivenConfiguredSoruce_whenResourceLoadingEnds_itSendsResourceEventWithCorrecSource() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
-        let customSource = String.mockAnySource()
+        let customSource: String = .mockAnySource()
+        let customContext: DatadogV1Context = .mockWith(configuration: .mockWith(source: customSource))
+
         let scope = RUMResourceScope.mockWith(
-            context: context,
-            dependencies: dependencies.replacing(
-                source: customSource
-            ),
+            context: rumContext,
+            dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
-            isFirstPartyResource: nil,
             resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200")
         )
@@ -139,13 +146,15 @@ class RUMResourceScopeTests: XCTestCase {
                     kind: .image,
                     httpStatusCode: 200,
                     size: 1_024
-                )
+                ),
+                context: customContext,
+                writer: writer
             )
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMResourceEvent.self).first)
-        XCTAssertEqual(event.source, RUMResourceEvent.Source(rawValue: customSource))
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertEqual(event.source, .init(rawValue: customSource))
     }
 
     func testGivenStartedResource_whenResourceLoadingEndsWithNegativeDuration_itSendsResourceEventWithPositiveDuration() throws {
@@ -153,15 +162,13 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: context,
+            context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
             attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
-            isFirstPartyResource: nil,
             resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200")
         )
@@ -178,18 +185,20 @@ class RUMResourceScopeTests: XCTestCase {
                     kind: .image,
                     httpStatusCode: 200,
                     size: 1_024
-                )
+                ),
+                context: datadogContext,
+                writer: writer
             )
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMResourceEvent.self).first)
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
         XCTAssertEqual(event.source, .ios)
-        XCTAssertEqual(event.view.id, context.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.id, rumContext.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.view.url, "FooViewController")
         XCTAssertEqual(event.view.name, "FooViewName")
         XCTAssertValidRumUUID(event.resource.id)
@@ -206,12 +215,14 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.ssl)
         XCTAssertNil(event.resource.firstByte)
         XCTAssertNil(event.resource.download)
-        XCTAssertEqual(try XCTUnwrap(event.action?.id), context.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.dd.traceId, "100")
         XCTAssertEqual(event.dd.spanId, "200")
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
-        XCTAssertEqual(event.service, randomServiceName)
+        XCTAssertEqual(event.service, "test-service")
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
     }
 
     func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEventWithCustomSpanAndTraceId() throws {
@@ -219,17 +230,13 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: context,
+            context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
             attributes: [CrossPlatformAttributes.traceID: "100", CrossPlatformAttributes.spanID: "200"],
             startTime: currentTime,
-            dateCorrection: .zero,
             url: "https://foo.com/resource/1",
-            httpMethod: .post,
-            isFirstPartyResource: nil,
-            resourceKindBasedOnRequest: nil,
-            spanContext: nil
+            httpMethod: .post
         )
 
         currentTime.addTimeInterval(2)
@@ -244,17 +251,19 @@ class RUMResourceScopeTests: XCTestCase {
                     kind: .image,
                     httpStatusCode: 200,
                     size: 1_024
-                )
+                ),
+                context: datadogContext,
+                writer: writer
             )
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMResourceEvent.self).first)
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
-        XCTAssertEqual(event.view.id, context.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.id, rumContext.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.view.url, "FooViewController")
         XCTAssertEqual(event.view.name, "FooViewName")
         XCTAssertValidRumUUID(event.resource.id)
@@ -271,12 +280,14 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.ssl)
         XCTAssertNil(event.resource.firstByte)
         XCTAssertNil(event.resource.download)
-        XCTAssertEqual(try XCTUnwrap(event.action?.id), context.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.dd.traceId, "100")
         XCTAssertEqual(event.dd.spanId, "200")
         XCTAssertEqual(event.source, .ios)
-        XCTAssertEqual(event.service, randomServiceName)
+        XCTAssertEqual(event.service, "test-service")
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
     }
 
     func testGivenStartedResource_whenResourceLoadingEndsWithError_itSendsErrorEvent() throws {
@@ -284,12 +295,10 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: context,
+            context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             url: "https://foo.com/resource/1",
             httpMethod: .post
         )
@@ -306,17 +315,19 @@ class RUMResourceScopeTests: XCTestCase {
                     source: .network,
                     httpStatusCode: 500,
                     attributes: ["foo": "bar"]
-                )
+                ),
+                context: datadogContext,
+                writer: writer
             )
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMErrorEvent.self).first)
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
-        XCTAssertEqual(event.view.id, context.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.id, rumContext.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.view.url, "FooViewController")
         XCTAssertEqual(event.view.name, "FooViewName")
         XCTAssertEqual(event.error.type, "ErrorMock")
@@ -328,27 +339,29 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.error.resource?.provider)
         XCTAssertEqual(event.error.resource?.statusCode, 500)
         XCTAssertEqual(event.error.resource?.url, "https://foo.com/resource/1")
-        XCTAssertEqual(try XCTUnwrap(event.action?.id), context.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.source, .ios)
-        XCTAssertEqual(event.service, randomServiceName)
+        XCTAssertEqual(event.service, "test-service")
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
     }
 
     func testGivenConfiguredSource_whenResourceLoadingEndsWithError_itSendsErrorEventWithConfiguredSource() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
+        let source = String.mockAnySource()
+        let customContext: DatadogV1Context = .mockWith(
+            configuration: .mockWith(serviceName: "test-service", source: source)
+        )
+
         // Given
-        let customSource = String.mockAnySource()
         let scope = RUMResourceScope.mockWith(
-            context: context,
-            dependencies: dependencies.replacing(
-                source: customSource
-            ),
+            context: rumContext,
+            dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             url: "https://foo.com/resource/1",
             httpMethod: .post
         )
@@ -365,14 +378,16 @@ class RUMResourceScopeTests: XCTestCase {
                     source: .network,
                     httpStatusCode: 500,
                     attributes: ["foo": "bar"]
-                )
+                ),
+                context: customContext,
+                writer: writer
             )
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMErrorEvent.self).first)
-        XCTAssertEqual(event.source, RUMErrorEvent.Source(rawValue: customSource))
-        XCTAssertEqual(event.service, randomServiceName)
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
+        XCTAssertEqual(event.source, .init(rawValue: source))
+        XCTAssertEqual(event.service, "test-service")
     }
 
     func testGivenStartedResource_whenResourceReceivesMetricsBeforeItEnds_itUsesMetricValuesInSentResourceEvent() throws {
@@ -380,12 +395,10 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: context,
+            context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             url: "https://foo.com/resource/1",
             httpMethod: .post
         )
@@ -431,7 +444,7 @@ class RUMResourceScopeTests: XCTestCase {
             )
         )
 
-        XCTAssertTrue(scope.process(command: metricsCommand))
+        XCTAssertTrue(scope.process(command: metricsCommand, context: datadogContext, writer: writer))
 
         currentTime.addTimeInterval(1)
 
@@ -444,18 +457,20 @@ class RUMResourceScopeTests: XCTestCase {
                     kind: .image,
                     httpStatusCode: 200,
                     size: 1_024
-                )
+                ),
+                context: datadogContext,
+                writer: writer
             )
         )
 
         // Then
         let metrics = metricsCommand.metrics
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMResourceEvent.self).first)
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.date, metrics.fetch.start.timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
-        XCTAssertEqual(event.view.id, context.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.id, rumContext.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.view.url, "FooViewController")
         XCTAssertEqual(event.view.name, "FooViewName")
         XCTAssertValidRumUUID(event.resource.id)
@@ -477,24 +492,23 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.resource.firstByte?.duration, 1_000_000_000)
         XCTAssertEqual(event.resource.download?.start, 9_000_000_000)
         XCTAssertEqual(event.resource.download?.duration, 1_000_000_000)
-        XCTAssertEqual(try XCTUnwrap(event.action?.id), context.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertNil(event.dd.traceId)
         XCTAssertNil(event.dd.spanId)
         XCTAssertEqual(event.source, .ios)
-        XCTAssertEqual(event.service, randomServiceName)
+        XCTAssertEqual(event.service, "test-service")
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
     }
 
     func testGivenMultipleResourceScopes_whenSendingResourceEvents_eachEventHasUniqueResourceID() throws {
         let resourceKey: String = .mockAny()
         func createScope(url: String) -> RUMResourceScope {
             RUMResourceScope.mockWith(
-                context: context,
+                context: rumContext,
                 dependencies: dependencies,
                 resourceKey: resourceKey,
-                attributes: [:],
-                startTime: .mockAny(),
-                dateCorrection: .zero,
                 url: url
             )
         }
@@ -503,11 +517,19 @@ class RUMResourceScopeTests: XCTestCase {
         let scope2 = createScope(url: "/r/2")
 
         // When
-        _ = scope1.process(command: RUMStopResourceCommand.mockWith(resourceKey: resourceKey))
-        _ = scope2.process(command: RUMStopResourceCommand.mockWith(resourceKey: resourceKey))
+        _ = scope1.process(
+            command: RUMStopResourceCommand.mockWith(resourceKey: resourceKey),
+            context: datadogContext,
+            writer: writer
+        )
+        _ = scope2.process(
+            command: RUMStopResourceCommand.mockWith(resourceKey: resourceKey),
+            context: datadogContext,
+            writer: writer
+        )
 
         // Then
-        let resourceEvents = try output.recordedEvents(ofType: RUMResourceEvent.self)
+        let resourceEvents = writer.events(ofType: RUMResourceEvent.self)
         let resource1Events = resourceEvents.filter { $0.resource.url == "/r/1" }
         let resource2Events = resourceEvents.filter { $0.resource.url == "/r/2" }
         XCTAssertEqual(resource1Events.count, 1)
@@ -522,15 +544,11 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: context,
+            context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: Date(),
-            dateCorrection: .zero,
-            url: .mockAny(),
             httpMethod: .post,
-            isFirstPartyResource: nil,
             resourceKindBasedOnRequest: kindBasedOnRequest
         )
 
@@ -540,12 +558,14 @@ class RUMResourceScopeTests: XCTestCase {
                 command: RUMStopResourceCommand.mockWith(
                     resourceKey: "/resource/1",
                     kind: kindBasedOnResponse
-                )
+                ),
+                context: datadogContext,
+                writer: writer
             )
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMResourceEvent.self).first)
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.resource.type, kindBasedOnRequest)
     }
 
@@ -554,16 +574,13 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: context,
+            context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
-            url: "https://foo.com/resource/1",
+            url: "https://firstparty.com/resource/1",
             httpMethod: .post,
             isFirstPartyResource: true,
-            resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200")
         )
 
@@ -572,16 +589,18 @@ class RUMResourceScopeTests: XCTestCase {
         // When
         XCTAssertFalse(
             scope.process(
-                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1")
+                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1"),
+                context: datadogContext,
+                writer: writer
             )
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMResourceEvent.self).first)
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         let providerType = try XCTUnwrap(event.resource.provider?.type)
         let providerDomain = try XCTUnwrap(event.resource.provider?.domain)
         XCTAssertEqual(providerType, .firstParty)
-        XCTAssertEqual(providerDomain, "foo.com")
+        XCTAssertEqual(providerDomain, "firstparty.com")
     }
 
     func testGivenStartedThirdartyResource_whenResourceLoadingEnds_itSendsResourceEventWithoutResourceProvider() throws {
@@ -589,16 +608,13 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: context,
+            context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
             isFirstPartyResource: false,
-            resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200")
         )
 
@@ -607,12 +623,14 @@ class RUMResourceScopeTests: XCTestCase {
         // When
         XCTAssertFalse(
             scope.process(
-                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1")
+                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1"),
+                context: datadogContext,
+                writer: writer
             )
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMResourceEvent.self).first)
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertNil(event.resource.provider)
     }
 
@@ -621,13 +639,11 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: context,
+            context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
-            url: "https://foo.com/resource/1",
+            url: "https://firstparty.com/resource/1",
             httpMethod: .post,
             isFirstPartyResource: true
         )
@@ -637,16 +653,18 @@ class RUMResourceScopeTests: XCTestCase {
         // When
         XCTAssertFalse(
             scope.process(
-                command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/1")
+                command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/1"),
+                context: datadogContext,
+                writer: writer
             )
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMErrorEvent.self).first)
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         let providerType = try XCTUnwrap(event.error.resource?.provider?.type)
         let providerDomain = try XCTUnwrap(event.error.resource?.provider?.domain)
         XCTAssertEqual(providerType, .firstParty)
-        XCTAssertEqual(providerDomain, "foo.com")
+        XCTAssertEqual(providerDomain, "firstparty.com")
         XCTAssertEqual(event.error.sourceType, .ios)
     }
 
@@ -655,12 +673,10 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: context,
+            context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
             isFirstPartyResource: false
@@ -671,12 +687,14 @@ class RUMResourceScopeTests: XCTestCase {
         // When
         XCTAssertFalse(
             scope.process(
-                command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/1")
+                command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/1"),
+                context: datadogContext,
+                writer: writer
             )
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMErrorEvent.self).first)
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertNil(event.error.resource?.provider)
         XCTAssertEqual(event.error.sourceType, .ios)
     }
@@ -686,12 +704,10 @@ class RUMResourceScopeTests: XCTestCase {
         let resourceKey = "/resource/1"
         // Given
         let scope = RUMResourceScope.mockWith(
-            context: context,
+            context: rumContext,
             dependencies: dependencies,
             resourceKey: resourceKey,
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
             isFirstPartyResource: false
@@ -706,12 +722,14 @@ class RUMResourceScopeTests: XCTestCase {
                     resourceKey: resourceKey,
                     time: currentTime,
                     attributes: [CrossPlatformAttributes.errorSourceType: "react-native"]
-                )
+                ),
+                context: datadogContext,
+                writer: writer
             )
         )
 
         // Then
-        let event = try XCTUnwrap(output.recordedEvents(ofType: RUMErrorEvent.self).first)
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.error.sourceType, .reactNative)
     }
 
@@ -723,16 +741,12 @@ class RUMResourceScopeTests: XCTestCase {
         var onErrorEventSentCalled = false
         // Given
         let scope1 = RUMResourceScope.mockWith(
-            context: context,
+            context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
-            isFirstPartyResource: nil,
-            resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200"),
             onResourceEventSent: {
                 onResourceEventSentCalled = true
@@ -740,16 +754,12 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         let scope2 = RUMResourceScope.mockWith(
-            context: context,
+            context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/2",
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             url: "https://foo.com/resource/2",
             httpMethod: .post,
-            isFirstPartyResource: nil,
-            resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200"),
             onErrorEventSent: {
                 onErrorEventSentCalled = true
@@ -766,18 +776,22 @@ class RUMResourceScopeTests: XCTestCase {
                     kind: .image,
                     httpStatusCode: 200,
                     size: 1_024
-                )
+                ),
+                context: datadogContext,
+                writer: writer
             )
         )
 
         XCTAssertFalse(
             scope2.process(
-                command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/2")
+                command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/2"),
+                context: datadogContext,
+                writer: writer
             )
         )
 
         // Then
-        XCTAssertNotNil(try (output.recordedEvents(ofType: RUMResourceEvent.self).first))
+        XCTAssertFalse(writer.events(ofType: RUMResourceEvent.self).isEmpty)
         XCTAssertTrue(onResourceEventSentCalled)
         XCTAssertTrue(onErrorEventSentCalled)
     }
@@ -798,20 +812,18 @@ class RUMResourceScopeTests: XCTestCase {
                 }
             )
         )
-        let dependencies: RUMScopeDependencies = .mockWith(eventBuilder: eventBuilder, eventOutput: output)
+        let dependencies: RUMScopeDependencies = .mockWith(
+            eventBuilder: eventBuilder
+        )
 
         // swiftlint:disable trailing_closure
         let scope1 = RUMResourceScope.mockWith(
-            context: context,
+            context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
-            isFirstPartyResource: nil,
-            resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200"),
             onResourceEventSent: {
                 onResourceEventSentCalled = true
@@ -819,16 +831,12 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         let scope2 = RUMResourceScope.mockWith(
-            context: context,
+            context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/2",
-            attributes: [:],
             startTime: currentTime,
-            dateCorrection: .zero,
             url: "https://foo.com/resource/2",
             httpMethod: .post,
-            isFirstPartyResource: nil,
-            resourceKindBasedOnRequest: nil,
             spanContext: .init(traceID: "100", spanID: "200"),
             onErrorEventSent: {
                 onErrorEventSentCalled = true
@@ -846,18 +854,22 @@ class RUMResourceScopeTests: XCTestCase {
                     kind: .image,
                     httpStatusCode: 200,
                     size: 1_024
-                )
+                ),
+                context: datadogContext,
+                writer: writer
             )
         )
 
         XCTAssertFalse(
             scope2.process(
-                command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/2")
+                command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/2"),
+                context: datadogContext,
+                writer: writer
             )
         )
 
         // Then
-        XCTAssertNil(try (output.recordedEvents(ofType: RUMResourceEvent.self).first))
+        XCTAssertTrue(writer.events(ofType: RUMResourceEvent.self).isEmpty)
         XCTAssertFalse(onResourceEventSentCalled)
         XCTAssertFalse(onErrorEventSentCalled)
     }

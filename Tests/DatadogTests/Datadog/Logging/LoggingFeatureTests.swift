@@ -10,15 +10,11 @@ import XCTest
 class LoggingFeatureTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        XCTAssertNil(Datadog.instance)
-        XCTAssertNil(LoggingFeature.instance)
-        temporaryFeatureDirectories.create()
+        temporaryCoreDirectory.create()
     }
 
     override func tearDown() {
-        XCTAssertNil(Datadog.instance)
-        XCTAssertNil(LoggingFeature.instance)
-        temporaryFeatureDirectories.delete()
+        temporaryCoreDirectory.delete()
         super.tearDown()
     }
 
@@ -32,36 +28,45 @@ class LoggingFeatureTests: XCTestCase {
         let randomSDKVersion: String = .mockRandom(among: .alphanumerics)
         let randomUploadURL: URL = .mockRandom()
         let randomClientToken: String = .mockRandom()
-        let randomDeviceModel: String = .mockRandom()
+        let randomDeviceName: String = .mockRandom()
         let randomDeviceOSName: String = .mockRandom()
         let randomDeviceOSVersion: String = .mockRandom()
         let randomEncryption: DataEncryption? = Bool.random() ? DataEncryptionMock() : nil
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
 
-        // Given
-        LoggingFeature.instance = .mockWith(
-            directories: temporaryFeatureDirectories,
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
             configuration: .mockWith(
-                common: .mockWith(
-                    applicationName: randomApplicationName,
-                    applicationVersion: randomApplicationVersion,
-                    source: randomSource,
-                    origin: randomOrigin,
-                    sdkVersion: randomSDKVersion,
-                    encryption: randomEncryption
-                ),
-                uploadURL: randomUploadURL,
-                clientToken: randomClientToken
+                clientToken: randomClientToken,
+                applicationName: randomApplicationName,
+                applicationVersion: randomApplicationVersion,
+                source: randomSource,
+                origin: randomOrigin,
+                sdkVersion: randomSDKVersion,
+                encryption: randomEncryption
             ),
             dependencies: .mockWith(
-                mobileDevice: .mockWith(model: randomDeviceModel, osName: randomDeviceOSName, osVersion: randomDeviceOSVersion)
+                deviceInfo: .mockWith(
+                    name: randomDeviceName,
+                    osName: randomDeviceOSName,
+                    osVersion: randomDeviceOSVersion
+                )
             )
         )
-        defer { LoggingFeature.instance?.deinitialize() }
+
+        // Given
+        let featureConfiguration: LoggingFeature.Configuration = .mockWith(uploadURL: randomUploadURL)
+        let feature: LoggingFeature = try core.create(
+            storageConfiguration: createV2LoggingStorageConfiguration(),
+            uploadConfiguration: createV2LoggingUploadConfiguration(v1Configuration: featureConfiguration),
+            featureSpecificConfiguration: featureConfiguration
+        )
+        defer { feature.flush() }
+        core.register(feature: feature)
 
         // When
-        let logger = Logger.builder.build()
+        let logger = Logger.builder.build(in: core)
         logger.debug(.mockAny())
 
         // Then
@@ -73,7 +78,7 @@ class LoggingFeatureTests: XCTestCase {
         XCTAssertEqual(
             request.allHTTPHeaderFields?["User-Agent"],
             """
-            \(randomApplicationName)/\(randomApplicationVersion) CFNetwork (\(randomDeviceModel); \(randomDeviceOSName)/\(randomDeviceOSVersion))
+            \(randomApplicationName)/\(randomApplicationVersion) CFNetwork (\(randomDeviceName); \(randomDeviceOSName)/\(randomDeviceOSVersion))
             """
         )
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "application/json")
@@ -88,21 +93,23 @@ class LoggingFeatureTests: XCTestCase {
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        LoggingFeature.instance = .mockWith(
-            directories: temporaryFeatureDirectories,
+
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            configuration: .mockAny(),
             dependencies: .mockWith(
                 performance: .combining(
                     storagePerformance: StoragePerformanceMock(
                         maxFileSize: .max,
                         maxDirectorySize: .max,
-                        maxFileAgeForWrite: .distantFuture, // write all spans to single file,
+                        maxFileAgeForWrite: .distantFuture, // write all events to single file,
                         minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
                         maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
                         maxObjectsInFile: 3, // write 3 spans to payload,
                         maxObjectSize: .max
                     ),
                     uploadPerformance: UploadPerformanceMock(
-                        initialUploadDelay: 0.5, // wait enough until spans are written,
+                        initialUploadDelay: 0.5, // wait enough until events are written,
                         minUploadDelay: 1,
                         maxUploadDelay: 1,
                         uploadDelayChangeRate: 0
@@ -110,9 +117,18 @@ class LoggingFeatureTests: XCTestCase {
                 )
             )
         )
-        defer { LoggingFeature.instance?.deinitialize() }
 
-        let logger = Logger.builder.build()
+        // Given
+        let featureConfiguration: LoggingFeature.Configuration = .mockAny()
+        let feature: LoggingFeature = try core.create(
+            storageConfiguration: createV2LoggingStorageConfiguration(),
+            uploadConfiguration: createV2LoggingUploadConfiguration(v1Configuration: featureConfiguration),
+            featureSpecificConfiguration: featureConfiguration
+        )
+        defer { feature.flush() }
+        core.register(feature: feature)
+
+        let logger = Logger.builder.build(in: core)
         logger.debug("log 1")
         logger.debug("log 2")
         logger.debug("log 3")

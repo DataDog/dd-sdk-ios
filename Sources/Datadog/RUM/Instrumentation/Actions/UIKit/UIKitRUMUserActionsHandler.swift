@@ -45,7 +45,7 @@ internal class UIKitRUMUserActionsHandler: UIEventHandler {
         }
 
         guard let subscriber = subscriber else {
-            userLogger.warn(
+            DD.logger.warn(
                 """
                 RUM Action was detected, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work.
                 Make sure `Global.rum = RUMMonitor.initialize()` is called before any action happens.
@@ -110,7 +110,7 @@ internal struct UITouchCommandFactory: UIEventCommandFactory {
             return nil
         }
         return RUMAddUserActionCommand(
-            time: dateProvider.currentDate(),
+            time: dateProvider.now,
             attributes: action.attributes,
             actionType: .tap,
             name: action.name
@@ -164,7 +164,7 @@ internal struct UIPressCommandFactory: UIEventCommandFactory {
             return nil
         }
         return RUMAddUserActionCommand(
-            time: dateProvider.currentDate(),
+            time: dateProvider.now,
             attributes: action.attributes,
             actionType: .click,
             name: action.name

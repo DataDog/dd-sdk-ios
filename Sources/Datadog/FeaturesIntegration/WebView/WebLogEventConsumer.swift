@@ -18,7 +18,7 @@ internal class DefaultWebLogEventConsumer: WebLogEventConsumer {
     }
 
     private let userLogsWriter: Writer
-    private let dateCorrector: DateCorrectorType
+    private let dateCorrector: DateCorrector
     private let rumContextProvider: RUMContextProvider?
     private let applicationVersion: String
     private let environment: String
@@ -36,7 +36,7 @@ internal class DefaultWebLogEventConsumer: WebLogEventConsumer {
 
     init(
         userLogsWriter: Writer,
-        dateCorrector: DateCorrectorType,
+        dateCorrector: DateCorrector,
         rumContextProvider: RUMContextProvider?,
         applicationVersion: String,
         environment: String
@@ -58,7 +58,7 @@ internal class DefaultWebLogEventConsumer: WebLogEventConsumer {
         }
 
         if let timestampInMs = mutableEvent[Constants.dateKey] as? Int {
-            let serverTimeOffsetInMs = dateCorrector.currentCorrection.serverTimeOffset.toInt64Milliseconds
+            let serverTimeOffsetInMs = dateCorrector.offset.toInt64Milliseconds
             let correctedTimestamp = Int64(timestampInMs) + serverTimeOffsetInMs
             mutableEvent[Constants.dateKey] = correctedTimestamp
         }

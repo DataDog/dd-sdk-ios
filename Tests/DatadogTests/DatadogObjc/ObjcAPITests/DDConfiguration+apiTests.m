@@ -100,6 +100,7 @@
     [builder setWithCustomTracesEndpoint:[NSURL new]];
     [builder setWithCustomRUMEndpoint:[NSURL new]];
     [builder trackURLSessionWithFirstPartyHosts:[NSSet setWithArray:@[]]];
+    [builder setWithTracingSamplingRate:75];
     [builder setWithServiceName:@""];
     [builder setWithRumSessionsSamplingRate:50];
     [builder setOnRUMSessionStart:^(NSString * _Nonnull sessionId, BOOL isDiscarded) {}];
@@ -126,6 +127,7 @@
     [builder setRUMLongTaskEventMapper:^DDRUMLongTaskEvent * _Nullable(DDRUMLongTaskEvent * _Nonnull longTaskEvent) {
         return nil;
     }];
+    [builder setWithMobileVitalsFrequency:DDVitalsFrequencyFrequent];
     [builder setWithBatchSize:DDBatchSizeMedium];
     [builder setWithUploadFrequency:DDUploadFrequencyAverage];
     [builder setWithAdditionalConfiguration:@{}];

@@ -12,14 +12,14 @@ internal class ArbitraryDataWriter: AsyncWriter {
     /// Queue used to synchronize reads and writes for the feature.
     internal let queue: DispatchQueue
     /// Data processor for used to process & write data.
-    private let dataProcessor: DataProcessor
+    private let writer: Writer
 
     init(
         readWriteQueue: DispatchQueue,
-        dataProcessor: DataProcessor
+        writer: Writer
     ) {
         self.queue = readWriteQueue
-        self.dataProcessor = dataProcessor
+        self.writer = writer
     }
 
     // MARK: - Writer
@@ -29,7 +29,7 @@ internal class ArbitraryDataWriter: AsyncWriter {
             #if DD_SDK_COMPILED_FOR_TESTING
             assert(!self.isCanceled, "Trying to write data, but the writer is canceled.")
             #endif
-            self.dataProcessor.write(value: value)
+            self.writer.write(value: value)
         }
     }
 

@@ -12,79 +12,46 @@ extension TracingFeature {
         return TracingFeature(
             storage: .mockNoOp(),
             upload: .mockNoOp(),
-            configuration: .mockAny(),
-            commonDependencies: .mockAny(),
-            loggingFeatureAdapter: nil,
-            tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
-            telemetry: nil
-        )
-    }
-
-    /// Mocks the feature instance which performs uploads to `URLSession`.
-    /// Use `ServerMock` to inspect and assert recorded `URLRequests`.
-    static func mockWith(
-        directories: FeatureDirectories,
-        configuration: FeaturesConfiguration.Tracing = .mockAny(),
-        dependencies: FeaturesCommonDependencies = .mockAny(),
-        loggingFeature: LoggingFeature? = nil,
-        tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
-        telemetry: Telemetry? = nil
-    ) -> TracingFeature {
-        return TracingFeature(
-            directories: directories,
-            configuration: configuration,
-            commonDependencies: dependencies,
-            loggingFeatureAdapter: loggingFeature.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
-            tracingUUIDGenerator: tracingUUIDGenerator,
-            telemetry: telemetry
+            configuration: .mockAny()
         )
     }
 
     /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
     /// Use `TracingFeature.waitAndReturnSpanMatchers()` to inspect and assert recorded `Spans`.
     static func mockByRecordingSpanMatchers(
-        directories: FeatureDirectories,
-        configuration: FeaturesConfiguration.Tracing = .mockAny(),
-        dependencies: FeaturesCommonDependencies = .mockAny(),
-        loggingFeature: LoggingFeature? = nil,
-        tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
-        telemetry: Telemetry? = nil
+        featureConfiguration: FeaturesConfiguration.Tracing = .mockAny()
     ) -> TracingFeature {
-        // Get the full feature mock:
-        let fullFeature: TracingFeature = .mockWith(
-            directories: directories,
-            configuration: configuration,
-            dependencies: dependencies.replacing(
-                dateProvider: SystemDateProvider() // replace date provider in mocked `Feature.Storage`
-            ),
-            loggingFeature: loggingFeature,
-            tracingUUIDGenerator: tracingUUIDGenerator
+        // Mock storage with `InMemoryWriter`, used later for retrieving recorded events back:
+        let interceptedStorage = FeatureStorage(
+            writer: InMemoryWriter(),
+            reader: NoOpFileReader(),
+            arbitraryAuthorizedWriter: NoOpFileWriter(),
+            dataOrchestrator: NoOpDataOrchestrator()
         )
-        let uploadWorker = DataUploadWorkerMock()
-        let observedStorage = uploadWorker.observe(featureStorage: fullFeature.storage)
-        // Replace by mocking the `FeatureUpload` and observing the `FeatureStorage`:
-        let mockedUpload = FeatureUpload(uploader: uploadWorker)
-        // Tear down the original upload
-        fullFeature.upload.flushAndTearDown()
         return TracingFeature(
-            storage: observedStorage,
-            upload: mockedUpload,
-            configuration: configuration,
-            commonDependencies: dependencies,
-            loggingFeatureAdapter: fullFeature.loggingFeatureAdapter,
-            tracingUUIDGenerator: fullFeature.tracingUUIDGenerator,
-            telemetry: telemetry
+            storage: interceptedStorage,
+            upload: .mockNoOp(),
+            configuration: featureConfiguration
         )
     }
 
     // MARK: - Expecting Spans Data
 
-    static func waitAndReturnSpanMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [SpanMatcher] {
-        guard let uploadWorker = TracingFeature.instance?.upload.uploader as? DataUploadWorkerMock else {
+    func waitAndReturnSpanMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [SpanMatcher] {
+        guard let inMemoryWriter = storage.writer as? InMemoryWriter else {
             preconditionFailure("Retrieving matchers requires that feature is mocked with `.mockByRecordingSpanMatchers()`")
         }
-        return try uploadWorker.waitAndReturnBatchedData(count: count, file: file, line: line)
-            .flatMap { batchData in try SpanMatcher.fromNewlineSeparatedJSONObjectsData(batchData) }
+        return try inMemoryWriter.waitAndReturnEventsData(count: count, file: file, line: line)
+            .map { eventData in try SpanMatcher.fromJSONObjectData(eventData) }
+    }
+
+    // swiftlint:disable:next function_default_parameter_at_end
+    static func waitAndReturnSpanMatchers(in core: DatadogCoreProtocol = defaultDatadogCore, count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [SpanMatcher] {
+        guard let tracing = core.v1.feature(TracingFeature.self) else {
+            preconditionFailure("TracingFeature is not registered in core")
+        }
+
+        return try tracing.waitAndReturnSpanMatchers(count: count, file: file, line: line)
     }
 }
 
@@ -120,12 +87,12 @@ extension BaggageItems {
 }
 
 extension DDSpan {
-    static func mockAny() -> DDSpan {
-        return mockWith()
+    static func mockAny(in core: DatadogCoreProtocol) -> DDSpan {
+        return mockWith(core: core)
     }
 
     static func mockWith(
-        tracer: Tracer = .mockAny(),
+        tracer: Tracer,
         context: DDSpanContext = .mockAny(),
         operationName: String = .mockAny(),
         startTime: Date = .mockAny(),
@@ -133,6 +100,22 @@ extension DDSpan {
     ) -> DDSpan {
         return DDSpan(
             tracer: tracer,
+            context: context,
+            operationName: operationName,
+            startTime: startTime,
+            tags: tags
+        )
+    }
+
+    static func mockWith(
+        core: DatadogCoreProtocol,
+        context: DDSpanContext = .mockAny(),
+        operationName: String = .mockAny(),
+        startTime: Date = .mockAny(),
+        tags: [String: Encodable] = [:]
+    ) -> DDSpan {
+        return DDSpan(
+            tracer: .mockAny(in: core),
             context: context,
             operationName: operationName,
             startTime: startTime,
@@ -267,30 +250,25 @@ extension SpanEvent.UserInfo: AnyMockable, RandomMockable {
 // MARK: - Component Mocks
 
 extension Tracer {
-    static func mockAny() -> Tracer {
-        return mockWith()
+    static func mockAny(in core: DatadogCoreProtocol) -> Tracer {
+        return mockWith(core: core)
     }
 
     static func mockWith(
-        spanBuilder: SpanEventBuilder = .mockAny(),
-        spanOutput: SpanOutput = SpanOutputMock(),
-        logOutput: LoggingForTracingAdapter.AdaptedLogOutput = .init(
-            logBuilder: .mockAny(),
-            loggingOutput: LogOutputMock()
-        ),
-        dateProvider: DateProvider = SystemDateProvider(),
+        core: DatadogCoreProtocol,
+        configuration: Configuration = .init(),
+        spanEventMapper: SpanEventMapper? = nil,
         tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
-        globalTags: [String: Encodable]? = nil,
-        rumContextIntegration: TracingWithRUMContextIntegration? = nil
+        rumContextIntegration: TracingWithRUMContextIntegration? = nil,
+        loggingIntegration: TracingWithLoggingIntegration? = nil
     ) -> Tracer {
         return Tracer(
-            spanBuilder: spanBuilder,
-            spanOutput: spanOutput,
-            logOutput: logOutput,
-            dateProvider: dateProvider,
+            core: core,
+            configuration: configuration,
+            spanEventMapper: spanEventMapper,
             tracingUUIDGenerator: tracingUUIDGenerator,
-            globalTags: globalTags,
-            rumContextIntegration: rumContextIntegration
+            rumContextIntegration: rumContextIntegration,
+            loggingIntegration: loggingIntegration
         )
     }
 }
@@ -306,12 +284,11 @@ extension SpanEventBuilder {
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
-        dateCorrector: DateCorrectorType = DateCorrectorMock(),
+        dateCorrector: DateCorrector = DateCorrectorMock(),
         source: String = .mockAny(),
         origin: String? = nil,
         sdkVersion: String = .mockAny(),
-        eventsMapper: SpanEventMapper? = nil,
-        telemetry: Telemetry? = nil
+        eventsMapper: SpanEventMapper? = nil
     ) -> SpanEventBuilder {
         return SpanEventBuilder(
             sdkVersion: sdkVersion,
@@ -323,22 +300,7 @@ extension SpanEventBuilder {
             dateCorrector: dateCorrector,
             source: source,
             origin: origin,
-            eventsMapper: eventsMapper,
-            telemetry: telemetry
+            eventsMapper: eventsMapper
         )
-    }
-}
-
-/// `SpanOutput` recording received spans.
-class SpanOutputMock: SpanOutput {
-    var onSpanRecorded: ((SpanEvent) -> Void)?
-
-    var lastRecordedSpan: SpanEvent?
-    var allRecordedSpans: [SpanEvent] = []
-
-    func write(span: SpanEvent) {
-        lastRecordedSpan = span
-        allRecordedSpans.append(span)
-        onSpanRecorded?(span)
     }
 }

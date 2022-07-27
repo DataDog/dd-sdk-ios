@@ -28,7 +28,8 @@ internal protocol URLSessionInterceptorType: AnyObject {
 /// An object performing interception of requests sent with `URLSession`.
 public class URLSessionInterceptor: URLSessionInterceptorType {
     public static var shared: URLSessionInterceptor? {
-        URLSessionAutoInstrumentation.instance?.interceptor as? URLSessionInterceptor
+        let instrumentation = defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self)
+        return instrumentation?.interceptor as? URLSessionInterceptor
     }
 
     /// Filters first party `URLs` defined by the user.
@@ -44,6 +45,8 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
     /// Additional header injected to intercepted 1st party requests.
     /// Set to `x-datadog-origin: rum` if both RUM and Tracing instrumentations are enabled and `nil` in all other cases.
     internal let additionalHeadersForFirstPartyRequests: [String: String]?
+    /// Tracing sampler
+    internal let tracingSampler: Sampler
 
     // MARK: - Initialization
 
@@ -60,7 +63,10 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
                 rumAttributesProvider: configuration.rumAttributesProvider
             )
         } else {
-            handler = URLSessionTracingHandler(appStateListener: appStateListener)
+            handler = URLSessionTracingHandler(
+                appStateListener: appStateListener,
+                tracingSampler: configuration.tracingSampler
+            )
         }
 
         self.init(configuration: configuration, handler: handler)
@@ -73,6 +79,7 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
         self.defaultFirstPartyURLsFilter = FirstPartyURLsFilter(hosts: configuration.userDefinedFirstPartyHosts)
         self.internalURLsFilter = InternalURLsFilter(urls: configuration.sdkInternalURLs)
         self.handler = handler
+        self.tracingSampler = configuration.tracingSampler
 
         if configuration.instrumentTracing {
             self.injectTracingHeadersToFirstPartyRequests = true
@@ -211,10 +218,12 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
     // MARK: - Private
 
     private func isFirstParty(request: URLRequest, for session: URLSession?) -> Bool {
-        let delegateURLFilter = (session?.delegate as? DDURLSessionDelegate)?.firstPartyURLsFilter
-        let isFirstPartyForDelegate = (delegateURLFilter?.isFirstParty(url: request.url)) ?? false
-        let isFirstPartyForInterceptor = self.defaultFirstPartyURLsFilter.isFirstParty(url: request.url)
-        return isFirstPartyForDelegate || isFirstPartyForInterceptor
+        guard let delegate = session?.delegate as? DDURLSessionDelegate else {
+            return defaultFirstPartyURLsFilter.isFirstParty(url: request.url)
+        }
+
+        return delegate.firstPartyURLsFilter.isFirstParty(url: request.url) ||
+                defaultFirstPartyURLsFilter.isFirstParty(url: request.url)
     }
 
     private func finishInterception(task: URLSessionTask, interception: TaskInterception) {
@@ -229,7 +238,7 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
             return firstPartyRequest
         }
 
-        let writer = HTTPHeadersWriter()
+        let writer = HTTPHeadersWriter(sampler: tracingSampler)
         let spanContext = tracer.createSpanContext()
 
         tracer.inject(spanContext: spanContext, writer: writer)

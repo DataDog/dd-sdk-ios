@@ -35,7 +35,20 @@ extension Datadog {
             case rare
         }
 
-        public enum DatadogEndpoint {
+        /// Defines the frequency at which Datadog SDK will collect mobile vitals, such as CPU
+        /// and memory usage.
+        public enum VitalsFrequency {
+            /// Collect mobile vitals every 100ms.
+            case frequent
+            /// Collect mobile vitals every 500ms.
+            case average
+            /// Collect mobile vitals every 1000ms.
+            case rare
+            /// Don't provide mobile vitals.
+            case never
+        }
+
+        public enum DatadogEndpoint: String {
             /// US based servers.
             /// Sends data to [app.datadoghq.com](https://app.datadoghq.com/).
             case us1
@@ -251,6 +264,7 @@ extension Datadog {
         private(set) var firstPartyHosts: Set<String>?
         private(set) var logEventMapper: LogEventMapper?
         private(set) var spanEventMapper: SpanEventMapper?
+        private(set) var tracingSamplingRate: Float
         private(set) var rumSessionsSamplingRate: Float
         private(set) var rumSessionsListener: RUMSessionListener?
         private(set) var rumUIKitViewsPredicate: UIKitRUMViewsPredicate?
@@ -264,6 +278,7 @@ extension Datadog {
         private(set) var rumResourceAttributesProvider: URLSessionRUMAttributesProvider?
         private(set) var rumBackgroundEventTrackingEnabled: Bool
         private(set) var rumTelemetrySamplingRate: Float
+        private(set) var mobileVitalsFrequency: VitalsFrequency
         private(set) var batchSize: BatchSize
         private(set) var uploadFrequency: UploadFrequency
         private(set) var additionalConfiguration: [String: Any]
@@ -326,6 +341,7 @@ extension Datadog {
                     serviceName: nil,
                     firstPartyHosts: nil,
                     spanEventMapper: nil,
+                    tracingSamplingRate: 20.0,
                     rumSessionsSamplingRate: 100.0,
                     rumSessionsListener: nil,
                     rumUIKitViewsPredicate: nil,
@@ -337,6 +353,7 @@ extension Datadog {
                     rumResourceAttributesProvider: nil,
                     rumBackgroundEventTrackingEnabled: false,
                     rumTelemetrySamplingRate: 20,
+                    mobileVitalsFrequency: .rare,
                     batchSize: .medium,
                     uploadFrequency: .average,
                     additionalConfiguration: [:],
@@ -495,6 +512,15 @@ extension Datadog {
             /// Use the `trackURLSession(firstPartyHosts:)` API to configure tracing only the hosts that you are interested in.
             public func setSpanEventMapper(_ mapper: @escaping (SpanEvent) -> SpanEvent) -> Builder {
                 configuration.spanEventMapper = mapper
+                return self
+            }
+
+            /// Sets the sampling rate for APM traces created for auto-instrumented `URLSession` requests.
+            ///
+            /// - Parameter tracingSamplingRate: the sampling rate must be a value between `0.0` and `100.0`. A value of `0.0`
+            /// means no trace will be kept, `100.0` means all traces will be kept (default value is `20.0`).
+            public func set(tracingSamplingRate: Float) -> Builder {
+                configuration.tracingSamplingRate = tracingSamplingRate
                 return self
             }
 
@@ -694,6 +720,13 @@ extension Datadog {
             ///                   means no telemetry will be sent, 100 means all telemetry will be kept.
             public func set(sampleTelemetry rate: Float) -> Builder {
                 configuration.rumTelemetrySamplingRate = rate
+                return self
+            }
+
+            /// Sets the preferred frequency for collecting mobile vitals.
+            /// - Parameter mobileVitalsFrequency: `.average` by default.
+            public func set(mobileVitalsFrequency: VitalsFrequency) -> Builder {
+                configuration.mobileVitalsFrequency = mobileVitalsFrequency
                 return self
             }
 

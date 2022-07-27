@@ -63,9 +63,9 @@ class LoggingScenarioTests: IntegrationTests, LoggingCommonAsserts {
             )
 
             #if DEBUG
-            matcher.assertTags(equal: ["env:integration", "build_configuration:debug", "tag1:tag-value", "tag2", "tag3:added"])
+            matcher.assertTags(equal: ["env:integration", "build_configuration:debug", "tag1:tag-value", "tag2", "tag3:added", "version:1.0"])
             #else
-            matcher.assertTags(equal: ["env:integration", "build_configuration:release", "tag1:tag-value", "tag2", "tag3:added"])
+            matcher.assertTags(equal: ["env:integration", "build_configuration:release", "tag1:tag-value", "tag2", "tag3:added", "version:1.0"])
             #endif
 
             matcher.assertValue(

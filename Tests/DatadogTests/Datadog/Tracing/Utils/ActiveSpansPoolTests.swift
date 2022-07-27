@@ -9,7 +9,7 @@ import XCTest
 
 class ActiveSpansPoolTests: XCTestCase {
     func testsWhenSpanIsStartedIsAssignedToActiveSpan() throws {
-        let tracer = Tracer.mockAny()
+        let tracer = Tracer.mockAny(in: PassthroughCoreMock())
         let previousSpan = tracer.activeSpan
         XCTAssertNil(previousSpan)
 
@@ -20,7 +20,7 @@ class ActiveSpansPoolTests: XCTestCase {
     }
 
     func testsWhenSpanIsFinishedIsRemovedFromActiveSpan() throws {
-        let tracer = Tracer.mockAny()
+        let tracer = Tracer.mockAny(in: PassthroughCoreMock())
         XCTAssertNil(tracer.activeSpan)
 
         let oneSpan = tracer.startSpan(operationName: .mockAny()).setActive()
@@ -31,7 +31,7 @@ class ActiveSpansPoolTests: XCTestCase {
     }
 
     func testsSpanWithoutParentInheritsActiveSpan() throws {
-        let tracer = Tracer.mockAny()
+        let tracer = Tracer.mockAny(in: PassthroughCoreMock())
         let firstSpan = tracer.startSpan(operationName: .mockAny()).setActive()
         firstSpan.setActive()
         let previousActiveSpan = tracer.activeSpan
@@ -49,7 +49,7 @@ class ActiveSpansPoolTests: XCTestCase {
     }
 
     func testsSpanWithParentDoesntInheritActiveSpan() throws {
-        let tracer = Tracer.mockAny()
+        let tracer = Tracer.mockAny(in: PassthroughCoreMock())
         let oneSpan = tracer.startSpan(operationName: .mockAny())
         let otherSpan = tracer.startSpan(operationName: .mockAny()).setActive()
 
@@ -63,7 +63,7 @@ class ActiveSpansPoolTests: XCTestCase {
     }
 
     func testActiveSpanIsKeptPerTask() throws {
-        let tracer = Tracer.mockAny()
+        let tracer = Tracer.mockAny(in: PassthroughCoreMock())
         let oneSpan = tracer.startSpan(operationName: .mockAny()).setActive()
         let expectation1 = self.expectation(description: "firstSpan created")
         let expectation2 = self.expectation(description: "secondSpan created")
@@ -88,7 +88,7 @@ class ActiveSpansPoolTests: XCTestCase {
     }
 
     func testsSetActiveSpanCalledMultipleTimes() throws {
-        let tracer = Tracer.mockAny()
+        let tracer = Tracer.mockAny(in: PassthroughCoreMock())
         let firstSpan = tracer.startSpan(operationName: .mockAny()).setActive()
         firstSpan.setActive()
 

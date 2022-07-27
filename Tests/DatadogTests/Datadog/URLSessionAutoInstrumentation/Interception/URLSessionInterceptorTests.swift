@@ -8,6 +8,8 @@ import XCTest
 @testable import Datadog
 
 class URLSessionInterceptorTests: XCTestCase {
+    private var core: DatadogCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
+
     private let handler = URLSessionInterceptionHandlerMock()
     /// Mock request made to a first party URL.
     private let firstPartyRequest = URLRequest(url: URL(string: "https://api.first-party.com/v1/endpoint")!)
@@ -17,6 +19,18 @@ class URLSessionInterceptorTests: XCTestCase {
     private let thirdPartyRequest = URLRequest(url: URL(string: "https://api.third-party.com/v1/endpoint")!)
     /// Mock request made internally by the SDK (used to test that SDK internal calls to Intake servers are not intercepted).
     private let internalRequest = URLRequest(url: URL(string: "https://dd.internal.com/v1/endpoint")!)
+
+    override func setUp() {
+        super.setUp()
+        core = DatadogCoreMock()
+        core.register(feature: TracingFeature.mockByRecordingSpanMatchers())
+    }
+
+    override func tearDown() {
+        core.flush()
+        core = nil
+        super.tearDown()
+    }
 
     // MARK: - Initialization
 
@@ -99,23 +113,29 @@ class URLSessionInterceptorTests: XCTestCase {
 
     private func mockConfiguration(
         tracingInstrumentationEnabled: Bool,
-        rumInstrumentationEnabled: Bool
+        rumInstrumentationEnabled: Bool,
+        tracingSampler: Sampler = .mockKeepAll()
     ) -> FeaturesConfiguration.URLSessionAutoInstrumentation {
         return .mockWith(
             userDefinedFirstPartyHosts: ["first-party.com"],
             sdkInternalURLs: ["https://dd.internal.com"],
             instrumentTracing: tracingInstrumentationEnabled,
-            instrumentRUM: rumInstrumentationEnabled
+            instrumentRUM: rumInstrumentationEnabled,
+            tracingSampler: tracingSampler
         )
     }
 
     func testGivenTracingAndRUMInstrumentationEnabled_whenInterceptingRequests_itInjectsTracingContextToFirstPartyRequests() throws {
         // Given
         let interceptor = URLSessionInterceptor(
-            configuration: mockConfiguration(tracingInstrumentationEnabled: true, rumInstrumentationEnabled: true),
+            configuration: mockConfiguration(
+                tracingInstrumentationEnabled: true,
+                rumInstrumentationEnabled: true,
+                tracingSampler: .mockKeepAll()
+            ),
             handler: handler
         )
-        Global.sharedTracer = Tracer.mockAny()
+        Global.sharedTracer = Tracer.mockAny(in: core)
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
         let sessionWithCustomFirstPartyHosts = URLSession.mockWith(
             DDURLSessionDelegate(additionalFirstPartyHosts: [alternativeFirstPartyRequest.url!.host!])
@@ -133,30 +153,30 @@ class URLSessionInterceptorTests: XCTestCase {
         // Then
         XCTAssertNotNil(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.traceIDField])
         XCTAssertNotNil(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.parentSpanIDField])
+        XCTAssertEqual(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.samplingPriorityField], "1")
         XCTAssertEqual(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.ddOrigin.field], TracingHTTPHeaders.ddOrigin.value)
         assertRequestsEqual(
             interceptedFirstPartyRequest
                 .removing(httpHeaderField: TracingHTTPHeaders.traceIDField)
                 .removing(httpHeaderField: TracingHTTPHeaders.parentSpanIDField)
-                .removing(httpHeaderField: TracingHTTPHeaders.ddSamplingPriority.field)
-                .removing(httpHeaderField: TracingHTTPHeaders.ddSampled.field)
+                .removing(httpHeaderField: TracingHTTPHeaders.samplingPriorityField)
                 .removing(httpHeaderField: TracingHTTPHeaders.ddOrigin.field),
             firstPartyRequest,
-            "The only modification of the original requests should be the addition of 5 tracing headers."
+            "The only modification of the original requests should be the addition of 4 tracing headers."
         )
 
         XCTAssertNotNil(interceptedCustomFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.traceIDField])
         XCTAssertNotNil(interceptedCustomFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.parentSpanIDField])
+        XCTAssertEqual(interceptedCustomFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.samplingPriorityField], "1")
         XCTAssertEqual(interceptedCustomFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.ddOrigin.field], TracingHTTPHeaders.ddOrigin.value)
         assertRequestsEqual(
             interceptedCustomFirstPartyRequest
                 .removing(httpHeaderField: TracingHTTPHeaders.traceIDField)
                 .removing(httpHeaderField: TracingHTTPHeaders.parentSpanIDField)
-                .removing(httpHeaderField: TracingHTTPHeaders.ddSamplingPriority.field)
-                .removing(httpHeaderField: TracingHTTPHeaders.ddSampled.field)
+                .removing(httpHeaderField: TracingHTTPHeaders.samplingPriorityField)
                 .removing(httpHeaderField: TracingHTTPHeaders.ddOrigin.field),
             alternativeFirstPartyRequest,
-            "The only modification of the original requests should be the addition of 5 tracing headers."
+            "The only modification of the original requests should be the addition of 4 tracing headers."
         )
 
         assertRequestsEqual(thirdPartyRequest, interceptedThirdPartyRequest, "Intercepted 3rd party request should not be modified.")
@@ -166,10 +186,14 @@ class URLSessionInterceptorTests: XCTestCase {
     func testGivenOnlyTracingInstrumentationEnabled_whenInterceptingRequests_itInjectsTracingContextToFirstPartyRequests() throws {
         // Given
         let interceptor = URLSessionInterceptor(
-            configuration: mockConfiguration(tracingInstrumentationEnabled: true, rumInstrumentationEnabled: false),
+            configuration: mockConfiguration(
+                tracingInstrumentationEnabled: true,
+                rumInstrumentationEnabled: false,
+                tracingSampler: .mockKeepAll()
+            ),
             handler: handler
         )
-        Global.sharedTracer = Tracer.mockAny()
+        Global.sharedTracer = Tracer.mockAny(in: core)
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
 
         // When
@@ -180,15 +204,47 @@ class URLSessionInterceptorTests: XCTestCase {
         // Then
         XCTAssertNotNil(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.traceIDField])
         XCTAssertNotNil(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.parentSpanIDField])
+        XCTAssertEqual(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.samplingPriorityField], "1")
         XCTAssertNil(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.ddOrigin.field], "Origin header should not be added if RUM is disabled.")
         assertRequestsEqual(
             interceptedFirstPartyRequest
                 .removing(httpHeaderField: TracingHTTPHeaders.traceIDField)
                 .removing(httpHeaderField: TracingHTTPHeaders.parentSpanIDField)
-                .removing(httpHeaderField: TracingHTTPHeaders.ddSamplingPriority.field)
-                .removing(httpHeaderField: TracingHTTPHeaders.ddSampled.field),
+                .removing(httpHeaderField: TracingHTTPHeaders.samplingPriorityField),
             firstPartyRequest,
             "The only modification of the original requests should be the addition of 4 tracing headers."
+        )
+        assertRequestsEqual(thirdPartyRequest, interceptedThirdPartyRequest, "Intercepted 3rd party request should not be modified.")
+        assertRequestsEqual(internalRequest, interceptedInternalRequest, "Intercepted internal request should not be modified.")
+    }
+
+    func testGivenTracingInstrumentationEnabled_whenInterceptingRequests_itInjectsSampledOutTracingContextToFirstPartyRequests() throws {
+        // Given
+        let interceptor = URLSessionInterceptor(
+            configuration: mockConfiguration(
+                tracingInstrumentationEnabled: true,
+                rumInstrumentationEnabled: false,
+                tracingSampler: .mockRejectAll()
+            ),
+            handler: handler
+        )
+        Global.sharedTracer = Tracer.mockAny(in: core)
+        defer { Global.sharedTracer = DDNoopGlobals.tracer }
+
+        // When
+        let interceptedFirstPartyRequest = interceptor.modify(request: firstPartyRequest)
+        let interceptedThirdPartyRequest = interceptor.modify(request: thirdPartyRequest)
+        let interceptedInternalRequest = interceptor.modify(request: internalRequest)
+
+        // Then
+        XCTAssertNil(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.traceIDField])
+        XCTAssertNil(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.parentSpanIDField])
+        XCTAssertEqual(interceptedFirstPartyRequest.allHTTPHeaderFields?[TracingHTTPHeaders.samplingPriorityField], "0")
+        assertRequestsEqual(
+            interceptedFirstPartyRequest
+                .removing(httpHeaderField: TracingHTTPHeaders.samplingPriorityField),
+            firstPartyRequest,
+            "The only modification of the original requests should be the addition of x-datadog-sampling-priority tracing headers."
         )
         assertRequestsEqual(thirdPartyRequest, interceptedThirdPartyRequest, "Intercepted 3rd party request should not be modified.")
         assertRequestsEqual(internalRequest, interceptedInternalRequest, "Intercepted internal request should not be modified.")
@@ -200,7 +256,7 @@ class URLSessionInterceptorTests: XCTestCase {
             configuration: mockConfiguration(tracingInstrumentationEnabled: false, rumInstrumentationEnabled: true),
             handler: handler
         )
-        Global.sharedTracer = Tracer.mockAny()
+        Global.sharedTracer = Tracer.mockAny(in: core)
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
 
         // When
@@ -255,7 +311,7 @@ class URLSessionInterceptorTests: XCTestCase {
             configuration: mockConfiguration(tracingInstrumentationEnabled: true, rumInstrumentationEnabled: .random()),
             handler: handler
         )
-        Global.sharedTracer = Tracer.mockAny()
+        Global.sharedTracer = Tracer.mockAny(in: core)
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
         let sessionWithCustomFirstPartyHosts = URLSession.mockWith(
             DDURLSessionDelegate(additionalFirstPartyHosts: [alternativeFirstPartyRequest.url!.host!])
