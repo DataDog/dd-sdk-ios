@@ -182,31 +182,33 @@ public class Datadog {
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
         let carrierInfoProvider = CarrierInfoProvider()
         let launchTimeProvider = LaunchTimeProvider()
-
-        // Bundle all core dependencies provided by `DatadogCore` to features:
-        let commonDependencies = CoreDependencies(
-            consentProvider: consentProvider,
-            performance: configuration.common.performance,
-            httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
-            deviceInfo: .init(),
-            sdkInitDate: dateProvider.now,
-            dateProvider: dateProvider,
-            dateCorrector: dateCorrector,
-            userInfoProvider: userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider,
-            launchTimeProvider: launchTimeProvider,
-            appStateListener: AppStateListener(dateProvider: dateProvider),
-            encryption: configuration.common.encryption
-        )
+        let appStateListener = AppStateListener(dateProvider: dateProvider)
 
         // Set default `DatadogCore`:
         let core = DatadogCore(
             directory: try CoreDirectory(in: Directory.cache(), from: configuration.common),
-            configuration: configuration.common,
-            dependencies: commonDependencies,
-            v1Context: DatadogV1Context(configuration: configuration.common, dependencies: commonDependencies),
-            contextProvider: DatadogContextProvider(configuration: configuration.common, dependencies: commonDependencies)
+            dateProvider: dateProvider,
+            consentProvider: consentProvider,
+            userInfoProvider: userInfoProvider,
+            performance: configuration.common.performance,
+            httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
+            encryption: configuration.common.encryption,
+            v1Context: DatadogV1Context(
+                configuration: configuration.common,
+                device: .init(),
+                dateProvider: dateProvider,
+                dateCorrector: dateCorrector,
+                networkConnectionInfoProvider: networkConnectionInfoProvider,
+                carrierInfoProvider: carrierInfoProvider,
+                userInfoProvider: userInfoProvider,
+                appStateListener: appStateListener,
+                launchTimeProvider: launchTimeProvider
+            ),
+            contextProvider: DatadogContextProvider(
+                configuration: configuration.common,
+                device: .init(),
+                dateProvider: dateProvider
+            )
         )
 
         // First, initialize features:
@@ -268,7 +270,11 @@ public class Datadog {
         if let crashReportingConfiguration = configuration.crashReporting {
             crashReporting = CrashReportingFeature(
                 configuration: crashReportingConfiguration,
-                commonDependencies: commonDependencies
+                consentProvider: consentProvider,
+                userInfoProvider: userInfoProvider,
+                networkConnectionInfoProvider: networkConnectionInfoProvider,
+                carrierInfoProvider: carrierInfoProvider,
+                appStateListener: appStateListener
             )
 
             core.register(feature: crashReporting)
@@ -277,7 +283,8 @@ public class Datadog {
         if let urlSessionAutoInstrumentationConfiguration = configuration.urlSessionAutoInstrumentation {
             urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
                 configuration: urlSessionAutoInstrumentationConfiguration,
-                commonDependencies: commonDependencies
+                dateProvider: dateProvider,
+                appStateListener: appStateListener
             )
 
             core.register(feature: urlSessionAutoInstrumentation)

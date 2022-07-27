@@ -72,12 +72,55 @@ extension DatadogV1Context: AnyMockable {
     }
 
     static func mockWith(
-        configuration: CoreConfiguration = .mockAny(),
-        dependencies: CoreDependencies = .mockAny()
+        site: DatadogSite? = .mockAny(),
+        clientToken: String = .mockAny(),
+        service: String = .mockAny(),
+        env: String = .mockAny(),
+        version: String = .mockAny(),
+        source: String = .mockAny(),
+        sdkVersion: String = .mockAny(),
+        ciAppOrigin: String? = nil,
+        applicationName: String = .mockAny(),
+        applicationBundleIdentifier: String = .mockAny(),
+        sdkInitDate: Date = Date(),
+        device: DeviceInfo = .mockAny(),
+        dateProvider: DateProvider = SystemDateProvider(),
+        dateCorrector: DateCorrector = DateCorrectorMock(),
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
+            networkConnectionInfo: .mockWith(
+                reachability: .yes, // so it always meets the upload condition
+                availableInterfaces: [.wifi],
+                supportsIPv4: true,
+                supportsIPv6: true,
+                isExpensive: true,
+                isConstrained: false // so it always meets the upload condition
+            )
+        ),
+        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
+        userInfoProvider: UserInfoProvider = .mockAny(),
+        appStateListener: AppStateListening = AppStateListenerMock.mockAny(),
+        launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock.mockAny()
     ) -> DatadogV1Context {
-        return DatadogV1Context(
-            configuration: configuration,
-            dependencies: dependencies
+        DatadogV1Context(
+            site: site,
+            clientToken: clientToken,
+            service: service,
+            env: env,
+            version: version,
+            source: source,
+            sdkVersion: sdkVersion,
+            ciAppOrigin: ciAppOrigin,
+            applicationName: applicationName,
+            applicationBundleIdentifier: applicationBundleIdentifier,
+            sdkInitDate: sdkInitDate,
+            device: device,
+            dateProvider: dateProvider,
+            dateCorrector: dateCorrector,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider,
+            userInfoProvider: userInfoProvider,
+            appStateListener: appStateListener,
+            launchTimeProvider: launchTimeProvider
         )
     }
 }

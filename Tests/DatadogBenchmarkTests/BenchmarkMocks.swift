@@ -14,26 +14,6 @@ extension PerformancePreset {
     static let benchmarksPreset = PerformancePreset(batchSize: .small, uploadFrequency: .frequent, bundleType: .iOSApp)
 }
 
-extension FeaturesCommonDependencies {
-    static func mockAny() -> Self {
-        return .init(
-            consentProvider: ConsentProvider(initialConsent: .granted),
-            performance: .benchmarksPreset,
-            httpClient: HTTPClient(),
-            deviceInfo: DeviceInfo(),
-            sdkInitDate: Date(),
-            dateProvider: SystemDateProvider(),
-            dateCorrector: DateCorrectorMock(),
-            userInfoProvider: UserInfoProvider(),
-            networkConnectionInfoProvider: NetworkConnectionInfoProvider(),
-            carrierInfoProvider: CarrierInfoProvider(),
-            launchTimeProvider: LaunchTimeProvider(),
-            appStateListener: AppStateListener(dateProvider: SystemDateProvider()),
-            encryption: nil
-        )
-    }
-}
-
 struct FeatureRequestBuilderMock: FeatureRequestBuilder {
     let dataFormat = DataFormat(prefix: "", suffix: "", separator: "\n")
 

@@ -6,24 +6,6 @@
 
 import Foundation
 
-/// Container with dependencies common to all features (Logging, Tracing and RUM).
-internal struct FeaturesCommonDependencies {
-    let consentProvider: ConsentProvider
-    let performance: PerformancePreset
-    let httpClient: HTTPClient
-    let deviceInfo: DeviceInfo
-    /// Time of SDK initialization, measured in device date.
-    let sdkInitDate: Date
-    let dateProvider: DateProvider
-    let dateCorrector: DateCorrector
-    let userInfoProvider: UserInfoProvider
-    let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
-    let carrierInfoProvider: CarrierInfoProviderType
-    let launchTimeProvider: LaunchTimeProviderType
-    let appStateListener: AppStateListening
-    let encryption: DataEncryption?
-}
-
 internal struct FeatureStorage {
     /// Writes data to files. This `Writer` takes current value of the `TrackingConsent` into consideration
     /// to decided if the data should be written to authorized or unauthorized folder.
@@ -43,17 +25,20 @@ internal struct FeatureStorage {
         featureName: String,
         queue: DispatchQueue,
         directories: FeatureDirectories,
-        commonDependencies: FeaturesCommonDependencies
+        dateProvider: DateProvider,
+        consentProvider: ConsentProvider,
+        performance: PerformancePreset,
+        encryption: DataEncryption?
     ) {
         let authorizedFilesOrchestrator = FilesOrchestrator(
             directory: directories.authorized,
-            performance: commonDependencies.performance,
-            dateProvider: commonDependencies.dateProvider
+            performance: performance,
+            dateProvider: dateProvider
         )
         let unauthorizedFilesOrchestrator = FilesOrchestrator(
             directory: directories.unauthorized,
-            performance: commonDependencies.performance,
-            dateProvider: commonDependencies.dateProvider
+            performance: performance,
+            dateProvider: dateProvider
         )
 
         let dataOrchestrator = DataOrchestrator(
@@ -64,16 +49,16 @@ internal struct FeatureStorage {
 
         let unauthorizedFileWriter = FileWriter(
             orchestrator: unauthorizedFilesOrchestrator,
-            encryption: commonDependencies.encryption
+            encryption: encryption
         )
 
         let authorizedFileWriter = FileWriter(
             orchestrator: authorizedFilesOrchestrator,
-            encryption: commonDependencies.encryption
+            encryption: encryption
         )
 
         let consentAwareDataWriter = ConsentAwareDataWriter(
-            consentProvider: commonDependencies.consentProvider,
+            consentProvider: consentProvider,
             readWriteQueue: queue,
             unauthorizedWriter: unauthorizedFileWriter,
             authorizedWriter: authorizedFileWriter,
@@ -91,7 +76,7 @@ internal struct FeatureStorage {
             readWriteQueue: queue,
             fileReader: FileReader(
                 orchestrator: authorizedFilesOrchestrator,
-                encryption: commonDependencies.encryption
+                encryption: encryption
             )
         )
 

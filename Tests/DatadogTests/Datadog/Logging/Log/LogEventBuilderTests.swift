@@ -35,7 +35,7 @@ class LogEventBuilderTests: XCTestCase {
             error: randomError,
             attributes: randomAttributes,
             tags: randomTags,
-            context: .mockWith(dependencies: .mockWith(dateCorrector: DateCorrectorMock(offset: 0))),
+            context: .mockWith(dateCorrector: DateCorrectorMock(offset: 0)),
             threadName: randomThreadName
         )
         let log = try XCTUnwrap(event)
@@ -64,17 +64,13 @@ class LogEventBuilderTests: XCTestCase {
         let randomCarrierInfo: CarrierInfo = .mockRandom()
         let randomServerOffset: TimeInterval = .mockRandom(min: -10, max: 10)
         let randomSDKContext: DatadogV1Context = .mockWith(
-            configuration: .mockWith(
-                applicationVersion: randomApplicationVersion,
-                environment: randomEnvironment,
-                sdkVersion: randomSDKVersion
-            ),
-            dependencies: .mockWith(
-                dateCorrector: DateCorrectorMock(offset: randomServerOffset),
-                userInfoProvider: .mockWith(userInfo: randomUserInfo),
-                networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: randomNetworkInfo),
-                carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: randomCarrierInfo)
-            )
+            env: randomEnvironment,
+            version: randomApplicationVersion,
+            sdkVersion: randomSDKVersion,
+            dateCorrector: DateCorrectorMock(offset: randomServerOffset),
+            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: randomNetworkInfo),
+            carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: randomCarrierInfo),
+            userInfoProvider: .mockWith(userInfo: randomUserInfo)
         )
 
         // Given
@@ -129,10 +125,8 @@ class LogEventBuilderTests: XCTestCase {
             attributes: .mockAny(),
             tags: .mockAny(),
             context: .mockWith(
-                dependencies: .mockWith(
-                    networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: .mockAny()),
-                    carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: .mockAny())
-                )
+                networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: .mockAny()),
+                carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: .mockAny())
             ),
             threadName: .mockAny()
         )

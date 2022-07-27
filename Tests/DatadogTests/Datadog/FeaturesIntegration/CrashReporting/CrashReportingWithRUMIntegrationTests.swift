@@ -33,10 +33,8 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
                 backgroundEventTrackingEnabled: .mockRandom() // no matter BET
             ),
             context: .mockWith(
-                dependencies: .mockWith(
-                    dateProvider: RelativeDateProvider(using: currentDate),
-                    dateCorrector: DateCorrectorMock(offset: 0)
-                )
+                dateProvider: RelativeDateProvider(using: currentDate),
+                dateCorrector: DateCorrectorMock(offset: 0)
             )
         )
 
@@ -70,9 +68,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
                 backgroundEventTrackingEnabled: .mockRandom() // no matter BET
             ),
             context: .mockWith(
-                dependencies: .mockWith(
-                    dateProvider: RelativeDateProvider(using: currentDate)
-                )
+                dateProvider: RelativeDateProvider(using: currentDate)
             )
         )
 
@@ -104,10 +100,8 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
                 backgroundEventTrackingEnabled: true // BET enabled
             ),
             context: .mockWith(
-                dependencies: .mockWith(
-                    dateProvider: RelativeDateProvider(using: currentDate),
-                    dateCorrector: DateCorrectorMock(offset: 0)
-                )
+                dateProvider: RelativeDateProvider(using: currentDate),
+                dateCorrector: DateCorrectorMock(offset: 0)
             )
         )
 
@@ -140,10 +134,8 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
                 backgroundEventTrackingEnabled: true
             ),
             context: .mockWith(
-                dependencies: .mockWith(
-                    dateProvider: RelativeDateProvider(using: currentDate),
-                    dateCorrector: DateCorrectorMock(offset: 0)
-                )
+                dateProvider: RelativeDateProvider(using: currentDate),
+                dateCorrector: DateCorrectorMock(offset: 0)
             )
         )
 
@@ -171,10 +163,8 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
                 backgroundEventTrackingEnabled: .mockRandom() // no matter BET
             ),
             context: .mockWith(
-                dependencies: .mockWith(
-                    dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
-                    dateCorrector: DateCorrectorMock()
-                )
+                dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
+                dateCorrector: DateCorrectorMock()
             )
         )
 
@@ -205,9 +195,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
                 backgroundEventTrackingEnabled: true
             ),
             context: .mockWith(
-                dependencies: .mockWith(
-                    dateProvider: RelativeDateProvider(using: currentDate)
-                )
+                dateProvider: RelativeDateProvider(using: currentDate)
             )
         )
 
@@ -237,10 +225,8 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
                 backgroundEventTrackingEnabled: false // BET disabled
             ),
             context: .mockWith(
-                dependencies: .mockWith(
-                    dateProvider: RelativeDateProvider(using: crashDate),
-                    dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
-                )
+                dateProvider: RelativeDateProvider(using: crashDate),
+                dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
             )
         )
 
@@ -275,9 +261,7 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
                 backgroundEventTrackingEnabled: .mockRandom()
             ),
             context: .mockWith(
-                dependencies: .mockWith(
-                    dateProvider: RelativeDateProvider(using: currentDate)
-                )
+                dateProvider: RelativeDateProvider(using: currentDate)
             )
         )
 
@@ -310,10 +294,8 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
                 backgroundEventTrackingEnabled: .mockRandom() // no matter BET
             ),
             context: .mockWith(
-                dependencies: .mockWith(
-                    dateProvider: RelativeDateProvider(using: crashDate),
-                    dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
-                )
+                dateProvider: RelativeDateProvider(using: crashDate),
+                dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
             )
         )
         integration.send(crashReport: crashReport, with: crashContext)
@@ -404,14 +386,12 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
                 backgroundEventTrackingEnabled: .mockRandom() // no matter BET
             ),
             context: .mockWith(
-                dependencies: .mockWith(
-                    dateProvider: RelativeDateProvider(
-                        using: crashDate.addingTimeInterval(
-                            .mockRandom(min: 10, max: 2 * CrashReportingWithRUMIntegration.Constants.viewEventAvailabilityThreshold) // simulate restarting app from 10s to 8h later
-                        )
-                    ),
-                    dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
-                )
+                dateProvider: RelativeDateProvider(
+                    using: crashDate.addingTimeInterval(
+                        .mockRandom(min: 10, max: 2 * CrashReportingWithRUMIntegration.Constants.viewEventAvailabilityThreshold) // simulate restarting app from 10s to 8h later
+                    )
+                ),
+                dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
             )
         )
         integration.send(crashReport: crashReport, with: crashContext)
@@ -500,13 +480,9 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
                     backgroundEventTrackingEnabled: backgroundEventsTrackingEnabled
                 ),
                 context: .mockWith(
-                    configuration: .mockWith(
-                        source: randomSource
-                    ),
-                    dependencies: .mockWith(
-                        dateProvider: RelativeDateProvider(using: crashDate),
-                        dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
-                    )
+                    source: randomSource,
+                    dateProvider: RelativeDateProvider(using: crashDate),
+                    dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
                 )
             )
 
@@ -638,10 +614,8 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
                     backgroundEventTrackingEnabled: backgroundEventsTrackingEnabled
                 ),
                 context: .mockWith(
-                    dependencies: .mockWith(
-                        dateProvider: RelativeDateProvider(using: crashDate),
-                        dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
-                    )
+                    dateProvider: RelativeDateProvider(using: crashDate),
+                    dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
                 )
             )
 

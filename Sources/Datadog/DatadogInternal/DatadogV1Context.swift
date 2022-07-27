@@ -20,85 +20,69 @@ internal typealias DatadogSite = Datadog.Configuration.DatadogEndpoint
 /// - exposed static configuration won't change;
 /// - bundled provider references won't change (although the value they provide will be different over time).
 internal struct DatadogV1Context {
-    private let configuration: CoreConfiguration
-    private let dependencies: CoreDependencies
-
-    init(configuration: CoreConfiguration, dependencies: CoreDependencies) {
-        self.configuration = configuration
-        self.dependencies = dependencies
-    }
-}
-
-// MARK: - Configuration
-
-/// This extension bundles different parts of the SDK core configuration.
-internal extension DatadogV1Context {
-    // MARK: - Datadog Specific
+    // MARK: Datadog Specific
 
     /// [Datadog Site](https://docs.datadoghq.com/getting_started/site/) for data uploads. It can be `nil` in V1
     /// if the SDK is configured using deprecated APIs: `set(logsEndpoint:)`, `set(tracesEndpoint:)` and `set(rumEndpoint:)`.
-    var site: DatadogSite? { configuration.site }
+    let site: DatadogSite?
 
     /// The client token allowing for data uploads to [Datadog Site](https://docs.datadoghq.com/getting_started/site/).
-    var clientToken: String { configuration.clientToken }
+    let clientToken: String
 
     /// The name of the service that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
-    var service: String { configuration.serviceName }
+    let service: String
 
     /// The name of the environment that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
-    var env: String { configuration.environment }
+    let env: String
 
     /// The version of the application that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
-    var version: String { configuration.applicationVersion }
+    let version: String
 
     /// Denotes the mobile application's platform, such as `"ios"` or `"flutter"` that data is generated from.
     ///  - See: Datadog [Reserved Attributes](https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#reserved-attributes).
-    var source: String { configuration.source }
+    let source: String
 
     /// The version of Datadog iOS SDK.
-    var sdkVersion: String { configuration.sdkVersion }
+    let sdkVersion: String
 
     /// The name of [CI Visibility](https://docs.datadoghq.com/continuous_integration/) origin.
     /// It is only set if the SDK is running with a context passed from [Swift Tests](https://docs.datadoghq.com/continuous_integration/setup_tests/swift/?tab=swiftpackagemanager) library.
-    var ciAppOrigin: String? { configuration.origin }
+    let ciAppOrigin: String?
 
     // MARK: - Application Specific
 
     /// The name of the application, read from `Info.plist` (`CFBundleExecutable`).
-    var applicationName: String { configuration.applicationName }
+    let applicationName: String
 
     /// The bundle identifier, read from `Info.plist` (`CFBundleIdentifier`).
-    var applicationBundleIdentifier: String { configuration.applicationBundleIdentifier }
+    let applicationBundleIdentifier: String
 
     /// Date of SDK initialization measured in device time (without NTP correction).
-    var sdkInitDate: Date { dependencies.sdkInitDate }
+    let sdkInitDate: Date
 
     /// Current device information.
-    var device: DeviceInfo { dependencies.deviceInfo }
-}
+    let device: DeviceInfo
 
-// MARK: - Providers
+    // MARK: Providers
 
-/// This extension bundles different providers managed by the SDK core.
-internal extension DatadogV1Context {
     /// Time provider.
-    var dateProvider: DateProvider { dependencies.dateProvider }
+    let dateProvider: DateProvider
 
     /// NTP time correction provider.
-    var dateCorrector: DateCorrector { dependencies.dateCorrector }
+    let dateCorrector: DateCorrector
 
     /// Network information provider.
-    var networkConnectionInfoProvider: NetworkConnectionInfoProviderType { dependencies.networkConnectionInfoProvider }
+    let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
 
     /// Carrier information provider.
-    var carrierInfoProvider: CarrierInfoProviderType { dependencies.carrierInfoProvider }
+    let carrierInfoProvider: CarrierInfoProviderType
 
     /// User information provider.
-    var userInfoProvider: UserInfoProvider { dependencies.userInfoProvider }
+    let userInfoProvider: UserInfoProvider
 
     /// Provides the history of app foreground / background states and lets subscribe for their updates.
-    var appStateListener: AppStateListening { dependencies.appStateListener }
+    let appStateListener: AppStateListening
 
     /// Provides the information about application launch time.
-    var launchTimeProvider: LaunchTimeProviderType { dependencies.launchTimeProvider }
+    let launchTimeProvider: LaunchTimeProviderType
 }

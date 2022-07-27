@@ -13,16 +13,11 @@ class TracerConfigurationTests: XCTestCase {
     private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
     private lazy var core = DatadogCoreMock(
         context: .mockWith(
-            configuration: .mockWith(
-                applicationVersion: "1.2.3",
-                serviceName: "service-name",
-                environment: "tests"
-            ),
-            dependencies: .mockWith(
-                userInfoProvider: userInfoProvider,
-                networkConnectionInfoProvider: networkConnectionInfoProvider,
-                carrierInfoProvider: carrierInfoProvider
-            )
+            env: "service-name",
+            version: "1.2.3",
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider,
+            userInfoProvider: userInfoProvider
         )
     )
 

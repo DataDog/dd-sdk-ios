@@ -9,19 +9,35 @@
 extension CrashReportingFeature {
     /// Mocks the Crash Reporting feature instance which doesn't load crash reports.
     static func mockNoOp() -> CrashReportingFeature {
-        return CrashReportingFeature(
-            configuration: .mockWith(crashReportingPlugin: NoopCrashReportingPlugin()),
-            commonDependencies: .mockAny()
+        return mockWith(
+            configuration: .mockWith(crashReportingPlugin: NoopCrashReportingPlugin())
         )
     }
 
     static func mockWith(
         configuration: FeaturesConfiguration.CrashReporting = .mockAny(),
-        dependencies: FeaturesCommonDependencies = .mockAny()
+        consentProvider: ConsentProvider = ConsentProvider(initialConsent: .granted),
+        userInfoProvider: UserInfoProvider = .mockAny(),
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
+            networkConnectionInfo: .mockWith(
+                reachability: .yes, // so it always meets the upload condition
+                availableInterfaces: [.wifi],
+                supportsIPv4: true,
+                supportsIPv6: true,
+                isExpensive: true,
+                isConstrained: false // so it always meets the upload condition
+            )
+        ),
+        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
+        appStateListener: AppStateListening = AppStateListenerMock.mockAny()
     ) -> CrashReportingFeature {
         return CrashReportingFeature(
             configuration: configuration,
-            commonDependencies: dependencies
+            consentProvider: consentProvider,
+            userInfoProvider: userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider,
+            appStateListener: appStateListener
         )
     }
 }

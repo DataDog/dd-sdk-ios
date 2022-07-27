@@ -38,15 +38,16 @@ class TracingFeatureTests: XCTestCase {
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
-            configuration: .mockWith(
-                encryption: randomEncryption
+            dateProvider: SystemDateProvider(),
+            consentProvider: ConsentProvider(initialConsent: .granted),
+            userInfoProvider: .mockAny(),
+            performance: .combining(
+                storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
+                uploadPerformance: .veryQuick
             ),
-            dependencies: .mockWith(
-                httpClient: httpClient
-            ),
-            v1Context: .mockWith(
-                dependencies: .mockWith(httpClient: httpClient)
-            ),
+            httpClient: httpClient,
+            encryption: randomEncryption,
+            v1Context: .mockAny(),
             contextProvider: .mockWith(
                 context: .mockWith(
                     clientToken: randomClientToken,
@@ -107,30 +108,29 @@ class TracingFeatureTests: XCTestCase {
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
-            configuration: .mockAny(),
-            dependencies: .mockWith(
-                performance: .combining(
-                    storagePerformance: StoragePerformanceMock(
-                        maxFileSize: .max,
-                        maxDirectorySize: .max,
-                        maxFileAgeForWrite: .distantFuture, // write all events to single file,
-                        minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
-                        maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
-                        maxObjectsInFile: 3, // write 3 spans to payload,
-                        maxObjectSize: .max
-                    ),
-                    uploadPerformance: UploadPerformanceMock(
-                        initialUploadDelay: 0.5, // wait enough until events are written,
-                        minUploadDelay: 1,
-                        maxUploadDelay: 1,
-                        uploadDelayChangeRate: 0
-                    )
+            dateProvider: SystemDateProvider(),
+            consentProvider: ConsentProvider(initialConsent: .granted),
+            userInfoProvider: .mockAny(),
+            performance: .combining(
+                storagePerformance: StoragePerformanceMock(
+                    maxFileSize: .max,
+                    maxDirectorySize: .max,
+                    maxFileAgeForWrite: .distantFuture, // write all events to single file,
+                    minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
+                    maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
+                    maxObjectsInFile: 3, // write 3 spans to payload,
+                    maxObjectSize: .max
                 ),
-                httpClient: httpClient
+                uploadPerformance: UploadPerformanceMock(
+                    initialUploadDelay: 0.5, // wait enough until events are written,
+                    minUploadDelay: 1,
+                    maxUploadDelay: 1,
+                    uploadDelayChangeRate: 0
+                )
             ),
-            v1Context: .mockWith(
-                dependencies: .mockWith(httpClient: httpClient)
-            ),
+            httpClient: httpClient,
+            encryption: nil,
+            v1Context: .mockAny(),
             contextProvider: .mockAny()
         )
 

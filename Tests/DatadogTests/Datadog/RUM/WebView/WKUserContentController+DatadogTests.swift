@@ -149,16 +149,11 @@ class WKUserContentController_DatadogTests: XCTestCase {
     func testSendingWebEvents() throws {
         let core = DatadogCoreMock(
             context: .mockWith(
-                configuration: .mockWith(
-                    applicationVersion: "1.0.0",
-                    applicationBundleIdentifier: "com.datadoghq.ios-sdk",
-                    serviceName: "default-service-name",
-                    environment: "tests",
-                    sdkVersion: "1.2.3"
-                ),
-                dependencies: .mockWith(
-                    dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
-                )
+                service: "default-service-name",
+                env: "tests",
+                version: "1.0.0",
+                applicationBundleIdentifier: "com.datadoghq.ios-sdk",
+                dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
             )
         )
         defer { core.flush() }

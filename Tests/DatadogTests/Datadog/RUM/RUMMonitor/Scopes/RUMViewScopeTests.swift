@@ -10,15 +10,13 @@ import UIKit
 
 class RUMViewScopeTests: XCTestCase {
     let context: DatadogV1Context = .mockWith(
-        configuration: .mockWith(serviceName: "test-service"),
-        dependencies: .mockWith(
-            deviceInfo: .mockWith(
-                name: "device-name",
-                osName: "device-os"
-            ),
-            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: nil),
-            carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: nil)
-        )
+        service: "test-service",
+        device: .mockWith(
+            name: "device-name",
+            osName: "device-os"
+        ),
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: nil),
+        carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: nil)
     )
 
     let writer = FileWriterMock()
@@ -135,7 +133,7 @@ class RUMViewScopeTests: XCTestCase {
         // Given
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let source = String.mockAnySource()
-        let custonContext: DatadogV1Context = .mockWith(configuration: .mockWith(source: source))
+        let custonContext: DatadogV1Context = .mockWith(source: source)
 
         let scope = RUMViewScope(
             isInitialView: true,
@@ -241,7 +239,7 @@ class RUMViewScopeTests: XCTestCase {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let source = String.mockAnySource()
 
-        let customContext: DatadogV1Context = .mockWith(configuration: .mockWith(source: source))
+        let customContext: DatadogV1Context = .mockWith(source: source)
 
         let scope = RUMViewScope(
             isInitialView: true,
@@ -986,7 +984,7 @@ class RUMViewScopeTests: XCTestCase {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let source = String.mockAnySource()
 
-        let customContext: DatadogV1Context = .mockWith(configuration: .mockWith(source: source))
+        let customContext: DatadogV1Context = .mockWith(source: source)
 
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
@@ -1031,10 +1029,8 @@ class RUMViewScopeTests: XCTestCase {
         let customSource = String.mockAnySource()
         let expectedSource = RUMErrorEvent.Source(rawValue: customSource)
         let customContext: DatadogV1Context = .mockWith(
-            configuration: .mockWith(
-                serviceName: "test-service",
-                source: customSource
-            )
+            service: "test-service",
+            source: customSource
         )
 
         let scope: RUMViewScope = .mockWith(
@@ -1186,7 +1182,7 @@ class RUMViewScopeTests: XCTestCase {
         let startViewDate: Date = .mockDecember15th2019At10AMUTC()
 
         let source = String.mockAnySource()
-        let customContext: DatadogV1Context = .mockWith(configuration: .mockWith(source: source))
+        let customContext: DatadogV1Context = .mockWith(source: source)
 
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),

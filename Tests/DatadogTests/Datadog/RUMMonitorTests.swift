@@ -46,12 +46,8 @@ class RUMMonitorTests: XCTestCase {
         let randomServiceName: String = .mockRandom()
 
         core.context = .mockWith(
-            configuration: .mockWith(
-                serviceName: randomServiceName
-            ),
-            dependencies: .mockWith(
-                dateProvider: dateProvider
-            )
+            service: randomServiceName,
+            dateProvider: dateProvider
         )
 
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
@@ -89,9 +85,7 @@ class RUMMonitorTests: XCTestCase {
         let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
 
         core.context = .mockWith(
-            dependencies: .mockWith(
-                dateProvider: dateProvider
-            )
+            dateProvider: dateProvider
         )
 
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
@@ -347,9 +341,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testStartingView_thenTappingButton() throws {
         core.context = .mockWith(
-            dependencies: .mockWith(
-                dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-            )
+            dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
         )
 
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
@@ -442,9 +434,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testStartingView_thenIssuingErrors_whileScrolling() throws {
         core.context = .mockWith(
-            dependencies: .mockWith(
-                dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0.01)
-            )
+            dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0.01)
         )
 
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
@@ -505,11 +495,9 @@ class RUMMonitorTests: XCTestCase {
 
     func testStartingAnotherViewBeforeFirstIsStopped_thenLoadingResourcesAfterTapingButton() throws {
         core.context = .mockWith(
-            dependencies: .mockWith(
-                dateProvider: RelativeDateProvider(
-                    startingFrom: Date(),
-                    advancingBySeconds: RUMUserActionScope.Constants.discreteActionTimeoutDuration
-                )
+            dateProvider: RelativeDateProvider(
+                startingFrom: Date(),
+                advancingBySeconds: RUMUserActionScope.Constants.discreteActionTimeoutDuration
             )
         )
 
@@ -628,9 +616,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testStartingView_thenTappingButton_thenTappingAnotherButton() throws {
         core.context = .mockWith(
-            dependencies: .mockWith(
-                dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-            )
+            dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
         )
 
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
@@ -662,18 +648,16 @@ class RUMMonitorTests: XCTestCase {
 
     func testWhenUserInfoIsProvided_itIsSendWithAllEvents() throws {
         core.context = .mockWith(
-            dependencies: .mockWith(
-                userInfoProvider: .mockWith(
-                    userInfo: UserInfo(
-                        id: "abc-123",
-                        name: "Foo",
-                        email: "foo@bar.com",
-                        extraInfo: [
-                            "str": "value",
-                            "int": 11_235,
-                            "bool": true
-                        ]
-                    )
+            userInfoProvider: .mockWith(
+                userInfo: UserInfo(
+                    id: "abc-123",
+                    name: "Foo",
+                    email: "foo@bar.com",
+                    extraInfo: [
+                        "str": "value",
+                        "int": 11_235,
+                        "bool": true
+                    ]
                 )
             )
         )
@@ -722,13 +706,11 @@ class RUMMonitorTests: XCTestCase {
 
     func testWhenNetworkAndCarrierInfoAreProvided_thenConnectivityInfoIsSendWithAllEvents() throws {
         core.context = .mockWith(
-            dependencies: .mockWith(
-                networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(
-                    networkConnectionInfo: .mockWith(reachability: .yes, availableInterfaces: [.cellular])
-                ),
-                carrierInfoProvider: CarrierInfoProviderMock(
-                    carrierInfo: .mockWith(carrierName: "Carrier Name", radioAccessTechnology: .GPRS)
-                )
+            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(
+                networkConnectionInfo: .mockWith(reachability: .yes, availableInterfaces: [.cellular])
+            ),
+            carrierInfoProvider: CarrierInfoProviderMock(
+                carrierInfo: .mockWith(carrierName: "Carrier Name", radioAccessTechnology: .GPRS)
             )
         )
 
@@ -844,11 +826,9 @@ class RUMMonitorTests: XCTestCase {
 
     func testStartingView_thenAddingTiming() throws {
         core.context = .mockWith(
-            dependencies: .mockWith(
-                dateProvider: RelativeDateProvider(
-                    startingFrom: Date(),
-                    advancingBySeconds: 1
-                )
+            dateProvider: RelativeDateProvider(
+                startingFrom: Date(),
+                advancingBySeconds: 1
             )
         )
 
@@ -910,10 +890,8 @@ class RUMMonitorTests: XCTestCase {
         )
 
         core.context = .mockWith(
-            dependencies: .mockWith(
-                dateProvider: dateProvider,
-                dateCorrector: DateCorrectorMock(offset: serverTimeDifference)
-            )
+            dateProvider: dateProvider,
+            dateCorrector: DateCorrectorMock(offset: serverTimeDifference)
         )
 
         // When
@@ -967,12 +945,10 @@ class RUMMonitorTests: XCTestCase {
         let sdkInitDate: Date = .mockDecember15th2019At10AMUTC()
 
         core.context = .mockWith(
-            dependencies: .mockWith(
-                sdkInitDate: sdkInitDate,
-                dateProvider: RelativeDateProvider(
-                    startingFrom: sdkInitDate.addingTimeInterval(1),
-                    advancingBySeconds: 1
-                )
+            sdkInitDate: sdkInitDate,
+            dateProvider: RelativeDateProvider(
+                startingFrom: sdkInitDate.addingTimeInterval(1),
+                advancingBySeconds: 1
             )
         )
 
@@ -1021,9 +997,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testModifyingEventsBeforeTheyGetSend() throws {
         core.context = .mockWith(
-            dependencies: .mockWith(
-                dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-            )
+            dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
         )
 
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
@@ -1140,14 +1114,12 @@ class RUMMonitorTests: XCTestCase {
         let randomViewEventAttributes = mockRandomAttributes()
 
         core.context = .mockWith(
-            dependencies: .mockWith(
-                userInfoProvider: .mockWith(
-                    userInfo: .init(
-                        id: .mockRandom(),
-                        name: .mockRandom(),
-                        email: .mockRandom(),
-                        extraInfo: randomUserInfoAttributes
-                    )
+            userInfoProvider: .mockWith(
+                userInfo: .init(
+                    id: .mockRandom(),
+                    name: .mockRandom(),
+                    email: .mockRandom(),
+                    extraInfo: randomUserInfoAttributes
                 )
             )
         )

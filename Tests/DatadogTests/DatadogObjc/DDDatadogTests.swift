@@ -59,11 +59,11 @@ class DDDatadogTests: XCTestCase {
         )
 
         let core = defaultDatadogCore as? DatadogCore
-        XCTAssertEqual(core?.dependencies.consentProvider.currentValue, initialConsent.swift)
+        XCTAssertEqual(core?.consentProvider.currentValue, initialConsent.swift)
 
         DDDatadog.setTrackingConsent(consent: nextConsent.objc)
 
-        XCTAssertEqual(core?.dependencies.consentProvider.currentValue, nextConsent.swift)
+        XCTAssertEqual(core?.consentProvider.currentValue, nextConsent.swift)
 
         Datadog.flushAndDeinitialize()
     }
@@ -78,7 +78,7 @@ class DDDatadogTests: XCTestCase {
         )
 
         let core = defaultDatadogCore as? DatadogCore
-        let userInfo = try XCTUnwrap(core?.dependencies.userInfoProvider)
+        let userInfo = try XCTUnwrap(core?.userInfoProvider)
 
         DDDatadog.setUserInfo(
             id: "id",
