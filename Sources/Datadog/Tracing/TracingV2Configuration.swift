@@ -21,27 +21,41 @@ internal func createV2TracingStorageConfiguration() -> FeatureStorageConfigurati
 }
 
 /// Creates V2 Upload configuration for V1 Tracing.
-internal func createV2TracingUploadConfiguration(v1Configuration: FeaturesConfiguration.Tracing) -> FeatureUploadConfiguration {
-    return FeatureUploadConfiguration(
+internal func createV2TracingUploadConfiguration(v1Configuration: FeaturesConfiguration.Tracing) -> FeatureV1UploadConfiguration {
+    return FeatureV1UploadConfiguration(
         featureName: "tracing",
-        createRequestBuilder: { v1Context in
-            return RequestBuilder(
-                url: v1Configuration.uploadURL,
-                queryItems: [],
-                headers: [
-                    .contentTypeHeader(contentType: .textPlainUTF8),
-                    .userAgentHeader(
-                        appName: v1Context.applicationName,
-                        appVersion: v1Context.version,
-                        device: v1Context.device
-                    ),
-                    .ddAPIKeyHeader(clientToken: v1Context.clientToken),
-                    .ddEVPOriginHeader(source: v1Context.ciAppOrigin ?? v1Context.source),
-                    .ddEVPOriginVersionHeader(sdkVersion: v1Context.sdkVersion),
-                    .ddRequestIDHeader(),
-                ]
-            )
-        },
-        payloadFormat: DataFormat(prefix: "", suffix: "", separator: "\n")
+        requestBuilder: TracingRequestBuilder(intake: v1Configuration.uploadURL)
     )
+}
+
+/// The Tracing URL Request Builder for formatting and configuring the `URLRequest`
+/// to upload traces data.
+internal struct TracingRequestBuilder: FeatureRequestBuilder {
+    /// The tracing intake.
+    let intake: URL
+
+    /// The tracing request body format.
+    let format = DataFormat(prefix: "", suffix: "", separator: "\n")
+
+    func request(for events: [Data], with context: /* DatadogContext */ DatadogV1Context) -> URLRequest {
+        let builder = URLRequestBuilder(
+            url: intake,
+            queryItems: [],
+            headers: [
+                .contentTypeHeader(contentType: .textPlainUTF8),
+                .userAgentHeader(
+                    appName: context.applicationName,
+                    appVersion: context.version,
+                    device: context.device
+                ),
+                .ddAPIKeyHeader(clientToken: context.clientToken),
+                .ddEVPOriginHeader(source: context.ciAppOrigin ?? context.source),
+                .ddEVPOriginVersionHeader(sdkVersion: context.sdkVersion),
+                .ddRequestIDHeader(),
+            ]
+        )
+
+        let data = format.format(events)
+        return builder.uploadRequest(with: data)
+    }
 }

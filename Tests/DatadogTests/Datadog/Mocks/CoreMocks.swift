@@ -476,6 +476,7 @@ extension FeaturesCommonDependencies {
             storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
             uploadPerformance: .veryQuick
         ),
+        httpClient: HTTPClient? = nil,
         deviceInfo: DeviceInfo = .mockAny(),
         batteryStatusProvider: BatteryStatusProviderType = BatteryStatusProviderMock.mockAny(),
         sdkInitDate: Date = Date(),
@@ -497,10 +498,12 @@ extension FeaturesCommonDependencies {
         appStateListener: AppStateListening = AppStateListenerMock.mockAny(),
         encryption: DataEncryption? = nil
     ) -> FeaturesCommonDependencies {
-        let httpClient: HTTPClient
+        var client: HTTPClient
 
-        if let activeServer = ServerMock.activeInstance {
-            httpClient = HTTPClient(session: activeServer.getInterceptedURLSession())
+        if let httpClient = httpClient {
+            client = httpClient
+        } else if let activeServer = ServerMock.activeInstance {
+            client = HTTPClient(session: activeServer.getInterceptedURLSession())
         } else {
             class AssertedHTTPClient: HTTPClient {
                 // swiftlint:disable:next unavailable_function
@@ -515,13 +518,13 @@ extension FeaturesCommonDependencies {
                 }
             }
 
-            httpClient = AssertedHTTPClient()
+            client = AssertedHTTPClient()
         }
 
         return FeaturesCommonDependencies(
             consentProvider: consentProvider,
             performance: performance,
-            httpClient: httpClient,
+            httpClient: client,
             deviceInfo: deviceInfo,
             batteryStatusProvider: batteryStatusProvider,
             sdkInitDate: sdkInitDate,
@@ -585,7 +588,7 @@ extension FeatureStorage {
 
 extension FeatureUpload {
     static func mockNoOp() -> FeatureUpload {
-        return FeatureUpload(uploader: NoOpDataUploadWorker())
+        return FeatureUpload(uploader: NOPDataUploadWorker())
     }
 }
 
@@ -875,59 +878,13 @@ extension UserInfoProvider {
     }
 }
 
-extension RequestBuilder.QueryItem: RandomMockable, AnyMockable {
-    static func mockRandom() -> RequestBuilder.QueryItem {
-        let all: [RequestBuilder.QueryItem] = [
-            .ddsource(source: .mockRandom()),
-            .ddtags(tags: .mockRandom()),
-        ]
-        return all.randomElement()!
-    }
-
-    static func mockAny() -> RequestBuilder.QueryItem {
-        return .ddsource(source: .mockRandom(among: .alphanumerics))
-    }
-}
-
-extension RequestBuilder.HTTPHeader: RandomMockable, AnyMockable {
-    static func mockRandom() -> RequestBuilder.HTTPHeader {
-        let all: [RequestBuilder.HTTPHeader] = [
-            .contentTypeHeader(contentType: Bool.random() ? .applicationJSON : .textPlainUTF8),
-            .userAgentHeader(appName: .mockRandom(among: .alphanumerics), appVersion: .mockRandom(among: .alphanumerics), device: .mockAny()),
-            .ddAPIKeyHeader(clientToken: .mockRandom(among: .alphanumerics)),
-            .ddEVPOriginHeader(source: .mockRandom(among: .alphanumerics)),
-            .ddEVPOriginVersionHeader(sdkVersion: .mockRandom(among: .alphanumerics)),
-            .ddRequestIDHeader()
-        ]
-        return all.randomElement()!
-    }
-
-    static func mockAny() -> RequestBuilder.HTTPHeader {
-        return .ddEVPOriginVersionHeader(sdkVersion: "1.2.3")
-    }
-}
-
-extension RequestBuilder: AnyMockable {
-    static func mockAny() -> RequestBuilder {
-        return mockWith()
-    }
-
-    static func mockWith(
-        url: URL = .mockAny(),
-        queryItems: [QueryItem] = [],
-        headers: [HTTPHeader] = []
-    ) -> RequestBuilder {
-        return RequestBuilder(url: url, queryItems: queryItems, headers: headers)
-    }
-}
-
 extension HTTPClient {
     static func mockAny() -> HTTPClient {
         return HTTPClient(session: URLSession())
     }
 }
 
-class NoOpDataUploadWorker: DataUploadWorkerType {
+class NOPDataUploadWorker: DataUploadWorkerType {
     func flushSynchronously() {}
     func cancelSynchronously() {}
 }
@@ -937,7 +894,7 @@ struct DataUploaderMock: DataUploaderType {
 
     var onUpload: (() -> Void)? = nil
 
-    func upload(data: Data) -> DataUploadStatus {
+    func upload(events: [Data], context: DatadogV1Context) -> DataUploadStatus {
         onUpload?()
         return uploadStatus
     }

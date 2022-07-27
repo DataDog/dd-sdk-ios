@@ -21,29 +21,43 @@ internal func createV2LoggingStorageConfiguration() -> FeatureStorageConfigurati
 }
 
 /// Creates V2 Upload configuration for V1 Logging.
-internal func createV2LoggingUploadConfiguration(v1Configuration: FeaturesConfiguration.Logging) -> FeatureUploadConfiguration {
-    return FeatureUploadConfiguration(
+internal func createV2LoggingUploadConfiguration(v1Configuration: FeaturesConfiguration.Logging) -> FeatureV1UploadConfiguration {
+    return FeatureV1UploadConfiguration(
         featureName: "logging",
-        createRequestBuilder: { v1Context in
-            return RequestBuilder(
-                url: v1Configuration.uploadURL,
-                queryItems: [
-                    .ddsource(source: v1Context.source)
-                ],
-                headers: [
-                    .contentTypeHeader(contentType: .applicationJSON),
-                    .userAgentHeader(
-                        appName: v1Context.applicationName,
-                        appVersion: v1Context.version,
-                        device: v1Context.device
-                    ),
-                    .ddAPIKeyHeader(clientToken: v1Context.clientToken),
-                    .ddEVPOriginHeader(source: v1Context.ciAppOrigin ?? v1Context.source),
-                    .ddEVPOriginVersionHeader(sdkVersion: v1Context.sdkVersion),
-                    .ddRequestIDHeader(),
-                ]
-            )
-        },
-        payloadFormat: DataFormat(prefix: "[", suffix: "]", separator: ",")
+        requestBuilder: LoggingRequestBuilder(intake: v1Configuration.uploadURL)
     )
+}
+
+/// The Logging URL Request Builder for formatting and configuring the `URLRequest`
+/// to upload logs data.
+internal struct LoggingRequestBuilder: FeatureRequestBuilder {
+    /// The logs intake.
+    let intake: URL
+
+    /// The logs request body format.
+    let format = DataFormat(prefix: "[", suffix: "]", separator: ",")
+
+    func request(for events: [Data], with context: /* DatadogContext */ DatadogV1Context) -> URLRequest {
+        let builder = URLRequestBuilder(
+            url: intake,
+            queryItems: [
+                .ddsource(source: context.source)
+            ],
+            headers: [
+                .contentTypeHeader(contentType: .applicationJSON),
+                .userAgentHeader(
+                    appName: context.applicationName,
+                    appVersion: context.version,
+                    device: context.device
+                ),
+                .ddAPIKeyHeader(clientToken: context.clientToken),
+                .ddEVPOriginHeader(source: context.ciAppOrigin ?? context.source),
+                .ddEVPOriginVersionHeader(sdkVersion: context.sdkVersion),
+                .ddRequestIDHeader(),
+            ]
+        )
+
+        let data = format.format(events)
+        return builder.uploadRequest(with: data)
+    }
 }

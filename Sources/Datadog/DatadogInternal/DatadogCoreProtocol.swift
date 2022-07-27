@@ -39,23 +39,6 @@ internal struct FeatureStorageConfiguration {
     let featureName: String
 }
 
-/// Provide feature specific upload configuration.
-internal struct FeatureUploadConfiguration {
-    // MARK: - V1 interface
-
-    /// A human-readable name of this Feature used for naming internal queues specific to this Feature and annotating
-    /// origin of telemetry and verbosity logs produced by the SDK.
-    let featureName: String
-
-    /// Creates the V1's `RequetsBuilder` for uploading data in this Feature.
-    /// In V2 we will change it to build requests based on V2 context and batch metadata.
-    let createRequestBuilder: (DatadogV1Context) -> RequestBuilder
-
-    /// Data format for constructing Feature payloads in V1. It is applied by the reader when reading data from batch and
-    /// before passing it to the uploader.
-    let payloadFormat: DataFormat
-}
-
 /// A datadog feature providing thread-safe scope for writing events.
 public protocol FeatureScope {
     // TODO: RUMM-2133

@@ -7,7 +7,7 @@
 import Foundation
 
 internal struct Batch {
-    let data: Data
+    let events: [Data]
     /// File from which `data` was read.
     let file: ReadableFile
 }

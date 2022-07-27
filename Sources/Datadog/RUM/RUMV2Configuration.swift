@@ -21,37 +21,51 @@ internal func createV2RUMStorageConfiguration() -> FeatureStorageConfiguration {
 }
 
 /// Creates V2 Upload configuration for V1 RUM.
-internal func createV2RUMUploadConfiguration(v1Configuration: FeaturesConfiguration.RUM) -> FeatureUploadConfiguration {
-    return FeatureUploadConfiguration(
+internal func createV2RUMUploadConfiguration(v1Configuration: FeaturesConfiguration.RUM) -> FeatureV1UploadConfiguration {
+    return FeatureV1UploadConfiguration(
         featureName: "RUM",
-        createRequestBuilder: { v1Context in
-            return RequestBuilder(
-                url: v1Configuration.uploadURL,
-                queryItems: [
-                    .ddsource(source: v1Context.source),
-                    .ddtags(
-                        tags: [
-                            "service:\(v1Context.service)",
-                            "version:\(v1Context.version)",
-                            "sdk_version:\(v1Context.sdkVersion)",
-                            "env:\(v1Context.env)"
-                        ]
-                    )
-                ],
-                headers: [
-                    .contentTypeHeader(contentType: .textPlainUTF8),
-                    .userAgentHeader(
-                        appName: v1Context.applicationName,
-                        appVersion: v1Context.version,
-                        device: v1Context.device
-                    ),
-                    .ddAPIKeyHeader(clientToken: v1Context.clientToken),
-                    .ddEVPOriginHeader(source: v1Context.ciAppOrigin ?? v1Context.source),
-                    .ddEVPOriginVersionHeader(sdkVersion: v1Context.sdkVersion),
-                    .ddRequestIDHeader(),
-                ]
-            )
-        },
-        payloadFormat: DataFormat(prefix: "", suffix: "", separator: "\n")
+        requestBuilder: RUMRequestBuilder(intake: v1Configuration.uploadURL)
     )
+}
+
+/// The RUM URL Request Builder for formatting and configuring the `URLRequest`
+/// to upload RUM data.
+internal struct RUMRequestBuilder: FeatureRequestBuilder {
+    /// The RUM intake.
+    let intake: URL
+
+    /// The RUM request body format.
+    let format = DataFormat(prefix: "", suffix: "", separator: "\n")
+
+    func request(for events: [Data], with context: /* DatadogContext */ DatadogV1Context) -> URLRequest {
+        let builder = URLRequestBuilder(
+            url: intake,
+            queryItems: [
+                .ddsource(source: context.source),
+                .ddtags(
+                    tags: [
+                        "service:\(context.service)",
+                        "version:\(context.version)",
+                        "sdk_version:\(context.sdkVersion)",
+                        "env:\(context.env)"
+                    ]
+                )
+            ],
+            headers: [
+                .contentTypeHeader(contentType: .textPlainUTF8),
+                .userAgentHeader(
+                    appName: context.applicationName,
+                    appVersion: context.version,
+                    device: context.device
+                ),
+                .ddAPIKeyHeader(clientToken: context.clientToken),
+                .ddEVPOriginHeader(source: context.ciAppOrigin ?? context.source),
+                .ddEVPOriginVersionHeader(sdkVersion: context.sdkVersion),
+                .ddRequestIDHeader(),
+            ]
+        )
+
+        let data = format.format(events)
+        return builder.uploadRequest(with: data)
+    }
 }

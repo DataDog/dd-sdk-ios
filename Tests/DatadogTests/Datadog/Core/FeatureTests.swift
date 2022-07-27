@@ -27,7 +27,6 @@ class FeatureStorageTests: XCTestCase {
         let storage = FeatureStorage(
             featureName: .mockAny(),
             queue: queue,
-            dataFormat: DataFormat(prefix: "", suffix: "", separator: "#"),
             directories: temporaryFeatureDirectories,
             commonDependencies: .mockWith(consentProvider: consentProvider)
         )
@@ -67,7 +66,6 @@ class FeatureStorageTests: XCTestCase {
         let storage = FeatureStorage(
             featureName: .mockAny(),
             queue: queue,
-            dataFormat: DataFormat(prefix: "", suffix: "", separator: "#"),
             directories: temporaryFeatureDirectories,
             commonDependencies: .mockWith(consentProvider: .init(initialConsent: .granted))
         )
@@ -98,7 +96,6 @@ class FeatureStorageTests: XCTestCase {
         let storage = FeatureStorage(
             featureName: .mockAny(),
             queue: queue,
-            dataFormat: DataFormat(prefix: "", suffix: "", separator: "#"),
             directories: temporaryFeatureDirectories,
             commonDependencies: .mockWith(consentProvider: .init(initialConsent: .granted))
         )
@@ -134,7 +131,7 @@ class FeatureStorageTests: XCTestCase {
 
         (0..<limit).forEach { _ in
             if let nextBatch = storage.reader.readNextBatch() {
-                dataAuthorizedForUpload.append(nextBatch.data)
+                dataAuthorizedForUpload.append(contentsOf: nextBatch.events)
                 storage.reader.markBatchAsRead(nextBatch)
             }
         }

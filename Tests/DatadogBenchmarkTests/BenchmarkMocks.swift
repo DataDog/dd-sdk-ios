@@ -34,3 +34,54 @@ extension FeaturesCommonDependencies {
         )
     }
 }
+
+extension FeaturesConfiguration.Common {
+    static func mockAny() -> Self {
+        return .init(
+            site: .us1,
+            clientToken: .mockAny(),
+            applicationName: .mockAny(),
+            applicationVersion: .mockAny(),
+            applicationBundleIdentifier: .mockAny(),
+            serviceName: .mockAny(),
+            environment: .mockAny(),
+            performance: .init(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
+            source: .mockAny(),
+            origin: nil,
+            sdkVersion: .mockAny(),
+            proxyConfiguration: nil,
+            encryption: nil
+        )
+    }
+}
+
+struct FeatureRequestBuilderMock: FeatureRequestBuilder {
+    let dataFormat = DataFormat(prefix: "", suffix: "", separator: "\n")
+
+    func request(for events: [Data], with context: DatadogV1Context) -> URLRequest {
+        let builder = URLRequestBuilder(
+            url: .mockAny(),
+            queryItems: [.ddtags(tags: ["foo:bar"])],
+            headers: []
+        )
+
+        let data = dataFormat.format(events)
+        return builder.uploadRequest(with: data)
+    }
+}
+
+extension DatadogV1Context: AnyMockable {
+    static func mockAny() -> DatadogV1Context {
+        return mockWith()
+    }
+
+    static func mockWith(
+        configuration: CoreConfiguration = .mockAny(),
+        dependencies: CoreDependencies = .mockAny()
+    ) -> DatadogV1Context {
+        return DatadogV1Context(
+            configuration: configuration,
+            dependencies: dependencies
+        )
+    }
+}

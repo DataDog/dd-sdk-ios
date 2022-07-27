@@ -48,7 +48,7 @@ extension DatadogCoreMock: DatadogV1CoreProtocol {
         return v1Features[key] as? T
     }
 
-    func scope<T>(for featureType: T.Type) -> V1FeatureScope? {
+    func scope<T>(for featureType: T.Type) -> FeatureV1Scope? {
         guard let context = context else {
             return nil
         }

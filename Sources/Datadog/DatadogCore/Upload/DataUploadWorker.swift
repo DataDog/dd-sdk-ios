@@ -24,6 +24,11 @@ internal class DataUploadWorker: DataUploadWorkerType {
     /// Name of the feature this worker is performing uploads for.
     private let featureName: String
 
+    /// The current V1 context
+    ///
+    /// TODO: To be replaced with v2 context provider
+    private let context: DatadogV1Context
+
     /// Delay used to schedule consecutive uploads.
     private var delay: Delay
 
@@ -34,6 +39,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
         queue: DispatchQueue,
         fileReader: Reader,
         dataUploader: DataUploaderType,
+        context: DatadogV1Context,
         uploadConditions: DataUploadConditions,
         delay: Delay,
         featureName: String
@@ -44,20 +50,24 @@ internal class DataUploadWorker: DataUploadWorkerType {
         self.dataUploader = dataUploader
         self.delay = delay
         self.featureName = featureName
+        self.context = context
 
         let uploadWork = DispatchWorkItem { [weak self] in
             guard let self = self else {
                 return
             }
 
-            let blockersForUpload = self.uploadConditions.blockersForUpload()
+            let blockersForUpload = self.uploadConditions.blockersForUpload(with: context.networkConnectionInfoProvider.current)
             let isSystemReady = blockersForUpload.isEmpty
             let nextBatch = isSystemReady ? self.fileReader.readNextBatch() : nil
             if let batch = nextBatch {
                 DD.logger.debug("⏳ (\(self.featureName)) Uploading batch...")
 
                 // Upload batch
-                let uploadStatus = self.dataUploader.upload(data: batch.data)
+                let uploadStatus = self.dataUploader.upload(
+                    events: batch.events,
+                    context: context
+                )
 
                 // Delete or keep batch depending on the upload status
                 if uploadStatus.needsRetry {
@@ -108,7 +118,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
     internal func flushSynchronously() {
         queue.sync {
             while let nextBatch = self.fileReader.readNextBatch() {
-                _ = self.dataUploader.upload(data: nextBatch.data)
+                _ = self.dataUploader.upload(events: nextBatch.events, context: self.context)
                 self.fileReader.markBatchAsRead(nextBatch)
             }
         }

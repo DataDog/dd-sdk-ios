@@ -43,7 +43,6 @@ internal struct FeatureStorage {
     init(
         featureName: String,
         queue: DispatchQueue,
-        dataFormat: DataFormat,
         directories: FeatureDirectories,
         commonDependencies: FeaturesCommonDependencies
     ) {
@@ -92,7 +91,6 @@ internal struct FeatureStorage {
         let authorisedDataReader = DataReader(
             readWriteQueue: queue,
             fileReader: FileReader(
-                dataFormat: dataFormat,
                 orchestrator: authorizedFilesOrchestrator,
                 encryption: commonDependencies.encryption
             )
@@ -132,58 +130,5 @@ internal struct FeatureStorage {
         writer.flushAndCancelSynchronously()
         arbitraryAuthorizedWriter.flushAndCancelSynchronously()
         (dataOrchestrator as? DataOrchestrator)?.markAllFilesAsReadable()
-    }
-}
-
-internal struct FeatureUpload {
-    /// Uploads data to server.
-    let uploader: DataUploadWorkerType
-
-    init(
-        featureName: String,
-        storage: FeatureStorage,
-        requestBuilder: RequestBuilder,
-        commonDependencies: FeaturesCommonDependencies
-    ) {
-        let uploadQueue = DispatchQueue(
-            label: "com.datadoghq.ios-sdk-\(featureName)-upload",
-            target: .global(qos: .utility)
-        )
-
-        let uploadConditions = DataUploadConditions(
-            batteryStatus: commonDependencies.batteryStatusProvider,
-            networkConnectionInfo: commonDependencies.networkConnectionInfoProvider
-        )
-
-        let dataUploader = DataUploader(
-            httpClient: commonDependencies.httpClient,
-            requestBuilder: requestBuilder
-        )
-
-        self.init(
-            uploader: DataUploadWorker(
-                queue: uploadQueue,
-                fileReader: storage.reader,
-                dataUploader: dataUploader,
-                uploadConditions: uploadConditions,
-                delay: DataUploadDelay(performance: commonDependencies.performance),
-                featureName: featureName
-            )
-        )
-    }
-
-    init(uploader: DataUploadWorkerType) {
-        self.uploader = uploader
-    }
-
-    /// Flushes all authorised data and tears down the upload stack.
-    /// - It completes all pending asynchronous work in upload worker and cancels its next schedules.
-    /// - It flushes all data stored in authorized files by performing their arbitrary upload (without retrying).
-    ///
-    /// This method is executed synchronously. After return, the upload feature has no more
-    /// pending asynchronous operations and all its authorized data should be considered uploaded.
-    internal func flushAndTearDown() {
-        uploader.cancelSynchronously()
-        uploader.flushSynchronously()
     }
 }

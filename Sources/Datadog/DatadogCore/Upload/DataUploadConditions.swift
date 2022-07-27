@@ -20,20 +20,22 @@ internal struct DataUploadConditions {
     }
 
     let batteryStatus: BatteryStatusProviderType?
-    let networkConnectionInfo: NetworkConnectionInfoProviderType
 
-    func blockersForUpload() -> [Blocker] {
+    func blockersForUpload(with network: NetworkConnectionInfo?) -> [Blocker] {
         let batteryStatus = self.batteryStatus?.current
-        guard let networkConnectionInfo = self.networkConnectionInfo.current else {
+        guard let network = network else {
             // when `NetworkConnectionInfo` is not yet available
             return [.networkReachability(description: "unknown")]
         }
 
+        let networkIsReachable = network.reachability == .yes || network.reachability == .maybe
+        let blockers: [Blocker] = networkIsReachable ? [] : [.networkReachability(description: network.reachability.rawValue)]
+
         if let batteryStatus = batteryStatus {
-            return blockersForUploadWith(networkConnectionInfo) + blockersForUploadWith(batteryStatus)
-        } else {
-            return blockersForUploadWith(networkConnectionInfo)
+            return blockers + blockersForUploadWith(batteryStatus)
         }
+
+        return blockers
     }
 
     private func blockersForUploadWith(_ batteryStatus: BatteryStatus) -> [Blocker] {
@@ -62,10 +64,5 @@ internal struct DataUploadConditions {
         }
 
         return blockers
-    }
-
-    private func blockersForUploadWith(_ networkConnectionInfo: NetworkConnectionInfo) -> [Blocker] {
-        let networkIsReachable = networkConnectionInfo.reachability == .yes || networkConnectionInfo.reachability == .maybe
-        return networkIsReachable ? [] : [.networkReachability(description: networkConnectionInfo.reachability.rawValue)]
     }
 }

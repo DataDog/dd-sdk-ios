@@ -7,17 +7,17 @@
 import Foundation
 
 /// Describes the format of writing and reading data from files.
-internal struct DataFormat {
+/* public */ internal struct DataFormat {
     /// Prefixes the batch payload read from file.
-    let prefixData: Data
+    private let prefixData: Data
     /// Suffixes the batch payload read from file.
-    let suffixData: Data
+    private let suffixData: Data
     /// Separates entities written to file.
-    let separatorByte: UInt8
+    private let separatorByte: UInt8
 
     // MARK: - Initialization
 
-    init(
+    /* public */ init(
         prefix: String,
         suffix: String,
         separator: Character
@@ -25,5 +25,21 @@ internal struct DataFormat {
         self.prefixData = prefix.data(using: .utf8)! // swiftlint:disable:this force_unwrapping
         self.suffixData = suffix.data(using: .utf8)! // swiftlint:disable:this force_unwrapping
         self.separatorByte = separator.asciiValue!   // swiftlint:disable:this force_unwrapping
+    }
+
+    /// Formats the given data sequence by applying the prefix, separator,
+    /// and suffix.
+    ///
+    /// - Parameter data: The data sequence.
+    /// - Returns: the formatted data.
+    func format(_ data: [Data]) -> Data {
+        // add prefix
+        prefixData +
+        // concat data
+        data.reduce(.init()) { $0 + $1 + [separatorByte] }
+        // drop last separator
+        .dropLast() +
+        // add suffix
+        suffixData
     }
 }
