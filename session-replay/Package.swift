@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "DatadogSessionReplay",
     platforms: [
-        .iOS(.v15),
+        .iOS(.v11),
     ],
     products: [
         .library(
