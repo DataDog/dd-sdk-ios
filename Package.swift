@@ -11,27 +11,34 @@ let package = Package(
     products: [
         .library(
             name: "Datadog",
-            type: .dynamic,
             targets: ["Datadog"]
         ),
         .library(
             name: "DatadogObjc",
-            type: .dynamic,
             targets: ["DatadogObjc"]
         ),
         .library(
+            name: "DatadogDynamic",
+            type: .dynamic,
+            targets: ["Datadog"]
+        ),
+        .library(
+            name: "DatadogDynamicObjc",
+            type: .dynamic,
+            targets: ["DatadogObjc"]
+        ),
+        .library( // TODO: Remove in the next major version.
             name: "DatadogStatic",
             type: .static,
             targets: ["Datadog"]
         ),
-        .library(
+        .library( // TODO: Remove in the next major version.
             name: "DatadogStaticObjc",
             type: .static,
             targets: ["DatadogObjc"]
         ),
         .library(
             name: "DatadogCrashReporting",
-            type: .static,
             targets: ["DatadogCrashReporting"]
         ),
     ],
