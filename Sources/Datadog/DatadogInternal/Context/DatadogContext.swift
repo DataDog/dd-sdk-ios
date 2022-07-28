@@ -60,6 +60,8 @@ internal struct DatadogContext {
     var userInfo: UserInfo?
 
     /// Application launch time.
+    ///
+    /// Can be `nil` if the launch could not yet been evaluated.
     var launchTime: LaunchTime?
 
     /// Provides the history of app foreground / background states.
@@ -70,6 +72,8 @@ internal struct DatadogContext {
     /// Network information.
     ///
     /// Represents the current state of the device network connectivity and interface.
+    /// The value can be `nil` if the network interface is not available or if it has not
+    /// yet been evaluated.
     var networkConnectionInfo: NetworkConnectionInfo?
 
     /// Carrier information.
