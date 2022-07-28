@@ -78,4 +78,12 @@ internal struct DatadogContext {
     /// This value can be `nil` of no service is currently registered, or if the device does
     /// not support telephony services.
     var carrierInfo: CarrierInfo?
+
+    /// The current mobile device battery status.
+    ///
+    /// This value can be `nil` of the current device battery interface is not available.
+    var batteryStatus: BatteryStatus?
+
+    /// `true` if the Low Power Mode is enabled.
+    var isLowPowerModeEnabled: Bool
 }

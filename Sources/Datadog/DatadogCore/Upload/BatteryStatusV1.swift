@@ -7,7 +7,7 @@
 import Foundation
 
 /// Describe the battery state for mobile devices.
-internal struct BatteryStatus {
+internal struct BatteryStatusV1 {
     enum State: Equatable {
         case unknown
         case unplugged
@@ -28,16 +28,16 @@ internal struct BatteryStatus {
 /// Shared provider to get current `BatteryStatus`.
 internal protocol BatteryStatusProviderType {
     /// The current status of the battery.
-    var current: BatteryStatus { get }
+    var current: BatteryStatusV1 { get }
 }
 
 internal class BatteryStatusProvider: BatteryStatusProviderType {
     /// Resets battery status monitoring.
     private let resetBatteryStatusMonitoring: () -> Void
     /// Returns current `BatteryStatus`.
-    private let currentBatteryStatus: () -> BatteryStatus
+    private let currentBatteryStatus: () -> BatteryStatusV1
     /// The current status of the battery.
-    var current: BatteryStatus { currentBatteryStatus() }
+    var current: BatteryStatusV1 { currentBatteryStatus() }
 
     /// Creates a battery status provider to monitor the battery.
     ///
@@ -48,7 +48,7 @@ internal class BatteryStatusProvider: BatteryStatusProviderType {
     init(
         enableBatteryStatusMonitoring: () -> Void,
         resetBatteryStatusMonitoring: @escaping () -> Void,
-        currentBatteryStatus: @escaping () -> BatteryStatus
+        currentBatteryStatus: @escaping () -> BatteryStatusV1
     ) {
         self.resetBatteryStatusMonitoring = resetBatteryStatusMonitoring
         self.currentBatteryStatus = currentBatteryStatus
@@ -128,7 +128,7 @@ extension BatteryStatusProvider {
         self.init(
             enableBatteryStatusMonitoring: {},
             resetBatteryStatusMonitoring: {},
-            currentBatteryStatus: { BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false) }
+            currentBatteryStatus: { BatteryStatusV1(state: .full, level: 1, isLowPowerModeEnabled: false) }
         )
         #elseif os(iOS)
         self.init(
@@ -164,7 +164,7 @@ extension BatteryStatusProvider {
             enableBatteryStatusMonitoring: { device.isBatteryMonitoringEnabled = true },
             resetBatteryStatusMonitoring: { device.isBatteryMonitoringEnabled = wasBatteryMonitoringEnabled },
             currentBatteryStatus: {
-                return BatteryStatus(
+                return BatteryStatusV1(
                     state: .init(device.batteryState),
                     level: device.batteryLevel,
                     isLowPowerModeEnabled: lowPowerModeMonitor.isLowPowerModeEnabled
@@ -176,7 +176,7 @@ extension BatteryStatusProvider {
 }
 
 #if !os(tvOS)
-extension BatteryStatus.State {
+extension BatteryStatusV1.State {
     /// Cast `UIDevice.BatteryState` to `BatteryStatus.State`
     /// 
     /// - Parameter state: The state to cast.

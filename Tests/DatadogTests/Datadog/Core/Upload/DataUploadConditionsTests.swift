@@ -15,7 +15,7 @@ class DataUploadConditionsTests: XCTestCase {
             assert(
                 canPerformUploadReturns: true,
                 forBattery: .mockWith(
-                    status: BatteryStatus(
+                    status: BatteryStatusV1(
                         state: .mockRandom(), level: Constants.minBatteryLevel + 0.01, isLowPowerModeEnabled: false
                     )
                 ),
@@ -26,7 +26,7 @@ class DataUploadConditionsTests: XCTestCase {
             assert(
                 canPerformUploadReturns: true,
                 forBattery: .mockWith(
-                    status: BatteryStatus(
+                    status: BatteryStatusV1(
                         state: .mockRandom(within: [.charging, .full]), level: .random(in: 0...100), isLowPowerModeEnabled: false
                     )
                 ),
@@ -49,7 +49,7 @@ class DataUploadConditionsTests: XCTestCase {
             assert(
                 canPerformUploadReturns: false,
                 forBattery: .mockWith(
-                    status: BatteryStatus(
+                    status: BatteryStatusV1(
                         state: .mockRandom(within: [.unplugged, .charging, .full]), level: .random(in: 0...100), isLowPowerModeEnabled: .random()
                     )
                 ),
@@ -60,7 +60,7 @@ class DataUploadConditionsTests: XCTestCase {
             assert(
                 canPerformUploadReturns: false,
                 forBattery: .mockWith(
-                    status: BatteryStatus(
+                    status: BatteryStatusV1(
                         state: .mockRandom(within: [.unplugged, .charging, .full]), level: .random(in: 0...100), isLowPowerModeEnabled: .random()
                     )
                 ),
@@ -69,7 +69,7 @@ class DataUploadConditionsTests: XCTestCase {
             assert(
                 canPerformUploadReturns: false,
                 forBattery: .mockWith(
-                    status: BatteryStatus(
+                    status: BatteryStatusV1(
                         state: .mockRandom(within: [.unplugged, .charging, .full]), level: .random(in: 0...100), isLowPowerModeEnabled: true
                     )
                 ),
@@ -80,7 +80,7 @@ class DataUploadConditionsTests: XCTestCase {
             assert(
                 canPerformUploadReturns: false,
                 forBattery: .mockWith(
-                    status: BatteryStatus(
+                    status: BatteryStatusV1(
                         state: .unplugged, level: Constants.minBatteryLevel - 0.01, isLowPowerModeEnabled: .random()
                     )
                 ),
@@ -103,7 +103,7 @@ class DataUploadConditionsTests: XCTestCase {
             assert(
                 canPerformUploadReturns: true,
                 forBattery: .mockWith(
-                    status: BatteryStatus(
+                    status: BatteryStatusV1(
                         state: .unknown, level: .random(in: -100...100), isLowPowerModeEnabled: .random()
                     )
                 ),

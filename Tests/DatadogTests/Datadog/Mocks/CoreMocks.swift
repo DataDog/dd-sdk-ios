@@ -964,17 +964,36 @@ extension BatteryStatus {
 
     static func mockWith(
         state: State = .charging,
+        level: Float = 0.5
+    ) -> BatteryStatus {
+        return BatteryStatus(state: state, level: level)
+    }
+}
+
+extension BatteryStatusV1 {
+    static func mockAny() -> BatteryStatusV1 {
+        return mockWith()
+    }
+
+    static func mockWith(
+        state: State = .charging,
         level: Float = 0.5,
         isLowPowerModeEnabled: Bool = false
-    ) -> BatteryStatus {
-        return BatteryStatus(state: state, level: level, isLowPowerModeEnabled: isLowPowerModeEnabled)
+    ) -> BatteryStatusV1 {
+        return BatteryStatusV1(state: state, level: level, isLowPowerModeEnabled: isLowPowerModeEnabled)
+    }
+}
+
+extension BatteryStatusV1.State {
+    static func mockRandom(within cases: [BatteryStatusV1.State] = [.unknown, .unplugged, .charging, .full]) -> BatteryStatusV1.State {
+        return cases.randomElement()!
     }
 }
 
 struct BatteryStatusProviderMock: BatteryStatusProviderType {
-    let current: BatteryStatus
+    let current: BatteryStatusV1
 
-    static func mockWith(status: BatteryStatus ) -> BatteryStatusProviderMock {
+    static func mockWith(status: BatteryStatusV1 ) -> BatteryStatusProviderMock {
         return BatteryStatusProviderMock(current: status)
     }
 

@@ -8,7 +8,7 @@ import XCTest
 import UIKit
 @testable import Datadog
 
-class BatteryStatusTests: XCTestCase {
+class BatteryStatusV1Tests: XCTestCase {
     func testWhenInstantiated_itEnablesBatteryMonitoring() {
         let expectation = self.expectation(description: "call configuration block")
 
@@ -41,7 +41,7 @@ class BatteryStatusTests: XCTestCase {
             enableBatteryStatusMonitoring: { },
             resetBatteryStatusMonitoring: {},
             currentBatteryStatus: {
-                BatteryStatus(
+                BatteryStatusV1(
                     state: .charging,
                     level: 0.5,
                     isLowPowerModeEnabled: false

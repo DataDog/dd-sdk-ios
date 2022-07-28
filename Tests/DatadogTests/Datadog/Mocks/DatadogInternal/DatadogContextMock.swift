@@ -29,7 +29,9 @@ extension DatadogContext: AnyMockable {
         launchTime: LaunchTime = .mockAny(),
         applicationStateHistory: AppStateHistory = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo = .mockAny(),
-        carrierInfo: CarrierInfo? = .mockAny()
+        carrierInfo: CarrierInfo? = .mockAny(),
+        batteryStatus: BatteryStatus? = .mockAny(),
+        isLowPowerModeEnabled: Bool = false
     ) -> DatadogContext {
         .init(
             site: site,
@@ -49,7 +51,9 @@ extension DatadogContext: AnyMockable {
             launchTime: launchTime,
             applicationStateHistory: applicationStateHistory,
             networkConnectionInfo: networkConnectionInfo,
-            carrierInfo: carrierInfo
+            carrierInfo: carrierInfo,
+            batteryStatus: batteryStatus,
+            isLowPowerModeEnabled: isLowPowerModeEnabled
         )
     }
 }
