@@ -79,7 +79,9 @@ internal struct DatadogContext {
     /// not support telephony services.
     var carrierInfo: CarrierInfo?
 
-    /// `true` if the Low Power Mode is enabled.
+    /// The current mobile device battery status.
+    ///
+    /// This value can be `nil` of the current device battery interface is not available.
     var batteryStatus: BatteryStatus?
 
     /// `true` if the Low Power Mode is enabled.

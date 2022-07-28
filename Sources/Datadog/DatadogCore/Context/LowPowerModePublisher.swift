@@ -6,12 +6,20 @@
 
 import Foundation
 
+/// The low power mode publisher will publish the ``ProcessInfo/isLowPowerModeEnabled`` value
+/// by observing the `NSProcessInfoPowerStateDidChange` notification on the given
+/// notification center.
 internal final class LowPowerModePublisher: ContextValuePublisher {
     let initialValue: Bool
 
     private let notificationCenter: NotificationCenter
     private var observer: Any?
 
+    /// Creates a low power mode publisher.
+    ///
+    /// - Parameters:
+    ///   - processInfo: The process for reading the initial `isLowPowerModeEnabled`.
+    ///   - notificationCenter: The notification center for observing the `NSProcessInfoPowerStateDidChange`,
     init(
         processInfo: ProcessInfo = .processInfo,
         notificationCenter: NotificationCenter = .default
@@ -42,8 +50,6 @@ internal final class LowPowerModePublisher: ContextValuePublisher {
     }
 
     func cancel() {
-        if let observer = observer {
-            notificationCenter.removeObserver(observer)
-        }
+        observer.map(notificationCenter.removeObserver)
     }
 }

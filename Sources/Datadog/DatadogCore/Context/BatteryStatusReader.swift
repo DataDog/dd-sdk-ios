@@ -7,15 +7,21 @@
 import Foundation
 
 #if os(iOS)
-
 import UIKit
 
+/// The ``BatteryStatusReader`` reads the battery state and level from the ``UIDevice``.
+///
+/// The reader will enable the battery monitoring by setting the ``UIDevice/isBatteryMonitoringEnabled``
+/// to `true`. The property will be reset to it's initial value when the reader is deallocated.
 internal final class BatteryStatusReader: ContextValueReader {
     let initialValue: BatteryStatus?
 
     let device: UIDevice
     let isBatteryMonitoringEnabled: Bool
 
+    /// Creates a battery status reader from the given device.
+    ///
+    /// - Parameter device: The `UIDevice` instance. `.current` by default.
     init(device: UIDevice = .current) {
         self.device = device
         self.isBatteryMonitoringEnabled = device.isBatteryMonitoringEnabled
@@ -38,6 +44,7 @@ internal final class BatteryStatusReader: ContextValueReader {
         device.isBatteryMonitoringEnabled = isBatteryMonitoringEnabled
     }
 }
+
 extension BatteryStatus.State {
     /// Cast `UIDevice.BatteryState` to `BatteryStatus.State`
     ///
