@@ -15,6 +15,7 @@ class DeviceInfoTests: XCTestCase {
         let randomModel: String = .mockRandom()
         let randomOSName: String = .mockRandom()
         let randomOSVersion: String = .mockRandom()
+        let randomArchitecutre: String = .mockRandom()
 
         let info = DeviceInfo(
             model: randomModel,
@@ -22,7 +23,8 @@ class DeviceInfoTests: XCTestCase {
                 model: randomUIDeviceModel,
                 systemName: randomOSName,
                 systemVersion: randomOSVersion
-            )
+            ),
+            architecture: randomArchitecutre
         )
 
         XCTAssertEqual(info.brand, "Apple")
@@ -30,5 +32,6 @@ class DeviceInfoTests: XCTestCase {
         XCTAssertEqual(info.model, randomModel)
         XCTAssertEqual(info.osName, randomOSName)
         XCTAssertEqual(info.osVersion, randomOSVersion)
+        XCTAssertEqual(info.architecture, randomArchitecutre)
     }
 }
