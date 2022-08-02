@@ -11,27 +11,34 @@ let package = Package(
     products: [
         .library(
             name: "Datadog",
-            type: .dynamic,
             targets: ["Datadog"]
         ),
         .library(
             name: "DatadogObjc",
-            type: .dynamic,
             targets: ["DatadogObjc"]
         ),
         .library(
+            name: "DatadogDynamic",
+            type: .dynamic,
+            targets: ["Datadog"]
+        ),
+        .library(
+            name: "DatadogDynamicObjc",
+            type: .dynamic,
+            targets: ["DatadogObjc"]
+        ),
+        .library( // TODO: RUMM-2387 Consider removing explicit linkage variants
             name: "DatadogStatic",
             type: .static,
             targets: ["Datadog"]
         ),
-        .library(
+        .library( // TODO: RUMM-2387 Consider removing explicit linkage variants
             name: "DatadogStaticObjc",
             type: .static,
             targets: ["DatadogObjc"]
         ),
         .library(
             name: "DatadogCrashReporting",
-            type: .static,
             targets: ["DatadogCrashReporting"]
         ),
     ],
