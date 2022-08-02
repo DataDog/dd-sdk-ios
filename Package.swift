@@ -27,12 +27,12 @@ let package = Package(
             type: .dynamic,
             targets: ["DatadogObjc"]
         ),
-        .library( // TODO: Remove in the next major version.
+        .library( // TODO: RUMM-2387 Consider removing explicit linkage variants
             name: "DatadogStatic",
             type: .static,
             targets: ["Datadog"]
         ),
-        .library( // TODO: Remove in the next major version.
+        .library( // TODO: RUMM-2387 Consider removing explicit linkage variants
             name: "DatadogStaticObjc",
             type: .static,
             targets: ["DatadogObjc"]
