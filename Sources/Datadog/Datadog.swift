@@ -177,7 +177,7 @@ public class Datadog {
         let userInfoProvider = UserInfoProvider()
         let dateProvider = SystemDateProvider()
         let dateCorrector = ServerDateCorrector(
-            serverDateProvider: NTPServerDateProvider()
+            serverDateProvider: configuration.common.serverDateProvider ?? DatadogNTPDateProvider()
         )
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
         let carrierInfoProvider = CarrierInfoProvider()

@@ -466,6 +466,28 @@ class DatadogTests: XCTestCase {
 
         Datadog.flushAndDeinitialize()
     }
+
+    func testServerDateProvider() throws {
+        // Given
+        let serverDateProvider = ServerDateProviderMock()
+
+        // When
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: defaultBuilder
+                .set(serverDateProvider: serverDateProvider)
+                .build()
+        )
+
+        serverDateProvider.offset = -1
+
+        // Then
+        let core = try XCTUnwrap(defaultDatadogCore as? DatadogCore)
+        XCTAssertEqual(core.dependencies.dateCorrector.offset, -1)
+
+        Datadog.flushAndDeinitialize()
+    }
 }
 
 class AppContextTests: XCTestCase {

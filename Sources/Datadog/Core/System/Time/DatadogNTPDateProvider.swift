@@ -6,21 +6,7 @@
 
 import Foundation
 
-/// Abstract the monotonic clock synchronized with the server using NTP.
-internal protocol ServerDateProvider {
-    /// Start the clock synchronisation with NTP server.
-    /// Calls the `completion` by passing it the server time offset when the synchronization succeeds or`nil` if it fails.
-    func synchronize(update: @escaping (TimeInterval) -> Void)
-}
-
-internal class NTPServerDateProvider: ServerDateProvider {
-    static let datadogNTPServers = [
-        "0.datadog.pool.ntp.org",
-        "1.datadog.pool.ntp.org",
-        "2.datadog.pool.ntp.org",
-        "3.datadog.pool.ntp.org"
-    ]
-
+internal class DatadogNTPDateProvider: ServerDateProvider {
     let kronos: KronosClockProtocol
 
     init(kronos: KronosClockProtocol = KronosClock()) {
@@ -29,7 +15,7 @@ internal class NTPServerDateProvider: ServerDateProvider {
 
     func synchronize(update: @escaping (TimeInterval) -> Void) {
         kronos.sync(
-            from: NTPServerDateProvider.datadogNTPServers.randomElement()!, // swiftlint:disable:this force_unwrapping
+            from: DatadogNTPServers.randomElement()!, // swiftlint:disable:this force_unwrapping
             first: { _, offset in
                 update(offset)
             },
