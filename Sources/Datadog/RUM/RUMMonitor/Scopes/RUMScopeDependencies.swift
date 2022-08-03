@@ -10,25 +10,21 @@ internal typealias RUMSessionListener = (String, Bool) -> Void
 
 /// Dependency container for injecting components to `RUMScopes` hierarchy.
 internal struct RUMScopeDependencies {
+    struct VitalsReaders {
+        let frequency: TimeInterval
+        let cpu: SamplingBasedVitalReader
+        let memory: SamplingBasedVitalReader
+        let refreshRate: ContinuousVitalReader
+    }
+
     let rumApplicationID: String
     let sessionSampler: Sampler
-    /// The start time of the application, indicated as SDK init. Measured in device time (without NTP correction).
-    let sdkInitDate: Date
     let backgroundEventTrackingEnabled: Bool
     let appStateListener: AppStateListening
-    let userInfoProvider: RUMUserInfoProvider
     let launchTimeProvider: LaunchTimeProviderType
-    let connectivityInfoProvider: RUMConnectivityInfoProvider
-    let serviceName: String
-    let applicationVersion: String
-    let sdkVersion: String
-    let source: String
     let firstPartyURLsFilter: FirstPartyURLsFilter
     let eventBuilder: RUMEventBuilder
-    let eventOutput: RUMEventOutput
     let rumUUIDGenerator: RUMUUIDGenerator
-    /// Adjusts RUM events time (device time) to server time.
-    let dateCorrector: DateCorrectorType
     /// Integration with Crash Reporting. It updates the crash context with RUM info.
     /// `nil` if Crash Reporting feature is not enabled.
     let crashContextIntegration: RUMWithCrashContextIntegration?
@@ -37,47 +33,45 @@ internal struct RUMScopeDependencies {
     /// Produces `RUMViewUpdatesThrottlerType` for each started RUM view scope.
     let viewUpdatesThrottlerFactory: () -> RUMViewUpdatesThrottlerType
 
-    let vitalCPUReader: SamplingBasedVitalReader
-    let vitalMemoryReader: SamplingBasedVitalReader
-    let vitalRefreshRateReader: ContinuousVitalReader
-
+    let vitalsReaders: VitalsReaders?
     let onSessionStart: RUMSessionListener?
 }
 
 internal extension RUMScopeDependencies {
-    init(rumFeature: RUMFeature) {
+    init(
+        rumFeature: RUMFeature,
+        crashReportingFeature: CrashReportingFeature?,
+        context: DatadogV1Context
+    ) {
         self.init(
             rumApplicationID: rumFeature.configuration.applicationID,
             sessionSampler: rumFeature.configuration.sessionSampler,
-            sdkInitDate: rumFeature.sdkInitDate,
             backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled,
-            appStateListener: rumFeature.appStateListener,
-            userInfoProvider: RUMUserInfoProvider(userInfoProvider: rumFeature.userInfoProvider),
-            launchTimeProvider: rumFeature.launchTimeProvider,
-            connectivityInfoProvider: RUMConnectivityInfoProvider(
-                networkConnectionInfoProvider: rumFeature.networkConnectionInfoProvider,
-                carrierInfoProvider: rumFeature.carrierInfoProvider
-            ),
-            serviceName: rumFeature.configuration.common.serviceName,
-            applicationVersion: rumFeature.configuration.common.applicationVersion,
-            sdkVersion: rumFeature.configuration.common.sdkVersion,
-            source: rumFeature.configuration.common.source,
+            appStateListener: context.appStateListener,
+            launchTimeProvider: context.launchTimeProvider,
             firstPartyURLsFilter: FirstPartyURLsFilter(hosts: rumFeature.configuration.firstPartyHosts),
             eventBuilder: RUMEventBuilder(
-                eventsMapper: rumFeature.eventsMapper
-            ),
-            eventOutput: RUMEventFileOutput(
-                fileWriter: rumFeature.storage.writer
+                eventsMapper: RUMEventsMapper(
+                    viewEventMapper: rumFeature.configuration.viewEventMapper,
+                    errorEventMapper: rumFeature.configuration.errorEventMapper,
+                    resourceEventMapper: rumFeature.configuration.resourceEventMapper,
+                    actionEventMapper: rumFeature.configuration.actionEventMapper,
+                    longTaskEventMapper: rumFeature.configuration.longTaskEventMapper
+                )
             ),
             rumUUIDGenerator: rumFeature.configuration.uuidGenerator,
-            dateCorrector: rumFeature.dateCorrector,
-            crashContextIntegration: RUMWithCrashContextIntegration(),
+            crashContextIntegration: crashReportingFeature.map { .init(crashReporting: $0) },
             ciTest: CITestIntegration.active?.rumCITest,
             viewUpdatesThrottlerFactory: { RUMViewUpdatesThrottler() },
-            vitalCPUReader: rumFeature.vitalCPUReader,
-            vitalMemoryReader: rumFeature.vitalMemoryReader,
-            vitalRefreshRateReader: rumFeature.vitalRefreshRateReader,
-            onSessionStart: rumFeature.onSessionStart
+            vitalsReaders: rumFeature.configuration.vitalsFrequency.map {
+                .init(
+                    frequency: $0,
+                    cpu: VitalCPUReader(),
+                    memory: VitalMemoryReader(),
+                    refreshRate: VitalRefreshRateReader()
+                )
+            },
+            onSessionStart: rumFeature.configuration.onSessionStart
         )
     }
 }

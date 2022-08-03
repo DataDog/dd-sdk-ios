@@ -12,6 +12,10 @@ import Foundation
 /// unvalidated and unresolved inputs, it should never be passed to features. Instead, `FeaturesConfiguration` should be used.
 internal struct FeaturesConfiguration {
     struct Common {
+        /// [Datadog Site](https://docs.datadoghq.com/getting_started/site/) for data uploads. It can be `nil` in V1
+        /// if the SDK is configured using deprecated APIs: `set(logsEndpoint:)`, `set(tracesEndpoint:)` and `set(rumEndpoint:)`.
+        let site: DatadogSite?
+        let clientToken: String
         let applicationName: String
         let applicationVersion: String
         let applicationBundleIdentifier: String
@@ -23,19 +27,17 @@ internal struct FeaturesConfiguration {
         let sdkVersion: String
         let proxyConfiguration: [AnyHashable: Any]?
         let encryption: DataEncryption?
+        let serverDateProvider: ServerDateProvider?
     }
 
     struct Logging {
-        let common: Common
         let uploadURL: URL
-        let clientToken: String
         let logEventMapper: LogEventMapper?
     }
 
     struct Tracing {
-        let common: Common
         let uploadURL: URL
-        let clientToken: String
+        let uuidGenerator: TracingUUIDGenerator
         let spanEventMapper: SpanEventMapper?
     }
 
@@ -46,9 +48,7 @@ internal struct FeaturesConfiguration {
             let longTaskThreshold: TimeInterval?
         }
 
-        let common: Common
         let uploadURL: URL
-        let clientToken: String
         let applicationID: String
         let sessionSampler: Sampler
         let telemetrySampler: Sampler
@@ -63,6 +63,7 @@ internal struct FeaturesConfiguration {
         let backgroundEventTrackingEnabled: Bool
         let onSessionStart: RUMSessionListener?
         let firstPartyHosts: Set<String>
+        let vitalsFrequency: TimeInterval?
     }
 
     struct URLSessionAutoInstrumentation {
@@ -128,17 +129,17 @@ extension FeaturesConfiguration {
         }
 
         if let customLogsEndpoint = configuration.customLogsEndpoint {
-            // If `.set(cusstomLogsEndpoint:)` API was used, it should override logs endpoint
+            // If `.set(customLogsEndpoint:)` API was used, it should override logs endpoint
             logsEndpoint = .custom(url: customLogsEndpoint.absoluteString)
         }
 
         if let customTracesEndpoint = configuration.customTracesEndpoint {
-            // If `.set(cusstomLogsEndpoint:)` API was used, it should override traces endpoint
+            // If `.set(customTracesEndpoint:)` API was used, it should override traces endpoint
             tracesEndpoint = .custom(url: customTracesEndpoint.absoluteString)
         }
 
         if let customRUMEndpoint = configuration.customRUMEndpoint {
-            // If `.set(cusstomLogsEndpoint:)` API was used, it should override RUM endpoint
+            // If `.set(customRUMEndpoint:)` API was used, it should override RUM endpoint
             rumEndpoint = .custom(url: customRUMEndpoint.absoluteString)
         }
 
@@ -152,6 +153,8 @@ extension FeaturesConfiguration {
         }
 
         let common = Common(
+            site: configuration.datadogEndpoint,
+            clientToken: try ifValid(clientToken: configuration.clientToken),
             applicationName: appContext.bundleName ?? appContext.bundleType.rawValue,
             applicationVersion: appContext.bundleVersion ?? "0.0.0",
             applicationBundleIdentifier: appContext.bundleIdentifier ?? "unknown",
@@ -166,23 +169,21 @@ extension FeaturesConfiguration {
             origin: CITestIntegration.active?.origin,
             sdkVersion: sdkVersion,
             proxyConfiguration: configuration.proxyConfiguration,
-            encryption: configuration.encryption
+            encryption: configuration.encryption,
+            serverDateProvider: configuration.serverDateProvider
         )
 
         if configuration.loggingEnabled {
             logging = Logging(
-                common: common,
                 uploadURL: try ifValid(endpointURLString: logsEndpoint.url),
-                clientToken: try ifValid(clientToken: configuration.clientToken),
                 logEventMapper: configuration.logEventMapper
             )
         }
 
         if configuration.tracingEnabled {
             tracing = Tracing(
-                common: common,
                 uploadURL: try ifValid(endpointURLString: tracesEndpoint.url),
-                clientToken: try ifValid(clientToken: configuration.clientToken),
+                uuidGenerator: DefaultTracingUUIDGenerator(),
                 spanEventMapper: configuration.spanEventMapper
             )
         }
@@ -204,9 +205,7 @@ extension FeaturesConfiguration {
 
             if let rumApplicationID = configuration.rumApplicationID {
                 rum = RUM(
-                    common: common,
                     uploadURL: try ifValid(endpointURLString: rumEndpoint.url),
-                    clientToken: try ifValid(clientToken: configuration.clientToken),
                     applicationID: rumApplicationID,
                     sessionSampler: Sampler(samplingRate: debugOverride ? 100.0 : configuration.rumSessionsSamplingRate),
                     telemetrySampler: Sampler(samplingRate: configuration.rumTelemetrySamplingRate),
@@ -219,7 +218,8 @@ extension FeaturesConfiguration {
                     instrumentation: instrumentation,
                     backgroundEventTrackingEnabled: configuration.rumBackgroundEventTrackingEnabled,
                     onSessionStart: configuration.rumSessionsListener,
-                    firstPartyHosts: sanitizedHosts
+                    firstPartyHosts: sanitizedHosts,
+                    vitalsFrequency: configuration.mobileVitalsFrequency.timeInterval
                 )
             } else {
                 let error = ProgrammerError(
@@ -285,6 +285,17 @@ extension FeaturesConfiguration {
         self.rum = rum
         self.urlSessionAutoInstrumentation = urlSessionAutoInstrumentation
         self.crashReporting = crashReporting
+    }
+}
+
+extension Datadog.Configuration.VitalsFrequency {
+    var timeInterval: TimeInterval? {
+        switch self {
+        case .frequent: return 0.1
+        case .average: return 0.5
+        case .rare: return 1
+        case .never: return nil
+        }
     }
 }
 

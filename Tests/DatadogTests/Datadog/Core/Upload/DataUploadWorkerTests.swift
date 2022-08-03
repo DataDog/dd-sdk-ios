@@ -17,7 +17,6 @@ class DataUploadWorkerTests: XCTestCase {
         dateProvider: dateProvider
     )
     lazy var writer = FileWriter(
-        dataFormat: .mockWith(prefix: "[", suffix: "]"),
         orchestrator: orchestrator
     )
     lazy var reader = FileReader(
@@ -228,11 +227,8 @@ class DataUploadWorkerTests: XCTestCase {
     // MARK: - Notifying Upload Progress
 
     func testWhenDataIsBeingUploaded_itPrintsUploadProgressInformation() {
-        let previousUserLogger = userLogger
-        defer { userLogger = previousUserLogger }
-
-        let mockUserLoggerOutput = LogOutputMock()
-        userLogger = .mockWith(logOutput: mockUserLoggerOutput)
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         // Given
         writer.write(value: ["key": "value"])
@@ -259,27 +255,24 @@ class DataUploadWorkerTests: XCTestCase {
 
         // Then
         let expectedSummary = randomUploadStatus.needsRetry ? "not delivered, will be retransmitted" : "accepted, won't be retransmitted"
-        XCTAssertEqual(mockUserLoggerOutput.allRecordedLogs.count, 2)
+        XCTAssertEqual(dd.logger.debugLogs.count, 2)
 
         XCTAssertEqual(
-            mockUserLoggerOutput.allRecordedLogs[0].message,
+            dd.logger.debugLogs[0].message,
             "⏳ (\(randomFeatureName)) Uploading batch...",
-            "Batch start information should be printed to `userLogger`. All captured logs:\n\(mockUserLoggerOutput.dumpAllRecordedLogs())"
+            "Batch start information should be printed to `userLogger`. All captured logs:\n\(dd.logger.recordedLogs)"
         )
 
         XCTAssertEqual(
-            mockUserLoggerOutput.allRecordedLogs[1].message,
+            dd.logger.debugLogs[1].message,
             "   → (\(randomFeatureName)) \(expectedSummary): \(randomUploadStatus.userDebugDescription)",
-            "Batch completion information should be printed to `userLogger`. All captured logs:\n\(mockUserLoggerOutput.dumpAllRecordedLogs())"
+            "Batch completion information should be printed to `userLogger`. All captured logs:\n\(dd.logger.recordedLogs)"
         )
     }
 
     func testWhenDataIsBeingUploaded_itPrintsUnauthoriseMessage_toUserLogger() {
-        let previousUserLogger = userLogger
-        defer { userLogger = previousUserLogger }
-
-        let mockUserLoggerOutput = LogOutputMock()
-        userLogger = .mockWith(logOutput: mockUserLoggerOutput)
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
         // Given
         writer.write(value: ["key": "value"])
@@ -304,18 +297,17 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(mockUserLoggerOutput.allRecordedLogs.count, 3)
-
         XCTAssertEqual(
-            mockUserLoggerOutput.allRecordedLogs[2].message,
+            dd.logger.errorLog?.message,
             "⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.",
-            "An error should be printed to `userLogger`. All captured logs:\n\(mockUserLoggerOutput.dumpAllRecordedLogs())"
+            "An error should be printed to `userLogger`. All captured logs:\n\(dd.logger.recordedLogs)"
         )
     }
 
     func testWhenDataIsBeingUploaded_itPrintsHTTPErrorMessage_toTelemetry() {
         // Given
-        let mockTelemetry = TelemetryMock()
+        let dd = DD.mockWith(telemetry: TelemetryMock())
+        defer { dd.reset() }
 
         writer.write(value: ["key": "value"])
         let randomUploadStatus: DataUploadStatus = .mockWith(error: .httpError(statusCode: 500))
@@ -331,26 +323,26 @@ class DataUploadWorkerTests: XCTestCase {
             dataUploader: mockDataUploader,
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
-            featureName: .mockRandom(),
-            telemetry: mockTelemetry
+            featureName: .mockRandom()
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(mockTelemetry.errors.count, 1)
+        XCTAssertEqual(dd.telemetry.errors.count, 1)
 
         XCTAssertEqual(
-            mockTelemetry.errors.first?.message,
+            dd.telemetry.errors.first?.message,
             "Data upload finished with status code: 500",
-            "An error should be send to internal telemetry. \(mockTelemetry)"
+            "An error should be send to `DD.telemetry`."
         )
     }
 
     func testWhenDataIsBeingUploaded_itPrintsNetworkErrorMessage_toTelemetry() {
         // Given
-        let mockTelemetry = TelemetryMock()
+        let dd = DD.mockWith(telemetry: TelemetryMock())
+        defer { dd.reset() }
 
         writer.write(value: ["key": "value"])
         let randomUploadStatus: DataUploadStatus = .mockWith(error: .networkError(error: .mockAny()))
@@ -366,20 +358,19 @@ class DataUploadWorkerTests: XCTestCase {
             dataUploader: mockDataUploader,
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
-            featureName: .mockRandom(),
-            telemetry: mockTelemetry
+            featureName: .mockRandom()
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(mockTelemetry.errors.count, 1)
+        XCTAssertEqual(dd.telemetry.errors.count, 1)
 
         XCTAssertEqual(
-            mockTelemetry.errors.first?.message,
+            dd.telemetry.errors.first?.message,
             #"Data upload finished with error - Error Domain=abc Code=0 "(null)""#,
-            "An error should be send to internal telemetry. \(mockTelemetry)"
+            "An error should be send to `DD.telemetry`."
         )
     }
 

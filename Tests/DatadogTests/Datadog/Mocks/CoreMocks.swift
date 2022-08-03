@@ -4,6 +4,7 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+import XCTest
 @testable import Datadog
 
 // MARK: - Configuration Mocks
@@ -57,6 +58,7 @@ extension Datadog.Configuration {
         rumResourceAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         rumBackgroundEventTrackingEnabled: Bool = false,
         rumTelemetrySamplingRate: Float = 100.0,
+        mobileVitalsFrequency: VitalsFrequency = .average,
         batchSize: BatchSize = .medium,
         uploadFrequency: UploadFrequency = .average,
         additionalConfiguration: [String: Any] = [:],
@@ -88,6 +90,7 @@ extension Datadog.Configuration {
             rumResourceAttributesProvider: rumResourceAttributesProvider,
             rumBackgroundEventTrackingEnabled: rumBackgroundEventTrackingEnabled,
             rumTelemetrySamplingRate: rumTelemetrySamplingRate,
+            mobileVitalsFrequency: mobileVitalsFrequency,
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
             additionalConfiguration: additionalConfiguration,
@@ -138,7 +141,11 @@ extension BundleType: CaseIterable {
     public static var allCases: [Self] { [.iOSApp, iOSAppExtension] }
 }
 
-extension Datadog.Configuration.DatadogEndpoint {
+extension Datadog.Configuration.DatadogEndpoint: AnyMockable, RandomMockable {
+    static func mockAny() -> Datadog.Configuration.DatadogEndpoint {
+        return .us1
+    }
+
     static func mockRandom() -> Self {
         return [.us1, .us3, .eu1, .us1_fed].randomElement()!
     }
@@ -188,6 +195,8 @@ extension FeaturesConfiguration.Common {
     static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
+        site: DatadogSite? = .mockAny(),
+        clientToken: String = .mockAny(),
         applicationName: String = .mockAny(),
         applicationVersion: String = .mockAny(),
         applicationBundleIdentifier: String = .mockAny(),
@@ -198,9 +207,12 @@ extension FeaturesConfiguration.Common {
         origin: String? = nil,
         sdkVersion: String = .mockAny(),
         proxyConfiguration: [AnyHashable: Any]? = nil,
-        encryption: DataEncryption? = nil
+        encryption: DataEncryption? = nil,
+        serverDateProvider: ServerDateProvider? = nil
     ) -> Self {
         return .init(
+            site: site,
+            clientToken: clientToken,
             applicationName: applicationName,
             applicationVersion: applicationVersion,
             applicationBundleIdentifier: applicationBundleIdentifier,
@@ -211,7 +223,8 @@ extension FeaturesConfiguration.Common {
             origin: origin,
             sdkVersion: sdkVersion,
             proxyConfiguration: proxyConfiguration,
-            encryption: encryption
+            encryption: encryption,
+            serverDateProvider: serverDateProvider
         )
     }
 }
@@ -220,15 +233,11 @@ extension FeaturesConfiguration.Logging {
     static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
-        common: FeaturesConfiguration.Common = .mockAny(),
         uploadURL: URL = .mockAny(),
-        clientToken: String = .mockAny(),
         logEventMapper: LogEventMapper? = nil
     ) -> Self {
         return .init(
-            common: common,
             uploadURL: uploadURL,
-            clientToken: clientToken,
             logEventMapper: logEventMapper
         )
     }
@@ -238,15 +247,13 @@ extension FeaturesConfiguration.Tracing {
     static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
-        common: FeaturesConfiguration.Common = .mockAny(),
         uploadURL: URL = .mockAny(),
-        spanEventMapper: SpanEventMapper? = nil,
-        clientToken: String = .mockAny()
+        uuidGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
+        spanEventMapper: SpanEventMapper? = nil
     ) -> Self {
         return .init(
-            common: common,
             uploadURL: uploadURL,
-            clientToken: clientToken,
+            uuidGenerator: uuidGenerator,
             spanEventMapper: spanEventMapper
         )
     }
@@ -256,9 +263,7 @@ extension FeaturesConfiguration.RUM {
     static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
-        common: FeaturesConfiguration.Common = .mockAny(),
         uploadURL: URL = .mockAny(),
-        clientToken: String = .mockAny(),
         applicationID: String = .mockAny(),
         sessionSampler: Sampler = .mockKeepAll(),
         telemetrySampler: Sampler = .mockKeepAll(),
@@ -271,12 +276,11 @@ extension FeaturesConfiguration.RUM {
         instrumentation: FeaturesConfiguration.RUM.Instrumentation? = nil,
         backgroundEventTrackingEnabled: Bool = false,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener(),
-        firstPartyHosts: Set<String> = []
+        firstPartyHosts: Set<String> = [],
+        vitalsFrequency: TimeInterval? = 0.5
     ) -> Self {
         return .init(
-            common: common,
             uploadURL: uploadURL,
-            clientToken: clientToken,
             applicationID: applicationID,
             sessionSampler: sessionSampler,
             telemetrySampler: telemetrySampler,
@@ -289,7 +293,8 @@ extension FeaturesConfiguration.RUM {
             instrumentation: instrumentation,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
             onSessionStart: onSessionStart,
-            firstPartyHosts: firstPartyHosts
+            firstPartyHosts: firstPartyHosts,
+            vitalsFrequency: vitalsFrequency
         )
     }
 }
@@ -366,6 +371,18 @@ struct DataEncryptionMock: DataEncryption {
 
     func encrypt(data: Data) throws -> Data { try enc(data) }
     func decrypt(data: Data) throws -> Data { try dec(data) }
+}
+
+class ServerDateProviderMock: ServerDateProvider {
+    private var update: (TimeInterval) -> Void = { _ in }
+
+    var offset: TimeInterval = .zero {
+        didSet { update(offset) }
+    }
+
+    func synchronize(update: @escaping (TimeInterval) -> Void) {
+        self.update = update
+    }
 }
 
 // MARK: - PerformancePreset Mocks
@@ -473,15 +490,11 @@ extension FeaturesCommonDependencies {
             storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
             uploadPerformance: .veryQuick
         ),
-        mobileDevice: MobileDevice = .mockWith(
-            currentBatteryStatus: {
-                // Mock full battery, so it doesn't rely on battery condition for the upload
-                return BatteryStatus(state: .full, level: 1, isLowPowerModeEnabled: false)
-            }
-        ),
+        deviceInfo: DeviceInfo = .mockAny(),
+        batteryStatusProvider: BatteryStatusProviderType = BatteryStatusProviderMock.mockAny(),
         sdkInitDate: Date = Date(),
         dateProvider: DateProvider = SystemDateProvider(),
-        dateCorrector: DateCorrectorType = DateCorrectorMock(),
+        dateCorrector: DateCorrector = DateCorrectorMock(),
         userInfoProvider: UserInfoProvider = .mockAny(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
             networkConnectionInfo: .mockWith(
@@ -523,7 +536,8 @@ extension FeaturesCommonDependencies {
             consentProvider: consentProvider,
             performance: performance,
             httpClient: httpClient,
-            mobileDevice: mobileDevice,
+            deviceInfo: deviceInfo,
+            batteryStatusProvider: batteryStatusProvider,
             sdkInitDate: sdkInitDate,
             dateProvider: dateProvider,
             dateCorrector: dateCorrector,
@@ -541,10 +555,11 @@ extension FeaturesCommonDependencies {
         consentProvider: ConsentProvider? = nil,
         performance: PerformancePreset? = nil,
         httpClient: HTTPClient? = nil,
-        mobileDevice: MobileDevice? = nil,
+        deviceInfo: DeviceInfo? = nil,
+        batteryStatusProvider: BatteryStatusProviderType? = nil,
         sdkInitDate: Date? = nil,
         dateProvider: DateProvider? = nil,
-        dateCorrector: DateCorrectorType? = nil,
+        dateCorrector: DateCorrector? = nil,
         userInfoProvider: UserInfoProvider? = nil,
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType? = nil,
         carrierInfoProvider: CarrierInfoProviderType? = nil,
@@ -556,7 +571,8 @@ extension FeaturesCommonDependencies {
             consentProvider: consentProvider ?? self.consentProvider,
             performance: performance ?? self.performance,
             httpClient: httpClient ?? self.httpClient,
-            mobileDevice: mobileDevice ?? self.mobileDevice,
+            deviceInfo: deviceInfo ?? self.deviceInfo,
+            batteryStatusProvider: batteryStatusProvider ?? self.batteryStatusProvider,
             sdkInitDate: sdkInitDate ?? self.sdkInitDate,
             dateProvider: dateProvider ?? self.dateProvider,
             dateCorrector: dateCorrector ?? self.dateCorrector,
@@ -588,10 +604,22 @@ extension FeatureUpload {
 }
 
 class FileWriterMock: Writer {
-    var dataWritten: Encodable?
+    /// Recorded events.
+    internal private(set) var events: [Encodable] = []
 
+    /// Adds an `Encodable` event to the events stack.
+    ///
+    /// - Parameter value: The event value to record.
     func write<T>(value: T) where T: Encodable {
-        dataWritten = value
+        events.append(value)
+    }
+
+    /// Returns all events of the given type.
+    ///
+    /// - Parameter type: The event type to retrieve.
+    /// - Returns: A list of event of the give type.
+    func events<T>(ofType type: T.Type = T.self) -> [T] where T: Encodable {
+        events.compactMap { $0 as? T }
     }
 }
 
@@ -610,6 +638,73 @@ class NoOpFileReader: SyncReader {
     func readNextBatch() -> Batch? { return nil }
     func markBatchAsRead(_ batch: Batch) {}
     func markAllFilesAsReadable() {}
+}
+
+/// `AsyncWriter` stub which records events in-memory and allows reading their data back.
+internal class InMemoryWriter: AsyncWriter {
+    let queue = DispatchQueue(label: "com.datadoghq.InMemoryWriter-\(UUID().uuidString)")
+
+    private let encoder: JSONEncoder = .default()
+    private var events: [Data] = []
+
+    func write<T>(value: T) where T: Encodable {
+        queue.async {
+            do {
+                let eventData = try self.encoder.encode(value)
+                self.events.append(eventData)
+                self.waitAndReturnEventsDataExpectation?.fulfill()
+            } catch {
+                assertionFailure("Failed to encode event: \(value)")
+            }
+        }
+    }
+
+    func flushAndCancelSynchronously() {
+        queue.sync {}
+    }
+
+    // MARK: - Retrieving Recorded Data
+
+    private var waitAndReturnEventsDataExpectation: XCTestExpectation?
+
+    /// Waits until given number of events is written and returns data for these events.
+    /// Passing no `timeout` will result with picking the recommended timeout for unit tests.
+    func waitAndReturnEventsData(count: UInt, timeout: TimeInterval? = nil, file: StaticString = #file, line: UInt = #line) -> [Data] {
+        precondition(waitAndReturnEventsDataExpectation == nil, "The `InMemoryWriter` is already waiting on `waitAndReturnEventsData`.")
+
+        let expectation = XCTestExpectation(description: "Record \(count) events.")
+        if count > 0 {
+            expectation.expectedFulfillmentCount = Int(count)
+        } else {
+            expectation.isInverted = true
+        }
+
+        queue.sync {
+            self.waitAndReturnEventsDataExpectation = expectation
+            self.events.forEach { _ in expectation.fulfill() } // fulfill already recorded events
+        }
+
+        let recommendedTimeout = Double(max(1, count)) * 1 // 1s for each event
+        let timeout = timeout ?? recommendedTimeout
+        let result = XCTWaiter().wait(for: [expectation], timeout: timeout)
+
+        switch result {
+        case .completed:
+            break
+        case .incorrectOrder, .interrupted:
+            fatalError("Can't happen.")
+        case .timedOut:
+            XCTFail("Exceeded timeout of \(timeout)s with recording \(events.count) out of \(count) expected events.", file: file, line: line)
+            return queue.sync { events }
+        case .invertedFulfillment:
+            XCTFail("\(events.count) batches were read, but not expected.", file: file, line: line)
+            return queue.sync { events }
+        @unknown default:
+            fatalError()
+        }
+
+        return queue.sync { events }
+    }
 }
 
 extension DataFormat {
@@ -650,7 +745,7 @@ class RelativeDateProvider: DateProvider {
     }
 
     /// Returns current date and advances next date by `timeInterval`.
-    func currentDate() -> Date {
+    var now: Date {
         defer {
             queue.async {
                 self.date.addTimeInterval(self.timeInterval)
@@ -669,22 +764,12 @@ class RelativeDateProvider: DateProvider {
     }
 }
 
-extension DateCorrection {
-    static var zero: DateCorrection {
-        return DateCorrection(serverTimeOffset: 0)
-    }
-}
+/// `DateCorrector` mock, correcting dates by adding predefined offset.
+class DateCorrectorMock: DateCorrector {
+    var offset: TimeInterval
 
-/// `DateCorrectorType` mock, correcting dates by adding predefined offset.
-class DateCorrectorMock: DateCorrectorType {
-    var correctionOffset: TimeInterval
-
-    init(correctionOffset: TimeInterval = 0) {
-        self.correctionOffset = correctionOffset
-    }
-
-    var currentCorrection: DateCorrection {
-        return DateCorrection(serverTimeOffset: correctionOffset)
+    init(offset: TimeInterval = 0) {
+        self.offset = offset
     }
 }
 
@@ -802,7 +887,7 @@ extension RequestBuilder.HTTPHeader: RandomMockable, AnyMockable {
     static func mockRandom() -> RequestBuilder.HTTPHeader {
         let all: [RequestBuilder.HTTPHeader] = [
             .contentTypeHeader(contentType: Bool.random() ? .applicationJSON : .textPlainUTF8),
-            .userAgentHeader(appName: .mockRandom(among: .alphanumerics), appVersion: .alphanumerics, device: .mockAny()),
+            .userAgentHeader(appName: .mockRandom(among: .alphanumerics), appVersion: .mockRandom(among: .alphanumerics), device: .mockAny()),
             .ddAPIKeyHeader(clientToken: .mockRandom(among: .alphanumerics)),
             .ddEVPOriginHeader(source: .mockRandom(among: .alphanumerics)),
             .ddEVPOriginVersionHeader(sdkVersion: .mockRandom(among: .alphanumerics)),
@@ -874,26 +959,34 @@ extension DataUploadStatus: RandomMockable {
     }
 }
 
-extension MobileDevice {
-    static func mockAny() -> MobileDevice {
+extension DeviceInfo {
+    static func mockAny() -> DeviceInfo {
         return .mockWith()
     }
 
     static func mockWith(
+        name: String = .mockAny(),
         model: String = .mockAny(),
         osName: String = .mockAny(),
         osVersion: String = .mockAny(),
-        enableBatteryStatusMonitoring: @escaping () -> Void = {},
-        resetBatteryStatusMonitoring: @escaping () -> Void = {},
-        currentBatteryStatus: @escaping () -> BatteryStatus = { .mockAny() }
-    ) -> MobileDevice {
-        return MobileDevice(
+        architecture: String = .mockAny()
+    ) -> DeviceInfo {
+        return .init(
+            name: name,
             model: model,
             osName: osName,
             osVersion: osVersion,
-            enableBatteryStatusMonitoring: enableBatteryStatusMonitoring,
-            resetBatteryStatusMonitoring: resetBatteryStatusMonitoring,
-            currentBatteryStatus: currentBatteryStatus
+            architecture: architecture
+        )
+    }
+
+    static func mockRandom() -> DeviceInfo {
+        return .init(
+            name: .mockRandom(),
+            model: .mockRandom(),
+            osName: .mockRandom(),
+            osVersion: .mockRandom(),
+            architecture: .mockRandom()
         )
     }
 }
@@ -921,8 +1014,12 @@ extension BatteryStatus {
 struct BatteryStatusProviderMock: BatteryStatusProviderType {
     let current: BatteryStatus
 
-    static func mockWith(status: BatteryStatus) -> BatteryStatusProviderMock {
+    static func mockWith(status: BatteryStatus ) -> BatteryStatusProviderMock {
         return BatteryStatusProviderMock(current: status)
+    }
+
+    static func mockAny() -> BatteryStatusProviderMock {
+        return BatteryStatusProviderMock(current: .mockAny())
     }
 }
 
@@ -1129,7 +1226,15 @@ internal class ValueObserverMock<Value>: ValueObserver {
     }
 }
 
-extension DDError: RandomMockable {
+extension DDError: AnyMockable, RandomMockable {
+    static func mockAny() -> DDError {
+        return DDError(
+            type: .mockAny(),
+            message: .mockAny(),
+            stack: .mockAny()
+        )
+    }
+
     static func mockRandom() -> DDError {
         return DDError(
             type: .mockRandom(),
@@ -1161,5 +1266,113 @@ class PrintFunctionMock {
 
     func print(message: String) {
         printedMessages.append(message)
+    }
+
+    func reset() {
+        printedMessages = []
+    }
+}
+
+class CoreLoggerMock: CoreLogger {
+    private let queue = DispatchQueue(label: "core-logger-mock")
+    private(set) var recordedLogs: [(level: CoreLoggerLevel, message: String, error: Error?)] = []
+
+    // MARK: - CoreLogger
+
+    func log(_ level: CoreLoggerLevel, message: @autoclosure () -> String, error: Error?) {
+        let newLog = (level, message(), error)
+        queue.async { self.recordedLogs.append(newLog) }
+    }
+
+    func reset() {
+        queue.async { self.recordedLogs = [] }
+    }
+
+    // MARK: - Matching
+
+    typealias RecordedLog = (message: String, error: DDError?)
+
+    private func recordedLogs(ofLevel level: CoreLoggerLevel) -> [RecordedLog] {
+        return queue.sync {
+            recordedLogs
+                .filter({ $0.level == level })
+                .map { ($0.message, $0.error.map({ DDError(error: $0) })) }
+        }
+    }
+
+    var debugLogs: [RecordedLog] { recordedLogs(ofLevel: .debug) }
+    var warnLogs: [RecordedLog] { recordedLogs(ofLevel: .warn) }
+    var errorLogs: [RecordedLog] { recordedLogs(ofLevel: .error) }
+    var criticalLogs: [RecordedLog] { recordedLogs(ofLevel: .critical) }
+
+    var debugLog: RecordedLog? { debugLogs.last }
+    var warnLog: RecordedLog? { warnLogs.last }
+    var errorLog: RecordedLog? { errorLogs.last }
+    var criticalLog: RecordedLog? { criticalLogs.last }
+}
+
+/// `Telemtry` recording received telemetry.
+class TelemetryMock: Telemetry, CustomStringConvertible {
+    private(set) var debugs: [String] = []
+    private(set) var errors: [(message: String, kind: String?, stack: String?)] = []
+    private(set) var description: String = "Telemetry logs:"
+
+    func debug(id: String, message: String) {
+        debugs.append(message)
+        description.append("\n- [debug] \(message)")
+    }
+
+    func error(id: String, message: String, kind: String?, stack: String?) {
+        errors.append((message: message, kind: kind, stack: stack))
+        description.append("\n - [error] \(message), kind: \(kind ?? "nil"), stack: \(stack ?? "nil")")
+    }
+}
+
+extension DD {
+    /// Syntactic sugar for patching the `dd` bundle by replacing `logger`.
+    ///
+    /// ```
+    /// let dd = DD.mockWith(logger: CoreLoggerMock())
+    /// defer { dd.reset() }
+    /// ```
+    static func mockWith<CL: CoreLogger>(logger: CL) -> DDMock<CL, TelemetryMock> {
+        let mock = DDMock(
+            oldLogger: DD.logger,
+            oldTelemetry: DD.telemetry,
+            logger: logger,
+            telemetry: TelemetryMock()
+        )
+        DD.logger = logger
+        return mock
+    }
+
+    /// Syntactic sugar for patching the `dd` bundle by replacing `telemetry`.
+    ///
+    /// ```
+    /// let dd = DD.mockWith(telemetry: TelemetryMock())
+    /// defer { dd.reset() }
+    /// ```
+    static func mockWith<TM: Telemetry>(telemetry: TM) -> DDMock<CoreLoggerMock, TM> {
+        let mock = DDMock(
+            oldLogger: DD.logger,
+            oldTelemetry: DD.telemetry,
+            logger: CoreLoggerMock(),
+            telemetry: telemetry
+        )
+        DD.telemetry = telemetry
+        return mock
+    }
+}
+
+struct DDMock<CL: CoreLogger, TM: Telemetry> {
+    let oldLogger: CoreLogger
+    let oldTelemetry: Telemetry
+
+    let logger: CL
+    let telemetry: TM
+
+    func reset() {
+        DD.logger = oldLogger
+        DD.telemetry = oldTelemetry
     }
 }

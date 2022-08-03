@@ -102,135 +102,132 @@ class DatadogTests: XCTestCase {
             )
             verificationBlock()
 
-            RUMInstrumentation.instance?.viewControllerSwizzler?.unswizzle()
-            URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
+            defaultDatadogCore.v1.feature(RUMInstrumentation.self)?.viewControllerSwizzler?.unswizzle()
+            defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self)?.swizzler.unswizzle()
             Datadog.flushAndDeinitialize()
         }
 
         defer {
-            RUMInstrumentation.instance?.viewControllerSwizzler?.unswizzle()
-            URLSessionAutoInstrumentation.instance?.swizzler.unswizzle()
+            defaultDatadogCore.v1.feature(RUMInstrumentation.self)?.viewControllerSwizzler?.unswizzle()
+            defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self)?.swizzler.unswizzle()
         }
 
         verify(configuration: defaultBuilder.build()) {
             // verify features:
-            XCTAssertTrue(LoggingFeature.isEnabled)
-            XCTAssertTrue(TracingFeature.isEnabled)
-            XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
-            XCTAssertFalse(CrashReportingFeature.isEnabled)
-            XCTAssertNil(RUMInstrumentation.instance)
-            XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNotNil(defaultDatadogCore.v1.feature(LoggingFeature.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(RUMFeature.self), "When using `defaultBuilder` RUM feature should be disabled by default")
+            XCTAssertNil(defaultDatadogCore.v1.feature(CrashReportingFeature.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
-            XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
+            XCTAssertTrue(DD.telemetry is NOPTelemetry, "When RUM is disabled, telemetry monitor should not be set")
         }
         verify(configuration: rumBuilder.build()) {
             // verify features:
-            XCTAssertTrue(LoggingFeature.isEnabled)
-            XCTAssertTrue(TracingFeature.isEnabled)
-            XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
-            XCTAssertFalse(CrashReportingFeature.isEnabled)
-            XCTAssertNotNil(RUMInstrumentation.instance)
-            XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNotNil(defaultDatadogCore.v1.feature(LoggingFeature.self))
+            XCTAssertNotNil(defaultDatadogCore.v1.feature(RUMFeature.self), "When using `rumBuilder` RUM feature should be enabled by default")
+            XCTAssertNil(defaultDatadogCore.v1.feature(CrashReportingFeature.self))
+            XCTAssertNotNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
-            XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
+            XCTAssertTrue(DD.telemetry is RUMTelemetry, "When RUM is enabled, telemetry monitor should be set")
         }
 
         verify(configuration: defaultBuilder.enableLogging(false).build()) {
             // verify features:
-            XCTAssertFalse(LoggingFeature.isEnabled)
-            XCTAssertTrue(TracingFeature.isEnabled)
-            XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
-            XCTAssertFalse(CrashReportingFeature.isEnabled)
-            XCTAssertNil(RUMInstrumentation.instance)
-            XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNil(defaultDatadogCore.v1.feature(LoggingFeature.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(RUMFeature.self), "When using `defaultBuilder` RUM feature should be disabled by default")
+            XCTAssertNil(defaultDatadogCore.v1.feature(CrashReportingFeature.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
-            XCTAssertNil(TracingFeature.instance?.loggingFeatureAdapter)
+            XCTAssertTrue(DD.telemetry is NOPTelemetry)
         }
         verify(configuration: rumBuilder.enableLogging(false).build()) {
             // verify features:
-            XCTAssertFalse(LoggingFeature.isEnabled)
-            XCTAssertTrue(TracingFeature.isEnabled)
-            XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
-            XCTAssertFalse(CrashReportingFeature.isEnabled)
-            XCTAssertNotNil(RUMInstrumentation.instance)
-            XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNil(defaultDatadogCore.v1.feature(LoggingFeature.self))
+            XCTAssertNotNil(defaultDatadogCore.v1.feature(TracingFeature.self))
+            XCTAssertNotNil(defaultDatadogCore.v1.feature(RUMFeature.self), "When using `rumBuilder` RUM feature should be enabled by default")
+            XCTAssertNil(defaultDatadogCore.v1.feature(CrashReportingFeature.self))
+            XCTAssertNotNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
-            XCTAssertNil(TracingFeature.instance?.loggingFeatureAdapter)
+            XCTAssertTrue(DD.telemetry is RUMTelemetry)
         }
 
         verify(configuration: defaultBuilder.enableTracing(false).build()) {
             // verify features:
-            XCTAssertTrue(LoggingFeature.isEnabled)
-            XCTAssertFalse(TracingFeature.isEnabled)
-            XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature should be disabled by default")
-            XCTAssertFalse(CrashReportingFeature.isEnabled)
-            XCTAssertNil(RUMInstrumentation.instance)
-            XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNotNil(defaultDatadogCore.v1.feature(LoggingFeature.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(TracingFeature.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(RUMFeature.self), "When using `defaultBuilder` RUM feature should be disabled by default")
+            XCTAssertNil(defaultDatadogCore.v1.feature(CrashReportingFeature.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
+            XCTAssertTrue(DD.telemetry is NOPTelemetry)
         }
         verify(configuration: rumBuilder.enableTracing(false).build()) {
             // verify features:
-            XCTAssertTrue(LoggingFeature.isEnabled)
-            XCTAssertFalse(TracingFeature.isEnabled)
-            XCTAssertTrue(RUMFeature.isEnabled, "When using `rumBuilder` RUM feature should be enabled by default")
-            XCTAssertFalse(CrashReportingFeature.isEnabled)
-            XCTAssertNotNil(RUMInstrumentation.instance)
-            XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNotNil(defaultDatadogCore.v1.feature(LoggingFeature.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(TracingFeature.self))
+            XCTAssertNotNil(defaultDatadogCore.v1.feature(RUMFeature.self), "When using `rumBuilder` RUM feature should be enabled by default")
+            XCTAssertNil(defaultDatadogCore.v1.feature(CrashReportingFeature.self))
+            XCTAssertNotNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
+            XCTAssertTrue(DD.telemetry is RUMTelemetry)
         }
 
         verify(configuration: defaultBuilder.enableRUM(true).build()) {
             // verify features:
-            XCTAssertTrue(LoggingFeature.isEnabled)
-            XCTAssertTrue(TracingFeature.isEnabled)
-            XCTAssertFalse(RUMFeature.isEnabled, "When using `defaultBuilder` RUM feature cannot be enabled")
-            XCTAssertFalse(CrashReportingFeature.isEnabled)
-            XCTAssertNil(RUMInstrumentation.instance)
-            XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNotNil(defaultDatadogCore.v1.feature(LoggingFeature.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(RUMFeature.self), "When using `defaultBuilder` RUM feature cannot be enabled")
+            XCTAssertNil(defaultDatadogCore.v1.feature(CrashReportingFeature.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
-            XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
+            XCTAssertTrue(DD.telemetry is NOPTelemetry)
         }
         verify(configuration: rumBuilder.enableRUM(false).build()) {
             // verify features:
-            XCTAssertTrue(LoggingFeature.isEnabled)
-            XCTAssertTrue(TracingFeature.isEnabled)
-            XCTAssertFalse(RUMFeature.isEnabled)
-            XCTAssertFalse(CrashReportingFeature.isEnabled)
-            XCTAssertNil(RUMInstrumentation.instance)
-            XCTAssertNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNotNil(defaultDatadogCore.v1.feature(LoggingFeature.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(RUMFeature.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(CrashReportingFeature.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
             // verify integrations:
-            XCTAssertNotNil(TracingFeature.instance?.loggingFeatureAdapter)
+            XCTAssertTrue(DD.telemetry is NOPTelemetry)
         }
 
         verify(configuration: rumBuilder.trackUIKitRUMViews().build()) {
-            XCTAssertTrue(RUMFeature.isEnabled)
-            XCTAssertNotNil(RUMInstrumentation.instance?.viewControllerSwizzler)
-            XCTAssertNil(RUMInstrumentation.instance?.userActionsAutoInstrumentation)
+            XCTAssertNotNil(defaultDatadogCore.v1.feature(RUMFeature.self))
+            XCTAssertNotNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self)?.viewControllerSwizzler)
+            XCTAssertNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self)?.userActionsAutoInstrumentation)
         }
         verify(
             configuration: rumBuilder.enableRUM(false).trackUIKitRUMViews().build()
         ) {
-            XCTAssertFalse(RUMFeature.isEnabled)
-            XCTAssertNil(RUMInstrumentation.instance?.viewControllerSwizzler)
-            XCTAssertNil(RUMInstrumentation.instance?.userActionsAutoInstrumentation)
+            XCTAssertNil(defaultDatadogCore.v1.feature(RUMFeature.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self)?.viewControllerSwizzler)
+            XCTAssertNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self)?.userActionsAutoInstrumentation)
         }
 
         verify(configuration: rumBuilder.trackUIKitRUMActions().build()) {
-            XCTAssertTrue(RUMFeature.isEnabled)
-            XCTAssertNil(RUMInstrumentation.instance?.viewControllerSwizzler)
-            XCTAssertNotNil(RUMInstrumentation.instance?.userActionsAutoInstrumentation)
+            XCTAssertNotNil(defaultDatadogCore.v1.feature(RUMFeature.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self)?.viewControllerSwizzler)
+            XCTAssertNotNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self)?.userActionsAutoInstrumentation)
         }
         verify(
             configuration: rumBuilder.enableRUM(false).trackUIKitRUMActions().build()
         ) {
-            XCTAssertFalse(RUMFeature.isEnabled)
-            XCTAssertNil(RUMInstrumentation.instance?.viewControllerSwizzler)
-            XCTAssertNil(RUMInstrumentation.instance?.userActionsAutoInstrumentation)
+            XCTAssertNil(defaultDatadogCore.v1.feature(RUMFeature.self))
+            XCTAssertNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self)?.viewControllerSwizzler)
+            XCTAssertNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self)?.userActionsAutoInstrumentation)
         }
 
         verify(configuration: defaultBuilder.trackURLSession(firstPartyHosts: ["example.com"]).build()) {
-            XCTAssertNotNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNotNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
         }
         verify(configuration: defaultBuilder.trackURLSession().build()) {
-            XCTAssertNotNil(URLSessionAutoInstrumentation.instance)
+            XCTAssertNotNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
         }
 
         verify(
@@ -240,7 +237,7 @@ class DatadogTests: XCTestCase {
                 .enableCrashReporting(using: CrashReportingPluginMock())
                 .build()
         ) {
-            XCTAssertNotNil(CrashReportingFeature.instance)
+            XCTAssertNotNil(defaultDatadogCore.v1.feature(CrashReportingFeature.self))
             XCTAssertTrue(
                 Global.crashReporter?.loggingOrRUMIntegration is CrashReportingWithLoggingIntegration,
                 "When only Logging feature is enabled, the Crash Reporter should send crash reports as Logs"
@@ -254,7 +251,7 @@ class DatadogTests: XCTestCase {
                 .enableCrashReporting(using: CrashReportingPluginMock())
                 .build()
         ) {
-            XCTAssertNotNil(CrashReportingFeature.instance)
+            XCTAssertNotNil(defaultDatadogCore.v1.feature(CrashReportingFeature.self))
             XCTAssertTrue(
                 Global.crashReporter?.loggingOrRUMIntegration is CrashReportingWithRUMIntegration,
                 "When only RUM feature is enabled, the Crash Reporter should send crash reports as RUM Events"
@@ -268,7 +265,7 @@ class DatadogTests: XCTestCase {
                 .enableCrashReporting(using: CrashReportingPluginMock())
                 .build()
         ) {
-            XCTAssertNotNil(CrashReportingFeature.instance)
+            XCTAssertNotNil(defaultDatadogCore.v1.feature(CrashReportingFeature.self))
             XCTAssertTrue(
                 Global.crashReporter?.loggingOrRUMIntegration is CrashReportingWithRUMIntegration,
                 "When both Logging and RUM features are enabled, the Crash Reporter should send crash reports as RUM Events"
@@ -282,7 +279,7 @@ class DatadogTests: XCTestCase {
                 .enableCrashReporting(using: CrashReportingPluginMock())
                 .build()
         ) {
-            XCTAssertNil(CrashReportingFeature.instance)
+            XCTAssertNil(defaultDatadogCore.v1.feature(CrashReportingFeature.self))
             XCTAssertNil(
                 Global.crashReporter,
                 "When both Logging and RUM are disabled, Crash Reporter should not be registered"
@@ -290,7 +287,7 @@ class DatadogTests: XCTestCase {
         }
     }
 
-    func testSupplyingDebugLaunchArgument_itOverridesUserSettings() {
+    func testSupplyingDebugLaunchArgument_itOverridesUserSettings() throws {
         let mockProcessInfo = ProcessInfoMock(
             arguments: [Datadog.LaunchArguments.Debug]
         )
@@ -314,9 +311,11 @@ class DatadogTests: XCTestCase {
             uploadFrequency: .frequent,
             bundleType: .iOSApp
         )
-        XCTAssertEqual(RUMFeature.instance?.configuration.sessionSampler.samplingRate, 100)
-        XCTAssertEqual(TracingFeature.instance?.configuration.common.performance, expectedPerformancePreset)
-        XCTAssertEqual(LoggingFeature.instance?.configuration.common.performance, expectedPerformancePreset)
+
+        let core = try XCTUnwrap(defaultDatadogCore as? DatadogCore)
+        let rum = core.v1.feature(RUMFeature.self)
+        XCTAssertEqual(core.configuration.performance, expectedPerformancePreset)
+        XCTAssertEqual(rum?.configuration.sessionSampler.samplingRate, 100)
         XCTAssertEqual(Datadog.verbosityLevel, .debug)
 
         // Clear default verbosity after this test
@@ -359,11 +358,12 @@ class DatadogTests: XCTestCase {
             configuration: defaultBuilder.build()
         )
 
-        XCTAssertEqual(Datadog.instance?.consentProvider.currentValue, initialConsent)
+        let core = defaultDatadogCore as? DatadogCore
+        XCTAssertEqual(core?.dependencies.consentProvider.currentValue, initialConsent)
 
         Datadog.set(trackingConsent: nextConsent)
 
-        XCTAssertEqual(Datadog.instance?.consentProvider.currentValue, nextConsent)
+        XCTAssertEqual(core?.dependencies.consentProvider.currentValue, nextConsent)
 
         Datadog.flushAndDeinitialize()
     }
@@ -375,11 +375,13 @@ class DatadogTests: XCTestCase {
             configuration: defaultBuilder.build()
         )
 
-        XCTAssertNotNil(Datadog.instance?.userInfoProvider.value)
-        XCTAssertNil(Datadog.instance?.userInfoProvider.value.id)
-        XCTAssertNil(Datadog.instance?.userInfoProvider.value.email)
-        XCTAssertNil(Datadog.instance?.userInfoProvider.value.name)
-        XCTAssertEqual(Datadog.instance?.userInfoProvider.value.extraInfo as? [String: Int], [:])
+        let core = defaultDatadogCore as? DatadogCore
+
+        XCTAssertNotNil(core?.dependencies.userInfoProvider.value)
+        XCTAssertNil(core?.dependencies.userInfoProvider.value.id)
+        XCTAssertNil(core?.dependencies.userInfoProvider.value.email)
+        XCTAssertNil(core?.dependencies.userInfoProvider.value.name)
+        XCTAssertEqual(core?.dependencies.userInfoProvider.value.extraInfo as? [String: Int], [:])
 
         Datadog.setUserInfo(
             id: "foo",
@@ -388,10 +390,10 @@ class DatadogTests: XCTestCase {
             extraInfo: ["abc": 123]
         )
 
-        XCTAssertEqual(Datadog.instance?.userInfoProvider.value.id, "foo")
-        XCTAssertEqual(Datadog.instance?.userInfoProvider.value.name, "bar")
-        XCTAssertEqual(Datadog.instance?.userInfoProvider.value.email, "foo@bar.com")
-        XCTAssertEqual(Datadog.instance?.userInfoProvider.value.extraInfo as? [String: Int], ["abc": 123])
+        XCTAssertEqual(core?.dependencies.userInfoProvider.value.id, "foo")
+        XCTAssertEqual(core?.dependencies.userInfoProvider.value.name, "bar")
+        XCTAssertEqual(core?.dependencies.userInfoProvider.value.email, "foo@bar.com")
+        XCTAssertEqual(core?.dependencies.userInfoProvider.value.extraInfo as? [String: Int], ["abc": 123])
 
         Datadog.flushAndDeinitialize()
     }
@@ -410,8 +412,10 @@ class DatadogTests: XCTestCase {
             configuration: defaultBuilder.build()
         )
 
+        let core = defaultDatadogCore as? DatadogCore
+
         XCTAssertEqual(
-            Datadog.instance?.consentProvider.currentValue,
+            core?.dependencies.consentProvider.currentValue,
             .granted,
             "When using deprecated Datadog initialization API the consent should be set to `.granted`"
         )
@@ -430,20 +434,17 @@ class DatadogTests: XCTestCase {
                 .build()
         )
 
+        let core = try XCTUnwrap(defaultDatadogCore as? DatadogCore)
+
         // On SDK init, underlying `ConsentAwareDataWriter` performs data migration for each feature, which includes
         // data removal in `unauthorised` (`.pending`) directory. To not cause test flakiness, we must ensure that
         // mock data is written only after this operation completes - otherwise, migration may delete mocked files.
-        let loggingWriter = try XCTUnwrap(LoggingFeature.instance?.storage.writer as? ConsentAwareDataWriter)
-        let tracingWriter = try XCTUnwrap(TracingFeature.instance?.storage.writer as? ConsentAwareDataWriter)
-        let rumWriter = try XCTUnwrap(RUMFeature.instance?.storage.writer as? ConsentAwareDataWriter)
-        loggingWriter.queue.sync {}
-        tracingWriter.queue.sync {}
-        rumWriter.queue.sync {}
+        core.readWriteQueue.sync {}
 
         let featureDirectories: [FeatureDirectories] = [
-            try obtainLoggingFeatureDirectories(),
-            try obtainTracingFeatureDirectories(),
-            try obtainRUMFeatureDirectories()
+            try core.directory.getFeatureDirectories(configuration: createV2LoggingStorageConfiguration()),
+            try core.directory.getFeatureDirectories(configuration: createV2TracingStorageConfiguration()),
+            try core.directory.getFeatureDirectories(configuration: createV2RUMStorageConfiguration()),
         ]
 
         let allDirectories: [Directory] = featureDirectories.flatMap { [$0.authorized, $0.unauthorized] }
@@ -457,13 +458,33 @@ class DatadogTests: XCTestCase {
         Datadog.clearAllData()
 
         // Wait for async clear completion in all features:
-        (LoggingFeature.instance?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
-        (TracingFeature.instance?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
-        (RUMFeature.instance?.storage.dataOrchestrator as? DataOrchestrator)?.queue.sync {}
+        core.readWriteQueue.sync {}
 
         // Then
         let newNumberOfFiles = try allDirectories.reduce(0, { acc, nextDirectory in return try acc + nextDirectory.files().count })
         XCTAssertEqual(newNumberOfFiles, 0, "All files must be removed")
+
+        Datadog.flushAndDeinitialize()
+    }
+
+    func testServerDateProvider() throws {
+        // Given
+        let serverDateProvider = ServerDateProviderMock()
+
+        // When
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: defaultBuilder
+                .set(serverDateProvider: serverDateProvider)
+                .build()
+        )
+
+        serverDateProvider.offset = -1
+
+        // Then
+        let core = try XCTUnwrap(defaultDatadogCore as? DatadogCore)
+        XCTAssertEqual(core.dependencies.dateCorrector.offset, -1)
 
         Datadog.flushAndDeinitialize()
     }

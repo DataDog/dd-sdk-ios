@@ -28,7 +28,8 @@ internal protocol URLSessionInterceptorType: AnyObject {
 /// An object performing interception of requests sent with `URLSession`.
 public class URLSessionInterceptor: URLSessionInterceptorType {
     public static var shared: URLSessionInterceptor? {
-        URLSessionAutoInstrumentation.instance?.interceptor as? URLSessionInterceptor
+        let instrumentation = defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self)
+        return instrumentation?.interceptor as? URLSessionInterceptor
     }
 
     /// Filters first party `URLs` defined by the user.
@@ -217,10 +218,12 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
     // MARK: - Private
 
     private func isFirstParty(request: URLRequest, for session: URLSession?) -> Bool {
-        let delegateURLFilter = (session?.delegate as? DDURLSessionDelegate)?.firstPartyURLsFilter
-        let isFirstPartyForDelegate = (delegateURLFilter?.isFirstParty(url: request.url)) ?? false
-        let isFirstPartyForInterceptor = self.defaultFirstPartyURLsFilter.isFirstParty(url: request.url)
-        return isFirstPartyForDelegate || isFirstPartyForInterceptor
+        guard let delegate = session?.delegate as? DDURLSessionDelegate else {
+            return defaultFirstPartyURLsFilter.isFirstParty(url: request.url)
+        }
+
+        return delegate.firstPartyURLsFilter.isFirstParty(url: request.url) ||
+                defaultFirstPartyURLsFilter.isFirstParty(url: request.url)
     }
 
     private func finishInterception(task: URLSessionTask, interception: TaskInterception) {

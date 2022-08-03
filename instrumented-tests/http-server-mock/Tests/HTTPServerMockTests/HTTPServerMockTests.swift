@@ -14,7 +14,7 @@ final class HTTPServerMockTests: XCTestCase {
     override func setUp() {
         super.setUp()
         self.process = Process()
-        self.process.launchPath = "/usr/bin/python"
+        self.process.launchPath = "/usr/bin/python3"
         self.process.arguments = [serverPythonScriptPath(), "--prefer-localhost"]
         self.process.launch()
     }
@@ -128,7 +128,7 @@ private func resolveSwiftPackageFolder() -> URL {
         }
     }
 
-    fatalError("Cannot resolve the URL to folder containing `Package.swif`.")
+    fatalError("Cannot resolve the URL to folder containing `Package.swift`.")
 }
 
 private func sendPOSTRequestSynchronouslyTo(url: URL, body: Data) {

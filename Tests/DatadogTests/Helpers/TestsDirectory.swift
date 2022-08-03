@@ -10,9 +10,13 @@ import XCTest
 
 /// Creates `Directory` pointing to unique subfolder in `/var/folders/`.
 /// Does not create the subfolder - it must be later created with `.create()`.
+/// It returns different `Directory` each time it is called.
 func obtainUniqueTemporaryDirectory() -> Directory {
     let subdirectoryName = "com.datadoghq.ios-sdk-tests-\(UUID().uuidString)"
-    let osTemporaryDirectoryURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true).appendingPathComponent(subdirectoryName, isDirectory: true)
+    let osTemporaryDirectoryURL = URL(
+        fileURLWithPath: NSTemporaryDirectory(),
+        isDirectory: true
+    ).appendingPathComponent(subdirectoryName, isDirectory: true)
     print("💡 Obtained temporary directory URL: \(osTemporaryDirectoryURL)")
     return Directory(url: osTemporaryDirectoryURL)
 }
@@ -25,7 +29,8 @@ let temporaryDirectory = obtainUniqueTemporaryDirectory()
 /// Provides handy methods to create / delete files and directories.
 extension Directory {
     /// Creates empty directory with given attributes .
-    func create(attributes: [FileAttributeKey: Any]? = nil, file: StaticString = #file, line: UInt = #line) {
+    @discardableResult
+    func create(attributes: [FileAttributeKey: Any]? = nil, file: StaticString = #file, line: UInt = #line) -> Self {
         do {
             try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: attributes)
             let initialFilesCount = try files().count
@@ -33,6 +38,7 @@ extension Directory {
         } catch {
             XCTFail("🔥 Failed to create `TestsDirectory`: \(error)", file: file, line: line)
         }
+        return self
     }
 
     /// Deletes entire directory with its content.

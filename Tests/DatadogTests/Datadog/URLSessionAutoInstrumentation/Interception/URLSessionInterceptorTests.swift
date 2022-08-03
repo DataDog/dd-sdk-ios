@@ -8,6 +8,8 @@ import XCTest
 @testable import Datadog
 
 class URLSessionInterceptorTests: XCTestCase {
+    private var core: DatadogCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
+
     private let handler = URLSessionInterceptionHandlerMock()
     /// Mock request made to a first party URL.
     private let firstPartyRequest = URLRequest(url: URL(string: "https://api.first-party.com/v1/endpoint")!)
@@ -17,6 +19,18 @@ class URLSessionInterceptorTests: XCTestCase {
     private let thirdPartyRequest = URLRequest(url: URL(string: "https://api.third-party.com/v1/endpoint")!)
     /// Mock request made internally by the SDK (used to test that SDK internal calls to Intake servers are not intercepted).
     private let internalRequest = URLRequest(url: URL(string: "https://dd.internal.com/v1/endpoint")!)
+
+    override func setUp() {
+        super.setUp()
+        core = DatadogCoreMock()
+        core.register(feature: TracingFeature.mockByRecordingSpanMatchers())
+    }
+
+    override func tearDown() {
+        core.flush()
+        core = nil
+        super.tearDown()
+    }
 
     // MARK: - Initialization
 
@@ -121,7 +135,7 @@ class URLSessionInterceptorTests: XCTestCase {
             ),
             handler: handler
         )
-        Global.sharedTracer = Tracer.mockAny()
+        Global.sharedTracer = Tracer.mockAny(in: core)
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
         let sessionWithCustomFirstPartyHosts = URLSession.mockWith(
             DDURLSessionDelegate(additionalFirstPartyHosts: [alternativeFirstPartyRequest.url!.host!])
@@ -179,7 +193,7 @@ class URLSessionInterceptorTests: XCTestCase {
             ),
             handler: handler
         )
-        Global.sharedTracer = Tracer.mockAny()
+        Global.sharedTracer = Tracer.mockAny(in: core)
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
 
         // When
@@ -214,7 +228,7 @@ class URLSessionInterceptorTests: XCTestCase {
             ),
             handler: handler
         )
-        Global.sharedTracer = Tracer.mockAny()
+        Global.sharedTracer = Tracer.mockAny(in: core)
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
 
         // When
@@ -242,7 +256,7 @@ class URLSessionInterceptorTests: XCTestCase {
             configuration: mockConfiguration(tracingInstrumentationEnabled: false, rumInstrumentationEnabled: true),
             handler: handler
         )
-        Global.sharedTracer = Tracer.mockAny()
+        Global.sharedTracer = Tracer.mockAny(in: core)
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
 
         // When
@@ -297,7 +311,7 @@ class URLSessionInterceptorTests: XCTestCase {
             configuration: mockConfiguration(tracingInstrumentationEnabled: true, rumInstrumentationEnabled: .random()),
             handler: handler
         )
-        Global.sharedTracer = Tracer.mockAny()
+        Global.sharedTracer = Tracer.mockAny(in: core)
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
         let sessionWithCustomFirstPartyHosts = URLSession.mockWith(
             DDURLSessionDelegate(additionalFirstPartyHosts: [alternativeFirstPartyRequest.url!.host!])

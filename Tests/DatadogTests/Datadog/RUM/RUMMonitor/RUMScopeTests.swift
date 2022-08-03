@@ -17,24 +17,20 @@ class RUMScopeTests: XCTestCase {
         }
 
         let context = RUMContext.mockWith(rumApplicationID: .mockAny(), sessionID: .nullUUID)
-        func process(command: RUMCommand) -> Bool { !isCompleted }
-    }
-
-    private class AnyScope: RUMScope {
-        func process(command: RUMCommand) -> Bool { .mockAny() }
+        func process(command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Bool { !isCompleted }
     }
 
     func testWhenPropagatingCommand_itRemovesCompletedScope() {
         // Direct reference
         var scope: CompletableScope? = CompletableScope(isCompleted: true)
-        scope = AnyScope().manage(childScope: scope, byPropagatingCommand: RUMCommandMock())
+        scope = scope?.scope(byPropagating: RUMCommandMock(), context: .mockAny(), writer: FileWriterMock())
         XCTAssertNil(scope)
     }
 
     func testWhenPropagatingCommand_itKeepsNonCompletedScope() {
         // Direct reference
         var scope: CompletableScope? = CompletableScope(isCompleted: false)
-        scope = AnyScope().manage(childScope: scope, byPropagatingCommand: RUMCommandMock())
+        scope = scope?.scope(byPropagating: RUMCommandMock(), context: .mockAny(), writer: FileWriterMock())
         XCTAssertNotNil(scope)
     }
 
@@ -46,7 +42,7 @@ class RUMScopeTests: XCTestCase {
             CompletableScope(isCompleted: false)
         ]
 
-        scopes = AnyScope().manage(childScopes: scopes, byPropagatingCommand: RUMCommandMock())
+        scopes = scopes.scopes(byPropagating: RUMCommandMock(), context: .mockAny(), writer: FileWriterMock())
 
         XCTAssertEqual(scopes.count, 2)
         XCTAssertEqual(scopes.filter { !$0.isCompleted }.count, 2)

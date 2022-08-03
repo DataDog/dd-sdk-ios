@@ -129,6 +129,7 @@ internal enum RUMInternalErrorSource {
 ///     Global.rum.startView(...)
 ///
 public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
+    internal let core: DatadogCoreProtocol
     /// The root scope of RUM monitoring.
     internal let applicationScope: RUMApplicationScope
     /// Current RUM context provider for integrations with Logging and Tracing.
@@ -148,8 +149,13 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     // MARK: - Initialization
 
     /// Initializes the Datadog RUM Monitor.
-    public static func initialize() -> DDRUMMonitor {
+    public static func initialize(in core: DatadogCoreProtocol = defaultDatadogCore) -> DDRUMMonitor {
         do {
+            guard let context = core.v1.context else {
+                throw ProgrammerError(
+                    description: "`Datadog.initialize()` must be called prior to `RUMMonitor.initialize()`."
+                )
+            }
             if Global.rum is RUMMonitor {
                 throw ProgrammerError(
                     description: """
@@ -157,19 +163,26 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     """
                 )
             }
-            guard let rumFeature = RUMFeature.instance else {
+            guard let rumFeature = core.v1.feature(RUMFeature.self) else {
                 throw ProgrammerError(
-                    description: Datadog.instance == nil
-                        ? "`Datadog.initialize()` must be called prior to `RUMMonitor.initialize()`."
-                        : "`RUMMonitor.initialize()` produces a non-functional monitor, as the RUM feature is disabled."
+                    description: "`RUMMonitor.initialize()` produces a non-functional monitor, as the RUM feature is disabled."
                 )
             }
+
+            let crashReporting = core.v1.feature(CrashReportingFeature.self)
             let monitor = RUMMonitor(
-                dependencies: RUMScopeDependencies(rumFeature: rumFeature),
-                dateProvider: rumFeature.dateProvider
+                core: core,
+                dependencies: RUMScopeDependencies(
+                    rumFeature: rumFeature,
+                    crashReportingFeature: crashReporting,
+                    context: context
+                ),
+                dateProvider: context.dateProvider
             )
-            RUMInstrumentation.instance?.publish(to: monitor)
-            URLSessionAutoInstrumentation.instance?.publish(to: monitor)
+
+            core.v1.feature(RUMInstrumentation.self)?.publish(to: monitor)
+            core.v1.feature(URLSessionAutoInstrumentation.self)?.publish(to: monitor)
+
             return monitor
         } catch {
             consolePrint("\(error)")
@@ -177,7 +190,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         }
     }
 
-    internal init(dependencies: RUMScopeDependencies, dateProvider: DateProvider) {
+    internal init(core: DatadogCoreProtocol, dependencies: RUMScopeDependencies, dateProvider: DateProvider) {
+        self.core = core
         self.applicationScope = RUMApplicationScope(dependencies: dependencies)
         self.dateProvider = dateProvider
         self.contextProvider = RUMCurrentContext(
@@ -186,6 +200,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         )
 
         super.init()
+
+        _internal = _RUMInternalProxy(subscriber: self)
 
         if Datadog.debugRUM {
             self.enableRUMDebugging(true)
@@ -203,7 +219,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     ) {
         process(
             command: RUMStartViewCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 identity: viewController,
                 name: path,
                 path: path,
@@ -219,7 +235,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     ) {
         process(
             command: RUMStartViewCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 identity: viewController,
                 name: name,
                 path: nil,
@@ -234,7 +250,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     ) {
         process(
             command: RUMStopViewCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 identity: viewController
             )
@@ -248,7 +264,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     ) {
         process(
             command: RUMStartViewCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 identity: key,
                 name: name ?? key,
                 path: key,
@@ -263,7 +279,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     ) {
         process(
             command: RUMStopViewCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 identity: key
             )
@@ -275,7 +291,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     ) {
         process(
             command: RUMAddViewTimingCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: [:],
                 timingName: name
             )
@@ -311,7 +327,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     ) {
         process(
             command: RUMAddCurrentViewErrorCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 message: message,
                 type: type,
                 stack: stack,
@@ -328,7 +344,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     ) {
         process(
             command: RUMAddCurrentViewErrorCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 error: error,
                 source: RUMInternalErrorSource(source),
                 attributes: attributes
@@ -344,7 +360,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         process(
             command: RUMStartResourceCommand(
                 resourceKey: resourceKey,
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 url: request.url?.absoluteString ?? "unknown_url",
                 httpMethod: RUMMethod(httpMethod: request.httpMethod),
@@ -362,7 +378,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         process(
             command: RUMStartResourceCommand(
                 resourceKey: resourceKey,
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 url: url.absoluteString,
                 httpMethod: .get,
@@ -381,7 +397,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         process(
             command: RUMStartResourceCommand(
                 resourceKey: resourceKey,
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 url: urlString,
                 httpMethod: httpMethod,
@@ -399,7 +415,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         process(
             command: RUMAddResourceMetricsCommand(
                 resourceKey: resourceKey,
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 metrics: ResourceMetrics(taskMetrics: metrics)
             )
@@ -421,7 +437,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         process(
             command: RUMAddResourceMetricsCommand(
                 resourceKey: resourceKey,
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 metrics: ResourceMetrics(
                     fetch: ResourceMetrics.DateInterval(start: fetch.start, end: fetch.end),
@@ -456,7 +472,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         process(
             command: RUMStopResourceCommand(
                 resourceKey: resourceKey,
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 kind: resourceKind,
                 httpStatusCode: statusCode,
@@ -475,7 +491,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         process(
             command: RUMStopResourceCommand(
                 resourceKey: resourceKey,
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 kind: kind,
                 httpStatusCode: statusCode,
@@ -493,7 +509,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         process(
             command: RUMStopResourceWithErrorCommand(
                 resourceKey: resourceKey,
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 error: error,
                 source: .network,
                 httpStatusCode: (response as? HTTPURLResponse)?.statusCode,
@@ -512,7 +528,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         process(
             command: RUMStopResourceWithErrorCommand(
                 resourceKey: resourceKey,
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 message: errorMessage,
                 type: type,
                 source: .network,
@@ -525,7 +541,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     override public func startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStartUserActionCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 actionType: type,
                 name: name
@@ -536,7 +552,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     override public func stopUserAction(type: RUMUserActionType, name: String?, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStopUserActionCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 actionType: type,
                 name: name
@@ -547,7 +563,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     override public func addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMAddUserActionCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: attributes,
                 actionType: type,
                 name: name
@@ -581,9 +597,16 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     // MARK: - RUMCommandSubscriber
 
     func process(command: RUMCommand) {
+        guard let scope = core.v1.scope(for: RUMFeature.self) else {
+            return
+        }
+
         queue.async {
             let transformedCommand = self.transform(command: command)
-            _ = self.applicationScope.process(command: transformedCommand)
+
+            scope.eventWriteContext { context, writer in
+                _ = self.applicationScope.process(command: transformedCommand, context: context, writer: writer)
+            }
 
             if let debugging = self.debugging {
                 debugging.debug(applicationScope: self.applicationScope)
@@ -608,6 +631,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             let customTimeInterval = TimeInterval(fromMilliseconds: customTimestampInMiliseconds)
             mutableCommand.time = Date(timeIntervalSince1970: customTimeInterval)
         }
+
         mutableCommand.attributes = combinedUserAttributes
 
         return mutableCommand

@@ -37,7 +37,7 @@ internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler, RUM
         subscriber?.process(
             command: RUMStartResourceCommand(
                 resourceKey: interception.identifier.uuidString,
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: [:],
                 url: url,
                 httpMethod: RUMMethod(httpMethod: interception.request.httpMethod),
@@ -54,7 +54,7 @@ internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler, RUM
 
     func notify_taskInterceptionCompleted(interception: TaskInterception) {
         if subscriber == nil {
-            userLogger.warn(
+            DD.logger.warn(
                 """
                 RUM Resource was completed, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work.
                 Make sure `Global.rum = RUMMonitor.initialize()` is called before any network request is send.
@@ -74,7 +74,7 @@ internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler, RUM
             subscriber?.process(
                 command: RUMAddResourceMetricsCommand(
                     resourceKey: interception.identifier.uuidString,
-                    time: dateProvider.currentDate(),
+                    time: dateProvider.now,
                     attributes: [:],
                     metrics: resourceMetrics
                 )
@@ -85,7 +85,7 @@ internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler, RUM
             subscriber?.process(
                 command: RUMStopResourceCommand(
                     resourceKey: interception.identifier.uuidString,
-                    time: dateProvider.currentDate(),
+                    time: dateProvider.now,
                     attributes: userAttributes,
                     kind: RUMResourceType(response: httpResponse),
                     httpStatusCode: httpResponse.statusCode,
@@ -98,7 +98,7 @@ internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler, RUM
             subscriber?.process(
                 command: RUMStopResourceWithErrorCommand(
                     resourceKey: interception.identifier.uuidString,
-                    time: dateProvider.currentDate(),
+                    time: dateProvider.now,
                     error: error,
                     source: .network,
                     httpStatusCode: interception.completion?.httpResponse?.statusCode,

@@ -24,8 +24,28 @@ public extension WKUserContentController {
     /// with the RUM session from native SDK.
     ///
     /// - Parameter hosts: a list of hosts instrumented with Browser SDK to capture Datadog events from
-    func trackDatadogEvents(in hosts: Set<String>) {
-        addDatadogMessageHandler(allowedWebViewHosts: hosts, hostsSanitizer: HostsSanitizer())
+    func trackDatadogEvents(in hosts: Set<String>, sdk core: DatadogCoreProtocol = defaultDatadogCore) {
+        do {
+            try trackDatadogEventsOrThrow(in: hosts, sdk: core)
+        } catch {
+            consolePrint("\(error)")
+        }
+    }
+
+    private func trackDatadogEventsOrThrow(in hosts: Set<String>, sdk core: DatadogCoreProtocol) throws {
+        guard let context = core.v1.context else {
+            throw ProgrammerError(
+                description: "`Datadog.initialize()` must be called prior to `trackDatadogEvents(in:)`."
+            )
+        }
+
+        addDatadogMessageHandler(
+            allowedWebViewHosts: hosts,
+            hostsSanitizer: HostsSanitizer(),
+            loggingFeature: core.v1.feature(LoggingFeature.self),
+            rumFeature: core.v1.feature(RUMFeature.self),
+            context: context
+        )
     }
 
     /// Disables Datadog iOS SDK and Datadog Browser SDK integration.
@@ -44,9 +64,15 @@ public extension WKUserContentController {
         }
     }
 
-    internal func addDatadogMessageHandler(allowedWebViewHosts: Set<String>, hostsSanitizer: HostsSanitizing) {
+    internal func addDatadogMessageHandler(
+        allowedWebViewHosts: Set<String>,
+        hostsSanitizer: HostsSanitizing,
+        loggingFeature: LoggingFeature?,
+        rumFeature: RUMFeature?,
+        context: DatadogV1Context
+    ) {
         guard !isTracking else {
-              userLogger.warn("`trackDatadogEvents(in:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")
+            DD.logger.warn("`trackDatadogEvents(in:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")
               return
            }
 
@@ -55,24 +81,24 @@ public extension WKUserContentController {
         let globalRUMMonitor = Global.rum as? RUMMonitor
 
         var logEventConsumer: DefaultWebLogEventConsumer? = nil
-        if let loggingFeature = LoggingFeature.instance {
+        if let loggingFeature = loggingFeature {
             logEventConsumer = DefaultWebLogEventConsumer(
                 userLogsWriter: loggingFeature.storage.writer,
-                dateCorrector: loggingFeature.dateCorrector,
+                dateCorrector: context.dateCorrector,
                 rumContextProvider: globalRUMMonitor?.contextProvider,
-                applicationVersion: loggingFeature.configuration.common.applicationVersion,
-                environment: loggingFeature.configuration.common.environment
+                applicationVersion: context.version,
+                environment: context.env
             )
         }
 
         var rumEventConsumer: DefaultWebRUMEventConsumer? = nil
-        if let rumFeature = RUMFeature.instance {
+        if let rumFeature = rumFeature {
             rumEventConsumer = DefaultWebRUMEventConsumer(
                 dataWriter: rumFeature.storage.writer,
-                dateCorrector: rumFeature.dateCorrector,
+                dateCorrector: context.dateCorrector,
                 contextProvider: globalRUMMonitor?.contextProvider,
                 rumCommandSubscriber: globalRUMMonitor,
-                dateProvider: rumFeature.dateProvider
+                dateProvider: context.dateProvider
             )
         }
 
@@ -141,7 +167,7 @@ internal class DatadogMessageHandler: NSObject, WKScriptMessageHandler {
             do {
                 try self.eventBridge.consume(messageBody)
             } catch {
-                userLogger.error("🔥 Web Event Error: \(error)")
+                DD.logger.error("Encountered an error when receiving web view event", error: error)
             }
         }
     }

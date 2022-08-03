@@ -35,7 +35,20 @@ extension Datadog {
             case rare
         }
 
-        public enum DatadogEndpoint {
+        /// Defines the frequency at which Datadog SDK will collect mobile vitals, such as CPU
+        /// and memory usage.
+        public enum VitalsFrequency {
+            /// Collect mobile vitals every 100ms.
+            case frequent
+            /// Collect mobile vitals every 500ms.
+            case average
+            /// Collect mobile vitals every 1000ms.
+            case rare
+            /// Don't provide mobile vitals.
+            case never
+        }
+
+        public enum DatadogEndpoint: String {
             /// US based servers.
             /// Sends data to [app.datadoghq.com](https://app.datadoghq.com/).
             case us1
@@ -229,6 +242,7 @@ extension Datadog {
         private(set) var loggingEnabled: Bool
         private(set) var tracingEnabled: Bool
         private(set) var rumEnabled: Bool
+        private(set) var serverDateProvider: ServerDateProvider?
         private(set) var crashReportingPlugin: DDCrashReportingPluginType?
 
         /// If `DatadogEndpoint` is set, it will override `logsEndpoint`, `tracesEndpoint` and `rumEndpoint` values.
@@ -265,6 +279,7 @@ extension Datadog {
         private(set) var rumResourceAttributesProvider: URLSessionRUMAttributesProvider?
         private(set) var rumBackgroundEventTrackingEnabled: Bool
         private(set) var rumTelemetrySamplingRate: Float
+        private(set) var mobileVitalsFrequency: VitalsFrequency
         private(set) var batchSize: BatchSize
         private(set) var uploadFrequency: UploadFrequency
         private(set) var additionalConfiguration: [String: Any]
@@ -339,6 +354,7 @@ extension Datadog {
                     rumResourceAttributesProvider: nil,
                     rumBackgroundEventTrackingEnabled: false,
                     rumTelemetrySamplingRate: 20,
+                    mobileVitalsFrequency: .rare,
                     batchSize: .medium,
                     uploadFrequency: .average,
                     additionalConfiguration: [:],
@@ -380,6 +396,20 @@ extension Datadog {
             /// - Parameter customRUMEndpoint: server endpoint (not set by default)
             public func set(customRUMEndpoint: URL) -> Builder {
                 configuration.customRUMEndpoint = customRUMEndpoint
+                return self
+            }
+
+            /// Sets a custom NTP synchronization interface.
+            ///
+            /// By default, the Datadog SDK synchronizes with dedicated NTP pools provided by the
+            /// https://www.ntppool.org/ . Using different pools or setting a no-op `ServerDateProvider`
+            /// implementation will result in desynchronization of the SDK instance and the Datadog servers.
+            /// This can lead to significant time shift in RUM sessions or distributed traces.
+            ///
+            /// - Parameter serverDateProvider: An object that complies with `ServerDateProvider`
+            ///                                 for provider clock synchronisation.
+            public func set(serverDateProvider: ServerDateProvider) -> Builder {
+                configuration.serverDateProvider = serverDateProvider
                 return self
             }
 
@@ -705,6 +735,13 @@ extension Datadog {
             ///                   means no telemetry will be sent, 100 means all telemetry will be kept.
             public func set(sampleTelemetry rate: Float) -> Builder {
                 configuration.rumTelemetrySamplingRate = rate
+                return self
+            }
+
+            /// Sets the preferred frequency for collecting mobile vitals.
+            /// - Parameter mobileVitalsFrequency: `.average` by default.
+            public func set(mobileVitalsFrequency: VitalsFrequency) -> Builder {
+                configuration.mobileVitalsFrequency = mobileVitalsFrequency
                 return self
             }
 

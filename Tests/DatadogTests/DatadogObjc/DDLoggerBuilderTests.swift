@@ -21,7 +21,7 @@ class DDLoggerBuilderTests: XCTestCase {
         XCTAssertEqual(swiftBuilder.loggerName, "logger-name")
         XCTAssertEqual(swiftBuilder.serviceName, "service-name")
         XCTAssertTrue(swiftBuilder.sendNetworkInfo)
-        XCTAssertFalse(swiftBuilder.useFileOutput)
-        XCTAssertNotNil(swiftBuilder.useConsoleLogFormat)
+        XCTAssertFalse(swiftBuilder.sendLogsToDatadog)
+        XCTAssertNotNil(swiftBuilder.consoleLogFormat)
     }
 }

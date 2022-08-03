@@ -11,6 +11,9 @@ import SwiftUI
 /// global RUM Monitor when the modified view appears and disappears.
 @available(iOS 13, tvOS 13, *)
 internal struct RUMViewModifier: SwiftUI.ViewModifier {
+    /// Datadog RUM instrumentation instance
+    let instrumentation: RUMInstrumentation?
+
     /// The Content View identifier.
     /// The id will be unique per modified view.
     let identity: String = UUID().uuidString
@@ -26,7 +29,7 @@ internal struct RUMViewModifier: SwiftUI.ViewModifier {
 
     func body(content: Content) -> some View {
         content.onAppear {
-            RUMInstrumentation.instance?.viewsHandler
+            instrumentation?.viewsHandler
                 .notify_onAppear(
                     identity: identity,
                     name: name,
@@ -35,7 +38,7 @@ internal struct RUMViewModifier: SwiftUI.ViewModifier {
                 )
         }
         .onDisappear {
-            RUMInstrumentation.instance?.viewsHandler
+            instrumentation?.viewsHandler
                 .notify_onDisappear(identity: identity)
         }
     }
@@ -52,10 +55,19 @@ public extension SwiftUI.View {
     /// - Returns: This view after applying a `ViewModifier` for monitoring the view.
     func trackRUMView(
         name: String,
-        attributes: [AttributeKey: AttributeValue] = [:]
+        attributes: [AttributeKey: AttributeValue] = [:],
+        in core: DatadogCoreProtocol = defaultDatadogCore
     ) -> some View {
         let path = "\(name)/\(typeDescription.hashValue)"
-        return modifier(RUMViewModifier(name: name, path: path, attributes: attributes))
+        let instrumentation = core.v1.feature(RUMInstrumentation.self)
+        return modifier(
+            RUMViewModifier(
+                instrumentation: instrumentation,
+                name: name,
+                path: path,
+                attributes: attributes
+            )
+        )
     }
 }
 

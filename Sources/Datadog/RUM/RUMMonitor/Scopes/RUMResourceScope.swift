@@ -23,8 +23,16 @@ internal class RUMResourceScope: RUMScope {
     private var resourceURL: String
     /// The start time of this Resource loading.
     private var resourceLoadingStartTime: Date
-    /// Date correction to server time.
-    private let dateCorrection: DateCorrection
+
+    /// Server time offset for date correction.
+    ///
+    /// The offset should be applied to event's timestamp for synchronizing
+    /// local time with server time. This time interval value can be added to
+    /// any date that needs to be synced. e.g:
+    ///
+    ///     date.addingTimeInterval(serverTimeOffset)
+    private let serverTimeOffset: TimeInterval
+
     /// The HTTP method used to load this Resource.
     private var resourceHTTPMethod: RUMMethod
     /// Whether or not the Resource is provided by a first party host, if that information is available.
@@ -51,7 +59,7 @@ internal class RUMResourceScope: RUMScope {
         resourceKey: String,
         attributes: [AttributeKey: AttributeValue],
         startTime: Date,
-        dateCorrection: DateCorrection,
+        serverTimeOffset: TimeInterval,
         url: String,
         httpMethod: RUMMethod,
         resourceKindBasedOnRequest: RUMResourceType?,
@@ -66,7 +74,7 @@ internal class RUMResourceScope: RUMScope {
         self.attributes = attributes
         self.resourceURL = url
         self.resourceLoadingStartTime = startTime
-        self.dateCorrection = dateCorrection
+        self.serverTimeOffset = serverTimeOffset
         self.resourceHTTPMethod = httpMethod
         self.isFirstPartyResource = dependencies.firstPartyURLsFilter.isFirstParty(string: url)
         self.resourceKindBasedOnRequest = resourceKindBasedOnRequest
@@ -77,17 +85,13 @@ internal class RUMResourceScope: RUMScope {
 
     // MARK: - RUMScope
 
-    func process(command: RUMCommand) -> Bool {
+    func process(command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Bool {
         switch command {
         case let command as RUMStopResourceCommand where command.resourceKey == resourceKey:
-            if sendResourceEvent(on: command) {
-                onResourceEventSent()
-            }
+            sendResourceEvent(on: command, context: context, writer: writer)
             return false
         case let command as RUMStopResourceWithErrorCommand where command.resourceKey == resourceKey:
-            if sendErrorEvent(on: command) {
-                onErrorEventSent()
-            }
+            sendErrorEvent(on: command, context: context, writer: writer)
             return false
         case let command as RUMAddResourceMetricsCommand where command.resourceKey == resourceKey:
             addMetrics(from: command)
@@ -104,7 +108,7 @@ internal class RUMResourceScope: RUMScope {
 
     // MARK: - Sending RUM Events
 
-    private func sendResourceEvent(on command: RUMStopResourceCommand) -> Bool {
+    private func sendResourceEvent(on command: RUMStopResourceCommand, context: DatadogV1Context, writer: Writer) {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let resourceStartTime: Date
@@ -127,42 +131,45 @@ internal class RUMResourceScope: RUMScope {
         }
         let resourceType: RUMResourceType = resourceKindBasedOnRequest ?? command.kind
 
-        let eventData = RUMResourceEvent(
+        let resourceEvent = RUMResourceEvent(
             dd: .init(
                 browserSdkVersion: nil,
                 session: .init(plan: .plan1),
                 spanId: spanId,
                 traceId: traceId
             ),
-            action: context.activeUserActionID.flatMap { rumUUID in
-                .init(id: rumUUID.toRUMDataFormat)
+            action: self.context.activeUserActionID.map { rumUUID in
+                .init(id: .string(value: rumUUID.toRUMDataFormat))
             },
-            application: .init(id: context.rumApplicationID),
+            application: .init(id: self.context.rumApplicationID),
             ciTest: dependencies.ciTest,
-            connectivity: dependencies.connectivityInfoProvider.current,
+            connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: dateCorrection.applying(to: resourceStartTime).timeIntervalSince1970.toInt64Milliseconds,
+            date: resourceStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            device: .init(context: context),
+            display: nil,
+            os: .init(context: context),
             resource: .init(
-                connect: resourceMetrics?.connect.flatMap { metric in
+                connect: resourceMetrics?.connect.map { metric in
                     .init(
                         duration: metric.duration.toInt64Nanoseconds,
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
                     )
                 },
-                dns: resourceMetrics?.dns.flatMap { metric in
+                dns: resourceMetrics?.dns.map { metric in
                     .init(
                         duration: metric.duration.toInt64Nanoseconds,
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
                     )
                 },
-                download: resourceMetrics?.download.flatMap { metric in
+                download: resourceMetrics?.download.map { metric in
                     .init(
                         duration: metric.duration.toInt64Nanoseconds,
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
                     )
                 },
                 duration: resolveResourceDuration(resourceDuration),
-                firstByte: resourceMetrics?.firstByte.flatMap { metric in
+                firstByte: resourceMetrics?.firstByte.map { metric in
                     .init(
                         duration: metric.duration.toInt64Nanoseconds,
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
@@ -171,14 +178,14 @@ internal class RUMResourceScope: RUMScope {
                 id: resourceUUID.toRUMDataFormat,
                 method: resourceHTTPMethod,
                 provider: resourceEventProvider,
-                redirect: resourceMetrics?.redirection.flatMap { metric in
+                redirect: resourceMetrics?.redirection.map { metric in
                     .init(
                         duration: metric.duration.toInt64Nanoseconds,
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
                     )
                 },
                 size: size,
-                ssl: resourceMetrics?.ssl.flatMap { metric in
+                ssl: resourceMetrics?.ssl.map { metric in
                     .init(
                         duration: metric.duration.toInt64Nanoseconds,
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
@@ -188,47 +195,48 @@ internal class RUMResourceScope: RUMScope {
                 type: resourceType,
                 url: resourceURL
             ),
-            service: dependencies.serviceName,
+            service: context.service,
             session: .init(
                 hasReplay: nil,
-                id: context.sessionID.toRUMDataFormat,
+                id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: RUMResourceEvent.Source(rawValue: dependencies.source) ?? .ios,
+            source: .init(rawValue: context.source) ?? .ios,
             synthetics: nil,
-            usr: dependencies.userInfoProvider.current,
-            version: dependencies.applicationVersion,
+            usr: .init(context: context),
+            version: context.version,
             view: .init(
-                id: context.activeViewID.orNull.toRUMDataFormat,
-                name: context.activeViewName,
+                id: self.context.activeViewID.orNull.toRUMDataFormat,
+                name: self.context.activeViewName,
                 referrer: nil,
-                url: context.activeViewPath ?? ""
+                url: self.context.activeViewPath ?? ""
             )
         )
 
-        if let event = dependencies.eventBuilder.build(from: eventData) {
-            dependencies.eventOutput.write(event: event)
-            return true
+        if let event = dependencies.eventBuilder.build(from: resourceEvent) {
+            writer.write(value: event)
+            onResourceEventSent()
         }
-        return false
     }
 
-    private func sendErrorEvent(on command: RUMStopResourceWithErrorCommand) -> Bool {
+    private func sendErrorEvent(on command: RUMStopResourceWithErrorCommand, context: DatadogV1Context, writer: Writer) {
         attributes.merge(rumCommandAttributes: command.attributes)
 
-        let eventData = RUMErrorEvent(
+        let errorEvent = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
                 session: .init(plan: .plan1)
             ),
-            action: context.activeUserActionID.flatMap { rumUUID in
-                .init(id: rumUUID.toRUMDataFormat)
+            action: self.context.activeUserActionID.map { rumUUID in
+                .init(id: .string(value: rumUUID.toRUMDataFormat))
             },
-            application: .init(id: context.rumApplicationID),
+            application: .init(id: self.context.rumApplicationID),
             ciTest: dependencies.ciTest,
-            connectivity: dependencies.connectivityInfoProvider.current,
+            connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
-            date: dateCorrection.applying(to: command.time).timeIntervalSince1970.toInt64Milliseconds,
+            date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            device: .init(context: context),
+            display: nil,
             error: .init(
                 handling: nil,
                 handlingStack: nil,
@@ -246,56 +254,56 @@ internal class RUMResourceScope: RUMScope {
                 stack: command.stack,
                 type: command.errorType
             ),
-            service: dependencies.serviceName,
+            os: .init(context: context),
+            service: context.service,
             session: .init(
                 hasReplay: nil,
-                id: context.sessionID.toRUMDataFormat,
+                id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
-            source: RUMErrorEvent.Source(rawValue: dependencies.source) ?? .ios,
+            source: .init(rawValue: context.source) ?? .ios,
             synthetics: nil,
-            usr: dependencies.userInfoProvider.current,
-            version: dependencies.applicationVersion,
+            usr: .init(context: context),
+            version: context.version,
             view: .init(
-                id: context.activeViewID.orNull.toRUMDataFormat,
+                id: self.context.activeViewID.orNull.toRUMDataFormat,
                 inForeground: nil,
-                name: context.activeViewName,
+                name: self.context.activeViewName,
                 referrer: nil,
-                url: context.activeViewPath ?? ""
+                url: self.context.activeViewPath ?? ""
             )
         )
 
-        if let event = dependencies.eventBuilder.build(from: eventData) {
-            dependencies.eventOutput.write(event: event)
-            return true
+        if let event = dependencies.eventBuilder.build(from: errorEvent) {
+            writer.write(value: event)
+            onErrorEventSent()
         }
-        return false
     }
 
     // MARK: - Resource provider helpers
 
     private var resourceEventProvider: RUMResourceEvent.Resource.Provider? {
-        if isFirstPartyResource == true {
-            return RUMResourceEvent.Resource.Provider(
-                domain: providerDomain(from: resourceURL),
-                name: nil,
-                type: .firstParty
-            )
-        } else {
+        guard isFirstPartyResource == true else {
             return nil
         }
+
+        return RUMResourceEvent.Resource.Provider(
+            domain: providerDomain(from: resourceURL),
+            name: nil,
+            type: .firstParty
+        )
     }
 
     private var errorEventProvider: RUMErrorEvent.Error.Resource.Provider? {
-        if isFirstPartyResource == true {
-            return RUMErrorEvent.Error.Resource.Provider(
-                domain: providerDomain(from: resourceURL),
-                name: nil,
-                type: .firstParty
-            )
-        } else {
+        guard isFirstPartyResource == true else {
             return nil
         }
+
+        return RUMErrorEvent.Error.Resource.Provider(
+            domain: providerDomain(from: resourceURL),
+            name: nil,
+            type: .firstParty
+        )
     }
 
     private func providerDomain(from url: String) -> String? {
@@ -303,14 +311,15 @@ internal class RUMResourceScope: RUMScope {
     }
 
     private func resolveResourceDuration(_ duration: TimeInterval) -> Int64 {
-        if duration <= 0.0 {
-            let negativeDurationWarningMessage =
-            """
-            The computed duration for your resource: \(resourceURL) was 0 or negative. In order to keep the resource event we forced it to 1ns.
-            """
-            userLogger.warn(negativeDurationWarningMessage)
+        guard duration > 0.0 else {
+            DD.logger.warn(
+                """
+                The computed duration for your resource: \(resourceURL) was 0 or negative. In order to keep the resource event we forced it to 1ns.
+                """
+            )
             return 1 // 1ns
         }
+
         return duration.toInt64Nanoseconds
     }
 }

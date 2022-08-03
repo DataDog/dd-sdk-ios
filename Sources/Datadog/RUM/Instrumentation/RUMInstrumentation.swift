@@ -8,8 +8,6 @@ import Foundation
 
 /// RUM Auto Instrumentation feature.
 internal final class RUMInstrumentation: RUMCommandPublisher {
-    static var instance: RUMInstrumentation?
-
     /// RUM User Actions auto instrumentation.
     class UserActionsAutoInstrumentation {
         let swizzler: UIApplicationSwizzler
@@ -88,6 +86,5 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     internal func deinitialize() {
         viewControllerSwizzler?.unswizzle()
         userActionsAutoInstrumentation?.swizzler.unswizzle()
-        RUMInstrumentation.instance = nil
     }
 }

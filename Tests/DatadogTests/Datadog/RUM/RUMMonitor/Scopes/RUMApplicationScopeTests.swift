@@ -8,6 +8,9 @@ import XCTest
 @testable import Datadog
 
 class RUMApplicationScopeTests: XCTestCase {
+    let context: DatadogV1Context = .mockAny()
+    let writer = FileWriterMock()
+
     func testRootContext() {
         let scope = RUMApplicationScope(
             dependencies: .mockWith(rumApplicationID: "abc-123")
@@ -33,7 +36,6 @@ class RUMApplicationScopeTests: XCTestCase {
         let scope = RUMApplicationScope(
             dependencies: .mockWith(
                 sessionSampler: .mockRejectAll(),
-                sdkInitDate: Date(),
                 onSessionStart: onSessionStart
             )
         )
@@ -41,7 +43,8 @@ class RUMApplicationScopeTests: XCTestCase {
 
         // When
         let command = mockRandomRUMCommand().replacing(time: currentTime.addingTimeInterval(1))
-        XCTAssertTrue(scope.process(command: command))
+        XCTAssertTrue(scope.process(command: command, context: context, writer: writer))
+
         waitForExpectations(timeout: 0.5)
 
         // Then
@@ -63,20 +66,28 @@ class RUMApplicationScopeTests: XCTestCase {
         var currentTime = Date()
         let scope = RUMApplicationScope(
             dependencies: .mockWith(
-                sdkInitDate: currentTime,
                 onSessionStart: onSessionStart
             )
         )
 
         let view = createMockViewInWindow()
-        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: view))
+
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: currentTime, identity: view),
+            context: context,
+            writer: writer
+        )
 
         let initialSession = try XCTUnwrap(scope.sessionScope)
 
         // When
         // Push time forward by the max session duration:
         currentTime.addTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
-        _ = scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime))
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(time: currentTime),
+            context: context,
+            writer: writer
+        )
 
         // Then
         waitForExpectations(timeout: 0.5)
@@ -95,61 +106,73 @@ class RUMApplicationScopeTests: XCTestCase {
     // MARK: - RUM Session Sampling
 
     func testWhenSamplingRateIs100_allEventsAreSent() {
-        let output = RUMEventOutputMock()
-
         let currentTime = Date()
         let scope = RUMApplicationScope(
             dependencies: .mockWith(
-                sessionSampler: Sampler(samplingRate: 100),
-                sdkInitDate: currentTime,
-                eventOutput: output
+                sessionSampler: Sampler(samplingRate: 100)
             )
         )
 
-        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView))
-        _ = scope.process(command: RUMStopViewCommand.mockWith(time: currentTime, identity: mockView))
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopViewCommand.mockWith(time: currentTime, identity: mockView),
+            context: context,
+            writer: writer
+        )
 
-        XCTAssertEqual(try output.recordedEvents(ofType: RUMViewEvent.self).count, 2)
+        XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).count, 2)
     }
 
     func testWhenSamplingRateIs0_noEventsAreSent() {
-        let output = RUMEventOutputMock()
-
         let currentTime = Date()
         let scope = RUMApplicationScope(
             dependencies: .mockWith(
-                sessionSampler: Sampler(samplingRate: 0),
-                sdkInitDate: currentTime,
-                eventOutput: output
+                sessionSampler: Sampler(samplingRate: 0)
             )
         )
 
-        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView))
-        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView))
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView),
+            context: context,
+            writer: writer
+        )
 
-        XCTAssertEqual(try output.recordedEvents(ofType: RUMViewEvent.self).count, 0)
+        XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).count, 0)
     }
 
     func testWhenSamplingRateIs50_onlyHalfOfTheEventsAreSent() throws {
-        let output = RUMEventOutputMock()
-
         var currentTime = Date()
         let scope = RUMApplicationScope(
             dependencies: .mockWith(
-                sessionSampler: Sampler(samplingRate: 50),
-                sdkInitDate: currentTime,
-                eventOutput: output
+                sessionSampler: Sampler(samplingRate: 50)
             )
         )
 
         let simulatedSessionsCount = 400
         (0..<simulatedSessionsCount).forEach { _ in
-            _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView))
-            _ = scope.process(command: RUMStopViewCommand.mockWith(time: currentTime, identity: mockView))
+            _ = scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView),
+                context: context,
+                writer: writer
+            )
+            _ = scope.process(
+                command: RUMStopViewCommand.mockWith(time: currentTime, identity: mockView),
+                context: context,
+                writer: writer
+            )
             currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration) // force the Session to be re-created
         }
 
-        let viewEventsCount = try output.recordedEvents(ofType: RUMViewEvent.self).count
+        let viewEventsCount = writer.events(ofType: RUMViewEvent.self).count
         let trackedSessionsCount = Double(viewEventsCount) / 2 // each Session should send 2 View updates
 
         let halfSessionsCount = 0.5 * Double(simulatedSessionsCount)

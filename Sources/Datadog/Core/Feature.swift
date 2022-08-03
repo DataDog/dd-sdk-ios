@@ -6,27 +6,17 @@
 
 import Foundation
 
-/// Lists different types of data directories used by the feature.
-internal struct FeatureDirectories {
-    /// Data directory for storing unauthorized data collected without knowing the tracking consent value.
-    /// Due to the consent change, data in this directory may be either moved to `authorized` folder or entirely deleted.
-    let unauthorized: Directory
-    /// Data directory for storing authorized data collected when tracking consent is granted.
-    /// Consent change does not impact data already stored in this folder.
-    /// Data in this folder gets uploaded to the server.
-    let authorized: Directory
-}
-
 /// Container with dependencies common to all features (Logging, Tracing and RUM).
 internal struct FeaturesCommonDependencies {
     let consentProvider: ConsentProvider
     let performance: PerformancePreset
     let httpClient: HTTPClient
-    let mobileDevice: MobileDevice
+    let deviceInfo: DeviceInfo
+    let batteryStatusProvider: BatteryStatusProviderType
     /// Time of SDK initialization, measured in device date.
     let sdkInitDate: Date
     let dateProvider: DateProvider
-    let dateCorrector: DateCorrectorType
+    let dateCorrector: DateCorrector
     let userInfoProvider: UserInfoProvider
     let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
     let carrierInfoProvider: CarrierInfoProviderType
@@ -52,75 +42,59 @@ internal struct FeatureStorage {
 
     init(
         featureName: String,
+        queue: DispatchQueue,
         dataFormat: DataFormat,
         directories: FeatureDirectories,
-        commonDependencies: FeaturesCommonDependencies,
-        telemetry: Telemetry?
+        commonDependencies: FeaturesCommonDependencies
     ) {
-        let readWriteQueue = DispatchQueue(
-            label: "com.datadoghq.ios-sdk-\(featureName)-read-write",
-            target: .global(qos: .utility)
-        )
         let authorizedFilesOrchestrator = FilesOrchestrator(
             directory: directories.authorized,
             performance: commonDependencies.performance,
-            dateProvider: commonDependencies.dateProvider,
-            telemetry: telemetry
+            dateProvider: commonDependencies.dateProvider
         )
         let unauthorizedFilesOrchestrator = FilesOrchestrator(
             directory: directories.unauthorized,
             performance: commonDependencies.performance,
-            dateProvider: commonDependencies.dateProvider,
-            telemetry: telemetry
+            dateProvider: commonDependencies.dateProvider
         )
 
         let dataOrchestrator = DataOrchestrator(
-            queue: readWriteQueue,
+            queue: queue,
             authorizedFilesOrchestrator: authorizedFilesOrchestrator,
             unauthorizedFilesOrchestrator: unauthorizedFilesOrchestrator
         )
 
         let unauthorizedFileWriter = FileWriter(
-            dataFormat: dataFormat,
             orchestrator: unauthorizedFilesOrchestrator,
-            encryption: commonDependencies.encryption,
-            telemetry: telemetry
+            encryption: commonDependencies.encryption
         )
 
         let authorizedFileWriter = FileWriter(
-            dataFormat: dataFormat,
             orchestrator: authorizedFilesOrchestrator,
-            encryption: commonDependencies.encryption,
-            telemetry: telemetry
+            encryption: commonDependencies.encryption
         )
 
         let consentAwareDataWriter = ConsentAwareDataWriter(
             consentProvider: commonDependencies.consentProvider,
-            readWriteQueue: readWriteQueue,
-            dataProcessorFactory: DataProcessorFactory(
-                unauthorizedFileWriter: unauthorizedFileWriter,
-                authorizedFileWriter: authorizedFileWriter
-            ),
+            readWriteQueue: queue,
+            unauthorizedWriter: unauthorizedFileWriter,
+            authorizedWriter: authorizedFileWriter,
             dataMigratorFactory: DataMigratorFactory(
-                directories: directories,
-                telemetry: telemetry
+                directories: directories
             )
         )
 
         let arbitraryDataWriter = ArbitraryDataWriter(
-            readWriteQueue: readWriteQueue,
-            dataProcessor: DataProcessor(
-                fileWriter: authorizedFileWriter
-            )
+            readWriteQueue: queue,
+            writer: authorizedFileWriter
         )
 
         let authorisedDataReader = DataReader(
-            readWriteQueue: readWriteQueue,
+            readWriteQueue: queue,
             fileReader: FileReader(
                 dataFormat: dataFormat,
                 orchestrator: authorizedFilesOrchestrator,
-                encryption: commonDependencies.encryption,
-                telemetry: telemetry
+                encryption: commonDependencies.encryption
             )
         )
 
@@ -169,8 +143,7 @@ internal struct FeatureUpload {
         featureName: String,
         storage: FeatureStorage,
         requestBuilder: RequestBuilder,
-        commonDependencies: FeaturesCommonDependencies,
-        telemetry: Telemetry?
+        commonDependencies: FeaturesCommonDependencies
     ) {
         let uploadQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-\(featureName)-upload",
@@ -178,7 +151,7 @@ internal struct FeatureUpload {
         )
 
         let uploadConditions = DataUploadConditions(
-            batteryStatus: BatteryStatusProvider(mobileDevice: commonDependencies.mobileDevice),
+            batteryStatus: commonDependencies.batteryStatusProvider,
             networkConnectionInfo: commonDependencies.networkConnectionInfoProvider
         )
 
@@ -194,8 +167,7 @@ internal struct FeatureUpload {
                 dataUploader: dataUploader,
                 uploadConditions: uploadConditions,
                 delay: DataUploadDelay(performance: commonDependencies.performance),
-                featureName: featureName,
-                telemetry: telemetry
+                featureName: featureName
             )
         )
     }

@@ -252,6 +252,9 @@ You can use the following methods in `Datadog.Configuration.Builder` when creati
 `set(uploadFrequency: UploadFrequency)`
 : Sets the preferred frequency of uploading data to Datadog. Available values include: `.frequent`, `.average`, and `.rare`.
 
+`set(mobileVitalsFrequency: VitalsFrequency)`
+: Sets the preferred frequency of collecting mobile vitals. Available values include: `.frequent` (every 100ms), `.average` (every 500ms), `.rare` (every 1s), and `.never` (disable vitals monitoring).
+
 ### RUM configuration
 
 `enableRUM(_ enabled: Bool)`

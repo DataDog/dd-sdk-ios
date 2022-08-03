@@ -1,7 +1,7 @@
 all: dependencies xcodeproj-httpservermock templates
 
 # The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
-DD_SDK_SWIFT_TESTING_VERSION = 2.0.0
+DD_SDK_SWIFT_TESTING_VERSION = 2.0.1
 
 define DD_SDK_TESTING_XCCONFIG_CI
 FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
@@ -90,13 +90,25 @@ test-cocoapods:
 # Generate RUM data models from rum-events-format JSON Schemas
 rum-models-generate:
 		@echo "⚙️  Generating RUM models..."
-		./tools/rum-models-generator/run.sh generate
+		./tools/rum-models-generator/run.py generate rum
 		@echo "OK 👌"
 
 # Verify if RUM data models follow rum-events-format JSON Schemas
 rum-models-verify:
 		@echo "🧪  Verifying RUM models..."
-		./tools/rum-models-generator/run.sh verify
+		./tools/rum-models-generator/run.py verify rum
+		@echo "OK 👌"
+
+# Generate Session Replay data models from rum-events-format JSON Schemas
+sr-models-generate:
+		@echo "⚙️  Generating Session Replay models..."
+		./tools/rum-models-generator/run.py generate sr
+		@echo "OK 👌"
+
+# Verify if Session Replay data models follow rum-events-format JSON Schemas
+sr-models-verify:
+		@echo "🧪  Verifying Session Replay models..."
+		./tools/rum-models-generator/run.py verify sr
 		@echo "OK 👌"
 
 # Generate api-surface files for Datadog and DatadogObjc.

@@ -11,10 +11,6 @@ class ConsentAwareDataWriterTests: XCTestCase {
     private let queue = DispatchQueue(label: "dd-tests-write", target: .global(qos: .utility))
     private let unauthorizedWriter = FileWriterMock()
     private let authorizedWriter = FileWriterMock()
-    private lazy var dataProcessorFactory = DataProcessorFactory(
-        unauthorizedFileWriter: unauthorizedWriter,
-        authorizedFileWriter: authorizedWriter
-    )
     private lazy var dataMigratorFactory = DataMigratorFactory(
         directories: temporaryFeatureDirectories
     )
@@ -36,7 +32,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let writer = ConsentAwareDataWriter(
             consentProvider: ConsentProvider(initialConsent: .granted),
             readWriteQueue: queue,
-            dataProcessorFactory: dataProcessorFactory,
+            unauthorizedWriter: unauthorizedWriter,
+            authorizedWriter: authorizedWriter,
             dataMigratorFactory: dataMigratorFactory
         )
 
@@ -44,8 +41,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         writer.write(value: "authorized data")
 
         waitForOperationCompletion(on: queue)
-        XCTAssertNil(unauthorizedWriter.dataWritten)
-        XCTAssertEqual(authorizedWriter.dataWritten as? String, "authorized data")
+        XCTAssertTrue(unauthorizedWriter.events.isEmpty)
+        XCTAssertEqual(authorizedWriter.events.first as? String, "authorized data")
     }
 
     func testWhenInitializedWithConsentPending_thenItWritesDataToUnauthorizedFolder() {
@@ -53,7 +50,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let writer = ConsentAwareDataWriter(
             consentProvider: ConsentProvider(initialConsent: .pending),
             readWriteQueue: queue,
-            dataProcessorFactory: dataProcessorFactory,
+            unauthorizedWriter: unauthorizedWriter,
+            authorizedWriter: authorizedWriter,
             dataMigratorFactory: dataMigratorFactory
         )
 
@@ -61,8 +59,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         writer.write(value: "unauthorized data")
 
         waitForOperationCompletion(on: queue)
-        XCTAssertNil(authorizedWriter.dataWritten)
-        XCTAssertEqual(unauthorizedWriter.dataWritten as? String, "unauthorized data")
+        XCTAssertTrue(authorizedWriter.events.isEmpty)
+        XCTAssertEqual(unauthorizedWriter.events.first as? String, "unauthorized data")
     }
 
     func testWhenInitializedWithConsentNotGranted_thenItDoesNotWriteDataToAnyFolder() {
@@ -70,7 +68,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let writer = ConsentAwareDataWriter(
             consentProvider: ConsentProvider(initialConsent: .notGranted),
             readWriteQueue: queue,
-            dataProcessorFactory: dataProcessorFactory,
+            unauthorizedWriter: unauthorizedWriter,
+            authorizedWriter: authorizedWriter,
             dataMigratorFactory: dataMigratorFactory
         )
 
@@ -78,8 +77,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         writer.write(value: "rejected data")
 
         waitForOperationCompletion(on: queue)
-        XCTAssertNil(unauthorizedWriter.dataWritten)
-        XCTAssertNil(authorizedWriter.dataWritten)
+        XCTAssertTrue(unauthorizedWriter.events.isEmpty)
+        XCTAssertTrue(authorizedWriter.events.isEmpty)
     }
 
     // MARK: - Writing Data After Consent Change
@@ -90,7 +89,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let writer = ConsentAwareDataWriter(
             consentProvider: consentProvider,
             readWriteQueue: queue,
-            dataProcessorFactory: dataProcessorFactory,
+            unauthorizedWriter: unauthorizedWriter,
+            authorizedWriter: authorizedWriter,
             dataMigratorFactory: dataMigratorFactory
         )
 
@@ -101,8 +101,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         writer.write(value: "authorized data")
 
         waitForOperationCompletion(on: queue)
-        XCTAssertNil(unauthorizedWriter.dataWritten)
-        XCTAssertEqual(authorizedWriter.dataWritten as? String, "authorized data")
+        XCTAssertTrue(unauthorizedWriter.events.isEmpty)
+        XCTAssertEqual(authorizedWriter.events.first as? String, "authorized data")
     }
 
     func testWhenConsentChangesToPending_thenItStartsWritingDataToUnauthorizedFolder() {
@@ -111,7 +111,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let writer = ConsentAwareDataWriter(
             consentProvider: consentProvider,
             readWriteQueue: queue,
-            dataProcessorFactory: dataProcessorFactory,
+            unauthorizedWriter: unauthorizedWriter,
+            authorizedWriter: authorizedWriter,
             dataMigratorFactory: dataMigratorFactory
         )
 
@@ -122,8 +123,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         writer.write(value: "unauthorized data")
 
         waitForOperationCompletion(on: queue)
-        XCTAssertEqual(unauthorizedWriter.dataWritten as? String, "unauthorized data")
-        XCTAssertNil(authorizedWriter.dataWritten)
+        XCTAssertEqual(unauthorizedWriter.events.first as? String, "unauthorized data")
+        XCTAssertTrue(authorizedWriter.events.isEmpty)
     }
 
     func testWhenConsentChangesToNotGranted_thenItStopsWritingDataToAnyFolder() {
@@ -132,7 +133,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let writer = ConsentAwareDataWriter(
             consentProvider: consentProvider,
             readWriteQueue: queue,
-            dataProcessorFactory: dataProcessorFactory,
+            unauthorizedWriter: unauthorizedWriter,
+            authorizedWriter: authorizedWriter,
             dataMigratorFactory: dataMigratorFactory
         )
 
@@ -143,8 +145,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         writer.write(value: "rejected data")
 
         waitForOperationCompletion(on: queue)
-        XCTAssertNil(unauthorizedWriter.dataWritten)
-        XCTAssertNil(authorizedWriter.dataWritten)
+        XCTAssertTrue(unauthorizedWriter.events.isEmpty)
+        XCTAssertTrue(authorizedWriter.events.isEmpty)
     }
 
     // MARK: - Data Migration
@@ -161,7 +163,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         _ = ConsentAwareDataWriter(
             consentProvider: ConsentProvider(initialConsent: initialConsent),
             readWriteQueue: queue,
-            dataProcessorFactory: dataProcessorFactory,
+            unauthorizedWriter: unauthorizedWriter,
+            authorizedWriter: authorizedWriter,
             dataMigratorFactory: dataMigratorFactory
         )
 
@@ -178,7 +181,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         _ = ConsentAwareDataWriter(
             consentProvider: consentProvider,
             readWriteQueue: queue,
-            dataProcessorFactory: dataProcessorFactory,
+            unauthorizedWriter: unauthorizedWriter,
+            authorizedWriter: authorizedWriter,
             dataMigratorFactory: dataMigratorFactory
         )
 
@@ -202,7 +206,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         _ = ConsentAwareDataWriter(
             consentProvider: consentProvider,
             readWriteQueue: queue,
-            dataProcessorFactory: dataProcessorFactory,
+            unauthorizedWriter: unauthorizedWriter,
+            authorizedWriter: authorizedWriter,
             dataMigratorFactory: dataMigratorFactory
         )
 
@@ -228,7 +233,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         _ = ConsentAwareDataWriter(
             consentProvider: consentProvider,
             readWriteQueue: queue,
-            dataProcessorFactory: dataProcessorFactory,
+            unauthorizedWriter: unauthorizedWriter,
+            authorizedWriter: authorizedWriter,
             dataMigratorFactory: dataMigratorFactory
         )
 
@@ -254,7 +260,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         let writer = ConsentAwareDataWriter(
             consentProvider: consentProvider,
             readWriteQueue: queue,
-            dataProcessorFactory: dataProcessorFactory,
+            unauthorizedWriter: unauthorizedWriter,
+            authorizedWriter: authorizedWriter,
             dataMigratorFactory: dataMigratorFactory
         )
 
@@ -267,8 +274,8 @@ class ConsentAwareDataWriterTests: XCTestCase {
         }
 
         waitForOperationCompletion(on: queue)
-        XCTAssertNotNil(unauthorizedWriter.dataWritten, "There should be some unauthorized data written.")
-        XCTAssertNotNil(authorizedWriter.dataWritten, "There should be some authorized data written.")
+        XCTAssertFalse(unauthorizedWriter.events.isEmpty, "There should be some unauthorized data written.")
+        XCTAssertFalse(authorizedWriter.events.isEmpty, "There should be some authorized data written.")
     }
 
     // MARK: - Helpers

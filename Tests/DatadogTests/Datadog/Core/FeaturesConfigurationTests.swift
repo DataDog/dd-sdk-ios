@@ -152,12 +152,10 @@ class FeaturesConfigurationTests: XCTestCase {
     }
 
     func testClientToken() throws {
-        let clientToken: String = .mockRandom(among: "abcdefgh")
+        let clientToken: String = .mockRandom(among: .alphanumerics)
         let configuration = try createConfiguration(clientToken: clientToken)
 
-        XCTAssertEqual(configuration.logging?.clientToken, clientToken)
-        XCTAssertEqual(configuration.tracing?.clientToken, clientToken)
-        XCTAssertEqual(configuration.rum?.clientToken, clientToken)
+        XCTAssertEqual(configuration.common.clientToken, clientToken)
     }
 
     func testEndpoint() throws {
@@ -438,6 +436,44 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertNotNil(longTaskConfigured.rum!.instrumentation!.longTaskThreshold)
         XCTAssertNil(longTaskConfigured.rum!.instrumentation!.uiKitRUMViewsPredicate)
         XCTAssertNil(longTaskConfigured.rum!.instrumentation!.uiKitRUMUserActionsPredicate)
+    }
+
+    func testMobileVitalsFrequency() throws {
+        var custom = try FeaturesConfiguration(
+            configuration: .mockWith(
+                rumEnabled: true,
+                mobileVitalsFrequency: .average
+            ),
+            appContext: .mockAny()
+        )
+        XCTAssertEqual(custom.rum?.vitalsFrequency, 0.5)
+
+        custom = try FeaturesConfiguration(
+            configuration: .mockWith(
+                rumEnabled: true,
+                mobileVitalsFrequency: .frequent
+            ),
+            appContext: .mockAny()
+        )
+        XCTAssertEqual(custom.rum?.vitalsFrequency, 0.1)
+
+        custom = try FeaturesConfiguration(
+            configuration: .mockWith(
+                rumEnabled: true,
+                mobileVitalsFrequency: .rare
+            ),
+            appContext: .mockAny()
+        )
+        XCTAssertEqual(custom.rum?.vitalsFrequency, 1)
+
+        custom = try FeaturesConfiguration(
+            configuration: .mockWith(
+                rumEnabled: true,
+                mobileVitalsFrequency: .never
+            ),
+            appContext: .mockAny()
+        )
+        XCTAssertNil(custom.rum?.vitalsFrequency)
     }
 
     // MARK: - Crash Reporting Configuration Tests

@@ -29,34 +29,29 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
 
     /// The output for writing RUM events. It uses the authorized data folder and is synchronized with the eventual
     /// authorized output working simultaneously in the RUM feature.
-    private let rumEventOutput: RUMEventOutput
-    private let dateProvider: DateProvider
-    private let dateCorrector: DateCorrectorType
+    private let writer: Writer
     private let rumConfiguration: FeaturesConfiguration.RUM
+
+    private let context: DatadogV1Context
 
     // MARK: - Initialization
 
-    init(rumFeature: RUMFeature) {
+    init(rumFeature: RUMFeature, context: DatadogV1Context) {
         self.init(
-            rumEventOutput: RUMEventFileOutput(
-                fileWriter: rumFeature.storage.arbitraryAuthorizedWriter
-            ),
-            dateProvider: rumFeature.dateProvider,
-            dateCorrector: rumFeature.dateCorrector,
-            rumConfiguration: rumFeature.configuration
+            writer: rumFeature.storage.arbitraryAuthorizedWriter,
+            rumConfiguration: rumFeature.configuration,
+            context: context
         )
     }
 
     init(
-        rumEventOutput: RUMEventOutput,
-        dateProvider: DateProvider,
-        dateCorrector: DateCorrectorType,
-        rumConfiguration: FeaturesConfiguration.RUM
+        writer: Writer,
+        rumConfiguration: FeaturesConfiguration.RUM,
+        context: DatadogV1Context
     ) {
-        self.rumEventOutput = rumEventOutput
-        self.dateProvider = dateProvider
-        self.dateCorrector = dateCorrector
+        self.writer = writer
         self.rumConfiguration = rumConfiguration
+        self.context = context
     }
 
     // MARK: - CrashReportingIntegration
@@ -69,13 +64,13 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         // The `crashReport.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
         // to the server time before processing. Following use of the current correction is not ideal (it's not the correction
         // from the moment of crash), but this is the best approximation we can get.
-        let currentTimeCorrection = dateCorrector.currentCorrection
+        let currentTimeCorrection = context.dateCorrector.offset
 
-        let crashDate = crashReport.date ?? dateProvider.currentDate()
+        let crashDate = crashReport.date ?? context.dateProvider.now
         let adjustedCrashTimings = AdjustedCrashTimings(
             crashDate: crashDate,
-            realCrashDate: currentTimeCorrection.applying(to: crashDate),
-            realDateNow: currentTimeCorrection.applying(to: dateProvider.currentDate())
+            realCrashDate: crashDate.addingTimeInterval(currentTimeCorrection),
+            realDateNow: context.dateProvider.now.addingTimeInterval(currentTimeCorrection)
         )
 
         if let lastRUMViewEvent = crashContext.lastRUMViewEvent {
@@ -85,7 +80,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         } else if rumConfiguration.sessionSampler.sample() { // before producing a new RUM session, we must consider sampling
             sendCrashReportToNewSession(crashReport, crashContext: crashContext, using: adjustedCrashTimings)
         } else {
-            userLogger.info("There was a crash in previous session, but it is ignored due to sampling.")
+            DD.logger.debug("There was a crash in previous session, but it is ignored due to sampling.")
         }
     }
 
@@ -101,9 +96,9 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         } else {
             // We know it is too late for sending RUM view to previous RUM session as it is now stale on backend.
             // To avoid inconsistency, we only send the RUM error.
-            userLogger.debug("Sending crash as RUM error.")
+            DD.logger.debug("Sending crash as RUM error.")
             let rumError = createRUMError(from: crashReport, and: lastRUMViewEvent, crashDate: crashTimings.realCrashDate)
-            rumEventOutput.write(event: rumError)
+            writer.write(value: rumError)
         }
     }
 
@@ -147,7 +142,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 crashContext: crashContext
             )
         case .doNotHandle:
-            userLogger.debug("There was a crash in background, but it is ignored due to Background Event Tracking disabled or sampling.")
+            DD.logger.debug("There was a crash in background, but it is ignored due to Background Event Tracking disabled or sampling.")
             newRUMView = nil
         }
 
@@ -192,7 +187,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 crashContext: crashContext
             )
         case .doNotHandle:
-            userLogger.debug("There was a crash in background, but it is ignored due to Background Event Tracking disabled.")
+            DD.logger.debug("There was a crash in background, but it is ignored due to Background Event Tracking disabled.")
             newRUMView = nil
         }
 
@@ -203,11 +198,11 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
 
     /// Sends given `CrashReport` by linking it to given `rumView` and updating view counts accordingly.
     private func send(crashReport: DDCrashReport, to rumView: RUMViewEvent, using realCrashDate: Date) {
-        userLogger.debug("Updating RUM view with crash report.")
+        DD.logger.debug("Updating RUM view with crash report.")
         let updatedRUMView = updateRUMViewWithNewError(rumView, crashDate: realCrashDate)
         let rumError = createRUMError(from: crashReport, and: updatedRUMView, crashDate: realCrashDate)
-        rumEventOutput.write(event: rumError)
-        rumEventOutput.write(event: updatedRUMView)
+        writer.write(value: rumError)
+        writer.write(value: updatedRUMView)
     }
 
     // MARK: - Building RUM events
@@ -235,6 +230,8 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             connectivity: lastRUMView.connectivity,
             context: nil,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds,
+            device: lastRUMView.device,
+            display: nil,
             error: .init(
                 handling: nil,
                 handlingStack: nil,
@@ -247,6 +244,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 stack: errorStackTrace,
                 type: errorType
             ),
+            os: lastRUMView.os,
             service: lastRUMView.service,
             session: .init(
                 hasReplay: lastRUMView.session.hasReplay,
@@ -284,6 +282,9 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             connectivity: original.connectivity,
             context: original.context,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds - 1, // -1ms to put the crash after view in RUM session
+            device: original.device,
+            display: nil,
+            os: original.os,
             service: original.service,
             session: original.session,
             source: original.source ?? .ios,
@@ -305,6 +306,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 firstInputDelay: original.view.firstInputDelay,
                 firstInputTime: original.view.firstInputTime,
                 frozenFrame: nil,
+                frustration: nil,
                 id: original.view.id,
                 inForegroundPeriods: original.view.inForegroundPeriods,
                 isActive: false,
@@ -353,16 +355,23 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             ),
             context: nil,
             date: startDate.timeIntervalSince1970.toInt64Milliseconds,
-            service: rumConfiguration.common.serviceName,
+            device: .init(context: context),
+            display: nil,
+            // RUMM-2197: In very rare cases, the OS info computed below might not be exactly the one
+            // that the app crashed on. This would correspond to a scenario when the device OS was upgraded
+            // before restarting the app after crash. To solve this, the OS information would have to be
+            // persisted in `crashContext` the same way as we do for other dynamic information.
+            os: .init(context: context),
+            service: context.service,
             session: .init(
                 hasReplay: nil,
                 id: sessionUUID.toRUMDataFormat,
                 type: CITestIntegration.active != nil ? .ciTest : .user
             ),
-            source: RUMViewEvent.Source(rawValue: rumConfiguration.common.source) ?? .ios,
+            source: RUMViewEvent.Source(rawValue: context.source) ?? .ios,
             synthetics: nil,
             usr: crashContext.lastUserInfo.flatMap { RUMUser(userInfo: $0) },
-            version: rumConfiguration.common.applicationVersion,
+            version: context.version,
             view: .init(
                 action: .init(count: 0),
                 cpuTicksCount: nil,
@@ -378,6 +387,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 firstInputDelay: nil,
                 firstInputTime: nil,
                 frozenFrame: nil,
+                frustration: nil,
                 id: viewUUID.toRUMDataFormat,
                 inForegroundPeriods: nil,
                 isActive: false, // we know it won't receive updates

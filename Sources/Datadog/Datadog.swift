@@ -117,7 +117,7 @@ public class Datadog {
 
     /// Returns `true` if the Datadog SDK is already initialized, `false` otherwise.
     public static var isInitialized: Bool {
-        return instance != nil
+        return defaultDatadogCore is DatadogCore
     }
 
     /// Sets current user information.
@@ -133,7 +133,8 @@ public class Datadog {
         email: String? = nil,
         extraInfo: [AttributeKey: AttributeValue] = [:]
     ) {
-        instance?.userInfoProvider.value = UserInfo(
+        let core = defaultDatadogCore as? DatadogCore
+        core?.setUserInfo(
             id: id,
             name: name,
             email: email,
@@ -144,12 +145,18 @@ public class Datadog {
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     public static func set(trackingConsent: TrackingConsent) {
-        instance?.consentProvider.changeConsent(to: trackingConsent)
+        let core = defaultDatadogCore as? DatadogCore
+        core?.set(trackingConsent: trackingConsent)
     }
 
     /// Clears all data that has not already been sent to Datadog servers.
     public static func clearAllData() {
-        instance?.clearAllData()
+        let logging = defaultDatadogCore.v1.feature(LoggingFeature.self)
+        let tracing = defaultDatadogCore.v1.feature(TracingFeature.self)
+        let rum = defaultDatadogCore.v1.feature(RUMFeature.self)
+        logging?.storage.clearAllData()
+        tracing?.storage.clearAllData()
+        rum?.storage.clearAllData()
     }
 
     // MARK: - Internal
@@ -158,60 +165,32 @@ public class Datadog {
         static let DebugRUM = "DD_DEBUG_RUM"
     }
 
-    internal static var instance: Datadog?
-
-    internal let consentProvider: ConsentProvider
-    internal let userInfoProvider: UserInfoProvider
-    internal let launchTimeProvider: LaunchTimeProviderType
-
     private static func initializeOrThrow(
         initialTrackingConsent: TrackingConsent,
         configuration: FeaturesConfiguration
     ) throws {
-        guard Datadog.instance == nil else {
+        if Datadog.isInitialized {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
 
         let consentProvider = ConsentProvider(initialConsent: initialTrackingConsent)
-        let dateProvider = SystemDateProvider()
-        let dateCorrector = DateCorrector(
-            deviceDateProvider: dateProvider,
-            serverDateProvider: NTPServerDateProvider()
-        )
         let userInfoProvider = UserInfoProvider()
+        let dateProvider = SystemDateProvider()
+        let dateCorrector = ServerDateCorrector(
+            serverDateProvider: configuration.common.serverDateProvider ?? DatadogNTPDateProvider()
+        )
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
         let carrierInfoProvider = CarrierInfoProvider()
         let launchTimeProvider = LaunchTimeProvider()
 
-        // First, initialize internal loggers:
-
-        let internalLoggerConfiguration = InternalLoggerConfiguration(
-            sdkVersion: configuration.common.sdkVersion,
-            applicationVersion: configuration.common.applicationVersion,
-            environment: configuration.common.environment,
-            userInfoProvider: userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider
-        )
-
-        userLogger = createSDKUserLogger(configuration: internalLoggerConfiguration)
-
-        // Then, initialize features:
-        var telemetry: Telemetry?
-        var logging: LoggingFeature?
-        var tracing: TracingFeature?
-        var rum: RUMFeature?
-        var crashReporting: CrashReportingFeature?
-
-        var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
-        var rumInstrumentation: RUMInstrumentation?
-
-        let commonDependencies = FeaturesCommonDependencies(
+        // Bundle all core dependencies provided by `DatadogCore` to features:
+        let commonDependencies = CoreDependencies(
             consentProvider: consentProvider,
             performance: configuration.common.performance,
             httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
-            mobileDevice: MobileDevice(),
-            sdkInitDate: dateProvider.currentDate(),
+            deviceInfo: .init(),
+            batteryStatusProvider: BatteryStatusProvider(),
+            sdkInitDate: dateProvider.now,
             dateProvider: dateProvider,
             dateCorrector: dateCorrector,
             userInfoProvider: userInfoProvider,
@@ -222,57 +201,76 @@ public class Datadog {
             encryption: configuration.common.encryption
         )
 
+        // Set default `DatadogCore`:
+        let core = DatadogCore(
+            directory: try CoreDirectory(in: Directory.cache(), from: configuration.common),
+            configuration: configuration.common,
+            dependencies: commonDependencies
+        )
+
+        // First, initialize features:
+        var logging: LoggingFeature?
+        var tracing: TracingFeature?
+        var rum: RUMFeature?
+        var crashReporting: CrashReportingFeature?
+
+        var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
+        var rumInstrumentation: RUMInstrumentation?
+
         if let rumConfiguration = configuration.rum {
-            telemetry = RUMTelemetry(
+            DD.telemetry = RUMTelemetry(
+                in: core,
                 sdkVersion: configuration.common.sdkVersion,
                 applicationID: rumConfiguration.applicationID,
-                source: rumConfiguration.common.source,
+                source: configuration.common.source,
                 dateProvider: dateProvider,
                 dateCorrector: dateCorrector,
                 sampler: rumConfiguration.telemetrySampler
             )
 
-            rum = RUMFeature(
-                directories: try obtainRUMFeatureDirectories(),
-                configuration: rumConfiguration,
-                commonDependencies: commonDependencies,
-                telemetry: telemetry
+            rum = try core.create(
+                storageConfiguration: createV2RUMStorageConfiguration(),
+                uploadConfiguration: createV2RUMUploadConfiguration(v1Configuration: rumConfiguration),
+                featureSpecificConfiguration: rumConfiguration
             )
+
+            core.register(feature: rum)
 
             if let instrumentationConfiguration = rumConfiguration.instrumentation {
                 rumInstrumentation = RUMInstrumentation(
                     configuration: instrumentationConfiguration,
                     dateProvider: dateProvider
                 )
+
+                core.register(feature: rumInstrumentation)
             }
         }
 
         if let loggingConfiguration = configuration.logging {
-            logging = LoggingFeature(
-                directories: try obtainLoggingFeatureDirectories(),
-                configuration: loggingConfiguration,
-                commonDependencies: commonDependencies,
-                telemetry: telemetry
+            logging = try core.create(
+                storageConfiguration: createV2LoggingStorageConfiguration(),
+                uploadConfiguration: createV2LoggingUploadConfiguration(v1Configuration: loggingConfiguration),
+                featureSpecificConfiguration: loggingConfiguration
             )
+            core.register(feature: logging)
         }
 
         if let tracingConfiguration = configuration.tracing {
-            tracing = TracingFeature(
-                directories: try obtainTracingFeatureDirectories(),
-                configuration: tracingConfiguration,
-                commonDependencies: commonDependencies,
-                loggingFeatureAdapter: logging.flatMap { LoggingForTracingAdapter(loggingFeature: $0) },
-                tracingUUIDGenerator: DefaultTracingUUIDGenerator(),
-                telemetry: telemetry
+            tracing = try core.create(
+                storageConfiguration: createV2TracingStorageConfiguration(),
+                uploadConfiguration: createV2TracingUploadConfiguration(v1Configuration: tracingConfiguration),
+                featureSpecificConfiguration: tracingConfiguration
             )
+            core.register(feature: tracing)
         }
 
         if let crashReportingConfiguration = configuration.crashReporting {
             crashReporting = CrashReportingFeature(
                 configuration: crashReportingConfiguration,
-                commonDependencies: commonDependencies,
-                telemetry: telemetry
+                commonDependencies: commonDependencies
             )
+
+            core.register(feature: crashReporting)
         }
 
         if let urlSessionAutoInstrumentationConfiguration = configuration.urlSessionAutoInstrumentation {
@@ -280,48 +278,30 @@ public class Datadog {
                 configuration: urlSessionAutoInstrumentationConfiguration,
                 commonDependencies: commonDependencies
             )
+
+            core.register(feature: urlSessionAutoInstrumentation)
         }
 
-        LoggingFeature.instance = logging
-        TracingFeature.instance = tracing
-        RUMFeature.instance = rum
-        CrashReportingFeature.instance = crashReporting
+        core.v1.feature(RUMInstrumentation.self)?.enable()
+        core.v1.feature(URLSessionAutoInstrumentation.self)?.enable()
 
-        RUMInstrumentation.instance = rumInstrumentation
-        RUMInstrumentation.instance?.enable()
-
-        URLSessionAutoInstrumentation.instance = urlSessionAutoInstrumentation
-        URLSessionAutoInstrumentation.instance?.enable()
-
-        // Only after all features were initialized with no error thrown:
-        self.instance = Datadog(
-            consentProvider: consentProvider,
-            userInfoProvider: userInfoProvider,
-            launchTimeProvider: launchTimeProvider
-        )
+        defaultDatadogCore = core
 
         // After everything is set up, if the Crash Reporting feature was enabled,
         // register crash reporter and send crash report if available:
-        if let crashReportingFeature = CrashReportingFeature.instance {
-            Global.crashReporter = CrashReporter(crashReportingFeature: crashReportingFeature)
+        if let crashReportingFeature = core.v1.feature(CrashReportingFeature.self) {
+            Global.crashReporter = CrashReporter(
+                crashReportingFeature: crashReportingFeature,
+                loggingFeature: logging,
+                rumFeature: rum,
+                context: core.v1Context
+            )
+
             Global.crashReporter?.sendCrashReportIfFound()
         }
     }
 
-    internal init(
-        consentProvider: ConsentProvider,
-        userInfoProvider: UserInfoProvider,
-        launchTimeProvider: LaunchTimeProviderType
-    ) {
-        self.consentProvider = consentProvider
-        self.userInfoProvider = userInfoProvider
-        self.launchTimeProvider = launchTimeProvider
-    }
-
-    internal func clearAllData() {
-        LoggingFeature.instance?.storage.clearAllData()
-        TracingFeature.instance?.storage.clearAllData()
-        RUMFeature.instance?.storage.clearAllData()
+    internal init() {
     }
 
     /// Flushes all authorised data for each feature, tears down and deinitializes the SDK.
@@ -336,29 +316,34 @@ public class Datadog {
 #endif
 
     internal static func internalFlushAndDeinitialize() {
-        assert(Datadog.instance != nil, "SDK must be first initialized.")
+        assert(Datadog.isInitialized, "SDK must be first initialized.")
 
         // Tear down and deinitialize all features:
-        LoggingFeature.instance?.deinitialize()
-        TracingFeature.instance?.deinitialize()
-        RUMFeature.instance?.deinitialize()
-        CrashReportingFeature.instance?.deinitialize()
-
-        RUMInstrumentation.instance?.deinitialize()
-        URLSessionAutoInstrumentation.instance?.deinitialize()
+        let logging = defaultDatadogCore.v1.feature(LoggingFeature.self)
+        let tracing = defaultDatadogCore.v1.feature(TracingFeature.self)
+        let rum = defaultDatadogCore.v1.feature(RUMFeature.self)
+        let rumInstrumentation = defaultDatadogCore.v1.feature(RUMInstrumentation.self)
+        let urlSessionInstrumentation = defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self)
+        logging?.deinitialize()
+        tracing?.deinitialize()
+        rum?.deinitialize()
+        rumInstrumentation?.deinitialize()
+        urlSessionInstrumentation?.deinitialize()
 
         // Reset Globals:
         Global.sharedTracer = DDNoopGlobals.tracer
         Global.rum = DDNoopRUMMonitor()
         Global.crashReporter?.deinitialize()
         Global.crashReporter = nil
+        DD.telemetry = NOPTelemetry()
 
         // Deinitialize `Datadog`:
-        Datadog.instance = nil
-
-        // Reset internal loggers:
-        userLogger = createNoOpSDKUserLogger()
+        defaultDatadogCore = NOOPDatadogCore()
     }
+
+    // MARK: - Internal Proxy - exposure of internal classes (Mostly used for cross platform libraries)
+
+    public private(set) static var _internal = _InternalProxy()
 }
 
 /// Convenience typealias.

@@ -9,13 +9,12 @@ import Foundation
 /// Data migrator which deletes all files in given directory.
 internal struct DeleteAllDataMigrator: DataMigrator {
     let directory: Directory
-    var telemetry: Telemetry? = nil
 
     func migrate() {
         do {
             try directory.deleteAllFiles()
         } catch {
-            telemetry?.error(
+            DD.telemetry.error(
                 "Failed to use `DeleteAllDataMigrator` in directory \(directory.url)", error: error
             )
         }

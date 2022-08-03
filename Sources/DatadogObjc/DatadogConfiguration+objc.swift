@@ -143,6 +143,23 @@ public enum DDUploadFrequency: Int {
 }
 
 @objc
+public enum DDVitalsFrequency: Int {
+    case frequent
+    case average
+    case rare
+    case never
+
+    internal var swiftType: Datadog.Configuration.VitalsFrequency {
+        switch self {
+        case .frequent: return .frequent
+        case .average: return .average
+        case .rare: return .rare
+        case .never: return .never
+        }
+    }
+}
+
+@objc
 public protocol DDDataEncryption: AnyObject {
     /// Encrypts given `Data` with user-chosen encryption.
     ///
@@ -171,6 +188,22 @@ internal struct DDDataEncryptionBridge: DataEncryption {
 
     func decrypt(data: Data) throws -> Data {
         return try objcEncryption.decrypt(data: data)
+    }
+}
+
+@objc
+public protocol DDServerDateProvider: AnyObject {
+    /// Start the clock synchronisation with NTP server.
+    ///
+    /// Calls the `completion` by passing it the server time offset when the synchronization succeeds or`nil` if it fails.
+    func synchronize(update: @escaping (TimeInterval) -> Void)
+}
+
+internal struct DDServerDateProviderBridge: ServerDateProvider {
+    let objcProvider: DDServerDateProvider
+
+    func synchronize(update: @escaping (TimeInterval) -> Void) {
+        objcProvider.synchronize(update: update)
     }
 }
 
@@ -248,6 +281,20 @@ public class DDConfigurationBuilder: NSObject {
     @objc
     public func set(customRUMEndpoint: URL) {
         _ = sdkBuilder.set(customRUMEndpoint: customRUMEndpoint)
+    }
+
+    /// Sets a custom NTP synchronization interface.
+    ///
+    /// By default, the Datadog SDK synchronizes with dedicated NTP pools provided by the
+    /// https://www.ntppool.org/ . Using different pools or setting a no-op `DDServerDateProvider`
+    /// implementation will result in desynchronization of the SDK instance and the Datadog servers.
+    /// This can lead to significant time shift in RUM sessions or distributed traces.
+    ///
+    /// - Parameter serverDateProvider: An object that complies with `DDServerDateProvider`
+    ///                                 for provider clock synchronisation.
+    @objc
+    public func set(serverDateProvider: DDServerDateProvider) {
+        _ = sdkBuilder.set(serverDateProvider: DDServerDateProviderBridge(objcProvider: serverDateProvider))
     }
 
     @available(*, deprecated, message: "This option is replaced by `set(endpoint:)`. Refer to the new API comment for details.")
@@ -377,6 +424,11 @@ public class DDConfigurationBuilder: NSObject {
             let objcEvent = DDRUMLongTaskEvent(swiftModel: swiftEvent)
             return mapper(objcEvent)?.swiftModel
         }
+    }
+
+    @objc
+    public func set(mobileVitalsFrequency: DDVitalsFrequency) {
+        _ = sdkBuilder.set(mobileVitalsFrequency: mobileVitalsFrequency.swiftType)
     }
 
     @objc

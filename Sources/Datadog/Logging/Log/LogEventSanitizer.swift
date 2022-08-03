@@ -13,8 +13,8 @@ internal struct LogEventSanitizer {
         /// If any of those is used by the user, the attribute will be ignored.
         static let reservedAttributeNames: Set<String> = [
             "host", "message", "status", "service", "source", "ddtags",
-            LoggingForTracingAdapter.TracingAttributes.traceID,
-            LoggingForTracingAdapter.TracingAttributes.spanID,
+            TracingWithLoggingIntegration.TracingAttributes.traceID,
+            TracingWithLoggingIntegration.TracingAttributes.spanID,
             RUMContextIntegration.Attributes.applicationID,
             RUMContextIntegration.Attributes.sessionID,
             RUMContextIntegration.Attributes.viewID,
@@ -24,8 +24,8 @@ internal struct LogEventSanitizer {
         /// Allowed first character of a tag name (given as ASCII values ranging from lowercased `a` to `z`) .
         /// Tags with name starting with different character will be dropped.
         static let allowedTagNameFirstCharacterASCIIRange: [UInt8] = Array(97...122)
-        /// Maximum lenght of the tag.
-        /// Tags exceeting this lenght will be trunkated.
+        /// Maximum length of the tag.
+        /// Tags exceeting this length will be trunkated.
         static let maxTagLength: Int = 200
         /// Tag keys reserved for Datadog.
         /// If any of those is used by user, the tag will be ignored.
@@ -70,7 +70,7 @@ internal struct LogEventSanitizer {
         // Attribute name cannot be empty
         return attributes.filter { attribute in
             if attribute.key.isEmpty {
-                userLogger.error("Attribute key is empty. This attribute will be ignored.")
+                DD.logger.error("Attribute key is empty. This attribute will be ignored.")
                 return false
             }
             return true
@@ -80,7 +80,7 @@ internal struct LogEventSanitizer {
     private func removeReservedAttributes(_ attributes: [String: Encodable]) -> [String: Encodable] {
         return attributes.filter { attribute in
             if Constraints.reservedAttributeNames.contains(attribute.key) {
-                userLogger.error("'\(attribute.key)' is a reserved attribute name. This attribute will be ignored.")
+                DD.logger.error("'\(attribute.key)' is a reserved attribute name. This attribute will be ignored.")
                 return false
             }
             return true
@@ -106,7 +106,7 @@ internal struct LogEventSanitizer {
 
     private func startsWithAllowedCharacter(tag: String) -> Bool {
         guard let firstCharacter = tag.first?.asciiValue else {
-            userLogger.error("Tag is empty and will be ignored.")
+            DD.logger.error("Tag is empty and will be ignored.")
             return false
         }
 
@@ -114,7 +114,7 @@ internal struct LogEventSanitizer {
         if Constraints.allowedTagNameFirstCharacterASCIIRange.contains(firstCharacter) {
             return true
         } else {
-            userLogger.error("Tag '\(tag)' starts with an invalid character and will be ignored.")
+            DD.logger.error("Tag '\(tag)' starts with an invalid character and will be ignored.")
             return false
         }
     }
@@ -122,7 +122,7 @@ internal struct LogEventSanitizer {
     private func replaceIllegalCharactersIn(tag: String) -> String {
         let sanitized = tag.replacingOccurrences(of: #"[^a-z0-9_:.\/-]"#, with: "_", options: .regularExpression)
         if sanitized != tag {
-            userLogger.warn("Tag '\(tag)' was modified to '\(sanitized)' to match Datadog constraints.")
+            DD.logger.warn("Tag '\(tag)' was modified to '\(sanitized)' to match Datadog constraints.")
         }
         return sanitized
     }
@@ -132,7 +132,7 @@ internal struct LogEventSanitizer {
         var sanitized = tag
         while sanitized.last == ":" { _ = sanitized.removeLast() }
         if sanitized != tag {
-            userLogger.warn("Tag '\(tag)' was modified to '\(sanitized)' to match Datadog constraints.")
+            DD.logger.warn("Tag '\(tag)' was modified to '\(sanitized)' to match Datadog constraints.")
         }
         return sanitized
     }
@@ -140,7 +140,7 @@ internal struct LogEventSanitizer {
     private func limitToMaxLength(tag: String) -> String {
         if tag.count > Constraints.maxTagLength {
             let sanitized = String(tag.prefix(Constraints.maxTagLength))
-            userLogger.warn("Tag '\(tag)' was modified to '\(sanitized)' to match Datadog constraints.")
+            DD.logger.warn("Tag '\(tag)' was modified to '\(sanitized)' to match Datadog constraints.")
             return sanitized
         } else {
             return tag
@@ -151,7 +151,7 @@ internal struct LogEventSanitizer {
         if let colonIndex = tag.firstIndex(of: ":") {
             let key = String(tag.prefix(upTo: colonIndex))
             if Constraints.reservedTagKeys.contains(key) {
-                userLogger.error("'\(key)' is a reserved tag key. This tag will be ignored.")
+                DD.logger.warn("'\(key)' is a reserved tag key. This tag will be ignored.")
                 return false
             } else {
                 return true
@@ -165,7 +165,7 @@ internal struct LogEventSanitizer {
         // Only `Constraints.maxNumberOfTags` of tags are allowed.
         if tags.count > Constraints.maxNumberOfTags {
             let extraTagsCount = tags.count - Constraints.maxNumberOfTags
-            userLogger.error("Number of tags exceeds the limit of \(Constraints.maxNumberOfTags). \(extraTagsCount) attribute(s) will be ignored.")
+            DD.logger.warn("Number of tags exceeds the limit of \(Constraints.maxNumberOfTags). \(extraTagsCount) attribute(s) will be ignored.")
             return tags.dropLast(extraTagsCount)
         } else {
             return tags

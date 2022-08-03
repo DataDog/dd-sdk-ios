@@ -132,7 +132,7 @@ internal final class RUMViewsHandler {
 
     private func start(view: View) {
         guard let subscriber = subscriber else {
-            return userLogger.warn(
+            return DD.logger.warn(
                 """
                 RUM View was started, but no `RUMMonitor` is registered on `Global.rum`. RUM instrumentation will not work.
                 Make sure `Global.rum = RUMMonitor.initialize()` is called before any view appears.
@@ -146,7 +146,7 @@ internal final class RUMViewsHandler {
 
         subscriber.process(
             command: RUMStartViewCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 identity: identity,
                 name: view.name,
                 path: view.path,
@@ -162,7 +162,7 @@ internal final class RUMViewsHandler {
 
         subscriber?.process(
             command: RUMStopViewCommand(
-                time: dateProvider.currentDate(),
+                time: dateProvider.now,
                 attributes: [:],
                 identity: identity
             )

@@ -13,7 +13,6 @@ internal final class FileReader: Reader {
     /// Orchestrator producing reference to readable file.
     private let orchestrator: FilesOrchestrator
     private let encryption: DataEncryption?
-    private let telemetry: Telemetry?
 
     /// Files marked as read.
     private var filesRead: Set<String> = []
@@ -21,13 +20,11 @@ internal final class FileReader: Reader {
     init(
         dataFormat: DataFormat,
         orchestrator: FilesOrchestrator,
-        encryption: DataEncryption? = nil,
-        telemetry: Telemetry? = nil
+        encryption: DataEncryption? = nil
     ) {
         self.dataFormat = dataFormat
         self.orchestrator = orchestrator
         self.encryption = encryption
-        self.telemetry = telemetry
     }
 
     // MARK: - Reading batches
@@ -38,50 +35,43 @@ internal final class FileReader: Reader {
         }
 
         do {
-            let fileData = try decrypt(data: file.read())
+            let fileData = try decode(data: file.read())
             let batchData = dataFormat.prefixData + fileData + dataFormat.suffixData
             return Batch(data: batchData, file: file)
         } catch {
-            telemetry?.error("Failed to read data from file", error: error)
+            DD.telemetry.error("Failed to read data from file", error: error)
             return nil
         }
     }
 
-    /// Decrypts data if encryption is available.
+    /// Decodes input data
     ///
-    /// When encryption is provided, the data is splitted using data-format separator, each slices
-    /// is then decoded from base64 and decrypted. Data is finally re-joined with data-format separator.
+    /// The input data is expected to be a stream of `DataBlock`. Only block of type `event` are
+    /// consumed and decrypted if encryption is available. Decrypted events are finally joined with
+    /// data-format separator.
     ///
-    /// If no encryption, the data is returned.
-    ///
-    /// - Parameter data: The data to decrypt.
-    /// - Returns: Decrypted data.
-    private func decrypt(data: Data) -> Data {
-        guard let encryption = encryption else {
-            return data
-        }
+    /// - Parameter data: The data to decode.
+    /// - Returns: The decoded and formatted data.
+    private func decode(data: Data) throws -> Data {
+        let reader = DataBlockReader(data: data)
 
         var failure: String? = nil
         defer {
-            failure.map { userLogger.error($0) }
+            failure.map { DD.logger.error($0) }
         }
 
-        return data
-            // split data
-            .split(separator: dataFormat.separatorByte)
-            // decode base64 - report failure
+        return try reader.all()
+            // get event blocks only
             .compactMap {
-                if let data = Data(base64Encoded: $0) {
-                    return data
+                switch $0.type {
+                case .event:
+                    return $0.data
                 }
-
-                failure = "🔥 Failed to decode base64 data before decryption"
-                return nil
             }
             // decrypt data - report failure
             .compactMap { (data: Data) in
                 do {
-                    return try encryption.decrypt(data: data)
+                    return try decrypt(data: data)
                 } catch {
                     failure = "🔥 Failed to decrypt data with error: \(error)"
                     return nil
@@ -91,6 +81,20 @@ internal final class FileReader: Reader {
             .reduce(Data()) { $0 + $1 + [dataFormat.separatorByte] }
             // drop last separator
             .dropLast()
+    }
+
+    /// Decrypts data if encryption is available.
+    ///
+    /// If no encryption, the data is returned.
+    ///
+    /// - Parameter data: The data to decrypt.
+    /// - Returns: Decrypted data.
+    private func decrypt(data: Data) throws -> Data {
+        guard let encryption = encryption else {
+            return data
+        }
+
+        return try encryption.decrypt(data: data)
     }
 
     // MARK: - Accepting batches

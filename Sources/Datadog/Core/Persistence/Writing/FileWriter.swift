@@ -8,26 +8,19 @@ import Foundation
 
 /// Writes data to files.
 internal final class FileWriter: Writer {
-    /// Data writing format.
-    private let dataFormat: DataFormat
     /// Orchestrator producing reference to writable file.
     private let orchestrator: FilesOrchestrator
     /// JSON encoder used to encode data.
     private let jsonEncoder: JSONEncoder
     private let encryption: DataEncryption?
-    private let telemetry: Telemetry?
 
     init(
-        dataFormat: DataFormat,
         orchestrator: FilesOrchestrator,
-        encryption: DataEncryption? = nil,
-        telemetry: Telemetry? = nil
+        encryption: DataEncryption? = nil
     ) {
-        self.dataFormat = dataFormat
         self.orchestrator = orchestrator
         self.jsonEncoder = .default()
         self.encryption = encryption
-        self.telemetry = telemetry
     }
 
     // MARK: - Writing data
@@ -35,34 +28,47 @@ internal final class FileWriter: Writer {
     /// Encodes given value to JSON data and writes it to the file.
     func write<T: Encodable>(value: T) {
         do {
-            var data = try encode(value: value)
+            let data = try encode(event: value)
             let file = try orchestrator.getWritableFile(writeSize: UInt64(data.count))
-
-            if try file.size() > 0 {
-                data.insert(dataFormat.separatorByte, at: 0)
-            }
-
             try file.append(data: data)
         } catch {
-            userLogger.error("🔥 Failed to write data: \(error)")
-            telemetry?.error("Failed to write data to file", error: error)
+            DD.logger.error("Failed to write data", error: error)
+            DD.telemetry.error("Failed to write data to file", error: error)
         }
     }
 
     /// Encodes the given encodable value and encrypt it if encryption is available.
     ///
-    /// If encryption is available, encryption result is base64 encoded.
+    /// The returned data format:
     ///
-    /// - Parameter value: The value to encode.
+    ///     +- 2 bytes -+-  4 bytes -+- n bytes  -|
+    ///     |    0x00   | block size | block data |
+    ///     +-----------+------------+------------+
+    ///
+    /// Where the 2 first bytes represents the `block type` of
+    /// an event.
+    ///
+    /// - Parameter event: The value to encode.
     /// - Returns: Data representation of the value.
-    private func encode<T: Encodable>(value: T) throws -> Data {
-        let data = try jsonEncoder.encode(value)
+    private func encode<T: Encodable>(event: T) throws -> Data {
+        let data = try jsonEncoder.encode(event)
+        return try DataBlock(
+            type: .event,
+            data: encrypt(data: data)
+        ).serialize()
+    }
 
+    /// Encrypts data if encryption is available.
+    ///
+    /// If no encryption, the data is returned.
+    ///
+    /// - Parameter data: The data to encrypt.
+    /// - Returns: Encrypted data.
+    private func encrypt(data: Data) throws -> Data {
         guard let encryption = encryption else {
             return data
         }
 
         return try encryption.encrypt(data: data)
-            .base64EncodedData()
     }
 }

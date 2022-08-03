@@ -16,7 +16,7 @@ internal struct DDNoopTracer: OTTracer {
     var activeSpan: OTSpan? = nil
 
     private func warn() {
-        userLogger.warn(
+        DD.logger.warn(
             """
             The `Global.sharedTracer` was called but no `Tracer` is registered. Configure and register the `Tracer` globally before invoking the feature:
                 Global.sharedTracer = Tracer.initialize()

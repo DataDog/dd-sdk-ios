@@ -42,8 +42,8 @@ class KronosE2ETests: E2ETests {
         }
 
         func performKronosSync(using pool: String) -> KronosSyncResult {
-            KronosClock.reset()
-            defer { KronosClock.reset() }
+            let kronosClock = KronosClock()
+            defer { kronosClock.reset() }
 
             // Given
             let numberOfSamplesForEachIP = 2 // exchange only 2 samples with each resolved IP - to run test quick
@@ -57,7 +57,7 @@ class KronosE2ETests: E2ETests {
             let completionExpectation = expectation(description: "KronosClock.sync() calls completion closure")
             var result = KronosSyncResult()
 
-            KronosClock.sync(
+            kronosClock.sync(
                 from: pool,
                 samples: numberOfSamplesForEachIP,
                 first: { date, offset in // this closure could not be called if all samples to all servers resulted with failure
@@ -83,7 +83,7 @@ class KronosE2ETests: E2ETests {
         }
 
         // Run test for each Datadog NTP pool:
-        DateCorrector.datadogNTPServers.forEach { ddNTPPool in
+        DatadogNTPDateProvider.datadogNTPServers.forEach { ddNTPPool in
             let result = measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
                 performKronosSync(using: ddNTPPool)
             }

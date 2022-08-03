@@ -22,9 +22,12 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
         // When
         let integration = CrashReportingWithLoggingIntegration(
             logOutput: logOutput,
-            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
-            dateCorrector: DateCorrectorMock(),
-            configuration: .mockAny()
+            context: .mockWith(
+                dependencies: .mockWith(
+                    dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
+                    dateCorrector: DateCorrectorMock()
+                )
+            )
         )
         integration.send(crashReport: crashReport, with: crashContext)
 
@@ -80,9 +83,13 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
         // When
         let integration = CrashReportingWithLoggingIntegration(
             logOutput: logOutput,
-            dateProvider: RelativeDateProvider(using: .mockRandomInThePast()),
-            dateCorrector: DateCorrectorMock(correctionOffset: dateCorrectionOffset),
-            configuration: configuration
+            context: .mockWith(
+                configuration: configuration,
+                dependencies: .mockWith(
+                    dateProvider: RelativeDateProvider(using: .mockRandomInThePast()),
+                    dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
+                )
+            )
         )
         integration.send(crashReport: crashReport, with: crashContext)
 

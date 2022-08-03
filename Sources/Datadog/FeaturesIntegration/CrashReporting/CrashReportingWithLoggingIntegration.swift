@@ -16,36 +16,24 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
     /// The output for writing logs. It uses the authorized data folder and is synchronized with the eventual
     /// authorized output working simultaneously in the Logging feature.
     private let logOutput: LogOutput
-    private let dateProvider: DateProvider
-    private let dateCorrector: DateCorrectorType
 
-    /// Global configuration set for the SDK (service name, environment, application version, ...)
-    private let configuration: FeaturesConfiguration.Common
+    private let context: DatadogV1Context
 
-    init(loggingFeature: LoggingFeature) {
+    init(loggingFeature: LoggingFeature, context: DatadogV1Context) {
         self.init(
             logOutput: LogFileOutput(
-                fileWriter: loggingFeature.storage.arbitraryAuthorizedWriter,
-                // The RUM Errors integration is not set for this instance of the `LogFileOutput` we don't want to
-                // issue additional RUM Errors for crash reports. Those are send through `CrashReportingWithRUMIntegration`.
-                rumErrorsIntegration: nil
+                fileWriter: loggingFeature.storage.arbitraryAuthorizedWriter
             ),
-            dateProvider: loggingFeature.dateProvider,
-            dateCorrector: loggingFeature.dateCorrector,
-            configuration: loggingFeature.configuration.common
+            context: context
         )
     }
 
     init(
         logOutput: LogOutput,
-        dateProvider: DateProvider,
-        dateCorrector: DateCorrectorType,
-        configuration: FeaturesConfiguration.Common
+        context: DatadogV1Context
     ) {
         self.logOutput = logOutput
-        self.dateProvider = dateProvider
-        self.dateCorrector = dateCorrector
-        self.configuration = configuration
+        self.context = context
     }
 
     func send(crashReport: DDCrashReport, with crashContext: CrashContext) {
@@ -56,10 +44,10 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
         // The `crashReport.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
         // to the server time before processing. Following use of the current correction is not ideal, but this is the best
         // approximation we can get.
-        let currentTimeCorrection = dateCorrector.currentCorrection
+        let currentTimeCorrection = context.dateCorrector.offset
 
-        let crashDate = crashReport.date ?? dateProvider.currentDate()
-        let realCrashDate = currentTimeCorrection.applying(to: crashDate)
+        let crashDate = crashReport.date ?? context.dateProvider.now
+        let realCrashDate = crashDate.addingTimeInterval(currentTimeCorrection)
 
         let log = createLog(from: crashReport, crashContext: crashContext, crashDate: realCrashDate)
         logOutput.write(log: log)
@@ -85,12 +73,12 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
                 message: crashReport.message,
                 stack: crashReport.stack
             ),
-            serviceName: configuration.serviceName,
-            environment: configuration.environment,
+            serviceName: context.service,
+            environment: context.env,
             loggerName: Constants.loggerName,
-            loggerVersion: configuration.sdkVersion,
+            loggerVersion: context.sdkVersion,
             threadName: nil,
-            applicationVersion: configuration.applicationVersion,
+            applicationVersion: context.version,
             userInfo: .init(
                 id: user?.id,
                 name: user?.name,

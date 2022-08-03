@@ -57,6 +57,7 @@ class DDConfigurationTests: XCTestCase {
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 100.0)
             XCTAssertNil(configuration.rumUIKitViewsPredicate)
             XCTAssertNil(configuration.rumUIKitUserActionsPredicate)
+            XCTAssertEqual(configuration.mobileVitalsFrequency, .rare)
             XCTAssertEqual(configuration.batchSize, .medium)
             XCTAssertEqual(configuration.uploadFrequency, .average)
             XCTAssertNil(configuration.rumViewEventMapper)
@@ -65,6 +66,7 @@ class DDConfigurationTests: XCTestCase {
             XCTAssertNil(configuration.rumErrorEventMapper)
             XCTAssertEqual(configuration.additionalConfiguration.count, 0)
             XCTAssertNil(configuration.encryption)
+            XCTAssertNil(configuration.serverDateProvider)
         }
     }
 
@@ -182,6 +184,9 @@ class DDConfigurationTests: XCTestCase {
         objcBuilder.set(batchSize: .small)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.batchSize, .small)
 
+        objcBuilder.set(mobileVitalsFrequency: .frequent)
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.mobileVitalsFrequency, .frequent)
+
         objcBuilder.set(batchSize: .large)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.batchSize, .large)
 
@@ -209,6 +214,13 @@ class DDConfigurationTests: XCTestCase {
         let dataEncryption = ObjCDataEncryption()
         objcBuilder.set(encryption: dataEncryption)
         XCTAssertTrue((objcBuilder.build().sdkConfiguration.encryption as? DDDataEncryptionBridge)?.objcEncryption === dataEncryption)
+
+        class ObjcServerDateProvider: DDServerDateProvider {
+            func synchronize(update: @escaping (TimeInterval) -> Void) { }
+        }
+        let serverDateProvider = ObjcServerDateProvider()
+        objcBuilder.set(serverDateProvider: serverDateProvider)
+        XCTAssertTrue((objcBuilder.build().sdkConfiguration.serverDateProvider as? DDServerDateProviderBridge)?.objcProvider === serverDateProvider)
     }
 
     func testScrubbingRUMEvents() {

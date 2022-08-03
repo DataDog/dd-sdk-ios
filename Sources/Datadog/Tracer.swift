@@ -45,22 +45,20 @@ public struct DDTags {
 public typealias DDTracer = Tracer
 
 public class Tracer: OTTracer {
-    /// Builds the `Span` from user input.
-    internal let spanBuilder: SpanEventBuilder
-    /// Writes the `Span` to file.
-    internal let spanOutput: SpanOutput
-    /// Writes span logs to output. `nil` if Logging feature is disabled.
-    internal let logOutput: LoggingForTracingAdapter.AdaptedLogOutput?
+    internal let core: DatadogCoreProtocol
+
+    /// The Tracer configuration
+    internal let configuration: Configuration
+    /// Span events mapper configured by the user, `nil` if not set.
+    internal let spanEventMapper: SpanEventMapper?
     /// Queue ensuring thread-safety of the `Tracer` and `DDSpan` operations.
     internal let queue: DispatchQueue
-    /// Integration with RUM Context. `nil` if disabled for this Tracer or if the RUM feature disabled.
+    /// Integration with RUM Context. `nil` if disabled for this Tracer or if the RUM feature is disabled.
     internal let rumContextIntegration: TracingWithRUMContextIntegration?
+    /// Integration with Logging. `nil` if the Logging feature is disabled.
+    internal let loggingIntegration: TracingWithLoggingIntegration?
 
-    private let dateProvider: DateProvider
     private let tracingUUIDGenerator: TracingUUIDGenerator
-
-    /// Tags to be set on all spans. They are set at initialization from Tracer.Configuration
-    private let globalTags: [String: Encodable]?
 
     internal let activeSpansPool = ActiveSpansPool()
 
@@ -69,8 +67,13 @@ public class Tracer: OTTracer {
     /// Initializes the Datadog Tracer.
     /// - Parameters:
     ///   - configuration: the tracer configuration obtained using `Tracer.Configuration()`.
-    public static func initialize(configuration: Configuration) -> OTTracer {
+    public static func initialize(configuration: Configuration, in core: DatadogCoreProtocol = defaultDatadogCore) -> OTTracer {
         do {
+            guard let context = core.v1.context else {
+                throw ProgrammerError(
+                    description: "`Datadog.initialize()` must be called prior to `Tracer.initialize()`."
+                )
+            }
             if Global.sharedTracer is Tracer {
                 throw ProgrammerError(
                     description: """
@@ -78,16 +81,18 @@ public class Tracer: OTTracer {
                     """
                 )
             }
-            guard let tracingFeature = TracingFeature.instance else {
+            guard let tracingFeature = core.v1.feature(TracingFeature.self) else {
                 throw ProgrammerError(
-                    description: Datadog.instance == nil
-                        ? "`Datadog.initialize()` must be called prior to `Tracer.initialize()`."
-                        : "`Tracer.initialize(configuration:)` produces a non-functional tracer, as the tracing feature is disabled."
+                    description: "`Tracer.initialize(configuration:)` produces a non-functional tracer, as the tracing feature is disabled."
                 )
             }
             return DDTracer(
+                core: core,
                 tracingFeature: tracingFeature,
-                tracerConfiguration: configuration
+                tracerConfiguration: configuration,
+                rumEnabled: core.v1.feature(RUMFeature.self) != nil,
+                loggingFeature: core.v1.feature(LoggingFeature.self),
+                context: context
             )
         } catch {
             consolePrint("\(error)")
@@ -95,55 +100,50 @@ public class Tracer: OTTracer {
         }
     }
 
-    internal convenience init(tracingFeature: TracingFeature, tracerConfiguration: Configuration) {
+    internal convenience init(
+        core: DatadogCoreProtocol,
+        tracingFeature: TracingFeature,
+        tracerConfiguration: Configuration,
+        rumEnabled: Bool,
+        loggingFeature: LoggingFeature?,
+        context: DatadogV1Context
+    ) {
         self.init(
-            spanBuilder: SpanEventBuilder(
-                sdkVersion: tracingFeature.configuration.common.sdkVersion,
-                applicationVersion: tracingFeature.configuration.common.applicationVersion,
-                serviceName: tracerConfiguration.serviceName ?? tracingFeature.configuration.common.serviceName,
-                userInfoProvider: tracingFeature.userInfoProvider,
-                networkConnectionInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.networkConnectionInfoProvider : nil,
-                carrierInfoProvider: tracerConfiguration.sendNetworkInfo ? tracingFeature.carrierInfoProvider : nil,
-                dateCorrector: tracingFeature.dateCorrector,
-                source: tracingFeature.configuration.common.source,
-                origin: tracingFeature.configuration.common.origin ,
-                eventsMapper: tracingFeature.configuration.spanEventMapper,
-                telemetry: tracingFeature.telemetry
-            ),
-            spanOutput: SpanFileOutput(
-                fileWriter: tracingFeature.storage.writer,
-                environment: tracingFeature.configuration.common.environment
-            ),
-            logOutput: tracingFeature
-                .loggingFeatureAdapter?
-                .resolveLogOutput(usingTracingFeature: tracingFeature, tracerConfiguration: tracerConfiguration),
-            dateProvider: tracingFeature.dateProvider,
-            tracingUUIDGenerator: tracingFeature.tracingUUIDGenerator,
-            globalTags: tracerConfiguration.globalTags,
-            rumContextIntegration: (RUMFeature.isEnabled && tracerConfiguration.bundleWithRUM) ? TracingWithRUMContextIntegration() : nil
+            core: core,
+            configuration: tracerConfiguration,
+            spanEventMapper: tracingFeature.configuration.spanEventMapper,
+            tracingUUIDGenerator: tracingFeature.configuration.uuidGenerator,
+            rumContextIntegration: (rumEnabled && tracerConfiguration.bundleWithRUM) ? TracingWithRUMContextIntegration() : nil,
+            loggingIntegration: loggingFeature.map {
+                TracingWithLoggingIntegration(
+                    core: core,
+                    context: context,
+                    tracerConfiguration: tracerConfiguration,
+                    loggingFeature: $0
+                )
+            }
         )
     }
 
     internal init(
-        spanBuilder: SpanEventBuilder,
-        spanOutput: SpanOutput,
-        logOutput: LoggingForTracingAdapter.AdaptedLogOutput?,
-        dateProvider: DateProvider,
+        core: DatadogCoreProtocol,
+        configuration: Configuration,
+        spanEventMapper: SpanEventMapper?,
         tracingUUIDGenerator: TracingUUIDGenerator,
-        globalTags: [String: Encodable]?,
-        rumContextIntegration: TracingWithRUMContextIntegration?
+        rumContextIntegration: TracingWithRUMContextIntegration?,
+        loggingIntegration: TracingWithLoggingIntegration?
     ) {
-        self.spanBuilder = spanBuilder
-        self.spanOutput = spanOutput
-        self.logOutput = logOutput
+        self.core = core
+        self.configuration = configuration
+        self.spanEventMapper = spanEventMapper
         self.queue = DispatchQueue(
             label: "com.datadoghq.tracer",
             target: .global(qos: .userInteractive)
         )
-        self.dateProvider = dateProvider
+
         self.tracingUUIDGenerator = tracingUUIDGenerator
-        self.globalTags = globalTags
         self.rumContextIntegration = rumContextIntegration
+        self.loggingIntegration = loggingIntegration
     }
 
     // MARK: - Open Tracing interface
@@ -196,7 +196,7 @@ public class Tracer: OTTracer {
     }
 
     internal func startSpan(spanContext: DDSpanContext, operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
-        var combinedTags = globalTags ?? [:]
+        var combinedTags = configuration.globalTags ?? [:]
         if let userTags = tags {
             combinedTags.merge(userTags) { _, last in last }
         }
@@ -208,7 +208,7 @@ public class Tracer: OTTracer {
             tracer: self,
             context: spanContext,
             operationName: operationName,
-            startTime: startTime ?? dateProvider.currentDate(),
+            startTime: startTime ?? core.v1.context?.dateProvider.now ?? Date(),
             tags: combinedTags
         )
         return span

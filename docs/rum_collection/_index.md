@@ -17,6 +17,8 @@ further_reading:
     text: "See your crash reports and error trends in RUM"
 ---
 
+## Overview
+
 Datadog Real User Monitoring (RUM) enables you to visualize and analyze the real-time performance and user journeys of your application's individual users. 
 
 ## Setup
@@ -24,11 +26,11 @@ Datadog Real User Monitoring (RUM) enables you to visualize and analyze the real
 1. Declare the SDK as a dependency.
 2. Specify application details in the UI.
 3. Initialize the library.
-4. Initialize the RUM Monitor, `DDURLSessionDelegate`, and start sending data.
+4. Initialize the RUM Monitor, `DDURLSessionDelegate`, to start sending data.
 
 **Note:** The minimum supported version for the Datadog iOS SDK is iOS v11+. The Datadog iOS SDK also supports tvOS. 
 
-### Declare SDK as dependency
+### Declare the SDK as a dependency
 
 1. Declare [dd-sdk-ios][1] as a dependency, depending on your package manager.
 
@@ -39,18 +41,23 @@ Datadog Real User Monitoring (RUM) enables you to visualize and analyze the real
 | [Swift Package Manager][3] | `.package(url: "https://github.com/DataDog/dd-sdk-ios.git", .upToNextMajor(from: "1.0.0"))` |
 | [Carthage][4]              | `github "DataDog/dd-sdk-ios"`                                                               |
 
-### Specify application details in UI
+### Specify application details in the UI
 
-1. In **UX Monitoring** > **RUM Applications**, click **New Application**.
-2. Select `iOS` as your **Application Type** in the [Datadog UI][5] and provide a new application name to generate a unique Datadog application ID and client token.
+1. Navigate to [**UX Monitoring** > **RUM Applications** > **New Application**][5].
+2. Select `iOS` as the application type and enter an application name to generate a unique Datadog application ID and client token.
+3. To instrument your web views, click the **Instrument your webviews** toggle. For more information, see [Web View Tracking][12].
 
 {{< img src="real_user_monitoring/ios/screenshot_rum.png" alt="RUM Event hierarchy" style="width:100%;border:none" >}}
 
-To keep your data safe, do not use a [Datadog API key][6] to configure the `dd-sdk-ios` library. Instead, use the client token to prevent your API key from being publicly exposed on the client side in the iOS application byte code.
+To ensure the safety of your data, you must use a client token. If you used only [Datadog API keys][6] to configure the `dd-sdk-ios` library, they would be exposed client-side in the iOS application's byte code. 
 
 For more information about setting up a client token, see the [Client token documentation][7].
 
 ### Initialize the library
+
+In the initialization snippet, set an environment name, service name, and version number. In the examples below, `app-name` specifies the variant of the application that generates data. 
+
+For more information, see [Using Tags][11].
 
 {{< site-region region="us" >}}
 {{< tabs >}}
@@ -258,9 +265,9 @@ DDConfigurationBuilder *builder = [DDConfiguration builderWithRumApplicationID:@
 {{< /tabs >}}
 {{< /site-region >}}
 
-The RUM SDK automatically tracks user sessions depending on options provided at the SDK initialization. To add GDPR compliance for your EU users and other [initialization parameters][9] to the SDK configuration, see the [Set tracking consent documentation][8].
+The RUM iOS SDK automatically tracks user sessions depending on options provided at the SDK initialization. To add GDPR compliance for your EU users and other [initialization parameters][9] to the SDK configuration, see the [Set tracking consent documentation][8].
 
-### Initialize RUM Monitor and `DDURLSessionDelegate`
+### Initialize the RUM Monitor and `DDURLSessionDelegate`
 
 Configure and register the RUM Monitor. You only need to do it once, usually in your `AppDelegate` code:
 
@@ -319,7 +326,7 @@ Add the following snippet during initialization in your Datadog configuration:
 <div class="alert alert-info"><p>Tracking background events may lead to additional sessions, which can impact billing. For questions, <a href="https://docs.datadoghq.com/help/">contact Datadog support.</a></p>
 </div>
 
-## iOS Crash Reporting and Error Tracking
+## Access outstanding errors
 
 Crash Reporting and Error Tracking for iOS displays any issues and latest available errors. You can view error details and attributes including JSON in the [RUM Explorer][10]. 
 
@@ -332,9 +339,11 @@ Crash Reporting and Error Tracking for iOS displays any issues and latest availa
 [2]: https://cocoapods.org/
 [3]: https://swift.org/package-manager/
 [4]: https://github.com/Carthage/Carthage
-[5]: https://app.datadoghq.com/rum/create
+[5]: https://app.datadoghq.com/rum/application/create
 [6]: https://docs.datadoghq.com/account_management/api-app-keys/#api-keys
 [7]: https://docs.datadoghq.com/account_management/api-app-keys/#client-tokens
 [8]: https://docs.datadoghq.com/real_user_monitoring/ios/advanced_configuration/#set-tracking-consent-gdpr-compliance
 [9]: https://docs.datadoghq.com/real_user_monitoring/ios/advanced_configuration/#initialization-parameters
 [10]: https://docs.datadoghq.com/real_user_monitoring/explorer/
+[11]: https://docs.datadoghq.com/getting_started/tagging/using_tags/#rum--session-replay
+[12]: https://docs.datadoghq.com/real_user_monitoring/ios/web_view_tracking/
