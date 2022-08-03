@@ -242,6 +242,7 @@ extension Datadog {
         private(set) var loggingEnabled: Bool
         private(set) var tracingEnabled: Bool
         private(set) var rumEnabled: Bool
+        private(set) var serverDateProvider: ServerDateProvider?
         private(set) var crashReportingPlugin: DDCrashReportingPluginType?
 
         /// If `DatadogEndpoint` is set, it will override `logsEndpoint`, `tracesEndpoint` and `rumEndpoint` values.
@@ -395,6 +396,20 @@ extension Datadog {
             /// - Parameter customRUMEndpoint: server endpoint (not set by default)
             public func set(customRUMEndpoint: URL) -> Builder {
                 configuration.customRUMEndpoint = customRUMEndpoint
+                return self
+            }
+
+            /// Sets a custom NTP synchronization interface.
+            ///
+            /// By default, the Datadog SDK synchronizes with dedicated NTP pools provided by the
+            /// https://www.ntppool.org/ . Using different pools or setting a no-op `ServerDateProvider`
+            /// implementation will result in desynchronization of the SDK instance and the Datadog servers.
+            /// This can lead to significant time shift in RUM sessions or distributed traces.
+            ///
+            /// - Parameter serverDateProvider: An object that complies with `ServerDateProvider`
+            ///                                 for provider clock synchronisation.
+            public func set(serverDateProvider: ServerDateProvider) -> Builder {
+                configuration.serverDateProvider = serverDateProvider
                 return self
             }
 

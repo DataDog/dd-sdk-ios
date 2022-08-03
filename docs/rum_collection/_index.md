@@ -55,7 +55,7 @@ For more information about setting up a client token, see the [Client token docu
 
 ### Initialize the library
 
-In the initialization snippet, set an environment name, service name, and version number. In the examples below, `app-name` specifies the name of the service that generates data. 
+In the initialization snippet, set an environment name, service name, and version number. In the examples below, `app-name` specifies the variant of the application that generates data. 
 
 For more information, see [Using Tags][11].
 
@@ -76,7 +76,7 @@ Datadog.initialize(
         .set(serviceName: "app-name")
         .set(endpoint: .us1)
         .trackUIKitRUMViews()
-        .trackUIKitActions()
+        .trackUIKitRUMActions()
         .trackURLSession()
         .build()
 )
@@ -117,7 +117,7 @@ Datadog.initialize(
         .set(serviceName: "app-name")
         .set(endpoint: .eu1)
         .trackUIKitRUMViews()
-        .trackUIKitActions()
+        .trackUIKitRUMActions()
         .trackURLSession()
         .build()
 )
@@ -158,7 +158,7 @@ Datadog.initialize(
         .set(serviceName: "app-name")
         .set(endpoint: .us3)
         .trackUIKitRUMViews()
-        .trackUIKitActions()
+        .trackUIKitRUMActions()
         .trackURLSession()
         .build()
 )
@@ -199,7 +199,7 @@ Datadog.initialize(
         .set(serviceName: "app-name")
         .set(endpoint: .us5)
         .trackUIKitRUMViews()
-        .trackUIKitActions()
+        .trackUIKitRUMActions()
         .trackURLSession()
         .build()
 )
@@ -240,7 +240,7 @@ Datadog.initialize(
         .set(serviceName: "app-name")
         .set(endpoint: .us1_fed)
         .trackUIKitRUMViews()
-        .trackUIKitActions()
+        .trackUIKitRUMActions()
         .trackURLSession()
         .build()
 )

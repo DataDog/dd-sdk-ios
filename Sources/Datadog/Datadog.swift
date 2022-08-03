@@ -177,7 +177,7 @@ public class Datadog {
         let userInfoProvider = UserInfoProvider()
         let dateProvider = SystemDateProvider()
         let dateCorrector = ServerDateCorrector(
-            serverDateProvider: NTPServerDateProvider()
+            serverDateProvider: configuration.common.serverDateProvider ?? DatadogNTPDateProvider()
         )
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
         let carrierInfoProvider = CarrierInfoProvider()
@@ -218,7 +218,7 @@ public class Datadog {
         var rumInstrumentation: RUMInstrumentation?
 
         if let rumConfiguration = configuration.rum {
-            core.telemetry = RUMTelemetry(
+            DD.telemetry = RUMTelemetry(
                 in: core,
                 sdkVersion: configuration.common.sdkVersion,
                 applicationID: rumConfiguration.applicationID,
@@ -267,8 +267,7 @@ public class Datadog {
         if let crashReportingConfiguration = configuration.crashReporting {
             crashReporting = CrashReportingFeature(
                 configuration: crashReportingConfiguration,
-                commonDependencies: commonDependencies,
-                telemetry: core.telemetry
+                commonDependencies: commonDependencies
             )
 
             core.register(feature: crashReporting)
@@ -336,10 +335,15 @@ public class Datadog {
         Global.rum = DDNoopRUMMonitor()
         Global.crashReporter?.deinitialize()
         Global.crashReporter = nil
+        DD.telemetry = NOPTelemetry()
 
         // Deinitialize `Datadog`:
         defaultDatadogCore = NOOPDatadogCore()
     }
+
+    // MARK: - Internal Proxy - exposure of internal classes (Mostly used for cross platform libraries)
+
+    public private(set) static var _internal = _InternalProxy()
 }
 
 /// Convenience typealias.

@@ -17,12 +17,21 @@ internal struct DD {
     /// It is meant for debugging purposes when using the SDK, hence **it should log information useful and actionable
     /// to the SDK user**. Think of possible logs that we may want to receive from our users when asking them to enable
     /// SDK verbosity and send us their console log.
-    static var logger: CoreLogger = ConsoleLogger(
+    static var logger: CoreLogger = InternalLogger(
         dateProvider: SystemDateProvider(),
         timeZone: .current,
         printFunction: consolePrint,
         verbosityLevel: { Datadog.verbosityLevel }
     )
 
-    // TODO: RUMM-2239 Move `Telemetry` in here
+    /// The telemetry monitor providing methods to send debug information
+    /// and execution errors of the Datadog SDK. It is only available if RUM feature is used.
+    ///
+    /// All collected events are anonymous and get reported to Datadog Telemetry org.
+    /// The actual implementation of `Telemetry` provides sampling and throttling
+    /// capabilities to ensure fair usage of user quota.
+    ///
+    /// Regardless internal optimisations, **it should be used wisely to report only useful
+    /// and actionable events** that are key to SDK observability.
+    static var telemetry: Telemetry = NOPTelemetry()
 }

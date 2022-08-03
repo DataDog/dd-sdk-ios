@@ -24,7 +24,7 @@ internal func createV2TracingStorageConfiguration() -> FeatureStorageConfigurati
 internal func createV2TracingUploadConfiguration(v1Configuration: FeaturesConfiguration.Tracing) -> FeatureUploadConfiguration {
     return FeatureUploadConfiguration(
         featureName: "tracing",
-        createRequestBuilder: { v1Context, telemetry in
+        createRequestBuilder: { v1Context in
             return RequestBuilder(
                 url: v1Configuration.uploadURL,
                 queryItems: [],
@@ -39,8 +39,7 @@ internal func createV2TracingUploadConfiguration(v1Configuration: FeaturesConfig
                     .ddEVPOriginHeader(source: v1Context.ciAppOrigin ?? v1Context.source),
                     .ddEVPOriginVersionHeader(sdkVersion: v1Context.sdkVersion),
                     .ddRequestIDHeader(),
-                ],
-                telemetry: telemetry
+                ]
             )
         },
         payloadFormat: DataFormat(prefix: "", suffix: "", separator: "\n")

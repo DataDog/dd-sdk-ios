@@ -125,7 +125,11 @@ internal final class KronosClock: KronosClockProtocol {
     ) {
         self.loadFromDefaults()
 
-        KronosNTPClient().query(pool: pool, numberOfSamples: samples) { offset, done, total in
+        KronosNTPClient().query(pool: pool, numberOfSamples: samples) { [weak self] offset, done, total in
+            guard let self = self else {
+                return
+            }
+
             if let offset = offset {
                 self.stableTime = KronosTimeFreeze(offset: offset)
 

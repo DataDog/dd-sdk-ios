@@ -30,13 +30,10 @@ internal final class CrashReportingFeature {
     let rumSessionStateProvider: ValuePublisher<RUMSessionState?>
     /// Publishes changes to app "foreground" / "background" state.
     let appStateListener: AppStateListening
-    /// Telemetry interface
-    let telemetry: Telemetry?
 
     init(
         configuration: FeaturesConfiguration.CrashReporting,
-        commonDependencies: FeaturesCommonDependencies,
-        telemetry: Telemetry?
+        commonDependencies: FeaturesCommonDependencies
     ) {
         self.configuration = configuration
         self.consentProvider = commonDependencies.consentProvider
@@ -46,6 +43,5 @@ internal final class CrashReportingFeature {
         self.rumViewEventProvider = ValuePublisher(initialValue: nil) // `nil` by default, because there cannot be any RUM view at this ponit
         self.rumSessionStateProvider = ValuePublisher(initialValue: nil) // `nil` by default, because there cannot be any RUM session at this ponit
         self.appStateListener = commonDependencies.appStateListener
-        self.telemetry = telemetry
     }
 }

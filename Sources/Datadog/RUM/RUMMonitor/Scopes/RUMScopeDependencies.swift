@@ -41,8 +41,7 @@ internal extension RUMScopeDependencies {
     init(
         rumFeature: RUMFeature,
         crashReportingFeature: CrashReportingFeature?,
-        context: DatadogV1Context,
-        telemetry: Telemetry?
+        context: DatadogV1Context
     ) {
         self.init(
             rumApplicationID: rumFeature.configuration.applicationID,
@@ -57,8 +56,7 @@ internal extension RUMScopeDependencies {
                     errorEventMapper: rumFeature.configuration.errorEventMapper,
                     resourceEventMapper: rumFeature.configuration.resourceEventMapper,
                     actionEventMapper: rumFeature.configuration.actionEventMapper,
-                    longTaskEventMapper: rumFeature.configuration.longTaskEventMapper,
-                    telemetry: telemetry
+                    longTaskEventMapper: rumFeature.configuration.longTaskEventMapper
                 )
             ),
             rumUUIDGenerator: rumFeature.configuration.uuidGenerator,
@@ -68,7 +66,7 @@ internal extension RUMScopeDependencies {
             vitalsReaders: rumFeature.configuration.vitalsFrequency.map {
                 .init(
                     frequency: $0,
-                    cpu: VitalCPUReader(telemetry: telemetry),
+                    cpu: VitalCPUReader(),
                     memory: VitalMemoryReader(),
                     refreshRate: VitalRefreshRateReader()
                 )

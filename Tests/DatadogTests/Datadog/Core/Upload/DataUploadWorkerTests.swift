@@ -306,7 +306,8 @@ class DataUploadWorkerTests: XCTestCase {
 
     func testWhenDataIsBeingUploaded_itPrintsHTTPErrorMessage_toTelemetry() {
         // Given
-        let mockTelemetry = TelemetryMock()
+        let dd = DD.mockWith(telemetry: TelemetryMock())
+        defer { dd.reset() }
 
         writer.write(value: ["key": "value"])
         let randomUploadStatus: DataUploadStatus = .mockWith(error: .httpError(statusCode: 500))
@@ -322,26 +323,26 @@ class DataUploadWorkerTests: XCTestCase {
             dataUploader: mockDataUploader,
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
-            featureName: .mockRandom(),
-            telemetry: mockTelemetry
+            featureName: .mockRandom()
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(mockTelemetry.errors.count, 1)
+        XCTAssertEqual(dd.telemetry.errors.count, 1)
 
         XCTAssertEqual(
-            mockTelemetry.errors.first?.message,
+            dd.telemetry.errors.first?.message,
             "Data upload finished with status code: 500",
-            "An error should be send to internal telemetry. \(mockTelemetry)"
+            "An error should be send to `DD.telemetry`."
         )
     }
 
     func testWhenDataIsBeingUploaded_itPrintsNetworkErrorMessage_toTelemetry() {
         // Given
-        let mockTelemetry = TelemetryMock()
+        let dd = DD.mockWith(telemetry: TelemetryMock())
+        defer { dd.reset() }
 
         writer.write(value: ["key": "value"])
         let randomUploadStatus: DataUploadStatus = .mockWith(error: .networkError(error: .mockAny()))
@@ -357,20 +358,19 @@ class DataUploadWorkerTests: XCTestCase {
             dataUploader: mockDataUploader,
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
-            featureName: .mockRandom(),
-            telemetry: mockTelemetry
+            featureName: .mockRandom()
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(mockTelemetry.errors.count, 1)
+        XCTAssertEqual(dd.telemetry.errors.count, 1)
 
         XCTAssertEqual(
-            mockTelemetry.errors.first?.message,
+            dd.telemetry.errors.first?.message,
             #"Data upload finished with error - Error Domain=abc Code=0 "(null)""#,
-            "An error should be send to internal telemetry. \(mockTelemetry)"
+            "An error should be send to `DD.telemetry`."
         )
     }
 

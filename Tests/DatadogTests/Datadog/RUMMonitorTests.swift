@@ -33,8 +33,7 @@ class RUMMonitorTests: XCTestCase {
             dependencies: RUMScopeDependencies(
                 rumFeature: rumFeature,
                 crashReportingFeature: crashReportingFeature,
-                context: v1Context,
-                telemetry: v1Context.telemetry
+                context: v1Context
             ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
             dateProvider: v1Context.dateProvider
         )
@@ -410,7 +409,7 @@ class RUMMonitorTests: XCTestCase {
         }
         var userActionID: String?
         try rumEventMatchers[2].model(ofType: RUMResourceEvent.self) { rumModel in
-            userActionID = rumModel.action?.id
+            userActionID = rumModel.action?.id.stringValue
             XCTAssertEqual(rumModel.resource.statusCode, 200)
             XCTAssertEqual(rumModel.resource.method, .get)
         }

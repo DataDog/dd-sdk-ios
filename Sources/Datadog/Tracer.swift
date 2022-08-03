@@ -116,9 +116,10 @@ public class Tracer: OTTracer {
             rumContextIntegration: (rumEnabled && tracerConfiguration.bundleWithRUM) ? TracingWithRUMContextIntegration() : nil,
             loggingIntegration: loggingFeature.map {
                 TracingWithLoggingIntegration(
+                    core: core,
+                    context: context,
                     tracerConfiguration: tracerConfiguration,
-                    loggingFeature: $0,
-                    context: context
+                    loggingFeature: $0
                 )
             }
         )

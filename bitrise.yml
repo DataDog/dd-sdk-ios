@@ -280,6 +280,15 @@ workflows:
         - project_path: Datadog.xcworkspace
         - xcodebuild_options: -testPlan DatadogIntegrationTests
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogIntegration-tests.html"
+    - script:
+        title: Disable Apple Crash Reporter
+        run_if: '{{enveq "DD_RUN_INTEGRATION_TESTS" "1"}}'
+        inputs:
+        - content: |-
+            #!/usr/bin/env zsh
+            # We suspect Apple Crash Reporter causing flakiness in our CR integration tests.
+            # Disabling it makes the system prompt ("Example iOS quit unexpectedly") not appear.
+            launchctl unload -w /System/Library/LaunchAgents/com.apple.ReportCrash.plist
     - xcode-test:
         title: Run integration tests for Crash Reporting (on iOS Simulator)
         run_if: '{{enveq "DD_RUN_INTEGRATION_TESTS" "1"}}'

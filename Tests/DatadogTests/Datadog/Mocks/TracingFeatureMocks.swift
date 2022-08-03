@@ -288,8 +288,7 @@ extension SpanEventBuilder {
         source: String = .mockAny(),
         origin: String? = nil,
         sdkVersion: String = .mockAny(),
-        eventsMapper: SpanEventMapper? = nil,
-        telemetry: Telemetry? = nil
+        eventsMapper: SpanEventMapper? = nil
     ) -> SpanEventBuilder {
         return SpanEventBuilder(
             sdkVersion: sdkVersion,
@@ -301,8 +300,7 @@ extension SpanEventBuilder {
             dateCorrector: dateCorrector,
             source: source,
             origin: origin,
-            eventsMapper: eventsMapper,
-            telemetry: telemetry
+            eventsMapper: eventsMapper
         )
     }
 }

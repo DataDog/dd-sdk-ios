@@ -83,7 +83,7 @@ class KronosE2ETests: E2ETests {
         }
 
         // Run test for each Datadog NTP pool:
-        NTPServerDateProvider.datadogNTPServers.forEach { ddNTPPool in
+        DatadogNTPServers.forEach { ddNTPPool in
             let result = measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
                 performKronosSync(using: ddNTPPool)
             }

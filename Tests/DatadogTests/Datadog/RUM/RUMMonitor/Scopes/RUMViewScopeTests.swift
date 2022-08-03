@@ -1163,7 +1163,7 @@ class RUMViewScopeTests: XCTestCase {
 
         let longTaskStartingDate = addLongTaskDate - duration
 
-        XCTAssertEqual(event.action?.id, scope.context.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(event.action?.id.stringValue, scope.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
         XCTAssertNil(event.connectivity)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])

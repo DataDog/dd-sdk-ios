@@ -100,16 +100,13 @@ internal struct RequestBuilder {
     private let precomputedHeaders: [String: String]
     /// Computed HTTP headers (their value is different in succeeding requests).
     private let computedHeaders: [String: () -> String]
-    /// A monitor reporting errors through internal telemetry feature.
-    private let telemetry: Telemetry?
 
     // MARK: - Initialization
 
     init(
         url: URL,
         queryItems: [QueryItem],
-        headers: [HTTPHeader],
-        telemetry: Telemetry? = nil
+        headers: [HTTPHeader]
     ) {
         var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false)
 
@@ -131,7 +128,6 @@ internal struct RequestBuilder {
         self.url = urlComponents?.url ?? url
         self.precomputedHeaders = precomputedHeaders
         self.computedHeaders = computedHeaders
-        self.telemetry = telemetry
     }
 
     /// Creates `URLRequest` for uploading given `data` to Datadog.
@@ -149,7 +145,7 @@ internal struct RequestBuilder {
             request.httpBody = body
         } else {
             request.httpBody = data
-            telemetry?.debug(
+            DD.telemetry.debug(
                 """
                 Failed to compress request payload
                 - url: \(url)

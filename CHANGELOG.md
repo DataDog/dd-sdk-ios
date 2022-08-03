@@ -5,6 +5,8 @@
 * [IMPROVEMENT] Add mobile vitals frequency configuration. See [#876][]
 * [IMPROVEMENT] Include the exact model information in RUM `device.model`. See [#888][]
 * [FEATURE] Allow filtering outgoing logs with a status threshold. See [#867][]
+* [BUGFIX] Fix compilation issue in SwiftUI Previews. See [#949][]
+* [IMPROVEMENT] Expose server date provider for custom clock synchronization. See [#950][]
 
 # 1.11.1 / 20-06-2022
 
@@ -395,6 +397,8 @@
 [#851]: https://github.com/DataDog/dd-sdk-ios/issues/851
 [#876]: https://github.com/DataDog/dd-sdk-ios/issues/876
 [#894]: https://github.com/DataDog/dd-sdk-ios/issues/894
+[#949]: https://github.com/DataDog/dd-sdk-ios/issues/949
+[#950]: https://github.com/DataDog/dd-sdk-ios/issues/950
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu

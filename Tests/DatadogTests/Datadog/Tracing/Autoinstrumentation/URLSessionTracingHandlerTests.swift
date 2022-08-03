@@ -9,8 +9,6 @@ import XCTest
 
 class URLSessionTracingHandlerTests: XCTestCase {
     private let core = PassthroughCoreMock()
-
-    private let logOutput = LogOutputMock()
     private let handler = URLSessionTracingHandler(
         appStateListener: AppStateListenerMock(
             history: .init(
@@ -25,8 +23,13 @@ class URLSessionTracingHandlerTests: XCTestCase {
         Global.sharedTracer = Tracer.mockWith(
             core: core,
             loggingIntegration: .init(
-                logBuilder: .mockAny(),
-                loggingOutput: logOutput
+                core: core,
+                logBuilder: .init(
+                    service: .mockAny(),
+                    loggerName: .mockAny(),
+                    sendNetworkInfo: .mockAny(),
+                    eventMapper: nil
+                )
             )
         )
         super.setUp()
@@ -70,7 +73,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         XCTAssertFalse(span.isError)
         XCTAssertEqual(span.duration, 1)
 
-        let log = logOutput.recordedLog
+        let log: LogEvent? = core.events().last
         XCTAssertNil(log)
     }
 
@@ -107,15 +110,23 @@ class URLSessionTracingHandlerTests: XCTestCase {
         XCTAssertEqual(span.tags[OTTags.httpStatusCode], "200")
         XCTAssertEqual(span.tags.count, 5)
 
-        let log = logOutput.recordedLog
+        let log: LogEvent? = core.events().last
         XCTAssertNil(log)
     }
 
     func testGivenFirstPartyInterceptionWithNetworkError_whenInterceptionCompletes_itEncodesRequestInfoInSpanAndSendsLog() throws {
-        core.expectation = expectation(description: "Send span")
+        core.expectation = expectation(description: "Send span and log")
+        core.expectation?.expectedFulfillmentCount = 2
 
         // Given
-        let request: URLRequest = .mockWith(url: "https://www.example.com", queryParams: [URLQueryItem(name: "foo", value: "42"), URLQueryItem(name: "lang", value: "en")], httpMethod: "GET")
+        let request: URLRequest = .mockWith(
+            url: "https://www.example.com",
+            queryParams: [
+                URLQueryItem(name: "foo", value: "42"),
+                URLQueryItem(name: "lang", value: "en")
+            ],
+            httpMethod: "GET"
+        )
         let error = NSError(domain: "domain", code: 123, userInfo: [NSLocalizedDescriptionKey: "network error"])
         let interception = TaskInterception(request: request, isFirstParty: true)
         interception.register(completion: .mockWith(response: nil, error: error))
@@ -150,7 +161,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         XCTAssertEqual(span.tags[DDTags.errorMessage], "network error")
         XCTAssertEqual(span.tags.count, 7)
 
-        let log = try XCTUnwrap(logOutput.recordedLog, "It should send error log")
+        let log: LogEvent = try XCTUnwrap(core.events().last, "It should send error log")
         XCTAssertEqual(log.status, .error)
         XCTAssertEqual(log.message, "network error")
         XCTAssertEqual(
@@ -175,7 +186,8 @@ class URLSessionTracingHandlerTests: XCTestCase {
     }
 
     func testGivenFirstPartyInterceptionWithClientError_whenInterceptionCompletes_itEncodesRequestInfoInSpanAndSendsLog() throws {
-        core.expectation = expectation(description: "Send span")
+        core.expectation = expectation(description: "Send span and log")
+        core.expectation?.expectedFulfillmentCount = 2
 
         // Given
         let request: URLRequest = .mockWith(httpMethod: "GET")
@@ -213,7 +225,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         )
         XCTAssertEqual(span.tags.count, 8)
 
-        let log = try XCTUnwrap(logOutput.recordedLog, "It should send error log")
+        let log: LogEvent = try XCTUnwrap(core.events().last, "It should send error log")
         XCTAssertEqual(log.status, .error)
         XCTAssertEqual(log.message, "404 not found")
         XCTAssertEqual(
@@ -275,7 +287,6 @@ class URLSessionTracingHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
         XCTAssertTrue(core.events.isEmpty)
-        XCTAssertNil(logOutput.recordedLog)
     }
 
     func testGivenAnyInterception_itAddsAppStateInformationToSpan() throws {

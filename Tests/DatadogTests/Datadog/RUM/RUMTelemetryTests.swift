@@ -173,6 +173,7 @@ class RUMTelemetryTests: XCTestCase {
         telemetry.error("ns error", error: nsError)
         XCTAssertEqual(telemetry.record?.message, "ns error - error description")
     }
+
     func testSendTelemetry_discardDuplicates() throws {
         // Given
         let telemetry: RUMTelemetry = .mockAny(in: core)
