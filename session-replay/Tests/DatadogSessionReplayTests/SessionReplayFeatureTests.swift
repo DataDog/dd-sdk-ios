@@ -9,6 +9,6 @@ import XCTest
 
 final class SessionReplayFeatureTests: XCTestCase {
     func testExample() throws {
-        XCTAssertTrue(SessionReplayFeature.testBool)
+        XCTAssertNil(SessionReplayFeature.instance)
     }
 }
