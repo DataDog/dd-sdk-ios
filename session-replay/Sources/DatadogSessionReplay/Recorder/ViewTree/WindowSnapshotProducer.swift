@@ -14,8 +14,6 @@ internal struct WindowSnapshotProducer: ViewTreeSnapshotProducer {
 
     func takeSnapshot() -> ViewTreeSnapshot? {
         guard let window = windowObserver.relevantWindow else {
-            // TODO: RUMM-2398 Add console logger for reporting internal problems
-            print("Session Replay failed to find the key window in this app")
             return nil
         }
         return takeSnapshot(in: window)
