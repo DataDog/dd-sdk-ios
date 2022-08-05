@@ -16,19 +16,27 @@ internal class Recorder {
     let scheduler: Scheduler
     /// Captures view tree snapshot (an intermediate representation of the view tree).
     let snapshotProducer: ViewTreeSnapshotProducer
+    /// Turns view tree snapshots into data models that will be uploaded to SR BE.
+    let snapshotProcessor: ViewTreeSnapshotProcessor
 
     convenience init() {
         self.init(
             scheduler: MainThreadScheduler(interval: 0.2),
             snapshotProducer: WindowSnapshotProducer(
                 windowObserver: KeyWindowObserver()
-            )
+            ),
+            snapshotProcessor: Processor()
         )
     }
 
-    init(scheduler: Scheduler, snapshotProducer: ViewTreeSnapshotProducer) {
+    init(
+        scheduler: Scheduler,
+        snapshotProducer: ViewTreeSnapshotProducer,
+        snapshotProcessor: ViewTreeSnapshotProcessor
+    ) {
         self.scheduler = scheduler
         self.snapshotProducer = snapshotProducer
+        self.snapshotProcessor = snapshotProcessor
 
         scheduler.schedule { [weak self] in
             self?.captureNextRecord()
