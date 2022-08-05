@@ -497,6 +497,7 @@
 		61F3CDA52511190E00C816E5 /* UIViewControllerSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3CDA42511190E00C816E5 /* UIViewControllerSwizzler.swift */; };
 		61F3CDA72512144600C816E5 /* UIKitRUMViewsPredicate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3CDA62512144600C816E5 /* UIKitRUMViewsPredicate.swift */; };
 		61F3CDAB25121FB500C816E5 /* UIViewControllerSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3CDAA25121FB500C816E5 /* UIViewControllerSwizzlerTests.swift */; };
+		61F4A01D289D5C00001B1BB6 /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = 61F4A01C289D5C00001B1BB6 /* DatadogSessionReplay */; };
 		61F74AF426F20E4600E5F5ED /* DebugCrashReportingWithRUMViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F74AF326F20E4600E5F5ED /* DebugCrashReportingWithRUMViewController.swift */; };
 		61F7F1DD266F9CB000F9F53B /* CodableValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA02423979B00786299 /* CodableValue.swift */; };
 		61F8CC092469295500FE2908 /* DatadogConfigurationBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F8CC082469295500FE2908 /* DatadogConfigurationBuilderTests.swift */; };
@@ -1946,6 +1947,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9E5BD8062819742C00CB568E /* SwiftUI.framework in Frameworks */,
+				61F4A01D289D5C00001B1BB6 /* DatadogSessionReplay in Frameworks */,
 				D240687027CF971C00C04F44 /* CrashReporter.xcframework in Frameworks */,
 				D240687127CF971C00C04F44 /* Datadog.framework in Frameworks */,
 				D240687227CF971C00C04F44 /* DatadogCrashReporting.framework in Frameworks */,
@@ -4529,6 +4531,7 @@
 			);
 			name = "Example tvOS";
 			packageProductDependencies = (
+				61F4A01C289D5C00001B1BB6 /* DatadogSessionReplay */,
 			);
 			productName = Example;
 			productReference = D240684D27CE6C9E00C04F44 /* Example tvOS.app */;
@@ -7872,6 +7875,10 @@
 			productName = HTTPServerMock;
 		};
 		6160D3B22892F508000768DD /* DatadogSessionReplay */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogSessionReplay;
+		};
+		61F4A01C289D5C00001B1BB6 /* DatadogSessionReplay */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DatadogSessionReplay;
 		};
