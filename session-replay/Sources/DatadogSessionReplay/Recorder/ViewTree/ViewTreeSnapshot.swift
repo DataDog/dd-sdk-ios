@@ -16,4 +16,6 @@ import Foundation
 internal struct ViewTreeSnapshot {
     /// The time of taking this snapshot.
     let date: Date
+
+    // TODO: RUMM-2411 Define view tree snapshot
 }

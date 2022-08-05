@@ -21,6 +21,6 @@ internal struct WindowSnapshotProducer: ViewTreeSnapshotProducer {
 
     private func takeSnapshot(in window: UIWindow) -> ViewTreeSnapshot {
         let now = Date()
-        return ViewTreeSnapshot(date: now)
+        return ViewTreeSnapshot(date: now) // TODO: RUMM-2411 Create real view tree snapshot
     }
 }

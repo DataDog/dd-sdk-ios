@@ -55,7 +55,7 @@ internal class Recorder {
     /// **Note**: This is called on the main thread.
     private func captureNextRecord() {
         guard let snapshot = snapshotProducer.takeSnapshot() else {
-            print("Failed to take the snapshot of current window") // TODO: RUMM-2398 Use console logger
+            print("Failed to take the snapshot of current window") // TODO: RUMM-2410 Use `DD.logger` and / or `DD.telemetry`
             return
         }
 
