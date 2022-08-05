@@ -20,6 +20,7 @@ internal struct WindowSnapshotProducer: ViewTreeSnapshotProducer {
     }
 
     private func takeSnapshot(in window: UIWindow) -> ViewTreeSnapshot {
-        return ViewTreeSnapshot()
+        let now = Date()
+        return ViewTreeSnapshot(date: now)
     }
 }

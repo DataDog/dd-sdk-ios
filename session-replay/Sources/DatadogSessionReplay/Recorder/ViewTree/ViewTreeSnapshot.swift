@@ -14,4 +14,6 @@ import Foundation
 /// own description of the view hierarchy, which can be optimised for efficiency in SR recorder (e.g. unlike
 /// the real views hierarchy, `ViewTreeSnapshot` is meant to be safe when accesed on a background thread).
 internal struct ViewTreeSnapshot {
+    /// The time of taking this snapshot.
+    let date: Date
 }

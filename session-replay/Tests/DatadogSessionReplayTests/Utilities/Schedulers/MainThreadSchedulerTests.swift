@@ -9,8 +9,9 @@ import XCTest
 
 class MainThreadSchedulerTests: XCTestCase {
     func testWhenStarted_itRepeatsOperation() {
-        let expectation = self.expectation(description: "perform operation")
+        let expectation = self.expectation(description: "repeat operation 5 times")
         expectation.expectedFulfillmentCount = 5
+        expectation.assertForOverFulfill = false
 
         // Given
         let scheduler = MainThreadScheduler(interval: 0.01)
@@ -38,6 +39,7 @@ class MainThreadSchedulerTests: XCTestCase {
 
     func testWhenRepeatingOperations_itExecutesItOnTheMainThread() {
         let expectation = self.expectation(description: "perform operation")
+        expectation.assertForOverFulfill = false
 
         // Given
         let scheduler = MainThreadScheduler(interval: 0.1)
@@ -57,6 +59,7 @@ class MainThreadSchedulerTests: XCTestCase {
     func testItCanScheduleMultipleOperations() {
         let expectation = self.expectation(description: "perform 3 operations")
         expectation.expectedFulfillmentCount = 3
+        expectation.assertForOverFulfill = false
 
         // Given
         let scheduler = MainThreadScheduler(interval: 0.01)

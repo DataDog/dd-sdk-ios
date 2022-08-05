@@ -59,6 +59,6 @@ internal class Recorder {
             return
         }
 
-        print(snapshot)
+        snapshotProcessor.process(snapshot: snapshot)
     }
 }
