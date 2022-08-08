@@ -26,7 +26,7 @@ internal struct NWPathMonitorPublisher: ContextValuePublisher {
         target: .global(qos: .utility)
     )
 
-    let initialValue: NetworkConnectionInfo? = nil
+    let initialValue: NetworkConnectionInfo
 
     private let monitor: NWPathMonitor
     private let queue: DispatchQueue
@@ -37,9 +37,17 @@ internal struct NWPathMonitorPublisher: ContextValuePublisher {
     ) {
         self.monitor = monitor
         self.queue = queue
+        self.initialValue = .init(
+            reachability: .maybe,
+            availableInterfaces: nil,
+            supportsIPv4: nil,
+            supportsIPv6: nil,
+            isExpensive: nil,
+            isConstrained: nil
+        )
     }
 
-    func publish(to receiver: @escaping ContextValueReceiver<NetworkConnectionInfo?>) {
+    func publish(to receiver: @escaping ContextValueReceiver<NetworkConnectionInfo>) {
         monitor.pathUpdateHandler = {
             let info = NetworkConnectionInfo($0)
             receiver(info)
@@ -103,12 +111,9 @@ extension NetworkConnectionInfo.Interface {
 import SystemConfiguration
 
 internal struct SCNetworkReachabilityReader: ContextValueReader {
-    let initialValue: NetworkConnectionInfo?
-
     private let reachability: SCNetworkReachability
 
     init(reachability: SCNetworkReachability) {
-        self.initialValue = NetworkConnectionInfo(reachability)
         self.reachability = reachability
     }
 
@@ -120,7 +125,7 @@ internal struct SCNetworkReachabilityReader: ContextValueReader {
         self.init(reachability: reachability)
     }
 
-    func read(to receiver: inout NetworkConnectionInfo?) {
+    func read(to receiver: inout NetworkConnectionInfo) {
         receiver = NetworkConnectionInfo(reachability)
     }
 }

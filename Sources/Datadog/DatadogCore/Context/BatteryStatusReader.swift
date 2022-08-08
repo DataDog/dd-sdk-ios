@@ -14,8 +14,6 @@ import UIKit
 /// The reader will enable the battery monitoring by setting the ``UIDevice/isBatteryMonitoringEnabled``
 /// to `true`. The property will be reset to it's initial value when the reader is deallocated.
 internal final class BatteryStatusReader: ContextValueReader {
-    let initialValue: BatteryStatus?
-
     let device: UIDevice
     let isBatteryMonitoringEnabled: Bool
 
@@ -26,11 +24,6 @@ internal final class BatteryStatusReader: ContextValueReader {
         self.device = device
         self.isBatteryMonitoringEnabled = device.isBatteryMonitoringEnabled
         device.isBatteryMonitoringEnabled = true
-
-        self.initialValue = BatteryStatus(
-            state: .init(device.batteryState),
-            level: device.batteryLevel
-        )
     }
 
     func read(to receiver: inout BatteryStatus?) {

@@ -40,7 +40,7 @@ internal struct DatadogContext {
     /// Interval between device and server time.
     ///
     /// The value can change as the device continue to sync with the server.
-    var serverTimeOffset: TimeInterval
+    var serverTimeOffset: TimeInterval = .zero
 
     // MARK: - Application Specific
 
@@ -61,20 +61,20 @@ internal struct DatadogContext {
 
     /// Application launch time.
     ///
-    /// Can be `nil` if the launch could not yet been evaluated.
-    var launchTime: LaunchTime?
+    /// Can be `zero` if the launch could not yet been evaluated.
+    var launchTime: LaunchTime = .zero
 
     /// Provides the history of app foreground / background states.
-    var applicationStateHistory: AppStateHistory?
+    var applicationStateHistory: AppStateHistory
 
     // MARK: - Device Specific
 
     /// Network information.
     ///
     /// Represents the current state of the device network connectivity and interface.
-    /// The value can be `nil` if the network interface is not available or if it has not
+    /// The value can be `unknown` if the network interface is not available or if it has not
     /// yet been evaluated.
-    var networkConnectionInfo: NetworkConnectionInfo?
+    var networkConnectionInfo: NetworkConnectionInfo = .unknown
 
     /// Carrier information.
     ///
@@ -89,5 +89,5 @@ internal struct DatadogContext {
     var batteryStatus: BatteryStatus?
 
     /// `true` if the Low Power Mode is enabled.
-    var isLowPowerModeEnabled: Bool
+    var isLowPowerModeEnabled = false
 }

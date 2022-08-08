@@ -12,8 +12,6 @@ internal class ContextValueReaderMock<Value>: ContextValueReader {
         label: "com.datadoghq.context-value-reader-mock"
     )
 
-    let initialValue: Value
-
     var value: Value {
         get { queue.sync { _value } }
         set { queue.sync { _value = newValue } }
@@ -22,12 +20,10 @@ internal class ContextValueReaderMock<Value>: ContextValueReader {
     private var _value: Value
 
     init(initialValue: Value) {
-        self.initialValue = initialValue
         self._value = initialValue
     }
 
     init() where Value: ExpressibleByNilLiteral {
-        initialValue = nil
         _value = nil
     }
 

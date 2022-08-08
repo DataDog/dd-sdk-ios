@@ -52,14 +52,6 @@ class DataUploadConditionsTests: XCTestCase {
                 forBattery: BatteryStatus(
                     state: .mockRandom(within: [.unplugged, .charging, .full]), level: .random(in: 0...100)
                 ),
-                isLowPowerModeEnabled: .random(),
-                forNetwork: nil
-            )
-            assert(
-                canPerformUploadReturns: false,
-                forBattery: BatteryStatus(
-                    state: .mockRandom(within: [.unplugged, .charging, .full]), level: .random(in: 0...100)
-                ),
                 isLowPowerModeEnabled: true,
                 forNetwork: .mockWith(reachability: .mockRandom())
             )
@@ -95,7 +87,7 @@ class DataUploadConditionsTests: XCTestCase {
         canPerformUploadReturns value: Bool,
         forBattery battery: BatteryStatus?,
         isLowPowerModeEnabled: Bool,
-        forNetwork network: NetworkConnectionInfo?,
+        forNetwork network: NetworkConnectionInfo,
         file: StaticString = #file,
         line: UInt = #line
     ) {

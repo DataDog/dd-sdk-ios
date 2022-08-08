@@ -23,24 +23,6 @@ class CarrierInfoPublisherTests: XCTestCase {
         serviceSubscriberCellularProviders: [:]
     )
 
-    func testGivenCellularServiceAvailableOnIOS11_itProvidesInitialValue() {
-        // Given
-        let reader = iOS11CarrierInfoReader(networkInfo: availableCTTelephonyNetworkInfo)
-
-        // Then
-        XCTAssertEqual(reader.initialValue?.carrierName, "Carrier")
-        XCTAssertEqual(reader.initialValue?.carrierISOCountryCode, "US")
-        XCTAssertEqual(reader.initialValue?.carrierAllowsVOIP, true)
-    }
-
-    func testGivenCellularServiceUnAvailableOnIOS11_itProvidesNoInitialValue() {
-        // Given
-        let reader = iOS11CarrierInfoReader(networkInfo: unavailableCTTelephonyNetworkInfo)
-
-        // Then
-        XCTAssertNil(reader.initialValue)
-    }
-
     func testGivenCellularServiceAvailableOnIOS12AndAbove_itProvidesInitialValue() {
         if #available(iOS 12, *) {
             // Given

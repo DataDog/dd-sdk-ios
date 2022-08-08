@@ -21,9 +21,9 @@ class LaunchTimeReaderTests: XCTestCase {
         var values: [TimeInterval] = []
         try (0..<10).forEach { _ in
             Thread.sleep(forTimeInterval: 0.01)
-            var launchTime: LaunchTime? = .init(launchTime: .mockRandom(), isActivePrewarm: false)
+            var launchTime = LaunchTime(launchTime: .mockRandom(), isActivePrewarm: false)
             reader.read(to: &launchTime)
-            try values.append(XCTUnwrap(launchTime?.launchTime))
+            try values.append(XCTUnwrap(launchTime.launchTime))
         }
 
         // Then
@@ -39,7 +39,7 @@ class LaunchTimeReaderTests: XCTestCase {
         callConcurrently(
             closures: [
                 {
-                    var launchTime: LaunchTime? = .mockAny()
+                    var launchTime: LaunchTime = .mockAny()
                     reader.read(to: &launchTime)
                 }
             ],
@@ -56,11 +56,11 @@ class LaunchTimeReaderTests: XCTestCase {
         setenv("ActivePrewarm", "1", 1)
         NSClassFromString("AppLaunchHandler")?.load()
 
-        var launchTime: LaunchTime? = .init(launchTime: 0, isActivePrewarm: false)
+        var launchTime = LaunchTime(launchTime: 0, isActivePrewarm: false)
         reader.read(to: &launchTime)
 
         // Then
-        XCTAssertTrue(launchTime?.isActivePrewarm ?? false)
+        XCTAssertTrue(launchTime.isActivePrewarm)
     }
 
     func testIsActivePrewarm_returnsFalse() {
@@ -69,10 +69,10 @@ class LaunchTimeReaderTests: XCTestCase {
 
         // When
         NSClassFromString("AppLaunchHandler")?.load()
-        var launchTime: LaunchTime? = .init(launchTime: 0, isActivePrewarm: true)
+        var launchTime = LaunchTime(launchTime: 0, isActivePrewarm: true)
         reader.read(to: &launchTime)
 
         // Then
-        XCTAssertFalse(launchTime?.isActivePrewarm ?? true)
+        XCTAssertFalse(launchTime.isActivePrewarm)
     }
 }

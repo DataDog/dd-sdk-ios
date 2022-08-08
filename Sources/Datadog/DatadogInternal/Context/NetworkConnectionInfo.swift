@@ -40,3 +40,17 @@ public struct NetworkConnectionInfo: Equatable {
     /// A Boolean indicating if the connection uses an interface in Low Data Mode.
     public let isConstrained: Bool?
 }
+
+extension NetworkConnectionInfo {
+    /// Returns an unknown network info with `.maybe` reachability.
+    static var unknown: NetworkConnectionInfo {
+        .init(
+            reachability: .maybe,
+            availableInterfaces: nil,
+            supportsIPv4: nil,
+            supportsIPv6: nil,
+            isExpensive: nil,
+            isConstrained: nil
+        )
+    }
+}

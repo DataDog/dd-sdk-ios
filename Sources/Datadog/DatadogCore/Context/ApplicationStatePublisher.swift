@@ -21,7 +21,7 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
     )
 
     /// The initial history value.
-    let initialValue: AppStateHistory?
+    let initialValue: AppStateHistory
 
     /// The notification center where this publisher observes following `UIApplication` notifications:
     /// - `.didBecomeActiveNotification`
@@ -45,7 +45,7 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
     /// The receiver for publishing the state history.
     ///
     /// To mutate in the `queue` only.
-    private var receiver: ContextValueReceiver<AppStateHistory?>?
+    private var receiver: ContextValueReceiver<AppStateHistory>?
 
     /// Creates a Application state publisher for publishing application state
     /// history.
@@ -61,14 +61,9 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
         dateProvider: DateProvider = SystemDateProvider(),
         notificationCenter: NotificationCenter = .default
     ) {
-        let snapshot = Snapshot(
-            state: initialState,
-            date: dateProvider.now
-        )
-
         let initialValue = AppStateHistory(
-            initialSnapshot: snapshot,
-            recentDate: snapshot.date
+            initialState: initialState,
+            date: dateProvider.now
         )
 
         self.initialValue = initialValue
@@ -102,7 +97,7 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
         )
     }
 
-    func publish(to receiver: @escaping ContextValueReceiver<AppStateHistory?>) {
+    func publish(to receiver: @escaping ContextValueReceiver<AppStateHistory>) {
         queue.async { self.receiver = receiver }
         notificationCenter.addObserver(self, selector: #selector(applicationDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
         notificationCenter.addObserver(self, selector: #selector(applicationWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)

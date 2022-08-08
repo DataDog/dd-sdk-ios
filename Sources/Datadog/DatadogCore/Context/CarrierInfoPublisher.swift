@@ -66,13 +66,10 @@ extension CarrierInfo {
 /// Carrier info provider for iOS 11.
 /// It reads `CarrierInfo?` from `CTTelephonyNetworkInfo` each time.
 internal struct iOS11CarrierInfoReader: ContextValueReader {
-    let initialValue: CarrierInfo?
-
     private let networkInfo: CTTelephonyNetworkInfo
 
     init(networkInfo: CTTelephonyNetworkInfo = .init()) {
         self.networkInfo = networkInfo
-        self.initialValue = CarrierInfo(networkInfo)
     }
 
     func read(to receiver: inout CarrierInfo?) {

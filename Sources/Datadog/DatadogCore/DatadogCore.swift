@@ -224,12 +224,14 @@ extension DatadogContextProvider {
             source: configuration.source,
             sdkVersion: configuration.sdkVersion,
             ciAppOrigin: configuration.origin,
-            serverTimeOffset: .zero,
             applicationName: configuration.applicationName,
             applicationBundleIdentifier: configuration.applicationBundleIdentifier,
             sdkInitDate: dependencies.sdkInitDate,
             device: dependencies.deviceInfo,
-            isLowPowerModeEnabled: false
+            // this is a placeholder waiting for the `ApplicationStatePublisher`
+            // to be initialized on the main thread, this value will be overrided
+            // as soon as the subscription is made.
+            applicationStateHistory: .active(since: dependencies.dateProvider.now)
         )
 
         self.init(context: context)

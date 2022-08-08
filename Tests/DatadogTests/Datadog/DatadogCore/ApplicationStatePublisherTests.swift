@@ -35,7 +35,7 @@ class ApplicationStatePublisherTests: XCTestCase {
         publisher.publish { state in
             // Then
             XCTAssertEqual(
-                state?.currentSnapshot.state,
+                state.currentSnapshot.state,
                 notification.expectedState,
                 "It must record \(notification.expectedState) after receiving '\(notification.name)'"
             )
@@ -67,7 +67,7 @@ class ApplicationStatePublisherTests: XCTestCase {
 
         // When
         publisher.publish { state in
-            receivedHistoryStates.append(state?.currentSnapshot.state)
+            receivedHistoryStates.append(state.currentSnapshot.state)
             expectation.fulfill()
         }
 
