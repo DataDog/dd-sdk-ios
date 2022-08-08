@@ -1,0 +1,11 @@
+{
+    "$id": "fixture-json-schema-to-json-type-transformer.json",
+    "type": "object",
+    "title": "Schema title",
+    "description": "Fixture schema",
+    "oneOf": [
+      {
+        "$ref": "fixture-json-schema-to-json-type-transformer/main.json"
+      }
+    ]
+  }

@@ -66,6 +66,7 @@ class DDConfigurationTests: XCTestCase {
             XCTAssertNil(configuration.rumErrorEventMapper)
             XCTAssertEqual(configuration.additionalConfiguration.count, 0)
             XCTAssertNil(configuration.encryption)
+            XCTAssertNil(configuration.serverDateProvider)
         }
     }
 
@@ -213,6 +214,13 @@ class DDConfigurationTests: XCTestCase {
         let dataEncryption = ObjCDataEncryption()
         objcBuilder.set(encryption: dataEncryption)
         XCTAssertTrue((objcBuilder.build().sdkConfiguration.encryption as? DDDataEncryptionBridge)?.objcEncryption === dataEncryption)
+
+        class ObjcServerDateProvider: DDServerDateProvider {
+            func synchronize(update: @escaping (TimeInterval) -> Void) { }
+        }
+        let serverDateProvider = ObjcServerDateProvider()
+        objcBuilder.set(serverDateProvider: serverDateProvider)
+        XCTAssertTrue((objcBuilder.build().sdkConfiguration.serverDateProvider as? DDServerDateProviderBridge)?.objcProvider === serverDateProvider)
     }
 
     func testScrubbingRUMEvents() {

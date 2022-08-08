@@ -34,6 +34,9 @@ public struct RUMActionEvent: RUMDataModel {
     /// Device properties
     public let device: RUMDevice?
 
+    /// Display properties
+    public let display: RUMDisplay?
+
     /// Operating system properties
     public let os: RUMOperatingSystem?
 
@@ -70,6 +73,7 @@ public struct RUMActionEvent: RUMDataModel {
         case context = "context"
         case date = "date"
         case device = "device"
+        case display = "display"
         case os = "os"
         case service = "service"
         case session = "session"
@@ -208,10 +212,10 @@ public struct RUMActionEvent: RUMDataModel {
 
         /// Action position properties
         public struct Position: Codable {
-            /// X coordinate of the action (in pixels)
+            /// X coordinate relative to the target element of the action (in pixels)
             public let x: Int64
 
-            /// Y coordinate of the action (in pixels)
+            /// Y coordinate relative to the target element of the action (in pixels)
             public let y: Int64
 
             enum CodingKeys: String, CodingKey {
@@ -379,6 +383,9 @@ public struct RUMErrorEvent: RUMDataModel {
     /// Device properties
     public let device: RUMDevice?
 
+    /// Display properties
+    public let display: RUMDisplay?
+
     /// Error properties
     public var error: Error
 
@@ -418,6 +425,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case context = "context"
         case date = "date"
         case device = "device"
+        case display = "display"
         case error = "error"
         case os = "os"
         case service = "service"
@@ -467,7 +475,7 @@ public struct RUMErrorEvent: RUMDataModel {
     /// Action properties
     public struct Action: Codable {
         /// UUID of the action
-        public let id: String
+        public let id: RUMActionID
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
@@ -720,6 +728,9 @@ public struct RUMLongTaskEvent: RUMDataModel {
     /// Device properties
     public let device: RUMDevice?
 
+    /// Display properties
+    public let display: RUMDisplay?
+
     /// Long Task properties
     public let longTask: LongTask
 
@@ -759,6 +770,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case context = "context"
         case date = "date"
         case device = "device"
+        case display = "display"
         case longTask = "long_task"
         case os = "os"
         case service = "service"
@@ -808,7 +820,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     /// Action properties
     public struct Action: Codable {
         /// UUID of the action
-        public let id: String
+        public let id: RUMActionID
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
@@ -944,6 +956,9 @@ public struct RUMResourceEvent: RUMDataModel {
     /// Device properties
     public let device: RUMDevice?
 
+    /// Display properties
+    public let display: RUMDisplay?
+
     /// Operating system properties
     public let os: RUMOperatingSystem?
 
@@ -983,6 +998,7 @@ public struct RUMResourceEvent: RUMDataModel {
         case context = "context"
         case date = "date"
         case device = "device"
+        case display = "display"
         case os = "os"
         case resource = "resource"
         case service = "service"
@@ -1040,7 +1056,7 @@ public struct RUMResourceEvent: RUMDataModel {
     /// Action properties
     public struct Action: Codable {
         /// UUID of the action
-        public let id: String
+        public let id: RUMActionID
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
@@ -1352,6 +1368,9 @@ public struct RUMViewEvent: RUMDataModel {
     /// Device properties
     public let device: RUMDevice?
 
+    /// Display properties
+    public let display: RUMDisplay?
+
     /// Operating system properties
     public let os: RUMOperatingSystem?
 
@@ -1387,6 +1406,7 @@ public struct RUMViewEvent: RUMDataModel {
         case context = "context"
         case date = "date"
         case device = "device"
+        case display = "display"
         case os = "os"
         case service = "service"
         case session = "session"
@@ -1747,6 +1767,9 @@ public struct TelemetryErrorEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Enabled experimental features
+    public let experimentalFeatures: [String]?
+
     /// The SDK generating the telemetry event
     public let service: String
 
@@ -1773,6 +1796,7 @@ public struct TelemetryErrorEvent: RUMDataModel {
         case action = "action"
         case application = "application"
         case date = "date"
+        case experimentalFeatures = "experimental_features"
         case service = "service"
         case session = "session"
         case source = "source"
@@ -1888,6 +1912,9 @@ public struct TelemetryDebugEvent: RUMDataModel {
     /// Start of the event in ms from epoch
     public let date: Int64
 
+    /// Enabled experimental features
+    public let experimentalFeatures: [String]?
+
     /// The SDK generating the telemetry event
     public let service: String
 
@@ -1914,6 +1941,7 @@ public struct TelemetryDebugEvent: RUMDataModel {
         case action = "action"
         case application = "application"
         case date = "date"
+        case experimentalFeatures = "experimental_features"
         case service = "service"
         case session = "session"
         case source = "source"
@@ -2097,6 +2125,9 @@ extension RUMEventAttributes {
 
 /// Device properties
 public struct RUMDevice: Codable {
+    /// The CPU architecture of the device that is reporting the error
+    public let architecture: String?
+
     /// Device marketing brand, e.g. Apple, OPPO, Xiaomi, etc.
     public let brand: String?
 
@@ -2110,6 +2141,7 @@ public struct RUMDevice: Codable {
     public let type: RUMDeviceType
 
     enum CodingKeys: String, CodingKey {
+        case architecture = "architecture"
         case brand = "brand"
         case model = "model"
         case name = "name"
@@ -2125,6 +2157,30 @@ public struct RUMDevice: Codable {
         case gamingConsole = "gaming_console"
         case bot = "bot"
         case other = "other"
+    }
+}
+
+/// Display properties
+public struct RUMDisplay: Codable {
+    /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+    public let viewport: Viewport?
+
+    enum CodingKeys: String, CodingKey {
+        case viewport = "viewport"
+    }
+
+    /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+    public struct Viewport: Codable {
+        /// Height of the viewport (in pixels)
+        public let height: Double
+
+        /// Width of the viewport (in pixels)
+        public let width: Double
+
+        enum CodingKeys: String, CodingKey {
+            case height = "height"
+            case width = "width"
+        }
     }
 }
 
@@ -2211,6 +2267,48 @@ extension RUMUser {
     }
 }
 
+/// UUID of the action
+public enum RUMActionID: Codable {
+    case string(value: String)
+    case stringsArray(value: [String])
+
+    // MARK: - Codable
+
+    public func encode(to encoder: Encoder) throws {
+        // Encode only the associated value, without encoding enum case
+        var container = encoder.singleValueContainer()
+
+        switch self {
+        case .string(let value):
+            try container.encode(value)
+        case .stringsArray(let value):
+            try container.encode(value)
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode enum case from associated value
+        let container = try decoder.singleValueContainer()
+
+        if let value = try? container.decode(String.self) {
+            self = .string(value: value)
+            return
+        }
+        if let value = try? container.decode([String].self) {
+            self = .stringsArray(value: value)
+            return
+        }
+        let error = DecodingError.Context(
+            codingPath: container.codingPath,
+            debugDescription: """
+            Failed to decode `RUMActionID`.
+            Ran out of possibilities when trying to decode the value of associated type.
+            """
+        )
+        throw DecodingError.typeMismatch(RUMActionID.self, error)
+    }
+}
+
 /// HTTP method of the resource
 public enum RUMMethod: String, Codable {
     case post = "POST"
@@ -2221,4 +2319,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/d5a943ad55117da57d0b87f9af417ccbcbd49daf
+// Generated from https://github.com/DataDog/rum-events-format/tree/9e0f8b2ab26ce0e33b058d7d5d3663ab043847f5

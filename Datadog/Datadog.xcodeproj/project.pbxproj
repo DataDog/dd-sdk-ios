@@ -378,7 +378,7 @@
 		61BB2B1B244A185D009F3F56 /* PerformancePreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61BB2B1A244A185D009F3F56 /* PerformancePreset.swift */; };
 		61BBD19524ED4E9E0023E65F /* FeaturesConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61BBD19424ED4E9E0023E65F /* FeaturesConfiguration.swift */; };
 		61BBD19724ED50040023E65F /* FeaturesConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61BBD19624ED50040023E65F /* FeaturesConfigurationTests.swift */; };
-		61BCB81F256EB77F0039887B /* NTPServerDateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61BCB81E256EB77F0039887B /* NTPServerDateProvider.swift */; };
+		61BCB81F256EB77F0039887B /* DatadogNTPDateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61BCB81E256EB77F0039887B /* DatadogNTPDateProvider.swift */; };
 		61C1510D25AC8C1B00362D4B /* RUMViewIdentityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C1510C25AC8C1B00362D4B /* RUMViewIdentityTests.swift */; };
 		61C2C20724C098FC00C0321C /* RUMSessionScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C2C20624C098FC00C0321C /* RUMSessionScope.swift */; };
 		61C2C20924C0C75500C0321C /* RUMSessionScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C2C20824C0C75500C0321C /* RUMSessionScopeTests.swift */; };
@@ -762,7 +762,7 @@
 		D2CB6E4527C50EAE00A62B57 /* RUMResourceScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB024C839460082C633 /* RUMResourceScope.swift */; };
 		D2CB6E4627C50EAE00A62B57 /* RUMSessionScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C2C20624C098FC00C0321C /* RUMSessionScope.swift */; };
 		D2CB6E4727C50EAE00A62B57 /* TracingUUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617CEB382456BC3A00AD4669 /* TracingUUID.swift */; };
-		D2CB6E4827C50EAE00A62B57 /* NTPServerDateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61BCB81E256EB77F0039887B /* NTPServerDateProvider.swift */; };
+		D2CB6E4827C50EAE00A62B57 /* DatadogNTPDateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61BCB81E256EB77F0039887B /* DatadogNTPDateProvider.swift */; };
 		D2CB6E4927C50EAE00A62B57 /* AttributesSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61122ED925B1BA9700F9C7F5 /* AttributesSanitizer.swift */; };
 		D2CB6E4C27C50EAE00A62B57 /* RUMDataModelsMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618715F824DC13A100FC0F69 /* RUMDataModelsMapping.swift */; };
 		D2CB6E4D27C50EAE00A62B57 /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3638424361E9200C4D4E6 /* Globals.swift */; };
@@ -1100,6 +1100,8 @@
 		D2DC4BF727F484AA00E4FB96 /* DataEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2DC4BF527F484AA00E4FB96 /* DataEncryption.swift */; };
 		D2EFA868286DA85700F1FAA6 /* DatadogContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFA867286DA85700F1FAA6 /* DatadogContextProvider.swift */; };
 		D2EFA869286DA85700F1FAA6 /* DatadogContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFA867286DA85700F1FAA6 /* DatadogContextProvider.swift */; };
+		D2E2C2592893E54600E336BE /* ServerDateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E2C2582893E54600E336BE /* ServerDateProvider.swift */; };
+		D2E2C25A2893E54600E336BE /* ServerDateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E2C2582893E54600E336BE /* ServerDateProvider.swift */; };
 		D2EFA86B286DCDBB00F1FAA6 /* DateCorrector.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFA86A286DCDBB00F1FAA6 /* DateCorrector.swift */; };
 		D2EFA86C286DCDBB00F1FAA6 /* DateCorrector.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFA86A286DCDBB00F1FAA6 /* DateCorrector.swift */; };
 		D2EFA871286DFF7900F1FAA6 /* DatadogContextMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFA870286DFF7900F1FAA6 /* DatadogContextMock.swift */; };
@@ -1666,7 +1668,7 @@
 		61BB2B1A244A185D009F3F56 /* PerformancePreset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformancePreset.swift; sourceTree = "<group>"; };
 		61BBD19424ED4E9E0023E65F /* FeaturesConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeaturesConfiguration.swift; sourceTree = "<group>"; };
 		61BBD19624ED50040023E65F /* FeaturesConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeaturesConfigurationTests.swift; sourceTree = "<group>"; };
-		61BCB81E256EB77F0039887B /* NTPServerDateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NTPServerDateProvider.swift; sourceTree = "<group>"; };
+		61BCB81E256EB77F0039887B /* DatadogNTPDateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogNTPDateProvider.swift; sourceTree = "<group>"; };
 		61C1510C25AC8C1B00362D4B /* RUMViewIdentityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewIdentityTests.swift; sourceTree = "<group>"; };
 		61C2C20624C098FC00C0321C /* RUMSessionScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSessionScope.swift; sourceTree = "<group>"; };
 		61C2C20824C0C75500C0321C /* RUMSessionScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSessionScopeTests.swift; sourceTree = "<group>"; };
@@ -1920,6 +1922,7 @@
 		D2D37DBE2846335F00FB4348 /* DatadogV1CoreProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogV1CoreProtocol.swift; sourceTree = "<group>"; };
 		D2DC4BF527F484AA00E4FB96 /* DataEncryption.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataEncryption.swift; sourceTree = "<group>"; };
 		D2EFA867286DA85700F1FAA6 /* DatadogContextProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogContextProvider.swift; sourceTree = "<group>"; };
+		D2E2C2582893E54600E336BE /* ServerDateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerDateProvider.swift; sourceTree = "<group>"; };
 		D2EFA86A286DCDBB00F1FAA6 /* DateCorrector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateCorrector.swift; sourceTree = "<group>"; };
 		D2EFA870286DFF7900F1FAA6 /* DatadogContextMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogContextMock.swift; sourceTree = "<group>"; };
 		D2EFA874286E011900F1FAA6 /* DatadogContextProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogContextProviderTests.swift; sourceTree = "<group>"; };
@@ -3614,8 +3617,9 @@
 		61C576C4256E655600295F7C /* Time */ = {
 			isa = PBXGroup;
 			children = (
+				D2E2C2582893E54600E336BE /* ServerDateProvider.swift */,
 				61C576C5256E65BD00295F7C /* ServerDateCorrector.swift */,
-				61BCB81E256EB77F0039887B /* NTPServerDateProvider.swift */,
+				61BCB81E256EB77F0039887B /* DatadogNTPDateProvider.swift */,
 			);
 			path = Time;
 			sourceTree = "<group>";
@@ -5304,6 +5308,7 @@
 				D2956CA82869BA23007D5462 /* DatadogContext.swift in Sources */,
 				61BCB81F256EB77F0039887B /* NTPServerDateProvider.swift in Sources */,
 				D255382C288F161500727FAD /* BatteryStatus.swift in Sources */,
+				61BCB81F256EB77F0039887B /* DatadogNTPDateProvider.swift in Sources */,
 				61122EDA25B1BA9700F9C7F5 /* AttributesSanitizer.swift in Sources */,
 				618715F924DC13A100FC0F69 /* RUMDataModelsMapping.swift in Sources */,
 				61C3638524361E9200C4D4E6 /* Globals.swift in Sources */,
@@ -5405,6 +5410,7 @@
 				B3FC3C0926526F0000DEED9E /* VitalInfo.swift in Sources */,
 				61DA8CAF28620C760074A606 /* Cryptography.swift in Sources */,
 				616F1FB32840125400651A3A /* RUMV2Configuration.swift in Sources */,
+				D2E2C2592893E54600E336BE /* ServerDateProvider.swift in Sources */,
 				613E81F025A740140084B751 /* RUMEventsMapper.swift in Sources */,
 				D26C49B62889416300802B2D /* UploadPerformancePreset.swift in Sources */,
 				61D980BA24E28D0100E03345 /* RUMIntegrations.swift in Sources */,
@@ -5929,6 +5935,7 @@
 				D2CB6E2927C50EAE00A62B57 /* KronosInternetAddress.swift in Sources */,
 				D2CB6E2A27C50EAE00A62B57 /* RUMContextProvider.swift in Sources */,
 				6122514927FDFF82004F5AE4 /* RUMScopeDependencies.swift in Sources */,
+				D2E2C25A2893E54600E336BE /* ServerDateProvider.swift in Sources */,
 				D2CB6E2B27C50EAE00A62B57 /* RUMViewScope.swift in Sources */,
 				D2CB6E2C27C50EAE00A62B57 /* KronosNTPPacket.swift in Sources */,
 				D2CB6E2D27C50EAE00A62B57 /* CrashReportingFeature.swift in Sources */,
@@ -5973,6 +5980,7 @@
 				D2CB6E4727C50EAE00A62B57 /* TracingUUID.swift in Sources */,
 				D20605A7287476230047275C /* KronosClockPublisher.swift in Sources */,
 				D2CB6E4827C50EAE00A62B57 /* NTPServerDateProvider.swift in Sources */,
+				D2CB6E4827C50EAE00A62B57 /* DatadogNTPDateProvider.swift in Sources */,
 				D2CB6E4927C50EAE00A62B57 /* AttributesSanitizer.swift in Sources */,
 				6194E4BD2878AF7600EB6307 /* ConsoleLogger.swift in Sources */,
 				D2CB6E4C27C50EAE00A62B57 /* RUMDataModelsMapping.swift in Sources */,

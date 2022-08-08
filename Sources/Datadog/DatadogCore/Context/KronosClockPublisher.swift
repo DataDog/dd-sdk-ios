@@ -6,14 +6,6 @@
 
 import Foundation
 
-/// Datadog NTP hostnames from https://www.ntppool.org/
-internal let DatadogNTPServers = [
-    "0.datadog.pool.ntp.org",
-    "1.datadog.pool.ntp.org",
-    "2.datadog.pool.ntp.org",
-    "3.datadog.pool.ntp.org"
-]
-
 /// The Kronos Clock Publisher provides updates on time offset between the
 /// local time and one of the Datadog's NTP pool.
 ///

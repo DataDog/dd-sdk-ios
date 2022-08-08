@@ -62,6 +62,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.uploadFrequency, .average)
             XCTAssertEqual(configuration.additionalConfiguration.count, 0)
             XCTAssertNil(configuration.encryption)
+            XCTAssertNil(configuration.serverDateProvider)
         }
     }
 
@@ -114,6 +115,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                     kCFProxyPasswordKey: "proxypass",
                 ])
                 .set(encryption: DataEncryptionMock())
+                .set(serverDateProvider: ServerDateProviderMock())
 
             return builder
         }
@@ -175,6 +177,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.proxyConfiguration?[kCFProxyUsernameKey] as? String, "proxyuser")
             XCTAssertEqual(configuration.proxyConfiguration?[kCFProxyPasswordKey] as? String, "proxypass")
             XCTAssertTrue(configuration.encryption is DataEncryptionMock)
+            XCTAssertTrue(configuration.serverDateProvider is ServerDateProviderMock)
         }
 
         XCTAssertTrue(rumConfigurationWithDefaultValues.rumUIKitViewsPredicate is DefaultUIKitRUMViewsPredicate)

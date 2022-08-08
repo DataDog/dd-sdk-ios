@@ -346,6 +346,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             context: .init(contextInfo: attributes),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context),
+            display: nil,
             os: .init(context: context),
             service: context.service,
             session: .init(
@@ -399,6 +400,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             context: .init(contextInfo: attributes),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context),
+            display: nil,
             os: .init(context: context),
             service: context.service,
             session: .init(
@@ -474,7 +476,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 session: .init(plan: .plan1)
             ),
             action: self.context.activeUserActionID.map { rumUUID in
-                .init(id: rumUUID.toRUMDataFormat)
+                .init(id: .string(value: rumUUID.toRUMDataFormat))
             },
             application: .init(id: self.context.rumApplicationID),
             ciTest: dependencies.ciTest,
@@ -482,6 +484,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             context: .init(contextInfo: attributes),
             date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context),
+            display: nil,
             error: .init(
                 handling: nil,
                 handlingStack: nil,
@@ -533,13 +536,16 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 browserSdkVersion: nil,
                 session: .init(plan: .plan1)
             ),
-            action: self.context.activeUserActionID.map { .init(id: $0.toRUMDataFormat) },
+            action: self.context.activeUserActionID.map {
+                .init(id: .string(value: $0.toRUMDataFormat))
+            },
             application: .init(id: self.context.rumApplicationID),
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
             date: (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context),
+            display: nil,
             longTask: .init(duration: taskDurationInNs, id: nil, isFrozenFrame: isFrozenFrame),
             os: .init(context: context),
             service: context.service,
