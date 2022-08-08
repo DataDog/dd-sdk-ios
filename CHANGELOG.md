@@ -2,6 +2,10 @@
 
 ### Changes
 
+# 1.12.0 / 02-08-2022
+
+### Changes
+
 * [IMPROVEMENT] Add mobile vitals frequency configuration. See [#876][]
 * [IMPROVEMENT] Include the exact model information in RUM `device.model`. See [#888][]
 * [FEATURE] Allow filtering outgoing logs with a status threshold. See [#867][]
@@ -392,10 +396,12 @@
 [#797]: https://github.com/DataDog/dd-sdk-ios/issues/797
 [#815]: https://github.com/DataDog/dd-sdk-ios/issues/815
 [#830]: https://github.com/DataDog/dd-sdk-ios/issues/830
-[#837]: https://github.com/DataDog/dd-sdk-ios/issues/837
 [#832]: https://github.com/DataDog/dd-sdk-ios/issues/832
+[#837]: https://github.com/DataDog/dd-sdk-ios/issues/837
 [#851]: https://github.com/DataDog/dd-sdk-ios/issues/851
+[#867]: https://github.com/DataDog/dd-sdk-ios/issues/867
 [#876]: https://github.com/DataDog/dd-sdk-ios/issues/876
+[#888]: https://github.com/DataDog/dd-sdk-ios/issues/888
 [#894]: https://github.com/DataDog/dd-sdk-ios/issues/894
 [#949]: https://github.com/DataDog/dd-sdk-ios/issues/949
 [#950]: https://github.com/DataDog/dd-sdk-ios/issues/950
