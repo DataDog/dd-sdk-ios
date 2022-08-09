@@ -15,17 +15,17 @@ import Foundation
 /// Methods, members, and functionality of this class  are subject to change without notice, as they
 /// are not considered part of the public interface of the Datadog SDK.
 public class _InternalProxy {
-    let _telemtry = _TelemetryProxy()
+    public let _telemtry = _TelemetryProxy()
 }
 
 public class _TelemetryProxy {
     /// See Telementry.debug
-    func debug(id: String, message: String) {
+    public func debug(id: String, message: String) {
         DD.telemetry.debug(id: id, message: message)
     }
 
     /// See Telementry.error
-    func error(id: String, message: String, kind: String?, stack: String?) {
+    public func error(id: String, message: String, kind: String?, stack: String?) {
         DD.telemetry.error(id: id, message: message, kind: kind, stack: stack)
     }
 }
