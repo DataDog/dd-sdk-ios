@@ -57,7 +57,7 @@ internal final class DatadogCore {
     internal private(set) var v1Context: DatadogV1Context
 
     /// The core context provider.
-    private let contextProvider: DatadogContextProvider
+    internal let contextProvider: DatadogContextProvider
 
     /// Creates a core instance.
     ///
@@ -279,7 +279,8 @@ extension DatadogContextProvider {
     convenience init(
         configuration: CoreConfiguration,
         device: DeviceInfo,
-        dateProvider: DateProvider
+        dateProvider: DateProvider,
+        serverDateProvider: ServerDateProvider
     ) {
         let context = DatadogContext(
             site: configuration.site,
@@ -302,7 +303,7 @@ extension DatadogContextProvider {
 
         self.init(context: context)
 
-        subscribe(\.serverTimeOffset, to: KronosClockPublisher())
+        subscribe(\.serverTimeOffset, to: ServerOffsetPublisher(provider: serverDateProvider))
         assign(reader: LaunchTimeReader(), to: \.launchTime)
 
         if #available(iOS 12, tvOS 12, *) {

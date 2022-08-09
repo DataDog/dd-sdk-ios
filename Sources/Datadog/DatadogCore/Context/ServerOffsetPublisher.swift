@@ -6,6 +6,22 @@
 
 import Foundation
 
+/// List of Datadog NTP pools.
+public let DatadogNTPServers = [
+    "0.datadog.pool.ntp.org",
+    "1.datadog.pool.ntp.org",
+    "2.datadog.pool.ntp.org",
+    "3.datadog.pool.ntp.org"
+]
+
+/// Abstract the monotonic clock synchronized with the server using NTP.
+public protocol ServerDateProvider {
+    /// Start the clock synchronisation with NTP server.
+    ///
+    /// Calls the `completion` by passing it the server time offset when the synchronization succeeds.
+    func synchronize(update: @escaping (TimeInterval) -> Void)
+}
+
 internal class DatadogNTPDateProvider: ServerDateProvider {
     let kronos: KronosClockProtocol
 
@@ -53,5 +69,37 @@ internal class DatadogNTPDateProvider: ServerDateProvider {
         if let offset = kronos.now?.timeIntervalSinceNow {
             update(offset)
         }
+    }
+}
+
+/// The Server Offset Publisher provides updates on time offset between the
+/// local time and one of the Datadog's NTP pool.
+///
+/// This publisher uses a modified version of the ``MobileNativeFoundation/Kronos``
+/// see. https://github.com/MobileNativeFoundation/Kronos
+///
+/// The ``KronosClockPublisher/publish`` will start syncing with one of the pool
+/// picked randomly from ``DatadogNTPServers``.
+///
+/// The time offset is defined in seconds.
+internal final class ServerOffsetPublisher: ContextValuePublisher {
+    /// The initial offset is 0.
+    let initialValue: TimeInterval = .zero
+
+    private var provider: ServerDateProvider?
+
+    /// Creates a publisher using the given `KronosClock` implementation.
+    ///
+    /// - Parameter kronos: An object complying with `KronosClockProtocol`.
+    init(provider: ServerDateProvider = DatadogNTPDateProvider()) {
+        self.provider = provider
+    }
+
+    func publish(to receiver: @escaping ContextValueReceiver<TimeInterval>) {
+        provider?.synchronize(update: receiver)
+    }
+
+    func cancel() {
+        provider = nil
     }
 }

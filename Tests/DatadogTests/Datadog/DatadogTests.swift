@@ -494,7 +494,8 @@ class DatadogTests: XCTestCase {
 
         // Then
         let core = try XCTUnwrap(defaultDatadogCore as? DatadogCore)
-        XCTAssertEqual(core.dependencies.dateCorrector.offset, -1)
+        let context = core.contextProvider.read()
+        XCTAssertEqual(context.serverTimeOffset, -1)
 
         Datadog.flushAndDeinitialize()
     }
