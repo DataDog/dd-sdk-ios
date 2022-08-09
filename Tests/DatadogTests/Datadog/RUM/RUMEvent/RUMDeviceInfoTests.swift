@@ -8,17 +8,19 @@ import XCTest
 @testable import Datadog
 
 class RUMDeviceInfoTests: XCTestCase {
-    func testItSetsBrandAndModelAndName() {
+    func testItSetsProperties() {
         let randomModel: String = .mockRandom()
         let randomName: String = .mockRandom()
+        let randomArch: String = .mockRandom()
 
         let info = RUMDevice(
-            device: .mockWith(name: randomName, model: randomModel)
+            device: .mockWith(name: randomName, model: randomModel, architecture: randomArch)
         )
 
         XCTAssertEqual(info.brand, "Apple")
         XCTAssertEqual(info.name, randomName)
         XCTAssertEqual(info.model, randomModel)
+        XCTAssertEqual(info.architecture, randomArch)
     }
 
     func testItInfersDeviceTypeFromDeviceModel() {

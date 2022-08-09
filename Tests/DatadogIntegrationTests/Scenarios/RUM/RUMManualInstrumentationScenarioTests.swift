@@ -58,6 +58,15 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         let view1 = session.viewVisits[0]
         XCTAssertEqual(view1.name, "SendRUMFixture1View")
         XCTAssertEqual(view1.path, "Example.SendRUMFixture1ViewController")
+        XCTAssertNotNil(view1.viewEvents.last?.device)
+        XCTAssertNotNil(view1.viewEvents.last?.device?.architecture)
+        if let architecture = view1.viewEvents.last?.device?.architecture {
+            // i486 is the architecture of the VMs on bitrise
+            XCTAssertTrue(
+                architecture.starts(with: "x86_64") || architecture.starts(with: "arm") || architecture.starts(with: "i486"),
+                "Expected architecture to start with 'x86_64', 'i486' or 'arm'. Got \(architecture)"
+            )
+        }
         XCTAssertEqual(view1.viewEvents.last?.view.action.count, 2)
         XCTAssertEqual(view1.viewEvents.last?.view.resource.count, 1)
         XCTAssertEqual(view1.viewEvents.last?.view.error.count, 1)
@@ -92,6 +101,7 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         let view2 = session.viewVisits[1]
         XCTAssertEqual(view2.name, "SendRUMFixture2View")
         XCTAssertEqual(view2.path, "Example.SendRUMFixture2ViewController")
+        XCTAssertNotNil(view2.viewEvents.last?.device)
         XCTAssertEqual(view2.viewEvents.last?.view.action.count, 0)
         XCTAssertEqual(view2.viewEvents.last?.view.resource.count, 0)
         XCTAssertEqual(view2.viewEvents.last?.view.error.count, 1)
@@ -102,6 +112,7 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         let view3 = session.viewVisits[2]
         XCTAssertEqual(view3.name, "SendRUMFixture3View")
         XCTAssertEqual(view3.path, "fixture3-vc")
+        XCTAssertNotNil(view3.viewEvents.last?.device)
         XCTAssertEqual(view3.viewEvents.last?.view.action.count, 0)
         XCTAssertEqual(view3.viewEvents.last?.view.resource.count, 0)
         XCTAssertEqual(view3.viewEvents.last?.view.error.count, 0)

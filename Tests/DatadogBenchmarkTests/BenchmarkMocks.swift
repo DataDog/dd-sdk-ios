@@ -50,7 +50,8 @@ extension FeaturesConfiguration.Common {
             origin: nil,
             sdkVersion: .mockAny(),
             proxyConfiguration: nil,
-            encryption: nil
+            encryption: nil,
+            serverDateProvider: nil
         )
     }
 }

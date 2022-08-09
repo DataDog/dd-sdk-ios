@@ -11,20 +11,38 @@ let package = Package(
         .package(name: "Difference", url: "https://github.com/krzysztofzablocki/Difference.git", from: "0.5.0"),
     ],
     targets: [
+        // CLI wrapper
         .target(
             name: "rum-models-generator",
             dependencies: [
-                "RUMModelsGeneratorCore",
+                "CodeGeneration",
+                "CodeDecoration",
                 .product(name: "ArgumentParser", package: "swift-argument-parser")
-            ]),
+            ]
+        ),
+        .testTarget(
+            name: "rum-models-generatorTests",
+            dependencies: ["rum-models-generator",]
+        ),
+
+        // Product-agnostic code generator (JSON Schema -> Swift | Objc-interop)
         .target(
-            name: "RUMModelsGeneratorCore",
+            name: "CodeGeneration",
             dependencies: []
         ),
         .testTarget(
-            name: "rum-models-generator-coreTests",
-            dependencies: ["RUMModelsGeneratorCore", "Difference"],
+            name: "CodeGenerationTests",
+            dependencies: [
+                "CodeGeneration",
+                "Difference"
+            ],
             resources: [.copy("Fixtures")]
+        ),
+
+        // Product-specific code decorators
+        .target(
+            name: "CodeDecoration",
+            dependencies: ["CodeGeneration"]
         ),
     ]
 )

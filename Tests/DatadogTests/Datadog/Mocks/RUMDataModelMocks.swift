@@ -56,11 +56,33 @@ extension RUMEventAttributes: RandomMockable {
 extension RUMDevice: RandomMockable {
     static func mockRandom() -> RUMDevice {
         return .init(
+            architecture: .mockRandom(),
             brand: .mockRandom(),
             model: .mockRandom(),
             name: .mockRandom(),
             type: .mockRandom()
         )
+    }
+}
+
+extension RUMActionID: RandomMockable {
+    static func mockRandom() -> RUMActionID {
+        if Bool.random() {
+            return .string(value: .mockRandom())
+        } else {
+            return .stringsArray(value: .mockRandom())
+        }
+    }
+}
+
+extension RUMActionID {
+    var stringValue: String? {
+        switch self {
+        case .string(let value):
+            return value
+        default:
+            return nil
+        }
     }
 }
 
@@ -102,6 +124,7 @@ extension RUMViewEvent: RandomMockable {
             context: .mockRandom(),
             date: .mockRandom(),
             device: .mockRandom(),
+            display: nil,
             os: .mockRandom(),
             service: .mockRandom(),
             session: .init(
@@ -173,6 +196,7 @@ extension RUMResourceEvent: RandomMockable {
             context: .mockRandom(),
             date: .mockRandom(),
             device: .mockRandom(),
+            display: nil,
             os: .mockRandom(),
             resource: .init(
                 connect: .init(duration: .mockRandom(), start: .mockRandom()),
@@ -238,6 +262,7 @@ extension RUMActionEvent: RandomMockable {
             context: .mockRandom(),
             date: .mockRandom(),
             device: .mockRandom(),
+            display: nil,
             os: .mockRandom(),
             service: .mockRandom(),
             session: .init(
@@ -279,6 +304,7 @@ extension RUMErrorEvent: RandomMockable {
             context: .mockRandom(),
             date: .mockRandom(),
             device: .mockRandom(),
+            display: nil,
             error: .init(
                 handling: nil,
                 handlingStack: nil,
@@ -348,6 +374,7 @@ extension RUMLongTaskEvent: RandomMockable {
             context: .mockRandom(),
             date: .mockRandom(),
             device: .mockRandom(),
+            display: nil,
             longTask: .init(duration: .mockRandom(), id: .mockRandom(), isFrozenFrame: .mockRandom()),
             os: .mockRandom(),
             service: .mockRandom(),

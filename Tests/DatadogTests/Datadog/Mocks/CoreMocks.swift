@@ -207,7 +207,8 @@ extension FeaturesConfiguration.Common {
         origin: String? = nil,
         sdkVersion: String = .mockAny(),
         proxyConfiguration: [AnyHashable: Any]? = nil,
-        encryption: DataEncryption? = nil
+        encryption: DataEncryption? = nil,
+        serverDateProvider: ServerDateProvider? = nil
     ) -> Self {
         return .init(
             site: site,
@@ -222,7 +223,8 @@ extension FeaturesConfiguration.Common {
             origin: origin,
             sdkVersion: sdkVersion,
             proxyConfiguration: proxyConfiguration,
-            encryption: encryption
+            encryption: encryption,
+            serverDateProvider: serverDateProvider
         )
     }
 }
@@ -369,6 +371,18 @@ struct DataEncryptionMock: DataEncryption {
 
     func encrypt(data: Data) throws -> Data { try enc(data) }
     func decrypt(data: Data) throws -> Data { try dec(data) }
+}
+
+class ServerDateProviderMock: ServerDateProvider {
+    private var update: (TimeInterval) -> Void = { _ in }
+
+    var offset: TimeInterval = .zero {
+        didSet { update(offset) }
+    }
+
+    func synchronize(update: @escaping (TimeInterval) -> Void) {
+        self.update = update
+    }
 }
 
 // MARK: - PerformancePreset Mocks
@@ -931,13 +945,15 @@ extension DeviceInfo {
         name: String = .mockAny(),
         model: String = .mockAny(),
         osName: String = .mockAny(),
-        osVersion: String = .mockAny()
+        osVersion: String = .mockAny(),
+        architecture: String = .mockAny()
     ) -> DeviceInfo {
         return .init(
             name: name,
             model: model,
             osName: osName,
-            osVersion: osVersion
+            osVersion: osVersion,
+            architecture: architecture
         )
     }
 
@@ -946,7 +962,8 @@ extension DeviceInfo {
             name: .mockRandom(),
             model: .mockRandom(),
             osName: .mockRandom(),
-            osVersion: .mockRandom()
+            osVersion: .mockRandom(),
+            architecture: .mockRandom()
         )
     }
 }
