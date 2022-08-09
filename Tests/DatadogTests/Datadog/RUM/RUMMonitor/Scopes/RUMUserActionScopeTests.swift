@@ -85,6 +85,7 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(recordedAction.service, "test-service")
         XCTAssertEqual(recordedAction.device?.name, "device-name")
         XCTAssertEqual(recordedAction.os?.name, "device-os")
+        XCTAssertNil(recordedAction.action.frustration)
     }
 
     func testGivenCustomSource_whenActionIsSent_itSendsCustomSource() throws {
@@ -263,6 +264,7 @@ class RUMUserActionScopeTests: XCTestCase {
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
         XCTAssertEqual(event.action.resource?.count, 1, "User Action should track first successful Resource")
         XCTAssertEqual(event.action.error?.count, 1, "User Action should track second Resource failure as Error")
+        XCTAssertNil(event.action.frustration)
     }
 
     func testWhileContinuousUserActionIsActive_itCountsViewErrors() throws {
@@ -576,5 +578,38 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertNil(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertFalse(callbackCalled)
+    }
+
+    // MARK: - Actions with Frustrations
+
+    func testGivenTapUserActionWithError_itWritesErrorTapFrustration() throws {
+        var currentTime = Date()
+        let scope = RUMUserActionScope.mockWith(
+            parent: parent,
+            actionType: .tap,
+            startTime: currentTime,
+            isContinuous: false
+        )
+
+        currentTime.addTimeInterval(0.05)
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorObject(time: currentTime),
+                context: context,
+                writer: writer
+            )
+        )
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(identity: mockView),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
+        XCTAssertEqual(event.action.frustration?.type.first, .errorTap)
     }
 }

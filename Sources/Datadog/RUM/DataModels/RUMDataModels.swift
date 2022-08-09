@@ -87,6 +87,9 @@ public struct RUMActionEvent: RUMDataModel {
 
     /// Internal properties
     public struct DD: Codable {
+        /// Action properties
+        public let action: Action?
+
         /// Browser SDK version
         public let browserSdkVersion: String?
 
@@ -97,9 +100,56 @@ public struct RUMActionEvent: RUMDataModel {
         public let session: Session?
 
         enum CodingKeys: String, CodingKey {
+            case action = "action"
             case browserSdkVersion = "browser_sdk_version"
             case formatVersion = "format_version"
             case session = "session"
+        }
+
+        /// Action properties
+        public struct Action: Codable {
+            /// Action position properties
+            public let position: Position?
+
+            /// Target properties
+            public let target: Target?
+
+            enum CodingKeys: String, CodingKey {
+                case position = "position"
+                case target = "target"
+            }
+
+            /// Action position properties
+            public struct Position: Codable {
+                /// X coordinate relative to the target element of the action (in pixels)
+                public let x: Int64
+
+                /// Y coordinate relative to the target element of the action (in pixels)
+                public let y: Int64
+
+                enum CodingKeys: String, CodingKey {
+                    case x = "x"
+                    case y = "y"
+                }
+            }
+
+            /// Target properties
+            public struct Target: Codable {
+                /// Height of the target element (in pixels)
+                public let height: Int64?
+
+                /// CSS selector path of the target element
+                public let selector: String?
+
+                /// Width of the target element (in pixels)
+                public let width: Int64?
+
+                enum CodingKeys: String, CodingKey {
+                    case height = "height"
+                    case selector = "selector"
+                    case width = "width"
+                }
+            }
         }
 
         /// Session-related internal properties
@@ -139,9 +189,6 @@ public struct RUMActionEvent: RUMDataModel {
         /// Properties of the long tasks of the action
         public let longTask: LongTask?
 
-        /// Action position properties
-        public let position: Position?
-
         /// Properties of the resources of the action
         public let resource: Resource?
 
@@ -158,7 +205,6 @@ public struct RUMActionEvent: RUMDataModel {
             case id = "id"
             case loadingTime = "loading_time"
             case longTask = "long_task"
-            case position = "position"
             case resource = "resource"
             case target = "target"
             case type = "type"
@@ -197,6 +243,8 @@ public struct RUMActionEvent: RUMDataModel {
                 case rageClick = "rage_click"
                 case deadClick = "dead_click"
                 case errorClick = "error_click"
+                case rageTap = "rage_tap"
+                case errorTap = "error_tap"
             }
         }
 
@@ -207,20 +255,6 @@ public struct RUMActionEvent: RUMDataModel {
 
             enum CodingKeys: String, CodingKey {
                 case count = "count"
-            }
-        }
-
-        /// Action position properties
-        public struct Position: Codable {
-            /// X coordinate relative to the target element of the action (in pixels)
-            public let x: Int64
-
-            /// Y coordinate relative to the target element of the action (in pixels)
-            public let y: Int64
-
-            enum CodingKeys: String, CodingKey {
-                case x = "x"
-                case y = "y"
             }
         }
 
@@ -236,23 +270,11 @@ public struct RUMActionEvent: RUMDataModel {
 
         /// Action target properties
         public struct Target: Codable {
-            /// Height of the target element (in pixels)
-            public let height: Int64?
-
             /// Target name
             public var name: String
 
-            /// CSS selector path of the target element
-            public let selector: String?
-
-            /// Width of the target element (in pixels)
-            public let width: Int64?
-
             enum CodingKeys: String, CodingKey {
-                case height = "height"
                 case name = "name"
-                case selector = "selector"
-                case width = "width"
             }
         }
 
@@ -2319,4 +2341,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/9e0f8b2ab26ce0e33b058d7d5d3663ab043847f5
+// Generated from https://github.com/DataDog/rum-events-format/tree/a2f14e5f284d21f29e4fe4e49c0ac52cfcd96d93

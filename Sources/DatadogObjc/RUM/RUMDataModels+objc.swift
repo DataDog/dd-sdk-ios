@@ -101,6 +101,10 @@ public class DDRUMActionEventDD: NSObject {
         self.root = root
     }
 
+    @objc public var action: DDRUMActionEventDDAction? {
+        root.swiftModel.dd.action != nil ? DDRUMActionEventDDAction(root: root) : nil
+    }
+
     @objc public var browserSdkVersion: String? {
         root.swiftModel.dd.browserSdkVersion
     }
@@ -111,6 +115,61 @@ public class DDRUMActionEventDD: NSObject {
 
     @objc public var session: DDRUMActionEventDDSession? {
         root.swiftModel.dd.session != nil ? DDRUMActionEventDDSession(root: root) : nil
+    }
+}
+
+@objc
+public class DDRUMActionEventDDAction: NSObject {
+    internal let root: DDRUMActionEvent
+
+    internal init(root: DDRUMActionEvent) {
+        self.root = root
+    }
+
+    @objc public var position: DDRUMActionEventDDActionPosition? {
+        root.swiftModel.dd.action!.position != nil ? DDRUMActionEventDDActionPosition(root: root) : nil
+    }
+
+    @objc public var target: DDRUMActionEventDDActionTarget? {
+        root.swiftModel.dd.action!.target != nil ? DDRUMActionEventDDActionTarget(root: root) : nil
+    }
+}
+
+@objc
+public class DDRUMActionEventDDActionPosition: NSObject {
+    internal let root: DDRUMActionEvent
+
+    internal init(root: DDRUMActionEvent) {
+        self.root = root
+    }
+
+    @objc public var x: NSNumber {
+        root.swiftModel.dd.action!.position!.x as NSNumber
+    }
+
+    @objc public var y: NSNumber {
+        root.swiftModel.dd.action!.position!.y as NSNumber
+    }
+}
+
+@objc
+public class DDRUMActionEventDDActionTarget: NSObject {
+    internal let root: DDRUMActionEvent
+
+    internal init(root: DDRUMActionEvent) {
+        self.root = root
+    }
+
+    @objc public var height: NSNumber? {
+        root.swiftModel.dd.action!.target!.height as NSNumber?
+    }
+
+    @objc public var selector: String? {
+        root.swiftModel.dd.action!.target!.selector
+    }
+
+    @objc public var width: NSNumber? {
+        root.swiftModel.dd.action!.target!.width as NSNumber?
     }
 }
 
@@ -179,10 +238,6 @@ public class DDRUMActionEventAction: NSObject {
         root.swiftModel.action.longTask != nil ? DDRUMActionEventActionLongTask(root: root) : nil
     }
 
-    @objc public var position: DDRUMActionEventActionPosition? {
-        root.swiftModel.action.position != nil ? DDRUMActionEventActionPosition(root: root) : nil
-    }
-
     @objc public var resource: DDRUMActionEventActionResource? {
         root.swiftModel.action.resource != nil ? DDRUMActionEventActionResource(root: root) : nil
     }
@@ -242,6 +297,8 @@ public enum DDRUMActionEventActionFrustrationFrustrationType: Int {
         case .rageClick: self = .rageClick
         case .deadClick: self = .deadClick
         case .errorClick: self = .errorClick
+        case .rageTap: self = .rageTap
+        case .errorTap: self = .errorTap
         }
     }
 
@@ -250,12 +307,16 @@ public enum DDRUMActionEventActionFrustrationFrustrationType: Int {
         case .rageClick: return .rageClick
         case .deadClick: return .deadClick
         case .errorClick: return .errorClick
+        case .rageTap: return .rageTap
+        case .errorTap: return .errorTap
         }
     }
 
     case rageClick
     case deadClick
     case errorClick
+    case rageTap
+    case errorTap
 }
 
 @objc
@@ -268,23 +329,6 @@ public class DDRUMActionEventActionLongTask: NSObject {
 
     @objc public var count: NSNumber {
         root.swiftModel.action.longTask!.count as NSNumber
-    }
-}
-
-@objc
-public class DDRUMActionEventActionPosition: NSObject {
-    internal let root: DDRUMActionEvent
-
-    internal init(root: DDRUMActionEvent) {
-        self.root = root
-    }
-
-    @objc public var x: NSNumber {
-        root.swiftModel.action.position!.x as NSNumber
-    }
-
-    @objc public var y: NSNumber {
-        root.swiftModel.action.position!.y as NSNumber
     }
 }
 
@@ -309,21 +353,9 @@ public class DDRUMActionEventActionTarget: NSObject {
         self.root = root
     }
 
-    @objc public var height: NSNumber? {
-        root.swiftModel.action.target!.height as NSNumber?
-    }
-
     @objc public var name: String {
         set { root.swiftModel.action.target!.name = newValue }
         get { root.swiftModel.action.target!.name }
-    }
-
-    @objc public var selector: String? {
-        root.swiftModel.action.target!.selector
-    }
-
-    @objc public var width: NSNumber? {
-        root.swiftModel.action.target!.width as NSNumber?
     }
 }
 
@@ -4332,4 +4364,4 @@ public class DDTelemetryDebugEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/9e0f8b2ab26ce0e33b058d7d5d3663ab043847f5
+// Generated from https://github.com/DataDog/rum-events-format/tree/a2f14e5f284d21f29e4fe4e49c0ac52cfcd96d93

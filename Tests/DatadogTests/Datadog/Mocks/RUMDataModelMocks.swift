@@ -241,6 +241,14 @@ extension RUMActionEvent: RandomMockable {
     static func mockRandom() -> RUMActionEvent {
         return RUMActionEvent(
             dd: .init(
+                action: .init(
+                    position: nil,
+                    target: .init(
+                        height: nil,
+                        selector: nil,
+                        width: .mockRandom()
+                    )
+                ),
                 browserSdkVersion: nil,
                 session: .init(plan: .plan1)
             ),
@@ -251,9 +259,8 @@ extension RUMActionEvent: RandomMockable {
                 id: .mockRandom(),
                 loadingTime: .mockRandom(),
                 longTask: .init(count: .mockRandom()),
-                position: nil,
                 resource: .init(count: .mockRandom()),
-                target: .init(height: nil, name: .mockRandom(), selector: nil, width: .mockRandom()),
+                target: .init(name: .mockRandom()),
                 type: [.tap, .swipe, .scroll].randomElement()!
             ),
             application: .init(id: .mockRandom()),
