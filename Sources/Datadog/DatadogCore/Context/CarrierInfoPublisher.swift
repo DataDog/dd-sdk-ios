@@ -6,7 +6,7 @@
 
 import Foundation
 
-#if os(iOS)
+#if os(iOS) && !targetEnvironment(macCatalyst)
 
 import CoreTelephony
 
@@ -101,7 +101,6 @@ extension CarrierInfo {
 extension CarrierInfo.RadioAccessTechnology {
     init(_ radioAccessTechnology: String) {
         switch radioAccessTechnology {
-        #if os(iOS) && !targetEnvironment(macCatalyst)
         case CTRadioAccessTechnologyGPRS: self = .GPRS
         case CTRadioAccessTechnologyEdge: self = .Edge
         case CTRadioAccessTechnologyWCDMA: self = .WCDMA
@@ -113,7 +112,6 @@ extension CarrierInfo.RadioAccessTechnology {
         case CTRadioAccessTechnologyCDMAEVDORevB: self = .CDMAEVDORevB
         case CTRadioAccessTechnologyeHRPD: self = .eHRPD
         case CTRadioAccessTechnologyLTE: self = .LTE
-        #endif
         default: self = .unknown
         }
     }
