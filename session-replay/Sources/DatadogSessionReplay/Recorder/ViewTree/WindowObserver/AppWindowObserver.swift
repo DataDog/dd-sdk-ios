@@ -4,11 +4,9 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import XCTest
-@testable import DatadogSessionReplay
+import UIKit
 
-final class SessionReplayFeatureTests: XCTestCase {
-    func testExample() throws {
-        XCTAssertNil(SessionReplayFeature.instance)
-    }
+/// A type observing the application object and finding the most relevant window for session replay recording.
+internal protocol AppWindowObserver {
+    var relevantWindow: UIWindow? { get }
 }

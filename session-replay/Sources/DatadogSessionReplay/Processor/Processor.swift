@@ -4,11 +4,10 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import XCTest
-@testable import DatadogSessionReplay
+import Foundation
 
-final class SessionReplayFeatureTests: XCTestCase {
-    func testExample() throws {
-        XCTAssertNil(SessionReplayFeature.instance)
+// TODO: RUMM-2272 Implement SR Processor
+internal class Processor: ViewTreeSnapshotProcessor {
+    func process(snapshot: ViewTreeSnapshot) {
     }
 }

@@ -247,6 +247,7 @@
 		615CC4102694A64D0005F08C /* SwiftExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615CC40F2694A64D0005F08C /* SwiftExtensionTests.swift */; };
 		615CC4132695957C0005F08C /* CrashReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615CC4122695957C0005F08C /* CrashReportTests.swift */; };
 		615F197C25B5A64B00BE14B5 /* UIKitExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615F197B25B5A64B00BE14B5 /* UIKitExtensions.swift */; };
+		6160D3B32892F508000768DD /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = 6160D3B22892F508000768DD /* DatadogSessionReplay */; };
 		6161247925CA9CA6009901BE /* CrashReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6161247825CA9CA6009901BE /* CrashReporter.swift */; };
 		6161249E25CAB340009901BE /* CrashContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6161249D25CAB340009901BE /* CrashContext.swift */; };
 		616124A725CAC268009901BE /* CrashContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616124A625CAC268009901BE /* CrashContextProvider.swift */; };
@@ -496,6 +497,7 @@
 		61F3CDA52511190E00C816E5 /* UIViewControllerSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3CDA42511190E00C816E5 /* UIViewControllerSwizzler.swift */; };
 		61F3CDA72512144600C816E5 /* UIKitRUMViewsPredicate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3CDA62512144600C816E5 /* UIKitRUMViewsPredicate.swift */; };
 		61F3CDAB25121FB500C816E5 /* UIViewControllerSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3CDAA25121FB500C816E5 /* UIViewControllerSwizzlerTests.swift */; };
+		61F4A01D289D5C00001B1BB6 /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = 61F4A01C289D5C00001B1BB6 /* DatadogSessionReplay */; };
 		61F74AF426F20E4600E5F5ED /* DebugCrashReportingWithRUMViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F74AF326F20E4600E5F5ED /* DebugCrashReportingWithRUMViewController.swift */; };
 		61F7F1DD266F9CB000F9F53B /* CodableValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BA02423979B00786299 /* CodableValue.swift */; };
 		61F8CC092469295500FE2908 /* DatadogConfigurationBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F8CC082469295500FE2908 /* DatadogConfigurationBuilderTests.swift */; };
@@ -1865,6 +1867,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9E5BD8042819742200CB568E /* SwiftUI.framework in Frameworks */,
+				6160D3B32892F508000768DD /* DatadogSessionReplay in Frameworks */,
 				D240687827CF982B00C04F44 /* CrashReporter.xcframework in Frameworks */,
 				D240687B27CF982C00C04F44 /* Datadog.framework in Frameworks */,
 				D240687D27CF982D00C04F44 /* DatadogCrashReporting.framework in Frameworks */,
@@ -1944,6 +1947,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9E5BD8062819742C00CB568E /* SwiftUI.framework in Frameworks */,
+				61F4A01D289D5C00001B1BB6 /* DatadogSessionReplay in Frameworks */,
 				D240687027CF971C00C04F44 /* CrashReporter.xcframework in Frameworks */,
 				D240687127CF971C00C04F44 /* Datadog.framework in Frameworks */,
 				D240687227CF971C00C04F44 /* DatadogCrashReporting.framework in Frameworks */,
@@ -4363,6 +4367,7 @@
 			);
 			name = "Example iOS";
 			packageProductDependencies = (
+				6160D3B22892F508000768DD /* DatadogSessionReplay */,
 			);
 			productName = Example;
 			productReference = 61441C0224616DE9003D8BB8 /* Example iOS.app */;
@@ -4526,6 +4531,7 @@
 			);
 			name = "Example tvOS";
 			packageProductDependencies = (
+				61F4A01C289D5C00001B1BB6 /* DatadogSessionReplay */,
 			);
 			productName = Example;
 			productReference = D240684D27CE6C9E00C04F44 /* Example tvOS.app */;
@@ -7867,6 +7873,14 @@
 		6152C83D24BE1C91006A1679 /* HTTPServerMock */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = HTTPServerMock;
+		};
+		6160D3B22892F508000768DD /* DatadogSessionReplay */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogSessionReplay;
+		};
+		61F4A01C289D5C00001B1BB6 /* DatadogSessionReplay */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogSessionReplay;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

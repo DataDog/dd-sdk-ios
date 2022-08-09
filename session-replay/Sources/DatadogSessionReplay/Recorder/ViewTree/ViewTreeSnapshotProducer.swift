@@ -4,11 +4,9 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import XCTest
-@testable import DatadogSessionReplay
+import Foundation
 
-final class SessionReplayFeatureTests: XCTestCase {
-    func testExample() throws {
-        XCTAssertNil(SessionReplayFeature.instance)
-    }
+/// Produces `ViewTreeSnapshot` describing the user interface.
+internal protocol ViewTreeSnapshotProducer {
+    func takeSnapshot() -> ViewTreeSnapshot?
 }

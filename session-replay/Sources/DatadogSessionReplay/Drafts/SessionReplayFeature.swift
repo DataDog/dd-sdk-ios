@@ -8,5 +8,14 @@ import Foundation
 
 /// A draft interface of SR feature.
 public class SessionReplayFeature {
-    public static let testBool = true
+    public static var instance: SessionReplayFeature?
+
+    private let recorder: Recorder
+
+    public init() {
+        self.recorder = Recorder()
+    }
+
+    public func start() { recorder.start() }
+    public func stop() { recorder.stop() }
 }
