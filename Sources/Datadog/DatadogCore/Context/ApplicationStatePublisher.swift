@@ -4,10 +4,15 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import Foundation
+#if canImport(UIKit)
+import UIKit
 
 internal final class ApplicationStatePublisher: ContextValuePublisher {
     typealias Snapshot = AppStateHistory.Snapshot
+
+    private static var currentApplicationState: UIApplication.State {
+        UIApplication.managedShared?.applicationState ?? .active // fallback to most expected state
+    }
 
     /// The default publisher queue.
     private static let defaultQueue = DispatchQueue(
@@ -56,14 +61,9 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
         dateProvider: DateProvider = SystemDateProvider(),
         notificationCenter: NotificationCenter = .default
     ) {
-        let snapshot = Snapshot(
-            state: initialState,
-            date: dateProvider.now
-        )
-
         let initialValue = AppStateHistory(
-            initialSnapshot: snapshot,
-            recentDate: snapshot.date
+            initialState: initialState,
+            date: dateProvider.now
         )
 
         self.initialValue = initialValue
@@ -71,6 +71,30 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
         self.queue = queue
         self.dateProvider = dateProvider
         self.notificationCenter = notificationCenter
+    }
+
+    /// Creates a Application state publisher for publishing application state
+    /// history.
+    ///
+    /// **Note**: It must be called on the main thread.
+    ///
+    /// - Parameters:
+    ///   - applicationState: The current shared `UIApplication` state.
+    ///   - queue: The queue for publishing the history.
+    ///   - dateProvider: The date provider for the Application state snapshot timestamp.
+    ///   - notificationCenter: The notification center where this publisher observes `UIApplication` notifications.
+    convenience init(
+        applicationState: UIApplication.State = ApplicationStatePublisher.currentApplicationState,
+        queue: DispatchQueue = ApplicationStatePublisher.defaultQueue,
+        dateProvider: DateProvider = SystemDateProvider(),
+        notificationCenter: NotificationCenter = .default
+    ) {
+        self.init(
+            initialState: AppState(applicationState),
+            queue: queue,
+            dateProvider: dateProvider,
+            notificationCenter: notificationCenter
+        )
     }
 
     func publish(to receiver: @escaping ContextValueReceiver<AppStateHistory>) {
@@ -115,40 +139,6 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
         notificationCenter.removeObserver(self, name: UIApplication.didEnterBackgroundNotification, object: nil)
         notificationCenter.removeObserver(self, name: UIApplication.willEnterForegroundNotification, object: nil)
         queue.async { self.receiver = nil }
-    }
-}
-
-#if canImport(UIKit)
-
-import UIKit
-
-extension ApplicationStatePublisher {
-    private static var currentApplicationState: UIApplication.State {
-        UIApplication.managedShared?.applicationState ?? .active // fallback to most expected state
-    }
-
-    /// Creates a Application state publisher for publishing application state
-    /// history.
-    ///
-    /// **Note**: It must be called on the main thread.
-    ///
-    /// - Parameters:
-    ///   - applicationState: The current shared `UIApplication` state.
-    ///   - queue: The queue for publishing the history.
-    ///   - dateProvider: The date provider for the Application state snapshot timestamp.
-    ///   - notificationCenter: The notification center where this publisher observes `UIApplication` notifications.
-    convenience init(
-        applicationState: UIApplication.State = ApplicationStatePublisher.currentApplicationState,
-        queue: DispatchQueue = ApplicationStatePublisher.defaultQueue,
-        dateProvider: DateProvider = SystemDateProvider(),
-        notificationCenter: NotificationCenter = .default
-    ) {
-        self.init(
-            initialState: AppState(applicationState),
-            queue: queue,
-            dateProvider: dateProvider,
-            notificationCenter: notificationCenter
-        )
     }
 }
 

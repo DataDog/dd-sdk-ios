@@ -23,5 +23,5 @@ import Foundation
     ///   - context: The current core context.
     ///   - events: The events data to upload.
     /// - Returns: The URL request.
-    func request(for events: [Data], with context: /* DatadogContext */ DatadogV1Context) -> URLRequest
+    func request(for events: [Data], with context: DatadogContext) -> URLRequest
 }

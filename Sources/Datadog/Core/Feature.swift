@@ -12,7 +12,6 @@ internal struct FeaturesCommonDependencies {
     let performance: PerformancePreset
     let httpClient: HTTPClient
     let deviceInfo: DeviceInfo
-    let batteryStatusProvider: BatteryStatusProviderType
     /// Time of SDK initialization, measured in device date.
     let sdkInitDate: Date
     let dateProvider: DateProvider

@@ -29,7 +29,7 @@ class DataUploaderTests: XCTestCase {
         // When
         let uploadStatus = uploader.upload(
             events: .mockAny(),
-            context: .mockWith(dependencies: .mockWith(httpClient: httpClient))
+            context: .mockAny()
         )
 
         // Then
@@ -55,7 +55,7 @@ class DataUploaderTests: XCTestCase {
         // When
         let uploadStatus = uploader.upload(
             events: .mockAny(),
-            context: .mockWith(dependencies: .mockWith(httpClient: httpClient))
+            context: .mockAny()
         )
 
         // Then

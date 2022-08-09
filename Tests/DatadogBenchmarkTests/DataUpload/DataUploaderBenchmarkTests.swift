@@ -29,7 +29,7 @@ class DataUploaderBenchmarkTests: BenchmarkTests {
             requestBuilder: FeatureRequestBuilderMock()
         )
 
-        let context: DatadogV1Context = .mockAny()
+        let context: DatadogContext = .mockAny()
 
         // `measure` runs 5 iterations
         measure(metrics: [XCTMemoryMetric()]) {

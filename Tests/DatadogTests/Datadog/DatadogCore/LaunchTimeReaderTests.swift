@@ -13,17 +13,17 @@ class LaunchTimeReaderTests: XCTestCase {
         setenv("ActivePrewarm", "", 1)
     }
 
-    func testGivenStartedApplication_whenRequestingLaunchTimeAtAnyTime_itReturnsTheSameValue() {
+    func testGivenStartedApplication_whenRequestingLaunchTimeAtAnyTime_itReturnsTheSameValue() throws {
         // Given
         let reader = LaunchTimeReader()
 
         // When
         var values: [TimeInterval] = []
-        (0..<10).forEach { _ in
+        try (0..<10).forEach { _ in
             Thread.sleep(forTimeInterval: 0.01)
             var launchTime = LaunchTime(launchTime: .mockRandom(), isActivePrewarm: false)
             reader.read(to: &launchTime)
-            values.append(launchTime.launchTime)
+            try values.append(XCTUnwrap(launchTime.launchTime))
         }
 
         // Then

@@ -12,7 +12,7 @@ internal struct FeatureUpload {
 
     init(
         featureName: String,
-        context: DatadogV1Context,
+        contextProvider: DatadogContextProvider,
         fileReader: Reader,
         requestBuilder: FeatureRequestBuilder,
         commonDependencies: FeaturesCommonDependencies
@@ -20,10 +20,6 @@ internal struct FeatureUpload {
         let uploadQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-\(featureName)-upload",
             target: .global(qos: .utility)
-        )
-
-        let uploadConditions = DataUploadConditions(
-            batteryStatus: commonDependencies.batteryStatusProvider
         )
 
         let dataUploader = DataUploader(
@@ -36,8 +32,8 @@ internal struct FeatureUpload {
                 queue: uploadQueue,
                 fileReader: fileReader,
                 dataUploader: dataUploader,
-                context: context,
-                uploadConditions: uploadConditions,
+                contextProvider: contextProvider,
+                uploadConditions: DataUploadConditions(),
                 delay: DataUploadDelay(performance: commonDependencies.performance),
                 featureName: featureName
             )

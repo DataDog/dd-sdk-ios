@@ -7,14 +7,21 @@
 import Foundation
 
 /// Provides the application launch time.
-internal struct LaunchTime {
+/* public */ internal struct LaunchTime {
     /// The app process launch duration (in seconds) measured as the time from process start time
     /// to receiving `UIApplication.didBecomeActiveNotification` notification.
     ///
     /// If the `UIApplication.didBecomeActiveNotification` has not yet been received by the
     /// time this value is provided, it will represent the time interval between now and the process start time.
-    let launchTime: TimeInterval
+    /* public */ let launchTime: TimeInterval
 
     /// Returns `true` if the application is pre-warmed.
-    let isActivePrewarm: Bool
+    /* public */ let isActivePrewarm: Bool
+}
+
+extension LaunchTime {
+    /// Returns a zero launch time with inactive pre-warm.
+    /* public */ static var zero: LaunchTime {
+        .init(launchTime: 0, isActivePrewarm: false)
+    }
 }

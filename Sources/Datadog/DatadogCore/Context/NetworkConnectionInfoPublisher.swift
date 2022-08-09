@@ -111,12 +111,9 @@ extension NetworkConnectionInfo.Interface {
 import SystemConfiguration
 
 internal struct SCNetworkReachabilityReader: ContextValueReader {
-    let initialValue: NetworkConnectionInfo
-
     private let reachability: SCNetworkReachability
 
     init(reachability: SCNetworkReachability) {
-        self.initialValue = NetworkConnectionInfo(reachability)
         self.reachability = reachability
     }
 

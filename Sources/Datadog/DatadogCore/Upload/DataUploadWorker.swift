@@ -24,10 +24,8 @@ internal class DataUploadWorker: DataUploadWorkerType {
     /// Name of the feature this worker is performing uploads for.
     private let featureName: String
 
-    /// The current V1 context
-    ///
-    /// TODO: To be replaced with v2 context provider
-    private let context: DatadogV1Context
+    /// The core context provider
+    private let contextProvider: DatadogContextProvider
 
     /// Delay used to schedule consecutive uploads.
     private var delay: Delay
@@ -39,7 +37,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
         queue: DispatchQueue,
         fileReader: Reader,
         dataUploader: DataUploaderType,
-        context: DatadogV1Context,
+        contextProvider: DatadogContextProvider,
         uploadConditions: DataUploadConditions,
         delay: Delay,
         featureName: String
@@ -48,16 +46,17 @@ internal class DataUploadWorker: DataUploadWorkerType {
         self.fileReader = fileReader
         self.uploadConditions = uploadConditions
         self.dataUploader = dataUploader
+        self.contextProvider = contextProvider
         self.delay = delay
         self.featureName = featureName
-        self.context = context
 
         let uploadWork = DispatchWorkItem { [weak self] in
             guard let self = self else {
                 return
             }
 
-            let blockersForUpload = self.uploadConditions.blockersForUpload(with: context.networkConnectionInfoProvider.current)
+            let context = contextProvider.read()
+            let blockersForUpload = self.uploadConditions.blockersForUpload(with: context)
             let isSystemReady = blockersForUpload.isEmpty
             let nextBatch = isSystemReady ? self.fileReader.readNextBatch() : nil
             if let batch = nextBatch {
@@ -118,7 +117,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
     internal func flushSynchronously() {
         queue.sync {
             while let nextBatch = self.fileReader.readNextBatch() {
-                _ = self.dataUploader.upload(events: nextBatch.events, context: self.context)
+                _ = self.dataUploader.upload(events: nextBatch.events, context: contextProvider.read())
                 self.fileReader.markBatchAsRead(nextBatch)
             }
         }

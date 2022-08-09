@@ -61,6 +61,18 @@ internal struct AppStateHistory: Equatable {
         self.recentDate = recentDate
     }
 
+    init(
+        initialState: AppState,
+        date: Date,
+        snapshots: [Snapshot] = []
+    ) {
+        self.init(
+            initialSnapshot: .init(state: initialState, date: date),
+            recentDate: date,
+            snapshots: snapshots
+        )
+    }
+
     /// Limits or extrapolates app state history to the given range
     /// This is useful when you record between 0...3t but you are concerned of t...2t only
     /// - Parameter range: if outside of initial and final states, it extrapolates; otherwise it limits
@@ -101,21 +113,25 @@ internal struct AppStateHistory: Equatable {
     }
 
     private func state(at date: Date) -> AppState {
-        if date <= initialSnapshot.date {
-            // we assume there was no change before initial state
-            return initialSnapshot.state
-        } else if currentSnapshot.date <= date {
-            // and no change after final state
-            return currentSnapshot.state
-        }
-        var active = initialSnapshot
-        for change in snapshots {
-            if date < change.date {
-                break
+        for snapshot in snapshots.reversed() {
+            if snapshot.date > date {
+                continue
             }
-            active = change
+
+            return snapshot.state
         }
-        return active.state
+
+        // we assume there was no change before initial state
+        return initialSnapshot.state
+    }
+}
+
+extension AppStateHistory {
+    /// Return a history with an active initial state.
+    ///
+    /// - Parameter date: The date since the application is considred active.
+    static func active(since date: Date) -> AppStateHistory {
+        .init(initialState: .active, date: date)
     }
 }
 

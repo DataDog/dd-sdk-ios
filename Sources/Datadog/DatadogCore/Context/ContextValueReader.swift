@@ -21,9 +21,6 @@ internal protocol ContextValueReader {
     /// The kind of values this reader reads.
     associatedtype Value
 
-    /// The initial value of the reader.
-    var initialValue: Value { get }
-
     /// Reads the value synchronously and mutate the value.
     ///
     /// - Parameter receiver: The value to mutate on read.
@@ -44,16 +41,12 @@ internal protocol ContextValueReader {
 /// You can use extension method ``ContextValueReader/eraseToAnyReader()``
 /// operator to wrap a publisher with ``ContextValueReader``.
 internal struct AnyContextValueReader<Value>: ContextValueReader {
-    /// The initial value of the reader.
-    let initialValue: Value
-
     private var mutation: ContextValueMutation<Value>
 
     /// Creates a type-erasing reader to wrap the provided reader.
     ///
     /// - Parameter reader: A reader to wrap with a type-eraser.
     init<Reader>(_ reader: Reader) where Reader: ContextValueReader, Reader.Value == Value {
-        self.initialValue = reader.initialValue
         self.mutation = reader.read
     }
 
@@ -121,20 +114,6 @@ internal struct KeyPathContextValueReader<Value> {
 ///
 /// You can use ``NOPContextValueReader`` as a placeholder.
 internal struct NOPContextValueReader<Value>: ContextValueReader {
-    /// The initial value of the reader.
-    let initialValue: Value
-
-    /// Creates a type-erasing reader to wrap the provided reader.
-    ///
-    /// - Parameter reader: A reader to wrap with a type-eraser.
-    init(initialValue: Value) {
-        self.initialValue = initialValue
-    }
-
-    init() where Value: ExpressibleByNilLiteral {
-        self.initialValue = nil
-    }
-
     func read(to receiver: inout Value) {
         // no-op
     }

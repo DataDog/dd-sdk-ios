@@ -37,7 +37,7 @@ internal struct LoggingRequestBuilder: FeatureRequestBuilder {
     /// The logs request body format.
     let format = DataFormat(prefix: "[", suffix: "]", separator: ",")
 
-    func request(for events: [Data], with context: /* DatadogContext */ DatadogV1Context) -> URLRequest {
+    func request(for events: [Data], with context: DatadogContext) -> URLRequest {
         let builder = URLRequestBuilder(
             url: intake,
             queryItems: [

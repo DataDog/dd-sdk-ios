@@ -4,26 +4,14 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import XCTest
+import Foundation
 
 @testable import Datadog
 
-extension DatadogContextProvider {
-    /// Reads to the `context` synchronously.
-    func read(timeout: DispatchTimeInterval = .seconds(5)) throws -> DatadogContext {
-        let semaphore = DispatchSemaphore(value: 0)
-        var context: DatadogContext! // swiftlint:disable:this implicitly_unwrapped_optional
+extension DatadogContextProvider: AnyMockable {
+    static func mockAny() -> Self { .mockWith() }
 
-        read {
-            context = $0
-            semaphore.signal()
-        }
-
-        switch semaphore.wait(timeout: .now() + timeout) {
-        case .success:
-            return context
-        case .timedOut:
-            throw XCTestError(.timeoutWhileWaiting)
-        }
+    static func mockWith(context: DatadogContext = .mockAny()) -> Self {
+        .init(context: context)
     }
 }
