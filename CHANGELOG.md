@@ -2,7 +2,13 @@
 
 ### Changes
 
-# 1.12.0 / 02-08-2022
+# 1.12.0-beta2 / 10-08-2022
+
+### Changes
+
+* [IMPROVEMENT] Add internal APIs for cross-platform SDKs. See [#964][]
+
+# 1.12.0-beta1 / 02-08-2022
 
 ### Changes
 
@@ -405,6 +411,7 @@
 [#894]: https://github.com/DataDog/dd-sdk-ios/issues/894
 [#949]: https://github.com/DataDog/dd-sdk-ios/issues/949
 [#950]: https://github.com/DataDog/dd-sdk-ios/issues/950
+[#964]: https://github.com/DataDog/dd-sdk-ios/issues/964
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu
