@@ -307,9 +307,22 @@ public class Datadog {
 
             Global.crashReporter?.sendCrashReportIfFound()
         }
+
+        deleteV1Folders(in: core)
     }
 
     internal init() {
+    }
+
+    private static func deleteV1Folders(in core: DatadogCore) {
+        let deprecated = ["com.datadoghq.logs", "com.datadoghq.traces", "com.datadoghq.rum"].compactMap {
+            try? Directory.cache().subdirectory(path: $0) // ignore errors - deprecated paths likely do not exist
+        }
+
+        core.readWriteQueue.async {
+            // ignore errors
+            deprecated.forEach { try? FileManager.default.removeItem(at: $0.url) }
+        }
     }
 
     /// Flushes all authorised data for each feature, tears down and deinitializes the SDK.

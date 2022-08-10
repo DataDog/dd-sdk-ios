@@ -499,6 +499,33 @@ class DatadogTests: XCTestCase {
 
         Datadog.flushAndDeinitialize()
     }
+
+    func testRemoveV1DeprecatedFolders() throws {
+        // Given
+        let cache = try Directory.cache()
+        let directories = ["com.datadoghq.logs", "com.datadoghq.traces", "com.datadoghq.rum"]
+        try directories.forEach {
+            _ = try cache.createSubdirectory(path: $0).createFile(named: "test")
+        }
+
+        // When
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: defaultBuilder.build()
+        )
+
+        defer { Datadog.flushAndDeinitialize() }
+
+        let core = try XCTUnwrap(defaultDatadogCore as? DatadogCore)
+        // Wait for async deletion
+        core.readWriteQueue.sync {}
+
+        // Then
+        XCTAssertThrowsError(try cache.subdirectory(path: "com.datadoghq.logs"))
+        XCTAssertThrowsError(try cache.subdirectory(path: "com.datadoghq.traces"))
+        XCTAssertThrowsError(try cache.subdirectory(path: "com.datadoghq.rum"))
+    }
 }
 
 class AppContextTests: XCTestCase {

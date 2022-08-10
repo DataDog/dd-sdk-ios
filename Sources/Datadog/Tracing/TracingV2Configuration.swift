@@ -11,10 +11,7 @@ internal func createV2TracingStorageConfiguration() -> FeatureStorageConfigurati
     return FeatureStorageConfiguration(
         directories: .init(
             authorized: "tracing/v2", // relative to `CoreDirectory.coreDirectory`
-            unauthorized: "tracing/intermediate-v2", // relative to `CoreDirectory.coreDirectory`
-            deprecated: [
-                "com.datadoghq.traces", // relative to `CoreDirectory.osDirectory`
-            ]
+            unauthorized: "tracing/intermediate-v2" // relative to `CoreDirectory.coreDirectory`
         ),
         featureName: "tracing"
     )

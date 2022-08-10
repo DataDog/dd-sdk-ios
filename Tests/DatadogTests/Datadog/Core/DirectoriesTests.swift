@@ -94,8 +94,7 @@ class DirectoriesTests: XCTestCase {
         let randomFeatureConfiguration = FeatureStorageConfiguration(
             directories: .init(
                 authorized: randomAuthorizedPath,
-                unauthorized: randomUnauthorizedPath,
-                deprecated: []
+                unauthorized: randomUnauthorizedPath
             ),
             featureName: .mockRandom()
         )
@@ -110,44 +109,5 @@ class DirectoriesTests: XCTestCase {
             featureDirectories.unauthorized.url.path.contains(coreDirectory.coreDirectory.url.path),
             "Feature's unauthorized directory must be relative to core directory"
         )
-    }
-
-    func testGivenCoreDirectory_whenCreatingFeatureDirectories_thenItObtainsOnlyDeprecatedPathsThatExist() throws {
-        // Given
-        let coreDirectory = temporaryCoreDirectory.create()
-        defer { coreDirectory.delete() }
-
-        let randomExisingDeprecatedPaths: [String] = (0..<5).map { _ in .mockRandom(among: .alphanumerics) }
-        let randomNotExistingDeprecatedPaths: [String] = (0..<5).map { _ in .mockRandom(among: .alphanumerics) }
-
-        try randomExisingDeprecatedPaths.forEach { _ = try coreDirectory.osDirectory.createSubdirectory(path: $0) }
-
-        // When
-        let randomFeatureConfiguration = FeatureStorageConfiguration(
-            directories: .init(
-                authorized: .mockRandom(among: .alphanumerics),
-                unauthorized: .mockRandom(among: .alphanumerics),
-                deprecated: (randomExisingDeprecatedPaths + randomNotExistingDeprecatedPaths).shuffled()
-            ),
-            featureName: .mockRandom()
-        )
-        let featureDirectories = try coreDirectory.getFeatureDirectories(configuration: randomFeatureConfiguration)
-
-        // Then
-        XCTAssertEqual(
-            featureDirectories.deprecated.count,
-            randomExisingDeprecatedPaths.count,
-            "It must obtain directory for each deprecated path that exists"
-        )
-        featureDirectories.deprecated.forEach { deprecatedDirectory in
-            XCTAssertTrue(
-                deprecatedDirectory.url.path.contains(coreDirectory.osDirectory.url.path),
-                "Feature's deprecated directory must be relative to OS directory"
-            )
-            XCTAssertFalse(
-                deprecatedDirectory.url.path.contains(coreDirectory.coreDirectory.url.path),
-                "Feature's deprecated directory must NOT be relative to core directory"
-            )
-        }
     }
 }

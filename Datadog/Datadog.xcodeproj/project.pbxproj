@@ -218,7 +218,6 @@
 		614BF3812670AEC8002379C8 /* EquatableInTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AADBDC263C7ECF008ABC6F /* EquatableInTests.swift */; };
 		614CADCE250FCA0200B93D2D /* TestScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614CADCD250FCA0200B93D2D /* TestScenarios.swift */; };
 		614CADD72510BAC000B93D2D /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614CADD62510BAC000B93D2D /* Environment.swift */; };
-		614D812C24E3EA15004C9C5D /* Feature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614D812B24E3EA15004C9C5D /* Feature.swift */; };
 		614E9EB3244719FA007EE3E1 /* BundleType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614E9EB2244719FA007EE3E1 /* BundleType.swift */; };
 		614ED36C260352DC00C8C519 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 614ED36B260352DC00C8C519 /* CrashReporter.xcframework */; };
 		6152C83E24BE1C91006A1679 /* HTTPServerMock in Frameworks */ = {isa = PBXBuildFile; productRef = 6152C83D24BE1C91006A1679 /* HTTPServerMock */; };
@@ -597,8 +596,8 @@
 		D20605CD28770C3B0047275C /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605CC28770C3B0047275C /* AppState.swift */; };
 		D20605CE28770C3B0047275C /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605CC28770C3B0047275C /* AppState.swift */; };
 		D2135330270CA722000315AD /* DataCompressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D213532F270CA722000315AD /* DataCompressionTests.swift */; };
-		D21C26C728A401FB005DD405 /* DatadogNTPDateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61BCB81E256EB77F0039887B /* DatadogNTPDateProvider.swift */; };
-		D21C26C828A4020B005DD405 /* DatadogNTPDateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61BCB81E256EB77F0039887B /* DatadogNTPDateProvider.swift */; };
+		D21C26C528A3B49C005DD405 /* FeatureStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26C428A3B49C005DD405 /* FeatureStorage.swift */; };
+		D21C26C628A3B49C005DD405 /* FeatureStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26C428A3B49C005DD405 /* FeatureStorage.swift */; };
 		D22C1F5C271484B400922024 /* LogEventMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22C1F5B271484B400922024 /* LogEventMapper.swift */; };
 		D232CAD52832D762001B262C /* DatadogCoreMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D232CAD42832D762001B262C /* DatadogCoreMock.swift */; };
 		D232CAD62832D762001B262C /* DatadogCoreMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D232CAD42832D762001B262C /* DatadogCoreMock.swift */; };
@@ -786,7 +785,6 @@
 		D2CB6E6227C50EAE00A62B57 /* LogEventSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC42423979B00786299 /* LogEventSanitizer.swift */; };
 		D2CB6E6327C50EAE00A62B57 /* UIKitExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615F197B25B5A64B00BE14B5 /* UIKitExtensions.swift */; };
 		D2CB6E6427C50EAE00A62B57 /* VitalCPUReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC8B5D92668197B000F7529 /* VitalCPUReader.swift */; };
-		D2CB6E6527C50EAE00A62B57 /* Feature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614D812B24E3EA15004C9C5D /* Feature.swift */; };
 		D2CB6E6627C50EAE00A62B57 /* Reader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613E792E2577B0F900DFCC17 /* Reader.swift */; };
 		D2CB6E6727C50EAE00A62B57 /* DDURLSessionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618E1365252383D80098C6B0 /* DDURLSessionDelegate.swift */; };
 		D2CB6E6827C50EAE00A62B57 /* SwiftExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BBA2423979B00786299 /* SwiftExtensions.swift */; };
@@ -1496,7 +1494,6 @@
 		614BF37D2670AE9D002379C8 /* AttributesMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributesMocks.swift; sourceTree = "<group>"; };
 		614CADCD250FCA0200B93D2D /* TestScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestScenarios.swift; sourceTree = "<group>"; };
 		614CADD62510BAC000B93D2D /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
-		614D812B24E3EA15004C9C5D /* Feature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feature.swift; sourceTree = "<group>"; };
 		614E9EB2244719FA007EE3E1 /* BundleType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundleType.swift; sourceTree = "<group>"; };
 		614ED36B260352DC00C8C519 /* CrashReporter.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CrashReporter.xcframework; path = ../Carthage/Build/CrashReporter.xcframework; sourceTree = "<group>"; };
 		6152C83F24BE1CC8006A1679 /* DataUploaderBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataUploaderBenchmarkTests.swift; sourceTree = "<group>"; };
@@ -1859,6 +1856,7 @@
 		D20605C62875A77D0047275C /* ContextValueReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextValueReader.swift; sourceTree = "<group>"; };
 		D20605CC28770C3B0047275C /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		D213532F270CA722000315AD /* DataCompressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCompressionTests.swift; sourceTree = "<group>"; };
+		D21C26C428A3B49C005DD405 /* FeatureStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureStorage.swift; sourceTree = "<group>"; };
 		D22C1F5B271484B400922024 /* LogEventMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEventMapper.swift; sourceTree = "<group>"; };
 		D232CAD42832D762001B262C /* DatadogCoreMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogCoreMock.swift; sourceTree = "<group>"; };
 		D240684D27CE6C9E00C04F44 /* Example tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Example tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -2233,8 +2231,6 @@
 		61133B9E2423979B00786299 /* Core */ = {
 			isa = PBXGroup;
 			children = (
-				61DA8CA828609C5B0074A606 /* Directories.swift */,
-				614D812B24E3EA15004C9C5D /* Feature.swift */,
 				61BBD19424ED4E9E0023E65F /* FeaturesConfiguration.swift */,
 				614E9EB2244719FA007EE3E1 /* BundleType.swift */,
 				61BB2B1A244A185D009F3F56 /* PerformancePreset.swift */,
@@ -2242,7 +2238,6 @@
 				61133BBF2423979B00786299 /* Attributes */,
 				61133B9F2423979B00786299 /* Utils */,
 				61133BA12423979B00786299 /* System */,
-				61133BA62423979B00786299 /* Persistence */,
 				61E945DE2869BCA200A946C4 /* DD */,
 			);
 			path = Core;
@@ -2276,9 +2271,11 @@
 			path = System;
 			sourceTree = "<group>";
 		};
-		61133BA62423979B00786299 /* Persistence */ = {
+		61133BA62423979B00786299 /* Storage */ = {
 			isa = PBXGroup;
 			children = (
+				D21C26C428A3B49C005DD405 /* FeatureStorage.swift */,
+				61DA8CA828609C5B0074A606 /* Directories.swift */,
 				D29CDD3128211A2200F7DAA5 /* DataBlock.swift */,
 				6137C571271DAD4B00EFC4A1 /* DataOrchestrator.swift */,
 				D2DC4BF527F484AA00E4FB96 /* DataEncryption.swift */,
@@ -2289,7 +2286,7 @@
 				6114FE0D257667AD0084E372 /* Privacy */,
 				61133BAA2423979B00786299 /* Files */,
 			);
-			path = Persistence;
+			path = Storage;
 			sourceTree = "<group>";
 		};
 		61133BAA2423979B00786299 /* Files */ = {
@@ -4336,6 +4333,7 @@
 			children = (
 				D2B3F04C282A85FD00C2B5EE /* DatadogCore.swift */,
 				D2EFA866286DA82700F1FAA6 /* Context */,
+				61133BA62423979B00786299 /* Storage */,
 				D26C49B428893E5300802B2D /* Upload */,
 			);
 			path = DatadogCore;
@@ -5217,7 +5215,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D21C26C728A401FB005DD405 /* DatadogNTPDateProvider.swift in Sources */,
 				6112B10B25C849C000B37771 /* CrashReportingWithRUMIntegration.swift in Sources */,
 				61E917D12465423600E6C631 /* TracerConfiguration.swift in Sources */,
 				D24985A22728048B00B4F72D /* SwiftUIViewHandler.swift in Sources */,
@@ -5324,7 +5321,6 @@
 				61133BE62423979B00786299 /* LogEventSanitizer.swift in Sources */,
 				615F197C25B5A64B00BE14B5 /* UIKitExtensions.swift in Sources */,
 				9EC8B5DA2668197B000F7529 /* VitalCPUReader.swift in Sources */,
-				614D812C24E3EA15004C9C5D /* Feature.swift in Sources */,
 				613E792F2577B0F900DFCC17 /* Reader.swift in Sources */,
 				61B0385A2527247000518F3C /* DDURLSessionDelegate.swift in Sources */,
 				61133BDF2423979B00786299 /* SwiftExtensions.swift in Sources */,
@@ -5360,6 +5356,7 @@
 				6156CB9824DEFD44008CB2B2 /* LoggingWithRUMIntegration.swift in Sources */,
 				9EB4B862274E79D50041CD03 /* WKUserContentController+Datadog.swift in Sources */,
 				61133BD62423979B00786299 /* DataUploader.swift in Sources */,
+				D21C26C528A3B49C005DD405 /* FeatureStorage.swift in Sources */,
 				619E16F12578E89700B2516B /* DeleteAllDataMigrator.swift in Sources */,
 				61494CBA24CB126F0082C633 /* RUMUserActionScope.swift in Sources */,
 				D2F1B81126D795F3009F3293 /* DDNoopRUMMonitor.swift in Sources */,
@@ -5885,7 +5882,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D21C26C828A4020B005DD405 /* DatadogNTPDateProvider.swift in Sources */,
 				D2CB6E1027C50EAE00A62B57 /* CrashReportingWithRUMIntegration.swift in Sources */,
 				D2DC4BBC27F234D600E4FB96 /* CITestIntegration.swift in Sources */,
 				D2CB6E1127C50EAE00A62B57 /* TracerConfiguration.swift in Sources */,
@@ -5964,6 +5960,7 @@
 				D2CB6E4927C50EAE00A62B57 /* AttributesSanitizer.swift in Sources */,
 				6194E4BD2878AF7600EB6307 /* ConsoleLogger.swift in Sources */,
 				D2CB6E4C27C50EAE00A62B57 /* RUMDataModelsMapping.swift in Sources */,
+				D21C26C628A3B49C005DD405 /* FeatureStorage.swift in Sources */,
 				D2CB6E4D27C50EAE00A62B57 /* Globals.swift in Sources */,
 				D2CB6E4E27C50EAE00A62B57 /* ActiveSpansPool.swift in Sources */,
 				D2CB6E4F27C50EAE00A62B57 /* AppStateListener.swift in Sources */,
@@ -5992,7 +5989,6 @@
 				D20605B02874DAD70047275C /* CarrierInfo.swift in Sources */,
 				D2CB6E6327C50EAE00A62B57 /* UIKitExtensions.swift in Sources */,
 				D2CB6E6427C50EAE00A62B57 /* VitalCPUReader.swift in Sources */,
-				D2CB6E6527C50EAE00A62B57 /* Feature.swift in Sources */,
 				D2CB6E6627C50EAE00A62B57 /* Reader.swift in Sources */,
 				D2CB6E6727C50EAE00A62B57 /* DDURLSessionDelegate.swift in Sources */,
 				D2CB6E6827C50EAE00A62B57 /* SwiftExtensions.swift in Sources */,
