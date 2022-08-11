@@ -24,9 +24,6 @@ internal struct FeatureStorageConfiguration {
         /// The path for writing unauthorized data (when tracking consent is pending).
         /// This path must be relative to the core directory created for given instance of the SDK.
         let unauthorized: String
-        /// The list of deprecated paths from previous versions of this feature. It is used to perform cleanup.
-        /// These paths must be relative to the known OS location (`/Library/Caches/`) containing core directories for different instances of the SDK.
-        let deprecated: [String]
     }
 
     /// Directories storing data for this Feature.

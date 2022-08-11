@@ -28,9 +28,6 @@ internal struct CoreDirectory {
     /// - Parameter configuration: the storage configuration for given Feature
     func getFeatureDirectories(configuration: FeatureStorageConfiguration) throws -> FeatureDirectories {
         return FeatureDirectories(
-            deprecated: configuration.directories.deprecated.compactMap { deprecatedPath in
-                try? osDirectory.subdirectory(path: deprecatedPath) // ignore errors - deprecated paths likely do not exist
-            },
             unauthorized: try coreDirectory.createSubdirectory(path: configuration.directories.unauthorized),
             authorized: try coreDirectory.createSubdirectory(path: configuration.directories.authorized)
         )
@@ -59,8 +56,6 @@ internal extension CoreDirectory {
 
 /// Bundles directories for managing data in single Feature.
 internal struct FeatureDirectories {
-    /// Deprecated data directory that can be deleted safely.
-    let deprecated: [Directory]
     /// Data directory for storing unauthorized data collected without knowing the tracking consent value.
     /// Due to the consent change, data in this directory may be either moved to `authorized` folder or entirely deleted.
     let unauthorized: Directory
