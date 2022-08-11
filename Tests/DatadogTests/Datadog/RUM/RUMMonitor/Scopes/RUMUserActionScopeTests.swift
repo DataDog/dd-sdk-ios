@@ -577,4 +577,99 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertNil(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertFalse(callbackCalled)
     }
+
+    // MARK: - Actions with Frustrations
+
+    func testGivenTapUserActionWithError_itWritesErrorTapFrustration() throws {
+        var currentTime = Date()
+        let scope = RUMUserActionScope.mockWith(
+            parent: parent,
+            actionType: .tap,
+            startTime: currentTime,
+            isContinuous: false
+        )
+
+        currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration * 0.5)
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorObject(time: currentTime),
+                context: context,
+                writer: writer
+            )
+        )
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(identity: mockView),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
+        XCTAssertEqual(event.action.frustration?.type.first, .errorTap)
+    }
+
+    func testGivenNotDiscreteUserActionWithError_itDoesNotWriteFrustration() throws {
+        var currentTime = Date()
+        let scope = RUMUserActionScope.mockWith(
+            parent: parent,
+            actionType: .scroll,
+            startTime: currentTime,
+            isContinuous: false
+        )
+
+        currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration * 0.5)
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorObject(time: currentTime),
+                context: context,
+                writer: writer
+            )
+        )
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(identity: mockView),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
+        XCTAssertNil(event.action.frustration)
+    }
+
+    func testGivenTimedoutTapUserActionWithError_itDoesNotWriteFrustration() throws {
+        var currentTime = Date()
+        let scope = RUMUserActionScope.mockWith(
+            parent: parent,
+            actionType: .tap,
+            startTime: currentTime,
+            isContinuous: false
+        )
+
+        currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration * 1.5)
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorObject(time: currentTime),
+                context: context,
+                writer: writer
+            )
+        )
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(identity: mockView),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
+        XCTAssertNil(event.action.frustration)
+    }
 }
