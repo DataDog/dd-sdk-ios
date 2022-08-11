@@ -132,7 +132,6 @@ RUM action, error, resource, and long task events contain information about the 
 | Metric                | Type        | Description                                                                  |
 |-----------------------|-------------|------------------------------------------------------------------------------|
 | `view.time_spent`     | number (ns) | Time spent on this view.                                                     |
-| `view.loading_time`                             | number (ns) | Loading time for this view.                        |
 | `view.long_task.count`        | number      | Count of all long tasks collected for this view.                     |
 | `view.error.count`    | number      | Count of all errors collected for this view.                                 |
 | `view.resource.count` | number      | Count of all resources collected for this view.                              |
