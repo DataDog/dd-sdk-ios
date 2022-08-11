@@ -7,10 +7,11 @@
 import XCTest
 @testable import Datadog
 
-class KronosClockPublisherTests: XCTestCase {
+class ServerOffsetPublisherTests: XCTestCase {
     func testPickRandomDatadogNTPServers() throws {
         let kronos = KronosClockMock()
-        let publisher = KronosClockPublisher(kronos: kronos)
+        let provider = DatadogNTPDateProvider(kronos: kronos)
+        let publisher = ServerOffsetPublisher(provider: provider)
 
         var pools: Set<String> = []
 
@@ -29,7 +30,8 @@ class KronosClockPublisherTests: XCTestCase {
 
         // Given
         let kronos = KronosClockMock()
-        let publisher = KronosClockPublisher(kronos: kronos)
+        let provider = DatadogNTPDateProvider(kronos: kronos)
+        let publisher = ServerOffsetPublisher(provider: provider)
 
         // When
         publisher.publish {
@@ -53,7 +55,8 @@ class KronosClockPublisherTests: XCTestCase {
 
         // Given
         let kronos = KronosClockMock()
-        let publisher = KronosClockPublisher(kronos: kronos)
+        let provider = DatadogNTPDateProvider(kronos: kronos)
+        let publisher = ServerOffsetPublisher(provider: provider)
 
         // When
         publisher.publish {
@@ -86,7 +89,8 @@ class KronosClockPublisherTests: XCTestCase {
 
         // Given
         let kronos = KronosClockMock()
-        let publisher = KronosClockPublisher(kronos: kronos)
+        let provider = DatadogNTPDateProvider(kronos: kronos)
+        let publisher = ServerOffsetPublisher(provider: provider)
 
         // When
         publisher.publish {

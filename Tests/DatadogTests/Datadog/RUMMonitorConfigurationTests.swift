@@ -17,17 +17,13 @@ class RUMMonitorConfigurationTests: XCTestCase {
 
         let core = DatadogCoreMock(
             context: .mockWith(
-                configuration: .mockWith(
-                    applicationVersion: "1.2.3",
-                    serviceName: "service-name",
-                    environment: "tests",
-                    sdkVersion: "3.4.5"
-                ),
-                dependencies: .mockWith(
-                    userInfoProvider: userInfoProvider,
-                    networkConnectionInfoProvider: networkConnectionInfoProvider,
-                    carrierInfoProvider: carrierInfoProvider
-                )
+                service: "service-name",
+                env: "tests",
+                version: "1.2.3",
+                sdkVersion: "3.4.5",
+                networkConnectionInfoProvider: networkConnectionInfoProvider,
+                carrierInfoProvider: carrierInfoProvider,
+                userInfoProvider: userInfoProvider
             )
         )
         defer { core.flush() }

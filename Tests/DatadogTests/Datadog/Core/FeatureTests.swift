@@ -28,7 +28,13 @@ class FeatureStorageTests: XCTestCase {
             featureName: .mockAny(),
             queue: queue,
             directories: temporaryFeatureDirectories,
-            commonDependencies: .mockWith(consentProvider: consentProvider)
+            dateProvider: SystemDateProvider(),
+            consentProvider: consentProvider,
+            performance: .combining(
+                storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
+                uploadPerformance: .veryQuick
+            ),
+            encryption: nil
         )
 
         // When
@@ -67,7 +73,13 @@ class FeatureStorageTests: XCTestCase {
             featureName: .mockAny(),
             queue: queue,
             directories: temporaryFeatureDirectories,
-            commonDependencies: .mockWith(consentProvider: .init(initialConsent: .granted))
+            dateProvider: SystemDateProvider(),
+            consentProvider: .init(initialConsent: .granted),
+            performance: .combining(
+                storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
+                uploadPerformance: .veryQuick
+            ),
+            encryption: nil
         )
 
         // When
@@ -97,7 +109,13 @@ class FeatureStorageTests: XCTestCase {
             featureName: .mockAny(),
             queue: queue,
             directories: temporaryFeatureDirectories,
-            commonDependencies: .mockWith(consentProvider: .init(initialConsent: .granted))
+            dateProvider: SystemDateProvider(),
+            consentProvider: .init(initialConsent: .granted),
+            performance: .combining(
+                storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
+                uploadPerformance: .veryQuick
+            ),
+            encryption: nil
         )
 
         // When

@@ -28,7 +28,10 @@ class LoggingStorageBenchmarkTests: XCTestCase {
                 unauthorized: directory,
                 authorized: directory
             ),
-            commonDependencies: .mockAny()
+            dateProvider: SystemDateProvider(),
+            consentProvider: ConsentProvider(initialConsent: .granted),
+            performance: .benchmarksPreset,
+            encryption: nil
         )
 
         self.writer = storage.writer

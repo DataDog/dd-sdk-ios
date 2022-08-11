@@ -202,7 +202,7 @@ extension FeaturesConfiguration.Common {
         applicationBundleIdentifier: String = .mockAny(),
         serviceName: String = .mockAny(),
         environment: String = .mockAny(),
-        performance: PerformancePreset = .init(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
+        performance: PerformancePreset = .mockAny(),
         source: String = .mockAny(),
         origin: String? = nil,
         sdkVersion: String = .mockAny(),
@@ -458,7 +458,11 @@ struct UploadPerformanceMock: UploadPerformancePreset {
 }
 
 extension PerformancePreset {
-    static func combining(storagePerformance storage: StoragePerformanceMock, uploadPerformance upload: UploadPerformanceMock) -> PerformancePreset {
+    static func mockAny() -> Self {
+        PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp)
+    }
+
+    static func combining(storagePerformance storage: StoragePerformanceMock, uploadPerformance upload: UploadPerformanceMock) -> Self {
         PerformancePreset(
             maxFileSize: storage.maxFileSize,
             maxDirectorySize: storage.maxDirectorySize,
@@ -471,116 +475,6 @@ extension PerformancePreset {
             minUploadDelay: upload.minUploadDelay,
             maxUploadDelay: upload.maxUploadDelay,
             uploadDelayChangeRate: upload.uploadDelayChangeRate
-        )
-    }
-}
-
-// MARK: - Features Common Mocks
-
-extension FeaturesCommonDependencies {
-    static func mockAny() -> FeaturesCommonDependencies {
-        return .mockWith()
-    }
-
-    /// Mocks features common dependencies.
-    /// Default values describe the environment setup where data can be uploaded to the server (device is online and battery is full).
-    static func mockWith(
-        consentProvider: ConsentProvider = ConsentProvider(initialConsent: .granted),
-        performance: PerformancePreset = .combining(
-            storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
-            uploadPerformance: .veryQuick
-        ),
-        httpClient: HTTPClient? = nil,
-        deviceInfo: DeviceInfo = .mockAny(),
-        sdkInitDate: Date = Date(),
-        dateProvider: DateProvider = SystemDateProvider(),
-        dateCorrector: DateCorrector = DateCorrectorMock(),
-        userInfoProvider: UserInfoProvider = .mockAny(),
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
-            networkConnectionInfo: .mockWith(
-                reachability: .yes, // so it always meets the upload condition
-                availableInterfaces: [.wifi],
-                supportsIPv4: true,
-                supportsIPv6: true,
-                isExpensive: true,
-                isConstrained: false // so it always meets the upload condition
-            )
-        ),
-        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
-        launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock.mockAny(),
-        appStateListener: AppStateListening = AppStateListenerMock.mockAny(),
-        encryption: DataEncryption? = nil
-    ) -> FeaturesCommonDependencies {
-        var client: HTTPClient
-
-        if let httpClient = httpClient {
-            client = httpClient
-        } else if let activeServer = ServerMock.activeInstance {
-            client = HTTPClient(session: activeServer.getInterceptedURLSession())
-        } else {
-            class AssertedHTTPClient: HTTPClient {
-                // swiftlint:disable:next unavailable_function
-                override func send(request: URLRequest, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void) {
-                    preconditionFailure(
-                        """
-                        ⚠️ Request to \(request.url?.absoluteString ?? "null") was sent but there is no `ServerMock` instance set up for its interception.
-                        All unit tests must be configured to either send data to mocked `FeatureStorage` (`XYZFeature.mockByRecordingXYZ(...)`)
-                        or use `ServerMock` instance and `serverMock.getInterceptedURLSession()` for requests interception.
-                        """
-                    )
-                }
-            }
-
-            client = AssertedHTTPClient()
-        }
-
-        return FeaturesCommonDependencies(
-            consentProvider: consentProvider,
-            performance: performance,
-            httpClient: client,
-            deviceInfo: deviceInfo,
-            sdkInitDate: sdkInitDate,
-            dateProvider: dateProvider,
-            dateCorrector: dateCorrector,
-            userInfoProvider: userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider,
-            launchTimeProvider: launchTimeProvider,
-            appStateListener: appStateListener,
-            encryption: encryption
-        )
-    }
-
-    /// Creates new instance of `FeaturesCommonDependencies` by replacing individual dependencies.
-    func replacing(
-        consentProvider: ConsentProvider? = nil,
-        performance: PerformancePreset? = nil,
-        httpClient: HTTPClient? = nil,
-        deviceInfo: DeviceInfo? = nil,
-        sdkInitDate: Date? = nil,
-        dateProvider: DateProvider? = nil,
-        dateCorrector: DateCorrector? = nil,
-        userInfoProvider: UserInfoProvider? = nil,
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType? = nil,
-        carrierInfoProvider: CarrierInfoProviderType? = nil,
-        launchTimeProvider: LaunchTimeProviderType? = nil,
-        appStateListener: AppStateListening? = nil,
-        encryption: DataEncryption? = nil
-    ) -> FeaturesCommonDependencies {
-        return FeaturesCommonDependencies(
-            consentProvider: consentProvider ?? self.consentProvider,
-            performance: performance ?? self.performance,
-            httpClient: httpClient ?? self.httpClient,
-            deviceInfo: deviceInfo ?? self.deviceInfo,
-            sdkInitDate: sdkInitDate ?? self.sdkInitDate,
-            dateProvider: dateProvider ?? self.dateProvider,
-            dateCorrector: dateCorrector ?? self.dateCorrector,
-            userInfoProvider: userInfoProvider ?? self.userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider ?? self.networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider ?? self.carrierInfoProvider,
-            launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider,
-            appStateListener: appStateListener ?? self.appStateListener,
-            encryption: encryption ?? self.encryption
         )
     }
 }

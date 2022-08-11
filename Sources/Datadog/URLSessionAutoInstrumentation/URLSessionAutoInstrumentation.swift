@@ -13,15 +13,16 @@ internal final class URLSessionAutoInstrumentation: RUMCommandPublisher {
 
     convenience init?(
         configuration: FeaturesConfiguration.URLSessionAutoInstrumentation,
-        commonDependencies: FeaturesCommonDependencies
+        dateProvider: DateProvider,
+        appStateListener: AppStateListening
     ) {
         do {
             self.init(
                 swizzler: try URLSessionSwizzler(),
                 interceptor: URLSessionInterceptor(
                     configuration: configuration,
-                    dateProvider: commonDependencies.dateProvider,
-                    appStateListener: commonDependencies.appStateListener
+                    dateProvider: dateProvider,
+                    appStateListener: appStateListener
                 )
             )
         } catch {

@@ -9,12 +9,10 @@ import XCTest
 
 class RUMResourceScopeTests: XCTestCase {
     let datadogContext: DatadogV1Context = .mockWith(
-        configuration: .mockWith(serviceName: "test-service"),
-        dependencies: .mockWith(
-            deviceInfo: .mockWith(
-                name: "device-name",
-                osName: "device-os"
-            )
+        service: "test-service",
+        device: .mockWith(
+            name: "device-name",
+            osName: "device-os"
         )
     )
 
@@ -121,7 +119,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let customSource: String = .mockAnySource()
-        let customContext: DatadogV1Context = .mockWith(configuration: .mockWith(source: customSource))
+        let customContext: DatadogV1Context = .mockWith(source: customSource)
 
         let scope = RUMResourceScope.mockWith(
             context: rumContext,
@@ -353,7 +351,8 @@ class RUMResourceScopeTests: XCTestCase {
 
         let source = String.mockAnySource()
         let customContext: DatadogV1Context = .mockWith(
-            configuration: .mockWith(serviceName: "test-service", source: source)
+            service: "test-service",
+            source: source
         )
 
         // Given

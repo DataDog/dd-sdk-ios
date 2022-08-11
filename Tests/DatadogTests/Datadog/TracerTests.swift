@@ -26,17 +26,13 @@ class TracerTests: XCTestCase {
 
     func testSendingSpanWithDefaultTracer() throws {
         core.context = .mockWith(
-            configuration: .mockWith(
-                applicationVersion: "1.0.0",
-                applicationBundleIdentifier: "com.datadoghq.ios-sdk",
-                serviceName: "default-service-name",
-                environment: "custom",
-                source: "abc",
-                sdkVersion: "1.2.3"
-            ),
-            dependencies: .mockWith(
-                dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
-            )
+            service: "default-service-name",
+            env: "custom",
+            version: "1.0.0",
+            source: "abc",
+            sdkVersion: "1.2.3",
+            applicationBundleIdentifier: "com.datadoghq.ios-sdk",
+            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
         )
 
         let feature: TracingFeature = .mockByRecordingSpanMatchers(
@@ -322,9 +318,7 @@ class TracerTests: XCTestCase {
         let userInfoProvider = UserInfoProvider()
 
         core.context = .mockWith(
-            dependencies: .mockWith(
-                userInfoProvider: userInfoProvider
-            )
+            userInfoProvider: userInfoProvider
         )
 
         let feature: TracingFeature = .mockByRecordingSpanMatchers()
@@ -383,9 +377,7 @@ class TracerTests: XCTestCase {
         let carrierInfoProvider = CarrierInfoProviderMock(carrierInfo: nil)
 
         core.context = .mockWith(
-            dependencies: .mockWith(
-                carrierInfoProvider: carrierInfoProvider
-            )
+            carrierInfoProvider: carrierInfoProvider
         )
 
         let feature: TracingFeature = .mockByRecordingSpanMatchers()
@@ -432,9 +424,7 @@ class TracerTests: XCTestCase {
         let networkConnectionInfoProvider = NetworkConnectionInfoProviderMock.mockAny()
 
         core.context = .mockWith(
-            dependencies: .mockWith(
-                networkConnectionInfoProvider: networkConnectionInfoProvider
-            )
+            networkConnectionInfoProvider: networkConnectionInfoProvider
         )
 
         let feature: TracingFeature = .mockByRecordingSpanMatchers()
@@ -811,10 +801,8 @@ class TracerTests: XCTestCase {
         let serverTimeDifference = TimeInterval.random(in: -5..<5).rounded() // few seconds difference
 
         core.context = .mockWith(
-            dependencies: .mockWith(
-                dateProvider: RelativeDateProvider(using: deviceTime),
-                dateCorrector: DateCorrectorMock(offset: serverTimeDifference)
-            )
+            dateProvider: RelativeDateProvider(using: deviceTime),
+            dateCorrector: DateCorrectorMock(offset: serverTimeDifference)
         )
 
         // When

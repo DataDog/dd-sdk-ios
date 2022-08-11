@@ -6,28 +6,8 @@
 
 import Foundation
 
-#if canImport(UIKit)
-import UIKit
-#endif
-
 /// Feature-agnostic SDK configuration.
 internal typealias CoreConfiguration = FeaturesConfiguration.Common
-
-/// Feature-agnostic set of dependencies powering Features storage, upload and event recording.
-internal typealias CoreDependencies = FeaturesCommonDependencies
-
-/// A shim interface for allowing V1 Features generic initialization in `DatadogCore`.
-internal protocol V1FeatureInitializable {
-    /// The configuration specific to this Feature.
-    /// In V2 this will likely become a part of the public interface for the Feature module.
-    associatedtype Configuration
-
-    init(
-        storage: FeatureStorage,
-        upload: FeatureUpload,
-        configuration: Configuration
-    )
-}
 
 /// Core implementation of Datadog SDK.
 ///
@@ -40,42 +20,75 @@ internal final class DatadogCore {
     /// The root location for storing Features data in this instance of the SDK.
     /// For each Feature a set of subdirectories is created inside `CoreDirectory` based on their storage configuration.
     let directory: CoreDirectory
-    /// The configuration of SDK core.
-    let configuration: CoreConfiguration
-    /// A set of dependencies used by SDK core to power Features.
-    let dependencies: CoreDependencies
 
+    /// The storage r/w GDC queue.
     let readWriteQueue = DispatchQueue(
         label: "com.datadoghq.ios-sdk-read-write",
         target: .global(qos: .utility)
     )
 
+    /// The system date provider.
+    let dateProvider: DateProvider
+
+    /// The user consent provider.
+    let consentProvider: ConsentProvider
+
+    /// The user info provider that provide values to the
+    /// `v1Context`.
+    let userInfoProvider: UserInfoProvider
+
+    /// The core SDK performance presets.
+    let performance: PerformancePreset
+
+    /// The HTTP Client for uploads.
+    let httpClient: HTTPClient
+
+    /// The on-disk data encryption.
+    let encryption: DataEncryption?
+
+    /// The user info publisher that publishes value to the
+    /// `contextProvider`
+    let userInfoPublisher = UserInfoPublisher()
+
+    /// Registery for v1 features.
     private var v1Features: [String: Any] = [:]
 
     /// The SDK Context for V1.
     internal private(set) var v1Context: DatadogV1Context
 
-    private let contextProvider: DatadogContextProvider
-    private let userInfoPublisher = UserInfoPublisher()
+    /// The core context provider.
+    internal let contextProvider: DatadogContextProvider
 
     /// Creates a core instance.
     ///
     /// - Parameters:
     ///   - directory: The core directory for this instance of the SDK.
-    ///   - configuration: The configuration of the SDK core.
-    ///   - dependencies: A set of dependencies used by the SDK core to power Features.
+    ///   - dateProvider: The system date provider.
+    ///   - consentProvider: The user consent provider.
+    ///   - userInfoProvider: The user info provider.
+    ///   - performance: The core SDK performance presets.
+    ///   - httpClient: The HTTP Client for uploads.
+    ///   - encryption: The on-disk data encryption.
     ///   - v1Context: The v1 context.
     ///   - contextProvider: The core context provider.
     init(
         directory: CoreDirectory,
-        configuration: CoreConfiguration,
-        dependencies: CoreDependencies,
+        dateProvider: DateProvider,
+        consentProvider: ConsentProvider,
+        userInfoProvider: UserInfoProvider,
+    	performance: PerformancePreset,
+    	httpClient: HTTPClient,
+    	encryption: DataEncryption?,
         v1Context: DatadogV1Context,
         contextProvider: DatadogContextProvider
     ) {
         self.directory = directory
-        self.configuration = configuration
-        self.dependencies = dependencies
+        self.dateProvider = dateProvider
+        self.consentProvider = consentProvider
+        self.userInfoProvider = userInfoProvider
+        self.performance = performance
+        self.httpClient = httpClient
+        self.encryption = encryption
         self.v1Context = v1Context
         self.contextProvider = contextProvider
         self.contextProvider.subscribe(\.userInfo, to: userInfoPublisher)
@@ -104,14 +117,14 @@ internal final class DatadogCore {
         )
 
         userInfoPublisher.current = userInfo
-        dependencies.userInfoProvider.value = userInfo
+        userInfoProvider.value = userInfo
     }
 
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.
     /// 
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     func set(trackingConsent: TrackingConsent) {
-        dependencies.consentProvider.changeConsent(to: trackingConsent)
+        consentProvider.changeConsent(to: trackingConsent)
     }
 }
 
@@ -135,7 +148,10 @@ extension DatadogCore: DatadogV1CoreProtocol {
             featureName: storageConfiguration.featureName,
             queue: readWriteQueue,
             directories: featureDirectories,
-            commonDependencies: dependencies
+            dateProvider: dateProvider,
+            consentProvider: consentProvider,
+            performance: performance,
+            encryption: encryption
         )
 
         let upload = FeatureUpload(
@@ -143,7 +159,8 @@ extension DatadogCore: DatadogV1CoreProtocol {
             contextProvider: contextProvider,
             fileReader: storage.reader,
             requestBuilder: uploadConfiguration.requestBuilder,
-            commonDependencies: dependencies
+            httpClient: httpClient,
+            performance: performance
         )
 
         return Feature(
@@ -205,16 +222,66 @@ internal struct DatadogCoreFeatureScope: FeatureV1Scope {
     }
 }
 
-extension DatadogContextProvider {
-    /// Extension to create a context provider based on v1 configuration and dependencies.
-    ///
-    /// This initiliazer is necessary while migrating to v2, but this will be move up to the
-    /// configuration of the core SDK.
+extension DatadogV1Context {
+    /// Create V1 context with the given congiguration and provider.
     ///
     /// - Parameters:
-    ///   - configuration: v1 configuration
-    ///   - dependencies: v1 dependencies.
-    convenience init(configuration: CoreConfiguration, dependencies: CoreDependencies) {
+    ///   - configuration: The configuration.
+    ///   - device: The device description.
+    ///   - dateProvider: The local date provider.
+    ///   - dateCorrector: The server date corrector.
+    ///   - networkConnectionInfoProvider: The network info provider.
+    ///   - carrierInfoProvider: The carrier info provider.
+    ///   - userInfoProvider: The user info provider.
+    ///   - appStateListener: The application state listener.
+    ///   - launchTimeProvider: The launch time provider.
+    init(
+        configuration: CoreConfiguration,
+        device: DeviceInfo,
+        dateProvider: DateProvider,
+        dateCorrector: DateCorrector,
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
+        carrierInfoProvider: CarrierInfoProviderType,
+        userInfoProvider: UserInfoProvider,
+        appStateListener: AppStateListening,
+        launchTimeProvider: LaunchTimeProviderType
+    ) {
+        self.site = configuration.site
+        self.clientToken = configuration.clientToken
+        self.service = configuration.serviceName
+        self.env = configuration.environment
+        self.version = configuration.applicationVersion
+        self.source = configuration.source
+        self.sdkVersion = configuration.sdkVersion
+        self.ciAppOrigin = configuration.origin
+        self.applicationName = configuration.applicationName
+        self.applicationBundleIdentifier = configuration.applicationBundleIdentifier
+
+        self.sdkInitDate = dateProvider.now
+        self.device = device
+        self.dateProvider = dateProvider
+        self.dateCorrector = dateCorrector
+        self.networkConnectionInfoProvider = networkConnectionInfoProvider
+        self.carrierInfoProvider = carrierInfoProvider
+        self.userInfoProvider = userInfoProvider
+        self.appStateListener = appStateListener
+        self.launchTimeProvider = launchTimeProvider
+    }
+}
+
+extension DatadogContextProvider {
+    /// Creates a core context provider with the given configuration,
+    ///
+    /// - Parameters:
+    ///   - configuration: The configuration.
+    ///   - device: The device description.
+    ///   - dateProvider: The local date provider.
+    convenience init(
+        configuration: CoreConfiguration,
+        device: DeviceInfo,
+        dateProvider: DateProvider,
+        serverDateProvider: ServerDateProvider
+    ) {
         let context = DatadogContext(
             site: configuration.site,
             clientToken: configuration.clientToken,
@@ -226,17 +293,17 @@ extension DatadogContextProvider {
             ciAppOrigin: configuration.origin,
             applicationName: configuration.applicationName,
             applicationBundleIdentifier: configuration.applicationBundleIdentifier,
-            sdkInitDate: dependencies.sdkInitDate,
-            device: dependencies.deviceInfo,
+            sdkInitDate: dateProvider.now,
+            device: device,
             // this is a placeholder waiting for the `ApplicationStatePublisher`
             // to be initialized on the main thread, this value will be overrided
             // as soon as the subscription is made.
-            applicationStateHistory: .active(since: dependencies.dateProvider.now)
+            applicationStateHistory: .active(since: dateProvider.now)
         )
 
         self.init(context: context)
 
-        subscribe(\.serverTimeOffset, to: KronosClockPublisher())
+        subscribe(\.serverTimeOffset, to: ServerOffsetPublisher(provider: serverDateProvider))
         assign(reader: LaunchTimeReader(), to: \.launchTime)
 
         if #available(iOS 12, tvOS 12, *) {
@@ -260,9 +327,22 @@ extension DatadogContextProvider {
         #if os(iOS) || os(tvOS)
         DispatchQueue.main.async {
             // must be call on the main thread to read `UIApplication.State`
-            let applicationStatePublisher = ApplicationStatePublisher(dateProvider: dependencies.dateProvider)
+            let applicationStatePublisher = ApplicationStatePublisher(dateProvider: dateProvider)
             self.subscribe(\.applicationStateHistory, to: applicationStatePublisher)
         }
         #endif
     }
+}
+
+/// A shim interface for allowing V1 Features generic initialization in `DatadogCore`.
+internal protocol V1FeatureInitializable {
+    /// The configuration specific to this Feature.
+    /// In V2 this will likely become a part of the public interface for the Feature module.
+    associatedtype Configuration
+
+    init(
+        storage: FeatureStorage,
+        upload: FeatureUpload,
+        configuration: Configuration
+    )
 }

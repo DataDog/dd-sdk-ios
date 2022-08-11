@@ -13,17 +13,13 @@ class LoggerBuilderTests: XCTestCase {
     private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
     private lazy var core = DatadogCoreMock(
         context: .mockWith(
-            configuration: .mockWith(
-                applicationVersion: "1.2.3",
-                applicationBundleIdentifier: "com.datadog.unit-tests",
-                serviceName: "service-name",
-                environment: "tests"
-            ),
-            dependencies: .mockWith(
-                userInfoProvider: userInfoProvider,
-                networkConnectionInfoProvider: networkConnectionInfoProvider,
-                carrierInfoProvider: carrierInfoProvider
-            )
+            service: "service-name",
+            env: "tests",
+            version: "1.2.3",
+            applicationBundleIdentifier: "com.datadog.unit-tests",
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider,
+            userInfoProvider: userInfoProvider
         )
     )
 

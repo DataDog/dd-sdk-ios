@@ -343,9 +343,7 @@ class DDRUMMonitorTests: XCTestCase {
 
     func testSendingActionEvents() throws {
         core.context = .mockWith(
-            dependencies: .mockWith(
-                dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-            )
+            dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
         )
 
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers()

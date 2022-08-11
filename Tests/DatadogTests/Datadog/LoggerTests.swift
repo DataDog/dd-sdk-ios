@@ -26,16 +26,12 @@ class LoggerTests: XCTestCase {
 
     func testSendingLogWithDefaultLogger() throws {
         core.context = .mockWith(
-            configuration: .mockWith(
-                applicationVersion: "1.0.0",
-                applicationBundleIdentifier: "com.datadoghq.ios-sdk",
-                serviceName: "default-service-name",
-                environment: "tests",
-                sdkVersion: "1.2.3"
-            ),
-            dependencies: .mockWith(
-                dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
-            )
+            service: "default-service-name",
+            env: "tests",
+            version: "1.0.0",
+            sdkVersion: "1.2.3",
+            applicationBundleIdentifier: "com.datadoghq.ios-sdk",
+            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
         )
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers()
@@ -95,9 +91,7 @@ class LoggerTests: XCTestCase {
 
     func testSendingLogsWithDifferentDates() throws {
         core.context = .mockWith(
-            dependencies: .mockWith(
-                dateProvider: RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC(), advancingBySeconds: 1)
-            )
+            dateProvider: RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC(), advancingBySeconds: 1)
         )
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers()
@@ -195,9 +189,7 @@ class LoggerTests: XCTestCase {
         let userInfoProvider = UserInfoProvider()
 
         core.context = .mockWith(
-            dependencies: .mockWith(
-                userInfoProvider: userInfoProvider
-            )
+            userInfoProvider: userInfoProvider
         )
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers()
@@ -251,9 +243,7 @@ class LoggerTests: XCTestCase {
         let carrierInfoProvider = CarrierInfoProviderMock(carrierInfo: nil)
 
         core.context = .mockWith(
-            dependencies: .mockWith(
-                carrierInfoProvider: carrierInfoProvider
-            )
+            carrierInfoProvider: carrierInfoProvider
         )
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers()
@@ -294,9 +284,7 @@ class LoggerTests: XCTestCase {
         let networkConnectionInfoProvider = NetworkConnectionInfoProviderMock.mockAny()
 
         core.context = .mockWith(
-            dependencies: .mockWith(
-                networkConnectionInfoProvider: networkConnectionInfoProvider
-            )
+            networkConnectionInfoProvider: networkConnectionInfoProvider
         )
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers()
@@ -451,10 +439,8 @@ class LoggerTests: XCTestCase {
 
     func testSendingTags() throws {
         core.context = .mockWith(
-            configuration: .mockWith(
-                applicationVersion: "1.2.3",
-                environment: "tests"
-            )
+            env: "tests",
+            version: "1.2.3"
         )
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers()
@@ -685,10 +671,8 @@ class LoggerTests: XCTestCase {
         let serverTimeDifference = TimeInterval.random(in: -5..<5).rounded() // few seconds difference
 
         core.context = .mockWith(
-            dependencies: .mockWith(
-                dateProvider: RelativeDateProvider(using: deviceTime),
-                dateCorrector: DateCorrectorMock(offset: serverTimeDifference)
-            )
+            dateProvider: RelativeDateProvider(using: deviceTime),
+            dateCorrector: DateCorrectorMock(offset: serverTimeDifference)
         )
 
         // When
