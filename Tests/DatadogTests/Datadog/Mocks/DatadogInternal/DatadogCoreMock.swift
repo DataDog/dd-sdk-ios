@@ -35,6 +35,14 @@ internal final class DatadogCoreMock: Flushable {
     }
 }
 
+extension DatadogCoreMock: DatadogCoreProtocol {
+    // MARK: V2 interface
+
+    func send(message: String, attributes: [String: Any]?) {
+        // no-op
+    }
+}
+
 extension DatadogCoreMock: DatadogV1CoreProtocol {
     // MARK: V1 interface
 

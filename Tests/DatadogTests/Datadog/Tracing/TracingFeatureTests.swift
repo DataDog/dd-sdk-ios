@@ -67,9 +67,9 @@ class TracingFeatureTests: XCTestCase {
 
         // Given
         let featureConfiguration: TracingFeature.Configuration = .mockWith(uploadURL: randomUploadURL)
+
         let feature: TracingFeature = try core.create(
-            storageConfiguration: createV2TracingStorageConfiguration(),
-            uploadConfiguration: createV2TracingUploadConfiguration(v1Configuration: featureConfiguration),
+            configuration: createTracingConfiguration(intake: featureConfiguration.uploadURL),
             featureSpecificConfiguration: featureConfiguration
         )
         defer { feature.flush() }
@@ -136,8 +136,7 @@ class TracingFeatureTests: XCTestCase {
 
         let featureConfiguration: TracingFeature.Configuration = .mockAny()
         let feature: TracingFeature = try core.create(
-            storageConfiguration: createV2TracingStorageConfiguration(),
-            uploadConfiguration: createV2TracingUploadConfiguration(v1Configuration: featureConfiguration),
+            configuration: createTracingConfiguration(intake: featureConfiguration.uploadURL),
             featureSpecificConfiguration: featureConfiguration
         )
         defer { feature.flush() }

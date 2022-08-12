@@ -44,7 +44,8 @@ class RUMIntegrationsTests: XCTestCase {
         let rum = RUMFeature(
             storage: .mockNoOp(),
             upload: .mockNoOp(),
-            configuration: .mockWith(sessionSampler: .mockRejectAll())
+            configuration: .mockWith(sessionSampler: .mockRejectAll()),
+            messageReceiver: NOOPFeatureMessageReceiver()
         )
         core.register(feature: rum)
 

@@ -13,7 +13,8 @@ extension RUMFeature {
         return RUMFeature(
             storage: .mockNoOp(),
             upload: .mockNoOp(),
-            configuration: .mockAny()
+            configuration: .mockAny(),
+            messageReceiver: NOOPFeatureMessageReceiver()
         )
     }
 
@@ -32,7 +33,8 @@ extension RUMFeature {
         return RUMFeature(
             storage: interceptedStorage,
             upload: .mockNoOp(),
-            configuration: featureConfiguration
+            configuration: featureConfiguration,
+            messageReceiver: NOOPFeatureMessageReceiver()
         )
     }
 

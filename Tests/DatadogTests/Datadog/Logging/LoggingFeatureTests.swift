@@ -68,8 +68,7 @@ class LoggingFeatureTests: XCTestCase {
         // Given
         let featureConfiguration: LoggingFeature.Configuration = .mockWith(uploadURL: randomUploadURL)
         let feature: LoggingFeature = try core.create(
-            storageConfiguration: createV2LoggingStorageConfiguration(),
-            uploadConfiguration: createV2LoggingUploadConfiguration(v1Configuration: featureConfiguration),
+            configuration: createLoggingConfiguration(intake: randomUploadURL),
             featureSpecificConfiguration: featureConfiguration
         )
         defer { feature.flush() }
@@ -136,8 +135,7 @@ class LoggingFeatureTests: XCTestCase {
         // Given
         let featureConfiguration: LoggingFeature.Configuration = .mockAny()
         let feature: LoggingFeature = try core.create(
-            storageConfiguration: createV2LoggingStorageConfiguration(),
-            uploadConfiguration: createV2LoggingUploadConfiguration(v1Configuration: featureConfiguration),
+            configuration: createLoggingConfiguration(intake: featureConfiguration.uploadURL),
             featureSpecificConfiguration: featureConfiguration
         )
         defer { feature.flush() }

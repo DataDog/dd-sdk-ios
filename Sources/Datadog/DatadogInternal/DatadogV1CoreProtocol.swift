@@ -45,20 +45,6 @@ internal protocol DatadogV1CoreProtocol: DatadogCoreProtocol {
     func scope<T>(for featureType: T.Type) -> FeatureV1Scope?
 }
 
-/// Provide feature specific upload configuration.
-internal struct FeatureV1UploadConfiguration {
-    // MARK: - V1 interface
-
-    /// A human-readable name of this Feature used for naming internal queues specific to this Feature and annotating
-    /// origin of telemetry and verbosity logs produced by the SDK.
-    let featureName: String
-
-    /// The URL request builder for uploading data in this Feature.
-    ///
-    /// This builder currently use the v1 context, but will be soon migrated to v2
-    let requestBuilder: FeatureRequestBuilder
-}
-
 /// Feature scope in v1 provide a context and a writer to build a record event.
 internal protocol FeatureV1Scope {
     /// Retrieve the event context and writer.

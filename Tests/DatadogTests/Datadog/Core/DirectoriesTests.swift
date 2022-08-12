@@ -88,17 +88,7 @@ class DirectoriesTests: XCTestCase {
         defer { coreDirectory.delete() }
 
         // When
-        let randomAuthorizedPath: String = .mockRandom(among: .alphanumerics)
-        let randomUnauthorizedPath: String = .mockRandom(among: .alphanumerics)
-
-        let randomFeatureConfiguration = FeatureStorageConfiguration(
-            directories: .init(
-                authorized: randomAuthorizedPath,
-                unauthorized: randomUnauthorizedPath
-            ),
-            featureName: .mockRandom()
-        )
-        let featureDirectories = try coreDirectory.getFeatureDirectories(configuration: randomFeatureConfiguration)
+        let featureDirectories = try coreDirectory.getFeatureDirectories(forFeatureNamed: .mockRandom())
 
         // Then
         XCTAssertTrue(
