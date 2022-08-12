@@ -50,10 +50,10 @@ class TimeIntervalTests: XCTestCase {
         let date15Dec2019 = Date.mockDecember15th2019At10AMUTC()
         XCTAssertEqual(date15Dec2019.timeIntervalSince1970.toInt64Milliseconds, 1_576_404_000_000)
 
-        let dateIn2050 = Date.mockSpecificUTCGregorianDate(year: 2050, month: 08, day: 12, hour: 12)
+        let dateIn2050 = Date.mockSpecificUTCGregorianDate(year: 2_050, month: 08, day: 12, hour: 12)
         XCTAssertEqual(dateIn2050.timeIntervalSince1970.toInt64Milliseconds, 2_543_918_400_000)
 
-        let dateIn1970 = Date.mockSpecificUTCGregorianDate(year: 1970, month: 08, day: 12, hour: 12)
+        let dateIn1970 = Date.mockSpecificUTCGregorianDate(year: 1_970, month: 08, day: 12, hour: 12)
         XCTAssertEqual(dateIn1970.timeIntervalSince1970.toInt64Milliseconds, 19_310_400_000)
     }
 

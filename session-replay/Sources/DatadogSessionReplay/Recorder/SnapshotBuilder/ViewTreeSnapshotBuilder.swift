@@ -7,9 +7,11 @@
 import Foundation
 import UIKit
 
-private typealias Snapshot = ViewTreeSnapshot.Snapshot
+internal typealias Snapshot = ViewTreeSnapshot.Snapshot
 
 /// Builds `ViewTreeSnapshot` for given root view.
+///
+/// Note: This builder is used by `Recorder` on the main thread.
 internal struct ViewTreeSnapshotBuilder {
     /// The context of building current snapshot.
     private struct Context {
@@ -39,6 +41,8 @@ internal struct ViewTreeSnapshotBuilder {
         )
         return snapshot
     }
+
+    // TODO: RUMM-2429 Collect semantic information on various UI elements (UIButton, UILabel, UITabBar, ...)
 }
 
 // MARK: - Convenience

@@ -21,7 +21,7 @@ internal class Recorder {
 
     convenience init() {
         self.init(
-            scheduler: MainThreadScheduler(interval: 0.2),
+            scheduler: MainThreadScheduler(interval: 0.25),
             snapshotProducer: WindowSnapshotProducer(
                 windowObserver: KeyWindowObserver(),
                 snapshotBuilder: ViewTreeSnapshotBuilder()
