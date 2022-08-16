@@ -30,13 +30,13 @@ internal struct ViewTreeSnapshot: Equatable {
     internal struct Snapshot: Equatable {
         internal struct Frame: Equatable {
             /// The x position of this snapshot, in VTS's root view coordinate space.
-            let x: Int
+            let x: Int64
             /// The y position of this snapshot, in VTS's root view coordinate space.
-            let y: Int
+            let y: Int64
             /// The width of this snapshot.
-            let width: Int
+            let width: Int64
             /// The height of this snapshot.
-            let height: Int
+            let height: Int64
         }
 
         /// Snapshots of subviews.

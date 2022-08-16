@@ -27,8 +27,8 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
 
         XCTAssertEqual(snapshot.root.frame.x, 0, "The root view should always start at (0, 0)")
         XCTAssertEqual(snapshot.root.frame.y, 0, "The root view should always start at (0, 0)")
-        XCTAssertEqual(snapshot.root.frame.width, Int(withNoOverflow: rootView.frame.width))
-        XCTAssertEqual(snapshot.root.frame.height, Int(withNoOverflow: rootView.frame.height))
+        XCTAssertEqual(snapshot.root.frame.width, Int64(withNoOverflow: rootView.frame.width))
+        XCTAssertEqual(snapshot.root.frame.height, Int64(withNoOverflow: rootView.frame.height))
     }
 
     func testComputingFramesWhenRootViewHasNestedSubviews() throws {
@@ -52,27 +52,27 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
             Frame(
                 x: 0,
                 y: 0,
-                width: Int(withNoOverflow: rootView.frame.width),
-                height: Int(withNoOverflow: rootView.frame.height)
+                width: Int64(withNoOverflow: rootView.frame.width),
+                height: Int64(withNoOverflow: rootView.frame.height)
             )
         )
         XCTAssertEqual(
             snapshot.root.children[0].frame,
             Frame(
-                x: Int(withNoOverflow: childView.frame.origin.x),
-                y: Int(withNoOverflow: childView.frame.origin.y),
-                width: Int(withNoOverflow: childView.frame.width),
-                height: Int(withNoOverflow: childView.frame.height)
+                x: Int64(withNoOverflow: childView.frame.origin.x),
+                y: Int64(withNoOverflow: childView.frame.origin.y),
+                width: Int64(withNoOverflow: childView.frame.width),
+                height: Int64(withNoOverflow: childView.frame.height)
             ),
             "The position of nested snapshots should be given in root's coordinate space"
         )
         XCTAssertEqual(
             snapshot.root.children[0].children[0].frame,
             Frame(
-                x: Int(withNoOverflow: childView.frame.origin.x + grandchildView.frame.origin.x),
-                y: Int(withNoOverflow: childView.frame.origin.y + grandchildView.frame.origin.y),
-                width: Int(withNoOverflow: grandchildView.frame.width),
-                height: Int(withNoOverflow: grandchildView.frame.height)
+                x: Int64(withNoOverflow: childView.frame.origin.x + grandchildView.frame.origin.x),
+                y: Int64(withNoOverflow: childView.frame.origin.y + grandchildView.frame.origin.y),
+                width: Int64(withNoOverflow: grandchildView.frame.width),
+                height: Int64(withNoOverflow: grandchildView.frame.height)
             ),
             "The position of nested snapshots should be given in root's coordinate space"
         )

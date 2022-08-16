@@ -55,3 +55,4 @@ extension FixedWidthInteger where Self: AnyMockable {
 }
 
 extension Int: AnyMockable, RandomMockable {}
+extension Int64: AnyMockable, RandomMockable {}

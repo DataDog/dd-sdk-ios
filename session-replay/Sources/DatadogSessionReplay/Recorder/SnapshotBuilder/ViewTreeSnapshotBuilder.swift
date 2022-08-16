@@ -50,10 +50,10 @@ internal struct ViewTreeSnapshotBuilder {
 extension Snapshot.Frame {
     init(cgRect: CGRect) {
         self.init(
-            x: Int(withNoOverflow: cgRect.origin.x),
-            y: Int(withNoOverflow: cgRect.origin.y),
-            width: Int(withNoOverflow: cgRect.size.width),
-            height: Int(withNoOverflow: cgRect.size.height)
+            x: Int64(withNoOverflow: cgRect.origin.x),
+            y: Int64(withNoOverflow: cgRect.origin.y),
+            width: Int64(withNoOverflow: cgRect.size.width),
+            height: Int64(withNoOverflow: cgRect.size.height)
         )
     }
 }

@@ -24,12 +24,12 @@ internal class WireframesBuilder {
         // TODO: RUMM-2429 Record real appearance information in `Snapshot`
         let shape = SRShapeWireframe(
             border: .init(color: "#4900FF", width: 1),
-            height: Int64(withNoOverflow: snapshot.height),
+            height: snapshot.frame.height,
             id: dummyIDsGenerator,
             shapeStyle: nil,
-            width: Int64(withNoOverflow: snapshot.width),
-            x: Int64(withNoOverflow: snapshot.x),
-            y: Int64(withNoOverflow: snapshot.y)
+            width: snapshot.frame.width,
+            x: snapshot.frame.x,
+            y: snapshot.frame.y
         )
 
         return .shapeWireframe(value: shape)
