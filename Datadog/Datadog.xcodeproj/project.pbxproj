@@ -606,6 +606,8 @@
 		D21C26D228A64599005DD405 /* MessageBusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D028A64599005DD405 /* MessageBusTests.swift */; };
 		D21C26D728A647DB005DD405 /* MessageBusMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D628A647DB005DD405 /* MessageBusMock.swift */; };
 		D21C26D828A647DB005DD405 /* MessageBusMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D628A647DB005DD405 /* MessageBusMock.swift */; };
+		D21C26DA28ABA073005DD405 /* FeatureMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D928ABA073005DD405 /* FeatureMessage.swift */; };
+		D21C26DB28ABA073005DD405 /* FeatureMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D928ABA073005DD405 /* FeatureMessage.swift */; };
 		D22C1F5C271484B400922024 /* LogEventMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22C1F5B271484B400922024 /* LogEventMapper.swift */; };
 		D232CAD52832D762001B262C /* DatadogCoreMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D232CAD42832D762001B262C /* DatadogCoreMock.swift */; };
 		D232CAD62832D762001B262C /* DatadogCoreMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D232CAD42832D762001B262C /* DatadogCoreMock.swift */; };
@@ -1869,6 +1871,7 @@
 		D21C26CD28A411FF005DD405 /* FeatureMessageReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureMessageReceiver.swift; sourceTree = "<group>"; };
 		D21C26D028A64599005DD405 /* MessageBusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBusTests.swift; sourceTree = "<group>"; };
 		D21C26D628A647DB005DD405 /* MessageBusMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBusMock.swift; sourceTree = "<group>"; };
+		D21C26D928ABA073005DD405 /* FeatureMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureMessage.swift; sourceTree = "<group>"; };
 		D22C1F5B271484B400922024 /* LogEventMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEventMapper.swift; sourceTree = "<group>"; };
 		D232CAD42832D762001B262C /* DatadogCoreMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogCoreMock.swift; sourceTree = "<group>"; };
 		D240684D27CE6C9E00C04F44 /* Example tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Example tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -4198,6 +4201,7 @@
 		D21C26CC28A411BE005DD405 /* MessageBus */ = {
 			isa = PBXGroup;
 			children = (
+				D21C26D928ABA073005DD405 /* FeatureMessage.swift */,
 				D21C26CD28A411FF005DD405 /* FeatureMessageReceiver.swift */,
 			);
 			path = MessageBus;
@@ -5278,6 +5282,7 @@
 				61C2C21224C5951400C0321C /* RUMViewScope.swift in Sources */,
 				61D3E0D5277B23F1008BE766 /* KronosNTPPacket.swift in Sources */,
 				61DE332625C826E4008E3EC2 /* CrashReportingFeature.swift in Sources */,
+				D21C26DA28ABA073005DD405 /* FeatureMessage.swift in Sources */,
 				61E36A11254B2280001AD6F2 /* LaunchTimeProvider.swift in Sources */,
 				614872772485067300E3EBDB /* SpanTagsReducer.swift in Sources */,
 				61C3E63E24BF1B91008053F2 /* RUMApplicationScope.swift in Sources */,
@@ -6102,6 +6107,7 @@
 				D2CB6EAA27C50EAE00A62B57 /* URLSessionSwizzler.swift in Sources */,
 				D2CB6EAB27C50EAE00A62B57 /* VitalMemoryReader.swift in Sources */,
 				D26C49B72889416300802B2D /* UploadPerformancePreset.swift in Sources */,
+				D21C26DB28ABA073005DD405 /* FeatureMessage.swift in Sources */,
 				D2CB6EAC27C50EAE00A62B57 /* DatadogConfiguration.swift in Sources */,
 				D2CB6EAE27C50EAE00A62B57 /* DataOrchestrator.swift in Sources */,
 				D2CB6EAF27C50EAE00A62B57 /* BundleType.swift in Sources */,

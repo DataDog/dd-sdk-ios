@@ -13,18 +13,18 @@ import Foundation
 /// agreement between features, any supported messages by a feature should be properly
 /// documented.
 /* public */ internal protocol FeatureMessageReceiver {
-    /// Receive a message from the bus.
+    /// Receive a message from the message bus of a given core.
     ///
-    /// The message is composed of a key and attributes that the feature can use to build an
-    /// event or run a process. Be mindful of not blocking the caller thread.
+    /// The message can be used to build an event or run a process.
+    /// Be mindful of not blocking the caller thread.
     ///
     /// - Parameters:
-    ///   - message: The message key.
-    ///   - attributes: The message attributes.
-    func receive(message: String, attributes: [String: Any]?)
+    ///   - message: The Feature message
+    ///   - core: The core from which the message is transmitted.
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol)
 }
 
 /* public */ internal struct NOOPFeatureMessageReceiver: FeatureMessageReceiver {
     /// no-op
-    func receive(message: String, attributes: [String: Any]?) { }
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) { }
 }

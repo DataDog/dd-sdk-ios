@@ -17,9 +17,8 @@ public protocol DatadogCoreProtocol {
     /// event or run a process. Be mindful of not blocking the caller thread.
     ///
     /// - Parameters:
-    ///   - message: The message key.
-    ///   - attributes: The message attributes.
-    func send(message: String, attributes: [String: Any]?)
+    ///   - message: The message.
+    func send(message: FeatureMessage)
 }
 
 /// A datadog feature providing thread-safe scope for writing events.
@@ -30,5 +29,5 @@ public protocol FeatureScope {
 /// No-op implementation of `DatadogFeatureRegistry`.
 internal struct NOOPDatadogCore: DatadogCoreProtocol {
     /// no-op
-    func send(message: String, attributes: [String: Any]?) { }
+    func send(message: FeatureMessage) { }
 }

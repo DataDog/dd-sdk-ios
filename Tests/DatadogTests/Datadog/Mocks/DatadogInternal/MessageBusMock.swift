@@ -10,7 +10,7 @@ import XCTest
 @testable import Datadog
 
 internal struct FeatureMessageReceiverMock: FeatureMessageReceiver {
-    typealias ReceiverClosure = (String, [String: Any]?) -> Void
+    typealias ReceiverClosure = (FeatureMessage) -> Void
 
     /// Test expectation that will be fullfilled when a message is received.
     internal var expectation: XCTestExpectation?
@@ -30,8 +30,8 @@ internal struct FeatureMessageReceiverMock: FeatureMessageReceiver {
         self.receiver = receiver
     }
 
-    func receive(message: String, attributes: [String: Any]?) {
-        receiver?(message, attributes)
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) {
+        receiver?(message)
         expectation?.fulfill()
     }
 }

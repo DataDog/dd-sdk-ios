@@ -134,8 +134,8 @@ internal final class DatadogCore {
 extension DatadogCore: DatadogCoreProtocol {
     // MARK: - V2 interface
 
-    func send(message: String, attributes: [String: Any]? = nil) {
-        messageBus.forEach { $0.receive(message: message, attributes: attributes) }
+    /* public */ func send(message: FeatureMessage) {
+        messageBus.forEach { $0.receive(message: message, from: self) }
     }
 }
 

@@ -51,8 +51,9 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureV1Scope 
         self
     }
 
-    func send(message: String, attributes: [String: Any]?) {
+    func send(message: FeatureMessage) {
         // no-op
+
     }
 
     /// Execute `block` with the current context and a `writer` to record events.

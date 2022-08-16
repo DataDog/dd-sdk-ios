@@ -27,10 +27,15 @@ class MessageBusTests: XCTestCase {
 
         defer { temporaryCoreDirectory.delete() }
 
-        let receiver = FeatureMessageReceiverMock(expectation: expectation) { message, attributes in
+        let receiver = FeatureMessageReceiverMock(expectation: expectation) { message in
             // Then
-            XCTAssertEqual(message, "test")
-            XCTAssertEqual(attributes as? [String: String], ["key": "value"])
+            switch message {
+            case .custom(let key, let attributes):
+                XCTAssertEqual(key, "test")
+                XCTAssertEqual(attributes as? [String: String], ["key": "value"])
+            default:
+                XCTFail("wrong message case")
+            }
         }
 
         let logging: LoggingFeature = try core.create(
@@ -55,8 +60,7 @@ class MessageBusTests: XCTestCase {
         core.register(feature: rum)
 
         // When
-        core.send(message: "test", attributes: ["key": "value"])
-
+        core.send(message: .custom(key: "test", attributes: ["key": "value"]))
         // Then
         waitForExpectations(timeout: 0)
     }
