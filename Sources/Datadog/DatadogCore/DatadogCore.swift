@@ -222,10 +222,10 @@ internal protocol V1Feature {
     /// The feature's storage.
     var storage: FeatureStorage { get }
 
-    /// The message bus receiver.
+    /// The message receiver.
     ///
-    /// The `FeatureMessageReceiver` defines an interface for feature to receive any message
-    /// from a bus that is shared between feature registered in a core.
+    /// The `FeatureMessageReceiver` defines an interface for Feature to receive any message
+    /// from a bus that is shared between Features registered in a core.
     var messageReceiver: FeatureMessageReceiver { get }
 }
 

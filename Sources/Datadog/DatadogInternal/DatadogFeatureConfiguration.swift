@@ -7,7 +7,7 @@
 import Foundation
 
 /* public */ internal struct DatadogFeatureConfiguration {
-    /// The feature name.
+    /// The Feature name.
     let name: String
 
     /// The URL request builder for uploading data in this Feature.
@@ -17,7 +17,7 @@ import Foundation
 
     /// The message bus receiver.
     ///
-    /// The `FeatureMessageReceiver` defines an interface for feature to receive any message
-    /// from a bus that is shared between feature registered in a core.
+    /// The `FeatureMessageReceiver` defines an interface for Feature to receive any message
+    /// from a bus that is shared between Features registered in a core.
     let messageReceiver: FeatureMessageReceiver
 }

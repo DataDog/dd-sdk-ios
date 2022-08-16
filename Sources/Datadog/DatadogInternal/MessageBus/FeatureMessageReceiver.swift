@@ -6,11 +6,11 @@
 
 import Foundation
 
-/// The `FeatureMessageReceiver` defines an interface for feature to receive any message
-/// from a bus that is shared between feature registered in a core.
+/// The `FeatureMessageReceiver` defines an interface for Feature to receive any message
+/// from a bus that is shared between Features registered in a core.
 ///
 /// A message is composed of a key and a dictionary of attributes. A message format is a loose
-/// agreement between features, any supported messages by a feature should be properly
+/// agreement between Features, any supported messages by a Feature should be properly
 /// documented.
 /* public */ internal protocol FeatureMessageReceiver {
     /// Receive a message from the message bus of a given core.
