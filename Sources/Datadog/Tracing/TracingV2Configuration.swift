@@ -14,7 +14,7 @@ internal func createTracingConfiguration(intake: URL) -> DatadogFeatureConfigura
     return DatadogFeatureConfiguration(
         name: "tracing",
         requestBuilder: TracingRequestBuilder(intake: intake),
-        messageReceiver: NOOPFeatureMessageReceiver()
+        messageReceiver: NOPFeatureMessageReceiver()
     )
 }
 

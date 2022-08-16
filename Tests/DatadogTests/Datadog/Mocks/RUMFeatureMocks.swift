@@ -14,7 +14,7 @@ extension RUMFeature {
             storage: .mockNoOp(),
             upload: .mockNoOp(),
             configuration: .mockAny(),
-            messageReceiver: NOOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver()
         )
     }
 
@@ -34,7 +34,7 @@ extension RUMFeature {
             storage: interceptedStorage,
             upload: .mockNoOp(),
             configuration: featureConfiguration,
-            messageReceiver: NOOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver()
         )
     }
 

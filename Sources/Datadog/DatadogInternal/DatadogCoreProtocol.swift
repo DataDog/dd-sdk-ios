@@ -6,7 +6,7 @@
 
 import Foundation
 
-public internal(set) var defaultDatadogCore: DatadogCoreProtocol = NOOPDatadogCore()
+public internal(set) var defaultDatadogCore: DatadogCoreProtocol = NOPDatadogCore()
 
 /// A Datadog Core holds a set of features and is responsible of managing their storage
 /// and upload mechanism. It also provides a thread-safe scope for writing events.
@@ -27,7 +27,7 @@ public protocol FeatureScope {
 }
 
 /// No-op implementation of `DatadogFeatureRegistry`.
-internal struct NOOPDatadogCore: DatadogCoreProtocol {
+internal struct NOPDatadogCore: DatadogCoreProtocol {
     /// no-op
     func send(message: FeatureMessage) { }
 }

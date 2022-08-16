@@ -14,7 +14,7 @@ internal func createLoggingConfiguration(intake: URL) -> DatadogFeatureConfigura
     return DatadogFeatureConfiguration(
         name: "logging",
         requestBuilder: LoggingRequestBuilder(intake: intake),
-        messageReceiver: NOOPFeatureMessageReceiver()
+        messageReceiver: NOPFeatureMessageReceiver()
     )
 }
 

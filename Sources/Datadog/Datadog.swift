@@ -358,7 +358,7 @@ public class Datadog {
         DD.telemetry = NOPTelemetry()
 
         // Deinitialize `Datadog`:
-        defaultDatadogCore = NOOPDatadogCore()
+        defaultDatadogCore = NOPDatadogCore()
     }
 
     // MARK: - Internal Proxy - exposure of internal classes (Mostly used for cross platform libraries)

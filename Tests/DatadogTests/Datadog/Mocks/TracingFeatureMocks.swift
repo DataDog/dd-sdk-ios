@@ -13,7 +13,7 @@ extension TracingFeature {
             storage: .mockNoOp(),
             upload: .mockNoOp(),
             configuration: .mockAny(),
-            messageReceiver: NOOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver()
         )
     }
 
@@ -33,7 +33,7 @@ extension TracingFeature {
             storage: interceptedStorage,
             upload: .mockNoOp(),
             configuration: featureConfiguration,
-            messageReceiver: NOOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver()
         )
     }
 

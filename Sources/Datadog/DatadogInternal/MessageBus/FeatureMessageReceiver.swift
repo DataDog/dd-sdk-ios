@@ -24,7 +24,7 @@ import Foundation
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol)
 }
 
-/* public */ internal struct NOOPFeatureMessageReceiver: FeatureMessageReceiver {
+/* public */ internal struct NOPFeatureMessageReceiver: FeatureMessageReceiver {
     /// no-op
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) { }
 }

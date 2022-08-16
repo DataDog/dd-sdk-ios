@@ -11,7 +11,7 @@ extension DatadogCoreProtocol {
     // to access v1 related implementation.
     // If upcasting fails, a `NOOPDatadogCore` instance is returned.
     var v1: DatadogV1CoreProtocol {
-        self as? DatadogV1CoreProtocol ?? NOOPDatadogCore()
+        self as? DatadogV1CoreProtocol ?? NOPDatadogCore()
     }
 }
 
@@ -56,7 +56,7 @@ internal protocol FeatureV1Scope {
     func eventWriteContext(_ block: (DatadogV1Context, Writer) throws -> Void)
 }
 
-extension NOOPDatadogCore: DatadogV1CoreProtocol {
+extension NOPDatadogCore: DatadogV1CoreProtocol {
     // MARK: - V1 interface
 
     /// Returns `nil`.

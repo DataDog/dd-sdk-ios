@@ -45,7 +45,7 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
         ),
         .init(
             assert: {
-                defaultDatadogCore is NOOPDatadogCore
+                defaultDatadogCore is NOPDatadogCore
             },
             problem: "`defaultDatadogCore` must be reset after each test.",
             solution: """

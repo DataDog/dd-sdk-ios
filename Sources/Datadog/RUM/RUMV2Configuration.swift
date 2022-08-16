@@ -14,7 +14,7 @@ internal func createRUMConfiguration(intake: URL) -> DatadogFeatureConfiguration
     return DatadogFeatureConfiguration(
         name: "rum",
         requestBuilder: RUMRequestBuilder(intake: intake),
-        messageReceiver: NOOPFeatureMessageReceiver()
+        messageReceiver: NOPFeatureMessageReceiver()
     )
 }
 
