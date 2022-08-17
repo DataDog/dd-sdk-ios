@@ -608,6 +608,12 @@
 		D21C26D828A647DB005DD405 /* MessageBusMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D628A647DB005DD405 /* MessageBusMock.swift */; };
 		D21C26DA28ABA073005DD405 /* FeatureMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D928ABA073005DD405 /* FeatureMessage.swift */; };
 		D21C26DB28ABA073005DD405 /* FeatureMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D928ABA073005DD405 /* FeatureMessage.swift */; };
+		D21C26DD28ACD371005DD405 /* FeatureMessageAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26DC28ACD371005DD405 /* FeatureMessageAttributes.swift */; };
+		D21C26DE28ACD371005DD405 /* FeatureMessageAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26DC28ACD371005DD405 /* FeatureMessageAttributes.swift */; };
+		D21C26E728AF9388005DD405 /* FeatureMessageAttributesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26E628AF9388005DD405 /* FeatureMessageAttributesTests.swift */; };
+		D21C26E828AF9388005DD405 /* FeatureMessageAttributesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26E628AF9388005DD405 /* FeatureMessageAttributesTests.swift */; };
+		D21C26EE28AFB65B005DD405 /* RUMMessageReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26ED28AFB65B005DD405 /* RUMMessageReceiverTests.swift */; };
+		D21C26EF28AFB65B005DD405 /* RUMMessageReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26ED28AFB65B005DD405 /* RUMMessageReceiverTests.swift */; };
 		D22C1F5C271484B400922024 /* LogEventMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22C1F5B271484B400922024 /* LogEventMapper.swift */; };
 		D232CAD52832D762001B262C /* DatadogCoreMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D232CAD42832D762001B262C /* DatadogCoreMock.swift */; };
 		D232CAD62832D762001B262C /* DatadogCoreMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D232CAD42832D762001B262C /* DatadogCoreMock.swift */; };
@@ -1872,6 +1878,9 @@
 		D21C26D028A64599005DD405 /* MessageBusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBusTests.swift; sourceTree = "<group>"; };
 		D21C26D628A647DB005DD405 /* MessageBusMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBusMock.swift; sourceTree = "<group>"; };
 		D21C26D928ABA073005DD405 /* FeatureMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureMessage.swift; sourceTree = "<group>"; };
+		D21C26DC28ACD371005DD405 /* FeatureMessageAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureMessageAttributes.swift; sourceTree = "<group>"; };
+		D21C26E628AF9388005DD405 /* FeatureMessageAttributesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureMessageAttributesTests.swift; sourceTree = "<group>"; };
+		D21C26ED28AFB65B005DD405 /* RUMMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMMessageReceiverTests.swift; sourceTree = "<group>"; };
 		D22C1F5B271484B400922024 /* LogEventMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEventMapper.swift; sourceTree = "<group>"; };
 		D232CAD42832D762001B262C /* DatadogCoreMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogCoreMock.swift; sourceTree = "<group>"; };
 		D240684D27CE6C9E00C04F44 /* Example tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Example tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -3797,6 +3806,7 @@
 				49274908288048F400ECD49B /* RUMInternalProxyTests.swift */,
 				61E5332E24B75DE2003D6C4E /* RUMFeatureTests.swift */,
 				D248ED4728081B9B00B315B4 /* RUMTelemetryTests.swift */,
+				D21C26ED28AFB65B005DD405 /* RUMMessageReceiverTests.swift */,
 				9EB4B86A27510AC80041CD03 /* WebView */,
 				B3FC3C1226526F4100DEED9E /* RUMVitals */,
 				618715FA24DC5EE700FC0F69 /* DataModels */,
@@ -4202,6 +4212,7 @@
 			isa = PBXGroup;
 			children = (
 				D21C26D928ABA073005DD405 /* FeatureMessage.swift */,
+				D21C26DC28ACD371005DD405 /* FeatureMessageAttributes.swift */,
 				D21C26CD28A411FF005DD405 /* FeatureMessageReceiver.swift */,
 			);
 			path = MessageBus;
@@ -4322,6 +4333,7 @@
 			children = (
 				D2956CB02869D54E007D5462 /* DeviceInfoTests.swift */,
 				D26C49B12886E10E00802B2D /* AppStateHistoryTests.swift */,
+				D21C26E628AF9388005DD405 /* FeatureMessageAttributesTests.swift */,
 			);
 			path = Context;
 			sourceTree = "<group>";
@@ -5292,6 +5304,7 @@
 				61C5A8A724509FAA00DA608C /* SpanEventBuilder.swift in Sources */,
 				6179FFD3254ADB1700556A0B /* ObjcAppLaunchHandler.m in Sources */,
 				F637AED22697404200516F32 /* UIKitRUMUserActionsPredicate.swift in Sources */,
+				D21C26DD28ACD371005DD405 /* FeatureMessageAttributes.swift in Sources */,
 				D29CDD3228211A2200F7DAA5 /* DataBlock.swift in Sources */,
 				D2553829288F0B2400727FAD /* LowPowerModePublisher.swift in Sources */,
 				616C0A9E28573DFF00C13264 /* RUMOperatingSystemInfo.swift in Sources */,
@@ -5516,6 +5529,7 @@
 				9E53889C2773C4B300A7DC42 /* WebRUMEventConsumerTests.swift in Sources */,
 				6114FDEC257659E90084E372 /* DirectoriesMock.swift in Sources */,
 				61122EE825B1C92500F9C7F5 /* SpanSanitizerTests.swift in Sources */,
+				D21C26EE28AFB65B005DD405 /* RUMMessageReceiverTests.swift in Sources */,
 				61B5E42526DFAFBC000B0A5F /* DDGlobal+apiTests.m in Sources */,
 				61FB222D244A21ED00902D19 /* LoggingFeatureMocks.swift in Sources */,
 				617B954224BF4E7600E6F443 /* RUMMonitorConfigurationTests.swift in Sources */,
@@ -5660,6 +5674,7 @@
 				D21C26D728A647DB005DD405 /* MessageBusMock.swift in Sources */,
 				61F2724925C943C500D54BF8 /* CrashReporterTests.swift in Sources */,
 				6172472725D673D7007085B3 /* CrashContextTests.swift in Sources */,
+				D21C26E728AF9388005DD405 /* FeatureMessageAttributesTests.swift in Sources */,
 				D2A1EE26287C35DE00D28DFB /* ContextValueReaderMock.swift in Sources */,
 				61BAD46A26415FCE001886CA /* OTSpanTests.swift in Sources */,
 				61B5E42726DFB145000B0A5F /* DDDatadog+apiTests.m in Sources */,
@@ -5931,6 +5946,7 @@
 				D2CB6E1A27C50EAE00A62B57 /* OTSpanContext.swift in Sources */,
 				D2CB6E1B27C50EAE00A62B57 /* OTTracer.swift in Sources */,
 				D2CB6E1C27C50EAE00A62B57 /* OTReference.swift in Sources */,
+				D21C26DE28ACD371005DD405 /* FeatureMessageAttributes.swift in Sources */,
 				D2CB6E1D27C50EAE00A62B57 /* ArbitraryDataWriter.swift in Sources */,
 				D2CB6E1E27C50EAE00A62B57 /* TracingWithLoggingIntegration.swift in Sources */,
 				D2CB6E1F27C50EAE00A62B57 /* WebRUMEventConsumer.swift in Sources */,
@@ -6189,6 +6205,7 @@
 				D2CB6EF727C520D400A62B57 /* URLSessionAutoInstrumentationMocks.swift in Sources */,
 				D2CB6EF927C520D400A62B57 /* WebRUMEventConsumerTests.swift in Sources */,
 				D2CB6EFA27C520D400A62B57 /* DirectoriesMock.swift in Sources */,
+				D21C26EF28AFB65B005DD405 /* RUMMessageReceiverTests.swift in Sources */,
 				D2CB6EFB27C520D400A62B57 /* SpanSanitizerTests.swift in Sources */,
 				D2CB6EFC27C520D400A62B57 /* DDGlobal+apiTests.m in Sources */,
 				D2CB6EFD27C520D400A62B57 /* LoggingFeatureMocks.swift in Sources */,
@@ -6333,6 +6350,7 @@
 				D21C26D828A647DB005DD405 /* MessageBusMock.swift in Sources */,
 				D2CB6F7C27C520D400A62B57 /* CrashReporterTests.swift in Sources */,
 				D2CB6F7D27C520D400A62B57 /* CrashContextTests.swift in Sources */,
+				D21C26E828AF9388005DD405 /* FeatureMessageAttributesTests.swift in Sources */,
 				D2A1EE27287C35DE00D28DFB /* ContextValueReaderMock.swift in Sources */,
 				D2CB6F7E27C520D400A62B57 /* OTSpanTests.swift in Sources */,
 				D2CB6F7F27C520D400A62B57 /* DDDatadog+apiTests.m in Sources */,

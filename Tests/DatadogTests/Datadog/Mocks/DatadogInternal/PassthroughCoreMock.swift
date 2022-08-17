@@ -20,6 +20,9 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureV1Scope 
 
     internal let writer = FileWriterMock()
 
+    /// The message receiver.
+    private let messageReceiver: FeatureMessageReceiver
+
     /// Test expectation that will be fullfilled when the `eventWriteContext` closure
     /// is executed.
     internal var expectation: XCTestExpectation?
@@ -32,10 +35,12 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureV1Scope 
     ///                  is invoked.
     init(
         context: DatadogV1Context = .mockAny(),
-        expectation: XCTestExpectation? = nil
+        expectation: XCTestExpectation? = nil,
+        messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
     ) {
         self.context = context
         self.expectation = expectation
+        self.messageReceiver = messageReceiver
     }
 
     /// no-op
@@ -51,9 +56,10 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureV1Scope 
         self
     }
 
-    func send(message: FeatureMessage) {
-        // no-op
-
+    func send(message: FeatureMessage, else fallback: () -> Void) {
+        if !messageReceiver.receive(message: message, from: self) {
+            fallback()
+        }
     }
 
     /// Execute `block` with the current context and a `writer` to record events.

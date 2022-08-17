@@ -21,17 +21,3 @@ internal struct LoggingWithRUMContextIntegration {
         return attributes
     }
 }
-
-/// Sends given `Log` as RUM Errors.
-internal struct LoggingWithRUMErrorsIntegration {
-    private let rumErrorsIntegration = RUMErrorsIntegration()
-
-    func addError(for log: LogEvent) {
-        rumErrorsIntegration.addError(
-            with: log.error?.message ?? log.message,
-            type: log.error?.kind,
-            stack: log.error?.stack,
-            source: .logger
-        )
-    }
-}

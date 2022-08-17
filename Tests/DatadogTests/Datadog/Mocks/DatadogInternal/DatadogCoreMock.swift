@@ -38,8 +38,14 @@ internal final class DatadogCoreMock: Flushable {
 extension DatadogCoreMock: DatadogCoreProtocol {
     // MARK: V2 interface
 
-    func send(message: FeatureMessage) {
-        // no-op
+    func send(message: FeatureMessage, else fallback: () -> Void) {
+        let receivers = v1Features.values
+            .compactMap { $0 as? V1Feature }
+            .filter { $0.messageReceiver.receive(message: message, from: self) }
+
+        if receivers.isEmpty {
+            fallback()
+        }
     }
 }
 

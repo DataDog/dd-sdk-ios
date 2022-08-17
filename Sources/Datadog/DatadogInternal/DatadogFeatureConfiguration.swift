@@ -21,3 +21,22 @@ import Foundation
     /// from a bus that is shared between Features registered in a core.
     let messageReceiver: FeatureMessageReceiver
 }
+
+/* public */ internal struct DatadogFeature<Configuration> {
+    /// The feature name.
+    let name: String
+
+    /// The feature-specific configuration.
+    let configuration: Configuration
+
+    /// The URL request builder for uploading data in this Feature.
+    ///
+    /// This builder currently use the v1 context, but will be soon migrated to v2
+    let requestBuilder: FeatureRequestBuilder
+
+    /// The message bus receiver.
+    ///
+    /// The `FeatureMessageReceiver` defines an interface for Feature to receive any message
+    /// from a bus that is shared between Features registered in a core.
+    let messageReceiver: FeatureMessageReceiver
+}

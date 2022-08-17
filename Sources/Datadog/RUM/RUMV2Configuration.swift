@@ -14,7 +14,7 @@ internal func createRUMConfiguration(intake: URL) -> DatadogFeatureConfiguration
     return DatadogFeatureConfiguration(
         name: "rum",
         requestBuilder: RUMRequestBuilder(intake: intake),
-        messageReceiver: NOPFeatureMessageReceiver()
+        messageReceiver: RUMMessageReceiver()
     )
 }
 
@@ -57,5 +57,41 @@ internal struct RUMRequestBuilder: FeatureRequestBuilder {
 
         let data = format.format(events)
         return builder.uploadRequest(with: data)
+    }
+}
+
+internal struct RUMMessageReceiver: FeatureMessageReceiver {
+    /// Process messages receives from the bus.
+    ///
+    /// - Parameters:
+    ///   - message: The Feature message
+    ///   - core: The core from which the message is transmitted.
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        switch message {
+        case .error(let message, let attributes):
+            return addError(message: message, attributes: attributes)
+        default:
+            return false
+        }
+    }
+
+    /// Adds RUM Error with given message and stack to current RUM View.
+    private func addError(message: String, attributes: FeatureMessageAttributes) -> Bool {
+        guard
+            let monitor = Global.rum as? RUMMonitor,
+            let source = attributes["source", type: RUMInternalErrorSource.self]
+        else {
+            return false
+        }
+
+        monitor.addError(
+            message: message,
+            type: attributes["type"],
+            stack: attributes["stack"],
+            source: source,
+            attributes: attributes["attributes"] ?? [:]
+        )
+
+        return true
     }
 }

@@ -46,7 +46,6 @@ class LoggerBuilderTests: XCTestCase {
         XCTAssertEqual(remoteLogger.configuration.threshold, .debug)
         XCTAssertNil(remoteLogger.configuration.eventMapper)
         XCTAssertNil(remoteLogger.rumContextIntegration)
-        XCTAssertNil(remoteLogger.rumErrorsIntegration)
         XCTAssertNil(remoteLogger.activeSpanIntegration)
     }
 
@@ -95,7 +94,6 @@ class LoggerBuilderTests: XCTestCase {
         XCTAssertEqual(remoteLogger.configuration.threshold, .error)
         XCTAssertNil(remoteLogger.configuration.eventMapper)
         XCTAssertNil(remoteLogger.rumContextIntegration)
-        XCTAssertNotNil(remoteLogger.rumErrorsIntegration, "When RUM is enabled, `rumErrorsIntegration` should be available")
         XCTAssertNil(remoteLogger.activeSpanIntegration)
     }
 

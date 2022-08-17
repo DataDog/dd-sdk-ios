@@ -376,7 +376,6 @@ public class Logger: LoggerProtocol {
                     configuration: configuration,
                     dateProvider: context.dateProvider,
                     rumContextIntegration: (rumEnabled && bundleWithRUM) ? LoggingWithRUMContextIntegration() : nil,
-                    rumErrorsIntegration: rumEnabled ? LoggingWithRUMErrorsIntegration() : nil,
                     activeSpanIntegration: (tracingEnabled && bundleWithTrace) ? LoggingWithActiveSpanIntegration() : nil
                 )
             }()

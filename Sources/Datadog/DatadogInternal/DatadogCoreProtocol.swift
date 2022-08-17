@@ -13,12 +13,24 @@ public internal(set) var defaultDatadogCore: DatadogCoreProtocol = NOPDatadogCor
 public protocol DatadogCoreProtocol {
     /// Sends a message on the bus shared by features registered in this core.
     ///
-    /// The message is composed of a key and attributes that the feature can use to build an
-    /// event or run a process. Be mindful of not blocking the caller thread.
+    /// If the message could be be processed by any registered feature, the fallback closure
+    /// will be invoked. Do not make any assumption on which thread the fallback is called.
     ///
     /// - Parameters:
     ///   - message: The message.
-    func send(message: FeatureMessage)
+    ///   - fallback: The fallback closure to call when the message could not be
+    ///               processed by any Features on the bus.
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void)
+}
+
+extension DatadogCoreProtocol {
+    /// Sends a message on the bus shared by features registered in this core.
+    ///
+    /// - Parameters:
+    ///   - message: The message.
+    func send(message: FeatureMessage) {
+        send(message: message, else: {})
+    }
 }
 
 /// A datadog feature providing thread-safe scope for writing events.
@@ -28,6 +40,8 @@ public protocol FeatureScope {
 
 /// No-op implementation of `DatadogFeatureRegistry`.
 internal struct NOPDatadogCore: DatadogCoreProtocol {
-    /// no-op
-    func send(message: FeatureMessage) { }
+    /// no-op: call the fallback in sync
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
+        fallback()
+    }
 }
