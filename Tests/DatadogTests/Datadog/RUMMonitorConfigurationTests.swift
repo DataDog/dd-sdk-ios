@@ -18,7 +18,6 @@ class RUMMonitorConfigurationTests: XCTestCase {
         let core = DatadogCoreMock(
             context: .mockWith(
                 configuration: .mockWith(
-                    applicationVersion: "1.2.3",
                     serviceName: "service-name",
                     environment: "tests",
                     sdkVersion: "3.4.5"
@@ -27,7 +26,8 @@ class RUMMonitorConfigurationTests: XCTestCase {
                     userInfoProvider: userInfoProvider,
                     networkConnectionInfoProvider: networkConnectionInfoProvider,
                     carrierInfoProvider: carrierInfoProvider
-                )
+                ),
+                appVersionProvider: .mockWith(version: "1.2.3")
             )
         )
         defer { core.flush() }

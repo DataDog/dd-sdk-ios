@@ -73,11 +73,13 @@ extension DatadogV1Context: AnyMockable {
 
     static func mockWith(
         configuration: CoreConfiguration = .mockAny(),
-        dependencies: CoreDependencies = .mockAny()
+        dependencies: CoreDependencies = .mockAny(),
+        appVersionProvider: AppVersionProvider = .mockAny()
     ) -> DatadogV1Context {
         return DatadogV1Context(
             configuration: configuration,
-            dependencies: dependencies
+            dependencies: dependencies,
+            appVersionProvider: appVersionProvider
         )
     }
 }

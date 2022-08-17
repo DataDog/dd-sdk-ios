@@ -42,7 +42,6 @@ class RUMFeatureTests: XCTestCase {
             configuration: .mockWith(
                 clientToken: randomClientToken,
                 applicationName: randomApplicationName,
-                applicationVersion: randomApplicationVersion,
                 serviceName: randomServiceName,
                 environment: randomEnvironmentName,
                 source: randomSource,
@@ -56,7 +55,8 @@ class RUMFeatureTests: XCTestCase {
                     osName: randomDeviceOSName,
                     osVersion: randomDeviceOSVersion
                 )
-            )
+            ),
+            appVersionProvider: .mockWith(version: randomApplicationVersion)
         )
 
         // Given
@@ -124,7 +124,8 @@ class RUMFeatureTests: XCTestCase {
                         uploadDelayChangeRate: 0
                     )
                 )
-            )
+            ),
+            appVersionProvider: .mockAny()
         )
 
         // Given

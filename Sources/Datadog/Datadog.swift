@@ -182,6 +182,7 @@ public class Datadog {
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
         let carrierInfoProvider = CarrierInfoProvider()
         let launchTimeProvider = LaunchTimeProvider()
+        let appVersionProvider = AppVersionProvider(configuration: configuration.common)
 
         // Bundle all core dependencies provided by `DatadogCore` to features:
         let commonDependencies = CoreDependencies(
@@ -205,7 +206,8 @@ public class Datadog {
         let core = DatadogCore(
             directory: try CoreDirectory(in: Directory.cache(), from: configuration.common),
             configuration: configuration.common,
-            dependencies: commonDependencies
+            dependencies: commonDependencies,
+            appVersionProvider: appVersionProvider
         )
 
         // First, initialize features:

@@ -150,7 +150,6 @@ class WKUserContentController_DatadogTests: XCTestCase {
         let core = DatadogCoreMock(
             context: .mockWith(
                 configuration: .mockWith(
-                    applicationVersion: "1.0.0",
                     applicationBundleIdentifier: "com.datadoghq.ios-sdk",
                     serviceName: "default-service-name",
                     environment: "tests",
@@ -158,7 +157,8 @@ class WKUserContentController_DatadogTests: XCTestCase {
                 ),
                 dependencies: .mockWith(
                     dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
-                )
+                ),
+                appVersionProvider: .mockWith(version: "1.0.0")
             )
         )
         defer { core.flush() }
