@@ -46,6 +46,9 @@ internal final class DatadogCore {
         target: .global(qos: .utility)
     )
 
+    /// The app version provider.
+    let appVersionProvider: AppVersionProvider
+
     private var v1Features: [String: Any] = [:]
 
     /// The SDK Context for V1.
@@ -67,6 +70,7 @@ internal final class DatadogCore {
         self.directory = directory
         self.configuration = configuration
         self.dependencies = dependencies
+        self.appVersionProvider = appVersionProvider
         self.v1Context = DatadogV1Context(configuration: configuration, dependencies: dependencies, appVersionProvider: appVersionProvider)
     }
 
