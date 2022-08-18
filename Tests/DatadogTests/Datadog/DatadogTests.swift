@@ -452,9 +452,9 @@ class DatadogTests: XCTestCase {
         core.readWriteQueue.sync {}
 
         let featureDirectories: [FeatureDirectories] = [
-            try core.directory.getFeatureDirectories(configuration: createV2LoggingStorageConfiguration()),
-            try core.directory.getFeatureDirectories(configuration: createV2TracingStorageConfiguration()),
-            try core.directory.getFeatureDirectories(configuration: createV2RUMStorageConfiguration()),
+            try core.directory.getFeatureDirectories(forFeatureNamed: "logging"),
+            try core.directory.getFeatureDirectories(forFeatureNamed: "tracing"),
+            try core.directory.getFeatureDirectories(forFeatureNamed: "rum"),
         ]
 
         let allDirectories: [Directory] = featureDirectories.flatMap { [$0.authorized, $0.unauthorized] }

@@ -6,22 +6,15 @@
 
 import Foundation
 
-/// Creates V2 Storage configuration for V1 RUM.
-internal func createV2RUMStorageConfiguration() -> FeatureStorageConfiguration {
-    return FeatureStorageConfiguration(
-        directories: .init(
-            authorized: "rum/v2", // relative to `CoreDirectory.coreDirectory`
-            unauthorized: "rum/intermediate-v2" // relative to `CoreDirectory.coreDirectory`
-        ),
-        featureName: "RUM"
-    )
-}
-
-/// Creates V2 Upload configuration for V1 RUM.
-internal func createV2RUMUploadConfiguration(v1Configuration: FeaturesConfiguration.RUM) -> FeatureV1UploadConfiguration {
-    return FeatureV1UploadConfiguration(
-        featureName: "RUM",
-        requestBuilder: RUMRequestBuilder(intake: v1Configuration.uploadURL)
+/// Creates RUM Feature Configuration.
+///
+/// - Parameter intake: The RUM intake URL.
+/// - Returns: The RUM feature configuration.
+internal func createRUMConfiguration(intake: URL) -> DatadogFeatureConfiguration {
+    return DatadogFeatureConfiguration(
+        name: "rum",
+        requestBuilder: RUMRequestBuilder(intake: intake),
+        messageReceiver: NOPFeatureMessageReceiver()
     )
 }
 

@@ -25,11 +25,13 @@ internal struct CoreDirectory {
     let coreDirectory: Directory
 
     /// Obtains subdirectories for managing Feature data (creates if don't exist).
-    /// - Parameter configuration: the storage configuration for given Feature
-    func getFeatureDirectories(configuration: FeatureStorageConfiguration) throws -> FeatureDirectories {
+    ///
+    /// - Parameter name: The given Feature name.
+    /// - Returns: The Feature's directories
+    func getFeatureDirectories(forFeatureNamed name: String) throws -> FeatureDirectories {
         return FeatureDirectories(
-            unauthorized: try coreDirectory.createSubdirectory(path: configuration.directories.unauthorized),
-            authorized: try coreDirectory.createSubdirectory(path: configuration.directories.authorized)
+            unauthorized: try coreDirectory.createSubdirectory(path: "\(name)/intermediate-v2"),
+            authorized: try coreDirectory.createSubdirectory(path: "\(name)/v2")
         )
     }
 }

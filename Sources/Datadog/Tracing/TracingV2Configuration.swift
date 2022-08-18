@@ -6,22 +6,15 @@
 
 import Foundation
 
-/// Creates V2 Storage configuration for V1 Tracing.
-internal func createV2TracingStorageConfiguration() -> FeatureStorageConfiguration {
-    return FeatureStorageConfiguration(
-        directories: .init(
-            authorized: "tracing/v2", // relative to `CoreDirectory.coreDirectory`
-            unauthorized: "tracing/intermediate-v2" // relative to `CoreDirectory.coreDirectory`
-        ),
-        featureName: "tracing"
-    )
-}
-
-/// Creates V2 Upload configuration for V1 Tracing.
-internal func createV2TracingUploadConfiguration(v1Configuration: FeaturesConfiguration.Tracing) -> FeatureV1UploadConfiguration {
-    return FeatureV1UploadConfiguration(
-        featureName: "tracing",
-        requestBuilder: TracingRequestBuilder(intake: v1Configuration.uploadURL)
+/// Creates Tracing Feature Configuration.
+///
+/// - Parameter intake: The Tracing intake URL.
+/// - Returns: The Tracing feature configuration.
+internal func createTracingConfiguration(intake: URL) -> DatadogFeatureConfiguration {
+    return DatadogFeatureConfiguration(
+        name: "tracing",
+        requestBuilder: TracingRequestBuilder(intake: intake),
+        messageReceiver: NOPFeatureMessageReceiver()
     )
 }
 

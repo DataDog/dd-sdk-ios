@@ -6,22 +6,15 @@
 
 import Foundation
 
-/// Creates V2 Storage configuration for V1 Logging.
-internal func createV2LoggingStorageConfiguration() -> FeatureStorageConfiguration {
-    return FeatureStorageConfiguration(
-        directories: .init(
-            authorized: "logging/v2", // relative to `CoreDirectory.coreDirectory`
-            unauthorized: "logging/intermediate-v2" // relative to `CoreDirectory.coreDirectory`
-        ),
-        featureName: "logging"
-    )
-}
-
-/// Creates V2 Upload configuration for V1 Logging.
-internal func createV2LoggingUploadConfiguration(v1Configuration: FeaturesConfiguration.Logging) -> FeatureV1UploadConfiguration {
-    return FeatureV1UploadConfiguration(
-        featureName: "logging",
-        requestBuilder: LoggingRequestBuilder(intake: v1Configuration.uploadURL)
+/// Creates Logging Feature Configuration.
+///
+/// - Parameter intake: The Logging intake URL.
+/// - Returns: The Logging feature configuration.
+internal func createLoggingConfiguration(intake: URL) -> DatadogFeatureConfiguration {
+    return DatadogFeatureConfiguration(
+        name: "logging",
+        requestBuilder: LoggingRequestBuilder(intake: intake),
+        messageReceiver: NOPFeatureMessageReceiver()
     )
 }
 

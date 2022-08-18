@@ -17,7 +17,7 @@ class URLSessionAutoInstrumentationTests: XCTestCase {
 
     func testWhenURLSessionAutoInstrumentationIsEnabled_thenSharedInterceptorIsAvailable() {
         defaultDatadogCore = core
-        defer { defaultDatadogCore = NOOPDatadogCore() }
+        defer { defaultDatadogCore = NOPDatadogCore() }
 
         XCTAssertNil(URLSessionInterceptor.shared)
 

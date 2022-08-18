@@ -12,7 +12,8 @@ extension LoggingFeature {
         return LoggingFeature(
             storage: .mockNoOp(),
             upload: .mockNoOp(),
-            configuration: .mockAny()
+            configuration: .mockAny(),
+            messageReceiver: NOPFeatureMessageReceiver()
         )
     }
 
@@ -31,7 +32,8 @@ extension LoggingFeature {
         return LoggingFeature(
             storage: interceptedStorage,
             upload: .mockNoOp(),
-            configuration: featureConfiguration
+            configuration: featureConfiguration,
+            messageReceiver: NOPFeatureMessageReceiver()
         )
     }
 

@@ -50,6 +50,9 @@ internal final class DatadogCore {
     /// `contextProvider`
     let userInfoPublisher = UserInfoPublisher()
 
+    /// The message bus used to dispatch messages to registered features.
+    private var messageBus: [FeatureMessageReceiver] = []
+
     /// Registery for v1 features.
     private var v1Features: [String: Any] = [:]
 
@@ -128,51 +131,25 @@ internal final class DatadogCore {
     }
 }
 
+extension DatadogCore: DatadogCoreProtocol {
+    // MARK: - V2 interface
+
+    /* public */ func send(message: FeatureMessage) {
+        messageBus.forEach { $0.receive(message: message, from: self) }
+    }
+}
+
 extension DatadogCore: DatadogV1CoreProtocol {
     // MARK: - V1 interface
-
-    /// Creates V1 Feature using its V2 configuration.
-    ///
-    /// `DatadogCore` uses its core `configuration` to inject feature-agnostic parts of V1 setup.
-    /// Feature-specific part is provided explicitly with `featureSpecificConfiguration`.
-    ///
-    /// - Returns: an instance of V1 feature
-    func create<Feature: V1FeatureInitializable>(
-        storageConfiguration: FeatureStorageConfiguration,
-        uploadConfiguration: FeatureV1UploadConfiguration,
-        featureSpecificConfiguration: Feature.Configuration
-    ) throws -> Feature {
-        let featureDirectories = try directory.getFeatureDirectories(configuration: storageConfiguration)
-
-        let storage = FeatureStorage(
-            featureName: storageConfiguration.featureName,
-            queue: readWriteQueue,
-            directories: featureDirectories,
-            dateProvider: dateProvider,
-            consentProvider: consentProvider,
-            performance: performance,
-            encryption: encryption
-        )
-
-        let upload = FeatureUpload(
-            featureName: uploadConfiguration.featureName,
-            contextProvider: contextProvider,
-            fileReader: storage.reader,
-            requestBuilder: uploadConfiguration.requestBuilder,
-            httpClient: httpClient,
-            performance: performance
-        )
-
-        return Feature(
-            storage: storage,
-            upload: upload,
-            configuration: featureSpecificConfiguration
-        )
-    }
 
     func register<T>(feature instance: T?) {
         let key = String(describing: T.self)
         v1Features[key] = instance
+
+        // add/replace v1 feature to the message bus
+        messageBus = v1Features.values
+            .compactMap { $0 as? V1Feature }
+            .map(\.messageReceiver)
     }
 
     func feature<T>(_ type: T.Type) -> T? {
@@ -196,12 +173,60 @@ extension DatadogCore: DatadogV1CoreProtocol {
     var context: DatadogV1Context? {
         return v1Context
     }
+
+    /// Creates V1 Feature using its V2 configuration.
+    ///
+    /// `DatadogCore` uses its core `configuration` to inject feature-agnostic parts of V1 setup.
+    /// Feature-specific part is provided explicitly with `featureSpecificConfiguration`.
+    ///
+    /// - Parameters:
+    ///   - configuration: The generic feature configuration.
+    ///   - featureSpecificConfiguration: The feature-specific configuration.
+    /// - Returns: an instance of V1 feature
+    func create<Feature: V1FeatureInitializable>(
+        configuration: DatadogFeatureConfiguration,
+        featureSpecificConfiguration: Feature.Configuration
+    ) throws -> Feature {
+        let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: configuration.name)
+
+        let storage = FeatureStorage(
+            featureName: configuration.name,
+            queue: readWriteQueue,
+            directories: featureDirectories,
+            dateProvider: dateProvider,
+            consentProvider: consentProvider,
+            performance: performance,
+            encryption: encryption
+        )
+
+        let upload = FeatureUpload(
+            featureName: configuration.name,
+            contextProvider: contextProvider,
+            fileReader: storage.reader,
+            requestBuilder: configuration.requestBuilder,
+            httpClient: httpClient,
+            performance: performance
+        )
+
+        return Feature(
+            storage: storage,
+            upload: upload,
+            configuration: featureSpecificConfiguration,
+            messageReceiver: configuration.messageReceiver
+        )
+    }
 }
 
 /// A v1 Feature with an associated stroage.
 internal protocol V1Feature {
     /// The feature's storage.
     var storage: FeatureStorage { get }
+
+    /// The message receiver.
+    ///
+    /// The `FeatureMessageReceiver` defines an interface for Feature to receive any message
+    /// from a bus that is shared between Features registered in a core.
+    var messageReceiver: FeatureMessageReceiver { get }
 }
 
 /// This Scope complies with `V1FeatureScope` to provide context and writer to
@@ -343,6 +368,7 @@ internal protocol V1FeatureInitializable {
     init(
         storage: FeatureStorage,
         upload: FeatureUpload,
-        configuration: Configuration
+        configuration: Configuration,
+        messageReceiver: FeatureMessageReceiver
     )
 }
