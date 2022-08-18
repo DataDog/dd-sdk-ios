@@ -7,20 +7,17 @@
 import Foundation
 import UIKit
 
-/// Captures `ViewTreeSnapshot` in current application window.
+/// Produces `ViewTreeSnapshot` for key window in current application.
 internal struct WindowSnapshotProducer: ViewTreeSnapshotProducer {
     /// Finds the right window to capture snapshot in.
     let windowObserver: AppWindowObserver
+    /// Builds snapshot from the app window.
+    let snapshotBuilder: ViewTreeSnapshotBuilder
 
-    func takeSnapshot() -> ViewTreeSnapshot? {
+    func takeSnapshot() throws -> ViewTreeSnapshot? {
         guard let window = windowObserver.relevantWindow else {
             return nil
         }
-        return takeSnapshot(in: window)
-    }
-
-    private func takeSnapshot(in window: UIWindow) -> ViewTreeSnapshot {
-        let now = Date()
-        return ViewTreeSnapshot(date: now) // TODO: RUMM-2411 Create real view tree snapshot
+        return try snapshotBuilder.createSnapshot(of: window)
     }
 }

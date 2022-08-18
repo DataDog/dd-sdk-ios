@@ -6,7 +6,10 @@
 
 import Foundation
 
-/// Produces `ViewTreeSnapshot` describing the user interface.
+/// Produces `ViewTreeSnapshot` describing the user interface in current app.
 internal protocol ViewTreeSnapshotProducer {
-    func takeSnapshot() -> ViewTreeSnapshot?
+    /// Produces the snapshot of a view tree.
+    /// - Returns: the snapshot or `nil` if it cannot be taken.
+    /// - Throws: can throw an `InternalError` if any problem occurs.
+    func takeSnapshot() throws -> ViewTreeSnapshot?
 }

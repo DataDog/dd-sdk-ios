@@ -21,9 +21,10 @@ internal class Recorder {
 
     convenience init() {
         self.init(
-            scheduler: MainThreadScheduler(interval: 0.2),
+            scheduler: MainThreadScheduler(interval: 0.25),
             snapshotProducer: WindowSnapshotProducer(
-                windowObserver: KeyWindowObserver()
+                windowObserver: KeyWindowObserver(),
+                snapshotBuilder: ViewTreeSnapshotBuilder()
             ),
             snapshotProcessor: Processor()
         )
@@ -54,11 +55,14 @@ internal class Recorder {
     /// Initiates the capture of a next record.
     /// **Note**: This is called on the main thread.
     private func captureNextRecord() {
-        guard let snapshot = snapshotProducer.takeSnapshot() else {
-            print("Failed to take the snapshot of current window") // TODO: RUMM-2410 Use `DD.logger` and / or `DD.telemetry`
-            return
-        }
+        do {
+            guard let snapshot = try snapshotProducer.takeSnapshot() else {
+                return // there is nothing visible yet (i.e. the key window is not yet ready)
+            }
 
-        snapshotProcessor.process(snapshot: snapshot)
+            snapshotProcessor.process(snapshot: snapshot)
+        } catch {
+            print("Failed to capture the snapshot: \(error)") // TODO: RUMM-2410 Use `DD.logger` and / or `DD.telemetry`
+        }
     }
 }

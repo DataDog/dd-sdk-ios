@@ -22,7 +22,7 @@ extension Date: AnyMockable, RandomMockable {
             .addingTimeInterval(timeInterval)
     }
 
-    private static func mockSpecificUTCGregorianDate(year: Int, month: Int, day: Int, hour: Int, minute: Int = 0, second: Int = 0) -> Date {
+    static func mockSpecificUTCGregorianDate(year: Int, month: Int, day: Int, hour: Int, minute: Int = 0, second: Int = 0) -> Date {
         var dateComponents = DateComponents()
         dateComponents.year = year
         dateComponents.month = month
@@ -35,3 +35,24 @@ extension Date: AnyMockable, RandomMockable {
         return dateComponents.date!
     }
 }
+
+extension FixedWidthInteger where Self: RandomMockable {
+    static func mockRandom() -> Self {
+        return .random(in: min...max)
+    }
+
+    static func mockRandom(min: Self = .min, max: Self = .max, otherThan values: Set<Self> = []) -> Self {
+        var random: Self = .random(in: min...max)
+        while values.contains(random) { random = .random(in: min...max) }
+        return random
+    }
+}
+
+extension FixedWidthInteger where Self: AnyMockable {
+    static func mockAny() -> Self {
+        return 42
+    }
+}
+
+extension Int: AnyMockable, RandomMockable {}
+extension Int64: AnyMockable, RandomMockable {}
