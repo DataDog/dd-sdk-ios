@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import CoreGraphics
 
 /// The `ViewTreeSnapshot` is an intermediate representation of the app UI in Session Replay
 /// recording: [views hierarchy] → [`ViewTreeSnapshot`] → [wireframes].
