@@ -18,34 +18,41 @@ internal struct TracingWithLoggingIntegration {
         static let defaultErrorProperty = "Unknown"
     }
 
+    struct Configuration {
+        /// The `service` value for logs.
+        /// See: [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
+        let service: String?
+        /// The `logger.name` value for logs.
+        let loggerName: String
+        /// Whether to send the network info in `network.client.*` log attributes.
+        let sendNetworkInfo: Bool
+    }
+
     /// `DatadogCore` instance managing this integration.
     let core: DatadogCoreProtocol
     /// Builds log events.
-    let logBuilder: LogEventBuilder
+    let configuration: Configuration
 
     init(
         core: DatadogCoreProtocol,
-        context: DatadogV1Context,
-        tracerConfiguration: Tracer.Configuration,
-        loggingFeature: LoggingFeature
+        tracerConfiguration: Tracer.Configuration
     ) {
         self.init(
             core: core,
-            logBuilder: LogEventBuilder(
-                service: tracerConfiguration.serviceName ?? context.service,
+            configuration: .init(
+                service: tracerConfiguration.serviceName,
                 loggerName: "trace",
-                sendNetworkInfo: tracerConfiguration.sendNetworkInfo,
-                eventMapper: loggingFeature.configuration.logEventMapper
+                sendNetworkInfo: tracerConfiguration.sendNetworkInfo
             )
         )
     }
 
-    init(core: DatadogCoreProtocol, logBuilder: LogEventBuilder) {
+    init(core: DatadogCoreProtocol, configuration: Configuration) {
         self.core = core
-        self.logBuilder = logBuilder
+        self.configuration = configuration
     }
 
-    func writeLog(withSpanContext spanContext: DDSpanContext, fields: [String: Encodable], date: Date) {
+    func writeLog(withSpanContext spanContext: DDSpanContext, fields: [String: Encodable], date: Date, else fallback: @escaping () -> Void) {
         var userAttributes = fields
 
         // get the log message and optional error kind
@@ -73,26 +80,23 @@ internal struct TracingWithLoggingIntegration {
             )
         }
 
-        let threadName = getCurrentThreadName()
-
-        core.v1.scope(for: LoggingFeature.self)?.eventWriteContext { context, writer in
-            let log = logBuilder.createLogEvent(
-                date: date,
-                level: level,
-                message: message,
-                error: extractedError,
-                attributes: .init(
-                    userAttributes: userAttributes,
-                    internalAttributes: internalAttributes
-                ),
-                tags: [],
-                context: context,
-                threadName: threadName
-            )
-
-            if let log = log {
-                writer.write(value: log)
-            }
-        }
+        core.send(
+            message: .custom(
+                key: "log",
+                attributes: [
+                    "date": date,
+                    "loggerName": configuration.loggerName,
+                    "service": configuration.service,
+                    "threadName": Thread.current.dd.name,
+                    "message": message,
+                    "level": level,
+                    "error": extractedError,
+                    "userAttributes": userAttributes,
+                    "internalAttributes": internalAttributes,
+                    "sendNetworkInfo": configuration.sendNetworkInfo
+                ]
+            ),
+            else: fallback
+        )
     }
 }

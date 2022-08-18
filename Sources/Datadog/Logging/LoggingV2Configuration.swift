@@ -7,14 +7,18 @@
 import Foundation
 
 /// Creates Logging Feature Configuration.
-///
-/// - Parameter intake: The Logging intake URL.
+/// - Parameters:
+///   - intake: The Logging intake URL.
+///   - logEventMapper: The log event mapper.
 /// - Returns: The Logging feature configuration.
-internal func createLoggingConfiguration(intake: URL) -> DatadogFeatureConfiguration {
+internal func createLoggingConfiguration(
+    intake: URL,
+    logEventMapper: LogEventMapper?
+) -> DatadogFeatureConfiguration {
     return DatadogFeatureConfiguration(
         name: "logging",
         requestBuilder: LoggingRequestBuilder(intake: intake),
-        messageReceiver: NOPFeatureMessageReceiver()
+        messageReceiver: LoggingMessageReceiver(logEventMapper: logEventMapper)
     )
 }
 
@@ -49,5 +53,65 @@ internal struct LoggingRequestBuilder: FeatureRequestBuilder {
 
         let data = format.format(events)
         return builder.uploadRequest(with: data)
+    }
+}
+
+internal struct LoggingMessageReceiver: FeatureMessageReceiver {
+    /// The log event mapper
+    let logEventMapper: LogEventMapper?
+
+    /// Process messages receives from the bus.
+    ///
+    /// - Parameters:
+    ///   - message: The Feature message
+    ///   - core: The core from which the message is transmitted.
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        switch message {
+        case .custom(let key, let attributes) where key == "log":
+            return log(attributes: attributes, to: core)
+        default:
+            return false
+        }
+    }
+
+    private func log(attributes: FeatureMessageAttributes, to core: DatadogCoreProtocol) -> Bool {
+        guard
+            let loggerName: String = attributes["loggerName"],
+            let date: Date = attributes["date"],
+            let message: String = attributes["message"],
+            let level: LogLevel = attributes["level"],
+            let threadName: String = attributes["threadName"]
+        else {
+            return false
+        }
+
+        core.v1.scope(for: LoggingFeature.self)?.eventWriteContext { context, writer in
+            let builder = LogEventBuilder(
+                service: attributes["service"] ?? context.service,
+                loggerName: loggerName,
+                sendNetworkInfo: attributes["sendNetworkInfo"] ?? false,
+                eventMapper: logEventMapper
+            )
+
+            let log = builder.createLogEvent(
+                date: date,
+                level: level,
+                message: message,
+                error: attributes["error"],
+                attributes: .init(
+                    userAttributes: attributes["userAttributes"] ?? [:],
+                    internalAttributes: attributes["internalAttributes"]
+                ),
+                tags: [],
+                context: context,
+                threadName: threadName
+            )
+
+            if let log = log {
+                writer.write(value: log)
+            }
+        }
+
+        return true
     }
 }

@@ -261,8 +261,7 @@ extension Tracer {
         configuration: Configuration = .init(),
         spanEventMapper: SpanEventMapper? = nil,
         tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
-        rumContextIntegration: TracingWithRUMContextIntegration? = nil,
-        loggingIntegration: TracingWithLoggingIntegration? = nil
+        rumContextIntegration: TracingWithRUMContextIntegration? = nil
     ) -> Tracer {
         return Tracer(
             core: core,
@@ -270,7 +269,7 @@ extension Tracer {
             spanEventMapper: spanEventMapper,
             tracingUUIDGenerator: tracingUUIDGenerator,
             rumContextIntegration: rumContextIntegration,
-            loggingIntegration: loggingIntegration
+            loggingIntegration: .init(core: core, tracerConfiguration: configuration)
         )
     }
 }
@@ -303,6 +302,16 @@ extension SpanEventBuilder {
             source: source,
             origin: origin,
             eventsMapper: eventsMapper
+        )
+    }
+}
+
+extension TracingWithLoggingIntegration.Configuration: AnyMockable {
+    static func mockAny() -> TracingWithLoggingIntegration.Configuration {
+        .init(
+            service: .mockAny(),
+            loggerName: .mockAny(),
+            sendNetworkInfo: true
         )
     }
 }

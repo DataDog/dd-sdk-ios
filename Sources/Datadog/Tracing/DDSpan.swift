@@ -18,7 +18,7 @@ internal class DDSpan: OTSpan {
     /// Span creation date
     internal let startTime: Date
     /// Writes span logs to Logging Feature. `nil` if Logging feature is disabled.
-    private let loggingIntegration: TracingWithLoggingIntegration?
+    private let loggingIntegration: TracingWithLoggingIntegration
 
     /// Queue used for synchronizing mutable properties access.
     private let queue: DispatchQueue
@@ -178,13 +178,9 @@ internal class DDSpan: OTSpan {
     }
 
     private func sendSpanLogs(fields: [String: Encodable], date: Date) {
-        guard let loggingIntegration = loggingIntegration else {
-            queue.async {
-                DD.logger.warn("The log for span \"\(self.unsafeOperationName)\" will not be send, because the Logging feature is disabled.")
-            }
-            return
-        }
-        loggingIntegration.writeLog(withSpanContext: ddContext, fields: fields, date: date)
+        loggingIntegration.writeLog(withSpanContext: ddContext, fields: fields, date: date, else: {
+            self.queue.async { DD.logger.warn("The log for span \"\(self.unsafeOperationName)\" will not be send, because the Logging feature is disabled.") }
+        })
     }
 
     // MARK: - Private

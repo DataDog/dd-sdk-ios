@@ -20,7 +20,8 @@ extension LoggingFeature {
     /// Mocks the feature instance which performs writes to `InMemoryWriter`.
     /// Use `LogFeature.waitAndReturnLogMatchers()` to inspect and assert recorded `Logs`.
     static func mockByRecordingLogMatchers(
-        featureConfiguration: FeaturesConfiguration.Logging = .mockAny()
+        featureConfiguration: FeaturesConfiguration.Logging = .mockAny(),
+        messageReceiver: FeatureMessageReceiver = LoggingMessageReceiver(logEventMapper: nil)
     ) -> LoggingFeature {
         // Mock storage with `InMemoryWriter`, used later for retrieving recorded events back:
         let interceptedStorage = FeatureStorage(
@@ -33,7 +34,7 @@ extension LoggingFeature {
             storage: interceptedStorage,
             upload: .mockNoOp(),
             configuration: featureConfiguration,
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: messageReceiver
         )
     }
 

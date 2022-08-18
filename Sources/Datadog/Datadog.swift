@@ -250,7 +250,10 @@ public class Datadog {
 
         if let loggingConfiguration = configuration.logging {
             logging = try core.create(
-                configuration: createLoggingConfiguration(intake: loggingConfiguration.uploadURL),
+                configuration: createLoggingConfiguration(
+                    intake: loggingConfiguration.uploadURL,
+                    logEventMapper: loggingConfiguration.logEventMapper
+                ),
                 featureSpecificConfiguration: loggingConfiguration
             )
 
