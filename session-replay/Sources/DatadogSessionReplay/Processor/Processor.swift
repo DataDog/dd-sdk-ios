@@ -66,13 +66,13 @@ internal class Processor: ViewTreeSnapshotProcessor {
 
     private var records: [SRMobileSegment.Records] = []
 
-    private func flatten(viewTreeSnapshot: ViewTreeSnapshot) -> [Snapshot] {
-        func accumulate(next viewSnapshot: Snapshot, in array: inout [Snapshot]) {
+    private func flatten(viewTreeSnapshot: ViewTreeSnapshot) -> [Node] {
+        func accumulate(next viewSnapshot: Node, in array: inout [Node]) {
             array.append(viewSnapshot)
             viewSnapshot.children.forEach { childViewSnapshot in accumulate(next: childViewSnapshot, in: &array) }
         }
 
-        var flattened: [Snapshot] = []
+        var flattened: [Node] = []
         accumulate(next: viewTreeSnapshot.root, in: &flattened)
         return flattened
     }

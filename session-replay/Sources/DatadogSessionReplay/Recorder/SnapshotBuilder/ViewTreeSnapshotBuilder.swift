@@ -7,7 +7,7 @@
 import Foundation
 import UIKit
 
-internal typealias Snapshot = ViewTreeSnapshot.Snapshot
+internal typealias Node = ViewTreeSnapshot.Node
 
 /// Builds `ViewTreeSnapshot` for given root view.
 ///
@@ -28,18 +28,18 @@ internal struct ViewTreeSnapshotBuilder {
         let context = Context(rootView: rootView)
         let viewTreeSnapshot = ViewTreeSnapshot(
             date: Date(),
-            root: createSnapshot(of: rootView, in: context)
+            root: createNode(for: rootView, in: context)
         )
         return viewTreeSnapshot
     }
 
-    private func createSnapshot(of anyView: UIView, in context: Context) -> Snapshot {
+    private func createNode(for anyView: UIView, in context: Context) -> Node {
         let frameInRoot = anyView.convert(anyView.bounds, to: context.rootView)
-        let snapshot = Snapshot(
-            children: anyView.subviews.map { createSnapshot(of: $0, in: context) },
-            frame: Snapshot.Frame(cgRect: frameInRoot)
+        let node = Node(
+            children: anyView.subviews.map { createNode(for: $0, in: context) },
+            frame: Node.Frame(cgRect: frameInRoot)
         )
-        return snapshot
+        return node
     }
 
     // TODO: RUMM-2429 Collect semantic information on various UI elements (UIButton, UILabel, UITabBar, ...)
@@ -47,7 +47,7 @@ internal struct ViewTreeSnapshotBuilder {
 
 // MARK: - Convenience
 
-extension Snapshot.Frame {
+extension Node.Frame {
     init(cgRect: CGRect) {
         self.init(
             x: Int64(withNoOverflow: cgRect.origin.x),

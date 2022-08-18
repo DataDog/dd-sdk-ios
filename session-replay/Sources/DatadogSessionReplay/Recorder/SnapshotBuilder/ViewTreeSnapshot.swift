@@ -19,30 +19,31 @@ internal struct ViewTreeSnapshot: Equatable {
     let date: Date
 
     /// The snapshot of a root view.
-    let root: Snapshot
+    let root: Node
 
-    /// An individual node in the`ViewTreeSnapshot` tree structure.
+    /// An individual node in the`ViewTreeSnapshot` tree structure. It denotes a snapshot of an individual view
+    /// or views hierarchy.
     ///
-    /// The `Snapshot` can describe a view by nesting snapshots for each of its child views OR it can abstract
-    /// the view along with its childs by merging their information into single snapshot. This stands for the key difference
-    /// between the hierarchy of native views and hierarchy of snapshots - typically there is significantly less snapshots
+    /// The `Node` can describe a view by nesting nodes for each of its child views OR it can abstract
+    /// the view along with its childs by merging their information into single node. This stands for the key difference
+    /// between the hierarchy of native views and hierarchy of nodes - typically there is significantly less nodes
     /// than number of native views they describe.
-    internal struct Snapshot: Equatable {
+    internal struct Node: Equatable {
         internal struct Frame: Equatable {
-            /// The x position of this snapshot, in VTS's root view coordinate space.
+            /// The x position of this node, in VTS's root view coordinate space.
             let x: Int64
-            /// The y position of this snapshot, in VTS's root view coordinate space.
+            /// The y position of this node, in VTS's root view coordinate space.
             let y: Int64
-            /// The width of this snapshot.
+            /// The width of this node.
             let width: Int64
-            /// The height of this snapshot.
+            /// The height of this node.
             let height: Int64
         }
 
-        /// Snapshots of subviews.
-        let children: [Snapshot]
+        /// Nodes (snapshots) denoting subviews of this node's view.
+        let children: [Node]
 
-        /// The frame of this snapshot, in VTS's root view's coordinate space.
+        /// The frame of this node, in VTS's root view's coordinate space.
         let frame: Frame
     }
 }

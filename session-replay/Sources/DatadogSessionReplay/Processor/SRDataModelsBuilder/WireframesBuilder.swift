@@ -18,18 +18,18 @@ internal class WireframesBuilder {
     /// TODO: RUMM-2272 Add a stable way of managing wireframe IDs (so they can be reduced in incremental SR records)
     var dummyIDsGenerator: Int64 = 0
 
-    func createShapeWireframe(from snapshot: Snapshot) -> Wireframe {
+    func createShapeWireframe(from node: Node) -> Wireframe {
         dummyIDsGenerator += 1
 
-        // TODO: RUMM-2429 Record real appearance information in `Snapshot`
+        // TODO: RUMM-2429 Record real appearance information in `Node`
         let shape = SRShapeWireframe(
             border: .init(color: "#4900FF", width: 1),
-            height: snapshot.frame.height,
+            height: node.frame.height,
             id: dummyIDsGenerator,
             shapeStyle: nil,
-            width: snapshot.frame.width,
-            x: snapshot.frame.x,
-            y: snapshot.frame.y
+            width: node.frame.width,
+            x: node.frame.x,
+            y: node.frame.y
         )
 
         return .shapeWireframe(value: shape)

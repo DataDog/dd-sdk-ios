@@ -7,7 +7,7 @@
 import XCTest
 @testable import DatadogSessionReplay
 
-private typealias Frame = ViewTreeSnapshot.Snapshot.Frame
+private typealias Frame = ViewTreeSnapshot.Node.Frame
 
 class ViewTreeSnapshotBuilderTests: XCTestCase {
     private let builder = ViewTreeSnapshotBuilder()
