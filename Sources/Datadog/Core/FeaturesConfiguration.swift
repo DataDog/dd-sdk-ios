@@ -145,6 +145,7 @@ extension FeaturesConfiguration {
 
         let source = (configuration.additionalConfiguration[CrossPlatformAttributes.ddsource] as? String) ?? Datadog.Constants.ddsource
         let sdkVersion = (configuration.additionalConfiguration[CrossPlatformAttributes.sdkVersion] as? String) ?? __sdkVersion
+        let appVersion = (configuration.additionalConfiguration[CrossPlatformAttributes.version] as? String) ?? appContext.bundleVersion ?? "0.0.0"
 
         let debugOverride = appContext.processInfo.arguments.contains(Datadog.LaunchArguments.Debug)
         if debugOverride {
@@ -156,7 +157,7 @@ extension FeaturesConfiguration {
             site: configuration.datadogEndpoint,
             clientToken: try ifValid(clientToken: configuration.clientToken),
             applicationName: appContext.bundleName ?? appContext.bundleType.rawValue,
-            applicationVersion: appContext.bundleVersion ?? "0.0.0",
+            applicationVersion: appVersion,
             applicationBundleIdentifier: appContext.bundleIdentifier ?? "unknown",
             serviceName: configuration.serviceName ?? appContext.bundleIdentifier ?? "ios",
             environment: try ifValid(environment: configuration.environment),

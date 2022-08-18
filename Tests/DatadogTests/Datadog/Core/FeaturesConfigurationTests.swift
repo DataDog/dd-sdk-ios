@@ -38,6 +38,13 @@ class FeaturesConfigurationTests: XCTestCase {
             appContext: .mockWith(bundleVersion: nil)
         )
         XCTAssertEqual(configuration.common.applicationVersion, "0.0.0", "should fallback to '0.0.0'")
+
+        let randomVersion: String = .mockRandom()
+        configuration = try FeaturesConfiguration(
+            configuration: .mockWith(additionalConfiguration: [CrossPlatformAttributes.version: randomVersion]),
+            appContext: .mockAny()
+        )
+        XCTAssertEqual(configuration.common.applicationVersion, randomVersion, "Version can be customized through additional configuration")
     }
 
     func testApplicationBundleIdentifier() throws {

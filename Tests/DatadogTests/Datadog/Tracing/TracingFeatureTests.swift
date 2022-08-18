@@ -40,7 +40,6 @@ class TracingFeatureTests: XCTestCase {
             configuration: .mockWith(
                 clientToken: randomClientToken,
                 applicationName: randomApplicationName,
-                applicationVersion: randomApplicationVersion,
                 source: randomSource,
                 origin: randomOrigin,
                 sdkVersion: randomSDKVersion,
@@ -52,7 +51,8 @@ class TracingFeatureTests: XCTestCase {
                     osName: randomDeviceOSName,
                     osVersion: randomDeviceOSVersion
                 )
-            )
+            ),
+            appVersionProvider: .mockWith(version: randomApplicationVersion)
         )
 
         // Given
@@ -116,7 +116,8 @@ class TracingFeatureTests: XCTestCase {
                         uploadDelayChangeRate: 0
                     )
                 )
-            )
+            ),
+            appVersionProvider: .mockAny()
         )
 
         let featureConfiguration: TracingFeature.Configuration = .mockAny()

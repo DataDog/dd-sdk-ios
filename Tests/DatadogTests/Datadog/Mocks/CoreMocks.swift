@@ -1181,6 +1181,16 @@ class CarrierInfoProviderMock: CarrierInfoProviderType {
     }
 }
 
+extension AppVersionProvider: AnyMockable {
+    static func mockAny() -> AppVersionProvider {
+        return AppVersionProvider(configuration: .mockAny())
+    }
+
+    static func mockWith(version: String) -> AppVersionProvider {
+        return AppVersionProvider(configuration: .mockWith(applicationVersion: version))
+    }
+}
+
 extension CodableValue {
     static func mockAny() -> CodableValue {
         return CodableValue(String.mockAny())

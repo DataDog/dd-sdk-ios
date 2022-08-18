@@ -2,6 +2,8 @@
 
 ### Changes
 
+* [IMPROVEMENT] Enable cross-platform SDKs to change app `version`. See [#973][]
+
 # 1.12.0-beta2 / 10-08-2022
 
 ### Changes
@@ -412,6 +414,7 @@
 [#949]: https://github.com/DataDog/dd-sdk-ios/issues/949
 [#950]: https://github.com/DataDog/dd-sdk-ios/issues/950
 [#964]: https://github.com/DataDog/dd-sdk-ios/issues/964
+[#973]: https://github.com/DataDog/dd-sdk-ios/issues/973
 [@00FA9A]: https://github.com/00FA9A
 [@Britton-Earnin]: https://github.com/Britton-Earnin
 [@Hengyu]: https://github.com/Hengyu
