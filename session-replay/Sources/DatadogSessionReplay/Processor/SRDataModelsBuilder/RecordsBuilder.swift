@@ -6,7 +6,8 @@
 
 import Foundation
 
-internal typealias Record = SRMobileSegment.Records
+/// TODO: RUMM-2440 - configure models generator to emit root-level `SRRecord` instead of this
+internal typealias SRRecord = SRMobileSegment.Records
 
 /// Builds SR records from VTS snapshots to transport wireframes (see `WireframesBuilder`).
 /// There are several types of records in SR format, including Full Snapshot Record (FSR contains all wireframes
@@ -16,7 +17,7 @@ internal typealias Record = SRMobileSegment.Records
 /// Note: `RecordsBuilder` is used by `Processor` on a single background thread.
 internal class RecordsBuilder {
     /// Creates Meta Record, defining the viewport size of the player.
-    func createMetaRecord(from snapshot: ViewTreeSnapshot) -> Record {
+    func createMetaRecord(from snapshot: ViewTreeSnapshot) -> SRRecord {
         let record = SRMetaRecord(
             data: .init(
                 height: snapshot.root.frame.height,
@@ -30,7 +31,7 @@ internal class RecordsBuilder {
 
     /// Creates Focus Record - 🚧 it's required by the contract with the player, but doesn't bring anything for mobile.
     /// TODO: RUMM-2250 remove if we decide to not go with FRs.
-    func createFocusRecord(from snapshot: ViewTreeSnapshot) -> Record {
+    func createFocusRecord(from snapshot: ViewTreeSnapshot) -> SRRecord {
         let record = SRFocusRecord(
             data: SRFocusRecord.Data(hasFocus: true),
             timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
@@ -39,7 +40,7 @@ internal class RecordsBuilder {
     }
 
     /// Creates Full Snapshot Record - bringing self-contained description of a single frame of the replay.
-    func createFullSnapshotRecord(from snapshot: ViewTreeSnapshot, with wireframes: [Wireframe]) -> Record {
+    func createFullSnapshotRecord(from snapshot: ViewTreeSnapshot, with wireframes: [SRWireframe]) -> SRRecord {
         let record = SRMobileFullSnapshotRecord(
             data: .init(wireframes: wireframes),
             timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
