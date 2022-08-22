@@ -40,10 +40,9 @@ public extension WKUserContentController {
         }
 
         addDatadogMessageHandler(
+            core: core,
             allowedWebViewHosts: hosts,
             hostsSanitizer: HostsSanitizer(),
-            loggingFeature: core.v1.feature(LoggingFeature.self),
-            rumFeature: core.v1.feature(RUMFeature.self),
             context: context
         )
     }
@@ -65,10 +64,9 @@ public extension WKUserContentController {
     }
 
     internal func addDatadogMessageHandler(
+        core: DatadogCoreProtocol,
         allowedWebViewHosts: Set<String>,
         hostsSanitizer: HostsSanitizing,
-        loggingFeature: LoggingFeature?,
-        rumFeature: RUMFeature?,
         context: DatadogV1Context
     ) {
         guard !isTracking else {
@@ -80,27 +78,21 @@ public extension WKUserContentController {
 
         let globalRUMMonitor = Global.rum as? RUMMonitor
 
-        var logEventConsumer: DefaultWebLogEventConsumer? = nil
-        if let loggingFeature = loggingFeature {
-            logEventConsumer = DefaultWebLogEventConsumer(
-                userLogsWriter: loggingFeature.storage.writer,
-                dateCorrector: context.dateCorrector,
-                rumContextProvider: globalRUMMonitor?.contextProvider,
-                applicationVersion: context.version,
-                environment: context.env
-            )
-        }
+        let logEventConsumer = DefaultWebLogEventConsumer(
+            core: core,
+            dateCorrector: context.dateCorrector,
+            rumContextProvider: globalRUMMonitor?.contextProvider,
+            applicationVersion: context.version,
+            environment: context.env
+        )
 
-        var rumEventConsumer: DefaultWebRUMEventConsumer? = nil
-        if let rumFeature = rumFeature {
-            rumEventConsumer = DefaultWebRUMEventConsumer(
-                dataWriter: rumFeature.storage.writer,
-                dateCorrector: context.dateCorrector,
-                contextProvider: globalRUMMonitor?.contextProvider,
-                rumCommandSubscriber: globalRUMMonitor,
-                dateProvider: rumFeature.configuration.dateProvider
-            )
-        }
+        let rumEventConsumer = DefaultWebRUMEventConsumer(
+            core: core,
+            dateCorrector: context.dateCorrector,
+            contextProvider: globalRUMMonitor?.contextProvider,
+            rumCommandSubscriber: globalRUMMonitor,
+            dateProvider: context.dateProvider
+        )
 
         let messageHandler = DatadogMessageHandler(
             eventBridge: WebEventBridge(

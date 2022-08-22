@@ -93,4 +93,29 @@ class RUMMessageReceiverTests: XCTestCase {
         XCTAssertEqual(event.error.stack, "stack-test")
         XCTAssertEqual(event.error.source, .logger)
     }
+
+    func testReceiveEvent() throws {
+        // Given
+        struct Event: Encodable {
+            let test: String
+        }
+
+        let core = PassthroughCoreMock(
+            expectation: expectation(description: "Send Event"),
+            messageReceiver: RUMMessageReceiver()
+        )
+
+        // When
+        let sent = Event(test: .mockRandom())
+
+        core.send(
+            message: .event(target: "rum", event: .init(sent))
+        )
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let received: FeatureMessageAttributes.AnyEncodable = try XCTUnwrap(core.events().last, "It should send event")
+        try AssertEncodedRepresentationsEqual(received, sent)
+    }
 }

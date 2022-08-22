@@ -107,7 +107,7 @@ class CodableValueTests: XCTestCase {
             let decodedCodableValue = try decoder.decode(CodableValue.self, from: encodedCodableValue)
 
             // Then
-            try AssertEncodedRepresentationsEqual(value1: codableValue, value2: decodedCodableValue)
+            try AssertEncodedRepresentationsEqual(codableValue, decodedCodableValue)
         }
 
         try test(value: EncodingContainer(Bool.mockRandom()))
