@@ -40,8 +40,6 @@ public protocol FeatureScope {
 
 /// No-op implementation of `DatadogFeatureRegistry`.
 internal struct NOPDatadogCore: DatadogCoreProtocol {
-    /// no-op: call the fallback in sync
-    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
-        fallback()
-    }
+    /// no-op
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
 }
