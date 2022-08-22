@@ -48,10 +48,9 @@ class WKUserContentController_DatadogTests: XCTestCase {
         let initialUserScriptCount = controller.userScripts.count
 
         controller.addDatadogMessageHandler(
+            core: PassthroughCoreMock(),
             allowedWebViewHosts: ["datadoghq.com"],
             hostsSanitizer: mockSanitizer,
-            loggingFeature: nil,
-            rumFeature: nil,
             context: .mockAny()
         )
 
@@ -76,10 +75,9 @@ class WKUserContentController_DatadogTests: XCTestCase {
         let multipleTimes = 5
         (0..<multipleTimes).forEach { _ in
             controller.addDatadogMessageHandler(
+                core: PassthroughCoreMock(),
                 allowedWebViewHosts: ["datadoghq.com"],
                 hostsSanitizer: mockSanitizer,
-                loggingFeature: nil,
-                rumFeature: nil,
                 context: .mockAny()
             )
         }
@@ -130,10 +128,9 @@ class WKUserContentController_DatadogTests: XCTestCase {
 
         let controller = DDUserContentController()
         controller.addDatadogMessageHandler(
+            core: PassthroughCoreMock(),
             allowedWebViewHosts: ["datadoghq.com"],
             hostsSanitizer: MockHostsSanitizer(),
-            loggingFeature: nil,
-            rumFeature: nil,
             context: .mockAny()
         )
 
@@ -169,10 +166,9 @@ class WKUserContentController_DatadogTests: XCTestCase {
 
         let controller = DDUserContentController()
         controller.addDatadogMessageHandler(
+            core: core,
             allowedWebViewHosts: ["datadoghq.com"],
             hostsSanitizer: MockHostsSanitizer(),
-            loggingFeature: logging,
-            rumFeature: rum,
             context: core.context!
         )
 

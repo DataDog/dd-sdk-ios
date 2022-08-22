@@ -31,10 +31,10 @@ internal class WebEventBridge {
         static let eventTypeInternalLog = "internal_log"
     }
 
-    private let logEventConsumer: WebLogEventConsumer?
-    private let rumEventConsumer: WebRUMEventConsumer?
+    private let logEventConsumer: WebLogEventConsumer
+    private let rumEventConsumer: WebRUMEventConsumer
 
-    init(logEventConsumer: WebLogEventConsumer?, rumEventConsumer: WebRUMEventConsumer?) {
+    init(logEventConsumer: WebLogEventConsumer, rumEventConsumer: WebRUMEventConsumer) {
         self.logEventConsumer = logEventConsumer
         self.rumEventConsumer = rumEventConsumer
     }
@@ -51,22 +51,13 @@ internal class WebEventBridge {
             throw WebEventError.missingKey(key: Constants.eventKey)
         }
 
-        if eventType == Constants.eventTypeLog ||
-            eventType == Constants.eventTypeInternalLog {
-            if let consumer = logEventConsumer {
-                try consumer.consume(
-                    event: wrappedEvent,
-                    internalLog: (eventType == Constants.eventTypeInternalLog)
-                )
-            } else {
-                DD.logger.warn("A WebView log is lost because Logging is disabled in the SDK")
-            }
+        if eventType == Constants.eventTypeLog || eventType == Constants.eventTypeInternalLog {
+            try logEventConsumer.consume(
+                event: wrappedEvent,
+                internalLog: (eventType == Constants.eventTypeInternalLog)
+            )
         } else {
-            if let consumer = rumEventConsumer {
-                try consumer.consume(event: wrappedEvent)
-            } else {
-                DD.logger.warn("A WebView RUM event is lost because RUM is disabled in the SDK")
-           }
+            try rumEventConsumer.consume(event: wrappedEvent)
         }
     }
 

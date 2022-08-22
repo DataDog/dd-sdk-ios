@@ -8,7 +8,10 @@ import XCTest
 @testable import Datadog
 
 class WebLogEventConsumerTests: XCTestCase {
-    let mockUserLogsWriter = FileWriterMock()
+    let core = PassthroughCoreMock(
+        messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
+    )
+
     let mockDateCorrector = DateCorrectorMock()
     let mockContextProvider = RUMContextProviderMock(context: .mockWith(rumApplicationID: "123456"))
 
@@ -19,7 +22,7 @@ class WebLogEventConsumerTests: XCTestCase {
         let applicationVersion = String.mockRandom()
         let environment = String.mockRandom()
         let eventConsumer = DefaultWebLogEventConsumer(
-            userLogsWriter: mockUserLogsWriter,
+            core: core,
             dateCorrector: mockDateCorrector,
             rumContextProvider: mockContextProvider,
             applicationVersion: applicationVersion,
@@ -47,7 +50,7 @@ class WebLogEventConsumerTests: XCTestCase {
 
         try eventConsumer.consume(event: webLogEvent, internalLog: false)
 
-        let data = try JSONEncoder().encode(mockUserLogsWriter.events.first as? CodableValue)
+        let data = try JSONEncoder().encode(core.events.first as? FeatureMessageAttributes.AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
         AssertDictionariesEqual(writtenJSON, expectedWebLogEvent)
@@ -57,7 +60,7 @@ class WebLogEventConsumerTests: XCTestCase {
         let applicationVersion = String.mockRandom()
         let environment = String.mockRandom()
         let eventConsumer = DefaultWebLogEventConsumer(
-            userLogsWriter: mockUserLogsWriter,
+            core: core,
             dateCorrector: mockDateCorrector,
             rumContextProvider: nil,
             applicationVersion: applicationVersion,
@@ -77,7 +80,7 @@ class WebLogEventConsumerTests: XCTestCase {
 
         try eventConsumer.consume(event: webLogEvent, internalLog: false)
 
-        let data = try JSONEncoder().encode(mockUserLogsWriter.events.first as? CodableValue)
+        let data = try JSONEncoder().encode(core.events.first as? FeatureMessageAttributes.AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
         AssertDictionariesEqual(writtenJSON, expectedWebLogEvent)
