@@ -1120,9 +1120,7 @@ class RUMMonitorTests: XCTestCase {
 
         // Given
         Global.crashReporter = CrashReporter(
-            crashReportingFeature: crashReporting,
-            loggingFeature: nil,
-            rumFeature: rum,
+            core: core,
             context: .mockAny()
         )
         defer { Global.crashReporter = nil }

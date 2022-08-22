@@ -293,15 +293,9 @@ public class Datadog {
 
         // After everything is set up, if the Crash Reporting feature was enabled,
         // register crash reporter and send crash report if available:
-        if let crashReportingFeature = core.v1.feature(CrashReportingFeature.self) {
-            Global.crashReporter = CrashReporter(
-                crashReportingFeature: crashReportingFeature,
-                loggingFeature: logging,
-                rumFeature: rum,
-                context: core.v1Context
-            )
-
-            Global.crashReporter?.sendCrashReportIfFound()
+        if let reporter = CrashReporter(core: core, context: core.v1Context) {
+            Global.crashReporter = reporter
+            reporter.sendCrashReportIfFound()
         }
 
         deleteV1Folders(in: core)

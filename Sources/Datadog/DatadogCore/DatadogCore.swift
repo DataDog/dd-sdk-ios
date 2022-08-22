@@ -254,13 +254,12 @@ internal struct DatadogCoreFeatureScope: FeatureV1Scope {
     let contextProvider: DatadogContextProvider
     let storage: FeatureStorage
 
-    func eventWriteContext(_ block: @escaping (DatadogContext, Writer) throws -> Void) {
-        contextProvider.read { context in
-            do {
-                try block(context, storage.writer)
-            } catch {
-                DD.telemetry.error("Failed to execute feature scope", error: error)
-            }
+    func eventWriteContext(bypassConsent: Bool, _ block: (DatadogContext, Writer) throws -> Void) {
+        do {
+            let writer = bypassConsent ? storage.arbitraryAuthorizedWriter : storage.writer
+            try block(context, writer)
+        } catch {
+            DD.telemetry.error("Failed to execute feature scope", error: error)
         }
     }
 }
