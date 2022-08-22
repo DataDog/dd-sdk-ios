@@ -17,7 +17,7 @@ public struct FeatureMessageAttributes {
     /// an attribute.
     ///
     /// This *key-based* subscript returns the value for the given key if the key
-    /// with a value of type `T` is found in the attributes, or `nil`otherwise.
+    /// with a value of type `T` is found in the attributes, or `nil` otherwise.
     ///
     /// The following example creates a new `FeatureMessageAttributes` and
     /// prints the value of a key found in the attributes object (`"coral"`).

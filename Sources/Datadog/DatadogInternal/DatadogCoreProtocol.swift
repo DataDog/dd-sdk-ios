@@ -13,7 +13,7 @@ public internal(set) var defaultDatadogCore: DatadogCoreProtocol = NOPDatadogCor
 public protocol DatadogCoreProtocol {
     /// Sends a message on the bus shared by features registered in this core.
     ///
-    /// If the message could be be processed by any registered feature, the fallback closure
+    /// If the message could not be processed by any registered feature, the fallback closure
     /// will be invoked. Do not make any assumption on which thread the fallback is called.
     ///
     /// - Parameters:
