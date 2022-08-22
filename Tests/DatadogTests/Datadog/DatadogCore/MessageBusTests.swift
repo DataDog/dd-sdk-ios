@@ -32,7 +32,7 @@ class MessageBusTests: XCTestCase {
             switch message {
             case .custom(let key, let attributes):
                 XCTAssertEqual(key, "test")
-                XCTAssertEqual(attributes as? [String: String], ["key": "value"])
+                XCTAssertEqual(attributes["key"], "value")
             default:
                 XCTFail("wrong message case")
             }
@@ -62,6 +62,6 @@ class MessageBusTests: XCTestCase {
         // When
         core.send(message: .custom(key: "test", attributes: ["key": "value"]))
         // Then
-        waitForExpectations(timeout: 0)
+        waitForExpectations(timeout: 0.5)
     }
 }

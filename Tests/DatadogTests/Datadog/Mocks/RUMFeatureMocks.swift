@@ -21,7 +21,8 @@ extension RUMFeature {
     /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
     /// Use `RUMFeature.waitAndReturnRUMEventMatchers()` to inspect and assert recorded `RUMEvents`.
     static func mockByRecordingRUMEventMatchers(
-        featureConfiguration: FeaturesConfiguration.RUM = .mockAny()
+        featureConfiguration: FeaturesConfiguration.RUM = .mockAny(),
+        messageReceiver: FeatureMessageReceiver = RUMMessageReceiver()
     ) -> RUMFeature {
         // Mock storage with `InMemoryWriter`, used later for retrieving recorded events back:
         let interceptedStorage = FeatureStorage(
@@ -34,7 +35,7 @@ extension RUMFeature {
             storage: interceptedStorage,
             upload: .mockNoOp(),
             configuration: featureConfiguration,
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: messageReceiver
         )
     }
 

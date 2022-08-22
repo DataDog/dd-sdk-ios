@@ -21,10 +21,14 @@ import Foundation
     /// - Parameters:
     ///   - message: The Feature message
     ///   - core: The core from which the message is transmitted.
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol)
+    /// - Returns: Returns `true` if the message was processed by the receiver. `false` if it was
+    ///            ignored.
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool
 }
 
 /* public */ internal struct NOPFeatureMessageReceiver: FeatureMessageReceiver {
-    /// no-op
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) { }
+    /// no-op: returns `false`
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        return false
+    }
 }

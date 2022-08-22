@@ -11,7 +11,7 @@ public enum FeatureMessage {
     /// An error message.
     case error(
         message: String,
-        attributes: [String: Encodable]?
+        attributes: FeatureMessageAttributes
     )
 
     /// An encodable event that will be transmitted
@@ -25,6 +25,6 @@ public enum FeatureMessage {
     /// attributes.
     case custom(
         key: String,
-        attributes: [String: Encodable]?
+        attributes: FeatureMessageAttributes
     )
 }

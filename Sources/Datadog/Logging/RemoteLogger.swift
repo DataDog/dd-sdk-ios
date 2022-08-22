@@ -41,9 +41,6 @@ internal final class RemoteLogger: LoggerProtocol {
     /// Integration with RUM. It is used to correlate Logs with RUM events by injecting RUM context to `LogEvent`.
     /// Can be `nil` if the integration is disabled for this logger or if RUM feature is disabled.
     internal let rumContextIntegration: LoggingWithRUMContextIntegration?
-    /// Integration with RUM. It is used to send RUM errors for logs of high severity (`.error` and above).
-    /// Can be `nil` if RUM feature is disabled.
-    internal let rumErrorsIntegration: LoggingWithRUMErrorsIntegration?
     /// Integration with Tracing. It is used to correlate Logs with Spans by injecting `Span` context to `LogEvent`.
     /// Can be `nil` if the integration is disabled for this logger or if Tracing feature is disabled.
     internal let activeSpanIntegration: LoggingWithActiveSpanIntegration?
@@ -53,7 +50,6 @@ internal final class RemoteLogger: LoggerProtocol {
         configuration: Configuration,
         dateProvider: DateProvider,
         rumContextIntegration: LoggingWithRUMContextIntegration?,
-        rumErrorsIntegration: LoggingWithRUMErrorsIntegration?,
         activeSpanIntegration: LoggingWithActiveSpanIntegration?
     ) {
         self.core = core
@@ -70,7 +66,6 @@ internal final class RemoteLogger: LoggerProtocol {
             eventMapper: configuration.eventMapper
         )
         self.rumContextIntegration = rumContextIntegration
-        self.rumErrorsIntegration = rumErrorsIntegration
         self.activeSpanIntegration = activeSpanIntegration
     }
 
@@ -150,7 +145,16 @@ internal final class RemoteLogger: LoggerProtocol {
                 writer.write(value: log)
 
                 if log.status == .error || log.status == .critical {
-                    self.rumErrorsIntegration?.addError(for: log)
+                    self.core.send(
+                        message: .error(
+                            message: log.error?.message ?? log.message,
+                            attributes: [
+                                "type": log.error?.kind,
+                                "stack": log.error?.stack,
+                                "source": "logger"
+                            ]
+                        )
+                    )
                 }
             }
         }

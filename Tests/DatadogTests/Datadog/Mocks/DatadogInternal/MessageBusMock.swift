@@ -30,8 +30,9 @@ internal struct FeatureMessageReceiverMock: FeatureMessageReceiver {
         self.receiver = receiver
     }
 
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) {
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         receiver?(message)
         expectation?.fulfill()
+        return true
     }
 }

@@ -27,6 +27,12 @@ internal final class DatadogCore {
         target: .global(qos: .utility)
     )
 
+    /// The message bus GDC queue.
+    let messageBusQueue = DispatchQueue(
+        label: "com.datadoghq.ios-sdk-message-bus",
+        target: .global(qos: .utility)
+    )
+
     /// The system date provider.
     let dateProvider: DateProvider
 
@@ -132,10 +138,16 @@ internal final class DatadogCore {
 }
 
 extension DatadogCore: DatadogCoreProtocol {
-    // MARK: - V2 interface
+    /* public */ func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
+        messageBusQueue.async {
+            let receivers = self.messageBus.filter {
+                $0.receive(message: message, from: self)
+            }
 
-    /* public */ func send(message: FeatureMessage) {
-        messageBus.forEach { $0.receive(message: message, from: self) }
+            if receivers.isEmpty {
+                fallback()
+            }
+        }
     }
 }
 
@@ -146,10 +158,14 @@ extension DatadogCore: DatadogV1CoreProtocol {
         let key = String(describing: T.self)
         v1Features[key] = instance
 
-        // add/replace v1 feature to the message bus
-        messageBus = v1Features.values
+        let messageBus = self.v1Features.values
             .compactMap { $0 as? V1Feature }
             .map(\.messageReceiver)
+
+        messageBusQueue.async {
+            // add/replace v1 feature to the message bus
+            self.messageBus = messageBus
+        }
     }
 
     func feature<T>(_ type: T.Type) -> T? {

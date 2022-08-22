@@ -68,33 +68,3 @@ class RUMIntegrationsTests: XCTestCase {
         XCTAssertNil(integration.currentRUMContextAttributes)
     }
 }
-
-class RUMErrorsIntegrationTests: XCTestCase {
-    let integration = RUMErrorsIntegration()
-
-    func testGivenRUMMonitorRegistered_whenAddingErrorMessage_itSendsRUMErrorForCurrentView() throws {
-        let core = DatadogCoreMock()
-        defer { core.flush() }
-
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
-        core.register(feature: rum)
-
-        // given
-        Global.rum = RUMMonitor.initialize(in: core)
-        Global.rum.startView(viewController: mockView)
-        defer { Global.rum = DDNoopRUMMonitor() }
-
-        // when
-        integration.addError(with: "error message", type: "Error type", stack: "Foo.swift:10", source: .logger)
-
-        // then
-        let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 3) // [RUMView, RUMAction, RUMError] events sent
-        let rumErrorMatcher = rumEventMatchers.first { $0.model(isTypeOf: RUMErrorEvent.self) }
-        try XCTUnwrap(rumErrorMatcher).model(ofType: RUMErrorEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.error.message, "error message")
-            XCTAssertEqual(rumModel.error.type, "Error type")
-            XCTAssertEqual(rumModel.error.source, .logger)
-            XCTAssertEqual(rumModel.error.stack, "Foo.swift:10")
-        }
-    }
-}

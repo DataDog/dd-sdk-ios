@@ -96,7 +96,7 @@ public enum RUMErrorSource {
     case custom
 }
 
-internal enum RUMInternalErrorSource {
+internal enum RUMInternalErrorSource: String {
     case custom
     case source
     case network
