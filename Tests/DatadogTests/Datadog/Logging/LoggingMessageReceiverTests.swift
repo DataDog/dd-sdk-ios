@@ -173,4 +173,27 @@ class LoggingMessageReceiverTests: XCTestCase {
         let received: FeatureMessageAttributes.AnyEncodable = try XCTUnwrap(core.events().last, "It should send event")
         try AssertEncodedRepresentationsEqual(received, sent)
     }
+
+    func testReceiveCrashLog() throws {
+        // Given
+        let core = PassthroughCoreMock(
+            bypassConsentExpectation: expectation(description: "Send Event Bypass Consent"),
+            messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
+        )
+
+        // When
+        let sent: LogEvent = .mockRandom()
+
+        core.send(
+            message: .custom(key: "crash", attributes: [
+                "log": sent
+            ])
+        )
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let received: LogEvent = try XCTUnwrap(core.events().last, "It should send event")
+        try AssertEncodedRepresentationsEqual(received, sent)
+    }
 }

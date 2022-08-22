@@ -27,19 +27,27 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureV1Scope 
     /// is executed.
     internal var expectation: XCTestExpectation?
 
+    /// Test expectation that will be fullfilled when the `eventWriteContext` closure
+    /// is executed with `bypassConsent` parameter to `true`.
+    internal var bypassConsentExpectation: XCTestExpectation?
+
     /// Creates a Passthrough core mock.
     ///
     /// - Parameters:
     ///   - context: The testing context.
     ///   - expectation: The test exepection to fullfill when `eventWriteContext`
     ///                  is invoked.
+    ///   - bypassConsentExpectation: The test exepection to fullfill when `eventWriteContext`
+    ///                  is invoked with `bypassConsent` parameter to `true`..
     init(
         context: DatadogV1Context = .mockAny(),
         expectation: XCTestExpectation? = nil,
+        bypassConsentExpectation: XCTestExpectation? = nil,
         messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
     ) {
         self.context = context
         self.expectation = expectation
+        self.bypassConsentExpectation = bypassConsentExpectation
         self.messageReceiver = messageReceiver
     }
 
@@ -65,7 +73,7 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureV1Scope 
     /// Execute `block` with the current context and a `writer` to record events.
     ///
     /// - Parameter block: The block to execute.
-    func eventWriteContext(_ block: (DatadogV1Context, Writer) throws -> Void) {
+    func eventWriteContext(bypassConsent: Bool, _ block: (DatadogV1Context, Writer) throws -> Void) {
         guard let context = context else {
             return XCTFail("PassthroughCoreMock missing context")
         }
@@ -77,6 +85,10 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureV1Scope 
         }
 
         expectation?.fulfill()
+
+        if bypassConsent {
+            bypassConsentExpectation?.fulfill()
+        }
     }
 
     /// Recorded events from feature scopes.

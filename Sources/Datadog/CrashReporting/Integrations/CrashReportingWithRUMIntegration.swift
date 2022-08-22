@@ -27,29 +27,18 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         let realDateNow: Date
     }
 
-    /// The output for writing RUM events. It uses the authorized data folder and is synchronized with the eventual
-    /// authorized output working simultaneously in the RUM feature.
-    private let writer: Writer
     private let rumConfiguration: FeaturesConfiguration.RUM
-
+    private let core: DatadogCoreProtocol
     private let context: DatadogV1Context
 
     // MARK: - Initialization
 
-    init(rumFeature: RUMFeature, context: DatadogV1Context) {
-        self.init(
-            writer: rumFeature.storage.arbitraryAuthorizedWriter,
-            rumConfiguration: rumFeature.configuration,
-            context: context
-        )
-    }
-
     init(
-        writer: Writer,
+        core: DatadogCoreProtocol,
         rumConfiguration: FeaturesConfiguration.RUM,
         context: DatadogV1Context
     ) {
-        self.writer = writer
+        self.core = core
         self.rumConfiguration = rumConfiguration
         self.context = context
     }
@@ -98,7 +87,12 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             // To avoid inconsistency, we only send the RUM error.
             DD.logger.debug("Sending crash as RUM error.")
             let rumError = createRUMError(from: crashReport, and: lastRUMViewEvent, crashDate: crashTimings.realCrashDate)
-            writer.write(value: rumError)
+            core.send(
+                message: .custom(
+                    key: "crash",
+                    attributes: ["rum-error": rumError]
+                )
+            )
         }
     }
 
@@ -201,8 +195,16 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         DD.logger.debug("Updating RUM view with crash report.")
         let updatedRUMView = updateRUMViewWithNewError(rumView, crashDate: realCrashDate)
         let rumError = createRUMError(from: crashReport, and: updatedRUMView, crashDate: realCrashDate)
-        writer.write(value: rumError)
-        writer.write(value: updatedRUMView)
+
+        core.send(
+            message: .custom(
+                key: "crash",
+                attributes: [
+                    "rum-error": rumError,
+                    "rum-view": updatedRUMView
+                ]
+            )
+        )
     }
 
     // MARK: - Building RUM events

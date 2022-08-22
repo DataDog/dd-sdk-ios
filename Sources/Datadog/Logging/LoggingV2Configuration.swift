@@ -69,6 +69,8 @@ internal struct LoggingMessageReceiver: FeatureMessageReceiver {
         switch message {
         case .custom(let key, let attributes) where key == "log":
             return log(attributes: attributes, to: core)
+        case .custom(let key, let attributes) where key == "crash":
+            return crash(attributes: attributes, to: core)
         case .event(let target, let event) where target == "log":
             return write(event: event, to: core)
         default:
@@ -78,6 +80,20 @@ internal struct LoggingMessageReceiver: FeatureMessageReceiver {
 
     private func write(event: FeatureMessageAttributes.AnyEncodable, to core: DatadogCoreProtocol) -> Bool {
         core.v1.scope(for: LoggingFeature.self)?.eventWriteContext { _, writer in
+            writer.write(value: event)
+        }
+
+        return true
+    }
+
+    private func crash(attributes: FeatureMessageAttributes, to core: DatadogCoreProtocol) -> Bool {
+        guard let event = attributes["log", type: LogEvent.self] else {
+            return false
+        }
+
+        // crash reporting is considering the user consent from previous session, if an event reached
+        // the message bus it means that consent was granted and we can safely bypass current consent.
+        core.v1.scope(for: LoggingFeature.self)?.eventWriteContext(bypassConsent: true) { _, writer in
             writer.write(value: event)
         }
 
