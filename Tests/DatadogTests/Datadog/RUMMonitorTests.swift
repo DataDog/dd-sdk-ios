@@ -1138,7 +1138,7 @@ class RUMMonitorTests: XCTestCase {
         let currentCrashContext = try XCTUnwrap(Global.crashReporter?.crashContextProvider.currentCrashContext)
         let currentLastRUMViewEventSent = try XCTUnwrap(currentCrashContext.lastRUMViewEvent)
 
-        try AssertEncodedRepresentationsEqual(value1: currentLastRUMViewEventSent, value2: lastRUMViewEventSent)
+        try AssertEncodedRepresentationsEqual(currentLastRUMViewEventSent, lastRUMViewEventSent)
     }
 
     // MARK: - Thread safety

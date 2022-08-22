@@ -69,9 +69,19 @@ internal struct LoggingMessageReceiver: FeatureMessageReceiver {
         switch message {
         case .custom(let key, let attributes) where key == "log":
             return log(attributes: attributes, to: core)
+        case .event(let target, let event) where target == "log":
+            return write(event: event, to: core)
         default:
             return false
         }
+    }
+
+    private func write(event: FeatureMessageAttributes.AnyEncodable, to core: DatadogCoreProtocol) -> Bool {
+        core.v1.scope(for: LoggingFeature.self)?.eventWriteContext { _, writer in
+            writer.write(value: event)
+        }
+
+        return true
     }
 
     private func log(attributes: FeatureMessageAttributes, to core: DatadogCoreProtocol) -> Bool {

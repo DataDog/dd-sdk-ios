@@ -17,8 +17,8 @@ public enum FeatureMessage {
     /// An encodable event that will be transmitted
     /// as-is through a Feature.
     case event(
-        type: String,
-        encodable: Encodable
+        target: String,
+        event: FeatureMessageAttributes.AnyEncodable
     )
 
     /// A custom message with generic encodable
