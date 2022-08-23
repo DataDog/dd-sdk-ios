@@ -55,7 +55,7 @@ public class Tracer: OTTracer {
     internal let queue: DispatchQueue
     /// Integration with RUM Context. `nil` if disabled for this Tracer or if the RUM feature is disabled.
     internal let rumContextIntegration: TracingWithRUMContextIntegration?
-    /// Integration with Logging. `nil` if the Logging feature is disabled.
+    /// Integration with Logging.
     internal let loggingIntegration: TracingWithLoggingIntegration
 
     private let tracingUUIDGenerator: TracingUUIDGenerator
