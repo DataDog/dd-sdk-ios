@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal class DefaultWebLogEventConsumer: WebLogEventConsumer {
+internal class DefaultWebLogEventConsumer: WebEventConsumer {
     private struct Constants {
         static let logEventType = "log"
         static let internalLogEventType = "internal_log"
@@ -48,7 +48,7 @@ internal class DefaultWebLogEventConsumer: WebLogEventConsumer {
         self.environment = environment
     }
 
-    func consume(event: JSON, internalLog: Bool) throws {
+    func consume(event: JSON) throws {
         var mutableEvent = event
 
         if let existingTags = mutableEvent[Constants.ddTagsKey] as? String, !existingTags.isEmpty {

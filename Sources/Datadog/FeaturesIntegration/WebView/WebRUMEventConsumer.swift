@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal class DefaultWebRUMEventConsumer: WebRUMEventConsumer {
+internal class DefaultWebRUMEventConsumer: WebEventConsumer {
     private let core: DatadogCoreProtocol
     private let dateCorrector: DateCorrector
     private let contextProvider: RUMContextProvider?

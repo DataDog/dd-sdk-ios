@@ -48,7 +48,7 @@ class WebLogEventConsumerTests: XCTestCase {
             "view": ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"]
         ]
 
-        try eventConsumer.consume(event: webLogEvent, internalLog: false)
+        try eventConsumer.consume(event: webLogEvent)
 
         let data = try JSONEncoder().encode(core.events.first as? FeatureMessageAttributes.AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
@@ -78,7 +78,7 @@ class WebLogEventConsumerTests: XCTestCase {
         var expectedWebLogEvent: JSON = webLogEvent
         expectedWebLogEvent["ddtags"] = "version:\(applicationVersion),env:\(environment)"
 
-        try eventConsumer.consume(event: webLogEvent, internalLog: false)
+        try eventConsumer.consume(event: webLogEvent)
 
         let data = try JSONEncoder().encode(core.events.first as? FeatureMessageAttributes.AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
