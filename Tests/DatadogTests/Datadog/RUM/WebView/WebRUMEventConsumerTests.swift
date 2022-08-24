@@ -14,7 +14,7 @@ class WebRUMEventConsumerTests: XCTestCase {
     let mockCommandSubscriber = RUMCommandSubscriberMock()
     let mockDateProvider = RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC(), advancingBySeconds: 0.0)
 
-    func testWhenValidWebRUMEventPassed_itDecoratesAndPassesToWriter() throws {
+    func testWhenValidWebRUMEventPassed_itDecoratesAndPassesToCoreMessageBus() throws {
         let mockSessionID = UUID(uuidString: "e9796469-c2a1-43d6-b0f6-65c47d33cf5f")!
         mockContextProvider.context.sessionID = RUMUUID(rawValue: mockSessionID)
         mockDateCorrector.offset = 123
@@ -63,7 +63,7 @@ class WebRUMEventConsumerTests: XCTestCase {
         XCTAssertEqual(webViewCommand.time, .mockDecember15th2019At10AMUTC())
     }
 
-    func testWhenValidWebRUMEventPassedWithoutRUMContext_itPassesToWriter() throws {
+    func testWhenValidWebRUMEventPassedWithoutRUMContext_itPassesToCoreMessageBus() throws {
         let eventConsumer = DefaultWebRUMEventConsumer(
             core: core,
             dateCorrector: mockDateCorrector,
@@ -121,7 +121,7 @@ class WebRUMEventConsumerTests: XCTestCase {
         XCTAssertEqual(webViewCommand.time, .mockDecember15th2019At10AMUTC())
     }
 
-    func testWhenUnknownWebRUMEventPassed_itPassesToWriter() throws {
+    func testWhenUnknownWebRUMEventPassed_itPassesToCoreMessageBus() throws {
         let eventConsumer = DefaultWebRUMEventConsumer(
             core: core,
             dateCorrector: mockDateCorrector,
