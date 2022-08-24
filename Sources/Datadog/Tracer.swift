@@ -55,8 +55,8 @@ public class Tracer: OTTracer {
     internal let queue: DispatchQueue
     /// Integration with RUM Context. `nil` if disabled for this Tracer or if the RUM feature is disabled.
     internal let rumContextIntegration: TracingWithRUMContextIntegration?
-    /// Integration with Logging. `nil` if the Logging feature is disabled.
-    internal let loggingIntegration: TracingWithLoggingIntegration?
+    /// Integration with Logging.
+    internal let loggingIntegration: TracingWithLoggingIntegration
 
     private let tracingUUIDGenerator: TracingUUIDGenerator
 
@@ -91,7 +91,6 @@ public class Tracer: OTTracer {
                 tracingFeature: tracingFeature,
                 tracerConfiguration: configuration,
                 rumEnabled: core.v1.feature(RUMFeature.self) != nil,
-                loggingFeature: core.v1.feature(LoggingFeature.self),
                 context: context
             )
         } catch {
@@ -105,7 +104,6 @@ public class Tracer: OTTracer {
         tracingFeature: TracingFeature,
         tracerConfiguration: Configuration,
         rumEnabled: Bool,
-        loggingFeature: LoggingFeature?,
         context: DatadogV1Context
     ) {
         self.init(
@@ -114,14 +112,10 @@ public class Tracer: OTTracer {
             spanEventMapper: tracingFeature.configuration.spanEventMapper,
             tracingUUIDGenerator: tracingFeature.configuration.uuidGenerator,
             rumContextIntegration: (rumEnabled && tracerConfiguration.bundleWithRUM) ? TracingWithRUMContextIntegration() : nil,
-            loggingIntegration: loggingFeature.map {
-                TracingWithLoggingIntegration(
-                    core: core,
-                    context: context,
-                    tracerConfiguration: tracerConfiguration,
-                    loggingFeature: $0
-                )
-            }
+            loggingIntegration: TracingWithLoggingIntegration(
+                core: core,
+                tracerConfiguration: tracerConfiguration
+            )
         )
     }
 
@@ -131,7 +125,7 @@ public class Tracer: OTTracer {
         spanEventMapper: SpanEventMapper?,
         tracingUUIDGenerator: TracingUUIDGenerator,
         rumContextIntegration: TracingWithRUMContextIntegration?,
-        loggingIntegration: TracingWithLoggingIntegration?
+        loggingIntegration: TracingWithLoggingIntegration
     ) {
         self.core = core
         self.configuration = configuration

@@ -106,7 +106,7 @@ internal final class RemoteLogger: LoggerProtocol {
 
         // on user thread:
         let date = dateProvider.now
-        let threadName = getCurrentThreadName()
+        let threadName = Thread.current.dd.name
 
         // SDK context must be requested on the user thread to ensure that it provides values
         // that are up-to-date for the caller.

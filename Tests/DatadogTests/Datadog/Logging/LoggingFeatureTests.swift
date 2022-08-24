@@ -68,7 +68,7 @@ class LoggingFeatureTests: XCTestCase {
         // Given
         let featureConfiguration: LoggingFeature.Configuration = .mockWith(uploadURL: randomUploadURL)
         let feature: LoggingFeature = try core.create(
-            configuration: createLoggingConfiguration(intake: randomUploadURL),
+            configuration: createLoggingConfiguration(intake: randomUploadURL, logEventMapper: nil),
             featureSpecificConfiguration: featureConfiguration
         )
         defer { feature.flush() }
@@ -135,7 +135,7 @@ class LoggingFeatureTests: XCTestCase {
         // Given
         let featureConfiguration: LoggingFeature.Configuration = .mockAny()
         let feature: LoggingFeature = try core.create(
-            configuration: createLoggingConfiguration(intake: featureConfiguration.uploadURL),
+            configuration: createLoggingConfiguration(intake: featureConfiguration.uploadURL, logEventMapper: nil),
             featureSpecificConfiguration: featureConfiguration
         )
         defer { feature.flush() }

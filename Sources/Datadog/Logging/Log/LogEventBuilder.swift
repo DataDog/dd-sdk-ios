@@ -89,15 +89,6 @@ internal struct LogEventBuilder {
     }
 }
 
-/// Returns the name of current thread if available or the nature of thread otherwise: `"main" | "background"`.
-internal func getCurrentThreadName() -> String {
-    if let customName = Thread.current.name, !customName.isEmpty {
-        return customName
-    } else {
-        return Thread.isMainThread ? "main" : "background"
-    }
-}
-
 internal extension LogLevel {
     var asLogStatus: LogEvent.Status {
         switch self {

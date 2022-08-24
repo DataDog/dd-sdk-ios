@@ -917,7 +917,7 @@ class TracerTests: XCTestCase {
         Datadog.flushAndDeinitialize()
     }
 
-    func testGivenLoggingFeatureDisabled_whenSendingLogFromSpan_itPrintsWarning() {
+    func testGivenLoggingFeatureDisabled_whenSendingLogFromSpan_itPrintsWarning() throws {
         // given
         Datadog.initialize(
             appContext: .mockAny(),
@@ -926,6 +926,8 @@ class TracerTests: XCTestCase {
                 .enableLogging(false)
                 .build()
         )
+
+        let core = try XCTUnwrap(defaultDatadogCore as? DatadogCore)
 
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
@@ -936,6 +938,7 @@ class TracerTests: XCTestCase {
         span.log(fields: ["bar": "bizz"])
 
         // then
+        core.messageBusQueue.sync {} // wait synchronizing Feature message bus
         tracer.dd.queue.sync {} // wait synchronizing span's internal state
         XCTAssertEqual(dd.logger.warnLog?.message, "The log for span \"foo\" will not be send, because the Logging feature is disabled.")
 

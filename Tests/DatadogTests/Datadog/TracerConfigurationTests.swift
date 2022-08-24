@@ -69,37 +69,4 @@ class TracerConfigurationTests: XCTestCase {
         XCTAssertTrue(tracer.configuration.sendNetworkInfo)
         XCTAssertNil(tracer.rumContextIntegration)
     }
-
-    func testWhenLoggingFeatureIsEnabled_itUsesLogsIntegration() throws {
-        // When
-        core.register(feature: LoggingFeature.mockNoOp())
-
-        // Then
-        let tracer = Tracer.initialize(
-            configuration: .init(
-                serviceName: .mockRandom(),
-                sendNetworkInfo: .mockRandom(),
-                bundleWithRUM: .mockAny(),
-                globalTags: nil
-            ),
-            in: core
-        ).dd
-        let tracingLogBuilder = try XCTUnwrap(
-            tracer.loggingIntegration?.logBuilder,
-            "When Logging feature is enabled Tracer should use `loggingIntegration`."
-        )
-        XCTAssertEqual(tracingLogBuilder.service, tracer.configuration.serviceName)
-        XCTAssertEqual(tracingLogBuilder.loggerName, "trace")
-        XCTAssertEqual(tracingLogBuilder.sendNetworkInfo, tracer.configuration.sendNetworkInfo)
-        XCTAssertNil(tracingLogBuilder.eventMapper)
-    }
-
-    func testWhenLoggingFeatureIsNotEnabled_itDoesNotUseLogsIntegration() throws {
-        // When
-        XCTAssertNil(core.v1.feature(LoggingFeature.self))
-
-        // Then
-        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
-        XCTAssertNil(tracer.loggingIntegration)
-    }
 }
