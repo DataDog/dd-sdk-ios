@@ -782,6 +782,18 @@ extension UserInfoProvider {
     }
 }
 
+extension FeatureAttributesProvider {
+    static func mockAny() -> FeatureAttributesProvider {
+        return mockWith()
+    }
+
+    static func mockWith(attributes: [String: FeatureMessageAttributes] = [:]) -> FeatureAttributesProvider {
+        let provider = FeatureAttributesProvider()
+        provider.attributes = attributes
+        return provider
+    }
+}
+
 extension HTTPClient {
     static func mockAny() -> HTTPClient {
         return HTTPClient(session: URLSession())

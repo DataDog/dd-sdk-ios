@@ -182,6 +182,7 @@ public class Datadog {
         let carrierInfoProvider = CarrierInfoProvider()
         let launchTimeProvider = LaunchTimeProvider()
         let appStateListener = AppStateListener(dateProvider: dateProvider)
+        let featureAttributesProvider = FeatureAttributesProvider()
 
         // Set default `DatadogCore`:
         let core = DatadogCore(
@@ -201,7 +202,8 @@ public class Datadog {
                 carrierInfoProvider: carrierInfoProvider,
                 userInfoProvider: userInfoProvider,
                 appStateListener: appStateListener,
-                launchTimeProvider: launchTimeProvider
+                launchTimeProvider: launchTimeProvider,
+                featureAttributesProvider: featureAttributesProvider
             ),
             contextProvider: DatadogContextProvider(
                 configuration: configuration.common,

@@ -60,7 +60,7 @@ public class Tracer: OTTracer {
 
     private let tracingUUIDGenerator: TracingUUIDGenerator
 
-    internal let activeSpansPool = ActiveSpansPool()
+    private let activeSpansPool = ActiveSpansPool()
 
     // MARK: - Initialization
 
@@ -206,5 +206,24 @@ public class Tracer: OTTracer {
             tags: combinedTags
         )
         return span
+    }
+
+    internal func addSpan(span: DDSpan, activityReference: ActivityReference) {
+        activeSpansPool.addSpan(span: span, activityReference: activityReference)
+        updateCoreAttributes()
+    }
+
+    internal func removeSpan(activityReference: ActivityReference) {
+        activeSpansPool.removeSpan(activityReference: activityReference)
+        updateCoreAttributes()
+    }
+
+    private func updateCoreAttributes() {
+        let context = activeSpan?.context as? DDSpanContext
+
+        core.set(feature: "tracing", attributes: [
+            "dd.trace_id": context.map { "\($0.traceID.rawValue)" },
+            "dd.span_id": context.map { "\($0.spanID.rawValue)" }
+        ])
     }
 }

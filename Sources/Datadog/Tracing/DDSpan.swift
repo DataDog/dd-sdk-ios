@@ -97,7 +97,7 @@ internal class DDSpan: OTSpan {
     func setActive() -> OTSpan {
         activityReference = ActivityReference()
         if let activityReference = activityReference {
-            ddTracer.activeSpansPool.addSpan(span: self, activityReference: activityReference)
+            ddTracer.addSpan(span: self, activityReference: activityReference)
         }
         return self
     }
@@ -121,7 +121,7 @@ internal class DDSpan: OTSpan {
 
         if !isFinished {
             if let activity = activityReference {
-                ddTracer.activeSpansPool.removeSpan(activityReference: activity)
+                ddTracer.removeSpan(activityReference: activity)
             }
             sendSpan(finishTime: time)
         }

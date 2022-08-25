@@ -85,4 +85,7 @@ internal struct DatadogV1Context {
 
     /// Provides the information about application launch time.
     let launchTimeProvider: LaunchTimeProviderType
+
+    /// Feature attributes provider.
+    let featuresAttributesProvider: FeatureAttributesProvider
 }

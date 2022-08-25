@@ -38,6 +38,10 @@ internal final class DatadogCoreMock: Flushable {
 extension DatadogCoreMock: DatadogCoreProtocol {
     // MARK: V2 interface
 
+    func set(feature: String, attributes: FeatureMessageAttributes) {
+        context?.featuresAttributesProvider.attributes[feature] = attributes
+    }
+
     func send(message: FeatureMessage, else fallback: () -> Void) {
         let receivers = v1Features.values
             .compactMap { $0 as? V1Feature }
@@ -113,7 +117,8 @@ extension DatadogV1Context: AnyMockable {
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
         userInfoProvider: UserInfoProvider = .mockAny(),
         appStateListener: AppStateListening = AppStateListenerMock.mockAny(),
-        launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock.mockAny()
+        launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock.mockAny(),
+        featuresAttributesProvider: FeatureAttributesProvider = .mockAny()
     ) -> DatadogV1Context {
         DatadogV1Context(
             site: site,
@@ -134,7 +139,8 @@ extension DatadogV1Context: AnyMockable {
             carrierInfoProvider: carrierInfoProvider,
             userInfoProvider: userInfoProvider,
             appStateListener: appStateListener,
-            launchTimeProvider: launchTimeProvider
+            launchTimeProvider: launchTimeProvider,
+            featuresAttributesProvider: featuresAttributesProvider
         )
     }
 }
