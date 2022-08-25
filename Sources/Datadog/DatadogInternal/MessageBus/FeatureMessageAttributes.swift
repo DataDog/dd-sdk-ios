@@ -13,6 +13,19 @@ public struct FeatureMessageAttributes {
     /// The attributes dictionary.
     private var attributes: [String: Any]
 
+    /// Creates an instance initialized with the given key-value pairs.
+    public init(_ attributes: [String: Any?]) {
+        self.attributes = attributes.compactMapValues { $0 }
+    }
+
+    /// Returns all attributes where the value is of type `T`.
+    ///
+    /// - Parameter type: The requested value type.
+    /// - Returns: A dictionary of attribute where the value is of type `T`
+    public func all<T>(of type: T.Type = T.self) -> [String: T] {
+        attributes.compactMapValues { $0 as? T }
+    }
+
     /// Accesses the value associated with the given key for reading and writing
     /// an attribute.
     ///

@@ -8,6 +8,7 @@ import Foundation
 import XCTest
 
 @testable import Datadog
+import SwiftUI
 
 /// Passthrough core mocks feature-scope allowing recording events in **sync**.
 ///
@@ -66,6 +67,10 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureV1Scope 
     /// Always returns a feature-scope.
     func scope<T>(for featureType: T.Type) -> FeatureV1Scope? {
         self
+    }
+
+    func set(feature: String, attributes: FeatureMessageAttributes) {
+        context.featuresAttributes[feature] = attributes
     }
 
     func send(message: FeatureMessage, else fallback: () -> Void) {
