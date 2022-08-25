@@ -68,6 +68,10 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureV1Scope 
         self
     }
 
+    func set(feature: String, attributes: FeatureMessageAttributes) {
+        context.featuresAttributes[feature] = attributes
+    }
+
     func send(message: FeatureMessage, else fallback: () -> Void) {
         if !messageReceiver.receive(message: message, from: self) {
             fallback()

@@ -43,6 +43,10 @@ internal final class DatadogCoreMock: Flushable {
 extension DatadogCoreMock: DatadogCoreProtocol {
     // MARK: V2 interface
 
+    func set(feature: String, attributes: FeatureMessageAttributes) {
+        context.featuresAttributes[feature] = attributes
+    }
+
     func send(message: FeatureMessage, else fallback: () -> Void) {
         let receivers = v1Features.values
             .compactMap { $0 as? V1Feature }
@@ -61,7 +65,7 @@ extension DatadogCoreMock: DatadogV1CoreProtocol {
         let context: DatadogContext
         let writer: Writer
 
-        func eventWriteContext(_ block: @escaping (DatadogContext, Writer) throws -> Void) {
+        func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void) {
             XCTAssertNoThrow(try block(context, writer), "Encountered an error when executing `eventWriteContext`")
         }
     }

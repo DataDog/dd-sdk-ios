@@ -41,7 +41,7 @@ class LoggerBuilderTests: XCTestCase {
         XCTAssertEqual(remoteLogger.configuration.threshold, .debug)
         XCTAssertNil(remoteLogger.configuration.eventMapper)
         XCTAssertNil(remoteLogger.rumContextIntegration)
-        XCTAssertNil(remoteLogger.activeSpanIntegration)
+        XCTAssertTrue(remoteLogger.activeSpanIntegration)
     }
 
     func testDefaultLoggerWithRUMEnabled() throws {
@@ -60,10 +60,10 @@ class LoggerBuilderTests: XCTestCase {
         core.register(feature: tracing)
 
         let logger1 = Logger.builder.build(in: core)
-        XCTAssertNotNil((logger1.v2Logger as? RemoteLogger)?.activeSpanIntegration)
+        XCTAssertTrue(try XCTUnwrap(logger1.v2Logger as? RemoteLogger).activeSpanIntegration)
 
         let logger2 = Logger.builder.bundleWithTrace(false).build(in: core)
-        XCTAssertNil((logger2.v2Logger as? RemoteLogger)?.activeSpanIntegration)
+        XCTAssertFalse(try XCTUnwrap(logger2.v2Logger as? RemoteLogger).activeSpanIntegration)
     }
 
     func testCustomizedLogger() throws {
@@ -89,7 +89,7 @@ class LoggerBuilderTests: XCTestCase {
         XCTAssertEqual(remoteLogger.configuration.threshold, .error)
         XCTAssertNil(remoteLogger.configuration.eventMapper)
         XCTAssertNil(remoteLogger.rumContextIntegration)
-        XCTAssertNil(remoteLogger.activeSpanIntegration)
+        XCTAssertFalse(remoteLogger.activeSpanIntegration)
     }
 
     func testCombiningInternalLoggers() throws {

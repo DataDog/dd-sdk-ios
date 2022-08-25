@@ -40,15 +40,15 @@ internal final class RemoteLogger: LoggerProtocol {
     /// Can be `nil` if the integration is disabled for this logger or if RUM feature is disabled.
     internal let rumContextIntegration: LoggingWithRUMContextIntegration?
     /// Integration with Tracing. It is used to correlate Logs with Spans by injecting `Span` context to `LogEvent`.
-    /// Can be `nil` if the integration is disabled for this logger or if Tracing feature is disabled.
-    internal let activeSpanIntegration: LoggingWithActiveSpanIntegration?
+    /// Can be `false` if the integration is disabled for this logger or if Tracing feature is disabled.
+    internal let activeSpanIntegration: Bool
 
     init(
         core: DatadogCoreProtocol,
         configuration: Configuration,
         dateProvider: DateProvider,
         rumContextIntegration: LoggingWithRUMContextIntegration?,
-        activeSpanIntegration: LoggingWithActiveSpanIntegration?
+        activeSpanIntegration: Bool
     ) {
         self.core = core
         self.configuration = configuration
@@ -112,11 +112,14 @@ internal final class RemoteLogger: LoggerProtocol {
                 userAttributes = self.unsafeAttributes.merging(attributes ?? [:]) { $1 } // prefer message attributes
                 userTags = self.unsafeTags
 
+                let contextAttributes = context.featuresAttributes
+
                 if let rumContextAttributes = self.rumContextIntegration?.currentRUMContextAttributes {
                     internalAttributes.merge(rumContextAttributes) { $1 }
                 }
-                if let activeSpanAttributes = self.activeSpanIntegration?.activeSpanAttributes {
-                    internalAttributes.merge(activeSpanAttributes) { $1 }
+
+                if self.activeSpanIntegration, let attributes = contextAttributes["tracing"] {
+                    internalAttributes.merge(attributes.all()) { $1 }
                 }
             }
 

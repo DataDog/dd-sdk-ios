@@ -199,6 +199,7 @@ internal extension CrashReportingWithRUMIntegration {
     static func mockWith(
         core: DatadogCoreProtocol,
         applicationID: String = .mockAny(),
+        dateProvider: DateProvider = SystemDateProvider(),
         sessionSampler: Sampler = .mockKeepAll(),
         backgroundEventTrackingEnabled: Bool = true,
         uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
@@ -207,6 +208,7 @@ internal extension CrashReportingWithRUMIntegration {
         .init(
             core: core,
             applicationID: applicationID,
+            dateProvider: dateProvider,
             sessionSampler: sessionSampler,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
             uuidGenerator: uuidGenerator,

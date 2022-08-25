@@ -56,6 +56,8 @@ internal final class DatadogCore {
     /// `contextProvider`
     let userInfoPublisher = UserInfoPublisher()
 
+    let featureAttributesPublisher = FeatureAttributesPublisher()
+
     /// The message bus used to dispatch messages to registered features.
     private var messageBus: [FeatureMessageReceiver] = []
 
@@ -101,6 +103,7 @@ internal final class DatadogCore {
         self.v1Context = v1Context
         self.contextProvider = contextProvider
         self.contextProvider.subscribe(\.userInfo, to: userInfoPublisher)
+        self.contextProvider.subscribe(\.featuresAttributes, to: featureAttributesPublisher)
     }
 
     /// Sets current user information.
@@ -138,6 +141,10 @@ internal final class DatadogCore {
 }
 
 extension DatadogCore: DatadogCoreProtocol {
+    /* public */ func set(feature: String, attributes: FeatureMessageAttributes) {
+        featureAttributesPublisher.attributes[feature] = attributes
+    }
+
     /* public */ func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
         messageBusQueue.async {
             let receivers = self.messageBus.filter {
