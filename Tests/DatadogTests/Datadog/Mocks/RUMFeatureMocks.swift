@@ -75,18 +75,12 @@ extension RUMTelemetry {
 
     static func mockWith(
         core: DatadogCoreProtocol,
-        sdkVersion: String = .mockAny(),
-        applicationID: String = .mockAny(),
-        source: String = .mockAnySource(),
         dateProvider: DateProvider = SystemDateProvider(),
         dateCorrector: DateCorrector = DateCorrectorMock(),
         sampler: Sampler = .init(samplingRate: 100)
     ) -> Self {
         .init(
             in: core,
-            sdkVersion: sdkVersion,
-            applicationID: applicationID,
-            source: source,
             dateProvider: dateProvider,
             dateCorrector: dateCorrector,
             sampler: sampler

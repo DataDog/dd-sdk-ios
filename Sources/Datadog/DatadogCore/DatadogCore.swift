@@ -142,6 +142,8 @@ internal final class DatadogCore {
 
 extension DatadogCore: DatadogCoreProtocol {
     /* public */ func set(feature: String, attributes: FeatureMessageAttributes) {
+        // set `nil` for empty attributes
+        let attributes = attributes.isEmpty ? nil : attributes
         v1Context.featuresAttributesProvider.attributes[feature] = attributes
         featureAttributesPublisher.attributes[feature] = attributes
     }

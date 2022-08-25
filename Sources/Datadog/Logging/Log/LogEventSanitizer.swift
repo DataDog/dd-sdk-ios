@@ -14,9 +14,7 @@ internal struct LogEventSanitizer {
         static let reservedAttributeNames: Set<String> = [
             "host", "message", "status", "service", "source", "ddtags",
             "dd.trace_id", "dd.span_id",
-            RUMContextIntegration.Attributes.applicationID,
-            RUMContextIntegration.Attributes.sessionID,
-            RUMContextIntegration.Attributes.viewID,
+            "application_id", "session_id", "view.id",
         ]
         /// Allowed first character of a tag name (given as ASCII values ranging from lowercased `a` to `z`) .
         /// Tags with name starting with different character will be dropped.

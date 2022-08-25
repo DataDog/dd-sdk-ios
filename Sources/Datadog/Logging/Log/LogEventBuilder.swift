@@ -105,4 +105,7 @@ internal extension LogLevel {
 internal struct LogInternalAttributes {
     static let traceID = "dd.trace_id"
     static let spanID = "dd.span_id"
+    static let applicationID = "application_id"
+    static let sessionID = "session_id"
+    static let viewID = "view.id"
 }

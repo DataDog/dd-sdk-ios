@@ -225,9 +225,6 @@ public class Datadog {
         if let rumConfiguration = configuration.rum {
             DD.telemetry = RUMTelemetry(
                 in: core,
-                sdkVersion: configuration.common.sdkVersion,
-                applicationID: rumConfiguration.applicationID,
-                source: configuration.common.source,
                 dateProvider: dateProvider,
                 dateCorrector: dateCorrector,
                 sampler: rumConfiguration.telemetrySampler

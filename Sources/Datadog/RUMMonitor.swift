@@ -606,11 +606,37 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
 
             scope.eventWriteContext { context, writer in
                 _ = self.applicationScope.process(command: transformedCommand, context: context, writer: writer)
+                self.updateCoreAttributes()
             }
 
             if let debugging = self.debugging {
                 debugging.debug(applicationScope: self.applicationScope)
             }
+        }
+    }
+
+    /// Update Core Context with current RUM Context.
+    private func updateCoreAttributes() {
+        queue.async {
+            let applicationContext = self.applicationScope.context
+            let sessionContext = self.applicationScope.sessionScope?.context
+            let activeViewContext = self.applicationScope.sessionScope?.viewScopes.last?.context
+
+            let attributes: FeatureMessageAttributes = {
+                guard let sessionContext = sessionContext, sessionContext.sessionID != .nullUUID else {
+                    // if Session was sampled or not yet started
+                    return [:]
+                }
+
+                return [
+                    "application_id": applicationContext.rumApplicationID,
+                    "session_id": sessionContext.sessionID.rawValue.uuidString.lowercased(),
+                    "view.id": activeViewContext?.activeViewID?.rawValue.uuidString.lowercased(),
+                    "user_action.id": activeViewContext?.activeUserActionID?.rawValue.uuidString.lowercased()
+                ]
+            }()
+
+            self.core.set(feature: "rum", attributes: attributes)
         }
     }
 
