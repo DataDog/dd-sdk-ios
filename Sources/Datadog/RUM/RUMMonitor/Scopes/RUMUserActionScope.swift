@@ -26,6 +26,8 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     private(set) var name: String
     /// User Action attributes.
     private(set) var attributes: [AttributeKey: AttributeValue]
+    /// If this action is a rage action
+    private(set) var isRage: Bool
 
     /// This User Action's UUID.
     let actionUUID: RUMUUID
@@ -67,7 +69,8 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         startTime: Date,
         serverTimeOffset: TimeInterval,
         isContinuous: Bool,
-        onActionEventSent: @escaping () -> Void
+        onActionEventSent: @escaping () -> Void,
+        isRage: Bool = false
     ) {
         self.parent = parent
         self.dependencies = dependencies
@@ -80,6 +83,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         self.isContinuous = isContinuous
         self.lastActivityTime = startTime
         self.onActionEventSent = onActionEventSent
+        self.isRage = isRage
     }
 
     // MARK: - RUMContextProvider
@@ -93,14 +97,19 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     // MARK: - RUMScope
 
     func process(command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Bool {
-        if let expirationTime = possibleExpirationTime(currentTime: command.time), allResourcesCompletedLoading() {
-            sendActionEvent(completionTime: expirationTime, on: nil, context: context, writer: writer)
-            return false
-        }
+        // TODO - Handle time expiration gracefully now that delays have been introduced
+//        if let expirationTime = possibleExpirationTime(currentTime: command.time), allResourcesCompletedLoading() {
+//            sendActionEvent(completionTime: expirationTime, on: nil, context: context, writer: writer)
+//            return false
+//        }
 
         lastActivityTime = command.time
         switch command {
         case is RUMStopViewCommand:
+            sendActionEvent(completionTime: command.time, on: command, context: context, writer: writer)
+            return false
+        case let command as RUMAddUserActionCommand:
+            isRage = command.isRage
             sendActionEvent(completionTime: command.time, on: command, context: context, writer: writer)
             return false
         case let command as RUMStopUserActionCommand:
@@ -137,7 +146,11 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         if errorsCount > 0, actionType == .tap {
             frustrations = [.errorTap]
         }
-
+        
+        if isRage, actionType == .tap {
+            frustrations = (frustrations ?? []) + [.rageTap]
+        }
+        
         let actionEvent = RUMActionEvent(
             dd: .init(
                 action: nil,

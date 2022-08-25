@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import UIKit
 
 /// Command processed through the tree of `RUMScopes`.
 internal protocol RUMCommand {
@@ -298,6 +299,8 @@ internal struct RUMStopUserActionCommand: RUMUserActionCommand {
 internal struct RUMAddUserActionCommand: RUMUserActionCommand {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
+    var isRage = false
+    var targetView : UIView? = nil // Most likely target for this action
     let canStartBackgroundView = true // yes, we want to track actions in "Background" view (e.g. it makes sense for custom actions)
     let canStartApplicationLaunchView = true // yes, we want to track actions in "ApplicationLaunch" view (e.g. it makes sense for custom actions)
     let isUserInteraction = true // a user action definitely is a User Interacgion

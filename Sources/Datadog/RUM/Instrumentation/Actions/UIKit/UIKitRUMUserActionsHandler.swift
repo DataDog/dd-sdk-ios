@@ -15,6 +15,7 @@ internal protocol UIEventCommandFactory {
 }
 
 internal class UIKitRUMUserActionsHandler: UIEventHandler {
+    let rageActionManager = RageTapManager()
     let factory: UIEventCommandFactory
 
     convenience init(dateProvider: DateProvider, predicate: UITouchRUMUserActionsPredicate) {
@@ -37,6 +38,7 @@ internal class UIKitRUMUserActionsHandler: UIEventHandler {
 
     func publish(to subscriber: RUMCommandSubscriber) {
         self.subscriber = subscriber
+        rageActionManager.subscriber = subscriber
     }
 
     func notify_sendEvent(application: UIApplication, event: UIEvent) {
@@ -53,8 +55,10 @@ internal class UIKitRUMUserActionsHandler: UIEventHandler {
             )
             return
         }
-
-        subscriber.process(command: command)
+        
+        if !rageActionManager.processActionCommand(command: command, event: event){
+            subscriber.process(command: command)
+        }
     }
 }
 
@@ -112,6 +116,7 @@ internal struct UITouchCommandFactory: UIEventCommandFactory {
         return RUMAddUserActionCommand(
             time: dateProvider.now,
             attributes: action.attributes,
+            targetView: targetView,
             actionType: .tap,
             name: action.name
         )
