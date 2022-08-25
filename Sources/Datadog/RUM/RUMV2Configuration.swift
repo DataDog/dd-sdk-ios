@@ -70,9 +70,19 @@ internal struct RUMMessageReceiver: FeatureMessageReceiver {
         switch message {
         case .error(let message, let attributes):
             return addError(message: message, attributes: attributes)
+        case .event(let target, let event) where target == "rum":
+            return write(event: event, to: core)
         default:
             return false
         }
+    }
+
+    private func write(event: FeatureMessageAttributes.AnyEncodable, to core: DatadogCoreProtocol) -> Bool {
+        core.v1.scope(for: RUMFeature.self)?.eventWriteContext { _, writer in
+            writer.write(value: event)
+        }
+
+        return true
     }
 
     /// Adds RUM Error with given message and stack to current RUM View.

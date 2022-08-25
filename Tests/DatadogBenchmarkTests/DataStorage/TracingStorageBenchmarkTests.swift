@@ -24,7 +24,6 @@ class TracingStorageBenchmarkTests: XCTestCase {
             featureName: "tracing",
             queue: queue,
             directories: .init(
-                deprecated: [],
                 unauthorized: directory,
                 authorized: directory
             ),

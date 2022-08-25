@@ -24,7 +24,6 @@ class LoggingStorageBenchmarkTests: XCTestCase {
             featureName: "logging",
             queue: queue,
             directories: .init(
-                deprecated: [],
                 unauthorized: directory,
                 authorized: directory
             ),

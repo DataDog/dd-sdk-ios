@@ -43,7 +43,7 @@ class LoggingMessageReceiverTests: XCTestCase {
             messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
         )
 
-        // Given
+        // When
         core.send(
             message: .custom(
                 key: "log",
@@ -81,7 +81,7 @@ class LoggingMessageReceiverTests: XCTestCase {
             messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
         )
 
-        // Given
+        // When
         core.send(
             message: .custom(
                 key: "log",
@@ -147,5 +147,30 @@ class LoggingMessageReceiverTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
         XCTAssertTrue(core.events.isEmpty)
+    }
+
+    func testReceiveEvent() throws {
+        // Given
+        struct Event: Encodable {
+            let test: String
+        }
+
+        let core = PassthroughCoreMock(
+            expectation: expectation(description: "Send Event"),
+            messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
+        )
+
+        // When
+        let sent = Event(test: .mockRandom())
+
+        core.send(
+            message: .event(target: "log", event: .init(sent))
+        )
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let received: FeatureMessageAttributes.AnyEncodable = try XCTUnwrap(core.events().last, "It should send event")
+        try AssertEncodedRepresentationsEqual(received, sent)
     }
 }
