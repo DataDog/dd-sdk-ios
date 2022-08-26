@@ -26,10 +26,10 @@ internal class WebEventBridge {
         static let eventTypeLog = "log"
     }
 
-    private let logEventConsumer: WebEventConsumer
-    private let rumEventConsumer: WebEventConsumer
+    private let logEventConsumer: WebEventConsumer?
+    private let rumEventConsumer: WebEventConsumer?
 
-    init(logEventConsumer: WebEventConsumer, rumEventConsumer: WebEventConsumer) {
+    init(logEventConsumer: WebEventConsumer?, rumEventConsumer: WebEventConsumer?) {
         self.logEventConsumer = logEventConsumer
         self.rumEventConsumer = rumEventConsumer
     }
@@ -47,9 +47,9 @@ internal class WebEventBridge {
         }
 
         if eventType == Constants.eventTypeLog {
-            try logEventConsumer.consume(event: wrappedEvent)
+            try logEventConsumer?.consume(event: wrappedEvent)
         } else {
-            try rumEventConsumer.consume(event: wrappedEvent)
+            try rumEventConsumer?.consume(event: wrappedEvent)
         }
     }
 
