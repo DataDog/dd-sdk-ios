@@ -194,3 +194,23 @@ internal extension DDCrashReport.Meta {
         )
     }
 }
+
+internal extension CrashReportingWithRUMIntegration {
+    static func mockWith(
+        core: DatadogCoreProtocol,
+        applicationID: String = .mockAny(),
+        sessionSampler: Sampler = .mockKeepAll(),
+        backgroundEventTrackingEnabled: Bool = true,
+        uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
+        context: DatadogV1Context = .mockAny()
+    ) -> Self {
+        .init(
+            core: core,
+            applicationID: applicationID,
+            sessionSampler: sessionSampler,
+            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
+            uuidGenerator: uuidGenerator,
+            context: context
+        )
+    }
+}
