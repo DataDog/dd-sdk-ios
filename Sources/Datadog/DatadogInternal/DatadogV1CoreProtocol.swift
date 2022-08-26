@@ -61,7 +61,7 @@ internal protocol FeatureV1Scope {
     ///                    Default is `false`, setting `true` must still respect user's consent for
     ///                    collecting information.
     ///   - block: The block to execute.
-    func eventWriteContext(bypassConsent: Bool, _ block: (DatadogV1Context, Writer) throws -> Void)
+    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void)
 }
 
 /// Feature scope in v1 provide a context and a writer to build a record event.
@@ -72,7 +72,7 @@ extension FeatureV1Scope {
     /// for the Feature to build and record events.
     ///
     /// - Parameter block: The block to execute.
-    func eventWriteContext(_ block: (DatadogContext, Writer) throws -> Void) {
+    func eventWriteContext(_ block: @escaping (DatadogContext, Writer) throws -> Void) {
         self.eventWriteContext(bypassConsent: false, block)
     }
 }

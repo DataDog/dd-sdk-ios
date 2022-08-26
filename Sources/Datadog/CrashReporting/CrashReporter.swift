@@ -30,14 +30,22 @@ internal class CrashReporter {
         let loggingOrRUMIntegration: CrashReportingIntegration?
 
         // If RUM rum is enabled prefer it for sending crash reports, otherwise use Logging feature.
-        if let rumFeature = core.v1.feature(RUMFeature.self) {
+        if let rum = core.v1.feature(RUMFeature.self) {
             loggingOrRUMIntegration = CrashReportingWithRUMIntegration(
                 core: core,
-                rumConfiguration: rumFeature.configuration,
+                applicationID: rum.configuration.applicationID,
+                dateProvider: rum.configuration.dateProvider,
+                sessionSampler: rum.configuration.sessionSampler,
+                backgroundEventTrackingEnabled: rum.configuration.backgroundEventTrackingEnabled,
+                uuidGenerator: rum.configuration.uuidGenerator,
                 context: context
             )
-        } else if core.v1.feature(LoggingFeature.self) != nil {
-            loggingOrRUMIntegration = CrashReportingWithLoggingIntegration(core: core, context: context)
+        } else if let logging = core.v1.feature(LoggingFeature.self) {
+            loggingOrRUMIntegration = CrashReportingWithLoggingIntegration(
+                core: core,
+                context: context,
+                dateProvider: logging.configuration.dateProvider
+            )
         } else {
             loggingOrRUMIntegration = nil
         }

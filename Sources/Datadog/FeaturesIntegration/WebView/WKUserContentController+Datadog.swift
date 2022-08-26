@@ -78,21 +78,28 @@ public extension WKUserContentController {
 
         let globalRUMMonitor = Global.rum as? RUMMonitor
 
-        let logEventConsumer = DefaultWebLogEventConsumer(
-            core: core,
-            dateCorrector: context.dateCorrector,
-            rumContextProvider: globalRUMMonitor?.contextProvider,
-            applicationVersion: context.version,
-            environment: context.env
-        )
+        var logEventConsumer: WebEventConsumer?
+        var rumEventConsumer: WebEventConsumer?
 
-        let rumEventConsumer = DefaultWebRUMEventConsumer(
-            core: core,
-            dateCorrector: context.dateCorrector,
-            contextProvider: globalRUMMonitor?.contextProvider,
-            rumCommandSubscriber: globalRUMMonitor,
-            dateProvider: context.dateProvider
-        )
+        if core.v1.feature(LoggingFeature.self) != nil {
+            logEventConsumer = DefaultWebLogEventConsumer(
+                core: core,
+                dateCorrector: context.dateCorrector,
+                rumContextProvider: globalRUMMonitor?.contextProvider,
+                applicationVersion: context.version,
+                environment: context.env
+            )
+        }
+
+        if let rum = core.v1.feature(RUMFeature.self) {
+            rumEventConsumer = DefaultWebRUMEventConsumer(
+                core: core,
+                dateCorrector: context.dateCorrector,
+                contextProvider: globalRUMMonitor?.contextProvider,
+                rumCommandSubscriber: globalRUMMonitor,
+                dateProvider: rum.configuration.dateProvider
+            )
+        }
 
         let messageHandler = DatadogMessageHandler(
             eventBridge: WebEventBridge(

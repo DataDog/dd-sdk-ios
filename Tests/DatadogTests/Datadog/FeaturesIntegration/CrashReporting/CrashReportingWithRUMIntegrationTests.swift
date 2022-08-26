@@ -26,13 +26,11 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             lastRUMViewEvent: activeRUMView // means there was a RUM session and it was sampled
         )
 
-        let integration = CrashReportingWithRUMIntegration(
+        let integration: CrashReportingWithRUMIntegration = .mockWith(
             core: core,
-            rumConfiguration: .mockWith(
-                sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
-                backgroundEventTrackingEnabled: .mockRandom(), // no matter BET
-                dateProvider: RelativeDateProvider(using: currentDate)
-            ),
+            sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
+            backgroundEventTrackingEnabled: .mockRandom(), // no matter BET
+            dateProvider: RelativeDateProvider(using: currentDate)
             context: .mockWith(
                 dateCorrector: DateCorrectorMock(offset: 0)
             )
@@ -61,14 +59,11 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             lastRUMViewEvent: activeRUMView // means there was a RUM session and it was sampled
         )
 
-        let integration = CrashReportingWithRUMIntegration(
+        let integration: CrashReportingWithRUMIntegration = .mockWith(
             core: core,
-            rumConfiguration: .mockWith(
-                sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
-                backgroundEventTrackingEnabled: .mockRandom(), // no matter BET
-                dateProvider: RelativeDateProvider(using: currentDate)
-            ),
-            context: .mockAny()
+            sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
+            backgroundEventTrackingEnabled: .mockRandom(), // no matter BET
+            dateProvider: RelativeDateProvider(using: currentDate)
         )
 
         // When
@@ -92,13 +87,11 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             lastIsAppInForeground: false // app in background
         )
 
-        let integration = CrashReportingWithRUMIntegration(
+        let integration: CrashReportingWithRUMIntegration = .mockWith(
             core: core,
-            rumConfiguration: .mockWith(
-                sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
-                backgroundEventTrackingEnabled: true, // BET enabled
-                dateProvider: RelativeDateProvider(using: currentDate)
-            ),
+            sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
+            backgroundEventTrackingEnabled: true, // BET enabled
+            dateProvider: RelativeDateProvider(using: currentDate),
             context: .mockWith(
                 dateCorrector: DateCorrectorMock(offset: 0)
             )
@@ -126,13 +119,10 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             lastIsAppInForeground: .mockRandom() // no matter if crashed in foreground or in background
         )
 
-        let integration = CrashReportingWithRUMIntegration(
+        let integration: CrashReportingWithRUMIntegration = .mockWith(
             core: core,
-            rumConfiguration: .mockWith(
-                sessionSampler: .mockKeepAll(),
-                backgroundEventTrackingEnabled: true,
-                dateProvider: RelativeDateProvider(using: currentDate)
-            ),
+            backgroundEventTrackingEnabled: true,
+            dateProvider: RelativeDateProvider(using: currentDate),
             context: .mockWith(
                 dateCorrector: DateCorrectorMock(offset: 0)
             )
@@ -155,13 +145,11 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             lastRUMViewEvent: Bool.random() ? .mockRandom() : nil // no matter if in RUM session or not
         )
 
-        let integration = CrashReportingWithRUMIntegration(
+        let integration: CrashReportingWithRUMIntegration = .mockWith(
             core: core,
-            rumConfiguration: .mockWith(
-                sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling
-                backgroundEventTrackingEnabled: .mockRandom(), // no matter BET
-                dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
-            ),
+            sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling
+            backgroundEventTrackingEnabled: .mockRandom(), // no matter BET
+            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
             context: .mockWith(
                 dateCorrector: DateCorrectorMock()
             )
@@ -187,13 +175,11 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             lastIsAppInForeground: .mockRandom() // no matter if crashed in foreground or in background
         )
 
-        let integration = CrashReportingWithRUMIntegration(
+        let integration: CrashReportingWithRUMIntegration = .mockWith(
             core: core,
-            rumConfiguration: .mockWith(
-                sessionSampler: .mockRejectAll(), // no sampling (no session should be sent)
-                backgroundEventTrackingEnabled: true,
-                dateProvider: RelativeDateProvider(using: currentDate)
-            ),
+            sessionSampler: .mockRejectAll(), // no sampling (no session should be sent)
+            backgroundEventTrackingEnabled: true,
+            dateProvider: RelativeDateProvider(using: currentDate),
             context: .mockAny()
         )
 
@@ -216,13 +202,10 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
         )
 
         let dateCorrectionOffset: TimeInterval = .mockRandom()
-        let integration = CrashReportingWithRUMIntegration(
+        let integration: CrashReportingWithRUMIntegration = .mockWith(
             core: core,
-            rumConfiguration: .mockWith(
-                sessionSampler: .mockKeepAll(),
-                backgroundEventTrackingEnabled: false, // BET disabled
-                dateProvider: RelativeDateProvider(using: crashDate)
-            ),
+            backgroundEventTrackingEnabled: false, // BET disabled
+            dateProvider: RelativeDateProvider(using: crashDate),
             context: .mockWith(
                 dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
             )
@@ -252,13 +235,11 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             lastIsAppInForeground: .mockRandom() // no matter if crashed in foreground or in background
         )
 
-        let integration = CrashReportingWithRUMIntegration(
+        let integration: CrashReportingWithRUMIntegration = .mockWith(
             core: core,
-            rumConfiguration: .mockWith(
-                sessionSampler: .mockRandom(), // no matter current session sampling
-                backgroundEventTrackingEnabled: .mockRandom(),
-                dateProvider: RelativeDateProvider(using: currentDate)
-            ),
+            sessionSampler: .mockRandom(), // no matter current session sampling
+            backgroundEventTrackingEnabled: .mockRandom(),
+            dateProvider: RelativeDateProvider(using: currentDate)
             context: .mockAny()
         )
 
@@ -284,13 +265,11 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
 
         // When
         let dateCorrectionOffset: TimeInterval = .mockRandom()
-        let integration = CrashReportingWithRUMIntegration(
+        let integration: CrashReportingWithRUMIntegration = .mockWith(
             core: core,
-            rumConfiguration: .mockWith(
-                sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
-                backgroundEventTrackingEnabled: .mockRandom(), // no matter BET
-                dateProvider: RelativeDateProvider(using: crashDate)
-            ),
+            sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
+            backgroundEventTrackingEnabled: .mockRandom(), // no matter BET
+            dateProvider: RelativeDateProvider(using: crashDate),
             context: .mockWith(
                 dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
             )
@@ -376,15 +355,13 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
 
         // When
         let dateCorrectionOffset: TimeInterval = .mockRandom(min: 1, max: 5)
-        let integration = CrashReportingWithRUMIntegration(
+        let integration: CrashReportingWithRUMIntegration = .mockWith(
             core: core,
-            rumConfiguration: .mockWith(
-                sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
-                backgroundEventTrackingEnabled: .mockRandom(), // no matter BET
-                dateProvider: RelativeDateProvider(
-                    using: crashDate.addingTimeInterval(
-                        .mockRandom(min: 10, max: 2 * CrashReportingWithRUMIntegration.Constants.viewEventAvailabilityThreshold) // simulate restarting app from 10s to 8h later
-                    )
+            sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
+            backgroundEventTrackingEnabled: .mockRandom(), // no matter BET
+            dateProvider: RelativeDateProvider(
+                using: crashDate.addingTimeInterval(
+                    .mockRandom(min: 10, max: 2 * CrashReportingWithRUMIntegration.Constants.viewEventAvailabilityThreshold) // simulate restarting app from 10s to 8h later
                 )
             ),
             context: .mockWith(
@@ -469,14 +446,12 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             )
 
             let dateCorrectionOffset: TimeInterval = .mockRandom()
-            let integration = CrashReportingWithRUMIntegration(
+            let integration: CrashReportingWithRUMIntegration = .mockWith(
                 core: core,
-                rumConfiguration: .mockWith(
-                    applicationID: randomRUMAppID,
-                    sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled),
-                    backgroundEventTrackingEnabled: backgroundEventsTrackingEnabled,
-                    dateProvider: RelativeDateProvider(using: crashDate)
-                ),
+                applicationID: randomRUMAppID,
+                sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
+                backgroundEventTrackingEnabled: backgroundEventsTrackingEnabled,
+                dateProvider: RelativeDateProvider(using: crashDate),
                 context: .mockWith(
                     source: randomSource,
                     dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
@@ -603,14 +578,11 @@ class CrashReportingWithRUMIntegrationTests: XCTestCase {
             )
 
             let dateCorrectionOffset: TimeInterval = .mockRandom()
-            let integration = CrashReportingWithRUMIntegration(
+            let integration: CrashReportingWithRUMIntegration = .mockWith(
                 core: core,
-                rumConfiguration: .mockWith(
-                    applicationID: randomRUMAppID,
-                    sessionSampler: .mockKeepAll(),
-                    backgroundEventTrackingEnabled: backgroundEventsTrackingEnabled,
-                    dateProvider: RelativeDateProvider(using: crashDate)
-                ),
+                applicationID: randomRUMAppID,
+                backgroundEventTrackingEnabled: backgroundEventsTrackingEnabled,
+                dateProvider: RelativeDateProvider(using: crashDate),
                 context: .mockWith(
                     dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
                 )
