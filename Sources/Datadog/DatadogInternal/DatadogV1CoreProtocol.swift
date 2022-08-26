@@ -52,8 +52,8 @@ internal protocol FeatureV1Scope {
     /// The Feature scope provides the current Datadog context and event writer
     /// for the Feature to build and record events.
     ///
-    /// A feature has the ability to bypass the current user consent for data collection. The `bypassConsent`
-    /// must be set to `true` only if the feature is already aware of the user's consent for the event it is about
+    /// A Feature has the ability to bypass the current user consent for data collection. The `bypassConsent`
+    /// must be set to `true` only if the Feature is already aware of the user's consent for the event it is about
     /// to write.
     ///
     /// - Parameters:
