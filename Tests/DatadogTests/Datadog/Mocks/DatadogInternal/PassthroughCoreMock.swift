@@ -65,15 +65,15 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureV1Scope 
     /// Execute `block` with the current context and a `writer` to record events.
     ///
     /// - Parameter block: The block to execute.
-    func eventWriteContext(_ block: (DatadogV1Context, Writer) throws -> Void) {
+    func eventWriteContext(_ block: (DatadogContext, Writer) throws -> Void) {
         guard let context = context else {
             return XCTFail("PassthroughCoreMock missing context")
         }
 
         do {
-           try block(context, writer)
+            try block(.init(context), writer)
         } catch let error {
-           XCTFail("Encountered an error when executing `eventWriteContext`: \(error)")
+            XCTFail("Encountered an error when executing `eventWriteContext`: \(error)")
         }
 
         expectation?.fulfill()

@@ -32,8 +32,7 @@ class RUMInternalProxyTests: XCTestCase {
             core: core,
             dependencies: RUMScopeDependencies(
                 rumFeature: rumFeature,
-                crashReportingFeature: crashReportingFeature,
-                context: v1Context
+                crashReportingFeature: crashReportingFeature
             ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
             dateProvider: v1Context.dateProvider
         )

@@ -98,7 +98,7 @@ public extension WKUserContentController {
                 dateCorrector: context.dateCorrector,
                 contextProvider: globalRUMMonitor?.contextProvider,
                 rumCommandSubscriber: globalRUMMonitor,
-                dateProvider: context.dateProvider
+                dateProvider: rumFeature.configuration.dateProvider
             )
         }
 

@@ -35,7 +35,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     // MARK: - RUMScope
 
-    func process(command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Bool {
+    func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
         if sessionScope == nil {
             startInitialSession(context: context)
         }
@@ -53,14 +53,14 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     // MARK: - Private
 
-    private func refresh(expiredSession: RUMSessionScope, on command: RUMCommand, context: DatadogV1Context, writer: Writer) {
+    private func refresh(expiredSession: RUMSessionScope, on command: RUMCommand, context: DatadogContext, writer: Writer) {
         let refreshedSession = RUMSessionScope(from: expiredSession, startTime: command.time, context: context)
         sessionScope = refreshedSession
         sessionScopeDidUpdate(refreshedSession)
         _ = refreshedSession.process(command: command, context: context, writer: writer)
     }
 
-    private func startInitialSession(context: DatadogV1Context) {
+    private func startInitialSession(context: DatadogContext) {
         let initialSession = RUMSessionScope(
             isInitialSession: true,
             parent: self,

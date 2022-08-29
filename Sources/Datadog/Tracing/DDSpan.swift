@@ -147,19 +147,13 @@ internal class DDSpan: OTSpan {
         queue.async {
             tracing.eventWriteContext { context, writer in
                 let builder = SpanEventBuilder(
-                    sdkVersion: context.sdkVersion,
-                    applicationVersion: context.version,
-                    serviceName: configuration.serviceName ?? context.service,
-                    userInfoProvider: context.userInfoProvider,
-                    networkConnectionInfoProvider: configuration.sendNetworkInfo ? context.networkConnectionInfoProvider : nil,
-                    carrierInfoProvider: configuration.sendNetworkInfo ? context.carrierInfoProvider : nil,
-                    dateCorrector: context.dateCorrector,
-                    source: context.source,
-                    origin: context.ciAppOrigin,
+                    serviceName: configuration.serviceName,
+                    sendNetworkInfo: configuration.sendNetworkInfo,
                     eventsMapper: self.ddTracer.spanEventMapper
                 )
 
                 let event = builder.createSpanEvent(
+                    context: context,
                     traceID: self.ddContext.traceID,
                     spanID: self.ddContext.spanID,
                     parentSpanID: self.ddContext.parentSpanID,

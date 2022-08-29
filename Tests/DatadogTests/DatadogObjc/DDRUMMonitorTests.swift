@@ -152,8 +152,7 @@ class DDRUMMonitorTests: XCTestCase {
             core: core,
             dependencies: RUMScopeDependencies(
                 rumFeature: rumFeature,
-                crashReportingFeature: nil,
-                context: v1Context
+                crashReportingFeature: nil
             )
             .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
             dateProvider: v1Context.dateProvider

@@ -75,7 +75,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     convenience init(
         from expiredSession: RUMSessionScope,
         startTime: Date,
-        context: DatadogV1Context
+        context: DatadogContext
     ) {
         self.init(
             isInitialSession: false,
@@ -99,7 +99,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 attributes: expiredView.attributes,
                 customTimings: expiredView.customTimings,
                 startTime: startTime,
-                serverTimeOffset: context.dateCorrector.offset
+                serverTimeOffset: context.serverTimeOffset
             )
         }
     }
@@ -114,7 +114,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     // MARK: - RUMScope
 
-    func process(command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Bool {
+    func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
         if timedOutOrExpired(currentTime: command.time) {
             return false // no longer keep this session
         }
@@ -133,7 +133,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             // Otherwise, if there is no active view scope, consider starting artificial scope for handling this command
             let handlingRule = RUMOffViewEventsHandlingRule(
                 sessionState: state,
-                isAppInForeground: dependencies.appStateListener.history.currentSnapshot.state.isRunningInForeground,
+                isAppInForeground: context.applicationStateHistory.currentSnapshot.state.isRunningInForeground,
                 isBETEnabled: backgroundEventTrackingEnabled
             )
 
@@ -177,7 +177,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     // MARK: - RUMCommands Processing
 
-    private func startView(on command: RUMStartViewCommand, context: DatadogV1Context) {
+    private func startView(on command: RUMStartViewCommand, context: DatadogContext) {
         let isStartingInitialView = isInitialSession && !state.hasTrackedAnyView
         viewScopes.append(
             RUMViewScope(
@@ -190,12 +190,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 attributes: command.attributes,
                 customTimings: [:],
                 startTime: command.time,
-                serverTimeOffset: context.dateCorrector.offset
+                serverTimeOffset: context.serverTimeOffset
             )
         )
     }
 
-    private func startApplicationLaunchView(on command: RUMCommand, context: DatadogV1Context) {
+    private func startApplicationLaunchView(on command: RUMCommand, context: DatadogContext) {
         viewScopes.append(
             RUMViewScope(
                 isInitialView: true,
@@ -207,12 +207,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 attributes: command.attributes,
                 customTimings: [:],
                 startTime: sessionStartTime,
-                serverTimeOffset: context.dateCorrector.offset
+                serverTimeOffset: context.serverTimeOffset
             )
         )
     }
 
-    private func startBackgroundView(on command: RUMCommand, context: DatadogV1Context) {
+    private func startBackgroundView(on command: RUMCommand, context: DatadogContext) {
         let isStartingInitialView = isInitialSession && !state.hasTrackedAnyView
         viewScopes.append(
             RUMViewScope(
@@ -225,7 +225,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 attributes: command.attributes,
                 customTimings: [:],
                 startTime: command.time,
-                serverTimeOffset: context.dateCorrector.offset
+                serverTimeOffset: context.serverTimeOffset
             )
         )
     }

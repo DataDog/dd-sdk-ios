@@ -29,12 +29,14 @@ class LoggerTests: XCTestCase {
             service: "default-service-name",
             env: "tests",
             version: "1.0.0",
-            sdkVersion: "1.2.3",
-            applicationBundleIdentifier: "com.datadoghq.ios-sdk",
-            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+            sdkVersion: "1.2.3"
         )
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        let feature: LoggingFeature = .mockByRecordingLogMatchers(
+            configuration: .mockWith(
+                dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
+                applicationBundleIdentifier: "com.datadoghq.ios-sdk")
+        )
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
@@ -90,11 +92,11 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending Customized Logs
 
     func testSendingLogsWithDifferentDates() throws {
-        core.context = .mockWith(
-            dateProvider: RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC(), advancingBySeconds: 1)
+        let feature: LoggingFeature = .mockByRecordingLogMatchers(
+            configuration: .mockWith(
+                dateProvider: RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC(), advancingBySeconds: 1)
+            )
         )
-
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
@@ -549,9 +551,6 @@ class LoggerTests: XCTestCase {
     }
 
     func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorForCurrentView() throws {
-        let v1Context: DatadogV1Context = .mockAny()
-        core.context = v1Context
-
         let logging: LoggingFeature = .mockNoOp()
         core.register(feature: logging)
 
@@ -564,10 +563,9 @@ class LoggerTests: XCTestCase {
             core: core,
             dependencies: RUMScopeDependencies(
                 rumFeature: rum,
-                crashReportingFeature: nil,
-                context: v1Context
+                crashReportingFeature: nil
             ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-            dateProvider: v1Context.dateProvider
+            dateProvider: SystemDateProvider()
         )
         Global.rum.startView(viewController: mockView)
         defer { Global.rum = DDNoopRUMMonitor() }
@@ -671,12 +669,13 @@ class LoggerTests: XCTestCase {
         let serverTimeDifference = TimeInterval.random(in: -5..<5).rounded() // few seconds difference
 
         core.context = .mockWith(
-            dateProvider: RelativeDateProvider(using: deviceTime),
             dateCorrector: DateCorrectorMock(offset: serverTimeDifference)
         )
 
         // When
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        let feature: LoggingFeature = .mockByRecordingLogMatchers(
+            configuration: .mockWith(dateProvider: RelativeDateProvider(using: deviceTime))
+        )
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
@@ -717,28 +716,6 @@ class LoggerTests: XCTestCase {
     }
 
     // MARK: - Usage
-
-    func testGivenDatadogNotInitialized_whenInitializingLogger_itPrintsError() {
-        let dd = DD.mockWith(logger: CoreLoggerMock())
-        defer { dd.reset() }
-
-        // given
-        core.context = nil
-
-        // when
-        let logger = Logger.builder.build(in: core)
-
-        // then
-        XCTAssertEqual(
-            dd.logger.criticalLog?.message,
-            "Failed to build `Logger`."
-        )
-        XCTAssertEqual(
-            dd.logger.criticalLog?.error?.message,
-            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `Logger.builder.build()`."
-        )
-        XCTAssertTrue(logger.v2Logger is NOPLogger)
-    }
 
     func testGivenLoggingFeatureDisabled_whenInitializingLogger_itPrintsError() {
         let dd = DD.mockWith(logger: CoreLoggerMock())

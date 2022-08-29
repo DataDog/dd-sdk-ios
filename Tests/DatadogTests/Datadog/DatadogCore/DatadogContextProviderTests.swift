@@ -15,7 +15,7 @@ class DatadogContextProviderTests: XCTestCase {
     func testPublisherPropagation() throws {
         // Given
         let serverOffsetPublisher = ContextValuePublisherMock<TimeInterval>(initialValue: 0)
-        let networkConnectionInfoPublisher = ContextValuePublisherMock<NetworkConnectionInfo>(initialValue: .unknown)
+        let networkConnectionInfoPublisher = ContextValuePublisherMock<NetworkConnectionInfo?>()
         let carrierInfoPublisher = ContextValuePublisherMock<CarrierInfo?>()
 
         let provider = DatadogContextProvider(context: context)
@@ -43,7 +43,7 @@ class DatadogContextProviderTests: XCTestCase {
     func testReaderPropagation() throws {
         // Given
         let serverOffsetReader = ContextValueReaderMock<TimeInterval>(initialValue: 0)
-        let networkConnectionInfoReader = ContextValueReaderMock<NetworkConnectionInfo>(initialValue: .unknown)
+        let networkConnectionInfoReader = ContextValueReaderMock<NetworkConnectionInfo?>()
         let carrierInfoReader = ContextValueReaderMock<CarrierInfo?>()
 
         let provider = DatadogContextProvider(context: context)
@@ -72,11 +72,11 @@ class DatadogContextProviderTests: XCTestCase {
 
     func testThreadSafety() {
         let serverOffsetPublisher = ContextValuePublisherMock<TimeInterval>(initialValue: 0)
-        let networkConnectionInfoPublisher = ContextValuePublisherMock<NetworkConnectionInfo>(initialValue: .unknown)
+        let networkConnectionInfoPublisher = ContextValuePublisherMock<NetworkConnectionInfo?>()
         let carrierInfoPublisher = ContextValuePublisherMock<CarrierInfo?>()
 
         let serverOffsetReader = ContextValueReaderMock<TimeInterval>(initialValue: 0)
-        let networkConnectionInfoReader = ContextValueReaderMock<NetworkConnectionInfo>(initialValue: .unknown)
+        let networkConnectionInfoReader = ContextValueReaderMock<NetworkConnectionInfo?>()
         let carrierInfoReader = ContextValueReaderMock<CarrierInfo?>()
 
         let provider = DatadogContextProvider(context: context)

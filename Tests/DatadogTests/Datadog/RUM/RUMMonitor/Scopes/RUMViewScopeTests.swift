@@ -9,14 +9,14 @@ import UIKit
 @testable import Datadog
 
 class RUMViewScopeTests: XCTestCase {
-    let context: DatadogV1Context = .mockWith(
+    let context: DatadogContext = .mockWith(
         service: "test-service",
         device: .mockWith(
             name: "device-name",
             osName: "device-os"
         ),
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: nil),
-        carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: nil)
+        networkConnectionInfo: nil,
+        carrierInfo: nil
     )
 
     let writer = FileWriterMock()
@@ -87,12 +87,13 @@ class RUMViewScopeTests: XCTestCase {
     func testWhenInitialViewReceivesAnyCommand_itSendsApplicationStartAction() throws {
         // Given
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        var context = self.context
+        context.launchTime = .init(launchTime: 2, isActivePrewarm: false)
+
         let scope = RUMViewScope(
             isInitialView: true,
             parent: parent,
-            dependencies: .mockWith(
-                launchTimeProvider: LaunchTimeProviderMock.mockWith(launchTime: 2) // 2 seconds
-            ),
+            dependencies: .mockAny(),
             identity: mockView,
             path: "UIViewController",
             name: "ViewName",
@@ -133,14 +134,15 @@ class RUMViewScopeTests: XCTestCase {
         // Given
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let source = String.mockAnySource()
-        let custonContext: DatadogV1Context = .mockWith(source: source)
+        let custonContext: DatadogContext = .mockWith(source: source)
+
+        var context = self.context
+        context.launchTime = .init(launchTime: 2, isActivePrewarm: false)
 
         let scope = RUMViewScope(
             isInitialView: true,
             parent: parent,
-            dependencies: .mockWith(
-                launchTimeProvider: LaunchTimeProviderMock.mockWith(launchTime: 2) // 2 seconds
-            ),
+            dependencies: .mockAny(),
             identity: mockView,
             path: "UIViewController",
             name: "ViewName",
@@ -164,15 +166,13 @@ class RUMViewScopeTests: XCTestCase {
 
     func testWhenActivePrewarm_itSendsApplicationStartAction_withoutLoadingTime() throws {
         // Given
+        var context = self.context
+        context.launchTime = .init(launchTime: 2, isActivePrewarm: true)
+
         let scope: RUMViewScope = .mockWith(
             isInitialView: true,
             parent: parent,
-            dependencies: .mockWith(
-                launchTimeProvider: LaunchTimeProviderMock.mockWith(
-                    launchTime: 2, // 2 seconds
-                    isActivePrewarm: true
-                )
-            ),
+            dependencies: .mockAny(),
             identity: mockView
         )
 
@@ -239,7 +239,7 @@ class RUMViewScopeTests: XCTestCase {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let source = String.mockAnySource()
 
-        let customContext: DatadogV1Context = .mockWith(source: source)
+        let customContext: DatadogContext = .mockWith(source: source)
 
         let scope = RUMViewScope(
             isInitialView: true,
@@ -984,7 +984,7 @@ class RUMViewScopeTests: XCTestCase {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let source = String.mockAnySource()
 
-        let customContext: DatadogV1Context = .mockWith(source: source)
+        let customContext: DatadogContext = .mockWith(source: source)
 
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
@@ -1028,7 +1028,7 @@ class RUMViewScopeTests: XCTestCase {
 
         let customSource = String.mockAnySource()
         let expectedSource = RUMErrorEvent.Source(rawValue: customSource)
-        let customContext: DatadogV1Context = .mockWith(
+        let customContext: DatadogContext = .mockWith(
             service: "test-service",
             source: customSource
         )
@@ -1182,7 +1182,7 @@ class RUMViewScopeTests: XCTestCase {
         let startViewDate: Date = .mockDecember15th2019At10AMUTC()
 
         let source = String.mockAnySource()
-        let customContext: DatadogV1Context = .mockWith(source: source)
+        let customContext: DatadogContext = .mockWith(source: source)
 
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),

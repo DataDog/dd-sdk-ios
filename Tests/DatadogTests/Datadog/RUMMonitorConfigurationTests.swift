@@ -40,9 +40,9 @@ class RUMMonitorConfigurationTests: XCTestCase {
 
         let dependencies = monitor.applicationScope.dependencies
         monitor.core.v1.scope(for: RUMFeature.self)?.eventWriteContext { context, _ in
-            XCTAssertTrue(context.userInfoProvider === userInfoProvider)
-            XCTAssertTrue(context.networkConnectionInfoProvider as AnyObject === networkConnectionInfoProvider as AnyObject)
-            XCTAssertTrue(context.carrierInfoProvider as AnyObject === carrierInfoProvider as AnyObject)
+            XCTAssertEqual(context.userInfo, self.userInfoProvider.value)
+            XCTAssertEqual(context.networkConnectionInfo, self.networkConnectionInfoProvider.current)
+            XCTAssertEqual(context.carrierInfo, self.carrierInfoProvider.current)
 
             XCTAssertEqual(context.service, "service-name")
             XCTAssertEqual(context.version, "1.2.3")

@@ -175,18 +175,17 @@ public class Datadog {
 
         let consentProvider = ConsentProvider(initialConsent: initialTrackingConsent)
         let userInfoProvider = UserInfoProvider()
-        let dateProvider = SystemDateProvider()
         let serverDateProvider = configuration.common.serverDateProvider ?? DatadogNTPDateProvider()
         let dateCorrector = ServerDateCorrector(serverDateProvider: serverDateProvider)
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
         let carrierInfoProvider = CarrierInfoProvider()
         let launchTimeProvider = LaunchTimeProvider()
-        let appStateListener = AppStateListener(dateProvider: dateProvider)
+        let appStateListener = AppStateListener(dateProvider: configuration.common.dateProvider)
 
         // Set default `DatadogCore`:
         let core = DatadogCore(
             directory: try CoreDirectory(in: Directory.cache(), from: configuration.common),
-            dateProvider: dateProvider,
+            dateProvider: configuration.common.dateProvider,
             consentProvider: consentProvider,
             userInfoProvider: userInfoProvider,
             performance: configuration.common.performance,
@@ -195,7 +194,6 @@ public class Datadog {
             v1Context: DatadogV1Context(
                 configuration: configuration.common,
                 device: .init(),
-                dateProvider: dateProvider,
                 dateCorrector: dateCorrector,
                 networkConnectionInfoProvider: networkConnectionInfoProvider,
                 carrierInfoProvider: carrierInfoProvider,
@@ -206,7 +204,6 @@ public class Datadog {
             contextProvider: DatadogContextProvider(
                 configuration: configuration.common,
                 device: .init(),
-                dateProvider: dateProvider,
                 serverDateProvider: serverDateProvider
             )
         )
@@ -226,7 +223,7 @@ public class Datadog {
                 sdkVersion: configuration.common.sdkVersion,
                 applicationID: rumConfiguration.applicationID,
                 source: configuration.common.source,
-                dateProvider: dateProvider,
+                dateProvider: rumConfiguration.dateProvider,
                 dateCorrector: dateCorrector,
                 sampler: rumConfiguration.telemetrySampler
             )
@@ -241,7 +238,7 @@ public class Datadog {
             if let instrumentationConfiguration = rumConfiguration.instrumentation {
                 rumInstrumentation = RUMInstrumentation(
                     configuration: instrumentationConfiguration,
-                    dateProvider: dateProvider
+                    dateProvider: rumConfiguration.dateProvider
                 )
 
                 core.register(feature: rumInstrumentation)
@@ -285,7 +282,7 @@ public class Datadog {
         if let urlSessionAutoInstrumentationConfiguration = configuration.urlSessionAutoInstrumentation {
             urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
                 configuration: urlSessionAutoInstrumentationConfiguration,
-                dateProvider: dateProvider,
+                dateProvider: configuration.common.dateProvider,
                 appStateListener: appStateListener
             )
 

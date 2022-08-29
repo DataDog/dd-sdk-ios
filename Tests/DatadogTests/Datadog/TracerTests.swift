@@ -31,13 +31,13 @@ class TracerTests: XCTestCase {
             version: "1.0.0",
             source: "abc",
             sdkVersion: "1.2.3",
-            applicationBundleIdentifier: "com.datadoghq.ios-sdk",
-            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+            applicationBundleIdentifier: "com.datadoghq.ios-sdk"
         )
 
         let feature: TracingFeature = .mockByRecordingSpanMatchers(
-            featureConfiguration: .mockWith(
-                uuidGenerator: RelativeTracingUUIDGenerator(startingFrom: 1)
+            configuration: .mockWith(
+                uuidGenerator: RelativeTracingUUIDGenerator(startingFrom: 1),
+                dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
             )
         )
         core.register(feature: feature)
@@ -801,12 +801,13 @@ class TracerTests: XCTestCase {
         let serverTimeDifference = TimeInterval.random(in: -5..<5).rounded() // few seconds difference
 
         core.context = .mockWith(
-            dateProvider: RelativeDateProvider(using: deviceTime),
             dateCorrector: DateCorrectorMock(offset: serverTimeDifference)
         )
 
         // When
-        let feature: TracingFeature = .mockByRecordingSpanMatchers()
+        let feature: TracingFeature = .mockByRecordingSpanMatchers(
+            configuration: .mockWith(dateProvider: RelativeDateProvider(using: deviceTime))
+        )
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core)
@@ -870,25 +871,6 @@ class TracerTests: XCTestCase {
     }
 
     // MARK: - Usage errors
-
-    func testGivenDatadogNotInitialized_whenInitializingTracer_itPrintsError() {
-        let printFunction = PrintFunctionMock()
-        consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
-
-        // given
-        core.context = nil
-
-        // when
-        let tracer = Tracer.initialize(configuration: .init(), in: core)
-
-        // then
-        XCTAssertEqual(
-            printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `Tracer.initialize()`."
-        )
-        XCTAssertTrue(tracer is DDNoopTracer)
-    }
 
     func testGivenTracingFeatureDisabled_whenInitializingTracer_itPrintsError() {
         let printFunction = PrintFunctionMock()

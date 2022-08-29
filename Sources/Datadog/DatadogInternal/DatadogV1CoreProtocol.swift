@@ -53,7 +53,7 @@ internal protocol FeatureV1Scope {
     /// for the Feature to build and record events.
     ///
     /// - Parameter block: The block to execute.
-    func eventWriteContext(_ block: (DatadogV1Context, Writer) throws -> Void)
+    func eventWriteContext(_ block: @escaping (DatadogContext, Writer) throws -> Void)
 }
 
 extension NOPDatadogCore: DatadogV1CoreProtocol {

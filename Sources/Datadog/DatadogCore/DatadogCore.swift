@@ -181,7 +181,7 @@ extension DatadogCore: DatadogV1CoreProtocol {
         }
 
         return DatadogCoreFeatureScope(
-            context: v1Context,
+            contextProvider: contextProvider,
             storage: feature.storage
         )
     }
@@ -251,14 +251,16 @@ internal protocol V1Feature {
 /// The execution block is currently running in `sync`, this will change once the
 /// context is provided on it's own queue.
 internal struct DatadogCoreFeatureScope: FeatureV1Scope {
-    let context: DatadogV1Context
+    let contextProvider: DatadogContextProvider
     let storage: FeatureStorage
 
-    func eventWriteContext(_ block: (DatadogV1Context, Writer) throws -> Void) {
-        do {
-            try block(context, storage.writer)
-        } catch {
-            DD.telemetry.error("Failed to execute feature scope", error: error)
+    func eventWriteContext(_ block: @escaping (DatadogContext, Writer) throws -> Void) {
+        contextProvider.read { context in
+            do {
+                try block(context, storage.writer)
+            } catch {
+                DD.telemetry.error("Failed to execute feature scope", error: error)
+            }
         }
     }
 }
@@ -279,7 +281,6 @@ extension DatadogV1Context {
     init(
         configuration: CoreConfiguration,
         device: DeviceInfo,
-        dateProvider: DateProvider,
         dateCorrector: DateCorrector,
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
         carrierInfoProvider: CarrierInfoProviderType,
@@ -297,10 +298,10 @@ extension DatadogV1Context {
         self.ciAppOrigin = configuration.origin
         self.applicationName = configuration.applicationName
         self.applicationBundleIdentifier = configuration.applicationBundleIdentifier
+        self.dateProvider = configuration.dateProvider
 
         self.sdkInitDate = dateProvider.now
         self.device = device
-        self.dateProvider = dateProvider
         self.dateCorrector = dateCorrector
         self.networkConnectionInfoProvider = networkConnectionInfoProvider
         self.carrierInfoProvider = carrierInfoProvider
@@ -320,7 +321,6 @@ extension DatadogContextProvider {
     convenience init(
         configuration: CoreConfiguration,
         device: DeviceInfo,
-        dateProvider: DateProvider,
         serverDateProvider: ServerDateProvider
     ) {
         let context = DatadogContext(
@@ -334,12 +334,12 @@ extension DatadogContextProvider {
             ciAppOrigin: configuration.origin,
             applicationName: configuration.applicationName,
             applicationBundleIdentifier: configuration.applicationBundleIdentifier,
-            sdkInitDate: dateProvider.now,
+            sdkInitDate: configuration.dateProvider.now,
             device: device,
             // this is a placeholder waiting for the `ApplicationStatePublisher`
             // to be initialized on the main thread, this value will be overrided
             // as soon as the subscription is made.
-            applicationStateHistory: .active(since: dateProvider.now)
+            applicationStateHistory: .active(since: configuration.dateProvider.now)
         )
 
         self.init(context: context)
@@ -368,7 +368,7 @@ extension DatadogContextProvider {
         #if os(iOS) || os(tvOS)
         DispatchQueue.main.async {
             // must be call on the main thread to read `UIApplication.State`
-            let applicationStatePublisher = ApplicationStatePublisher(dateProvider: dateProvider)
+            let applicationStatePublisher = ApplicationStatePublisher(dateProvider: configuration.dateProvider)
             self.subscribe(\.applicationStateHistory, to: applicationStatePublisher)
         }
         #endif

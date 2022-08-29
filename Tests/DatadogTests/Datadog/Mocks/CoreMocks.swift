@@ -208,7 +208,8 @@ extension FeaturesConfiguration.Common {
         sdkVersion: String = .mockAny(),
         proxyConfiguration: [AnyHashable: Any]? = nil,
         encryption: DataEncryption? = nil,
-        serverDateProvider: ServerDateProvider? = nil
+        serverDateProvider: ServerDateProvider? = nil,
+        dateProvider: DateProvider = SystemDateProvider()
     ) -> Self {
         return .init(
             site: site,
@@ -224,7 +225,8 @@ extension FeaturesConfiguration.Common {
             sdkVersion: sdkVersion,
             proxyConfiguration: proxyConfiguration,
             encryption: encryption,
-            serverDateProvider: serverDateProvider
+            serverDateProvider: serverDateProvider,
+            dateProvider: dateProvider
         )
     }
 }
@@ -234,11 +236,15 @@ extension FeaturesConfiguration.Logging {
 
     static func mockWith(
         uploadURL: URL = .mockAny(),
-        logEventMapper: LogEventMapper? = nil
+        logEventMapper: LogEventMapper? = nil,
+        dateProvider: DateProvider = SystemDateProvider(),
+        applicationBundleIdentifier: String = .mockAny()
     ) -> Self {
         return .init(
             uploadURL: uploadURL,
-            logEventMapper: logEventMapper
+            logEventMapper: logEventMapper,
+            dateProvider: dateProvider,
+            applicationBundleIdentifier: applicationBundleIdentifier
         )
     }
 }
@@ -249,12 +255,14 @@ extension FeaturesConfiguration.Tracing {
     static func mockWith(
         uploadURL: URL = .mockAny(),
         uuidGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
-        spanEventMapper: SpanEventMapper? = nil
+        spanEventMapper: SpanEventMapper? = nil,
+        dateProvider: DateProvider = SystemDateProvider()
     ) -> Self {
         return .init(
             uploadURL: uploadURL,
             uuidGenerator: uuidGenerator,
-            spanEventMapper: spanEventMapper
+            spanEventMapper: spanEventMapper,
+            dateProvider: dateProvider
         )
     }
 }
@@ -277,7 +285,8 @@ extension FeaturesConfiguration.RUM {
         backgroundEventTrackingEnabled: Bool = false,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener(),
         firstPartyHosts: Set<String> = [],
-        vitalsFrequency: TimeInterval? = 0.5
+        vitalsFrequency: TimeInterval? = 0.5,
+        dateProvider: DateProvider = SystemDateProvider()
     ) -> Self {
         return .init(
             uploadURL: uploadURL,
@@ -294,7 +303,8 @@ extension FeaturesConfiguration.RUM {
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
             onSessionStart: onSessionStart,
             firstPartyHosts: firstPartyHosts,
-            vitalsFrequency: vitalsFrequency
+            vitalsFrequency: vitalsFrequency,
+            dateProvider: dateProvider
         )
     }
 }

@@ -32,8 +32,7 @@ class RUMMonitorTests: XCTestCase {
             core: core,
             dependencies: RUMScopeDependencies(
                 rumFeature: rumFeature,
-                crashReportingFeature: crashReportingFeature,
-                context: v1Context
+                crashReportingFeature: crashReportingFeature
             ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
             dateProvider: v1Context.dateProvider
         )
@@ -1187,44 +1186,6 @@ class RUMMonitorTests: XCTestCase {
     }
 
     // MARK: - Usage
-
-    func testGivenDatadogNotInitialized_whenInitializingRUMMonitor_itPrintsError() {
-        let printFunction = PrintFunctionMock()
-        consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
-
-        // given
-        core.context = nil
-
-        // when
-        let monitor = RUMMonitor.initialize(in: core)
-
-        // then
-        XCTAssertEqual(
-            printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `RUMMonitor.initialize()`."
-        )
-        XCTAssertTrue(monitor is DDNoopRUMMonitor)
-    }
-
-    func testGivenRUMFeatureDisabled_whenInitializingRUMMonitor_itPrintsError() {
-        let printFunction = PrintFunctionMock()
-        consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
-
-        // given
-        XCTAssertNil(core.feature(RUMFeature.self))
-
-        // when
-        let monitor = RUMMonitor.initialize(in: core)
-
-        // then
-        XCTAssertEqual(
-            printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: `RUMMonitor.initialize()` produces a non-functional monitor, as the RUM feature is disabled."
-        )
-        XCTAssertTrue(monitor is DDNoopRUMMonitor)
-    }
 
     func testGivenRUMMonitorInitialized_whenInitializingAnotherTime_itPrintsError() {
         let printFunction = PrintFunctionMock()

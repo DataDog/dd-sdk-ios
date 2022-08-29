@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import XCTest
 
 @testable import Datadog
 
@@ -52,6 +53,15 @@ extension DatadogCoreMock: DatadogCoreProtocol {
 extension DatadogCoreMock: DatadogV1CoreProtocol {
     // MARK: V1 interface
 
+    struct Scope: FeatureV1Scope {
+        let context: DatadogContext
+        let writer: Writer
+
+        func eventWriteContext(_ block: @escaping (DatadogContext, Writer) throws -> Void) {
+            XCTAssertNoThrow(try block(context, writer), "Encountered an error when executing `eventWriteContext`")
+        }
+    }
+
     func register<T>(feature instance: T?) {
         let key = String(describing: T.self)
         v1Features[key] = instance
@@ -73,10 +83,7 @@ extension DatadogCoreMock: DatadogV1CoreProtocol {
             return nil
         }
 
-        return DatadogCoreFeatureScope(
-            context: context,
-            storage: feature.storage
-        )
+        return Scope(context: .init(context), writer: feature.storage.writer)
     }
 }
 
@@ -135,6 +142,63 @@ extension DatadogV1Context: AnyMockable {
             userInfoProvider: userInfoProvider,
             appStateListener: appStateListener,
             launchTimeProvider: launchTimeProvider
+        )
+    }
+
+    init(_ v2: DatadogContext, dateProvider: DateProvider = SystemDateProvider()) {
+        self.init(
+            site: v2.site,
+            clientToken: v2.clientToken,
+            service: v2.service,
+            env: v2.env,
+            version: v2.version,
+            source: v2.source,
+            sdkVersion: v2.sdkVersion,
+            ciAppOrigin: v2.ciAppOrigin,
+            applicationName: v2.applicationName,
+            applicationBundleIdentifier: v2.applicationBundleIdentifier,
+            sdkInitDate: v2.sdkInitDate,
+            device: v2.device,
+            dateProvider: dateProvider,
+            dateCorrector: DateCorrectorMock(offset: v2.serverTimeOffset),
+            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: v2.networkConnectionInfo),
+            carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: v2.carrierInfo),
+            userInfoProvider: UserInfoProvider.mockWith(userInfo: v2.userInfo ?? .empty),
+            appStateListener: AppStateListenerMock(history: v2.applicationStateHistory),
+            launchTimeProvider: LaunchTimeProviderMock(
+                launchTime: v2.launchTime.launchTime,
+                isActivePrewarm: v2.launchTime.isActivePrewarm
+            )
+        )
+    }
+}
+
+extension DatadogContext {
+    init(_ v1: DatadogV1Context) {
+        self.init(
+            site: v1.site,
+            clientToken: v1.clientToken,
+            service: v1.service,
+            env: v1.env,
+            version: v1.version,
+            source: v1.source,
+            sdkVersion: v1.sdkVersion,
+            ciAppOrigin: v1.ciAppOrigin,
+            serverTimeOffset: v1.dateCorrector.offset,
+            applicationName: v1.applicationName,
+            applicationBundleIdentifier: v1.applicationBundleIdentifier,
+            sdkInitDate: v1.sdkInitDate,
+            device: v1.device,
+            userInfo: v1.userInfoProvider.value,
+            launchTime: .init(
+                launchTime: v1.launchTimeProvider.launchTime,
+                isActivePrewarm: v1.launchTimeProvider.isActivePrewarm
+            ),
+            applicationStateHistory: v1.appStateListener.history,
+            networkConnectionInfo: v1.networkConnectionInfoProvider.current,
+            carrierInfo: v1.carrierInfoProvider.current,
+            batteryStatus: nil,
+            isLowPowerModeEnabled: false
         )
     }
 }

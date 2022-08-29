@@ -28,17 +28,21 @@ internal struct FeaturesConfiguration {
         let proxyConfiguration: [AnyHashable: Any]?
         let encryption: DataEncryption?
         let serverDateProvider: ServerDateProvider?
+        let dateProvider: DateProvider
     }
 
     struct Logging {
         let uploadURL: URL
         let logEventMapper: LogEventMapper?
+        let dateProvider: DateProvider
+        let applicationBundleIdentifier: String
     }
 
     struct Tracing {
         let uploadURL: URL
         let uuidGenerator: TracingUUIDGenerator
         let spanEventMapper: SpanEventMapper?
+        let dateProvider: DateProvider
     }
 
     struct RUM {
@@ -64,6 +68,7 @@ internal struct FeaturesConfiguration {
         let onSessionStart: RUMSessionListener?
         let firstPartyHosts: Set<String>
         let vitalsFrequency: TimeInterval?
+        let dateProvider: DateProvider
     }
 
     struct URLSessionAutoInstrumentation {
@@ -152,6 +157,8 @@ extension FeaturesConfiguration {
             Datadog.verbosityLevel = .debug
         }
 
+        let dateProvider = SystemDateProvider()
+
         let common = Common(
             site: configuration.datadogEndpoint,
             clientToken: try ifValid(clientToken: configuration.clientToken),
@@ -170,13 +177,16 @@ extension FeaturesConfiguration {
             sdkVersion: sdkVersion,
             proxyConfiguration: configuration.proxyConfiguration,
             encryption: configuration.encryption,
-            serverDateProvider: configuration.serverDateProvider
+            serverDateProvider: configuration.serverDateProvider,
+            dateProvider: dateProvider
         )
 
         if configuration.loggingEnabled {
             logging = Logging(
                 uploadURL: try ifValid(endpointURLString: logsEndpoint.url),
-                logEventMapper: configuration.logEventMapper
+                logEventMapper: configuration.logEventMapper,
+                dateProvider: dateProvider,
+                applicationBundleIdentifier: common.applicationBundleIdentifier
             )
         }
 
@@ -184,7 +194,8 @@ extension FeaturesConfiguration {
             tracing = Tracing(
                 uploadURL: try ifValid(endpointURLString: tracesEndpoint.url),
                 uuidGenerator: DefaultTracingUUIDGenerator(),
-                spanEventMapper: configuration.spanEventMapper
+                spanEventMapper: configuration.spanEventMapper,
+                dateProvider: dateProvider
             )
         }
 
@@ -219,7 +230,8 @@ extension FeaturesConfiguration {
                     backgroundEventTrackingEnabled: configuration.rumBackgroundEventTrackingEnabled,
                     onSessionStart: configuration.rumSessionsListener,
                     firstPartyHosts: sanitizedHosts,
-                    vitalsFrequency: configuration.mobileVitalsFrequency.timeInterval
+                    vitalsFrequency: configuration.mobileVitalsFrequency.timeInterval,
+                    dateProvider: dateProvider
                 )
             } else {
                 let error = ProgrammerError(

@@ -151,11 +151,6 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     /// Initializes the Datadog RUM Monitor.
     public static func initialize(in core: DatadogCoreProtocol = defaultDatadogCore) -> DDRUMMonitor {
         do {
-            guard let context = core.v1.context else {
-                throw ProgrammerError(
-                    description: "`Datadog.initialize()` must be called prior to `RUMMonitor.initialize()`."
-                )
-            }
             if Global.rum is RUMMonitor {
                 throw ProgrammerError(
                     description: """
@@ -174,10 +169,9 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 core: core,
                 dependencies: RUMScopeDependencies(
                     rumFeature: rumFeature,
-                    crashReportingFeature: crashReporting,
-                    context: context
+                    crashReportingFeature: crashReporting
                 ),
-                dateProvider: context.dateProvider
+                dateProvider: rumFeature.configuration.dateProvider
             )
 
             core.v1.feature(RUMInstrumentation.self)?.publish(to: monitor)

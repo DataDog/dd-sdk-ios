@@ -20,8 +20,6 @@ internal struct RUMScopeDependencies {
     let rumApplicationID: String
     let sessionSampler: Sampler
     let backgroundEventTrackingEnabled: Bool
-    let appStateListener: AppStateListening
-    let launchTimeProvider: LaunchTimeProviderType
     let firstPartyURLsFilter: FirstPartyURLsFilter
     let eventBuilder: RUMEventBuilder
     let rumUUIDGenerator: RUMUUIDGenerator
@@ -40,15 +38,12 @@ internal struct RUMScopeDependencies {
 internal extension RUMScopeDependencies {
     init(
         rumFeature: RUMFeature,
-        crashReportingFeature: CrashReportingFeature?,
-        context: DatadogV1Context
+        crashReportingFeature: CrashReportingFeature?
     ) {
         self.init(
             rumApplicationID: rumFeature.configuration.applicationID,
             sessionSampler: rumFeature.configuration.sessionSampler,
             backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled,
-            appStateListener: context.appStateListener,
-            launchTimeProvider: context.launchTimeProvider,
             firstPartyURLsFilter: FirstPartyURLsFilter(hosts: rumFeature.configuration.firstPartyHosts),
             eventBuilder: RUMEventBuilder(
                 eventsMapper: RUMEventsMapper(

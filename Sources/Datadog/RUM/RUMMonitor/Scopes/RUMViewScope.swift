@@ -135,7 +135,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     // MARK: - RUMScope
 
-    func process(command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Bool {
+    func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
         // Tells if the View did change and an update event should be send.
         needsViewUpdate = false
 
@@ -284,7 +284,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         userActionScope = createDiscreteUserActionScope(on: command)
     }
 
-    private func sendDiscreteCustomUserAction(on command: RUMAddUserActionCommand, context: DatadogV1Context, writer: Writer) {
+    private func sendDiscreteCustomUserAction(on command: RUMAddUserActionCommand, context: DatadogContext, writer: Writer) {
         let customActionScope = createDiscreteUserActionScope(on: command)
         _ = customActionScope.process(
             command: RUMStopUserActionCommand(
@@ -308,19 +308,19 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     // MARK: - Sending RUM Events
 
-    private func sendApplicationStartAction(context: DatadogV1Context, writer: Writer) {
+    private func sendApplicationStartAction(context: DatadogContext, writer: Writer) {
         actionsCount += 1
 
         var attributes = self.attributes
         var loadingTime: Int64? = nil
 
-        if dependencies.launchTimeProvider.isActivePrewarm {
+        if context.launchTime.isActivePrewarm {
             // Set `active_pre_warm` attribute to true in case
             // of pre-warmed app
             attributes[Constants.activePrewarm] = true
         } else {
             // Report Application Launch Time only if not pre-warmed
-            loadingTime = dependencies.launchTimeProvider.launchTime.toInt64Nanoseconds
+            loadingTime = context.launchTime.launchTime.toInt64Nanoseconds
         }
 
         let actionEvent = RUMActionEvent(
@@ -375,7 +375,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
     }
 
-    private func sendViewUpdateEvent(on command: RUMCommand, context: DatadogV1Context, writer: Writer) {
+    private func sendViewUpdateEvent(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         version += 1
         attributes.merge(rumCommandAttributes: command.attributes)
 
@@ -466,7 +466,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
     }
 
-    private func sendErrorEvent(on command: RUMAddCurrentViewErrorCommand, context: DatadogV1Context, writer: Writer) {
+    private func sendErrorEvent(on command: RUMAddCurrentViewErrorCommand, context: DatadogContext, writer: Writer) {
         errorsCount += 1
         attributes.merge(rumCommandAttributes: command.attributes)
 
@@ -525,7 +525,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
     }
 
-    private func sendLongTaskEvent(on command: RUMAddLongTaskCommand, context: DatadogV1Context, writer: Writer) {
+    private func sendLongTaskEvent(on command: RUMAddLongTaskCommand, context: DatadogContext, writer: Writer) {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let taskDurationInNs = command.duration.toInt64Nanoseconds

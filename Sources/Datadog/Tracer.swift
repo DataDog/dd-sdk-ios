@@ -60,6 +60,9 @@ public class Tracer: OTTracer {
 
     private let tracingUUIDGenerator: TracingUUIDGenerator
 
+    /// Date provider for traces.
+    private let dateProvider: DateProvider
+
     internal let activeSpansPool = ActiveSpansPool()
 
     // MARK: - Initialization
@@ -69,11 +72,6 @@ public class Tracer: OTTracer {
     ///   - configuration: the tracer configuration obtained using `Tracer.Configuration()`.
     public static func initialize(configuration: Configuration, in core: DatadogCoreProtocol = defaultDatadogCore) -> OTTracer {
         do {
-            guard let context = core.v1.context else {
-                throw ProgrammerError(
-                    description: "`Datadog.initialize()` must be called prior to `Tracer.initialize()`."
-                )
-            }
             if Global.sharedTracer is Tracer {
                 throw ProgrammerError(
                     description: """
@@ -90,8 +88,7 @@ public class Tracer: OTTracer {
                 core: core,
                 tracingFeature: tracingFeature,
                 tracerConfiguration: configuration,
-                rumEnabled: core.v1.feature(RUMFeature.self) != nil,
-                context: context
+                rumEnabled: core.v1.feature(RUMFeature.self) != nil
             )
         } catch {
             consolePrint("\(error)")
@@ -103,14 +100,14 @@ public class Tracer: OTTracer {
         core: DatadogCoreProtocol,
         tracingFeature: TracingFeature,
         tracerConfiguration: Configuration,
-        rumEnabled: Bool,
-        context: DatadogV1Context
+        rumEnabled: Bool
     ) {
         self.init(
             core: core,
             configuration: tracerConfiguration,
             spanEventMapper: tracingFeature.configuration.spanEventMapper,
             tracingUUIDGenerator: tracingFeature.configuration.uuidGenerator,
+            dateProvider: tracingFeature.configuration.dateProvider,
             rumContextIntegration: (rumEnabled && tracerConfiguration.bundleWithRUM) ? TracingWithRUMContextIntegration() : nil,
             loggingIntegration: TracingWithLoggingIntegration(
                 core: core,
@@ -124,6 +121,7 @@ public class Tracer: OTTracer {
         configuration: Configuration,
         spanEventMapper: SpanEventMapper?,
         tracingUUIDGenerator: TracingUUIDGenerator,
+        dateProvider: DateProvider,
         rumContextIntegration: TracingWithRUMContextIntegration?,
         loggingIntegration: TracingWithLoggingIntegration
     ) {
@@ -136,6 +134,7 @@ public class Tracer: OTTracer {
         )
 
         self.tracingUUIDGenerator = tracingUUIDGenerator
+        self.dateProvider = dateProvider
         self.rumContextIntegration = rumContextIntegration
         self.loggingIntegration = loggingIntegration
     }
@@ -202,7 +201,7 @@ public class Tracer: OTTracer {
             tracer: self,
             context: spanContext,
             operationName: operationName,
-            startTime: startTime ?? core.v1.context?.dateProvider.now ?? Date(),
+            startTime: startTime ?? dateProvider.now,
             tags: combinedTags
         )
         return span

@@ -8,7 +8,7 @@ import XCTest
 @testable import Datadog
 
 class RUMApplicationScopeTests: XCTestCase {
-    let context: DatadogV1Context = .mockAny()
+    let context: DatadogContext = .mockAny()
     let writer = FileWriterMock()
 
     func testRootContext() {
