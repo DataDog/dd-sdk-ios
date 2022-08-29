@@ -196,16 +196,16 @@ class CrashReporterTests: XCTestCase {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
+        let core = DatadogCoreMock()
         let plugin = CrashReportingPluginMock()
 
         // Given
+        core.register(feature: CrashReportingFeature.mockNoOp())
         plugin.pendingCrashReport = .mockAny()
 
         // When
         let crashReporter = CrashReporter(
-            crashReportingFeature: .mockNoOp(),
-            loggingFeature: nil,
-            rumFeature: nil,
+            core: core,
             context: .mockAny()
         )
 

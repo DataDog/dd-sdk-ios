@@ -70,6 +70,8 @@ internal struct RUMMessageReceiver: FeatureMessageReceiver {
         switch message {
         case .error(let message, let attributes):
             return addError(message: message, attributes: attributes)
+        case .custom(let key, let attributes) where key == "crash":
+            return crash(attributes: attributes, to: core)
         case .event(let target, let event) where target == "rum":
             return write(event: event, to: core)
         default:
@@ -80,6 +82,24 @@ internal struct RUMMessageReceiver: FeatureMessageReceiver {
     private func write(event: FeatureMessageAttributes.AnyEncodable, to core: DatadogCoreProtocol) -> Bool {
         core.v1.scope(for: RUMFeature.self)?.eventWriteContext { _, writer in
             writer.write(value: event)
+        }
+
+        return true
+    }
+
+    private func crash(attributes: FeatureMessageAttributes, to core: DatadogCoreProtocol) -> Bool {
+        guard let error = attributes["rum-error", type: RUMCrashEvent.self] else {
+            return false
+        }
+
+        // crash reporting is considering the user consent from previous session, if an event reached
+        // the message bus it means that consent was granted and we can safely bypass current consent.
+        core.v1.scope(for: RUMFeature.self)?.eventWriteContext(bypassConsent: true) { _, writer in
+            writer.write(value: error)
+
+            if let view = attributes["rum-view", type: RUMViewEvent.self] {
+                writer.write(value: view)
+            }
         }
 
         return true

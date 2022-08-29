@@ -27,30 +27,29 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         let realDateNow: Date
     }
 
-    /// The output for writing RUM events. It uses the authorized data folder and is synchronized with the eventual
-    /// authorized output working simultaneously in the RUM feature.
-    private let writer: Writer
-    private let rumConfiguration: FeaturesConfiguration.RUM
+    private let applicationID: String
+    private let sessionSampler: Sampler
+    private let backgroundEventTrackingEnabled: Bool
+    private let uuidGenerator: RUMUUIDGenerator
 
+    private let core: DatadogCoreProtocol
     private let context: DatadogV1Context
 
     // MARK: - Initialization
 
-    init(rumFeature: RUMFeature, context: DatadogV1Context) {
-        self.init(
-            writer: rumFeature.storage.arbitraryAuthorizedWriter,
-            rumConfiguration: rumFeature.configuration,
-            context: context
-        )
-    }
-
     init(
-        writer: Writer,
-        rumConfiguration: FeaturesConfiguration.RUM,
+        core: DatadogCoreProtocol,
+        applicationID: String,
+        sessionSampler: Sampler,
+        backgroundEventTrackingEnabled: Bool,
+        uuidGenerator: RUMUUIDGenerator,
         context: DatadogV1Context
     ) {
-        self.writer = writer
-        self.rumConfiguration = rumConfiguration
+        self.core = core
+        self.applicationID = applicationID
+        self.sessionSampler = sessionSampler
+        self.backgroundEventTrackingEnabled = backgroundEventTrackingEnabled
+        self.uuidGenerator = uuidGenerator
         self.context = context
     }
 
@@ -77,7 +76,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             sendCrashReportLinkedToLastViewInPreviousSession(crashReport, lastRUMViewEventInPreviousSession: lastRUMViewEvent, using: adjustedCrashTimings)
         } else if let lastRUMSessionState = crashContext.lastRUMSessionState {
             sendCrashReportToPreviousSession(crashReport, crashContext: crashContext, lastRUMSessionStateInPreviousSession: lastRUMSessionState, using: adjustedCrashTimings)
-        } else if rumConfiguration.sessionSampler.sample() { // before producing a new RUM session, we must consider sampling
+        } else if sessionSampler.sample() { // before producing a new RUM session, we must consider sampling
             sendCrashReportToNewSession(crashReport, crashContext: crashContext, using: adjustedCrashTimings)
         } else {
             DD.logger.debug("There was a crash in previous session, but it is ignored due to sampling.")
@@ -98,7 +97,12 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             // To avoid inconsistency, we only send the RUM error.
             DD.logger.debug("Sending crash as RUM error.")
             let rumError = createRUMError(from: crashReport, and: lastRUMViewEvent, crashDate: crashTimings.realCrashDate)
-            writer.write(value: rumError)
+            core.send(
+                message: .custom(
+                    key: "crash",
+                    attributes: ["rum-error": rumError]
+                )
+            )
         }
     }
 
@@ -114,7 +118,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         let handlingRule = RUMOffViewEventsHandlingRule(
             sessionState: lastRUMSessionState,
             isAppInForeground: crashContext.lastIsAppInForeground,
-            isBETEnabled: rumConfiguration.backgroundEventTrackingEnabled
+            isBETEnabled: backgroundEventTrackingEnabled
         )
 
         let newRUMView: RUMViewEvent?
@@ -164,7 +168,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         let handlingRule = RUMOffViewEventsHandlingRule(
             sessionState: nil,
             isAppInForeground: crashContext.lastIsAppInForeground,
-            isBETEnabled: rumConfiguration.backgroundEventTrackingEnabled
+            isBETEnabled: backgroundEventTrackingEnabled
         )
 
         let newRUMView: RUMViewEvent?
@@ -175,7 +179,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 named: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName,
                 url: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
                 startDate: crashTimings.realCrashDate,
-                sessionUUID: rumConfiguration.uuidGenerator.generateUnique(), // create new RUM session
+                sessionUUID: uuidGenerator.generateUnique(), // create new RUM session
                 crashContext: crashContext
             )
         case .handleInBackgroundView:
@@ -183,7 +187,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 named: RUMOffViewEventsHandlingRule.Constants.backgroundViewName,
                 url: RUMOffViewEventsHandlingRule.Constants.backgroundViewURL,
                 startDate: crashTimings.realCrashDate,
-                sessionUUID: rumConfiguration.uuidGenerator.generateUnique(), // create new RUM session
+                sessionUUID: uuidGenerator.generateUnique(), // create new RUM session
                 crashContext: crashContext
             )
         case .doNotHandle:
@@ -201,8 +205,16 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         DD.logger.debug("Updating RUM view with crash report.")
         let updatedRUMView = updateRUMViewWithNewError(rumView, crashDate: realCrashDate)
         let rumError = createRUMError(from: crashReport, and: updatedRUMView, crashDate: realCrashDate)
-        writer.write(value: rumError)
-        writer.write(value: updatedRUMView)
+
+        core.send(
+            message: .custom(
+                key: "crash",
+                attributes: [
+                    "rum-error": rumError,
+                    "rum-view": updatedRUMView
+                ]
+            )
+        )
     }
 
     // MARK: - Building RUM events
@@ -337,7 +349,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         sessionUUID: RUMUUID,
         crashContext: CrashContext
     ) -> RUMViewEvent {
-        let viewUUID = rumConfiguration.uuidGenerator.generateUnique()
+        let viewUUID = uuidGenerator.generateUnique()
 
         return RUMViewEvent(
             dd: .init(
@@ -346,7 +358,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 session: .init(plan: .plan1)
             ),
             application: .init(
-                id: rumConfiguration.applicationID
+                id: applicationID
             ),
             ciTest: CITestIntegration.active?.rumCITest,
             connectivity: RUMConnectivity(

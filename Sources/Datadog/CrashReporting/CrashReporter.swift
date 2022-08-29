@@ -20,18 +20,27 @@ internal class CrashReporter {
     // MARK: - Initialization
 
     convenience init?(
-        crashReportingFeature: CrashReportingFeature,
-        loggingFeature: LoggingFeature?,
-        rumFeature: RUMFeature?,
+        core: DatadogCoreProtocol,
         context: DatadogV1Context
     ) {
+        guard let feature = core.v1.feature(CrashReportingFeature.self) else {
+            return nil
+        }
+
         let loggingOrRUMIntegration: CrashReportingIntegration?
 
         // If RUM rum is enabled prefer it for sending crash reports, otherwise use Logging feature.
-        if let rumFeature = rumFeature {
-            loggingOrRUMIntegration = CrashReportingWithRUMIntegration(rumFeature: rumFeature, context: context)
-        } else if let loggingFeature = loggingFeature {
-            loggingOrRUMIntegration = CrashReportingWithLoggingIntegration(loggingFeature: loggingFeature, context: context)
+        if let rum = core.v1.feature(RUMFeature.self) {
+            loggingOrRUMIntegration = CrashReportingWithRUMIntegration(
+                core: core,
+                applicationID: rum.configuration.applicationID,
+                sessionSampler: rum.configuration.sessionSampler,
+                backgroundEventTrackingEnabled: rum.configuration.backgroundEventTrackingEnabled,
+                uuidGenerator: rum.configuration.uuidGenerator,
+                context: context
+            )
+        } else if core.v1.feature(LoggingFeature.self) != nil {
+            loggingOrRUMIntegration = CrashReportingWithLoggingIntegration(core: core, context: context)
         } else {
             loggingOrRUMIntegration = nil
         }
@@ -49,15 +58,15 @@ internal class CrashReporter {
         }
 
         self.init(
-            crashReportingPlugin: crashReportingFeature.configuration.crashReportingPlugin,
+            crashReportingPlugin: feature.configuration.crashReportingPlugin,
             crashContextProvider: CrashContextProvider(
-                consentProvider: crashReportingFeature.consentProvider,
-                userInfoProvider: crashReportingFeature.userInfoProvider,
-                networkConnectionInfoProvider: crashReportingFeature.networkConnectionInfoProvider,
-                carrierInfoProvider: crashReportingFeature.carrierInfoProvider,
-                rumViewEventProvider: crashReportingFeature.rumViewEventProvider,
-                rumSessionStateProvider: crashReportingFeature.rumSessionStateProvider,
-                appStateListener: crashReportingFeature.appStateListener
+                consentProvider: feature.consentProvider,
+                userInfoProvider: feature.userInfoProvider,
+                networkConnectionInfoProvider: feature.networkConnectionInfoProvider,
+                carrierInfoProvider: feature.carrierInfoProvider,
+                rumViewEventProvider: feature.rumViewEventProvider,
+                rumSessionStateProvider: feature.rumSessionStateProvider,
+                appStateListener: feature.appStateListener
             ),
             loggingOrRUMIntegration: availableLoggingOrRUMIntegration
         )

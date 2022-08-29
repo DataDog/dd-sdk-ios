@@ -15,24 +15,14 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
 
     /// The output for writing logs. It uses the authorized data folder and is synchronized with the eventual
     /// authorized output working simultaneously in the Logging feature.
-    private let logOutput: LogOutput
-
+    private let core: DatadogCoreProtocol
     private let context: DatadogV1Context
 
-    init(loggingFeature: LoggingFeature, context: DatadogV1Context) {
-        self.init(
-            logOutput: LogFileOutput(
-                fileWriter: loggingFeature.storage.arbitraryAuthorizedWriter
-            ),
-            context: context
-        )
-    }
-
     init(
-        logOutput: LogOutput,
+        core: DatadogCoreProtocol,
         context: DatadogV1Context
     ) {
-        self.logOutput = logOutput
+        self.core = core
         self.context = context
     }
 
@@ -50,7 +40,13 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
         let realCrashDate = crashDate.addingTimeInterval(currentTimeCorrection)
 
         let log = createLog(from: crashReport, crashContext: crashContext, crashDate: realCrashDate)
-        logOutput.write(log: log)
+
+        core.send(
+            message: .custom(
+                key: "crash",
+                attributes: ["log": log]
+            )
+        )
     }
 
     // MARK: - Building Log

@@ -2157,16 +2157,6 @@
 			path = RUM;
 			sourceTree = "<group>";
 		};
-		6112B11C25C84E7F00B37771 /* CrashReporting */ = {
-			isa = PBXGroup;
-			children = (
-				6112B11325C84E7900B37771 /* CrashReportingIntegration.swift */,
-				6112B10125C83D4E00B37771 /* CrashReportingWithLoggingIntegration.swift */,
-				6112B10A25C849C000B37771 /* CrashReportingWithRUMIntegration.swift */,
-			);
-			path = CrashReporting;
-			sourceTree = "<group>";
-		};
 		61133B78242393DE00786299 = {
 			isa = PBXGroup;
 			children = (
@@ -2726,7 +2716,6 @@
 				61FC5F4425CC23C9006BB4DE /* RUMWithCrashContextIntegration.swift */,
 				E11625D727B681D200E428C6 /* CITestIntegration.swift */,
 				9EB4B860274E79620041CD03 /* WebView */,
-				6112B11C25C84E7F00B37771 /* CrashReporting */,
 			);
 			path = FeaturesIntegration;
 			sourceTree = "<group>";
@@ -3777,6 +3766,7 @@
 				61DE333525C8278A008E3EC2 /* DDCrashReportingPluginType.swift */,
 				6161247825CA9CA6009901BE /* CrashReporter.swift */,
 				616124AF25CAC26B009901BE /* CrashContext */,
+				D24CA32F28B3BF0C007B26BF /* Integrations */,
 			);
 			path = CrashReporting;
 			sourceTree = "<group>";
@@ -4279,6 +4269,16 @@
 				611F82022563C66100CB9BDB /* UIKitRUMViewsPredicateTests.swift */,
 			);
 			path = UIKit;
+			sourceTree = "<group>";
+		};
+		D24CA32F28B3BF0C007B26BF /* Integrations */ = {
+			isa = PBXGroup;
+			children = (
+				6112B11325C84E7900B37771 /* CrashReportingIntegration.swift */,
+				6112B10125C83D4E00B37771 /* CrashReportingWithLoggingIntegration.swift */,
+				6112B10A25C849C000B37771 /* CrashReportingWithRUMIntegration.swift */,
+			);
+			path = Integrations;
 			sourceTree = "<group>";
 		};
 		D26C49B428893E5300802B2D /* Upload */ = {

@@ -118,4 +118,54 @@ class RUMMessageReceiverTests: XCTestCase {
         let received: FeatureMessageAttributes.AnyEncodable = try XCTUnwrap(core.events().last, "It should send event")
         try AssertEncodedRepresentationsEqual(received, sent)
     }
+
+    func testReceiveCrashEvent() throws {
+        // Given
+        let core = PassthroughCoreMock(
+            bypassConsentExpectation: expectation(description: "Send Event Bypass Consent"),
+            messageReceiver: RUMMessageReceiver()
+        )
+
+        // When
+        let sentError: RUMCrashEvent = .mockRandom()
+
+        core.send(
+            message: .custom(key: "crash", attributes: [
+                "rum-error": sentError
+            ])
+        )
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let receivedError: RUMCrashEvent = try XCTUnwrap(core.events().last, "It should send event")
+        try AssertEncodedRepresentationsEqual(sentError, receivedError)
+    }
+
+    func testReceiveCrashAndViewEvent() throws {
+        // Given
+        let core = PassthroughCoreMock(
+            bypassConsentExpectation: expectation(description: "Send Event Bypass Consent"),
+            messageReceiver: RUMMessageReceiver()
+        )
+
+        // When
+        let sentError: RUMCrashEvent = .mockRandom()
+        let sentView: RUMViewEvent = .mockRandom()
+
+        core.send(
+            message: .custom(key: "crash", attributes: [
+                "rum-error": sentError,
+                "rum-view": sentView
+            ])
+        )
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let receivedError: RUMCrashEvent = try XCTUnwrap(core.events().last, "It should send event")
+        let receivedView: RUMViewEvent = try XCTUnwrap(core.events().last, "It should send event")
+        try AssertEncodedRepresentationsEqual(sentError, receivedError)
+        try AssertEncodedRepresentationsEqual(sentView, receivedView)
+    }
 }

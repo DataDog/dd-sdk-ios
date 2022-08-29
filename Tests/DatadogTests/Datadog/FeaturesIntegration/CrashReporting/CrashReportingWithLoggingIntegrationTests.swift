@@ -8,7 +8,9 @@ import XCTest
 @testable import Datadog
 
 class CrashReportingWithLoggingIntegrationTests: XCTestCase {
-    private let logOutput = LogOutputMock()
+    let core = PassthroughCoreMock(
+        messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
+    )
 
     // MARK: - Testing Conditional Uploads
 
@@ -21,7 +23,7 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
 
         // When
         let integration = CrashReportingWithLoggingIntegration(
-            logOutput: logOutput,
+            core: core,
             context: .mockWith(
                 dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
                 dateCorrector: DateCorrectorMock()
@@ -30,7 +32,7 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
         integration.send(crashReport: crashReport, with: crashContext)
 
         // Then
-        XCTAssertNil(logOutput.recordedLog)
+        XCTAssertTrue(core.events(ofType: LogEvent.self).isEmpty)
     }
 
     // MARK: - Testing Uploaded Data
@@ -80,7 +82,7 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
 
         // When
         let integration = CrashReportingWithLoggingIntegration(
-            logOutput: logOutput,
+            core: core,
             context: .mockWith(
                 service: configuration.serviceName,
                 env: configuration.environment,
@@ -93,7 +95,7 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
         integration.send(crashReport: crashReport, with: crashContext)
 
         // Then
-        let log = try XCTUnwrap(logOutput.recordedLog)
+        let log = try XCTUnwrap(core.events(ofType: LogEvent.self).first)
         let user = try XCTUnwrap(crashContext.lastUserInfo)
 
         let expectedLog = LogEvent(
