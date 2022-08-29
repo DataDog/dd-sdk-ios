@@ -188,10 +188,8 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending user info
 
     func testSendingUserInfo() throws {
-        let userInfoProvider = UserInfoProvider()
-
         core.context = .mockWith(
-            userInfoProvider: userInfoProvider
+            userInfo: .empty
         )
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers()
@@ -199,13 +197,12 @@ class LoggerTests: XCTestCase {
 
         let logger = Logger.builder.build(in: core)
 
-        userInfoProvider.value = .empty
         logger.debug("message with no user info")
 
-        userInfoProvider.value = UserInfo(id: "abc-123", name: "Foo", email: nil, extraInfo: [:])
+        core.context.userInfo = UserInfo(id: "abc-123", name: "Foo", email: nil, extraInfo: [:])
         logger.debug("message with user `id` and `name`")
 
-        userInfoProvider.value = UserInfo(
+        core.context.userInfo = UserInfo(
             id: "abc-123",
             name: "Foo",
             email: "foo@example.com",
@@ -217,7 +214,7 @@ class LoggerTests: XCTestCase {
         )
         logger.debug("message with user `id`, `name`, `email` and `extraInfo`")
 
-        userInfoProvider.value = .empty
+        core.context.userInfo = .empty
         logger.debug("message with no user info")
 
         let logMatchers = try feature.waitAndReturnLogMatchers(count: 4)
@@ -242,10 +239,8 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending carrier info
 
     func testSendingCarrierInfoWhenEnteringAndLeavingCellularServiceRange() throws {
-        let carrierInfoProvider = CarrierInfoProviderMock(carrierInfo: nil)
-
         core.context = .mockWith(
-            carrierInfoProvider: carrierInfoProvider
+            carrierInfo: nil
         )
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers()
@@ -256,19 +251,17 @@ class LoggerTests: XCTestCase {
             .build(in: core)
 
         // simulate entering cellular service range
-        carrierInfoProvider.set(
-            current: .mockWith(
-                carrierName: "Carrier",
-                carrierISOCountryCode: "US",
-                carrierAllowsVOIP: true,
-                radioAccessTechnology: .LTE
-            )
+        core.context.carrierInfo = .mockWith(
+            carrierName: "Carrier",
+            carrierISOCountryCode: "US",
+            carrierAllowsVOIP: true,
+            radioAccessTechnology: .LTE
         )
 
         logger.debug("message")
 
         // simulate leaving cellular service range
-        carrierInfoProvider.set(current: nil)
+        core.context.carrierInfo = nil
 
         logger.debug("message")
 
@@ -283,10 +276,8 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending network info
 
     func testSendingNetworkConnectionInfoWhenReachabilityChanges() throws {
-        let networkConnectionInfoProvider = NetworkConnectionInfoProviderMock.mockAny()
-
         core.context = .mockWith(
-            networkConnectionInfoProvider: networkConnectionInfoProvider
+            networkConnectionInfo: nil
         )
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers()
@@ -297,29 +288,25 @@ class LoggerTests: XCTestCase {
             .build(in: core)
 
         // simulate reachable network
-        networkConnectionInfoProvider.set(
-            current: .mockWith(
-                reachability: .yes,
-                availableInterfaces: [.wifi, .cellular],
-                supportsIPv4: true,
-                supportsIPv6: true,
-                isExpensive: false,
-                isConstrained: false
-            )
+        core.context.networkConnectionInfo = .mockWith(
+            reachability: .yes,
+            availableInterfaces: [.wifi, .cellular],
+            supportsIPv4: true,
+            supportsIPv6: true,
+            isExpensive: false,
+            isConstrained: false
         )
 
         logger.debug("message")
 
         // simulate unreachable network
-        networkConnectionInfoProvider.set(
-            current: .mockWith(
-                reachability: .no,
-                availableInterfaces: [],
-                supportsIPv4: false,
-                supportsIPv6: false,
-                isExpensive: false,
-                isConstrained: false
-            )
+        core.context.networkConnectionInfo = .mockWith(
+            reachability: .no,
+            availableInterfaces: [],
+            supportsIPv4: false,
+            supportsIPv6: false,
+            isExpensive: false,
+            isConstrained: false
         )
 
         logger.debug("message")
@@ -666,10 +653,10 @@ class LoggerTests: XCTestCase {
     func testGivenTimeDifferenceBetweenDeviceAndServer_whenCollectingLogs_thenLogDateUsesServerTime() throws {
         // Given
         let deviceTime: Date = .mockDecember15th2019At10AMUTC()
-        let serverTimeDifference = TimeInterval.random(in: -5..<5).rounded() // few seconds difference
+        let serverTimeOffset = TimeInterval.random(in: -5..<5).rounded() // few seconds difference
 
         core.context = .mockWith(
-            dateCorrector: DateCorrectorMock(offset: serverTimeDifference)
+            serverTimeOffset: serverTimeOffset
         )
 
         // When
@@ -684,7 +671,7 @@ class LoggerTests: XCTestCase {
         // Then
         let logMatchers = try feature.waitAndReturnLogMatchers(count: 1)
         logMatchers[0].assertDate { logDate in
-            logDate == deviceTime.addingTimeInterval(serverTimeDifference)
+            logDate == deviceTime.addingTimeInterval(serverTimeOffset)
         }
     }
 

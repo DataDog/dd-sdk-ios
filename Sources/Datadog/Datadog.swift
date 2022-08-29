@@ -179,7 +179,6 @@ public class Datadog {
         let dateCorrector = ServerDateCorrector(serverDateProvider: serverDateProvider)
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
         let carrierInfoProvider = CarrierInfoProvider()
-        let launchTimeProvider = LaunchTimeProvider()
         let appStateListener = AppStateListener(dateProvider: configuration.common.dateProvider)
 
         // Set default `DatadogCore`:
@@ -197,9 +196,7 @@ public class Datadog {
                 dateCorrector: dateCorrector,
                 networkConnectionInfoProvider: networkConnectionInfoProvider,
                 carrierInfoProvider: carrierInfoProvider,
-                userInfoProvider: userInfoProvider,
-                appStateListener: appStateListener,
-                launchTimeProvider: launchTimeProvider
+                userInfoProvider: userInfoProvider
             ),
             contextProvider: DatadogContextProvider(
                 configuration: configuration.common,

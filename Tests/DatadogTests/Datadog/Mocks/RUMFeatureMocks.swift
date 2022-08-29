@@ -9,11 +9,11 @@ import XCTest
 
 extension RUMFeature {
     /// Mocks feature instance which performs no writes and no uploads.
-    static func mockNoOp() -> RUMFeature {
+    static func mockNoOp(configuration: FeaturesConfiguration.RUM = .mockAny()) -> RUMFeature {
         return RUMFeature(
             storage: .mockNoOp(),
             upload: .mockNoOp(),
-            configuration: .mockAny(),
+            configuration: configuration,
             messageReceiver: NOPFeatureMessageReceiver()
         )
     }
@@ -21,7 +21,7 @@ extension RUMFeature {
     /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
     /// Use `RUMFeature.waitAndReturnRUMEventMatchers()` to inspect and assert recorded `RUMEvents`.
     static func mockByRecordingRUMEventMatchers(
-        featureConfiguration: FeaturesConfiguration.RUM = .mockAny(),
+        configuration: FeaturesConfiguration.RUM = .mockAny(),
         messageReceiver: FeatureMessageReceiver = RUMMessageReceiver()
     ) -> RUMFeature {
         // Mock storage with `InMemoryWriter`, used later for retrieving recorded events back:
@@ -34,7 +34,7 @@ extension RUMFeature {
         return RUMFeature(
             storage: interceptedStorage,
             upload: .mockNoOp(),
-            configuration: featureConfiguration,
+            configuration: configuration,
             messageReceiver: messageReceiver
         )
     }

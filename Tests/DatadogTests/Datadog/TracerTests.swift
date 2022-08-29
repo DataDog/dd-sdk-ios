@@ -31,6 +31,7 @@ class TracerTests: XCTestCase {
             version: "1.0.0",
             source: "abc",
             sdkVersion: "1.2.3",
+            ciAppOrigin: nil,
             applicationBundleIdentifier: "com.datadoghq.ios-sdk"
         )
 
@@ -315,10 +316,8 @@ class TracerTests: XCTestCase {
     // MARK: - Sending user info
 
     func testSendingUserInfo() throws {
-        let userInfoProvider = UserInfoProvider()
-
         core.context = .mockWith(
-            userInfoProvider: userInfoProvider
+            userInfo: .empty
         )
 
         let feature: TracingFeature = .mockByRecordingSpanMatchers()
@@ -326,15 +325,14 @@ class TracerTests: XCTestCase {
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd
 
-        userInfoProvider.value = .empty
         tracer.startSpan(operationName: "span with no user info").finish()
         tracer.queue.sync {} // wait for processing the span event in `DDSpan`
 
-        userInfoProvider.value = UserInfo(id: "abc-123", name: "Foo", email: nil, extraInfo: [:])
+        core.context.userInfo = UserInfo(id: "abc-123", name: "Foo", email: nil, extraInfo: [:])
         tracer.startSpan(operationName: "span with user `id` and `name`").finish()
         tracer.queue.sync {}
 
-        userInfoProvider.value = UserInfo(
+        core.context.userInfo = UserInfo(
             id: "abc-123",
             name: "Foo",
             email: "foo@example.com",
@@ -347,7 +345,7 @@ class TracerTests: XCTestCase {
         tracer.startSpan(operationName: "span with user `id`, `name`, `email` and `extraInfo`").finish()
         tracer.queue.sync {}
 
-        userInfoProvider.value = .empty
+        core.context.userInfo = .empty
         tracer.startSpan(operationName: "span with no user info").finish()
 
         let spanMatchers = try feature.waitAndReturnSpanMatchers(count: 4)
@@ -374,10 +372,8 @@ class TracerTests: XCTestCase {
     // MARK: - Sending carrier info
 
     func testSendingCarrierInfoWhenEnteringAndLeavingCellularServiceRange() throws {
-        let carrierInfoProvider = CarrierInfoProviderMock(carrierInfo: nil)
-
         core.context = .mockWith(
-            carrierInfoProvider: carrierInfoProvider
+            carrierInfo: nil
         )
 
         let feature: TracingFeature = .mockByRecordingSpanMatchers()
@@ -389,20 +385,18 @@ class TracerTests: XCTestCase {
         ).dd
 
         // simulate entering cellular service range
-        carrierInfoProvider.set(
-            current: .mockWith(
-                carrierName: "Carrier",
-                carrierISOCountryCode: "US",
-                carrierAllowsVOIP: true,
-                radioAccessTechnology: .LTE
-            )
+        core.context.carrierInfo = .mockWith(
+            carrierName: "Carrier",
+            carrierISOCountryCode: "US",
+            carrierAllowsVOIP: true,
+            radioAccessTechnology: .LTE
         )
 
         tracer.startSpan(operationName: "span with carrier info").finish()
         tracer.queue.sync {} // wait for processing the span event in `DDSpan`
 
         // simulate leaving cellular service range
-        carrierInfoProvider.set(current: nil)
+        core.context.carrierInfo = nil
 
         tracer.startSpan(operationName: "span with no carrier info").finish()
 
@@ -421,11 +415,7 @@ class TracerTests: XCTestCase {
     // MARK: - Sending network info
 
     func testSendingNetworkConnectionInfoWhenReachabilityChanges() throws {
-        let networkConnectionInfoProvider = NetworkConnectionInfoProviderMock.mockAny()
-
-        core.context = .mockWith(
-            networkConnectionInfoProvider: networkConnectionInfoProvider
-        )
+        core.context = .mockWith(networkConnectionInfo: nil)
 
         let feature: TracingFeature = .mockByRecordingSpanMatchers()
         core.register(feature: feature)
@@ -436,30 +426,26 @@ class TracerTests: XCTestCase {
         ).dd
 
         // simulate reachable network
-        networkConnectionInfoProvider.set(
-            current: .mockWith(
-                reachability: .yes,
-                availableInterfaces: [.wifi, .cellular],
-                supportsIPv4: true,
-                supportsIPv6: true,
-                isExpensive: true,
-                isConstrained: true
-            )
+        core.context.networkConnectionInfo = .mockWith(
+            reachability: .yes,
+            availableInterfaces: [.wifi, .cellular],
+            supportsIPv4: true,
+            supportsIPv6: true,
+            isExpensive: true,
+            isConstrained: true
         )
 
         tracer.startSpan(operationName: "online span").finish()
         tracer.queue.sync {} // wait for processing the span event in `DDSpan`
 
         // simulate unreachable network
-        networkConnectionInfoProvider.set(
-            current: .mockWith(
-                reachability: .no,
-                availableInterfaces: [],
-                supportsIPv4: false,
-                supportsIPv6: false,
-                isExpensive: false,
-                isConstrained: false
-            )
+        core.context.networkConnectionInfo = .mockWith(
+            reachability: .no,
+            availableInterfaces: [],
+            supportsIPv4: false,
+            supportsIPv6: false,
+            isExpensive: false,
+            isConstrained: false
         )
 
         tracer.startSpan(operationName: "offline span").finish()
@@ -798,10 +784,10 @@ class TracerTests: XCTestCase {
     func testGivenTimeDifferenceBetweenDeviceAndServer_whenCollectingSpans_thenSpanDateUsesServerTime() throws {
         // Given
         let deviceTime: Date = .mockDecember15th2019At10AMUTC()
-        let serverTimeDifference = TimeInterval.random(in: -5..<5).rounded() // few seconds difference
+        let serverTimeOffset = TimeInterval.random(in: -5..<5).rounded() // few seconds difference
 
         core.context = .mockWith(
-            dateCorrector: DateCorrectorMock(offset: serverTimeDifference)
+            serverTimeOffset: serverTimeOffset
         )
 
         // When
@@ -819,7 +805,7 @@ class TracerTests: XCTestCase {
         let spanMatcher = try feature.waitAndReturnSpanMatchers(count: 1)[0]
         XCTAssertEqual(
             try spanMatcher.startTime(),
-            deviceTime.addingTimeInterval(serverTimeDifference).timeIntervalSince1970.toNanoseconds,
+            deviceTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toNanoseconds,
             "The `startTime` should be using server time."
         )
         XCTAssertEqual(

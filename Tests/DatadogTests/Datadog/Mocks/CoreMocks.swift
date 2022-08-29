@@ -676,25 +676,6 @@ class DateCorrectorMock: DateCorrector {
     }
 }
 
-struct LaunchTimeProviderMock: LaunchTimeProviderType {
-    let launchTime: TimeInterval
-    let isActivePrewarm: Bool
-}
-
-extension LaunchTimeProviderMock {
-    static func mockAny() -> LaunchTimeProviderMock {
-        return mockWith(launchTime: 0, isActivePrewarm: false)
-    }
-
-    static func mockWith(launchTime: TimeInterval, isActivePrewarm: Bool = false) -> LaunchTimeProviderMock {
-        return LaunchTimeProviderMock(launchTime: launchTime, isActivePrewarm: isActivePrewarm)
-    }
-
-    static func mockRandom(launchTime: TimeInterval = .mockRandom(), isActivePrewarm: Bool = .random()) -> LaunchTimeProviderMock {
-        return mockWith(launchTime: launchTime, isActivePrewarm: isActivePrewarm)
-    }
-}
-
 extension AppState: AnyMockable, RandomMockable {
     static func mockAny() -> AppState {
         return .active

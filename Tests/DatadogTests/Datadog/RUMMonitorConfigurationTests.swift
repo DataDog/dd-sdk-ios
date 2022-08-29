@@ -8,9 +8,9 @@ import XCTest
 @testable import Datadog
 
 class RUMMonitorConfigurationTests: XCTestCase {
-    private let userInfoProvider: UserInfoProvider = .mockAny()
-    private let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
-    private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
+    private let userIno: UserInfo = .mockAny()
+    private let networkConnectionInfo: NetworkConnectionInfo = .mockAny()
+    private let carrierInfo: CarrierInfo = .mockAny()
 
     func testRUMMonitorConfiguration() throws {
         let expectation = expectation(description: "open feature scope")
@@ -21,15 +21,15 @@ class RUMMonitorConfigurationTests: XCTestCase {
                 env: "tests",
                 version: "1.2.3",
                 sdkVersion: "3.4.5",
-                networkConnectionInfoProvider: networkConnectionInfoProvider,
-                carrierInfoProvider: carrierInfoProvider,
-                userInfoProvider: userInfoProvider
+                userInfo: userIno,
+                networkConnectionInfo: networkConnectionInfo,
+                carrierInfo: carrierInfo
             )
         )
         defer { core.flush() }
 
         let feature: RUMFeature = .mockByRecordingRUMEventMatchers(
-            featureConfiguration: .mockWith(
+            configuration: .mockWith(
                 applicationID: "rum-123",
                 sessionSampler: Sampler(samplingRate: 42.5)
             )
@@ -40,9 +40,9 @@ class RUMMonitorConfigurationTests: XCTestCase {
 
         let dependencies = monitor.applicationScope.dependencies
         monitor.core.v1.scope(for: RUMFeature.self)?.eventWriteContext { context, _ in
-            XCTAssertEqual(context.userInfo, self.userInfoProvider.value)
-            XCTAssertEqual(context.networkConnectionInfo, self.networkConnectionInfoProvider.current)
-            XCTAssertEqual(context.carrierInfo, self.carrierInfoProvider.current)
+            XCTAssertEqual(context.userInfo, self.userIno)
+            XCTAssertEqual(context.networkConnectionInfo, self.networkConnectionInfo)
+            XCTAssertEqual(context.carrierInfo, self.carrierInfo)
 
             XCTAssertEqual(context.service, "service-name")
             XCTAssertEqual(context.version, "1.2.3")

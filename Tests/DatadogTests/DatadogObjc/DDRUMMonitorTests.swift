@@ -147,7 +147,6 @@ class DDRUMMonitorTests: XCTestCase {
     /// The only difference vs. `DDRUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
     private func createTestableDDRUMMonitor() throws -> DatadogObjc.DDRUMMonitor {
         let rumFeature: RUMFeature = try XCTUnwrap(core.v1.feature(RUMFeature.self), "RUM feature must be initialized before creating `RUMMonitor`")
-        let v1Context = try XCTUnwrap(core.v1.context, "`DatadogCore` must be initialized before creating `RUMMonitor`")
         let swiftMonitor = RUMMonitor(
             core: core,
             dependencies: RUMScopeDependencies(
@@ -155,7 +154,7 @@ class DDRUMMonitorTests: XCTestCase {
                 crashReportingFeature: nil
             )
             .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-            dateProvider: v1Context.dateProvider
+            dateProvider: rumFeature.configuration.dateProvider
         )
         return DatadogObjc.DDRUMMonitor(swiftRUMMonitor: swiftMonitor)
     }
@@ -341,11 +340,11 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingActionEvents() throws {
-        core.context = .mockWith(
-            dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
+            configuration: .mockWith(
+                dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+            )
         )
-
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
         core.register(feature: rum)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()

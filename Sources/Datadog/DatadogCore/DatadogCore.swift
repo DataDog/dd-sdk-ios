@@ -186,7 +186,7 @@ extension DatadogCore: DatadogV1CoreProtocol {
         )
     }
 
-    var context: DatadogV1Context? {
+    var legacyContext: DatadogV1Context? {
         return v1Context
     }
 
@@ -271,43 +271,29 @@ extension DatadogV1Context {
     /// - Parameters:
     ///   - configuration: The configuration.
     ///   - device: The device description.
-    ///   - dateProvider: The local date provider.
     ///   - dateCorrector: The server date corrector.
     ///   - networkConnectionInfoProvider: The network info provider.
     ///   - carrierInfoProvider: The carrier info provider.
     ///   - userInfoProvider: The user info provider.
-    ///   - appStateListener: The application state listener.
-    ///   - launchTimeProvider: The launch time provider.
     init(
         configuration: CoreConfiguration,
         device: DeviceInfo,
         dateCorrector: DateCorrector,
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
         carrierInfoProvider: CarrierInfoProviderType,
-        userInfoProvider: UserInfoProvider,
-        appStateListener: AppStateListening,
-        launchTimeProvider: LaunchTimeProviderType
+        userInfoProvider: UserInfoProvider
     ) {
-        self.site = configuration.site
-        self.clientToken = configuration.clientToken
         self.service = configuration.serviceName
         self.env = configuration.environment
         self.version = configuration.applicationVersion
         self.source = configuration.source
         self.sdkVersion = configuration.sdkVersion
-        self.ciAppOrigin = configuration.origin
-        self.applicationName = configuration.applicationName
-        self.applicationBundleIdentifier = configuration.applicationBundleIdentifier
-        self.dateProvider = configuration.dateProvider
 
-        self.sdkInitDate = dateProvider.now
         self.device = device
         self.dateCorrector = dateCorrector
         self.networkConnectionInfoProvider = networkConnectionInfoProvider
         self.carrierInfoProvider = carrierInfoProvider
         self.userInfoProvider = userInfoProvider
-        self.appStateListener = appStateListener
-        self.launchTimeProvider = launchTimeProvider
     }
 }
 

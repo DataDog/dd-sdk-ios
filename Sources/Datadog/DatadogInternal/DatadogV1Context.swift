@@ -22,13 +22,6 @@ internal typealias DatadogSite = Datadog.Configuration.DatadogEndpoint
 internal struct DatadogV1Context {
     // MARK: Datadog Specific
 
-    /// [Datadog Site](https://docs.datadoghq.com/getting_started/site/) for data uploads. It can be `nil` in V1
-    /// if the SDK is configured using deprecated APIs: `set(logsEndpoint:)`, `set(tracesEndpoint:)` and `set(rumEndpoint:)`.
-    let site: DatadogSite?
-
-    /// The client token allowing for data uploads to [Datadog Site](https://docs.datadoghq.com/getting_started/site/).
-    let clientToken: String
-
     /// The name of the service that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
     let service: String
 
@@ -45,28 +38,12 @@ internal struct DatadogV1Context {
     /// The version of Datadog iOS SDK.
     let sdkVersion: String
 
-    /// The name of [CI Visibility](https://docs.datadoghq.com/continuous_integration/) origin.
-    /// It is only set if the SDK is running with a context passed from [Swift Tests](https://docs.datadoghq.com/continuous_integration/setup_tests/swift/?tab=swiftpackagemanager) library.
-    let ciAppOrigin: String?
-
     // MARK: - Application Specific
-
-    /// The name of the application, read from `Info.plist` (`CFBundleExecutable`).
-    let applicationName: String
-
-    /// The bundle identifier, read from `Info.plist` (`CFBundleIdentifier`).
-    let applicationBundleIdentifier: String
-
-    /// Date of SDK initialization measured in device time (without NTP correction).
-    let sdkInitDate: Date
 
     /// Current device information.
     let device: DeviceInfo
 
     // MARK: Providers
-
-    /// Time provider.
-    let dateProvider: DateProvider
 
     /// NTP time correction provider.
     let dateCorrector: DateCorrector
@@ -79,10 +56,4 @@ internal struct DatadogV1Context {
 
     /// User information provider.
     let userInfoProvider: UserInfoProvider
-
-    /// Provides the history of app foreground / background states and lets subscribe for their updates.
-    let appStateListener: AppStateListening
-
-    /// Provides the information about application launch time.
-    let launchTimeProvider: LaunchTimeProviderType
 }

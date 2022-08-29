@@ -152,8 +152,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
                 service: "default-service-name",
                 env: "tests",
                 version: "1.0.0",
-                applicationBundleIdentifier: "com.datadoghq.ios-sdk",
-                dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+                applicationBundleIdentifier: "com.datadoghq.ios-sdk"
             )
         )
         defer { core.flush() }
@@ -173,7 +172,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
             hostsSanitizer: MockHostsSanitizer(),
             loggingFeature: logging,
             rumFeature: rum,
-            context: core.context!
+            context: core.legacyContext!
         )
 
         let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DatadogMessageHandler
