@@ -151,6 +151,11 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     /// Initializes the Datadog RUM Monitor.
     public static func initialize(in core: DatadogCoreProtocol = defaultDatadogCore) -> DDRUMMonitor {
         do {
+            if core is NOPDatadogCore {
+                throw ProgrammerError(
+                    description: "`Datadog.initialize()` must be called prior to `RUMMonitor.initialize()`."
+                )
+            }
             if Global.rum is RUMMonitor {
                 throw ProgrammerError(
                     description: """

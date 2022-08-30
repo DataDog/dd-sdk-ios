@@ -343,6 +343,12 @@ public class Logger: LoggerProtocol {
         }
 
         private func buildOrThrow(in core: DatadogCoreProtocol) throws -> LoggerProtocol {
+            if core is NOPDatadogCore {
+                throw ProgrammerError(
+                    description: "`Datadog.initialize()` must be called prior to `Logger.builder.build()`."
+                )
+            }
+
             guard let loggingFeature = core.v1.feature(LoggingFeature.self) else {
                 throw ProgrammerError(
                     description: "`Logger.builder.build()` produces a non-functional logger, as the logging feature is disabled."

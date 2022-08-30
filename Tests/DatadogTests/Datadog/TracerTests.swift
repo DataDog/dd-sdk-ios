@@ -858,6 +858,25 @@ class TracerTests: XCTestCase {
 
     // MARK: - Usage errors
 
+    func testGivenDatadogNotInitialized_whenInitializingTracer_itPrintsError() {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
+
+        // given
+        let core = NOPDatadogCore()
+
+        // when
+        let tracer = Tracer.initialize(configuration: .init(), in: core)
+
+        // then
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `Tracer.initialize()`."
+        )
+        XCTAssertTrue(tracer is DDNoopTracer)
+    }
+
     func testGivenTracingFeatureDisabled_whenInitializingTracer_itPrintsError() {
         let printFunction = PrintFunctionMock()
         consolePrint = printFunction.print

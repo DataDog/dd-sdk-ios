@@ -72,6 +72,11 @@ public class Tracer: OTTracer {
     ///   - configuration: the tracer configuration obtained using `Tracer.Configuration()`.
     public static func initialize(configuration: Configuration, in core: DatadogCoreProtocol = defaultDatadogCore) -> OTTracer {
         do {
+            if core is NOPDatadogCore {
+                throw ProgrammerError(
+                    description: "`Datadog.initialize()` must be called prior to `Tracer.initialize()`."
+                )
+            }
             if Global.sharedTracer is Tracer {
                 throw ProgrammerError(
                     description: """

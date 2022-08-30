@@ -704,6 +704,28 @@ class LoggerTests: XCTestCase {
 
     // MARK: - Usage
 
+    func testGivenDatadogNotInitialized_whenInitializingLogger_itPrintsError() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        // given
+        let core = NOPDatadogCore()
+
+        // when
+        let logger = Logger.builder.build(in: core)
+
+        // then
+        XCTAssertEqual(
+            dd.logger.criticalLog?.message,
+            "Failed to build `Logger`."
+        )
+        XCTAssertEqual(
+            dd.logger.criticalLog?.error?.message,
+            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `Logger.builder.build()`."
+        )
+        XCTAssertTrue(logger.v2Logger is NOPLogger)
+    }
+
     func testGivenLoggingFeatureDisabled_whenInitializingLogger_itPrintsError() {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
