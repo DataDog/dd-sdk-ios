@@ -596,19 +596,15 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     // MARK: - RUMCommandSubscriber
 
     func process(command: RUMCommand) {
-        guard let scope = core.v1.scope(for: RUMFeature.self) else {
-            return
-        }
+        core.v1.scope(for: RUMFeature.self)?.eventWriteContext { context, writer in
+            self.queue.async {
+                let transformedCommand = self.transform(command: command)
 
-        queue.async {
-            let transformedCommand = self.transform(command: command)
-
-            scope.eventWriteContext { context, writer in
                 _ = self.applicationScope.process(command: transformedCommand, context: context, writer: writer)
-            }
 
-            if let debugging = self.debugging {
-                debugging.debug(applicationScope: self.applicationScope)
+                if let debugging = self.debugging {
+                    debugging.debug(applicationScope: self.applicationScope)
+                }
             }
         }
     }
