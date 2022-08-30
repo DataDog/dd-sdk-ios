@@ -12,9 +12,9 @@ further_reading:
   - link: "/real_user_monitoring"
     tag: "Documentation"
     text: "Learn how to explore your RUM data"
-  - link: "/real_user_monitoring/ios/crash_reporting/"
+  - link: "/real_user_monitoring/error_tracking/ios/"
     tag: "Documentation"
-    text: "See your crash reports and error trends in RUM"
+    text: "Learn how to track iOS errors"
 ---
 
 ## Overview
@@ -309,26 +309,9 @@ NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConf
 {{% /tab %}}
 {{< /tabs >}}
 
-### Track background events
+## Track iOS errors
 
-You can track events such as crashes and network requests when your application is in the background (for example, no active view is available). 
-
-Add the following snippet during initialization in your Datadog configuration:
-
-{{< tabs >}}
-{{% tab "Swift" %}}
-```swift
-.trackBackgroundEvents()
-
-```
-{{% /tab %}}
-{{< /tabs >}}
-<div class="alert alert-info"><p>Tracking background events may lead to additional sessions, which can impact billing. For questions, <a href="https://docs.datadoghq.com/help/">contact Datadog support.</a></p>
-</div>
-
-## Access outstanding errors
-
-Crash Reporting and Error Tracking for iOS displays any issues and latest available errors. You can view error details and attributes including JSON in the [RUM Explorer][10]. 
+[iOS Crash Reporting and Error Tracking][13] displays any issues in your application and the latest available errors. You can view error details and attributes including JSON in the [RUM Explorer][10]. 
 
 ## Further Reading
 
@@ -347,3 +330,4 @@ Crash Reporting and Error Tracking for iOS displays any issues and latest availa
 [10]: https://docs.datadoghq.com/real_user_monitoring/explorer/
 [11]: https://docs.datadoghq.com/getting_started/tagging/using_tags/#rum--session-replay
 [12]: https://docs.datadoghq.com/real_user_monitoring/ios/web_view_tracking/
+[13]: https://docs.datadohq.com/real_user_monitoring/error_tracking/ios/
