@@ -16,12 +16,11 @@ further_reading:
 
 The Datadog iOS SDK for RUM allows you to instrument views and actions of `SwiftUI` applications. The instrumentation also works with hybrid `UIKit` and `SwiftUI` applications. 
 
-
-Support for SwiftUI was introduced in the SDK [v1.9.0][2]. 
+Support for SwiftUI was introduced in the SDK [v1.9.0][1]. 
 
 ## Setup
 
-For more information about setup, see [iOS and tvOS Monitoring][1].
+For more information about setup, see [iOS and tvOS Monitoring][2].
 
 ### Instrument views
 
@@ -63,23 +62,9 @@ struct BarView: View {
 }
 ```
 
-
-## Track background events
-
-<div class="alert alert-info"><p>Tracking background events may lead to additional sessions, which can impact billing. For questions, <a href="https://docs.datadoghq.com/help/">contact Datadog support.</a></p>
-</div>
-
-You can track events such as crashes and network requests when your application is in the background (for example, no active view is available).
-
-Add the following snippet during initialization in your Datadog configuration:
-
-```swift
-.trackBackgroundEvents()
-```
-
 ## Further reading
 
 {{< partial name="whats-next/whats-next.html" >}}
 
-[1]: /real_user_monitoring/ios/#setup
-[2]: https://github.com/DataDog/dd-sdk-ios/releases/tag/1.9.0
+[1]: https://github.com/DataDog/dd-sdk-ios/releases/tag/1.9.0
+[2]: /real_user_monitoring/ios/#setup
