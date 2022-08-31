@@ -22,6 +22,8 @@ import Foundation
 internal class Processor: ViewTreeSnapshotProcessor {
     /// The background queue for executing all logic.
     private let queue = DispatchQueue(label: "com.datadoghq.session-replay.processor", qos: .utility)
+    /// Flattens VTS received from `Recorder` by transforming its tree-structure into flat array of nodes and removing invisible nodes.
+    private let nodesFlattener = NodesFlattener()
     /// Builds SR wireframes to describe UI elements.
     private let wireframesBuilder = WireframesBuilder()
     /// Builds SR records to transport SR wireframes.
@@ -45,8 +47,10 @@ internal class Processor: ViewTreeSnapshotProcessor {
             )
         }
 
-        let wireframes = flatten(viewTreeSnapshot: snapshot)
-            .map { viewSnapshot in wireframesBuilder.createShapeWireframe(from: viewSnapshot) }
+        let flattenedNodes = nodesFlattener.flattenNodes(in: snapshot)
+        let wireframes: [SRWireframe] = flattenedNodes
+            .compactMap { node in node.semantics.wireframesBuilder }
+            .flatMap { nodeBuilder in nodeBuilder.buildWireframes(with: wireframesBuilder) }
 
         records.append(
             recordsBuilder.createFullSnapshotRecord(from: snapshot, with: wireframes)
@@ -65,17 +69,6 @@ internal class Processor: ViewTreeSnapshotProcessor {
     // MARK: - 🚧 Work In Progress: things will change in RUMM-2429
 
     private var records: [SRMobileSegment.Records] = []
-
-    private func flatten(viewTreeSnapshot: ViewTreeSnapshot) -> [Node] {
-        func accumulate(next viewSnapshot: Node, in array: inout [Node]) {
-            array.append(viewSnapshot)
-            viewSnapshot.children.forEach { childViewSnapshot in accumulate(next: childViewSnapshot, in: &array) }
-        }
-
-        var flattened: [Node] = []
-        accumulate(next: viewTreeSnapshot.root, in: &flattened)
-        return flattened
-    }
 
     private func printToConsole(segment: SRMobileSegment) {
         let jsonEncoder = JSONEncoder()

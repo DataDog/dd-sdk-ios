@@ -18,6 +18,6 @@ internal struct WindowSnapshotProducer: ViewTreeSnapshotProducer {
         guard let window = windowObserver.relevantWindow else {
             return nil
         }
-        return try snapshotBuilder.createSnapshot(of: window)
+        return snapshotBuilder.createSnapshot(of: window)
     }
 }

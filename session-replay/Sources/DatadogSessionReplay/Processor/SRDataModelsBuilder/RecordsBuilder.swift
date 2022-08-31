@@ -20,9 +20,9 @@ internal class RecordsBuilder {
     func createMetaRecord(from snapshot: ViewTreeSnapshot) -> SRRecord {
         let record = SRMetaRecord(
             data: .init(
-                height: snapshot.root.frame.height,
+                height: Int64(withNoOverflow: snapshot.root.viewAttributes.frame.height),
                 href: nil,
-                width: snapshot.root.frame.width
+                width: Int64(withNoOverflow: snapshot.root.viewAttributes.frame.width)
             ),
             timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
         )
