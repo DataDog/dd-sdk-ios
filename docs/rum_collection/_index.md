@@ -15,6 +15,9 @@ further_reading:
   - link: "/real_user_monitoring/error_tracking/ios/"
     tag: "Documentation"
     text: "Learn how to track iOS errors"
+ -  link: "/real_user_monitoring/ios/swiftui/"
+    tag: "Documentation"
+    text: "Learn about instrumenting SwiftUI applications"
 ---
 
 ## Overview
