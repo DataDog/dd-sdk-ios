@@ -70,12 +70,7 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureV1Scope 
     ///
     /// - Parameter block: The block to execute.
     func eventWriteContext(_ block: (DatadogContext, Writer) throws -> Void) {
-        do {
-            try block(context, writer)
-        } catch let error {
-            XCTFail("Encountered an error when executing `eventWriteContext`: \(error)")
-        }
-
+        XCTAssertNoThrow(try block(context, writer), "Encountered an error when executing `eventWriteContext`")
         expectation?.fulfill()
     }
 

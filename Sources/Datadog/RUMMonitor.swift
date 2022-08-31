@@ -597,7 +597,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
 
     func process(command: RUMCommand) {
         core.v1.scope(for: RUMFeature.self)?.eventWriteContext { context, writer in
-            self.queue.async {
+            self.queue.sync {
                 let transformedCommand = self.transform(command: command)
 
                 _ = self.applicationScope.process(command: transformedCommand, context: context, writer: writer)

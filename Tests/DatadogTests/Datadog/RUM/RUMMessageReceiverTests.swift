@@ -9,7 +9,7 @@ import XCTest
 @testable import Datadog
 
 class RUMMessageReceiverTests: XCTestCase {
-    func testReceiveIncompleteLogMessage() throws {
+    func testReceiveIncompleteError() throws {
         let expectation = expectation(description: "Don't send error fallback")
 
         // Given
@@ -34,7 +34,7 @@ class RUMMessageReceiverTests: XCTestCase {
         XCTAssertTrue(core.events.isEmpty)
     }
 
-    func testReceivePartialLogMessage() throws {
+    func testReceivePartialError() throws {
         // Given
         let core = PassthroughCoreMock(
             expectation: expectation(description: "Send Error"),
@@ -62,7 +62,7 @@ class RUMMessageReceiverTests: XCTestCase {
         XCTAssertEqual(event.error.source, .custom)
     }
 
-    func testReceiveCompleteLogMessage() throws {
+    func testReceiveCompleteError() throws {
         // Given
         let core = PassthroughCoreMock(
             expectation: expectation(description: "Send Error"),
