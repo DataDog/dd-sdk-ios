@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogSDKCrashReporting"
   s.module_name  = "DatadogCrashReporting"
-  s.version      = "1.12.0-beta2"
+  s.version      = "1.12.0-beta3"
   s.summary      = "Official Datadog Crash Reporting SDK for iOS."
   
   s.homepage     = "https://www.datadoghq.com"
@@ -22,6 +22,6 @@ Pod::Spec.new do |s|
   s.static_framework = true
 
   s.source_files = "Sources/DatadogCrashReporting/**/*.swift"
-  s.dependency 'DatadogSDK', '1.12.0-beta2'
+  s.dependency 'DatadogSDK', '1.12.0-beta3'
   s.dependency 'PLCrashReporter', '~> 1.10.1'
 end
