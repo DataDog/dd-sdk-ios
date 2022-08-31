@@ -140,19 +140,19 @@ internal class DDSpan: OTSpan {
         // Baggage items must be accessed outside the `tracer.queue` as it uses that queue for internal sync.
         let baggageItems = ddContext.baggageItems.all
 
-        // This queue adds performance optimisation by reading all `unsafe*` values in one block and performing
-        // the `builder.createSpan()` off the main thread. This is important as the span creation includes
-        // attributes encoding to JSON string values (for tags and extra user info). It captures `self` strongly
-        // as it is very likely to be deallocated after return.
-        queue.async {
-            tracing.eventWriteContext { context, writer in
+        tracing.eventWriteContext { context, writer in
+            // This queue adds performance optimisation by reading all `unsafe*` values in one block and performing
+            // the `builder.createSpan()` off the main thread. This is important as the span creation includes
+            // attributes encoding to JSON string values (for tags and extra user info). It captures `self` strongly
+            // as it is very likely to be deallocated after return.
+            let event: SpanEvent = self.queue.sync {
                 let builder = SpanEventBuilder(
                     serviceName: configuration.serviceName,
                     sendNetworkInfo: configuration.sendNetworkInfo,
                     eventsMapper: self.ddTracer.spanEventMapper
                 )
 
-                let event = builder.createSpanEvent(
+                return builder.createSpanEvent(
                     context: context,
                     traceID: self.ddContext.traceID,
                     spanID: self.ddContext.spanID,
@@ -164,10 +164,10 @@ internal class DDSpan: OTSpan {
                     baggageItems: baggageItems,
                     logFields: self.unsafeLogFields
                 )
-
-                let envelope = SpanEventsEnvelope(span: event, environment: context.env)
-                writer.write(value: envelope)
             }
+
+            let envelope = SpanEventsEnvelope(span: event, environment: context.env)
+            writer.write(value: envelope)
         }
     }
 
