@@ -1,8 +1,8 @@
 ---
-title: Swift
+title: SwiftUI
 kind: documentation
 beta: true
-description: Use SwiftUI to instrument your RUM applications.
+description: Use RUM to instrument your SwiftUI applications.
 further_reading:
 - link: 'https://github.com/DataDog/dd-sdk-ios'
   tag: 'GitHub'
@@ -14,9 +14,10 @@ further_reading:
 
 ## Overview
 
-The Datadog iOS SDK for RUM supports Swift and SwiftUI. 
+The Datadog iOS SDK for RUM allows you to instrument views and actions of `SwiftUI` applications. The instrumentation also works with hybrid `UIKit` and `SwiftUI` applications. 
 
-[Version support information here].
+
+Support for SwiftUI was introduced in the SDK [v1.9.0][2]. 
 
 ## Setup
 
@@ -24,7 +25,7 @@ For more information about setup, see [iOS and tvOS Monitoring][1].
 
 ### Instrument views
 
-To instrument RUM views, add the following to your initialization file:
+To instrument a `SwiftUI.View`, add the following method to your view declaration:
 
 ```swift
 import SwiftUI
@@ -41,9 +42,11 @@ struct FooView: View {
 }
 ```
 
+The `trackRUMView(name:)` method starts and stops a RUM view when the `SwiftUI` view appears and disappears from the screen.
+
 ### Instrument tap actions
 
-To instrument RUM tap actions, add the following to your initialization file:
+To instrument a tap action on a `SwiftUI.View`, add the following method to your view declaration:
 
 ```swift
 import SwiftUI
@@ -60,7 +63,6 @@ struct BarView: View {
 }
 ```
 
-These API endpoints work with `UIKit` auto-instrumentation for hybrid `UIKit` and `SwiftUI` applications. 
 
 ## Track background events
 
@@ -80,3 +82,4 @@ Add the following snippet during initialization in your Datadog configuration:
 {{< partial name="whats-next/whats-next.html" >}}
 
 [1]: /real_user_monitoring/ios/#setup
+[2]: https://github.com/DataDog/dd-sdk-ios/releases/tag/1.9.0
