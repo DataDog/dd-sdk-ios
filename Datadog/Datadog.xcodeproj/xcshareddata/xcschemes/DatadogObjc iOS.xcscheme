@@ -132,7 +132,7 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_CIVISIBILITY_EXCLUDED_BRANCHES"
-            value = "develop"
+            value = "develop,release/*,hotfix/*"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>

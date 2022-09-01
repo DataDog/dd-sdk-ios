@@ -152,7 +152,7 @@
       },
       {
         "key" : "DD_CIVISIBILITY_EXCLUDED_BRANCHES",
-        "value" : "develop"
+        "value" : "develop,release\/*,hotfix\/*"
       }
     ],
     "targetForVariableExpansion" : {
