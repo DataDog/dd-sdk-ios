@@ -4,20 +4,20 @@ kind: documentation
 beta: true
 description: "Collect RUM data from your iOS and tvOS applications."
 aliases:
-    - /real_user_monitoring/ios/getting_started
+  - /real_user_monitoring/ios/getting_started
 further_reading:
-  - link: "https://github.com/DataDog/dd-sdk-ios"
-    tag: "Github"
-    text: "dd-sdk-ios Source Code"
-  - link: "/real_user_monitoring"
-    tag: "Documentation"
-    text: "Learn how to explore your RUM data"
-  - link: "/real_user_monitoring/error_tracking/ios/"
-    tag: "Documentation"
-    text: "Learn how to track iOS errors"
- -  link: "/real_user_monitoring/ios/swiftui/"
-    tag: "Documentation"
-    text: "Learn about instrumenting SwiftUI applications"
+    - link: "https://github.com/DataDog/dd-sdk-ios"
+      tag: "Github"
+      text: "dd-sdk-ios Source Code"
+    - link: "/real_user_monitoring"
+      tag: "Documentation"
+      text: "Learn how to explore your RUM data"
+    - link: "/real_user_monitoring/error_tracking/ios/"
+      tag: "Documentation"
+      text: "Learn how to track iOS errors"
+    - link: "/real_user_monitoring/ios/swiftui/"
+      tag: "Documentation"
+      text: "Learn about instrumenting SwiftUI applications"
 ---
 
 ## Overview
