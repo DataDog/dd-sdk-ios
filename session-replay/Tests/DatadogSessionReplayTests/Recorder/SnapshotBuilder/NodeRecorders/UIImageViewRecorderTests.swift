@@ -7,6 +7,7 @@
 import XCTest
 @testable import DatadogSessionReplay
 
+// swiftlint:disable opening_brace
 class UIImageViewRecorderTests: XCTestCase {
     private let recorder = UIImageViewRecorder()
     /// The view under test.
@@ -59,3 +60,4 @@ class UIImageViewRecorderTests: XCTestCase {
         XCTAssertNil(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
     }
 }
+// swiftlint:enable opening_brace

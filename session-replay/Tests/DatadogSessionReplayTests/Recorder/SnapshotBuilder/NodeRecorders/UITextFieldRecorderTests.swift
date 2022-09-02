@@ -7,6 +7,7 @@
 import XCTest
 @testable import DatadogSessionReplay
 
+// swiftlint:disable opening_brace
 class UITextFieldRecorderTests: XCTestCase {
     private let recorder = UITextFieldRecorder()
     /// The label under test.
@@ -67,3 +68,4 @@ class UITextFieldRecorderTests: XCTestCase {
         XCTAssertNil(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
     }
 }
+// swiftlint:enable opening_brace
