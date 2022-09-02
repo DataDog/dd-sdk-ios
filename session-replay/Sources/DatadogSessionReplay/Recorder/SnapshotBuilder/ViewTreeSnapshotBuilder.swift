@@ -52,7 +52,7 @@ internal struct ViewTreeSnapshotBuilder {
                 continue
             }
 
-            if nextSemantics.importance > semantics.importance {
+            if nextSemantics.importance >= semantics.importance {
                 semantics = nextSemantics
 
                 if nextSemantics.importance == .max {

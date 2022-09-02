@@ -125,4 +125,134 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
             "It should NOT query `childViewOfMeaningfulSemantis`, because the parent has 'specific' semantics"
         )
     }
+
+    // MARK: - Recording Certain Node Semantics
+
+    func testItRecordsInvisibleViews() throws {
+        // Given
+        let builder = ViewTreeSnapshotBuilder()
+        let views: [UIView] = [
+            try UIView.mock(withFixture: .invisible),
+            try UILabel.mock(withFixture: .invisible),
+            try UIImageView.mock(withFixture: .invisible),
+            try UITextField.mock(withFixture: .invisible),
+            try UISwitch.mock(withFixture: .invisible),
+        ]
+
+        // When
+        let snapshots = views.map { builder.createSnapshot(of: $0) }
+
+        // Then
+        zip(snapshots, views).forEach { snapshot, view in
+            XCTAssertTrue(
+                snapshot.root.semantics is InvisibleElement,
+                """
+                All invisible members of `UIView` should record `InvisibleElement` semantics as
+                they will not appear in SR anyway. Got \(type(of: snapshot.root.semantics)) instead.
+                """
+            )
+        }
+    }
+
+    func testItRecordsViewsWithNoAppearance() throws {
+        // Given
+        let builder = ViewTreeSnapshotBuilder()
+
+        let view = try UIView.mock(withFixture: .visibleWithNoAppearance)
+        let label = try UILabel.mock(withFixture: .visibleWithNoAppearance)
+        let imageView = try UIImageView.mock(withFixture: .visibleWithNoAppearance)
+        let textField = try UITextField.mock(withFixture: .visibleWithNoAppearance)
+        let `switch` = try UISwitch.mock(withFixture: .visibleWithNoAppearance)
+
+        // When
+        let viewSnapshot = builder.createSnapshot(of: view)
+        XCTAssertTrue(
+            viewSnapshot.root.semantics is AmbiguousElement,
+            """
+            Bare `UIView` with no appearance should record `AmbiguousElement` semantics as we don't know
+            if this view is specialised with appearance coming from its superclass.
+            Got \(type(of: viewSnapshot.root.semantics)) instead.
+            """
+        )
+
+        let labelSnapshot = builder.createSnapshot(of: label)
+        XCTAssertTrue(
+            labelSnapshot.root.semantics is InvisibleElement,
+            """
+            `UILabel` with no appearance should record `InvisibleElement` semantics as it
+            won't display anything in SR. Got \(type(of: labelSnapshot.root.semantics)) instead.
+            """
+        )
+
+        let imageViewSnapshot = builder.createSnapshot(of: imageView)
+        XCTAssertTrue(
+            imageViewSnapshot.root.semantics is InvisibleElement,
+            """
+            `UIImageView` with no appearance should record `InvisibleElement` semantics as it
+            won't display anything in SR. Got \(type(of: imageViewSnapshot.root.semantics)) instead.
+            """
+        )
+
+        let textFieldSnapshot = builder.createSnapshot(of: textField)
+        XCTAssertTrue(
+            textFieldSnapshot.root.semantics is SpecificElement,
+            """
+            `UITextField` with no appearance should still record `SpecificElement` semantics as it
+            has style coming from its internal subtree. Got \(type(of: textFieldSnapshot.root.semantics)) instead.
+            """
+        )
+
+        let switchSnapshot = builder.createSnapshot(of: `switch`)
+        XCTAssertTrue(
+            switchSnapshot.root.semantics is SpecificElement,
+            """
+            `UISwitch` with no appearance should still record `SpecificElement` semantics as it
+            has style coming from its internal subtree. Got \(type(of: switchSnapshot.root.semantics)) instead.
+            """
+        )
+    }
+
+    func testItRecordsBaseViewWithSomeAppearance() throws {
+        // Given
+        let builder = ViewTreeSnapshotBuilder()
+        let view = try UIView.mock(withFixture: .visibleWithSomeAppearance)
+
+        // When
+        let snapshot = builder.createSnapshot(of: view)
+
+        // Then
+        XCTAssertTrue(
+            snapshot.root.semantics is AmbiguousElement,
+            """
+            Bare `UIView` with no appearance should record `AmbiguousElement` semantics as we don't know
+            if this view is specialised with appearance coming from its superclass.
+            Got \(type(of: snapshot.root.semantics)) instead.
+            """
+        )
+    }
+
+    func testItRecordsSpecialisedViewsWithSomeAppearance() throws {
+        // Given
+        let builder = ViewTreeSnapshotBuilder()
+        let views: [UIView] = [
+            try UILabel.mock(withFixture: .visibleWithSomeAppearance),
+            try UIImageView.mock(withFixture: .visibleWithSomeAppearance),
+            try UITextField.mock(withFixture: .visibleWithSomeAppearance),
+            try UISwitch.mock(withFixture: .visibleWithSomeAppearance),
+        ]
+
+        // When
+        let snapshots = views.map { builder.createSnapshot(of: $0) }
+
+        // Then
+        zip(snapshots, views).forEach { snapshot, view in
+            XCTAssertTrue(
+                snapshot.root.semantics is SpecificElement,
+                """
+                All specialised subclasses of `UIView` should record `SpecificElement` semantics as
+                long as they are visible. Got \(type(of: snapshot.root.semantics)) instead.
+                """
+            )
+        }
+    }
 }

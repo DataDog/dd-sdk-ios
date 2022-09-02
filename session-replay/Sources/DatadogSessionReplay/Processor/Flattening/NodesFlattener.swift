@@ -18,8 +18,8 @@ internal struct NodesFlattener {
         var flattened: [Node] = []
 
         dfsVisit(startingFrom: snapshot.root) { nextNode in
-            // Skip nodes with no semantics:
-            if nextNode.semantics.importance > InvisibleElement.importance {
+            // Skip invisible nodes:
+            if !(nextNode.semantics is InvisibleElement) {
                 // When accepting nodes, remove ones that are covered by another opaque node:
                 flattened = flattened.compactMap { previousNode in
                     let isPreviousNodeCovered = nextNode.viewAttributes.frame.contains(previousNode.viewAttributes.frame)
