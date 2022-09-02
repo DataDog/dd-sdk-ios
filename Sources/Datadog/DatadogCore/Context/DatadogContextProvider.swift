@@ -47,7 +47,7 @@ internal final class DatadogContextProvider {
     /// to make writes exclusive.
     private let queue = DispatchQueue(
         label: "com.datadoghq.core-context",
-        attributes: .concurrent
+        qos: .utility
     )
 
     private var subscriptions: [ContextValueSubscription]
