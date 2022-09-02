@@ -1,7 +1,7 @@
 all: dependencies xcodeproj-httpservermock templates
 
 # The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
-DD_SDK_SWIFT_TESTING_VERSION = 2.1.0
+DD_SDK_SWIFT_TESTING_VERSION = 2.2.0-beta.3
 
 define DD_SDK_TESTING_XCCONFIG_CI
 FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
@@ -13,6 +13,7 @@ DD_TEST_RUNNER=1\n
 DD_SDK_SWIFT_TESTING_SERVICE=dd-sdk-ios\n
 DD_SDK_SWIFT_TESTING_APIKEY=${DD_SDK_SWIFT_TESTING_APIKEY}\n
 DD_SDK_SWIFT_TESTING_ENV=ci\n
+DD_SDK_SWIFT_TESTING_APPLICATION_KEY=${DD_SDK_SWIFT_TESTING_APPLICATION_KEY}\n
 endef
 export DD_SDK_TESTING_XCCONFIG_CI
 
