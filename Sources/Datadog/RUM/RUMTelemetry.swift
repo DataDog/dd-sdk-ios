@@ -26,7 +26,7 @@ internal final class RUMTelemetry: Telemetry {
     let sampler: Sampler
 
     /// Keeps track of current session
-    private var currentSessionID: RUMUUID = .nullUUID
+    private var currentSessionID: String?
 
     /// Keeps track of event's ids recorded during a user session.
     private var eventIDs: Set<String> = []
@@ -71,21 +71,24 @@ internal final class RUMTelemetry: Telemetry {
         let date = dateProvider.now.addingTimeInterval(dateCorrector.offset)
 
         record(event: id) { context, writer in
-            let actionId = context.activeUserActionID?.toRUMDataFormat
-            let viewId = context.activeViewID?.toRUMDataFormat
-            let sessionId = context.sessionID == RUMUUID.nullUUID ? nil : context.sessionID.toRUMDataFormat
+            let attributes = context.featuresAttributes["rum"]
+
+            let applicationId = attributes?["application_id", type: String.self]
+            let sessionId = attributes?["session_id", type: String.self]
+            let viewId = attributes?["view.id", type: String.self]
+            let actionId = attributes?["user_action.id", type: String.self]
 
             let event = TelemetryDebugEvent(
                 dd: .init(),
                 action: actionId.map { .init(id: $0) },
-                application: .init(id: self.applicationID),
+                application: applicationId.map { .init(id: $0) },
                 date: date.timeIntervalSince1970.toInt64Milliseconds,
                 experimentalFeatures: nil,
                 service: "dd-sdk-ios",
                 session: sessionId.map { .init(id: $0) },
-                source: TelemetryDebugEvent.Source(rawValue: self.source) ?? .ios,
+                source: .init(rawValue: context.source) ?? .ios,
                 telemetry: .init(message: message),
-                version: self.sdkVersion,
+                version: context.sdkVersion,
                 view: viewId.map { .init(id: $0) }
             )
 
@@ -108,21 +111,24 @@ internal final class RUMTelemetry: Telemetry {
         let date = dateProvider.now.addingTimeInterval(dateCorrector.offset)
 
         record(event: id) { context, writer in
-            let actionId = context.activeUserActionID?.toRUMDataFormat
-            let viewId = context.activeViewID?.toRUMDataFormat
-            let sessionId = context.sessionID == RUMUUID.nullUUID ? nil : context.sessionID.toRUMDataFormat
+            let attributes = context.featuresAttributes["rum"]
+
+            let applicationId = attributes?["application_id", type: String.self]
+            let sessionId = attributes?["session_id", type: String.self]
+            let viewId = attributes?["view.id", type: String.self]
+            let actionId = attributes?["user_action.id", type: String.self]
 
             let event = TelemetryErrorEvent(
                 dd: .init(),
                 action: actionId.map { .init(id: $0) },
-                application: .init(id: self.applicationID),
+                application: applicationId.map { .init(id: $0) },
                 date: date.timeIntervalSince1970.toInt64Milliseconds,
                 experimentalFeatures: nil,
                 service: "dd-sdk-ios",
                 session: sessionId.map { .init(id: $0) },
-                source: TelemetryErrorEvent.Source(rawValue: self.source) ?? .ios,
+                source: .init(rawValue: context.source) ?? .ios,
                 telemetry: .init(error: .init(kind: kind, stack: stack), message: message),
-                version: self.sdkVersion,
+                version: context.sdkVersion,
                 view: viewId.map { .init(id: $0) }
             )
 
@@ -130,21 +136,21 @@ internal final class RUMTelemetry: Telemetry {
         }
     }
 
-    private func record(event id: String, operation: @escaping (RUMContext, Writer) -> Void) {
-        let rum = core.v1.feature(RUMFeature.self)
-
+    private func record(event id: String, operation: @escaping (DatadogContext, Writer) -> Void) {
         guard
-            sampler.sample(),
-            let monitor = Global.rum as? RUMMonitor,
-            let writer = rum?.storage.writer
+            let rum = core.v1.scope(for: RUMFeature.self),
+            sampler.sample()
         else {
             return
         }
 
-        monitor.contextProvider.async { context in
+        rum.eventWriteContext { context, writer in
             // reset recorded events on session renewal
-            if context.sessionID != self.currentSessionID {
-                self.currentSessionID = context.sessionID
+            let attributes = context.featuresAttributes["rum"]
+            let sessionId = attributes?["session_id", type: String.self]
+
+            if sessionId != self.currentSessionID {
+                self.currentSessionID = sessionId
                 self.eventIDs = []
             }
 

@@ -101,8 +101,3 @@ internal extension LogLevel {
         }
     }
 }
-
-internal struct LogInternalAttributes {
-    static let traceID = "dd.trace_id"
-    static let spanID = "dd.span_id"
-}

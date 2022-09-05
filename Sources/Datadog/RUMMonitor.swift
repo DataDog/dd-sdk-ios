@@ -596,6 +596,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     // MARK: - RUMCommandSubscriber
 
     func process(command: RUMCommand) {
+        // process command in event context
         core.v1.scope(for: RUMFeature.self)?.eventWriteContext { context, writer in
             self.queue.sync {
                 let transformedCommand = self.transform(command: command)
@@ -607,6 +608,25 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 }
             }
         }
+
+        // update the core context with rum context
+        core.set(feature: "rum", attributes: self.queue.sync {
+            let applicationContext = self.applicationScope.context
+            let sessionContext = self.applicationScope.sessionScope?.context
+            let activeViewContext = self.applicationScope.sessionScope?.viewScopes.last?.context
+
+            guard let sessionContext = sessionContext, sessionContext.sessionID != .nullUUID else {
+                // if Session was sampled or not yet started
+                return [:]
+            }
+
+            return [
+                "application_id": applicationContext.rumApplicationID,
+                "session_id": sessionContext.sessionID.rawValue.uuidString.lowercased(),
+                "view.id": activeViewContext?.activeViewID?.rawValue.uuidString.lowercased(),
+                "user_action.id": activeViewContext?.activeUserActionID?.rawValue.uuidString.lowercased()
+            ]
+        })
     }
 
     // TODO: RUMM-896

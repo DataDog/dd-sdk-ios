@@ -37,8 +37,8 @@ internal final class RemoteLogger: LoggerProtocol {
     /// Date provider for logs.
     private let dateProvider: DateProvider
     /// Integration with RUM. It is used to correlate Logs with RUM events by injecting RUM context to `LogEvent`.
-    /// Can be `nil` if the integration is disabled for this logger or if RUM feature is disabled.
-    internal let rumContextIntegration: LoggingWithRUMContextIntegration?
+    /// Can be `false` if the integration is disabled for this logger or if RUM feature is disabled.
+    internal let rumContextIntegration: Bool
     /// Integration with Tracing. It is used to correlate Logs with Spans by injecting `Span` context to `LogEvent`.
     /// Can be `false` if the integration is disabled for this logger or if Tracing feature is disabled.
     internal let activeSpanIntegration: Bool
@@ -47,7 +47,7 @@ internal final class RemoteLogger: LoggerProtocol {
         core: DatadogCoreProtocol,
         configuration: Configuration,
         dateProvider: DateProvider,
-        rumContextIntegration: LoggingWithRUMContextIntegration?,
+        rumContextIntegration: Bool,
         activeSpanIntegration: Bool
     ) {
         self.core = core
@@ -104,61 +104,62 @@ internal final class RemoteLogger: LoggerProtocol {
         // SDK context must be requested on the user thread to ensure that it provides values
         // that are up-to-date for the caller.
         self.core.v1.scope(for: LoggingFeature.self)?.eventWriteContext { context, writer in
-            var userAttributes: [String: Encodable] = [:]
-            var internalAttributes: [String: Encodable] = [:]
-            var userTags: Set<String> = []
-
-            self.queue.sync {
-                userAttributes = self.unsafeAttributes.merging(attributes ?? [:]) { $1 } // prefer message attributes
-                userTags = self.unsafeTags
+            self.queue.async {
+                let userAttributes = self.unsafeAttributes.merging(attributes ?? [:]) { $1 } // prefer message attributes
+                var internalAttributes: [String: Encodable] = [:]
+                let userTags = self.unsafeTags
 
                 let contextAttributes = context.featuresAttributes
 
-                if let rumContextAttributes = self.rumContextIntegration?.currentRUMContextAttributes {
-                    internalAttributes.merge(rumContextAttributes) { $1 }
+                if self.rumContextIntegration, let attributes = contextAttributes["rum"] {
+                    internalAttributes.merge(attributes.all()) { $1 }
                 }
 
                 if self.activeSpanIntegration, let attributes = contextAttributes["tracing"] {
                     internalAttributes.merge(attributes.all()) { $1 }
                 }
-            }
 
-            let builder = LogEventBuilder(
-                service: self.configuration.service ?? context.service,
-                loggerName: self.configuration.loggerName,
-                sendNetworkInfo: self.configuration.sendNetworkInfo,
-                eventMapper: self.configuration.eventMapper
-            )
+                let builder = LogEventBuilder(
+                    service: self.configuration.service ?? context.service,
+                    loggerName: self.configuration.loggerName,
+                    sendNetworkInfo: self.configuration.sendNetworkInfo,
+                    eventMapper: self.configuration.eventMapper
+                )
 
-            let log = builder.createLogEvent(
-                date: date,
-                level: level,
-                message: message,
-                error: error.map { DDError(error: $0) },
-                attributes: .init(
-                    userAttributes: userAttributes,
-                    internalAttributes: internalAttributes
-                ),
-                tags: userTags,
-                context: context,
-                threadName: threadName
-            )
+                let log = builder.createLogEvent(
+                    date: date,
+                    level: level,
+                    message: message,
+                    error: error.map { DDError(error: $0) },
+                    attributes: .init(
+                        userAttributes: userAttributes,
+                        internalAttributes: internalAttributes
+                    ),
+                    tags: userTags,
+                    context: context,
+                    threadName: threadName
+                )
 
-            if let log = log {
+                guard let log = log else {
+                    return
+                }
+
                 writer.write(value: log)
 
-                if log.status == .error || log.status == .critical {
-                    self.core.send(
-                        message: .error(
-                            message: log.error?.message ?? log.message,
-                            attributes: [
-                                "type": log.error?.kind,
-                                "stack": log.error?.stack,
-                                "source": "logger"
-                            ]
-                        )
-                    )
+                guard log.status == .error || log.status == .critical else {
+                    return
                 }
+
+                self.core.send(
+                    message: .error(
+                        message: log.error?.message ?? log.message,
+                        attributes: [
+                            "type": log.error?.kind,
+                            "stack": log.error?.stack,
+                            "source": "logger"
+                        ]
+                    )
+                )
             }
         }
     }

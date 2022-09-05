@@ -40,7 +40,7 @@ class LoggerBuilderTests: XCTestCase {
         XCTAssertFalse(remoteLogger.configuration.sendNetworkInfo)
         XCTAssertEqual(remoteLogger.configuration.threshold, .debug)
         XCTAssertNil(remoteLogger.configuration.eventMapper)
-        XCTAssertNil(remoteLogger.rumContextIntegration)
+        XCTAssertTrue(remoteLogger.rumContextIntegration)
         XCTAssertTrue(remoteLogger.activeSpanIntegration)
     }
 
@@ -88,7 +88,7 @@ class LoggerBuilderTests: XCTestCase {
         XCTAssertTrue(remoteLogger.configuration.sendNetworkInfo)
         XCTAssertEqual(remoteLogger.configuration.threshold, .error)
         XCTAssertNil(remoteLogger.configuration.eventMapper)
-        XCTAssertNil(remoteLogger.rumContextIntegration)
+        XCTAssertFalse(remoteLogger.rumContextIntegration)
         XCTAssertFalse(remoteLogger.activeSpanIntegration)
     }
 

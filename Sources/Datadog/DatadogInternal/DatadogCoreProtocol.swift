@@ -34,7 +34,7 @@ public protocol DatadogCoreProtocol {
     /// - Parameters:
     ///   - feature: The Feature's name.
     ///   - attributes: The Feature's attributes to set.
-    func set(feature: String, attributes: FeatureMessageAttributes)
+    func set(feature: String, attributes: @escaping @autoclosure () -> FeatureMessageAttributes)
 
     /// Sends a message on the bus shared by features registered in this core.
     ///
@@ -66,7 +66,7 @@ public protocol FeatureScope {
 /// No-op implementation of `DatadogFeatureRegistry`.
 internal struct NOPDatadogCore: DatadogCoreProtocol {
     /// no-op
-    func set(feature: String, attributes: FeatureMessageAttributes) { }
+    func set(feature: String, attributes: @escaping @autoclosure () -> FeatureMessageAttributes) { }
     /// no-op
     func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
 }

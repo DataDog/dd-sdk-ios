@@ -16,10 +16,23 @@ internal final class DatadogCoreMock: Flushable {
         .init(context)
     }
 
-    var context: DatadogContext
+    var context: DatadogContext {
+        get { synchronize { _context } }
+        set { synchronize { _context = newValue } }
+    }
+
+    /// ordered/non-recursive lock on the context.
+    private let lock = NSLock()
+    private var _context: DatadogContext
 
     init(context: DatadogContext = .mockAny()) {
-        self.context = context
+        _context = context
+    }
+
+    private func synchronize<T>(_ block: () -> T) -> T {
+        lock.lock()
+        defer { lock.unlock() }
+        return block()
     }
 
     /// Flush resgistered features.
@@ -43,8 +56,8 @@ internal final class DatadogCoreMock: Flushable {
 extension DatadogCoreMock: DatadogCoreProtocol {
     // MARK: V2 interface
 
-    func set(feature: String, attributes: FeatureMessageAttributes) {
-        context.featuresAttributes[feature] = attributes
+    func set(feature: String, attributes: @escaping @autoclosure () -> FeatureMessageAttributes) {
+        context.featuresAttributes[feature] = attributes()
     }
 
     func send(message: FeatureMessage, else fallback: () -> Void) {
