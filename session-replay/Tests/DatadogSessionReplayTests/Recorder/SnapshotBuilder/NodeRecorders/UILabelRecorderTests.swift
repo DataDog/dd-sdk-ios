@@ -56,5 +56,13 @@ class UILabelRecorderTests: XCTestCase {
         XCTAssertEqual(builder.textColor, label.textColor?.cgColor)
         XCTAssertEqual(builder.font, label.font)
     }
+
+    func testWhenViewIsNotOfExpectedType() {
+        // When
+        let view = UITextField()
+
+        // Then
+        XCTAssertNil(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
+    }
 }
 // swiftlint:enable opening_brace

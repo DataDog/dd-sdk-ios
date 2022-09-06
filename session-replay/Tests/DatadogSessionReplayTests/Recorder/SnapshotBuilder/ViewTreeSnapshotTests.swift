@@ -114,5 +114,6 @@ class NodeSemanticsTests: XCTestCase {
         XCTAssertGreaterThan(specificElement.importance, ambiguousElement.importance)
         XCTAssertGreaterThan(ambiguousElement.importance, invisibleElement.importance)
         XCTAssertGreaterThan(invisibleElement.importance, unknownElement.importance)
+        XCTAssertEqual(specificElement.importance, .max)
     }
 }

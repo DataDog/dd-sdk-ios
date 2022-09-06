@@ -11,16 +11,13 @@ import UIKit
 ///
 /// **Note:** The `NodeRecorder` is used on the main thread by `Recorder`.
 internal protocol NodeRecorder {
-    /// The `UIView` subclass this recorder is specialised for.
-    associatedtype View: UIView
-
     /// Finds the semantic of given`view`.
     /// - Parameters:
-    ///   - view: the view to determine semantics for
+    ///   - view: the `UIView` to determine semantics for
     ///   - attributes: attributes of this view inferred from its base `UIView` interface
     ///   - context: the context of building current `ViewTreeSnapshot`
     /// - Returns: the value of `NodeSemantics` or `nil` if the view is a member of view subclass other than the one this recorder is specialised for.
-    func semantics(of view: View, with attributes: ViewAttributes, in context: ViewTreeSnapshotBuilder.Context) -> NodeSemantics?
+    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeSnapshotBuilder.Context) -> NodeSemantics?
 }
 
 /// A type producing SR wireframes.
@@ -33,30 +30,4 @@ internal protocol NodeWireframesBuilder {
     /// - Parameter builder: the generic builder for constructing SR data models.
     /// - Returns: one or more wireframes that describe a node in SR.
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe]
-}
-
-// MARK: - Type Erasure
-
-/// Type erasure for `NodeRecorder`.
-internal struct AnyNodeRecorder<View> {
-    private let erasedMethod: (View, ViewAttributes, ViewTreeSnapshotBuilder.Context) -> NodeSemantics?
-
-    init<NR: NodeRecorder>(_ concreteRecorder: NR) {
-        self.erasedMethod = { view, node, context in
-            guard let concreteView = view as? NR.View else {
-                // Means that the `UIView` instance passed to erased `NodeRecorder` was not of the type
-                // that this recorder supports. In that case, semantics cannot be determined.
-                return nil
-            }
-            return concreteRecorder.semantics(of: concreteView, with: node, in: context)
-        }
-    }
-
-    func semantics(of view: View, with node: ViewAttributes, in context: ViewTreeSnapshotBuilder.Context) -> NodeSemantics? {
-        return erasedMethod(view, node, context)
-    }
-}
-
-extension NodeRecorder {
-    var eraseToAnyNodeRecorder: AnyNodeRecorder<UIView> { AnyNodeRecorder(self) }
 }

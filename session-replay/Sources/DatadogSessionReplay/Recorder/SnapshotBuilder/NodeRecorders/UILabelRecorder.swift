@@ -7,7 +7,11 @@
 import UIKit
 
 internal struct UILabelRecorder: NodeRecorder {
-    func semantics(of label: UILabel, with attributes: ViewAttributes, in context: ViewTreeSnapshotBuilder.Context) -> NodeSemantics? {
+    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeSnapshotBuilder.Context) -> NodeSemantics? {
+        guard let label = view as? UILabel else {
+            return nil
+        }
+
         let hasVisibleText = !(label.text?.isEmpty ?? true)
 
         guard hasVisibleText || attributes.hasAnyAppearance else {

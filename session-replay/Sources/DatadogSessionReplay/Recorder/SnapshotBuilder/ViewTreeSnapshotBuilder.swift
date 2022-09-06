@@ -21,7 +21,7 @@ internal struct ViewTreeSnapshotBuilder {
     ///
     /// The order in this this array  should be managed consciously. For each node, the implementation loops
     /// through `nodeRecorders` and stops on the one that recorded node semantics with highes importance.
-    let nodeRecorders: [AnyNodeRecorder<UIView>]
+    let nodeRecorders: [NodeRecorder]
 
     /// Builds the `ViewTreeSnapshot` for given root view.
     ///
@@ -55,7 +55,7 @@ internal struct ViewTreeSnapshotBuilder {
             if nextSemantics.importance > semantics.importance {
                 semantics = nextSemantics
 
-                if nextSemantics.importance >= SpecificElement.importance {
+                if nextSemantics.importance == .max {
                     // We know the current semantics is best we can get, so skip querying other `nodeRecorders`:
                     break
                 }
@@ -66,7 +66,7 @@ internal struct ViewTreeSnapshotBuilder {
             viewAttributes: viewAttributes,
             semantics: semantics,
             children: {
-                if semantics.importance < SpecificElement.importance {
+                if semantics.importance != .max {
                     // Only resolve child nodes if the semantics of parent node is low (so if the
                     // sub-tree remains ambiguous):
                     return anyView.subviews.map { createNode(for: $0, in: context) }
@@ -82,8 +82,8 @@ extension ViewTreeSnapshotBuilder {
     init() {
         self.init(
             nodeRecorders: [
-                UIViewRecorder().eraseToAnyNodeRecorder,
-                UILabelRecorder().eraseToAnyNodeRecorder,
+                UIViewRecorder(),
+                UILabelRecorder(),
             ]
         )
     }

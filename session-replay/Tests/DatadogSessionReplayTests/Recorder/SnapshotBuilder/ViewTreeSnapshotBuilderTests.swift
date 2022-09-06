@@ -38,7 +38,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
             NodeRecorderMock(resultForView: { _ in nil }),
             NodeRecorderMock(resultForView: { _ in nil }),
         ]
-        let builder = ViewTreeSnapshotBuilder(nodeRecorders: recorders.map { $0.eraseToAnyNodeRecorder })
+        let builder = ViewTreeSnapshotBuilder(nodeRecorders: recorders)
         _ = builder.createSnapshot(of: rootView)
 
         // Then
@@ -63,7 +63,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
             NodeRecorderMock(resultForView: { _ in specificElement }), // here we find best semantics...
             NodeRecorderMock(resultForView: { _ in specificElement }), // ... so this one should not be queried
         ]
-        let builder = ViewTreeSnapshotBuilder(nodeRecorders: recorders.map { $0.eraseToAnyNodeRecorder })
+        let builder = ViewTreeSnapshotBuilder(nodeRecorders: recorders)
         _ = builder.createSnapshot(of: view)
 
         // Then
@@ -102,7 +102,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
 
         // When
         let nodeRecorder = NodeRecorderMock(resultForView: { view in semanticsByView[view] })
-        let builder = ViewTreeSnapshotBuilder(nodeRecorders: [nodeRecorder.eraseToAnyNodeRecorder])
+        let builder = ViewTreeSnapshotBuilder(nodeRecorders: [nodeRecorder])
         let snapshot = builder.createSnapshot(of: rootView)
 
         // Then

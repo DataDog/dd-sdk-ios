@@ -153,7 +153,7 @@ internal struct UnknownElement: NodeSemantics {
     let wireframesBuilder: NodeWireframesBuilder? = nil
 
     /// Use `UnknownElement.constant` instead.
-    fileprivate init () {}
+    private init () {}
 
     /// A constant value of `UnknownElement` semantics.
     static let constant = UnknownElement()
@@ -167,7 +167,7 @@ internal struct InvisibleElement: NodeSemantics {
     let wireframesBuilder: NodeWireframesBuilder? = nil
 
     /// Use `InvisibleElement.constant` instead.
-    fileprivate init () {}
+    private init () {}
 
     /// A constant value of `InvisibleElement` semantics.
     static let constant = InvisibleElement()
