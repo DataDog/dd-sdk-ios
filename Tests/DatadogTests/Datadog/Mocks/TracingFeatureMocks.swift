@@ -262,7 +262,7 @@ extension Tracer {
         spanEventMapper: SpanEventMapper? = nil,
         tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
         dateProvider: DateProvider = SystemDateProvider(),
-        rumContextIntegration: TracingWithRUMContextIntegration? = nil
+        rumIntegration: TracingWithRUMIntegration? = nil
     ) -> Tracer {
         return Tracer(
             core: core,
@@ -270,7 +270,7 @@ extension Tracer {
             spanEventMapper: spanEventMapper,
             tracingUUIDGenerator: tracingUUIDGenerator,
             dateProvider: dateProvider,
-            rumContextIntegration: rumContextIntegration,
+            rumIntegration: rumIntegration,
             loggingIntegration: .init(core: core, tracerConfiguration: configuration)
         )
     }

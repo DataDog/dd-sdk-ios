@@ -27,4 +27,6 @@ public enum FeatureMessage {
         key: String,
         baggage: FeatureBaggage
     )
+
+    case context(DatadogContext)
 }

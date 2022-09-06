@@ -54,7 +54,7 @@ public class Tracer: OTTracer {
     /// Queue ensuring thread-safety of the `Tracer` and `DDSpan` operations.
     internal let queue: DispatchQueue
     /// Integration with RUM Context. `nil` if disabled for this Tracer or if the RUM feature is disabled.
-    internal let rumContextIntegration: TracingWithRUMContextIntegration?
+    internal let rumIntegration: TracingWithRUMIntegration?
     /// Integration with Logging.
     internal let loggingIntegration: TracingWithLoggingIntegration
 
@@ -98,8 +98,7 @@ public class Tracer: OTTracer {
             return DDTracer(
                 core: core,
                 tracingFeature: tracingFeature,
-                tracerConfiguration: configuration,
-                rumEnabled: core.v1.feature(RUMFeature.self) != nil
+                tracerConfiguration: configuration
             )
         } catch {
             consolePrint("\(error)")
@@ -110,8 +109,7 @@ public class Tracer: OTTracer {
     internal convenience init(
         core: DatadogCoreProtocol,
         tracingFeature: TracingFeature,
-        tracerConfiguration: Configuration,
-        rumEnabled: Bool
+        tracerConfiguration: Configuration
     ) {
         self.init(
             core: core,
@@ -119,7 +117,7 @@ public class Tracer: OTTracer {
             spanEventMapper: tracingFeature.configuration.spanEventMapper,
             tracingUUIDGenerator: tracingFeature.configuration.uuidGenerator,
             dateProvider: tracingFeature.configuration.dateProvider,
-            rumContextIntegration: (rumEnabled && tracerConfiguration.bundleWithRUM) ? TracingWithRUMContextIntegration() : nil,
+            rumIntegration: tracerConfiguration.bundleWithRUM ? TracingWithRUMIntegration() : nil,
             loggingIntegration: TracingWithLoggingIntegration(
                 core: core,
                 tracerConfiguration: tracerConfiguration
@@ -133,7 +131,7 @@ public class Tracer: OTTracer {
         spanEventMapper: SpanEventMapper?,
         tracingUUIDGenerator: TracingUUIDGenerator,
         dateProvider: DateProvider,
-        rumContextIntegration: TracingWithRUMContextIntegration?,
+        rumIntegration: TracingWithRUMIntegration?,
         loggingIntegration: TracingWithLoggingIntegration
     ) {
         self.core = core
@@ -146,7 +144,7 @@ public class Tracer: OTTracer {
 
         self.tracingUUIDGenerator = tracingUUIDGenerator
         self.dateProvider = dateProvider
-        self.rumContextIntegration = rumContextIntegration
+        self.rumIntegration = rumIntegration
         self.loggingIntegration = loggingIntegration
     }
 
@@ -202,10 +200,11 @@ public class Tracer: OTTracer {
     internal func startSpan(spanContext: DDSpanContext, operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
         var combinedTags = configuration.globalTags ?? [:]
         if let userTags = tags {
-            combinedTags.merge(userTags) { _, last in last }
+            combinedTags.merge(userTags) { $1 }
         }
-        if let currentRUMContextTags = rumContextIntegration?.currentRUMContextTags {
-            combinedTags.merge(currentRUMContextTags) { _, last in last }
+
+        if let rumTags = rumIntegration?.attribues {
+            combinedTags.merge(rumTags) { $1 }
         }
 
         let span = DDSpan(

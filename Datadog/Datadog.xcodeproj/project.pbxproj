@@ -2702,7 +2702,6 @@
 			isa = PBXGroup;
 			children = (
 				61D980B924E28D0100E03345 /* RUMIntegrations.swift */,
-				6156CB9B24E18224008CB2B2 /* TracingWithRUMIntegration.swift */,
 				61FC5F4425CC23C9006BB4DE /* RUMWithCrashContextIntegration.swift */,
 				E11625D727B681D200E428C6 /* CITestIntegration.swift */,
 				9EB4B860274E79620041CD03 /* WebView */,
@@ -4221,6 +4220,7 @@
 			isa = PBXGroup;
 			children = (
 				61216275247D1CD700AC5D67 /* TracingWithLoggingIntegration.swift */,
+				6156CB9B24E18224008CB2B2 /* TracingWithRUMIntegration.swift */,
 			);
 			path = Integrations;
 			sourceTree = "<group>";

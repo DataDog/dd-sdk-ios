@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal struct DatadogContext {
+public struct DatadogContext {
     // MARK: - Datadog Specific
 
     /// [Datadog Site](https://docs.datadoghq.com/getting_started/site/) for data uploads. It can be `nil` in V1
