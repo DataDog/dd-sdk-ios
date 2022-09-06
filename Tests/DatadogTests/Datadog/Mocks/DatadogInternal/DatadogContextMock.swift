@@ -31,7 +31,8 @@ extension DatadogContext: AnyMockable {
         networkConnectionInfo: NetworkConnectionInfo? = .mockWith(reachability: .yes),
         carrierInfo: CarrierInfo? = .mockAny(),
         batteryStatus: BatteryStatus? = .mockAny(),
-        isLowPowerModeEnabled: Bool = false
+        isLowPowerModeEnabled: Bool = false,
+        featuresAttributes: [String: FeatureBaggage] = [:]
     ) -> DatadogContext {
         .init(
             site: site,
@@ -53,7 +54,8 @@ extension DatadogContext: AnyMockable {
             networkConnectionInfo: networkConnectionInfo,
             carrierInfo: carrierInfo,
             batteryStatus: batteryStatus,
-            isLowPowerModeEnabled: isLowPowerModeEnabled
+            isLowPowerModeEnabled: isLowPowerModeEnabled,
+            featuresAttributes: featuresAttributes
         )
     }
 }
