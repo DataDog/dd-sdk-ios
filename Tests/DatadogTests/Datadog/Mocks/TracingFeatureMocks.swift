@@ -20,7 +20,8 @@ extension TracingFeature {
     /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
     /// Use `TracingFeature.waitAndReturnSpanMatchers()` to inspect and assert recorded `Spans`.
     static func mockByRecordingSpanMatchers(
-        configuration: FeaturesConfiguration.Tracing = .mockAny()
+        configuration: FeaturesConfiguration.Tracing = .mockAny(),
+        messageReceiver: FeatureMessageReceiver = TracingMessageReceiver()
     ) -> TracingFeature {
         // Mock storage with `InMemoryWriter`, used later for retrieving recorded events back:
         let interceptedStorage = FeatureStorage(
@@ -33,7 +34,7 @@ extension TracingFeature {
             storage: interceptedStorage,
             upload: .mockNoOp(),
             configuration: configuration,
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: messageReceiver
         )
     }
 

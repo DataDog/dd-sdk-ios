@@ -237,6 +237,12 @@ extension DatadogCore: DatadogV1CoreProtocol {
     }
 }
 
+extension DatadogCore: DatadogContextObserver {
+    func notify(context: DatadogContext) {
+        send(message: .context(context))
+    }
+}
+
 /// A v1 Feature with an associated stroage.
 internal protocol V1Feature {
     /// The feature's storage.

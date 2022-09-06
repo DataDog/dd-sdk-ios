@@ -27,7 +27,9 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureV1Scope 
 
     /// ordered/non-recursive lock on the context.
     private let lock = NSLock()
-    private var _context: DatadogContext
+    private var _context: DatadogContext {
+        didSet { send(message: .context(_context)) }
+    }
 
     private func synchronize<T>(_ block: () -> T) -> T {
         lock.lock()
