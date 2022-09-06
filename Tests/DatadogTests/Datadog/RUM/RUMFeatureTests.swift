@@ -98,6 +98,44 @@ class RUMFeatureTests: XCTestCase {
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-REQUEST-ID"]?.matches(regex: .uuidRegex), true)
     }
 
+    // MARK: - HTTP Message with included variant
+
+    func testItUsesExpectedVariantQueryParaemterInMessage() throws {
+        let randomVariant: String = .mockAny()
+
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            configuration: .mockWith(
+                variant: randomVariant
+            ),
+            dependencies: .mockAny(),
+            appVersionProvider: .mockAny()
+        )
+
+        // Given
+        let featureConfiguration: RUMFeature.Configuration = .mockAny()
+        let feature: RUMFeature = try core.create(
+            storageConfiguration: createV2RUMStorageConfiguration(),
+            uploadConfiguration: createV2RUMUploadConfiguration(v1Configuration: featureConfiguration),
+            featureSpecificConfiguration: featureConfiguration
+        )
+        defer { feature.flush() }
+        core.register(feature: feature)
+
+        // When
+        let monitor = RUMMonitor.initialize(in: core)
+        monitor.startView(viewController: mockView) // on starting the first view we sends `application_start` action event
+
+        // Then
+        let request = server.waitAndReturnRequests(count: 1)[0]
+        let requestURL = try XCTUnwrap(request.url)
+        let components = URLComponents(url: requestURL, resolvingAgainstBaseURL: false)
+        let tagsItem = components?.queryItems?.first(where: { $0.name == "ddtags" })
+        XCTAssertTrue(tagsItem?.value?.contains("variant:\(randomVariant)") == true)
+    }
+
     // MARK: - HTTP Payload
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
