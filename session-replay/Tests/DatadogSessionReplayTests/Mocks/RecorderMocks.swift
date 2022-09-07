@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import CoreGraphics
+import UIKit
 @testable import DatadogSessionReplay
 
 // MARK: - Equatable conformances
@@ -28,7 +28,7 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
 
     static func mockWith(
         date: Date = .mockAny(),
-        root: ViewTreeSnapshot.Node = .mockAny()
+        root: Node = .mockAny()
     ) -> ViewTreeSnapshot {
         return ViewTreeSnapshot(
             date: date,
@@ -37,56 +37,128 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
     }
 }
 
-extension ViewTreeSnapshot.Node: AnyMockable, RandomMockable {
-    static func mockAny() -> ViewTreeSnapshot.Node {
+extension ViewAttributes: AnyMockable, RandomMockable {
+    static func mockAny() -> ViewAttributes {
+        return mockWith()
+    }
+
+    static func mockRandom() -> ViewAttributes {
+        return .init(
+            frame: .mockRandom(),
+            backgroundColor: UIColor.mockRandom().cgColor,
+            layerBorderColor: UIColor.mockRandom().cgColor,
+            layerBorderWidth: .mockRandom(min: 0, max: 5),
+            layerCornerRadius: .mockRandom(min: 0, max: 5),
+            alpha: .mockRandom(min: 0, max: 1),
+            intrinsicContentSize: .mockRandom(),
+            isVisible: .mockRandom(),
+            hasAnyAppearance: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        frame: CGRect = .mockAny(),
+        backgroundColor: CGColor? = .mockAny(),
+        layerBorderColor: CGColor? = .mockAny(),
+        layerBorderWidth: CGFloat = .mockAny(),
+        layerCornerRadius: CGFloat = .mockAny(),
+        alpha: CGFloat = .mockAny(),
+        intrinsicContentSize: CGSize = .mockAny(),
+        isVisible: Bool = .mockAny(),
+        hasAnyAppearance: Bool = .mockAny()
+    ) -> ViewAttributes {
+        return .init(
+            frame: frame,
+            backgroundColor: backgroundColor,
+            layerBorderColor: layerBorderColor,
+            layerBorderWidth: layerBorderWidth,
+            layerCornerRadius: layerCornerRadius,
+            alpha: alpha,
+            intrinsicContentSize: intrinsicContentSize,
+            isVisible: isVisible,
+            hasAnyAppearance: hasAnyAppearance
+        )
+    }
+}
+
+struct NOPWireframesBuilderMock: NodeWireframesBuilder {
+    func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+        return []
+    }
+}
+
+func mockAnyNodeSemantics() -> NodeSemantics {
+    return InvisibleElement.constant
+}
+
+func mockRandomNodeSemantics() -> NodeSemantics {
+    let all: [NodeSemantics] = [
+        UnknownElement.constant,
+        InvisibleElement.constant,
+        AmbiguousElement(wireframesBuilder: NOPWireframesBuilderMock()),
+        SpecificElement(wireframesBuilder: NOPWireframesBuilderMock()),
+    ]
+    return all.randomElement()!
+}
+
+extension Node: AnyMockable, RandomMockable {
+    static func mockAny() -> Node {
         return mockWith()
     }
 
     static func mockWith(
-        children: [ViewTreeSnapshot.Node] = [],
-        frame: ViewTreeSnapshot.Node.Frame = .mockAny()
-    ) -> ViewTreeSnapshot.Node {
+        viewAttributes: ViewAttributes = .mockAny(),
+        semantics: NodeSemantics = InvisibleElement.constant,
+        children: [Node] = []
+    ) -> Node {
         return .init(
-            children: children,
-            frame: frame
+            viewAttributes: viewAttributes,
+            semantics: semantics,
+            children: children
         )
     }
 
-    static func mockRandom() -> ViewTreeSnapshot.Node {
+    static func mockRandom() -> Node {
         return mockRandom(maxDepth: 4, maxBreadth: 4)
     }
 
-    static func mockRandom(maxDepth: Int, maxBreadth: Int) -> ViewTreeSnapshot.Node {
+    static func mockRandom(maxDepth: Int, maxBreadth: Int) -> Node {
         mockRandom(
             depth: .random(in: 0..<maxDepth),
             breadth: .random(in: 0..<maxBreadth)
         )
     }
 
-    /// Generates random view snapshot.
+    /// Generates random node.
     /// - Parameters:
-    ///   - depth: number of levels of nested snapshots
-    ///   - breadth: number of child snapshots in each nested snapshot (except the last level determined by `depth` which has no childs)
-    /// - Returns: randomized snapshot
-    static func mockRandom(depth: Int, breadth: Int) -> ViewTreeSnapshot.Node {
+    ///   - depth: number of levels of nested nodes
+    ///   - breadth: number of child nodes in each nested node (except the last level determined by `depth` which has no childs)
+    /// - Returns: randomized node
+    static func mockRandom(depth: Int, breadth: Int) -> Node {
         return mockWith(
-            children: depth <= 0 ? [] : (0..<breadth).map { _ in mockRandom(depth: depth - 1, breadth: breadth) },
-            frame: .mockRandom()
+            viewAttributes: .mockRandom(),
+            semantics: mockRandomNodeSemantics(),
+            children: depth <= 0 ? [] : (0..<breadth).map { _ in mockRandom(depth: depth - 1, breadth: breadth) }
         )
     }
 }
 
-extension ViewTreeSnapshot.Node.Frame: AnyMockable, RandomMockable {
-    static func mockAny() -> ViewTreeSnapshot.Node.Frame {
-        return .init(x: 0, y: 0, width: 420, height: 420)
+extension ViewTreeSnapshotBuilder.Context: AnyMockable, RandomMockable {
+    static func mockAny() -> ViewTreeSnapshotBuilder.Context {
+        return .mockWith()
     }
 
-    static func mockRandom() -> ViewTreeSnapshot.Node.Frame {
+    static func mockRandom() -> ViewTreeSnapshotBuilder.Context {
         return .init(
-            x: .mockRandom(min: -1_000, max: 1_000),
-            y: .mockRandom(min: -1_000, max: 1_000),
-            width: .mockRandom(min: 0, max: 1_000),
-            height: .mockRandom(min: 0, max: 1_000)
+            coordinateSpace: UIView.mockRandom()
+        )
+    }
+
+    static func mockWith(
+        coordinateSpace: UICoordinateSpace = UIView.mockAny()
+    ) -> ViewTreeSnapshotBuilder.Context {
+        return .init(
+            coordinateSpace: coordinateSpace
         )
     }
 }

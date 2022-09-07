@@ -7,16 +7,21 @@
 import Foundation
 import UIKit
 
-internal typealias Node = ViewTreeSnapshot.Node
-
 /// Builds `ViewTreeSnapshot` for given root view.
 ///
 /// Note: This builder is used by `Recorder` on the main thread.
 internal struct ViewTreeSnapshotBuilder {
     /// The context of building current snapshot.
-    private struct Context {
-        let rootView: UIView
+    struct Context {
+        /// The coordinate space to convert node positions to.
+        let coordinateSpace: UICoordinateSpace
     }
+
+    /// An array of enabled node recorders.
+    ///
+    /// The order in this this array  should be managed consciously. For each node, the implementation loops
+    /// through `nodeRecorders` and stops on the one that recorded node semantics with highes importance.
+    let nodeRecorders: [NodeRecorder]
 
     /// Builds the `ViewTreeSnapshot` for given root view.
     ///
@@ -24,8 +29,8 @@ internal struct ViewTreeSnapshotBuilder {
     /// - Returns: snapshot describing the view tree starting in `rootView`. All properties in snapshot nodes
     /// are computed relatively to the `rootView` (e.g. the `x` and `y` position of all descendant nodes  is given
     /// as its position in the root, no matter of nesting level).
-    func createSnapshot(of rootView: UIView) throws -> ViewTreeSnapshot {
-        let context = Context(rootView: rootView)
+    func createSnapshot(of rootView: UIView) -> ViewTreeSnapshot {
+        let context = Context(coordinateSpace: rootView)
         let viewTreeSnapshot = ViewTreeSnapshot(
             date: Date(),
             root: createNode(for: rootView, in: context)
@@ -33,27 +38,53 @@ internal struct ViewTreeSnapshotBuilder {
         return viewTreeSnapshot
     }
 
+    /// Takes the native view and creates its `Node` recursively.
     private func createNode(for anyView: UIView, in context: Context) -> Node {
-        let frameInRoot = anyView.convert(anyView.bounds, to: context.rootView)
-        let node = Node(
-            children: anyView.subviews.map { createNode(for: $0, in: context) },
-            frame: Node.Frame(cgRect: frameInRoot)
+        let viewAttributes = ViewAttributes(
+            frameInRootView: anyView.convert(anyView.bounds, to: context.coordinateSpace),
+            view: anyView
         )
-        return node
-    }
 
-    // TODO: RUMM-2429 Collect semantic information on various UI elements (UIButton, UILabel, UITabBar, ...)
+        var semantics: NodeSemantics = UnknownElement.constant
+
+        for nodeRecorder in nodeRecorders {
+            guard let nextSemantics = nodeRecorder.semantics(of: anyView, with: viewAttributes, in: context) else {
+                continue
+            }
+
+            if nextSemantics.importance > semantics.importance {
+                semantics = nextSemantics
+
+                if nextSemantics.importance == .max {
+                    // We know the current semantics is best we can get, so skip querying other `nodeRecorders`:
+                    break
+                }
+            }
+        }
+
+        return Node(
+            viewAttributes: viewAttributes,
+            semantics: semantics,
+            children: {
+                if semantics.importance != .max {
+                    // Only resolve child nodes if the semantics of parent node is low (so if the
+                    // sub-tree remains ambiguous):
+                    return anyView.subviews.map { createNode(for: $0, in: context) }
+                } else {
+                    return []
+                }
+            }()
+        )
+    }
 }
 
-// MARK: - Convenience
-
-extension Node.Frame {
-    init(cgRect: CGRect) {
+extension ViewTreeSnapshotBuilder {
+    init() {
         self.init(
-            x: Int64(withNoOverflow: cgRect.origin.x),
-            y: Int64(withNoOverflow: cgRect.origin.y),
-            width: Int64(withNoOverflow: cgRect.size.width),
-            height: Int64(withNoOverflow: cgRect.size.height)
+            nodeRecorders: [
+                UIViewRecorder(),
+                UILabelRecorder(),
+            ]
         )
     }
 }

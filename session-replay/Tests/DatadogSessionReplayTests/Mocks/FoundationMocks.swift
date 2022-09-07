@@ -6,6 +6,11 @@
 
 import Foundation
 
+extension Bool: AnyMockable, RandomMockable {
+    static func mockAny() -> Bool { true }
+    static func mockRandom() -> Bool { .random() }
+}
+
 extension Date: AnyMockable, RandomMockable {
     static func mockAny() -> Date {
         return .mockDecember15th2019At10AMUTC()
@@ -56,3 +61,56 @@ extension FixedWidthInteger where Self: AnyMockable {
 
 extension Int: AnyMockable, RandomMockable {}
 extension Int64: AnyMockable, RandomMockable {}
+
+extension String: AnyMockable, RandomMockable {
+    static func mockAny() -> String {
+        return "abc"
+    }
+
+    static func mockRandom() -> String {
+        return mockRandom(length: 10)
+    }
+
+    static func mockRandom(length: Int) -> String {
+        return mockRandom(among: .alphanumericsAndWhitespace, length: length)
+    }
+
+    static func mockRandom(among characters: RandomStringCharacterSet, length: Int = 10) -> String {
+        return characters.random(ofLength: length)
+    }
+
+    static func mockRepeating(character: Character, times: Int) -> String {
+        let characters = (0..<times).map { _ in character }
+        return String(characters)
+    }
+
+    enum RandomStringCharacterSet {
+        private static let alphanumericCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        private static let decimalDigitCharacters = "0123456789"
+
+        /// Only letters and numbers (lower and upper cased).
+        case alphanumerics
+        /// Letters, numbers and whitespace (lower and upper cased).
+        case alphanumericsAndWhitespace
+        /// Only numbers.
+        case decimalDigits
+        /// Custom characters.
+        case custom(characters: String)
+
+        func random(ofLength length: Int) -> String {
+            var characters: String
+            switch self {
+            case .alphanumerics:
+                characters = RandomStringCharacterSet.alphanumericCharacters
+            case .alphanumericsAndWhitespace:
+                characters = RandomStringCharacterSet.alphanumericCharacters + " "
+            case .decimalDigits:
+                characters = RandomStringCharacterSet.decimalDigitCharacters
+            case .custom(let customCharacters):
+                characters = customCharacters
+            }
+
+            return String((0..<length).map { _ in characters.randomElement()! })
+        }
+    }
+}
