@@ -70,7 +70,7 @@ internal class Processor: ViewTreeSnapshotProcessor {
 
     private var records: [SRRecord] = []
 
-    private func printToConsole(segment: SRMobileSegment) {
+    private func printToConsole(segment: SRSegment) {
         let jsonEncoder = JSONEncoder()
         jsonEncoder.outputFormatting = .prettyPrinted
 

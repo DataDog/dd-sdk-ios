@@ -9,7 +9,7 @@
 internal protocol SRDataModel: Codable {}
 
 /// Mobile-specific. Schema of a Session Replay data Segment.
-internal struct SRMobileSegment: SRDataModel {
+internal struct SRSegment: SRDataModel {
     /// Application properties
     internal let application: Application
 

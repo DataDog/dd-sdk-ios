@@ -66,6 +66,10 @@ public class SRCodeDecorator: SwiftCodeDecorator {
             fixedName = "SRRecord"
         }
 
+        if fixedName == "MobileSegment" {
+            fixedName = "SRSegment"
+        }
+
         // Ensure all root types have `SR` prefix:
         let isRootType = context.parent == nil
         if isRootType && fixedName.uppercased().hasPrefix("SR") == false {
