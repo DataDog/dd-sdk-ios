@@ -378,29 +378,16 @@ internal struct SRTextWireframe: Codable {
         /// The font color as a string hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional.
         internal let color: String
 
-        /// The font family.
+        /// The preferred font family collection, ordered by preference and formatted as a String list: e.g. Century Gothic, Verdana, sans-serif
         internal let family: String
 
         /// The font size in pixels.
         internal let size: Int64
 
-        /// The font type.
-        internal let type: TextStyleType
-
         enum CodingKeys: String, CodingKey {
             case color = "color"
             case family = "family"
             case size = "size"
-            case type = "type"
-        }
-
-        /// The font type.
-        internal enum TextStyleType: String, Codable {
-            case serif = "serif"
-            case sansSerif = "sans-serif"
-            case script = "script"
-            case monospaced = "monospaced"
-            case dynamic = "dynamic"
         }
     }
 }
@@ -547,7 +534,7 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
             internal let removes: [Removes]
 
             /// The source of this type of incremental data.
-            internal let source: Int64? = 0
+            internal let source: Int64 = 0
 
             /// Contains the updated wireframes mutations.
             internal let updates: [Updates]
@@ -810,29 +797,16 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
                         /// The font color as a string hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional.
                         internal let color: String
 
-                        /// The font family.
+                        /// The preferred font family collection, ordered by preference and formatted as a String list: e.g. Century Gothic, Verdana, sans-serif
                         internal let family: String
 
                         /// The font size in pixels.
                         internal let size: Int64
 
-                        /// The font type.
-                        internal let type: TextStyleType
-
                         enum CodingKeys: String, CodingKey {
                             case color = "color"
                             case family = "family"
                             case size = "size"
-                            case type = "type"
-                        }
-
-                        /// The font type.
-                        internal enum TextStyleType: String, Codable {
-                            case serif = "serif"
-                            case sansSerif = "sans-serif"
-                            case script = "script"
-                            case monospaced = "monospaced"
-                            case dynamic = "dynamic"
                         }
                     }
                 }
@@ -915,7 +889,7 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
             internal let positions: [Positions]?
 
             /// The source of this type of incremental data.
-            internal let source: Int64? = 2
+            internal let source: Int64 = 2
 
             enum CodingKeys: String, CodingKey {
                 case positions = "positions"
@@ -1083,4 +1057,4 @@ internal struct SRVisualViewportRecord: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/b3c893ccfc8960b58895863546f63b4651860181
+// Generated from https://github.com/DataDog/rum-events-format/tree/3809da04bcae3a8ca4843edd88135efca44fabc0

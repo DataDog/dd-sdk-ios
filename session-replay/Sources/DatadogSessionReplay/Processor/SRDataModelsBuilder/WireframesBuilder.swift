@@ -129,8 +129,7 @@ internal class WireframesBuilder {
         let textStyle = SRTextWireframe.TextStyle(
             color: textColor.flatMap { hexString(from: $0) } ?? Fallback.color,
             family: Fallback.fontFamily,
-            size: Int64(withNoOverflow: font?.pointSize ?? Fallback.fontSize),
-            type: .sansSerif
+            size: Int64(withNoOverflow: font?.pointSize ?? Fallback.fontSize)
         )
 
         let wireframe = SRTextWireframe(
