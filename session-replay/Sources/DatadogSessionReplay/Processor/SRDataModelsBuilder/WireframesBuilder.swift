@@ -8,9 +8,6 @@ import Foundation
 import CoreGraphics
 import UIKit
 
-/// TODO: RUMM-2440 - configure models generator to emit root-level `SRWireframe` instead of this
-internal typealias SRWireframe = SRMobileFullSnapshotRecord.Data.Wireframes
-
 /// Builds the actual wireframes from VTS snapshots (produced by `Recorder`) to be later transported in SR
 /// records (see `RecordsBuilder`) within SR segments (see `SegmentBuilder`).
 /// A wireframe stands for semantic definition of an UI element (i.a.: label, button, tab bar).

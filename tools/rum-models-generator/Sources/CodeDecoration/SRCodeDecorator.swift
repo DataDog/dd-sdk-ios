@@ -26,7 +26,10 @@ public class SRCodeDecorator: SwiftCodeDecorator {
                 "SRViewEndRecord",
                 "SRVisualViewportRecord",
                 // For convenience, detach `SRMobileSegment.Record` to root-level `SRRecord`:
-                "SRRecord"
+                "SRRecord",
+                // For convenience, detach `SRMobileFullSnapshotRecord.Data.Wireframes`
+                // and `SRMobileIncrementalSnapshotRecord.Update.Add.Wireframes` to root-level `SRWireframe`:
+                "SRWireframe"
             ]
         )
     }
@@ -68,6 +71,10 @@ public class SRCodeDecorator: SwiftCodeDecorator {
 
         if fixedName == "MobileSegment" {
             fixedName = "SRSegment"
+        }
+
+        if fixedName == "Wireframes" {
+            fixedName = "SRWireframe"
         }
 
         // Ensure all root types have `SR` prefix:

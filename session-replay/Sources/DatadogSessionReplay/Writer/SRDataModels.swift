@@ -322,6 +322,48 @@ internal struct SRTextWireframe: Codable {
     }
 }
 
+/// Schema of a Wireframe type.
+internal enum SRWireframe: Codable {
+    case shapeWireframe(value: SRShapeWireframe)
+    case textWireframe(value: SRTextWireframe)
+
+    // MARK: - Codable
+
+    internal func encode(to encoder: Encoder) throws {
+        // Encode only the associated value, without encoding enum case
+        var container = encoder.singleValueContainer()
+
+        switch self {
+        case .shapeWireframe(let value):
+            try container.encode(value)
+        case .textWireframe(let value):
+            try container.encode(value)
+        }
+    }
+
+    internal init(from decoder: Decoder) throws {
+        // Decode enum case from associated value
+        let container = try decoder.singleValueContainer()
+
+        if let value = try? container.decode(SRShapeWireframe.self) {
+            self = .shapeWireframe(value: value)
+            return
+        }
+        if let value = try? container.decode(SRTextWireframe.self) {
+            self = .textWireframe(value: value)
+            return
+        }
+        let error = DecodingError.Context(
+            codingPath: container.codingPath,
+            debugDescription: """
+            Failed to decode `SRWireframe`.
+            Ran out of possibilities when trying to decode the value of associated type.
+            """
+        )
+        throw DecodingError.typeMismatch(SRWireframe.self, error)
+    }
+}
+
 /// Mobile-specific. Schema of a Record type which contains the full snapshot of a screen.
 internal struct SRMobileFullSnapshotRecord: Codable {
     internal let data: Data
@@ -340,52 +382,10 @@ internal struct SRMobileFullSnapshotRecord: Codable {
 
     internal struct Data: Codable {
         /// The Wireframes contained by this Record.
-        internal let wireframes: [Wireframes]
+        internal let wireframes: [SRWireframe]
 
         enum CodingKeys: String, CodingKey {
             case wireframes = "wireframes"
-        }
-
-        /// Schema of a Wireframe type.
-        internal enum Wireframes: Codable {
-            case shapeWireframe(value: SRShapeWireframe)
-            case textWireframe(value: SRTextWireframe)
-
-            // MARK: - Codable
-
-            internal func encode(to encoder: Encoder) throws {
-                // Encode only the associated value, without encoding enum case
-                var container = encoder.singleValueContainer()
-
-                switch self {
-                case .shapeWireframe(let value):
-                    try container.encode(value)
-                case .textWireframe(let value):
-                    try container.encode(value)
-                }
-            }
-
-            internal init(from decoder: Decoder) throws {
-                // Decode enum case from associated value
-                let container = try decoder.singleValueContainer()
-
-                if let value = try? container.decode(SRShapeWireframe.self) {
-                    self = .shapeWireframe(value: value)
-                    return
-                }
-                if let value = try? container.decode(SRTextWireframe.self) {
-                    self = .textWireframe(value: value)
-                    return
-                }
-                let error = DecodingError.Context(
-                    codingPath: container.codingPath,
-                    debugDescription: """
-                    Failed to decode `Wireframes`.
-                    Ran out of possibilities when trying to decode the value of associated type.
-                    """
-                )
-                throw DecodingError.typeMismatch(Wireframes.self, error)
-            }
         }
     }
 }
@@ -481,53 +481,11 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
                 internal let previousId: Int64?
 
                 /// Schema of a Wireframe type.
-                internal let wireframe: Wireframe
+                internal let wireframe: SRWireframe
 
                 enum CodingKeys: String, CodingKey {
                     case previousId = "previousId"
                     case wireframe = "wireframe"
-                }
-
-                /// Schema of a Wireframe type.
-                internal enum Wireframe: Codable {
-                    case shapeWireframe(value: SRShapeWireframe)
-                    case textWireframe(value: SRTextWireframe)
-
-                    // MARK: - Codable
-
-                    internal func encode(to encoder: Encoder) throws {
-                        // Encode only the associated value, without encoding enum case
-                        var container = encoder.singleValueContainer()
-
-                        switch self {
-                        case .shapeWireframe(let value):
-                            try container.encode(value)
-                        case .textWireframe(let value):
-                            try container.encode(value)
-                        }
-                    }
-
-                    internal init(from decoder: Decoder) throws {
-                        // Decode enum case from associated value
-                        let container = try decoder.singleValueContainer()
-
-                        if let value = try? container.decode(SRShapeWireframe.self) {
-                            self = .shapeWireframe(value: value)
-                            return
-                        }
-                        if let value = try? container.decode(SRTextWireframe.self) {
-                            self = .textWireframe(value: value)
-                            return
-                        }
-                        let error = DecodingError.Context(
-                            codingPath: container.codingPath,
-                            debugDescription: """
-                            Failed to decode `Wireframe`.
-                            Ran out of possibilities when trying to decode the value of associated type.
-                            """
-                        )
-                        throw DecodingError.typeMismatch(Wireframe.self, error)
-                    }
                 }
             }
 
