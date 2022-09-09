@@ -92,10 +92,42 @@ internal struct SRSegment: SRDataModel {
     }
 }
 
+/// The border properties of this wireframe. The default value is null (no-border).
+internal struct SRShapeBorder: Codable {
+    /// The border color as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional.
+    internal let color: String
+
+    /// The width of the border in pixels.
+    internal let width: Int64
+
+    enum CodingKeys: String, CodingKey {
+        case color = "color"
+        case width = "width"
+    }
+}
+
+/// The style of this wireframe.
+internal struct SRShapeStyle: Codable {
+    /// The background color for this wireframe as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. The default value is #FFFFFF00.
+    internal let backgroundColor: String?
+
+    /// The corner(border) radius of this wireframe in pixels. The default value is 0.
+    internal let cornerRadius: Double?
+
+    /// The opacity of this wireframe. Takes values from 0 to 1, default value is 1.
+    internal let opacity: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case backgroundColor = "backgroundColor"
+        case cornerRadius = "cornerRadius"
+        case opacity = "opacity"
+    }
+}
+
 /// Schema of all properties of a ShapeWireframe.
 internal struct SRShapeWireframe: Codable {
     /// The border properties of this wireframe. The default value is null (no-border).
-    internal let border: Border?
+    internal let border: SRShapeBorder?
 
     /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
     internal let height: Int64
@@ -104,7 +136,7 @@ internal struct SRShapeWireframe: Codable {
     internal let id: Int64
 
     /// The style of this wireframe.
-    internal let shapeStyle: ShapeStyle?
+    internal let shapeStyle: SRShapeStyle?
 
     /// The type of the wireframe.
     internal let type: String = "shape"
@@ -128,44 +160,12 @@ internal struct SRShapeWireframe: Codable {
         case x = "x"
         case y = "y"
     }
-
-    /// The border properties of this wireframe. The default value is null (no-border).
-    internal struct Border: Codable {
-        /// The border color as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional.
-        internal let color: String
-
-        /// The width of the border in pixels.
-        internal let width: Int64
-
-        enum CodingKeys: String, CodingKey {
-            case color = "color"
-            case width = "width"
-        }
-    }
-
-    /// The style of this wireframe.
-    internal struct ShapeStyle: Codable {
-        /// The background color for this wireframe as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. The default value is #FFFFFF00.
-        internal let backgroundColor: String?
-
-        /// The corner(border) radius of this wireframe in pixels. The default value is 0.
-        internal let cornerRadius: Double?
-
-        /// The opacity of this wireframe. Takes values from 0 to 1, default value is 1.
-        internal let opacity: Double?
-
-        enum CodingKeys: String, CodingKey {
-            case backgroundColor = "backgroundColor"
-            case cornerRadius = "cornerRadius"
-            case opacity = "opacity"
-        }
-    }
 }
 
 /// Schema of all properties of a TextWireframe.
 internal struct SRTextWireframe: Codable {
     /// The border properties of this wireframe. The default value is null (no-border).
-    internal let border: Border?
+    internal let border: SRShapeBorder?
 
     /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
     internal let height: Int64
@@ -174,7 +174,7 @@ internal struct SRTextWireframe: Codable {
     internal let id: Int64
 
     /// The style of this wireframe.
-    internal let shapeStyle: ShapeStyle?
+    internal let shapeStyle: SRShapeStyle?
 
     /// The text value of the wireframe.
     internal var text: String
@@ -209,38 +209,6 @@ internal struct SRTextWireframe: Codable {
         case width = "width"
         case x = "x"
         case y = "y"
-    }
-
-    /// The border properties of this wireframe. The default value is null (no-border).
-    internal struct Border: Codable {
-        /// The border color as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional.
-        internal let color: String
-
-        /// The width of the border in pixels.
-        internal let width: Int64
-
-        enum CodingKeys: String, CodingKey {
-            case color = "color"
-            case width = "width"
-        }
-    }
-
-    /// The style of this wireframe.
-    internal struct ShapeStyle: Codable {
-        /// The background color for this wireframe as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. The default value is #FFFFFF00.
-        internal let backgroundColor: String?
-
-        /// The corner(border) radius of this wireframe in pixels. The default value is 0.
-        internal let cornerRadius: Double?
-
-        /// The opacity of this wireframe. Takes values from 0 to 1, default value is 1.
-        internal let opacity: Double?
-
-        enum CodingKeys: String, CodingKey {
-            case backgroundColor = "backgroundColor"
-            case cornerRadius = "cornerRadius"
-            case opacity = "opacity"
-        }
     }
 
     /// Schema of all properties of a TextPosition.
@@ -542,7 +510,7 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
                 /// Schema of all properties of a TextWireframeUpdate.
                 internal struct TextWireframeUpdate: Codable {
                     /// The border properties of this wireframe. The default value is null (no-border).
-                    internal let border: Border?
+                    internal let border: SRShapeBorder?
 
                     /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
                     internal let height: Int64?
@@ -551,7 +519,7 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
                     internal let id: Int64
 
                     /// The style of this wireframe.
-                    internal let shapeStyle: ShapeStyle?
+                    internal let shapeStyle: SRShapeStyle?
 
                     /// The text value of the wireframe.
                     internal var text: String?
@@ -586,38 +554,6 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
                         case width = "width"
                         case x = "x"
                         case y = "y"
-                    }
-
-                    /// The border properties of this wireframe. The default value is null (no-border).
-                    internal struct Border: Codable {
-                        /// The border color as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional.
-                        internal let color: String
-
-                        /// The width of the border in pixels.
-                        internal let width: Int64
-
-                        enum CodingKeys: String, CodingKey {
-                            case color = "color"
-                            case width = "width"
-                        }
-                    }
-
-                    /// The style of this wireframe.
-                    internal struct ShapeStyle: Codable {
-                        /// The background color for this wireframe as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. The default value is #FFFFFF00.
-                        internal let backgroundColor: String?
-
-                        /// The corner(border) radius of this wireframe in pixels. The default value is 0.
-                        internal let cornerRadius: Double?
-
-                        /// The opacity of this wireframe. Takes values from 0 to 1, default value is 1.
-                        internal let opacity: Double?
-
-                        enum CodingKeys: String, CodingKey {
-                            case backgroundColor = "backgroundColor"
-                            case cornerRadius = "cornerRadius"
-                            case opacity = "opacity"
-                        }
                     }
 
                     /// Schema of all properties of a TextPosition.
@@ -702,7 +638,7 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
                 /// Schema of a ShapeWireframeUpdate.
                 internal struct ShapeWireframeUpdate: Codable {
                     /// The border properties of this wireframe. The default value is null (no-border).
-                    internal let border: Border?
+                    internal let border: SRShapeBorder?
 
                     /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
                     internal let height: Int64?
@@ -711,7 +647,7 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
                     internal let id: Int64
 
                     /// The style of this wireframe.
-                    internal let shapeStyle: ShapeStyle?
+                    internal let shapeStyle: SRShapeStyle?
 
                     /// The type of the wireframe.
                     internal let type: String = "shape"
@@ -734,38 +670,6 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
                         case width = "width"
                         case x = "x"
                         case y = "y"
-                    }
-
-                    /// The border properties of this wireframe. The default value is null (no-border).
-                    internal struct Border: Codable {
-                        /// The border color as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional.
-                        internal let color: String
-
-                        /// The width of the border in pixels.
-                        internal let width: Int64
-
-                        enum CodingKeys: String, CodingKey {
-                            case color = "color"
-                            case width = "width"
-                        }
-                    }
-
-                    /// The style of this wireframe.
-                    internal struct ShapeStyle: Codable {
-                        /// The background color for this wireframe as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. The default value is #FFFFFF00.
-                        internal let backgroundColor: String?
-
-                        /// The corner(border) radius of this wireframe in pixels. The default value is 0.
-                        internal let cornerRadius: Double?
-
-                        /// The opacity of this wireframe. Takes values from 0 to 1, default value is 1.
-                        internal let opacity: Double?
-
-                        enum CodingKeys: String, CodingKey {
-                            case backgroundColor = "backgroundColor"
-                            case cornerRadius = "cornerRadius"
-                            case opacity = "opacity"
-                        }
                     }
                 }
             }

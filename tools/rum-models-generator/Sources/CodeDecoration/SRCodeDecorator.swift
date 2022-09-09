@@ -29,7 +29,10 @@ public class SRCodeDecorator: SwiftCodeDecorator {
                 "SRRecord",
                 // For convenience, detach `SRMobileFullSnapshotRecord.Data.Wireframes`
                 // and `SRMobileIncrementalSnapshotRecord.Update.Add.Wireframes` to root-level `SRWireframe`:
-                "SRWireframe"
+                "SRWireframe",
+                // For convenience, detach styles from each wireframe to shared, root-level definition:
+                "SRShapeBorder",
+                "SRShapeStyle",
             ]
         )
     }
@@ -64,17 +67,24 @@ public class SRCodeDecorator: SwiftCodeDecorator {
             fixedName = typeName.uppercased()
         }
 
-        // Rename `enum Records` to `enum Record`
+        // Basic renamings:
         if fixedName == "Records" {
             fixedName = "SRRecord"
         }
-
         if fixedName == "MobileSegment" {
             fixedName = "SRSegment"
         }
-
         if fixedName == "Wireframes" {
             fixedName = "SRWireframe"
+        }
+
+        // Detach styles from each wireframe to shared, root-level definitions
+        let parentWireframe = context.predecessorStruct(matching: { $0.name.lowercased().contains("wireframe") })
+        if parentWireframe != nil && fixedName == "Border" {
+            fixedName = "SRShapeBorder"
+        }
+        if parentWireframe != nil && fixedName == "ShapeStyle" {
+            fixedName = "SRShapeStyle"
         }
 
         // Ensure all root types have `SR` prefix:
@@ -89,5 +99,16 @@ public class SRCodeDecorator: SwiftCodeDecorator {
         }
 
         return fixedName
+    }
+}
+
+private extension TransformationContext {
+    func predecessorStruct(matching predicate: (SwiftStruct) -> Bool) -> SwiftStruct? {
+        return predecessor(matching: {
+            guard let `struct` = $0 as? SwiftStruct else {
+                return false
+            }
+            return predicate(`struct`)
+        }) as? SwiftStruct
     }
 }

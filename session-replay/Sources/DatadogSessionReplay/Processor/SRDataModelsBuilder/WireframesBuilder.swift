@@ -41,30 +41,11 @@ internal class WireframesBuilder {
     ) -> SRWireframe {
         dummyIDsGenerator += 1
 
-        var border: SRShapeWireframe.Border? = nil
-
-        if let borderColor = borderColor, let borderWidth = borderWidth, borderWidth > 0.0 {
-            border = .init(
-                color: hexString(from: borderColor) ?? Fallback.color,
-                width: Int64(withNoOverflow: borderWidth.rounded(.up))
-            )
-        }
-
-        var style: SRShapeWireframe.ShapeStyle? = nil
-
-        if let backgroundColor = backgroundColor {
-            style = .init(
-                backgroundColor: hexString(from: backgroundColor) ?? Fallback.color,
-                cornerRadius: cornerRadius.map { Double($0) },
-                opacity: opacity.map { Double($0) }
-            )
-        }
-
         let wireframe = SRShapeWireframe(
-            border: border,
+            border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
             height: Int64(withNoOverflow: frame.height),
             id: dummyIDsGenerator,
-            shapeStyle: style,
+            shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
             width: Int64(withNoOverflow: frame.width),
             x: Int64(withNoOverflow: frame.minX),
             y: Int64(withNoOverflow: frame.minY)
@@ -86,27 +67,6 @@ internal class WireframesBuilder {
         opacity: CGFloat? = nil
     ) -> SRWireframe {
         dummyIDsGenerator += 1
-
-        // TODO: RUMM-2440 Share `.border` type between wireframes:
-        var border: SRTextWireframe.Border? = nil
-
-        if let borderColor = borderColor, let borderWidth = borderWidth, borderWidth > 0.0 {
-            border = .init(
-                color: hexString(from: borderColor) ?? Fallback.color,
-                width: Int64(withNoOverflow: borderWidth.rounded(.up))
-            )
-        }
-
-        // TODO: RUMM-2440 Share `.style` type between wireframes:
-        var style: SRTextWireframe.ShapeStyle? = nil
-
-        if let backgroundColor = backgroundColor {
-            style = .init(
-                backgroundColor: hexString(from: backgroundColor) ?? Fallback.color,
-                cornerRadius: cornerRadius.map { Double($0) },
-                opacity: opacity.map { Double($0) }
-            )
-        }
 
         var textPosition: SRTextWireframe.TextPosition? = nil
 
@@ -130,10 +90,10 @@ internal class WireframesBuilder {
         )
 
         let wireframe = SRTextWireframe(
-            border: border,
+            border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
             height: Int64(withNoOverflow: frame.height),
             id: dummyIDsGenerator,
-            shapeStyle: style,
+            shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
             text: text,
             textPosition: textPosition,
             textStyle: textStyle,
@@ -143,5 +103,30 @@ internal class WireframesBuilder {
         )
 
         return .textWireframe(value: wireframe)
+    }
+
+    // MARK: - Private
+
+    private func createShapeBorder(borderColor: CGColor?, borderWidth: CGFloat?) -> SRShapeBorder? {
+        guard let borderColor = borderColor, let borderWidth = borderWidth, borderWidth > 0.0 else {
+            return nil
+        }
+
+        return .init(
+            color: hexString(from: borderColor) ?? Fallback.color,
+            width: Int64(withNoOverflow: borderWidth.rounded(.up))
+        )
+    }
+
+    private func createShapeStyle(backgroundColor: CGColor?, cornerRadius: CGFloat?, opacity: CGFloat?) -> SRShapeStyle? {
+        guard let backgroundColor = backgroundColor else {
+            return nil
+        }
+
+        return .init(
+            backgroundColor: hexString(from: backgroundColor) ?? Fallback.color,
+            cornerRadius: cornerRadius.map { Double($0) },
+            opacity: opacity.map { Double($0) }
+        )
     }
 }
