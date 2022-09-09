@@ -25,6 +25,8 @@ public class SRCodeDecorator: SwiftCodeDecorator {
                 "SRFocusRecord",
                 "SRViewEndRecord",
                 "SRVisualViewportRecord",
+                // For convenience, detach `SRMobileSegment.Record` to root-level `SRRecord`:
+                "SRRecord"
             ]
         )
     }
@@ -57,6 +59,11 @@ public class SRCodeDecorator: SwiftCodeDecorator {
         // If the type name uses an abbreviation, keep it uppercased:
         if fixedName.count <= 3 {
             fixedName = typeName.uppercased()
+        }
+
+        // Rename `enum Records` to `enum Record`
+        if fixedName == "Records" {
+            fixedName = "SRRecord"
         }
 
         // Ensure all root types have `SR` prefix:

@@ -6,9 +6,6 @@
 
 import Foundation
 
-/// TODO: RUMM-2440 - configure models generator to emit root-level `SRRecord` instead of this
-internal typealias SRRecord = SRMobileSegment.Records
-
 /// Builds SR records from VTS snapshots to transport wireframes (see `WireframesBuilder`).
 /// There are several types of records in SR format, including Full Snapshot Record (FSR contains all wireframes
 /// of a single replay frame), Incremental Snapshot Record (ISR describes only changes since prior ISR and FSR)

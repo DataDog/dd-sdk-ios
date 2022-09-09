@@ -68,7 +68,7 @@ internal class Processor: ViewTreeSnapshotProcessor {
 
     // MARK: - 🚧 Work In Progress: things will change in RUMM-2429
 
-    private var records: [SRMobileSegment.Records] = []
+    private var records: [SRRecord] = []
 
     private func printToConsole(segment: SRMobileSegment) {
         let jsonEncoder = JSONEncoder()

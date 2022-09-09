@@ -23,7 +23,7 @@ internal struct SRMobileSegment: SRDataModel {
     internal let indexInView: Int64
 
     /// The records contained by this Segment.
-    internal let records: [Records]
+    internal let records: [SRRecord]
 
     /// The number of records in this Segment.
     internal let recordsCount: Int64
@@ -60,76 +60,6 @@ internal struct SRMobileSegment: SRDataModel {
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
-        }
-    }
-
-    /// Mobile-specific. Schema of a Session Replay Record.
-    internal enum Records: Codable {
-        case mobileFullSnapshotRecord(value: SRMobileFullSnapshotRecord)
-        case mobileIncrementalSnapshotRecord(value: SRMobileIncrementalSnapshotRecord)
-        case metaRecord(value: SRMetaRecord)
-        case focusRecord(value: SRFocusRecord)
-        case viewEndRecord(value: SRViewEndRecord)
-        case visualViewportRecord(value: SRVisualViewportRecord)
-
-        // MARK: - Codable
-
-        internal func encode(to encoder: Encoder) throws {
-            // Encode only the associated value, without encoding enum case
-            var container = encoder.singleValueContainer()
-
-            switch self {
-            case .mobileFullSnapshotRecord(let value):
-                try container.encode(value)
-            case .mobileIncrementalSnapshotRecord(let value):
-                try container.encode(value)
-            case .metaRecord(let value):
-                try container.encode(value)
-            case .focusRecord(let value):
-                try container.encode(value)
-            case .viewEndRecord(let value):
-                try container.encode(value)
-            case .visualViewportRecord(let value):
-                try container.encode(value)
-            }
-        }
-
-        internal init(from decoder: Decoder) throws {
-            // Decode enum case from associated value
-            let container = try decoder.singleValueContainer()
-
-            if let value = try? container.decode(SRMobileFullSnapshotRecord.self) {
-                self = .mobileFullSnapshotRecord(value: value)
-                return
-            }
-            if let value = try? container.decode(SRMobileIncrementalSnapshotRecord.self) {
-                self = .mobileIncrementalSnapshotRecord(value: value)
-                return
-            }
-            if let value = try? container.decode(SRMetaRecord.self) {
-                self = .metaRecord(value: value)
-                return
-            }
-            if let value = try? container.decode(SRFocusRecord.self) {
-                self = .focusRecord(value: value)
-                return
-            }
-            if let value = try? container.decode(SRViewEndRecord.self) {
-                self = .viewEndRecord(value: value)
-                return
-            }
-            if let value = try? container.decode(SRVisualViewportRecord.self) {
-                self = .visualViewportRecord(value: value)
-                return
-            }
-            let error = DecodingError.Context(
-                codingPath: container.codingPath,
-                debugDescription: """
-                Failed to decode `Records`.
-                Ran out of possibilities when trying to decode the value of associated type.
-                """
-            )
-            throw DecodingError.typeMismatch(Records.self, error)
         }
     }
 
@@ -1054,6 +984,76 @@ internal struct SRVisualViewportRecord: Codable {
             case scale = "scale"
             case width = "width"
         }
+    }
+}
+
+/// Mobile-specific. Schema of a Session Replay Record.
+internal enum SRRecord: Codable {
+    case mobileFullSnapshotRecord(value: SRMobileFullSnapshotRecord)
+    case mobileIncrementalSnapshotRecord(value: SRMobileIncrementalSnapshotRecord)
+    case metaRecord(value: SRMetaRecord)
+    case focusRecord(value: SRFocusRecord)
+    case viewEndRecord(value: SRViewEndRecord)
+    case visualViewportRecord(value: SRVisualViewportRecord)
+
+    // MARK: - Codable
+
+    internal func encode(to encoder: Encoder) throws {
+        // Encode only the associated value, without encoding enum case
+        var container = encoder.singleValueContainer()
+
+        switch self {
+        case .mobileFullSnapshotRecord(let value):
+            try container.encode(value)
+        case .mobileIncrementalSnapshotRecord(let value):
+            try container.encode(value)
+        case .metaRecord(let value):
+            try container.encode(value)
+        case .focusRecord(let value):
+            try container.encode(value)
+        case .viewEndRecord(let value):
+            try container.encode(value)
+        case .visualViewportRecord(let value):
+            try container.encode(value)
+        }
+    }
+
+    internal init(from decoder: Decoder) throws {
+        // Decode enum case from associated value
+        let container = try decoder.singleValueContainer()
+
+        if let value = try? container.decode(SRMobileFullSnapshotRecord.self) {
+            self = .mobileFullSnapshotRecord(value: value)
+            return
+        }
+        if let value = try? container.decode(SRMobileIncrementalSnapshotRecord.self) {
+            self = .mobileIncrementalSnapshotRecord(value: value)
+            return
+        }
+        if let value = try? container.decode(SRMetaRecord.self) {
+            self = .metaRecord(value: value)
+            return
+        }
+        if let value = try? container.decode(SRFocusRecord.self) {
+            self = .focusRecord(value: value)
+            return
+        }
+        if let value = try? container.decode(SRViewEndRecord.self) {
+            self = .viewEndRecord(value: value)
+            return
+        }
+        if let value = try? container.decode(SRVisualViewportRecord.self) {
+            self = .visualViewportRecord(value: value)
+            return
+        }
+        let error = DecodingError.Context(
+            codingPath: container.codingPath,
+            debugDescription: """
+            Failed to decode `SRRecord`.
+            Ran out of possibilities when trying to decode the value of associated type.
+            """
+        )
+        throw DecodingError.typeMismatch(SRRecord.self, error)
     }
 }
 
