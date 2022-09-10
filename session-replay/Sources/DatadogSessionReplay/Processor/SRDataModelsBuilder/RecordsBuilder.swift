@@ -38,11 +38,11 @@ internal class RecordsBuilder {
 
     /// Creates Full Snapshot Record - bringing self-contained description of a single frame of the replay.
     func createFullSnapshotRecord(from snapshot: ViewTreeSnapshot, with wireframes: [SRWireframe]) -> SRRecord {
-        let record = SRMobileFullSnapshotRecord(
+        let record = SRFullSnapshotRecord(
             data: .init(wireframes: wireframes),
             timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
         )
-        return .mobileFullSnapshotRecord(value: record)
+        return .fullSnapshotRecord(value: record)
     }
 
     // TODO: RUMM-2250 Bring other types of records

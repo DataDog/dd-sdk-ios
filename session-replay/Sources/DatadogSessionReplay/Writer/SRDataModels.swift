@@ -333,7 +333,7 @@ internal enum SRWireframe: Codable {
 }
 
 /// Mobile-specific. Schema of a Record type which contains the full snapshot of a screen.
-internal struct SRMobileFullSnapshotRecord: Codable {
+internal struct SRFullSnapshotRecord: Codable {
     internal let data: Data
 
     /// Defines the UTC time in milliseconds when this Record was performed.
@@ -359,7 +359,7 @@ internal struct SRMobileFullSnapshotRecord: Codable {
 }
 
 /// Mobile-specific. Schema of a Record type which contains mutations of a screen.
-internal struct SRMobileIncrementalSnapshotRecord: Codable {
+internal struct SRIncrementalSnapshotRecord: Codable {
     /// Mobile-specific. Schema of a Session Replay IncrementalData type.
     internal let data: Data
 
@@ -377,7 +377,7 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
 
     /// Mobile-specific. Schema of a Session Replay IncrementalData type.
     internal enum Data: Codable {
-        case mobileMutationData(value: MobileMutationData)
+        case mutationData(value: MutationData)
         case touchData(value: TouchData)
         case viewportResizeData(value: ViewportResizeData)
 
@@ -388,7 +388,7 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
             var container = encoder.singleValueContainer()
 
             switch self {
-            case .mobileMutationData(let value):
+            case .mutationData(let value):
                 try container.encode(value)
             case .touchData(let value):
                 try container.encode(value)
@@ -401,8 +401,8 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
             // Decode enum case from associated value
             let container = try decoder.singleValueContainer()
 
-            if let value = try? container.decode(MobileMutationData.self) {
-                self = .mobileMutationData(value: value)
+            if let value = try? container.decode(MutationData.self) {
+                self = .mutationData(value: value)
                 return
             }
             if let value = try? container.decode(TouchData.self) {
@@ -424,7 +424,7 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
         }
 
         /// Mobile-specific. Schema of a MutationData.
-        internal struct MobileMutationData: Codable {
+        internal struct MutationData: Codable {
             /// Contains the newly added wireframes.
             internal let adds: [Adds]
 
@@ -851,8 +851,8 @@ internal struct SRVisualViewportRecord: Codable {
 
 /// Mobile-specific. Schema of a Session Replay Record.
 internal enum SRRecord: Codable {
-    case mobileFullSnapshotRecord(value: SRMobileFullSnapshotRecord)
-    case mobileIncrementalSnapshotRecord(value: SRMobileIncrementalSnapshotRecord)
+    case fullSnapshotRecord(value: SRFullSnapshotRecord)
+    case incrementalSnapshotRecord(value: SRIncrementalSnapshotRecord)
     case metaRecord(value: SRMetaRecord)
     case focusRecord(value: SRFocusRecord)
     case viewEndRecord(value: SRViewEndRecord)
@@ -865,9 +865,9 @@ internal enum SRRecord: Codable {
         var container = encoder.singleValueContainer()
 
         switch self {
-        case .mobileFullSnapshotRecord(let value):
+        case .fullSnapshotRecord(let value):
             try container.encode(value)
-        case .mobileIncrementalSnapshotRecord(let value):
+        case .incrementalSnapshotRecord(let value):
             try container.encode(value)
         case .metaRecord(let value):
             try container.encode(value)
@@ -884,12 +884,12 @@ internal enum SRRecord: Codable {
         // Decode enum case from associated value
         let container = try decoder.singleValueContainer()
 
-        if let value = try? container.decode(SRMobileFullSnapshotRecord.self) {
-            self = .mobileFullSnapshotRecord(value: value)
+        if let value = try? container.decode(SRFullSnapshotRecord.self) {
+            self = .fullSnapshotRecord(value: value)
             return
         }
-        if let value = try? container.decode(SRMobileIncrementalSnapshotRecord.self) {
-            self = .mobileIncrementalSnapshotRecord(value: value)
+        if let value = try? container.decode(SRIncrementalSnapshotRecord.self) {
+            self = .incrementalSnapshotRecord(value: value)
             return
         }
         if let value = try? container.decode(SRMetaRecord.self) {

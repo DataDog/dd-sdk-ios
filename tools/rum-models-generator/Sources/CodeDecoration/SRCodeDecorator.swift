@@ -19,8 +19,8 @@ public class SRCodeDecorator: SwiftCodeDecorator {
                 "SRShapeWireframe",
                 "SRTextWireframe",
                 // For convenience, make fat `*Record` structures to be root types:
-                "SRMobileFullSnapshotRecord",
-                "SRMobileIncrementalSnapshotRecord",
+                "SRFullSnapshotRecord",
+                "SRIncrementalSnapshotRecord",
                 "SRMetaRecord",
                 "SRFocusRecord",
                 "SRViewEndRecord",
@@ -57,6 +57,22 @@ public class SRCodeDecorator: SwiftCodeDecorator {
         return `struct`
     }
 
+    override public func format(structName: String) -> String {
+        super.format(
+            structName: structName
+                .replacingOccurrences(of: "mobile", with: "")
+                .replacingOccurrences(of: "Mobile", with: "") // erase "[M|m]obile" in names
+        )
+    }
+
+    override public func format(enumCaseName: String) -> String {
+        super.format(
+            enumCaseName: enumCaseName
+                .replacingOccurrences(of: "mobile", with: "")
+                .replacingOccurrences(of: "Mobile", with: "") // erase "[M|m]obile" in names
+        )
+    }
+
     // MARK: - Naming Conventions
 
     override public func fix(typeName: String) -> String {
@@ -70,9 +86,6 @@ public class SRCodeDecorator: SwiftCodeDecorator {
         // Basic renamings:
         if fixedName == "Records" {
             fixedName = "SRRecord"
-        }
-        if fixedName == "MobileSegment" {
-            fixedName = "SRSegment"
         }
         if fixedName == "Wireframes" {
             fixedName = "SRWireframe"

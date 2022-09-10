@@ -19,7 +19,7 @@ internal class SegmentBuilder {
         guard case SRRecord.metaRecord(let metaRecord) = firstRecord else {
             throw InternalError(description: "The first record in a Segment must be Meta Record")
         }
-        guard case SRRecord.mobileFullSnapshotRecord(let lastFullSnapshotRecord) = lastRecord else {
+        guard case SRRecord.fullSnapshotRecord(let lastFullSnapshotRecord) = lastRecord else {
             // TODO: RUMM-2250 Make it more generic after introducing more record types
             throw InternalError(description: "For now, Segment must end with Full Snapshot Record")
         }
