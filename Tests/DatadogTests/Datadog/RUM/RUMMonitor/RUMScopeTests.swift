@@ -17,7 +17,7 @@ class RUMScopeTests: XCTestCase {
         }
 
         let context = RUMContext.mockWith(rumApplicationID: .mockAny(), sessionID: .nullUUID)
-        func process(command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Bool { !isCompleted }
+        func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool { !isCompleted }
     }
 
     func testWhenPropagatingCommand_itRemovesCompletedScope() {

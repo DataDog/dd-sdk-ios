@@ -343,7 +343,7 @@ public class Logger: LoggerProtocol {
         }
 
         private func buildOrThrow(in core: DatadogCoreProtocol) throws -> LoggerProtocol {
-            guard let context = core.v1.context else {
+            if core is NOPDatadogCore {
                 throw ProgrammerError(
                     description: "`Datadog.initialize()` must be called prior to `Logger.builder.build()`."
                 )
@@ -361,8 +361,8 @@ public class Logger: LoggerProtocol {
                 }
 
                 let configuration = RemoteLogger.Configuration(
-                    service: serviceName ?? context.service,
-                    loggerName: loggerName ?? context.applicationBundleIdentifier,
+                    service: serviceName,
+                    loggerName: loggerName ?? loggingFeature.configuration.applicationBundleIdentifier,
                     sendNetworkInfo: sendNetworkInfo,
                     threshold: datadogReportingThreshold,
                     eventMapper: loggingFeature.configuration.logEventMapper
@@ -374,7 +374,7 @@ public class Logger: LoggerProtocol {
                 return RemoteLogger(
                     core: core,
                     configuration: configuration,
-                    dateProvider: context.dateProvider,
+                    dateProvider: loggingFeature.configuration.dateProvider,
                     rumContextIntegration: (rumEnabled && bundleWithRUM) ? LoggingWithRUMContextIntegration() : nil,
                     activeSpanIntegration: (tracingEnabled && bundleWithTrace) ? LoggingWithActiveSpanIntegration() : nil
                 )
@@ -392,7 +392,7 @@ public class Logger: LoggerProtocol {
 
                 return ConsoleLogger(
                     configuration: configuration,
-                    dateProvider: context.dateProvider,
+                    dateProvider: loggingFeature.configuration.dateProvider,
                     printFunction: consolePrint
                 )
             }()

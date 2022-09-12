@@ -5,15 +5,20 @@
  */
 
 import Foundation
+import XCTest
 
 @testable import Datadog
 
 internal final class DatadogCoreMock: Flushable {
     private var v1Features: [String: Any] = [:]
 
-    var context: DatadogV1Context?
+    var legacyContext: DatadogV1Context? {
+        .init(context)
+    }
 
-    init(context: DatadogV1Context? = .mockAny()) {
+    var context: DatadogContext
+
+    init(context: DatadogContext = .mockAny()) {
         self.context = context
     }
 
@@ -52,6 +57,15 @@ extension DatadogCoreMock: DatadogCoreProtocol {
 extension DatadogCoreMock: DatadogV1CoreProtocol {
     // MARK: V1 interface
 
+    struct Scope: FeatureV1Scope {
+        let context: DatadogContext
+        let writer: Writer
+
+        func eventWriteContext(_ block: @escaping (DatadogContext, Writer) throws -> Void) {
+            XCTAssertNoThrow(try block(context, writer), "Encountered an error when executing `eventWriteContext`")
+        }
+    }
+
     func register<T>(feature instance: T?) {
         let key = String(describing: T.self)
         v1Features[key] = instance
@@ -63,20 +77,13 @@ extension DatadogCoreMock: DatadogV1CoreProtocol {
     }
 
     func scope<T>(for featureType: T.Type) -> FeatureV1Scope? {
-        guard let context = context else {
-            return nil
-        }
-
         let key = String(describing: T.self)
 
         guard let feature = v1Features[key] as? V1Feature else {
             return nil
         }
 
-        return DatadogCoreFeatureScope(
-            context: context,
-            storage: feature.storage
-        )
+        return Scope(context: context, writer: feature.storage.writer)
     }
 }
 
@@ -86,19 +93,12 @@ extension DatadogV1Context: AnyMockable {
     }
 
     static func mockWith(
-        site: DatadogSite? = .mockAny(),
-        clientToken: String = .mockAny(),
         service: String = .mockAny(),
         env: String = .mockAny(),
         version: String = .mockAny(),
         source: String = .mockAny(),
         sdkVersion: String = .mockAny(),
-        ciAppOrigin: String? = nil,
-        applicationName: String = .mockAny(),
-        applicationBundleIdentifier: String = .mockAny(),
-        sdkInitDate: Date = Date(),
         device: DeviceInfo = .mockAny(),
-        dateProvider: DateProvider = SystemDateProvider(),
         dateCorrector: DateCorrector = DateCorrectorMock(),
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
             networkConnectionInfo: .mockWith(
@@ -111,30 +111,34 @@ extension DatadogV1Context: AnyMockable {
             )
         ),
         carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
-        userInfoProvider: UserInfoProvider = .mockAny(),
-        appStateListener: AppStateListening = AppStateListenerMock.mockAny(),
-        launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock.mockAny()
+        userInfoProvider: UserInfoProvider = .mockAny()
     ) -> DatadogV1Context {
         DatadogV1Context(
-            site: site,
-            clientToken: clientToken,
             service: service,
             env: env,
             version: version,
             source: source,
             sdkVersion: sdkVersion,
-            ciAppOrigin: ciAppOrigin,
-            applicationName: applicationName,
-            applicationBundleIdentifier: applicationBundleIdentifier,
-            sdkInitDate: sdkInitDate,
             device: device,
-            dateProvider: dateProvider,
             dateCorrector: dateCorrector,
             networkConnectionInfoProvider: networkConnectionInfoProvider,
             carrierInfoProvider: carrierInfoProvider,
-            userInfoProvider: userInfoProvider,
-            appStateListener: appStateListener,
-            launchTimeProvider: launchTimeProvider
+            userInfoProvider: userInfoProvider
+        )
+    }
+
+    init(_ v2: DatadogContext) {
+        self.init(
+            service: v2.service,
+            env: v2.env,
+            version: v2.version,
+            source: v2.source,
+            sdkVersion: v2.sdkVersion,
+            device: v2.device,
+            dateCorrector: DateCorrectorMock(offset: v2.serverTimeOffset),
+            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: v2.networkConnectionInfo),
+            carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: v2.carrierInfo),
+            userInfoProvider: UserInfoProvider.mockWith(userInfo: v2.userInfo ?? .empty)
         )
     }
 }

@@ -8,16 +8,10 @@ import XCTest
 @testable import Datadog
 
 class TracerConfigurationTests: XCTestCase {
-    private let userInfoProvider: UserInfoProvider = .mockAny()
-    private let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
-    private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
     private lazy var core = DatadogCoreMock(
         context: .mockWith(
             env: "service-name",
-            version: "1.2.3",
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider,
-            userInfoProvider: userInfoProvider
+            version: "1.2.3"
         )
     )
 

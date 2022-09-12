@@ -151,7 +151,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     /// Initializes the Datadog RUM Monitor.
     public static func initialize(in core: DatadogCoreProtocol = defaultDatadogCore) -> DDRUMMonitor {
         do {
-            guard let context = core.v1.context else {
+            if core is NOPDatadogCore {
                 throw ProgrammerError(
                     description: "`Datadog.initialize()` must be called prior to `RUMMonitor.initialize()`."
                 )
@@ -174,10 +174,9 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 core: core,
                 dependencies: RUMScopeDependencies(
                     rumFeature: rumFeature,
-                    crashReportingFeature: crashReporting,
-                    context: context
+                    crashReportingFeature: crashReporting
                 ),
-                dateProvider: context.dateProvider
+                dateProvider: rumFeature.configuration.dateProvider
             )
 
             core.v1.feature(RUMInstrumentation.self)?.publish(to: monitor)
@@ -597,19 +596,15 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     // MARK: - RUMCommandSubscriber
 
     func process(command: RUMCommand) {
-        guard let scope = core.v1.scope(for: RUMFeature.self) else {
-            return
-        }
+        core.v1.scope(for: RUMFeature.self)?.eventWriteContext { context, writer in
+            self.queue.sync {
+                let transformedCommand = self.transform(command: command)
 
-        queue.async {
-            let transformedCommand = self.transform(command: command)
-
-            scope.eventWriteContext { context, writer in
                 _ = self.applicationScope.process(command: transformedCommand, context: context, writer: writer)
-            }
 
-            if let debugging = self.debugging {
-                debugging.debug(applicationScope: self.applicationScope)
+                if let debugging = self.debugging {
+                    debugging.debug(applicationScope: self.applicationScope)
+                }
             }
         }
     }

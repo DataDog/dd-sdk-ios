@@ -24,7 +24,6 @@ class RUMStorageBenchmarkTests: XCTestCase {
             featureName: "rum",
             queue: queue,
             directories: .init(
-                deprecated: [],
                 unauthorized: directory,
                 authorized: directory
             ),

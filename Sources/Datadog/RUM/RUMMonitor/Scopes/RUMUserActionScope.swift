@@ -92,7 +92,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
     // MARK: - RUMScope
 
-    func process(command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Bool {
+    func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
         if let expirationTime = possibleExpirationTime(currentTime: command.time), allResourcesCompletedLoading() {
             sendActionEvent(completionTime: expirationTime, on: nil, context: context, writer: writer)
             return false
@@ -128,7 +128,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
     // MARK: - Sending RUM Events
 
-    private func sendActionEvent(completionTime: Date, on command: RUMCommand?, context: DatadogV1Context, writer: Writer) {
+    private func sendActionEvent(completionTime: Date, on command: RUMCommand?, context: DatadogContext, writer: Writer) {
         if let commandAttributes = command?.attributes {
             attributes.merge(rumCommandAttributes: commandAttributes)
         }

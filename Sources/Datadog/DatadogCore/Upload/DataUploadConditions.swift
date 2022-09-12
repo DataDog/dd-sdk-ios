@@ -27,7 +27,10 @@ internal struct DataUploadConditions {
     }
 
     func blockersForUpload(with context: DatadogContext) -> [Blocker] {
-        let reachability = context.networkConnectionInfo.reachability
+        guard let reachability = context.networkConnectionInfo?.reachability else {
+            // when `NetworkConnectionInfo` is not yet available
+            return [.networkReachability(description: "unknown")]
+        }
         let networkIsReachable = reachability == .yes || reachability == .maybe
         var blockers: [Blocker] = networkIsReachable ? [] : [.networkReachability(description: reachability.rawValue)]
 

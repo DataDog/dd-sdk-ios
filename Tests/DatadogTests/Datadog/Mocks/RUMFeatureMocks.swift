@@ -9,11 +9,11 @@ import XCTest
 
 extension RUMFeature {
     /// Mocks feature instance which performs no writes and no uploads.
-    static func mockNoOp() -> RUMFeature {
+    static func mockNoOp(configuration: FeaturesConfiguration.RUM = .mockAny()) -> RUMFeature {
         return RUMFeature(
             storage: .mockNoOp(),
             upload: .mockNoOp(),
-            configuration: .mockAny(),
+            configuration: configuration,
             messageReceiver: NOPFeatureMessageReceiver()
         )
     }
@@ -21,7 +21,7 @@ extension RUMFeature {
     /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
     /// Use `RUMFeature.waitAndReturnRUMEventMatchers()` to inspect and assert recorded `RUMEvents`.
     static func mockByRecordingRUMEventMatchers(
-        featureConfiguration: FeaturesConfiguration.RUM = .mockAny(),
+        configuration: FeaturesConfiguration.RUM = .mockAny(),
         messageReceiver: FeatureMessageReceiver = RUMMessageReceiver()
     ) -> RUMFeature {
         // Mock storage with `InMemoryWriter`, used later for retrieving recorded events back:
@@ -34,7 +34,7 @@ extension RUMFeature {
         return RUMFeature(
             storage: interceptedStorage,
             upload: .mockNoOp(),
-            configuration: featureConfiguration,
+            configuration: configuration,
             messageReceiver: messageReceiver
         )
     }
@@ -614,8 +614,6 @@ extension RUMScopeDependencies {
         rumApplicationID: String = .mockAny(),
         sessionSampler: Sampler = .mockKeepAll(),
         backgroundEventTrackingEnabled: Bool = .mockAny(),
-        appStateListener: AppStateListening = AppStateListenerMock.mockAny(),
-        launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock.mockAny(),
         firstPartyURLsFilter: FirstPartyURLsFilter = FirstPartyURLsFilter(hosts: []),
         eventBuilder: RUMEventBuilder = RUMEventBuilder(eventsMapper: .mockNoOp()),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
@@ -629,8 +627,6 @@ extension RUMScopeDependencies {
             rumApplicationID: rumApplicationID,
             sessionSampler: sessionSampler,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
-            appStateListener: appStateListener,
-            launchTimeProvider: launchTimeProvider,
             firstPartyURLsFilter: firstPartyURLsFilter,
             eventBuilder: eventBuilder,
             rumUUIDGenerator: rumUUIDGenerator,
@@ -647,8 +643,6 @@ extension RUMScopeDependencies {
         rumApplicationID: String? = nil,
         sessionSampler: Sampler? = nil,
         backgroundEventTrackingEnabled: Bool? = nil,
-        appStateListener: AppStateListening? = nil,
-        launchTimeProvider: LaunchTimeProviderType? = nil,
         firstPartyUrls: Set<String>? = nil,
         eventBuilder: RUMEventBuilder? = nil,
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
@@ -662,8 +656,6 @@ extension RUMScopeDependencies {
             rumApplicationID: rumApplicationID ?? self.rumApplicationID,
             sessionSampler: sessionSampler ?? self.sessionSampler,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled ?? self.backgroundEventTrackingEnabled,
-            appStateListener: appStateListener ?? self.appStateListener,
-            launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider,
             firstPartyURLsFilter: firstPartyUrls.map { .init(hosts: $0) } ?? self.firstPartyURLsFilter,
             eventBuilder: eventBuilder ?? self.eventBuilder,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,

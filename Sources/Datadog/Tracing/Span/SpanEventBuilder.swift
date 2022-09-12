@@ -8,28 +8,17 @@ import Foundation
 
 /// Builds `SpanEvent` representation (for later serialization) from span information recorded in `DDSpan` and values received from global configuration.
 internal struct SpanEventBuilder {
-    /// SDK version to encode in the span.
-    let sdkVersion: String
-    /// Application version to encode in span.
-    let applicationVersion: String
     /// Service name to encode in span.
-    let serviceName: String
-    /// Shared user info provider.
-    let userInfoProvider: UserInfoProvider
-    /// Shared network connection info provider (or `nil` if disabled for given tracer).
-    let networkConnectionInfoProvider: NetworkConnectionInfoProviderType?
-    /// Shared mobile carrier info provider (or `nil` if disabled for given tracer).
-    let carrierInfoProvider: CarrierInfoProviderType?
-    /// Adjusts span's time (device time) to server time.
-    let dateCorrector: DateCorrector
-    /// Source tag to encode in span (e.g. `ios` for native iOS).
-    let source: String
-    /// Optional Origin tag to encode in span (e.g. `ciapp-test`).
-    let origin: String?
+    let serviceName: String?
+    /// Enriches traces with network connection info.
+    /// This means: reachability status, connection type, mobile carrier name and many more will be added to every span and span logs.
+    /// For full list of network info attributes see `NetworkConnectionInfo` and `CarrierInfo`.
+    let sendNetworkInfo: Bool
     /// Span events mapper configured by the user, `nil` if not set.
     let eventsMapper: SpanEventMapper?
 
     func createSpanEvent(
+        context: DatadogContext,
         traceID: TracingUUID,
         spanID: TracingUUID,
         parentSpanID: TracingUUID?,
@@ -52,12 +41,11 @@ internal struct SpanEventBuilder {
         tags.merge(regularTags) { _, regularTag in regularTag }
 
         // Transform user info to `SpanEvent.UserInfo` representation
-        let userInfo = userInfoProvider.value
         let spanUserInfo = SpanEvent.UserInfo(
-            id: userInfo.id,
-            name: userInfo.name,
-            email: userInfo.email,
-            extraInfo: castValuesToString(userInfo.extraInfo)
+            id: context.userInfo?.id,
+            name: context.userInfo?.name,
+            email: context.userInfo?.email,
+            extraInfo: context.userInfo.map { castValuesToString($0.extraInfo) } ?? [:]
         )
 
         let span = SpanEvent(
@@ -65,17 +53,17 @@ internal struct SpanEventBuilder {
             spanID: spanID,
             parentID: parentSpanID,
             operationName: operationName,
-            serviceName: serviceName,
+            serviceName: serviceName ?? context.service,
             resource: tagsReducer.extractedResourceName ?? operationName,
-            startTime: startTime.addingTimeInterval(dateCorrector.offset),
+            startTime: startTime.addingTimeInterval(context.serverTimeOffset),
             duration: finishTime.timeIntervalSince(startTime),
             isError: tagsReducer.extractedIsError ?? false,
-            source: source,
-            origin: origin,
-            tracerVersion: sdkVersion,
-            applicationVersion: applicationVersion,
-            networkConnectionInfo: networkConnectionInfoProvider?.current,
-            mobileCarrierInfo: carrierInfoProvider?.current,
+            source: context.source,
+            origin: context.ciAppOrigin,
+            tracerVersion: context.sdkVersion,
+            applicationVersion: context.version,
+            networkConnectionInfo: sendNetworkInfo ? context.networkConnectionInfo : nil,
+            mobileCarrierInfo: sendNetworkInfo ? context.carrierInfo : nil,
             userInfo: spanUserInfo,
             tags: tags
         )

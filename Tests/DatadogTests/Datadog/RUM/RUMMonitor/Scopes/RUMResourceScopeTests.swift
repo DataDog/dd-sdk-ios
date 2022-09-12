@@ -8,7 +8,7 @@ import XCTest
 @testable import Datadog
 
 class RUMResourceScopeTests: XCTestCase {
-    let datadogContext: DatadogV1Context = .mockWith(
+    let datadogContext: DatadogContext = .mockWith(
         service: "test-service",
         device: .mockWith(
             name: "device-name",
@@ -119,7 +119,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let customSource: String = .mockAnySource()
-        let customContext: DatadogV1Context = .mockWith(source: customSource)
+        let customContext: DatadogContext = .mockWith(source: customSource)
 
         let scope = RUMResourceScope.mockWith(
             context: rumContext,
@@ -350,7 +350,7 @@ class RUMResourceScopeTests: XCTestCase {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         let source = String.mockAnySource()
-        let customContext: DatadogV1Context = .mockWith(
+        let customContext: DatadogContext = .mockWith(
             service: "test-service",
             source: source
         )

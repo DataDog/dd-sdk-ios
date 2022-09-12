@@ -11,7 +11,7 @@ internal final class RemoteLogger: LoggerProtocol {
     struct Configuration {
         /// The `service` value for logs.
         /// See: [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
-        let service: String
+        let service: String?
         /// The `logger.name` value for logs.
         let loggerName: String
         /// Whether to send the network info in `network.client.*` log attributes.
@@ -36,8 +36,6 @@ internal final class RemoteLogger: LoggerProtocol {
 
     /// Date provider for logs.
     private let dateProvider: DateProvider
-    /// Builds log events.
-    private let builder: LogEventBuilder
     /// Integration with RUM. It is used to correlate Logs with RUM events by injecting RUM context to `LogEvent`.
     /// Can be `nil` if the integration is disabled for this logger or if RUM feature is disabled.
     internal let rumContextIntegration: LoggingWithRUMContextIntegration?
@@ -59,12 +57,7 @@ internal final class RemoteLogger: LoggerProtocol {
             label: "com.datadoghq.logger-\(configuration.loggerName)",
             target: .global(qos: .userInteractive)
         )
-        self.builder = LogEventBuilder(
-            service: configuration.service,
-            loggerName: configuration.loggerName,
-            sendNetworkInfo: configuration.sendNetworkInfo,
-            eventMapper: configuration.eventMapper
-        )
+
         self.rumContextIntegration = rumContextIntegration
         self.activeSpanIntegration = activeSpanIntegration
     }
@@ -115,7 +108,7 @@ internal final class RemoteLogger: LoggerProtocol {
             var internalAttributes: [String: Encodable] = [:]
             var userTags: Set<String> = []
 
-            queue.sync {
+            self.queue.sync {
                 userAttributes = self.unsafeAttributes.merging(attributes ?? [:]) { $1 } // prefer message attributes
                 userTags = self.unsafeTags
 
@@ -127,7 +120,14 @@ internal final class RemoteLogger: LoggerProtocol {
                 }
             }
 
-            let log = self.builder.createLogEvent(
+            let builder = LogEventBuilder(
+                service: self.configuration.service ?? context.service,
+                loggerName: self.configuration.loggerName,
+                sendNetworkInfo: self.configuration.sendNetworkInfo,
+                eventMapper: self.configuration.eventMapper
+            )
+
+            let log = builder.createLogEvent(
                 date: date,
                 level: level,
                 message: message,

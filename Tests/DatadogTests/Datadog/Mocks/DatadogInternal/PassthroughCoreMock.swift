@@ -16,7 +16,11 @@ import XCTest
 /// store all events in the `events` property..
 internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureV1Scope {
     /// Current context that will be passed to feature-scopes.
-    internal var context: DatadogV1Context?
+    internal var legacyContext: DatadogV1Context? {
+        .init(context)
+    }
+
+    internal var context: DatadogContext
 
     internal let writer = FileWriterMock()
 
@@ -34,7 +38,7 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureV1Scope 
     ///   - expectation: The test exepection to fullfill when `eventWriteContext`
     ///                  is invoked.
     init(
-        context: DatadogV1Context = .mockAny(),
+        context: DatadogContext = .mockAny(),
         expectation: XCTestExpectation? = nil,
         messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
     ) {
@@ -65,17 +69,8 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureV1Scope 
     /// Execute `block` with the current context and a `writer` to record events.
     ///
     /// - Parameter block: The block to execute.
-    func eventWriteContext(_ block: (DatadogV1Context, Writer) throws -> Void) {
-        guard let context = context else {
-            return XCTFail("PassthroughCoreMock missing context")
-        }
-
-        do {
-           try block(context, writer)
-        } catch let error {
-           XCTFail("Encountered an error when executing `eventWriteContext`: \(error)")
-        }
-
+    func eventWriteContext(_ block: (DatadogContext, Writer) throws -> Void) {
+        XCTAssertNoThrow(try block(context, writer), "Encountered an error when executing `eventWriteContext`")
         expectation?.fulfill()
     }
 

@@ -33,7 +33,7 @@ public extension WKUserContentController {
     }
 
     private func trackDatadogEventsOrThrow(in hosts: Set<String>, sdk core: DatadogCoreProtocol) throws {
-        guard let context = core.v1.context else {
+        guard let context = core.v1.legacyContext else {
             throw ProgrammerError(
                 description: "`Datadog.initialize()` must be called prior to `trackDatadogEvents(in:)`."
             )
@@ -98,7 +98,7 @@ public extension WKUserContentController {
                 dateCorrector: context.dateCorrector,
                 contextProvider: globalRUMMonitor?.contextProvider,
                 rumCommandSubscriber: globalRUMMonitor,
-                dateProvider: context.dateProvider
+                dateProvider: rumFeature.configuration.dateProvider
             )
         }
 

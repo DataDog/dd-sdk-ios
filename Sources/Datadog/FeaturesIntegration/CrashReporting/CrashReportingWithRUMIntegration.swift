@@ -66,11 +66,11 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         // from the moment of crash), but this is the best approximation we can get.
         let currentTimeCorrection = context.dateCorrector.offset
 
-        let crashDate = crashReport.date ?? context.dateProvider.now
+        let crashDate = crashReport.date ?? rumConfiguration.dateProvider.now
         let adjustedCrashTimings = AdjustedCrashTimings(
             crashDate: crashDate,
             realCrashDate: crashDate.addingTimeInterval(currentTimeCorrection),
-            realDateNow: context.dateProvider.now.addingTimeInterval(currentTimeCorrection)
+            realDateNow: rumConfiguration.dateProvider.now.addingTimeInterval(currentTimeCorrection)
         )
 
         if let lastRUMViewEvent = crashContext.lastRUMViewEvent {

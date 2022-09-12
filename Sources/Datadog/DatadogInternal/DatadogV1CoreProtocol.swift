@@ -21,7 +21,7 @@ internal protocol DatadogV1CoreProtocol: DatadogCoreProtocol {
     // MARK: - V1 interface
 
     /// The SDK context created upon core initialization or `nil` if SDK was not yet initialized.
-    var context: DatadogV1Context? { get }
+    var legacyContext: DatadogV1Context? { get }
 
     /// Registers a feature instance by its type description.
     ///
@@ -53,14 +53,14 @@ internal protocol FeatureV1Scope {
     /// for the Feature to build and record events.
     ///
     /// - Parameter block: The block to execute.
-    func eventWriteContext(_ block: (DatadogV1Context, Writer) throws -> Void)
+    func eventWriteContext(_ block: @escaping (DatadogContext, Writer) throws -> Void)
 }
 
 extension NOPDatadogCore: DatadogV1CoreProtocol {
     // MARK: - V1 interface
 
     /// Returns `nil`.
-    var context: DatadogV1Context? {
+    var legacyContext: DatadogV1Context? {
         return nil
     }
 

@@ -35,7 +35,7 @@ class LogEventBuilderTests: XCTestCase {
             error: randomError,
             attributes: randomAttributes,
             tags: randomTags,
-            context: .mockWith(dateCorrector: DateCorrectorMock(offset: 0)),
+            context: .mockWith(serverTimeOffset: 0),
             threadName: randomThreadName
         )
         let log = try XCTUnwrap(event)
@@ -63,14 +63,14 @@ class LogEventBuilderTests: XCTestCase {
         let randomNetworkInfo: NetworkConnectionInfo = .mockRandom()
         let randomCarrierInfo: CarrierInfo = .mockRandom()
         let randomServerOffset: TimeInterval = .mockRandom(min: -10, max: 10)
-        let randomSDKContext: DatadogV1Context = .mockWith(
+        let randomSDKContext: DatadogContext = .mockWith(
             env: randomEnvironment,
             version: randomApplicationVersion,
             sdkVersion: randomSDKVersion,
-            dateCorrector: DateCorrectorMock(offset: randomServerOffset),
-            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: randomNetworkInfo),
-            carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: randomCarrierInfo),
-            userInfoProvider: .mockWith(userInfo: randomUserInfo)
+            serverTimeOffset: randomServerOffset,
+            userInfo: randomUserInfo,
+            networkConnectionInfo: randomNetworkInfo,
+            carrierInfo: randomCarrierInfo
         )
 
         // Given
@@ -125,8 +125,8 @@ class LogEventBuilderTests: XCTestCase {
             attributes: .mockAny(),
             tags: .mockAny(),
             context: .mockWith(
-                networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: .mockAny()),
-                carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: .mockAny())
+                networkConnectionInfo: .mockAny(),
+                carrierInfo: .mockAny()
             ),
             threadName: .mockAny()
         )

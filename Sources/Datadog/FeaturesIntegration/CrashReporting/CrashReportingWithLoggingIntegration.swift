@@ -17,6 +17,9 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
     /// authorized output working simultaneously in the Logging feature.
     private let logOutput: LogOutput
 
+    /// Time provider.
+    private let dateProvider: DateProvider
+
     private let context: DatadogV1Context
 
     init(loggingFeature: LoggingFeature, context: DatadogV1Context) {
@@ -24,16 +27,19 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
             logOutput: LogFileOutput(
                 fileWriter: loggingFeature.storage.arbitraryAuthorizedWriter
             ),
-            context: context
+            context: context,
+            dateProvider: loggingFeature.configuration.dateProvider
         )
     }
 
     init(
         logOutput: LogOutput,
-        context: DatadogV1Context
+        context: DatadogV1Context,
+        dateProvider: DateProvider
     ) {
         self.logOutput = logOutput
         self.context = context
+        self.dateProvider = dateProvider
     }
 
     func send(crashReport: DDCrashReport, with crashContext: CrashContext) {
@@ -46,7 +52,7 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
         // approximation we can get.
         let currentTimeCorrection = context.dateCorrector.offset
 
-        let crashDate = crashReport.date ?? context.dateProvider.now
+        let crashDate = crashReport.date ?? dateProvider.now
         let realCrashDate = crashDate.addingTimeInterval(currentTimeCorrection)
 
         let log = createLog(from: crashReport, crashContext: crashContext, crashDate: realCrashDate)

@@ -8,25 +8,20 @@ import XCTest
 @testable import Datadog
 
 class LoggerBuilderTests: XCTestCase {
-    private let userInfoProvider: UserInfoProvider = .mockAny()
-    private let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
-    private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
     private lazy var core = DatadogCoreMock(
         context: .mockWith(
             service: "service-name",
             env: "tests",
-            version: "1.2.3",
-            applicationBundleIdentifier: "com.datadog.unit-tests",
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider,
-            userInfoProvider: userInfoProvider
+            version: "1.2.3"
         )
     )
 
     override func setUp() {
         super.setUp()
         temporaryDirectory.create()
-        let feature: LoggingFeature = .mockNoOp()
+        let feature: LoggingFeature = .mockNoOp(
+            configuration: .mockWith(applicationBundleIdentifier: "com.datadog.unit-tests")
+        )
         core.register(feature: feature)
     }
 
@@ -40,7 +35,7 @@ class LoggerBuilderTests: XCTestCase {
         let logger = Logger.builder.build(in: core)
 
         let remoteLogger = try XCTUnwrap(logger.v2Logger as? RemoteLogger)
-        XCTAssertEqual(remoteLogger.configuration.service, "service-name")
+        XCTAssertNil(remoteLogger.configuration.service)
         XCTAssertEqual(remoteLogger.configuration.loggerName, "com.datadog.unit-tests")
         XCTAssertFalse(remoteLogger.configuration.sendNetworkInfo)
         XCTAssertEqual(remoteLogger.configuration.threshold, .debug)
