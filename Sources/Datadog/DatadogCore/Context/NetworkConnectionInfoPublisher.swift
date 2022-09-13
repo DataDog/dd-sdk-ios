@@ -26,7 +26,7 @@ internal struct NWPathMonitorPublisher: ContextValuePublisher {
         target: .global(qos: .utility)
     )
 
-    let initialValue: NetworkConnectionInfo? = nil
+    let initialValue: NetworkConnectionInfo?
 
     private let monitor: NWPathMonitor
     private let queue: DispatchQueue
@@ -37,6 +37,7 @@ internal struct NWPathMonitorPublisher: ContextValuePublisher {
     ) {
         self.monitor = monitor
         self.queue = queue
+        self.initialValue = NetworkConnectionInfo(monitor.currentPath)
     }
 
     func publish(to receiver: @escaping ContextValueReceiver<NetworkConnectionInfo?>) {
