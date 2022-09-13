@@ -282,25 +282,25 @@ class RUMTelemetryTests: XCTestCase {
 
     // MARK: - Thread safety
 
-//    func testSendTelemetryAndReset_onAnyThread() throws {
-//        let telemetry: RUMTelemetry = .mockAny(in: core)
-//
-//        // swiftlint:disable opening_brace
-//        callConcurrently(
-//            closures: [
-//                { telemetry.debug(id: .mockRandom(), message: "telemetry debug") },
-//                { telemetry.error(id: .mockRandom(), message: "telemetry error", kind: nil, stack: nil) },
-//                {
-//                    self.core.set(feature: "rum", attributes: [
-//                        "application_id": String.mockRandom(),
-//                        "session_id": String.mockRandom(),
-//                        "view.id": String.mockRandom(),
-//                        "user_action.id": String.mockRandom()
-//                    ])
-//                }
-//            ],
-//            iterations: 50
-//        )
-//        // swiftlint:enable opening_brace
-//    }
+    func testSendTelemetryAndReset_onAnyThread() throws {
+        let telemetry: RUMTelemetry = .mockAny(in: core)
+
+        // swiftlint:disable opening_brace
+        callConcurrently(
+            closures: [
+                { telemetry.debug(id: .mockRandom(), message: "telemetry debug") },
+                { telemetry.error(id: .mockRandom(), message: "telemetry error", kind: nil, stack: nil) },
+                {
+                    self.core.set(feature: "rum", attributes: [
+                        "application_id": String.mockRandom(),
+                        "session_id": String.mockRandom(),
+                        "view.id": String.mockRandom(),
+                        "user_action.id": String.mockRandom()
+                    ])
+                }
+            ],
+            iterations: 50
+        )
+        // swiftlint:enable opening_brace
+    }
 }
