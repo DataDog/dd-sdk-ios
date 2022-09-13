@@ -52,7 +52,7 @@ internal struct ViewTreeSnapshotBuilder {
                 continue
             }
 
-            if nextSemantics.importance > semantics.importance {
+            if nextSemantics.importance >= semantics.importance {
                 semantics = nextSemantics
 
                 if nextSemantics.importance == .max {
@@ -84,6 +84,11 @@ extension ViewTreeSnapshotBuilder {
             nodeRecorders: [
                 UIViewRecorder(),
                 UILabelRecorder(),
+                UIViewRecorder(),
+                UILabelRecorder(),
+                UIImageViewRecorder(),
+                UITextFieldRecorder(),
+                UISwitchRecorder(),
             ]
         )
     }

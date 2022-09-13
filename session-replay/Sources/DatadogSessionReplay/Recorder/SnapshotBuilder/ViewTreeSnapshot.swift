@@ -176,7 +176,7 @@ internal struct InvisibleElement: NodeSemantics {
 /// A semantics of an UI element that is of `UIView` type. This semantics mean that the element has visual appearance in SR, but
 /// it will only utilize its base `UIView` attributes. The full identity of the node will remain ambiguous if not overwritten with `SpecificElement`.
 internal struct AmbiguousElement: NodeSemantics {
-    static let importance: Int = 1
+    static let importance: Int = 0
     let wireframesBuilder: NodeWireframesBuilder?
 }
 

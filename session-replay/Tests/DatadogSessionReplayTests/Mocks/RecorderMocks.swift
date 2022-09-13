@@ -38,10 +38,12 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
 }
 
 extension ViewAttributes: AnyMockable, RandomMockable {
+    /// Placeholder mock, not guaranteeing consistency of returned `ViewAttributes`.
     static func mockAny() -> ViewAttributes {
         return mockWith()
     }
 
+    /// Random mock, not guaranteeing consistency of returned `ViewAttributes`.
     static func mockRandom() -> ViewAttributes {
         return .init(
             frame: .mockRandom(),
@@ -56,6 +58,7 @@ extension ViewAttributes: AnyMockable, RandomMockable {
         )
     }
 
+    /// Partial mock, not guaranteeing consistency of returned `ViewAttributes`.
     static func mockWith(
         frame: CGRect = .mockAny(),
         backgroundColor: CGColor? = .mockAny(),
@@ -75,6 +78,47 @@ extension ViewAttributes: AnyMockable, RandomMockable {
             layerCornerRadius: layerCornerRadius,
             alpha: alpha,
             intrinsicContentSize: intrinsicContentSize,
+            isVisible: isVisible,
+            hasAnyAppearance: hasAnyAppearance
+        )
+    }
+
+    /// A fixture for mocking consistent state in `ViewAttributes`.
+    enum Fixture {
+        /// A view that is not visible.
+        case invisible
+        /// A view that is visible, but has no appearance (e.g. all colors are fully transparent).
+        case visibleWithNoAppearance
+        /// A view that is visible and has some appearance.
+        case visibleWithSomeAppearance
+    }
+
+    /// Partial mock, guaranteeing consistency of returned `ViewAttributes`.
+    static func mock(fixture: Fixture) -> ViewAttributes {
+        let isVisible: Bool
+        let hasAnyAppearance: Bool
+
+        switch fixture {
+        case .invisible:
+            isVisible = false
+            hasAnyAppearance = false
+        case .visibleWithNoAppearance:
+            isVisible = true
+            hasAnyAppearance = false
+        case .visibleWithSomeAppearance:
+            isVisible = true
+            hasAnyAppearance = true
+        }
+
+        let frame: CGRect = isVisible ? .mockRandom(minWidth: 10, minHeight: 10) : .zero
+        return .init(
+            frame: frame,
+            backgroundColor: hasAnyAppearance ? .mockRandom() : nil,
+            layerBorderColor: hasAnyAppearance ? .mockRandom() : nil,
+            layerBorderWidth: hasAnyAppearance ? .mockRandom(min: 1, max: 4) : 0,
+            layerCornerRadius: .mockRandom(min: 0, max: 4),
+            alpha: isVisible ? .mockRandom(min: 0.01, max: 1) : 0,
+            intrinsicContentSize: frame.size,
             isVisible: isVisible,
             hasAnyAppearance: hasAnyAppearance
         )
@@ -160,5 +204,52 @@ extension ViewTreeSnapshotBuilder.Context: AnyMockable, RandomMockable {
         return .init(
             coordinateSpace: coordinateSpace
         )
+    }
+}
+
+// MARK: - UIView mocks
+
+/// An error indicating inconsistency of `UIView` (or derived) mock.
+internal struct UIViewMockException: Error, CustomDebugStringConvertible {
+    var debugDescription: String
+}
+
+/// Creates mocked instance of generic `UIView` subclass and configures its state with provided `attributes`. 
+internal func mockUIView<View: UIView>(with attributes: ViewAttributes) throws -> View {
+    let view = View(frame: attributes.frame)
+
+    view.backgroundColor = attributes.backgroundColor.map { UIColor(cgColor: $0) }
+    view.layer.borderColor = attributes.layerBorderColor
+    view.layer.borderWidth = attributes.layerBorderWidth
+    view.layer.cornerRadius = attributes.layerCornerRadius
+    view.alpha = attributes.alpha
+
+    // Consistency check - to make sure computed properties in `ViewAttributes` captured
+    // for mocked view are equal the these from requested `attributes`.
+    let expectedAttributes = attributes
+    let actualAttributes = ViewAttributes(frameInRootView: view.frame, view: view)
+
+    guard actualAttributes.isVisible == expectedAttributes.isVisible else {
+        throw UIViewMockException(debugDescription: """
+        The `.isVisible` value in provided `attributes` will be resolved differently for mocked
+        view than its original value passed to this function. Make sure that provided attributes
+        are consistent and if nothing else in `\(type(of: view))` is not overriding visibility state.
+        """)
+    }
+
+    guard actualAttributes.hasAnyAppearance == expectedAttributes.hasAnyAppearance  else {
+        throw UIViewMockException(debugDescription: """
+        The `.hasAnyAppearance` value in provided `attributes` will be resolved differently for mocked
+        view than its original value passed to this function. Make sure that provided attributes
+        are consistent and if nothing else in `\(type(of: view))` is not overriding appearance state.
+        """)
+    }
+
+    return view
+}
+
+extension UIView {
+    static func mock(withFixture fixture: ViewAttributes.Fixture) throws -> Self {
+        return try mockUIView(with: .mock(fixture: fixture))
     }
 }

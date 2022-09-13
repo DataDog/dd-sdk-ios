@@ -40,15 +40,4 @@ extension UIView: AnyMockable, RandomMockable {
         view.isHidden = .random()
         return view as! Self
     }
-
-    func replacing(
-        frame: CGRect? = nil,
-        alpha: CGFloat? = nil,
-        isHidden: Bool? = nil
-    ) -> Self {
-        self.frame = frame ?? self.frame
-        self.alpha = alpha ?? self.alpha
-        self.isHidden = isHidden ?? self.isHidden
-        return self
-    }
 }

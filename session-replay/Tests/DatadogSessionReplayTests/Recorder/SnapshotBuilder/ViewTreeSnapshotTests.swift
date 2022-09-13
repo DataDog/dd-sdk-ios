@@ -111,9 +111,23 @@ class NodeSemanticsTests: XCTestCase {
         let ambiguousElement = AmbiguousElement(wireframesBuilder: nil)
         let specificElement = SpecificElement(wireframesBuilder: nil)
 
-        XCTAssertGreaterThan(specificElement.importance, ambiguousElement.importance)
-        XCTAssertGreaterThan(ambiguousElement.importance, invisibleElement.importance)
-        XCTAssertGreaterThan(invisibleElement.importance, unknownElement.importance)
+        XCTAssertGreaterThan(
+            specificElement.importance,
+            ambiguousElement.importance,
+            "`SpecificElement` should override `AmbiguousElement` semantics"
+        )
+        XCTAssertGreaterThanOrEqual(
+            invisibleElement.importance,
+            ambiguousElement.importance,
+            """
+            `InvisibleElement` should override `AmbiguousElement` semantics - as invisibility
+            can be noticed in specialised recorers by determining empty state for certain
+            `UIView` subclass (e.g. no text in `UILabel` which has no other appearance but is visible)
+            """
+        )
+        XCTAssertGreaterThan(invisibleElement.importance, unknownElement.importance, "All semantics should override `UnknownElement`")
+        XCTAssertGreaterThan(ambiguousElement.importance, unknownElement.importance, "All semantics should override `UnknownElement`")
+        XCTAssertGreaterThan(specificElement.importance, unknownElement.importance, "All semantics should override `UnknownElement`")
         XCTAssertEqual(specificElement.importance, .max)
     }
 }
