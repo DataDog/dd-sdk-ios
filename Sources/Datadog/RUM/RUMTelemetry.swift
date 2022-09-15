@@ -140,7 +140,7 @@ internal final class RUMTelemetry: Telemetry {
             let attributes = context.featuresAttributes["rum"]
             let sessionId = attributes?["session_id", type: String.self]
 
-            self.queue.sync {
+            self.queue.async {
                 if sessionId != self.currentSessionID {
                     self.currentSessionID = sessionId
                     self.eventIDs = []
