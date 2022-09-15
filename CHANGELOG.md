@@ -1,6 +1,6 @@
 # Unreleased
 
-- [BUGFIX] Fix manual User Action dropped if new a view start. See [#997][]
+- [BUGFIX] Fix manual User Action dropped if a new view start. See [#997][]
 
 # 1.12.0-beta3 / 30-08-2022
 
