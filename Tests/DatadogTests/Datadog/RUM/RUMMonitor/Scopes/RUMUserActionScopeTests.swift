@@ -87,6 +87,48 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(recordedAction.os?.name, "device-os")
     }
 
+    func testGivenActiveUserAction_whenNewViewStart_itSendsUserActionEvent() throws {
+        let scope = RUMViewScope.mockWith(
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: mockView,
+            attributes: [:],
+            startTime: Date()
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(identity: mockView),
+                context: context,
+                writer: writer
+            )
+        )
+        let mockUserActionCmd = RUMAddUserActionCommand.mockAny()
+        XCTAssertTrue(
+            scope.process(
+                command: mockUserActionCmd,
+                context: context,
+                writer: writer
+            )
+        )
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStartViewCommand.mockAny(),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let recordedActionEvents = writer.events(ofType: RUMActionEvent.self)
+        XCTAssertEqual(recordedActionEvents.count, 1)
+        let recordedAction = try XCTUnwrap(recordedActionEvents.last)
+        XCTAssertEqual(recordedAction.action.type.rawValue, String(describing: mockUserActionCmd.actionType))
+        XCTAssertEqual(recordedAction.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+        XCTAssertEqual(recordedAction.source, .ios)
+        XCTAssertEqual(recordedAction.service, "test-service")
+        XCTAssertEqual(recordedAction.device?.name, "device-name")
+        XCTAssertEqual(recordedAction.os?.name, "device-os")
+    }
+
     func testGivenCustomSource_whenActionIsSent_itSendsCustomSource() throws {
         let source = String.mockAnySource()
         let customContext: DatadogV1Context = .mockWith(configuration: .mockWith(source: source))

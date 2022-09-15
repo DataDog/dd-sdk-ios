@@ -100,7 +100,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
         lastActivityTime = command.time
         switch command {
-        case is RUMStopViewCommand:
+        case is RUMStartViewCommand, is RUMStopViewCommand:
             sendActionEvent(completionTime: command.time, on: command, context: context, writer: writer)
             return false
         case let command as RUMStopUserActionCommand:
