@@ -1,5 +1,5 @@
 ---
-format_version: '8'
+format_version: 11
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 project_type: other
 
@@ -21,7 +21,7 @@ workflows:
     description: |-
         Does `make dependencies` to prepare source code in repo for building and testing.
     steps:
-    - script@1.1.6:
+    - script:
         title: Do `make dependencies`.
         inputs:
         - content: |-
@@ -39,14 +39,14 @@ workflows:
 
   _run_unit_tests:
     steps:
-    - script@1.1.6:
+    - script:
         inputs:
         - content: |-
             #!/usr/bin/env bash
             echo "+------------------------------------------------------------------------------+"
             printf '| %-78s |\n' "🧪 Running unit tests for ${PROJECT_SCHEME} on ${SIMULATOR_DEVICE} (${SIMULATOR_OS_VERSION})"
             echo "+------------------------------------------------------------------------------+"
-    - xcode-test@2.4.5:
+    - xcode-test:
         title: Run unit tests for given platform
         is_always_run: true # continue next tests if some failed
         run_if: '{{(getenv "DD_SKIP_RUNNING_TESTS") | eq ""}}'
@@ -56,7 +56,8 @@ workflows:
         - simulator_device: $SIMULATOR_DEVICE
         - simulator_os_version: $SIMULATOR_OS_VERSION
         - is_clean_build: 'no'
-        - ## <RETRY_ON_FAIL> ##
+        - test_repetition_mode: 'retry_on_failure'
+        - maximum_test_repetitions: 2
         - generate_code_coverage_files: 'yes'
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Unit-tests-${PROJECT_SCHEME}-${SIMULATOR_DEVICE} (${SIMULATOR_OS_VERSION}).html"
     - deploy-to-bitrise-io: {}

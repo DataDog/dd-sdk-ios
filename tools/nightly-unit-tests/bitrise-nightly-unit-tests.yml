@@ -1,5 +1,5 @@
 ---
-format_version: '8'
+format_version: 11
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 project_type: other
 
@@ -36,7 +36,7 @@ workflows:
     description: |-
         Generates best 'bitrise.yml' for running unit tests on range of runtimes.
     steps:
-    - script@1.1.6:
+    - script:
         title: Prepare host environment and generate `bitrise.yml`.
         inputs:
         - content: |-

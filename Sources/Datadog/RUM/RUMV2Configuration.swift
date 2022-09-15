@@ -25,17 +25,22 @@ internal func createV2RUMUploadConfiguration(v1Configuration: FeaturesConfigurat
     return FeatureUploadConfiguration(
         featureName: "RUM",
         createRequestBuilder: { v1Context in
+            var tags = [
+                "service:\(v1Context.service)",
+                "version:\(v1Context.version)",
+                "sdk_version:\(v1Context.sdkVersion)",
+                "env:\(v1Context.env)",
+            ]
+            if let variant = v1Context.variant {
+                tags.append("variant:\(variant)")
+            }
+
             return RequestBuilder(
                 url: v1Configuration.uploadURL,
                 queryItems: [
                     .ddsource(source: v1Context.source),
                     .ddtags(
-                        tags: [
-                            "service:\(v1Context.service)",
-                            "version:\(v1Context.version)",
-                            "sdk_version:\(v1Context.sdkVersion)",
-                            "env:\(v1Context.env)"
-                        ]
+                        tags: tags
                     )
                 ],
                 headers: [

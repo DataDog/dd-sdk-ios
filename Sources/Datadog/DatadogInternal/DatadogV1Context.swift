@@ -57,6 +57,9 @@ internal extension DatadogV1Context {
     ///  - See: Datadog [Reserved Attributes](https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#reserved-attributes).
     var source: String { configuration.source }
 
+    /// The variant of the build, equivelent to Android's "Flavor".  Only used by cross platform SDKs
+    var variant: String? { configuration.variant }
+
     /// The version of Datadog iOS SDK.
     var sdkVersion: String { configuration.sdkVersion }
 
