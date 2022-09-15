@@ -1,5 +1,7 @@
 # Unreleased
 
+- [BUGFIX] Fix manual User Action dropped if new a view start. See [#997][]
+
 # 1.12.0-beta3 / 30-08-2022
 
 ### Changes
@@ -417,6 +419,7 @@
 [#950]: https://github.com/DataDog/dd-sdk-ios/issues/950
 [#964]: https://github.com/DataDog/dd-sdk-ios/issues/964
 [#973]: https://github.com/DataDog/dd-sdk-ios/issues/973
+[#997]: https://github.com/DataDog/dd-sdk-ios/issues/997
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
