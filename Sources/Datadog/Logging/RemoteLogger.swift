@@ -37,10 +37,10 @@ internal final class RemoteLogger: LoggerProtocol {
     /// Date provider for logs.
     private let dateProvider: DateProvider
     /// Integration with RUM. It is used to correlate Logs with RUM events by injecting RUM context to `LogEvent`.
-    /// Can be `false` if the integration is disabled for this logger or if RUM feature is disabled.
+    /// Can be `false` if the integration is disabled for this logger.
     internal let rumContextIntegration: Bool
     /// Integration with Tracing. It is used to correlate Logs with Spans by injecting `Span` context to `LogEvent`.
-    /// Can be `false` if the integration is disabled for this logger or if Tracing feature is disabled.
+    /// Can be `false` if the integration is disabled for this logger.
     internal let activeSpanIntegration: Bool
 
     init(
