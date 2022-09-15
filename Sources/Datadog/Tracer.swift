@@ -225,9 +225,9 @@ public class Tracer: OTTracer {
     private func updateCoreAttributes() {
         let context = activeSpan?.context as? DDSpanContext
 
-        core.set(feature: "tracing", attributes: [
+        core.set(feature: "tracing", attributes: {[
             "dd.trace_id": context.map { "\($0.traceID.rawValue)" },
             "dd.span_id": context.map { "\($0.spanID.rawValue)" }
-        ])
+        ]})
     }
 }

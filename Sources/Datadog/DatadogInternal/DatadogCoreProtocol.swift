@@ -34,7 +34,7 @@ public protocol DatadogCoreProtocol {
     /// - Parameters:
     ///   - feature: The Feature's name.
     ///   - attributes: The Feature's attributes to set.
-    func set(feature: String, attributes: @escaping @autoclosure () -> FeatureMessageAttributes)
+    func set(feature: String, attributes: @escaping () -> FeatureMessageAttributes)
 
     /// Sends a message on the bus shared by features registered in this core.
     ///

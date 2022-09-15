@@ -83,12 +83,12 @@ class RUMTelemetryTests: XCTestCase {
         let viewId: String = .mockRandom()
         let actionId: String = .mockRandom()
 
-        core.set(feature: "rum", attributes: [
+        core.set(feature: "rum", attributes: {[
             "application_id": applicationId,
             "session_id": sessionId,
             "view.id": viewId,
             "user_action.id": actionId
-        ])
+        ]})
 
         // When
         telemetry.debug("telemetry debug")
@@ -112,12 +112,12 @@ class RUMTelemetryTests: XCTestCase {
         let viewId: String = .mockRandom()
         let actionId: String = .mockRandom()
 
-        core.set(feature: "rum", attributes: [
+        core.set(feature: "rum", attributes: {[
             "application_id": applicationId,
             "session_id": sessionId,
             "view.id": viewId,
             "user_action.id": actionId
-        ])
+        ]})
 
         // When
         telemetry.error("telemetry error")
@@ -259,18 +259,18 @@ class RUMTelemetryTests: XCTestCase {
         let telemetry: RUMTelemetry = .mockAny(in: core)
         let applicationId: String = .mockRandom()
 
-        core.set(feature: "rum", attributes: [
+        core.set(feature: "rum", attributes: {[
             "application_id": applicationId,
             "session_id": String.mockRandom()
-        ])
+        ]})
 
         // When
         telemetry.debug(id: "0", message: "telemetry debug")
 
-        core.set(feature: "rum", attributes: [
+        core.set(feature: "rum", attributes: {[
             "application_id": applicationId,
             "session_id": String.mockRandom() // new session
-        ])
+        ]})
 
         telemetry.debug(id: "0", message: "telemetry debug")
 
@@ -291,12 +291,12 @@ class RUMTelemetryTests: XCTestCase {
                 { telemetry.debug(id: .mockRandom(), message: "telemetry debug") },
                 { telemetry.error(id: .mockRandom(), message: "telemetry error", kind: nil, stack: nil) },
                 {
-                    self.core.set(feature: "rum", attributes: [
+                    self.core.set(feature: "rum", attributes: {[
                         "application_id": String.mockRandom(),
                         "session_id": String.mockRandom(),
                         "view.id": String.mockRandom(),
                         "user_action.id": String.mockRandom()
-                    ])
+                    ]})
                 }
             ],
             iterations: 50

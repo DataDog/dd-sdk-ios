@@ -81,7 +81,7 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureV1Scope 
         self
     }
 
-    func set(feature: String, attributes: @escaping @autoclosure () -> FeatureMessageAttributes) {
+    func set(feature: String, attributes: @escaping () -> FeatureMessageAttributes) {
         context.featuresAttributes[feature] = attributes()
     }
 

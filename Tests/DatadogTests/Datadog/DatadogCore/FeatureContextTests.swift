@@ -26,7 +26,7 @@ class FeatureContextTests: XCTestCase {
 
         // When
         let attributes: FeatureMessageAttributes = ["key": "value"]
-        core.set(feature: "test", attributes: attributes)
+        core.set(feature: "test", attributes: { attributes })
 
         // Then
 
