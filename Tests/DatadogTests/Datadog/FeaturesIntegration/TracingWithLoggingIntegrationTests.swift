@@ -43,8 +43,8 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         XCTAssertEqual(
             log.attributes.internalAttributes as? [String: String],
             [
-                "dd.span_id": "2",
-                "dd.trace_id": "1"
+                Tracer.Attributes.spanID: "2",
+                Tracer.Attributes.traceID: "1"
             ]
         )
     }
@@ -117,8 +117,8 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         XCTAssertEqual(
             log.attributes.internalAttributes as? [String: String],
             [
-                "dd.span_id": "2",
-                "dd.trace_id": "1"
+                Tracer.Attributes.spanID: "2",
+                Tracer.Attributes.traceID: "1"
             ]
         )
     }

@@ -146,6 +146,14 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     /// User-targeted, debugging utility which can be toggled with `Datadog.debugRUM`.
     private(set) var debugging: RUMDebugging? = nil
 
+    /// RUM Attributes shared with other Feature registered in core.
+    internal struct Attributes {
+        internal static let applicationID = "application_id"
+        internal static let sessionID = "session_id"
+        internal static let viewID = "view.id"
+        internal static let userActionID = "user_action.id"
+    }
+
     // MARK: - Initialization
 
     /// Initializes the Datadog RUM Monitor.
@@ -612,20 +620,20 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         // update the core context with rum context
         core.set(feature: "rum", attributes: {
             self.queue.sync {
-                let applicationContext = self.applicationScope.context
-                let sessionContext = self.applicationScope.sessionScope?.context
-                let activeViewContext = self.applicationScope.sessionScope?.viewScopes.last?.context
+                let context = self.applicationScope.sessionScope?.viewScopes.last?.context ??
+                                self.applicationScope.sessionScope?.context ??
+                                self.applicationScope.context
 
-                guard let sessionContext = sessionContext, sessionContext.sessionID != .nullUUID else {
+                guard context.sessionID != .nullUUID else {
                     // if Session was sampled or not yet started
                     return [:]
                 }
 
                 return [
-                    "application_id": applicationContext.rumApplicationID,
-                    "session_id": sessionContext.sessionID.rawValue.uuidString.lowercased(),
-                    "view.id": activeViewContext?.activeViewID?.rawValue.uuidString.lowercased(),
-                    "user_action.id": activeViewContext?.activeUserActionID?.rawValue.uuidString.lowercased()
+                    Attributes.applicationID: context.rumApplicationID,
+                    Attributes.sessionID: context.sessionID.rawValue.uuidString.lowercased(),
+                    Attributes.viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
+                    Attributes.userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased()
                 ]
             }
         })
