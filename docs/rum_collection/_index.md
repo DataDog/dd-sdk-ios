@@ -346,4 +346,4 @@ Add the following snippet during initialization in your Datadog configuration:
 [10]: https://docs.datadoghq.com/real_user_monitoring/explorer/
 [11]: https://docs.datadoghq.com/getting_started/tagging/using_tags/#rum--session-replay
 [12]: https://docs.datadoghq.com/real_user_monitoring/ios/web_view_tracking/
-[13]: https://docs.datadohq.com/real_user_monitoring/error_tracking/ios/
+[13]: https://docs.datadoghq.com/real_user_monitoring/error_tracking/ios/
