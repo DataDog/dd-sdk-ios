@@ -1,21 +1,10 @@
 # Unreleased
 
-# 1.12.0-beta3 / 30-08-2022
+# 1.12.0 / 16-09-2022
 
-### Changes
-
+- [BUGFIX] Fix manual User Action dropped if a new view start. See [#997][]
 - [IMPROVEMENT] Enable cross-platform SDKs to change app `version`. See [#973][]
-
-# 1.12.0-beta2 / 10-08-2022
-
-### Changes
-
 - [IMPROVEMENT] Add internal APIs for cross-platform SDKs. See [#964][]
-
-# 1.12.0-beta1 / 02-08-2022
-
-### Changes
-
 - [IMPROVEMENT] Add mobile vitals frequency configuration. See [#876][]
 - [IMPROVEMENT] Include the exact model information in RUM `device.model`. See [#888][]
 - [FEATURE] Allow filtering outgoing logs with a status threshold. See [#867][]
@@ -43,25 +32,10 @@
 - [IMPROVEMENT] Add tracing sampling rate. See [#851][]
 - [IMPROVEMENT] Crash Reporting: Filter out unrecognized trailing `???` stack frame in `error.stack`. See [#794][]
 - [IMPROVEMENT] Reduce the number of intermediate view events sent in RUM payloads. See [#815][]
-
-# 1.11.0-rc1 / 18-05-2022
-
-### Changes
-
 - [IMPROVEMENT] Allow manually tracked resources in RUM Sessions to detect first party hosts. See [#837][]
 - [IMPROVEMENT] Add tracing sampling rate. See [#851][]
-
-# 1.11.0-beta2 / 05-04-2022
-
-### Changes
-
 - [BUGFIX] Fix rare problem with bringing up the "Local Network Permission" alert. See [#830][]
 - [BUGFIX] Fix RUM event `source`. See [#832][]
-
-# 1.11.0-beta1 / 04-26-2022
-
-### Changes
-
 - [FEATURE] Integration with CI Visibility Tests. See[#761][]
 - [FEATURE] Add tvOS Support. See [#793][]
 - [FEATURE] Add data encryption interface on-disk data storage. See [#797][]
@@ -417,6 +391,7 @@
 [#950]: https://github.com/DataDog/dd-sdk-ios/issues/950
 [#964]: https://github.com/DataDog/dd-sdk-ios/issues/964
 [#973]: https://github.com/DataDog/dd-sdk-ios/issues/973
+[#997]: https://github.com/DataDog/dd-sdk-ios/issues/997
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
