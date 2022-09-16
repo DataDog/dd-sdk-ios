@@ -40,7 +40,6 @@ class LoggingFeatureTests: XCTestCase {
             configuration: .mockWith(
                 clientToken: randomClientToken,
                 applicationName: randomApplicationName,
-                applicationVersion: randomApplicationVersion,
                 source: randomSource,
                 origin: randomOrigin,
                 sdkVersion: randomSDKVersion,
@@ -52,7 +51,8 @@ class LoggingFeatureTests: XCTestCase {
                     osName: randomDeviceOSName,
                     osVersion: randomDeviceOSVersion
                 )
-            )
+            ),
+            appVersionProvider: .mockWith(version: randomApplicationVersion)
         )
 
         // Given
@@ -115,7 +115,8 @@ class LoggingFeatureTests: XCTestCase {
                         uploadDelayChangeRate: 0
                     )
                 )
-            )
+            ),
+            appVersionProvider: .mockAny()
         )
 
         // Given

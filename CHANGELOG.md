@@ -1,290 +1,268 @@
 # Unreleased
 
-### Changes
+# 1.12.0 / 16-09-2022
 
-# 1.12.0-beta2 / 10-08-2022
-
-### Changes
-
-* [IMPROVEMENT] Add internal APIs for cross-platform SDKs. See [#964][]
-
-# 1.12.0-beta1 / 02-08-2022
-
-### Changes
-
-* [IMPROVEMENT] Add mobile vitals frequency configuration. See [#876][]
-* [IMPROVEMENT] Include the exact model information in RUM `device.model`. See [#888][]
-* [FEATURE] Allow filtering outgoing logs with a status threshold. See [#867][]
-* [BUGFIX] Fix compilation issue in SwiftUI Previews. See [#949][]
-* [IMPROVEMENT] Expose server date provider for custom clock synchronization. See [#950][]
+- [BUGFIX] Fix manual User Action dropped if a new view start. See [#997][]
+- [IMPROVEMENT] Enable cross-platform SDKs to change app `version`. See [#973][]
+- [IMPROVEMENT] Add internal APIs for cross-platform SDKs. See [#964][]
+- [IMPROVEMENT] Add mobile vitals frequency configuration. See [#876][]
+- [IMPROVEMENT] Include the exact model information in RUM `device.model`. See [#888][]
+- [FEATURE] Allow filtering outgoing logs with a status threshold. See [#867][]
+- [BUGFIX] Fix compilation issue in SwiftUI Previews. See [#949][]
+- [IMPROVEMENT] Expose server date provider for custom clock synchronization. See [#950][]
 
 # 1.11.1 / 20-06-2022
 
 ### Changes
 
-* [BUGFIX] Fix Mac Catalyst builds compatibility. See [#894][]
+- [BUGFIX] Fix Mac Catalyst builds compatibility. See [#894][]
 
 # 1.11.0 / 13-06-2022
 
 ### Changes
 
-* [BUGFIX] Fix rare problem with bringing up the "Local Network Permission" alert. See [#830][]
-* [BUGFIX] Fix RUM event `source`. See [#832][]
-* [BUGFIX] Stop reporting pre-warmed application launch time. See [#789][]
-* [BUGFIX] Allow log event dropping. See [#795][]
-* [FEATURE] Integration with CI Visibility Tests. See[#761][]
-* [FEATURE] Add tvOS Support. See [#793][]
-* [FEATURE] Add data encryption interface on-disk data storage. See [#797][]
-* [IMPROVEMENT] Allow manually tracked resources in RUM Sessions to detect first party hosts. See [#837][]
-* [IMPROVEMENT] Add tracing sampling rate. See [#851][]
-* [IMPROVEMENT] Crash Reporting: Filter out unrecognized trailing `???` stack frame in `error.stack`. See [#794][]
-* [IMPROVEMENT] Reduce the number of intermediate view events sent in RUM payloads. See [#815][]
-
-# 1.11.0-rc1 / 18-05-2022
-
-### Changes
-
-* [IMPROVEMENT] Allow manually tracked resources in RUM Sessions to detect first party hosts. See [#837][]
-* [IMPROVEMENT] Add tracing sampling rate. See [#851][]
-
-# 1.11.0-beta2 / 05-04-2022
-
-### Changes
-
-* [BUGFIX] Fix rare problem with bringing up the "Local Network Permission" alert. See [#830][]
-* [BUGFIX] Fix RUM event `source`. See [#832][]
-
-# 1.11.0-beta1 / 04-26-2022
-
-### Changes
-
-* [FEATURE] Integration with CI Visibility Tests. See[#761][]
-* [FEATURE] Add tvOS Support. See [#793][]
-* [FEATURE] Add data encryption interface on-disk data storage. See [#797][]
-* [BUGFIX] Stop reporting pre-warmed application launch time. See [#789][]
-* [BUGFIX] Allow log event dropping. See [#795][]
-* [IMPROVEMENT] Crash Reporting: Filter out unrecognized trailing `???` stack frame in `error.stack`. See [#794][]
-* [IMPROVEMENT] Reduce the number of intermediate view events sent in RUM payloads. See [#815][]
+- [BUGFIX] Fix rare problem with bringing up the "Local Network Permission" alert. See [#830][]
+- [BUGFIX] Fix RUM event `source`. See [#832][]
+- [BUGFIX] Stop reporting pre-warmed application launch time. See [#789][]
+- [BUGFIX] Allow log event dropping. See [#795][]
+- [FEATURE] Integration with CI Visibility Tests. See[#761][]
+- [FEATURE] Add tvOS Support. See [#793][]
+- [FEATURE] Add data encryption interface on-disk data storage. See [#797][]
+- [IMPROVEMENT] Allow manually tracked resources in RUM Sessions to detect first party hosts. See [#837][]
+- [IMPROVEMENT] Add tracing sampling rate. See [#851][]
+- [IMPROVEMENT] Crash Reporting: Filter out unrecognized trailing `???` stack frame in `error.stack`. See [#794][]
+- [IMPROVEMENT] Reduce the number of intermediate view events sent in RUM payloads. See [#815][]
+- [IMPROVEMENT] Allow manually tracked resources in RUM Sessions to detect first party hosts. See [#837][]
+- [IMPROVEMENT] Add tracing sampling rate. See [#851][]
+- [BUGFIX] Fix rare problem with bringing up the "Local Network Permission" alert. See [#830][]
+- [BUGFIX] Fix RUM event `source`. See [#832][]
+- [FEATURE] Integration with CI Visibility Tests. See[#761][]
+- [FEATURE] Add tvOS Support. See [#793][]
+- [FEATURE] Add data encryption interface on-disk data storage. See [#797][]
+- [BUGFIX] Stop reporting pre-warmed application launch time. See [#789][]
+- [BUGFIX] Allow log event dropping. See [#795][]
+- [IMPROVEMENT] Crash Reporting: Filter out unrecognized trailing `???` stack frame in `error.stack`. See [#794][]
+- [IMPROVEMENT] Reduce the number of intermediate view events sent in RUM payloads. See [#815][]
 
 # 1.10.0 / 04-12-2022
 
 ### Changes
 
-* [FEATURE] Web-view tracking. See [#729][]
-* [BUGFIX] Strip query parameters from span resource. See [#728][]
+- [FEATURE] Web-view tracking. See [#729][]
+- [BUGFIX] Strip query parameters from span resource. See [#728][]
 
 # 1.9.0 / 01-26-2022
 
 ### Changes
 
-* [BUGFIX] Report binary image with no UUID. See [#724][]
-* [FEATURE] Add Application Launch events tracking. See [#699][]
-* [FEATURE] Set `PLCrashReporter` custom path. See [#692][]
-* [FEATURE] `SwiftUI` Instrumentation. See [#676][]
-* [IMPROVEMENT] Embed Kronos. See [#708][]
-* [IMPROVEMENT] Add `@service` attribute to all RUM events. See [#725][]
-* [IMPROVEMENT] Adds support for flutter error source. See [#715][]
-* [IMPROVEMENT] Add crash reporting console logs. See [#712][]
-* [IMPROVEMENT] Keep view active until all resources are consumed. See [#702][]
-* [IMPROVEMENT] Allow passing in a type for errors sent with a message. See [#680][] (Thanks [@AvdLee][])
-* [IMPROVEMENT] Add config overrides for debug launch arguments. See [#679][]
+- [BUGFIX] Report binary image with no UUID. See [#724][]
+- [FEATURE] Add Application Launch events tracking. See [#699][]
+- [FEATURE] Set `PLCrashReporter` custom path. See [#692][]
+- [FEATURE] `SwiftUI` Instrumentation. See [#676][]
+- [IMPROVEMENT] Embed Kronos. See [#708][]
+- [IMPROVEMENT] Add `@service` attribute to all RUM events. See [#725][]
+- [IMPROVEMENT] Adds support for flutter error source. See [#715][]
+- [IMPROVEMENT] Add crash reporting console logs. See [#712][]
+- [IMPROVEMENT] Keep view active until all resources are consumed. See [#702][]
+- [IMPROVEMENT] Allow passing in a type for errors sent with a message. See [#680][] (Thanks [@AvdLee][])
+- [IMPROVEMENT] Add config overrides for debug launch arguments. See [#679][]
 
 # 1.8.0 / 11-23-2021
 
 ### Changes
 
-* [BUGFIX] Fix rare crash in `CarrierInfoProvider`. See [#627][] [#623][], [#619][] (Thanks [@safa-ads][], [@matcartmill][])
-* [BUGFIX] Crash Reporting: Fix issue with some truncated stack traces not being displayed. See [#641][]
-* [BUGFIX] Fix reading SDK attributes in Objective-C. See [#654][]
-* [FEATURE] RUM: Track slow UI renders with RUM Long Tasks. See [#567][]
-* [FEATURE] RUM: Add API to notify RUM session start: `.onRUMSessionStart(_: (String, Bool) -> Void)`. See [#590][]
-* [FEATURE] Logs: Add logs scrubbing API: `.setLogEventMapper(_: (LogEvent) -> LogEvent)`. See [#640][]
-* [FEATURE] Add `Datadog.isInitialized` API. See [#566][]
-* [FEATURE] Add API for clearing out all SDK data: `Datadog.clearAllData()`. See [#644][]
-* [FEATURE] Add support for `us5` site. See [#576][]
-* [FEATURE] Support `URLSession` proxy configuration with `.connectionProxyDictionary`. See [#582][]
-* [IMPROVEMENT] Compress HTTP body in SDK uploads. See [#626][]
-* [IMPROVEMENT] Change type of `.xhr` RUM Resources to `.native`. See [#605][]
-* [IMPROVEMENT] Link logs and traces to RUM Actions. See [#615][]
-* [IMPROVEMENT] Crash Reporting: Fix symbolication issue for iOS Simulator crashes. See [#563][]
-* [IMPROVEMENT] Fix various typos in docs. See [#569][] (Thanks [@michalsrutek][])
-* [IMPROVEMENT] Use Intake API V2 for SDK data uploads. See [#562][]
+- [BUGFIX] Fix rare crash in `CarrierInfoProvider`. See [#627][] [#623][], [#619][] (Thanks [@safa-ads][], [@matcartmill][])
+- [BUGFIX] Crash Reporting: Fix issue with some truncated stack traces not being displayed. See [#641][]
+- [BUGFIX] Fix reading SDK attributes in Objective-C. See [#654][]
+- [FEATURE] RUM: Track slow UI renders with RUM Long Tasks. See [#567][]
+- [FEATURE] RUM: Add API to notify RUM session start: `.onRUMSessionStart(_: (String, Bool) -> Void)`. See [#590][]
+- [FEATURE] Logs: Add logs scrubbing API: `.setLogEventMapper(_: (LogEvent) -> LogEvent)`. See [#640][]
+- [FEATURE] Add `Datadog.isInitialized` API. See [#566][]
+- [FEATURE] Add API for clearing out all SDK data: `Datadog.clearAllData()`. See [#644][]
+- [FEATURE] Add support for `us5` site. See [#576][]
+- [FEATURE] Support `URLSession` proxy configuration with `.connectionProxyDictionary`. See [#582][]
+- [IMPROVEMENT] Compress HTTP body in SDK uploads. See [#626][]
+- [IMPROVEMENT] Change type of `.xhr` RUM Resources to `.native`. See [#605][]
+- [IMPROVEMENT] Link logs and traces to RUM Actions. See [#615][]
+- [IMPROVEMENT] Crash Reporting: Fix symbolication issue for iOS Simulator crashes. See [#563][]
+- [IMPROVEMENT] Fix various typos in docs. See [#569][] (Thanks [@michalsrutek][])
+- [IMPROVEMENT] Use Intake API V2 for SDK data uploads. See [#562][]
 
 # 1.7.2 / 11-8-2021
 
 ### Changes
 
-* [BUGFIX] Fix iOS 15 crash related to `ProcessInfo.isLowPowerModeEnabled`. See [#609][] [#655][] (Thanks [@pingd][])
+- [BUGFIX] Fix iOS 15 crash related to `ProcessInfo.isLowPowerModeEnabled`. See [#609][] [#655][] (Thanks [@pingd][])
 
 # 1.7.1 / 10-4-2021
 
 ### Changes
 
-* [BUGFIX] Fix iOS 15 crash in `MobileDevice.swift`. See [#609][] [#613][] (Thanks [@arnauddorgans][], [@earltedly][])
-* [BUGFIX] RUM: Fix bug with "Refresh Rate" Mobile Vital reporting very low values. [#608][]
+- [BUGFIX] Fix iOS 15 crash in `MobileDevice.swift`. See [#609][] [#613][] (Thanks [@arnauddorgans][], [@earltedly][])
+- [BUGFIX] RUM: Fix bug with "Refresh Rate" Mobile Vital reporting very low values. [#608][]
 
 # 1.7.0 / 09-27-2021
 
 ### Changes
 
-* [BUGFIX] RUM: Fix `DDRUMView` API visibility for Objective-C. See [#583][]
-* [FEATURE] Crash Reporting: Add `DatadogCrashReporting`
-* [FEATURE] RUM: Add Mobile Vitals. See [#493][] [#514][] [#522][] [#495][]
-* [FEATURE] RUM: Add option for renaming instrumented actions. See [#539][]
-* [FEATURE] RUM: Add option for tracking events when app is in background. See [#504][] [#537][]
-* [FEATURE] Add support for `us3` site. See [#523][]
-* [IMPROVEMENT] RUM: Improve RUM <> APM integration. See [#524][] [#575][] [#531][] (Thanks [@jracollins][], [@marcusway][])
-* [IMPROVEMENT] RUM: Improve naming for views started with `key:`. See [#534][]
-* [IMPROVEMENT] RUM: Improve actions instrumentation. See [#509][] [#545][] [#547][]
-* [IMPROVEMENT] RUM: Sanitize custom timings for views. See [#525][]
-* [IMPROVEMENT] Do not retry uploading events if Client Token is invalid. See [#535][]
+- [BUGFIX] RUM: Fix `DDRUMView` API visibility for Objective-C. See [#583][]
+- [FEATURE] Crash Reporting: Add `DatadogCrashReporting`
+- [FEATURE] RUM: Add Mobile Vitals. See [#493][] [#514][] [#522][] [#495][]
+- [FEATURE] RUM: Add option for renaming instrumented actions. See [#539][]
+- [FEATURE] RUM: Add option for tracking events when app is in background. See [#504][] [#537][]
+- [FEATURE] Add support for `us3` site. See [#523][]
+- [IMPROVEMENT] RUM: Improve RUM <> APM integration. See [#524][] [#575][] [#531][] (Thanks [@jracollins][], [@marcusway][])
+- [IMPROVEMENT] RUM: Improve naming for views started with `key:`. See [#534][]
+- [IMPROVEMENT] RUM: Improve actions instrumentation. See [#509][] [#545][] [#547][]
+- [IMPROVEMENT] RUM: Sanitize custom timings for views. See [#525][]
+- [IMPROVEMENT] Do not retry uploading events if Client Token is invalid. See [#535][]
 
 # 1.6.0 / 06-09-2021
 
 ### Changes
 
-* [BUGFIX] Trace: Fix `[configuration trackUIKitRUMViews]` not working properly in Obj-c. See [#419][]
-* [BUGFIX] Trace: Make `tracePropagationHTTPHeaders` available in Obj-c. See [#421][] (Thanks [@ben-yolabs][])
-* [BUGFIX] RUM: Fix RUM Views auto-instrumentation issue on iOS 11. See [#474][]
-* [FEATURE] RUM: Support adding custom attributes for auto-instrumented RUM Resources. See [#473][]
-* [FEATURE] Trace: Add scrubbing APIs for redacting auto-instrumented spans. See [#481][]
-* [IMPROVEMENT] RUM: Add "VIEW NAME" attribute to RUM Views. See [#318][]
-* [IMPROVEMENT] RUM: Views cannot be now dropped using view event mapper. See [#415][]
-* [IMPROVEMENT] RUM: Improve presentation of errors sent with `Logger`. See [#423][]
-* [IMPROVEMENT] Trace: Improve presentation of errors sent with `span.log()`. See [#431][]
-* [IMPROVEMENT] Add support for extra user attributes in Obj-c. See [#444][]
-* [IMPROVEMENT] Trace: Add `foreground_duration` and `is_background` information to network spans. See [#436][]
-* [IMPROVEMENT] RUM: Views will now automatically stop when the app leaves foreground. See [#479][]
-* [IMPROVEMENT] `DDURLSessionDelegate` can now be initialized before starting SDK. See [#483][]
+- [BUGFIX] Trace: Fix `[configuration trackUIKitRUMViews]` not working properly in Obj-c. See [#419][]
+- [BUGFIX] Trace: Make `tracePropagationHTTPHeaders` available in Obj-c. See [#421][] (Thanks [@ben-yolabs][])
+- [BUGFIX] RUM: Fix RUM Views auto-instrumentation issue on iOS 11. See [#474][]
+- [FEATURE] RUM: Support adding custom attributes for auto-instrumented RUM Resources. See [#473][]
+- [FEATURE] Trace: Add scrubbing APIs for redacting auto-instrumented spans. See [#481][]
+- [IMPROVEMENT] RUM: Add "VIEW NAME" attribute to RUM Views. See [#318][]
+- [IMPROVEMENT] RUM: Views cannot be now dropped using view event mapper. See [#415][]
+- [IMPROVEMENT] RUM: Improve presentation of errors sent with `Logger`. See [#423][]
+- [IMPROVEMENT] Trace: Improve presentation of errors sent with `span.log()`. See [#431][]
+- [IMPROVEMENT] Add support for extra user attributes in Obj-c. See [#444][]
+- [IMPROVEMENT] Trace: Add `foreground_duration` and `is_background` information to network spans. See [#436][]
+- [IMPROVEMENT] RUM: Views will now automatically stop when the app leaves foreground. See [#479][]
+- [IMPROVEMENT] `DDURLSessionDelegate` can now be initialized before starting SDK. See [#483][]
 
 # 1.5.2 / 04-13-2021
 
 ### Changes
 
-* [BUGFIX] Add missing RUM Resource APIs to RUM for Objc. See [#447][] (Thanks [@sdejesusF][])
-* [BUGFIX] Fix eventual `swiftlint` error during `carthage` builds. See [#450][]
-* [IMPROVEMENT] Improve cocoapods installation by not requiring `!use_frameworks`. See [#451][]
+- [BUGFIX] Add missing RUM Resource APIs to RUM for Objc. See [#447][] (Thanks [@sdejesusF][])
+- [BUGFIX] Fix eventual `swiftlint` error during `carthage` builds. See [#450][]
+- [IMPROVEMENT] Improve cocoapods installation by not requiring `!use_frameworks`. See [#451][]
 
 # 1.5.1 / 03-11-2021
 
 ### Changes
 
-* [BUGFIX] Carthage XCFrameworks support. See [#439][]
+- [BUGFIX] Carthage XCFrameworks support. See [#439][]
 
 # 1.5.0 / 03-04-2021
 
 ### Changes
 
-* [BUGFIX] Fix baggage items propagation issue for `Span`. See [#365][] (Thanks [@philtre][])
-* [FEATURE] Add set of scrubbing APIs for redacting and dropping particular RUM Events. See [#367][]
-* [FEATURE] Add support for GDPR compliance with new `Datadog.set(trackingConsent:)` API. See [#335][]
-* [FEATURE] Add `Global.rum.addTiming(name:)` API for marking custom tming events in RUM Views. See [#323][]
-* [FEATURE] Add support for Alamofire networking with `DatadogAlamofireExtension`. See [#340][]
-* [FEATURE] Add configuration of data upload frequency and paylaod size with `.set(batchSize:)` and `.set(uploadFrequency:)` APIs. See [#358][]
-* [FEATURE] Add convenient `.setError(_:)` API for setting `Error` on `Span`. See [#390][]
-* [IMPROVEMENT] Improve `DATE` accurracy (with NTP time sync) for all data send from the SDK. See [#327][]
-* [IMPROVEMENT] Improve App Launch Time metric accurracy. See [#381][]
+- [BUGFIX] Fix baggage items propagation issue for `Span`. See [#365][] (Thanks [@philtre][])
+- [FEATURE] Add set of scrubbing APIs for redacting and dropping particular RUM Events. See [#367][]
+- [FEATURE] Add support for GDPR compliance with new `Datadog.set(trackingConsent:)` API. See [#335][]
+- [FEATURE] Add `Global.rum.addTiming(name:)` API for marking custom tming events in RUM Views. See [#323][]
+- [FEATURE] Add support for Alamofire networking with `DatadogAlamofireExtension`. See [#340][]
+- [FEATURE] Add configuration of data upload frequency and paylaod size with `.set(batchSize:)` and `.set(uploadFrequency:)` APIs. See [#358][]
+- [FEATURE] Add convenient `.setError(_:)` API for setting `Error` on `Span`. See [#390][]
+- [IMPROVEMENT] Improve `DATE` accurracy (with NTP time sync) for all data send from the SDK. See [#327][]
+- [IMPROVEMENT] Improve App Launch Time metric accurracy. See [#381][]
 
 # 1.4.1 / 01-18-2021
 
 ### Changes
 
-* [BUGFIX] Fix app extension compilation issue for `UIApplication.shared` symbol. See [#370][] (Thanks [@SimpleApp][])
+- [BUGFIX] Fix app extension compilation issue for `UIApplication.shared` symbol. See [#370][] (Thanks [@SimpleApp][])
 
 # 1.4.0 / 12-14-2020
 
 ### Changes
 
-* [BUGFIX] Fix crash when `serviceName` contains space characters. See [#317][] (Thanks [@philtre][])
-* [BUGFIX] Fix issue with data uploads when battery status is `.unknown`. See [#320][]
-* [BUGFIX] Fix compilation issue for Mac Catalyst. See [#277][] (Thanks [@Hengyu][])
-* [FEATURE] RUM: Add RUM monitoring feature (manual and auto instrumentation)
-* [FEATURE] Add single `.set(endpoint:)` API to configure all Datadog endpoints. See [#322][]
-* [FEATURE] Add support for GovCloud endpoints. See [#235][]
-* [FEATURE] Add support for extra user attributes. See [#315][]
-* [FEATURE] Logs: Add `error: Error` attribute to logging APIs. See [#303][] (Thanks [@sdejesusF][])
-* [FEATURE] Trace: Add `span.setActive()` API for indirect referencing Spans. See [#187][]
-* [FEATURE] Trace: Add `Global.sharedTracer.startRootSpan(...)` API. See [#236][]
-* [IMPROVEMENT] Trace: Add auto instrumentation for `URLSessionTasks` created with no completion handler. See [#262][]
-* [IMPROVEMENT] Extend allowed characters set for the `environment` value. See [#246][] (Thanks [@sdejesusF][])
-* [IMPROVEMENT] Improve data upload performance. See [#249][]
-
+- [BUGFIX] Fix crash when `serviceName` contains space characters. See [#317][] (Thanks [@philtre][])
+- [BUGFIX] Fix issue with data uploads when battery status is `.unknown`. See [#320][]
+- [BUGFIX] Fix compilation issue for Mac Catalyst. See [#277][] (Thanks [@Hengyu][])
+- [FEATURE] RUM: Add RUM monitoring feature (manual and auto instrumentation)
+- [FEATURE] Add single `.set(endpoint:)` API to configure all Datadog endpoints. See [#322][]
+- [FEATURE] Add support for GovCloud endpoints. See [#235][]
+- [FEATURE] Add support for extra user attributes. See [#315][]
+- [FEATURE] Logs: Add `error: Error` attribute to logging APIs. See [#303][] (Thanks [@sdejesusF][])
+- [FEATURE] Trace: Add `span.setActive()` API for indirect referencing Spans. See [#187][]
+- [FEATURE] Trace: Add `Global.sharedTracer.startRootSpan(...)` API. See [#236][]
+- [IMPROVEMENT] Trace: Add auto instrumentation for `URLSessionTasks` created with no completion handler. See [#262][]
+- [IMPROVEMENT] Extend allowed characters set for the `environment` value. See [#246][] (Thanks [@sdejesusF][])
+- [IMPROVEMENT] Improve data upload performance. See [#249][]
 
 # 1.3.1 / 08-14-2020
 
 ### Changes
 
-* [BUGFIX] Fix SPM compilation issue for DatadogObjC. See [#220][] (Thanks [@TsvetelinVladimirov][])
-* [BUGFIX] Fix compilation issue in Xcode 11.3.1. See [#217][] (Thanks [@provTheodoreNewell][])
+- [BUGFIX] Fix SPM compilation issue for DatadogObjC. See [#220][] (Thanks [@TsvetelinVladimirov][])
+- [BUGFIX] Fix compilation issue in Xcode 11.3.1. See [#217][] (Thanks [@provTheodoreNewell][])
 
 # 1.3.0 / 08-03-2020
 
 ### Changes
 
-* [FEATURE] Trace: Add tracing feature following the Open Tracing spec
+- [FEATURE] Trace: Add tracing feature following the Open Tracing spec
 
 # 1.2.4 / 07-17-2020
 
 ### Changes
 
-* [BUGFIX] Logs: Fix out-of-memory crash on intensive logging. See [#185][] (Thanks [@hyling][])
+- [BUGFIX] Logs: Fix out-of-memory crash on intensive logging. See [#185][] (Thanks [@hyling][])
 
 # 1.2.3 / 07-15-2020
 
 ### Changes
 
-* [BUGFIX] Logs: Fix memory leaks in logs upload. See [#180][] (Thanks [@hyling][])
-* [BUGFIX] Fix App Store Connect validation issue for `DatadogObjC`. See [#182][] (Thanks [@hyling][])
+- [BUGFIX] Logs: Fix memory leaks in logs upload. See [#180][] (Thanks [@hyling][])
+- [BUGFIX] Fix App Store Connect validation issue for `DatadogObjC`. See [#182][] (Thanks [@hyling][])
 
 # 1.2.2 / 06-12-2020
 
 ### Changes
 
-* [BUGFIX] Logs: Fix occasional logs malformation. See [#133][]
+- [BUGFIX] Logs: Fix occasional logs malformation. See [#133][]
 
 # 1.2.1 / 06-09-2020
 
 ### Changes
 
-* [BUGFIX] Fix `ISO8601DateFormatter` crash on iOS 11.0 and 11.1. See [#129][] (Thanks [@lgaches][], [@Britton-Earnin][])
+- [BUGFIX] Fix `ISO8601DateFormatter` crash on iOS 11.0 and 11.1. See [#129][] (Thanks [@lgaches][], [@Britton-Earnin][])
 
 # 1.2.0 / 05-22-2020
 
 ### Changes
 
-* [BUGFIX] Logs: Fixed family of `NWPathMonitor` crashes. See [#110][] (Thanks [@LeffelMania][], [@00FA9A][], [@jegnux][])
-* [FEATURE] Logs: Change default `serviceName` to app bundle identifier. See [#102][]
-* [IMPROVEMENT] Logs: Add milliseconds precision. See [#96][] (Thanks [@flobories][])
-* [IMPROVEMENT] Logs: Deliver logs faster in app extensions. See [#84][] (Thanks [@lmramirez][])
-* [OTHER] Logs: Change default `source` to `"ios"`. See [#111][]
-* [OTHER] Link SDK as dynamic framework in SPM. See [#82][]
+- [BUGFIX] Logs: Fixed family of `NWPathMonitor` crashes. See [#110][] (Thanks [@LeffelMania][], [@00FA9A][], [@jegnux][])
+- [FEATURE] Logs: Change default `serviceName` to app bundle identifier. See [#102][]
+- [IMPROVEMENT] Logs: Add milliseconds precision. See [#96][] (Thanks [@flobories][])
+- [IMPROVEMENT] Logs: Deliver logs faster in app extensions. See [#84][] (Thanks [@lmramirez][])
+- [OTHER] Logs: Change default `source` to `"ios"`. See [#111][]
+- [OTHER] Link SDK as dynamic framework in SPM. See [#82][]
 
 # 1.1.0 / 04-21-2020
 
 ### Changes
 
-* [BUGFIX] Fix "Missing required module 'Datadog_Private'" Carthage error. See [#80][]
-* [IMPROVEMENT] Logs: Sync logs time with server. See [#65][]
+- [BUGFIX] Fix "Missing required module 'Datadog_Private'" Carthage error. See [#80][]
+- [IMPROVEMENT] Logs: Sync logs time with server. See [#65][]
 
 # 1.0.2 / 04-08-2020
 
 ### Changes
 
-* [BUGFIX] Fix "'module.modulemap' should be inside the 'include' directory" Carthage error. See [#73][] (Thanks [@joeydong][])
+- [BUGFIX] Fix "'module.modulemap' should be inside the 'include' directory" Carthage error. See [#73][] (Thanks [@joeydong][])
 
 # 1.0.1 / 04-07-2020
 
 ### Changes
 
-* [BUGFIX] Fix "out of memory" crash. See [#64][] (Thanks [@lmramirez][])
+- [BUGFIX] Fix "out of memory" crash. See [#64][] (Thanks [@lmramirez][])
 
 # 1.0.0 / 03-31-2020
 
 ### Changes
 
-* [FEATURE] Logs: Add logging feature
+- [FEATURE] Logs: Add logging feature
 
 <!--- The following link definition list is generated by PimpMyChangelog --->
+
 [#64]: https://github.com/DataDog/dd-sdk-ios/issues/64
 [#65]: https://github.com/DataDog/dd-sdk-ios/issues/65
 [#73]: https://github.com/DataDog/dd-sdk-ios/issues/73
@@ -412,12 +390,14 @@
 [#949]: https://github.com/DataDog/dd-sdk-ios/issues/949
 [#950]: https://github.com/DataDog/dd-sdk-ios/issues/950
 [#964]: https://github.com/DataDog/dd-sdk-ios/issues/964
-[@00FA9A]: https://github.com/00FA9A
-[@Britton-Earnin]: https://github.com/Britton-Earnin
-[@Hengyu]: https://github.com/Hengyu
-[@LeffelMania]: https://github.com/LeffelMania
-[@SimpleApp]: https://github.com/SimpleApp
-[@TsvetelinVladimirov]: https://github.com/TsvetelinVladimirov
+[#973]: https://github.com/DataDog/dd-sdk-ios/issues/973
+[#997]: https://github.com/DataDog/dd-sdk-ios/issues/997
+[@00fa9a]: https://github.com/00FA9A
+[@britton-earnin]: https://github.com/Britton-Earnin
+[@hengyu]: https://github.com/Hengyu
+[@leffelmania]: https://github.com/LeffelMania
+[@simpleapp]: https://github.com/SimpleApp
+[@tsvetelinvladimirov]: https://github.com/TsvetelinVladimirov
 [@arnauddorgans]: https://github.com/arnauddorgans
 [@ben-yolabs]: https://github.com/ben-yolabs
 [@earltedly]: https://github.com/earltedly
@@ -433,7 +413,7 @@
 [@michalsrutek]: https://github.com/michalsrutek
 [@philtre]: https://github.com/philtre
 [@pingd]: https://github.com/pingd
-[@provTheodoreNewell]: https://github.com/provTheodoreNewell
+[@provtheodorenewell]: https://github.com/provTheodoreNewell
 [@safa-ads]: https://github.com/safa-ads
-[@sdejesusF]: https://github.com/sdejesusF
-[@AvdLee]: https://github.com/AvdLee
+[@sdejesusf]: https://github.com/sdejesusF
+[@avdlee]: https://github.com/AvdLee

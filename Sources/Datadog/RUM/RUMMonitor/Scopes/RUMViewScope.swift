@@ -325,6 +325,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         let actionEvent = RUMActionEvent(
             dd: .init(
+                action: nil,
                 browserSdkVersion: nil,
                 session: .init(plan: .plan1)
             ),
@@ -335,7 +336,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 loadingTime: loadingTime,
                 longTask: nil,
-                position: nil,
                 resource: nil,
                 target: nil,
                 type: .applicationStart

@@ -22,10 +22,12 @@ internal typealias DatadogSite = Datadog.Configuration.DatadogEndpoint
 internal struct DatadogV1Context {
     private let configuration: CoreConfiguration
     private let dependencies: CoreDependencies
+    private let appVersionProvider: AppVersionProvider
 
-    init(configuration: CoreConfiguration, dependencies: CoreDependencies) {
+    init(configuration: CoreConfiguration, dependencies: CoreDependencies, appVersionProvider: AppVersionProvider) {
         self.configuration = configuration
         self.dependencies = dependencies
+        self.appVersionProvider = appVersionProvider
     }
 }
 
@@ -49,11 +51,14 @@ internal extension DatadogV1Context {
     var env: String { configuration.environment }
 
     /// The version of the application that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
-    var version: String { configuration.applicationVersion }
+    var version: String { appVersionProvider.value }
 
     /// Denotes the mobile application's platform, such as `"ios"` or `"flutter"` that data is generated from.
     ///  - See: Datadog [Reserved Attributes](https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#reserved-attributes).
     var source: String { configuration.source }
+
+    /// The variant of the build, equivelent to Android's "Flavor".  Only used by cross platform SDKs
+    var variant: String? { configuration.variant }
 
     /// The version of Datadog iOS SDK.
     var sdkVersion: String { configuration.sdkVersion }

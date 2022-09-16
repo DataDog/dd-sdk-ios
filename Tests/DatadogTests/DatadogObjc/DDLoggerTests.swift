@@ -145,9 +145,9 @@ class DDLoggerTests: XCTestCase {
     func testSettingTagsAndAttributes() throws {
         core.context = .mockWith(
             configuration: .mockWith(
-                applicationVersion: "1.2.3",
                 environment: "test"
-            )
+            ),
+            appVersionProvider: .mockWith(version: "1.2.3")
         )
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers()

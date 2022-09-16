@@ -204,6 +204,7 @@ extension FeaturesConfiguration.Common {
         environment: String = .mockAny(),
         performance: PerformancePreset = .init(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
         source: String = .mockAny(),
+        variant: String? = nil,
         origin: String? = nil,
         sdkVersion: String = .mockAny(),
         proxyConfiguration: [AnyHashable: Any]? = nil,
@@ -220,6 +221,7 @@ extension FeaturesConfiguration.Common {
             environment: environment,
             performance: performance,
             source: source,
+            variant: variant,
             origin: origin,
             sdkVersion: sdkVersion,
             proxyConfiguration: proxyConfiguration,
@@ -1178,6 +1180,16 @@ class CarrierInfoProviderMock: CarrierInfoProviderType {
         carrierInfo: CarrierInfo = .mockAny()
     ) -> CarrierInfoProviderMock {
         return CarrierInfoProviderMock(carrierInfo: carrierInfo)
+    }
+}
+
+extension AppVersionProvider: AnyMockable {
+    static func mockAny() -> AppVersionProvider {
+        return AppVersionProvider(configuration: .mockAny())
+    }
+
+    static func mockWith(version: String) -> AppVersionProvider {
+        return AppVersionProvider(configuration: .mockWith(applicationVersion: version))
     }
 }
 
