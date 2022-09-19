@@ -9,7 +9,7 @@
 internal protocol SRDataModel: Codable {}
 
 /// Mobile-specific. Schema of a Session Replay data Segment.
-internal struct SRMobileSegment: SRDataModel {
+internal struct SRSegment: SRDataModel {
     /// Application properties
     internal let application: Application
 
@@ -23,7 +23,7 @@ internal struct SRMobileSegment: SRDataModel {
     internal let indexInView: Int64
 
     /// The records contained by this Segment.
-    internal let records: [Records]
+    internal let records: [SRRecord]
 
     /// The number of records in this Segment.
     internal let recordsCount: Int64
@@ -63,76 +63,6 @@ internal struct SRMobileSegment: SRDataModel {
         }
     }
 
-    /// Mobile-specific. Schema of a Session Replay Record.
-    internal enum Records: Codable {
-        case mobileFullSnapshotRecord(value: SRMobileFullSnapshotRecord)
-        case mobileIncrementalSnapshotRecord(value: SRMobileIncrementalSnapshotRecord)
-        case metaRecord(value: SRMetaRecord)
-        case focusRecord(value: SRFocusRecord)
-        case viewEndRecord(value: SRViewEndRecord)
-        case visualViewportRecord(value: SRVisualViewportRecord)
-
-        // MARK: - Codable
-
-        internal func encode(to encoder: Encoder) throws {
-            // Encode only the associated value, without encoding enum case
-            var container = encoder.singleValueContainer()
-
-            switch self {
-            case .mobileFullSnapshotRecord(let value):
-                try container.encode(value)
-            case .mobileIncrementalSnapshotRecord(let value):
-                try container.encode(value)
-            case .metaRecord(let value):
-                try container.encode(value)
-            case .focusRecord(let value):
-                try container.encode(value)
-            case .viewEndRecord(let value):
-                try container.encode(value)
-            case .visualViewportRecord(let value):
-                try container.encode(value)
-            }
-        }
-
-        internal init(from decoder: Decoder) throws {
-            // Decode enum case from associated value
-            let container = try decoder.singleValueContainer()
-
-            if let value = try? container.decode(SRMobileFullSnapshotRecord.self) {
-                self = .mobileFullSnapshotRecord(value: value)
-                return
-            }
-            if let value = try? container.decode(SRMobileIncrementalSnapshotRecord.self) {
-                self = .mobileIncrementalSnapshotRecord(value: value)
-                return
-            }
-            if let value = try? container.decode(SRMetaRecord.self) {
-                self = .metaRecord(value: value)
-                return
-            }
-            if let value = try? container.decode(SRFocusRecord.self) {
-                self = .focusRecord(value: value)
-                return
-            }
-            if let value = try? container.decode(SRViewEndRecord.self) {
-                self = .viewEndRecord(value: value)
-                return
-            }
-            if let value = try? container.decode(SRVisualViewportRecord.self) {
-                self = .visualViewportRecord(value: value)
-                return
-            }
-            let error = DecodingError.Context(
-                codingPath: container.codingPath,
-                debugDescription: """
-                Failed to decode `Records`.
-                Ran out of possibilities when trying to decode the value of associated type.
-                """
-            )
-            throw DecodingError.typeMismatch(Records.self, error)
-        }
-    }
-
     /// Session properties
     internal struct Session: Codable {
         /// UUID of the session
@@ -162,10 +92,42 @@ internal struct SRMobileSegment: SRDataModel {
     }
 }
 
+/// The border properties of this wireframe. The default value is null (no-border).
+internal struct SRShapeBorder: Codable {
+    /// The border color as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional.
+    internal let color: String
+
+    /// The width of the border in pixels.
+    internal let width: Int64
+
+    enum CodingKeys: String, CodingKey {
+        case color = "color"
+        case width = "width"
+    }
+}
+
+/// The style of this wireframe.
+internal struct SRShapeStyle: Codable {
+    /// The background color for this wireframe as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. The default value is #FFFFFF00.
+    internal let backgroundColor: String?
+
+    /// The corner(border) radius of this wireframe in pixels. The default value is 0.
+    internal let cornerRadius: Double?
+
+    /// The opacity of this wireframe. Takes values from 0 to 1, default value is 1.
+    internal let opacity: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case backgroundColor = "backgroundColor"
+        case cornerRadius = "cornerRadius"
+        case opacity = "opacity"
+    }
+}
+
 /// Schema of all properties of a ShapeWireframe.
 internal struct SRShapeWireframe: Codable {
     /// The border properties of this wireframe. The default value is null (no-border).
-    internal let border: Border?
+    internal let border: SRShapeBorder?
 
     /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
     internal let height: Int64
@@ -174,7 +136,7 @@ internal struct SRShapeWireframe: Codable {
     internal let id: Int64
 
     /// The style of this wireframe.
-    internal let shapeStyle: ShapeStyle?
+    internal let shapeStyle: SRShapeStyle?
 
     /// The type of the wireframe.
     internal let type: String = "shape"
@@ -198,44 +160,12 @@ internal struct SRShapeWireframe: Codable {
         case x = "x"
         case y = "y"
     }
-
-    /// The border properties of this wireframe. The default value is null (no-border).
-    internal struct Border: Codable {
-        /// The border color as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional.
-        internal let color: String
-
-        /// The width of the border in pixels.
-        internal let width: Int64
-
-        enum CodingKeys: String, CodingKey {
-            case color = "color"
-            case width = "width"
-        }
-    }
-
-    /// The style of this wireframe.
-    internal struct ShapeStyle: Codable {
-        /// The background color for this wireframe as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. The default value is #FFFFFF00.
-        internal let backgroundColor: String?
-
-        /// The corner(border) radius of this wireframe in pixels. The default value is 0.
-        internal let cornerRadius: Double?
-
-        /// The opacity of this wireframe. Takes values from 0 to 1, default value is 1.
-        internal let opacity: Double?
-
-        enum CodingKeys: String, CodingKey {
-            case backgroundColor = "backgroundColor"
-            case cornerRadius = "cornerRadius"
-            case opacity = "opacity"
-        }
-    }
 }
 
 /// Schema of all properties of a TextWireframe.
 internal struct SRTextWireframe: Codable {
     /// The border properties of this wireframe. The default value is null (no-border).
-    internal let border: Border?
+    internal let border: SRShapeBorder?
 
     /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
     internal let height: Int64
@@ -244,7 +174,7 @@ internal struct SRTextWireframe: Codable {
     internal let id: Int64
 
     /// The style of this wireframe.
-    internal let shapeStyle: ShapeStyle?
+    internal let shapeStyle: SRShapeStyle?
 
     /// The text value of the wireframe.
     internal var text: String
@@ -279,38 +209,6 @@ internal struct SRTextWireframe: Codable {
         case width = "width"
         case x = "x"
         case y = "y"
-    }
-
-    /// The border properties of this wireframe. The default value is null (no-border).
-    internal struct Border: Codable {
-        /// The border color as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional.
-        internal let color: String
-
-        /// The width of the border in pixels.
-        internal let width: Int64
-
-        enum CodingKeys: String, CodingKey {
-            case color = "color"
-            case width = "width"
-        }
-    }
-
-    /// The style of this wireframe.
-    internal struct ShapeStyle: Codable {
-        /// The background color for this wireframe as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. The default value is #FFFFFF00.
-        internal let backgroundColor: String?
-
-        /// The corner(border) radius of this wireframe in pixels. The default value is 0.
-        internal let cornerRadius: Double?
-
-        /// The opacity of this wireframe. Takes values from 0 to 1, default value is 1.
-        internal let opacity: Double?
-
-        enum CodingKeys: String, CodingKey {
-            case backgroundColor = "backgroundColor"
-            case cornerRadius = "cornerRadius"
-            case opacity = "opacity"
-        }
     }
 
     /// Schema of all properties of a TextPosition.
@@ -378,35 +276,64 @@ internal struct SRTextWireframe: Codable {
         /// The font color as a string hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional.
         internal let color: String
 
-        /// The font family.
+        /// The preferred font family collection, ordered by preference and formatted as a String list: e.g. Century Gothic, Verdana, sans-serif
         internal let family: String
 
         /// The font size in pixels.
         internal let size: Int64
 
-        /// The font type.
-        internal let type: TextStyleType
-
         enum CodingKeys: String, CodingKey {
             case color = "color"
             case family = "family"
             case size = "size"
-            case type = "type"
-        }
-
-        /// The font type.
-        internal enum TextStyleType: String, Codable {
-            case serif = "serif"
-            case sansSerif = "sans-serif"
-            case script = "script"
-            case monospaced = "monospaced"
-            case dynamic = "dynamic"
         }
     }
 }
 
+/// Schema of a Wireframe type.
+internal enum SRWireframe: Codable {
+    case shapeWireframe(value: SRShapeWireframe)
+    case textWireframe(value: SRTextWireframe)
+
+    // MARK: - Codable
+
+    internal func encode(to encoder: Encoder) throws {
+        // Encode only the associated value, without encoding enum case
+        var container = encoder.singleValueContainer()
+
+        switch self {
+        case .shapeWireframe(let value):
+            try container.encode(value)
+        case .textWireframe(let value):
+            try container.encode(value)
+        }
+    }
+
+    internal init(from decoder: Decoder) throws {
+        // Decode enum case from associated value
+        let container = try decoder.singleValueContainer()
+
+        if let value = try? container.decode(SRShapeWireframe.self) {
+            self = .shapeWireframe(value: value)
+            return
+        }
+        if let value = try? container.decode(SRTextWireframe.self) {
+            self = .textWireframe(value: value)
+            return
+        }
+        let error = DecodingError.Context(
+            codingPath: container.codingPath,
+            debugDescription: """
+            Failed to decode `SRWireframe`.
+            Ran out of possibilities when trying to decode the value of associated type.
+            """
+        )
+        throw DecodingError.typeMismatch(SRWireframe.self, error)
+    }
+}
+
 /// Mobile-specific. Schema of a Record type which contains the full snapshot of a screen.
-internal struct SRMobileFullSnapshotRecord: Codable {
+internal struct SRFullSnapshotRecord: Codable {
     internal let data: Data
 
     /// Defines the UTC time in milliseconds when this Record was performed.
@@ -423,58 +350,16 @@ internal struct SRMobileFullSnapshotRecord: Codable {
 
     internal struct Data: Codable {
         /// The Wireframes contained by this Record.
-        internal let wireframes: [Wireframes]
+        internal let wireframes: [SRWireframe]
 
         enum CodingKeys: String, CodingKey {
             case wireframes = "wireframes"
-        }
-
-        /// Schema of a Wireframe type.
-        internal enum Wireframes: Codable {
-            case shapeWireframe(value: SRShapeWireframe)
-            case textWireframe(value: SRTextWireframe)
-
-            // MARK: - Codable
-
-            internal func encode(to encoder: Encoder) throws {
-                // Encode only the associated value, without encoding enum case
-                var container = encoder.singleValueContainer()
-
-                switch self {
-                case .shapeWireframe(let value):
-                    try container.encode(value)
-                case .textWireframe(let value):
-                    try container.encode(value)
-                }
-            }
-
-            internal init(from decoder: Decoder) throws {
-                // Decode enum case from associated value
-                let container = try decoder.singleValueContainer()
-
-                if let value = try? container.decode(SRShapeWireframe.self) {
-                    self = .shapeWireframe(value: value)
-                    return
-                }
-                if let value = try? container.decode(SRTextWireframe.self) {
-                    self = .textWireframe(value: value)
-                    return
-                }
-                let error = DecodingError.Context(
-                    codingPath: container.codingPath,
-                    debugDescription: """
-                    Failed to decode `Wireframes`.
-                    Ran out of possibilities when trying to decode the value of associated type.
-                    """
-                )
-                throw DecodingError.typeMismatch(Wireframes.self, error)
-            }
         }
     }
 }
 
 /// Mobile-specific. Schema of a Record type which contains mutations of a screen.
-internal struct SRMobileIncrementalSnapshotRecord: Codable {
+internal struct SRIncrementalSnapshotRecord: Codable {
     /// Mobile-specific. Schema of a Session Replay IncrementalData type.
     internal let data: Data
 
@@ -492,7 +377,7 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
 
     /// Mobile-specific. Schema of a Session Replay IncrementalData type.
     internal enum Data: Codable {
-        case mobileMutationData(value: MobileMutationData)
+        case mutationData(value: MutationData)
         case touchData(value: TouchData)
         case viewportResizeData(value: ViewportResizeData)
 
@@ -503,7 +388,7 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
             var container = encoder.singleValueContainer()
 
             switch self {
-            case .mobileMutationData(let value):
+            case .mutationData(let value):
                 try container.encode(value)
             case .touchData(let value):
                 try container.encode(value)
@@ -516,8 +401,8 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
             // Decode enum case from associated value
             let container = try decoder.singleValueContainer()
 
-            if let value = try? container.decode(MobileMutationData.self) {
-                self = .mobileMutationData(value: value)
+            if let value = try? container.decode(MutationData.self) {
+                self = .mutationData(value: value)
                 return
             }
             if let value = try? container.decode(TouchData.self) {
@@ -539,7 +424,7 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
         }
 
         /// Mobile-specific. Schema of a MutationData.
-        internal struct MobileMutationData: Codable {
+        internal struct MutationData: Codable {
             /// Contains the newly added wireframes.
             internal let adds: [Adds]
 
@@ -547,7 +432,7 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
             internal let removes: [Removes]
 
             /// The source of this type of incremental data.
-            internal let source: Int64? = 0
+            internal let source: Int64 = 0
 
             /// Contains the updated wireframes mutations.
             internal let updates: [Updates]
@@ -564,53 +449,11 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
                 internal let previousId: Int64?
 
                 /// Schema of a Wireframe type.
-                internal let wireframe: Wireframe
+                internal let wireframe: SRWireframe
 
                 enum CodingKeys: String, CodingKey {
                     case previousId = "previousId"
                     case wireframe = "wireframe"
-                }
-
-                /// Schema of a Wireframe type.
-                internal enum Wireframe: Codable {
-                    case shapeWireframe(value: SRShapeWireframe)
-                    case textWireframe(value: SRTextWireframe)
-
-                    // MARK: - Codable
-
-                    internal func encode(to encoder: Encoder) throws {
-                        // Encode only the associated value, without encoding enum case
-                        var container = encoder.singleValueContainer()
-
-                        switch self {
-                        case .shapeWireframe(let value):
-                            try container.encode(value)
-                        case .textWireframe(let value):
-                            try container.encode(value)
-                        }
-                    }
-
-                    internal init(from decoder: Decoder) throws {
-                        // Decode enum case from associated value
-                        let container = try decoder.singleValueContainer()
-
-                        if let value = try? container.decode(SRShapeWireframe.self) {
-                            self = .shapeWireframe(value: value)
-                            return
-                        }
-                        if let value = try? container.decode(SRTextWireframe.self) {
-                            self = .textWireframe(value: value)
-                            return
-                        }
-                        let error = DecodingError.Context(
-                            codingPath: container.codingPath,
-                            debugDescription: """
-                            Failed to decode `Wireframe`.
-                            Ran out of possibilities when trying to decode the value of associated type.
-                            """
-                        )
-                        throw DecodingError.typeMismatch(Wireframe.self, error)
-                    }
                 }
             }
 
@@ -667,7 +510,7 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
                 /// Schema of all properties of a TextWireframeUpdate.
                 internal struct TextWireframeUpdate: Codable {
                     /// The border properties of this wireframe. The default value is null (no-border).
-                    internal let border: Border?
+                    internal let border: SRShapeBorder?
 
                     /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
                     internal let height: Int64?
@@ -676,7 +519,7 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
                     internal let id: Int64
 
                     /// The style of this wireframe.
-                    internal let shapeStyle: ShapeStyle?
+                    internal let shapeStyle: SRShapeStyle?
 
                     /// The text value of the wireframe.
                     internal var text: String?
@@ -711,38 +554,6 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
                         case width = "width"
                         case x = "x"
                         case y = "y"
-                    }
-
-                    /// The border properties of this wireframe. The default value is null (no-border).
-                    internal struct Border: Codable {
-                        /// The border color as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional.
-                        internal let color: String
-
-                        /// The width of the border in pixels.
-                        internal let width: Int64
-
-                        enum CodingKeys: String, CodingKey {
-                            case color = "color"
-                            case width = "width"
-                        }
-                    }
-
-                    /// The style of this wireframe.
-                    internal struct ShapeStyle: Codable {
-                        /// The background color for this wireframe as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. The default value is #FFFFFF00.
-                        internal let backgroundColor: String?
-
-                        /// The corner(border) radius of this wireframe in pixels. The default value is 0.
-                        internal let cornerRadius: Double?
-
-                        /// The opacity of this wireframe. Takes values from 0 to 1, default value is 1.
-                        internal let opacity: Double?
-
-                        enum CodingKeys: String, CodingKey {
-                            case backgroundColor = "backgroundColor"
-                            case cornerRadius = "cornerRadius"
-                            case opacity = "opacity"
-                        }
                     }
 
                     /// Schema of all properties of a TextPosition.
@@ -810,29 +621,16 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
                         /// The font color as a string hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional.
                         internal let color: String
 
-                        /// The font family.
+                        /// The preferred font family collection, ordered by preference and formatted as a String list: e.g. Century Gothic, Verdana, sans-serif
                         internal let family: String
 
                         /// The font size in pixels.
                         internal let size: Int64
 
-                        /// The font type.
-                        internal let type: TextStyleType
-
                         enum CodingKeys: String, CodingKey {
                             case color = "color"
                             case family = "family"
                             case size = "size"
-                            case type = "type"
-                        }
-
-                        /// The font type.
-                        internal enum TextStyleType: String, Codable {
-                            case serif = "serif"
-                            case sansSerif = "sans-serif"
-                            case script = "script"
-                            case monospaced = "monospaced"
-                            case dynamic = "dynamic"
                         }
                     }
                 }
@@ -840,7 +638,7 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
                 /// Schema of a ShapeWireframeUpdate.
                 internal struct ShapeWireframeUpdate: Codable {
                     /// The border properties of this wireframe. The default value is null (no-border).
-                    internal let border: Border?
+                    internal let border: SRShapeBorder?
 
                     /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
                     internal let height: Int64?
@@ -849,7 +647,7 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
                     internal let id: Int64
 
                     /// The style of this wireframe.
-                    internal let shapeStyle: ShapeStyle?
+                    internal let shapeStyle: SRShapeStyle?
 
                     /// The type of the wireframe.
                     internal let type: String = "shape"
@@ -873,38 +671,6 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
                         case x = "x"
                         case y = "y"
                     }
-
-                    /// The border properties of this wireframe. The default value is null (no-border).
-                    internal struct Border: Codable {
-                        /// The border color as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional.
-                        internal let color: String
-
-                        /// The width of the border in pixels.
-                        internal let width: Int64
-
-                        enum CodingKeys: String, CodingKey {
-                            case color = "color"
-                            case width = "width"
-                        }
-                    }
-
-                    /// The style of this wireframe.
-                    internal struct ShapeStyle: Codable {
-                        /// The background color for this wireframe as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. The default value is #FFFFFF00.
-                        internal let backgroundColor: String?
-
-                        /// The corner(border) radius of this wireframe in pixels. The default value is 0.
-                        internal let cornerRadius: Double?
-
-                        /// The opacity of this wireframe. Takes values from 0 to 1, default value is 1.
-                        internal let opacity: Double?
-
-                        enum CodingKeys: String, CodingKey {
-                            case backgroundColor = "backgroundColor"
-                            case cornerRadius = "cornerRadius"
-                            case opacity = "opacity"
-                        }
-                    }
                 }
             }
         }
@@ -915,7 +681,7 @@ internal struct SRMobileIncrementalSnapshotRecord: Codable {
             internal let positions: [Positions]?
 
             /// The source of this type of incremental data.
-            internal let source: Int64? = 2
+            internal let source: Int64 = 2
 
             enum CodingKeys: String, CodingKey {
                 case positions = "positions"
@@ -1083,4 +849,74 @@ internal struct SRVisualViewportRecord: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/b3c893ccfc8960b58895863546f63b4651860181
+/// Mobile-specific. Schema of a Session Replay Record.
+internal enum SRRecord: Codable {
+    case fullSnapshotRecord(value: SRFullSnapshotRecord)
+    case incrementalSnapshotRecord(value: SRIncrementalSnapshotRecord)
+    case metaRecord(value: SRMetaRecord)
+    case focusRecord(value: SRFocusRecord)
+    case viewEndRecord(value: SRViewEndRecord)
+    case visualViewportRecord(value: SRVisualViewportRecord)
+
+    // MARK: - Codable
+
+    internal func encode(to encoder: Encoder) throws {
+        // Encode only the associated value, without encoding enum case
+        var container = encoder.singleValueContainer()
+
+        switch self {
+        case .fullSnapshotRecord(let value):
+            try container.encode(value)
+        case .incrementalSnapshotRecord(let value):
+            try container.encode(value)
+        case .metaRecord(let value):
+            try container.encode(value)
+        case .focusRecord(let value):
+            try container.encode(value)
+        case .viewEndRecord(let value):
+            try container.encode(value)
+        case .visualViewportRecord(let value):
+            try container.encode(value)
+        }
+    }
+
+    internal init(from decoder: Decoder) throws {
+        // Decode enum case from associated value
+        let container = try decoder.singleValueContainer()
+
+        if let value = try? container.decode(SRFullSnapshotRecord.self) {
+            self = .fullSnapshotRecord(value: value)
+            return
+        }
+        if let value = try? container.decode(SRIncrementalSnapshotRecord.self) {
+            self = .incrementalSnapshotRecord(value: value)
+            return
+        }
+        if let value = try? container.decode(SRMetaRecord.self) {
+            self = .metaRecord(value: value)
+            return
+        }
+        if let value = try? container.decode(SRFocusRecord.self) {
+            self = .focusRecord(value: value)
+            return
+        }
+        if let value = try? container.decode(SRViewEndRecord.self) {
+            self = .viewEndRecord(value: value)
+            return
+        }
+        if let value = try? container.decode(SRVisualViewportRecord.self) {
+            self = .visualViewportRecord(value: value)
+            return
+        }
+        let error = DecodingError.Context(
+            codingPath: container.codingPath,
+            debugDescription: """
+            Failed to decode `SRRecord`.
+            Ran out of possibilities when trying to decode the value of associated type.
+            """
+        )
+        throw DecodingError.typeMismatch(SRRecord.self, error)
+    }
+}
+
+// Generated from https://github.com/DataDog/rum-events-format/tree/3809da04bcae3a8ca4843edd88135efca44fabc0

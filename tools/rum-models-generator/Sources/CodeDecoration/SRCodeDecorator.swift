@@ -19,12 +19,20 @@ public class SRCodeDecorator: SwiftCodeDecorator {
                 "SRShapeWireframe",
                 "SRTextWireframe",
                 // For convenience, make fat `*Record` structures to be root types:
-                "SRMobileFullSnapshotRecord",
-                "SRMobileIncrementalSnapshotRecord",
+                "SRFullSnapshotRecord",
+                "SRIncrementalSnapshotRecord",
                 "SRMetaRecord",
                 "SRFocusRecord",
                 "SRViewEndRecord",
                 "SRVisualViewportRecord",
+                // For convenience, detach `SRMobileSegment.Record` to root-level `SRRecord`:
+                "SRRecord",
+                // For convenience, detach `SRMobileFullSnapshotRecord.Data.Wireframes`
+                // and `SRMobileIncrementalSnapshotRecord.Update.Add.Wireframes` to root-level `SRWireframe`:
+                "SRWireframe",
+                // For convenience, detach styles from each wireframe to shared, root-level definition:
+                "SRShapeBorder",
+                "SRShapeStyle",
             ]
         )
     }
@@ -49,6 +57,22 @@ public class SRCodeDecorator: SwiftCodeDecorator {
         return `struct`
     }
 
+    override public func format(structName: String) -> String {
+        super.format(
+            structName: structName
+                .replacingOccurrences(of: "mobile", with: "")
+                .replacingOccurrences(of: "Mobile", with: "") // erase "[M|m]obile" in names
+        )
+    }
+
+    override public func format(enumCaseName: String) -> String {
+        super.format(
+            enumCaseName: enumCaseName
+                .replacingOccurrences(of: "mobile", with: "")
+                .replacingOccurrences(of: "Mobile", with: "") // erase "[M|m]obile" in names
+        )
+    }
+
     // MARK: - Naming Conventions
 
     override public func fix(typeName: String) -> String {
@@ -57,6 +81,23 @@ public class SRCodeDecorator: SwiftCodeDecorator {
         // If the type name uses an abbreviation, keep it uppercased:
         if fixedName.count <= 3 {
             fixedName = typeName.uppercased()
+        }
+
+        // Basic renamings:
+        if fixedName == "Records" {
+            fixedName = "SRRecord"
+        }
+        if fixedName == "Wireframes" {
+            fixedName = "SRWireframe"
+        }
+
+        // Detach styles from each wireframe to shared, root-level definitions
+        let parentWireframe = context.predecessorStruct(matching: { $0.name.lowercased().contains("wireframe") })
+        if parentWireframe != nil && fixedName == "Border" {
+            fixedName = "SRShapeBorder"
+        }
+        if parentWireframe != nil && fixedName == "ShapeStyle" {
+            fixedName = "SRShapeStyle"
         }
 
         // Ensure all root types have `SR` prefix:
@@ -71,5 +112,16 @@ public class SRCodeDecorator: SwiftCodeDecorator {
         }
 
         return fixedName
+    }
+}
+
+private extension TransformationContext {
+    func predecessorStruct(matching predicate: (SwiftStruct) -> Bool) -> SwiftStruct? {
+        return predecessor(matching: {
+            guard let `struct` = $0 as? SwiftStruct else {
+                return false
+            }
+            return predicate(`struct`)
+        }) as? SwiftStruct
     }
 }

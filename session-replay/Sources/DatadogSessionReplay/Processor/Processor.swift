@@ -57,20 +57,24 @@ internal class Processor: ViewTreeSnapshotProcessor {
         )
 
         if records.count == 60 { // after decent number of records, export the JSON
-            do {
-                let segment = try segmentsBuilder.createSegment(with: records)
-                printToConsole(segment: segment)
-            } catch {
-                print("Failed to process snapshot: \(error)") // TODO: RUMM-2410 Use `DD.logger` and / or `DD.telemetry`
-            }
+            printSegment()
         }
     }
 
     // MARK: - 🚧 Work In Progress: things will change in RUMM-2429
 
-    private var records: [SRMobileSegment.Records] = []
+    private var records: [SRRecord] = []
 
-    private func printToConsole(segment: SRMobileSegment) {
+    private func printSegment() {
+        do {
+            let segment = try segmentsBuilder.createSegment(with: records)
+            printToConsole(segment: segment)
+        } catch {
+            print("Failed to process snapshot: \(error)") // TODO: RUMM-2410 Use `DD.logger` and / or `DD.telemetry`
+        }
+    }
+
+    private func printToConsole(segment: SRSegment) {
         let jsonEncoder = JSONEncoder()
         jsonEncoder.outputFormatting = .prettyPrinted
 
