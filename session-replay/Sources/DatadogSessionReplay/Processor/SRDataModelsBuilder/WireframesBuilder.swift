@@ -8,7 +8,7 @@ import Foundation
 import CoreGraphics
 import UIKit
 
-internal typealias WireframeID = Int64
+internal typealias WireframeID = NodeID
 
 /// Builds the actual wireframes from VTS snapshots (produced by `Recorder`) to be later transported in SR
 /// records (see `RecordsBuilder`) within SR segments (see `SegmentBuilder`).
@@ -30,10 +30,8 @@ internal class WireframesBuilder {
         static let fontSize: CGFloat = 10
     }
 
-    /// TODO: RUMM-2272 Add a stable way of managing wireframe IDs (so they can be reduced in incremental SR records)
-    var dummyIDsGenerator: Int64 = 0
-
     func createShapeWireframe(
+        id: WireframeID,
         frame: CGRect,
         borderColor: CGColor? = nil,
         borderWidth: CGFloat? = nil,
@@ -41,12 +39,10 @@ internal class WireframesBuilder {
         cornerRadius: CGFloat? = nil,
         opacity: CGFloat? = nil
     ) -> SRWireframe {
-        dummyIDsGenerator += 1
-
         let wireframe = SRShapeWireframe(
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
             height: Int64(withNoOverflow: frame.height),
-            id: dummyIDsGenerator,
+            id: id,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
             width: Int64(withNoOverflow: frame.width),
             x: Int64(withNoOverflow: frame.minX),
@@ -57,6 +53,7 @@ internal class WireframesBuilder {
     }
 
     func createTextWireframe(
+        id: WireframeID,
         frame: CGRect,
         text: String,
         textFrame: CGRect? = nil,
@@ -68,8 +65,6 @@ internal class WireframesBuilder {
         cornerRadius: CGFloat? = nil,
         opacity: CGFloat? = nil
     ) -> SRWireframe {
-        dummyIDsGenerator += 1
-
         var textPosition: SRTextPosition? = nil
 
         if let textFrame = textFrame {
@@ -94,7 +89,7 @@ internal class WireframesBuilder {
         let wireframe = SRTextWireframe(
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
             height: Int64(withNoOverflow: frame.height),
-            id: dummyIDsGenerator,
+            id: id,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
             text: text,
             textPosition: textPosition,

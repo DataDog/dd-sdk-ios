@@ -19,6 +19,7 @@ internal struct UILabelRecorder: NodeRecorder {
         }
 
         let builder = UILabelWireframesBuilder(
+            wireframeID: context.ids.nodeID(for: label),
             attributes: attributes,
             text: label.text ?? "",
             textColor: label.textColor?.cgColor,
@@ -29,6 +30,7 @@ internal struct UILabelRecorder: NodeRecorder {
 }
 
 internal struct UILabelWireframesBuilder: NodeWireframesBuilder {
+    let wireframeID: WireframeID
     /// Attributes of the base `UIView`.
     let attributes: ViewAttributes
     /// The text inside label.
@@ -49,6 +51,7 @@ internal struct UILabelWireframesBuilder: NodeWireframesBuilder {
 
         return [
             builder.createTextWireframe(
+                id: wireframeID,
                 frame: attributes.frame,
                 text: text,
                 textFrame: textFrame,

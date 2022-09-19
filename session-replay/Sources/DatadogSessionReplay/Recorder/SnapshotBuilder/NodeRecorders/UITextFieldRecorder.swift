@@ -41,6 +41,7 @@ internal struct UITextFieldRecorder: NodeRecorder {
         }()
 
         let builder = UITextFieldWireframesBuilder(
+            wireframeID: context.ids.nodeID(for: textField),
             attributes: attributes,
             text: text,
             // TODO: RUMM-2459
@@ -54,6 +55,7 @@ internal struct UITextFieldRecorder: NodeRecorder {
 }
 
 internal struct UITextFieldWireframesBuilder: NodeWireframesBuilder {
+    let wireframeID: WireframeID
     /// Attributes of the base `UIView`.
     let attributes: ViewAttributes
     /// The text inside text field.
@@ -83,6 +85,7 @@ internal struct UITextFieldWireframesBuilder: NodeWireframesBuilder {
 
         return [
             builder.createTextWireframe(
+                id: wireframeID,
                 frame: attributes.frame,
                 text: text,
                 textFrame: textFrame,
