@@ -64,10 +64,10 @@ internal final class RUMTelemetry: Telemetry {
         record(event: id) { context, writer in
             let attributes = context.featuresAttributes["rum"]
 
-            let applicationId = attributes?["application_id", type: String.self]
-            let sessionId = attributes?["session_id", type: String.self]
-            let viewId = attributes?["view.id", type: String.self]
-            let actionId = attributes?["user_action.id", type: String.self]
+            let applicationId = attributes?[RUMMonitor.Attributes.applicationID, type: String.self]
+            let sessionId = attributes?[RUMMonitor.Attributes.sessionID, type: String.self]
+            let viewId = attributes?[RUMMonitor.Attributes.viewID, type: String.self]
+            let actionId = attributes?[RUMMonitor.Attributes.userActionID, type: String.self]
 
             let event = TelemetryDebugEvent(
                 dd: .init(),
@@ -104,10 +104,10 @@ internal final class RUMTelemetry: Telemetry {
         record(event: id) { context, writer in
             let attributes = context.featuresAttributes["rum"]
 
-            let applicationId = attributes?["application_id", type: String.self]
-            let sessionId = attributes?["session_id", type: String.self]
-            let viewId = attributes?["view.id", type: String.self]
-            let actionId = attributes?["user_action.id", type: String.self]
+            let applicationId = attributes?[RUMMonitor.Attributes.applicationID, type: String.self]
+            let sessionId = attributes?[RUMMonitor.Attributes.sessionID, type: String.self]
+            let viewId = attributes?[RUMMonitor.Attributes.viewID, type: String.self]
+            let actionId = attributes?[RUMMonitor.Attributes.userActionID, type: String.self]
 
             let event = TelemetryErrorEvent(
                 dd: .init(),
@@ -138,7 +138,7 @@ internal final class RUMTelemetry: Telemetry {
         rum.eventWriteContext { context, writer in
             // reset recorded events on session renewal
             let attributes = context.featuresAttributes["rum"]
-            let sessionId = attributes?["session_id", type: String.self]
+            let sessionId = attributes?[RUMMonitor.Attributes.sessionID, type: String.self]
 
             self.queue.async {
                 if sessionId != self.currentSessionID {

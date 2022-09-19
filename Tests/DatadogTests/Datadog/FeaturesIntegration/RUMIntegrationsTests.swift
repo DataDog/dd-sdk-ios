@@ -32,12 +32,12 @@ class RUMIntegrationsTests: XCTestCase {
 
         XCTAssertEqual(attributes.count, 4)
         XCTAssertEqual(
-            attributes["application_id"] as? String,
+            attributes[RUMMonitor.Attributes.applicationID] as? String,
             rum.configuration.applicationID
         )
-        XCTAssertValidRumUUID(attributes["session_id"] as? String)
-        XCTAssertValidRumUUID(attributes["view.id"] as? String)
-        XCTAssertValidRumUUID(attributes["user_action.id"] as? String)
+        XCTAssertValidRumUUID(attributes[RUMMonitor.Attributes.sessionID] as? String)
+        XCTAssertValidRumUUID(attributes[RUMMonitor.Attributes.viewID] as? String)
+        XCTAssertValidRumUUID(attributes[RUMMonitor.Attributes.userActionID] as? String)
     }
 
     func testGivenRUMMonitorRegistered_whenSessionIsRejectedBySampler_itProvidesEmptyRUMContextAttributes() throws {
