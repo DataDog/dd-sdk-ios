@@ -93,7 +93,7 @@ internal struct SRSegment: SRDataModel {
 }
 
 /// The border properties of this wireframe. The default value is null (no-border).
-internal struct SRShapeBorder: Codable {
+internal struct SRShapeBorder: Codable, Hashable {
     /// The border color as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional.
     internal let color: String
 
@@ -107,7 +107,7 @@ internal struct SRShapeBorder: Codable {
 }
 
 /// The style of this wireframe.
-internal struct SRShapeStyle: Codable {
+internal struct SRShapeStyle: Codable, Hashable {
     /// The background color for this wireframe as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. The default value is #FFFFFF00.
     internal let backgroundColor: String?
 
@@ -125,7 +125,7 @@ internal struct SRShapeStyle: Codable {
 }
 
 /// Schema of all properties of a ShapeWireframe.
-internal struct SRShapeWireframe: Codable {
+internal struct SRShapeWireframe: Codable, Hashable {
     /// The border properties of this wireframe. The default value is null (no-border).
     internal let border: SRShapeBorder?
 
@@ -162,8 +162,86 @@ internal struct SRShapeWireframe: Codable {
     }
 }
 
+/// Schema of all properties of a TextPosition.
+internal struct SRTextPosition: Codable, Hashable {
+    internal let alignment: Alignment?
+
+    internal let padding: Padding?
+
+    enum CodingKeys: String, CodingKey {
+        case alignment = "alignment"
+        case padding = "padding"
+    }
+
+    internal struct Alignment: Codable, Hashable {
+        /// The horizontal text alignment. The default value is `left`.
+        internal let horizontal: Horizontal?
+
+        /// The vertical text alignment. The default value is `top`.
+        internal let vertical: Vertical?
+
+        enum CodingKeys: String, CodingKey {
+            case horizontal = "horizontal"
+            case vertical = "vertical"
+        }
+
+        /// The horizontal text alignment. The default value is `left`.
+        internal enum Horizontal: String, Codable {
+            case left = "left"
+            case right = "right"
+            case center = "center"
+        }
+
+        /// The vertical text alignment. The default value is `top`.
+        internal enum Vertical: String, Codable {
+            case top = "top"
+            case bottom = "bottom"
+            case center = "center"
+        }
+    }
+
+    internal struct Padding: Codable, Hashable {
+        /// The bottom padding in pixels. The default value is 0.
+        internal let bottom: Int64?
+
+        /// The left padding in pixels. The default value is 0.
+        internal let left: Int64?
+
+        /// The right padding in pixels. The default value is 0.
+        internal let right: Int64?
+
+        /// The top padding in pixels. The default value is 0.
+        internal let top: Int64?
+
+        enum CodingKeys: String, CodingKey {
+            case bottom = "bottom"
+            case left = "left"
+            case right = "right"
+            case top = "top"
+        }
+    }
+}
+
+/// Schema of all properties of a TextStyle.
+internal struct SRTextStyle: Codable, Hashable {
+    /// The font color as a string hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional.
+    internal let color: String
+
+    /// The preferred font family collection, ordered by preference and formatted as a String list: e.g. Century Gothic, Verdana, sans-serif
+    internal let family: String
+
+    /// The font size in pixels.
+    internal let size: Int64
+
+    enum CodingKeys: String, CodingKey {
+        case color = "color"
+        case family = "family"
+        case size = "size"
+    }
+}
+
 /// Schema of all properties of a TextWireframe.
-internal struct SRTextWireframe: Codable {
+internal struct SRTextWireframe: Codable, Hashable {
     /// The border properties of this wireframe. The default value is null (no-border).
     internal let border: SRShapeBorder?
 
@@ -180,10 +258,10 @@ internal struct SRTextWireframe: Codable {
     internal var text: String
 
     /// Schema of all properties of a TextPosition.
-    internal let textPosition: TextPosition?
+    internal let textPosition: SRTextPosition?
 
     /// Schema of all properties of a TextStyle.
-    internal let textStyle: TextStyle
+    internal let textStyle: SRTextStyle
 
     /// The type of the wireframe.
     internal let type: String = "text"
@@ -209,84 +287,6 @@ internal struct SRTextWireframe: Codable {
         case width = "width"
         case x = "x"
         case y = "y"
-    }
-
-    /// Schema of all properties of a TextPosition.
-    internal struct TextPosition: Codable {
-        internal let alignment: Alignment?
-
-        internal let padding: Padding?
-
-        enum CodingKeys: String, CodingKey {
-            case alignment = "alignment"
-            case padding = "padding"
-        }
-
-        internal struct Alignment: Codable {
-            /// The horizontal text alignment. The default value is `left`.
-            internal let horizontal: Horizontal?
-
-            /// The vertical text alignment. The default value is `top`.
-            internal let vertical: Vertical?
-
-            enum CodingKeys: String, CodingKey {
-                case horizontal = "horizontal"
-                case vertical = "vertical"
-            }
-
-            /// The horizontal text alignment. The default value is `left`.
-            internal enum Horizontal: String, Codable {
-                case left = "left"
-                case right = "right"
-                case center = "center"
-            }
-
-            /// The vertical text alignment. The default value is `top`.
-            internal enum Vertical: String, Codable {
-                case top = "top"
-                case bottom = "bottom"
-                case center = "center"
-            }
-        }
-
-        internal struct Padding: Codable {
-            /// The bottom padding in pixels. The default value is 0.
-            internal let bottom: Int64?
-
-            /// The left padding in pixels. The default value is 0.
-            internal let left: Int64?
-
-            /// The right padding in pixels. The default value is 0.
-            internal let right: Int64?
-
-            /// The top padding in pixels. The default value is 0.
-            internal let top: Int64?
-
-            enum CodingKeys: String, CodingKey {
-                case bottom = "bottom"
-                case left = "left"
-                case right = "right"
-                case top = "top"
-            }
-        }
-    }
-
-    /// Schema of all properties of a TextStyle.
-    internal struct TextStyle: Codable {
-        /// The font color as a string hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional.
-        internal let color: String
-
-        /// The preferred font family collection, ordered by preference and formatted as a String list: e.g. Century Gothic, Verdana, sans-serif
-        internal let family: String
-
-        /// The font size in pixels.
-        internal let size: Int64
-
-        enum CodingKeys: String, CodingKey {
-            case color = "color"
-            case family = "family"
-            case size = "size"
-        }
     }
 }
 
@@ -525,10 +525,10 @@ internal struct SRIncrementalSnapshotRecord: Codable {
                     internal var text: String?
 
                     /// Schema of all properties of a TextPosition.
-                    internal let textPosition: TextPosition?
+                    internal let textPosition: SRTextPosition?
 
                     /// Schema of all properties of a TextStyle.
-                    internal let textStyle: TextStyle?
+                    internal let textStyle: SRTextStyle?
 
                     /// The type of the wireframe.
                     internal let type: String = "text"
@@ -554,84 +554,6 @@ internal struct SRIncrementalSnapshotRecord: Codable {
                         case width = "width"
                         case x = "x"
                         case y = "y"
-                    }
-
-                    /// Schema of all properties of a TextPosition.
-                    internal struct TextPosition: Codable {
-                        internal let alignment: Alignment?
-
-                        internal let padding: Padding?
-
-                        enum CodingKeys: String, CodingKey {
-                            case alignment = "alignment"
-                            case padding = "padding"
-                        }
-
-                        internal struct Alignment: Codable {
-                            /// The horizontal text alignment. The default value is `left`.
-                            internal let horizontal: Horizontal?
-
-                            /// The vertical text alignment. The default value is `top`.
-                            internal let vertical: Vertical?
-
-                            enum CodingKeys: String, CodingKey {
-                                case horizontal = "horizontal"
-                                case vertical = "vertical"
-                            }
-
-                            /// The horizontal text alignment. The default value is `left`.
-                            internal enum Horizontal: String, Codable {
-                                case left = "left"
-                                case right = "right"
-                                case center = "center"
-                            }
-
-                            /// The vertical text alignment. The default value is `top`.
-                            internal enum Vertical: String, Codable {
-                                case top = "top"
-                                case bottom = "bottom"
-                                case center = "center"
-                            }
-                        }
-
-                        internal struct Padding: Codable {
-                            /// The bottom padding in pixels. The default value is 0.
-                            internal let bottom: Int64?
-
-                            /// The left padding in pixels. The default value is 0.
-                            internal let left: Int64?
-
-                            /// The right padding in pixels. The default value is 0.
-                            internal let right: Int64?
-
-                            /// The top padding in pixels. The default value is 0.
-                            internal let top: Int64?
-
-                            enum CodingKeys: String, CodingKey {
-                                case bottom = "bottom"
-                                case left = "left"
-                                case right = "right"
-                                case top = "top"
-                            }
-                        }
-                    }
-
-                    /// Schema of all properties of a TextStyle.
-                    internal struct TextStyle: Codable {
-                        /// The font color as a string hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional.
-                        internal let color: String
-
-                        /// The preferred font family collection, ordered by preference and formatted as a String list: e.g. Century Gothic, Verdana, sans-serif
-                        internal let family: String
-
-                        /// The font size in pixels.
-                        internal let size: Int64
-
-                        enum CodingKeys: String, CodingKey {
-                            case color = "color"
-                            case family = "family"
-                            case size = "size"
-                        }
                     }
                 }
 
@@ -919,4 +841,4 @@ internal enum SRRecord: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/3809da04bcae3a8ca4843edd88135efca44fabc0
+// Generated from https://github.com/DataDog/rum-events-format/tree/cd94812544b54e3de5d8aaee0c5f936c98a92dbf

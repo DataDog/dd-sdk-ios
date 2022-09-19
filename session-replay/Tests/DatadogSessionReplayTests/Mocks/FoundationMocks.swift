@@ -59,6 +59,16 @@ extension FixedWidthInteger where Self: AnyMockable {
     }
 }
 
+extension Double: AnyMockable, RandomMockable {
+    static func mockAny() -> Double {
+        return 42.0
+    }
+
+    static func mockRandom() -> Double {
+        return .random(in: -Double(Int.min)...Double(Int.max))
+    }
+}
+
 extension Int: AnyMockable, RandomMockable {}
 extension Int64: AnyMockable, RandomMockable {}
 

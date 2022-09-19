@@ -8,6 +8,8 @@ import Foundation
 import CoreGraphics
 import UIKit
 
+internal typealias WireframeID = Int64
+
 /// Builds the actual wireframes from VTS snapshots (produced by `Recorder`) to be later transported in SR
 /// records (see `RecordsBuilder`) within SR segments (see `SegmentBuilder`).
 /// A wireframe stands for semantic definition of an UI element (i.a.: label, button, tab bar).
@@ -68,7 +70,7 @@ internal class WireframesBuilder {
     ) -> SRWireframe {
         dummyIDsGenerator += 1
 
-        var textPosition: SRTextWireframe.TextPosition? = nil
+        var textPosition: SRTextPosition? = nil
 
         if let textFrame = textFrame {
             textPosition = .init(
@@ -83,7 +85,7 @@ internal class WireframesBuilder {
         }
 
         // TODO: RUMM-2452 Better recognize the font:
-        let textStyle = SRTextWireframe.TextStyle(
+        let textStyle = SRTextStyle(
             color: textColor.flatMap { hexString(from: $0) } ?? Fallback.color,
             family: Fallback.fontFamily,
             size: Int64(withNoOverflow: font?.pointSize ?? Fallback.fontSize)
