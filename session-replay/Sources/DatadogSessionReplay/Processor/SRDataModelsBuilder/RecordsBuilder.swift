@@ -36,13 +36,61 @@ internal class RecordsBuilder {
         return .focusRecord(value: record)
     }
 
-    /// Creates Full Snapshot Record - bringing self-contained description of a single frame of the replay.
-    func createFullSnapshotRecord(from snapshot: ViewTreeSnapshot, with wireframes: [SRWireframe]) -> SRRecord {
+    // MARK: - Creating FSR and ISR
+
+    /// Wireframes from last FSR or ISR.
+    private var lastWireframes: [SRWireframe]?
+
+    func createFullOrIncrementalSnapshotRecord(from snapshot: ViewTreeSnapshot, with wireframes: [SRWireframe]) -> SRRecord? {
+        defer { lastWireframes = wireframes }
+
+        if let lastWireframes = lastWireframes {
+            do {
+                return try createIncrementalRecord(from: snapshot, newWireframes: wireframes, lastWireframes: lastWireframes)
+            } catch { // TODO: RUMM-2410 Use `DD.logger` and / or `DD.telemetry` to report ISR errors
+                // In case of any trouble, fallback to FSR which is always possible:
+                return createFullSnapshotRecord(from: snapshot, wireframes: wireframes)
+            }
+        } else {
+            return createFullSnapshotRecord(from: snapshot, wireframes: wireframes)
+        }
+    }
+
+    /// Creates Full Snapshot Record - a self-contained description of a single frame of the replay.
+    private func createFullSnapshotRecord(from snapshot: ViewTreeSnapshot, wireframes: [SRWireframe]) -> SRRecord {
         let record = SRFullSnapshotRecord(
             data: .init(wireframes: wireframes),
             timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
         )
+
         return .fullSnapshotRecord(value: record)
+    }
+
+    /// Creates Incremental Snapshot Record - an incremental description of a frame of the replay.
+    /// ISRs describe minimal difference between this and previous frame in the replay.
+    private func createIncrementalRecord(from snapshot: ViewTreeSnapshot, newWireframes: [SRWireframe], lastWireframes: [SRWireframe]) throws -> SRRecord? {
+        let diff = try computeDiff(oldArray: lastWireframes, newArray: newWireframes)
+
+        if diff.isEmpty {
+            return nil
+        }
+
+        let record = SRIncrementalSnapshotRecord(
+            data: .mutationData(
+                value: .init(
+                    adds: diff.adds.map { addition in .init(previousId: addition.previousID, wireframe: addition.new) },
+                    removes: diff.removes.map { removal in .init(id: removal.id) },
+                    updates: try diff.updates.compactMap { update in
+                        let newWireframe = update.to
+                        let oldWireframe = update.from
+                        return try newWireframe.mutations(from: oldWireframe)
+                    }
+                )
+            ),
+            timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
+        )
+
+        return .incrementalSnapshotRecord(value: record)
     }
 
     // TODO: RUMM-2250 Bring other types of records
