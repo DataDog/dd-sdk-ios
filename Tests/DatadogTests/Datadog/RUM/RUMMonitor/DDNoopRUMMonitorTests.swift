@@ -20,6 +20,23 @@ class DDNoopRUMMonitorTests: XCTestCase {
         noop.startView(key: "view-key", name: "View")
         noop.stopView(viewController: mockView)
         noop.stopView(key: "view-key")
+        noop.addTiming(name: #function)
+        noop.addError(message: #function)
+        noop.addError(error: ProgrammerError(description: #function))
+        noop.startResourceLoading(resourceKey: #function, request: .mockAny())
+        noop.startResourceLoading(resourceKey: #function, url: .mockRandom())
+        noop.startResourceLoading(resourceKey: #function, httpMethod: .mockAny(), urlString: #function)
+        noop.addResourceMetrics(resourceKey: #function, metrics: .mockAny())
+        noop.addResourceMetrics(resourceKey: #function, fetch: (start: .mockAny(), end: .mockAny()), redirection: nil, dns: nil, connect: nil, ssl: nil, firstByte: nil, download: nil, responseSize: nil)
+        noop.stopResourceLoading(resourceKey: #function, response: .mockAny())
+        noop.stopResourceLoading(resourceKey: #function, statusCode: nil, kind: .mockAny())
+        noop.stopResourceLoadingWithError(resourceKey: #function, error: ProgrammerError(description: #function))
+        noop.stopResourceLoadingWithError(resourceKey: #function, errorMessage: #function)
+        noop.startUserAction(type: .click, name: #function)
+        noop.stopUserAction(type: .click, name: #function)
+        noop.addUserAction(type: .click, name: #function)
+        noop.addAttribute(forKey: .mockAny(), value: #function)
+        noop.removeAttribute(forKey: .mockAny())
 
         // Then
         let expectedWarningMessage = """
@@ -28,7 +45,7 @@ class DDNoopRUMMonitorTests: XCTestCase {
         See https://docs.datadoghq.com/real_user_monitoring/ios
         """
 
-        XCTAssertEqual(dd.logger.criticalLogs.count, 2)
+        XCTAssertEqual(dd.logger.criticalLogs.count, 21)
         dd.logger.criticalLogs.forEach { log in
             XCTAssertEqual(log.message, expectedWarningMessage)
         }
