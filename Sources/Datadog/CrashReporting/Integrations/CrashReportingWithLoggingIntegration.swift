@@ -50,7 +50,7 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
         core.send(
             message: .custom(
                 key: "crash",
-                attributes: ["log": log]
+                baggage: ["log": log]
             )
         )
     }

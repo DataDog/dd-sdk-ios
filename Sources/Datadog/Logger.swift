@@ -368,15 +368,12 @@ public class Logger: LoggerProtocol {
                     eventMapper: loggingFeature.configuration.logEventMapper
                 )
 
-                let rumEnabled = core.v1.feature(RUMFeature.self) != nil
-                let tracingEnabled = core.v1.feature(TracingFeature.self) != nil
-
                 return RemoteLogger(
                     core: core,
                     configuration: configuration,
                     dateProvider: loggingFeature.configuration.dateProvider,
-                    rumContextIntegration: (rumEnabled && bundleWithRUM) ? LoggingWithRUMContextIntegration() : nil,
-                    activeSpanIntegration: (tracingEnabled && bundleWithTrace) ? LoggingWithActiveSpanIntegration() : nil
+                    rumContextIntegration: bundleWithRUM,
+                    activeSpanIntegration: bundleWithTrace
                 )
             }()
 

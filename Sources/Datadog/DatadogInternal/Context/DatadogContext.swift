@@ -90,4 +90,7 @@ internal struct DatadogContext {
 
     /// `true` if the Low Power Mode is enabled.
     var isLowPowerModeEnabled = false
+
+    /// Feature attributes provider.
+    var featuresAttributes: [String: FeatureBaggage] = [:]
 }

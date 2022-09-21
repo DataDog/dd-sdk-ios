@@ -505,38 +505,6 @@ class LoggerTests: XCTestCase {
         )
     }
 
-    func testGivenBundlingWithRUMEnabledButRUMMonitorNotRegistered_whenSendingLog_itPrintsWarning() throws {
-        core.context = .mockAny()
-
-        let logging: LoggingFeature = .mockByRecordingLogMatchers()
-        core.register(feature: logging)
-
-        let rum: RUMFeature = .mockNoOp()
-        core.register(feature: rum)
-
-        let dd = DD.mockWith(logger: CoreLoggerMock())
-        defer { dd.reset() }
-
-        // given
-        let logger = Logger.builder.build(in: core)
-        XCTAssertTrue(Global.rum is DDNoopRUMMonitor)
-
-        // when
-        logger.info("info message")
-
-        // then
-        try XCTAssertTrue(
-            XCTUnwrap(dd.logger.warnLog?.message)
-                .contains("RUM feature is enabled, but no `RUMMonitor` is registered. The RUM integration with Logging will not work.")
-        )
-
-        let logMatcher = try logging.waitAndReturnLogMatchers(count: 1)[0]
-        logMatcher.assertNoValue(forKeyPath: RUMContextIntegration.Attributes.applicationID)
-        logMatcher.assertNoValue(forKeyPath: RUMContextIntegration.Attributes.sessionID)
-        logMatcher.assertNoValue(forKeyPath: RUMContextIntegration.Attributes.viewID)
-        logMatcher.assertNoValue(forKeyPath: RUMContextIntegration.Attributes.actionID)
-    }
-
     func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorForCurrentView() throws {
         let logging: LoggingFeature = .mockNoOp()
         core.register(feature: logging)
@@ -607,45 +575,15 @@ class LoggerTests: XCTestCase {
         // then
         let logMatchers = try logging.waitAndReturnLogMatchers(count: 2)
         logMatchers[0].assertValue(
-            forKeyPath: LoggingWithActiveSpanIntegration.Attributes.traceID,
+            forKeyPath: "dd.trace_id",
             equals: "\(span.context.dd.traceID.rawValue)"
         )
         logMatchers[0].assertValue(
-            forKeyPath: LoggingWithActiveSpanIntegration.Attributes.spanID,
+            forKeyPath: "dd.span_id",
             equals: "\(span.context.dd.spanID.rawValue)"
         )
-        logMatchers[1].assertNoValue(forKey: LoggingWithActiveSpanIntegration.Attributes.traceID)
-        logMatchers[1].assertNoValue(forKey: LoggingWithActiveSpanIntegration.Attributes.spanID)
-    }
-
-    func testGivenBundlingWithTraceEnabledButTracerNotRegistered_whenSendingLog_itPrintsWarning() throws {
-        core.context = .mockAny()
-
-        let logging: LoggingFeature = .mockByRecordingLogMatchers()
-        core.register(feature: logging)
-
-        let tracing: TracingFeature = .mockNoOp()
-        core.register(feature: tracing)
-
-        let dd = DD.mockWith(logger: CoreLoggerMock())
-        defer { dd.reset() }
-
-        // given
-        let logger = Logger.builder.build(in: core)
-        XCTAssertTrue(Global.sharedTracer is DDNoopTracer)
-
-        // when
-        logger.info("info message")
-
-        // then
-        try XCTAssertTrue(
-            XCTUnwrap(dd.logger.warnLog?.message)
-                .contains("Tracing feature is enabled, but no `Tracer` is registered. The Tracing integration with Logging will not work.")
-        )
-
-        let logMatcher = try logging.waitAndReturnLogMatchers(count: 1)[0]
-        logMatcher.assertNoValue(forKeyPath: LoggingWithActiveSpanIntegration.Attributes.traceID)
-        logMatcher.assertNoValue(forKeyPath: LoggingWithActiveSpanIntegration.Attributes.spanID)
+        logMatchers[1].assertNoValue(forKey: "dd.trace_id")
+        logMatchers[1].assertNoValue(forKey: "dd.span_id")
     }
 
     // MARK: - Log Dates Correction

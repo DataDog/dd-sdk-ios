@@ -20,7 +20,20 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureV1Scope 
         .init(context)
     }
 
-    internal var context: DatadogContext
+    var context: DatadogContext {
+        get { synchronize { _context } }
+        set { synchronize { _context = newValue } }
+    }
+
+    /// ordered/non-recursive lock on the context.
+    private let lock = NSLock()
+    private var _context: DatadogContext
+
+    private func synchronize<T>(_ block: () -> T) -> T {
+        lock.lock()
+        defer { lock.unlock() }
+        return block()
+    }
 
     internal let writer = FileWriterMock()
 
@@ -49,7 +62,7 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureV1Scope 
         bypassConsentExpectation: XCTestExpectation? = nil,
         messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
     ) {
-        self.context = context
+        self._context = context
         self.expectation = expectation
         self.bypassConsentExpectation = bypassConsentExpectation
         self.messageReceiver = messageReceiver
@@ -66,6 +79,10 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureV1Scope 
     /// Always returns a feature-scope.
     func scope<T>(for featureType: T.Type) -> FeatureV1Scope? {
         self
+    }
+
+    func set(feature: String, attributes: @escaping () -> FeatureBaggage) {
+        context.featuresAttributes[feature] = attributes()
     }
 
     func send(message: FeatureMessage, else fallback: () -> Void) {

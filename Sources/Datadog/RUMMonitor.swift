@@ -146,6 +146,14 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     /// User-targeted, debugging utility which can be toggled with `Datadog.debugRUM`.
     private(set) var debugging: RUMDebugging? = nil
 
+    /// RUM Attributes shared with other Feature registered in core.
+    internal struct Attributes {
+        internal static let applicationID = "application_id"
+        internal static let sessionID = "session_id"
+        internal static let viewID = "view.id"
+        internal static let userActionID = "user_action.id"
+    }
+
     // MARK: - Initialization
 
     /// Initializes the Datadog RUM Monitor.
@@ -596,6 +604,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     // MARK: - RUMCommandSubscriber
 
     func process(command: RUMCommand) {
+        // process command in event context
         core.v1.scope(for: RUMFeature.self)?.eventWriteContext { context, writer in
             self.queue.sync {
                 let transformedCommand = self.transform(command: command)
@@ -607,6 +616,27 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 }
             }
         }
+
+        // update the core context with rum context
+        core.set(feature: "rum", attributes: {
+            self.queue.sync {
+                let context = self.applicationScope.sessionScope?.viewScopes.last?.context ??
+                                self.applicationScope.sessionScope?.context ??
+                                self.applicationScope.context
+
+                guard context.sessionID != .nullUUID else {
+                    // if Session was sampled or not yet started
+                    return [:]
+                }
+
+                return [
+                    Attributes.applicationID: context.rumApplicationID,
+                    Attributes.sessionID: context.sessionID.rawValue.uuidString.lowercased(),
+                    Attributes.viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
+                    Attributes.userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased()
+                ]
+            }
+        })
     }
 
     // TODO: RUMM-896

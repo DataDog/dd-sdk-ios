@@ -65,6 +65,12 @@ public class Tracer: OTTracer {
 
     internal let activeSpansPool = ActiveSpansPool()
 
+    /// Tracer Attributes shared with other Feature registered in core.
+    internal struct Attributes {
+        internal static let traceID = "dd.trace_id"
+        internal static let spanID = "dd.span_id"
+    }
+
     // MARK: - Initialization
 
     /// Initializes the Datadog Tracer.
@@ -210,5 +216,24 @@ public class Tracer: OTTracer {
             tags: combinedTags
         )
         return span
+    }
+
+    internal func addSpan(span: DDSpan, activityReference: ActivityReference) {
+        activeSpansPool.addSpan(span: span, activityReference: activityReference)
+        updateCoreAttributes()
+    }
+
+    internal func removeSpan(activityReference: ActivityReference) {
+        activeSpansPool.removeSpan(activityReference: activityReference)
+        updateCoreAttributes()
+    }
+
+    private func updateCoreAttributes() {
+        let context = activeSpan?.context as? DDSpanContext
+
+        core.set(feature: "tracing", attributes: {[
+            Attributes.traceID: context.map { "\($0.traceID.rawValue)" },
+            Attributes.spanID: context.map { "\($0.spanID.rawValue)" }
+        ]})
     }
 }

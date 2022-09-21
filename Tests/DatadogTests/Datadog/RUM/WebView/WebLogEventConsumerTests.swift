@@ -50,7 +50,7 @@ class WebLogEventConsumerTests: XCTestCase {
 
         try eventConsumer.consume(event: webLogEvent)
 
-        let data = try JSONEncoder().encode(core.events.first as? FeatureMessageAttributes.AnyEncodable)
+        let data = try JSONEncoder().encode(core.events.first as? FeatureBaggage.AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
         AssertDictionariesEqual(writtenJSON, expectedWebLogEvent)
@@ -80,7 +80,7 @@ class WebLogEventConsumerTests: XCTestCase {
 
         try eventConsumer.consume(event: webLogEvent)
 
-        let data = try JSONEncoder().encode(core.events.first as? FeatureMessageAttributes.AnyEncodable)
+        let data = try JSONEncoder().encode(core.events.first as? FeatureBaggage.AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
         AssertDictionariesEqual(writtenJSON, expectedWebLogEvent)

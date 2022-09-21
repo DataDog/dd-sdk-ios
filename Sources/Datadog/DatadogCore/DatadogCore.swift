@@ -138,6 +138,10 @@ internal final class DatadogCore {
 }
 
 extension DatadogCore: DatadogCoreProtocol {
+    /* public */ func set(feature: String, attributes: @escaping () -> FeatureBaggage) {
+        contextProvider.write { $0.featuresAttributes[feature] = attributes() }
+    }
+
     /* public */ func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
         messageBusQueue.async {
             let receivers = self.messageBus.filter {
