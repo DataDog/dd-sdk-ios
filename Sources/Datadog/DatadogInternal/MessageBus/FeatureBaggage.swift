@@ -6,10 +6,42 @@
 
 import Foundation
 
-/// Holds atributes for Feature message and provide convenient `subscript`
-/// access and cast attribute values.
+/// A `FeatureBaggage` holds keyed values and adds semantics for type-safe access.
+///
+/// Values are uniquely identified by key as `String`, the value type is validated on `get` either explicity, when specified,
+/// or inferred.
+///
+/// ## Defining a Feature Baggage
+/// A baggage is expressible by dictionary literal with `Any?` value type.
+///
+///     var baggage: FeatureBaggage = [
+///         "string": "value",
+///         "integer": 1,
+///         "null": nil
+///     ]
+///
+/// ## Accessing Values
+/// Values are accessible using `subscript` methods with support for dynamic member lookup.
+///
+///     let baggage: FeatureBaggage = [...]
+///     // get by key and explicit value type
+///     let string = baggage["string", type: String.self]
+///     // get by key and inferred value type
+///     let string: String? = baggage["string"]
+///     // get dynamic member
+///     let string: String? = baggage.string
+///
+/// A baggage can also be mutated:
+///
+///     var baggage: FeatureBaggage = [...]
+///     baggage["string"] = "value"
+///     // set dynamic member
+///     baggage.string = "value"
+///
+/// A Feature Baggage does not ensure thread-safety of values that holds references, make sure that any value can be accessibe
+/// from any thread.
 @dynamicMemberLookup
-public struct FeatureMessageAttributes {
+public struct FeatureBaggage {
     /// The attributes dictionary.
     private var attributes: [String: Any]
 
@@ -151,7 +183,7 @@ public struct FeatureMessageAttributes {
     }
 }
 
-extension FeatureMessageAttributes: ExpressibleByDictionaryLiteral {
+extension FeatureBaggage: ExpressibleByDictionaryLiteral {
     /// Creates an instance initialized with the given key-value pairs.
     public init(dictionaryLiteral elements: (String, Any?)...) {
         self.attributes = elements.reduce(into: [:]) { attributes, element in
@@ -160,7 +192,7 @@ extension FeatureMessageAttributes: ExpressibleByDictionaryLiteral {
     }
 }
 
-extension FeatureMessageAttributes {
+extension FeatureBaggage {
     /// Type-erasure wrapper for any `Encodable` type to be transmitted through
     /// the message bus.
     public struct AnyEncodable: Encodable {

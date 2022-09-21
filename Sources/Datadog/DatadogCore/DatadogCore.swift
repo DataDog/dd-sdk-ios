@@ -138,7 +138,7 @@ internal final class DatadogCore {
 }
 
 extension DatadogCore: DatadogCoreProtocol {
-    /* public */ func set(feature: String, attributes: @escaping () -> FeatureMessageAttributes) {
+    /* public */ func set(feature: String, attributes: @escaping () -> FeatureBaggage) {
         contextProvider.write { $0.featuresAttributes[feature] = attributes() }
     }
 

@@ -60,7 +60,7 @@ class MessageBusTests: XCTestCase {
         core.register(feature: rum)
 
         // When
-        core.send(message: .custom(key: "test", attributes: ["key": "value"]))
+        core.send(message: .custom(key: "test", baggage: ["key": "value"]))
         // Then
         waitForExpectations(timeout: 0.5)
     }

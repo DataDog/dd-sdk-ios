@@ -24,7 +24,7 @@ class RUMMessageReceiverTests: XCTestCase {
         core.send(
             message: .error(
                 message: "message-test",
-                attributes: [:]
+                baggage: [:]
             ),
             else: { expectation.fulfill() }
         )
@@ -48,7 +48,7 @@ class RUMMessageReceiverTests: XCTestCase {
         core.send(
             message: .error(
                 message: "message-test",
-                attributes: [
+                baggage: [
                     "source": "custom"
                 ]
             )
@@ -76,7 +76,7 @@ class RUMMessageReceiverTests: XCTestCase {
         core.send(
             message: .error(
                 message: "message-test",
-                attributes: [
+                baggage: [
                     "type": "type-test",
                     "stack": "stack-test",
                     "source": "logger"
@@ -115,7 +115,7 @@ class RUMMessageReceiverTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let received: FeatureMessageAttributes.AnyEncodable = try XCTUnwrap(core.events().last, "It should send event")
+        let received: FeatureBaggage.AnyEncodable = try XCTUnwrap(core.events().last, "It should send event")
         try AssertEncodedRepresentationsEqual(received, sent)
     }
 
@@ -130,7 +130,7 @@ class RUMMessageReceiverTests: XCTestCase {
         let sentError: RUMCrashEvent = .mockRandom()
 
         core.send(
-            message: .custom(key: "crash", attributes: [
+            message: .custom(key: "crash", baggage: [
                 "rum-error": sentError
             ])
         )
@@ -154,7 +154,7 @@ class RUMMessageReceiverTests: XCTestCase {
         let sentView: RUMViewEvent = .mockRandom()
 
         core.send(
-            message: .custom(key: "crash", attributes: [
+            message: .custom(key: "crash", baggage: [
                 "rum-error": sentError,
                 "rum-view": sentView
             ])

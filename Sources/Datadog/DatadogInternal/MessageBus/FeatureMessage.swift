@@ -11,20 +11,20 @@ public enum FeatureMessage {
     /// An error message.
     case error(
         message: String,
-        attributes: FeatureMessageAttributes
+        baggage: FeatureBaggage
     )
 
     /// An encodable event that will be transmitted
     /// as-is through a Feature.
     case event(
         target: String,
-        event: FeatureMessageAttributes.AnyEncodable
+        event: FeatureBaggage.AnyEncodable
     )
 
     /// A custom message with generic encodable
     /// attributes.
     case custom(
         key: String,
-        attributes: FeatureMessageAttributes
+        baggage: FeatureBaggage
     )
 }

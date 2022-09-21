@@ -153,7 +153,7 @@ internal final class RemoteLogger: LoggerProtocol {
                 self.core.send(
                     message: .error(
                         message: log.error?.message ?? log.message,
-                        attributes: [
+                        baggage: [
                             "type": log.error?.kind,
                             "stack": log.error?.stack,
                             "source": "logger"

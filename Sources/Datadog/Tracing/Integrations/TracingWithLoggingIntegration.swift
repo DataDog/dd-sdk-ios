@@ -83,7 +83,7 @@ internal struct TracingWithLoggingIntegration {
         core.send(
             message: .custom(
                 key: "log",
-                attributes: [
+                baggage: [
                     "date": date,
                     "loggerName": configuration.loggerName,
                     "service": configuration.service,

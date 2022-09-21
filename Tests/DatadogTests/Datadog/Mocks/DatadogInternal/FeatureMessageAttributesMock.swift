@@ -8,7 +8,7 @@ import Foundation
 
 @testable import Datadog
 
-extension FeatureMessageAttributes: AnyMockable, RandomMockable {
+extension FeatureBaggage: AnyMockable, RandomMockable {
     static func mockAny() -> Self {
         .init([String: String].mockAny())
     }

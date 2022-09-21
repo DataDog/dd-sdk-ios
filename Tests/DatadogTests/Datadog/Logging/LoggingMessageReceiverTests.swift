@@ -22,7 +22,7 @@ class LoggingMessageReceiverTests: XCTestCase {
         core.send(
             message: .custom(
                 key: "log",
-                attributes: [
+                baggage: [
                     "date": Date.mockDecember15th2019At10AMUTC(),
                     "message": "message-test",
                 ]
@@ -47,7 +47,7 @@ class LoggingMessageReceiverTests: XCTestCase {
         core.send(
             message: .custom(
                 key: "log",
-                attributes: [
+                baggage: [
                     "date": Date.mockDecember15th2019At10AMUTC(),
                     "loggerName": "logger-test",
                     "threadName": "thread-test",
@@ -85,7 +85,7 @@ class LoggingMessageReceiverTests: XCTestCase {
         core.send(
             message: .custom(
                 key: "log",
-                attributes: [
+                baggage: [
                     "date": Date.mockDecember15th2019At10AMUTC(),
                     "loggerName": "logger-test",
                     "service": "service-test",
@@ -134,7 +134,7 @@ class LoggingMessageReceiverTests: XCTestCase {
         core.send(
             message: .custom(
                 key: "log",
-                attributes: [
+                baggage: [
                     "date": Date.mockDecember15th2019At10AMUTC(),
                     "loggerName": "logger-test",
                     "threadName": "thread-test",
@@ -170,7 +170,7 @@ class LoggingMessageReceiverTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let received: FeatureMessageAttributes.AnyEncodable = try XCTUnwrap(core.events().last, "It should send event")
+        let received: FeatureBaggage.AnyEncodable = try XCTUnwrap(core.events().last, "It should send event")
         try AssertEncodedRepresentationsEqual(received, sent)
     }
 
@@ -185,7 +185,7 @@ class LoggingMessageReceiverTests: XCTestCase {
         let sent: LogEvent = .mockRandom()
 
         core.send(
-            message: .custom(key: "crash", attributes: [
+            message: .custom(key: "crash", baggage: [
                 "log": sent
             ])
         )

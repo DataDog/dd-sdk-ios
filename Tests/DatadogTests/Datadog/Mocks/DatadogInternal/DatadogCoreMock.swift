@@ -56,7 +56,7 @@ internal final class DatadogCoreMock: Flushable {
 extension DatadogCoreMock: DatadogCoreProtocol {
     // MARK: V2 interface
 
-    func set(feature: String, attributes: @escaping () -> FeatureMessageAttributes) {
+    func set(feature: String, attributes: @escaping () -> FeatureBaggage) {
         context.featuresAttributes[feature] = attributes()
     }
 

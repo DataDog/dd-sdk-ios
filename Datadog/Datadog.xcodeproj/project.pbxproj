@@ -604,8 +604,8 @@
 		D21C26D828A647DB005DD405 /* MessageBusMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D628A647DB005DD405 /* MessageBusMock.swift */; };
 		D21C26DA28ABA073005DD405 /* FeatureMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D928ABA073005DD405 /* FeatureMessage.swift */; };
 		D21C26DB28ABA073005DD405 /* FeatureMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D928ABA073005DD405 /* FeatureMessage.swift */; };
-		D21C26DD28ACD371005DD405 /* FeatureMessageAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26DC28ACD371005DD405 /* FeatureMessageAttributes.swift */; };
-		D21C26DE28ACD371005DD405 /* FeatureMessageAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26DC28ACD371005DD405 /* FeatureMessageAttributes.swift */; };
+		D21C26DD28ACD371005DD405 /* FeatureBaggage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26DC28ACD371005DD405 /* FeatureBaggage.swift */; };
+		D21C26DE28ACD371005DD405 /* FeatureBaggage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26DC28ACD371005DD405 /* FeatureBaggage.swift */; };
 		D21C26E028AD2E47005DD405 /* DatadogExtended.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26DF28AD2E47005DD405 /* DatadogExtended.swift */; };
 		D21C26E128AD2E47005DD405 /* DatadogExtended.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26DF28AD2E47005DD405 /* DatadogExtended.swift */; };
 		D21C26E428AD30E2005DD405 /* Foundation+Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26E328AD30E2005DD405 /* Foundation+Datadog.swift */; };
@@ -1876,7 +1876,7 @@
 		D21C26D028A64599005DD405 /* MessageBusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBusTests.swift; sourceTree = "<group>"; };
 		D21C26D628A647DB005DD405 /* MessageBusMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBusMock.swift; sourceTree = "<group>"; };
 		D21C26D928ABA073005DD405 /* FeatureMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureMessage.swift; sourceTree = "<group>"; };
-		D21C26DC28ACD371005DD405 /* FeatureMessageAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureMessageAttributes.swift; sourceTree = "<group>"; };
+		D21C26DC28ACD371005DD405 /* FeatureBaggage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureBaggage.swift; sourceTree = "<group>"; };
 		D21C26DF28AD2E47005DD405 /* DatadogExtended.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogExtended.swift; sourceTree = "<group>"; };
 		D21C26E328AD30E2005DD405 /* Foundation+Datadog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Foundation+Datadog.swift"; sourceTree = "<group>"; };
 		D21C26E628AF9388005DD405 /* FeatureMessageAttributesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureMessageAttributesTests.swift; sourceTree = "<group>"; };
@@ -4202,7 +4202,7 @@
 			isa = PBXGroup;
 			children = (
 				D21C26D928ABA073005DD405 /* FeatureMessage.swift */,
-				D21C26DC28ACD371005DD405 /* FeatureMessageAttributes.swift */,
+				D21C26DC28ACD371005DD405 /* FeatureBaggage.swift */,
 				D21C26CD28A411FF005DD405 /* FeatureMessageReceiver.swift */,
 			);
 			path = MessageBus;
@@ -5323,7 +5323,7 @@
 				61C5A8A724509FAA00DA608C /* SpanEventBuilder.swift in Sources */,
 				6179FFD3254ADB1700556A0B /* ObjcAppLaunchHandler.m in Sources */,
 				F637AED22697404200516F32 /* UIKitRUMUserActionsPredicate.swift in Sources */,
-				D21C26DD28ACD371005DD405 /* FeatureMessageAttributes.swift in Sources */,
+				D21C26DD28ACD371005DD405 /* FeatureBaggage.swift in Sources */,
 				D29CDD3228211A2200F7DAA5 /* DataBlock.swift in Sources */,
 				D2553829288F0B2400727FAD /* LowPowerModePublisher.swift in Sources */,
 				616C0A9E28573DFF00C13264 /* RUMOperatingSystemInfo.swift in Sources */,
@@ -5967,7 +5967,7 @@
 				D2CB6E1A27C50EAE00A62B57 /* OTSpanContext.swift in Sources */,
 				D2CB6E1B27C50EAE00A62B57 /* OTTracer.swift in Sources */,
 				D2CB6E1C27C50EAE00A62B57 /* OTReference.swift in Sources */,
-				D21C26DE28ACD371005DD405 /* FeatureMessageAttributes.swift in Sources */,
+				D21C26DE28ACD371005DD405 /* FeatureBaggage.swift in Sources */,
 				D2CB6E1D27C50EAE00A62B57 /* ArbitraryDataWriter.swift in Sources */,
 				D2CB6E1E27C50EAE00A62B57 /* TracingWithLoggingIntegration.swift in Sources */,
 				D2CB6E1F27C50EAE00A62B57 /* WebRUMEventConsumer.swift in Sources */,

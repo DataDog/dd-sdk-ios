@@ -79,7 +79,7 @@ internal struct RUMMessageReceiver: FeatureMessageReceiver {
         }
     }
 
-    private func write(event: FeatureMessageAttributes.AnyEncodable, to core: DatadogCoreProtocol) -> Bool {
+    private func write(event: FeatureBaggage.AnyEncodable, to core: DatadogCoreProtocol) -> Bool {
         core.v1.scope(for: RUMFeature.self)?.eventWriteContext { _, writer in
             writer.write(value: event)
         }
@@ -87,7 +87,7 @@ internal struct RUMMessageReceiver: FeatureMessageReceiver {
         return true
     }
 
-    private func crash(attributes: FeatureMessageAttributes, to core: DatadogCoreProtocol) -> Bool {
+    private func crash(attributes: FeatureBaggage, to core: DatadogCoreProtocol) -> Bool {
         guard let error = attributes["rum-error", type: RUMCrashEvent.self] else {
             return false
         }
@@ -106,7 +106,7 @@ internal struct RUMMessageReceiver: FeatureMessageReceiver {
     }
 
     /// Adds RUM Error with given message and stack to current RUM View.
-    private func addError(message: String, attributes: FeatureMessageAttributes) -> Bool {
+    private func addError(message: String, attributes: FeatureBaggage) -> Bool {
         guard
             let monitor = Global.rum as? RUMMonitor,
             let source = attributes["source", type: RUMInternalErrorSource.self]

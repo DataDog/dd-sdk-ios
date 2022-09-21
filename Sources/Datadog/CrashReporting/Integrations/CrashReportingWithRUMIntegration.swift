@@ -103,7 +103,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             core.send(
                 message: .custom(
                     key: "crash",
-                    attributes: ["rum-error": rumError]
+                    baggage: ["rum-error": rumError]
                 )
             )
         }
@@ -212,7 +212,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         core.send(
             message: .custom(
                 key: "crash",
-                attributes: [
+                baggage: [
                     "rum-error": rumError,
                     "rum-view": updatedRUMView
                 ]

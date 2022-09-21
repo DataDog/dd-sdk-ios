@@ -13,7 +13,7 @@ class FeatureMessageAttributesTests: XCTestCase {
         case test
     }
 
-    let attributes: FeatureMessageAttributes = [
+    let attributes: FeatureBaggage = [
         "int": 1,
         "string": "test",
         "double": 2.0,
