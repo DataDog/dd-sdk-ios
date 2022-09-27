@@ -74,6 +74,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private var longTasksCount: Int64 = 0
     /// Number of Frozen Frames tracked by this View.
     private var frozenFramesCount: Int64 = 0
+    /// Number of Frustration tracked by this View.
+    private var frustrationCount: Int64 = 0
 
     /// Current version of this View to use for RUM `documentVersion`.
     private var version: UInt = 0
@@ -256,9 +258,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             startTime: command.time,
             serverTimeOffset: serverTimeOffset,
             isContinuous: true,
-            onActionEventSent: { [weak self] in
-                self?.actionsCount += 1
-                self?.needsViewUpdate = true
+            onActionEventSent: { [weak self] event in
+                self?.onActionEventSent(event)
             }
         )
     }
@@ -273,11 +274,16 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             startTime: command.time,
             serverTimeOffset: serverTimeOffset,
             isContinuous: false,
-            onActionEventSent: { [weak self] in
-                self?.actionsCount += 1
-                self?.needsViewUpdate = true
+            onActionEventSent: { [weak self] event in
+                self?.onActionEventSent(event)
             }
         )
+    }
+
+    private func onActionEventSent(_ event: RUMActionEvent) {
+        actionsCount += 1
+        frustrationCount += event.action.frustration?.type.count.toInt64 ?? 0
+        needsViewUpdate = true
     }
 
     private func addDiscreteUserAction(on command: RUMAddUserActionCommand) {
@@ -429,7 +435,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 firstInputDelay: nil,
                 firstInputTime: nil,
                 frozenFrame: .init(count: frozenFramesCount),
-                frustration: nil,
+                frustration: .init(count: frustrationCount),
                 id: viewUUID.toRUMDataFormat,
                 inForegroundPeriods: nil,
                 isActive: isActive,

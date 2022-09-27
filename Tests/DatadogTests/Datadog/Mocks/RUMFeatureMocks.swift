@@ -812,7 +812,7 @@ extension RUMUserActionScope {
         startTime: Date = .mockAny(),
         serverTimeOffset: TimeInterval = .zero,
         isContinuous: Bool = .mockAny(),
-        onActionEventSent: @escaping () -> Void = {}
+        onActionEventSent: @escaping (RUMActionEvent) -> Void = { _ in }
     ) -> RUMUserActionScope {
         return RUMUserActionScope(
                 parent: parent,

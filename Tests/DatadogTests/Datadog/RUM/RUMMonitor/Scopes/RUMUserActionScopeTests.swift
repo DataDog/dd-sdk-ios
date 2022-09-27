@@ -555,7 +555,7 @@ class RUMUserActionScopeTests: XCTestCase {
             actionType: .tap,
             startTime: currentTime,
             isContinuous: false,
-            onActionEventSent: {
+            onActionEventSent: { _ in
                 callbackCalled = true
             }
         )
@@ -597,7 +597,7 @@ class RUMUserActionScopeTests: XCTestCase {
             actionType: .tap,
             startTime: currentTime,
             isContinuous: false,
-            onActionEventSent: {
+            onActionEventSent: { _ in
                 callbackCalled = true
             }
         )

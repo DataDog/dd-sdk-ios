@@ -918,6 +918,64 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(firstActionEvent.os?.name, "device-os")
     }
 
+    func testWhenDiscreteUserActionHasFrustration_itSendsFrustrationCount() throws {
+        // Given
+        var currentTime = Date()
+        let scope = RUMViewScope(
+            isInitialView: false,
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: mockView,
+            path: .mockAny(),
+            name: .mockAny(),
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // When
+        (0..<5).forEach { i in
+            XCTAssertTrue(
+                scope.process(
+                    command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: .tap),
+                    context: context,
+                    writer: writer
+                )
+            )
+
+            XCTAssertTrue(
+                scope.process(
+                    command: RUMAddCurrentViewErrorCommand.mockRandom(),
+                    context: context,
+                    writer: writer
+                )
+            )
+
+            currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration)
+        }
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(time: currentTime, identity: mockView),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        XCTAssertEqual(event.view.frustration?.count, 5)
+    }
+
     // MARK: - Error Tracking
 
     func testWhenViewErrorIsAdded_itSendsErrorEventAndViewUpdateEvent() throws {

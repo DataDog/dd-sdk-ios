@@ -56,7 +56,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     private var activeResourcesCount: Int = 0
 
     /// Callback called when a `RUMActionEvent` is submitted for storage.
-    private let onActionEventSent: () -> Void
+    private let onActionEventSent: (RUMActionEvent) -> Void
 
     init(
         parent: RUMContextProvider,
@@ -67,7 +67,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         startTime: Date,
         serverTimeOffset: TimeInterval,
         isContinuous: Bool,
-        onActionEventSent: @escaping () -> Void
+        onActionEventSent: @escaping (RUMActionEvent) -> Void
     ) {
         self.parent = parent
         self.dependencies = dependencies
@@ -184,7 +184,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
         if let event = dependencies.eventBuilder.build(from: actionEvent) {
             writer.write(value: event)
-            onActionEventSent()
+            onActionEventSent(event)
         }
     }
 
