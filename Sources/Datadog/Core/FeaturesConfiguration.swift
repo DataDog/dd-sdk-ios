@@ -62,6 +62,7 @@ internal struct FeaturesConfiguration {
         /// RUM auto instrumentation configuration, `nil` if not enabled.
         let instrumentation: Instrumentation?
         let backgroundEventTrackingEnabled: Bool
+        let frustrationTrackingEnabled: Bool
         let onSessionStart: RUMSessionListener?
         let firstPartyHosts: Set<String>
         let vitalsFrequency: TimeInterval?
@@ -221,6 +222,7 @@ extension FeaturesConfiguration {
                     longTaskEventMapper: configuration.rumLongTaskEventMapper,
                     instrumentation: instrumentation,
                     backgroundEventTrackingEnabled: configuration.rumBackgroundEventTrackingEnabled,
+                    frustrationTrackingEnabled: configuration.rumFrustrationSignalsTrackingEnabled,
                     onSessionStart: configuration.rumSessionsListener,
                     firstPartyHosts: sanitizedHosts,
                     vitalsFrequency: configuration.mobileVitalsFrequency.timeInterval

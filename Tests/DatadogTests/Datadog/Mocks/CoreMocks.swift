@@ -57,6 +57,7 @@ extension Datadog.Configuration {
         rumLongTaskDurationThreshold: TimeInterval? = nil,
         rumResourceAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         rumBackgroundEventTrackingEnabled: Bool = false,
+        rumFrustrationSignalsTrackingEnabled: Bool = true,
         rumTelemetrySamplingRate: Float = 100.0,
         mobileVitalsFrequency: VitalsFrequency = .average,
         batchSize: BatchSize = .medium,
@@ -89,6 +90,7 @@ extension Datadog.Configuration {
             rumLongTaskDurationThreshold: rumLongTaskDurationThreshold,
             rumResourceAttributesProvider: rumResourceAttributesProvider,
             rumBackgroundEventTrackingEnabled: rumBackgroundEventTrackingEnabled,
+            rumFrustrationSignalsTrackingEnabled: rumFrustrationSignalsTrackingEnabled,
             rumTelemetrySamplingRate: rumTelemetrySamplingRate,
             mobileVitalsFrequency: mobileVitalsFrequency,
             batchSize: batchSize,
@@ -277,6 +279,7 @@ extension FeaturesConfiguration.RUM {
         longTaskEventMapper: RUMLongTaskEventMapper? = nil,
         instrumentation: FeaturesConfiguration.RUM.Instrumentation? = nil,
         backgroundEventTrackingEnabled: Bool = false,
+        frustrationTrackingEnabled: Bool = true,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener(),
         firstPartyHosts: Set<String> = [],
         vitalsFrequency: TimeInterval? = 0.5
@@ -294,6 +297,7 @@ extension FeaturesConfiguration.RUM {
             longTaskEventMapper: longTaskEventMapper,
             instrumentation: instrumentation,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
+            frustrationTrackingEnabled: frustrationTrackingEnabled,
             onSessionStart: onSessionStart,
             firstPartyHosts: firstPartyHosts,
             vitalsFrequency: vitalsFrequency
