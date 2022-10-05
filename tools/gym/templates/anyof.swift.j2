@@ -1,0 +1,22 @@
+{% from 'macros.swift.j2' import swift_type with context %}
+
+{% macro name(case) %}
+{% if case.title -%}
+    {{ case.title|lower }}
+{%- elif case.type -%}
+    {{ case.type|lower }}
+{%- endif %}
+{% endmacro -%}
+
+/// {{ schema.description }}
+public enum {{ swift_type(schema, key) }}: Codable {
+{% for case in schema.anyOf %}
+
+    /// {{ case.description }}
+    case {{ name(case) }}({{ swift_type(case) }})
+{% endfor %}
+
+{%- for schema in schema.anyOf if schema['$parent'] == id %}
+    {% filter indent %}{% include "schema.swift.j2" %}{% endfilter %}
+{% endfor %}
+}

@@ -1,0 +1,15 @@
+{% set id = schema['$parent'] or schema['$id'] -%}
+
+{% if schema.oneOf %}
+    {% include "oneof.swift.j2" %}
+
+{% elif schema.anyOf %}
+    {% include "anyof.swift.j2" %}
+
+{% elif schema.properties %}
+    {% include "object.swift.j2" %}
+    
+{% elif schema.type == "array" %}
+    {% set schema = schema['items'] %}
+    {% include "schema.swift.j2" %}
+{% endif %}

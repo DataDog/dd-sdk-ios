@@ -1,0 +1,24 @@
+{% macro __swift_type(schema_id, schema, key) %}
+{% if schema.type == "string" -%}
+    String
+{%- elif schema.type == "number" -%}
+    Double
+{%- elif schema.type == "integer" -%}
+    Int
+{%- elif schema.type == "boolean" -%}
+    Bool
+{%- elif schema.type == "array" -%}
+    [{{ __swift_type(schema_id, schema['items'], key) }}]
+{%- elif schema['$parent'] and schema['$parent'] != schema_id -%}
+    {% set id = schema['$parent'] -%}
+    {{ __swift_type(id, subschemas[id]) }}.{{ __swift_type(id, schema, key) }}
+{%- elif schema.title -%}
+    {{ schema.title }}
+{%- elif key -%}
+    {{ key|capitalize }}
+{%- endif %}
+{% endmacro %}
+
+{% macro swift_type(schema, key) %}
+{{ __swift_type(id, schema, key) }}
+{%- endmacro %}

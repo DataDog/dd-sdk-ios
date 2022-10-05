@@ -1,0 +1,38 @@
+{% from 'macros.swift.j2' import swift_type with context %}
+
+{% macro accessor(property) %}
+{% if property.readOnly or property.const -%} 
+let
+{%- else -%}
+var
+{%- endif %}
+{% endmacro -%}
+
+{% macro optional(key, property) %}
+{% if not property.const and key in schema.required -%}
+?
+{%- endif %}
+{% endmacro -%}
+
+{% macro default(property) %}
+{% if property.const -%}
+{% if property.type == "string" %} = "{{ property.const }}"
+{%- else %} = {{ property.const }}
+{%- endif %}
+{%- endif %}
+{% endmacro -%}
+
+/// {{ schema.description }}
+public struct {{ swift_type(schema, key) }}: Codable {
+{% if schema.properties -%}
+{% for key, property in schema.properties.items() %}
+
+    /// {{ property.description }}
+    {{ accessor(property) }} {{ key|lower }}: {{ swift_type(property, key) }}{{ optional(key,property) }}{{ default(property) }}
+{% endfor %}
+
+{%- for key, schema in schema.properties.items() if schema['$parent'] == id %}
+    {% filter indent %}{% include "schema.swift.j2" %}{% endfilter %}
+{% endfor %}
+{%- endif %}
+}
