@@ -734,7 +734,7 @@ extension Datadog {
             /// Enables or disables automatic collection of user frustrations.
             ///
             /// The Datadog SDK currently support detection of `error_tap` frustration, which is detected when
-            /// an error follow a user tap action.
+            /// an error follows a user tap action.
             ///
             /// - Parameter enabled: `true` by default
             public func trackFrustrations(_ enabled: Bool = true) -> Builder {
