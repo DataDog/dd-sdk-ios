@@ -427,6 +427,16 @@ public class DDConfigurationBuilder: NSObject {
     }
 
     @objc
+    public func trackBackgroundEvents(_ enabled: Bool = true) {
+        _ = sdkBuilder.trackBackgroundEvents(enabled)
+    }
+
+    @objc
+    public func trackFrustrations(_ enabled: Bool = true) {
+        _ = sdkBuilder.trackFrustrations(enabled)
+    }
+
+    @objc
     public func set(mobileVitalsFrequency: DDVitalsFrequency) {
         _ = sdkBuilder.set(mobileVitalsFrequency: mobileVitalsFrequency.swiftType)
     }

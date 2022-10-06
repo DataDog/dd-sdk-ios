@@ -20,6 +20,7 @@ internal struct RUMScopeDependencies {
     let rumApplicationID: String
     let sessionSampler: Sampler
     let backgroundEventTrackingEnabled: Bool
+    let frustrationTrackingEnabled: Bool
     let appStateListener: AppStateListening
     let launchTimeProvider: LaunchTimeProviderType
     let firstPartyURLsFilter: FirstPartyURLsFilter
@@ -47,6 +48,7 @@ internal extension RUMScopeDependencies {
             rumApplicationID: rumFeature.configuration.applicationID,
             sessionSampler: rumFeature.configuration.sessionSampler,
             backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled,
+            frustrationTrackingEnabled: rumFeature.configuration.frustrationTrackingEnabled,
             appStateListener: context.appStateListener,
             launchTimeProvider: context.launchTimeProvider,
             firstPartyURLsFilter: FirstPartyURLsFilter(hosts: rumFeature.configuration.firstPartyHosts),

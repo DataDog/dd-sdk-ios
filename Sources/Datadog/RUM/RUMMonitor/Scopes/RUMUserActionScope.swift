@@ -134,7 +134,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         }
 
         var frustrations: [RUMActionEvent.Action.Frustration.FrustrationType]? = nil
-        if errorsCount > 0, actionType == .tap {
+        if dependencies.frustrationTrackingEnabled, errorsCount > 0, actionType == .tap {
             frustrations = [.errorTap]
         }
 
