@@ -676,11 +676,11 @@ class TracerTests: XCTestCase {
         // then
         let spanMatcher = try tracing.waitAndReturnSpanMatchers(count: 1)[0]
         XCTAssertEqual(
-            try spanMatcher.meta.custom(keyPath: "meta.application_id"),
+            try spanMatcher.meta.custom(keyPath: "meta.\(RUMMonitor.Attributes.applicationID)"),
             rum.configuration.applicationID
         )
-        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.session_id"))
-        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.view.id"))
+        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMMonitor.Attributes.sessionID)"))
+        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMMonitor.Attributes.viewID)"))
     }
 
     func testGivenBundlingWithRUMEnabledButRUMMonitorNotRegistered_whenSendingSpan_itPrintsWarning() throws {
@@ -697,9 +697,9 @@ class TracerTests: XCTestCase {
 
         // then
         let spanMatcher = try tracing.waitAndReturnSpanMatchers(count: 1)[0]
-        XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.application_id"))
-        XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.session_id"))
-        XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.view.id"))
+        XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMMonitor.Attributes.applicationID)"))
+        XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMMonitor.Attributes.sessionID)"))
+        XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMMonitor.Attributes.viewID)"))
     }
 
     // MARK: - Injecting span context into carrier
