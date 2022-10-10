@@ -18,8 +18,8 @@ class _InternalProxyTests: XCTestCase {
         // When
         let randomDebugMessage: String = .mockRandom()
         let randomErrorMessage: String = .mockRandom()
-        proxy._telemtry.debug(id: .mockAny(), message: randomDebugMessage)
-        proxy._telemtry.error(id: .mockAny(), message: randomErrorMessage, kind: .mockAny(), stack: .mockAny())
+        proxy._telemetry.debug(id: .mockAny(), message: randomDebugMessage)
+        proxy._telemetry.error(id: .mockAny(), message: randomErrorMessage, kind: .mockAny(), stack: .mockAny())
 
         // Then
         XCTAssertEqual(dd.telemetry.debugs.first, randomDebugMessage)
