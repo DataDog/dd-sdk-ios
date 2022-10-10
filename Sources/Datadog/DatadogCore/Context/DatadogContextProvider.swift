@@ -6,19 +6,6 @@
 
 import Foundation
 
-/// Comply to `DatadogContextObserver` protocol if you want to listen for new
-/// value of the Datadog Context.
-internal protocol DatadogContextObserver {
-    /// Receives notification for new Context.
-    ///
-    /// This method will be called each time the context changed in the observed
-    /// provider. There is no garantee on which thread this method will be invoked.
-    ///
-    /// - Parameter context: The new context value.
-    ///
-    func notify(context: DatadogContext)
-}
-
 /// Provides thread-safe access to Datadog Context.
 ///
 /// The context can be accessed asynchronously for reads and writes.
@@ -53,7 +40,7 @@ internal final class DatadogContextProvider {
     ///
     /// The value must be accessed from the `queue` only.
     private var context: DatadogContext {
-        didSet { observers.forEach { $0.notify(context: context) } }
+        didSet { receivers.forEach { $0(context) } }
     }
 
     /// The queue used to synchronize the access to the `DatadogContext`.
@@ -65,8 +52,13 @@ internal final class DatadogContextProvider {
         qos: .utility
     )
 
-    private var observers: [DatadogContextObserver]
+    /// List of receivers to invoke when the context changes.
+    private var receivers: [ContextValueReceiver<DatadogContext>]
+
+    /// List of subscription of context values.
     private var subscriptions: [ContextValueSubscription]
+
+    /// A reader for key-path values of the context.
     private var reader: KeyPathContextValueReader<DatadogContext>
 
     /// Creates a context provider to perform reads and writes on the
@@ -75,7 +67,7 @@ internal final class DatadogContextProvider {
     /// - Parameter context: The inital context value.
     init(context: DatadogContext) {
         self.context = context
-        self.observers = []
+        self.receivers = []
         self.subscriptions = []
         self.reader = KeyPathContextValueReader()
     }
@@ -92,11 +84,11 @@ internal final class DatadogContextProvider {
         return context
     }
 
-    /// Adds an observer to notify when the context changes.
+    /// Publishes context changes to tge given receiver.
     ///
-    /// - Parameter observer: The observer to add.
-    func add(observer: DatadogContextObserver) {
-        queue.async(flags: .barrier) { self.observers.append(observer) }
+    /// - Parameter receiver: The receiver closure.
+    func publish(to receiver: @escaping ContextValueReceiver<DatadogContext>) {
+        queue.async(flags: .barrier) { self.receivers.append(receiver) }
     }
 
     /// Reads to the `context` synchronously, by blocking the caller thread.
