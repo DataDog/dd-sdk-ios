@@ -159,7 +159,7 @@ internal class JSONSchema: Decodable {
     /// Subschemas to be resolved.
     /// https://json-schema.org/draft/2019-09/json-schema-core.html#rfc.section.9.2.1.1
     private(set) var allOf: [JSONSchema]?
-    
+
     /// Subschemas to be resolved.
     /// https://json-schema.org/draft/2019-09/json-schema-core.html#rfc.section.9.2.1.2
     private(set) var anyOf: [JSONSchema]?
@@ -167,7 +167,6 @@ internal class JSONSchema: Decodable {
     /// Subschemas to be resolved.
     /// https://json-schema.org/draft/2019-09/json-schema-core.html#rfc.section.9.2.1.3
     private(set) var oneOf: [JSONSchema]?
-
 
     // MARK: - Resolving Schema References
 
@@ -280,7 +279,7 @@ internal class JSONSchema: Decodable {
         } else if let otherOneOf = otherSchema.oneOf {
             self.oneOf = otherOneOf
         }
-        
+
         // Accumulate `anyOf` schemas
         if let selfAnyOf = anyOf, let otherAnyOf = otherSchema.anyOf {
             self.anyOf = selfAnyOf + otherAnyOf

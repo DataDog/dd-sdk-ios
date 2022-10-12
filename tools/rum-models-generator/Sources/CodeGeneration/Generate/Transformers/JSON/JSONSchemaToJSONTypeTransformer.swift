@@ -32,12 +32,11 @@ internal class JSONSchemaToJSONTypeTransformer {
         }
 
         if schema.properties != nil {
-            return try transformSchemaToObject(schema, named: name) 
+            return try transformSchemaToObject(schema, named: name)
         }
 
-         let schemaType = try schema.type
-             .unwrapOrThrow(.inconsistency("`JSONSchema` must define `type`: \(schema)."))
-
+        let schemaType = try schema.type
+            .unwrapOrThrow(.inconsistency("`JSONSchema` must define `type`: \(schema)."))
 
         switch schemaType {
         case .object:
@@ -162,5 +161,4 @@ internal class JSONSchemaToJSONTypeTransformer {
             }
         )
     }
-
 }
