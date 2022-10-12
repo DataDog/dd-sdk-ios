@@ -334,10 +334,6 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
         let objcEnumName = objcTypeNamesPrefix + nestedObjcEnumArray.objcTypeName
 
-        if swiftProperty.mutability == .mutable {
-            throw Exception.unimplemented("Generating setter for `ObjcInteropEnumArray` is not supported: \(swiftProperty.type).")
-        }
-
         writeLine("@objc public var \(objcPropertyName): [Int]\(objcPropertyOptionality) {")
         indentRight()
             writeLine("root.swiftModel.\(propertyWrapper.keyPath)\(objcPropertyOptionality).map { \(objcEnumName)(swift: $0).rawValue }")
@@ -358,10 +354,6 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         let objcPropertyName = swiftProperty.name
         let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
         let objcClassName = objcTypeNamesPrefix + nestedObjcClass.objcTypeName
-
-        if swiftProperty.mutability == .mutable {
-            throw Exception.unimplemented("Generating setter for `ObjcInteropNestedClass` is not supported: \(swiftProperty.type).")
-        }
 
         writeLine("@objc public var \(objcPropertyName): [\(objcClassName)]\(objcPropertyOptionality) {")
         indentRight()

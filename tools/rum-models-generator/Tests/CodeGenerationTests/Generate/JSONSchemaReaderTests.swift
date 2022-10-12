@@ -79,4 +79,16 @@ final class JSONSchemaReaderTests: XCTestCase {
         XCTAssertEqual(schema.oneOf?[2].oneOf?[0].properties?["propertyInC1"]?.type, .integer)
         XCTAssertEqual(schema.oneOf?[2].oneOf?[1].properties?["propertyInC2"]?.type, .string)
     }
+    
+    func testReadingSchemaWithAnyOf() throws {
+        let file = Bundle.module.url(forResource: "Fixtures/fixture-schema-with-anyof", withExtension: "json")!
+
+        let schema = try JSONSchemaReader().read(file)
+        XCTAssertEqual(schema.anyOf?.count, 3)
+        XCTAssertEqual(schema.anyOf?[0].properties?["propertyInA"]?.type, .string)
+        XCTAssertEqual(schema.anyOf?[1].properties?["propertyInB"]?.type, .integer)
+        XCTAssertEqual(schema.anyOf?[2].oneOf?.count, 2)
+        XCTAssertEqual(schema.anyOf?[2].oneOf?[0].properties?["propertyInC1"]?.type, .integer)
+        XCTAssertEqual(schema.anyOf?[2].oneOf?[1].properties?["propertyInC2"]?.type, .string)
+    }
 }

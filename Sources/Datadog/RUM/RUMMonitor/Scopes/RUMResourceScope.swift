@@ -134,6 +134,8 @@ internal class RUMResourceScope: RUMScope {
         let resourceEvent = RUMResourceEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                discarded: nil,
+                rulePsr: nil,
                 session: .init(plan: .plan1),
                 spanId: spanId,
                 traceId: traceId

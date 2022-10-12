@@ -431,15 +431,19 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 domContentLoaded: nil,
                 domInteractive: nil,
                 error: .init(count: errorsCount.toInt64),
+                firstByte: nil,
                 firstContentfulPaint: nil,
                 firstInputDelay: nil,
                 firstInputTime: nil,
+                flutterBuildTime: nil,
+                flutterRasterTime: nil,
                 frozenFrame: .init(count: frozenFramesCount),
                 frustration: .init(count: frustrationCount),
                 id: viewUUID.toRUMDataFormat,
                 inForegroundPeriods: nil,
                 isActive: isActive,
                 isSlowRendered: isSlowRendered,
+                jsRefreshRate: nil,
                 largestContentfulPaint: nil,
                 loadEvent: nil,
                 loadingTime: nil,
@@ -540,6 +544,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let longTaskEvent = RUMLongTaskEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                discarded: nil,
                 session: .init(plan: .plan1)
             ),
             action: self.context.activeUserActionID.map {

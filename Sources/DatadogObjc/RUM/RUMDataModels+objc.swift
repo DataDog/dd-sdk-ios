@@ -704,6 +704,7 @@ public enum DDRUMActionEventSource: Int {
         case .browser?: self = .browser
         case .flutter?: self = .flutter
         case .reactNative?: self = .reactNative
+        case .roku?: self = .roku
         }
     }
 
@@ -715,6 +716,7 @@ public enum DDRUMActionEventSource: Int {
         case .browser: return .browser
         case .flutter: return .flutter
         case .reactNative: return .reactNative
+        case .roku: return .roku
         }
     }
 
@@ -724,6 +726,7 @@ public enum DDRUMActionEventSource: Int {
     case browser
     case flutter
     case reactNative
+    case roku
 }
 
 @objc
@@ -1223,6 +1226,10 @@ public class DDRUMErrorEventError: NSObject {
         self.root = root
     }
 
+    @objc public var causes: [DDRUMErrorEventErrorCauses]? {
+        root.swiftModel.error.causes?.map { DDRUMErrorEventErrorCauses(swiftModel: $0) }
+    }
+
     @objc public var handling: DDRUMErrorEventErrorHandling {
         .init(swift: root.swiftModel.error.handling)
     }
@@ -1264,6 +1271,72 @@ public class DDRUMErrorEventError: NSObject {
     @objc public var type: String? {
         root.swiftModel.error.type
     }
+}
+
+@objc
+public class DDRUMErrorEventErrorCauses: NSObject {
+    internal let swiftModel: RUMErrorEvent.Error.Causes
+    internal var root: DDRUMErrorEventErrorCauses { self }
+
+    internal init(swiftModel: RUMErrorEvent.Error.Causes) {
+        self.swiftModel = swiftModel
+    }
+
+    @objc public var message: String {
+        set { root.swiftModel.message = newValue }
+        get { root.swiftModel.message }
+    }
+
+    @objc public var source: DDRUMErrorEventErrorCausesSource {
+        .init(swift: root.swiftModel.source)
+    }
+
+    @objc public var stack: String? {
+        set { root.swiftModel.stack = newValue }
+        get { root.swiftModel.stack }
+    }
+
+    @objc public var type: String? {
+        root.swiftModel.type
+    }
+}
+
+@objc
+public enum DDRUMErrorEventErrorCausesSource: Int {
+    internal init(swift: RUMErrorEvent.Error.Causes.Source) {
+        switch swift {
+        case .network: self = .network
+        case .source: self = .source
+        case .console: self = .console
+        case .logger: self = .logger
+        case .agent: self = .agent
+        case .webview: self = .webview
+        case .custom: self = .custom
+        case .report: self = .report
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.Error.Causes.Source {
+        switch self {
+        case .network: return .network
+        case .source: return .source
+        case .console: return .console
+        case .logger: return .logger
+        case .agent: return .agent
+        case .webview: return .webview
+        case .custom: return .custom
+        case .report: return .report
+        }
+    }
+
+    case network
+    case source
+    case console
+    case logger
+    case agent
+    case webview
+    case custom
+    case report
 }
 
 @objc
@@ -1475,6 +1548,7 @@ public enum DDRUMErrorEventErrorSourceType: Int {
         case .ios?: self = .ios
         case .reactNative?: self = .reactNative
         case .flutter?: self = .flutter
+        case .roku?: self = .roku
         }
     }
 
@@ -1486,6 +1560,7 @@ public enum DDRUMErrorEventErrorSourceType: Int {
         case .ios: return .ios
         case .reactNative: return .reactNative
         case .flutter: return .flutter
+        case .roku: return .roku
         }
     }
 
@@ -1495,6 +1570,7 @@ public enum DDRUMErrorEventErrorSourceType: Int {
     case ios
     case reactNative
     case flutter
+    case roku
 }
 
 @objc
@@ -1572,6 +1648,7 @@ public enum DDRUMErrorEventSource: Int {
         case .browser?: self = .browser
         case .flutter?: self = .flutter
         case .reactNative?: self = .reactNative
+        case .roku?: self = .roku
         }
     }
 
@@ -1583,6 +1660,7 @@ public enum DDRUMErrorEventSource: Int {
         case .browser: return .browser
         case .flutter: return .flutter
         case .reactNative: return .reactNative
+        case .roku: return .roku
         }
     }
 
@@ -1592,6 +1670,7 @@ public enum DDRUMErrorEventSource: Int {
     case browser
     case flutter
     case reactNative
+    case roku
 }
 
 @objc
@@ -1768,6 +1847,10 @@ public class DDRUMLongTaskEventDD: NSObject {
 
     @objc public var browserSdkVersion: String? {
         root.swiftModel.dd.browserSdkVersion
+    }
+
+    @objc public var discarded: NSNumber? {
+        root.swiftModel.dd.discarded as NSNumber?
     }
 
     @objc public var formatVersion: NSNumber {
@@ -2179,6 +2262,7 @@ public enum DDRUMLongTaskEventSource: Int {
         case .browser?: self = .browser
         case .flutter?: self = .flutter
         case .reactNative?: self = .reactNative
+        case .roku?: self = .roku
         }
     }
 
@@ -2190,6 +2274,7 @@ public enum DDRUMLongTaskEventSource: Int {
         case .browser: return .browser
         case .flutter: return .flutter
         case .reactNative: return .reactNative
+        case .roku: return .roku
         }
     }
 
@@ -2199,6 +2284,7 @@ public enum DDRUMLongTaskEventSource: Int {
     case browser
     case flutter
     case reactNative
+    case roku
 }
 
 @objc
@@ -2373,8 +2459,16 @@ public class DDRUMResourceEventDD: NSObject {
         root.swiftModel.dd.browserSdkVersion
     }
 
+    @objc public var discarded: NSNumber? {
+        root.swiftModel.dd.discarded as NSNumber?
+    }
+
     @objc public var formatVersion: NSNumber {
         root.swiftModel.dd.formatVersion as NSNumber
+    }
+
+    @objc public var rulePsr: NSNumber? {
+        root.swiftModel.dd.rulePsr as NSNumber?
     }
 
     @objc public var session: DDRUMResourceEventDDSession? {
@@ -3099,6 +3193,7 @@ public enum DDRUMResourceEventSource: Int {
         case .browser?: self = .browser
         case .flutter?: self = .flutter
         case .reactNative?: self = .reactNative
+        case .roku?: self = .roku
         }
     }
 
@@ -3110,6 +3205,7 @@ public enum DDRUMResourceEventSource: Int {
         case .browser: return .browser
         case .flutter: return .flutter
         case .reactNative: return .reactNative
+        case .roku: return .roku
         }
     }
 
@@ -3119,6 +3215,7 @@ public enum DDRUMResourceEventSource: Int {
     case browser
     case flutter
     case reactNative
+    case roku
 }
 
 @objc
@@ -3641,6 +3738,7 @@ public enum DDRUMViewEventSource: Int {
         case .browser?: self = .browser
         case .flutter?: self = .flutter
         case .reactNative?: self = .reactNative
+        case .roku?: self = .roku
         }
     }
 
@@ -3652,6 +3750,7 @@ public enum DDRUMViewEventSource: Int {
         case .browser: return .browser
         case .flutter: return .flutter
         case .reactNative: return .reactNative
+        case .roku: return .roku
         }
     }
 
@@ -3661,6 +3760,7 @@ public enum DDRUMViewEventSource: Int {
     case browser
     case flutter
     case reactNative
+    case roku
 }
 
 @objc
@@ -3757,6 +3857,10 @@ public class DDRUMViewEventView: NSObject {
         DDRUMViewEventViewError(root: root)
     }
 
+    @objc public var firstByte: NSNumber? {
+        root.swiftModel.view.firstByte as NSNumber?
+    }
+
     @objc public var firstContentfulPaint: NSNumber? {
         root.swiftModel.view.firstContentfulPaint as NSNumber?
     }
@@ -3767,6 +3871,14 @@ public class DDRUMViewEventView: NSObject {
 
     @objc public var firstInputTime: NSNumber? {
         root.swiftModel.view.firstInputTime as NSNumber?
+    }
+
+    @objc public var flutterBuildTime: DDRUMViewEventViewFlutterBuildTime? {
+        root.swiftModel.view.flutterBuildTime != nil ? DDRUMViewEventViewFlutterBuildTime(root: root) : nil
+    }
+
+    @objc public var flutterRasterTime: DDRUMViewEventViewFlutterRasterTime? {
+        root.swiftModel.view.flutterRasterTime != nil ? DDRUMViewEventViewFlutterRasterTime(root: root) : nil
     }
 
     @objc public var frozenFrame: DDRUMViewEventViewFrozenFrame? {
@@ -3791,6 +3903,10 @@ public class DDRUMViewEventView: NSObject {
 
     @objc public var isSlowRendered: NSNumber? {
         root.swiftModel.view.isSlowRendered as NSNumber?
+    }
+
+    @objc public var jsRefreshRate: DDRUMViewEventViewJsRefreshRate? {
+        root.swiftModel.view.jsRefreshRate != nil ? DDRUMViewEventViewJsRefreshRate(root: root) : nil
     }
 
     @objc public var largestContentfulPaint: NSNumber? {
@@ -3893,6 +4009,56 @@ public class DDRUMViewEventViewError: NSObject {
 }
 
 @objc
+public class DDRUMViewEventViewFlutterBuildTime: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var average: NSNumber {
+        root.swiftModel.view.flutterBuildTime!.average as NSNumber
+    }
+
+    @objc public var max: NSNumber {
+        root.swiftModel.view.flutterBuildTime!.max as NSNumber
+    }
+
+    @objc public var metricMax: NSNumber? {
+        root.swiftModel.view.flutterBuildTime!.metricMax as NSNumber?
+    }
+
+    @objc public var min: NSNumber {
+        root.swiftModel.view.flutterBuildTime!.min as NSNumber
+    }
+}
+
+@objc
+public class DDRUMViewEventViewFlutterRasterTime: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var average: NSNumber {
+        root.swiftModel.view.flutterRasterTime!.average as NSNumber
+    }
+
+    @objc public var max: NSNumber {
+        root.swiftModel.view.flutterRasterTime!.max as NSNumber
+    }
+
+    @objc public var metricMax: NSNumber? {
+        root.swiftModel.view.flutterRasterTime!.metricMax as NSNumber?
+    }
+
+    @objc public var min: NSNumber {
+        root.swiftModel.view.flutterRasterTime!.min as NSNumber
+    }
+}
+
+@objc
 public class DDRUMViewEventViewFrozenFrame: NSObject {
     internal let root: DDRUMViewEvent
 
@@ -3933,6 +4099,31 @@ public class DDRUMViewEventViewInForegroundPeriods: NSObject {
 
     @objc public var start: NSNumber {
         root.swiftModel.start as NSNumber
+    }
+}
+
+@objc
+public class DDRUMViewEventViewJsRefreshRate: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var average: NSNumber {
+        root.swiftModel.view.jsRefreshRate!.average as NSNumber
+    }
+
+    @objc public var max: NSNumber {
+        root.swiftModel.view.jsRefreshRate!.max as NSNumber
+    }
+
+    @objc public var metricMax: NSNumber? {
+        root.swiftModel.view.jsRefreshRate!.metricMax as NSNumber?
+    }
+
+    @objc public var min: NSNumber {
+        root.swiftModel.view.jsRefreshRate!.min as NSNumber
     }
 }
 
@@ -4161,6 +4352,10 @@ public class DDTelemetryErrorEventTelemetry: NSObject {
     @objc public var status: String {
         root.swiftModel.telemetry.status
     }
+
+    @objc public var type: String? {
+        root.swiftModel.telemetry.type
+    }
 }
 
 @objc
@@ -4347,6 +4542,10 @@ public class DDTelemetryDebugEventTelemetry: NSObject {
     @objc public var status: String {
         root.swiftModel.telemetry.status
     }
+
+    @objc public var type: String? {
+        root.swiftModel.telemetry.type
+    }
 }
 
 @objc
@@ -4362,6 +4561,371 @@ public class DDTelemetryDebugEventView: NSObject {
     }
 }
 
+@objc
+public class DDTelemetryConfigurationEvent: NSObject {
+    internal var swiftModel: TelemetryConfigurationEvent
+    internal var root: DDTelemetryConfigurationEvent { self }
+
+    internal init(swiftModel: TelemetryConfigurationEvent) {
+        self.swiftModel = swiftModel
+    }
+
+    @objc public var dd: DDTelemetryConfigurationEventDD {
+        DDTelemetryConfigurationEventDD(root: root)
+    }
+
+    @objc public var action: DDTelemetryConfigurationEventAction? {
+        root.swiftModel.action != nil ? DDTelemetryConfigurationEventAction(root: root) : nil
+    }
+
+    @objc public var application: DDTelemetryConfigurationEventApplication? {
+        root.swiftModel.application != nil ? DDTelemetryConfigurationEventApplication(root: root) : nil
+    }
+
+    @objc public var date: NSNumber {
+        root.swiftModel.date as NSNumber
+    }
+
+    @objc public var experimentalFeatures: [String]? {
+        root.swiftModel.experimentalFeatures
+    }
+
+    @objc public var service: String {
+        root.swiftModel.service
+    }
+
+    @objc public var session: DDTelemetryConfigurationEventSession? {
+        root.swiftModel.session != nil ? DDTelemetryConfigurationEventSession(root: root) : nil
+    }
+
+    @objc public var source: DDTelemetryConfigurationEventSource {
+        .init(swift: root.swiftModel.source)
+    }
+
+    @objc public var telemetry: DDTelemetryConfigurationEventTelemetry {
+        DDTelemetryConfigurationEventTelemetry(root: root)
+    }
+
+    @objc public var type: String {
+        root.swiftModel.type
+    }
+
+    @objc public var version: String {
+        root.swiftModel.version
+    }
+
+    @objc public var view: DDTelemetryConfigurationEventView? {
+        root.swiftModel.view != nil ? DDTelemetryConfigurationEventView(root: root) : nil
+    }
+}
+
+@objc
+public class DDTelemetryConfigurationEventDD: NSObject {
+    internal let root: DDTelemetryConfigurationEvent
+
+    internal init(root: DDTelemetryConfigurationEvent) {
+        self.root = root
+    }
+
+    @objc public var formatVersion: NSNumber {
+        root.swiftModel.dd.formatVersion as NSNumber
+    }
+}
+
+@objc
+public class DDTelemetryConfigurationEventAction: NSObject {
+    internal let root: DDTelemetryConfigurationEvent
+
+    internal init(root: DDTelemetryConfigurationEvent) {
+        self.root = root
+    }
+
+    @objc public var id: String {
+        root.swiftModel.action!.id
+    }
+}
+
+@objc
+public class DDTelemetryConfigurationEventApplication: NSObject {
+    internal let root: DDTelemetryConfigurationEvent
+
+    internal init(root: DDTelemetryConfigurationEvent) {
+        self.root = root
+    }
+
+    @objc public var id: String {
+        root.swiftModel.application!.id
+    }
+}
+
+@objc
+public class DDTelemetryConfigurationEventSession: NSObject {
+    internal let root: DDTelemetryConfigurationEvent
+
+    internal init(root: DDTelemetryConfigurationEvent) {
+        self.root = root
+    }
+
+    @objc public var id: String {
+        root.swiftModel.session!.id
+    }
+}
+
+@objc
+public enum DDTelemetryConfigurationEventSource: Int {
+    internal init(swift: TelemetryConfigurationEvent.Source) {
+        switch swift {
+        case .android: self = .android
+        case .ios: self = .ios
+        case .browser: self = .browser
+        case .flutter: self = .flutter
+        case .reactNative: self = .reactNative
+        }
+    }
+
+    internal var toSwift: TelemetryConfigurationEvent.Source {
+        switch self {
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        }
+    }
+
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+}
+
+@objc
+public class DDTelemetryConfigurationEventTelemetry: NSObject {
+    internal let root: DDTelemetryConfigurationEvent
+
+    internal init(root: DDTelemetryConfigurationEvent) {
+        self.root = root
+    }
+
+    @objc public var configuration: DDTelemetryConfigurationEventTelemetryConfiguration {
+        DDTelemetryConfigurationEventTelemetryConfiguration(root: root)
+    }
+
+    @objc public var type: String {
+        root.swiftModel.telemetry.type
+    }
+}
+
+@objc
+public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
+    internal let root: DDTelemetryConfigurationEvent
+
+    internal init(root: DDTelemetryConfigurationEvent) {
+        self.root = root
+    }
+
+    @objc public var actionNameAttribute: String? {
+        root.swiftModel.telemetry.configuration.actionNameAttribute
+    }
+
+    @objc public var defaultPrivacyLevel: String? {
+        root.swiftModel.telemetry.configuration.defaultPrivacyLevel
+    }
+
+    @objc public var forwardConsoleLogs: DDTelemetryConfigurationEventTelemetryConfigurationForwardConsoleLogs? {
+        root.swiftModel.telemetry.configuration.forwardConsoleLogs != nil ? DDTelemetryConfigurationEventTelemetryConfigurationForwardConsoleLogs(root: root) : nil
+    }
+
+    @objc public var forwardErrorsToLogs: NSNumber? {
+        root.swiftModel.telemetry.configuration.forwardErrorsToLogs as NSNumber?
+    }
+
+    @objc public var forwardReports: DDTelemetryConfigurationEventTelemetryConfigurationForwardReports? {
+        root.swiftModel.telemetry.configuration.forwardReports != nil ? DDTelemetryConfigurationEventTelemetryConfigurationForwardReports(root: root) : nil
+    }
+
+    @objc public var mobileVitalsUpdatePeriod: NSNumber? {
+        root.swiftModel.telemetry.configuration.mobileVitalsUpdatePeriod as NSNumber?
+    }
+
+    @objc public var premiumSampleRate: NSNumber? {
+        root.swiftModel.telemetry.configuration.premiumSampleRate as NSNumber?
+    }
+
+    @objc public var replaySampleRate: NSNumber? {
+        root.swiftModel.telemetry.configuration.replaySampleRate as NSNumber?
+    }
+
+    @objc public var sessionReplaySampleRate: NSNumber? {
+        root.swiftModel.telemetry.configuration.sessionReplaySampleRate as NSNumber?
+    }
+
+    @objc public var sessionSampleRate: NSNumber? {
+        root.swiftModel.telemetry.configuration.sessionSampleRate as NSNumber?
+    }
+
+    @objc public var silentMultipleInit: NSNumber? {
+        root.swiftModel.telemetry.configuration.silentMultipleInit as NSNumber?
+    }
+
+    @objc public var telemetryConfigurationSampleRate: NSNumber? {
+        root.swiftModel.telemetry.configuration.telemetryConfigurationSampleRate as NSNumber?
+    }
+
+    @objc public var telemetrySampleRate: NSNumber? {
+        root.swiftModel.telemetry.configuration.telemetrySampleRate as NSNumber?
+    }
+
+    @objc public var traceSampleRate: NSNumber? {
+        root.swiftModel.telemetry.configuration.traceSampleRate as NSNumber?
+    }
+
+    @objc public var trackBackgroundEvents: NSNumber? {
+        root.swiftModel.telemetry.configuration.trackBackgroundEvents as NSNumber?
+    }
+
+    @objc public var trackFrustrations: NSNumber? {
+        root.swiftModel.telemetry.configuration.trackFrustrations as NSNumber?
+    }
+
+    @objc public var trackInteractions: NSNumber? {
+        root.swiftModel.telemetry.configuration.trackInteractions as NSNumber?
+    }
+
+    @objc public var trackNativeCrashes: NSNumber? {
+        root.swiftModel.telemetry.configuration.trackNativeCrashes as NSNumber?
+    }
+
+    @objc public var trackSessionAcrossSubdomains: NSNumber? {
+        root.swiftModel.telemetry.configuration.trackSessionAcrossSubdomains as NSNumber?
+    }
+
+    @objc public var trackViewsManually: NSNumber? {
+        root.swiftModel.telemetry.configuration.trackViewsManually as NSNumber?
+    }
+
+    @objc public var useAllowedTracingOrigins: NSNumber? {
+        root.swiftModel.telemetry.configuration.useAllowedTracingOrigins as NSNumber?
+    }
+
+    @objc public var useBeforeSend: NSNumber? {
+        root.swiftModel.telemetry.configuration.useBeforeSend as NSNumber?
+    }
+
+    @objc public var useCrossSiteSessionCookie: NSNumber? {
+        root.swiftModel.telemetry.configuration.useCrossSiteSessionCookie as NSNumber?
+    }
+
+    @objc public var useExcludedActivityUrls: NSNumber? {
+        root.swiftModel.telemetry.configuration.useExcludedActivityUrls as NSNumber?
+    }
+
+    @objc public var useLocalEncryption: NSNumber? {
+        root.swiftModel.telemetry.configuration.useLocalEncryption as NSNumber?
+    }
+
+    @objc public var useProxy: NSNumber? {
+        root.swiftModel.telemetry.configuration.useProxy as NSNumber?
+    }
+
+    @objc public var useSecureSessionCookie: NSNumber? {
+        root.swiftModel.telemetry.configuration.useSecureSessionCookie as NSNumber?
+    }
+
+    @objc public var viewTrackingStrategy: DDTelemetryConfigurationEventTelemetryConfigurationViewTrackingStrategy {
+        .init(swift: root.swiftModel.telemetry.configuration.viewTrackingStrategy)
+    }
+}
+
+@objc
+public class DDTelemetryConfigurationEventTelemetryConfigurationForwardConsoleLogs: NSObject {
+    internal let root: DDTelemetryConfigurationEvent
+
+    internal init(root: DDTelemetryConfigurationEvent) {
+        self.root = root
+    }
+
+    @objc public var stringsArray: [String]? {
+        guard case .stringsArray(let value) = root.swiftModel.telemetry.configuration.forwardConsoleLogs else {
+            return nil
+        }
+        return value
+    }
+
+    @objc public var string: String? {
+        guard case .string(let value) = root.swiftModel.telemetry.configuration.forwardConsoleLogs else {
+            return nil
+        }
+        return value
+    }
+}
+
+@objc
+public class DDTelemetryConfigurationEventTelemetryConfigurationForwardReports: NSObject {
+    internal let root: DDTelemetryConfigurationEvent
+
+    internal init(root: DDTelemetryConfigurationEvent) {
+        self.root = root
+    }
+
+    @objc public var stringsArray: [String]? {
+        guard case .stringsArray(let value) = root.swiftModel.telemetry.configuration.forwardReports else {
+            return nil
+        }
+        return value
+    }
+
+    @objc public var string: String? {
+        guard case .string(let value) = root.swiftModel.telemetry.configuration.forwardReports else {
+            return nil
+        }
+        return value
+    }
+}
+
+@objc
+public enum DDTelemetryConfigurationEventTelemetryConfigurationViewTrackingStrategy: Int {
+    internal init(swift: TelemetryConfigurationEvent.Telemetry.Configuration.ViewTrackingStrategy?) {
+        switch swift {
+        case nil: self = .none
+        case .activityViewTrackingStrategy?: self = .activityViewTrackingStrategy
+        case .fragmentViewTrackingStrategy?: self = .fragmentViewTrackingStrategy
+        case .mixedViewTrackingStrategy?: self = .mixedViewTrackingStrategy
+        case .navigationViewTrackingStrategy?: self = .navigationViewTrackingStrategy
+        }
+    }
+
+    internal var toSwift: TelemetryConfigurationEvent.Telemetry.Configuration.ViewTrackingStrategy? {
+        switch self {
+        case .none: return nil
+        case .activityViewTrackingStrategy: return .activityViewTrackingStrategy
+        case .fragmentViewTrackingStrategy: return .fragmentViewTrackingStrategy
+        case .mixedViewTrackingStrategy: return .mixedViewTrackingStrategy
+        case .navigationViewTrackingStrategy: return .navigationViewTrackingStrategy
+        }
+    }
+
+    case none
+    case activityViewTrackingStrategy
+    case fragmentViewTrackingStrategy
+    case mixedViewTrackingStrategy
+    case navigationViewTrackingStrategy
+}
+
+@objc
+public class DDTelemetryConfigurationEventView: NSObject {
+    internal let root: DDTelemetryConfigurationEvent
+
+    internal init(root: DDTelemetryConfigurationEvent) {
+        self.root = root
+    }
+
+    @objc public var id: String {
+        root.swiftModel.view!.id
+    }
+}
+
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/a2f14e5f284d21f29e4fe4e49c0ac52cfcd96d93
+// Generated from https://github.com/DataDog/rum-events-format/tree/7320f7c483c80f5fc0d868b1f40c97f22af8b0d1
