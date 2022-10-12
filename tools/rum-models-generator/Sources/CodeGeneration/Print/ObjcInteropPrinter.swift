@@ -105,7 +105,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         writeLine("@objc")
         writeLine("public class \(className): NSObject {")
         indentRight()
-            writeLine("internal let swiftModel: \(objcInteropNestedClass.swiftTypeName)")
+            writeLine("internal var swiftModel: \(objcInteropNestedClass.swiftTypeName)")
             writeLine("internal var root: \(className) { self }")
             writeEmptyLine()
             writeLine("internal init(swiftModel: \(objcInteropNestedClass.swiftTypeName)) {")
@@ -333,6 +333,10 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         let objcPropertyName = swiftProperty.name
         let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
         let objcEnumName = objcTypeNamesPrefix + nestedObjcEnumArray.objcTypeName
+        
+        if swiftProperty.mutability == .mutable {
+            throw Exception.unimplemented("Generating setter for `ObjcInteropEnumArray` is not supported: \(swiftProperty.type).")
+        }
 
         writeLine("@objc public var \(objcPropertyName): [Int]\(objcPropertyOptionality) {")
         indentRight()
@@ -354,12 +358,21 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         let objcPropertyName = swiftProperty.name
         let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
         let objcClassName = objcTypeNamesPrefix + nestedObjcClass.objcTypeName
-
-        writeLine("@objc public var \(objcPropertyName): [\(objcClassName)]\(objcPropertyOptionality) {")
-        indentRight()
-            writeLine("root.swiftModel.\(propertyWrapper.keyPath)\(objcPropertyOptionality).map { \(objcClassName)(swiftModel: $0) }")
-        indentLeft()
-        writeLine("}")
+        
+        if swiftProperty.mutability == .mutable {
+            writeLine("@objc public var \(objcPropertyName): [\(objcClassName)]\(objcPropertyOptionality) {")
+            indentRight()
+                writeLine("set { root.swiftModel.\(propertyWrapper.keyPath) = newValue\(objcPropertyOptionality).map { $0.swiftModel } }")
+                writeLine("get { root.swiftModel.\(propertyWrapper.keyPath)\(objcPropertyOptionality).map { \(objcClassName)(swiftModel: $0) } }")
+            indentLeft()
+            writeLine("}")
+        } else {
+            writeLine("@objc public var \(objcPropertyName): [\(objcClassName)]\(objcPropertyOptionality) {")
+            indentRight()
+                writeLine("root.swiftModel.\(propertyWrapper.keyPath)\(objcPropertyOptionality).map { \(objcClassName)(swiftModel: $0) }")
+            indentLeft()
+            writeLine("}")
+        }
     }
 
     private func printPrimitivePropertyWrapper(_ propertyWrapper: ObjcInteropPropertyWrapperManagingSwiftStructProperty) throws {

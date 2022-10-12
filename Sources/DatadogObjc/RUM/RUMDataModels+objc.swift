@@ -1227,7 +1227,8 @@ public class DDRUMErrorEventError: NSObject {
     }
 
     @objc public var causes: [DDRUMErrorEventErrorCauses]? {
-        root.swiftModel.error.causes?.map { DDRUMErrorEventErrorCauses(swiftModel: $0) }
+        set { root.swiftModel.error.causes = newValue?.map { $0.swiftModel } }
+        get { root.swiftModel.error.causes?.map { DDRUMErrorEventErrorCauses(swiftModel: $0) } }
     }
 
     @objc public var handling: DDRUMErrorEventErrorHandling {
@@ -1275,7 +1276,7 @@ public class DDRUMErrorEventError: NSObject {
 
 @objc
 public class DDRUMErrorEventErrorCauses: NSObject {
-    internal let swiftModel: RUMErrorEvent.Error.Causes
+    internal var swiftModel: RUMErrorEvent.Error.Causes
     internal var root: DDRUMErrorEventErrorCauses { self }
 
     internal init(swiftModel: RUMErrorEvent.Error.Causes) {
@@ -4086,7 +4087,7 @@ public class DDRUMViewEventViewFrustration: NSObject {
 
 @objc
 public class DDRUMViewEventViewInForegroundPeriods: NSObject {
-    internal let swiftModel: RUMViewEvent.View.InForegroundPeriods
+    internal var swiftModel: RUMViewEvent.View.InForegroundPeriods
     internal var root: DDRUMViewEventViewInForegroundPeriods { self }
 
     internal init(swiftModel: RUMViewEvent.View.InForegroundPeriods) {
