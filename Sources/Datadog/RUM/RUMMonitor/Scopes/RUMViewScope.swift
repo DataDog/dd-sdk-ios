@@ -88,6 +88,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     /// Samples view update events, so we can minimize the number of events in payload.
     private let viewUpdatesThrottler: RUMViewUpdatesThrottlerType
+    
+    private var viewCrossPlatformPerfMetrics: [String: VitalInfo] = [:]
 
     init(
         isInitialView: Bool,
@@ -198,6 +200,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         case let command as RUMAddLongTaskCommand where isActiveView:
             sendLongTaskEvent(on: command, context: context, writer: writer)
+        
+        case let command as RUMAddCrossPlatformPerfMetric where isActiveView:
+            addCrossPlatormPerfMetric(on: command)
 
         default:
             break
@@ -600,5 +605,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
 
         return sanitized
+    }
+    
+    private func addCrossPlatormPerfMetric(on command: RUMAddCrossPlatformPerfMetric) {
+        if viewCrossPlatformPerfMetrics[command.metric] == nil {
+            viewCrossPlatformPerfMetrics[command.metric] = VitalInfo()
+        }
+        viewCrossPlatformPerfMetrics[command.metric]?.addSample(command.value)
     }
 }

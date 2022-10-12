@@ -191,4 +191,12 @@ internal class DDNoopRUMMonitor: DDRUMMonitor {
     override func removeAttribute(forKey key: AttributeKey) {
         warn()
     }
+    
+    override func addCrossPlatformPerfMetric(
+        metric: String,
+        value: Double,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        warn()
+    }
 }

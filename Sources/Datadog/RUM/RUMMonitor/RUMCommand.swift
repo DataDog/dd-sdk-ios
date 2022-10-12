@@ -328,3 +328,15 @@ internal struct RUMKeepSessionAliveCommand: RUMCommand {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
 }
+
+// MARK: - Cross-platform perf metrics
+
+internal struct RUMAddCrossPlatformPerfMetric: RUMCommand {
+    let canStartBackgroundView = false
+    let canStartApplicationLaunchView = false
+    let isUserInteraction = false
+    let metric: String
+    let value: Double
+    var time: Date
+    var attributes: [AttributeKey: AttributeValue]
+}
