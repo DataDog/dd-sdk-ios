@@ -335,7 +335,7 @@ internal struct RUMUpdatePerformanceMetric: RUMCommand {
     let canStartBackgroundView = false
     let canStartApplicationLaunchView = false
     let isUserInteraction = false
-    let metric: String
+    let metric: PerformanceMetric
     let value: Double
     var time: Date
     var attributes: [AttributeKey: AttributeValue]

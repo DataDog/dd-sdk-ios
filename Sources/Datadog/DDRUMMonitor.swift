@@ -291,7 +291,7 @@ public class DDRUMMonitor {
     ///   - metric: the name of the performance metric. One of `flutter_build_time`, `flutter_raster_time` or `js_refresh_rate`
     ///   - value: recorded value of the metric
     public func updatePerformanceMetric(
-        metric: String,
+        metric: PerformanceMetric,
         value: Double,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {}

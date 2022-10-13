@@ -89,7 +89,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// Samples view update events, so we can minimize the number of events in payload.
     private let viewUpdatesThrottler: RUMViewUpdatesThrottlerType
     
-    private var viewPerformanceMetrics: [String: VitalInfo] = [:]
+    private var viewPerformanceMetrics: [PerformanceMetric: VitalInfo] = [:]
 
     init(
         isInitialView: Bool,
@@ -440,15 +440,15 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 firstContentfulPaint: nil,
                 firstInputDelay: nil,
                 firstInputTime: nil,
-                flutterBuildTime: viewPerformanceMetrics["flutterBuildTime"]?.asFlutterBuildTime(), // TODO: I'd like to use a constant here
-                flutterRasterTime: viewPerformanceMetrics["flutterRasterTime"]?.asFlutterRasterTime(),
+                flutterBuildTime: viewPerformanceMetrics[PerformanceMetric.FLUTTER_BUILD_TIME]?.asFlutterBuildTime(),
+                flutterRasterTime: viewPerformanceMetrics[PerformanceMetric.FLUTTER_RASTER_TIME]?.asFlutterRasterTime(),
                 frozenFrame: .init(count: frozenFramesCount),
                 frustration: .init(count: frustrationCount),
                 id: viewUUID.toRUMDataFormat,
                 inForegroundPeriods: nil,
                 isActive: isActive,
                 isSlowRendered: isSlowRendered,
-                jsRefreshRate: viewPerformanceMetrics["jsRefreshRate"]?.asJsRefreshRate(),
+                jsRefreshRate: viewPerformanceMetrics[PerformanceMetric.JS_REFRESH_RATE]?.asJsRefreshRate(),
                 largestContentfulPaint: nil,
                 loadEvent: nil,
                 loadingTime: nil,

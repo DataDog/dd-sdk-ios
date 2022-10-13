@@ -193,7 +193,7 @@ internal class DDNoopRUMMonitor: DDRUMMonitor {
     }
     
     override func updatePerformanceMetric(
-        metric: String,
+        metric: PerformanceMetric,
         value: Double,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {

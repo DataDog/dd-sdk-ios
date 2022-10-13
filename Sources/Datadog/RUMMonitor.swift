@@ -588,7 +588,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     // MARK: - Cross-platform perf metrics
     
     override public func updatePerformanceMetric(
-        metric: String,
+        metric: PerformanceMetric,
         value: Double,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
