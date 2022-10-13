@@ -440,7 +440,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 firstContentfulPaint: nil,
                 firstInputDelay: nil,
                 firstInputTime: nil,
-                flutterBuildTime: viewPerformanceMetrics["flutterBuildTime"]?.asFlutterBuildTime(),
+                flutterBuildTime: viewPerformanceMetrics["flutterBuildTime"]?.asFlutterBuildTime(), // TODO: I'd like to use a constant here
                 flutterRasterTime: viewPerformanceMetrics["flutterRasterTime"]?.asFlutterRasterTime(),
                 frozenFrame: .init(count: frozenFramesCount),
                 frustration: .init(count: frustrationCount),
