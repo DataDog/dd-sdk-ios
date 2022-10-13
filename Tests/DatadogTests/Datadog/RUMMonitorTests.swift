@@ -1386,15 +1386,15 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertNotEqual(transformedCommand.time, mockCommand.time)
         XCTAssertEqual(transformedCommand.time, Date(timeIntervalSince1970: 1)) // 1 in seconds
     }
-    
+
     // MARK: - Cross-platform performance metrics
-    
+
     func testWhenViewIsStarted_performanceMetricsAreSent() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
         core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
-        
+
         monitor.startView(viewController: mockView)
         monitor.updatePerformanceMetric(metric: PerformanceMetric.JS_REFRESH_RATE, value: 40.0)
         monitor.updatePerformanceMetric(metric: PerformanceMetric.JS_REFRESH_RATE, value: 20.0)
@@ -1409,7 +1409,7 @@ class RUMMonitorTests: XCTestCase {
                 XCTAssertEqual(rumModel.view.jsRefreshRate?.max, 40.0)
                 XCTAssertEqual(rumModel.view.jsRefreshRate?.min, 20.0)
                 XCTAssertEqual(rumModel.view.jsRefreshRate?.average, 30.0)
-                
+
                 XCTAssertEqual(rumModel.view.flutterBuildTime?.average, 32.0)
                 XCTAssertEqual(rumModel.view.flutterRasterTime?.average, 42.0)
             }

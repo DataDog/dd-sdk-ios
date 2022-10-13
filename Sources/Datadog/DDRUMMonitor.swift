@@ -285,7 +285,7 @@ public class DDRUMMonitor {
     /// Events created prior to this call will not lose this attribute.
     /// - Parameter key: key for the attribute that will be removed.
     public func removeAttribute(forKey key: AttributeKey) {}
-    
+
     /// Adds a record for a cross-platform performance metric
     /// - Parameters:
     ///   - metric: the name of the performance metric. One of `flutter_build_time`, `flutter_raster_time` or `js_refresh_rate`

@@ -88,7 +88,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     /// Samples view update events, so we can minimize the number of events in payload.
     private let viewUpdatesThrottler: RUMViewUpdatesThrottlerType
-    
+
     private var viewPerformanceMetrics: [PerformanceMetric: VitalInfo] = [:]
 
     init(
@@ -200,7 +200,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         case let command as RUMAddLongTaskCommand where isActiveView:
             sendLongTaskEvent(on: command, context: context, writer: writer)
-        
+
         case let command as RUMUpdatePerformanceMetric where isActiveView:
             updatePerformanceMetric(on: command)
 
@@ -607,7 +607,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         return sanitized
     }
-    
+
     private func updatePerformanceMetric(on command: RUMUpdatePerformanceMetric) {
         if viewPerformanceMetrics[command.metric] == nil {
             viewPerformanceMetrics[command.metric] = VitalInfo()

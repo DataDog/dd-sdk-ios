@@ -9,10 +9,10 @@ import Foundation
 public enum PerformanceMetric {
     // The amount of time Flutter spent in its `build` method for this view.
     case FLUTTER_BUILD_TIME
-    
+
     // The amount of time Flutter spent rasterizing the view.
     case FLUTTER_RASTER_TIME
-    
+
     // The JavaScript refresh rate of a React Native view.
     case JS_REFRESH_RATE
 }

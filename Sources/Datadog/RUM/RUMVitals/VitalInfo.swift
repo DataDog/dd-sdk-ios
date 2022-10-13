@@ -56,7 +56,7 @@ internal struct VitalInfo {
         }
         return self
     }
-    
+
     func asFlutterBuildTime() -> RUMViewEvent.View.FlutterBuildTime {
         return RUMViewEvent.View.FlutterBuildTime(
             average: meanValue ?? 0.0,
@@ -65,7 +65,7 @@ internal struct VitalInfo {
             min: minValue ?? 0.0
         )
     }
-    
+
     func asFlutterRasterTime() -> RUMViewEvent.View.FlutterRasterTime {
         return RUMViewEvent.View.FlutterRasterTime(
             average: meanValue ?? 0.0,
@@ -74,7 +74,7 @@ internal struct VitalInfo {
             min: minValue ?? 0.0
         )
     }
-    
+
     func asJsRefreshRate() -> RUMViewEvent.View.JsRefreshRate {
         return RUMViewEvent.View.JsRefreshRate(
             average: meanValue ?? 0.0,
