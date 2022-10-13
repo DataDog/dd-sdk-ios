@@ -57,27 +57,30 @@ internal struct VitalInfo {
         return self
     }
     
-    func asPerformanceMetric() -> PerformanceMetric {
-        return PerformanceMetric(
+    func asFlutterBuildTime() -> RUMViewEvent.View.FlutterBuildTime {
+        return RUMViewEvent.View.FlutterBuildTime(
             average: meanValue ?? 0.0,
             max: maxValue ?? 0.0,
             metricMax: nil,
             min: minValue ?? 0.0
         )
     }
-}
-
-internal struct PerformanceMetric: Codable {
-    public let average: Double
-    public let max: Double
-    public let metricMax: Double?
-    public let min: Double
     
-    enum CodingKeys: String, CodingKey {
-        case average = "average"
-        case max = "max"
-        case metricMax = "metric_max"
-        case min = "min"
+    func asFlutterRasterTime() -> RUMViewEvent.View.FlutterRasterTime {
+        return RUMViewEvent.View.FlutterRasterTime(
+            average: meanValue ?? 0.0,
+            max: maxValue ?? 0.0,
+            metricMax: nil,
+            min: minValue ?? 0.0
+        )
+    }
+    
+    func asJsRefreshRate() -> RUMViewEvent.View.JsRefreshRate {
+        return RUMViewEvent.View.JsRefreshRate(
+            average: meanValue ?? 0.0,
+            max: maxValue ?? 0.0,
+            metricMax: 60.0,
+            min: minValue ?? 0.0
+        )
     }
 }
-
