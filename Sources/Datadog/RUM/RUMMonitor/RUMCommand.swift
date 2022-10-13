@@ -331,7 +331,7 @@ internal struct RUMKeepSessionAliveCommand: RUMCommand {
 
 // MARK: - Cross-platform perf metrics
 
-internal struct RUMAddCrossPlatformPerfMetric: RUMCommand {
+internal struct RUMUpdatePerformanceMetric: RUMCommand {
     let canStartBackgroundView = false
     let canStartApplicationLaunchView = false
     let isUserInteraction = false

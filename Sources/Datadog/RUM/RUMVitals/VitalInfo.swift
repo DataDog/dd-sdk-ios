@@ -57,8 +57,8 @@ internal struct VitalInfo {
         return self
     }
     
-    func asCrossPlatformPerfMetric() -> CrossPlatformPerfMetric {
-        return CrossPlatformPerfMetric(
+    func asPerformanceMetric() -> PerformanceMetric {
+        return PerformanceMetric(
             average: meanValue ?? 0.0,
             max: maxValue ?? 0.0,
             metricMax: nil,
@@ -67,7 +67,7 @@ internal struct VitalInfo {
     }
 }
 
-internal struct CrossPlatformPerfMetric: Codable {
+internal struct PerformanceMetric: Codable {
     public let average: Double
     public let max: Double
     public let metricMax: Double?

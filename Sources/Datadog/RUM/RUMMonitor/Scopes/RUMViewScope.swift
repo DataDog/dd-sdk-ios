@@ -89,7 +89,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// Samples view update events, so we can minimize the number of events in payload.
     private let viewUpdatesThrottler: RUMViewUpdatesThrottlerType
     
-    private var viewCrossPlatformPerfMetrics: [String: VitalInfo] = [:]
+    private var viewPerformanceMetrics: [String: VitalInfo] = [:]
 
     init(
         isInitialView: Bool,
@@ -201,8 +201,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         case let command as RUMAddLongTaskCommand where isActiveView:
             sendLongTaskEvent(on: command, context: context, writer: writer)
         
-        case let command as RUMAddCrossPlatformPerfMetric where isActiveView:
-            addCrossPlatormPerfMetric(on: command)
+        case let command as RUMUpdatePerformanceMetric where isActiveView:
+            updatePerformanceMetric(on: command)
 
         default:
             break
@@ -440,15 +440,15 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 firstContentfulPaint: nil,
                 firstInputDelay: nil,
                 firstInputTime: nil,
-                flutterBuildTime: viewCrossPlatformPerfMetrics["flutterBuildTime"]?.asCrossPlatformPerfMetric(),
-                flutterRasterTime: viewCrossPlatformPerfMetrics["flutterRasterTime"]?.asCrossPlatformPerfMetric(),
+                flutterBuildTime: viewPerformanceMetrics["flutterBuildTime"]?.asPerformanceMetric() as RUMViewEvent.View.FlutterBuildTime?,
+                flutterRasterTime: viewPerformanceMetrics["flutterRasterTime"]?.asPerformanceMetric() as RUMViewEvent.View.FlutterRasterTime?,
                 frozenFrame: .init(count: frozenFramesCount),
                 frustration: .init(count: frustrationCount),
                 id: viewUUID.toRUMDataFormat,
                 inForegroundPeriods: nil,
                 isActive: isActive,
                 isSlowRendered: isSlowRendered,
-                jsRefreshRate: viewCrossPlatformPerfMetrics["jsRefreshRate"]?.asCrossPlatformPerfMetric(),
+                jsRefreshRate: viewPerformanceMetrics["jsRefreshRate"]?.asPerformanceMetric() as RUMViewEvent.View.JsRefreshRate?,
                 largestContentfulPaint: nil,
                 loadEvent: nil,
                 loadingTime: nil,
@@ -608,10 +608,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         return sanitized
     }
     
-    private func addCrossPlatormPerfMetric(on command: RUMAddCrossPlatformPerfMetric) {
-        if viewCrossPlatformPerfMetrics[command.metric] == nil {
-            viewCrossPlatformPerfMetrics[command.metric] = VitalInfo()
+    private func updatePerformanceMetric(on command: RUMUpdatePerformanceMetric) {
+        if viewPerformanceMetrics[command.metric] == nil {
+            viewPerformanceMetrics[command.metric] = VitalInfo()
         }
-        viewCrossPlatformPerfMetrics[command.metric]?.addSample(command.value)
+        viewPerformanceMetrics[command.metric]?.addSample(command.value)
     }
 }

@@ -587,13 +587,13 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     
     // MARK: - Cross-platform perf metrics
     
-    override public func addCrossPlatformPerfMetric(
+    override public func updatePerformanceMetric(
         metric: String,
         value: Double,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
         process(
-            command: RUMAddCrossPlatformPerfMetric(
+            command: RUMUpdatePerformanceMetric(
                 metric: metric,
                 value: value,
                 time: dateProvider.now,
