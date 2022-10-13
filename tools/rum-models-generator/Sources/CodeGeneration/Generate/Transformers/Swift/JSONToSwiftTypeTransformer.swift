@@ -180,13 +180,14 @@ internal class JSONToSwiftTypeTransformer {
         )
     }
 
-    /// The `oneOf` schema appearing in nested (not root) context gets transformed into Swift enum
-    /// with associated values. Each `case` represents a single sub-suchema from `oneOf` array.
+    /// The `oneOf` and `anyOf` schemas appearing in nested (not root) context gets transformed into Swift enum
+    /// with associated values for representing union types. Each `case` represents a single sub-suchema from
+    /// `oneOf` or `anyOf` array.
     ///
     /// Following default and fallback for determining `case` names (labels) are implemented:
-    /// - If **all** `oneOf` sub-schemas define their `title` **and** all titles are unique, enum cases will be
+    /// - If **all**  sub-schemas define their `title` **and** all titles are unique, enum cases will be
     /// named by sub-schema titles.
-    /// - Otherwise, if **all** `oneOf` sub-schemas represent different `types`, enum cases will be named by
+    /// - Otherwise, if **all** sub-schemas represent different `types`, enum cases will be named by
     /// the name of sub-schema `type`.
     /// - If none of above is met, an incompatibility error will be thrown.
     private func transformJSONUnion(_ jsonUnion: JSONUnionType) throws -> SwiftAssociatedTypeEnum {

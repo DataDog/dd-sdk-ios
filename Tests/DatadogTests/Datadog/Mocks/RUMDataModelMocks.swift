@@ -147,9 +147,12 @@ extension RUMViewEvent: RandomMockable {
                 domContentLoaded: .mockRandom(),
                 domInteractive: .mockRandom(),
                 error: .init(count: .mockRandom()),
+                firstByte: .mockRandom(),
                 firstContentfulPaint: .mockRandom(),
                 firstInputDelay: .mockRandom(),
                 firstInputTime: .mockRandom(),
+                flutterBuildTime: nil,
+                flutterRasterTime: nil,
                 frozenFrame: .init(count: .mockRandom()),
                 frustration: nil,
                 id: .mockRandom(),
@@ -161,6 +164,7 @@ extension RUMViewEvent: RandomMockable {
                 ],
                 isActive: viewIsActive,
                 isSlowRendered: .mockRandom(),
+                jsRefreshRate: nil,
                 largestContentfulPaint: .mockRandom(),
                 loadEvent: .mockRandom(),
                 loadingTime: viewTimeSpent,
@@ -185,6 +189,8 @@ extension RUMResourceEvent: RandomMockable {
         return RUMResourceEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                discarded: nil,
+                rulePsr: nil,
                 session: .init(plan: .plan1),
                 spanId: .mockRandom(),
                 traceId: .mockRandom()
@@ -372,6 +378,7 @@ extension RUMLongTaskEvent: RandomMockable {
         return RUMLongTaskEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                discarded: nil,
                 session: .init(plan: .plan1)
             ),
             action: .init(id: .mockRandom()),
