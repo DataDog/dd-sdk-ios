@@ -11,6 +11,8 @@ import CodeGeneration
 public class SRCodeDecorator: SwiftCodeDecorator {
     /// `SRDataModel` protocol, implemented by all Session Replay models.
     private let srDataModelProtocol = SwiftProtocol(name: "SRDataModel", conformance: [codableProtocol])
+    /// `Hashable` protocol, implemented by wireframes which need to be compared in diff (for incremental records).
+    private let hashableProtocol = SwiftProtocol(name: "Hashable", conformance: [codableProtocol])
 
     public init() {
         super.init(
@@ -33,6 +35,8 @@ public class SRCodeDecorator: SwiftCodeDecorator {
                 // For convenience, detach styles from each wireframe to shared, root-level definition:
                 "SRShapeBorder",
                 "SRShapeStyle",
+                "SRTextPosition",
+                "SRTextStyle",
             ]
         )
     }
@@ -52,6 +56,14 @@ public class SRCodeDecorator: SwiftCodeDecorator {
 
         if context.parent == nil {
             `struct`.conformance = [srDataModelProtocol] // Conform root structs to `SRDataModel`
+        }
+
+        let isWireframe = `struct`.name.lowercased().contains("wireframe")
+        let isNestedInWireframe = context.predecessorStruct(matching: { $0.name.lowercased().contains("wireframe") }) != nil
+        let notWireframeUpdate = !`struct`.name.hasSuffix("WireframeUpdate") // to exclude `TextWireframeUpdate`, `ShapeWireframeUpdate`, ...
+
+        if (isWireframe || isNestedInWireframe) && notWireframeUpdate {
+            `struct`.conformance.append(hashableProtocol)
         }
 
         return `struct`
@@ -98,6 +110,12 @@ public class SRCodeDecorator: SwiftCodeDecorator {
         }
         if parentWireframe != nil && fixedName == "ShapeStyle" {
             fixedName = "SRShapeStyle"
+        }
+        if parentWireframe != nil && fixedName == "TextPosition" {
+            fixedName = "SRTextPosition"
+        }
+        if parentWireframe != nil && fixedName == "TextStyle" {
+            fixedName = "SRTextStyle"
         }
 
         // Ensure all root types have `SR` prefix:

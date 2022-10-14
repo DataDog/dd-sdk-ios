@@ -84,8 +84,6 @@ extension ViewTreeSnapshotBuilder {
             nodeRecorders: [
                 UIViewRecorder(),
                 UILabelRecorder(),
-                UIViewRecorder(),
-                UILabelRecorder(),
                 UIImageViewRecorder(),
                 UITextFieldRecorder(),
                 UISwitchRecorder(),
