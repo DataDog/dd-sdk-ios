@@ -65,7 +65,9 @@ internal struct TracingMessageReceiver: FeatureMessageReceiver {
         }
     }
 
-    /// Adds RUM Error with given message and stack to current RUM View.
+    /// Updates RUM attributes of the `Global.sharedTracer` if available.
+    ///
+    /// - Parameter context: The updated core context.
     private func update(context: DatadogContext) -> Bool {
         guard
             let tracer = Global.sharedTracer as? Tracer,

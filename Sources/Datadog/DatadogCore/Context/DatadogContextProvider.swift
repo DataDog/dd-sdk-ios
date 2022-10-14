@@ -84,7 +84,7 @@ internal final class DatadogContextProvider {
         return context
     }
 
-    /// Publishes context changes to tge given receiver.
+    /// Publishes context changes to the given receiver.
     ///
     /// - Parameter receiver: The receiver closure.
     func publish(to receiver: @escaping ContextValueReceiver<DatadogContext>) {
