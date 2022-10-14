@@ -38,6 +38,21 @@ class DiffTests: XCTestCase {
         XCTAssertTrue(diff.isEmpty)
     }
 
+    func testDiffOfEmptySequencesShouldBeEmpty() throws {
+        // Given
+        let sequenceA: [Mock] = []
+        let sequenceB: [Mock] = []
+
+        // When
+        let diff = try computeDiff(oldArray: sequenceA, newArray: sequenceB)
+
+        // Then
+        XCTAssertEqual(diff.adds, [])
+        XCTAssertEqual(diff.updates, [])
+        XCTAssertEqual(diff.removes, [])
+        XCTAssertTrue(diff.isEmpty)
+    }
+
     func testDiffFromEmptySequenceShouldGiveOnlyUpdates() throws {
         // Given
         let sequenceA: [Mock] = []
@@ -76,21 +91,26 @@ class DiffTests: XCTestCase {
     }
 
     func testWhenApplyingDiffOnTopOfTheOriginalSequence_itShouldProduceTheOtherSequence() throws {
-        // Given
-        let originalSequence: [Mock] = (0..<1_000).map { Mock(id: $0) }
+        // Test for short long sequences to cover more edge cases
+        let testedLengths: [Int64] = [2, 5, 500, 1_000]
 
-        var randomized = originalSequence
-        randomized += (1_001..<1_100).map { Mock(id: $0) } // add new elements
-        randomized.shuffle() // randomize order
-        randomized = Array(randomized.prefix(.mockRandom(min: 0, max: randomized.count - 1))) // cut at random position
+        try testedLengths.forEach { length in
+            // Given
+            let originalSequence: [Mock] = (0..<length).map { Mock(id: $0) }
 
-        let newSequence = Array(randomized)
+            var randomized = originalSequence
+            randomized += ((length + 1)..<(length * 2)).map { Mock(id: $0) } // add new elements
+            randomized.shuffle() // randomize order
+            randomized = Array(randomized.prefix(.mockRandom(min: 0, max: randomized.count - 1))) // cut at random position
 
-        // When
-        let diff = try computeDiff(oldArray: originalSequence, newArray: newSequence)
+            let newSequence = Array(randomized)
 
-        // Then
-        XCTAssertEqual(originalSequence.merge(diff: diff), newSequence)
+            // When
+            let diff = try computeDiff(oldArray: originalSequence, newArray: newSequence)
+
+            // Then
+            XCTAssertEqual(originalSequence.merge(diff: diff), newSequence)
+        }
     }
 
     // MARK: - Test Additions

@@ -74,13 +74,11 @@ internal struct DiffError: Error {}
 /// An item in symbols table (`[DiffableID: Symbol]`) in Heckel's algorithm.
 ///
 /// Note: Unlike original algorithm, our implementation doesn't use `OC`, `NC` and `OLNO` counters. In our case, elements within each array are unique,
-/// so instead of repetition counters, we define basic `Bool` flags to track occurence of certain `id` in one or both files.
+/// so instead of repetition counters, we define basic `inNew` flag and optional `indexInOld` to track occurence of certain `id` in one or both files.
 private struct Symbol {
-    /// If element with certain `id` occurs in `oldArray`.
-    var inOld: Bool
     /// If element with certain `id` occurs in `newArray`.
     var inNew: Bool
-    /// The index of element in `oldArray`.
+    /// The index of element in `oldArray` (or `nil` if the element is not there).
     var indexInOld: Int?
 }
 
@@ -120,7 +118,7 @@ internal func computeDiff<E: Diffable>(oldArray: [E], newArray: [E]) throws -> D
     // 1st pass
     // Read `newArray` and store info on each element in symbols `table`:
     for element in newArray {
-        table[element.id] = Symbol(inOld: false, inNew: true, indexInOld: nil)
+        table[element.id] = Symbol(inNew: true, indexInOld: nil)
         na.append(.reference(element.id))
     }
 
@@ -129,9 +127,8 @@ internal func computeDiff<E: Diffable>(oldArray: [E], newArray: [E]) throws -> D
     // exists, update its information (otherwise create new entry):
     for (index, element) in oldArray.enumerated() {
         if table[element.id] == nil {
-            table[element.id] = Symbol(inOld: true, inNew: false, indexInOld: index)
+            table[element.id] = Symbol(inNew: false, indexInOld: index)
         } else {
-            table[element.id]?.inOld = true
             table[element.id]?.indexInOld = index
         }
         oa.append(.reference(element.id))
@@ -146,10 +143,7 @@ internal func computeDiff<E: Diffable>(oldArray: [E], newArray: [E]) throws -> D
             guard let symbol = table[id] else {
                 throw DiffError()
             }
-            if symbol.inOld && symbol.inNew {
-                guard let indexInOld = symbol.indexInOld else {
-                    throw DiffError()
-                }
+            if symbol.inNew, let indexInOld = symbol.indexInOld {
                 na[index] = .index(indexInOld)
                 oa[indexInOld] = .index(index)
             }
@@ -160,7 +154,7 @@ internal func computeDiff<E: Diffable>(oldArray: [E], newArray: [E]) throws -> D
     // > If a line has been found to be unaltered, and the lines immediately adjacent to it in both files are identical,
     // > then these lines must be the same line. This information can be used to find blocks of unchanged lines.
     if na.count > 1 {
-        for i in (1..<(na.count - 1)) {
+        for i in (0..<(na.count - 1)) {
             if case let .index(j) = na[i], j + 1 < oa.count {
                 if case let .reference(id1) = na[i + 1], case let .reference(id2) = oa[j + 1], id1 == id2 {
                     na[i + 1] = .index(j + 1)
@@ -173,7 +167,7 @@ internal func computeDiff<E: Diffable>(oldArray: [E], newArray: [E]) throws -> D
     // 5th pass
     // Similar to 4th pass, except it processes entries in descending order.
     if na.count > 1 {
-        for i in (1..<(na.count - 1)).reversed() {
+        for i in (1..<na.count).reversed() {
             if case let .index(j) = na[i], j - 1 >= 0 {
                 if case let .reference(id1) = na[i - 1], case let .reference(id2) = oa[j - 1], id1 == id2 {
                     na[i - 1] = .index(j - 1)
