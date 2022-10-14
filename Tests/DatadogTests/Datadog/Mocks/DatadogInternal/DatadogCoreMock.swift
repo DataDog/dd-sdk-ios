@@ -10,13 +10,13 @@ import XCTest
 @testable import Datadog
 
 internal final class DatadogCoreMock: Flushable {
-    /// Registery for Features.
+    /// Registry for Features.
     private var features: [String: (
         feature: DatadogFeature,
         writer: Writer
     )] = [:]
 
-    /// Registery for Feature Integrations.
+    /// Registry for Feature Integrations.
     private var integrations: [String: DatadogFeatureIntegration] = [:]
 
     private var v1Features: [String: Any] = [:]

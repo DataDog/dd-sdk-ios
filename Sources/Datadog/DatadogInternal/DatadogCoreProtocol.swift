@@ -13,7 +13,7 @@ public internal(set) var defaultDatadogCore: DatadogCoreProtocol = NOPDatadogCor
 public protocol DatadogCoreProtocol {
     /// Registers a Feature instance.
     ///
-    /// A Feature collect and transfer data to a Datadog Product (e.g. Logs, RUM, ...). A registered Feature can
+    /// A Feature collects and transfers data to a Datadog Product (e.g. Logs, RUM, ...). A registered Feature can
     /// open a `FeatureScope` to write events, the core will then be responsible for storing and uploading events
     /// in a efficient manner. Performance presets for storage and upload are define when instanciating the core instance.
     ///
@@ -37,7 +37,7 @@ public protocol DatadogCoreProtocol {
 
     /// Registers a Feature Integration instance.
     ///
-    /// A Feature Integration collect and transfer data to a local Datadog Feature. An Integration will not store nor upload,
+    /// A Feature Integration collects and transfers data to a local Datadog Feature. An Integration will not store nor upload,
     /// it will collect data for other Features to consume.
     ///
     /// An Integration can commicate to Features via dependency or a communication channel such as the message-bus.

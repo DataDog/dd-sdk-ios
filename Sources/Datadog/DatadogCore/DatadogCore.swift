@@ -59,17 +59,17 @@ internal final class DatadogCore {
     /// The message bus used to dispatch messages to registered features.
     private var messageBus: [FeatureMessageReceiver] = []
 
-    /// Registery for Features.
+    /// Registry for Features.
     private var features: [String: (
         feature: DatadogFeature,
         storage: FeatureStorage,
         upload: FeatureUpload
     )] = [:]
 
-    /// Registery for Feature Integrations.
+    /// Registry for Feature Integrations.
     private var integrations: [String: DatadogFeatureIntegration] = [:]
 
-    /// Registery for v1 features.
+    /// Registry for v1 features.
     private var v1Features: [String: Any] = [:]
 
     /// The SDK Context for V1.
@@ -156,7 +156,7 @@ internal final class DatadogCore {
 extension DatadogCore: DatadogCoreProtocol {
     /// Registers a Feature instance.
     ///
-    /// A Feature collect and transfer data to a Datadog Product (e.g. Logs, RUM, ...). A registered Feature can
+    /// A Feature collects and transfers data to a Datadog Product (e.g. Logs, RUM, ...). A registered Feature can
     /// open a `FeatureScope` to write events, the core will then be responsible for storing and uploading events
     /// in a efficient manner. Performance presets for storage and upload are define when instanciating the core instance.
     ///
