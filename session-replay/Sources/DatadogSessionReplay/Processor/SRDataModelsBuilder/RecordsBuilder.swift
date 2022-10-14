@@ -44,14 +44,14 @@ internal class RecordsBuilder {
     func createFullOrIncrementalSnapshotRecord(from snapshot: ViewTreeSnapshot, with wireframes: [SRWireframe]) -> SRRecord? {
         defer { lastWireframes = wireframes }
 
-        if let lastWireframes = lastWireframes {
-            do {
-                return try createIncrementalRecord(from: snapshot, newWireframes: wireframes, lastWireframes: lastWireframes)
-            } catch { // TODO: RUMM-2410 Use `DD.logger` and / or `DD.telemetry` to report ISR errors
-                // In case of any trouble, fallback to FSR which is always possible:
-                return createFullSnapshotRecord(from: snapshot, wireframes: wireframes)
-            }
-        } else {
+        guard let lastWireframes = lastWireframes else {
+            return createFullSnapshotRecord(from: snapshot, wireframes: wireframes)
+        }
+
+        do {
+            return try createIncrementalRecord(from: snapshot, newWireframes: wireframes, lastWireframes: lastWireframes)
+        } catch { // TODO: RUMM-2410 Use `DD.logger` and / or `DD.telemetry` to report ISR errors
+            // In case of any trouble, fallback to FSR which is always possible:
             return createFullSnapshotRecord(from: snapshot, wireframes: wireframes)
         }
     }
@@ -81,9 +81,7 @@ internal class RecordsBuilder {
                     adds: diff.adds.map { addition in .init(previousId: addition.previousID, wireframe: addition.new) },
                     removes: diff.removes.map { removal in .init(id: removal.id) },
                     updates: try diff.updates.compactMap { update in
-                        let newWireframe = update.to
-                        let oldWireframe = update.from
-                        return try newWireframe.mutations(from: oldWireframe)
+                        return try update.to.mutations(from: update.from)
                     }
                 )
             ),
