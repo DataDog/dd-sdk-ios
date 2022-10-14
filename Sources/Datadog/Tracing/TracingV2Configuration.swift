@@ -14,7 +14,7 @@ internal func createTracingConfiguration(intake: URL) -> DatadogFeatureConfigura
     return DatadogFeatureConfiguration(
         name: "tracing",
         requestBuilder: TracingRequestBuilder(intake: intake),
-        messageReceiver: NOPFeatureMessageReceiver()
+        messageReceiver: TracingMessageReceiver()
     )
 }
 
@@ -47,5 +47,36 @@ internal struct TracingRequestBuilder: FeatureRequestBuilder {
 
         let data = format.format(events)
         return builder.uploadRequest(with: data)
+    }
+}
+
+internal struct TracingMessageReceiver: FeatureMessageReceiver {
+    /// Process messages receives from the bus.
+    ///
+    /// - Parameters:
+    ///   - message: The Feature message
+    ///   - core: The core from which the message is transmitted.
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        switch message {
+        case .context(let context):
+            return update(context: context)
+        default:
+            return false
+        }
+    }
+
+    /// Updates RUM attributes of the `Global.sharedTracer` if available.
+    ///
+    /// - Parameter context: The updated core context.
+    private func update(context: DatadogContext) -> Bool {
+        guard
+            let tracer = Global.sharedTracer as? Tracer,
+            let integration = tracer.rumIntegration
+        else {
+            return false
+        }
+
+        integration.attribues = context.featuresAttributes["rum"]?.all()
+        return true
     }
 }

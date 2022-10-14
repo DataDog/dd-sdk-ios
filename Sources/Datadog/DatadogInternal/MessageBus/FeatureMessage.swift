@@ -27,4 +27,10 @@ public enum FeatureMessage {
         key: String,
         baggage: FeatureBaggage
     )
+
+    /// A core context message.
+    ///
+    /// The core will send updated context throught the bus. Do not send new context values
+    /// from a Feature or Integration.
+    case context(DatadogContext)
 }

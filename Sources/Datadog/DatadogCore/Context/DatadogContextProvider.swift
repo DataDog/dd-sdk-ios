@@ -39,7 +39,9 @@ internal final class DatadogContextProvider {
     /// The current `context`.
     ///
     /// The value must be accessed from the `queue` only.
-    private var context: DatadogContext
+    private var context: DatadogContext {
+        didSet { receivers.forEach { $0(context) } }
+    }
 
     /// The queue used to synchronize the access to the `DatadogContext`.
     ///
@@ -50,7 +52,13 @@ internal final class DatadogContextProvider {
         qos: .utility
     )
 
+    /// List of receivers to invoke when the context changes.
+    private var receivers: [ContextValueReceiver<DatadogContext>]
+
+    /// List of subscription of context values.
     private var subscriptions: [ContextValueSubscription]
+
+    /// A reader for key-path values of the context.
     private var reader: KeyPathContextValueReader<DatadogContext>
 
     /// Creates a context provider to perform reads and writes on the
@@ -59,6 +67,7 @@ internal final class DatadogContextProvider {
     /// - Parameter context: The inital context value.
     init(context: DatadogContext) {
         self.context = context
+        self.receivers = []
         self.subscriptions = []
         self.reader = KeyPathContextValueReader()
     }
@@ -71,9 +80,15 @@ internal final class DatadogContextProvider {
     ///
     /// **Warning:** Must be called from the `queue`.
     private func unsafeRead() -> DatadogContext {
-        var context = self.context
-        reader.read(to: &context)
+        reader.read(to: &self.context)
         return context
+    }
+
+    /// Publishes context changes to the given receiver.
+    ///
+    /// - Parameter receiver: The receiver closure.
+    func publish(to receiver: @escaping ContextValueReceiver<DatadogContext>) {
+        queue.async(flags: .barrier) { self.receivers.append(receiver) }
     }
 
     /// Reads to the `context` synchronously, by blocking the caller thread.

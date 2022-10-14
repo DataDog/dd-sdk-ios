@@ -68,6 +68,47 @@ class DatadogContextProviderTests: XCTestCase {
         XCTAssertEqual(context.carrierInfo, carrierInfo)
     }
 
+    func testPublishNewContextOnValueChange() throws {
+        let expectation = self.expectation(description: "publish new context")
+        expectation.expectedFulfillmentCount = 3
+
+        // Given
+        let serverOffsetPublisher = ContextValuePublisherMock<TimeInterval>(initialValue: 0)
+
+        let provider = DatadogContextProvider(context: context)
+        provider.subscribe(\.serverTimeOffset, to: serverOffsetPublisher)
+
+        provider.publish { _ in
+            expectation.fulfill()
+        }
+
+        // When
+        (0..<expectation.expectedFulfillmentCount).forEach { _ in
+            serverOffsetPublisher.value = .mockRandomInThePast()
+        }
+
+        wait(for: [expectation], timeout: 0.5)
+    }
+
+    func testPublishContextOnContextRead() throws {
+        let expectation = self.expectation(description: "publish new context")
+        expectation.expectedFulfillmentCount = 3
+
+        // Given
+
+        let provider = DatadogContextProvider(context: context)
+        provider.publish { _ in
+            expectation.fulfill()
+        }
+
+        // When
+        (0..<expectation.expectedFulfillmentCount).forEach { _ in
+            _ = provider.read()
+        }
+
+        wait(for: [expectation], timeout: 0.5)
+    }
+
     // MARK: - Thread Safety
 
     func testThreadSafety() {

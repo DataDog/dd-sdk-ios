@@ -663,53 +663,24 @@ class TracerTests: XCTestCase {
         core.register(feature: rum)
 
         // given
-        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
+        Global.sharedTracer = Tracer.initialize(configuration: .init(), in: core).dd
+        defer { Global.sharedTracer = DDNoopTracer() }
         Global.rum = RUMMonitor.initialize(in: core)
         Global.rum.startView(viewController: mockView)
         defer { Global.rum = DDNoopRUMMonitor() }
 
         // when
-        let span = tracer.startSpan(operationName: "operation", tags: [:], startTime: Date())
+        let span = Global.sharedTracer.startSpan(operationName: "operation", tags: [:], startTime: Date())
         span.finish()
 
         // then
         let spanMatcher = try tracing.waitAndReturnSpanMatchers(count: 1)[0]
         XCTAssertEqual(
-            try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.applicationID)"),
+            try spanMatcher.meta.custom(keyPath: "meta.\(RUMMonitor.Attributes.applicationID)"),
             rum.configuration.applicationID
         )
-        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.sessionID)"))
-        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.viewID)"))
-    }
-
-    func testGivenBundlingWithRUMEnabledButRUMMonitorNotRegistered_whenSendingSpan_itPrintsWarning() throws {
-        let tracing: TracingFeature = .mockByRecordingSpanMatchers()
-        core.register(feature: tracing)
-
-        let rum: RUMFeature = .mockNoOp()
-        core.register(feature: rum)
-
-        let dd = DD.mockWith(logger: CoreLoggerMock())
-        defer { dd.reset() }
-
-        // given
-        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
-        XCTAssertTrue(Global.rum is DDNoopRUMMonitor)
-
-        // when
-        let span = tracer.startSpan(operationName: "operation", tags: [:], startTime: Date())
-        span.finish()
-
-        // then
-        try XCTAssertTrue(
-            XCTUnwrap(dd.logger.warnLog?.message)
-                .contains("RUM feature is enabled, but no `RUMMonitor` is registered. The RUM integration with Tracing will not work.")
-        )
-
-        let spanMatcher = try tracing.waitAndReturnSpanMatchers(count: 1)[0]
-        XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.applicationID)"))
-        XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.sessionID)"))
-        XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMContextIntegration.Attributes.viewID)"))
+        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMMonitor.Attributes.sessionID)"))
+        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMMonitor.Attributes.viewID)"))
     }
 
     // MARK: - Injecting span context into carrier

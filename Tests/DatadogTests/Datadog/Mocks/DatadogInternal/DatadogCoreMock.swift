@@ -23,7 +23,9 @@ internal final class DatadogCoreMock: Flushable {
 
     /// ordered/non-recursive lock on the context.
     private let lock = NSLock()
-    private var _context: DatadogContext
+    private var _context: DatadogContext {
+        didSet { send(message: .context(_context)) }
+    }
 
     init(context: DatadogContext = .mockAny()) {
         _context = context

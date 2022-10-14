@@ -100,7 +100,13 @@ internal final class DatadogCore {
         self.encryption = encryption
         self.v1Context = v1Context
         self.contextProvider = contextProvider
+
         self.contextProvider.subscribe(\.userInfo, to: userInfoPublisher)
+
+        // forward any context change on the message-bus
+        self.contextProvider.publish { [weak self] context in
+            self?.send(message: .context(context))
+        }
     }
 
     /// Sets current user information.
