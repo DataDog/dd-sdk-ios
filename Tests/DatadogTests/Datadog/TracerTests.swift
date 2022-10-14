@@ -683,25 +683,6 @@ class TracerTests: XCTestCase {
         XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMMonitor.Attributes.viewID)"))
     }
 
-    func testGivenBundlingWithRUMEnabledButRUMMonitorNotRegistered_whenSendingSpan_itPrintsWarning() throws {
-        let tracing: TracingFeature = .mockByRecordingSpanMatchers()
-        core.register(feature: tracing)
-
-        // given
-        Global.sharedTracer = Tracer.initialize(configuration: .init(), in: core).dd
-        defer { Global.sharedTracer = DDNoopTracer() }
-
-        // when
-        let span = Global.sharedTracer.startSpan(operationName: "operation", tags: [:], startTime: Date())
-        span.finish()
-
-        // then
-        let spanMatcher = try tracing.waitAndReturnSpanMatchers(count: 1)[0]
-        XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMMonitor.Attributes.applicationID)"))
-        XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMMonitor.Attributes.sessionID)"))
-        XCTAssertNil(try? spanMatcher.meta.custom(keyPath: "meta.\(RUMMonitor.Attributes.viewID)"))
-    }
-
     // MARK: - Injecting span context into carrier
 
     func testItInjectsSpanContextWithHTTPHeadersWriter() {
