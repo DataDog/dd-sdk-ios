@@ -615,3 +615,32 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         viewPerformanceMetrics[command.metric]?.addSample(command.value)
     }
 }
+
+private extension VitalInfo {
+    func asFlutterBuildTime() -> RUMViewEvent.View.FlutterBuildTime {
+        return RUMViewEvent.View.FlutterBuildTime(
+            average: meanValue ?? 0.0,
+            max: maxValue ?? 0.0,
+            metricMax: nil,
+            min: minValue ?? 0.0
+        )
+    }
+
+    func asFlutterRasterTime() -> RUMViewEvent.View.FlutterRasterTime {
+        return RUMViewEvent.View.FlutterRasterTime(
+            average: meanValue ?? 0.0,
+            max: maxValue ?? 0.0,
+            metricMax: nil,
+            min: minValue ?? 0.0
+        )
+    }
+
+    func asJsRefreshRate() -> RUMViewEvent.View.JsRefreshRate {
+        return RUMViewEvent.View.JsRefreshRate(
+            average: meanValue ?? 0.0,
+            max: maxValue ?? 0.0,
+            metricMax: 60.0,
+            min: minValue ?? 0.0
+        )
+    }
+}
