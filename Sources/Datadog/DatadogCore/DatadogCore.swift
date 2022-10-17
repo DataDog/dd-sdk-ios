@@ -359,7 +359,7 @@ extension DatadogContextProvider {
         #endif
 
         #if os(iOS) && !targetEnvironment(simulator)
-        assign(reader: BatteryStatusReader(), to: \.batteryStatus)
+        subscribe(\.batteryStatus, to: BatteryStatusPublisher())
         #endif
 
         #if os(iOS) || os(tvOS)
