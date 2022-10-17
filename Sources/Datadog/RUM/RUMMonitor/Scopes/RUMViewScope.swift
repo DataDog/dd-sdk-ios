@@ -89,6 +89,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// Samples view update events, so we can minimize the number of events in payload.
     private let viewUpdatesThrottler: RUMViewUpdatesThrottlerType
 
+    private var viewPerformanceMetrics: [PerformanceMetric: VitalInfo] = [:]
+
     init(
         isInitialView: Bool,
         parent: RUMContextProvider,
@@ -198,6 +200,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         case let command as RUMAddLongTaskCommand where isActiveView:
             sendLongTaskEvent(on: command, context: context, writer: writer)
+
+        case let command as RUMUpdatePerformanceMetric where isActiveView:
+            updatePerformanceMetric(on: command)
 
         default:
             break
@@ -435,15 +440,15 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 firstContentfulPaint: nil,
                 firstInputDelay: nil,
                 firstInputTime: nil,
-                flutterBuildTime: nil,
-                flutterRasterTime: nil,
+                flutterBuildTime: viewPerformanceMetrics[.flutterBuildTime]?.asFlutterBuildTime(),
+                flutterRasterTime: viewPerformanceMetrics[.flutterRasterTime]?.asFlutterRasterTime(),
                 frozenFrame: .init(count: frozenFramesCount),
                 frustration: .init(count: frustrationCount),
                 id: viewUUID.toRUMDataFormat,
                 inForegroundPeriods: nil,
                 isActive: isActive,
                 isSlowRendered: isSlowRendered,
-                jsRefreshRate: nil,
+                jsRefreshRate: viewPerformanceMetrics[.jsRefreshRate]?.asJsRefreshRate(),
                 largestContentfulPaint: nil,
                 loadEvent: nil,
                 loadingTime: nil,
@@ -496,6 +501,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             device: .init(context: context),
             display: nil,
             error: .init(
+                causes: nil,
                 handling: nil,
                 handlingStack: nil,
                 id: nil,
@@ -600,5 +606,41 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
 
         return sanitized
+    }
+
+    private func updatePerformanceMetric(on command: RUMUpdatePerformanceMetric) {
+        if viewPerformanceMetrics[command.metric] == nil {
+            viewPerformanceMetrics[command.metric] = VitalInfo()
+        }
+        viewPerformanceMetrics[command.metric]?.addSample(command.value)
+    }
+}
+
+private extension VitalInfo {
+    func asFlutterBuildTime() -> RUMViewEvent.View.FlutterBuildTime {
+        return RUMViewEvent.View.FlutterBuildTime(
+            average: meanValue ?? 0.0,
+            max: maxValue ?? 0.0,
+            metricMax: nil,
+            min: minValue ?? 0.0
+        )
+    }
+
+    func asFlutterRasterTime() -> RUMViewEvent.View.FlutterRasterTime {
+        return RUMViewEvent.View.FlutterRasterTime(
+            average: meanValue ?? 0.0,
+            max: maxValue ?? 0.0,
+            metricMax: nil,
+            min: minValue ?? 0.0
+        )
+    }
+
+    func asJsRefreshRate() -> RUMViewEvent.View.JsRefreshRate {
+        return RUMViewEvent.View.JsRefreshRate(
+            average: meanValue ?? 0.0,
+            max: maxValue ?? 0.0,
+            metricMax: 60.0,
+            min: minValue ?? 0.0
+        )
     }
 }
