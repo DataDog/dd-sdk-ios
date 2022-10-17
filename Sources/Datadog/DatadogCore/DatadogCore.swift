@@ -360,6 +360,7 @@ extension DatadogContextProvider {
 
         #if os(iOS) && !targetEnvironment(simulator)
         subscribe(\.batteryStatus, to: BatteryStatusPublisher())
+        subscribe(\.isLowPowerModeEnabled, to: LowPowerModePublisher())
         #endif
 
         #if os(iOS) || os(tvOS)
