@@ -22,21 +22,29 @@ import Foundation
     let messageReceiver: FeatureMessageReceiver
 }
 
-/* public */ internal struct DatadogFeature<Configuration> {
+public protocol DatadogFeature {
     /// The feature name.
-    let name: String
-
-    /// The feature-specific configuration.
-    let configuration: Configuration
+    var name: String { get }
 
     /// The URL request builder for uploading data in this Feature.
     ///
     /// This builder currently use the v1 context, but will be soon migrated to v2
-    let requestBuilder: FeatureRequestBuilder
+    var requestBuilder: FeatureRequestBuilder { get }
 
     /// The message bus receiver.
     ///
     /// The `FeatureMessageReceiver` defines an interface for Feature to receive any message
     /// from a bus that is shared between Features registered in a core.
-    let messageReceiver: FeatureMessageReceiver
+    var messageReceiver: FeatureMessageReceiver { get }
+}
+
+public protocol DatadogFeatureIntegration {
+    /// The feature name.
+    var name: String { get }
+
+    /// The message bus receiver.
+    ///
+    /// The `FeatureMessageReceiver` defines an interface for Feature to receive any message
+    /// from a bus that is shared between Features registered in a core.
+    var messageReceiver: FeatureMessageReceiver { get }
 }

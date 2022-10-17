@@ -59,7 +59,17 @@ internal final class DatadogCore {
     /// The message bus used to dispatch messages to registered features.
     private var messageBus: [FeatureMessageReceiver] = []
 
-    /// Registery for v1 features.
+    /// Registry for Features.
+    private var features: [String: (
+        feature: DatadogFeature,
+        storage: FeatureStorage,
+        upload: FeatureUpload
+    )] = [:]
+
+    /// Registry for Feature Integrations.
+    private var integrations: [String: DatadogFeatureIntegration] = [:]
+
+    /// Registry for v1 features.
     private var v1Features: [String: Any] = [:]
 
     /// The SDK Context for V1.
@@ -144,6 +154,100 @@ internal final class DatadogCore {
 }
 
 extension DatadogCore: DatadogCoreProtocol {
+    /// Registers a Feature instance.
+    ///
+    /// A Feature collects and transfers data to a Datadog Product (e.g. Logs, RUM, ...). A registered Feature can
+    /// open a `FeatureScope` to write events, the core will then be responsible for storing and uploading events
+    /// in a efficient manner. Performance presets for storage and upload are define when instanciating the core instance.
+    ///
+    /// A Feature can also communicate to other Features by sending message on the bus that is managed by the core.
+    ///
+    /// - Parameter feature: The Feature instance.
+    /* public */ func register(feature: DatadogFeature) throws {
+        let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: feature.name)
+
+        let storage = FeatureStorage(
+            featureName: feature.name,
+            queue: readWriteQueue,
+            directories: featureDirectories,
+            dateProvider: dateProvider,
+            consentProvider: consentProvider,
+            performance: performance,
+            encryption: encryption
+        )
+
+        let upload = FeatureUpload(
+            featureName: feature.name,
+            contextProvider: contextProvider,
+            fileReader: storage.reader,
+            requestBuilder: feature.requestBuilder,
+            httpClient: httpClient,
+            performance: performance
+        )
+
+        features[feature.name] = (
+            feature: feature,
+            storage: storage,
+            upload: upload
+        )
+
+        connectBus()
+    }
+
+    /// Retrieves a Feature by its name and type.
+    ///
+    /// A Feature type can be specified as parameter or inferred from the return type:
+    ///
+    ///     let feature = core.feature(named: "foo", type: Foo.self)
+    ///     let feature: Foo? = core.feature(named: "foo")
+    ///
+    /// - Parameters:
+    ///   - name: The Feature's name.
+    ///   - type: The Feature instance type.
+    /// - Returns: The Feature if any.
+    /* public */ func feature<T>(named name: String, type: T.Type = T.self) -> T? where T: DatadogFeature {
+        features[name]?.feature as? T
+    }
+
+    /// Registers a Feature Integration instance.
+    ///
+    /// A Feature Integration collect and transfer data to a local Datadog Feature. An Integration will not store nor upload,
+    /// it will collect data for other Features to consume.
+    ///
+    /// An Integration can commicate to Features via dependency or a communication channel such as the message-bus.
+    ///
+    /// - Parameter integration: The Feature Integration instance.
+    /* public */ func register(integration: DatadogFeatureIntegration) throws {
+        integrations[integration.name] = integration
+        connectBus()
+    }
+
+    /// Retrieves a Feature Integration by its name and type.
+    ///
+    /// A Feature Integration type can be specified as parameter or inferred from the return type:
+    ///
+    ///     let integration = core.integration(named: "foo", type: Foo.self)
+    ///     let integration: Foo? = core.integration(named: "foo")
+    ///
+    /// - Parameters:
+    ///   - name: The Feature Integration's name.
+    ///   - type: The Feature Integration instance type.
+    /// - Returns: The Feature Integration if any.
+    /* public */ func integration<T>(named name: String, type: T.Type = T.self) -> T? where T: DatadogFeature {
+        integrations[name] as? T
+    }
+
+    /* public */ func scope(for feature: String) -> FeatureScope? {
+        guard let storage = features[feature]?.storage else {
+            return nil
+        }
+
+        return DatadogCoreFeatureScope(
+            contextProvider: contextProvider,
+            storage: storage
+        )
+    }
+
     /* public */ func set(feature: String, attributes: @escaping () -> FeatureBaggage) {
         contextProvider.write { $0.featuresAttributes[feature] = attributes() }
     }
@@ -159,6 +263,17 @@ extension DatadogCore: DatadogCoreProtocol {
             }
         }
     }
+
+    private func connectBus() {
+        let messageBus = self.v1Features.values
+            .compactMap { $0 as? V1Feature }
+            .map(\.messageReceiver)
+            + features.values.map(\.feature.messageReceiver)
+            + integrations.values.map(\.messageReceiver)
+
+        // connect the message bus
+        messageBusQueue.async { self.messageBus = messageBus }
+    }
 }
 
 extension DatadogCore: DatadogV1CoreProtocol {
@@ -167,15 +282,7 @@ extension DatadogCore: DatadogV1CoreProtocol {
     func register<T>(feature instance: T?) {
         let key = String(describing: T.self)
         v1Features[key] = instance
-
-        let messageBus = self.v1Features.values
-            .compactMap { $0 as? V1Feature }
-            .map(\.messageReceiver)
-
-        messageBusQueue.async {
-            // add/replace v1 feature to the message bus
-            self.messageBus = messageBus
-        }
+        connectBus()
     }
 
     func feature<T>(_ type: T.Type) -> T? {
@@ -183,7 +290,7 @@ extension DatadogCore: DatadogV1CoreProtocol {
         return v1Features[key] as? T
     }
 
-    func scope<T>(for featureType: T.Type) -> FeatureV1Scope? {
+    func scope<T>(for featureType: T.Type) -> FeatureScope? {
         let key = String(describing: T.self)
 
         guard let feature = v1Features[key] as? V1Feature else {
@@ -260,7 +367,7 @@ internal protocol V1Feature {
 ///
 /// The execution block is currently running in `sync`, this will change once the
 /// context is provided on it's own queue.
-internal struct DatadogCoreFeatureScope: FeatureV1Scope {
+internal struct DatadogCoreFeatureScope: FeatureScope {
     let contextProvider: DatadogContextProvider
     let storage: FeatureStorage
 

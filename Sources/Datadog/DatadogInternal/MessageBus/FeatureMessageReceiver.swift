@@ -12,7 +12,7 @@ import Foundation
 /// A message is composed of a key and a dictionary of attributes. A message format is a loose
 /// agreement between Features, any supported messages by a Feature should be properly
 /// documented.
-/* public */ internal protocol FeatureMessageReceiver {
+public protocol FeatureMessageReceiver {
     /// Receive a message from the message bus of a given core.
     ///
     /// The message can be used to build an event or run a process.
@@ -26,9 +26,9 @@ import Foundation
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool
 }
 
-/* public */ internal struct NOPFeatureMessageReceiver: FeatureMessageReceiver {
+public struct NOPFeatureMessageReceiver: FeatureMessageReceiver {
     /// no-op: returns `false`
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+    public func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         return false
     }
 }

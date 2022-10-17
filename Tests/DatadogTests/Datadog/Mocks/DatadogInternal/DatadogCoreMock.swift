@@ -10,6 +10,15 @@ import XCTest
 @testable import Datadog
 
 internal final class DatadogCoreMock: Flushable {
+    /// Registry for Features.
+    private var features: [String: (
+        feature: DatadogFeature,
+        writer: Writer
+    )] = [:]
+
+    /// Registry for Feature Integrations.
+    private var integrations: [String: DatadogFeatureIntegration] = [:]
+
     private var v1Features: [String: Any] = [:]
 
     var legacyContext: DatadogV1Context? {
@@ -58,14 +67,35 @@ internal final class DatadogCoreMock: Flushable {
 extension DatadogCoreMock: DatadogCoreProtocol {
     // MARK: V2 interface
 
+    func register(feature: DatadogFeature) throws {
+        features[feature.name] = (
+            feature: feature,
+            writer: InMemoryWriter()
+        )
+    }
+
+    func feature<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature {
+        features[name]?.feature as? T
+    }
+
+    func register(integration: DatadogFeatureIntegration) throws {
+        integrations[integration.name] = integration
+    }
+
+    func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature {
+        integrations[name] as? T
+    }
+
     func set(feature: String, attributes: @escaping () -> FeatureBaggage) {
         context.featuresAttributes[feature] = attributes()
     }
 
     func send(message: FeatureMessage, else fallback: () -> Void) {
-        let receivers = v1Features.values
-            .compactMap { $0 as? V1Feature }
-            .filter { $0.messageReceiver.receive(message: message, from: self) }
+        let receivers = (
+            v1Features.values.compactMap { $0 as? V1Feature }.map(\.messageReceiver)
+            + features.values.map(\.feature.messageReceiver)
+            + integrations.values.map(\.messageReceiver)
+        ).filter { $0.receive(message: message, from: self) }
 
         if receivers.isEmpty {
             fallback()
@@ -76,7 +106,7 @@ extension DatadogCoreMock: DatadogCoreProtocol {
 extension DatadogCoreMock: DatadogV1CoreProtocol {
     // MARK: V1 interface
 
-    struct Scope: FeatureV1Scope {
+    struct Scope: FeatureScope {
         let context: DatadogContext
         let writer: Writer
 
@@ -95,7 +125,7 @@ extension DatadogCoreMock: DatadogV1CoreProtocol {
         return v1Features[key] as? T
     }
 
-    func scope<T>(for featureType: T.Type) -> FeatureV1Scope? {
+    func scope<T>(for featureType: T.Type) -> FeatureScope? {
         let key = String(describing: T.self)
 
         guard let feature = v1Features[key] as? V1Feature else {

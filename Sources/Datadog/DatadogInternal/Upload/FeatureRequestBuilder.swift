@@ -11,7 +11,7 @@ import Foundation
 ///
 /// The core implementation can use the interface for creating requests targetting datadog intake
 /// of a given feature.
-/* public */ internal protocol FeatureRequestBuilder {
+public protocol FeatureRequestBuilder {
     /// Builds a `URLRequest` for a list of events and the current core context to be uploaded
     /// to the feature intake.
     ///
