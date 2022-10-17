@@ -288,8 +288,8 @@ public class DDRUMMonitor {
 
     /// Adds a record for a cross-platform performance metric
     /// - Parameters:
-    ///   - metric: the name of the performance metric. One of `flutter_build_time`, `flutter_raster_time` or `js_refresh_rate`
-    ///   - value: recorded value of the metric
+    ///   - metric: the name of the performance metric.
+    ///   - value: recorded value of the metric.
     public func updatePerformanceMetric(
         metric: PerformanceMetric,
         value: Double,
