@@ -1396,10 +1396,10 @@ class RUMMonitorTests: XCTestCase {
         let monitor = try createTestableRUMMonitor()
 
         monitor.startView(viewController: mockView)
-        monitor.updatePerformanceMetric(metric: PerformanceMetric.jsRefreshRate, value: 40.0)
-        monitor.updatePerformanceMetric(metric: PerformanceMetric.jsRefreshRate, value: 20.0)
-        monitor.updatePerformanceMetric(metric: PerformanceMetric.flutterBuildTime, value: 32.0)
-        monitor.updatePerformanceMetric(metric: PerformanceMetric.flutterRasterTime, value: 42.0)
+        monitor.updatePerformanceMetric(metric: .jsRefreshRate, value: 40.0)
+        monitor.updatePerformanceMetric(metric: .jsRefreshRate, value: 20.0)
+        monitor.updatePerformanceMetric(metric: .flutterBuildTime, value: 32.0)
+        monitor.updatePerformanceMetric(metric: .flutterRasterTime, value: 42.0)
         monitor.stopView(viewController: mockView)
 
         let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 3)
