@@ -195,18 +195,54 @@ extension ViewTreeSnapshotBuilder.Context: AnyMockable, RandomMockable {
     static func mockRandom() -> ViewTreeSnapshotBuilder.Context {
         return .init(
             coordinateSpace: UIView.mockRandom(),
+            options: .mockRandom(),
             ids: NodeIDGenerator()
         )
     }
 
     static func mockWith(
         coordinateSpace: UICoordinateSpace = UIView.mockAny(),
+        options: ViewTreeSnapshotOptions = .mockAny(),
         ids: NodeIDGenerator = NodeIDGenerator()
     ) -> ViewTreeSnapshotBuilder.Context {
         return .init(
             coordinateSpace: coordinateSpace,
+            options: options,
             ids: ids
         )
+    }
+}
+
+extension ViewTreeSnapshotOptions: AnyMockable, RandomMockable {
+    static func mockAny() -> ViewTreeSnapshotOptions {
+        return .mockWith()
+    }
+
+    static func mockRandom() -> ViewTreeSnapshotOptions {
+        return ViewTreeSnapshotOptions(
+            privacy: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        privacy: SessionReplayPrivacy = .mockAny()
+    ) -> ViewTreeSnapshotOptions {
+        return ViewTreeSnapshotOptions(
+            privacy: privacy
+        )
+    }
+}
+
+extension SessionReplayPrivacy: AnyMockable, RandomMockable {
+    static func mockAny() -> SessionReplayPrivacy {
+        return .allowAll
+    }
+
+    static func mockRandom() -> SessionReplayPrivacy {
+        return [
+            .allowAll,
+            .maskAll
+        ].randomElement()!
     }
 }
 

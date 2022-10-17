@@ -15,7 +15,7 @@ internal class SnapshotProducerMock: ViewTreeSnapshotProducer {
         self.succeedingSnapshots = succeedingSnapshots
     }
 
-    func takeSnapshot() -> ViewTreeSnapshot? {
+    func takeSnapshot(with options: ViewTreeSnapshotOptions) throws -> ViewTreeSnapshot? {
         return succeedingSnapshots.isEmpty ? nil : succeedingSnapshots.removeFirst()
     }
 }

@@ -14,10 +14,10 @@ internal struct WindowSnapshotProducer: ViewTreeSnapshotProducer {
     /// Builds snapshot from the app window.
     let snapshotBuilder: ViewTreeSnapshotBuilder
 
-    func takeSnapshot() throws -> ViewTreeSnapshot? {
+    func takeSnapshot(with options: ViewTreeSnapshotOptions) throws -> ViewTreeSnapshot? {
         guard let window = windowObserver.relevantWindow else {
             return nil
         }
-        return snapshotBuilder.createSnapshot(of: window)
+        return snapshotBuilder.createSnapshot(of: window, with: options)
     }
 }

@@ -19,6 +19,9 @@ internal class Recorder {
     /// Turns view tree snapshots into data models that will be uploaded to SR BE.
     let snapshotProcessor: ViewTreeSnapshotProcessor
 
+    /// The content recording policy for creating snapshots.
+    var privacy: SessionReplayPrivacy = .maskAll
+
     convenience init() {
         self.init(
             scheduler: MainThreadScheduler(interval: 0.25),
@@ -56,7 +59,9 @@ internal class Recorder {
     /// **Note**: This is called on the main thread.
     private func captureNextRecord() {
         do {
-            guard let snapshot = try snapshotProducer.takeSnapshot() else {
+            let currentOptions = ViewTreeSnapshotOptions(privacy: privacy)
+
+            guard let snapshot = try snapshotProducer.takeSnapshot(with: currentOptions) else {
                 return // there is nothing visible yet (i.e. the key window is not yet ready)
             }
 
