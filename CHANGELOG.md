@@ -1,6 +1,6 @@
 # Unreleased
 
-# 1.12.0 / 18-10-2022
+# 1.12.1 / 18-10-2022
 
 - [IMPROVEMENT] Upgrade to PLCrashReporter 1.11.0 to fix Xcode 14 support.
 
