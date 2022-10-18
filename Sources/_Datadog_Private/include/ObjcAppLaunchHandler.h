@@ -4,16 +4,46 @@
 * Copyright 2019-2020 Datadog, Inc.
 */
 
-#import <CoreFoundation/CoreFoundation.h>
+#import <Foundation/Foundation.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+/// `AppLaunchHandler` aims to track some times as part of the sequence
+/// described in Apple's "About the App Launch Sequence"
+///
+/// ref. https://developer.apple.com/documentation/uikit/app_and_environment/responding_to_the_launch_of_your_app/about_the_app_launch_sequence
+@interface __dd_private_AppLaunchHandler : NSObject
+
+typedef void (^AppLaunchCallback) (__dd_private_AppLaunchHandler *handler);
+
+/// Sole instance of the Application Launch Handler.
+@property (class, readonly) __dd_private_AppLaunchHandler *shared;
+
+/// Returns the Application process launch date.
+@property (atomic, readonly) NSDate* launchDate;
 
 /// Returns the time interval between startup of the application process and the
 /// `UIApplicationDidBecomeActiveNotification`.
 ///
 /// If the `UIApplicationDidBecomeActiveNotification` has not been reached yet,
 /// it returns  time interval between startup of the application process and now.
-CFTimeInterval __dd_private_AppLaunchTime(void);
+@property (atomic, readonly, nullable) NSNumber* launchTime;
 
 /// Returns `true` when the application is pre-warmed.
 ///
 /// System sets environment variable `ActivePrewarm` to 1 when app is pre-warmed.
-BOOL __dd_private_isActivePrewarm(void);
+@property (atomic, readonly) BOOL isActivePrewarm;
+
+/// Sets the callback to be invoked when the application becomes active.
+///
+/// The closure get the updated handler as argument.
+/// 
+/// - Parameter callback: The callback closure.
+- (void)setCallback:(AppLaunchCallback)callback;
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
+
+@end
+
+NS_ASSUME_NONNULL_END

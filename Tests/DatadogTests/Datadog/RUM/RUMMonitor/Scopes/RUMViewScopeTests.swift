@@ -88,7 +88,7 @@ class RUMViewScopeTests: XCTestCase {
         // Given
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         var context = self.context
-        context.launchTime = .init(launchTime: 2, isActivePrewarm: false)
+        context.launchTime = .init(launchTime: 2, launchDate: nil, isActivePrewarm: false)
 
         let scope = RUMViewScope(
             isInitialView: true,
@@ -137,7 +137,11 @@ class RUMViewScopeTests: XCTestCase {
         let custonContext: DatadogContext = .mockWith(source: source)
 
         var context = self.context
-        context.launchTime = .init(launchTime: 2, isActivePrewarm: false)
+        context.launchTime = .init(
+            launchTime: 2,
+            launchDate: nil,
+            isActivePrewarm: false
+        )
 
         let scope = RUMViewScope(
             isInitialView: true,
@@ -164,10 +168,44 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.source, .init(rawValue: source))
     }
 
+    func testWhenNoLoadingTime_itSendsApplicationStartAction_basedOnLoadingDate() throws {
+        // Given
+        var context = self.context
+        let date = Date()
+        context.launchTime = .init(
+            launchTime: nil,
+            launchDate: date.addingTimeInterval(-2),
+            isActivePrewarm: false
+        )
+
+        let scope: RUMViewScope = .mockWith(
+            isInitialView: true,
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: mockView,
+            startTime: date
+        )
+
+        // When
+        _ = scope.process(
+            command: RUMCommandMock(),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
+        XCTAssertEqual(event.action.loadingTime, 2_000_000_000) // 2e+9 ns
+    }
+
     func testWhenActivePrewarm_itSendsApplicationStartAction_withoutLoadingTime() throws {
         // Given
         var context = self.context
-        context.launchTime = .init(launchTime: 2, isActivePrewarm: true)
+        context.launchTime = .init(
+            launchTime: 2,
+            launchDate: nil,
+            isActivePrewarm: true
+        )
 
         let scope: RUMViewScope = .mockWith(
             isInitialView: true,

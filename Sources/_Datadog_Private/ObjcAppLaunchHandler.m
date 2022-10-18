@@ -4,97 +4,129 @@
 * Copyright 2019-2020 Datadog, Inc.
 */
 
-#import "ObjcAppLaunchHandler.h"
-#import <sys/sysctl.h>
 #import <UIKit/UIKit.h>
 #import <pthread.h>
+#import <sys/sysctl.h>
 
-// `AppLaunchHandler` aims to track some times as part of the sequence described in Apple's "About the App Launch Sequence"
-// https://developer.apple.com/documentation/uikit/app_and_environment/responding_to_the_launch_of_your_app/about_the_app_launch_sequence
+#import "ObjcAppLaunchHandler.h"
 
-// A Read-Write lock to allow concurrent reads of TimeToApplicationDidBecomeActive, unless the initial (and only) write is locking it.
-static pthread_rwlock_t rwLock;
-// The framework load time  in seconds relative to the absolute reference date of Jan 1 2001 00:00:00 GMT.
-static NSTimeInterval FrameworkLoadTime = 0.0;
-// The time interval between the application starts and it's responsive and accepts touch events.
-static NSTimeInterval TimeToApplicationDidBecomeActive = 0.0;
-// System sets environment variable ActivePrewarm to 1 when app is pre-warmed.
-static BOOL isActivePrewarm = NO;
 // A very long application launch time is most-likely the result of a pre-warmed process.
 // We consider 30s as a threshold for pre-warm detection.
-static NSTimeInterval ValidAppLaunchTimeThreshold = 30;
+#define COLD_START_TIME_THRESHOLD 30
 
-NS_INLINE NSTimeInterval QueryProcessStartTimeWithFallback(NSTimeInterval fallbackTime) {
-    NSTimeInterval processStartTime;
-    // Query the current process' start time:
-    // https://www.freebsd.org/cgi/man.cgi?sysctl(3)
-    // https://github.com/darwin-on-arm/xnu/blob/707bfdc4e9a46e3612e53994fffc64542d3f7e72/bsd/sys/sysctl.h#L681
-    // https://github.com/darwin-on-arm/xnu/blob/707bfdc4e9a46e3612e53994fffc64542d3f7e72/bsd/sys/proc.h#L97
+/// Get the process start time from kernel.
+///
+/// The time intervale is related to the 1 January 2001 00:00:00 GMT reference date.
+///
+/// - Parameter timeInterval: Pointer to time interval to hold the process start time interval.
+int processStartTimeIntervalSinceReferenceDate(NSTimeInterval *timeInterval);
 
-    struct kinfo_proc kip;
-    size_t kipSize = sizeof(kip);
-    int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()};
-    int res = sysctl(mib, 4, &kip, &kipSize, NULL, 0);
-
-    if (res == 0) {
-        // The process' start time is provided relative to 1 Jan 1970
-        struct timeval startTime = kip.kp_proc.p_starttime;
-        processStartTime = startTime.tv_sec + startTime.tv_usec / USEC_PER_SEC;
-        // Convert to time since 1 Jan 2001 to align with CFAbsoluteTimeGetCurrent()
-        processStartTime -= kCFAbsoluteTimeIntervalSince1970;
-    } else {
-        // Fallback to less accurate delta with DD's framework load time
-        processStartTime = fallbackTime;
-    }
-    return processStartTime;
+/// `AppLaunchHandler` aims to track some times as part of the sequence
+/// described in Apple's "About the App Launch Sequence"
+///
+/// ref. https://developer.apple.com/documentation/uikit/app_and_environment/responding_to_the_launch_of_your_app/about_the_app_launch_sequence
+@implementation __dd_private_AppLaunchHandler {
+    NSTimeInterval _processStartTime;
+    NSTimeInterval _timeToApplicationDidBecomeActive;
+    AppLaunchCallback _callback;
 }
 
-NS_INLINE NSTimeInterval ComputeProcessTimeFromStart() {
-    NSTimeInterval now = CFAbsoluteTimeGetCurrent();
-    NSTimeInterval processStartTime = QueryProcessStartTimeWithFallback(FrameworkLoadTime);
-    return now - processStartTime;
-}
+/// Shared instance of the Application Launch Handler.
+static __dd_private_AppLaunchHandler *_shared;
 
-@interface AppLaunchHandler : NSObject
-@end
+/// The framework load time  in seconds relative to the absolute reference date of Jan 1 2001 00:00:00 GMT.
+static NSTimeInterval _frameworkLoadTime;
 
-@implementation AppLaunchHandler
+@synthesize isActivePrewarm = _isActivePrewarm;
 
 + (void)load {
     // This is called at the `_Datadog_Private` load time, keep the work minimal
-    FrameworkLoadTime = CFAbsoluteTimeGetCurrent();
-
-    isActivePrewarm = [NSProcessInfo.processInfo.environment[@"ActivePrewarm"] isEqualToString:@"1"];
+    _frameworkLoadTime = CFAbsoluteTimeGetCurrent();
+    _shared = [[self alloc] initWithProcessInfo:NSProcessInfo.processInfo];
 
     NSNotificationCenter * __weak center = NSNotificationCenter.defaultCenter;
-    id __block token = [center
-                        addObserverForName:UIApplicationDidBecomeActiveNotification
-                        object:nil
-                        queue:NSOperationQueue.mainQueue
-                        usingBlock:^(NSNotification *_){
+    id __block token = [center addObserverForName:UIApplicationDidBecomeActiveNotification
+                                           object:nil
+                                            queue:NSOperationQueue.mainQueue
+                                       usingBlock:^(NSNotification *_){
 
-        pthread_rwlock_init(&rwLock, NULL);
-        pthread_rwlock_wrlock(&rwLock);
-        TimeToApplicationDidBecomeActive = ComputeProcessTimeFromStart();
-        pthread_rwlock_unlock(&rwLock);
+        @synchronized(_shared) {
+            _shared->_timeToApplicationDidBecomeActive = CFAbsoluteTimeGetCurrent() - _shared->_processStartTime;
+            _shared->_callback(_shared);
+        }
 
         [center removeObserver:token];
         token = nil;
     }];
 }
 
-@end
-
-CFTimeInterval __dd_private_AppLaunchTime() {
-    pthread_rwlock_rdlock(&rwLock);
-    CFTimeInterval time = TimeToApplicationDidBecomeActive;
-    pthread_rwlock_unlock(&rwLock);
-    if (time == 0) time = ComputeProcessTimeFromStart();
-    return time;
++ (__dd_private_AppLaunchHandler *)shared {
+    return _shared;
 }
 
-BOOL __dd_private_isActivePrewarm() {
-    if (isActivePrewarm) return isActivePrewarm;
-    CFTimeInterval time = __dd_private_AppLaunchTime();
-    return time > ValidAppLaunchTimeThreshold;
+- (instancetype)initWithProcessInfo:(NSProcessInfo *)processInfo {
+    NSTimeInterval startTime;
+    if (processStartTimeIntervalSinceReferenceDate(&startTime) != 0) {
+        startTime = _frameworkLoadTime;
+    }
+
+    // The ActivePrewarm variable indicates whether the app was launched via pre-warming.
+    BOOL isActivePrewarm = [processInfo.environment[@"ActivePrewarm"] isEqualToString:@"1"];
+    return [self initWithStartTime:startTime isActivePrewarm:isActivePrewarm];
+}
+
+- (instancetype)initWithStartTime:(NSTimeInterval)startTime isActivePrewarm:(BOOL)isActivePrewarm {
+    self = [super init];
+    if (!self) return nil;
+    _processStartTime = startTime;
+    _isActivePrewarm = isActivePrewarm;
+    _callback = ^(__dd_private_AppLaunchHandler *handler) {};
+    return self;
+}
+
+- (NSDate *)launchDate {
+    @synchronized(self) {
+        return [NSDate dateWithTimeIntervalSinceReferenceDate:_processStartTime];
+    }
+}
+
+- (NSNumber *)launchTime {
+    @synchronized(self) {
+        return _timeToApplicationDidBecomeActive > 0 ?
+            @(_timeToApplicationDidBecomeActive) : nil;
+    }
+}
+
+- (BOOL)isActivePrewarm {
+    @synchronized(self) {
+        if (_isActivePrewarm) return _isActivePrewarm;
+        return _timeToApplicationDidBecomeActive > COLD_START_TIME_THRESHOLD;
+    }
+}
+
+- (void)setCallback:(AppLaunchCallback)callback {
+    @synchronized(self) {
+        _callback = callback;
+    }
+}
+
+@end
+
+int processStartTimeIntervalSinceReferenceDate(NSTimeInterval *timeInterval) {
+    // Query the current process' start time:
+    // https://www.freebsd.org/cgi/man.cgi?sysctl(3)
+    // https://github.com/darwin-on-arm/xnu/blob/707bfdc4e9a46e3612e53994fffc64542d3f7e72/bsd/sys/sysctl.h#L681
+    // https://github.com/darwin-on-arm/xnu/blob/707bfdc4e9a46e3612e53994fffc64542d3f7e72/bsd/sys/proc.h#L97
+    struct kinfo_proc kip;
+    size_t kipSize = sizeof(kip);
+    int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()};
+    int res = sysctl(mib, 4, &kip, &kipSize, NULL, 0);
+    if (res != 0) return res;
+
+    // The process' start time is provided relative to 1 Jan 1970
+    struct timeval startTime = kip.kp_proc.p_starttime;
+    NSTimeInterval processStartTime = startTime.tv_sec + startTime.tv_usec / USEC_PER_SEC;
+    // Convert to time since 1 Jan 2001 to align with CFAbsoluteTimeGetCurrent()
+    *timeInterval = processStartTime - kCFAbsoluteTimeIntervalSince1970;
+    return res;
 }
