@@ -1,5 +1,9 @@
 # Unreleased
 
+# 1.12.0 / 18-10-2022
+
+- [IMPROVEMENT] Upgrade to PLCrashReporter 1.11.0 to fix Xcode 14 support.
+
 # 1.12.0 / 16-09-2022
 
 - [BUGFIX] Fix manual User Action dropped if a new view start. See [#997][]
