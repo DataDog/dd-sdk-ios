@@ -9,6 +9,7 @@ import XCTest
 
 private class NodeRecorderMock: NodeRecorder {
     var queriedViews: Set<UIView> = []
+    var queryContexts: [ViewTreeSnapshotBuilder.Context] = []
     var resultForView: (UIView) -> NodeSemantics?
 
     init(resultForView: @escaping (UIView) -> NodeSemantics?) {
@@ -17,6 +18,7 @@ private class NodeRecorderMock: NodeRecorder {
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeSnapshotBuilder.Context) -> NodeSemantics? {
         queriedViews.insert(view)
+        queryContexts.append(context)
         return resultForView(view)
     }
 }
@@ -72,6 +74,23 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         XCTAssertEqual(recorders[2].queriedViews, [view], "It should be queried as only 'ambiguous' semantics is known")
         XCTAssertEqual(recorders[3].queriedViews, [view], "It should be queried as only 'ambiguous' semantics is known")
         XCTAssertEqual(recorders[4].queriedViews, [], "It should NOT be queried as 'specific' semantics is known")
+    }
+
+    func testWhenQueryingNodeRecorders_itPassesAppropriateContext() throws {
+        // Given
+        let view = UIView(frame: .mockRandom())
+
+        let randomSnapshotOptions: ViewTreeSnapshotOptions = .mockRandom()
+        let recorder = NodeRecorderMock(resultForView: { _ in nil })
+        let builder = ViewTreeSnapshotBuilder(nodeRecorders: [recorder])
+
+        // When
+        _ = builder.createSnapshot(of: view, with: randomSnapshotOptions)
+
+        // Then
+        let queryContext = try XCTUnwrap(recorder.queryContexts.first)
+        XCTAssertTrue(queryContext.coordinateSpace === view)
+        XCTAssertEqual(queryContext.options, randomSnapshotOptions)
     }
 
     // MARK: - Recording Nodes Recursively

@@ -19,6 +19,8 @@ internal struct ViewTreeSnapshotBuilder {
         let options: ViewTreeSnapshotOptions
         /// Generates stable IDs for traversed views.
         let ids: NodeIDGenerator
+        /// Masks text in recorded nodes.
+        let textObfuscator: TextObfuscator
     }
 
     /// An array of enabled node recorders.
@@ -28,6 +30,8 @@ internal struct ViewTreeSnapshotBuilder {
     let nodeRecorders: [NodeRecorder]
     /// Generates stable IDs for traversed views.
     let idsGenerator = NodeIDGenerator()
+    /// Masks text in recorded nodes.
+    let textObfuscator = TextObfuscator()
 
     /// Builds the `ViewTreeSnapshot` for given root view.
     ///
@@ -40,7 +44,8 @@ internal struct ViewTreeSnapshotBuilder {
         let context = Context(
             coordinateSpace: rootView,
             options: options,
-            ids: idsGenerator
+            ids: idsGenerator,
+            textObfuscator: textObfuscator
         )
         let viewTreeSnapshot = ViewTreeSnapshot(
             date: Date(),

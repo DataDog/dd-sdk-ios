@@ -48,7 +48,8 @@ internal struct UITextFieldRecorder: NodeRecorder {
             // Is it correct to assume `textField.textColor` for placeholder text?
             textColor: textField.textColor?.cgColor,
             font: textField.font,
-            editor: editorProperties
+            editor: editorProperties,
+            textObfuscator: context.options.privacy == .maskAll ? context.textObfuscator : nil
         )
         return SpecificElement(wireframesBuilder: builder)
     }
@@ -66,6 +67,8 @@ internal struct UITextFieldWireframesBuilder: NodeWireframesBuilder {
     let font: UIFont?
     /// Properties of the editor field (which is a nested subview in `UITextField`).
     let editor: EditorFieldProperties?
+    /// Text obfuscator for masking text (`nil` if text should not be obfuscated for this element).
+    let textObfuscator: TextObfuscator?
 
     struct EditorFieldProperties {
         /// Editor view's `.backgorundColor`.
@@ -87,7 +90,7 @@ internal struct UITextFieldWireframesBuilder: NodeWireframesBuilder {
             builder.createTextWireframe(
                 id: wireframeID,
                 frame: attributes.frame,
-                text: text,
+                text: textObfuscator.map { $0.mask(text: text) } ?? text,
                 textFrame: textFrame,
                 textColor: textColor,
                 font: font,

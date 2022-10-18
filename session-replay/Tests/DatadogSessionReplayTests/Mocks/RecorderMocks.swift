@@ -196,19 +196,22 @@ extension ViewTreeSnapshotBuilder.Context: AnyMockable, RandomMockable {
         return .init(
             coordinateSpace: UIView.mockRandom(),
             options: .mockRandom(),
-            ids: NodeIDGenerator()
+            ids: NodeIDGenerator(),
+            textObfuscator: TextObfuscator()
         )
     }
 
     static func mockWith(
         coordinateSpace: UICoordinateSpace = UIView.mockAny(),
         options: ViewTreeSnapshotOptions = .mockAny(),
-        ids: NodeIDGenerator = NodeIDGenerator()
+        ids: NodeIDGenerator = NodeIDGenerator(),
+        textObfuscator: TextObfuscator = TextObfuscator()
     ) -> ViewTreeSnapshotBuilder.Context {
         return .init(
             coordinateSpace: coordinateSpace,
             options: options,
-            ids: ids
+            ids: ids,
+            textObfuscator: textObfuscator
         )
     }
 }

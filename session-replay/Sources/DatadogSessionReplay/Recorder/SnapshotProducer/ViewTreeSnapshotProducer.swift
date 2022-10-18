@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal struct ViewTreeSnapshotOptions {
+internal struct ViewTreeSnapshotOptions: Equatable {
     /// The content recording policy for creating current snapshot.
     let privacy: SessionReplayPrivacy
 }

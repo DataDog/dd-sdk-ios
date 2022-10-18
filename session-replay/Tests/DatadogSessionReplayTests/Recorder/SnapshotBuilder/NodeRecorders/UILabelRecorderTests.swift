@@ -57,6 +57,21 @@ class UILabelRecorderTests: XCTestCase {
         XCTAssertEqual(builder.font, label.font)
     }
 
+    func testWhenRecordingInDifferentPrivacyModes() throws {
+        // Given
+        label.text = .mockRandom()
+
+        // When
+        let semantics1 = try XCTUnwrap(recorder.semantics(of: label, with: viewAttributes, in: .mockWith(options: .mockWith(privacy: .maskAll))))
+        let semantics2 = try XCTUnwrap(recorder.semantics(of: label, with: viewAttributes, in: .mockWith(options: .mockWith(privacy: .allowAll))))
+
+        // Then
+        let builder1 = try XCTUnwrap(semantics1.wireframesBuilder as? UILabelWireframesBuilder)
+        let builder2 = try XCTUnwrap(semantics2.wireframesBuilder as? UILabelWireframesBuilder)
+        XCTAssertNotNil(builder1.textObfuscator, "With `.maskAll` privacy the text obfuscator should be used")
+        XCTAssertNil(builder2.textObfuscator, "With `.allowAll` privacy the text obfuscator should not be used")
+    }
+
     func testWhenViewIsNotOfExpectedType() {
         // When
         let view = UITextField()
