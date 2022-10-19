@@ -11,8 +11,8 @@ import UIKit
 
 /// The ``BatteryStatusPublisher`` publishes the battery state and level from the ``UIDevice``.
 ///
-/// The reader will enable the battery monitoring by setting the ``UIDevice/isBatteryMonitoringEnabled``
-/// to `true`. The property will be reset to it's initial value when the reader is deallocated.
+/// The publisher will enable the battery monitoring by setting the ``UIDevice/isBatteryMonitoringEnabled``
+/// to `true`. The property will be reset to it's initial value when the publisher is deallocated.
 internal final class BatteryStatusPublisher: ContextValuePublisher {
     let initialValue: BatteryStatus?
     let device: UIDevice
@@ -21,6 +21,7 @@ internal final class BatteryStatusPublisher: ContextValuePublisher {
     private var observers: [Any]? = nil
 
     /// Creates a battery status publisher from the given device.
+    /// 
     /// - Parameters:
     ///   - device: The `UIDevice` instance. `.current` by default.
     ///   - notificationCenter: The notification center for observing the `UIDevice` battery changes,
