@@ -34,7 +34,6 @@ class DatadogXCFrameworkValidator(XCFrameworkValidator):
 
         dir.assert_it_has_files([
             'ios-arm64',
-            'ios-arm64/BCSymbolMaps/*.bcsymbolmap',
             'ios-arm64/dSYMs/*.dSYM',
             'ios-arm64/**/*.swiftinterface',
 
@@ -48,7 +47,6 @@ class DatadogXCFrameworkValidator(XCFrameworkValidator):
 
         dir.assert_it_has_files([
             'tvos-arm64',
-            'tvos-arm64/BCSymbolMaps/*.bcsymbolmap',
             'tvos-arm64/dSYMs/*.dSYM',
             'tvos-arm64/**/*.swiftinterface',
 
@@ -69,7 +67,6 @@ class DatadogObjcXCFrameworkValidator(XCFrameworkValidator):
         dir = zip_directory.get('DatadogObjc.xcframework')
         dir.assert_it_has_files([
             'ios-arm64',
-            'ios-arm64/BCSymbolMaps/*.bcsymbolmap',
             'ios-arm64/dSYMs/*.dSYM',
             'ios-arm64/**/*.swiftinterface',
 
@@ -82,7 +79,6 @@ class DatadogObjcXCFrameworkValidator(XCFrameworkValidator):
 
         dir.assert_it_has_files([
             'tvos-arm64',
-            'tvos-arm64/BCSymbolMaps/*.bcsymbolmap',
             'tvos-arm64/dSYMs/*.dSYM',
             'tvos-arm64/**/*.swiftinterface',
 
@@ -103,7 +99,6 @@ class DatadogCrashReportingXCFrameworkValidator(XCFrameworkValidator):
         dir = zip_directory.get('DatadogCrashReporting.xcframework')
         dir.assert_it_has_files([
             'ios-arm64',
-            'ios-arm64/BCSymbolMaps/*.bcsymbolmap',
             'ios-arm64/**/*.swiftinterface',
 
             'ios-arm64_x86_64-simulator',
@@ -116,7 +111,6 @@ class DatadogCrashReportingXCFrameworkValidator(XCFrameworkValidator):
 
         dir.assert_it_has_files([
             'tvos-arm64',
-            'tvos-arm64/BCSymbolMaps/*.bcsymbolmap',
             'tvos-arm64/**/*.swiftinterface',
 
             'tvos-arm64_x86_64-simulator',
@@ -173,7 +167,6 @@ class KronosXCFrameworkValidator(XCFrameworkValidator):
             
         zip_directory.get('Kronos.xcframework').assert_it_has_files([
             'ios-arm64_armv7',
-            'ios-arm64_armv7/BCSymbolMaps/*.bcsymbolmap',
             'ios-arm64_armv7/dSYMs/*.dSYM',
             'ios-arm64_armv7/**/*.swiftinterface',
 
