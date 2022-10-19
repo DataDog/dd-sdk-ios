@@ -6,7 +6,15 @@
 
 import Foundation
 
-internal struct TextObfuscator {
+internal protocol TextObfuscating {
+    /// Obfuscates given `text`.
+    /// - Parameter text: the text to be obfuscated
+    /// - Returns: obfuscated text
+    func mask(text: String) -> String
+}
+
+/// Text obfuscator which replaces all readable characters with `"x"`.
+internal struct TextObfuscator: TextObfuscating {
     /// The character to mask text with.
     let maskCharacter: UnicodeScalar = "x"
 
@@ -30,3 +38,13 @@ internal struct TextObfuscator {
         return masked
     }
 }
+
+/// Text obfuscator which only returns the original text.
+internal struct NOPTextObfuscator: TextObfuscating {
+    func mask(text: String) -> String {
+        return text
+    }
+}
+
+/// Text obfuscator which only returns the original text.
+internal let nopTextObfuscator: TextObfuscating = NOPTextObfuscator()

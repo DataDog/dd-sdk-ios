@@ -71,8 +71,8 @@ class UITextFieldRecorderTests: XCTestCase {
         // Then
         let builder1 = try XCTUnwrap(semantics1.wireframesBuilder as? UITextFieldWireframesBuilder)
         let builder2 = try XCTUnwrap(semantics2.wireframesBuilder as? UITextFieldWireframesBuilder)
-        XCTAssertNotNil(builder1.textObfuscator, "With `.maskAll` privacy the text obfuscator should be used")
-        XCTAssertNil(builder2.textObfuscator, "With `.allowAll` privacy the text obfuscator should not be used")
+        XCTAssertTrue(builder1.textObfuscator is TextObfuscator, "With `.maskAll` privacy the text obfuscator should be used")
+        XCTAssertTrue(builder2.textObfuscator is NOPTextObfuscator, "With `.allowAll` privacy the text obfuscator should not be used")
     }
 
     func testWhenViewIsNotOfExpectedType() {
