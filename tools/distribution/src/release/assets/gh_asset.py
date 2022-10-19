@@ -135,10 +135,21 @@ class CrashReporterXCFrameworkValidator(XCFrameworkValidator):
             return False # Datadog Crash Reporting.xcframework was introduced in `1.7.0`
 
         dir = zip_directory.get('CrashReporter.xcframework')
-        dir.assert_it_has_files([
-            'ios-arm64_arm64e_armv7_armv7s',
-            'ios-arm64_i386_x86_64-simulator',
-        ])
+
+        min_xc14_version = Version.parse('1.12.1')
+        if in_version.is_newer_than_or_equal(min_xc14_version):
+            # 1.12.1 depends on PLCR 1.11.1 which
+            # no longer include armv7_armv7s slices
+            # for Xcode 14 support
+            dir.assert_it_has_files([
+                'ios-arm64_arm64e',
+                'ios-arm64_x86_64-simulator',
+            ])
+        else:
+            dir.assert_it_has_files([
+                'ios-arm64_arm64e_armv7_armv7s',
+                'ios-arm64_i386_x86_64-simulator',
+            ])
 
         if in_version.is_older_than(min_tvos_version):
             return True # Stop here: tvOS support was introduced in `1.10.0`
