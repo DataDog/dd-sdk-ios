@@ -113,4 +113,10 @@ internal struct CrossPlatformAttributes {
     /// and send it within the RUM resource, so the RUM backend can issue corresponding APM span on behalf of the mobile app.
     /// Expects `String` value.
     static let spanID = "_dd.span_id"
+
+    /// Trace sample rate applied to RUM resources created by cross platform SDK.
+    /// We send cross-platform SDK's sample rate within RUM resource in order to provide accurate visibility into what settings are
+    /// configured at the SDK level. This gets displayed on APM's traffic ingestion control page.
+    /// Expects `Double` value between `0.0` and `1.0`.
+    static let rulePSR = "_dd.rule_psr"
 }
