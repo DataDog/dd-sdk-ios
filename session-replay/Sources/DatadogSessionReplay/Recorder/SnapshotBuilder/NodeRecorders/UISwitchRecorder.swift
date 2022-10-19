@@ -16,7 +16,11 @@ internal struct UISwitchRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
+        let (backgroundWireframeID, thumbWireframeID) = context.ids.nodeID2(for: `switch`)
+
         let builder = UISwitchWireframesBuilder(
+            backgroundWireframeID: backgroundWireframeID,
+            thumbWireframeID: thumbWireframeID,
             attributes: attributes,
             isOn: `switch`.isOn,
             thumbTintColor: `switch`.thumbTintColor?.cgColor,
@@ -37,6 +41,8 @@ internal struct UISwitchWireframesBuilder: NodeWireframesBuilder {
         static let offTintColor: CGColor = UIColor.lightGray.cgColor
     }
 
+    let backgroundWireframeID: WireframeID
+    let thumbWireframeID: WireframeID
     /// Attributes of the base `UIView`.
     let attributes: ViewAttributes
     /// If the switch is "on" or "off".
@@ -53,6 +59,7 @@ internal struct UISwitchWireframesBuilder: NodeWireframesBuilder {
         let backgroundColor = isOn ? (onTintColor ?? SystemDefaults.onTintColor) : (offTintColor ?? SystemDefaults.offTintColor)
 
         let background = builder.createShapeWireframe(
+            id: backgroundWireframeID,
             frame: attributes.frame,
             borderColor: nil,
             borderWidth: nil,
@@ -69,6 +76,7 @@ internal struct UISwitchWireframesBuilder: NodeWireframesBuilder {
         )
 
         let thumb = builder.createShapeWireframe(
+            id: thumbWireframeID,
             frame: thumbFrame,
             borderColor: nil,
             borderWidth: nil,

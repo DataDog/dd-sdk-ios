@@ -19,14 +19,10 @@ internal class SegmentBuilder {
         guard case SRRecord.metaRecord(let metaRecord) = firstRecord else {
             throw InternalError(description: "The first record in a Segment must be Meta Record")
         }
-        guard case SRRecord.fullSnapshotRecord(let lastFullSnapshotRecord) = lastRecord else {
-            // TODO: RUMM-2250 Make it more generic after introducing more record types
-            throw InternalError(description: "For now, Segment must end with Full Snapshot Record")
-        }
 
         return SRSegment(
             application: .init(id: ""),
-            end: lastFullSnapshotRecord.timestamp,
+            end: lastRecord.timestamp,
             hasFullSnapshot: true,
             indexInView: 0,
             records: records,
@@ -36,5 +32,18 @@ internal class SegmentBuilder {
             start: metaRecord.timestamp,
             view: .init(id: "")
         )
+    }
+}
+
+extension SRRecord {
+    var timestamp: Int64 {
+        switch self {
+        case .fullSnapshotRecord(let record):           return record.timestamp
+        case .incrementalSnapshotRecord(let record):    return record.timestamp
+        case .metaRecord(let record):                   return record.timestamp
+        case .focusRecord(let record):                  return record.timestamp
+        case .viewEndRecord(let record):                return record.timestamp
+        case .visualViewportRecord(let record):         return record.timestamp
+        }
     }
 }

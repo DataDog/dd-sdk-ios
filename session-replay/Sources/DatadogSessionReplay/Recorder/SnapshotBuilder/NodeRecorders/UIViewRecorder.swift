@@ -12,18 +12,23 @@ internal struct UIViewRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
-        let builder = UIViewWireframesBuilder(attributes: attributes)
+        let builder = UIViewWireframesBuilder(
+            wireframeID: context.ids.nodeID(for: view),
+            attributes: attributes
+        )
         return AmbiguousElement(wireframesBuilder: builder)
     }
 }
 
 internal struct UIViewWireframesBuilder: NodeWireframesBuilder {
+    let wireframeID: WireframeID
     /// Attributes of the `UIView`.
     let attributes: ViewAttributes
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         return [
             builder.createShapeWireframe(
+                id: wireframeID,
                 frame: attributes.frame,
                 borderColor: attributes.layerBorderColor,
                 borderWidth: attributes.layerBorderWidth,

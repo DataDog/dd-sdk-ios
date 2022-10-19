@@ -52,9 +52,9 @@ internal class Processor: ViewTreeSnapshotProcessor {
             .compactMap { node in node.semantics.wireframesBuilder }
             .flatMap { nodeBuilder in nodeBuilder.buildWireframes(with: wireframesBuilder) }
 
-        records.append(
-            recordsBuilder.createFullSnapshotRecord(from: snapshot, with: wireframes)
-        )
+        if let nextRecord = recordsBuilder.createFullOrIncrementalSnapshotRecord(from: snapshot, with: wireframes) {
+            records.append(nextRecord)
+        }
 
         if records.count == 60 { // after decent number of records, export the JSON
             printSegment()
@@ -88,7 +88,7 @@ internal class Processor: ViewTreeSnapshotProcessor {
         print("""
         ⚡️ >>>>>>>>> SR Segment >>>>>>>>>
         \(string)
-        🔌 <<<<<<<<< SR Segment <<<<<<<<<
+        🔌 <<<<<<<<< SR Segment - records.count: \(segment.recordsCount) <<<<<<<<<
         """)
     }
 }
