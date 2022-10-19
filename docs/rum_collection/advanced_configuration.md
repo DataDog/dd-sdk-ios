@@ -200,8 +200,8 @@ Custom attributes allow you to filter and group information about observed user 
 
 To set a custom global attribute, use `Global.rum.addAttribute(forKey:value:)`.
 
-* To add an attribute, use `Global.rum.setAttribute(forKey: "some key", value: "some value")`.
-* To update the value, use `Global.rum.setAttribute(forKey: "some key", value: "some other value")`.
+* To add an attribute, use `Global.rum.addAttribute(forKey: "some key", value: "some value")`.
+* To update the value, use `Global.rum.addAttribute(forKey: "some key", value: "some other value")`.
 * To remove the key, use `Global.rum.removeAttribute(forKey: "some key")`.
 
 ### Track user sessions
