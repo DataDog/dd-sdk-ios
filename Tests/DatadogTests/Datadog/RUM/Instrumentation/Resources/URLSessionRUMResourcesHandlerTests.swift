@@ -11,10 +11,15 @@ extension ResourceMetrics: EquatableInTests {}
 
 class URLSessionRUMResourcesHandlerTests: XCTestCase {
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+    private let tracingSampler: Sampler = .mockRandom()
     private let commandSubscriber = RUMCommandSubscriberMock()
 
     private func createHandler(rumAttributesProvider: URLSessionRUMAttributesProvider? = nil) -> URLSessionRUMResourcesHandler {
-        let handler = URLSessionRUMResourcesHandler(dateProvider: dateProvider, rumAttributesProvider: rumAttributesProvider)
+        let handler = URLSessionRUMResourcesHandler(
+            dateProvider: dateProvider,
+            tracingSampler: tracingSampler,
+            rumAttributesProvider: rumAttributesProvider
+        )
         handler.publish(to: commandSubscriber)
         return handler
     }
@@ -63,6 +68,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let resourceStartCommand = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMStartResourceCommand)
         XCTAssertEqual(resourceStartCommand.spanContext?.traceID, "1")
         XCTAssertEqual(resourceStartCommand.spanContext?.spanID, "2")
+        XCTAssertEqual(resourceStartCommand.spanContext?.samplingRate, tracingSampler.samplingRate)
     }
 
     func testGivenTaskInterceptionWithMetricsAndResponse_whenInterceptionCompletes_itStopsRUMResourceWithMetrics() throws {
