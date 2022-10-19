@@ -305,7 +305,7 @@ extension RUMSpanContext: AnyMockable, RandomMockable {
     static func mockWith(
         traceID: String = .mockAny(),
         spanID: String = .mockAny(),
-        samplingRate: Float = .mockAny()
+        samplingRate: Double = .mockAny()
     ) -> RUMSpanContext {
         return RUMSpanContext(
             traceID: traceID,

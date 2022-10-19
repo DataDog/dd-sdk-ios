@@ -61,7 +61,7 @@ class RUMResourceScopeTests: XCTestCase {
             url: "https://foo.com/resource/1",
             httpMethod: .post,
             resourceKindBasedOnRequest: nil,
-            spanContext: .init(traceID: "100", spanID: "200", samplingRate: 42.0)
+            spanContext: .init(traceID: "100", spanID: "200", samplingRate: 0.42)
         )
 
         currentTime.addTimeInterval(2)
@@ -123,7 +123,7 @@ class RUMResourceScopeTests: XCTestCase {
             context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            spanContext: .init(traceID: "100", spanID: "200", samplingRate: 42.01)
+            spanContext: .init(traceID: "100", spanID: "200", samplingRate: 0.42)
         )
 
         // When
@@ -139,7 +139,7 @@ class RUMResourceScopeTests: XCTestCase {
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.dd.traceId, "100")
         XCTAssertEqual(event.dd.spanId, "200")
-        XCTAssertEqual(event.dd.rulePsr!, 0.420_1, accuracy: 0.000_1)
+        XCTAssertEqual(event.dd.rulePsr, 0.42)
     }
 
     func testGivenStartedResourceWithoutSpanContext_whenResourceLoadingEnds_itSendsResourceEvent() throws {
@@ -281,7 +281,7 @@ class RUMResourceScopeTests: XCTestCase {
             attributes: [
                 CrossPlatformAttributes.traceID: "100",
                 CrossPlatformAttributes.spanID: "200",
-                // TODO: RUMM-2503 support receiving sampling rate through CP attributes
+                CrossPlatformAttributes.rulePSR: 0.12,
             ],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
@@ -333,6 +333,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.dd.traceId, "100")
         XCTAssertEqual(event.dd.spanId, "200")
+        XCTAssertEqual(event.dd.rulePsr, 0.12)
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.device?.name, "device-name")

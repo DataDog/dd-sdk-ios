@@ -150,8 +150,8 @@ internal struct RUMSpanContext {
     let traceID: String
     /// The span ID injected to `URLRequest` that issues RUM resource.
     let spanID: String
-    /// The sampling rate applied to the trace (a value between `0.0` and `100.0`).
-    let samplingRate: Float
+    /// The sampling rate applied to the trace (a value between `0.0` and `1.0`).
+    let samplingRate: Double
 }
 
 internal struct RUMStartResourceCommand: RUMResourceCommand {

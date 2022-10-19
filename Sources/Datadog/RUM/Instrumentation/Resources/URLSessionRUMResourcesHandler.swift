@@ -49,7 +49,7 @@ internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler, RUM
                     .init(
                         traceID: String($0.traceID.rawValue),
                         spanID: String($0.spanID.rawValue),
-                        samplingRate: tracingSampler.samplingRate
+                        samplingRate: Double(tracingSampler.samplingRate) / 100.0
                     )
                 }
             )

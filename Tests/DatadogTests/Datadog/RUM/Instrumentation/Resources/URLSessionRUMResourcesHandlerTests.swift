@@ -11,13 +11,13 @@ extension ResourceMetrics: EquatableInTests {}
 
 class URLSessionRUMResourcesHandlerTests: XCTestCase {
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
-    private let tracingSampler: Sampler = .mockRandom()
+    private let traceSamplingRate: Double = .mockRandom(min: 0, max: 1)
     private let commandSubscriber = RUMCommandSubscriberMock()
 
     private func createHandler(rumAttributesProvider: URLSessionRUMAttributesProvider? = nil) -> URLSessionRUMResourcesHandler {
         let handler = URLSessionRUMResourcesHandler(
             dateProvider: dateProvider,
-            tracingSampler: tracingSampler,
+            tracingSampler: Sampler(samplingRate: Float(traceSamplingRate * 100)),
             rumAttributesProvider: rumAttributesProvider
         )
         handler.publish(to: commandSubscriber)
@@ -66,9 +66,10 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
 
         let resourceStartCommand = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMStartResourceCommand)
-        XCTAssertEqual(resourceStartCommand.spanContext?.traceID, "1")
-        XCTAssertEqual(resourceStartCommand.spanContext?.spanID, "2")
-        XCTAssertEqual(resourceStartCommand.spanContext?.samplingRate, tracingSampler.samplingRate)
+        let spanContext = try XCTUnwrap(resourceStartCommand.spanContext)
+        XCTAssertEqual(spanContext.traceID, "1")
+        XCTAssertEqual(spanContext.spanID, "2")
+        XCTAssertEqual(spanContext.samplingRate, traceSamplingRate, accuracy: 0.01)
     }
 
     func testGivenTaskInterceptionWithMetricsAndResponse_whenInterceptionCompletes_itStopsRUMResourceWithMetrics() throws {
