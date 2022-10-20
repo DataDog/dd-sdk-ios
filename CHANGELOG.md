@@ -1,5 +1,7 @@
 # Unreleased
 
+- [IMPROVEMENT] Send trace sample rate (`dd.rulePsr`) for APM's traffic ingestion control page. See [#1029][]
+
 # 1.12.1 / 18-10-2022
 
 - [IMPROVEMENT] Upgrade to PLCrashReporter 1.11.0 to fix Xcode 14 support.
@@ -402,6 +404,7 @@
 [@leffelmania]: https://github.com/LeffelMania
 [@simpleapp]: https://github.com/SimpleApp
 [@tsvetelinvladimirov]: https://github.com/TsvetelinVladimirov
+[#1029]: https://github.com/DataDog/dd-sdk-ios/issues/1029
 [@arnauddorgans]: https://github.com/arnauddorgans
 [@ben-yolabs]: https://github.com/ben-yolabs
 [@earltedly]: https://github.com/earltedly
