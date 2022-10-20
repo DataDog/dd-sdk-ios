@@ -15,8 +15,12 @@ internal struct ViewTreeSnapshotBuilder {
     struct Context {
         /// The coordinate space to convert node positions to.
         let coordinateSpace: UICoordinateSpace
-
+        /// Options of creating the snapshot.
+        let options: ViewTreeSnapshotOptions
+        /// Generates stable IDs for traversed views.
         let ids: NodeIDGenerator
+        /// Masks text in recorded nodes.
+        let textObfuscator: TextObfuscator
     }
 
     /// An array of enabled node recorders.
@@ -24,19 +28,24 @@ internal struct ViewTreeSnapshotBuilder {
     /// The order in this this array  should be managed consciously. For each node, the implementation loops
     /// through `nodeRecorders` and stops on the one that recorded node semantics with highes importance.
     let nodeRecorders: [NodeRecorder]
-
+    /// Generates stable IDs for traversed views.
     let idsGenerator = NodeIDGenerator()
+    /// Masks text in recorded nodes.
+    let textObfuscator = TextObfuscator()
 
     /// Builds the `ViewTreeSnapshot` for given root view.
     ///
     /// - Parameter rootView: the root view
+    /// - Parameter options: options of the snapshot
     /// - Returns: snapshot describing the view tree starting in `rootView`. All properties in snapshot nodes
     /// are computed relatively to the `rootView` (e.g. the `x` and `y` position of all descendant nodes  is given
     /// as its position in the root, no matter of nesting level).
-    func createSnapshot(of rootView: UIView) -> ViewTreeSnapshot {
+    func createSnapshot(of rootView: UIView, with options: ViewTreeSnapshotOptions) -> ViewTreeSnapshot {
         let context = Context(
             coordinateSpace: rootView,
-            ids: idsGenerator
+            options: options,
+            ids: idsGenerator,
+            textObfuscator: textObfuscator
         )
         let viewTreeSnapshot = ViewTreeSnapshot(
             date: Date(),

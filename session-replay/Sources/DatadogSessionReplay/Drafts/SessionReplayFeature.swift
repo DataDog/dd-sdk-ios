@@ -18,4 +18,28 @@ public class SessionReplayFeature {
 
     public func start() { recorder.start() }
     public func stop() { recorder.stop() }
+
+    /// The content recording policy for Session Replay. It describes the way in which sensitive content (e.g. text or images) should be recorded.
+    /// Uses `.maskAll` by default.
+    ///
+    /// **Note**: It must be changed from the main thread.
+    public var privacy: SessionReplayPrivacy {
+        set { recorder.privacy = newValue }
+        get { recorder.privacy }
+    }
+}
+
+/// Session Replay content policy. It describes the way in which sensitive content (e.g. text or images) should be recorded.
+public enum SessionReplayPrivacy {
+    /// Record all content as it is.
+    /// When using this option: all text, images and other information will be recorded and presented in the player.
+    case allowAll
+
+    /// Mask all content.
+    /// When using this option: all characters in texts will be replaced with "x", images will be
+    /// replaced with placeholders and other content will be masked accordingly, so the original
+    /// information will not be presented in the player.
+    ///
+    /// This is the default content policy.
+    case maskAll
 }

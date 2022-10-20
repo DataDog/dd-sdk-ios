@@ -9,6 +9,7 @@ import XCTest
 
 private class NodeRecorderMock: NodeRecorder {
     var queriedViews: Set<UIView> = []
+    var queryContexts: [ViewTreeSnapshotBuilder.Context] = []
     var resultForView: (UIView) -> NodeSemantics?
 
     init(resultForView: @escaping (UIView) -> NodeSemantics?) {
@@ -17,6 +18,7 @@ private class NodeRecorderMock: NodeRecorder {
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeSnapshotBuilder.Context) -> NodeSemantics? {
         queriedViews.insert(view)
+        queryContexts.append(context)
         return resultForView(view)
     }
 }
@@ -39,7 +41,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
             NodeRecorderMock(resultForView: { _ in nil }),
         ]
         let builder = ViewTreeSnapshotBuilder(nodeRecorders: recorders)
-        _ = builder.createSnapshot(of: rootView)
+        _ = builder.createSnapshot(of: rootView, with: .mockRandom())
 
         // Then
         XCTAssertEqual(recorders[0].queriedViews, [rootView, childView, grandchildView])
@@ -64,7 +66,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
             NodeRecorderMock(resultForView: { _ in specificElement }), // ... so this one should not be queried
         ]
         let builder = ViewTreeSnapshotBuilder(nodeRecorders: recorders)
-        _ = builder.createSnapshot(of: view)
+        _ = builder.createSnapshot(of: view, with: .mockRandom())
 
         // Then
         XCTAssertEqual(recorders[0].queriedViews, [view], "It should be queried as semantics is not known")
@@ -72,6 +74,23 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         XCTAssertEqual(recorders[2].queriedViews, [view], "It should be queried as only 'ambiguous' semantics is known")
         XCTAssertEqual(recorders[3].queriedViews, [view], "It should be queried as only 'ambiguous' semantics is known")
         XCTAssertEqual(recorders[4].queriedViews, [], "It should NOT be queried as 'specific' semantics is known")
+    }
+
+    func testWhenQueryingNodeRecorders_itPassesAppropriateContext() throws {
+        // Given
+        let view = UIView(frame: .mockRandom())
+
+        let randomSnapshotOptions: ViewTreeSnapshotOptions = .mockRandom()
+        let recorder = NodeRecorderMock(resultForView: { _ in nil })
+        let builder = ViewTreeSnapshotBuilder(nodeRecorders: [recorder])
+
+        // When
+        _ = builder.createSnapshot(of: view, with: randomSnapshotOptions)
+
+        // Then
+        let queryContext = try XCTUnwrap(recorder.queryContexts.first)
+        XCTAssertTrue(queryContext.coordinateSpace === view)
+        XCTAssertEqual(queryContext.options, randomSnapshotOptions)
     }
 
     // MARK: - Recording Nodes Recursively
@@ -103,7 +122,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         // When
         let nodeRecorder = NodeRecorderMock(resultForView: { view in semanticsByView[view] })
         let builder = ViewTreeSnapshotBuilder(nodeRecorders: [nodeRecorder])
-        let snapshot = builder.createSnapshot(of: rootView)
+        let snapshot = builder.createSnapshot(of: rootView, with: .mockRandom())
 
         // Then
         XCTAssertTrue(snapshot.root.semantics is AmbiguousElement)
@@ -140,7 +159,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         ]
 
         // When
-        let snapshots = views.map { builder.createSnapshot(of: $0) }
+        let snapshots = views.map { builder.createSnapshot(of: $0, with: .mockRandom()) }
 
         // Then
         zip(snapshots, views).forEach { snapshot, view in
@@ -165,7 +184,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         let `switch` = try UISwitch.mock(withFixture: .visibleWithNoAppearance)
 
         // When
-        let viewSnapshot = builder.createSnapshot(of: view)
+        let viewSnapshot = builder.createSnapshot(of: view, with: .mockRandom())
         XCTAssertTrue(
             viewSnapshot.root.semantics is AmbiguousElement,
             """
@@ -175,7 +194,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
             """
         )
 
-        let labelSnapshot = builder.createSnapshot(of: label)
+        let labelSnapshot = builder.createSnapshot(of: label, with: .mockRandom())
         XCTAssertTrue(
             labelSnapshot.root.semantics is InvisibleElement,
             """
@@ -184,7 +203,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
             """
         )
 
-        let imageViewSnapshot = builder.createSnapshot(of: imageView)
+        let imageViewSnapshot = builder.createSnapshot(of: imageView, with: .mockRandom())
         XCTAssertTrue(
             imageViewSnapshot.root.semantics is InvisibleElement,
             """
@@ -193,7 +212,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
             """
         )
 
-        let textFieldSnapshot = builder.createSnapshot(of: textField)
+        let textFieldSnapshot = builder.createSnapshot(of: textField, with: .mockRandom())
         XCTAssertTrue(
             textFieldSnapshot.root.semantics is SpecificElement,
             """
@@ -202,7 +221,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
             """
         )
 
-        let switchSnapshot = builder.createSnapshot(of: `switch`)
+        let switchSnapshot = builder.createSnapshot(of: `switch`, with: .mockRandom())
         XCTAssertTrue(
             switchSnapshot.root.semantics is SpecificElement,
             """
@@ -218,7 +237,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         let view = try UIView.mock(withFixture: .visibleWithSomeAppearance)
 
         // When
-        let snapshot = builder.createSnapshot(of: view)
+        let snapshot = builder.createSnapshot(of: view, with: .mockRandom())
 
         // Then
         XCTAssertTrue(
@@ -242,7 +261,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         ]
 
         // When
-        let snapshots = views.map { builder.createSnapshot(of: $0) }
+        let snapshots = views.map { builder.createSnapshot(of: $0, with: .mockRandom()) }
 
         // Then
         zip(snapshots, views).forEach { snapshot, view in

@@ -27,4 +27,24 @@ class RecorderTests: XCTestCase {
         XCTAssertEqual(processor.processedSnapshots.count, numberOfSnapshots, "Processor should receive \(numberOfSnapshots) snapshots")
         XCTAssertEqual(processor.processedSnapshots, mockSnapshots)
     }
+
+    func testWhenCapturingSnapshot_itUsesPrivacyOption() {
+        let randomPrivacy: SessionReplayPrivacy = .mockRandom()
+
+        // Given
+        let snapshotProducer = SnapshotProducerSpy()
+        let recorder = Recorder(
+            scheduler: TestScheduler(numberOfRepeats: 1),
+            snapshotProducer: snapshotProducer,
+            snapshotProcessor: ProcessorSpy()
+        )
+
+        // When
+        recorder.privacy = randomPrivacy
+        recorder.start()
+
+        // Then
+        XCTAssertEqual(snapshotProducer.succeedingOptions.count, 1)
+        XCTAssertEqual(snapshotProducer.succeedingOptions[0].privacy, randomPrivacy)
+    }
 }

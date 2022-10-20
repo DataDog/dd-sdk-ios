@@ -23,7 +23,8 @@ internal struct UILabelRecorder: NodeRecorder {
             attributes: attributes,
             text: label.text ?? "",
             textColor: label.textColor?.cgColor,
-            font: label.font
+            font: label.font,
+            textObfuscator: context.options.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator
         )
         return SpecificElement(wireframesBuilder: builder)
     }
@@ -39,6 +40,8 @@ internal struct UILabelWireframesBuilder: NodeWireframesBuilder {
     let textColor: CGColor?
     /// The font used by the label.
     let font: UIFont?
+    /// Text obfuscator for masking text.
+    let textObfuscator: TextObfuscating
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         // The actual frame of the text, which is smaller than the frame of the label:
@@ -53,7 +56,7 @@ internal struct UILabelWireframesBuilder: NodeWireframesBuilder {
             builder.createTextWireframe(
                 id: wireframeID,
                 frame: attributes.frame,
-                text: text,
+                text: textObfuscator.mask(text: text),
                 textFrame: textFrame,
                 textColor: textColor,
                 font: font,

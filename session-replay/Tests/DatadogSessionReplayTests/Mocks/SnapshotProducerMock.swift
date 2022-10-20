@@ -15,7 +15,17 @@ internal class SnapshotProducerMock: ViewTreeSnapshotProducer {
         self.succeedingSnapshots = succeedingSnapshots
     }
 
-    func takeSnapshot() -> ViewTreeSnapshot? {
+    func takeSnapshot(with options: ViewTreeSnapshotOptions) throws -> ViewTreeSnapshot? {
         return succeedingSnapshots.isEmpty ? nil : succeedingSnapshots.removeFirst()
+    }
+}
+
+internal class SnapshotProducerSpy: ViewTreeSnapshotProducer {
+    /// Succeeding `options` passed to `takeSnapshot(with:)`.
+    var succeedingOptions: [ViewTreeSnapshotOptions] = []
+
+    func takeSnapshot(with options: ViewTreeSnapshotOptions) throws -> ViewTreeSnapshot? {
+        succeedingOptions.append(options)
+        return nil
     }
 }
