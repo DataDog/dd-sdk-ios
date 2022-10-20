@@ -14,23 +14,43 @@ extension PerformancePreset {
     static let benchmarksPreset = PerformancePreset(batchSize: .small, uploadFrequency: .frequent, bundleType: .iOSApp)
 }
 
-extension FeaturesCommonDependencies {
-    static func mockAny() -> Self {
-        return .init(
-            consentProvider: ConsentProvider(initialConsent: .granted),
-            performance: .benchmarksPreset,
-            httpClient: HTTPClient(),
-            deviceInfo: DeviceInfo(),
-            batteryStatusProvider: BatteryStatusProvider(),
-            sdkInitDate: Date(),
-            dateProvider: SystemDateProvider(),
-            dateCorrector: DateCorrectorMock(),
-            userInfoProvider: UserInfoProvider(),
-            networkConnectionInfoProvider: NetworkConnectionInfoProvider(),
-            carrierInfoProvider: CarrierInfoProvider(),
-            launchTimeProvider: LaunchTimeProvider(),
-            appStateListener: AppStateListener(dateProvider: SystemDateProvider()),
-            encryption: nil
+struct FeatureRequestBuilderMock: FeatureRequestBuilder {
+    let dataFormat = DataFormat(prefix: "", suffix: "", separator: "\n")
+
+    func request(for events: [Data], with context: DatadogContext) -> URLRequest {
+        let builder = URLRequestBuilder(
+            url: .mockAny(),
+            queryItems: [.ddtags(tags: ["foo:bar"])],
+            headers: []
+        )
+
+        let data = dataFormat.format(events)
+        return builder.uploadRequest(with: data)
+    }
+}
+
+extension DatadogContext: AnyMockable {
+    static func mockAny() -> DatadogContext {
+        .init(
+            site: .us1,
+            clientToken: .mockAny(),
+            service: .mockAny(),
+            env: .mockAny(),
+            version: .mockAny(),
+            source: .mockAny(),
+            sdkVersion: .mockAny(),
+            ciAppOrigin: .mockAny(),
+            serverTimeOffset: .zero,
+            applicationName: .mockAny(),
+            applicationBundleIdentifier: .mockAny(),
+            sdkInitDate: .mockRandomInThePast(),
+            device: DeviceInfo(),
+            userInfo: nil,
+            launchTime: .zero,
+            applicationStateHistory: .active(since: Date()),
+            networkConnectionInfo: .unknown,
+            carrierInfo: nil,
+            isLowPowerModeEnabled: false
         )
     }
 }

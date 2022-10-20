@@ -8,21 +8,10 @@ import XCTest
 @testable import Datadog
 
 class TracerConfigurationTests: XCTestCase {
-    private let userInfoProvider: UserInfoProvider = .mockAny()
-    private let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
-    private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
     private lazy var core = DatadogCoreMock(
         context: .mockWith(
-            configuration: .mockWith(
-                applicationVersion: "1.2.3",
-                serviceName: "service-name",
-                environment: "tests"
-            ),
-            dependencies: .mockWith(
-                userInfoProvider: userInfoProvider,
-                networkConnectionInfoProvider: networkConnectionInfoProvider,
-                carrierInfoProvider: carrierInfoProvider
-            )
+            env: "service-name",
+            version: "1.2.3"
         )
     )
 
@@ -45,7 +34,7 @@ class TracerConfigurationTests: XCTestCase {
         XCTAssertNotNil(tracer.core)
         XCTAssertNil(tracer.configuration.serviceName)
         XCTAssertFalse(tracer.configuration.sendNetworkInfo)
-        XCTAssertNil(tracer.rumContextIntegration)
+        XCTAssertNotNil(tracer.rumIntegration)
     }
 
     func testDefaultTracerWithRUMEnabled() {
@@ -53,10 +42,10 @@ class TracerConfigurationTests: XCTestCase {
         core.register(feature: rum)
 
         let tracer1 = Tracer.initialize(configuration: .init(), in: core).dd
-        XCTAssertNotNil(tracer1.rumContextIntegration)
+        XCTAssertNotNil(tracer1.rumIntegration)
 
         let tracer2 = Tracer.initialize(configuration: .init(bundleWithRUM: false), in: core).dd
-        XCTAssertNil(tracer2.rumContextIntegration)
+        XCTAssertNil(tracer2.rumIntegration)
     }
 
     func testCustomizedTracer() throws {
@@ -72,39 +61,6 @@ class TracerConfigurationTests: XCTestCase {
         XCTAssertNotNil(tracer.core)
         XCTAssertEqual(tracer.configuration.serviceName, "custom-service-name")
         XCTAssertTrue(tracer.configuration.sendNetworkInfo)
-        XCTAssertNil(tracer.rumContextIntegration)
-    }
-
-    func testWhenLoggingFeatureIsEnabled_itUsesLogsIntegration() throws {
-        // When
-        core.register(feature: LoggingFeature.mockNoOp())
-
-        // Then
-        let tracer = Tracer.initialize(
-            configuration: .init(
-                serviceName: .mockRandom(),
-                sendNetworkInfo: .mockRandom(),
-                bundleWithRUM: .mockAny(),
-                globalTags: nil
-            ),
-            in: core
-        ).dd
-        let tracingLogBuilder = try XCTUnwrap(
-            tracer.loggingIntegration?.logBuilder,
-            "When Logging feature is enabled Tracer should use `loggingIntegration`."
-        )
-        XCTAssertEqual(tracingLogBuilder.service, tracer.configuration.serviceName)
-        XCTAssertEqual(tracingLogBuilder.loggerName, "trace")
-        XCTAssertEqual(tracingLogBuilder.sendNetworkInfo, tracer.configuration.sendNetworkInfo)
-        XCTAssertNil(tracingLogBuilder.eventMapper)
-    }
-
-    func testWhenLoggingFeatureIsNotEnabled_itDoesNotUseLogsIntegration() throws {
-        // When
-        XCTAssertNil(core.v1.feature(LoggingFeature.self))
-
-        // Then
-        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
-        XCTAssertNil(tracer.loggingIntegration)
+        XCTAssertNil(tracer.rumIntegration)
     }
 }

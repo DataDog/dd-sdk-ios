@@ -18,7 +18,7 @@ class DDTracerTests: XCTestCase {
     }
 
     override func tearDown() {
-        defaultDatadogCore = NOOPDatadogCore()
+        defaultDatadogCore = NOPDatadogCore()
         core.flush()
         core = nil
         super.tearDown()

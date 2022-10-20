@@ -6,8 +6,8 @@
 
 import Foundation
 
-internal class DefaultWebRUMEventConsumer: WebRUMEventConsumer {
-    private let dataWriter: Writer
+internal class DefaultWebRUMEventConsumer: WebEventConsumer {
+    private let core: DatadogCoreProtocol
     private let dateCorrector: DateCorrector
     private let contextProvider: RUMContextProvider?
     private let rumCommandSubscriber: RUMCommandSubscriber?
@@ -16,13 +16,13 @@ internal class DefaultWebRUMEventConsumer: WebRUMEventConsumer {
     private let jsonDecoder = JSONDecoder()
 
     init(
-        dataWriter: Writer,
+        core: DatadogCoreProtocol,
         dateCorrector: DateCorrector,
         contextProvider: RUMContextProvider?,
         rumCommandSubscriber: RUMCommandSubscriber?,
         dateProvider: DateProvider
     ) {
-        self.dataWriter = dataWriter
+        self.core = core
         self.dateCorrector = dateCorrector
         self.contextProvider = contextProvider
         self.rumCommandSubscriber = rumCommandSubscriber
@@ -42,7 +42,9 @@ internal class DefaultWebRUMEventConsumer: WebRUMEventConsumer {
         let jsonData = try JSONSerialization.data(withJSONObject: mappedEvent, options: [])
         let encodableEvent = try jsonDecoder.decode(CodableValue.self, from: jsonData)
 
-        dataWriter.write(value: encodableEvent)
+        core.send(message: .event(target: "rum", event: .init(encodableEvent)), else: {
+            DD.logger.warn("A WebView RUM event is lost because RUM is disabled in the SDK")
+        })
     }
 
     private func map(event: JSON, with context: RUMContext?) -> JSON {

@@ -44,7 +44,7 @@ class RUMDebuggingTests: XCTestCase {
     }
 
     func testWhenOneRUMViewIsInactive_andSecondIsActive_itDisplaysTwoRUMViewOutlines() throws {
-        let context: DatadogV1Context = .mockAny()
+        let context: DatadogContext = .mockAny()
         let writer = FileWriterMock()
 
         let expectation = self.expectation(description: "Render RUMDebugging")

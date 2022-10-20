@@ -8,13 +8,11 @@ import XCTest
 @testable import Datadog
 
 class RUMUserActionScopeTests: XCTestCase {
-    let context: DatadogV1Context = .mockWith(
-        configuration: .mockWith(serviceName: "test-service"),
-        dependencies: .mockWith(
-            deviceInfo: .mockWith(
-                name: "device-name",
-                osName: "device-os"
-            )
+    let context: DatadogContext = .mockWith(
+        service: "test-service",
+        device: .mockWith(
+            name: "device-name",
+            osName: "device-os"
         )
     )
 
@@ -89,7 +87,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
     func testGivenCustomSource_whenActionIsSent_itSendsCustomSource() throws {
         let source = String.mockAnySource()
-        let customContext: DatadogV1Context = .mockWith(configuration: .mockWith(source: source))
+        let customContext: DatadogContext = .mockWith(source: source)
 
         let scope = RUMViewScope.mockWith(
             parent: parent,

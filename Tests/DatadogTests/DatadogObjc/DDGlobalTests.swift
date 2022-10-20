@@ -18,7 +18,7 @@ class DDGlobalTests: XCTestCase {
 
     override func tearDown() {
         core.flush()
-        defaultDatadogCore = NOOPDatadogCore()
+        defaultDatadogCore = NOPDatadogCore()
         super.tearDown()
     }
     // MARK: - Test Global Tracer

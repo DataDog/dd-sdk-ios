@@ -10,7 +10,7 @@ import XCTest
 extension RUMContext: EquatableInTests {}
 
 class RUMCurrentContextTests: XCTestCase {
-    let context: DatadogV1Context = .mockAny()
+    let context: DatadogContext = .mockAny()
     let writer = FileWriterMock()
     private let queue = DispatchQueue(label: "\(#file)")
 

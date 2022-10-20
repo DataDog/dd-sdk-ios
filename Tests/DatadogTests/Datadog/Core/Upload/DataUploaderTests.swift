@@ -14,18 +14,23 @@ class DataUploaderTests: XCTestCase {
         // Given
         let randomResponse: HTTPURLResponse = .mockResponseWith(statusCode: (100...599).randomElement()!)
         let randomRequestIDOrNil: String? = Bool.random() ? .mockRandom() : nil
-        let requestIDHeaderOrNil: RequestBuilder.HTTPHeader? = randomRequestIDOrNil.flatMap { randomRequestID in
-            .init(field: RequestBuilder.HTTPHeader.ddRequestIDHeaderField, value: .constant(randomRequestID))
+        let requestIDHeaderOrNil: URLRequestBuilder.HTTPHeader? = randomRequestIDOrNil.flatMap { randomRequestID in
+                .init(field: URLRequestBuilder.HTTPHeader.ddRequestIDHeaderField, value: { randomRequestID })
         }
 
         let server = ServerMock(delivery: .success(response: randomResponse))
+        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+
         let uploader = DataUploader(
-            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            requestBuilder: .mockWith(headers: requestIDHeaderOrNil.map { [$0] } ?? [])
+            httpClient: httpClient,
+            requestBuilder: FeatureRequestBuilderMock(headers: requestIDHeaderOrNil.map { [$0] } ?? [])
         )
 
         // When
-        let uploadStatus = uploader.upload(data: .mockAny())
+        let uploadStatus = uploader.upload(
+            events: .mockAny(),
+            context: .mockAny()
+        )
 
         // Then
         let expectedUploadStatus = DataUploadStatus(httpResponse: randomResponse, ddRequestID: randomRequestIDOrNil)
@@ -40,13 +45,18 @@ class DataUploaderTests: XCTestCase {
         let randomError = NSError(domain: .mockRandom(), code: .mockRandom(), userInfo: [NSLocalizedDescriptionKey: randomErrorDescription])
 
         let server = ServerMock(delivery: .failure(error: randomError))
+        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+
         let uploader = DataUploader(
-            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            requestBuilder: .mockAny()
+            httpClient: httpClient,
+            requestBuilder: FeatureRequestBuilderMock()
         )
 
         // When
-        let uploadStatus = uploader.upload(data: .mockAny())
+        let uploadStatus = uploader.upload(
+            events: .mockAny(),
+            context: .mockAny()
+        )
 
         // Then
         let expectedUploadStatus = DataUploadStatus(networkError: randomError)

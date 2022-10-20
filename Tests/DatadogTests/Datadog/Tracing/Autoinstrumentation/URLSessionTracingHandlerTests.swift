@@ -8,7 +8,10 @@ import XCTest
 @testable import Datadog
 
 class URLSessionTracingHandlerTests: XCTestCase {
-    private let core = PassthroughCoreMock()
+    private let core = PassthroughCoreMock(
+        messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
+    )
+
     private let handler = URLSessionTracingHandler(
         appStateListener: AppStateListenerMock(
             history: .init(
@@ -20,18 +23,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
     )
 
     override func setUp() {
-        Global.sharedTracer = Tracer.mockWith(
-            core: core,
-            loggingIntegration: .init(
-                core: core,
-                logBuilder: .init(
-                    service: .mockAny(),
-                    loggerName: .mockAny(),
-                    sendNetworkInfo: .mockAny(),
-                    eventMapper: nil
-                )
-            )
-        )
+        Global.sharedTracer = Tracer.mockWith(core: core)
         super.setUp()
     }
 

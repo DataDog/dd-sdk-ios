@@ -5,16 +5,45 @@
  */
 
 import Foundation
+import XCTest
 
 @testable import Datadog
 
 internal final class DatadogCoreMock: Flushable {
+    /// Registry for Features.
+    private var features: [String: (
+        feature: DatadogFeature,
+        writer: Writer
+    )] = [:]
+
+    /// Registry for Feature Integrations.
+    private var integrations: [String: DatadogFeatureIntegration] = [:]
+
     private var v1Features: [String: Any] = [:]
 
-    var context: DatadogV1Context?
+    var legacyContext: DatadogV1Context? {
+        .init(context)
+    }
 
-    init(context: DatadogV1Context? = .mockAny()) {
-        self.context = context
+    var context: DatadogContext {
+        get { synchronize { _context } }
+        set { synchronize { _context = newValue } }
+    }
+
+    /// ordered/non-recursive lock on the context.
+    private let lock = NSLock()
+    private var _context: DatadogContext {
+        didSet { send(message: .context(_context)) }
+    }
+
+    init(context: DatadogContext = .mockAny()) {
+        _context = context
+    }
+
+    private func synchronize<T>(_ block: () -> T) -> T {
+        lock.lock()
+        defer { lock.unlock() }
+        return block()
     }
 
     /// Flush resgistered features.
@@ -35,8 +64,56 @@ internal final class DatadogCoreMock: Flushable {
     }
 }
 
+extension DatadogCoreMock: DatadogCoreProtocol {
+    // MARK: V2 interface
+
+    func register(feature: DatadogFeature) throws {
+        features[feature.name] = (
+            feature: feature,
+            writer: InMemoryWriter()
+        )
+    }
+
+    func feature<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature {
+        features[name]?.feature as? T
+    }
+
+    func register(integration: DatadogFeatureIntegration) throws {
+        integrations[integration.name] = integration
+    }
+
+    func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature {
+        integrations[name] as? T
+    }
+
+    func set(feature: String, attributes: @escaping () -> FeatureBaggage) {
+        context.featuresAttributes[feature] = attributes()
+    }
+
+    func send(message: FeatureMessage, else fallback: () -> Void) {
+        let receivers = (
+            v1Features.values.compactMap { $0 as? V1Feature }.map(\.messageReceiver)
+            + features.values.map(\.feature.messageReceiver)
+            + integrations.values.map(\.messageReceiver)
+        ).filter { $0.receive(message: message, from: self) }
+
+        if receivers.isEmpty {
+            fallback()
+        }
+    }
+}
+
 extension DatadogCoreMock: DatadogV1CoreProtocol {
     // MARK: V1 interface
+
+    struct Scope: FeatureScope {
+        let context: DatadogContext
+        let writer: Writer
+
+        func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void) {
+            XCTAssertNoThrow(try block(context, writer), "Encountered an error when executing `eventWriteContext`")
+        }
+    }
 
     func register<T>(feature instance: T?) {
         let key = String(describing: T.self)
@@ -48,21 +125,14 @@ extension DatadogCoreMock: DatadogV1CoreProtocol {
         return v1Features[key] as? T
     }
 
-    func scope<T>(for featureType: T.Type) -> V1FeatureScope? {
-        guard let context = context else {
-            return nil
-        }
-
+    func scope<T>(for featureType: T.Type) -> FeatureScope? {
         let key = String(describing: T.self)
 
         guard let feature = v1Features[key] as? V1Feature else {
             return nil
         }
 
-        return DatadogCoreFeatureScope(
-            context: context,
-            storage: feature.storage
-        )
+        return Scope(context: context, writer: feature.storage.writer)
     }
 }
 
@@ -72,12 +142,52 @@ extension DatadogV1Context: AnyMockable {
     }
 
     static func mockWith(
-        configuration: CoreConfiguration = .mockAny(),
-        dependencies: CoreDependencies = .mockAny()
+        service: String = .mockAny(),
+        env: String = .mockAny(),
+        version: String = .mockAny(),
+        source: String = .mockAny(),
+        sdkVersion: String = .mockAny(),
+        device: DeviceInfo = .mockAny(),
+        dateCorrector: DateCorrector = DateCorrectorMock(),
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
+            networkConnectionInfo: .mockWith(
+                reachability: .yes, // so it always meets the upload condition
+                availableInterfaces: [.wifi],
+                supportsIPv4: true,
+                supportsIPv6: true,
+                isExpensive: true,
+                isConstrained: false // so it always meets the upload condition
+            )
+        ),
+        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
+        userInfoProvider: UserInfoProvider = .mockAny()
     ) -> DatadogV1Context {
-        return DatadogV1Context(
-            configuration: configuration,
-            dependencies: dependencies
+        DatadogV1Context(
+            service: service,
+            env: env,
+            version: version,
+            source: source,
+            sdkVersion: sdkVersion,
+            device: device,
+            dateCorrector: dateCorrector,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider,
+            userInfoProvider: userInfoProvider
+        )
+    }
+
+    init(_ v2: DatadogContext) {
+        self.init(
+            service: v2.service,
+            env: v2.env,
+            version: v2.version,
+            source: v2.source,
+            sdkVersion: v2.sdkVersion,
+            device: v2.device,
+            dateCorrector: DateCorrectorMock(offset: v2.serverTimeOffset),
+            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: v2.networkConnectionInfo),
+            carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: v2.carrierInfo),
+            userInfoProvider: UserInfoProvider.mockWith(userInfo: v2.userInfo ?? .empty)
         )
     }
 }

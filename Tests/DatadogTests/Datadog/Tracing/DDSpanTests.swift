@@ -28,15 +28,15 @@ class DDSpanTests: XCTestCase {
     // MARK: - Sending Span Logs
 
     func testWhenLoggingSpanEvent_itWritesLogToLogOutput() throws {
-        let core = PassthroughCoreMock()
+        let core = PassthroughCoreMock(
+            messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
+        )
+
         core.expectation = expectation(description: "write span event")
         core.expectation?.expectedFulfillmentCount = 2
 
         // Given
-        let tracer: Tracer = .mockWith(
-            core: core,
-            loggingIntegration: .init(core: core, logBuilder: .mockAny())
-        )
+        let tracer: Tracer = .mockWith(core: core)
         let span: DDSpan = .mockWith(tracer: tracer)
 
         // When
@@ -169,12 +169,9 @@ class DDSpanTests: XCTestCase {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
-        let core = PassthroughCoreMock()
+        let core = PassthroughCoreMock(messageReceiver: FeatureMessageReceiverMock())
         let span: DDSpan = .mockWith(
-            tracer: .mockWith(
-                core: core,
-                loggingIntegration: .init(core: core, logBuilder: .mockAny())
-            ),
+            tracer: .mockWith(core: core),
             operationName: "the span"
         )
         span.finish()

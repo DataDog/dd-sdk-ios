@@ -22,7 +22,7 @@ class FileWriterTests: XCTestCase {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
-                performance: PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
+                performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
             )
         )
@@ -90,7 +90,7 @@ class FileWriterTests: XCTestCase {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
-                performance: PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
+                performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
             )
         )
@@ -108,7 +108,7 @@ class FileWriterTests: XCTestCase {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
-                performance: PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
+                performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
             )
         )
@@ -178,7 +178,7 @@ class FileWriterTests: XCTestCase {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
-                performance: PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
+                performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
             ),
             encryption: DataEncryptionMock(
