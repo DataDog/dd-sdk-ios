@@ -398,6 +398,85 @@ class DatadogTests: XCTestCase {
         Datadog.flushAndDeinitialize()
     }
 
+    func testAddUserPreoprties_mergesProperties() {
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: defaultBuilder.build()
+        )
+
+        let core = defaultDatadogCore as? DatadogCore
+
+        Datadog.setUserInfo(
+            id: "foo",
+            name: "bar",
+            email: "foo@bar.com",
+            extraInfo: ["abc": 123]
+        )
+
+        Datadog.addUserProperties(["second": 667])
+
+        XCTAssertEqual(core?.dependencies.userInfoProvider.value.id, "foo")
+        XCTAssertEqual(core?.dependencies.userInfoProvider.value.name, "bar")
+        XCTAssertEqual(core?.dependencies.userInfoProvider.value.email, "foo@bar.com")
+        XCTAssertEqual(core?.dependencies.userInfoProvider.value.extraInfo as? [String: Int],
+                       ["abc": 123, "second": 667])
+
+        Datadog.flushAndDeinitialize()
+    }
+
+    func testAddUserPreoprties_removesProperties() {
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: defaultBuilder.build()
+        )
+
+        let core = defaultDatadogCore as? DatadogCore
+
+        Datadog.setUserInfo(
+            id: "foo",
+            name: "bar",
+            email: "foo@bar.com",
+            extraInfo: ["abc": 123]
+        )
+
+        Datadog.addUserProperties(["abc": nil, "second": 667])
+
+        XCTAssertEqual(core?.dependencies.userInfoProvider.value.id, "foo")
+        XCTAssertEqual(core?.dependencies.userInfoProvider.value.name, "bar")
+        XCTAssertEqual(core?.dependencies.userInfoProvider.value.email, "foo@bar.com")
+        XCTAssertEqual(core?.dependencies.userInfoProvider.value.extraInfo as? [String: Int], ["second": 667])
+
+        Datadog.flushAndDeinitialize()
+    }
+
+    func testAddUserPreoprties_overwritesProperties() {
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: defaultBuilder.build()
+        )
+
+        let core = defaultDatadogCore as? DatadogCore
+
+        Datadog.setUserInfo(
+            id: "foo",
+            name: "bar",
+            email: "foo@bar.com",
+            extraInfo: ["abc": 123]
+        )
+
+        Datadog.addUserProperties(["abc": 444])
+
+        XCTAssertEqual(core?.dependencies.userInfoProvider.value.id, "foo")
+        XCTAssertEqual(core?.dependencies.userInfoProvider.value.name, "bar")
+        XCTAssertEqual(core?.dependencies.userInfoProvider.value.email, "foo@bar.com")
+        XCTAssertEqual(core?.dependencies.userInfoProvider.value.extraInfo as? [String: Int], ["abc": 444])
+
+        Datadog.flushAndDeinitialize()
+    }
+
     func testDefaultVerbosityLevel() {
         XCTAssertNil(Datadog.verbosityLevel)
     }

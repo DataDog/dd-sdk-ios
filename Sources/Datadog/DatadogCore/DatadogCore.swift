@@ -97,6 +97,21 @@ internal final class DatadogCore {
         )
     }
 
+    /// Add or override the properties of the current user
+    ///
+    ///  - Parameters:
+    ///    - parameters: The user's custom attibutes to add over override
+    func addUserProperties(properties: [AttributeKey: AttributeValue?]) {
+        var extraInfo = dependencies.userInfoProvider.value.extraInfo
+        for property in properties {
+            if property.value == nil {
+                extraInfo.removeValue(forKey: property.key)
+            }
+        }
+        extraInfo.merge(properties.compactMapValues { $0 }, uniquingKeysWith: { _, new in new })
+        dependencies.userInfoProvider.value.extraInfo = extraInfo
+    }
+
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.
     /// 
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on

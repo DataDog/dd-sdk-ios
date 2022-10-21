@@ -142,6 +142,18 @@ public class Datadog {
         )
     }
 
+    /// Add properties to the current user information
+    ///
+    /// There properties will be added to logs, traces and RUM events automatically.
+    /// - Parameters:
+    ///   - properties:
+    public static func addUserProperties(
+        _ properties: [AttributeKey: AttributeValue?]
+    ) {
+        let core = defaultDatadogCore as? DatadogCore
+        core?.addUserProperties(properties: properties)
+    }
+
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     public static func set(trackingConsent: TrackingConsent) {
