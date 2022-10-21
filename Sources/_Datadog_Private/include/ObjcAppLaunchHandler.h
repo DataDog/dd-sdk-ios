@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// ref. https://developer.apple.com/documentation/uikit/app_and_environment/responding_to_the_launch_of_your_app/about_the_app_launch_sequence
 @interface __dd_private_AppLaunchHandler : NSObject
 
-typedef void (^AppLaunchCallback) (__dd_private_AppLaunchHandler *handler);
+typedef void (^UIApplicationDidBecomeActiveCallback) (NSTimeInterval);
 
 /// Sole instance of the Application Launch Handler.
 @property (class, readonly) __dd_private_AppLaunchHandler *shared;
@@ -22,11 +22,9 @@ typedef void (^AppLaunchCallback) (__dd_private_AppLaunchHandler *handler);
 /// Returns the Application process launch date.
 @property (atomic, readonly) NSDate* launchDate;
 
-/// Returns the time interval between startup of the application process and the
-/// `UIApplicationDidBecomeActiveNotification`.
-///
-/// If the `UIApplicationDidBecomeActiveNotification` has not been reached yet,
-/// it returns  time interval between startup of the application process and now.
+/// Returns the time interval in seconds between startup of the application process and the
+/// `UIApplicationDidBecomeActiveNotification`. Or `nil` If the
+/// `UIApplicationDidBecomeActiveNotification` has not been reached yet.
 @property (atomic, readonly, nullable) NSNumber* launchTime;
 
 /// Returns `true` when the application is pre-warmed.
@@ -36,10 +34,11 @@ typedef void (^AppLaunchCallback) (__dd_private_AppLaunchHandler *handler);
 
 /// Sets the callback to be invoked when the application becomes active.
 ///
-/// The closure get the updated handler as argument.
+/// The closure get the updated handler as argument. You will not get any
+/// notification if the application became active before setting the callback
 /// 
 /// - Parameter callback: The callback closure.
-- (void)setCallback:(AppLaunchCallback)callback;
+- (void)setApplicationDidBecomeActiveCallback:(UIApplicationDidBecomeActiveCallback)callback;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

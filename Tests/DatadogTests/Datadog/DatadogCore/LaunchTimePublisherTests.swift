@@ -31,7 +31,9 @@ class LaunchTimePublisherTests: XCTestCase {
         callConcurrently(
             closures: [
                 { _ = handler.launchTime },
-                { handler.setCallback { _ in } },
+                { _ = handler.launchDate },
+                { _ = handler.isActivePrewarm },
+                { handler.setApplicationDidBecomeActiveCallback { _ in } }
             ],
             iterations: 1_000
         )

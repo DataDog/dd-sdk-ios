@@ -28,21 +28,17 @@ int processStartTimeIntervalSinceReferenceDate(NSTimeInterval *timeInterval);
 @implementation __dd_private_AppLaunchHandler {
     NSTimeInterval _processStartTime;
     NSTimeInterval _timeToApplicationDidBecomeActive;
-    AppLaunchCallback _callback;
+    BOOL _isActivePrewarm;
+    UIApplicationDidBecomeActiveCallback _applicationDidBecomeActiveCallback;
 }
 
 /// Shared instance of the Application Launch Handler.
 static __dd_private_AppLaunchHandler *_shared;
 
-/// The framework load time  in seconds relative to the absolute reference date of Jan 1 2001 00:00:00 GMT.
-static NSTimeInterval _frameworkLoadTime;
-
-@synthesize isActivePrewarm = _isActivePrewarm;
-
 + (void)load {
     // This is called at the `_Datadog_Private` load time, keep the work minimal
-    _frameworkLoadTime = CFAbsoluteTimeGetCurrent();
-    _shared = [[self alloc] initWithProcessInfo:NSProcessInfo.processInfo];
+    _shared = [[self alloc] initWithProcessInfo:NSProcessInfo.processInfo
+                                       loadTime:CFAbsoluteTimeGetCurrent()];
 
     NSNotificationCenter * __weak center = NSNotificationCenter.defaultCenter;
     id __block token = [center addObserverForName:UIApplicationDidBecomeActiveNotification
@@ -51,8 +47,9 @@ static NSTimeInterval _frameworkLoadTime;
                                        usingBlock:^(NSNotification *_){
 
         @synchronized(_shared) {
-            _shared->_timeToApplicationDidBecomeActive = CFAbsoluteTimeGetCurrent() - _shared->_processStartTime;
-            _shared->_callback(_shared);
+            NSTimeInterval time = CFAbsoluteTimeGetCurrent() - _shared->_processStartTime;
+            _shared->_timeToApplicationDidBecomeActive = time;
+            _shared->_applicationDidBecomeActiveCallback(time);
         }
 
         [center removeObserver:token];
@@ -64,10 +61,11 @@ static NSTimeInterval _frameworkLoadTime;
     return _shared;
 }
 
-- (instancetype)initWithProcessInfo:(NSProcessInfo *)processInfo {
+- (instancetype)initWithProcessInfo:(NSProcessInfo *)processInfo loadTime:(NSTimeInterval)loadTime {
     NSTimeInterval startTime;
     if (processStartTimeIntervalSinceReferenceDate(&startTime) != 0) {
-        startTime = _frameworkLoadTime;
+        // fallback on the loading time
+        startTime = loadTime;
     }
 
     // The ActivePrewarm variable indicates whether the app was launched via pre-warming.
@@ -80,7 +78,7 @@ static NSTimeInterval _frameworkLoadTime;
     if (!self) return nil;
     _processStartTime = startTime;
     _isActivePrewarm = isActivePrewarm;
-    _callback = ^(__dd_private_AppLaunchHandler *handler) {};
+    _applicationDidBecomeActiveCallback = ^(NSTimeInterval _) {};
     return self;
 }
 
@@ -104,9 +102,9 @@ static NSTimeInterval _frameworkLoadTime;
     }
 }
 
-- (void)setCallback:(AppLaunchCallback)callback {
+- (void)setApplicationDidBecomeActiveCallback:(UIApplicationDidBecomeActiveCallback)callback {
     @synchronized(self) {
-        _callback = callback;
+        _applicationDidBecomeActiveCallback = callback;
     }
 }
 
