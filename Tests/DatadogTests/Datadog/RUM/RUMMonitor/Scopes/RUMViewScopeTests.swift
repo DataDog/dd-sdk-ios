@@ -88,7 +88,11 @@ class RUMViewScopeTests: XCTestCase {
         // Given
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         var context = self.context
-        context.launchTime = .init(launchTime: 2, launchDate: nil, isActivePrewarm: false)
+        context.launchTime = .init(
+            launchTime: 2,
+            launchDate: .distantPast,
+            isActivePrewarm: false
+        )
 
         let scope = RUMViewScope(
             isInitialView: true,
@@ -196,7 +200,7 @@ class RUMViewScopeTests: XCTestCase {
         var context = self.context
         context.launchTime = .init(
             launchTime: 2,
-            launchDate: nil,
+            launchDate: .distantPast,
             isActivePrewarm: true
         )
 

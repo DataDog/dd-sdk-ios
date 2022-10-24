@@ -15,15 +15,9 @@ import Foundation
     /// time this value is provided, it will represent the time interval between now and the process start time.
     /* public */ let launchTime: TimeInterval?
 
-    /* public */ let launchDate: Date?
+    /// The date when the application process started.
+    /* public */ let launchDate: Date
 
     /// Returns `true` if the application is pre-warmed.
     /* public */ let isActivePrewarm: Bool
-}
-
-extension LaunchTime {
-    /// Returns a zero launch time with inactive pre-warm.
-    /* public */ static var zero: LaunchTime {
-        .init(launchTime: 0, launchDate: nil, isActivePrewarm: false)
-    }
 }

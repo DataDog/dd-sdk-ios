@@ -21,7 +21,7 @@ class LaunchTimePublisherTests: XCTestCase {
         let launchTime = publisher.initialValue
 
         // Then
-        XCTAssertNotNil(launchTime.launchDate)
+        XCTAssertNotNil(launchTime?.launchDate)
     }
 
     func testThreadSafety() {
@@ -49,7 +49,7 @@ class LaunchTimePublisherTests: XCTestCase {
         let publisher = LaunchTimePublisher()
 
         // Then
-        XCTAssertTrue(publisher.initialValue.isActivePrewarm)
+        XCTAssertTrue(publisher.initialValue?.isActivePrewarm ?? false)
     }
 
     func testIsActivePrewarm_returnsFalse() {
@@ -60,6 +60,6 @@ class LaunchTimePublisherTests: XCTestCase {
         let publisher = LaunchTimePublisher()
 
         // Then
-        XCTAssertFalse(publisher.initialValue.isActivePrewarm)
+        XCTAssertFalse(publisher.initialValue?.isActivePrewarm ?? true)
     }
 }

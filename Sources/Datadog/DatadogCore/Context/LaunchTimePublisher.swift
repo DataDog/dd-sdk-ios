@@ -13,7 +13,7 @@ import _Datadog_Private
 internal struct LaunchTimePublisher: ContextValuePublisher {
     private typealias AppLaunchHandler = __dd_private_AppLaunchHandler
 
-    let initialValue: LaunchTime
+    let initialValue: LaunchTime?
 
     init() {
         initialValue = LaunchTime(
@@ -23,12 +23,15 @@ internal struct LaunchTimePublisher: ContextValuePublisher {
         )
     }
 
-    func publish(to receiver: @escaping ContextValueReceiver<LaunchTime>) {
+    func publish(to receiver: @escaping ContextValueReceiver<LaunchTime?>) {
+        let launchDate = AppLaunchHandler.shared.launchDate
+        let isActivePrewarm = AppLaunchHandler.shared.isActivePrewarm
+
         AppLaunchHandler.shared.setApplicationDidBecomeActiveCallback { launchTime in
             let value = LaunchTime(
                 launchTime: launchTime,
-                launchDate: initialValue.launchDate,
-                isActivePrewarm: initialValue.isActivePrewarm
+                launchDate: launchDate,
+                isActivePrewarm: isActivePrewarm
             )
             receiver(value)
         }
