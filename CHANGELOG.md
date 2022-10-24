@@ -398,13 +398,13 @@
 [#964]: https://github.com/DataDog/dd-sdk-ios/issues/964
 [#973]: https://github.com/DataDog/dd-sdk-ios/issues/973
 [#997]: https://github.com/DataDog/dd-sdk-ios/issues/997
+[#1029]: https://github.com/DataDog/dd-sdk-ios/issues/1029
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
 [@leffelmania]: https://github.com/LeffelMania
 [@simpleapp]: https://github.com/SimpleApp
 [@tsvetelinvladimirov]: https://github.com/TsvetelinVladimirov
-[#1029]: https://github.com/DataDog/dd-sdk-ios/issues/1029
 [@arnauddorgans]: https://github.com/arnauddorgans
 [@ben-yolabs]: https://github.com/ben-yolabs
 [@earltedly]: https://github.com/earltedly

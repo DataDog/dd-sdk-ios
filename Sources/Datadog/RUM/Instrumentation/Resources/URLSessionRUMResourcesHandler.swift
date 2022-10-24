@@ -14,7 +14,7 @@ internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler, RUM
     let tracingSampler: Sampler
     /// Attributes-providing callback.
     /// It is configured by the user and should be used to associate additional RUM attributes with intercepted RUM Resource.
-    let rumAttributesProvider: (URLSessionRUMAttributesProvider)?
+    let rumAttributesProvider: URLSessionRUMAttributesProvider?
 
     // MARK: - Initialization
 
