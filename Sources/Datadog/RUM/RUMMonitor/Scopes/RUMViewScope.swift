@@ -324,11 +324,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         } else if let launchDate = context.launchTime.launchDate {
             // The launchTime can be `nil` if the application is not yet
             // active (UIApplicationDidBecomeActiveNotification). That is
-            // the case when instrumenting a SwiftUI application that start
+            // the case when instrumenting a SwiftUI application that starts
             // a RUM view on `SwiftUI.View.onAppear`.
             //
             // In that case, we consider the time between the application
-            // launch and the view start as the application loadint time.
+            // launch and the view start as the application loading time.
             loadingTime = viewStartTime.timeIntervalSince(launchDate).toInt64Nanoseconds
         }
 

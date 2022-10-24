@@ -134,14 +134,7 @@ class RUMViewScopeTests: XCTestCase {
         // Given
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let source = String.mockAnySource()
-        let custonContext: DatadogContext = .mockWith(source: source)
-
-        var context = self.context
-        context.launchTime = .init(
-            launchTime: 2,
-            launchDate: nil,
-            isActivePrewarm: false
-        )
+        let customContext: DatadogContext = .mockWith(source: source)
 
         let scope = RUMViewScope(
             isInitialView: true,
@@ -159,7 +152,7 @@ class RUMViewScopeTests: XCTestCase {
         // When
         _ = scope.process(
             command: RUMCommandMock(time: currentTime),
-            context: custonContext,
+            context: customContext,
             writer: writer
         )
 

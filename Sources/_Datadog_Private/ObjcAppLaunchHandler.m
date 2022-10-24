@@ -16,7 +16,7 @@
 
 /// Get the process start time from kernel.
 ///
-/// The time intervale is related to the 1 January 2001 00:00:00 GMT reference date.
+/// The time interval is related to the 1 January 2001 00:00:00 GMT reference date.
 ///
 /// - Parameter timeInterval: Pointer to time interval to hold the process start time interval.
 int processStartTimeIntervalSinceReferenceDate(NSTimeInterval *timeInterval);
