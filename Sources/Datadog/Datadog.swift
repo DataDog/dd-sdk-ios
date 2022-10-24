@@ -142,16 +142,17 @@ public class Datadog {
         )
     }
 
-    /// Add properties to the current user information
+    /// Add custom attributes  to the current user information
     ///
-    /// There properties will be added to logs, traces and RUM events automatically.
+    /// This extra info will be added to already existing extra info that is added
+    /// to  logs traces and RUM events automatically.
     /// - Parameters:
-    ///   - properties:
-    public static func addUserProperties(
-        _ properties: [AttributeKey: AttributeValue?]
+    ///   - extraInfo: User's additionall custom attributes
+    public static func addUserExtraInfo(
+        _ extraInfo: [AttributeKey: AttributeValue?]
     ) {
         let core = defaultDatadogCore as? DatadogCore
-        core?.addUserProperties(properties: properties)
+        core?.addUserExtraInfo(extraInfo)
     }
 
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.

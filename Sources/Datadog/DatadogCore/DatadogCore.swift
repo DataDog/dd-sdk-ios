@@ -97,18 +97,13 @@ internal final class DatadogCore {
         )
     }
 
-    /// Add or override the properties of the current user
+    /// Add or override the extra info of the current user
     ///
     ///  - Parameters:
-    ///    - parameters: The user's custom attibutes to add over override
-    func addUserProperties(properties: [AttributeKey: AttributeValue?]) {
+    ///    - extraInfo: The user's custom attibutes to add or override
+    func addUserExtraInfo(_ newExtraInfo: [AttributeKey: AttributeValue?]) {
         var extraInfo = dependencies.userInfoProvider.value.extraInfo
-        for property in properties {
-            if property.value == nil {
-                extraInfo.removeValue(forKey: property.key)
-            }
-        }
-        extraInfo.merge(properties.compactMapValues { $0 }, uniquingKeysWith: { _, new in new })
+        newExtraInfo.forEach { extraInfo[$0.key] = $0.value }
         dependencies.userInfoProvider.value.extraInfo = extraInfo
     }
 

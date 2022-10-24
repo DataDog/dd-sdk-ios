@@ -414,13 +414,15 @@ class DatadogTests: XCTestCase {
             extraInfo: ["abc": 123]
         )
 
-        Datadog.addUserProperties(["second": 667])
+        Datadog.addUserExtraInfo(["second": 667])
 
         XCTAssertEqual(core?.dependencies.userInfoProvider.value.id, "foo")
         XCTAssertEqual(core?.dependencies.userInfoProvider.value.name, "bar")
         XCTAssertEqual(core?.dependencies.userInfoProvider.value.email, "foo@bar.com")
-        XCTAssertEqual(core?.dependencies.userInfoProvider.value.extraInfo as? [String: Int],
-                       ["abc": 123, "second": 667])
+        XCTAssertEqual(
+            core?.dependencies.userInfoProvider.value.extraInfo as? [String: Int],
+            ["abc": 123, "second": 667]
+        )
 
         Datadog.flushAndDeinitialize()
     }
@@ -441,7 +443,7 @@ class DatadogTests: XCTestCase {
             extraInfo: ["abc": 123]
         )
 
-        Datadog.addUserProperties(["abc": nil, "second": 667])
+        Datadog.addUserExtraInfo(["abc": nil, "second": 667])
 
         XCTAssertEqual(core?.dependencies.userInfoProvider.value.id, "foo")
         XCTAssertEqual(core?.dependencies.userInfoProvider.value.name, "bar")
@@ -467,7 +469,7 @@ class DatadogTests: XCTestCase {
             extraInfo: ["abc": 123]
         )
 
-        Datadog.addUserProperties(["abc": 444])
+        Datadog.addUserExtraInfo(["abc": 444])
 
         XCTAssertEqual(core?.dependencies.userInfoProvider.value.id, "foo")
         XCTAssertEqual(core?.dependencies.userInfoProvider.value.name, "bar")
