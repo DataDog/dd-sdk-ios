@@ -23,6 +23,10 @@ extension Double {
         }
         return self / divider
     }
+
+    var inverted: Double {
+        return self == 0 ? 0 : 1 / self
+    }
 }
 
 // MARK: - UUID

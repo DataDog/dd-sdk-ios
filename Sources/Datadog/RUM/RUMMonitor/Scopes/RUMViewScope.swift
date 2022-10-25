@@ -637,17 +637,10 @@ private extension VitalInfo {
 
     func asJsRefreshRate() -> RUMViewEvent.View.JsRefreshRate {
         return RUMViewEvent.View.JsRefreshRate(
-            average: invertValue(value: meanValue) * 1_000,
-            max: invertValue(value: minValue) * 1_000,
+            average: meanValue.map { $0.inverted * 1_000 } ?? 0,
+            max: minValue.map { $0.inverted * 1_000 } ?? 0,
             metricMax: 60.0,
-            min: invertValue(value: maxValue) * 1_000
+            min: maxValue.map { $0.inverted * 1_000 } ?? 0
         )
     }
-}
-
-internal func invertValue(value: Double?) -> Double {
-    if value == 0.0 || value == nil {
-        return 0.0
-    }
-    return 1 / (value ?? 1)
 }
