@@ -448,7 +448,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 inForegroundPeriods: nil,
                 isActive: isActive,
                 isSlowRendered: isSlowRendered,
-                jsRefreshRate: viewPerformanceMetrics[.jsRefreshRate]?.asJsRefreshRate(),
+                jsRefreshRate: viewPerformanceMetrics[.jsFrameTimeMilliseconds]?.asJsRefreshRate(),
                 largestContentfulPaint: nil,
                 loadEvent: nil,
                 loadingTime: nil,
@@ -637,10 +637,17 @@ private extension VitalInfo {
 
     func asJsRefreshRate() -> RUMViewEvent.View.JsRefreshRate {
         return RUMViewEvent.View.JsRefreshRate(
-            average: meanValue ?? 0.0,
-            max: maxValue ?? 0.0,
+            average: invertValue(value: meanValue) * 1_000,
+            max: invertValue(value: minValue) * 1_000,
             metricMax: 60.0,
-            min: minValue ?? 0.0
+            min: invertValue(value: maxValue) * 1_000
         )
     }
+}
+
+internal func invertValue(value: Double?) -> Double {
+    if value == 0.0 || value == nil {
+        return 0.0
+    }
+    return 1 / (value ?? 1)
 }
