@@ -80,17 +80,20 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         // Given
         let view = UIView(frame: .mockRandom())
 
-        let randomSnapshotOptions: ViewTreeSnapshotOptions = .mockRandom()
+        let randomRecorderContext: Recorder.Context = .mockRandom()
         let recorder = NodeRecorderMock(resultForView: { _ in nil })
         let builder = ViewTreeSnapshotBuilder(nodeRecorders: [recorder])
 
         // When
-        _ = builder.createSnapshot(of: view, with: randomSnapshotOptions)
+        let snapshot = builder.createSnapshot(of: view, with: randomRecorderContext)
 
         // Then
+        XCTAssertEqual(snapshot.date, randomRecorderContext.date)
+        XCTAssertEqual(snapshot.rumContext, randomRecorderContext.rumContext)
+
         let queryContext = try XCTUnwrap(recorder.queryContexts.first)
         XCTAssertTrue(queryContext.coordinateSpace === view)
-        XCTAssertEqual(queryContext.options, randomSnapshotOptions)
+        XCTAssertEqual(queryContext.recorder, randomRecorderContext)
     }
 
     // MARK: - Recording Nodes Recursively

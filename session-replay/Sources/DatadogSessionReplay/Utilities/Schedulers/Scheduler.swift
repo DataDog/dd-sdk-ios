@@ -6,15 +6,18 @@
 
 import Foundation
 
-/// Schedules operations and fires them in a recurring way.
+/// Schedules operations for later execution.
 internal protocol Scheduler {
+    /// The queue that operations are executed on.
+    var queue: Queue { get }
+
     /// Adds operation to the scheduler.
-    /// Operations can be added no matter if this scheduler is running or not.
+    /// Operations can be added no matter if the scheduler is running.
     func schedule(operation: @escaping () -> Void)
 
-    /// Starts repeating scheduled operations.
+    /// Starts executing scheduled operations.
     func start()
 
-    /// Stops repeating scheduled operations.
+    /// Stops executing scheduled operations.
     func stop()
 }

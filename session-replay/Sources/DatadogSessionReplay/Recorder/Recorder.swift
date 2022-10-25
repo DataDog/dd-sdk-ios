@@ -12,6 +12,16 @@ import Foundation
 /// captures intermediate representation of the view hierarchy. This representation
 /// is later passed to `Processor` and turned into wireframes uploaded to the BE.
 internal class Recorder {
+    /// The context of recording next snapshot.
+    struct Context: Equatable {
+        /// The time of requesting this snapshot.
+        let date: Date
+        /// The content recording policy from the moment of requesting snapshot.
+        let privacy: SessionReplayPrivacy
+        /// The RUM context from the moment of requesting snapshot.
+        let rumContext: RUMContext
+    }
+
     /// Schedules view tree captures.
     let scheduler: Scheduler
     /// Captures view tree snapshot (an intermediate representation of the view tree).
@@ -19,21 +29,34 @@ internal class Recorder {
     /// Turns view tree snapshots into data models that will be uploaded to SR BE.
     let snapshotProcessor: ViewTreeSnapshotProcessor
 
-    /// The content recording policy for creating snapshots.
-    var privacy: SessionReplayPrivacy = .maskAll
+    /// Notifies on RUM context changes through integration with `DatadogCore`.
+    private let rumContextObserver: RUMContextObserver
+    /// Last received RUM context (or `nil` if RUM session is not sampled).
+    /// It's synchronized through `scheduler.queue` (main thread).
+    private var currentRUMContext: RUMContext?
+    /// Current content recording policy for creating snapshots.
+    private var currentPrivacy: SessionReplayPrivacy
 
-    convenience init() {
+    convenience init(
+        configuration: SessionReplayConfiguration,
+        rumContextObserver: RUMContextObserver,
+        processor: ViewTreeSnapshotProcessor
+    ) {
         self.init(
+            configuration: configuration,
+            rumContextObserver: rumContextObserver,
             scheduler: MainThreadScheduler(interval: 0.25),
             snapshotProducer: WindowSnapshotProducer(
                 windowObserver: KeyWindowObserver(),
                 snapshotBuilder: ViewTreeSnapshotBuilder()
             ),
-            snapshotProcessor: Processor()
+            snapshotProcessor: processor
         )
     }
 
     init(
+        configuration: SessionReplayConfiguration,
+        rumContextObserver: RUMContextObserver,
         scheduler: Scheduler,
         snapshotProducer: ViewTreeSnapshotProducer,
         snapshotProcessor: ViewTreeSnapshotProcessor
@@ -41,9 +64,15 @@ internal class Recorder {
         self.scheduler = scheduler
         self.snapshotProducer = snapshotProducer
         self.snapshotProcessor = snapshotProcessor
+        self.rumContextObserver = rumContextObserver
+        self.currentPrivacy = configuration.privacy
 
         scheduler.schedule { [weak self] in
             self?.captureNextRecord()
+        }
+
+        rumContextObserver.observe(on: scheduler.queue) { [weak self] rumContext in
+            self?.currentRUMContext = rumContext
         }
     }
 
@@ -55,14 +84,30 @@ internal class Recorder {
         scheduler.stop()
     }
 
+    func change(privacy: SessionReplayPrivacy) {
+        scheduler.queue.run {
+            self.currentPrivacy = privacy
+        }
+    }
+
     /// Initiates the capture of a next record.
     /// **Note**: This is called on the main thread.
     private func captureNextRecord() {
         do {
-            let currentOptions = ViewTreeSnapshotOptions(privacy: privacy)
+            guard let rumContext = currentRUMContext else {
+                // The RUM context was not yet received or current RUM session is not sampled.
+                return
+            }
 
-            guard let snapshot = try snapshotProducer.takeSnapshot(with: currentOptions) else {
-                return // there is nothing visible yet (i.e. the key window is not yet ready)
+            let recorderContext = Context(
+                date: Date(), // TODO: RUMM-2688 Synchronize SR snapshot timestamps with current RUM time (+ NTP offset)
+                privacy: currentPrivacy,
+                rumContext: rumContext
+            )
+
+            guard let snapshot = try snapshotProducer.takeSnapshot(with: recorderContext) else {
+                // There is nothing visible yet (i.e. the key window is not yet ready).
+                return
             }
 
             snapshotProcessor.process(snapshot: snapshot)

@@ -4,11 +4,12 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
-import XCTest
+import Foundation
 @testable import DatadogSessionReplay
 
-final class SessionReplayFeatureTests: XCTestCase {
-    func testExample() throws {
-        XCTAssertNil(SessionReplayFeature.instance)
+/// A queue that executes synchronously on the caller thread.
+internal struct NoQueue: Queue {
+    func run(_ block: @escaping () -> Void) {
+        block()
     }
 }

@@ -18,7 +18,8 @@ import UIKit
 internal struct ViewTreeSnapshot {
     /// The time of taking this snapshot.
     let date: Date
-
+    /// The RUM context from the moment of taking this snapshot.
+    let rumContext: RUMContext
     /// The node indicating the root view of this snapshot.
     let root: Node
 }
