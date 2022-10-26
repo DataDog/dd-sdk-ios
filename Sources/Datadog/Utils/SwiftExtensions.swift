@@ -24,7 +24,7 @@ extension Double {
         return self / divider
     }
 
-    var inverted: Double {
+    var inverted: Self {
         return self == 0 ? 0 : 1 / self
     }
 }
