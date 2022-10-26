@@ -15,5 +15,5 @@ public enum PerformanceMetric {
 
     // The JavaScript frame time of a React Native view.
     // We store the frame time as its average makes more sense, then invert it to get the frame rate.
-    case jsFrameTimeMilliseconds
+    case jsFrameTimeSeconds
 }
