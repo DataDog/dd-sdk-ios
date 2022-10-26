@@ -8,23 +8,23 @@ import Foundation
 
 public internal(set) var defaultDatadogCore: DatadogCoreProtocol = NOPDatadogCore()
 
-/// A Datadog Core holds a set of features and is responsible of managing their storage
+/// A Datadog Core holds a set of Features and is responsible for managing their storage
 /// and upload mechanism. It also provides a thread-safe scope for writing events.
 public protocol DatadogCoreProtocol {
     /// Registers a Feature instance.
     ///
-    /// A Feature collects and transfers data to a Datadog Product (e.g. Logs, RUM, ...). A registered Feature can
-    /// open a `FeatureScope` to write events, the core will then be responsible for storing and uploading events
-    /// in a efficient manner. Performance presets for storage and upload are define when instanciating the core instance.
+    /// Feature collects and transfers data to a Datadog Product (e.g. Logs, RUM, ...). Upon registration, the Feature can
+    /// retrieve a `FeatureScope` interface for writing events. The core will store and upload events in an efficient way
+    /// with performance presets defined on initialization.
     ///
-    /// A Feature can also communicate to other Features by sending message on the bus that is managed by the core.
+    /// The Feature can also communicate to other Features by sending messages on the message bus managed by core.
     ///
-    /// - Parameter feature: The Feature instance.
+    /// - Parameter feature: The Feature instance - it will be retained and held by core.
     func register(feature: DatadogFeature) throws
 
-    /// Retrieves a Feature by its name and type.
+    /// Retrieves previously registered Feature by its name and type.
     ///
-    /// A Feature type can be specified as parameter or inferred from the return type:
+    /// Feature's type can be specified as parameter or inferred from the return type:
     ///
     ///     let feature = core.feature(named: "foo", type: Foo.self)
     ///     let feature: Foo? = core.feature(named: "foo")

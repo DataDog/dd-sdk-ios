@@ -34,7 +34,7 @@ public protocol DatadogFeature {
     /// The message bus receiver.
     ///
     /// The `FeatureMessageReceiver` defines an interface for Feature to receive any message
-    /// from a bus that is shared between Features registered in a core.
+    /// from a bus that is shared between all Features registered in the core.
     var messageReceiver: FeatureMessageReceiver { get }
 }
 

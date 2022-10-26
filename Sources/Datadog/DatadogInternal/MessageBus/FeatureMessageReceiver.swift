@@ -6,23 +6,25 @@
 
 import Foundation
 
-/// The `FeatureMessageReceiver` defines an interface for Feature to receive any message
-/// from a bus that is shared between Features registered in a core.
+/// The `FeatureMessageReceiver` defines an interface for a Feature to receive messages
+/// from a bus that is shared between Features registered to same instance of the core.
 ///
-/// A message is composed of a key and a dictionary of attributes. A message format is a loose
-/// agreement between Features, any supported messages by a Feature should be properly
-/// documented.
+/// The message is composed of a key and a dictionary of attributes. The message format is a loose
+/// agreement between Features - all messages supported by a Feature should be properly documented.
 public protocol FeatureMessageReceiver {
-    /// Receive a message from the message bus of a given core.
+    /// Receives messages from the message bus.
     ///
-    /// The message can be used to build an event or run a process.
-    /// Be mindful of not blocking the caller thread.
+    /// The message can be used to build an event or execute custom routine in the Feature.
+    ///
+    /// This method is always called on the same thread managed by core. If the implementation
+    /// of `FeatureMessageReceiver` needs to manage a state it can consider its mutations started
+    /// from `receive(message:from:)` to be thread-safe. The implementation should be mindful of
+    /// not blocking the caller thread to not delay processing of other messages in the system.
     ///
     /// - Parameters:
-    ///   - message: The Feature message
-    ///   - core: The core from which the message is transmitted.
-    /// - Returns: Returns `true` if the message was processed by the receiver. `false` if it was
-    ///            ignored.
+    ///   - message: The message
+    ///   - core: An instance of the core from which the message is transmitted.
+    /// - Returns: `true` if the message was processed by the receiver;`false` if it was ignored.
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool
 }
 
