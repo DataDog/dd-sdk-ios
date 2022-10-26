@@ -13,6 +13,7 @@ public enum PerformanceMetric {
     // The amount of time Flutter spent rasterizing the view.
     case flutterRasterTime
 
-    // The JavaScript refresh rate of a React Native view.
-    case jsRefreshRate
+    // The JavaScript frame time of a React Native view.
+    // We store the frame time as its average makes more sense, then invert it to get the frame rate.
+    case jsFrameTimeSeconds
 }

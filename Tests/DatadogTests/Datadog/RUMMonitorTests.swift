@@ -1396,9 +1396,12 @@ class RUMMonitorTests: XCTestCase {
         let monitor = try createTestableRUMMonitor()
 
         monitor.startView(viewController: mockView)
-        monitor.updatePerformanceMetric(metric: .jsRefreshRate, value: 40.0)
-        monitor.updatePerformanceMetric(metric: .jsRefreshRate, value: 20.0)
+        monitor.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.02)
+        monitor.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.02)
+        monitor.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.02)
+        monitor.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.04)
         monitor.updatePerformanceMetric(metric: .flutterBuildTime, value: 32.0)
+        monitor.updatePerformanceMetric(metric: .flutterBuildTime, value: 52.0)
         monitor.updatePerformanceMetric(metric: .flutterRasterTime, value: 42.0)
         monitor.stopView(viewController: mockView)
 
@@ -1406,11 +1409,13 @@ class RUMMonitorTests: XCTestCase {
 
         try rumEventMatchers.lastRUMEvent(ofType: RUMViewEvent.self)
             .model(ofType: RUMViewEvent.self) { rumModel in
-                XCTAssertEqual(rumModel.view.jsRefreshRate?.max, 40.0)
-                XCTAssertEqual(rumModel.view.jsRefreshRate?.min, 20.0)
-                XCTAssertEqual(rumModel.view.jsRefreshRate?.average, 30.0)
+                XCTAssertEqual(rumModel.view.jsRefreshRate?.max, 50.0)
+                XCTAssertEqual(rumModel.view.jsRefreshRate?.min, 25.0)
+                XCTAssertEqual(rumModel.view.jsRefreshRate?.average, 40.0)
 
-                XCTAssertEqual(rumModel.view.flutterBuildTime?.average, 32.0)
+                XCTAssertEqual(rumModel.view.flutterBuildTime?.max, 52.0)
+                XCTAssertEqual(rumModel.view.flutterBuildTime?.min, 32.0)
+                XCTAssertEqual(rumModel.view.flutterBuildTime?.average, 42.0)
                 XCTAssertEqual(rumModel.view.flutterRasterTime?.average, 42.0)
             }
     }
