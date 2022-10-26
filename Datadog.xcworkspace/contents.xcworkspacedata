@@ -7,7 +7,4 @@
    <FileRef
       location = "group:instrumented-tests/http-server-mock">
    </FileRef>
-   <FileRef
-      location = "group:session-replay">
-   </FileRef>
 </Workspace>
