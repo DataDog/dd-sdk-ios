@@ -14,17 +14,17 @@ public protocol DatadogCoreProtocol {
     /// Registers a Feature instance.
     ///
     /// Feature collects and transfers data to a Datadog Product (e.g. Logs, RUM, ...). Upon registration, the Feature can
-    /// retrieve a `FeatureScope` interface for writing events. The core will store and upload events in an efficient way
-    /// with performance presets defined on initialization.
+    /// retrieve a `FeatureScope` interface for writing events to the core. The core will store and upload events efficiently
+    /// according to the performance presets defined on initialization.
     ///
-    /// The Feature can also communicate to other Features by sending messages on the message bus managed by core.
+    /// A Feature can also communicate to other Features by sending messages on the message bus managed by core.
     ///
     /// - Parameter feature: The Feature instance - it will be retained and held by core.
     func register(feature: DatadogFeature) throws
 
     /// Retrieves previously registered Feature by its name and type.
     ///
-    /// Feature's type can be specified as parameter or inferred from the return type:
+    /// A Feature type can be specified as parameter or inferred from the return type:
     ///
     ///     let feature = core.feature(named: "foo", type: Foo.self)
     ///     let feature: Foo? = core.feature(named: "foo")

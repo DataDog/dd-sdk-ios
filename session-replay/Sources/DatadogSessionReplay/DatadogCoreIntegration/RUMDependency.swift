@@ -6,7 +6,7 @@
 
 import Foundation
 
-/// Defines dependency between Session Replay and RUM modules.
+/// Defines dependency between Session Replay (SR) and RUM modules.
 /// It aims at centralizing documentation of contracts between both products.
 internal struct RUMDependency {
     /// The key for referencing RUM baggage (RUM context) in `DatadogContext.featuresAttributes`.
