@@ -314,13 +314,23 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         var attributes = self.attributes
         var loadingTime: Int64? = nil
 
-        if context.launchTime.isActivePrewarm {
+        if context.launchTime?.isActivePrewarm == true {
             // Set `active_pre_warm` attribute to true in case
-            // of pre-warmed app
+            // of pre-warmed app.
             attributes[Constants.activePrewarm] = true
-        } else {
+        } else if let launchTime = context.launchTime?.launchTime {
             // Report Application Launch Time only if not pre-warmed
-            loadingTime = context.launchTime.launchTime.toInt64Nanoseconds
+            loadingTime = launchTime.toInt64Nanoseconds
+        } else if let launchDate = context.launchTime?.launchDate {
+            // The launchTime can be `nil` if the application is not yet
+            // active (UIApplicationDidBecomeActiveNotification). That is
+            // the case when instrumenting a SwiftUI application that start
+            // a RUM view on `SwiftUI.View/onAppear`.
+            //
+            // In that case, we consider the time between the application
+            // launch and the first view start as the application loading
+            // time.
+            loadingTime = viewStartTime.timeIntervalSince(launchDate).toInt64Nanoseconds
         }
 
         let actionEvent = RUMActionEvent(

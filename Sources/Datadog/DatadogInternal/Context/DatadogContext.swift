@@ -61,8 +61,8 @@ public struct DatadogContext {
 
     /// Application launch time.
     ///
-    /// Can be `zero` if the launch could not yet been evaluated.
-    var launchTime: LaunchTime = .zero
+    /// Can be `nil` if the launch could not yet been evaluated.
+    var launchTime: LaunchTime?
 
     /// Provides the history of app foreground / background states.
     var applicationStateHistory: AppStateHistory

@@ -64,6 +64,7 @@ extension LaunchTime: AnyMockable {
     static func mockAny() -> LaunchTime {
         .init(
             launchTime: .mockAny(),
+            launchDate: .mockAny(),
             isActivePrewarm: .mockAny()
         )
     }

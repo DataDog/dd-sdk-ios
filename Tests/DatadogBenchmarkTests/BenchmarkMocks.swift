@@ -46,7 +46,7 @@ extension DatadogContext: AnyMockable {
             sdkInitDate: .mockRandomInThePast(),
             device: DeviceInfo(),
             userInfo: nil,
-            launchTime: .zero,
+            launchTime: nil,
             applicationStateHistory: .active(since: Date()),
             networkConnectionInfo: .unknown,
             carrierInfo: nil,
