@@ -11,8 +11,7 @@ import Foundation
     /// The app process launch duration (in seconds) measured as the time from process start time
     /// to receiving `UIApplication.didBecomeActiveNotification` notification.
     ///
-    /// If the `UIApplication.didBecomeActiveNotification` has not yet been received by the
-    /// time this value is provided, it will represent the time interval between now and the process start time.
+    /// If the `UIApplication.didBecomeActiveNotification` has not yet been received the value will be `nil`.
     /* public */ let launchTime: TimeInterval?
 
     /// The date when the application process started.
