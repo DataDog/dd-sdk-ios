@@ -1,14 +1,35 @@
 #!/bin/bash
 
+function usage() {
+  cat << EOF
+Usage: $(basename "${BASH_SOURCE[0]}") [-h|--help] [-p|--platform] iOS,tvOS [-o|--output] path/to/bundles
+
+Build and bundle the Datdog SDK xcframeworks.
+
+Available options:
+
+-h, --help      Print this help and exit.
+-p, --platform  Select platform slices to include in the xcframework bundle. Use comma seperated list, default to 'iOS,tvOS'.
+-o, --output    Destination path of the bundles.
+
+EOF
+  exit
+}
+
+# default arguments
 OUTPUT="build"
 PLATFORM="iOS,tvOS"
 
+# read cmd arguments
 while :; do
     case $1 in
+        -p|--platform) PLATFORM=$2
+        shift
+        ;;
         -o|--output) OUTPUT_FILE=$2
         shift
         ;;
-        -p|--platform) PLATFORM=$2
+        -h|--help) usage
         shift
         ;;
         *) break

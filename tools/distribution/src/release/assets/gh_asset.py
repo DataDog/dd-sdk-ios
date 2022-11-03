@@ -32,11 +32,22 @@ class DatadogXCFrameworkValidator(XCFrameworkValidator):
 
         dir = zip_directory.get('Datadog.xcframework')
 
-        dir.assert_it_has_files([
-            'ios-arm64',
-            'ios-arm64/dSYMs/*.dSYM',
-            'ios-arm64/**/*.swiftinterface',
+        # above 1.12.1: framework includes arm64e slices
+        min_arm64e_version = Version.parse('1.12.1')
+        if in_version.is_newer_than(min_arm64e_version):
+            dir.assert_it_has_files([
+                'ios-arm64_arm64e',
+                'ios-arm64_arm64e/dSYMs/*.dSYM',
+                'ios-arm64_arm64e/**/*.swiftinterface',
+            ])
+        else:
+            dir.assert_it_has_files([
+                'ios-arm64',
+                'ios-arm64/dSYMs/*.dSYM',
+                'ios-arm64/**/*.swiftinterface',
+            ])
 
+        dir.assert_it_has_files([
             'ios-arm64_x86_64-simulator',
             'ios-arm64_x86_64-simulator/dSYMs/*.dSYM',
             'ios-arm64_x86_64-simulator/**/*.swiftinterface',
@@ -65,12 +76,25 @@ class DatadogObjcXCFrameworkValidator(XCFrameworkValidator):
         # always expect `DatadogObjc.xcframework`
 
         dir = zip_directory.get('DatadogObjc.xcframework')
-        dir.assert_it_has_files([
-            'ios-arm64',
-            'ios-arm64/dSYMs/*.dSYM',
-            'ios-arm64/**/*.swiftinterface',
 
+        # above 1.12.1: framework includes arm64e slices
+        min_arm64e_version = Version.parse('1.12.1')
+        if in_version.is_newer_than(min_arm64e_version):
+            dir.assert_it_has_files([
+                'ios-arm64_arm64e',
+                'ios-arm64_arm64e/dSYMs/*.dSYM',
+                'ios-arm64_arm64e/**/*.swiftinterface',
+            ])
+        else:
+            dir.assert_it_has_files([
+                'ios-arm64',
+                'ios-arm64/dSYMs/*.dSYM',
+                'ios-arm64/**/*.swiftinterface',
+            ])
+
+        dir.assert_it_has_files([
             'ios-arm64_x86_64-simulator',
+            'ios-arm64_x86_64-simulator/dSYMs/*.dSYM',
             'ios-arm64_x86_64-simulator/**/*.swiftinterface',
         ])
 
@@ -97,10 +121,23 @@ class DatadogCrashReportingXCFrameworkValidator(XCFrameworkValidator):
             return False # Datadog Crash Reporting.xcframework was introduced in `1.7.0`
 
         dir = zip_directory.get('DatadogCrashReporting.xcframework')
-        dir.assert_it_has_files([
-            'ios-arm64',
-            'ios-arm64/**/*.swiftinterface',
 
+        # above 1.12.1: framework includes arm64e slices
+        min_arm64e_version = Version.parse('1.12.1')
+        if in_version.is_newer_than(min_arm64e_version):
+            dir.assert_it_has_files([
+                'ios-arm64_arm64e',
+                'ios-arm64_arm64e/dSYMs/*.dSYM',
+                'ios-arm64_arm64e/**/*.swiftinterface',
+            ])
+        else:
+            dir.assert_it_has_files([
+                'ios-arm64',
+                'ios-arm64/dSYMs/*.dSYM',
+                'ios-arm64/**/*.swiftinterface',
+            ])
+
+        dir.assert_it_has_files([
             'ios-arm64_x86_64-simulator',
             'ios-arm64_x86_64-simulator/dSYMs/*.dSYM',
             'ios-arm64_x86_64-simulator/**/*.swiftinterface',
