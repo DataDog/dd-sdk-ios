@@ -200,18 +200,13 @@ class GHAsset:
         print(f'⌛️️️ Creating the GH release asset from {os.getcwd()}')
 
         with NamedTemporaryFile(mode='w+', prefix='dd-gh-distro-', suffix='.xcconfig') as xcconfig:
-            xcconfig.write('BUILD_LIBRARY_FOR_DISTRIBUTION = YES\n')
-            xcconfig.seek(0)  # without this line, content isn't actually written
             os.environ['XCODE_XCCONFIG_FILE'] = xcconfig.name
 
             this_version = Version.parse(git_tag)
             platform = 'iOS' if this_version.is_older_than(min_tvos_version) else 'iOS,tvOS'
 
-            # Produce XCFrameworks with carthage:
-            # - only checkout and `--no-build` as it will build in the next command:
-            shell(f'carthage bootstrap --platform {platform} --no-build')
-            # - `--no-build` as it will build in the next command:
-            shell(f'carthage build --platform {platform} --use-xcframeworks --no-use-binaries --no-skip-current')
+            # Produce XCFrameworks:
+            shell(f'sh tools/distribution/build-xcframework.sh --platform {platform}')
 
         # Create `.zip` archive:
         zip_archive_name = f'Datadog-{read_sdk_version()}.zip'
@@ -222,10 +217,10 @@ class GHAsset:
 
         with remember_cwd():
             print(f'   → Creating GH asset: {zip_archive_name}')
-            os.chdir('Carthage/Build')
+            os.chdir('build/xcframeworks')
             shell(f'zip -q --symlinks -r {zip_archive_name} *.xcframework')
 
-        self.__path = f'{os.getcwd()}/Carthage/Build/{zip_archive_name}'
+        self.__path = f'{os.getcwd()}/build/xcframeworks/{zip_archive_name}'
         self.__git_tag = git_tag
         print('   → GH asset created')
 
