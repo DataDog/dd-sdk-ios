@@ -20,7 +20,10 @@ let package = Package(
     targets: [
         .target(
             name: "DatadogSessionReplay",
-            dependencies: ["Datadog"]
+            dependencies: ["Datadog", "_DatadogSessionReplay_Private"]
+        ),
+        .target(
+            name: "_DatadogSessionReplay_Private"
         ),
         .testTarget(
             name: "DatadogSessionReplayTests",
