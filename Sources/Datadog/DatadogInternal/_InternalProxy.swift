@@ -20,6 +20,12 @@ public class _InternalProxy {
 }
 
 public class _TelemetryProxy {
+    public func setTelemetryConfigurationMapper(mapper: @escaping (TelemetryConfigurationEvent) -> TelemetryConfigurationEvent) {
+        if let rumTelemetry = DD.telemetry as? RUMTelemetry {
+            rumTelemetry.configurationEventMapper = mapper
+        }
+    }
+
     /// See Telementry.debug
     public func debug(id: String, message: String) {
         DD.telemetry.debug(id: id, message: message)

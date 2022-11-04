@@ -77,6 +77,7 @@ extension RUMTelemetry {
         source: String = .mockAnySource(),
         dateProvider: DateProvider = SystemDateProvider(),
         dateCorrector: DateCorrector = DateCorrectorMock(),
+        configurationEventMapper: RUMTelemetryConfiguratoinMapper? = nil,
         sampler: Sampler = .init(samplingRate: 100)
     ) -> Self {
         .init(
@@ -86,6 +87,7 @@ extension RUMTelemetry {
             source: source,
             dateProvider: dateProvider,
             dateCorrector: dateCorrector,
+            configurationEventMapper: configurationEventMapper,
             sampler: sampler
         )
     }

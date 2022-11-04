@@ -91,6 +91,21 @@ class DatadogTests: XCTestCase {
         Datadog.flushAndDeinitialize()
     }
 
+    func testGivenValidConfiguration_initializationCallsTelemetry() {
+        let dd = DD.mockWith(telemetry: TelemetryMock())
+        defer { dd.reset() }
+
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: defaultBuilder.build()
+        )
+
+        XCTAssertEqual(dd.telemetry.configurations.count, 1)
+
+        Datadog.flushAndDeinitialize()
+    }
+
     // MARK: - Toggling features
 
     func testEnablingAndDisablingFeatures() {

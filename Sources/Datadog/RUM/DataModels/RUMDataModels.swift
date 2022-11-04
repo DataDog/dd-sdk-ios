@@ -2313,6 +2313,12 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Attribute to be used to name actions
             public let actionNameAttribute: String?
 
+            /// The window duration for batches sent by the SDK (in milliseconds)
+            public let batchSize: Int64?
+
+            /// The upload frequency of batches (in milliseconds)
+            public let batchUploadFrequency: Int64?
+
             /// Session replay default privacy level
             public let defaultPrivacyLevel: String?
 
@@ -2324,6 +2330,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// The reports from the Reporting API tracked
             public let forwardReports: ForwardReports?
+
+            /// The type of initialization the SDK used, in case multiple are supported
+            public let initializationType: String?
 
             /// The period between each Mobile Vital sample (in milliseconds)
             public let mobileVitalsUpdatePeriod: Int64?
@@ -2352,8 +2361,20 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// The percentage of requests traced
             public let traceSampleRate: Int64?
 
+            /// Whether action tracking is performed automatically
+            public let trackActions: Bool?
+
             /// Whether RUM events are tracked when the application is in Background
             public let trackBackgroundEvents: Bool?
+
+            /// Whether long task tracking is performed automatically for cross platform SDKs
+            public let trackCrossPlatformLongTasks: Bool?
+
+            /// Whether error monitoring & crash reporting is enabled for the source platform
+            public let trackErrors: Bool?
+
+            /// Whether Flutter build and raster time tracking is enabled
+            public let trackFlutterPerformance: Bool?
 
             /// Whether user frustrations are tracked
             public let trackFrustrations: Bool?
@@ -2361,8 +2382,17 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether user actions are tracked
             public let trackInteractions: Bool?
 
-            /// Whether native crashes are tracked
-            public let trackNativeCrashes: Bool?
+            /// Whether native error monitoring & crash reporting is enabled (for cross platform SDKs)
+            public let trackNativeErrors: Bool?
+
+            /// Whether long task tracking is performed automatically
+            public let trackNativeLongTasks: Bool?
+
+            /// Whether native views are tracked (for cross platform SDKs)
+            public let trackNativeViews: Bool?
+
+            /// Whether automatic collection of network requests is enabled
+            public let trackNetworkRequests: Bool?
 
             /// Whether sessions across subdomains for the same site are tracked
             public let trackSessionAcrossSubdomains: Bool?
@@ -2373,6 +2403,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether the allowed tracing origins list is used
             public let useAllowedTracingOrigins: Bool?
 
+            /// Whether the cross-platform SDK was initialized on top of a pre-existing native SDK instance
+            public let useAttachToExisting: Bool?
+
             /// Whether beforeSend callback function is used
             public let useBeforeSend: Bool?
 
@@ -2381,6 +2414,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// Whether the request origins list to ignore when computing the page activity is used
             public let useExcludedActivityUrls: Bool?
+
+            /// Whether the client has provided a list of first party hosts
+            public let useFirstPartyHosts: Bool?
 
             /// Whether local encryption is used
             public let useLocalEncryption: Bool?
@@ -2391,15 +2427,21 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether a secure session cookie is used
             public let useSecureSessionCookie: Bool?
 
+            /// Whether tracing features are enabled
+            public let useTracing: Bool?
+
             /// View tracking strategy
             public let viewTrackingStrategy: ViewTrackingStrategy?
 
             enum CodingKeys: String, CodingKey {
                 case actionNameAttribute = "action_name_attribute"
+                case batchSize = "batch_size"
+                case batchUploadFrequency = "batch_upload_frequency"
                 case defaultPrivacyLevel = "default_privacy_level"
                 case forwardConsoleLogs = "forward_console_logs"
                 case forwardErrorsToLogs = "forward_errors_to_logs"
                 case forwardReports = "forward_reports"
+                case initializationType = "initialization_type"
                 case mobileVitalsUpdatePeriod = "mobile_vitals_update_period"
                 case premiumSampleRate = "premium_sample_rate"
                 case replaySampleRate = "replay_sample_rate"
@@ -2409,19 +2451,29 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case telemetryConfigurationSampleRate = "telemetry_configuration_sample_rate"
                 case telemetrySampleRate = "telemetry_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
+                case trackActions = "track_actions"
                 case trackBackgroundEvents = "track_background_events"
+                case trackCrossPlatformLongTasks = "track_cross_platform_long_tasks"
+                case trackErrors = "track_errors"
+                case trackFlutterPerformance = "track_flutter_performance"
                 case trackFrustrations = "track_frustrations"
                 case trackInteractions = "track_interactions"
-                case trackNativeCrashes = "track_native_crashes"
+                case trackNativeErrors = "track_native_errors"
+                case trackNativeLongTasks = "track_native_long_tasks"
+                case trackNativeViews = "track_native_views"
+                case trackNetworkRequests = "track_network_requests"
                 case trackSessionAcrossSubdomains = "track_session_across_subdomains"
                 case trackViewsManually = "track_views_manually"
                 case useAllowedTracingOrigins = "use_allowed_tracing_origins"
+                case useAttachToExisting = "use_attach_to_existing"
                 case useBeforeSend = "use_before_send"
                 case useCrossSiteSessionCookie = "use_cross_site_session_cookie"
                 case useExcludedActivityUrls = "use_excluded_activity_urls"
+                case useFirstPartyHosts = "use_first_party_hosts"
                 case useLocalEncryption = "use_local_encryption"
                 case useProxy = "use_proxy"
                 case useSecureSessionCookie = "use_secure_session_cookie"
+                case useTracing = "use_tracing"
                 case viewTrackingStrategy = "view_tracking_strategy"
             }
 
@@ -2824,4 +2876,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/7320f7c483c80f5fc0d868b1f40c97f22af8b0d1
+// Generated from https://github.com/DataDog/rum-events-format/tree/3367b250d1f3624bfec05a84fb46636cb2aa6024

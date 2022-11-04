@@ -240,6 +240,7 @@ public class Datadog {
                 source: configuration.common.source,
                 dateProvider: dateProvider,
                 dateCorrector: dateCorrector,
+                configurationEventMapper: nil,
                 sampler: rumConfiguration.telemetrySampler
             )
 
@@ -314,6 +315,8 @@ public class Datadog {
 
             Global.crashReporter?.sendCrashReportIfFound()
         }
+
+        DD.telemetry.configuration(configuration: configuration)
     }
 
     internal init() {
