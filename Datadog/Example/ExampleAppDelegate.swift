@@ -6,7 +6,6 @@
 
 import UIKit
 import Datadog
-import DatadogSessionReplay
 
 var logger: Logger!
 var tracer: OTTracer { Global.sharedTracer }
@@ -25,10 +24,6 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             appConfiguration = UITestsAppConfiguration()
         } else {
             appConfiguration = ExampleAppConfiguration()
-
-            // Draft integration with SR feature:
-            SessionReplayFeature.instance = SessionReplayFeature()
-            SessionReplayFeature.instance?.start()
         }
 
         // Initialize Datadog SDK

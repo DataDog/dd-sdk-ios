@@ -22,16 +22,19 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
     static func mockRandom() -> ViewTreeSnapshot {
         return ViewTreeSnapshot(
             date: .mockRandom(),
+            rumContext: .mockRandom(),
             root: .mockRandom()
         )
     }
 
     static func mockWith(
         date: Date = .mockAny(),
+        rumContext: RUMContext = .mockRandom(),
         root: Node = .mockAny()
     ) -> ViewTreeSnapshot {
         return ViewTreeSnapshot(
             date: date,
+            rumContext: rumContext,
             root: root
         )
     }
@@ -194,58 +197,77 @@ extension ViewTreeSnapshotBuilder.Context: AnyMockable, RandomMockable {
 
     static func mockRandom() -> ViewTreeSnapshotBuilder.Context {
         return .init(
+            recorder: .mockRandom(),
             coordinateSpace: UIView.mockRandom(),
-            options: .mockRandom(),
             ids: NodeIDGenerator(),
             textObfuscator: TextObfuscator()
         )
     }
 
     static func mockWith(
+        recorder: Recorder.Context = .mockAny(),
         coordinateSpace: UICoordinateSpace = UIView.mockAny(),
-        options: ViewTreeSnapshotOptions = .mockAny(),
         ids: NodeIDGenerator = NodeIDGenerator(),
         textObfuscator: TextObfuscator = TextObfuscator()
     ) -> ViewTreeSnapshotBuilder.Context {
         return .init(
+            recorder: recorder,
             coordinateSpace: coordinateSpace,
-            options: options,
             ids: ids,
             textObfuscator: textObfuscator
         )
     }
 }
 
-extension ViewTreeSnapshotOptions: AnyMockable, RandomMockable {
-    static func mockAny() -> ViewTreeSnapshotOptions {
+extension RUMContext: AnyMockable, RandomMockable {
+    static func mockAny() -> RUMContext {
         return .mockWith()
     }
 
-    static func mockRandom() -> ViewTreeSnapshotOptions {
-        return ViewTreeSnapshotOptions(
-            privacy: .mockRandom()
+    static func mockRandom() -> RUMContext {
+        return RUMContext(
+            applicationID: .mockRandom(),
+            sessionID: .mockRandom(),
+            viewID: .mockRandom()
         )
     }
 
     static func mockWith(
-        privacy: SessionReplayPrivacy = .mockAny()
-    ) -> ViewTreeSnapshotOptions {
-        return ViewTreeSnapshotOptions(
-            privacy: privacy
+        applicationID: String = .mockAny(),
+        sessionID: String = .mockAny(),
+        viewID: String = .mockAny()
+    ) -> RUMContext {
+        return RUMContext(
+            applicationID: applicationID,
+            sessionID: sessionID,
+            viewID: viewID
         )
     }
 }
 
-extension SessionReplayPrivacy: AnyMockable, RandomMockable {
-    static func mockAny() -> SessionReplayPrivacy {
-        return .allowAll
+extension Recorder.Context: AnyMockable, RandomMockable {
+    static func mockAny() -> Recorder.Context {
+        return .mockWith()
     }
 
-    static func mockRandom() -> SessionReplayPrivacy {
-        return [
-            .allowAll,
-            .maskAll
-        ].randomElement()!
+    static func mockRandom() -> Recorder.Context {
+        return Recorder.Context(
+            date: .mockRandom(),
+            privacy: .mockRandom(),
+            rumContext: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        date: Date = .mockAny(),
+        privacy: SessionReplayPrivacy = .mockAny(),
+        rumContext: RUMContext = .mockAny()
+    ) -> Recorder.Context {
+        return Recorder.Context(
+            date: date,
+            privacy: privacy,
+            rumContext: rumContext
+        )
     }
 }
 

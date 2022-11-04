@@ -15,11 +15,12 @@ let package = Package(
         ),
     ],
     dependencies: [
+        .package(name: "Datadog", path: ".."),
     ],
     targets: [
         .target(
             name: "DatadogSessionReplay",
-            dependencies: []
+            dependencies: ["Datadog"]
         ),
         .testTarget(
             name: "DatadogSessionReplayTests",

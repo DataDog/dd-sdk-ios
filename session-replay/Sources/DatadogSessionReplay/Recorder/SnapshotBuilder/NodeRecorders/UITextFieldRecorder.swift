@@ -49,7 +49,7 @@ internal struct UITextFieldRecorder: NodeRecorder {
             textColor: textField.textColor?.cgColor,
             font: textField.font,
             editor: editorProperties,
-            textObfuscator: context.options.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator
+            textObfuscator: context.recorder.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator
         )
         return SpecificElement(wireframesBuilder: builder)
     }

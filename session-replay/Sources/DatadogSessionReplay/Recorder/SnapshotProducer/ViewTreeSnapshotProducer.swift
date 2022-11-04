@@ -6,16 +6,11 @@
 
 import Foundation
 
-internal struct ViewTreeSnapshotOptions: Equatable {
-    /// The content recording policy for creating current snapshot.
-    let privacy: SessionReplayPrivacy
-}
-
 /// Produces `ViewTreeSnapshot` describing the user interface in current app.
 internal protocol ViewTreeSnapshotProducer {
     /// Produces the snapshot of a view tree.
-    /// - Parameter options: options of the snapshot
+    /// - Parameter context: the context of Recorder from the moment of requesting snapshot
     /// - Returns: the snapshot or `nil` if it cannot be taken.
     /// - Throws: can throw an `InternalError` if any problem occurs.
-    func takeSnapshot(with options: ViewTreeSnapshotOptions) throws -> ViewTreeSnapshot?
+    func takeSnapshot(with context: Recorder.Context) throws -> ViewTreeSnapshot?
 }

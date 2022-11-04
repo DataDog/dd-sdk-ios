@@ -5,41 +5,60 @@
  */
 
 import Foundation
+import Datadog
 
-/// A draft interface of SR feature.
-public class SessionReplayFeature {
-    public static var instance: SessionReplayFeature?
+/// A draft of the main SR component (TODO: RUMM-2268 Design convenient public API).
+/// - It conforms to `DatadogFeature` for communicating with `DatadogCore`.
+/// - It implements `SessionReplayController` for being used from the public API.
+///
+/// An instance of `SessionReplayFeature` is kept by `DatadogCore` but can be also
+/// retained by the user.
+internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
+    // MARK: - DatadogFeature
 
-    private let recorder: Recorder
+    let name: String = "session-replay"
+    let requestBuilder: FeatureRequestBuilder = RequestBuilder()
+    let messageReceiver: FeatureMessageReceiver
 
-    public init() {
-        self.recorder = Recorder()
+    // MARK: - Main Components
+
+    let recorder: Recorder
+
+    // MARK: - Initialization
+
+    convenience init(configuration: SessionReplayConfiguration) {
+        let rumContextReceiver = RUMContextReceiver()
+        let recorder = Recorder(
+            configuration: configuration,
+            rumContextObserver: rumContextReceiver,
+            processor: Processor()
+        )
+
+        self.init(
+            messageReceiver: rumContextReceiver,
+            recorder: recorder
+        )
     }
 
-    public func start() { recorder.start() }
-    public func stop() { recorder.stop() }
-
-    /// The content recording policy for Session Replay. It describes the way in which sensitive content (e.g. text or images) should be recorded.
-    /// Uses `.maskAll` by default.
-    ///
-    /// **Note**: It must be changed from the main thread.
-    public var privacy: SessionReplayPrivacy {
-        set { recorder.privacy = newValue }
-        get { recorder.privacy }
+    internal init(
+        messageReceiver: FeatureMessageReceiver,
+        recorder: Recorder
+    ) {
+        self.messageReceiver = messageReceiver
+        self.recorder = recorder
     }
+
+    // MARK: - SessionReplayController
+
+    func start() { recorder.start() }
+    func stop() { recorder.stop() }
+    func change(privacy: SessionReplayPrivacy) { recorder.change(privacy: privacy) }
 }
 
-/// Session Replay content policy. It describes the way in which sensitive content (e.g. text or images) should be recorded.
-public enum SessionReplayPrivacy {
-    /// Record all content as it is.
-    /// When using this option: all text, images and other information will be recorded and presented in the player.
-    case allowAll
+// MARK: - WIP: RUMM-2662 Session replay data is automatically uploaded
 
-    /// Mask all content.
-    /// When using this option: all characters in texts will be replaced with "x", images will be
-    /// replaced with placeholders and other content will be masked accordingly, so the original
-    /// information will not be presented in the player.
-    ///
-    /// This is the default content policy.
-    case maskAll
+internal struct RequestBuilder: FeatureRequestBuilder {
+    func request(for events: [Data], with context: DatadogContext) -> URLRequest { // swiftlint:disable:this unavailable_function
+        fatalError("TODO: RUMM-2662 Session replay data is automatically uploaded")
+    }
 }

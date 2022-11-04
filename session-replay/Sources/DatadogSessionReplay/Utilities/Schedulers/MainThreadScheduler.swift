@@ -20,15 +20,15 @@ internal class MainThreadScheduler: Scheduler {
         static let timerTolerance: Double = 0.1
     }
 
-    /// The queue for ensuring thread safety of this scheduler.
-    private let mainQueue = DispatchQueue.main
     /// The time interval between repeating operations.
     private let interval: TimeInterval
-
     /// The timer driving this scheduler.
     private var timer: Timer? = nil
     /// An array of scheduled operations.
     private var operations: [() -> Void] = []
+
+    /// The queue that operations are executed on.
+    let queue: Queue = MainAsyncQueue()
 
     /// Initializer.
     /// - Parameter interval: the interval between repeating operations
@@ -37,13 +37,13 @@ internal class MainThreadScheduler: Scheduler {
     }
 
     func schedule(operation: @escaping () -> Void) {
-        mainQueue.async {
+        queue.run {
             self.operations.append(operation)
         }
     }
 
     func start() {
-        mainQueue.async {
+        queue.run {
             guard self.timer == nil else {
                 return // is running
             }
@@ -59,7 +59,7 @@ internal class MainThreadScheduler: Scheduler {
     }
 
     func stop() {
-        mainQueue.async {
+        queue.run {
             guard self.timer != nil else {
                 return // is not running
             }

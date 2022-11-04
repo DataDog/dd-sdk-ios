@@ -24,7 +24,7 @@ internal struct UILabelRecorder: NodeRecorder {
             text: label.text ?? "",
             textColor: label.textColor?.cgColor,
             font: label.font,
-            textObfuscator: context.options.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator
+            textObfuscator: context.recorder.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator
         )
         return SpecificElement(wireframesBuilder: builder)
     }
