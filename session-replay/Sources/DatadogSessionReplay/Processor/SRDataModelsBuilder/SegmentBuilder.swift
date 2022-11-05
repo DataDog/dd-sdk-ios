@@ -34,16 +34,3 @@ internal class SegmentBuilder {
         )
     }
 }
-
-extension SRRecord {
-    var timestamp: Int64 {
-        switch self {
-        case .fullSnapshotRecord(let record):           return record.timestamp
-        case .incrementalSnapshotRecord(let record):    return record.timestamp
-        case .metaRecord(let record):                   return record.timestamp
-        case .focusRecord(let record):                  return record.timestamp
-        case .viewEndRecord(let record):                return record.timestamp
-        case .visualViewportRecord(let record):         return record.timestamp
-        }
-    }
-}

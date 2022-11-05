@@ -12,4 +12,8 @@ import Foundation
 /// The SDK should always recover from these failures.
 internal struct InternalError: Error, CustomStringConvertible {
     let description: String
+
+    init(description: String, fileID: StaticString = #fileID, line: UInt = #line) {
+        self.description = "\(description) (\(fileID):\(line))"
+    }
 }
