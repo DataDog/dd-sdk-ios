@@ -58,6 +58,17 @@ public protocol DatadogCoreProtocol {
     /// - Returns: The Feature Integration if any.
     func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature
 
+    /// Retrieves a Feature Scope by its name.
+    ///
+    /// Feature Scope collects data to Datadog Product (e.g. Logs, RUM, ...). Upon registration, the Feature retrieves
+    /// its `FeatureScope` interface for writing events to the core. The core will store and upload events efficiently
+    /// according to the performance presets defined on initialization.
+    ///
+    /// - Parameters:
+    ///   - feature: The Feature's name.
+    /// - Returns: The Feature scope if a Feature with given name was registered.
+    func scope(for feature: String) -> FeatureScope?
+
     /// Sets given attributes for a given Feature for sharing data through `DatadogContext`.
     ///
     /// This method provides a passive communication chanel between Features of the Core.
@@ -134,7 +145,7 @@ extension DatadogCoreProtocol {
 }
 
 /// Feature scope provides a context and a writer to build a record event.
-internal protocol FeatureScope {
+public protocol FeatureScope {
     /// Retrieve the event context and writer.
     ///
     /// The Feature scope provides the current Datadog context and event writer
@@ -153,7 +164,7 @@ internal protocol FeatureScope {
 }
 
 /// Feature scope provides a context and a writer to build a record event.
-extension FeatureScope {
+public extension FeatureScope {
     /// Retrieve the event context and writer.
     ///
     /// The Feature scope provides the current Datadog context and event writer
@@ -175,6 +186,8 @@ internal struct NOPDatadogCore: DatadogCoreProtocol {
     func register(integration: DatadogFeatureIntegration) throws { }
     /// no-op
     func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature { nil }
+    /// no-op
+    func scope(for feature: String) -> FeatureScope? { nil }
     /// no-op
     func set(feature: String, attributes: @escaping @autoclosure () -> FeatureBaggage) { }
     /// no-op
