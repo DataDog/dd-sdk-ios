@@ -265,6 +265,7 @@ extension Datadog {
         private(set) var firstPartyHosts: Set<String>?
         private(set) var logEventMapper: LogEventMapper?
         private(set) var spanEventMapper: SpanEventMapper?
+        private(set) var loggingSamplingRate: Float
         private(set) var tracingSamplingRate: Float
         private(set) var rumSessionsSamplingRate: Float
         private(set) var rumSessionsListener: RUMSessionListener?
@@ -343,6 +344,7 @@ extension Datadog {
                     serviceName: nil,
                     firstPartyHosts: nil,
                     spanEventMapper: nil,
+                    loggingSamplingRate: 100.0,
                     tracingSamplingRate: 20.0,
                     rumSessionsSamplingRate: 100.0,
                     rumSessionsListener: nil,
@@ -449,6 +451,15 @@ extension Datadog {
             @available(*, deprecated, message: "This option is replaced by `set(endpoint:)`. Refer to the new API comment for details.")
             public func set(logsEndpoint: LogsEndpoint) -> Builder {
                 configuration.logsEndpoint = logsEndpoint
+                return self
+            }
+            
+            /// Sets the sampling rate for logging.
+            ///
+            /// - Parameter loggingSamplingRate: the sampling rate must be a value between `0.0` and `100.0`. A value of `0.0`
+            /// means no trace will be kept, `100.0` means all traces will be kept (default value is `20.0`).
+            public func set(loggingSamplingRate: Float) -> Builder {
+                configuration.loggingSamplingRate = loggingSamplingRate
                 return self
             }
 

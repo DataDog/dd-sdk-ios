@@ -330,6 +330,11 @@ public class DDConfigurationBuilder: NSObject {
     public func set(serviceName: String) {
         _ = sdkBuilder.set(serviceName: serviceName)
     }
+    
+    @objc
+    public func set(loggingSamplingRate: Float) {
+        _ = sdkBuilder.set(loggingSamplingRate: loggingSamplingRate)
+    }
 
     @objc
     public func set(tracingSamplingRate: Float) {
