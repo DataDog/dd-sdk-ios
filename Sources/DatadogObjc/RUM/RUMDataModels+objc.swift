@@ -4794,10 +4794,6 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.traceSampleRate as NSNumber?
     }
 
-    @objc public var trackActions: NSNumber? {
-        root.swiftModel.telemetry.configuration.trackActions as NSNumber?
-    }
-
     @objc public var trackBackgroundEvents: NSNumber? {
         root.swiftModel.telemetry.configuration.trackBackgroundEvents as NSNumber?
     }
@@ -4981,4 +4977,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/3367b250d1f3624bfec05a84fb46636cb2aa6024
+// Generated from https://github.com/DataDog/rum-events-format/tree/ba3b9c6132c9cdecdfe1f846fe8a03c18ce091d5

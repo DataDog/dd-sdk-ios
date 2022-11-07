@@ -2361,9 +2361,6 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// The percentage of requests traced
             public let traceSampleRate: Int64?
 
-            /// Whether action tracking is performed automatically
-            public let trackActions: Bool?
-
             /// Whether RUM events are tracked when the application is in Background
             public let trackBackgroundEvents: Bool?
 
@@ -2451,7 +2448,6 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case telemetryConfigurationSampleRate = "telemetry_configuration_sample_rate"
                 case telemetrySampleRate = "telemetry_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
-                case trackActions = "track_actions"
                 case trackBackgroundEvents = "track_background_events"
                 case trackCrossPlatformLongTasks = "track_cross_platform_long_tasks"
                 case trackErrors = "track_errors"
@@ -2876,4 +2872,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/3367b250d1f3624bfec05a84fb46636cb2aa6024
+// Generated from https://github.com/DataDog/rum-events-format/tree/ba3b9c6132c9cdecdfe1f846fe8a03c18ce091d5
