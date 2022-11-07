@@ -20,7 +20,7 @@ internal struct SRSegment: SRDataModel {
     internal let hasFullSnapshot: Bool?
 
     /// The index of this Segment in the segments list that was recorded for this view ID. Starts from 0.
-    internal let indexInView: Int64
+    internal let indexInView: Int64?
 
     /// The records contained by this Segment.
     internal let records: [SRRecord]
@@ -841,4 +841,4 @@ internal enum SRRecord: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/cd94812544b54e3de5d8aaee0c5f936c98a92dbf
+// Generated from https://github.com/DataDog/rum-events-format/tree/7320f7c483c80f5fc0d868b1f40c97f22af8b0d1
