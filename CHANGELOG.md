@@ -1,5 +1,7 @@
 # Unreleased
 
+# 1.13.0 / 07-11-2022
+
 - [IMPROVEMENT] Add a method to add properties to user info without needing to reset other user info..
 - [IMPROVEMENT] Send trace sample rate (`dd.rulePsr`) for APM's traffic ingestion control page. See [#1029][]
 
