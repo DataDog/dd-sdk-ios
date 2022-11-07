@@ -5,13 +5,21 @@
  */
 
 import Foundation
+import Datadog
+
+/// A type managing Session Replay recording.
+internal protocol Recording {
+    func start()
+    func stop()
+    func change(privacy: SessionReplayPrivacy)
+}
 
 /// The main engine and the heart beat of Session Replay.
 ///
 /// It instruments running application by observing current window(s) and
 /// captures intermediate representation of the view hierarchy. This representation
 /// is later passed to `Processor` and turned into wireframes uploaded to the BE.
-internal class Recorder {
+internal class Recorder: Recording {
     /// The context of recording next snapshot.
     struct Context: Equatable {
         /// The time of requesting this snapshot.
@@ -23,11 +31,11 @@ internal class Recorder {
     }
 
     /// Schedules view tree captures.
-    let scheduler: Scheduler
+    private let scheduler: Scheduler
     /// Captures view tree snapshot (an intermediate representation of the view tree).
-    let snapshotProducer: ViewTreeSnapshotProducer
+    private let snapshotProducer: ViewTreeSnapshotProducer
     /// Turns view tree snapshots into data models that will be uploaded to SR BE.
-    let snapshotProcessor: ViewTreeSnapshotProcessor
+    private let snapshotProcessor: Processing
 
     /// Notifies on RUM context changes through integration with `DatadogCore`.
     private let rumContextObserver: RUMContextObserver
@@ -40,7 +48,7 @@ internal class Recorder {
     convenience init(
         configuration: SessionReplayConfiguration,
         rumContextObserver: RUMContextObserver,
-        processor: ViewTreeSnapshotProcessor
+        processor: Processing
     ) {
         self.init(
             configuration: configuration,
@@ -59,7 +67,7 @@ internal class Recorder {
         rumContextObserver: RUMContextObserver,
         scheduler: Scheduler,
         snapshotProducer: ViewTreeSnapshotProducer,
-        snapshotProcessor: ViewTreeSnapshotProcessor
+        snapshotProcessor: Processing
     ) {
         self.scheduler = scheduler
         self.snapshotProducer = snapshotProducer
@@ -75,6 +83,8 @@ internal class Recorder {
             self?.currentRUMContext = rumContext
         }
     }
+
+    // MARK: - Recording
 
     func start() {
         scheduler.start()

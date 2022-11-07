@@ -800,3 +800,127 @@ extension SRFullSnapshotRecord.Data: AnyMockable, RandomMockable {
         )
     }
 }
+
+// MARK: - Segment mocks
+
+extension SRSegment: AnyMockable, RandomMockable {
+    static func mockAny() -> SRSegment {
+        return .mockWith()
+    }
+
+    static func mockRandom() -> SRSegment {
+        return SRSegment(
+            application: .mockRandom(),
+            end: .mockRandom(),
+            hasFullSnapshot: .mockRandom(),
+            indexInView: .mockRandom(),
+            records: .mockRandom(),
+            recordsCount: .mockRandom(),
+            session: .mockRandom(),
+            source: .mockRandom(),
+            start: .mockRandom(),
+            view: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        application: Application = .mockAny(),
+        end: Int64 = .mockAny(),
+        hasFullSnapshot: Bool? = .mockAny(),
+        indexInView: Int64 = .mockAny(),
+        records: [SRRecord] = .mockAny(),
+        recordsCount: Int64 = .mockAny(),
+        session: Session = .mockAny(),
+        source: Source = .mockAny(),
+        start: Int64 = .mockAny(),
+        view: View = .mockAny()
+    ) -> SRSegment {
+        return SRSegment(
+            application: application,
+            end: end,
+            hasFullSnapshot: hasFullSnapshot,
+            indexInView: indexInView,
+            records: records,
+            recordsCount: recordsCount,
+            session: session,
+            source: source,
+            start: start,
+            view: view
+        )
+    }
+}
+
+extension SRSegment.View: AnyMockable, RandomMockable {
+    static func mockAny() -> SRSegment.View {
+        return .mockWith()
+    }
+
+    static func mockRandom() -> SRSegment.View {
+        return SRSegment.View(
+            id: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        id: String = .mockAny()
+    ) -> SRSegment.View {
+        return SRSegment.View(
+            id: id
+        )
+    }
+}
+
+extension SRSegment.Source: AnyMockable, RandomMockable {
+    static func mockAny() -> SRSegment.Source {
+        return .android
+    }
+
+    static func mockRandom() -> SRSegment.Source {
+        return [
+            .android,
+            .ios,
+            .flutter,
+            .reactNative
+        ].randomElement()!
+    }
+}
+
+extension SRSegment.Session: AnyMockable, RandomMockable {
+    static func mockAny() -> SRSegment.Session {
+        return .mockWith()
+    }
+
+    static func mockRandom() -> SRSegment.Session {
+        return SRSegment.Session(
+            id: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        id: String = .mockAny()
+    ) -> SRSegment.Session {
+        return SRSegment.Session(
+            id: id
+        )
+    }
+}
+
+extension SRSegment.Application: AnyMockable, RandomMockable {
+    static func mockAny() -> SRSegment.Application {
+        return .mockWith()
+    }
+
+    static func mockRandom() -> SRSegment.Application {
+        return SRSegment.Application(
+            id: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        id: String = .mockAny()
+    ) -> SRSegment.Application {
+        return SRSegment.Application(
+            id: id
+        )
+    }
+}

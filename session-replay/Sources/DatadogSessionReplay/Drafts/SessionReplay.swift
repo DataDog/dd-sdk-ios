@@ -14,11 +14,23 @@ public struct SessionReplay {
     public static func initialize(
         with configuration: SessionReplayConfiguration,
         in datadogInstance: DatadogCoreProtocol = defaultDatadogCore
-    ) throws -> SessionReplayController {
-        let sessionReplay = SessionReplayFeature(configuration: configuration)
-        try datadogInstance.register(feature: sessionReplay)
+    ) -> SessionReplayController {
+        do {
+            let feature = SessionReplayFeature(configuration:
+                                                configuration)
+            try datadogInstance.register(feature: feature)
 
-        return sessionReplay
+            guard let scope = datadogInstance.scope(for: feature.name) else {
+                throw FatalError(description: "Failed to obtain `FeatureScope` for \(feature.name)")
+            }
+
+            feature.register(sessionReplayScope: scope)
+
+            return feature
+        } catch let error {
+            consolePrint("\(error)")
+            return NOPSessionReplayController()
+        }
     }
 }
 
@@ -33,4 +45,10 @@ public protocol SessionReplayController {
 
     /// Changes the content recording policy.
     func change(privacy: SessionReplayPrivacy)
+}
+
+internal struct NOPSessionReplayController: SessionReplayController {
+    func start() {}
+    func stop() {}
+    func change(privacy: SessionReplayPrivacy) {}
 }
