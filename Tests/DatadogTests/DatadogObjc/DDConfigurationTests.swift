@@ -140,7 +140,7 @@ class DDConfigurationTests: XCTestCase {
 
         objcBuilder.set(loggingSamplingRate: 66)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.loggingSamplingRate, 66)
-        
+
         objcBuilder.set(tracingSamplingRate: 75)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.tracingSamplingRate, 75)
 
