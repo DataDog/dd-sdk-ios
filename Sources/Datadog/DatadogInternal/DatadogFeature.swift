@@ -27,8 +27,6 @@ public protocol DatadogFeature {
     var name: String { get }
 
     /// The URL request builder for uploading data in this Feature.
-    ///
-    /// This builder currently use the v1 context, but will be soon migrated to v2
     var requestBuilder: FeatureRequestBuilder { get }
 
     /// The message bus receiver.

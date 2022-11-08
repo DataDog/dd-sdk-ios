@@ -42,6 +42,14 @@ class RequestBuilderTests: XCTestCase {
         builder = URLRequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: [.contentTypeHeader(contentType: .applicationJSON)])
         request = builder.uploadRequest(with: .mockAny())
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "application/json")
+
+        builder = URLRequestBuilder(
+            url: .mockRandom(),
+            queryItems: .mockRandom(),
+            headers: [.contentTypeHeader(contentType: .multipartFormData(boundary: "boundary-uuid"))]
+        )
+        request = builder.uploadRequest(with: .mockAny())
+        XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "multipart/form-data; boundary=boundary-uuid")
     }
 
     func testBuildingRequestWithUserAgentHeader() {
@@ -158,7 +166,7 @@ class RequestBuilderTests: XCTestCase {
 
     // MARK: - Request Data
 
-    func testWhenBuildingRequestWithData_thenItDeflateHTTPBody() throws {
+    func testWhenBuildingRequestWithDataAndCompression_thenItDeflatesHTTPBody() throws {
         // Given
         let builder = URLRequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: .mockRandom())
 
@@ -166,7 +174,7 @@ class RequestBuilderTests: XCTestCase {
             // When
             let size = UInt64(pow(10, Double(i)))
             let randomData: Data = .mock(ofSize: size)
-            let request = builder.uploadRequest(with: randomData)
+            let request = builder.uploadRequest(with: randomData, compress: true)
             let body = try XCTUnwrap(request.httpBody)
 
             // Then
@@ -175,7 +183,7 @@ class RequestBuilderTests: XCTestCase {
         }
     }
 
-    func testWhenBuildingRequestWithSmallData_thenItDoesNotDeflateHTTPBody() throws {
+    func testWhenBuildingRequestWithSmallDataAndCompression_thenItDoesNotDeflateHTTPBody() throws {
         // When
         // In the worst possible case, where  deflate would expand the data,
         // deflation falls back to stored (uncompressed) data.
@@ -183,12 +191,26 @@ class RequestBuilderTests: XCTestCase {
         let randomData: Data = .mock(ofSize: size)
         let builder = URLRequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: .mockRandom())
 
-        let request = builder.uploadRequest(with: randomData)
+        let request = builder.uploadRequest(with: randomData, compress: true)
         let body = try XCTUnwrap(request.httpBody)
 
         // Then
         XCTAssertNil(request.allHTTPHeaderFields?["Content-Encoding"])
         XCTAssertEqual(body.count, Int(size), "HTTP body must not be alterated")
         XCTAssertEqual(body, randomData)
+    }
+
+    func testWhenBuildingRequestWithDataAndNoCompression_thenItDoesNotDeflatesHTTPBody() throws {
+        // Given
+        let builder = URLRequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: .mockRandom())
+
+        // When
+        let randomData: Data = .mockRandom()
+        let request = builder.uploadRequest(with: randomData, compress: false)
+
+        // Then
+        let body = try XCTUnwrap(request.httpBody)
+        XCTAssertNil(request.allHTTPHeaderFields?["Content-Encoding"])
+        XCTAssertEqual(body, randomData, "HTTP body must not be compressed")
     }
 }

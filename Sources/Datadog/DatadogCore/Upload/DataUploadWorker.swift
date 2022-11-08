@@ -62,32 +62,38 @@ internal class DataUploadWorker: DataUploadWorkerType {
             if let batch = nextBatch {
                 DD.logger.debug("⏳ (\(self.featureName)) Uploading batch...")
 
-                // Upload batch
-                let uploadStatus = self.dataUploader.upload(
-                    events: batch.events,
-                    context: context
-                )
+                do {
+                    // Upload batch
+                    let uploadStatus = try self.dataUploader.upload(
+                        events: batch.events,
+                        context: context
+                    )
 
-                // Delete or keep batch depending on the upload status
-                if uploadStatus.needsRetry {
-                    self.delay.increase()
+                    // Delete or keep batch depending on the upload status
+                    if uploadStatus.needsRetry {
+                        self.delay.increase()
 
-                    DD.logger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus.userDebugDescription)")
-                } else {
+                        DD.logger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus.userDebugDescription)")
+                    } else {
+                        self.fileReader.markBatchAsRead(batch)
+                        self.delay.decrease()
+
+                        DD.logger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus.userDebugDescription)")
+                    }
+
+                    switch uploadStatus.error {
+                    case .unauthorized:
+                        DD.logger.error("⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.")
+                    case let .httpError(statusCode: statusCode):
+                        DD.telemetry.error("Data upload finished with status code: \(statusCode)")
+                    case let .networkError(error: error):
+                        DD.telemetry.error("Data upload finished with error", error: error)
+                    case .none: break
+                    }
+                } catch let error {
+                    // If upload can't be initiated do not retry, so drop the batch:
                     self.fileReader.markBatchAsRead(batch)
-                    self.delay.decrease()
-
-                    DD.logger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus.userDebugDescription)")
-                }
-
-                switch uploadStatus.error {
-                case .unauthorized:
-                    DD.logger.error("⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.")
-                case let .httpError(statusCode: statusCode):
-                    DD.telemetry.error("Data upload finished with status code: \(statusCode)")
-                case let .networkError(error: error):
-                    DD.telemetry.error("Data upload finished with error", error: error)
-                case .none: break
+                    DD.telemetry.error("Failed to initiate '\(self.featureName)' data upload", error: error)
                 }
             } else {
                 let batchLabel = nextBatch != nil ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")
@@ -117,7 +123,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
     internal func flushSynchronously() {
         queue.sync {
             while let nextBatch = self.fileReader.readNextBatch() {
-                _ = self.dataUploader.upload(events: nextBatch.events, context: contextProvider.read())
+                _ = try? self.dataUploader.upload(events: nextBatch.events, context: contextProvider.read())
                 self.fileReader.markBatchAsRead(nextBatch)
             }
         }

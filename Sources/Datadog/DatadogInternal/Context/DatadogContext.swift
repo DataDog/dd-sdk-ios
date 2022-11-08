@@ -54,7 +54,7 @@ public struct DatadogContext {
     let sdkInitDate: Date
 
     /// Current device information.
-    let device: DeviceInfo
+    public let device: DeviceInfo
 
     /// Current user information.
     var userInfo: UserInfo?

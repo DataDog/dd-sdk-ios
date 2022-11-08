@@ -97,6 +97,37 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(try temporaryDirectory.files().count, 0, "When upload finishes with `needsRetry: false`, data should be deleted")
     }
 
+    func testGivenDataToUpload_whenUploadFailsToBeInitiated_thenDataIsDeleted() {
+        let initiatingUploadExpectation = self.expectation(description: "Upload is being initiated")
+
+        var mockDataUploader = DataUploaderMock(uploadStatus: .mockRandom())
+        mockDataUploader.onUpload = {
+            initiatingUploadExpectation.fulfill()
+            throw ErrorMock("Failed to prepare upload")
+        }
+
+        // Given
+        writer.write(value: ["key": "value"])
+        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+
+        // When
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: mockDataUploader,
+            contextProvider: .mockAny(),
+            uploadConditions: .alwaysUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
+            featureName: .mockAny()
+        )
+
+        wait(for: [initiatingUploadExpectation], timeout: 0.5)
+        worker.cancelSynchronously()
+
+        // Then
+        XCTAssertEqual(try temporaryDirectory.files().count, 0, "When upload fails to be initiated, data should be deleted")
+    }
+
     func testGivenDataToUpload_whenUploadFinishesAndNeedsToBeRetried_thenDataIsPreserved() {
         let startUploadExpectation = self.expectation(description: "Upload has started")
 
@@ -282,7 +313,7 @@ class DataUploadWorkerTests: XCTestCase {
         )
     }
 
-    func testWhenDataIsBeingUploaded_itPrintsUnauthoriseMessage_toUserLogger() {
+    func testWhenDataIsUploadedWithUnauthorizedError_itPrintsUnauthoriseMessage_toUserLogger() {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
@@ -317,7 +348,7 @@ class DataUploadWorkerTests: XCTestCase {
         )
     }
 
-    func testWhenDataIsBeingUploaded_itPrintsHTTPErrorMessage_toTelemetry() {
+    func testWhenDataIsUploadedWith500StatusCode_itSendsErrorTelemetry() {
         // Given
         let dd = DD.mockWith(telemetry: TelemetryMock())
         defer { dd.reset() }
@@ -353,7 +384,7 @@ class DataUploadWorkerTests: XCTestCase {
         )
     }
 
-    func testWhenDataIsBeingUploaded_itPrintsNetworkErrorMessage_toTelemetry() {
+    func testWhenDataCannotBeUploadedDueToNetworkError_itSendsErrorTelemetry() {
         // Given
         let dd = DD.mockWith(telemetry: TelemetryMock())
         defer { dd.reset() }
@@ -385,6 +416,44 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(
             dd.telemetry.errors.first?.message,
             #"Data upload finished with error - Error Domain=abc Code=0 "(null)""#,
+            "An error should be send to `DD.telemetry`."
+        )
+    }
+
+    func testWhenDataCannotBePreparedForUpload_itSendsErrorTelemetry() {
+        // Given
+        let dd = DD.mockWith(telemetry: TelemetryMock())
+        defer { dd.reset() }
+
+        writer.write(value: ["key": "value"])
+
+        // When
+        let initiatingUploadExpectation = self.expectation(description: "Upload is being initiated")
+        var mockDataUploader = DataUploaderMock(uploadStatus: .mockRandom())
+        mockDataUploader.onUpload = {
+            initiatingUploadExpectation.fulfill()
+            throw ErrorMock("Failed to prepare upload")
+        }
+
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: mockDataUploader,
+            contextProvider: .mockAny(),
+            uploadConditions: .alwaysUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
+            featureName: "some-feature"
+        )
+
+        wait(for: [initiatingUploadExpectation], timeout: 0.5)
+        worker.cancelSynchronously()
+
+        // Then
+        XCTAssertEqual(dd.telemetry.errors.count, 1)
+
+        XCTAssertEqual(
+            dd.telemetry.errors.first?.message,
+            #"Failed to initiate 'some-feature' data upload - Failed to prepare upload"#,
             "An error should be send to `DD.telemetry`."
         )
     }
