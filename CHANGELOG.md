@@ -2,8 +2,9 @@
 
 # 1.13.0 / 07-11-2022
 
-- [IMPROVEMENT] Add a method to add properties to user info without needing to reset other user info..
+- [IMPROVEMENT] Add a method to add properties to user info without needing to reset other user info.
 - [IMPROVEMENT] Send trace sample rate (`dd.rulePsr`) for APM's traffic ingestion control page. See [#1029][]
+- [BUGFIX] Fix vitals default presets. See [#1043][]
 
 # 1.12.1 / 18-10-2022
 
@@ -402,6 +403,7 @@
 [#973]: https://github.com/DataDog/dd-sdk-ios/issues/973
 [#997]: https://github.com/DataDog/dd-sdk-ios/issues/997
 [#1029]: https://github.com/DataDog/dd-sdk-ios/issues/1029
+[#1043]: https://github.com/DataDog/dd-sdk-ios/issues/1043
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
