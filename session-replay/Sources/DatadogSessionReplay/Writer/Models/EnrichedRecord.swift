@@ -65,7 +65,7 @@ internal struct EnrichedRecord: Encodable {
 
 // MARK: - Convenience
 
-private extension SRRecord {
+extension SRRecord {
     var isFullSnapshot: Bool {
         switch self {
         case .fullSnapshotRecord: return true

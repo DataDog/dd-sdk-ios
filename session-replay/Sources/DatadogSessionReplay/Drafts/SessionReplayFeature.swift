@@ -17,7 +17,7 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
     // MARK: - DatadogFeature
 
     let name: String = "session-replay"
-    let requestBuilder: FeatureRequestBuilder = RequestBuilder()
+    let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver
 
     // MARK: - Main Components
@@ -47,6 +47,9 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
         self.recorder = recorder
         self.processor = processor
         self.writer = writer
+        self.requestBuilder = RequestBuilder(
+            uploader: Uploader()
+        )
     }
 
     func register(sessionReplayScope: FeatureScope) {
@@ -58,12 +61,4 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
     func start() { recorder.start() }
     func stop() { recorder.stop() }
     func change(privacy: SessionReplayPrivacy) { recorder.change(privacy: privacy) }
-}
-
-// MARK: - WIP: RUMM-2662 Session replay data is automatically uploaded
-
-internal struct RequestBuilder: FeatureRequestBuilder {
-    func request(for events: [Data], with context: DatadogContext) -> URLRequest { // swiftlint:disable:this unavailable_function
-        fatalError("TODO: RUMM-2662 Session replay data is automatically uploaded")
-    }
 }
