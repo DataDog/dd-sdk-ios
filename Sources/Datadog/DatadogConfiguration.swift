@@ -457,7 +457,8 @@ extension Datadog {
             /// Sets the sampling rate for logging.
             ///
             /// - Parameter loggingSamplingRate: the sampling rate must be a value between `0.0` and `100.0`. A value of `0.0`
-            /// means no trace will be kept, `100.0` means all traces will be kept (by default sampling is disabled).
+            /// means no logs will be processed, `100.0` means all logs will be processed.
+            /// (by default sampling is disabled, meaning that all logs are being processed).
             public func set(loggingSamplingRate: Float) -> Builder {
                 configuration.loggingSamplingRate = loggingSamplingRate
                 return self
