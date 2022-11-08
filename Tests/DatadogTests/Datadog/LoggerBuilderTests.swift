@@ -137,4 +137,13 @@ class LoggerBuilderTests: XCTestCase {
         logger = Logger.builder.sendLogsToDatadog(false).printLogsToConsole(false).build(in: core)
         XCTAssertTrue(logger.v2Logger is NOPLogger)
     }
+
+    func testSamplingLogger() throws {
+        let logger = Logger.builder
+            .set(samplingRate: 77)
+            .build(in: core)
+
+        let samplingLogger = try XCTUnwrap(logger.v2Logger as? SamplingLogger)
+        XCTAssertEqual(samplingLogger.sampler.samplingRate, 77)
+    }
 }

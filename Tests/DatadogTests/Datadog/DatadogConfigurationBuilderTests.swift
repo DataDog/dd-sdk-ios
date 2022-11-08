@@ -45,7 +45,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertNil(configuration.firstPartyHosts)
             XCTAssertNil(configuration.logEventMapper)
             XCTAssertNil(configuration.spanEventMapper)
-            XCTAssertEqual(configuration.loggingSamplingRate, 100.0)
+            XCTAssertEqual(configuration.loggingSamplingRate, nil)
             XCTAssertEqual(configuration.tracingSamplingRate, 20.0)
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 100.0)
             XCTAssertNil(configuration.rumSessionsListener)

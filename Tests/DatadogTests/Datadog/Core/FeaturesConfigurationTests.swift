@@ -551,6 +551,17 @@ class FeaturesConfigurationTests: XCTestCase {
         )
     }
 
+    func testLoggingSamplingRate() throws {
+        let custom = try FeaturesConfiguration(
+            configuration: .mockWith(
+                loggingEnabled: true,
+                loggingSamplingRate: 12.34
+            ),
+            appContext: .mockAny()
+        )
+        XCTAssertEqual(custom.logging?.loggingSampler?.samplingRate, 12.34)
+    }
+
     // MARK: - URLSession Auto Instrumentation Configuration Tests
 
     func testURLSessionAutoInstrumentationConfiguration() throws {
