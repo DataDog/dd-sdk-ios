@@ -265,8 +265,13 @@ class RUMTelemetryTests: XCTestCase {
     // MARK: - Configuration Telemetry Events
 
     func testSendTelemetry_sendsConfigurationDelayed() throws {
-        // Given 
-        let telemetry: RUMTelemetry = .mockWith(core: core, sampler: .mockKeepAll())
+        // Given
+        var delayedDispatch: (() -> Void)?
+        let telemetry: RUMTelemetry = .mockWith(
+            core: core,
+            delayedDispatcher: { block in delayedDispatch = block },
+            sampler: .mockKeepAll()
+        )
 
         // When
         telemetry.configuration(configuration: .mockAny())
@@ -277,7 +282,7 @@ class RUMTelemetryTests: XCTestCase {
         XCTAssertEqual(events.count, 0)
 
         // Then later
-        sleep(6)
+        delayedDispatch?()
 
         eventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 1)
         events = try eventMatchers.compactMap(TelemetryConfigurationEvent.self)
@@ -286,6 +291,7 @@ class RUMTelemetryTests: XCTestCase {
 
     func testSendTelemetry_callsTelemetryMapperBeforeSend() throws {
         // Given
+        var delayedDispatch: (() -> Void)?
         var mapperCalled = false
         let modifiedEvent = TelemetryConfigurationEvent.mockRandom()
         let telemetry: RUMTelemetry = .mockWith(
@@ -294,6 +300,7 @@ class RUMTelemetryTests: XCTestCase {
                 mapperCalled = true
                 return modifiedEvent
             },
+            delayedDispatcher: { block in delayedDispatch = block },
             sampler: .mockKeepAll()
         )
 
@@ -307,7 +314,7 @@ class RUMTelemetryTests: XCTestCase {
         XCTAssertEqual(events.count, 0)
 
         // Then later
-        sleep(6)
+        delayedDispatch?()
 
         eventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 1)
         events = try eventMatchers.compactMap(TelemetryConfigurationEvent.self)

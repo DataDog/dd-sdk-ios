@@ -435,7 +435,6 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     telemetryConfigurationSampleRate: .mockRandom(),
                     telemetrySampleRate: .mockRandom(),
                     traceSampleRate: .mockRandom(),
-                    trackActions: .mockRandom(),
                     trackBackgroundEvents: .mockRandom(),
                     trackCrossPlatformLongTasks: .mockRandom(),
                     trackErrors: .mockRandom(),

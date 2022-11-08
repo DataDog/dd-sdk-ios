@@ -5,9 +5,9 @@
  */
 
 import Foundation
-import UIKit
 
 internal typealias RUMTelemetryConfiguratoinMapper = (TelemetryConfigurationEvent) -> TelemetryConfigurationEvent
+internal typealias RUMTelemetryDelayedDispatcher = (@escaping () -> Void) -> Void
 
 /// Sends Telemetry events to RUM.
 ///
@@ -27,6 +27,7 @@ internal final class RUMTelemetry: Telemetry {
     let dateProvider: DateProvider
     let dateCorrector: DateCorrector
     var configurationEventMapper: RUMTelemetryConfiguratoinMapper?
+    let delayedDispatcher: RUMTelemetryDelayedDispatcher
     let sampler: Sampler
 
     /// Keeps track of current session
@@ -52,6 +53,7 @@ internal final class RUMTelemetry: Telemetry {
         dateProvider: DateProvider,
         dateCorrector: DateCorrector,
         configurationEventMapper: RUMTelemetryConfiguratoinMapper?,
+        delayedDispatcher: RUMTelemetryDelayedDispatcher?,
         sampler: Sampler
     ) {
         self.core = core
@@ -61,6 +63,12 @@ internal final class RUMTelemetry: Telemetry {
         self.dateProvider = dateProvider
         self.dateCorrector = dateCorrector
         self.configurationEventMapper = configurationEventMapper
+        self.delayedDispatcher = delayedDispatcher ?? { block in
+            // By default, wait 5 seconds to dispatch configuration events
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                block()
+            }
+        }
         self.sampler = sampler
     }
 
@@ -149,10 +157,7 @@ internal final class RUMTelemetry: Telemetry {
     /// - Parameters:
     ///   - configuration: The current configuration
     func configuration(configuration: FeaturesConfiguration) {
-        // Use system time for dispatch, as the DispatchQueue works off system time.
-        let sendTime = DispatchTime.now() + .seconds(5)
-
-        DispatchQueue.main.asyncAfter(deadline: sendTime) {
+        self.delayedDispatcher {
             let date = self.dateProvider.now.addingTimeInterval(self.dateCorrector.offset)
 
             self.record(event: "_dd.configuration") { context, writer in

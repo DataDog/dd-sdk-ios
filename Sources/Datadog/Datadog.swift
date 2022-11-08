@@ -241,6 +241,7 @@ public class Datadog {
                 dateProvider: dateProvider,
                 dateCorrector: dateCorrector,
                 configurationEventMapper: nil,
+                delayedDispatcher: nil,
                 sampler: rumConfiguration.telemetrySampler
             )
 
