@@ -88,6 +88,11 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
         self
     }
 
+    /// Always returns a feature-scope.
+    func scope(for feature: String) -> FeatureScope? {
+        self
+    }
+
     func set(feature: String, attributes: @escaping () -> FeatureBaggage) {
         context.featuresAttributes[feature] = attributes()
     }
