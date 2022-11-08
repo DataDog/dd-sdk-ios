@@ -59,7 +59,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertFalse(configuration.rumBackgroundEventTrackingEnabled)
             XCTAssertTrue(configuration.rumFrustrationSignalsTrackingEnabled)
             XCTAssertNil(configuration.rumResourceAttributesProvider)
-            XCTAssertEqual(configuration.mobileVitalsFrequency, .rare)
+            XCTAssertEqual(configuration.mobileVitalsFrequency, .average)
             XCTAssertEqual(configuration.batchSize, .medium)
             XCTAssertEqual(configuration.uploadFrequency, .average)
             XCTAssertEqual(configuration.additionalConfiguration.count, 0)
