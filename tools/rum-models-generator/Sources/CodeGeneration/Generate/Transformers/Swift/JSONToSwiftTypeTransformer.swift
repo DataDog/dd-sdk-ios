@@ -18,8 +18,8 @@ internal class JSONToSwiftTypeTransformer {
         switch rootJSONType {
         case let jsonObject as JSONObject:
             return [try transform(rootJSONObject: jsonObject)]
-        case let jsonOneOfs as JSONOneOfs:
-            return try transform(rootJSONOneOfs: jsonOneOfs)
+        case let jsonUnion as JSONUnionType:
+            return try transform(rootJSONUnion: jsonUnion)
         default:
             throw Exception.unimplemented("Transforming root object of type `\(type(of: rootJSONType))` is not supported.")
         }
@@ -34,18 +34,18 @@ internal class JSONToSwiftTypeTransformer {
         return `struct`
     }
 
-    private func transform(rootJSONOneOfs: JSONOneOfs) throws -> [SwiftStruct] {
-        let numberOfTypes = rootJSONOneOfs.types.count
-        let jsonObjects = rootJSONOneOfs.types.compactMap { $0.type as? JSONObject }
-        let jsonOneOfs = rootJSONOneOfs.types.compactMap { $0.type as? JSONOneOfs }
+    private func transform(rootJSONUnion: JSONUnionType) throws -> [SwiftStruct] {
+        let numberOfTypes = rootJSONUnion.types.count
+        let jsonObjects = rootJSONUnion.types.compactMap { $0.type as? JSONObject }
+        let jsonUnion = rootJSONUnion.types.compactMap { $0.type as? JSONUnionType }
 
-        guard (jsonObjects.count + jsonOneOfs.count) == numberOfTypes else {
-            let mixedTypes = rootJSONOneOfs.types.map { "\(type(of: $0))" }
+        guard (jsonObjects.count + jsonUnion.count) == numberOfTypes else {
+            let mixedTypes = rootJSONUnion.types.map { "\(type(of: $0))" }
             throw Exception.unimplemented("Transforming root `JSONOneOfs` with mixed `oneOf` types is not supported (mixed types: \(mixedTypes)).")
         }
 
-        let transformedJSONOneOfs = try jsonOneOfs.flatMap { jsonOneOf in try transform(rootJSONOneOfs: jsonOneOf) }
-        let transformedJSONObjects = try jsonObjects.map { jsonObject in try transform(rootJSONObject: jsonObject) }
+        let transformedJSONOneOfs = try jsonUnion.flatMap { try transform(rootJSONUnion: $0) }
+        let transformedJSONObjects = try jsonObjects.map { try transform(rootJSONObject: $0) }
 
         return transformedJSONOneOfs + transformedJSONObjects
     }
@@ -62,8 +62,8 @@ internal class JSONToSwiftTypeTransformer {
             return transformJSONToEnum(jsonEnumeration)
         case let jsonObject as JSONObject:
             return try transformJSONObject(jsonObject)
-        case let jsonOneOfs as JSONOneOfs:
-            return try transformJSONOneOfs(jsonOneOfs)
+        case let jsonUnion as JSONUnionType:
+            return try transformJSONUnion(jsonUnion)
         default:
             throw Exception.unimplemented("Transforming `\(type(of: json))` into `SwiftType` is not supported.")
         }
@@ -180,23 +180,24 @@ internal class JSONToSwiftTypeTransformer {
         )
     }
 
-    /// The `oneOf` schema appearing in nested (not root) context gets transformed into Swift enum
-    /// with associated values. Each `case` represents a single sub-suchema from `oneOf` array.
+    /// The `oneOf` and `anyOf` schemas appearing in nested (not root) context gets transformed into Swift enum
+    /// with associated values for representing union types. Each `case` represents a single sub-suchema from
+    /// `oneOf` or `anyOf` array.
     ///
     /// Following default and fallback for determining `case` names (labels) are implemented:
-    /// - If **all** `oneOf` sub-schemas define their `title` **and** all titles are unique, enum cases will be
+    /// - If **all**  sub-schemas define their `title` **and** all titles are unique, enum cases will be
     /// named by sub-schema titles.
-    /// - Otherwise, if **all** `oneOf` sub-schemas represent different `types`, enum cases will be named by
+    /// - Otherwise, if **all** sub-schemas represent different `types`, enum cases will be named by
     /// the name of sub-schema `type`.
     /// - If none of above is met, an incompatibility error will be thrown.
-    private func transformJSONOneOfs(_ jsonOneOfs: JSONOneOfs) throws -> SwiftAssociatedTypeEnum {
+    private func transformJSONUnion(_ jsonUnion: JSONUnionType) throws -> SwiftAssociatedTypeEnum {
         // Determine case labels:
         let caseLabels: [String]
 
-        // Build names from sub-schemas `title` (given by `oneOf.name`):
-        let labelsFromNames = jsonOneOfs.types.compactMap { oneOf in oneOf.name }
+        // Build names from sub-schemas `title` (given by `oneOf/anyOf.name`):
+        let labelsFromNames = jsonUnion.types.compactMap { $0.name }
         // Check if labels from names are present and if all are unique:
-        let areLabelsFromNamesUnique = Set(labelsFromNames).count == jsonOneOfs.types.count
+        let areLabelsFromNamesUnique = Set(labelsFromNames).count == jsonUnion.types.count
 
         if areLabelsFromNamesUnique {
             caseLabels = labelsFromNames
@@ -213,16 +214,16 @@ internal class JSONToSwiftTypeTransformer {
                 }
             }
 
-            caseLabels = try jsonOneOfs.types.map { oneOf in try labelNameFromType(of: oneOf.type) }
+            caseLabels = try jsonUnion.types.map { try labelNameFromType(of: $0.type) }
         }
 
         return SwiftAssociatedTypeEnum(
-            name: jsonOneOfs.name,
-            comment: jsonOneOfs.comment,
-            cases: try zip(jsonOneOfs.types, caseLabels).map { oneOf, caseLabel in
+            name: jsonUnion.name,
+            comment: jsonUnion.comment,
+            cases: try zip(jsonUnion.types, caseLabels).map { schema, caseLabel in
                 return SwiftAssociatedTypeEnum.Case(
                     label: caseLabel,
-                    associatedType: try transformJSONToAnyType(oneOf.type)
+                    associatedType: try transformJSONToAnyType(schema.type)
                 )
             },
             conformance: []

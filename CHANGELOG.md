@@ -1,5 +1,13 @@
 # Unreleased
 
+# 1.13.0 / 08-11-2022
+
+- [IMPROVEMENT] Improve console logs when using `DDNoopRUMMonitor`. See [#1007][] (Thanks [@dfed][])
+- [IMPROVEMENT] Add public API to control tracking of frustrations signals. See [#1013][]
+- [IMPROVEMENT] Send trace sample rate (`dd.rulePsr`) for APM's traffic ingestion control page. See [#1029][]
+- [IMPROVEMENT] Add a method to add user info properties. See [#1031][]
+- [BUGFIX] Fix vitals default presets. See [#1043][]
+
 # 1.12.1 / 18-10-2022
 
 - [IMPROVEMENT] Upgrade to PLCrashReporter 1.11.0 to fix Xcode 14 support.
@@ -396,6 +404,11 @@
 [#964]: https://github.com/DataDog/dd-sdk-ios/issues/964
 [#973]: https://github.com/DataDog/dd-sdk-ios/issues/973
 [#997]: https://github.com/DataDog/dd-sdk-ios/issues/997
+[#1007]: https://github.com/DataDog/dd-sdk-ios/issues/1007
+[#1013]: https://github.com/DataDog/dd-sdk-ios/issues/1013
+[#1029]: https://github.com/DataDog/dd-sdk-ios/issues/1029
+[#1031]: https://github.com/DataDog/dd-sdk-ios/issues/1031
+[#1043]: https://github.com/DataDog/dd-sdk-ios/issues/1043
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
@@ -421,3 +434,4 @@
 [@safa-ads]: https://github.com/safa-ads
 [@sdejesusf]: https://github.com/sdejesusF
 [@avdlee]: https://github.com/AvdLee
+[@dfed]: https://github.com/dfed

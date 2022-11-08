@@ -154,14 +154,14 @@ public struct RUMActionEvent: RUMDataModel {
 
         /// Session-related internal properties
         public struct Session: Codable {
-            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay
             public let plan: Plan
 
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
             }
 
-            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay
             public enum Plan: Int, Codable {
                 case plan1 = 1
                 case plan2 = 2
@@ -332,6 +332,7 @@ public struct RUMActionEvent: RUMDataModel {
         case browser = "browser"
         case flutter = "flutter"
         case reactNative = "react-native"
+        case roku = "roku"
     }
 
     /// Synthetics properties
@@ -479,14 +480,14 @@ public struct RUMErrorEvent: RUMDataModel {
 
         /// Session-related internal properties
         public struct Session: Codable {
-            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay
             public let plan: Plan
 
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
             }
 
-            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay
             public enum Plan: Int, Codable {
                 case plan1 = 1
                 case plan2 = 2
@@ -516,6 +517,9 @@ public struct RUMErrorEvent: RUMDataModel {
 
     /// Error properties
     public struct Error: Codable {
+        /// Causes of the error
+        public var causes: [Causes]?
+
         /// Whether the error has been handled manually in the source code or not
         public let handling: Handling?
 
@@ -547,6 +551,7 @@ public struct RUMErrorEvent: RUMDataModel {
         public let type: String?
 
         enum CodingKeys: String, CodingKey {
+            case causes = "causes"
             case handling = "handling"
             case handlingStack = "handling_stack"
             case id = "id"
@@ -557,6 +562,40 @@ public struct RUMErrorEvent: RUMDataModel {
             case sourceType = "source_type"
             case stack = "stack"
             case type = "type"
+        }
+
+        /// Properties for one of the error causes
+        public struct Causes: Codable {
+            /// Error message
+            public var message: String
+
+            /// Source of the error
+            public let source: Source
+
+            /// Stacktrace of the error
+            public var stack: String?
+
+            /// The type of the error
+            public let type: String?
+
+            enum CodingKeys: String, CodingKey {
+                case message = "message"
+                case source = "source"
+                case stack = "stack"
+                case type = "type"
+            }
+
+            /// Source of the error
+            public enum Source: String, Codable {
+                case network = "network"
+                case source = "source"
+                case console = "console"
+                case logger = "logger"
+                case agent = "agent"
+                case webview = "webview"
+                case custom = "custom"
+                case report = "report"
+            }
         }
 
         /// Whether the error has been handled manually in the source code or not
@@ -642,6 +681,7 @@ public struct RUMErrorEvent: RUMDataModel {
             case ios = "ios"
             case reactNative = "react-native"
             case flutter = "flutter"
+            case roku = "roku"
         }
     }
 
@@ -677,6 +717,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case browser = "browser"
         case flutter = "flutter"
         case reactNative = "react-native"
+        case roku = "roku"
     }
 
     /// Synthetics properties
@@ -810,6 +851,9 @@ public struct RUMLongTaskEvent: RUMDataModel {
         /// Browser SDK version
         public let browserSdkVersion: String?
 
+        /// Whether the long task should be discarded or indexed
+        public let discarded: Bool?
+
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
@@ -818,20 +862,21 @@ public struct RUMLongTaskEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case browserSdkVersion = "browser_sdk_version"
+            case discarded = "discarded"
             case formatVersion = "format_version"
             case session = "session"
         }
 
         /// Session-related internal properties
         public struct Session: Codable {
-            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay
             public let plan: Plan
 
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
             }
 
-            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay
             public enum Plan: Int, Codable {
                 case plan1 = 1
                 case plan2 = 2
@@ -909,6 +954,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case browser = "browser"
         case flutter = "flutter"
         case reactNative = "react-native"
+        case roku = "roku"
     }
 
     /// Synthetics properties
@@ -1038,8 +1084,14 @@ public struct RUMResourceEvent: RUMDataModel {
         /// Browser SDK version
         public let browserSdkVersion: String?
 
+        /// Whether the resource should be discarded or indexed
+        public let discarded: Bool?
+
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
+
+        /// tracing sample rate in decimal format
+        public let rulePsr: Double?
 
         /// Session-related internal properties
         public let session: Session?
@@ -1052,7 +1104,9 @@ public struct RUMResourceEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case browserSdkVersion = "browser_sdk_version"
+            case discarded = "discarded"
             case formatVersion = "format_version"
+            case rulePsr = "rule_psr"
             case session = "session"
             case spanId = "span_id"
             case traceId = "trace_id"
@@ -1060,14 +1114,14 @@ public struct RUMResourceEvent: RUMDataModel {
 
         /// Session-related internal properties
         public struct Session: Codable {
-            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay
             public let plan: Plan
 
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
             }
 
-            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay
             public enum Plan: Int, Codable {
                 case plan1 = 1
                 case plan2 = 2
@@ -1324,6 +1378,7 @@ public struct RUMResourceEvent: RUMDataModel {
         case browser = "browser"
         case flutter = "flutter"
         case reactNative = "react-native"
+        case roku = "roku"
     }
 
     /// Synthetics properties
@@ -1463,14 +1518,14 @@ public struct RUMViewEvent: RUMDataModel {
 
         /// Session-related internal properties
         public struct Session: Codable {
-            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay
             public let plan: Plan
 
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
             }
 
-            /// Session plan: 1 is the 'lite' plan, 2 is the 'replay' plan
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay
             public enum Plan: Int, Codable {
                 case plan1 = 1
                 case plan2 = 2
@@ -1520,6 +1575,7 @@ public struct RUMViewEvent: RUMDataModel {
         case browser = "browser"
         case flutter = "flutter"
         case reactNative = "react-native"
+        case roku = "roku"
     }
 
     /// Synthetics properties
@@ -1554,7 +1610,7 @@ public struct RUMViewEvent: RUMDataModel {
         /// Properties of the crashes of the view
         public let crash: Crash?
 
-        /// Total layout shift score that occured on the view
+        /// Total layout shift score that occurred on the view
         public let cumulativeLayoutShift: Double?
 
         /// User custom timings of the view. As timing name is used as facet path, it must contain only letters, digits, or the characters - _ . @ $
@@ -1572,6 +1628,9 @@ public struct RUMViewEvent: RUMDataModel {
         /// Properties of the errors of the view
         public let error: Error
 
+        /// Duration in ns to the response start of the document request
+        public let firstByte: Int64?
+
         /// Duration in ns to the first rendering
         public let firstContentfulPaint: Int64?
 
@@ -1580,6 +1639,12 @@ public struct RUMViewEvent: RUMDataModel {
 
         /// Duration in ns to the first input
         public let firstInputTime: Int64?
+
+        /// Time taken for Flutter 'build' methods.
+        public let flutterBuildTime: FlutterBuildTime?
+
+        /// Time taken for Flutter to rasterize the view.
+        public let flutterRasterTime: FlutterRasterTime?
 
         /// Properties of the frozen frames of the view
         public let frozenFrame: FrozenFrame?
@@ -1598,6 +1663,9 @@ public struct RUMViewEvent: RUMDataModel {
 
         /// Whether the View had a low average refresh rate
         public let isSlowRendered: Bool?
+
+        /// The JavaScript refresh rate for React Native
+        public let jsRefreshRate: JsRefreshRate?
 
         /// Duration in ns to the largest contentful paint
         public let largestContentfulPaint: Int64?
@@ -1652,15 +1720,19 @@ public struct RUMViewEvent: RUMDataModel {
             case domContentLoaded = "dom_content_loaded"
             case domInteractive = "dom_interactive"
             case error = "error"
+            case firstByte = "first_byte"
             case firstContentfulPaint = "first_contentful_paint"
             case firstInputDelay = "first_input_delay"
             case firstInputTime = "first_input_time"
+            case flutterBuildTime = "flutter_build_time"
+            case flutterRasterTime = "flutter_raster_time"
             case frozenFrame = "frozen_frame"
             case frustration = "frustration"
             case id = "id"
             case inForegroundPeriods = "in_foreground_periods"
             case isActive = "is_active"
             case isSlowRendered = "is_slow_rendered"
+            case jsRefreshRate = "js_refresh_rate"
             case largestContentfulPaint = "largest_contentful_paint"
             case loadEvent = "load_event"
             case loadingTime = "loading_time"
@@ -1707,6 +1779,50 @@ public struct RUMViewEvent: RUMDataModel {
             }
         }
 
+        /// Time taken for Flutter 'build' methods.
+        public struct FlutterBuildTime: Codable {
+            /// The average value for this metric during the view's lifetime.
+            public let average: Double
+
+            /// The maximum value seen for this metric during the view's lifetime.
+            public let max: Double
+
+            /// The maximum possible value we could see for this metric, if such a max is relevant and can vary from session to session.
+            public let metricMax: Double?
+
+            /// The minimum value seen for this metric during the view's lifetime.
+            public let min: Double
+
+            enum CodingKeys: String, CodingKey {
+                case average = "average"
+                case max = "max"
+                case metricMax = "metric_max"
+                case min = "min"
+            }
+        }
+
+        /// Time taken for Flutter to rasterize the view.
+        public struct FlutterRasterTime: Codable {
+            /// The average value for this metric during the view's lifetime.
+            public let average: Double
+
+            /// The maximum value seen for this metric during the view's lifetime.
+            public let max: Double
+
+            /// The maximum possible value we could see for this metric, if such a max is relevant and can vary from session to session.
+            public let metricMax: Double?
+
+            /// The minimum value seen for this metric during the view's lifetime.
+            public let min: Double
+
+            enum CodingKeys: String, CodingKey {
+                case average = "average"
+                case max = "max"
+                case metricMax = "metric_max"
+                case min = "min"
+            }
+        }
+
         /// Properties of the frozen frames of the view
         public struct FrozenFrame: Codable {
             /// Number of frozen frames that occurred on the view
@@ -1738,6 +1854,28 @@ public struct RUMViewEvent: RUMDataModel {
             enum CodingKeys: String, CodingKey {
                 case duration = "duration"
                 case start = "start"
+            }
+        }
+
+        /// The JavaScript refresh rate for React Native
+        public struct JsRefreshRate: Codable {
+            /// The average value for this metric during the view's lifetime.
+            public let average: Double
+
+            /// The maximum value seen for this metric during the view's lifetime.
+            public let max: Double
+
+            /// The maximum possible value we could see for this metric, if such a max is relevant and can vary from session to session.
+            public let metricMax: Double?
+
+            /// The minimum value seen for this metric during the view's lifetime.
+            public let min: Double
+
+            enum CodingKeys: String, CodingKey {
+                case average = "average"
+                case max = "max"
+                case metricMax = "metric_max"
+                case min = "min"
             }
         }
 
@@ -1801,7 +1939,7 @@ public struct TelemetryErrorEvent: RUMDataModel {
     /// The source of this event
     public let source: Source
 
-    /// The telemetry information
+    /// The telemetry log information
     public let telemetry: Telemetry
 
     /// Telemetry event type. Should specify telemetry only.
@@ -1877,7 +2015,7 @@ public struct TelemetryErrorEvent: RUMDataModel {
         case reactNative = "react-native"
     }
 
-    /// The telemetry information
+    /// The telemetry log information
     public struct Telemetry: Codable {
         /// Error properties
         public let error: Error?
@@ -1888,10 +2026,14 @@ public struct TelemetryErrorEvent: RUMDataModel {
         /// Level/severity of the log
         public let status: String = "error"
 
+        /// Telemetry type
+        public let type: String? = "log"
+
         enum CodingKeys: String, CodingKey {
             case error = "error"
             case message = "message"
             case status = "status"
+            case type = "type"
         }
 
         /// Error properties
@@ -1946,7 +2088,7 @@ public struct TelemetryDebugEvent: RUMDataModel {
     /// The source of this event
     public let source: Source
 
-    /// The telemetry information
+    /// The telemetry log information
     public let telemetry: Telemetry
 
     /// Telemetry event type. Should specify telemetry only.
@@ -2022,7 +2164,7 @@ public struct TelemetryDebugEvent: RUMDataModel {
         case reactNative = "react-native"
     }
 
-    /// The telemetry information
+    /// The telemetry log information
     public struct Telemetry: Codable {
         /// Body of the log
         public let message: String
@@ -2030,9 +2172,350 @@ public struct TelemetryDebugEvent: RUMDataModel {
         /// Level/severity of the log
         public let status: String = "debug"
 
+        /// Telemetry type
+        public let type: String? = "log"
+
         enum CodingKeys: String, CodingKey {
             case message = "message"
             case status = "status"
+            case type = "type"
+        }
+    }
+
+    /// View properties
+    public struct View: Codable {
+        /// UUID of the view
+        public let id: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+    }
+}
+
+/// Schema of all properties of a telemetry configuration event
+public struct TelemetryConfigurationEvent: RUMDataModel {
+    /// Internal properties
+    public let dd: DD
+
+    /// Action properties
+    public let action: Action?
+
+    /// Application properties
+    public let application: Application?
+
+    /// Start of the event in ms from epoch
+    public let date: Int64
+
+    /// Enabled experimental features
+    public let experimentalFeatures: [String]?
+
+    /// The SDK generating the telemetry event
+    public let service: String
+
+    /// Session properties
+    public let session: Session?
+
+    /// The source of this event
+    public let source: Source
+
+    /// The telemetry configuration information
+    public let telemetry: Telemetry
+
+    /// Telemetry event type. Should specify telemetry only.
+    public let type: String = "telemetry"
+
+    /// The version of the SDK generating the telemetry event
+    public let version: String
+
+    /// View properties
+    public let view: View?
+
+    enum CodingKeys: String, CodingKey {
+        case dd = "_dd"
+        case action = "action"
+        case application = "application"
+        case date = "date"
+        case experimentalFeatures = "experimental_features"
+        case service = "service"
+        case session = "session"
+        case source = "source"
+        case telemetry = "telemetry"
+        case type = "type"
+        case version = "version"
+        case view = "view"
+    }
+
+    /// Internal properties
+    public struct DD: Codable {
+        /// Version of the RUM event format
+        public let formatVersion: Int64 = 2
+
+        enum CodingKeys: String, CodingKey {
+            case formatVersion = "format_version"
+        }
+    }
+
+    /// Action properties
+    public struct Action: Codable {
+        /// UUID of the action
+        public let id: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+    }
+
+    /// Application properties
+    public struct Application: Codable {
+        /// UUID of the application
+        public let id: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+    }
+
+    /// Session properties
+    public struct Session: Codable {
+        /// UUID of the session
+        public let id: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+    }
+
+    /// The source of this event
+    public enum Source: String, Codable {
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+    }
+
+    /// The telemetry configuration information
+    public struct Telemetry: Codable {
+        /// Configuration properties
+        public let configuration: Configuration
+
+        /// Telemetry type
+        public let type: String = "configuration"
+
+        enum CodingKeys: String, CodingKey {
+            case configuration = "configuration"
+            case type = "type"
+        }
+
+        /// Configuration properties
+        public struct Configuration: Codable {
+            /// Attribute to be used to name actions
+            public let actionNameAttribute: String?
+
+            /// Session replay default privacy level
+            public let defaultPrivacyLevel: String?
+
+            /// The console.* tracked
+            public let forwardConsoleLogs: ForwardConsoleLogs?
+
+            /// Whether console.error logs, uncaught exceptions and network errors are tracked
+            public let forwardErrorsToLogs: Bool?
+
+            /// The reports from the Reporting API tracked
+            public let forwardReports: ForwardReports?
+
+            /// The period between each Mobile Vital sample (in milliseconds)
+            public let mobileVitalsUpdatePeriod: Int64?
+
+            /// The percentage of sessions with Browser RUM & Session Replay pricing tracked (deprecated in favor of session_replay_sample_rate)
+            public let premiumSampleRate: Int64?
+
+            /// The percentage of sessions with Browser RUM & Session Replay pricing tracked (deprecated in favor of session_replay_sample_rate)
+            public let replaySampleRate: Int64?
+
+            /// The percentage of sessions with Browser RUM & Session Replay pricing tracked
+            public let sessionReplaySampleRate: Int64?
+
+            /// The percentage of sessions tracked
+            public let sessionSampleRate: Int64?
+
+            /// Whether initialization fails silently if the SDK is already initialized
+            public let silentMultipleInit: Bool?
+
+            /// The percentage of telemetry configuration events sent after being sampled by telemetry_sample_rate
+            public let telemetryConfigurationSampleRate: Int64?
+
+            /// The percentage of telemetry events sent
+            public let telemetrySampleRate: Int64?
+
+            /// The percentage of requests traced
+            public let traceSampleRate: Int64?
+
+            /// Whether RUM events are tracked when the application is in Background
+            public let trackBackgroundEvents: Bool?
+
+            /// Whether user frustrations are tracked
+            public let trackFrustrations: Bool?
+
+            /// Whether user actions are tracked
+            public let trackInteractions: Bool?
+
+            /// Whether native crashes are tracked
+            public let trackNativeCrashes: Bool?
+
+            /// Whether sessions across subdomains for the same site are tracked
+            public let trackSessionAcrossSubdomains: Bool?
+
+            /// Whether the RUM views creation is handled manually
+            public let trackViewsManually: Bool?
+
+            /// Whether the allowed tracing origins list is used
+            public let useAllowedTracingOrigins: Bool?
+
+            /// Whether beforeSend callback function is used
+            public let useBeforeSend: Bool?
+
+            /// Whether a secure cross-site session cookie is used
+            public let useCrossSiteSessionCookie: Bool?
+
+            /// Whether the request origins list to ignore when computing the page activity is used
+            public let useExcludedActivityUrls: Bool?
+
+            /// Whether local encryption is used
+            public let useLocalEncryption: Bool?
+
+            /// Whether a proxy configured is used
+            public let useProxy: Bool?
+
+            /// Whether a secure session cookie is used
+            public let useSecureSessionCookie: Bool?
+
+            /// View tracking strategy
+            public let viewTrackingStrategy: ViewTrackingStrategy?
+
+            enum CodingKeys: String, CodingKey {
+                case actionNameAttribute = "action_name_attribute"
+                case defaultPrivacyLevel = "default_privacy_level"
+                case forwardConsoleLogs = "forward_console_logs"
+                case forwardErrorsToLogs = "forward_errors_to_logs"
+                case forwardReports = "forward_reports"
+                case mobileVitalsUpdatePeriod = "mobile_vitals_update_period"
+                case premiumSampleRate = "premium_sample_rate"
+                case replaySampleRate = "replay_sample_rate"
+                case sessionReplaySampleRate = "session_replay_sample_rate"
+                case sessionSampleRate = "session_sample_rate"
+                case silentMultipleInit = "silent_multiple_init"
+                case telemetryConfigurationSampleRate = "telemetry_configuration_sample_rate"
+                case telemetrySampleRate = "telemetry_sample_rate"
+                case traceSampleRate = "trace_sample_rate"
+                case trackBackgroundEvents = "track_background_events"
+                case trackFrustrations = "track_frustrations"
+                case trackInteractions = "track_interactions"
+                case trackNativeCrashes = "track_native_crashes"
+                case trackSessionAcrossSubdomains = "track_session_across_subdomains"
+                case trackViewsManually = "track_views_manually"
+                case useAllowedTracingOrigins = "use_allowed_tracing_origins"
+                case useBeforeSend = "use_before_send"
+                case useCrossSiteSessionCookie = "use_cross_site_session_cookie"
+                case useExcludedActivityUrls = "use_excluded_activity_urls"
+                case useLocalEncryption = "use_local_encryption"
+                case useProxy = "use_proxy"
+                case useSecureSessionCookie = "use_secure_session_cookie"
+                case viewTrackingStrategy = "view_tracking_strategy"
+            }
+
+            /// The console.* tracked
+            public enum ForwardConsoleLogs: Codable {
+                case stringsArray(value: [String])
+                case string(value: String)
+
+                // MARK: - Codable
+
+                public func encode(to encoder: Encoder) throws {
+                    // Encode only the associated value, without encoding enum case
+                    var container = encoder.singleValueContainer()
+
+                    switch self {
+                    case .stringsArray(let value):
+                        try container.encode(value)
+                    case .string(let value):
+                        try container.encode(value)
+                    }
+                }
+
+                public init(from decoder: Decoder) throws {
+                    // Decode enum case from associated value
+                    let container = try decoder.singleValueContainer()
+
+                    if let value = try? container.decode([String].self) {
+                        self = .stringsArray(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(String.self) {
+                        self = .string(value: value)
+                        return
+                    }
+                    let error = DecodingError.Context(
+                        codingPath: container.codingPath,
+                        debugDescription: """
+                        Failed to decode `ForwardConsoleLogs`.
+                        Ran out of possibilities when trying to decode the value of associated type.
+                        """
+                    )
+                    throw DecodingError.typeMismatch(ForwardConsoleLogs.self, error)
+                }
+            }
+
+            /// The reports from the Reporting API tracked
+            public enum ForwardReports: Codable {
+                case stringsArray(value: [String])
+                case string(value: String)
+
+                // MARK: - Codable
+
+                public func encode(to encoder: Encoder) throws {
+                    // Encode only the associated value, without encoding enum case
+                    var container = encoder.singleValueContainer()
+
+                    switch self {
+                    case .stringsArray(let value):
+                        try container.encode(value)
+                    case .string(let value):
+                        try container.encode(value)
+                    }
+                }
+
+                public init(from decoder: Decoder) throws {
+                    // Decode enum case from associated value
+                    let container = try decoder.singleValueContainer()
+
+                    if let value = try? container.decode([String].self) {
+                        self = .stringsArray(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(String.self) {
+                        self = .string(value: value)
+                        return
+                    }
+                    let error = DecodingError.Context(
+                        codingPath: container.codingPath,
+                        debugDescription: """
+                        Failed to decode `ForwardReports`.
+                        Ran out of possibilities when trying to decode the value of associated type.
+                        """
+                    )
+                    throw DecodingError.typeMismatch(ForwardReports.self, error)
+                }
+            }
+
+            /// View tracking strategy
+            public enum ViewTrackingStrategy: String, Codable {
+                case activityViewTrackingStrategy = "ActivityViewTrackingStrategy"
+                case fragmentViewTrackingStrategy = "FragmentViewTrackingStrategy"
+                case mixedViewTrackingStrategy = "MixedViewTrackingStrategy"
+                case navigationViewTrackingStrategy = "NavigationViewTrackingStrategy"
+            }
         }
     }
 
@@ -2341,4 +2824,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/a2f14e5f284d21f29e4fe4e49c0ac52cfcd96d93
+// Generated from https://github.com/DataDog/rum-events-format/tree/7320f7c483c80f5fc0d868b1f40c97f22af8b0d1

@@ -278,6 +278,7 @@ extension Datadog {
         private(set) var rumLongTaskEventMapper: RUMLongTaskEventMapper?
         private(set) var rumResourceAttributesProvider: URLSessionRUMAttributesProvider?
         private(set) var rumBackgroundEventTrackingEnabled: Bool
+        private(set) var rumFrustrationSignalsTrackingEnabled: Bool
         private(set) var rumTelemetrySamplingRate: Float
         private(set) var mobileVitalsFrequency: VitalsFrequency
         private(set) var batchSize: BatchSize
@@ -353,8 +354,9 @@ extension Datadog {
                     rumErrorEventMapper: nil,
                     rumResourceAttributesProvider: nil,
                     rumBackgroundEventTrackingEnabled: false,
+                    rumFrustrationSignalsTrackingEnabled: true,
                     rumTelemetrySamplingRate: 20,
-                    mobileVitalsFrequency: .rare,
+                    mobileVitalsFrequency: .average,
                     batchSize: .medium,
                     uploadFrequency: .average,
                     additionalConfiguration: [:],
@@ -726,6 +728,17 @@ extension Datadog {
             /// - Parameter enabled: `true` by default
             public func trackBackgroundEvents(_ enabled: Bool = true) -> Builder {
                 configuration.rumBackgroundEventTrackingEnabled = enabled
+                return self
+            }
+
+            /// Enables or disables automatic collection of user frustrations.
+            ///
+            /// The Datadog SDK currently support detection of `error_tap` frustration, which is detected when
+            /// an error follows a user tap action.
+            ///
+            /// - Parameter enabled: `true` by default
+            public func trackFrustrations(_ enabled: Bool = true) -> Builder {
+                configuration.rumFrustrationSignalsTrackingEnabled = enabled
                 return self
             }
 

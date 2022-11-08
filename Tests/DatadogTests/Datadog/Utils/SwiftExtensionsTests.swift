@@ -113,3 +113,15 @@ class IntegerOverflowExtensionTests: XCTestCase {
         }
     }
 }
+
+class DoubleExtensionTests: XCTestCase {
+    func testDivideIfNotZero() {
+        XCTAssertNil(2.0.divideIfNotZero(by: 0))
+        XCTAssertEqual(2.0.divideIfNotZero(by: 1.0), 2.0)
+    }
+
+    func testInverted() {
+        XCTAssertEqual(0.0.inverted, 0.0)
+        XCTAssertEqual(2.0.inverted, 0.5)
+    }
+}

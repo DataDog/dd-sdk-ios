@@ -289,6 +289,32 @@ extension RUMAddViewTimingCommand: AnyMockable, RandomMockable {
     }
 }
 
+extension RUMSpanContext: AnyMockable, RandomMockable {
+    static func mockAny() -> RUMSpanContext {
+        return .mockWith()
+    }
+
+    static func mockRandom() -> RUMSpanContext {
+        return RUMSpanContext(
+            traceID: .mockRandom(),
+            spanID: .mockRandom(),
+            samplingRate: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        traceID: String = .mockAny(),
+        spanID: String = .mockAny(),
+        samplingRate: Double = .mockAny()
+    ) -> RUMSpanContext {
+        return RUMSpanContext(
+            traceID: traceID,
+            spanID: spanID,
+            samplingRate: samplingRate
+        )
+    }
+}
+
 extension RUMStartResourceCommand: AnyMockable, RandomMockable {
     static func mockAny() -> RUMStartResourceCommand { mockWith() }
 
@@ -301,7 +327,7 @@ extension RUMStartResourceCommand: AnyMockable, RandomMockable {
             httpMethod: .mockRandom(),
             kind: .mockAny(),
             isFirstPartyRequest: .mockRandom(),
-            spanContext: .init(traceID: .mockRandom(), spanID: .mockRandom())
+            spanContext: .init(traceID: .mockRandom(), spanID: .mockRandom(), samplingRate: .mockAny())
         )
     }
 
@@ -313,7 +339,7 @@ extension RUMStartResourceCommand: AnyMockable, RandomMockable {
         httpMethod: RUMMethod = .mockAny(),
         kind: RUMResourceType = .mockAny(),
         isFirstPartyRequest: Bool = .mockAny(),
-        spanContext: RUMSpanContext? = nil
+        spanContext: RUMSpanContext? = .mockAny()
     ) -> RUMStartResourceCommand {
         return RUMStartResourceCommand(
             resourceKey: resourceKey,
@@ -611,6 +637,7 @@ extension RUMScopeDependencies {
         rumApplicationID: String = .mockAny(),
         sessionSampler: Sampler = .mockKeepAll(),
         backgroundEventTrackingEnabled: Bool = .mockAny(),
+        frustrationTrackingEnabled: Bool = true,
         appStateListener: AppStateListening = AppStateListenerMock.mockAny(),
         launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock.mockAny(),
         firstPartyURLsFilter: FirstPartyURLsFilter = FirstPartyURLsFilter(hosts: []),
@@ -626,6 +653,7 @@ extension RUMScopeDependencies {
             rumApplicationID: rumApplicationID,
             sessionSampler: sessionSampler,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
+            frustrationTrackingEnabled: frustrationTrackingEnabled,
             appStateListener: appStateListener,
             launchTimeProvider: launchTimeProvider,
             firstPartyURLsFilter: firstPartyURLsFilter,
@@ -644,6 +672,7 @@ extension RUMScopeDependencies {
         rumApplicationID: String? = nil,
         sessionSampler: Sampler? = nil,
         backgroundEventTrackingEnabled: Bool? = nil,
+        frustrationTrackingEnabled: Bool? = nil,
         appStateListener: AppStateListening? = nil,
         launchTimeProvider: LaunchTimeProviderType? = nil,
         firstPartyUrls: Set<String>? = nil,
@@ -659,6 +688,7 @@ extension RUMScopeDependencies {
             rumApplicationID: rumApplicationID ?? self.rumApplicationID,
             sessionSampler: sessionSampler ?? self.sessionSampler,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled ?? self.backgroundEventTrackingEnabled,
+            frustrationTrackingEnabled: frustrationTrackingEnabled ?? self.frustrationTrackingEnabled,
             appStateListener: appStateListener ?? self.appStateListener,
             launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider,
             firstPartyURLsFilter: firstPartyUrls.map { .init(hosts: $0) } ?? self.firstPartyURLsFilter,
@@ -780,7 +810,7 @@ extension RUMResourceScope {
         httpMethod: RUMMethod = .mockAny(),
         isFirstPartyResource: Bool? = nil,
         resourceKindBasedOnRequest: RUMResourceType? = nil,
-        spanContext: RUMSpanContext? = nil,
+        spanContext: RUMSpanContext? = .mockAny(),
         onResourceEventSent: @escaping () -> Void = {},
         onErrorEventSent: @escaping () -> Void = {}
     ) -> RUMResourceScope {
@@ -812,7 +842,7 @@ extension RUMUserActionScope {
         startTime: Date = .mockAny(),
         serverTimeOffset: TimeInterval = .zero,
         isContinuous: Bool = .mockAny(),
-        onActionEventSent: @escaping () -> Void = {}
+        onActionEventSent: @escaping (RUMActionEvent) -> Void = { _ in }
     ) -> RUMUserActionScope {
         return RUMUserActionScope(
                 parent: parent,

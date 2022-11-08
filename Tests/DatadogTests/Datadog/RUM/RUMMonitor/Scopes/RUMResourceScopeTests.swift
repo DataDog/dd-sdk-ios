@@ -61,7 +61,7 @@ class RUMResourceScopeTests: XCTestCase {
             url: "https://foo.com/resource/1",
             httpMethod: .post,
             resourceKindBasedOnRequest: nil,
-            spanContext: .init(traceID: "100", spanID: "200")
+            spanContext: .init(traceID: "100", spanID: "200", samplingRate: 0.42)
         )
 
         currentTime.addTimeInterval(2)
@@ -110,10 +110,61 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.dd.traceId, "100")
         XCTAssertEqual(event.dd.spanId, "200")
+        XCTAssertEqual(event.dd.rulePsr, 0.42)
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
+    }
+
+    func testGivenStartedResourceWithSpanContext_whenResourceLoadingEnds_itSendsResourceEvent() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            context: rumContext,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            spanContext: .init(traceID: "100", spanID: "200", samplingRate: 0.42)
+        )
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1"),
+                context: datadogContext,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertEqual(event.dd.traceId, "100")
+        XCTAssertEqual(event.dd.spanId, "200")
+        XCTAssertEqual(event.dd.rulePsr, 0.42)
+    }
+
+    func testGivenStartedResourceWithoutSpanContext_whenResourceLoadingEnds_itSendsResourceEvent() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            context: rumContext,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            spanContext: nil
+        )
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1"),
+                context: datadogContext,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertNil(event.dd.traceId)
+        XCTAssertNil(event.dd.spanId)
+        XCTAssertNil(event.dd.rulePsr)
     }
 
     func testGivenConfiguredSoruce_whenResourceLoadingEnds_itSendsResourceEventWithCorrecSource() throws {
@@ -129,9 +180,7 @@ class RUMResourceScopeTests: XCTestCase {
             resourceKey: "/resource/1",
             startTime: currentTime,
             url: "https://foo.com/resource/1",
-            httpMethod: .post,
-            resourceKindBasedOnRequest: nil,
-            spanContext: .init(traceID: "100", spanID: "200")
+            httpMethod: .post
         )
 
         currentTime.addTimeInterval(2)
@@ -168,9 +217,7 @@ class RUMResourceScopeTests: XCTestCase {
             attributes: [:],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
-            httpMethod: .post,
-            resourceKindBasedOnRequest: nil,
-            spanContext: .init(traceID: "100", spanID: "200")
+            httpMethod: .post
         )
 
         currentTime.addTimeInterval(-1)
@@ -217,8 +264,6 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.download)
         XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(event.dd.traceId, "100")
-        XCTAssertEqual(event.dd.spanId, "200")
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.device?.name, "device-name")
@@ -233,7 +278,11 @@ class RUMResourceScopeTests: XCTestCase {
             context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            attributes: [CrossPlatformAttributes.traceID: "100", CrossPlatformAttributes.spanID: "200"],
+            attributes: [
+                CrossPlatformAttributes.traceID: "100",
+                CrossPlatformAttributes.spanID: "200",
+                CrossPlatformAttributes.rulePSR: 0.12,
+            ],
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .post
@@ -284,6 +333,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.dd.traceId, "100")
         XCTAssertEqual(event.dd.spanId, "200")
+        XCTAssertEqual(event.dd.rulePsr, 0.12)
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.device?.name, "device-name")
@@ -494,8 +544,6 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.resource.download?.duration, 1_000_000_000)
         XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
-        XCTAssertNil(event.dd.traceId)
-        XCTAssertNil(event.dd.spanId)
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.device?.name, "device-name")
@@ -580,8 +628,7 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             url: "https://firstparty.com/resource/1",
             httpMethod: .post,
-            isFirstPartyResource: true,
-            spanContext: .init(traceID: "100", spanID: "200")
+            isFirstPartyResource: true
         )
 
         currentTime.addTimeInterval(2)
@@ -614,8 +661,7 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
-            isFirstPartyResource: false,
-            spanContext: .init(traceID: "100", spanID: "200")
+            isFirstPartyResource: false
         )
 
         currentTime.addTimeInterval(2)
@@ -747,7 +793,6 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
-            spanContext: .init(traceID: "100", spanID: "200"),
             onResourceEventSent: {
                 onResourceEventSentCalled = true
             }
@@ -760,7 +805,6 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             url: "https://foo.com/resource/2",
             httpMethod: .post,
-            spanContext: .init(traceID: "100", spanID: "200"),
             onErrorEventSent: {
                 onErrorEventSentCalled = true
             }
@@ -824,7 +868,6 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             url: "https://foo.com/resource/1",
             httpMethod: .post,
-            spanContext: .init(traceID: "100", spanID: "200"),
             onResourceEventSent: {
                 onResourceEventSentCalled = true
             }
@@ -837,7 +880,6 @@ class RUMResourceScopeTests: XCTestCase {
             startTime: currentTime,
             url: "https://foo.com/resource/2",
             httpMethod: .post,
-            spanContext: .init(traceID: "100", spanID: "200"),
             onErrorEventSent: {
                 onErrorEventSentCalled = true
             }

@@ -555,7 +555,7 @@ class RUMUserActionScopeTests: XCTestCase {
             actionType: .tap,
             startTime: currentTime,
             isContinuous: false,
-            onActionEventSent: {
+            onActionEventSent: { _ in
                 callbackCalled = true
             }
         )
@@ -597,7 +597,7 @@ class RUMUserActionScopeTests: XCTestCase {
             actionType: .tap,
             startTime: currentTime,
             isContinuous: false,
-            onActionEventSent: {
+            onActionEventSent: { _ in
                 callbackCalled = true
             }
         )
@@ -651,6 +651,40 @@ class RUMUserActionScopeTests: XCTestCase {
 
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertEqual(event.action.frustration?.type.first, .errorTap)
+    }
+
+    func testGivenDisabledFrustration_whenTapUserActionWithError_itDoesNotWriteFrustration() throws {
+        var currentTime = Date()
+        let scope = RUMUserActionScope.mockWith(
+            parent: parent,
+            dependencies: .mockWith(
+                frustrationTrackingEnabled: false
+            ),
+            actionType: .tap,
+            startTime: currentTime,
+            isContinuous: false
+        )
+
+        currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration * 0.5)
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorObject(time: currentTime),
+                context: context,
+                writer: writer
+            )
+        )
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(identity: mockView),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
+        XCTAssertNil(event.action.frustration)
     }
 
     func testGivenNotDiscreteUserActionWithError_itDoesNotWriteFrustration() throws {

@@ -97,6 +97,16 @@ internal final class DatadogCore {
         )
     }
 
+    /// Add or override the extra info of the current user
+    ///
+    ///  - Parameters:
+    ///    - extraInfo: The user's custom attibutes to add or override
+    func addUserExtraInfo(_ newExtraInfo: [AttributeKey: AttributeValue?]) {
+        var extraInfo = dependencies.userInfoProvider.value.extraInfo
+        newExtraInfo.forEach { extraInfo[$0.key] = $0.value }
+        dependencies.userInfoProvider.value.extraInfo = extraInfo
+    }
+
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.
     /// 
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on

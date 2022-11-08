@@ -16,7 +16,7 @@ import Foundation
 /// are not considered part of the public interface of the Datadog SDK.
 public class _InternalProxy {
     public let _configuration = _ConfigurationProxy()
-    public let _telemtry = _TelemetryProxy()
+    public let _telemetry = _TelemetryProxy()
 }
 
 public class _TelemetryProxy {
