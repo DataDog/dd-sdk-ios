@@ -300,7 +300,7 @@ public class Logger: LoggerProtocol {
         
         /// Set the sampling rate for this logger.
         /// All the logs produced by the logger instance are randomly sampled according
-        /// to the provided sample rate (default 100.0 = all logs).
+        /// to the provided sample rate (default `nil` = all logs, equivalent of using `100.0`).
         public func set(samplingRate: Float?) -> Self {
             self.samplingRate = samplingRate
             return self
