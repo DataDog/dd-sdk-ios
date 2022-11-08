@@ -265,7 +265,7 @@ extension Datadog {
         private(set) var firstPartyHosts: Set<String>?
         private(set) var logEventMapper: LogEventMapper?
         private(set) var spanEventMapper: SpanEventMapper?
-        private(set) var loggingSamplingRate: Float
+        private(set) var loggingSamplingRate: Float?
         private(set) var tracingSamplingRate: Float
         private(set) var rumSessionsSamplingRate: Float
         private(set) var rumSessionsListener: RUMSessionListener?
@@ -344,7 +344,7 @@ extension Datadog {
                     serviceName: nil,
                     firstPartyHosts: nil,
                     spanEventMapper: nil,
-                    loggingSamplingRate: 100.0,
+                    loggingSamplingRate: nil,
                     tracingSamplingRate: 20.0,
                     rumSessionsSamplingRate: 100.0,
                     rumSessionsListener: nil,

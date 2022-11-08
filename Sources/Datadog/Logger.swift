@@ -234,6 +234,7 @@ public class Logger: LoggerProtocol {
         internal var sendLogsToDatadog = true
         internal var consoleLogFormat: ConsoleLogFormat? = nil
         internal var datadogReportingThreshold: LogLevel = .debug
+        internal var samplingRate: Float?
 
         /// Sets the service name that will appear in logs.
         /// - Parameter serviceName: the service name  (default value is set to application bundle identifier)
@@ -294,6 +295,14 @@ public class Logger: LoggerProtocol {
         /// - Parameter datadogReportingThreshold: `LogLevel.debug` by default
         public func set(datadogReportingThreshold: LogLevel) -> Self {
             self.datadogReportingThreshold = datadogReportingThreshold
+            return self
+        }
+        
+        /// Set the sampling rate for this logger.
+        /// All the logs produced by the logger instance are randomly sampled according
+        /// to the provided sample rate (default 100.0 = all logs).
+        public func set(samplingRate: Float?) -> Self {
+            self.samplingRate = samplingRate
             return self
         }
 
@@ -397,25 +406,73 @@ public class Logger: LoggerProtocol {
                     printFunction: consolePrint
                 )
             }()
-
+            
+            let logger: LoggerProtocol
             switch (remoteLogger, consoleLogger) {
             case (let remoteLogger?, nil):
-                return remoteLogger
+                logger = remoteLogger
 
             case (nil, let consoleLogger?):
-                return consoleLogger
+                logger = consoleLogger
 
             case (let remoteLogger?, let consoleLogger?):
-                return CombinedLogger(combinedLoggers: [remoteLogger, consoleLogger])
+                logger = CombinedLogger(combinedLoggers: [remoteLogger, consoleLogger])
 
             case (nil, nil): // when user explicitly produces a no-op logger
                 return NOPLogger()
+            }
+            
+            if let samplingRate = samplingRate {
+                return SamplingLogger(logger: logger, sampler: Sampler(samplingRate: samplingRate))
+            }
+            else if let sampler = loggingFeature.configuration.loggingSampler {
+                return SamplingLogger(logger: logger, sampler: sampler)
+            }
+            else {
+                return logger
             }
         }
     }
 }
 
-/// Combines multiple loggers together into single `Logger` interface.
+/// Wraps a `LoggerProtocol` and enables sampling using the injected instance of `Sampler`.
+internal struct SamplingLogger: LoggerProtocol {
+    var logger: LoggerProtocol
+    var sampler: Sampler
+    
+    func log(level: LogLevel, message: String, error: Error?, attributes: [String : Encodable]?) {
+        guard sampler.sample() else {
+            return
+        }
+        logger.log(level: level, message: message, error: error, attributes: attributes)
+    }
+    
+    func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
+        logger.addAttribute(forKey: key, value: value)
+    }
+    
+    func removeAttribute(forKey key: AttributeKey) {
+        logger.removeAttribute(forKey: key)
+    }
+    
+    func addTag(withKey key: String, value: String) {
+        logger.addTag(withKey: key, value: value)
+    }
+    
+    func removeTag(withKey key: String) {
+        logger.removeTag(withKey: key)
+    }
+    
+    func add(tag: String) {
+        logger.add(tag: tag)
+    }
+    
+    func remove(tag: String) {
+        logger.remove(tag: tag)
+    }
+}
+
+/// Combines multiple loggers together into single `LoggerProtocol` interface.
 internal struct CombinedLogger: LoggerProtocol {
     let combinedLoggers: [LoggerProtocol]
 
