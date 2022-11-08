@@ -453,7 +453,7 @@ extension Datadog {
                 configuration.logsEndpoint = logsEndpoint
                 return self
             }
-            
+
             /// Sets the sampling rate for logging.
             ///
             /// - Parameter loggingSamplingRate: the sampling rate must be a value between `0.0` and `100.0`. A value of `0.0`

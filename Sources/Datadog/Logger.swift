@@ -297,7 +297,7 @@ public class Logger: LoggerProtocol {
             self.datadogReportingThreshold = datadogReportingThreshold
             return self
         }
-        
+
         /// Set the sampling rate for this logger.
         /// All the logs produced by the logger instance are randomly sampled according
         /// to the provided sample rate (default `nil` = all logs, equivalent of using `100.0`).
@@ -406,7 +406,7 @@ public class Logger: LoggerProtocol {
                     printFunction: consolePrint
                 )
             }()
-            
+
             let logger: LoggerProtocol
             switch (remoteLogger, consoleLogger) {
             case (let remoteLogger?, nil):
@@ -421,14 +421,12 @@ public class Logger: LoggerProtocol {
             case (nil, nil): // when user explicitly produces a no-op logger
                 return NOPLogger()
             }
-            
+
             if let samplingRate = samplingRate {
                 return SamplingLogger(logger: logger, sampler: Sampler(samplingRate: samplingRate))
-            }
-            else if let sampler = loggingFeature.configuration.loggingSampler {
+            } else if let sampler = loggingFeature.configuration.loggingSampler {
                 return SamplingLogger(logger: logger, sampler: sampler)
-            }
-            else {
+            } else {
                 return logger
             }
         }
@@ -439,34 +437,34 @@ public class Logger: LoggerProtocol {
 internal struct SamplingLogger: LoggerProtocol {
     var logger: LoggerProtocol
     var sampler: Sampler
-    
-    func log(level: LogLevel, message: String, error: Error?, attributes: [String : Encodable]?) {
+
+    func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable]?) {
         guard sampler.sample() else {
             return
         }
         logger.log(level: level, message: message, error: error, attributes: attributes)
     }
-    
+
     func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
         logger.addAttribute(forKey: key, value: value)
     }
-    
+
     func removeAttribute(forKey key: AttributeKey) {
         logger.removeAttribute(forKey: key)
     }
-    
+
     func addTag(withKey key: String, value: String) {
         logger.addTag(withKey: key, value: value)
     }
-    
+
     func removeTag(withKey key: String) {
         logger.removeTag(withKey: key)
     }
-    
+
     func add(tag: String) {
         logger.add(tag: tag)
     }
-    
+
     func remove(tag: String) {
         logger.remove(tag: tag)
     }
