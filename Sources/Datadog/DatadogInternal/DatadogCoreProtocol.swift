@@ -10,7 +10,10 @@ public internal(set) var defaultDatadogCore: DatadogCoreProtocol = NOPDatadogCor
 
 /// A Datadog Core holds a set of Features and is responsible for managing their storage
 /// and upload mechanism. It also provides a thread-safe scope for writing events.
-public protocol DatadogCoreProtocol {
+///
+/// Any reference to `DatadogCoreProtocol` must be captured as `weak` within a Feature. This is to avoid
+/// retain cycle of core holding the Feature and vice-versa.
+public protocol DatadogCoreProtocol: AnyObject {
     /// Registers a Feature instance.
     ///
     /// Feature collects and transfers data to a Datadog Product (e.g. Logs, RUM, ...). Upon registration, the Feature can
@@ -177,7 +180,7 @@ public extension FeatureScope {
 }
 
 /// No-op implementation of `DatadogFeatureRegistry`.
-internal struct NOPDatadogCore: DatadogCoreProtocol {
+internal class NOPDatadogCore: DatadogCoreProtocol {
     /// no-op
     func register(feature: DatadogFeature) throws { }
     /// no-op

@@ -20,6 +20,11 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver
 
+    // MARK: - Integrations with other features
+
+    /// Updates other Features with SR context.
+    private let contextPublisher: SRContextPublisher
+
     // MARK: - Main Components
 
     private let recorder: Recording
@@ -28,7 +33,10 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
 
     // MARK: - Initialization
 
-    init(configuration: SessionReplayConfiguration) {
+    init(
+        core: DatadogCoreProtocol,
+        configuration: SessionReplayConfiguration
+    ) {
         let writer = Writer()
 
         let processor = Processor(
@@ -51,6 +59,10 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
             uploader: Uploader(), // TODO: RUMM-2509 Get rid of `Uploader` when passing multiple requests per batch to `DatadogCore` is possible
             customUploadURL: configuration.customUploadURL
         )
+        self.contextPublisher = SRContextPublisher(core: core)
+
+        // Set initial SR context (it is configured, but not yet started):
+        contextPublisher.setRecordingIsPending(false)
     }
 
     func register(sessionReplayScope: FeatureScope) {
@@ -59,7 +71,15 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
 
     // MARK: - SessionReplayController
 
-    func start() { recorder.start() }
-    func stop() { recorder.stop() }
+    func start() {
+        contextPublisher.setRecordingIsPending(true)
+        recorder.start()
+    }
+
+    func stop() {
+        contextPublisher.setRecordingIsPending(false)
+        recorder.stop()
+    }
+
     func change(privacy: SessionReplayPrivacy) { recorder.change(privacy: privacy) }
 }

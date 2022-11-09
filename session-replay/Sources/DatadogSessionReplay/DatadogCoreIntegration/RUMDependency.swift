@@ -9,6 +9,8 @@ import Foundation
 /// Defines dependency between Session Replay (SR) and RUM modules.
 /// It aims at centralizing documentation of contracts between both products.
 internal struct RUMDependency {
+    // MARK: Contract from RUM to SR:
+
     /// The key for referencing RUM baggage (RUM context) in `DatadogContext.featuresAttributes`.
     ///
     /// SR expects:
@@ -30,4 +32,16 @@ internal struct RUMDependency {
     ///
     /// SR expects non-optional value holding lowercased, standard UUID `String`.
     static let viewIDKey = "view.id"
+
+    // MARK: Contract from SR to RUM (mirror of `SessionReplayDependency` in RUM):
+
+    /// The key referencing SR baggage in `DatadogContext.featuresAttributes`.
+    ///
+    /// RUM expects:
+    /// - baggage with `hasReplay` key if SR Feature is configured;
+    /// - the `hasReplay` baggege key of `Bool` value indicating if the replay is being recorded.
+    static let srBaggageKey = "session-replay"
+
+    /// The key referencing a `Bool` value that indicates if replay is being recorded.
+    static let hasReplay = "has_replay"
 }
