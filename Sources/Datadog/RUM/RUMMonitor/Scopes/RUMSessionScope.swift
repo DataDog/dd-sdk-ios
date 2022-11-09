@@ -20,7 +20,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     private(set) var viewScopes: [RUMViewScope] = [] {
         didSet {
             if !state.hasTrackedAnyView && !viewScopes.isEmpty {
-                state = RUMSessionState(sessionUUID: state.sessionUUID, isInitialSession: state.isInitialSession, hasTrackedAnyView: true)
+                state = RUMSessionState(
+                    sessionUUID: state.sessionUUID,
+                    isInitialSession: state.isInitialSession,
+                    hasTrackedAnyView: true,
+                    didStartWithReplay: state.didStartWithReplay
+                )
             }
         }
     }
@@ -55,7 +60,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         isInitialSession: Bool,
         parent: RUMContextProvider,
         startTime: Date,
-        dependencies: RUMScopeDependencies
+        dependencies: RUMScopeDependencies,
+        isReplayBeingRecorded: Bool?
     ) {
         self.parent = parent
         self.dependencies = dependencies
@@ -65,7 +71,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.sessionStartTime = startTime
         self.lastInteractionTime = startTime
         self.backgroundEventTrackingEnabled = dependencies.backgroundEventTrackingEnabled
-        self.state = RUMSessionState(sessionUUID: sessionUUID.rawValue, isInitialSession: isInitialSession, hasTrackedAnyView: false)
+        self.state = RUMSessionState(
+            sessionUUID: sessionUUID.rawValue,
+            isInitialSession: isInitialSession,
+            hasTrackedAnyView: false,
+            didStartWithReplay: isReplayBeingRecorded
+        )
 
         // Update `CrashContext` with recent RUM session state:
         dependencies.crashContextIntegration?.update(lastRUMSessionState: state)
@@ -81,7 +92,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             isInitialSession: false,
             parent: expiredSession.parent,
             startTime: startTime,
-            dependencies: expiredSession.dependencies
+            dependencies: expiredSession.dependencies,
+            isReplayBeingRecorded: context.srBaggage?.isReplayBeingRecorded
         )
 
         // Transfer active Views by creating new `RUMViewScopes` for their identity objects:

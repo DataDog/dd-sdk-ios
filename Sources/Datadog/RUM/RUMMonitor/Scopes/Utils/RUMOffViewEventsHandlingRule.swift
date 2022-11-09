@@ -15,6 +15,8 @@ internal struct RUMSessionState: Equatable, Codable {
     let isInitialSession: Bool
     /// If this session has ever tracked any view (used to reason about "application launch" events).
     let hasTrackedAnyView: Bool
+    /// If the there was a Session Replay recording pending at the moment of starting this session (`nil` if SR Feature was not configured).
+    let didStartWithReplay: Bool?
 }
 
 /// The rule for handling RUM events which are tracked while there is no active view.
