@@ -48,7 +48,7 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
         self.processor = processor
         self.writer = writer
         self.requestBuilder = RequestBuilder(
-            uploader: Uploader()
+            uploader: Uploader() // TODO: RUMM-2509 Get rid of `Uploader` when passing multiple requests per batch to `DatadogCore` is possible
         )
     }
 

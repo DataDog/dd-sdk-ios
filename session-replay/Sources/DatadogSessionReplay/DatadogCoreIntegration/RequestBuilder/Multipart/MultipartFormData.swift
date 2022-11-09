@@ -8,7 +8,7 @@ import Foundation
 
 /// A helper facilitating creation of `multipart/form-data` body.
 internal struct MultipartFormData {
-    private let boundary: UUID
+    let boundary: UUID
     private var body = Data()
 
     init(boundary: UUID) {

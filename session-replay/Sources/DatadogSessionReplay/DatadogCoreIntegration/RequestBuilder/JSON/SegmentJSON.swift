@@ -32,7 +32,7 @@ internal struct SegmentJSON {
     /// If there is a Full Snapshot among records.
     let hasFullSnapshot: Bool
 
-    func toJSONObject() throws -> JSONObject {
+    func toJSONObject() -> JSONObject {
         return [
             segmentKey(.application): [applicationKey(.id): applicationID],
             segmentKey(.session): [sessionKey(.id): sessionID],

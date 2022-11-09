@@ -5,42 +5,52 @@
  */
 
 import Foundation
-@testable import Datadog
+import Datadog
 
 internal struct RequestBuilder: FeatureRequestBuilder {
+    private static let newlineByte = "\n".data(using: .utf8)!
+
     /// An arbitrary uploader.
+    /// TODO: RUMM-2509 Remove it when passing multiple requests per batch to `DatadogCore` is possible
     let uploader: Uploader
 
-    func request(for events: [Data], with context: DatadogContext) -> URLRequest {
-        do {
-            let source = SRSegment.Source(rawValue: context.source) ?? .ios // TODO: RUMM-2410 Send telemetry on `?? .ios`
-            let builder = SegmentJSONBuilder(source: source)
+    func request(for events: [Data], with context: DatadogContext) throws -> URLRequest {
+        let source = SRSegment.Source(rawValue: context.source) ?? .ios // TODO: RUMM-2410 Send telemetry on `?? .ios`
+        let segmentsBuilder = SegmentJSONBuilder(source: source)
 
-            let recordJSONs = try events.map { try EnrichedRecordJSON(jsonObjectData: $0) }
-            let segmentJSONs = builder.createSegmentJSONs(from: recordJSONs)
+        // If we can't decode `events: [Data]` there is no way to recover, so we throw an
+        // error to let the core delete the batch:
+        let records = try events.map { try EnrichedRecordJSON(jsonObjectData: $0) }
+        let segments = segmentsBuilder.createSegmentJSONs(from: records)
 
-            // When SDK was configured with deprecated `set(*Endpoint:)` APIs we don't have `context.site`, so
-            // we fallback to `.us1` - TODO: RUMM-2410 Report error with `DD.logger`
-            let site = context.site ?? .us1
-            let intakeURL = intakeURL(for: site)
+        // If the SDK was configured with deprecated `set(*Endpoint:)` APIs we don't have `context.site`, so
+        // we fallback to `.us1` - TODO: RUMM-2410 Report error with `DD.logger` in such case
+        let url = intakeURL(for: context.site ?? .us1)
 
-            let requests = try segmentJSONs.map { segmentJSON in
-                var request = URLRequest(url: intakeURL)
-                try configure(&request, with: segmentJSON, context: context)
-                return request
+        // If we fail to create request for some segments do not rethrow to caller, but instead try with
+        // other segments. This is to recover from unexpected failures with maximizing the amount of data sent.
+        let requests: [URLRequest] = segments.compactMap {
+            do {
+                // Errors thrown here indicate either `JSONSerialization` trouble on encoding segment
+                // data or ZLIB compression error when compressing it:
+                return try createRequest(url: url, segment: $0, context: context)
+            } catch {
+                return nil // TODO: RUMM-2410 Report error with `DD.logger` and send `DD.telemetry`
             }
-
-            if requests.count > 1 {
-                uploader.upload(requests: requests[1..<requests.count])
-                return requests[0]
-            } else if requests.count == 1 {
-                return requests[0]
-            } else {
-                fatalError()
-            }
-        } catch {
-            fatalError()
         }
+
+        guard let firstRequest = requests.first else {
+            throw InternalError(description: "Failed to prepare upload request for session replay segments.")
+        }
+
+        // TODO: RUMM-2509 Pass multiple requests per batch to `DatadogCore`
+        // Because it is yet not possible to return multiple requests to `DatadogCore`, we give it only
+        // the first one and send other with an arbitrary uploader managed by SR module:
+        if requests.count > 1 {
+            uploader.upload(requests: requests[1..<requests.count])
+        }
+
+        return firstRequest
     }
 
     private func intakeURL(for site: DatadogSite) -> URL {
@@ -58,17 +68,33 @@ internal struct RequestBuilder: FeatureRequestBuilder {
         }
     }
 
-    private func configure(_ request: inout URLRequest, with segment: SegmentJSON, context: DatadogContext) throws {
-        let boundary = UUID()
-        var multipart = MultipartFormData(boundary: boundary)
-        var segmentData = try JSONSerialization.data(withJSONObject: try segment.toJSONObject())
-        segmentData.append("\n".data(using: .utf8)!)
-        let compressedSegment = try! SRCompression.compress(data: segmentData)
+    private func createRequest(url: URL, segment: SegmentJSON, context: DatadogContext) throws -> URLRequest {
+        var multipart = MultipartFormData(boundary: UUID())
 
+        let builder = DDURLRequestBuilder(
+            url: url,
+            queryItems: [],
+            headers: [
+                .contentTypeHeader(contentType: .multipartFormData(boundary: multipart.boundary.uuidString)),
+                .userAgentHeader(appName: context.applicationName, appVersion: context.version, device: context.device),
+                .ddAPIKeyHeader(clientToken: context.clientToken),
+                .ddEVPOriginHeader(source: context.source),
+                .ddEVPOriginVersionHeader(sdkVersion: context.sdkVersion),
+                .ddRequestIDHeader(),
+            ]
+        )
+
+        // Session Replay BE accepts compressed segment data followed by newline character (before compression):
+        var segmentData = try JSONSerialization.data(withJSONObject: segment.toJSONObject())
+        segmentData.append(RequestBuilder.newlineByte)
+        let compressedSegmentData = try SRCompression.compress(data: segmentData)
+
+        // Compressed segment is sent within multipart form data - with some of segment (metadata)
+        // attributes listed as form fields:
         multipart.addFormData(
             name: "segment",
             filename: segment.sessionID,
-            data: compressedSegment,
+            data: compressedSegmentData,
             mimeType: "application/octet-stream"
         )
         multipart.addFormField(name: "segment", value: segment.sessionID)
@@ -77,35 +103,12 @@ internal struct RequestBuilder: FeatureRequestBuilder {
         multipart.addFormField(name: "view.id", value: segment.viewID)
         multipart.addFormField(name: "has_full_snapshot", value: segment.hasFullSnapshot ? "true" : "false")
         multipart.addFormField(name: "records_count", value: "\(segment.recordsCount)")
-        multipart.addFormField(name: "raw_segment_size", value: "\(compressedSegment.count)")
+        multipart.addFormField(name: "raw_segment_size", value: "\(compressedSegmentData.count)")
         multipart.addFormField(name: "start", value: "\(segment.start)")
         multipart.addFormField(name: "end", value: "\(segment.end)")
         multipart.addFormField(name: "source", value: "\(context.source)")
 
-        request.setValue(userAgent(from: context), forHTTPHeaderField: "User-Agent")
-        request.setValue(context.clientToken, forHTTPHeaderField: "DD-API-KEY")
-        request.setValue(context.source, forHTTPHeaderField: "DD-EVP-ORIGIN")
-        request.setValue(context.sdkVersion, forHTTPHeaderField: "DD-EVP-ORIGIN-VERSION")
-        request.setValue(UUID().uuidString, forHTTPHeaderField: "DD-REQUEST-ID")
-        request.setValue("multipart/form-data; boundary=\(boundary.uuidString)", forHTTPHeaderField: "Content-Type")
-
-        request.httpMethod = "POST"
-        request.httpBody = multipart.data
-    }
-
-    private func userAgent(from context: DatadogContext) -> String {
-        var sanitizedAppName = context.applicationName
-
-        if let regex = try? NSRegularExpression(pattern: "[^a-zA-Z0-9 -]+") {
-            sanitizedAppName = regex.stringByReplacingMatches(
-                in: context.applicationName,
-                range: NSRange(context.applicationName.startIndex..<context.applicationName.endIndex, in: context.applicationName),
-                withTemplate: ""
-            )
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        }
-
-        let device = context.device
-        return "\(sanitizedAppName)/\(context.version) CFNetwork (\(device.name); \(device.osName)/\(device.osVersion))"
+        // Data is already compressed, so request building request w/o compression:
+        return builder.uploadRequest(with: multipart.data, compress: false)
     }
 }
