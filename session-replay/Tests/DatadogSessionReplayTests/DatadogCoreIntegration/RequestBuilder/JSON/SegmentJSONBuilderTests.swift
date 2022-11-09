@@ -85,7 +85,6 @@ class SegmentJSONBuilderTests: XCTestCase {
             // Decode it back to `EnrichedRecordJSON` just like it happens when preparing
             // upload requests for SR:
             .map { try EnrichedRecordJSON(jsonObjectData: $0) }
-
     }
 
     private func encode<T: Encodable>(_ value: T) throws -> Data {

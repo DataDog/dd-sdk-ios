@@ -8,7 +8,7 @@ import Foundation
 import Datadog
 
 internal struct RequestBuilder: FeatureRequestBuilder {
-    private static let newlineByte = "\n".data(using: .utf8)!
+    private static let newlineByte = "\n".data(using: .utf8)! // swiftlint:disable:this force_unwrapping
 
     /// An arbitrary uploader.
     /// TODO: RUMM-2509 Remove it when passing multiple requests per batch to `DatadogCore` is possible
@@ -56,6 +56,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
     }
 
     private func intakeURL(for site: DatadogSite) -> URL {
+        // swiftlint:disable force_unwrapping
         switch site {
         case .us1:
             return URL(string: "https://session-replay.browser-intake-datadoghq.com/api/v2/replay")!
@@ -68,6 +69,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
         case .us1_fed:
             return URL(string: "https://session-replay.browser-intake-ddog-gov.com/api/v2/replay")!
         }
+        // swiftlint:enable force_unwrapping
     }
 
     private func createRequest(url: URL, segment: SegmentJSON, context: DatadogContext) throws -> URLRequest {

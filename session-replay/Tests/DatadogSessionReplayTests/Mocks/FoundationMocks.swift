@@ -125,7 +125,6 @@ extension String: AnyMockable, RandomMockable {
     }
 }
 
-
 extension URL: AnyMockable, RandomMockable {
     static func mockAny() -> URL {
         return URL(string: "https://www.datadoghq.com")!
