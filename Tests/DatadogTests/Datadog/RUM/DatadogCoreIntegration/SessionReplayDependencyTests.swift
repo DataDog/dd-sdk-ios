@@ -13,11 +13,7 @@ class SessionReplayDependencyTests: XCTestCase {
 
         // When
         let context: DatadogContext = .mockWith(
-            featuresAttributes: [
-                SessionReplayDependency.srBaggageKey: [
-                    SessionReplayDependency.hasReplay: hasReplay
-                ]
-            ]
+            featuresAttributes: .mockSessionReplayAttributes(hasReplay: hasReplay)
         )
 
         // Then

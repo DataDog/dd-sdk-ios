@@ -7,6 +7,7 @@
 import Foundation
 import Datadog
 
+/// Publisher that sets Session Replay context for being utilized by other Features.
 internal class SRContextPublisher {
     private weak var core: DatadogCoreProtocol?
 
@@ -16,10 +17,9 @@ internal class SRContextPublisher {
 
     /// Notifies other Features on the state of  Session Replay recording.
     func setRecordingIsPending(_ value: Bool) {
-        let baggage: FeatureBaggage = [
-            RUMDependency.hasReplay: value
-        ]
-
-        core?.set(feature: RUMDependency.srBaggageKey, attributes: { baggage })
+        core?.set(
+            feature: RUMDependency.srBaggageKey,
+            attributes: { [RUMDependency.hasReplay: value] }
+        )
     }
 }
