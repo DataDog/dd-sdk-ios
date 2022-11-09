@@ -125,6 +125,23 @@ extension String: AnyMockable, RandomMockable {
     }
 }
 
+
+extension URL: AnyMockable, RandomMockable {
+    static func mockAny() -> URL {
+        return URL(string: "https://www.datadoghq.com")!
+    }
+
+    static func mockRandom() -> URL {
+        return URL(string: "https://www.foo.com/")!
+            .appendingPathComponent(
+                .mockRandom(
+                    among: .alphanumerics,
+                    length: 32
+                )
+            )
+    }
+}
+
 extension Array {
     /// Chunks the array randomly, e.g.:
     ///

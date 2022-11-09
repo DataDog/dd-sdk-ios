@@ -13,6 +13,8 @@ internal struct RequestBuilder: FeatureRequestBuilder {
     /// An arbitrary uploader.
     /// TODO: RUMM-2509 Remove it when passing multiple requests per batch to `DatadogCore` is possible
     let uploader: Uploader
+    /// Custom URL for uploading data to.
+    let customUploadURL: URL?
 
     func request(for events: [Data], with context: DatadogContext) throws -> URLRequest {
         let source = SRSegment.Source(rawValue: context.source) ?? .ios // TODO: RUMM-2410 Send telemetry on `?? .ios`
@@ -25,7 +27,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
 
         // If the SDK was configured with deprecated `set(*Endpoint:)` APIs we don't have `context.site`, so
         // we fallback to `.us1` - TODO: RUMM-2410 Report error with `DD.logger` in such case
-        let url = intakeURL(for: context.site ?? .us1)
+        let url = customUploadURL ?? intakeURL(for: context.site ?? .us1)
 
         // If we fail to create request for some segments do not rethrow to caller, but instead try with
         // other segments. This is to recover from unexpected failures with maximizing the amount of data sent.

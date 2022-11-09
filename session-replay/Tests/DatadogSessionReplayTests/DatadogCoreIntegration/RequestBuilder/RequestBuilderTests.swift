@@ -9,6 +9,18 @@ import XCTest
 
 // swiftlint:disable empty_xctest_method
 class RequestBuilderTests: XCTestCase {
+    func testWhenCustomUploadURLIsNotSet_itCreatesRequestsToAppropriateDatadogSite() {
+        // TODO: RUMM-2690
+        // Implementing this test requires creating mocks for `DatadogContext` (passed in `FeatureRequestBuilder`),
+        // which is yet not possible as we lack separate, shared module to facilitate tests.
+    }
+
+    func testWhenCustomUploadURLIsSet_itCreatesRequestsToCustomURL() {
+        // TODO: RUMM-2690
+        // Implementing this test requires creating mocks for `DatadogContext` (passed in `FeatureRequestBuilder`),
+        // which is yet not possible as we lack separate, shared module to facilitate tests.
+    }
+
     func testWhenBatchContainsRecordsFromOneSegment_itCreatesOneRequest() {
         // TODO: RUMM-2690
         // Implementing this test requires creating mocks for `DatadogContext` (passed in `FeatureRequestBuilder`),

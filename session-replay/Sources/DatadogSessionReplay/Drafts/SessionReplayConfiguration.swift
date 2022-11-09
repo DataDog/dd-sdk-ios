@@ -10,12 +10,20 @@ import Foundation
 public struct SessionReplayConfiguration {
     /// Defines the way in which sensitive content (e.g. text or images) should be recorded.
     /// Defaults to `.maskAll`.
-    public let privacy: SessionReplayPrivacy
+    public var privacy: SessionReplayPrivacy
+
+    /// Defines a custom URL for uploading data to.
+    ///
+    /// Defaults to `nil` which makes the Session Replay upload data to Datadog Site configured in
+    /// the target instance of Datadog SDK.
+    public var customUploadURL: URL?
 
     public init(
-        privacy: SessionReplayPrivacy = .maskAll
+        privacy: SessionReplayPrivacy = .maskAll,
+        customUploadURL: URL? = nil
     ) {
         self.privacy = privacy
+        self.customUploadURL = customUploadURL
     }
 }
 

@@ -14,15 +14,18 @@ extension SessionReplayConfiguration: AnyMockable, RandomMockable {
 
     static func mockRandom() -> SessionReplayConfiguration {
         return SessionReplayConfiguration(
-            privacy: .mockRandom()
+            privacy: .mockRandom(),
+            customUploadURL: .mockRandom()
         )
     }
 
     static func mockWith(
-        privacy: SessionReplayPrivacy = .mockAny()
+        privacy: SessionReplayPrivacy = .mockAny(),
+        customUploadURL: URL? = .mockAny()
     ) -> SessionReplayConfiguration {
         return SessionReplayConfiguration(
-            privacy: privacy
+            privacy: privacy,
+            customUploadURL: customUploadURL
         )
     }
 }
