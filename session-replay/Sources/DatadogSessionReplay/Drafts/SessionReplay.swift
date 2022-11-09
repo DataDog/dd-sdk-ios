@@ -31,6 +31,11 @@ public struct SessionReplay {
             return NOPSessionReplayController()
         }
     }
+
+    /// Whether or not to print debug console logs on arbitrary uploads success.
+    /// TODO: RUMM-RUMM-2509 Remove this class once multiple `URLRequest` can be passed to `DatadogCore` and we no longer
+    /// need arbitrary uploader.
+    public static var arbitraryUploadsVerbosity = false
 }
 
 /// A draft interface of SR controller.

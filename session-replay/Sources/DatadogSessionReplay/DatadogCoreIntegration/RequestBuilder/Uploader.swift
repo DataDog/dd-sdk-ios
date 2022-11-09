@@ -24,11 +24,14 @@ internal class Uploader {
             let task = session.dataTask(with: request) { data, response, error in
                 switch httpClientResult(for: (data, response, error)) {
                 case .failure(let error):
-                    print("🎥 error: \(error)")
+                    print("[DATADOG Session Replay] 🐶🎥 →  an error occured when performing arbitrary upload: \(error)")
                 case .success(let response):
-                    print("🎥 response.code: \(response.statusCode)")
+                    if response.statusCode != 202 {
+                        print("[DATADOG Session Replay] 🐶🎥 →  arbitrary upload completed with unexpected status code: \(response.statusCode)")
+                    } else if SessionReplay.arbitraryUploadsVerbosity {
+                        print("[DATADOG Session Replay] 🐶🎥 →  arbitrary upload completed with status code: \(response.statusCode)")
+                    }
                 }
-
             }
             task.resume()
         }
