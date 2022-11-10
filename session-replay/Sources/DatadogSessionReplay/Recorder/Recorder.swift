@@ -45,7 +45,7 @@ internal class Recorder {
         self.init(
             configuration: configuration,
             rumContextObserver: rumContextObserver,
-            scheduler: MainThreadScheduler(interval: 0.25),
+            scheduler: MainThreadScheduler(interval: 0.1),
             snapshotProducer: WindowSnapshotProducer(
                 windowObserver: KeyWindowObserver(),
                 snapshotBuilder: ViewTreeSnapshotBuilder()
