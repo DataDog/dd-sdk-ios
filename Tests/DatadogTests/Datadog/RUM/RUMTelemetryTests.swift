@@ -126,6 +126,8 @@ class RUMTelemetryTests: XCTestCase {
             func error(id: String, message: String, kind: String?, stack: String?) {
                 record = (id: id, message: message, kind: kind, stack: stack)
             }
+
+            func configuration(configuration: FeaturesConfiguration) { }
         }
 
         let telemetry = TelemetryTest()
@@ -258,6 +260,67 @@ class RUMTelemetryTests: XCTestCase {
         let eventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 2)
         let events = try eventMatchers.compactMap(TelemetryDebugEvent.self)
         XCTAssertEqual(events.count, 2)
+    }
+
+    // MARK: - Configuration Telemetry Events
+
+    func testSendTelemetry_sendsConfigurationDelayed() throws {
+        // Given
+        var delayedDispatch: (() -> Void)?
+        let telemetry: RUMTelemetry = .mockWith(
+            core: core,
+            delayedDispatcher: { block in delayedDispatch = block },
+            sampler: .mockKeepAll()
+        )
+
+        // When
+        telemetry.configuration(configuration: .mockAny())
+
+        // Then immediately
+        var eventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 0)
+        var events = try eventMatchers.compactMap(TelemetryConfigurationEvent.self)
+        XCTAssertEqual(events.count, 0)
+
+        // Then later
+        delayedDispatch?()
+
+        eventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 1)
+        events = try eventMatchers.compactMap(TelemetryConfigurationEvent.self)
+        XCTAssertEqual(events.count, 1)
+    }
+
+    func testSendTelemetry_callsTelemetryMapperBeforeSend() throws {
+        // Given
+        var delayedDispatch: (() -> Void)?
+        var mapperCalled = false
+        let modifiedEvent = TelemetryConfigurationEvent.mockRandom()
+        let telemetry: RUMTelemetry = .mockWith(
+            core: core,
+            configurationEventMapper: { event in
+                mapperCalled = true
+                return modifiedEvent
+            },
+            delayedDispatcher: { block in delayedDispatch = block },
+            sampler: .mockKeepAll()
+        )
+
+        // When
+        telemetry.configuration(configuration: .mockAny())
+
+        // Then immediately
+        var eventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 0)
+        var events = try eventMatchers.compactMap(TelemetryConfigurationEvent.self)
+        XCTAssertFalse(mapperCalled)
+        XCTAssertEqual(events.count, 0)
+
+        // Then later
+        delayedDispatch?()
+
+        eventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 1)
+        events = try eventMatchers.compactMap(TelemetryConfigurationEvent.self)
+        XCTAssertTrue(mapperCalled)
+        XCTAssertEqual(events.count, 1)
+        XCTAssertEqual(events[0], modifiedEvent)
     }
 
     // MARK: - Thread safety

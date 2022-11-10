@@ -709,7 +709,10 @@ internal class InMemoryWriter: AsyncWriter {
             fatalError()
         }
 
-        return queue.sync { events }
+        return queue.sync {
+            waitAndReturnEventsDataExpectation = nil
+            return events
+        }
     }
 }
 
@@ -1331,6 +1334,7 @@ class CoreLoggerMock: CoreLogger {
 class TelemetryMock: Telemetry, CustomStringConvertible {
     private(set) var debugs: [String] = []
     private(set) var errors: [(message: String, kind: String?, stack: String?)] = []
+    private(set) var configurations: [FeaturesConfiguration] = []
     private(set) var description: String = "Telemetry logs:"
 
     func debug(id: String, message: String) {
@@ -1341,6 +1345,11 @@ class TelemetryMock: Telemetry, CustomStringConvertible {
     func error(id: String, message: String, kind: String?, stack: String?) {
         errors.append((message: message, kind: kind, stack: stack))
         description.append("\n - [error] \(message), kind: \(kind ?? "nil"), stack: \(stack ?? "nil")")
+    }
+
+    func configuration(configuration: FeaturesConfiguration) {
+        configurations.append(configuration)
+        description.append("\n - [configuration] \(configuration)")
     }
 }
 

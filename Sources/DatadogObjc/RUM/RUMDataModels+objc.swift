@@ -4730,6 +4730,14 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.actionNameAttribute
     }
 
+    @objc public var batchSize: NSNumber? {
+        root.swiftModel.telemetry.configuration.batchSize as NSNumber?
+    }
+
+    @objc public var batchUploadFrequency: NSNumber? {
+        root.swiftModel.telemetry.configuration.batchUploadFrequency as NSNumber?
+    }
+
     @objc public var defaultPrivacyLevel: String? {
         root.swiftModel.telemetry.configuration.defaultPrivacyLevel
     }
@@ -4744,6 +4752,10 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
 
     @objc public var forwardReports: DDTelemetryConfigurationEventTelemetryConfigurationForwardReports? {
         root.swiftModel.telemetry.configuration.forwardReports != nil ? DDTelemetryConfigurationEventTelemetryConfigurationForwardReports(root: root) : nil
+    }
+
+    @objc public var initializationType: String? {
+        root.swiftModel.telemetry.configuration.initializationType
     }
 
     @objc public var mobileVitalsUpdatePeriod: NSNumber? {
@@ -4786,6 +4798,18 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.trackBackgroundEvents as NSNumber?
     }
 
+    @objc public var trackCrossPlatformLongTasks: NSNumber? {
+        root.swiftModel.telemetry.configuration.trackCrossPlatformLongTasks as NSNumber?
+    }
+
+    @objc public var trackErrors: NSNumber? {
+        root.swiftModel.telemetry.configuration.trackErrors as NSNumber?
+    }
+
+    @objc public var trackFlutterPerformance: NSNumber? {
+        root.swiftModel.telemetry.configuration.trackFlutterPerformance as NSNumber?
+    }
+
     @objc public var trackFrustrations: NSNumber? {
         root.swiftModel.telemetry.configuration.trackFrustrations as NSNumber?
     }
@@ -4794,8 +4818,20 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.trackInteractions as NSNumber?
     }
 
-    @objc public var trackNativeCrashes: NSNumber? {
-        root.swiftModel.telemetry.configuration.trackNativeCrashes as NSNumber?
+    @objc public var trackNativeErrors: NSNumber? {
+        root.swiftModel.telemetry.configuration.trackNativeErrors as NSNumber?
+    }
+
+    @objc public var trackNativeLongTasks: NSNumber? {
+        root.swiftModel.telemetry.configuration.trackNativeLongTasks as NSNumber?
+    }
+
+    @objc public var trackNativeViews: NSNumber? {
+        root.swiftModel.telemetry.configuration.trackNativeViews as NSNumber?
+    }
+
+    @objc public var trackNetworkRequests: NSNumber? {
+        root.swiftModel.telemetry.configuration.trackNetworkRequests as NSNumber?
     }
 
     @objc public var trackSessionAcrossSubdomains: NSNumber? {
@@ -4810,6 +4846,10 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.useAllowedTracingOrigins as NSNumber?
     }
 
+    @objc public var useAttachToExisting: NSNumber? {
+        root.swiftModel.telemetry.configuration.useAttachToExisting as NSNumber?
+    }
+
     @objc public var useBeforeSend: NSNumber? {
         root.swiftModel.telemetry.configuration.useBeforeSend as NSNumber?
     }
@@ -4822,6 +4862,10 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.useExcludedActivityUrls as NSNumber?
     }
 
+    @objc public var useFirstPartyHosts: NSNumber? {
+        root.swiftModel.telemetry.configuration.useFirstPartyHosts as NSNumber?
+    }
+
     @objc public var useLocalEncryption: NSNumber? {
         root.swiftModel.telemetry.configuration.useLocalEncryption as NSNumber?
     }
@@ -4832,6 +4876,10 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
 
     @objc public var useSecureSessionCookie: NSNumber? {
         root.swiftModel.telemetry.configuration.useSecureSessionCookie as NSNumber?
+    }
+
+    @objc public var useTracing: NSNumber? {
+        root.swiftModel.telemetry.configuration.useTracing as NSNumber?
     }
 
     @objc public var viewTrackingStrategy: DDTelemetryConfigurationEventTelemetryConfigurationViewTrackingStrategy {
@@ -4929,4 +4977,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/7320f7c483c80f5fc0d868b1f40c97f22af8b0d1
+// Generated from https://github.com/DataDog/rum-events-format/tree/ba3b9c6132c9cdecdfe1f846fe8a03c18ce091d5

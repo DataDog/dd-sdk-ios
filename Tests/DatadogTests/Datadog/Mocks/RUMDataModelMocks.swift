@@ -402,6 +402,70 @@ extension RUMLongTaskEvent: RandomMockable {
     }
 }
 
+extension TelemetryConfigurationEvent: EquatableInTests {
+}
+
+extension TelemetryConfigurationEvent: RandomMockable {
+    static func mockRandom() -> TelemetryConfigurationEvent {
+        return TelemetryConfigurationEvent(
+            dd: .init(),
+            action: .init(id: .mockRandom()),
+            application: .init(id: .mockRandom()),
+            date: .mockRandom(),
+            experimentalFeatures: nil,
+            service: .mockRandom(),
+            session: .init(id: .mockRandom()),
+            source: .ios,
+            telemetry: .init(
+                configuration: .init(
+                    actionNameAttribute: nil,
+                    batchSize: .mockAny(),
+                    batchUploadFrequency: .mockAny(),
+                    defaultPrivacyLevel: .mockAny(),
+                    forwardConsoleLogs: nil,
+                    forwardErrorsToLogs: nil,
+                    forwardReports: nil,
+                    initializationType: nil,
+                    mobileVitalsUpdatePeriod: .mockRandom(),
+                    premiumSampleRate: nil,
+                    replaySampleRate: nil,
+                    sessionReplaySampleRate: nil,
+                    sessionSampleRate: .mockRandom(),
+                    silentMultipleInit: nil,
+                    telemetryConfigurationSampleRate: .mockRandom(),
+                    telemetrySampleRate: .mockRandom(),
+                    traceSampleRate: .mockRandom(),
+                    trackBackgroundEvents: .mockRandom(),
+                    trackCrossPlatformLongTasks: .mockRandom(),
+                    trackErrors: .mockRandom(),
+                    trackFlutterPerformance: .mockRandom(),
+                    trackFrustrations: .mockRandom(),
+                    trackInteractions: .mockRandom(),
+                    trackNativeErrors: .mockRandom(),
+                    trackNativeLongTasks: .mockRandom(),
+                    trackNativeViews: .mockRandom(),
+                    trackNetworkRequests: .mockRandom(),
+                    trackSessionAcrossSubdomains: nil,
+                    trackViewsManually: nil,
+                    useAllowedTracingOrigins: .mockRandom(),
+                    useAttachToExisting: .mockRandom(),
+                    useBeforeSend: nil,
+                    useCrossSiteSessionCookie: nil,
+                    useExcludedActivityUrls: nil,
+                    useFirstPartyHosts: .mockRandom(),
+                    useLocalEncryption: .mockRandom(),
+                    useProxy: .mockRandom(),
+                    useSecureSessionCookie: nil,
+                    useTracing: .mockRandom(),
+                    viewTrackingStrategy: nil
+                )
+            ),
+            version: .mockAny(),
+            view: .init(id: .mockRandom())
+        )
+    }
+}
+
 extension String {
     static func mockAnySource() -> String {
         return ["ios", "android", "browser", "ios", "react-native", "flutter"].randomElement()!
