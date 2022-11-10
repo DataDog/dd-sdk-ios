@@ -358,7 +358,7 @@ extension Datadog {
                     rumBackgroundEventTrackingEnabled: false,
                     rumFrustrationSignalsTrackingEnabled: true,
                     rumTelemetrySamplingRate: 20,
-                    mobileVitalsFrequency: .rare,
+                    mobileVitalsFrequency: .average,
                     batchSize: .medium,
                     uploadFrequency: .average,
                     additionalConfiguration: [:],

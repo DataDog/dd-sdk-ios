@@ -8,7 +8,7 @@ import Foundation
 
 internal class RUMViewScope: RUMScope, RUMContextProvider {
     struct Constants {
-        static let frozenFrameThresholdInNs = (0.07).toInt64Nanoseconds // 70ms
+        static let frozenFrameThresholdInNs = (0.7).toInt64Nanoseconds // 700ms
         static let slowRenderingThresholdFPS = 55.0
         /// The pre-warming detection attribute key
         static let activePrewarm = "active_pre_warm"

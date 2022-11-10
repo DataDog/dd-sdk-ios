@@ -57,7 +57,7 @@ class DDConfigurationTests: XCTestCase {
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 100.0)
             XCTAssertNil(configuration.rumUIKitViewsPredicate)
             XCTAssertNil(configuration.rumUIKitUserActionsPredicate)
-            XCTAssertEqual(configuration.mobileVitalsFrequency, .rare)
+            XCTAssertEqual(configuration.mobileVitalsFrequency, .average)
             XCTAssertEqual(configuration.batchSize, .medium)
             XCTAssertEqual(configuration.uploadFrequency, .average)
             XCTAssertNil(configuration.rumViewEventMapper)
