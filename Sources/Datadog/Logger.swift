@@ -367,7 +367,7 @@ public class Logger: LoggerProtocol {
                     sendNetworkInfo: sendNetworkInfo,
                     threshold: datadogReportingThreshold,
                     eventMapper: loggingFeature.configuration.logEventMapper,
-                    sampler: loggingFeature.configuration.loggingSampler
+                    sampler: loggingFeature.configuration.remoteLoggingSampler
                 )
 
                 let rumEnabled = core.v1.feature(RUMFeature.self) != nil

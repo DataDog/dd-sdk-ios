@@ -241,12 +241,12 @@ extension FeaturesConfiguration.Logging {
     static func mockWith(
         uploadURL: URL = .mockAny(),
         logEventMapper: LogEventMapper? = nil,
-        loggingSampler: Sampler = Sampler(samplingRate: 100.0)
+        remoteLoggingSampler: Sampler = Sampler(samplingRate: 100.0)
     ) -> Self {
         return .init(
             uploadURL: uploadURL,
             logEventMapper: logEventMapper,
-            loggingSampler: loggingSampler
+            remoteLoggingSampler: remoteLoggingSampler
         )
     }
 }
