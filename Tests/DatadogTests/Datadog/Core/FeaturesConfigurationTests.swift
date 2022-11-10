@@ -559,7 +559,7 @@ class FeaturesConfigurationTests: XCTestCase {
             ),
             appContext: .mockAny()
         )
-        XCTAssertEqual(custom.logging?.loggingSampler?.samplingRate, 12.34)
+        XCTAssertEqual(custom.logging?.loggingSampler.samplingRate, 12.34)
     }
 
     // MARK: - URLSession Auto Instrumentation Configuration Tests

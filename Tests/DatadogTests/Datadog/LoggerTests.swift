@@ -191,32 +191,12 @@ class LoggerTests: XCTestCase {
 
     // MARK: - Sampling
 
-    func testSamplingEnabled() throws {
+    func testSamplingEnabled() {
         core.context = .mockAny()
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        let feature: LoggingFeature = .mockByRecordingLogMatchers(featureConfiguration: .mockWith(loggingSampler: Sampler(samplingRate: 100)))
         core.register(feature: feature)
 
         let logger = Logger.builder
-            .set(samplingRate: 0)
-            .build(in: core)
-
-        logger.debug("message")
-        logger.info("message")
-        logger.notice("message")
-        logger.warn("message")
-        logger.error("message")
-        logger.critical("message")
-
-        XCTAssertEqual(try feature.waitAndReturnLogMatchers(count: 0).count, 0)
-    }
-
-    func testSamplingDisabled() throws {
-        core.context = .mockAny()
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
-        core.register(feature: feature)
-
-        let logger = Logger.builder
-            .set(samplingRate: 100)
             .build(in: core)
 
         logger.debug("message")
@@ -229,26 +209,7 @@ class LoggerTests: XCTestCase {
         XCTAssertEqual(try feature.waitAndReturnLogMatchers(count: 6).count, 6)
     }
 
-    func testSamplingLocalSetupOverridesGlobalSetup() {
-        core.context = .mockAny()
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(featureConfiguration: .mockWith(loggingSampler: Sampler(samplingRate: 0)))
-        core.register(feature: feature)
-
-        let logger = Logger.builder
-            .set(samplingRate: 100)
-            .build(in: core)
-
-        logger.debug("message")
-        logger.info("message")
-        logger.notice("message")
-        logger.warn("message")
-        logger.error("message")
-        logger.critical("message")
-
-        XCTAssertEqual(try feature.waitAndReturnLogMatchers(count: 6).count, 6)
-    }
-
-    func testSamplingGlobalSetup() {
+    func testSamplingDisabled() {
         core.context = .mockAny()
         let feature: LoggingFeature = .mockByRecordingLogMatchers(featureConfiguration: .mockWith(loggingSampler: Sampler(samplingRate: 0)))
         core.register(feature: feature)

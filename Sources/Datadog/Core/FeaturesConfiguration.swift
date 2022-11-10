@@ -34,7 +34,7 @@ internal struct FeaturesConfiguration {
     struct Logging {
         let uploadURL: URL
         let logEventMapper: LogEventMapper?
-        let loggingSampler: Sampler?
+        let loggingSampler: Sampler
     }
 
     struct Tracing {
@@ -182,16 +182,10 @@ extension FeaturesConfiguration {
         )
 
         if configuration.loggingEnabled {
-            let loggingSampler: Sampler?
-            if let loggingSamplingRate = configuration.loggingSamplingRate {
-                loggingSampler = Sampler(samplingRate: loggingSamplingRate)
-            } else {
-                loggingSampler = nil
-            }
             logging = Logging(
                 uploadURL: try ifValid(endpointURLString: logsEndpoint.url),
                 logEventMapper: configuration.logEventMapper,
-                loggingSampler: loggingSampler
+                loggingSampler: Sampler(samplingRate: configuration.loggingSamplingRate)
             )
         }
 
