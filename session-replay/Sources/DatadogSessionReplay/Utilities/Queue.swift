@@ -22,7 +22,7 @@ internal struct BackgroundAsyncQueue: Queue {
     private let queue: DispatchQueue
 
     init(named queueName: String) {
-        self.queue = DispatchQueue(label: "com.datadoghq.session-replay.processor", qos: .utility)
+        self.queue = DispatchQueue(label: queueName, qos: .utility)
     }
 
     func run(_ block: @escaping () -> Void) {
