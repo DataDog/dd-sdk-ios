@@ -264,7 +264,7 @@ private extension FeaturesConfiguration {
 }
 
 private extension Float {
-    func toInt64() -> Int64 {
-        return Int64(self)
+    func toInt64() -> Int64? {
+        return try? Int64(withReportingOverflow: self)
     }
 }
