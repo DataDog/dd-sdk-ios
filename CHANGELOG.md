@@ -1,5 +1,7 @@
 # Unreleased
 
+- [IMPROVEMENT] Add a method for sending error attributes on logs as strings.
+
 # 1.13.0 / 08-11-2022
 
 - [IMPROVEMENT] Improve console logs when using `DDNoopRUMMonitor`. See [#1007][] (Thanks [@dfed][])

@@ -86,4 +86,37 @@ class ConsoleLoggerTests: XCTestCase {
         }
         XCTAssertEqual(mock.printedMessages.count, 6)
     }
+
+    func testItPrintsErrorStringsWithExpectedFormat() {
+        // Given
+        let logger = ConsoleLogger(
+            configuration: .init(
+                timeZone: .UTC,
+                format: .short
+            ),
+            dateProvider: RelativeDateProvider(
+                using: .mockDecember15th2019At10AMUTC()
+            ),
+            printFunction: mock.print
+        )
+
+        let message = String.mockRandom()
+        let errorKind = String.mockRandom()
+        let errorMessage = String.mockRandom()
+        let stackTrace = String.mockRandom()
+
+        logger.log(level: .info, message: message, errorKind: errorKind, errorMessage: errorMessage,
+                   stackTrace: stackTrace, attributes: nil)
+        // Then
+        let expectedMessage = """
+            10:00:00.000 [INFO] \(message)
+
+            Error details:
+            → type: \(errorKind)
+            → message: \(errorMessage)
+            → stack: \(stackTrace)
+            """
+        XCTAssertEqual(mock.printedMessages.first, expectedMessage)
+        XCTAssertEqual(mock.printedMessages.count, 1)
+    }
 }
