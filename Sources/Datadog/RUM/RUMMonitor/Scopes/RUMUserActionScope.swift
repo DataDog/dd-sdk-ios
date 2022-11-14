@@ -145,7 +145,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                 session: .init(plan: .plan1)
             ),
             action: .init(
-                crash: nil,
+                crash: .init(count: 0),
                 error: .init(count: errorsCount.toInt64),
                 frustration: frustrations.map { .init(type: $0) },
                 id: actionUUID.toRUMDataFormat,
