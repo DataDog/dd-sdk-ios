@@ -519,7 +519,6 @@ class DatadogTests: XCTestCase {
         XCTAssertEqual(core?.userInfoPublisher.current.email, "foo@bar.com")
         XCTAssertEqual(core?.userInfoPublisher.current.extraInfo as? [String: Int], ["abc": 444])
 
-
         Datadog.flushAndDeinitialize()
     }
 
