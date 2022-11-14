@@ -28,18 +28,22 @@ internal struct RUMRequestBuilder: FeatureRequestBuilder {
     let format = DataFormat(prefix: "", suffix: "", separator: "\n")
 
     func request(for events: [Data], with context: DatadogContext) -> URLRequest {
+        var tags = [
+            "service:\(context.service)",
+            "version:\(context.version)",
+            "sdk_version:\(context.sdkVersion)",
+            "env:\(context.env)",
+        ]
+
+        if let variant = context.variant {
+            tags.append("variant:\(variant)")
+        }
+
         let builder = URLRequestBuilder(
             url: intake,
             queryItems: [
                 .ddsource(source: context.source),
-                .ddtags(
-                    tags: [
-                        "service:\(context.service)",
-                        "version:\(context.version)",
-                        "sdk_version:\(context.sdkVersion)",
-                        "env:\(context.env)"
-                    ]
-                )
+                .ddtags(tags: tags)
             ],
             headers: [
                 .contentTypeHeader(contentType: .textPlainUTF8),

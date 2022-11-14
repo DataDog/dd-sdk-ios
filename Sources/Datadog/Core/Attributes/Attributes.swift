@@ -82,6 +82,11 @@ internal struct CrossPlatformAttributes {
     /// Expects `String` value.
     static let ddsource: String = "_dd.source"
 
+    /// Custom Variant passed from a CP SDK. This is the 'flavor' parameter used in Android and Flutter, Used for all events issued by the SDK (both coming from cross-platform
+    /// SDK and produced internally, like RUM long tasks).
+    /// It does not replace any default native properties as iOS does not have the concept of 'flavors' or variants.
+    static let variant: String = "_dd.variant"
+
     /// Event timestamp passed from CP SDK. Used for all RUM events issued by cross platform SDK.
     /// It should replace event time obtained from `DateProvider` to ensure that events are not skewed due to time difference in native and cross-platform SDKs.
     /// Expects `Int64` value (milliseconds).
@@ -108,4 +113,10 @@ internal struct CrossPlatformAttributes {
     /// and send it within the RUM resource, so the RUM backend can issue corresponding APM span on behalf of the mobile app.
     /// Expects `String` value.
     static let spanID = "_dd.span_id"
+
+    /// Trace sample rate applied to RUM resources created by cross platform SDK.
+    /// We send cross-platform SDK's sample rate within RUM resource in order to provide accurate visibility into what settings are
+    /// configured at the SDK level. This gets displayed on APM's traffic ingestion control page.
+    /// Expects `Double` value between `0.0` and `1.0`.
+    static let rulePSR = "_dd.rule_psr"
 }

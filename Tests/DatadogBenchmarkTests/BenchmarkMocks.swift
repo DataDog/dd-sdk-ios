@@ -37,6 +37,7 @@ extension DatadogContext: AnyMockable {
             service: .mockAny(),
             env: .mockAny(),
             version: .mockAny(),
+            variant: nil,
             source: .mockAny(),
             sdkVersion: .mockAny(),
             ciAppOrigin: .mockAny(),

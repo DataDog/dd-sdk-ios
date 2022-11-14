@@ -89,7 +89,7 @@ class PerformancePresetTests: XCTestCase {
         XCTAssertEqual(preset.maxDirectorySize, 512 * 1_024 * 1_024) // 512 MB
         XCTAssertEqual(preset.maxFileAgeForRead, 18 * 60 * 60) // 18h
         XCTAssertEqual(preset.maxObjectsInFile, 500)
-        XCTAssertEqual(preset.maxObjectSize, 256 * 1_024) // 256KB
+        XCTAssertEqual(preset.maxObjectSize, 512 * 1_024) // 512KB
     }
 
     func testPresetsConsistency() {

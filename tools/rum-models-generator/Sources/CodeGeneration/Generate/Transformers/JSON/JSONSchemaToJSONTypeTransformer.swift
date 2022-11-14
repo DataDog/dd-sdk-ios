@@ -27,8 +27,12 @@ internal class JSONSchemaToJSONTypeTransformer {
     // MARK: - Transforming ambiguous types
 
     private func transformSchemaToAnyType(_ schema: JSONSchema, named name: String) throws -> JSONType {
-        if schema.oneOf != nil {
-            return try transformSchemasToOneOfs(schema, named: name)
+        if schema.oneOf != nil || schema.anyOf != nil {
+            return try transformSchemasToUnion(schema, named: name)
+        }
+
+        if schema.properties != nil {
+            return try transformSchemaToObject(schema, named: name)
         }
 
         let schemaType = try schema.type
@@ -141,16 +145,16 @@ internal class JSONSchemaToJSONTypeTransformer {
         )
     }
 
-    /// Transforms multiple non-homogeneous schemas (such as `oneOf: []`) into single `JSONOneOfs`.
-    private func transformSchemasToOneOfs(_ schema: JSONSchema, named name: String) throws -> JSONOneOfs {
-        let oneOfSchemas = try schema.oneOf
-            .unwrapOrThrow(.inconsistency("`JSONOneOfs` schema must define `oneOf`."))
+    /// Transforms multiple non-homogeneous schemas (such as `oneOf: []`) into single `JSONUnionType`.
+    private func transformSchemasToUnion(_ schema: JSONSchema, named name: String) throws -> JSONUnionType {
+        let unionSchema = try schema.oneOf ?? schema.anyOf
+            .unwrapOrThrow(.inconsistency("`JSONSchema` schema must define `oneOf` or `anyOf."))
 
-        return JSONOneOfs(
+        return JSONUnionType(
             name: name,
             comment: schema.description,
-            types: try oneOfSchemas.map { subschema in
-                return JSONOneOfs.OneOf(
+            types: try unionSchema.map { subschema in
+                return .init(
                     name: subschema.title,
                     type: try transformSchemaToAnyType(subschema, named: subschema.title ?? name)
                 )

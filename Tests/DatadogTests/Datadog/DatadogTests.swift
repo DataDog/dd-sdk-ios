@@ -91,6 +91,21 @@ class DatadogTests: XCTestCase {
         Datadog.flushAndDeinitialize()
     }
 
+    func testGivenValidConfiguration_initializationCallsTelemetry() {
+        let dd = DD.mockWith(telemetry: TelemetryMock())
+        defer { dd.reset() }
+
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: defaultBuilder.build()
+        )
+
+        XCTAssertEqual(dd.telemetry.configurations.count, 1)
+
+        Datadog.flushAndDeinitialize()
+    }
+
     // MARK: - Toggling features
 
     func testEnablingAndDisablingFeatures() {
@@ -404,6 +419,106 @@ class DatadogTests: XCTestCase {
         XCTAssertEqual(core?.userInfoPublisher.current.name, "bar")
         XCTAssertEqual(core?.userInfoPublisher.current.email, "foo@bar.com")
         XCTAssertEqual(core?.userInfoPublisher.current.extraInfo as? [String: Int], ["abc": 123])
+
+        Datadog.flushAndDeinitialize()
+    }
+
+    func testAddUserPreoprties_mergesProperties() {
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: defaultBuilder.build()
+        )
+
+        let core = defaultDatadogCore as? DatadogCore
+
+        Datadog.setUserInfo(
+            id: "foo",
+            name: "bar",
+            email: "foo@bar.com",
+            extraInfo: ["abc": 123]
+        )
+
+        Datadog.addUserExtraInfo(["second": 667])
+
+        XCTAssertEqual(core?.userInfoProvider.value.id, "foo")
+        XCTAssertEqual(core?.userInfoProvider.value.name, "bar")
+        XCTAssertEqual(core?.userInfoProvider.value.email, "foo@bar.com")
+        XCTAssertEqual(
+            core?.userInfoProvider.value.extraInfo as? [String: Int],
+            ["abc": 123, "second": 667]
+        )
+
+        XCTAssertEqual(core?.userInfoPublisher.current.id, "foo")
+        XCTAssertEqual(core?.userInfoPublisher.current.name, "bar")
+        XCTAssertEqual(core?.userInfoPublisher.current.email, "foo@bar.com")
+        XCTAssertEqual(
+            core?.userInfoPublisher.current.extraInfo as? [String: Int],
+            ["abc": 123, "second": 667]
+        )
+
+        Datadog.flushAndDeinitialize()
+    }
+
+    func testAddUserPreoprties_removesProperties() {
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: defaultBuilder.build()
+        )
+
+        let core = defaultDatadogCore as? DatadogCore
+
+        Datadog.setUserInfo(
+            id: "foo",
+            name: "bar",
+            email: "foo@bar.com",
+            extraInfo: ["abc": 123]
+        )
+
+        Datadog.addUserExtraInfo(["abc": nil, "second": 667])
+
+        XCTAssertEqual(core?.userInfoProvider.value.id, "foo")
+        XCTAssertEqual(core?.userInfoProvider.value.name, "bar")
+        XCTAssertEqual(core?.userInfoProvider.value.email, "foo@bar.com")
+        XCTAssertEqual(core?.userInfoProvider.value.extraInfo as? [String: Int], ["second": 667])
+
+        XCTAssertEqual(core?.userInfoPublisher.current.id, "foo")
+        XCTAssertEqual(core?.userInfoPublisher.current.name, "bar")
+        XCTAssertEqual(core?.userInfoPublisher.current.email, "foo@bar.com")
+        XCTAssertEqual(core?.userInfoPublisher.current.extraInfo as? [String: Int], ["second": 667])
+
+        Datadog.flushAndDeinitialize()
+    }
+
+    func testAddUserPreoprties_overwritesProperties() {
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: defaultBuilder.build()
+        )
+
+        let core = defaultDatadogCore as? DatadogCore
+
+        Datadog.setUserInfo(
+            id: "foo",
+            name: "bar",
+            email: "foo@bar.com",
+            extraInfo: ["abc": 123]
+        )
+
+        Datadog.addUserExtraInfo(["abc": 444])
+
+        XCTAssertEqual(core?.userInfoProvider.value.id, "foo")
+        XCTAssertEqual(core?.userInfoProvider.value.name, "bar")
+        XCTAssertEqual(core?.userInfoProvider.value.email, "foo@bar.com")
+        XCTAssertEqual(core?.userInfoProvider.value.extraInfo as? [String: Int], ["abc": 444])
+
+        XCTAssertEqual(core?.userInfoPublisher.current.id, "foo")
+        XCTAssertEqual(core?.userInfoPublisher.current.name, "bar")
+        XCTAssertEqual(core?.userInfoPublisher.current.email, "foo@bar.com")
+        XCTAssertEqual(core?.userInfoPublisher.current.extraInfo as? [String: Int], ["abc": 444])
+
 
         Datadog.flushAndDeinitialize()
     }

@@ -119,7 +119,7 @@ internal extension PerformancePreset {
         self.minFileAgeForRead = meanFileAge * 1.05 //  5% above the mean age
         self.maxFileAgeForRead = 18 * 60 * 60 // 18h
         self.maxObjectsInFile = 500
-        self.maxObjectSize = 256 * 1_024 // 256KB
+        self.maxObjectSize = 512 * 1_024 // 512KB
         self.initialUploadDelay = minUploadDelay * uploadDelayFactors.initial
         self.minUploadDelay = minUploadDelay * uploadDelayFactors.min
         self.maxUploadDelay = minUploadDelay * uploadDelayFactors.max

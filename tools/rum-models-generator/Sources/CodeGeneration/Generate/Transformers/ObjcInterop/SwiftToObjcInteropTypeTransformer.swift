@@ -95,6 +95,19 @@ internal class SwiftToObjcInteropTypeTransformer {
                     )
                     propertyWrapper.objcInteropType = try objcInteropType(for: swiftDictionary)
                     return propertyWrapper
+                case let swiftAssociatedTypeEnum as SwiftAssociatedTypeEnum:
+                    let propertyWrapper = ObjcInteropPropertyWrapperAccessingNestedAssociatedTypeEnum(
+                        owner: objcClass,
+                        swiftProperty: swiftProperty
+                    )
+                    propertyWrapper.objcNestedAssociatedTypeEnum = ObjcInteropReferencedAssociatedTypeEnum(
+                        owner: propertyWrapper,
+                        bridgedSwiftAssociatedTypeEnum: swiftAssociatedTypeEnum,
+                        associatedObjcInteropTypes: try swiftAssociatedTypeEnum.cases.map { swiftEnumCase in
+                            try objcInteropType(for: swiftEnumCase.associatedType)
+                        }
+                    )
+                    return propertyWrapper
                 case let swifTypeReference as SwiftTypeReference:
                     let referencedType = try resolve(swiftTypeReference: swifTypeReference)
 

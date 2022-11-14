@@ -152,6 +152,17 @@ internal final class DatadogCore {
         userInfoProvider.value = userInfo
     }
 
+    /// Add or override the extra info of the current user
+    ///
+    ///  - Parameters:
+    ///    - extraInfo: The user's custom attibutes to add or override
+    func addUserExtraInfo(_ newExtraInfo: [AttributeKey: AttributeValue?]) {
+        var extraInfo = userInfoPublisher.current.extraInfo
+        newExtraInfo.forEach { extraInfo[$0.key] = $0.value }
+        userInfoPublisher.current.extraInfo = extraInfo
+        userInfoProvider.value.extraInfo = extraInfo
+    }
+
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.
     /// 
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
@@ -412,6 +423,7 @@ extension DatadogV1Context {
         self.env = configuration.environment
         self.version = configuration.applicationVersion
         self.source = configuration.source
+        self.variant = configuration.variant
         self.sdkVersion = configuration.sdkVersion
 
         self.device = device
@@ -440,6 +452,7 @@ extension DatadogContextProvider {
             service: configuration.serviceName,
             env: configuration.environment,
             version: configuration.applicationVersion,
+            variant: configuration.variant,
             source: configuration.source,
             sdkVersion: configuration.sdkVersion,
             ciAppOrigin: configuration.origin,

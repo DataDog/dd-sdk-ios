@@ -17,6 +17,7 @@ from src.release.git import clone_repo
 from src.release.assets.gh_asset import GHAsset
 from src.release.assets.podspec import CPPodspec
 from src.release.semver import Version
+import shutil
 
 DD_SDK_IOS_REPO_SSH = 'git@github.com:DataDog/dd-sdk-ios.git'
 DD_SDK_IOS_REPO_NAME = 'dd-sdk-ios'
@@ -100,6 +101,8 @@ if __name__ == "__main__":
 
         publish_to_gh = not only_cocoapods
         publish_to_cp = not only_github
+        build_xcfw_relative_path = "tools/distribution/build-xcframework.sh"
+        build_xcfw_absolute_path = f"{os.getcwd()}/build-xcframework.sh"
 
         with TemporaryDirectory() as clone_dir:
             print(f'ℹ️️ Changing current directory to: {clone_dir}')
@@ -110,6 +113,9 @@ if __name__ == "__main__":
 
             print(f'ℹ️️ Changing current directory to: {clone_dir}/{DD_SDK_IOS_REPO_NAME}')
             os.chdir(DD_SDK_IOS_REPO_NAME)
+            # Copy build-xcframework.sh to cloned repo
+            shutil.copyfile(build_xcfw_absolute_path, build_xcfw_relative_path)
+            shutil.copymode(build_xcfw_absolute_path, build_xcfw_relative_path)
 
             # Publish GH Release asset:
             if publish_to_gh:

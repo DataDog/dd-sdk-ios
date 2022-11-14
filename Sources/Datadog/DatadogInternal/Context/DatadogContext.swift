@@ -26,6 +26,9 @@ public struct DatadogContext {
     /// The version of the application that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
     var version: String
 
+    /// The variant of the build, equivelent to Android's "Flavor".  Only used by cross platform SDKs
+    let variant: String?
+
     /// Denotes the mobile application's platform, such as `"ios"` or `"flutter"` that data is generated from.
     ///  - See: Datadog [Reserved Attributes](https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#reserved-attributes).
     let source: String
