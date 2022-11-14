@@ -109,7 +109,7 @@ extension RUMViewEvent: RandomMockable {
 
     /// Produces random `RUMViewEvent` with setting given fields to certain values.
     static func mockRandomWith(
-        viewIsActive: Bool? = .random(),
+        viewIsActive: Bool = .random(),
         viewTimeSpent: Int64 = .mockRandom()
     ) -> RUMViewEvent {
         return RUMViewEvent(
@@ -128,7 +128,7 @@ extension RUMViewEvent: RandomMockable {
             os: .mockRandom(),
             service: .mockRandom(),
             session: .init(
-                hasReplay: nil,
+                hasReplay: false,
                 id: .mockRandom(),
                 type: .user
             ),
@@ -189,7 +189,7 @@ extension RUMResourceEvent: RandomMockable {
         return RUMResourceEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                discarded: nil,
+                discarded: false,
                 rulePsr: nil,
                 session: .init(plan: .plan1),
                 spanId: .mockRandom(),
@@ -226,7 +226,7 @@ extension RUMResourceEvent: RandomMockable {
             ),
             service: .mockRandom(),
             session: .init(
-                hasReplay: nil,
+                hasReplay: false,
                 id: .mockRandom(),
                 type: .user
             ),
@@ -279,7 +279,7 @@ extension RUMActionEvent: RandomMockable {
             os: .mockRandom(),
             service: .mockRandom(),
             session: .init(
-                hasReplay: nil,
+                hasReplay: false,
                 id: .mockRandom(),
                 type: .user
             ),
@@ -342,7 +342,7 @@ extension RUMErrorEvent: RandomMockable {
             os: .mockRandom(),
             service: .mockRandom(),
             session: .init(
-                hasReplay: nil,
+                hasReplay: false,
                 id: .mockRandom(),
                 type: .user
             ),
@@ -378,7 +378,7 @@ extension RUMLongTaskEvent: RandomMockable {
         return RUMLongTaskEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                discarded: nil,
+                discarded: false,
                 session: .init(plan: .plan1)
             ),
             action: .init(id: .mockRandom()),
@@ -423,7 +423,7 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     batchUploadFrequency: .mockAny(),
                     defaultPrivacyLevel: .mockAny(),
                     forwardConsoleLogs: nil,
-                    forwardErrorsToLogs: nil,
+                    forwardErrorsToLogs: false,
                     forwardReports: nil,
                     initializationType: nil,
                     mobileVitalsUpdatePeriod: .mockRandom(),
@@ -431,7 +431,7 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     replaySampleRate: nil,
                     sessionReplaySampleRate: nil,
                     sessionSampleRate: .mockRandom(),
-                    silentMultipleInit: nil,
+                    silentMultipleInit: false,
                     telemetryConfigurationSampleRate: .mockRandom(),
                     telemetrySampleRate: .mockRandom(),
                     traceSampleRate: .mockRandom(),
@@ -445,17 +445,17 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     trackNativeLongTasks: .mockRandom(),
                     trackNativeViews: .mockRandom(),
                     trackNetworkRequests: .mockRandom(),
-                    trackSessionAcrossSubdomains: nil,
-                    trackViewsManually: nil,
+                    trackSessionAcrossSubdomains: false,
+                    trackViewsManually: false,
                     useAllowedTracingOrigins: .mockRandom(),
                     useAttachToExisting: .mockRandom(),
-                    useBeforeSend: nil,
-                    useCrossSiteSessionCookie: nil,
-                    useExcludedActivityUrls: nil,
+                    useBeforeSend: false,
+                    useCrossSiteSessionCookie: false,
+                    useExcludedActivityUrls: false,
                     useFirstPartyHosts: .mockRandom(),
                     useLocalEncryption: .mockRandom(),
                     useProxy: .mockRandom(),
-                    useSecureSessionCookie: nil,
+                    useSecureSessionCookie: false,
                     useTracing: .mockRandom(),
                     viewTrackingStrategy: nil
                 )

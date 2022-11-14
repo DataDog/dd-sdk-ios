@@ -272,7 +272,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             version: lastRUMView.version,
             view: .init(
                 id: lastRUMView.view.id,
-                inForeground: nil,
+                inForeground: false,
                 referrer: lastRUMView.view.referrer,
                 url: lastRUMView.view.url
             )
@@ -328,7 +328,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 id: original.view.id,
                 inForegroundPeriods: original.view.inForegroundPeriods,
                 isActive: false,
-                isSlowRendered: nil,
+                isSlowRendered: false,
                 jsRefreshRate: nil,
                 largestContentfulPaint: original.view.largestContentfulPaint,
                 loadEvent: original.view.loadEvent,
@@ -383,7 +383,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: nil,
+                hasReplay: false,
                 id: sessionUUID.toRUMDataFormat,
                 type: CITestIntegration.active != nil ? .ciTest : .user
             ),
@@ -413,7 +413,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 id: viewUUID.toRUMDataFormat,
                 inForegroundPeriods: nil,
                 isActive: false, // we know it won't receive updates
-                isSlowRendered: nil,
+                isSlowRendered: false,
                 jsRefreshRate: nil,
                 largestContentfulPaint: nil,
                 loadEvent: nil,

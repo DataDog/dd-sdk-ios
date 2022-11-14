@@ -216,13 +216,7 @@ internal class RUMSessionMatcher {
         try visits.forEach { visit in
             var viewIsInactive = false
             try visit.viewEvents.enumerated().forEach { index, viewEvent in
-                guard let viewIsActive = viewEvent.view.isActive else {
-                    throw RUMSessionConsistencyException(
-                        description: "A `RUMSessionMatcher.ViewVisit` can't have an event without the `isActive` parameter set."
-                    )
-                }
-
-                if index == 0 && !viewIsActive {
+                if index == 0 && !viewEvent.view.isActive {
                     throw RUMSessionConsistencyException(
                         description: "A `RUMSessionMatcher.ViewVisit` can't have a first event with an inactive `View`."
                     )
@@ -233,7 +227,7 @@ internal class RUMSessionMatcher {
                         description: "A `RUMSessionMatcher.ViewVisit` can't have an event after the `View` was marked as inactive."
                     )
                 }
-                viewIsInactive = !viewIsActive
+                viewIsInactive = !viewEvent.view.isActive
             }
         }
 
@@ -481,7 +475,7 @@ extension RUMSessionMatcher: CustomStringConvertible {
     private func describe(longTaskEvents: [RUMLongTaskEvent]) -> String {
         return longTaskEvents
             .map { event in
-                "           → [🐌 LongTask (duration: \(seconds(from: event.longTask.duration)), isFrozenFrame: \(event.longTask.isFrozenFrame.flatMap({ "\($0)" }) ?? "(null)")]"
+                "           → [🐌 LongTask (duration: \(seconds(from: event.longTask.duration)), isFrozenFrame: \(event.longTask.isFrozenFrame)]"
             }
             .joined(separator: "\n")
     }
