@@ -56,6 +56,9 @@ internal final class DatadogCore {
     /// `contextProvider`
     let userInfoPublisher = UserInfoPublisher()
 
+    /// The application version publisher.
+    let applicationVersionPublisher: ApplicationVersionPublisher
+
     /// The message bus used to dispatch messages to registered features.
     private var messageBus: [FeatureMessageReceiver] = []
 
@@ -90,6 +93,7 @@ internal final class DatadogCore {
     ///   - encryption: The on-disk data encryption.
     ///   - v1Context: The v1 context.
     ///   - contextProvider: The core context provider.
+    ///   - applicationVersion: The application version.
     init(
         directory: CoreDirectory,
         dateProvider: DateProvider,
@@ -99,7 +103,8 @@ internal final class DatadogCore {
     	httpClient: HTTPClient,
     	encryption: DataEncryption?,
         v1Context: DatadogV1Context,
-        contextProvider: DatadogContextProvider
+        contextProvider: DatadogContextProvider,
+        applicationVersion: String
     ) {
         self.directory = directory
         self.dateProvider = dateProvider
@@ -110,8 +115,10 @@ internal final class DatadogCore {
         self.encryption = encryption
         self.v1Context = v1Context
         self.contextProvider = contextProvider
+        self.applicationVersionPublisher = ApplicationVersionPublisher(version: applicationVersion)
 
         self.contextProvider.subscribe(\.userInfo, to: userInfoPublisher)
+        self.contextProvider.subscribe(\.version, to: applicationVersionPublisher)
 
         // forward any context change on the message-bus
         self.contextProvider.publish { [weak self] context in
