@@ -66,7 +66,8 @@ class RUMFeatureTests: XCTestCase {
                         osVersion: randomDeviceOSVersion
                     )
                 )
-            )
+            ),
+            applicationVersion: randomApplicationVersion
         )
 
         // Given
@@ -138,7 +139,8 @@ class RUMFeatureTests: XCTestCase {
             httpClient: httpClient,
             encryption: nil,
             v1Context: .mockAny(),
-            contextProvider: .mockAny()
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny()
         )
 
         // Given

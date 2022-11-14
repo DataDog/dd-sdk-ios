@@ -202,7 +202,8 @@ public class Datadog {
                 configuration: configuration.common,
                 device: .init(),
                 serverDateProvider: serverDateProvider
-            )
+            ),
+            applicationVersion: configuration.common.applicationVersion
         )
 
         // First, initialize features:

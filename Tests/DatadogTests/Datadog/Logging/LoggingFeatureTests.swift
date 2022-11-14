@@ -62,7 +62,8 @@ class LoggingFeatureTests: XCTestCase {
                         osVersion: randomDeviceOSVersion
                     )
                 )
-            )
+            ),
+            applicationVersion: randomApplicationVersion
         )
 
         // Given
@@ -129,7 +130,8 @@ class LoggingFeatureTests: XCTestCase {
             httpClient: httpClient,
             encryption: nil,
             v1Context: .mockAny(),
-            contextProvider: .mockAny()
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny()
         )
 
         // Given
