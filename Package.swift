@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "Datadog",
+    name: "DatadogSDK",
     platforms: [
         .iOS(.v11),
         .tvOS(.v11)
@@ -18,28 +18,12 @@ let package = Package(
             targets: ["DatadogObjc"]
         ),
         .library(
-            name: "DatadogDynamic",
-            type: .dynamic,
-            targets: ["Datadog"]
-        ),
-        .library(
-            name: "DatadogDynamicObjc",
-            type: .dynamic,
-            targets: ["DatadogObjc"]
-        ),
-        .library( // TODO: RUMM-2387 Consider removing explicit linkage variants
-            name: "DatadogStatic",
-            type: .static,
-            targets: ["Datadog"]
-        ),
-        .library( // TODO: RUMM-2387 Consider removing explicit linkage variants
-            name: "DatadogStaticObjc",
-            type: .static,
-            targets: ["DatadogObjc"]
-        ),
-        .library(
             name: "DatadogCrashReporting",
             targets: ["DatadogCrashReporting"]
+        ),
+        .library(
+            name: "DatadogSessionReplay",
+            targets: ["DatadogSessionReplay"]
         ),
     ],
     dependencies: [
@@ -51,12 +35,18 @@ let package = Package(
             dependencies: [
                 "_Datadog_Private",
             ],
-            swiftSettings: [.define("SPM_BUILD")]
+            swiftSettings: [
+                .define("SPM_BUILD"),
+                .define("DD_SDK_ENABLE_EXPERIMENTAL_APIS"),
+            ]
         ),
         .target(
             name: "DatadogObjc",
             dependencies: [
                 "Datadog",
+            ],
+            swiftSettings: [
+                .define("DD_SDK_ENABLE_EXPERIMENTAL_APIS"),
             ]
         ),
         .target(
@@ -67,7 +57,15 @@ let package = Package(
             dependencies: [
                 "Datadog",
                 .product(name: "CrashReporter", package: "PLCrashReporter"),
+            ],
+            swiftSettings: [
+                .define("DD_SDK_ENABLE_EXPERIMENTAL_APIS"),
             ]
-        )
+        ),
+        .target(
+            name: "DatadogSessionReplay",
+            dependencies: ["Datadog"],
+            path: "session-replay/Sources"
+        ),
     ]
 )
