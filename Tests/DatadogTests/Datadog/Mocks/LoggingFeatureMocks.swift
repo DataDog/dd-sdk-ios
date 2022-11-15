@@ -95,6 +95,7 @@ extension LogEvent: AnyMockable, RandomMockable {
         loggerVersion: String = .mockAny(),
         threadName: String = .mockAny(),
         applicationVersion: String = .mockAny(),
+        dd: LogEvent.Dd = .mockAny(),
         userInfo: UserInfo = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo = .mockAny(),
         mobileCarrierInfo: CarrierInfo? = .mockAny(),
@@ -112,6 +113,7 @@ extension LogEvent: AnyMockable, RandomMockable {
             loggerVersion: loggerVersion,
             threadName: threadName,
             applicationVersion: applicationVersion,
+            dd: dd,
             userInfo: userInfo,
             networkConnectionInfo: networkConnectionInfo,
             mobileCarrierInfo: mobileCarrierInfo,
@@ -132,6 +134,7 @@ extension LogEvent: AnyMockable, RandomMockable {
             loggerVersion: .mockRandom(),
             threadName: .mockRandom(),
             applicationVersion: .mockRandom(),
+            dd: .mockRandom(),
             userInfo: .mockRandom(),
             networkConnectionInfo: .mockRandom(),
             mobileCarrierInfo: .mockRandom(),
@@ -175,6 +178,34 @@ extension LogEvent.UserInfo: AnyMockable, RandomMockable {
     }
 }
 
+extension LogEvent.Dd: AnyMockable, RandomMockable {
+    static func mockAny() -> LogEvent.Dd {
+        return LogEvent.Dd(
+            device: .mockAny()
+        )
+    }
+
+    static func mockRandom() -> LogEvent.Dd {
+        return LogEvent.Dd(
+            device: .mockRandom()
+        )
+    }
+}
+
+extension LogEvent.DeviceInfo: AnyMockable, RandomMockable {
+    static func mockAny() -> LogEvent.DeviceInfo {
+        return LogEvent.DeviceInfo(
+            architecture: .mockAny()
+        )
+    }
+
+    static func mockRandom() -> LogEvent.DeviceInfo {
+        return LogEvent.DeviceInfo(
+            architecture: .mockRandom()
+        )
+    }
+}
+
 extension LogEvent.Error: RandomMockable {
     static func mockRandom() -> Self {
         return .init(
@@ -196,7 +227,8 @@ extension LogEventBuilder: AnyMockable {
         service: String = .mockAny(),
         loggerName: String = .mockAny(),
         sendNetworkInfo: Bool = .mockAny(),
-        eventMapper: LogEventMapper? = nil
+        eventMapper: LogEventMapper? = nil,
+        deviceInfo: DeviceInfo = .mockAny()
     ) -> LogEventBuilder {
         return LogEventBuilder(
             service: service,

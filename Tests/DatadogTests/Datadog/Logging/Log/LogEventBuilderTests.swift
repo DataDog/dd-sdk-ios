@@ -18,6 +18,7 @@ class LogEventBuilderTests: XCTestCase {
         let randomService: String = .mockRandom()
         let randomLoggerName: String = .mockRandom()
         let randomThreadName: String = .mockRandom()
+        let randomArchitecture: String = .mockRandom()
 
         // Given
         let builder = LogEventBuilder(
@@ -35,7 +36,12 @@ class LogEventBuilderTests: XCTestCase {
             error: randomError,
             attributes: randomAttributes,
             tags: randomTags,
-            context: .mockWith(serverTimeOffset: 0),
+            context: .mockWith(
+                serverTimeOffset: 0,
+                device: .mockWith(
+                    architecture: randomArchitecture
+                )
+            ),
             threadName: randomThreadName
         )
         let log = try XCTUnwrap(event)
@@ -52,6 +58,7 @@ class LogEventBuilderTests: XCTestCase {
         XCTAssertEqual(log.serviceName, randomService)
         XCTAssertEqual(log.loggerName, randomLoggerName)
         XCTAssertEqual(log.threadName, randomThreadName)
+        XCTAssertEqual(log.dd.device.architecture, randomArchitecture)
     }
 
     func testItBuildsLogEventWithSDKContextInformation() throws {
