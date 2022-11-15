@@ -37,6 +37,7 @@ internal struct FeaturesConfiguration {
         let logEventMapper: LogEventMapper?
         let dateProvider: DateProvider
         let applicationBundleIdentifier: String
+        let remoteLoggingSampler: Sampler
     }
 
     struct Tracing {
@@ -193,7 +194,8 @@ extension FeaturesConfiguration {
                 uploadURL: try ifValid(endpointURLString: logsEndpoint.url),
                 logEventMapper: configuration.logEventMapper,
                 dateProvider: dateProvider,
-                applicationBundleIdentifier: common.applicationBundleIdentifier
+                applicationBundleIdentifier: common.applicationBundleIdentifier,
+                remoteLoggingSampler: Sampler(samplingRate: debugOverride ? 100 : configuration.loggingSamplingRate)
             )
         }
 

@@ -7,6 +7,8 @@
 - [IMPROVEMENT] Send trace sample rate (`dd.rulePsr`) for APM's traffic ingestion control page. See [#1029][]
 - [IMPROVEMENT] Add a method to add user info properties. See [#1031][]
 - [BUGFIX] Fix vitals default presets. See [#1043][]
+- [IMPROVEMENT] Add logging sampling. See [#1045][]
+
 
 # 1.12.1 / 18-10-2022
 
@@ -409,6 +411,7 @@
 [#1029]: https://github.com/DataDog/dd-sdk-ios/issues/1029
 [#1031]: https://github.com/DataDog/dd-sdk-ios/issues/1031
 [#1043]: https://github.com/DataDog/dd-sdk-ios/issues/1043
+[#1045]: https://github.com/DataDog/dd-sdk-ios/pull/1045
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

@@ -50,6 +50,7 @@ extension Datadog.Configuration {
         rumEndpoint: RUMEndpoint = .us1,
         serviceName: String? = .mockAny(),
         firstPartyHosts: Set<String>? = nil,
+        loggingSamplingRate: Float = 100.0,
         tracingSamplingRate: Float = 100.0,
         rumSessionsSamplingRate: Float = 100.0,
         rumUIKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
@@ -83,6 +84,7 @@ extension Datadog.Configuration {
             rumEndpoint: rumEndpoint,
             serviceName: serviceName,
             firstPartyHosts: firstPartyHosts,
+            loggingSamplingRate: loggingSamplingRate,
             tracingSamplingRate: tracingSamplingRate,
             rumSessionsSamplingRate: rumSessionsSamplingRate,
             rumUIKitViewsPredicate: rumUIKitViewsPredicate,
@@ -242,13 +244,15 @@ extension FeaturesConfiguration.Logging {
         uploadURL: URL = .mockAny(),
         logEventMapper: LogEventMapper? = nil,
         dateProvider: DateProvider = SystemDateProvider(),
-        applicationBundleIdentifier: String = .mockAny()
+        applicationBundleIdentifier: String = .mockAny(),
+        remoteLoggingSampler: Sampler = Sampler(samplingRate: 100.0)
     ) -> Self {
         return .init(
             uploadURL: uploadURL,
             logEventMapper: logEventMapper,
             dateProvider: dateProvider,
-            applicationBundleIdentifier: applicationBundleIdentifier
+            applicationBundleIdentifier: applicationBundleIdentifier,
+            remoteLoggingSampler: remoteLoggingSampler
         )
     }
 }

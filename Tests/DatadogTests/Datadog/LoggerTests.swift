@@ -185,6 +185,44 @@ class LoggerTests: XCTestCase {
         }
     }
 
+    // MARK: - Sampling
+
+    func testSamplingEnabled() {
+        core.context = .mockAny()
+        let feature: LoggingFeature = .mockByRecordingLogMatchers(featureConfiguration: .mockWith(remoteLoggingSampler: Sampler(samplingRate: 100)))
+        core.register(feature: feature)
+
+        let logger = Logger.builder
+            .build(in: core)
+
+        logger.debug(.mockAny())
+        logger.info(.mockAny())
+        logger.notice(.mockAny())
+        logger.warn(.mockAny())
+        logger.error(.mockAny())
+        logger.critical(.mockAny())
+
+        XCTAssertEqual(try feature.waitAndReturnLogMatchers(count: 6).count, 6)
+    }
+
+    func testSamplingDisabled() {
+        core.context = .mockAny()
+        let feature: LoggingFeature = .mockByRecordingLogMatchers(featureConfiguration: .mockWith(remoteLoggingSampler: Sampler(samplingRate: 0)))
+        core.register(feature: feature)
+
+        let logger = Logger.builder
+            .build(in: core)
+
+        logger.debug(.mockAny())
+        logger.info(.mockAny())
+        logger.notice(.mockAny())
+        logger.warn(.mockAny())
+        logger.error(.mockAny())
+        logger.critical(.mockAny())
+
+        XCTAssertEqual(try feature.waitAndReturnLogMatchers(count: 0).count, 0)
+    }
+
     // MARK: - Sending user info
 
     func testSendingUserInfo() throws {
