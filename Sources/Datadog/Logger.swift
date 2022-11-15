@@ -52,7 +52,7 @@ public protocol LoggerProtocol {
     /// General purpose logging method.
     /// Sends a log with certain `level`, `message`, `errorKind`,  `errorMessage`,  `stackTrace` and `attributes`.
     ///
-    /// This method is meant for non-native or cross platform frameworks (such as React Native of Flutter) to send error information
+    /// This method is meant for non-native or cross platform frameworks (such as React Native or Flutter) to send error information
     /// to Datadog. Although it can be used directly, it is recommended to use other methods declared on `Logger`.
     ///
     /// - Parameters:
