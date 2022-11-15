@@ -135,7 +135,7 @@ internal class RUMResourceScope: RUMScope {
         let resourceEvent = RUMResourceEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                discarded: false,
+                discarded: nil,
                 rulePsr: traceSamplingRate,
                 session: .init(plan: .plan1),
                 spanId: spanId,
@@ -200,7 +200,7 @@ internal class RUMResourceScope: RUMScope {
             ),
             service: context.service,
             session: .init(
-                hasReplay: false,
+                hasReplay: nil,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
@@ -260,7 +260,7 @@ internal class RUMResourceScope: RUMScope {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: false,
+                hasReplay: nil,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
@@ -270,7 +270,7 @@ internal class RUMResourceScope: RUMScope {
             version: context.version,
             view: .init(
                 id: self.context.activeViewID.orNull.toRUMDataFormat,
-                inForeground: false,
+                inForeground: nil,
                 name: self.context.activeViewName,
                 referrer: nil,
                 url: self.context.activeViewPath ?? ""

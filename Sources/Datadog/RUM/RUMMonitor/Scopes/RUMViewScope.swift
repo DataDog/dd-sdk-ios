@@ -371,7 +371,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: false,
+                hasReplay: nil,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
@@ -381,7 +381,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             version: context.version,
             view: .init(
                 id: viewUUID.toRUMDataFormat,
-                inForeground: false,
+                inForeground: nil,
                 name: viewName,
                 referrer: nil,
                 url: viewPath
@@ -425,7 +425,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: false,
+                hasReplay: nil,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
@@ -526,7 +526,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: false,
+                hasReplay: nil,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
@@ -577,7 +577,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: false,
+                hasReplay: nil,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),

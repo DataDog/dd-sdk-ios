@@ -272,7 +272,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             version: lastRUMView.version,
             view: .init(
                 id: lastRUMView.view.id,
-                inForeground: false,
+                inForeground: nil,
                 referrer: lastRUMView.view.referrer,
                 url: lastRUMView.view.url
             )
@@ -383,7 +383,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: false,
+                hasReplay: nil,
                 id: sessionUUID.toRUMDataFormat,
                 type: CITestIntegration.active != nil ? .ciTest : .user
             ),
