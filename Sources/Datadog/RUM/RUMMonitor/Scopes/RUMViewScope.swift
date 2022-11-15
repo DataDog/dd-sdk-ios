@@ -536,7 +536,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             version: context.version,
             view: .init(
                 id: self.context.activeViewID.orNull.toRUMDataFormat,
-                inForeground: false,
+                inForeground: nil,
                 name: self.context.activeViewName,
                 referrer: nil,
                 url: self.context.activeViewPath ?? ""
@@ -560,7 +560,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let longTaskEvent = RUMLongTaskEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                discarded: false,
+                discarded: nil,
                 session: .init(plan: .plan1)
             ),
             action: self.context.activeUserActionID.map {
