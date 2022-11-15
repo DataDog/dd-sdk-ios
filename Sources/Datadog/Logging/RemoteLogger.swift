@@ -98,7 +98,7 @@ internal final class RemoteLogger: LoggerProtocol {
         internalLog(level: level, message: message, error: error.map { DDError(error: $0) }, attributes: attributes)
     }
 
-    func log(level: LogLevel, message: String, errorKind: String?, errorMessage: String?, stackTrace: String?, attributes: [String : Encodable]?) {
+    func log(level: LogLevel, message: String, errorKind: String?, errorMessage: String?, stackTrace: String?, attributes: [String: Encodable]?) {
         var ddError: DDError?
         if errorKind != nil || errorMessage != nil || stackTrace != nil {
             // Cross platform frameworks don't necessarilly send all values for errors. Send empty strings
@@ -109,7 +109,10 @@ internal final class RemoteLogger: LoggerProtocol {
         internalLog(level: level, message: message, error: ddError, attributes: attributes)
     }
 
-    func internalLog(level: LogLevel, message: String, error: DDError?, attributes: [String : Encodable]?) {
+    func internalLog(level: LogLevel, message: String, error: DDError?, attributes: [String: Encodable]?) {
+        guard configuration.sampler.sample() else {
+            return
+        }
         guard level.rawValue >= configuration.threshold.rawValue else {
             return
         }

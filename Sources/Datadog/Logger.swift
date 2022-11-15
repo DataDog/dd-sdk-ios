@@ -63,9 +63,14 @@ public protocol LoggerProtocol {
     ///   - stackTrace: a string representation of the error's stack trace
     ///   - attributes: a dictionary of attributes (optional) to add for this message. If an attribute with
     /// the same key already exist in this logger, it will be overridden (only for this message).
-    func log(level: LogLevel, message: String, errorKind: String?, errorMessage: String?,
-             stackTrace: String?, attributes: [String: Encodable]?)
-
+    func log(
+        level: LogLevel,
+        message: String,
+        errorKind: String?,
+        errorMessage: String?,
+        stackTrace: String?,
+        attributes: [String: Encodable]?
+    )
 
     // MARK: - Attributes
 
@@ -204,10 +209,21 @@ public class Logger: LoggerProtocol {
         v2Logger.log(level: level, message: message, error: error, attributes: attributes)
     }
 
-    public func log(level: LogLevel, message: String, errorKind: String?, errorMessage: String?,
-             stackTrace: String?, attributes: [String: Encodable]?) {
-        v2Logger.log(level: level, message: message, errorKind: errorKind, errorMessage: errorMessage,
-                     stackTrace: stackTrace, attributes: attributes)
+    public func log(
+        level: LogLevel,
+        message: String,
+        errorKind: String?,
+        errorMessage: String?,
+        stackTrace: String?,
+        attributes: [String: Encodable]?) {
+        v2Logger.log(
+            level: level,
+            message: message,
+             errorKind: errorKind,
+             errorMessage: errorMessage,
+             stackTrace: stackTrace,
+             attributes: attributes
+        )
     }
 
     public func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
@@ -445,10 +461,23 @@ internal struct CombinedLogger: LoggerProtocol {
         combinedLoggers.forEach { $0.log(level: level, message: message, error: error, attributes: attributes) }
     }
 
-    func log(level: LogLevel, message: String, errorKind: String?, errorMessage: String?,
-             stackTrace: String?, attributes: [String : Encodable]?) {
-        combinedLoggers.forEach { $0.log(level: level, message: message, errorKind: errorKind, errorMessage: errorMessage,
-                                         stackTrace: stackTrace, attributes: attributes) }
+    func log(
+        level: LogLevel,
+        message: String,
+        errorKind: String?,
+        errorMessage: String?,
+        stackTrace: String?,
+        attributes: [String: Encodable]?) {
+        combinedLoggers.forEach {
+            $0.log(
+                level: level,
+                message: message,
+                errorKind: errorKind,
+                errorMessage: errorMessage,
+                stackTrace: stackTrace,
+                attributes: attributes
+            )
+        }
     }
 
     func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
@@ -478,7 +507,7 @@ internal struct CombinedLogger: LoggerProtocol {
 
 internal struct NOPLogger: LoggerProtocol {
     func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable]?) {}
-    func log(level: LogLevel, message: String, errorKind: String?, errorMessage: String?, stackTrace: String?, attributes: [String : Encodable]?) {}
+    func log(level: LogLevel, message: String, errorKind: String?, errorMessage: String?, stackTrace: String?, attributes: [String: Encodable]?) {}
     func addAttribute(forKey key: AttributeKey, value: AttributeValue) {}
     func removeAttribute(forKey key: AttributeKey) {}
     func addTag(withKey key: String, value: String) {}

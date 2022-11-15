@@ -191,14 +191,17 @@ class LoggerTests: XCTestCase {
         let feature: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: feature)
 
-
         let logger = Logger.builder.build(in: core)
         let errorKind = String.mockRandom()
         let errorMessage = String.mockRandom()
         let stackTrace = String.mockRandom()
-        logger.log(level: .info, message: .mockAny(), errorKind: errorKind, errorMessage: errorMessage,
-                   stackTrace: stackTrace, attributes: nil)
-
+        logger.log(level: .info,
+                   message: .mockAny(),
+                   errorKind: errorKind,
+                   errorMessage: errorMessage,
+                   stackTrace: stackTrace,
+                   attributes: nil
+        )
 
         let logMatchers = try feature.waitAndReturnLogMatchers(count: 1)
         let logMatcher = logMatchers.first

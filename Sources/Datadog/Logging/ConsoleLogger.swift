@@ -54,7 +54,7 @@ internal final class ConsoleLogger: LoggerProtocol {
         internalLog(level: level, message: message, errorString: errorString)
     }
 
-    func log(level: LogLevel, message: String, errorKind: String?, errorMessage: String?, stackTrace: String?, attributes: [String : Encodable]?) {
+    func log(level: LogLevel, message: String, errorKind: String?, errorMessage: String?, stackTrace: String?, attributes: [String: Encodable]?) {
         var errorString: String? = nil
         if errorKind != nil || errorMessage != nil || stackTrace != nil {
             // Cross platform frameworks don't necessarilly send all values for errors. Send empty strings

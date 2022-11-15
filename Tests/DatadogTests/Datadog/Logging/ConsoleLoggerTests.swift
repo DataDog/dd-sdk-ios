@@ -105,8 +105,15 @@ class ConsoleLoggerTests: XCTestCase {
         let errorMessage = String.mockRandom()
         let stackTrace = String.mockRandom()
 
-        logger.log(level: .info, message: message, errorKind: errorKind, errorMessage: errorMessage,
-                   stackTrace: stackTrace, attributes: nil)
+        logger.log(
+            level: .info,
+            message: message,
+            errorKind: errorKind,
+            errorMessage: errorMessage,
+            stackTrace: stackTrace,
+            attributes: nil
+        )
+
         // Then
         let expectedMessage = """
             10:00:00.000 [INFO] \(message)
