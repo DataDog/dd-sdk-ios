@@ -243,7 +243,7 @@ internal class RUMResourceScope: RUMScope {
             error: .init(
                 handling: nil,
                 handlingStack: nil,
-                id: "", // TODO: What ID should we send here?
+                id: nil,
                 isCrash: false,
                 message: command.errorMessage,
                 resource: .init(
@@ -254,8 +254,8 @@ internal class RUMResourceScope: RUMScope {
                 ),
                 source: command.errorSource.toRUMDataFormat,
                 sourceType: command.errorSourceType,
-                stack: command.stack ?? "", // TODO
-                type: command.errorType ?? "" // TODO
+                stack: command.stack,
+                type: command.errorType
             ),
             os: .init(context: context),
             service: context.service,

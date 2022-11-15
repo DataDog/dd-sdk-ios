@@ -250,7 +250,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             error: .init(
                 handling: nil,
                 handlingStack: nil,
-                id: "", // TODO
+                id: nil,
                 isCrash: true,
                 message: errorMessage,
                 resource: nil,

@@ -323,7 +323,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         actionsCount += 1
 
         var attributes = self.attributes
-        var loadingTime: Int64 = 0
+        var loadingTime: Int64?
 
         if context.launchTime?.isActivePrewarm == true {
             // Set `active_pre_warm` attribute to true in case
@@ -514,14 +514,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 causes: nil,
                 handling: nil,
                 handlingStack: nil,
-                id: "", // todo
-                isCrash: command.isCrash,
+                id: nil,
+                isCrash: command.isCrash ?? false,
                 message: command.message,
                 resource: nil,
                 source: command.source.toRUMDataFormat,
                 sourceType: command.errorSourceType,
-                stack: command.stack ?? "", // todo
-                type: command.type ?? "" // todo
+                stack: command.stack,
+                type: command.type
             ),
             os: .init(context: context),
             service: context.service,
@@ -573,7 +573,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             date: (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context),
             display: nil,
-            longTask: .init(duration: taskDurationInNs, id: "", isFrozenFrame: isFrozenFrame), // TODO
+            longTask: .init(duration: taskDurationInNs, id: nil, isFrozenFrame: isFrozenFrame),
             os: .init(context: context),
             service: context.service,
             session: .init(
