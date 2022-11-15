@@ -189,7 +189,7 @@ class LoggerTests: XCTestCase {
 
     func testSamplingEnabled() {
         core.context = .mockAny()
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(featureConfiguration: .mockWith(remoteLoggingSampler: Sampler(samplingRate: 100)))
+        let feature: LoggingFeature = .mockByRecordingLogMatchers(configuration: .mockWith(remoteLoggingSampler: Sampler(samplingRate: 100)))
         core.register(feature: feature)
 
         let logger = Logger.builder
@@ -207,7 +207,7 @@ class LoggerTests: XCTestCase {
 
     func testSamplingDisabled() {
         core.context = .mockAny()
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(featureConfiguration: .mockWith(remoteLoggingSampler: Sampler(samplingRate: 0)))
+        let feature: LoggingFeature = .mockByRecordingLogMatchers(configuration: .mockWith(remoteLoggingSampler: Sampler(samplingRate: 0)))
         core.register(feature: feature)
 
         let logger = Logger.builder
