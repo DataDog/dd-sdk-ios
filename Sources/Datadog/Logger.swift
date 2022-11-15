@@ -234,6 +234,7 @@ public class Logger: LoggerProtocol {
         internal var sendLogsToDatadog = true
         internal var consoleLogFormat: ConsoleLogFormat? = nil
         internal var datadogReportingThreshold: LogLevel = .debug
+        internal var samplingRate: Float?
 
         /// Sets the service name that will appear in logs.
         /// - Parameter serviceName: the service name  (default value is set to application bundle identifier)
@@ -365,7 +366,8 @@ public class Logger: LoggerProtocol {
                     loggerName: loggerName ?? context.applicationBundleIdentifier,
                     sendNetworkInfo: sendNetworkInfo,
                     threshold: datadogReportingThreshold,
-                    eventMapper: loggingFeature.configuration.logEventMapper
+                    eventMapper: loggingFeature.configuration.logEventMapper,
+                    sampler: loggingFeature.configuration.remoteLoggingSampler
                 )
 
                 let rumEnabled = core.v1.feature(RUMFeature.self) != nil
@@ -415,7 +417,7 @@ public class Logger: LoggerProtocol {
     }
 }
 
-/// Combines multiple loggers together into single `Logger` interface.
+/// Combines multiple loggers together into single `LoggerProtocol` interface.
 internal struct CombinedLogger: LoggerProtocol {
     let combinedLoggers: [LoggerProtocol]
 

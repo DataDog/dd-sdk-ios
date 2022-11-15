@@ -332,6 +332,11 @@ public class DDConfigurationBuilder: NSObject {
     }
 
     @objc
+    public func set(loggingSamplingRate: Float) {
+        _ = sdkBuilder.set(loggingSamplingRate: loggingSamplingRate)
+    }
+
+    @objc
     public func set(tracingSamplingRate: Float) {
         _ = sdkBuilder.set(tracingSamplingRate: tracingSamplingRate)
     }

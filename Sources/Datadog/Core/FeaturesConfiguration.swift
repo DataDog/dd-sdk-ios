@@ -34,6 +34,7 @@ internal struct FeaturesConfiguration {
     struct Logging {
         let uploadURL: URL
         let logEventMapper: LogEventMapper?
+        let remoteLoggingSampler: Sampler
     }
 
     struct Tracing {
@@ -183,7 +184,8 @@ extension FeaturesConfiguration {
         if configuration.loggingEnabled {
             logging = Logging(
                 uploadURL: try ifValid(endpointURLString: logsEndpoint.url),
-                logEventMapper: configuration.logEventMapper
+                logEventMapper: configuration.logEventMapper,
+                remoteLoggingSampler: Sampler(samplingRate: debugOverride ? 100 : configuration.loggingSamplingRate)
             )
         }
 

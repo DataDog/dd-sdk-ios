@@ -50,6 +50,7 @@ extension Datadog.Configuration {
         rumEndpoint: RUMEndpoint = .us1,
         serviceName: String? = .mockAny(),
         firstPartyHosts: Set<String>? = nil,
+        loggingSamplingRate: Float = 100.0,
         tracingSamplingRate: Float = 100.0,
         rumSessionsSamplingRate: Float = 100.0,
         rumUIKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
@@ -83,6 +84,7 @@ extension Datadog.Configuration {
             rumEndpoint: rumEndpoint,
             serviceName: serviceName,
             firstPartyHosts: firstPartyHosts,
+            loggingSamplingRate: loggingSamplingRate,
             tracingSamplingRate: tracingSamplingRate,
             rumSessionsSamplingRate: rumSessionsSamplingRate,
             rumUIKitViewsPredicate: rumUIKitViewsPredicate,
@@ -238,11 +240,13 @@ extension FeaturesConfiguration.Logging {
 
     static func mockWith(
         uploadURL: URL = .mockAny(),
-        logEventMapper: LogEventMapper? = nil
+        logEventMapper: LogEventMapper? = nil,
+        remoteLoggingSampler: Sampler = Sampler(samplingRate: 100.0)
     ) -> Self {
         return .init(
             uploadURL: uploadURL,
-            logEventMapper: logEventMapper
+            logEventMapper: logEventMapper,
+            remoteLoggingSampler: remoteLoggingSampler
         )
     }
 }
