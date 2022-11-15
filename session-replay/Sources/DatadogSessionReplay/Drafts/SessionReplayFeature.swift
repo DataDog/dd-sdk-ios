@@ -22,30 +22,35 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
 
     // MARK: - Main Components
 
-    let recorder: Recorder
+    private let recorder: Recording
+    private let processor: Processing
+    private let writer: Writing
 
     // MARK: - Initialization
 
-    convenience init(configuration: SessionReplayConfiguration) {
-        let rumContextReceiver = RUMContextReceiver()
+    init(configuration: SessionReplayConfiguration) {
+        let writer = Writer()
+
+        let processor = Processor(
+            queue: BackgroundAsyncQueue(named: "com.datadoghq.session-replay.processor"),
+            writer: writer
+        )
+
+        let messageReceiver = RUMContextReceiver()
         let recorder = Recorder(
             configuration: configuration,
-            rumContextObserver: rumContextReceiver,
-            processor: Processor()
+            rumContextObserver: messageReceiver,
+            processor: processor
         )
 
-        self.init(
-            messageReceiver: rumContextReceiver,
-            recorder: recorder
-        )
-    }
-
-    internal init(
-        messageReceiver: FeatureMessageReceiver,
-        recorder: Recorder
-    ) {
         self.messageReceiver = messageReceiver
         self.recorder = recorder
+        self.processor = processor
+        self.writer = writer
+    }
+
+    func register(sessionReplayScope: FeatureScope) {
+        writer.startWriting(to: sessionReplayScope)
     }
 
     // MARK: - SessionReplayController

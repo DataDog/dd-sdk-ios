@@ -17,3 +17,15 @@ internal struct MainAsyncQueue: Queue {
         queue.async { block() }
     }
 }
+
+internal struct BackgroundAsyncQueue: Queue {
+    private let queue: DispatchQueue
+
+    init(named queueName: String) {
+        self.queue = DispatchQueue(label: queueName, qos: .utility)
+    }
+
+    func run(_ block: @escaping () -> Void) {
+        queue.async { block() }
+    }
+}

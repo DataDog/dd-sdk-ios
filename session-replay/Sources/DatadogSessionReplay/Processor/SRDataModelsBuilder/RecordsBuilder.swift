@@ -38,26 +38,8 @@ internal class RecordsBuilder {
 
     // MARK: - Creating FSR and ISR
 
-    /// Wireframes from last FSR or ISR.
-    private var lastWireframes: [SRWireframe]?
-
-    func createFullOrIncrementalSnapshotRecord(from snapshot: ViewTreeSnapshot, with wireframes: [SRWireframe]) -> SRRecord? {
-        defer { lastWireframes = wireframes }
-
-        guard let lastWireframes = lastWireframes else {
-            return createFullSnapshotRecord(from: snapshot, wireframes: wireframes)
-        }
-
-        do {
-            return try createIncrementalRecord(from: snapshot, newWireframes: wireframes, lastWireframes: lastWireframes)
-        } catch { // TODO: RUMM-2410 Use `DD.logger` and / or `DD.telemetry` to report ISR errors
-            // In case of any trouble, fallback to FSR which is always possible:
-            return createFullSnapshotRecord(from: snapshot, wireframes: wireframes)
-        }
-    }
-
     /// Creates Full Snapshot Record - a self-contained description of a single frame of the replay.
-    private func createFullSnapshotRecord(from snapshot: ViewTreeSnapshot, wireframes: [SRWireframe]) -> SRRecord {
+    func createFullSnapshotRecord(from snapshot: ViewTreeSnapshot, wireframes: [SRWireframe]) -> SRRecord {
         let record = SRFullSnapshotRecord(
             data: .init(wireframes: wireframes),
             timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
@@ -68,7 +50,20 @@ internal class RecordsBuilder {
 
     /// Creates Incremental Snapshot Record - an incremental description of a frame of the replay.
     /// ISRs describe minimal difference between this and previous frame in the replay.
-    private func createIncrementalRecord(from snapshot: ViewTreeSnapshot, newWireframes: [SRWireframe], lastWireframes: [SRWireframe]) throws -> SRRecord? {
+    ///
+    /// It may return `nil` if there is no diff between `wireframes` and `lastWireframes`.
+    /// In case of unexpected failure, it will fallback to creating FSR instead.
+    func createIncrementalSnapshotRecord(from snapshot: ViewTreeSnapshot, with wireframes: [SRWireframe], lastWireframes: [SRWireframe]) -> SRRecord? {
+        do {
+            return try createIncrementalSnapshotRecord(from: snapshot, newWireframes: wireframes, lastWireframes: lastWireframes)
+        } catch {
+            // In case of any trouble, fallback to FSR which is always possible:
+            print("Failed to create incremental record: \(error)") // TODO: RUMM-2410 Use `DD.logger` and / or `DD.telemetry`
+            return createFullSnapshotRecord(from: snapshot, wireframes: wireframes)
+        }
+    }
+
+    private func createIncrementalSnapshotRecord(from snapshot: ViewTreeSnapshot, newWireframes: [SRWireframe], lastWireframes: [SRWireframe]) throws -> SRRecord? {
         let diff = try computeDiff(oldArray: lastWireframes, newArray: newWireframes)
 
         if diff.isEmpty {
