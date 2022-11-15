@@ -187,14 +187,14 @@ internal class RUMResourceScope: RUMScope {
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
                     )
                 },
-                size: size,
+                size: size ?? 0,
                 ssl: resourceMetrics?.ssl.map { metric in
                     .init(
                         duration: metric.duration.toInt64Nanoseconds,
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
                     )
                 },
-                statusCode: command.httpStatusCode?.toInt64,
+                statusCode: command.httpStatusCode?.toInt64 ?? 0,
                 type: resourceType,
                 url: resourceURL
             ),
@@ -243,7 +243,7 @@ internal class RUMResourceScope: RUMScope {
             error: .init(
                 handling: nil,
                 handlingStack: nil,
-                id: nil,
+                id: "", // TODO: What ID should we send here?
                 isCrash: false,
                 message: command.errorMessage,
                 resource: .init(
@@ -254,8 +254,8 @@ internal class RUMResourceScope: RUMScope {
                 ),
                 source: command.errorSource.toRUMDataFormat,
                 sourceType: command.errorSourceType,
-                stack: command.stack,
-                type: command.errorType
+                stack: command.stack ?? "", // TODO
+                type: command.errorType ?? "" // TODO
             ),
             os: .init(context: context),
             service: context.service,
