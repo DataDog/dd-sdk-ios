@@ -24,7 +24,7 @@ public struct DatadogContext {
     let env: String
 
     /// The version of the application that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
-    public let version: String
+    public internal(set) var version: String
 
     /// The variant of the build, equivelent to Android's "Flavor".  Only used by cross platform SDKs
     let variant: String?
