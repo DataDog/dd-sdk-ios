@@ -265,6 +265,7 @@ extension Datadog {
         private(set) var firstPartyHosts: Set<String>?
         private(set) var logEventMapper: LogEventMapper?
         private(set) var spanEventMapper: SpanEventMapper?
+        private(set) var loggingSamplingRate: Float
         private(set) var tracingSamplingRate: Float
         private(set) var rumSessionsSamplingRate: Float
         private(set) var rumSessionsListener: RUMSessionListener?
@@ -278,6 +279,7 @@ extension Datadog {
         private(set) var rumLongTaskEventMapper: RUMLongTaskEventMapper?
         private(set) var rumResourceAttributesProvider: URLSessionRUMAttributesProvider?
         private(set) var rumBackgroundEventTrackingEnabled: Bool
+        private(set) var rumFrustrationSignalsTrackingEnabled: Bool
         private(set) var rumTelemetrySamplingRate: Float
         private(set) var mobileVitalsFrequency: VitalsFrequency
         private(set) var batchSize: BatchSize
@@ -342,6 +344,7 @@ extension Datadog {
                     serviceName: nil,
                     firstPartyHosts: nil,
                     spanEventMapper: nil,
+                    loggingSamplingRate: 100.0,
                     tracingSamplingRate: 20.0,
                     rumSessionsSamplingRate: 100.0,
                     rumSessionsListener: nil,
@@ -353,8 +356,9 @@ extension Datadog {
                     rumErrorEventMapper: nil,
                     rumResourceAttributesProvider: nil,
                     rumBackgroundEventTrackingEnabled: false,
+                    rumFrustrationSignalsTrackingEnabled: true,
                     rumTelemetrySamplingRate: 20,
-                    mobileVitalsFrequency: .rare,
+                    mobileVitalsFrequency: .average,
                     batchSize: .medium,
                     uploadFrequency: .average,
                     additionalConfiguration: [:],
@@ -447,6 +451,16 @@ extension Datadog {
             @available(*, deprecated, message: "This option is replaced by `set(endpoint:)`. Refer to the new API comment for details.")
             public func set(logsEndpoint: LogsEndpoint) -> Builder {
                 configuration.logsEndpoint = logsEndpoint
+                return self
+            }
+
+            /// Sets the sampling rate for logging.
+            ///
+            /// - Parameter loggingSamplingRate: the sampling rate must be a value between `0.0` and `100.0`. A value of `0.0`
+            /// means no logs will be processed, `100.0` means all logs will be processed.
+            /// (by default sampling is disabled, meaning that all logs are being processed).
+            public func set(loggingSamplingRate: Float) -> Builder {
+                configuration.loggingSamplingRate = loggingSamplingRate
                 return self
             }
 
@@ -726,6 +740,17 @@ extension Datadog {
             /// - Parameter enabled: `true` by default
             public func trackBackgroundEvents(_ enabled: Bool = true) -> Builder {
                 configuration.rumBackgroundEventTrackingEnabled = enabled
+                return self
+            }
+
+            /// Enables or disables automatic collection of user frustrations.
+            ///
+            /// The Datadog SDK currently support detection of `error_tap` frustration, which is detected when
+            /// an error follows a user tap action.
+            ///
+            /// - Parameter enabled: `true` by default
+            public func trackFrustrations(_ enabled: Bool = true) -> Builder {
+                configuration.rumFrustrationSignalsTrackingEnabled = enabled
                 return self
             }
 

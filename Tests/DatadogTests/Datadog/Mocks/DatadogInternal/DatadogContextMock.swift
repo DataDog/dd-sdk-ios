@@ -17,6 +17,7 @@ extension DatadogContext: AnyMockable {
         service: String = .mockAny(),
         env: String = .mockAny(),
         version: String = .mockAny(),
+        variant: String? = nil,
         source: String = .mockAny(),
         sdkVersion: String = .mockAny(),
         ciAppOrigin: String? = .mockAny(),
@@ -40,6 +41,7 @@ extension DatadogContext: AnyMockable {
             service: service,
             env: env,
             version: version,
+            variant: variant,
             source: source,
             sdkVersion: sdkVersion,
             ciAppOrigin: ciAppOrigin,
@@ -64,6 +66,7 @@ extension LaunchTime: AnyMockable {
     static func mockAny() -> LaunchTime {
         .init(
             launchTime: .mockAny(),
+            launchDate: .mockAny(),
             isActivePrewarm: .mockAny()
         )
     }

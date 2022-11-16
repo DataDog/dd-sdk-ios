@@ -118,6 +118,7 @@ internal class RUMResourceScope: RUMScope {
         // Check trace attributes
         let traceId = (attributes.removeValue(forKey: CrossPlatformAttributes.traceID) as? String) ?? spanContext?.traceID
         let spanId = (attributes.removeValue(forKey: CrossPlatformAttributes.spanID) as? String) ?? spanContext?.spanID
+        let traceSamplingRate = (attributes.removeValue(forKey: CrossPlatformAttributes.rulePSR) as? Double) ?? spanContext?.samplingRate
 
         /// Metrics values take precedence over other values.
         if let metrics = resourceMetrics {
@@ -134,6 +135,8 @@ internal class RUMResourceScope: RUMScope {
         let resourceEvent = RUMResourceEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                discarded: nil,
+                rulePsr: traceSamplingRate,
                 session: .init(plan: .plan1),
                 spanId: spanId,
                 traceId: traceId

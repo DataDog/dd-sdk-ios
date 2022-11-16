@@ -332,6 +332,11 @@ public class DDConfigurationBuilder: NSObject {
     }
 
     @objc
+    public func set(loggingSamplingRate: Float) {
+        _ = sdkBuilder.set(loggingSamplingRate: loggingSamplingRate)
+    }
+
+    @objc
     public func set(tracingSamplingRate: Float) {
         _ = sdkBuilder.set(tracingSamplingRate: tracingSamplingRate)
     }
@@ -424,6 +429,16 @@ public class DDConfigurationBuilder: NSObject {
             let objcEvent = DDRUMLongTaskEvent(swiftModel: swiftEvent)
             return mapper(objcEvent)?.swiftModel
         }
+    }
+
+    @objc
+    public func trackBackgroundEvents(_ enabled: Bool = true) {
+        _ = sdkBuilder.trackBackgroundEvents(enabled)
+    }
+
+    @objc
+    public func trackFrustrations(_ enabled: Bool = true) {
+        _ = sdkBuilder.trackFrustrations(enabled)
     }
 
     @objc

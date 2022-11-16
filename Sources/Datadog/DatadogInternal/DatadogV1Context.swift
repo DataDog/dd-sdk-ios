@@ -35,6 +35,9 @@ internal struct DatadogV1Context {
     ///  - See: Datadog [Reserved Attributes](https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#reserved-attributes).
     let source: String
 
+    /// The variant of the build, equivelent to Android's "Flavor".  Only used by cross platform SDKs
+    let variant: String?
+
     /// The version of Datadog iOS SDK.
     let sdkVersion: String
 

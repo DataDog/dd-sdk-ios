@@ -50,6 +50,7 @@ extension Datadog.Configuration {
         rumEndpoint: RUMEndpoint = .us1,
         serviceName: String? = .mockAny(),
         firstPartyHosts: Set<String>? = nil,
+        loggingSamplingRate: Float = 100.0,
         tracingSamplingRate: Float = 100.0,
         rumSessionsSamplingRate: Float = 100.0,
         rumUIKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
@@ -57,6 +58,7 @@ extension Datadog.Configuration {
         rumLongTaskDurationThreshold: TimeInterval? = nil,
         rumResourceAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         rumBackgroundEventTrackingEnabled: Bool = false,
+        rumFrustrationSignalsTrackingEnabled: Bool = true,
         rumTelemetrySamplingRate: Float = 100.0,
         mobileVitalsFrequency: VitalsFrequency = .average,
         batchSize: BatchSize = .medium,
@@ -82,6 +84,7 @@ extension Datadog.Configuration {
             rumEndpoint: rumEndpoint,
             serviceName: serviceName,
             firstPartyHosts: firstPartyHosts,
+            loggingSamplingRate: loggingSamplingRate,
             tracingSamplingRate: tracingSamplingRate,
             rumSessionsSamplingRate: rumSessionsSamplingRate,
             rumUIKitViewsPredicate: rumUIKitViewsPredicate,
@@ -89,6 +92,7 @@ extension Datadog.Configuration {
             rumLongTaskDurationThreshold: rumLongTaskDurationThreshold,
             rumResourceAttributesProvider: rumResourceAttributesProvider,
             rumBackgroundEventTrackingEnabled: rumBackgroundEventTrackingEnabled,
+            rumFrustrationSignalsTrackingEnabled: rumFrustrationSignalsTrackingEnabled,
             rumTelemetrySamplingRate: rumTelemetrySamplingRate,
             mobileVitalsFrequency: mobileVitalsFrequency,
             batchSize: batchSize,
@@ -204,6 +208,7 @@ extension FeaturesConfiguration.Common {
         environment: String = .mockAny(),
         performance: PerformancePreset = .mockAny(),
         source: String = .mockAny(),
+        variant: String? = nil,
         origin: String? = nil,
         sdkVersion: String = .mockAny(),
         proxyConfiguration: [AnyHashable: Any]? = nil,
@@ -221,6 +226,7 @@ extension FeaturesConfiguration.Common {
             environment: environment,
             performance: performance,
             source: source,
+            variant: variant,
             origin: origin,
             sdkVersion: sdkVersion,
             proxyConfiguration: proxyConfiguration,
@@ -238,13 +244,15 @@ extension FeaturesConfiguration.Logging {
         uploadURL: URL = .mockAny(),
         logEventMapper: LogEventMapper? = nil,
         dateProvider: DateProvider = SystemDateProvider(),
-        applicationBundleIdentifier: String = .mockAny()
+        applicationBundleIdentifier: String = .mockAny(),
+        remoteLoggingSampler: Sampler = Sampler(samplingRate: 100.0)
     ) -> Self {
         return .init(
             uploadURL: uploadURL,
             logEventMapper: logEventMapper,
             dateProvider: dateProvider,
-            applicationBundleIdentifier: applicationBundleIdentifier
+            applicationBundleIdentifier: applicationBundleIdentifier,
+            remoteLoggingSampler: remoteLoggingSampler
         )
     }
 }
@@ -283,6 +291,7 @@ extension FeaturesConfiguration.RUM {
         longTaskEventMapper: RUMLongTaskEventMapper? = nil,
         instrumentation: FeaturesConfiguration.RUM.Instrumentation? = nil,
         backgroundEventTrackingEnabled: Bool = false,
+        frustrationTrackingEnabled: Bool = true,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener(),
         firstPartyHosts: Set<String> = [],
         vitalsFrequency: TimeInterval? = 0.5,
@@ -301,6 +310,7 @@ extension FeaturesConfiguration.RUM {
             longTaskEventMapper: longTaskEventMapper,
             instrumentation: instrumentation,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
+            frustrationTrackingEnabled: frustrationTrackingEnabled,
             onSessionStart: onSessionStart,
             firstPartyHosts: firstPartyHosts,
             vitalsFrequency: vitalsFrequency,
@@ -606,7 +616,10 @@ internal class InMemoryWriter: AsyncWriter {
             fatalError()
         }
 
-        return queue.sync { events }
+        return queue.sync {
+            waitAndReturnEventsDataExpectation = nil
+            return events
+        }
     }
 }
 
@@ -1026,6 +1039,16 @@ class CarrierInfoProviderMock: CarrierInfoProviderType {
     }
 }
 
+extension AppVersionProvider: AnyMockable {
+    static func mockAny() -> AppVersionProvider {
+        return AppVersionProvider(configuration: .mockAny())
+    }
+
+    static func mockWith(version: String) -> AppVersionProvider {
+        return AppVersionProvider(configuration: .mockWith(applicationVersion: version))
+    }
+}
+
 extension CodableValue {
     static func mockAny() -> CodableValue {
         return CodableValue(String.mockAny())
@@ -1160,6 +1183,7 @@ class CoreLoggerMock: CoreLogger {
 class TelemetryMock: Telemetry, CustomStringConvertible {
     private(set) var debugs: [String] = []
     private(set) var errors: [(message: String, kind: String?, stack: String?)] = []
+    private(set) var configurations: [FeaturesConfiguration] = []
     private(set) var description: String = "Telemetry logs:"
 
     func debug(id: String, message: String) {
@@ -1170,6 +1194,11 @@ class TelemetryMock: Telemetry, CustomStringConvertible {
     func error(id: String, message: String, kind: String?, stack: String?) {
         errors.append((message: message, kind: kind, stack: stack))
         description.append("\n - [error] \(message), kind: \(kind ?? "nil"), stack: \(stack ?? "nil")")
+    }
+
+    func configuration(configuration: FeaturesConfiguration) {
+        configurations.append(configuration)
+        description.append("\n - [configuration] \(configuration)")
     }
 }
 

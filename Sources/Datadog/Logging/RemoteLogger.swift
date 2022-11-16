@@ -20,6 +20,8 @@ internal final class RemoteLogger: LoggerProtocol {
         let threshold: LogLevel
         /// Allows for modifying (or dropping) logs before they get sent.
         let eventMapper: LogEventMapper?
+        /// Sampler for remote logger. Default is using `100.0` sampling rate.
+        let sampler: Sampler
     }
 
     /// `DatadogCore` instance managing this logger.
@@ -93,6 +95,9 @@ internal final class RemoteLogger: LoggerProtocol {
     // MARK: - Logging
 
     func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable]?) {
+        guard configuration.sampler.sample() else {
+            return
+        }
         guard level.rawValue >= configuration.threshold.rawValue else {
             return
         }

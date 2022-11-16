@@ -45,6 +45,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertNil(configuration.firstPartyHosts)
             XCTAssertNil(configuration.logEventMapper)
             XCTAssertNil(configuration.spanEventMapper)
+            XCTAssertEqual(configuration.loggingSamplingRate, 100.0)
             XCTAssertEqual(configuration.tracingSamplingRate, 20.0)
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 100.0)
             XCTAssertNil(configuration.rumSessionsListener)
@@ -56,8 +57,10 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertNil(configuration.rumActionEventMapper)
             XCTAssertNil(configuration.rumErrorEventMapper)
             XCTAssertNil(configuration.rumLongTaskEventMapper)
+            XCTAssertFalse(configuration.rumBackgroundEventTrackingEnabled)
+            XCTAssertTrue(configuration.rumFrustrationSignalsTrackingEnabled)
             XCTAssertNil(configuration.rumResourceAttributesProvider)
-            XCTAssertEqual(configuration.mobileVitalsFrequency, .rare)
+            XCTAssertEqual(configuration.mobileVitalsFrequency, .average)
             XCTAssertEqual(configuration.batchSize, .medium)
             XCTAssertEqual(configuration.uploadFrequency, .average)
             XCTAssertEqual(configuration.additionalConfiguration.count, 0)
@@ -91,12 +94,14 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .onRUMSessionStart { _, _ in }
                 .setLogEventMapper { _ in mockLogEvent }
                 .setSpanEventMapper { _ in mockSpanEvent }
+                .set(loggingSamplingRate: 66)
                 .set(tracingSamplingRate: 75)
                 .trackURLSession(firstPartyHosts: ["example.com"])
                 .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock())
                 .trackUIKitRUMActions(using: UIKitRUMUserActionsPredicateMock())
                 .trackRUMLongTasks(threshold: 100.0)
                 .trackBackgroundEvents(false)
+                .trackFrustrations(false)
                 .setRUMViewEventMapper { _ in mockRUMViewEvent }
                 .setRUMErrorEventMapper { _ in mockRUMErrorEvent }
                 .setRUMResourceEventMapper { _ in mockRUMResourceEvent }
@@ -150,6 +155,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.customTracesEndpoint, URL(string: "https://api.custom.traces/")!)
             XCTAssertEqual(configuration.customRUMEndpoint, URL(string: "https://api.custom.rum/")!)
             XCTAssertEqual(configuration.firstPartyHosts, ["example.com"])
+            XCTAssertEqual(configuration.loggingSamplingRate, 66)
             XCTAssertEqual(configuration.tracingSamplingRate, 75)
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 42.5)
             XCTAssertNotNil(configuration.rumSessionsListener)
@@ -166,6 +172,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.rumLongTaskEventMapper?(.mockRandom()), mockRUMLongTaskEvent)
             XCTAssertEqual(configuration.rumResourceAttributesProvider?(.mockAny(), nil, nil, nil) as? [String: String], ["foo": "bar"])
             XCTAssertFalse(configuration.rumBackgroundEventTrackingEnabled)
+            XCTAssertFalse(configuration.rumFrustrationSignalsTrackingEnabled)
             XCTAssertEqual(configuration.mobileVitalsFrequency, .frequent)
             XCTAssertEqual(configuration.batchSize, .small)
             XCTAssertEqual(configuration.uploadFrequency, .frequent)

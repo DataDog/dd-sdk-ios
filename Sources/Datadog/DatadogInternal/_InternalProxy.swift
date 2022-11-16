@@ -15,17 +15,35 @@ import Foundation
 /// Methods, members, and functionality of this class  are subject to change without notice, as they
 /// are not considered part of the public interface of the Datadog SDK.
 public class _InternalProxy {
-    let _telemtry = _TelemetryProxy()
+    public let _configuration = _ConfigurationProxy()
+    public let _telemetry = _TelemetryProxy()
 }
 
 public class _TelemetryProxy {
+    public func setTelemetryConfigurationMapper(mapper: @escaping (TelemetryConfigurationEvent) -> TelemetryConfigurationEvent) {
+        if let rumTelemetry = DD.telemetry as? RUMTelemetry {
+            rumTelemetry.configurationEventMapper = mapper
+        }
+    }
+
     /// See Telementry.debug
-    func debug(id: String, message: String) {
+    public func debug(id: String, message: String) {
         DD.telemetry.debug(id: id, message: message)
     }
 
     /// See Telementry.error
-    func error(id: String, message: String, kind: String?, stack: String?) {
+    public func error(id: String, message: String, kind: String?, stack: String?) {
         DD.telemetry.error(id: id, message: message, kind: kind, stack: stack)
+    }
+}
+
+public class _ConfigurationProxy {
+    /// Changes the `version` used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
+    public func set(customVersion: String) {
+        guard let core = defaultDatadogCore as? DatadogCore else {
+            return
+        }
+
+        core.applicationVersionPublisher.version = customVersion
     }
 }

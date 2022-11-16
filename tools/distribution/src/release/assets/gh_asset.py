@@ -32,12 +32,22 @@ class DatadogXCFrameworkValidator(XCFrameworkValidator):
 
         dir = zip_directory.get('Datadog.xcframework')
 
-        dir.assert_it_has_files([
-            'ios-arm64',
-            'ios-arm64/BCSymbolMaps/*.bcsymbolmap',
-            'ios-arm64/dSYMs/*.dSYM',
-            'ios-arm64/**/*.swiftinterface',
+        # above 1.12.1: framework includes arm64e slices
+        min_arm64e_version = Version.parse('1.12.1')
+        if in_version.is_newer_than(min_arm64e_version):
+            dir.assert_it_has_files([
+                'ios-arm64_arm64e',
+                'ios-arm64_arm64e/dSYMs/*.dSYM',
+                'ios-arm64_arm64e/**/*.swiftinterface',
+            ])
+        else:
+            dir.assert_it_has_files([
+                'ios-arm64',
+                'ios-arm64/dSYMs/*.dSYM',
+                'ios-arm64/**/*.swiftinterface',
+            ])
 
+        dir.assert_it_has_files([
             'ios-arm64_x86_64-simulator',
             'ios-arm64_x86_64-simulator/dSYMs/*.dSYM',
             'ios-arm64_x86_64-simulator/**/*.swiftinterface',
@@ -48,7 +58,6 @@ class DatadogXCFrameworkValidator(XCFrameworkValidator):
 
         dir.assert_it_has_files([
             'tvos-arm64',
-            'tvos-arm64/BCSymbolMaps/*.bcsymbolmap',
             'tvos-arm64/dSYMs/*.dSYM',
             'tvos-arm64/**/*.swiftinterface',
 
@@ -67,13 +76,25 @@ class DatadogObjcXCFrameworkValidator(XCFrameworkValidator):
         # always expect `DatadogObjc.xcframework`
 
         dir = zip_directory.get('DatadogObjc.xcframework')
-        dir.assert_it_has_files([
-            'ios-arm64',
-            'ios-arm64/BCSymbolMaps/*.bcsymbolmap',
-            'ios-arm64/dSYMs/*.dSYM',
-            'ios-arm64/**/*.swiftinterface',
 
+        # above 1.12.1: framework includes arm64e slices
+        min_arm64e_version = Version.parse('1.12.1')
+        if in_version.is_newer_than(min_arm64e_version):
+            dir.assert_it_has_files([
+                'ios-arm64_arm64e',
+                'ios-arm64_arm64e/dSYMs/*.dSYM',
+                'ios-arm64_arm64e/**/*.swiftinterface',
+            ])
+        else:
+            dir.assert_it_has_files([
+                'ios-arm64',
+                'ios-arm64/dSYMs/*.dSYM',
+                'ios-arm64/**/*.swiftinterface',
+            ])
+
+        dir.assert_it_has_files([
             'ios-arm64_x86_64-simulator',
+            'ios-arm64_x86_64-simulator/dSYMs/*.dSYM',
             'ios-arm64_x86_64-simulator/**/*.swiftinterface',
         ])
 
@@ -82,7 +103,6 @@ class DatadogObjcXCFrameworkValidator(XCFrameworkValidator):
 
         dir.assert_it_has_files([
             'tvos-arm64',
-            'tvos-arm64/BCSymbolMaps/*.bcsymbolmap',
             'tvos-arm64/dSYMs/*.dSYM',
             'tvos-arm64/**/*.swiftinterface',
 
@@ -101,11 +121,23 @@ class DatadogCrashReportingXCFrameworkValidator(XCFrameworkValidator):
             return False # Datadog Crash Reporting.xcframework was introduced in `1.7.0`
 
         dir = zip_directory.get('DatadogCrashReporting.xcframework')
-        dir.assert_it_has_files([
-            'ios-arm64',
-            'ios-arm64/BCSymbolMaps/*.bcsymbolmap',
-            'ios-arm64/**/*.swiftinterface',
 
+        # above 1.12.1: framework includes arm64e slices
+        min_arm64e_version = Version.parse('1.12.1')
+        if in_version.is_newer_than(min_arm64e_version):
+            dir.assert_it_has_files([
+                'ios-arm64_arm64e',
+                'ios-arm64_arm64e/dSYMs/*.dSYM',
+                'ios-arm64_arm64e/**/*.swiftinterface',
+            ])
+        else:
+            dir.assert_it_has_files([
+                'ios-arm64',
+                'ios-arm64/dSYMs/*.dSYM',
+                'ios-arm64/**/*.swiftinterface',
+            ])
+
+        dir.assert_it_has_files([
             'ios-arm64_x86_64-simulator',
             'ios-arm64_x86_64-simulator/dSYMs/*.dSYM',
             'ios-arm64_x86_64-simulator/**/*.swiftinterface',
@@ -116,7 +148,6 @@ class DatadogCrashReportingXCFrameworkValidator(XCFrameworkValidator):
 
         dir.assert_it_has_files([
             'tvos-arm64',
-            'tvos-arm64/BCSymbolMaps/*.bcsymbolmap',
             'tvos-arm64/**/*.swiftinterface',
 
             'tvos-arm64_x86_64-simulator',
@@ -135,10 +166,21 @@ class CrashReporterXCFrameworkValidator(XCFrameworkValidator):
             return False # Datadog Crash Reporting.xcframework was introduced in `1.7.0`
 
         dir = zip_directory.get('CrashReporter.xcframework')
-        dir.assert_it_has_files([
-            'ios-arm64_arm64e_armv7_armv7s',
-            'ios-arm64_i386_x86_64-simulator',
-        ])
+
+        min_xc14_version = Version.parse('1.12.1')
+        if in_version.is_newer_than_or_equal(min_xc14_version):
+            # 1.12.1 depends on PLCR 1.11.1 which
+            # no longer include armv7_armv7s slices
+            # for Xcode 14 support
+            dir.assert_it_has_files([
+                'ios-arm64_arm64e',
+                'ios-arm64_x86_64-simulator',
+            ])
+        else:
+            dir.assert_it_has_files([
+                'ios-arm64_arm64e_armv7_armv7s',
+                'ios-arm64_i386_x86_64-simulator',
+            ])
 
         if in_version.is_older_than(min_tvos_version):
             return True # Stop here: tvOS support was introduced in `1.10.0`
@@ -162,7 +204,6 @@ class KronosXCFrameworkValidator(XCFrameworkValidator):
             
         zip_directory.get('Kronos.xcframework').assert_it_has_files([
             'ios-arm64_armv7',
-            'ios-arm64_armv7/BCSymbolMaps/*.bcsymbolmap',
             'ios-arm64_armv7/dSYMs/*.dSYM',
             'ios-arm64_armv7/**/*.swiftinterface',
 
@@ -196,18 +237,13 @@ class GHAsset:
         print(f'⌛️️️ Creating the GH release asset from {os.getcwd()}')
 
         with NamedTemporaryFile(mode='w+', prefix='dd-gh-distro-', suffix='.xcconfig') as xcconfig:
-            xcconfig.write('BUILD_LIBRARY_FOR_DISTRIBUTION = YES\n')
-            xcconfig.seek(0)  # without this line, content isn't actually written
             os.environ['XCODE_XCCONFIG_FILE'] = xcconfig.name
 
             this_version = Version.parse(git_tag)
             platform = 'iOS' if this_version.is_older_than(min_tvos_version) else 'iOS,tvOS'
 
-            # Produce XCFrameworks with carthage:
-            # - only checkout and `--no-build` as it will build in the next command:
-            shell(f'carthage bootstrap --platform {platform} --no-build')
-            # - `--no-build` as it will build in the next command:
-            shell(f'carthage build --platform {platform} --use-xcframeworks --no-use-binaries --no-skip-current')
+            # Produce XCFrameworks:
+            shell(f'sh tools/distribution/build-xcframework.sh --platform {platform}')
 
         # Create `.zip` archive:
         zip_archive_name = f'Datadog-{read_sdk_version()}.zip'
@@ -218,10 +254,10 @@ class GHAsset:
 
         with remember_cwd():
             print(f'   → Creating GH asset: {zip_archive_name}')
-            os.chdir('Carthage/Build')
+            os.chdir('build/xcframeworks')
             shell(f'zip -q --symlinks -r {zip_archive_name} *.xcframework')
 
-        self.__path = f'{os.getcwd()}/Carthage/Build/{zip_archive_name}'
+        self.__path = f'{os.getcwd()}/build/xcframeworks/{zip_archive_name}'
         self.__git_tag = git_tag
         print('   → GH asset created')
 

@@ -24,7 +24,9 @@ There are additional [metrics and attributes that are specific to a given event 
 | View       | 30 days   | A view represents a unique screen (or screen segment) on your mobile application. A view starts and stops when the `viewDidAppear(animated:)` and `viewDidDisappear(animated:)` callbacks on the `UIViewController` class are notified. Individual `UIViewControllers` are classified as distinct views. While a user stays on a view, RUM event attributes (Errors, Resources, Actions) get attached to the view with a unique `view.id`.                           |
 | Resource   | 15 days   | A resource represents network requests to first-party hosts, APIs, and third-party providers in your mobile application. All requests generated during a user session are attached to the view with a unique `resource.id`.                                                                       |
 | Error      | 30 days   | An error represents an exception or crash emitted by the mobile application attached to the view it is generated in.                                                                                                                                                                                        |
-| Action     | 30 days   | An action represents user activity in your mobile application (for example, application launch, tap, swipe, or back). Each action is attached with a unique `action.id` attached to the view it gets generated in.                                                                                                      |
+| Action     | 30 days   | An action represents user activity in your mobile application (for example, application launch, tap, swipe, or back). Each action is attached with a unique `action.id` attached to the view it gets generated in.                                                                                                                                              |
+| Long Task | 15 days | A long task event is generated for any task in the application that blocks the main thread for more than the specified duration threshold. |
+
 
 The following diagram illustrates the RUM event hierarchy:
 
@@ -118,7 +120,7 @@ You can enable [tracking user info][2] globally to collect and apply user attrib
 | `session.type`               | string | Type of the session (`user`).                                              |
 | `session.is_active`          | boolean | Indicates if the session is currently active. The session ends if a user navigates away from the application or closes the browser window, and expires after 4 hours of activity or 15 minutes of inactivity.                               |
 | `session.initial_view.url`   | string | URL of the initial view of the session.                                     |
-| `ssession.initial_view.name` | string | Name of the initial view of the session.                                    |
+| `session.initial_view.name` | string | Name of the initial view of the session.                                    |
 | `session.last_view.url`      | string | URL of the last view of the session.                                        |
 | `session.last_view.name`     | string | Name of the last view of the session.                                       |
 | `session.ip`                 | string | IP address of the session extracted from the TCP connection of the intake. |
@@ -132,7 +134,6 @@ RUM action, error, resource, and long task events contain information about the 
 | Metric                | Type        | Description                                                                  |
 |-----------------------|-------------|------------------------------------------------------------------------------|
 | `view.time_spent`     | number (ns) | Time spent on this view.                                                     |
-| `view.loading_time`                             | number (ns) | Loading time for this view.                        |
 | `view.long_task.count`        | number      | Count of all long tasks collected for this view.                     |
 | `view.error.count`    | number      | Count of all errors collected for this view.                                 |
 | `view.resource.count` | number      | Count of all resources collected for this view.                              |

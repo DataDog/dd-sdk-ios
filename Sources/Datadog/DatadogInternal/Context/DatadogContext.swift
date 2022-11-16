@@ -26,6 +26,9 @@ public struct DatadogContext {
     /// The version of the application that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
     public let version: String
 
+    /// The variant of the build, equivelent to Android's "Flavor".  Only used by cross platform SDKs
+    let variant: String?
+
     /// Denotes the mobile application's platform, such as `"ios"` or `"flutter"` that data is generated from.
     ///  - See: Datadog [Reserved Attributes](https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#reserved-attributes).
     public let source: String
@@ -61,8 +64,8 @@ public struct DatadogContext {
 
     /// Application launch time.
     ///
-    /// Can be `zero` if the launch could not yet been evaluated.
-    var launchTime: LaunchTime = .zero
+    /// Can be `nil` if the launch could not yet been evaluated.
+    var launchTime: LaunchTime?
 
     /// Provides the history of app foreground / background states.
     var applicationStateHistory: AppStateHistory

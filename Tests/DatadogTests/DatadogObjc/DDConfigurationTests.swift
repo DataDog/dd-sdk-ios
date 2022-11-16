@@ -57,13 +57,15 @@ class DDConfigurationTests: XCTestCase {
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 100.0)
             XCTAssertNil(configuration.rumUIKitViewsPredicate)
             XCTAssertNil(configuration.rumUIKitUserActionsPredicate)
-            XCTAssertEqual(configuration.mobileVitalsFrequency, .rare)
+            XCTAssertEqual(configuration.mobileVitalsFrequency, .average)
             XCTAssertEqual(configuration.batchSize, .medium)
             XCTAssertEqual(configuration.uploadFrequency, .average)
             XCTAssertNil(configuration.rumViewEventMapper)
             XCTAssertNil(configuration.rumResourceEventMapper)
             XCTAssertNil(configuration.rumActionEventMapper)
             XCTAssertNil(configuration.rumErrorEventMapper)
+            XCTAssertFalse(configuration.rumBackgroundEventTrackingEnabled)
+            XCTAssertTrue(configuration.rumFrustrationSignalsTrackingEnabled)
             XCTAssertEqual(configuration.additionalConfiguration.count, 0)
             XCTAssertNil(configuration.encryption)
             XCTAssertNil(configuration.serverDateProvider)
@@ -136,6 +138,9 @@ class DDConfigurationTests: XCTestCase {
         objcBuilder.trackURLSession(firstPartyHosts: ["example.com"])
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.firstPartyHosts, ["example.com"])
 
+        objcBuilder.set(loggingSamplingRate: 66)
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.loggingSamplingRate, 66)
+
         objcBuilder.set(tracingSamplingRate: 75)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.tracingSamplingRate, 75)
 
@@ -180,6 +185,12 @@ class DDConfigurationTests: XCTestCase {
 
         objcBuilder.setRUMLongTaskEventMapper { _ in nil }
         XCTAssertNotNil(objcBuilder.build().sdkConfiguration.rumLongTaskEventMapper)
+
+        objcBuilder.trackBackgroundEvents()
+        XCTAssertTrue(objcBuilder.build().sdkConfiguration.rumBackgroundEventTrackingEnabled)
+
+        objcBuilder.trackFrustrations(false)
+        XCTAssertFalse(objcBuilder.build().sdkConfiguration.rumFrustrationSignalsTrackingEnabled)
 
         objcBuilder.set(batchSize: .small)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.batchSize, .small)

@@ -597,6 +597,23 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         }
     }
 
+    // MARK: - Cross-platform perf metrics
+
+    override public func updatePerformanceMetric(
+        metric: PerformanceMetric,
+        value: Double,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        process(
+            command: RUMUpdatePerformanceMetric(
+                metric: metric,
+                value: value,
+                time: dateProvider.now,
+                attributes: attributes
+            )
+        )
+    }
+
     // MARK: - Internal
 
     func enableRUMDebugging(_ enabled: Bool) {

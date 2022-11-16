@@ -56,6 +56,9 @@ internal final class DatadogCore {
     /// `contextProvider`
     let userInfoPublisher = UserInfoPublisher()
 
+    /// The application version publisher.
+    let applicationVersionPublisher: ApplicationVersionPublisher
+
     /// The message bus used to dispatch messages to registered features.
     private var messageBus: [FeatureMessageReceiver] = []
 
@@ -90,6 +93,7 @@ internal final class DatadogCore {
     ///   - encryption: The on-disk data encryption.
     ///   - v1Context: The v1 context.
     ///   - contextProvider: The core context provider.
+    ///   - applicationVersion: The application version.
     init(
         directory: CoreDirectory,
         dateProvider: DateProvider,
@@ -99,7 +103,8 @@ internal final class DatadogCore {
     	httpClient: HTTPClient,
     	encryption: DataEncryption?,
         v1Context: DatadogV1Context,
-        contextProvider: DatadogContextProvider
+        contextProvider: DatadogContextProvider,
+        applicationVersion: String
     ) {
         self.directory = directory
         self.dateProvider = dateProvider
@@ -110,8 +115,10 @@ internal final class DatadogCore {
         self.encryption = encryption
         self.v1Context = v1Context
         self.contextProvider = contextProvider
+        self.applicationVersionPublisher = ApplicationVersionPublisher(version: applicationVersion)
 
         self.contextProvider.subscribe(\.userInfo, to: userInfoPublisher)
+        self.contextProvider.subscribe(\.version, to: applicationVersionPublisher)
 
         // forward any context change on the message-bus
         self.contextProvider.publish { [weak self] context in
@@ -143,6 +150,17 @@ internal final class DatadogCore {
 
         userInfoPublisher.current = userInfo
         userInfoProvider.value = userInfo
+    }
+
+    /// Add or override the extra info of the current user
+    ///
+    ///  - Parameters:
+    ///    - extraInfo: The user's custom attibutes to add or override
+    func addUserExtraInfo(_ newExtraInfo: [AttributeKey: AttributeValue?]) {
+        var extraInfo = userInfoPublisher.current.extraInfo
+        newExtraInfo.forEach { extraInfo[$0.key] = $0.value }
+        userInfoPublisher.current.extraInfo = extraInfo
+        userInfoProvider.value.extraInfo = extraInfo
     }
 
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.
@@ -405,6 +423,7 @@ extension DatadogV1Context {
         self.env = configuration.environment
         self.version = configuration.applicationVersion
         self.source = configuration.source
+        self.variant = configuration.variant
         self.sdkVersion = configuration.sdkVersion
 
         self.device = device
@@ -433,6 +452,7 @@ extension DatadogContextProvider {
             service: configuration.serviceName,
             env: configuration.environment,
             version: configuration.applicationVersion,
+            variant: configuration.variant,
             source: configuration.source,
             sdkVersion: configuration.sdkVersion,
             ciAppOrigin: configuration.origin,
@@ -449,7 +469,7 @@ extension DatadogContextProvider {
         self.init(context: context)
 
         subscribe(\.serverTimeOffset, to: ServerOffsetPublisher(provider: serverDateProvider))
-        assign(reader: LaunchTimeReader(), to: \.launchTime)
+        subscribe(\.launchTime, to: LaunchTimePublisher())
 
         if #available(iOS 12, tvOS 12, *) {
             subscribe(\.networkConnectionInfo, to: NWPathMonitorPublisher())
@@ -466,7 +486,8 @@ extension DatadogContextProvider {
         #endif
 
         #if os(iOS) && !targetEnvironment(simulator)
-        assign(reader: BatteryStatusReader(), to: \.batteryStatus)
+        subscribe(\.batteryStatus, to: BatteryStatusPublisher())
+        subscribe(\.isLowPowerModeEnabled, to: LowPowerModePublisher())
         #endif
 
         #if os(iOS) || os(tvOS)

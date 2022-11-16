@@ -62,7 +62,8 @@ class TracingFeatureTests: XCTestCase {
                         osVersion: randomDeviceOSVersion
                     )
                 )
-            )
+            ),
+            applicationVersion: randomApplicationVersion
         )
 
         // Given
@@ -131,7 +132,8 @@ class TracingFeatureTests: XCTestCase {
             httpClient: httpClient,
             encryption: nil,
             v1Context: .mockAny(),
-            contextProvider: .mockAny()
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny()
         )
 
         let featureConfiguration: TracingFeature.Configuration = .mockAny()

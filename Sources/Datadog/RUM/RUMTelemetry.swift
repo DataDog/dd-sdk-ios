@@ -6,6 +6,9 @@
 
 import Foundation
 
+internal typealias RUMTelemetryConfiguratoinMapper = (TelemetryConfigurationEvent) -> TelemetryConfigurationEvent
+internal typealias RUMTelemetryDelayedDispatcher = (@escaping () -> Void) -> Void
+
 /// Sends Telemetry events to RUM.
 ///
 /// `RUMTelemetry` complies to `Telemetry` protocol allowing sending telemetry
@@ -19,6 +22,8 @@ internal final class RUMTelemetry: Telemetry {
 
     let core: DatadogCoreProtocol
     let dateProvider: DateProvider
+    var configurationEventMapper: RUMTelemetryConfiguratoinMapper?
+    let delayedDispatcher: RUMTelemetryDelayedDispatcher
     let sampler: Sampler
 
     /// Keeps track of current session
@@ -42,10 +47,19 @@ internal final class RUMTelemetry: Telemetry {
     init(
         in core: DatadogCoreProtocol,
         dateProvider: DateProvider,
+        configurationEventMapper: RUMTelemetryConfiguratoinMapper?,
+        delayedDispatcher: RUMTelemetryDelayedDispatcher?,
         sampler: Sampler
     ) {
         self.core = core
         self.dateProvider = dateProvider
+        self.configurationEventMapper = configurationEventMapper
+        self.delayedDispatcher = delayedDispatcher ?? { block in
+            // By default, wait 5 seconds to dispatch configuration events
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                block()
+            }
+        }
         self.sampler = sampler
     }
 
@@ -127,6 +141,53 @@ internal final class RUMTelemetry: Telemetry {
         }
     }
 
+    /// Sends a `TelemetryConfigurationEvent` event.
+    /// see. https://github.com/DataDog/rum-events-format/blob/master/schemas/telemetry/configuration-schema.json
+    ///
+    /// The current RUM context info is applied if available, including session ID, view ID,
+    /// and action ID.
+    ///
+    /// This method delays sending the configuration event for 5 seconds to allow for configuration options that are not set during
+    /// inital configuration to be set up. This is common in cross platform frameworks like React Native and Flutter. After the delay,
+    /// we will call the configured `configurationEventMapper` if available, so properties can be updated with new information.
+    ///
+    /// - Parameters:
+    ///   - configuration: The current configuration
+    func configuration(configuration: FeaturesConfiguration) {
+        let date = dateProvider.now
+
+        self.delayedDispatcher {
+            self.record(event: "_dd.configuration") { context, writer in
+                let attributes = context.featuresAttributes["rum"]
+
+                let applicationId = attributes?[RUMMonitor.Attributes.applicationID, type: String.self]
+                let sessionId = attributes?[RUMMonitor.Attributes.sessionID, type: String.self]
+                let viewId = attributes?[RUMMonitor.Attributes.viewID, type: String.self]
+                let actionId = attributes?[RUMMonitor.Attributes.userActionID, type: String.self]
+
+                var event = TelemetryConfigurationEvent(
+                    dd: .init(),
+                    action: actionId.map { .init(id: $0) },
+                    application: applicationId.map { .init(id: $0) },
+                    date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+                    experimentalFeatures: nil,
+                    service: "dd-sdk-ios",
+                    session: sessionId.map { .init(id: $0) },
+                    source: .init(rawValue: context.source) ?? .ios,
+                    telemetry: .init(configuration: configuration.asTelemetry()),
+                    version: context.sdkVersion,
+                    view: viewId.map { .init(id: $0) }
+                )
+
+                if let configurationEventMapper = self.configurationEventMapper {
+                    event = configurationEventMapper(event)
+                }
+
+                writer.write(value: event)
+            }
+        }
+    }
+
     private func record(event id: String, operation: @escaping (DatadogContext, Writer) -> Void) {
         guard
             let rum = core.v1.scope(for: RUMFeature.self),
@@ -153,5 +214,59 @@ internal final class RUMTelemetry: Telemetry {
                 }
             }
         }
+    }
+}
+
+private extension FeaturesConfiguration {
+    func asTelemetry() -> TelemetryConfigurationEvent.Telemetry.Configuration {
+        let performancePreset = self.common.performance
+        return TelemetryConfigurationEvent.Telemetry.Configuration(
+            actionNameAttribute: nil,
+            batchSize: performancePreset.minUploadDelay.toInt64Milliseconds,
+            batchUploadFrequency: performancePreset.minUploadDelay.toInt64Milliseconds,
+            defaultPrivacyLevel: nil,
+            forwardConsoleLogs: nil,
+            forwardErrorsToLogs: nil,
+            forwardReports: nil,
+            initializationType: nil,
+            mobileVitalsUpdatePeriod: self.rum?.vitalsFrequency?.toInt64Milliseconds,
+            premiumSampleRate: nil,
+            replaySampleRate: nil,
+            sessionReplaySampleRate: nil,
+            sessionSampleRate: self.rum?.sessionSampler.samplingRate.toInt64(),
+            silentMultipleInit: nil,
+            telemetryConfigurationSampleRate: nil,
+            telemetrySampleRate: self.rum?.telemetrySampler.samplingRate.toInt64(),
+            traceSampleRate: self.urlSessionAutoInstrumentation?.tracingSampler.samplingRate.toInt64(),
+            trackBackgroundEvents: self.rum?.backgroundEventTrackingEnabled,
+            trackCrossPlatformLongTasks: nil,
+            trackErrors: self.crashReporting != nil,
+            trackFlutterPerformance: nil,
+            trackFrustrations: self.rum?.frustrationTrackingEnabled,
+            trackInteractions: self.rum?.instrumentation?.uiKitRUMUserActionsPredicate != nil,
+            trackNativeErrors: nil,
+            trackNativeLongTasks: self.rum?.instrumentation?.longTaskThreshold != nil,
+            trackNativeViews: self.rum?.instrumentation?.uiKitRUMViewsPredicate != nil,
+            trackNetworkRequests: self.urlSessionAutoInstrumentation != nil,
+            trackSessionAcrossSubdomains: nil,
+            trackViewsManually: nil,
+            useAllowedTracingOrigins: nil,
+            useAttachToExisting: nil,
+            useBeforeSend: nil,
+            useCrossSiteSessionCookie: nil,
+            useExcludedActivityUrls: nil,
+            useFirstPartyHosts: !(self.rum?.firstPartyHosts.isEmpty ?? true),
+            useLocalEncryption: self.common.encryption != nil,
+            useProxy: self.common.proxyConfiguration != nil,
+            useSecureSessionCookie: nil,
+            useTracing: self.tracing != nil,
+            viewTrackingStrategy: nil
+        )
+    }
+}
+
+private extension Float {
+    func toInt64() -> Int64? {
+        return try? Int64(withReportingOverflow: self)
     }
 }

@@ -8,7 +8,7 @@ import Foundation
 
 internal class RUMViewScope: RUMScope, RUMContextProvider {
     struct Constants {
-        static let frozenFrameThresholdInNs = (0.07).toInt64Nanoseconds // 70ms
+        static let frozenFrameThresholdInNs = (0.7).toInt64Nanoseconds // 700ms
         static let slowRenderingThresholdFPS = 55.0
         /// The pre-warming detection attribute key
         static let activePrewarm = "active_pre_warm"
@@ -74,6 +74,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private var longTasksCount: Int64 = 0
     /// Number of Frozen Frames tracked by this View.
     private var frozenFramesCount: Int64 = 0
+    /// Number of Frustration tracked by this View.
+    private var frustrationCount: Int64 = 0
 
     /// Current version of this View to use for RUM `documentVersion`.
     private var version: UInt = 0
@@ -86,6 +88,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     /// Samples view update events, so we can minimize the number of events in payload.
     private let viewUpdatesThrottler: RUMViewUpdatesThrottlerType
+
+    private var viewPerformanceMetrics: [PerformanceMetric: VitalInfo] = [:]
 
     init(
         isInitialView: Bool,
@@ -197,6 +201,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         case let command as RUMAddLongTaskCommand where isActiveView:
             sendLongTaskEvent(on: command, context: context, writer: writer)
 
+        case let command as RUMUpdatePerformanceMetric where isActiveView:
+            updatePerformanceMetric(on: command)
+
         default:
             break
         }
@@ -256,9 +263,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             startTime: command.time,
             serverTimeOffset: serverTimeOffset,
             isContinuous: true,
-            onActionEventSent: { [weak self] in
-                self?.actionsCount += 1
-                self?.needsViewUpdate = true
+            onActionEventSent: { [weak self] event in
+                self?.onActionEventSent(event)
             }
         )
     }
@@ -273,11 +279,16 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             startTime: command.time,
             serverTimeOffset: serverTimeOffset,
             isContinuous: false,
-            onActionEventSent: { [weak self] in
-                self?.actionsCount += 1
-                self?.needsViewUpdate = true
+            onActionEventSent: { [weak self] event in
+                self?.onActionEventSent(event)
             }
         )
+    }
+
+    private func onActionEventSent(_ event: RUMActionEvent) {
+        actionsCount += 1
+        frustrationCount += event.action.frustration?.type.count.toInt64 ?? 0
+        needsViewUpdate = true
     }
 
     private func addDiscreteUserAction(on command: RUMAddUserActionCommand) {
@@ -314,17 +325,28 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         var attributes = self.attributes
         var loadingTime: Int64? = nil
 
-        if context.launchTime.isActivePrewarm {
+        if context.launchTime?.isActivePrewarm == true {
             // Set `active_pre_warm` attribute to true in case
-            // of pre-warmed app
+            // of pre-warmed app.
             attributes[Constants.activePrewarm] = true
-        } else {
+        } else if let launchTime = context.launchTime?.launchTime {
             // Report Application Launch Time only if not pre-warmed
-            loadingTime = context.launchTime.launchTime.toInt64Nanoseconds
+            loadingTime = launchTime.toInt64Nanoseconds
+        } else if let launchDate = context.launchTime?.launchDate {
+            // The launchTime can be `nil` if the application is not yet
+            // active (UIApplicationDidBecomeActiveNotification). That is
+            // the case when instrumenting a SwiftUI application that start
+            // a RUM view on `SwiftUI.View/onAppear`.
+            //
+            // In that case, we consider the time between the application
+            // launch and the first view start as the application loading
+            // time.
+            loadingTime = viewStartTime.timeIntervalSince(launchDate).toInt64Nanoseconds
         }
 
         let actionEvent = RUMActionEvent(
             dd: .init(
+                action: nil,
                 browserSdkVersion: nil,
                 session: .init(plan: .plan1)
             ),
@@ -335,7 +357,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 loadingTime: loadingTime,
                 longTask: nil,
-                position: nil,
                 resource: nil,
                 target: nil,
                 type: .applicationStart
@@ -425,15 +446,19 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 domContentLoaded: nil,
                 domInteractive: nil,
                 error: .init(count: errorsCount.toInt64),
+                firstByte: nil,
                 firstContentfulPaint: nil,
                 firstInputDelay: nil,
                 firstInputTime: nil,
+                flutterBuildTime: viewPerformanceMetrics[.flutterBuildTime]?.asFlutterBuildTime(),
+                flutterRasterTime: viewPerformanceMetrics[.flutterRasterTime]?.asFlutterRasterTime(),
                 frozenFrame: .init(count: frozenFramesCount),
-                frustration: nil,
+                frustration: .init(count: frustrationCount),
                 id: viewUUID.toRUMDataFormat,
                 inForegroundPeriods: nil,
                 isActive: isActive,
                 isSlowRendered: isSlowRendered,
+                jsRefreshRate: viewPerformanceMetrics[.jsFrameTimeSeconds]?.asJsRefreshRate(),
                 largestContentfulPaint: nil,
                 loadEvent: nil,
                 loadingTime: nil,
@@ -486,6 +511,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             device: .init(context: context),
             display: nil,
             error: .init(
+                causes: nil,
                 handling: nil,
                 handlingStack: nil,
                 id: nil,
@@ -534,6 +560,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let longTaskEvent = RUMLongTaskEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                discarded: nil,
                 session: .init(plan: .plan1)
             ),
             action: self.context.activeUserActionID.map {
@@ -589,5 +616,41 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
 
         return sanitized
+    }
+
+    private func updatePerformanceMetric(on command: RUMUpdatePerformanceMetric) {
+        if viewPerformanceMetrics[command.metric] == nil {
+            viewPerformanceMetrics[command.metric] = VitalInfo()
+        }
+        viewPerformanceMetrics[command.metric]?.addSample(command.value)
+    }
+}
+
+private extension VitalInfo {
+    func asFlutterBuildTime() -> RUMViewEvent.View.FlutterBuildTime {
+        return RUMViewEvent.View.FlutterBuildTime(
+            average: meanValue ?? 0.0,
+            max: maxValue ?? 0.0,
+            metricMax: nil,
+            min: minValue ?? 0.0
+        )
+    }
+
+    func asFlutterRasterTime() -> RUMViewEvent.View.FlutterRasterTime {
+        return RUMViewEvent.View.FlutterRasterTime(
+            average: meanValue ?? 0.0,
+            max: maxValue ?? 0.0,
+            metricMax: nil,
+            min: minValue ?? 0.0
+        )
+    }
+
+    func asJsRefreshRate() -> RUMViewEvent.View.JsRefreshRate {
+        return RUMViewEvent.View.JsRefreshRate(
+            average: meanValue.map { $0.inverted } ?? 0,
+            max: minValue.map { $0.inverted } ?? 0,
+            metricMax: 60.0,
+            min: maxValue.map { $0.inverted } ?? 0
+        )
     }
 }

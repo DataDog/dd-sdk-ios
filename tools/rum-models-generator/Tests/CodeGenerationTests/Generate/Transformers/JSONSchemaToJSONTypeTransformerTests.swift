@@ -9,11 +9,11 @@ import XCTest
 
 final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
     func testTransformingJSONSchemaIntoJSONObject() throws {
-        let expected = JSONOneOfs(
+        let expected = JSONUnionType(
             name: "Schema title",
             comment: "Fixture schema",
             types: [
-                JSONOneOfs.OneOf(
+                .init(
                     name: "Foo",
                     type: JSONObject(
                         name: "Foo",
@@ -120,15 +120,15 @@ final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
         let jsonSchema = try JSONSchemaReader().read(file)
 
         let actual = try JSONSchemaToJSONTypeTransformer().transform(jsonSchema: jsonSchema)
-        XCTAssertEqual(expected, actual as? JSONOneOfs)
+        XCTAssertEqual(expected, actual as? JSONUnionType)
     }
 
-    func testTransformingJSONSchemaWithOneOfIntoJSONObject() throws {
-        let expected = JSONOneOfs(
+    func testTransformingJSONSchemaWithUnionTypeIntoJSONObject() throws {
+        let expected = JSONUnionType(
             name: "Schema title",
             comment: "Schema description",
             types: [
-                JSONOneOfs.OneOf(
+                .init(
                     name: "A",
                     type: JSONObject(
                         name: "A",
@@ -145,7 +145,7 @@ final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
                         ]
                     )
                 ),
-                JSONOneOfs.OneOf(
+                .init(
                     name: "B",
                     type: JSONObject(
                         name: "B",
@@ -162,13 +162,13 @@ final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
                         ]
                     )
                 ),
-                JSONOneOfs.OneOf(
+                .init(
                     name: "C",
-                    type: JSONOneOfs(
+                    type: JSONUnionType(
                         name: "C",
                         comment: "C description",
                         types: [
-                            JSONOneOfs.OneOf(
+                            .init(
                                 name: "C1",
                                 type: JSONObject(
                                     name: "C1",
@@ -185,7 +185,7 @@ final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
                                     ]
                                 )
                             ),
-                            JSONOneOfs.OneOf(
+                            .init(
                                 name: "C2",
                                 type: JSONObject(
                                     name: "C2",
@@ -213,6 +213,6 @@ final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
         let jsonSchema = try JSONSchemaReader().read(file)
 
         let actual = try JSONSchemaToJSONTypeTransformer().transform(jsonSchema: jsonSchema)
-        XCTAssertEqual(expected, actual as? JSONOneOfs)
+        XCTAssertEqual(expected, actual as? JSONUnionType)
     }
 }
