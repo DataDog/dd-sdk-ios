@@ -11,7 +11,8 @@ workflows:
         This workflow is triggered on starting new PR or pushing new changes to existing PRs.
         By default, it doesn't run any test phases, but this behaviour is overwritten in `choose_workflows.py` when:
         - one or more `DD_OVERWRITE_RUN_(phase)_TESTS` ENVs are passed to the current CI job:
-            - DD_OVERRIDE_RUN_UNIT_TESTS='1' to run unit tests phase
+            - DD_OVERRIDE_RUN_UNIT_TESTS='1' to run unit tests phase for the main SDK
+            - DD_OVERRIDE_RUN_SR_UNIT_TESTS='1' to run unit tests phase for Session Replay product
             - DD_OVERRIDE_RUN_INTEGRATION_TESTS='1' to run integration tests phase
             - DD_OVERRIDE_RUN_SMOKE_TESTS='1' to run smoke tests phase
             - DD_OVERRIDE_TOOLS_TESTS='1' to run tools tests phase
@@ -19,6 +20,7 @@ workflows:
         - the PR changes a file which matches phase filter (e.g. changing a file in `Sources/*` will trigger unit tests phase)
     envs:
       - DD_RUN_UNIT_TESTS: '0'
+      - DD_RUN_SR_UNIT_TESTS: '0'
       - DD_RUN_INTEGRATION_TESTS: '0'
       - DD_RUN_SMOKE_TESTS: '0'
       - DD_RUN_TOOLS_TESTS: '0'
@@ -32,6 +34,7 @@ workflows:
         This workflow is triggered for each new commit pushed to `develop` or `master` branch.
     envs:
       - DD_RUN_UNIT_TESTS: '1'
+      - DD_RUN_SR_UNIT_TESTS: '1'
       - DD_RUN_INTEGRATION_TESTS: '1'
       - DD_RUN_SMOKE_TESTS: '0'
       - DD_RUN_TOOLS_TESTS: '0'
@@ -46,6 +49,7 @@ workflows:
         This workflow is triggered every night.
     envs:
       - DD_RUN_UNIT_TESTS: '0'
+      - DD_RUN_SR_UNIT_TESTS: '0'
       - DD_RUN_INTEGRATION_TESTS: '0'
       - DD_RUN_SMOKE_TESTS: '1'
       - DD_RUN_TOOLS_TESTS: '1'
@@ -71,6 +75,7 @@ workflows:
         This workflow is triggered on pushing a new release tag.
     envs:
       - DD_RUN_UNIT_TESTS: '1'
+      - DD_RUN_SR_UNIT_TESTS: '1'
       - DD_RUN_INTEGRATION_TESTS: '1'
       - DD_RUN_SMOKE_TESTS: '1'
       - DD_RUN_TOOLS_TESTS: '0'
@@ -180,7 +185,9 @@ workflows:
     description: |-
         Runs unit tests for SDK on iOS Simulator.
         Runs unit tests for SDK on tvOS Simulator.
-        Only ran if 'DD_RUN_UNIT_TESTS' is '1'.
+        Selectively runs:
+        - main SDK tests when 'DD_RUN_UNIT_TESTS' is '1'
+        - or Session Replay tests when when 'DD_RUN_SR_UNIT_TESTS' is '1'
     steps:
     - script:
         title: Verify RUM data models
@@ -232,6 +239,17 @@ workflows:
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReporting-tvos-unit-tests.html"
+    - xcode-test:
+        title: Run unit tests for Session Replay - iOS Simulator
+        run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
+        inputs:
+        - scheme: DatadogSessionReplay
+        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
+        - should_build_before_test: 'no'
+        - is_clean_build: 'no'
+        - generate_code_coverage_files: 'yes'
+        - project_path: session-replay/Package.swift
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogSessionReplay-tests.html"
 
   run_integration_tests:
     description: |-

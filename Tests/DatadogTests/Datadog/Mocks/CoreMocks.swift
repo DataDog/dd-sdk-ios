@@ -800,10 +800,10 @@ class NOPDataUploadWorker: DataUploadWorkerType {
 struct DataUploaderMock: DataUploaderType {
     let uploadStatus: DataUploadStatus
 
-    var onUpload: (() -> Void)? = nil
+    var onUpload: (() throws -> Void)? = nil
 
-    func upload(events: [Data], context: DatadogContext) -> DataUploadStatus {
-        onUpload?()
+    func upload(events: [Data], context: DatadogContext) throws -> DataUploadStatus {
+        try onUpload?()
         return uploadStatus
     }
 }

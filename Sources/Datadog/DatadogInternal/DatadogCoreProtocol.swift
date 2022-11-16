@@ -8,21 +8,24 @@ import Foundation
 
 public internal(set) var defaultDatadogCore: DatadogCoreProtocol = NOPDatadogCore()
 
-/// A Datadog Core holds a set of features and is responsible of managing their storage
+/// A Datadog Core holds a set of Features and is responsible for managing their storage
 /// and upload mechanism. It also provides a thread-safe scope for writing events.
-public protocol DatadogCoreProtocol {
+///
+/// Any reference to `DatadogCoreProtocol` must be captured as `weak` within a Feature. This is to avoid
+/// retain cycle of core holding the Feature and vice-versa.
+public protocol DatadogCoreProtocol: AnyObject {
     /// Registers a Feature instance.
     ///
-    /// A Feature collects and transfers data to a Datadog Product (e.g. Logs, RUM, ...). A registered Feature can
-    /// open a `FeatureScope` to write events, the core will then be responsible for storing and uploading events
-    /// in a efficient manner. Performance presets for storage and upload are define when instanciating the core instance.
+    /// Feature collects and transfers data to a Datadog Product (e.g. Logs, RUM, ...). Upon registration, the Feature can
+    /// retrieve a `FeatureScope` interface for writing events to the core. The core will store and upload events efficiently
+    /// according to the performance presets defined on initialization.
     ///
-    /// A Feature can also communicate to other Features by sending message on the bus that is managed by the core.
+    /// A Feature can also communicate to other Features by sending messages on the message bus managed by core.
     ///
-    /// - Parameter feature: The Feature instance.
+    /// - Parameter feature: The Feature instance - it will be retained and held by core.
     func register(feature: DatadogFeature) throws
 
-    /// Retrieves a Feature by its name and type.
+    /// Retrieves previously registered Feature by its name and type.
     ///
     /// A Feature type can be specified as parameter or inferred from the return type:
     ///
@@ -57,6 +60,17 @@ public protocol DatadogCoreProtocol {
     ///   - type: The Feature Integration instance type.
     /// - Returns: The Feature Integration if any.
     func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature
+
+    /// Retrieves a Feature Scope by its name.
+    ///
+    /// Feature Scope collects data to Datadog Product (e.g. Logs, RUM, ...). Upon registration, the Feature retrieves
+    /// its `FeatureScope` interface for writing events to the core. The core will store and upload events efficiently
+    /// according to the performance presets defined on initialization.
+    ///
+    /// - Parameters:
+    ///   - feature: The Feature's name.
+    /// - Returns: The Feature scope if a Feature with given name was registered.
+    func scope(for feature: String) -> FeatureScope?
 
     /// Sets given attributes for a given Feature for sharing data through `DatadogContext`.
     ///
@@ -134,7 +148,7 @@ extension DatadogCoreProtocol {
 }
 
 /// Feature scope provides a context and a writer to build a record event.
-internal protocol FeatureScope {
+public protocol FeatureScope {
     /// Retrieve the event context and writer.
     ///
     /// The Feature scope provides the current Datadog context and event writer
@@ -153,7 +167,7 @@ internal protocol FeatureScope {
 }
 
 /// Feature scope provides a context and a writer to build a record event.
-extension FeatureScope {
+public extension FeatureScope {
     /// Retrieve the event context and writer.
     ///
     /// The Feature scope provides the current Datadog context and event writer
@@ -166,7 +180,7 @@ extension FeatureScope {
 }
 
 /// No-op implementation of `DatadogFeatureRegistry`.
-internal struct NOPDatadogCore: DatadogCoreProtocol {
+internal class NOPDatadogCore: DatadogCoreProtocol {
     /// no-op
     func register(feature: DatadogFeature) throws { }
     /// no-op
@@ -175,6 +189,8 @@ internal struct NOPDatadogCore: DatadogCoreProtocol {
     func register(integration: DatadogFeatureIntegration) throws { }
     /// no-op
     func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature { nil }
+    /// no-op
+    func scope(for feature: String) -> FeatureScope? { nil }
     /// no-op
     func set(feature: String, attributes: @escaping @autoclosure () -> FeatureBaggage) { }
     /// no-op

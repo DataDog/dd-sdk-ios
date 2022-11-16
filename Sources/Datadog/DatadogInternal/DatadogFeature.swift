@@ -27,14 +27,12 @@ public protocol DatadogFeature {
     var name: String { get }
 
     /// The URL request builder for uploading data in this Feature.
-    ///
-    /// This builder currently use the v1 context, but will be soon migrated to v2
     var requestBuilder: FeatureRequestBuilder { get }
 
     /// The message bus receiver.
     ///
     /// The `FeatureMessageReceiver` defines an interface for Feature to receive any message
-    /// from a bus that is shared between Features registered in a core.
+    /// from a bus that is shared between all Features registered in the core.
     var messageReceiver: FeatureMessageReceiver { get }
 }
 

@@ -44,6 +44,10 @@ class RUMUserActionScopeTests: XCTestCase {
     }
 
     func testGivenActiveUserAction_whenViewIsStopped_itSendsUserActionEvent() throws {
+        let hasReplay: Bool = .mockRandom()
+        var context = self.context
+        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
+
         let scope = RUMViewScope.mockWith(
             parent: parent,
             dependencies: .mockAny(),
@@ -79,6 +83,7 @@ class RUMUserActionScopeTests: XCTestCase {
         let recordedAction = try XCTUnwrap(recordedActionEvents.last)
         XCTAssertEqual(recordedAction.action.type.rawValue, String(describing: mockUserActionCmd.actionType))
         XCTAssertEqual(recordedAction.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+        XCTAssertEqual(recordedAction.session.hasReplay, hasReplay)
         XCTAssertEqual(recordedAction.source, .ios)
         XCTAssertEqual(recordedAction.service, "test-service")
         XCTAssertEqual(recordedAction.device?.name, "device-name")

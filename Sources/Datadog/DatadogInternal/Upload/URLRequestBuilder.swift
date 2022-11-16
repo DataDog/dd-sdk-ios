@@ -6,16 +6,18 @@
 
 import Foundation
 
+internal typealias URLRequestBuilder = DDURLRequestBuilder
+
 /// Builds `URLRequest` for sending data to Datadog.
-/* public */ internal struct URLRequestBuilder {
-    enum QueryItem {
+public struct DDURLRequestBuilder {
+    public enum QueryItem {
         /// `ddsource={source}` query item
         case ddsource(source: String)
         /// `ddtags={tag1},{tag2},...` query item
         case ddtags(tags: [String])
     }
 
-    struct HTTPHeader {
+    public struct HTTPHeader {
         static let contentTypeHeaderField = "Content-Type"
         static let contentEncodingHeaderField = "Content-Encoding"
         static let userAgentHeaderField = "User-Agent"
@@ -24,9 +26,18 @@ import Foundation
         static let ddEVPOriginVersionHeaderField = "DD-EVP-ORIGIN-VERSION"
         static let ddRequestIDHeaderField = "DD-REQUEST-ID"
 
-        enum ContentType: String {
-            case applicationJSON = "application/json"
-            case textPlainUTF8 = "text/plain;charset=UTF-8"
+        public enum ContentType {
+            case applicationJSON
+            case textPlainUTF8
+            case multipartFormData(boundary: String)
+
+            var toString: String {
+                switch self {
+                case .applicationJSON: return "application/json"
+                case .textPlainUTF8: return "text/plain;charset=UTF-8"
+                case .multipartFormData(let boundary): return "multipart/form-data; boundary=\(boundary)"
+                }
+            }
         }
 
         let field: String
@@ -35,12 +46,12 @@ import Foundation
         // MARK: - Standard Headers
 
         /// Standard "Content-Type" header.
-        static func contentTypeHeader(contentType: ContentType) -> HTTPHeader {
-            return HTTPHeader(field: contentTypeHeaderField, value: { contentType.rawValue })
+        public static func contentTypeHeader(contentType: ContentType) -> HTTPHeader {
+            return HTTPHeader(field: contentTypeHeaderField, value: { contentType.toString })
         }
 
         /// Standard "User-Agent" header.
-        static func userAgentHeader(appName: String, appVersion: String, device: DeviceInfo) -> HTTPHeader {
+        public static func userAgentHeader(appName: String, appVersion: String, device: DeviceInfo) -> HTTPHeader {
             var sanitizedAppName = appName
 
             if let regex = try? NSRegularExpression(pattern: "[^a-zA-Z0-9 -]+") {
@@ -59,22 +70,22 @@ import Foundation
         // MARK: - Datadog Headers
 
         /// Datadog request authentication header.
-        static func ddAPIKeyHeader(clientToken: String) -> HTTPHeader {
+        public static func ddAPIKeyHeader(clientToken: String) -> HTTPHeader {
             return HTTPHeader(field: ddAPIKeyHeaderField, value: { clientToken })
         }
 
         /// An observability and troubleshooting Datadog header for tracking the origin which is sending the request.
-        static func ddEVPOriginHeader(source: String) -> HTTPHeader {
+        public static func ddEVPOriginHeader(source: String) -> HTTPHeader {
             return HTTPHeader(field: ddEVPOriginHeaderField, value: { source })
         }
 
         /// An observability and troubleshooting Datadog header for tracking the origin which is sending the request.
-        static func ddEVPOriginVersionHeader(sdkVersion: String) -> HTTPHeader {
+        public static func ddEVPOriginVersionHeader(sdkVersion: String) -> HTTPHeader {
             return HTTPHeader(field: ddEVPOriginVersionHeaderField, value: { sdkVersion })
         }
 
         /// An optional Datadog header for debugging Intake requests by their ID.
-        static func ddRequestIDHeader() -> HTTPHeader {
+        public static func ddRequestIDHeader() -> HTTPHeader {
             return HTTPHeader(field: ddRequestIDHeaderField, value: { UUID().uuidString })
         }
     }
@@ -85,7 +96,7 @@ import Foundation
 
     // MARK: - Initialization
 
-    init(
+    public init(
         url: URL,
         queryItems: [QueryItem],
         headers: [HTTPHeader]
@@ -100,27 +111,31 @@ import Foundation
         self.headers = headers
     }
 
-    /// Creates `URLRequest` for uploading given `data` to Datadog.
-    /// - Parameter data: data to be uploaded
-    /// - Returns: Returns: the `URLRequest` object.
-    func uploadRequest(with data: Data) -> URLRequest {
+    /// Creates `URLRequest` for uploading given `body` to Datadog.
+    ///
+    /// - Parameter body: HTTP body to be attached to request
+    /// - Parameter compress: if `body` should be compressed into ZLIB Compressed Data Format (IETF RFC 1950)
+    /// - Returns: the `URLRequest` object.
+    public func uploadRequest(with body: Data, compress: Bool = true) -> URLRequest {
         var request = URLRequest(url: url)
         var headers: [String: String] = [:]
         self.headers.forEach { headers[$0.field] = $0.value() }
         request.httpMethod = "POST"
 
-        if let body = Deflate.encode(data) {
+        if compress, let deflatedBody = Deflate.encode(body) {
             headers[HTTPHeader.contentEncodingHeaderField] = "deflate"
-            request.httpBody = body
+            request.httpBody = deflatedBody
         } else {
-            request.httpBody = data
-            DD.telemetry.debug(
-                """
-                Failed to compress request payload
-                - url: \(url)
-                - uncompressed-size: \(data.count)
-                """
-            )
+            request.httpBody = body
+            if compress {
+                DD.telemetry.debug(
+                    """
+                    Failed to compress request payload
+                    - url: \(url)
+                    - uncompressed-size: \(body.count)
+                    """
+                )
+            }
         }
 
         request.allHTTPHeaderFields = headers

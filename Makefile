@@ -71,6 +71,11 @@ xcodeproj-httpservermock:
 		@cd instrumented-tests/http-server-mock/ && swift package generate-xcodeproj
 		@echo "OK 👌"
 
+xcodeproj-session-replay:
+		@echo "⚙️  Generating 'DatadogSessionReplay.xcodeproj'..."
+		@cd session-replay/ && swift package generate-xcodeproj
+		@echo "OK 👌"
+
 templates:
 		@echo "⚙️  Installing Xcode templates..."
 		./tools/xcode-templates/install-xcode-templates.sh

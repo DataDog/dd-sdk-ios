@@ -10,7 +10,7 @@ import XCTest
 extension DataUploadStatus: EquatableInTests {}
 
 class DataUploaderTests: XCTestCase {
-    func testWhenUploadCompletesWithSuccess_itReturnsExpectedUploadStatus() {
+    func testWhenUploadCompletesWithSuccess_itReturnsExpectedUploadStatus() throws {
         // Given
         let randomResponse: HTTPURLResponse = .mockResponseWith(statusCode: (100...599).randomElement()!)
         let randomRequestIDOrNil: String? = Bool.random() ? .mockRandom() : nil
@@ -27,7 +27,7 @@ class DataUploaderTests: XCTestCase {
         )
 
         // When
-        let uploadStatus = uploader.upload(
+        let uploadStatus = try uploader.upload(
             events: .mockAny(),
             context: .mockAny()
         )
@@ -39,7 +39,7 @@ class DataUploaderTests: XCTestCase {
         server.waitFor(requestsCompletion: 1)
     }
 
-    func testWhenUploadCompletesWithFailure_itReturnsExpectedUploadStatus() {
+    func testWhenUploadCompletesWithFailure_itReturnsExpectedUploadStatus() throws {
         // Given
         let randomErrorDescription: String = .mockRandom()
         let randomError = NSError(domain: .mockRandom(), code: .mockRandom(), userInfo: [NSLocalizedDescriptionKey: randomErrorDescription])
@@ -53,7 +53,7 @@ class DataUploaderTests: XCTestCase {
         )
 
         // When
-        let uploadStatus = uploader.upload(
+        let uploadStatus = try uploader.upload(
             events: .mockAny(),
             context: .mockAny()
         )
@@ -63,5 +63,20 @@ class DataUploaderTests: XCTestCase {
 
         XCTAssertEqual(uploadStatus, expectedUploadStatus)
         server.waitFor(requestsCompletion: 1)
+    }
+
+    func testWhenUploadCannotBeInitiated_itThrows() throws {
+        // Given
+        let error = ErrorMock()
+
+        let uploader = DataUploader(
+            httpClient: .mockAny(),
+            requestBuilder: FailingRequestBuilderMock(error: error)
+        )
+
+        // When & Then
+        XCTAssertThrowsError(try uploader.upload(events: .mockAny(), context: .mockAny())) { error in
+            XCTAssertTrue(error is ErrorMock)
+        }
     }
 }

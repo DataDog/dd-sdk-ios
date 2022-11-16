@@ -86,6 +86,9 @@ extension DatadogCoreMock: DatadogCoreProtocol {
         integrations[name] as? T
     }
 
+    /// no-op
+    func scope(for feature: String) -> FeatureScope? { nil }
+
     func set(feature: String, attributes: @escaping () -> FeatureBaggage) {
         context.featuresAttributes[feature] = attributes()
     }

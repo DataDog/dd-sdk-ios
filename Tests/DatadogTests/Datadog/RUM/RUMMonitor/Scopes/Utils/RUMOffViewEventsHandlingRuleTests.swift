@@ -42,7 +42,8 @@ class RUMOffViewEventsHandlingRuleTests: XCTestCase {
             sessionState: .init(
                 sessionUUID: .mockRandom(),
                 isInitialSession: true,
-                hasTrackedAnyView: false
+                hasTrackedAnyView: false,
+                didStartWithReplay: .mockAny()
             ),
             isAppInForeground: true,
             isBETEnabled: .mockRandom()
@@ -53,7 +54,8 @@ class RUMOffViewEventsHandlingRuleTests: XCTestCase {
             sessionState: .init(
                 sessionUUID: .mockRandom(),
                 isInitialSession: .mockRandom(),
-                hasTrackedAnyView: true
+                hasTrackedAnyView: true,
+                didStartWithReplay: .mockAny()
             ),
             isAppInForeground: true,
             isBETEnabled: .mockRandom()
@@ -64,7 +66,8 @@ class RUMOffViewEventsHandlingRuleTests: XCTestCase {
             sessionState: .init(
                 sessionUUID: .mockRandom(),
                 isInitialSession: false,
-                hasTrackedAnyView: .mockRandom()
+                hasTrackedAnyView: .mockRandom(),
+                didStartWithReplay: .mockAny()
             ),
             isAppInForeground: true,
             isBETEnabled: .mockRandom()
@@ -77,7 +80,8 @@ class RUMOffViewEventsHandlingRuleTests: XCTestCase {
             sessionState: .init(
                 sessionUUID: .mockRandom(),
                 isInitialSession: .mockRandom(),
-                hasTrackedAnyView: .mockRandom()
+                hasTrackedAnyView: .mockRandom(),
+                didStartWithReplay: .mockAny()
             ),
             isAppInForeground: false,
             isBETEnabled: true
@@ -88,7 +92,8 @@ class RUMOffViewEventsHandlingRuleTests: XCTestCase {
             sessionState: .init(
                 sessionUUID: .mockRandom(),
                 isInitialSession: .mockRandom(),
-                hasTrackedAnyView: .mockRandom()
+                hasTrackedAnyView: .mockRandom(),
+                didStartWithReplay: .mockAny()
             ),
             isAppInForeground: false,
             isBETEnabled: false
@@ -103,7 +108,8 @@ class RUMOffViewEventsHandlingRuleTests: XCTestCase {
             sessionState: .init(
                 sessionUUID: .nullUUID, // session is not sampled
                 isInitialSession: .mockRandom(),
-                hasTrackedAnyView: .mockRandom()
+                hasTrackedAnyView: .mockRandom(),
+                didStartWithReplay: .mockAny()
             ),
             isAppInForeground: .mockRandom(),
             isBETEnabled: .mockRandom()

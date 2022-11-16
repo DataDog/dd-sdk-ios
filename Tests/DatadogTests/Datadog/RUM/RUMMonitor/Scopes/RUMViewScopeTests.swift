@@ -94,6 +94,9 @@ class RUMViewScopeTests: XCTestCase {
             isActivePrewarm: false
         )
 
+        let hasReplay: Bool = .mockRandom()
+        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
+
         let scope = RUMViewScope(
             isInitialView: true,
             parent: parent,
@@ -120,6 +123,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
+        XCTAssertEqual(event.session.hasReplay, hasReplay)
         XCTAssertValidRumUUID(event.view.id)
         XCTAssertEqual(event.view.url, "UIViewController")
         XCTAssertEqual(event.view.name, "ViewName")
@@ -227,6 +231,10 @@ class RUMViewScopeTests: XCTestCase {
     }
 
     func testWhenInitialViewReceivesAnyCommand_itSendsViewUpdateEvent() throws {
+        let hasReplay: Bool = .mockRandom()
+        var context = self.context
+        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
+
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
             isInitialView: true,
@@ -252,6 +260,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
+        XCTAssertEqual(event.session.hasReplay, hasReplay)
         XCTAssertValidRumUUID(event.view.id)
         XCTAssertEqual(event.view.url, "UIViewController")
         XCTAssertEqual(event.view.name, "ViewName")
@@ -1012,6 +1021,10 @@ class RUMViewScopeTests: XCTestCase {
     // MARK: - Error Tracking
 
     func testWhenViewErrorIsAdded_itSendsErrorEventAndViewUpdateEvent() throws {
+        let hasReplay: Bool = .mockRandom()
+        var context = self.context
+        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
+
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
@@ -1049,6 +1062,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(error.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(error.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(error.session.type, .user)
+        XCTAssertEqual(error.session.hasReplay, hasReplay)
         XCTAssertValidRumUUID(error.view.id)
         XCTAssertEqual(error.view.url, "UIViewController")
         XCTAssertEqual(error.view.name, "ViewName")
@@ -1214,6 +1228,10 @@ class RUMViewScopeTests: XCTestCase {
     // MARK: - Long tasks
 
     func testWhenLongTaskIsAdded_itSendsLongTaskEventAndViewUpdateEvent() throws {
+        let hasReplay: Bool = .mockRandom()
+        var context = self.context
+        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
+
         let startViewDate: Date = .mockDecember15th2019At10AMUTC()
 
         let scope = RUMViewScope(
@@ -1254,6 +1272,8 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertEqual(event.action?.id.stringValue, scope.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.session.hasReplay, hasReplay)
         XCTAssertNil(event.connectivity)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.date, longTaskStartingDate.timeIntervalSince1970.toInt64Milliseconds)
