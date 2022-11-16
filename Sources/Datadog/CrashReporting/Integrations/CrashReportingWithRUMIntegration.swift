@@ -186,7 +186,10 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 startDate: crashTimings.realCrashDate,
                 sessionUUID: uuidGenerator.generateUnique(), // create new RUM session
                 crashContext: crashContext,
-                hasReplay: nil // as the crash occured after initializing SDK but before starting the first view, we can't know this
+                // As the crash occured after initializing SDK but before starting the first view,
+                // we can't know if Session Replay was configured. However, lack of view implies
+                // that there must be no replay collected:
+                hasReplay: false
             )
         case .handleInBackgroundView:
             newRUMView = createNewRUMViewEvent(
@@ -195,7 +198,10 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 startDate: crashTimings.realCrashDate,
                 sessionUUID: uuidGenerator.generateUnique(), // create new RUM session
                 crashContext: crashContext,
-                hasReplay: nil // as the crash occured after initializing SDK but before starting the first view, we can't know this
+                // As the crash occured after initializing SDK but before starting the first view,
+                // we can't know if Session Replay was configured. However, lack of view implies
+                // that there must be no replay collected:
+                hasReplay: false
             )
         case .doNotHandle:
             DD.logger.debug("There was a crash in background, but it is ignored due to Background Event Tracking disabled.")
