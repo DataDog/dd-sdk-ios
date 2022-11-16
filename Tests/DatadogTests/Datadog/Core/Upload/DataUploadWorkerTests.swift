@@ -20,7 +20,6 @@ class DataUploadWorkerTests: XCTestCase {
         orchestrator: orchestrator
     )
     lazy var reader = FileReader(
-        dataFormat: .mockWith(prefix: "[", suffix: "]"),
         orchestrator: orchestrator
     )
 
@@ -38,9 +37,10 @@ class DataUploadWorkerTests: XCTestCase {
 
     func testItUploadsAllData() {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
         let dataUploader = DataUploader(
-            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            requestBuilder: .mockAny()
+            httpClient: httpClient,
+            requestBuilder: FeatureRequestBuilderMock()
         )
 
         // Given
@@ -53,6 +53,7 @@ class DataUploadWorkerTests: XCTestCase {
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: dataUploader,
+            contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
             featureName: .mockAny()
@@ -65,7 +66,6 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k3":"v3"}]"#.utf8Data })
 
         worker.cancelSynchronously()
-
         XCTAssertEqual(try temporaryDirectory.files().count, 0)
     }
 
@@ -84,6 +84,7 @@ class DataUploadWorkerTests: XCTestCase {
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: mockDataUploader,
+            contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockAny()
@@ -111,6 +112,7 @@ class DataUploadWorkerTests: XCTestCase {
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: mockDataUploader,
+            contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockAny()
@@ -139,14 +141,17 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(try temporaryDirectory.files().count, 0)
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+
         let dataUploader = DataUploader(
-            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            requestBuilder: .mockAny()
+            httpClient: httpClient,
+            requestBuilder: FeatureRequestBuilderMock()
         )
         let worker = DataUploadWorker(
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: dataUploader,
+            contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.neverUpload(),
             delay: mockDelay,
             featureName: .mockAny()
@@ -172,14 +177,17 @@ class DataUploadWorkerTests: XCTestCase {
         writer.write(value: ["k1": "v1"])
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 500)))
+        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+
         let dataUploader = DataUploader(
-            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            requestBuilder: .mockAny()
+            httpClient: httpClient,
+            requestBuilder: FeatureRequestBuilderMock()
         )
         let worker = DataUploadWorker(
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: dataUploader,
+            contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: mockDelay,
             featureName: .mockAny()
@@ -205,14 +213,17 @@ class DataUploadWorkerTests: XCTestCase {
         writer.write(value: ["k1": "v1"])
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+
         let dataUploader = DataUploader(
-            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            requestBuilder: .mockAny()
+            httpClient: httpClient,
+            requestBuilder: FeatureRequestBuilderMock()
         )
         let worker = DataUploadWorker(
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: dataUploader,
+            contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: mockDelay,
             featureName: .mockAny()
@@ -245,6 +256,7 @@ class DataUploadWorkerTests: XCTestCase {
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: mockDataUploader,
+            contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: randomFeatureName
@@ -288,6 +300,7 @@ class DataUploadWorkerTests: XCTestCase {
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: mockDataUploader,
+            contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockRandom()
@@ -321,6 +334,7 @@ class DataUploadWorkerTests: XCTestCase {
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: mockDataUploader,
+            contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockRandom()
@@ -356,6 +370,7 @@ class DataUploadWorkerTests: XCTestCase {
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: mockDataUploader,
+            contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockRandom()
@@ -379,14 +394,17 @@ class DataUploadWorkerTests: XCTestCase {
     func testWhenCancelled_itPerformsNoMoreUploads() {
         // Given
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+
         let dataUploader = DataUploader(
-            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            requestBuilder: .mockAny()
+            httpClient: httpClient,
+            requestBuilder: FeatureRequestBuilderMock()
         )
         let worker = DataUploadWorker(
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: dataUploader,
+            contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.neverUpload(),
             delay: MockDelay(),
             featureName: .mockAny()
@@ -403,14 +421,17 @@ class DataUploadWorkerTests: XCTestCase {
 
     func testItFlushesAllData() {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+
         let dataUploader = DataUploader(
-            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            requestBuilder: .mockAny()
+            httpClient: httpClient,
+            requestBuilder: FeatureRequestBuilderMock()
         )
         let worker = DataUploadWorker(
             queue: uploaderQueue,
             fileReader: reader,
             dataUploader: dataUploader,
+            contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
             featureName: .mockAny()
@@ -456,38 +477,10 @@ struct MockDelay: Delay {
 
 private extension DataUploadConditions {
     static func alwaysUpload() -> DataUploadConditions {
-        return DataUploadConditions(
-            batteryStatus: BatteryStatusProviderMock.mockWith(
-                status: BatteryStatus(state: .full, level: 100, isLowPowerModeEnabled: false) // always upload
-            ),
-            networkConnectionInfo: NetworkConnectionInfoProviderMock(
-                networkConnectionInfo: NetworkConnectionInfo(
-                    reachability: .yes, // always upload
-                    availableInterfaces: [.wifi],
-                    supportsIPv4: true,
-                    supportsIPv6: true,
-                    isExpensive: false,
-                    isConstrained: false
-                )
-            )
-        )
+        return DataUploadConditions(minBatteryLevel: 0)
     }
 
     static func neverUpload() -> DataUploadConditions {
-        return DataUploadConditions(
-            batteryStatus: BatteryStatusProviderMock.mockWith(
-                status: BatteryStatus(state: .unplugged, level: 0, isLowPowerModeEnabled: true) // never upload
-            ),
-            networkConnectionInfo: NetworkConnectionInfoProviderMock(
-                networkConnectionInfo: NetworkConnectionInfo(
-                    reachability: .no, // never upload
-                    availableInterfaces: [.cellular],
-                    supportsIPv4: true,
-                    supportsIPv6: false,
-                    isExpensive: true,
-                    isConstrained: true
-                )
-            )
-        )
+        return DataUploadConditions(minBatteryLevel: 1)
     }
 }

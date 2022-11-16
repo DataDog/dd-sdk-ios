@@ -8,13 +8,15 @@ import XCTest
 @testable import Datadog
 
 class TracingWithLoggingIntegrationTests: XCTestCase {
-    private let core = PassthroughCoreMock()
+    private let core = PassthroughCoreMock(
+        messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
+    )
 
     func testSendingLogWithOTMessageField() throws {
         core.expectation = expectation(description: "Send log")
 
         // Given
-        let integration = TracingWithLoggingIntegration(core: core, logBuilder: .mockAny())
+        let integration = TracingWithLoggingIntegration(core: core, configuration: .mockAny())
 
         // When
         integration.writeLog(
@@ -23,7 +25,8 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
                 OTLogFields.message: "hello",
                 "custom field": 123,
             ],
-            date: .mockDecember15th2019At10AMUTC()
+            date: .mockDecember15th2019At10AMUTC(),
+            else: {}
         )
 
         // Then
@@ -40,8 +43,8 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         XCTAssertEqual(
             log.attributes.internalAttributes as? [String: String],
             [
-                "dd.span_id": "2",
-                "dd.trace_id": "1"
+                Tracer.Attributes.spanID: "2",
+                Tracer.Attributes.traceID: "1"
             ]
         )
     }
@@ -51,25 +54,28 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         core.expectation?.expectedFulfillmentCount = 3
 
         // Given
-        let integration = TracingWithLoggingIntegration(core: core, logBuilder: .mockAny())
+        let integration = TracingWithLoggingIntegration(core: core, configuration: .mockAny())
 
         // When
         integration.writeLog(
             withSpanContext: .mockAny(),
             fields: [OTLogFields.event: "error"],
-            date: .mockAny()
+            date: .mockAny(),
+            else: {}
         )
 
         integration.writeLog(
             withSpanContext: .mockAny(),
             fields: [OTLogFields.errorKind: "Swift error"],
-            date: .mockAny()
+            date: .mockAny(),
+            else: {}
         )
 
         integration.writeLog(
             withSpanContext: .mockAny(),
             fields: [OTLogFields.event: "error", OTLogFields.errorKind: "Swift error"],
-            date: .mockAny()
+            date: .mockAny(),
+            else: {}
         )
 
         // Then
@@ -87,13 +93,14 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         core.expectation = expectation(description: "Send log")
 
         // Given
-        let integration = TracingWithLoggingIntegration(core: core, logBuilder: .mockAny())
+        let integration = TracingWithLoggingIntegration(core: core, configuration: .mockAny())
 
         // When
         integration.writeLog(
             withSpanContext: .mockWith(traceID: 1, spanID: 2),
             fields: ["custom field": 123],
-            date: .mockDecember15th2019At10AMUTC()
+            date: .mockDecember15th2019At10AMUTC(),
+            else: {}
         )
 
         // Then
@@ -110,8 +117,8 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         XCTAssertEqual(
             log.attributes.internalAttributes as? [String: String],
             [
-                "dd.span_id": "2",
-                "dd.trace_id": "1"
+                Tracer.Attributes.spanID: "2",
+                Tracer.Attributes.traceID: "1"
             ]
         )
     }

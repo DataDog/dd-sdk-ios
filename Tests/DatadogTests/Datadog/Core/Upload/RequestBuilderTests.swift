@@ -12,7 +12,7 @@ class RequestBuilderTests: XCTestCase {
 
     func testBuildingRequestWithURLAndQueryItems() throws {
         let randomURL: URL = .mockRandom()
-        let builder = RequestBuilder(
+        let builder = URLRequestBuilder(
             url: randomURL,
             queryItems: [.ddsource(source: "abc"), .ddtags(tags: ["abc:def"])],
             headers: .mockRandom()
@@ -23,7 +23,7 @@ class RequestBuilderTests: XCTestCase {
 
     func testWhenBuildingRequestWithURLAndQueryItems_itEscapesWhitespacesInQuery() throws {
         let randomURL: URL = .mockRandom()
-        let builder = RequestBuilder(
+        let builder = URLRequestBuilder(
             url: randomURL,
             queryItems: [.ddsource(source: "source with whitespace"), .ddtags(tags: ["tag with whitespace"])],
             headers: .mockRandom()
@@ -35,17 +35,17 @@ class RequestBuilderTests: XCTestCase {
     // MARK: - Request Headers
 
     func testBuildingRequestWithContentTypeHeader() {
-        var builder = RequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: [.contentTypeHeader(contentType: .textPlainUTF8)])
+        var builder = URLRequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: [.contentTypeHeader(contentType: .textPlainUTF8)])
         var request = builder.uploadRequest(with: .mockAny())
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "text/plain;charset=UTF-8")
 
-        builder = RequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: [.contentTypeHeader(contentType: .applicationJSON)])
+        builder = URLRequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: [.contentTypeHeader(contentType: .applicationJSON)])
         request = builder.uploadRequest(with: .mockAny())
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "application/json")
     }
 
     func testBuildingRequestWithUserAgentHeader() {
-        let builder = RequestBuilder(
+        let builder = URLRequestBuilder(
             url: .mockRandom(),
             queryItems: .mockRandom(),
             headers: [
@@ -65,7 +65,7 @@ class RequestBuilderTests: XCTestCase {
     }
 
     func testBuildingRequestWithComplexUserAgentHeader() {
-        let builder = RequestBuilder(
+        let builder = URLRequestBuilder(
             url: .mockRandom(),
             queryItems: .mockRandom(),
             headers: [
@@ -86,27 +86,27 @@ class RequestBuilderTests: XCTestCase {
 
     func testBuildingRequestWithDDAPIKeyHeader() {
         let randomClientToken: String = .mockRandom()
-        let builder = RequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: [.ddAPIKeyHeader(clientToken: randomClientToken)])
+        let builder = URLRequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: [.ddAPIKeyHeader(clientToken: randomClientToken)])
         let request = builder.uploadRequest(with: .mockRandom())
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-API-KEY"], randomClientToken)
     }
 
     func testBuildingRequestWithDDEVPOriginHeader() {
         let randomSource: String = .mockRandom()
-        let builder = RequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: [.ddEVPOriginHeader(source: randomSource)])
+        let builder = URLRequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: [.ddEVPOriginHeader(source: randomSource)])
         let request = builder.uploadRequest(with: .mockRandom())
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN"], randomSource)
     }
 
     func testBuildingRequestWithDDEVPOriginVersionHeader() {
         let randomSDKVersion: String = .mockRandom()
-        let builder = RequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: [.ddEVPOriginVersionHeader(sdkVersion: randomSDKVersion)])
+        let builder = URLRequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: [.ddEVPOriginVersionHeader(sdkVersion: randomSDKVersion)])
         let request = builder.uploadRequest(with: .mockRandom())
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN-VERSION"], randomSDKVersion)
     }
 
     func testBuildingRequestWithDDRequestIDHeader() throws {
-        let builder = RequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: [.ddRequestIDHeader()])
+        let builder = URLRequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: [.ddRequestIDHeader()])
 
         let request1 = builder.uploadRequest(with: .mockRandom())
         let request2 = builder.uploadRequest(with: .mockRandom())
@@ -124,7 +124,7 @@ class RequestBuilderTests: XCTestCase {
     }
 
     func testBuildingRequestWithMultipleHeaders() {
-        let builder = RequestBuilder(
+        let builder = URLRequestBuilder(
             url: .mockRandom(),
             queryItems: .mockRandom(),
             headers: [
@@ -151,7 +151,7 @@ class RequestBuilderTests: XCTestCase {
     // MARK: - Request Method
 
     func testItUsesPOSTMethodForProducedReqest() {
-        let builder = RequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: .mockRandom())
+        let builder = URLRequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: .mockRandom())
         let request = builder.uploadRequest(with: .mockRandom())
         XCTAssertEqual(request.httpMethod, "POST")
     }
@@ -160,7 +160,7 @@ class RequestBuilderTests: XCTestCase {
 
     func testWhenBuildingRequestWithData_thenItDeflateHTTPBody() throws {
         // Given
-        let builder = RequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: .mockRandom())
+        let builder = URLRequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: .mockRandom())
 
         for i in 2...8 { // Test from 100KB to 100MB
             // When
@@ -181,7 +181,7 @@ class RequestBuilderTests: XCTestCase {
         // deflation falls back to stored (uncompressed) data.
         let size = 8 // Small data will most likely inflate with zlib.
         let randomData: Data = .mock(ofSize: size)
-        let builder = RequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: .mockRandom())
+        let builder = URLRequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: .mockRandom())
 
         let request = builder.uploadRequest(with: randomData)
         let body = try XCTUnwrap(request.httpBody)

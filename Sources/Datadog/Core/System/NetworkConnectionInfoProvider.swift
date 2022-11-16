@@ -6,41 +6,6 @@
 
 import Network
 
-/// Network connection details.
-public struct NetworkConnectionInfo: Equatable {
-    /// Tells if network is reachable.
-    public enum Reachability: String, Codable, CaseIterable {
-        /// The network is reachable.
-        case yes
-        /// The network might be reachable after trying.
-        case maybe
-        /// The network is not reachable.
-        case no
-    }
-
-    /// Network connection interfaces.
-    public enum Interface: String, Codable, CaseIterable {
-        case wifi
-        case wiredEthernet
-        case cellular
-        case loopback
-        case other
-    }
-
-    /// Network reachability status.
-    public let reachability: Reachability
-    /// Available network interfaces.
-    public let availableInterfaces: [Interface]?
-    /// A Boolean indicating whether the connection supports IPv4 traffic.
-    public let supportsIPv4: Bool?
-    /// A Boolean indicating whether the connection supports IPv6 traffic.
-    public let supportsIPv6: Bool?
-    /// A Boolean indicating if the connection uses an interface that is considered expensive, such as Cellular or a Personal Hotspot.
-    public let isExpensive: Bool?
-    /// A Boolean indicating if the connection uses an interface in Low Data Mode.
-    public let isConstrained: Bool?
-}
-
 /// An observer for `NetworkConnectionInfo` value.
 internal typealias NetworkConnectionInfoObserver = ValueObserver
 
@@ -116,8 +81,8 @@ internal class NWPathNetworkConnectionInfoProvider: WrappedNetworkConnectionInfo
         self.monitor = monitor
         monitor.pathUpdateHandler = { [weak self] path in
             self?.unsafeCurrentNetworkConnectionInfo = NetworkConnectionInfo(
-                reachability: NetworkConnectionInfo.Reachability(from: path.status),
-                availableInterfaces: Array(fromInterfaceTypes: path.availableInterfaces.map { $0.type }),
+                reachability: NetworkConnectionInfo.Reachability(path.status),
+                availableInterfaces: path.availableInterfaces.map { .init($0.type) },
                 supportsIPv4: path.supportsIPv4,
                 supportsIPv6: path.supportsIPv6,
                 isExpensive: path.isExpensive,
@@ -154,7 +119,6 @@ internal class iOS11NetworkConnectionInfoProvider: WrappedNetworkConnectionInfoP
         var zero = sockaddr()
         zero.sa_len = UInt8(MemoryLayout<sockaddr>.size)
         zero.sa_family = sa_family_t(AF_INET)
-
         return SCNetworkReachabilityCreateWithAddress(nil, &zero)! // swiftlint:disable:this force_unwrapping
     }()
 
@@ -162,60 +126,12 @@ internal class iOS11NetworkConnectionInfoProvider: WrappedNetworkConnectionInfoP
         var retrieval = SCNetworkReachabilityFlags()
         let flags = (SCNetworkReachabilityGetFlags(reachability, &retrieval)) ? retrieval : nil
         return NetworkConnectionInfo(
-            reachability: NetworkConnectionInfo.Reachability(from: flags),
-            availableInterfaces: Array(fromReachabilityFlags: flags),
+            reachability: NetworkConnectionInfo.Reachability(flags),
+            availableInterfaces: NetworkConnectionInfo.Interface(flags).map { [$0] },
             supportsIPv4: nil,
             supportsIPv6: nil,
             isExpensive: nil,
             isConstrained: nil
         )
-    }
-}
-
-// MARK: - Conversion helpers
-
-extension NetworkConnectionInfo.Reachability {
-    @available(iOS 12, tvOS 12, *)
-    init(from status: NWPath.Status) {
-        switch status {
-        case .satisfied: self = .yes
-        case .requiresConnection: self = .maybe
-        case .unsatisfied: self = .no
-        @unknown default: self = .maybe
-        }
-    }
-
-    init(from flags: SCNetworkReachabilityFlags?) {
-        switch flags?.contains(.reachable) {
-        case .none: self = .maybe
-        case .some(true): self = .yes
-        case .some(false): self = .no
-        }
-    }
-}
-
-extension Array where Element == NetworkConnectionInfo.Interface {
-    @available(iOS 12, tvOS 12, *)
-    init(fromInterfaceTypes interfaceTypes: [NWInterface.InterfaceType]) {
-        self = interfaceTypes.map { interface in
-            switch interface {
-            case .wifi: return .wifi
-            case .wiredEthernet: return .wiredEthernet
-            case .cellular: return .cellular
-            case .loopback: return .loopback
-            case .other: return .other
-            @unknown default: return .other
-            }
-        }
-    }
-
-    @available(iOS 2.0, macCatalyst 13.0, *)
-    init?(fromReachabilityFlags flags: SCNetworkReachabilityFlags?) {
-        if let flags = flags,
-            flags.contains(.isWWAN) {
-            self = [.cellular]
-        } else {
-            return nil
-        }
     }
 }

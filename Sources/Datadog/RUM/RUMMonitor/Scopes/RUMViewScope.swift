@@ -139,7 +139,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     // MARK: - RUMScope
 
-    func process(command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Bool {
+    func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
         // Tells if the View did change and an update event should be send.
         needsViewUpdate = false
 
@@ -295,7 +295,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         userActionScope = createDiscreteUserActionScope(on: command)
     }
 
-    private func sendDiscreteCustomUserAction(on command: RUMAddUserActionCommand, context: DatadogV1Context, writer: Writer) {
+    private func sendDiscreteCustomUserAction(on command: RUMAddUserActionCommand, context: DatadogContext, writer: Writer) {
         let customActionScope = createDiscreteUserActionScope(on: command)
         _ = customActionScope.process(
             command: RUMStopUserActionCommand(
@@ -319,19 +319,29 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     // MARK: - Sending RUM Events
 
-    private func sendApplicationStartAction(context: DatadogV1Context, writer: Writer) {
+    private func sendApplicationStartAction(context: DatadogContext, writer: Writer) {
         actionsCount += 1
 
         var attributes = self.attributes
         var loadingTime: Int64? = nil
 
-        if dependencies.launchTimeProvider.isActivePrewarm {
+        if context.launchTime?.isActivePrewarm == true {
             // Set `active_pre_warm` attribute to true in case
-            // of pre-warmed app
+            // of pre-warmed app.
             attributes[Constants.activePrewarm] = true
-        } else {
+        } else if let launchTime = context.launchTime?.launchTime {
             // Report Application Launch Time only if not pre-warmed
-            loadingTime = dependencies.launchTimeProvider.launchTime.toInt64Nanoseconds
+            loadingTime = launchTime.toInt64Nanoseconds
+        } else if let launchDate = context.launchTime?.launchDate {
+            // The launchTime can be `nil` if the application is not yet
+            // active (UIApplicationDidBecomeActiveNotification). That is
+            // the case when instrumenting a SwiftUI application that start
+            // a RUM view on `SwiftUI.View/onAppear`.
+            //
+            // In that case, we consider the time between the application
+            // launch and the first view start as the application loading
+            // time.
+            loadingTime = viewStartTime.timeIntervalSince(launchDate).toInt64Nanoseconds
         }
 
         let actionEvent = RUMActionEvent(
@@ -386,7 +396,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
     }
 
-    private func sendViewUpdateEvent(on command: RUMCommand, context: DatadogV1Context, writer: Writer) {
+    private func sendViewUpdateEvent(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         version += 1
         attributes.merge(rumCommandAttributes: command.attributes)
 
@@ -481,7 +491,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
     }
 
-    private func sendErrorEvent(on command: RUMAddCurrentViewErrorCommand, context: DatadogV1Context, writer: Writer) {
+    private func sendErrorEvent(on command: RUMAddCurrentViewErrorCommand, context: DatadogContext, writer: Writer) {
         errorsCount += 1
         attributes.merge(rumCommandAttributes: command.attributes)
 
@@ -541,7 +551,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
     }
 
-    private func sendLongTaskEvent(on command: RUMAddLongTaskCommand, context: DatadogV1Context, writer: Writer) {
+    private func sendLongTaskEvent(on command: RUMAddLongTaskCommand, context: DatadogContext, writer: Writer) {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let taskDurationInNs = command.duration.toInt64Nanoseconds

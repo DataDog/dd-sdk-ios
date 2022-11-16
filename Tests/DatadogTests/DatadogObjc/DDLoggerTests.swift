@@ -20,7 +20,7 @@ class DDLoggerTests: XCTestCase {
     }
 
     override func tearDown() {
-        defaultDatadogCore = NOOPDatadogCore()
+        defaultDatadogCore = NOPDatadogCore()
         core.flush()
         core = nil
         super.tearDown()
@@ -144,10 +144,8 @@ class DDLoggerTests: XCTestCase {
 
     func testSettingTagsAndAttributes() throws {
         core.context = .mockWith(
-            configuration: .mockWith(
-                environment: "test"
-            ),
-            appVersionProvider: .mockWith(version: "1.2.3")
+            env: "test",
+            version: "1.2.3"
         )
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers()

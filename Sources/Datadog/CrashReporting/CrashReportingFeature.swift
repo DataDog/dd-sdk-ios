@@ -33,15 +33,19 @@ internal final class CrashReportingFeature {
 
     init(
         configuration: FeaturesConfiguration.CrashReporting,
-        commonDependencies: FeaturesCommonDependencies
+        consentProvider: ConsentProvider,
+        userInfoProvider: UserInfoProvider,
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
+        carrierInfoProvider: CarrierInfoProviderType,
+        appStateListener: AppStateListening
     ) {
         self.configuration = configuration
-        self.consentProvider = commonDependencies.consentProvider
-        self.userInfoProvider = commonDependencies.userInfoProvider
-        self.networkConnectionInfoProvider = commonDependencies.networkConnectionInfoProvider
-        self.carrierInfoProvider = commonDependencies.carrierInfoProvider
+        self.consentProvider = consentProvider
+        self.userInfoProvider = userInfoProvider
+        self.networkConnectionInfoProvider = networkConnectionInfoProvider
+        self.carrierInfoProvider = carrierInfoProvider
         self.rumViewEventProvider = ValuePublisher(initialValue: nil) // `nil` by default, because there cannot be any RUM view at this ponit
         self.rumSessionStateProvider = ValuePublisher(initialValue: nil) // `nil` by default, because there cannot be any RUM session at this ponit
-        self.appStateListener = commonDependencies.appStateListener
+        self.appStateListener = appStateListener
     }
 }

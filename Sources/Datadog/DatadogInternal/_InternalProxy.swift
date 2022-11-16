@@ -44,6 +44,6 @@ public class _ConfigurationProxy {
             return
         }
 
-        core.appVersionProvider.value = customVersion
+        core.applicationVersionPublisher.version = customVersion
     }
 }

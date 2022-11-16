@@ -37,6 +37,6 @@ class _InternalProxyTests: XCTestCase {
 
         // Then
         let core = try XCTUnwrap(defaultDatadogCore as? DatadogCore)
-        XCTAssertEqual(core.appVersionProvider.value, randomVersion)
+        XCTAssertEqual(core.applicationVersionPublisher.version, randomVersion)
     }
 }

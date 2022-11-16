@@ -8,7 +8,9 @@ import XCTest
 @testable import Datadog
 
 class CrashReportingWithLoggingIntegrationTests: XCTestCase {
-    private let logOutput = LogOutputMock()
+    let core = PassthroughCoreMock(
+        messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
+    )
 
     // MARK: - Testing Conditional Uploads
 
@@ -21,18 +23,16 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
 
         // When
         let integration = CrashReportingWithLoggingIntegration(
-            logOutput: logOutput,
+            core: core,
             context: .mockWith(
-                dependencies: .mockWith(
-                    dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
-                    dateCorrector: DateCorrectorMock()
-                )
-            )
+                dateCorrector: DateCorrectorMock()
+            ),
+            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
         )
         integration.send(crashReport: crashReport, with: crashContext)
 
         // Then
-        XCTAssertNil(logOutput.recordedLog)
+        XCTAssertTrue(core.events(ofType: LogEvent.self).isEmpty)
     }
 
     // MARK: - Testing Uploaded Data
@@ -82,20 +82,20 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
 
         // When
         let integration = CrashReportingWithLoggingIntegration(
-            logOutput: logOutput,
+            core: core,
             context: .mockWith(
-                configuration: configuration,
-                dependencies: .mockWith(
-                    dateProvider: RelativeDateProvider(using: .mockRandomInThePast()),
-                    dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
-                ),
-                appVersionProvider: .mockWith(version: configuration.applicationVersion)
-            )
+                service: configuration.serviceName,
+                env: configuration.environment,
+                version: configuration.applicationVersion,
+                sdkVersion: configuration.sdkVersion,
+                dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
+            ),
+            dateProvider: RelativeDateProvider(using: .mockRandomInThePast())
         )
         integration.send(crashReport: crashReport, with: crashContext)
 
         // Then
-        let log = try XCTUnwrap(logOutput.recordedLog)
+        let log = try XCTUnwrap(core.events(ofType: LogEvent.self).first)
         let user = try XCTUnwrap(crashContext.lastUserInfo)
 
         let expectedLog = LogEvent(

@@ -14,15 +14,41 @@ import XCTest
 /// The `DatadogCoreProtocol` implementation does not require any feature registration,
 /// it will always provide a `FeatureScope` with the current context and a `writer` that will
 /// store all events in the `events` property..
-internal final class PassthroughCoreMock: DatadogV1CoreProtocol, V1FeatureScope {
+internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     /// Current context that will be passed to feature-scopes.
-    internal var context: DatadogV1Context?
+    internal var legacyContext: DatadogV1Context? {
+        .init(context)
+    }
+
+    var context: DatadogContext {
+        get { synchronize { _context } }
+        set { synchronize { _context = newValue } }
+    }
+
+    /// ordered/non-recursive lock on the context.
+    private let lock = NSLock()
+    private var _context: DatadogContext {
+        didSet { send(message: .context(_context)) }
+    }
+
+    private func synchronize<T>(_ block: () -> T) -> T {
+        lock.lock()
+        defer { lock.unlock() }
+        return block()
+    }
 
     internal let writer = FileWriterMock()
+
+    /// The message receiver.
+    private let messageReceiver: FeatureMessageReceiver
 
     /// Test expectation that will be fullfilled when the `eventWriteContext` closure
     /// is executed.
     internal var expectation: XCTestExpectation?
+
+    /// Test expectation that will be fullfilled when the `eventWriteContext` closure
+    /// is executed with `bypassConsent` parameter to `true`.
+    internal var bypassConsentExpectation: XCTestExpectation?
 
     /// Creates a Passthrough core mock.
     ///
@@ -30,42 +56,58 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, V1FeatureScope 
     ///   - context: The testing context.
     ///   - expectation: The test exepection to fullfill when `eventWriteContext`
     ///                  is invoked.
+    ///   - bypassConsentExpectation: The test exepection to fullfill when `eventWriteContext`
+    ///                  is invoked with `bypassConsent` parameter to `true`..
     init(
-        context: DatadogV1Context = .mockAny(),
-        expectation: XCTestExpectation? = nil
+        context: DatadogContext = .mockAny(),
+        expectation: XCTestExpectation? = nil,
+        bypassConsentExpectation: XCTestExpectation? = nil,
+        messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
     ) {
-        self.context = context
+        self._context = context
         self.expectation = expectation
+        self.bypassConsentExpectation = bypassConsentExpectation
+        self.messageReceiver = messageReceiver
     }
 
     /// no-op
+    func register(feature: DatadogFeature) throws { }
+    /// no-op
+    func feature<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature { nil }
+    /// no-op
+    func register(integration: DatadogFeatureIntegration) throws { }
+    /// no-op
+    func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature { nil }
+    /// no-op
     func register<T>(feature instance: T?) { }
-
     /// Returns `nil`
-    func feature<T>(_ type: T.Type) -> T? {
-        return nil
-    }
+    func feature<T>(_ type: T.Type) -> T? { nil }
 
     /// Always returns a feature-scope.
-    func scope<T>(for featureType: T.Type) -> V1FeatureScope? {
+    func scope<T>(for featureType: T.Type) -> FeatureScope? {
         self
+    }
+
+    func set(feature: String, attributes: @escaping () -> FeatureBaggage) {
+        context.featuresAttributes[feature] = attributes()
+    }
+
+    func send(message: FeatureMessage, else fallback: () -> Void) {
+        if !messageReceiver.receive(message: message, from: self) {
+            fallback()
+        }
     }
 
     /// Execute `block` with the current context and a `writer` to record events.
     ///
     /// - Parameter block: The block to execute.
-    func eventWriteContext(_ block: (DatadogV1Context, Writer) throws -> Void) {
-        guard let context = context else {
-            return XCTFail("PassthroughCoreMock missing context")
-        }
-
-        do {
-           try block(context, writer)
-        } catch let error {
-           XCTFail("Encountered an error when executing `eventWriteContext`: \(error)")
-        }
-
+    func eventWriteContext(bypassConsent: Bool, _ block: (DatadogContext, Writer) throws -> Void) {
+        XCTAssertNoThrow(try block(context, writer), "Encountered an error when executing `eventWriteContext`")
         expectation?.fulfill()
+
+        if bypassConsent {
+            bypassConsentExpectation?.fulfill()
+        }
     }
 
     /// Recorded events from feature scopes.

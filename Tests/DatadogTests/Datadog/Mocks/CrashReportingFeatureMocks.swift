@@ -9,19 +9,35 @@
 extension CrashReportingFeature {
     /// Mocks the Crash Reporting feature instance which doesn't load crash reports.
     static func mockNoOp() -> CrashReportingFeature {
-        return CrashReportingFeature(
-            configuration: .mockWith(crashReportingPlugin: NoopCrashReportingPlugin()),
-            commonDependencies: .mockAny()
+        return mockWith(
+            configuration: .mockWith(crashReportingPlugin: NoopCrashReportingPlugin())
         )
     }
 
     static func mockWith(
         configuration: FeaturesConfiguration.CrashReporting = .mockAny(),
-        dependencies: FeaturesCommonDependencies = .mockAny()
+        consentProvider: ConsentProvider = ConsentProvider(initialConsent: .granted),
+        userInfoProvider: UserInfoProvider = .mockAny(),
+        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
+            networkConnectionInfo: .mockWith(
+                reachability: .yes, // so it always meets the upload condition
+                availableInterfaces: [.wifi],
+                supportsIPv4: true,
+                supportsIPv6: true,
+                isExpensive: true,
+                isConstrained: false // so it always meets the upload condition
+            )
+        ),
+        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
+        appStateListener: AppStateListening = AppStateListenerMock.mockAny()
     ) -> CrashReportingFeature {
         return CrashReportingFeature(
             configuration: configuration,
-            commonDependencies: dependencies
+            consentProvider: consentProvider,
+            userInfoProvider: userInfoProvider,
+            networkConnectionInfoProvider: networkConnectionInfoProvider,
+            carrierInfoProvider: carrierInfoProvider,
+            appStateListener: appStateListener
         )
     }
 }
@@ -175,6 +191,28 @@ internal extension DDCrashReport.Meta {
             codeType: nil,
             exceptionType: nil,
             exceptionCodes: nil
+        )
+    }
+}
+
+internal extension CrashReportingWithRUMIntegration {
+    static func mockWith(
+        core: DatadogCoreProtocol,
+        applicationID: String = .mockAny(),
+        dateProvider: DateProvider = SystemDateProvider(),
+        sessionSampler: Sampler = .mockKeepAll(),
+        backgroundEventTrackingEnabled: Bool = true,
+        uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
+        context: DatadogV1Context = .mockAny()
+    ) -> Self {
+        .init(
+            core: core,
+            applicationID: applicationID,
+            dateProvider: dateProvider,
+            sessionSampler: sessionSampler,
+            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
+            uuidGenerator: uuidGenerator,
+            context: context
         )
     }
 }

@@ -8,32 +8,28 @@ import XCTest
 @testable import Datadog
 
 class RUMMonitorConfigurationTests: XCTestCase {
-    private let userInfoProvider: UserInfoProvider = .mockAny()
-    private let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
-    private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
+    private let userIno: UserInfo = .mockAny()
+    private let networkConnectionInfo: NetworkConnectionInfo = .mockAny()
+    private let carrierInfo: CarrierInfo = .mockAny()
 
     func testRUMMonitorConfiguration() throws {
         let expectation = expectation(description: "open feature scope")
 
         let core = DatadogCoreMock(
             context: .mockWith(
-                configuration: .mockWith(
-                    serviceName: "service-name",
-                    environment: "tests",
-                    sdkVersion: "3.4.5"
-                ),
-                dependencies: .mockWith(
-                    userInfoProvider: userInfoProvider,
-                    networkConnectionInfoProvider: networkConnectionInfoProvider,
-                    carrierInfoProvider: carrierInfoProvider
-                ),
-                appVersionProvider: .mockWith(version: "1.2.3")
+                service: "service-name",
+                env: "tests",
+                version: "1.2.3",
+                sdkVersion: "3.4.5",
+                userInfo: userIno,
+                networkConnectionInfo: networkConnectionInfo,
+                carrierInfo: carrierInfo
             )
         )
         defer { core.flush() }
 
         let feature: RUMFeature = .mockByRecordingRUMEventMatchers(
-            featureConfiguration: .mockWith(
+            configuration: .mockWith(
                 applicationID: "rum-123",
                 sessionSampler: Sampler(samplingRate: 42.5)
             )
@@ -44,9 +40,9 @@ class RUMMonitorConfigurationTests: XCTestCase {
 
         let dependencies = monitor.applicationScope.dependencies
         monitor.core.v1.scope(for: RUMFeature.self)?.eventWriteContext { context, _ in
-            XCTAssertTrue(context.userInfoProvider === userInfoProvider)
-            XCTAssertTrue(context.networkConnectionInfoProvider as AnyObject === networkConnectionInfoProvider as AnyObject)
-            XCTAssertTrue(context.carrierInfoProvider as AnyObject === carrierInfoProvider as AnyObject)
+            XCTAssertEqual(context.userInfo, self.userIno)
+            XCTAssertEqual(context.networkConnectionInfo, self.networkConnectionInfo)
+            XCTAssertEqual(context.carrierInfo, self.carrierInfo)
 
             XCTAssertEqual(context.service, "service-name")
             XCTAssertEqual(context.version, "1.2.3")

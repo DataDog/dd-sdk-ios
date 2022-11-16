@@ -34,32 +34,42 @@ class LoggingFeatureTests: XCTestCase {
         let randomEncryption: DataEncryption? = Bool.random() ? DataEncryptionMock() : nil
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
-            configuration: .mockWith(
-                clientToken: randomClientToken,
-                applicationName: randomApplicationName,
-                source: randomSource,
-                origin: randomOrigin,
-                sdkVersion: randomSDKVersion,
-                encryption: randomEncryption
+            dateProvider: SystemDateProvider(),
+            consentProvider: ConsentProvider(initialConsent: .granted),
+            userInfoProvider: .mockAny(),
+            performance: .combining(
+                storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
+                uploadPerformance: .veryQuick
             ),
-            dependencies: .mockWith(
-                deviceInfo: .mockWith(
-                    name: randomDeviceName,
-                    osName: randomDeviceOSName,
-                    osVersion: randomDeviceOSVersion
+            httpClient: httpClient,
+            encryption: randomEncryption,
+            v1Context: .mockAny(),
+            contextProvider: .mockWith(
+                context: .mockWith(
+                    clientToken: randomClientToken,
+                    version: randomApplicationVersion,
+                    source: randomSource,
+                    sdkVersion: randomSDKVersion,
+                    ciAppOrigin: randomOrigin,
+                    applicationName: randomApplicationName,
+                    device: .mockWith(
+                        name: randomDeviceName,
+                        osName: randomDeviceOSName,
+                        osVersion: randomDeviceOSVersion
+                    )
                 )
             ),
-            appVersionProvider: .mockWith(version: randomApplicationVersion)
+            applicationVersion: randomApplicationVersion
         )
 
         // Given
         let featureConfiguration: LoggingFeature.Configuration = .mockWith(uploadURL: randomUploadURL)
         let feature: LoggingFeature = try core.create(
-            storageConfiguration: createV2LoggingStorageConfiguration(),
-            uploadConfiguration: createV2LoggingUploadConfiguration(v1Configuration: featureConfiguration),
+            configuration: createLoggingConfiguration(intake: randomUploadURL, logEventMapper: nil),
             featureSpecificConfiguration: featureConfiguration
         )
         defer { feature.flush() }
@@ -93,37 +103,41 @@ class LoggingFeatureTests: XCTestCase {
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
-            configuration: .mockAny(),
-            dependencies: .mockWith(
-                performance: .combining(
-                    storagePerformance: StoragePerformanceMock(
-                        maxFileSize: .max,
-                        maxDirectorySize: .max,
-                        maxFileAgeForWrite: .distantFuture, // write all events to single file,
-                        minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
-                        maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
-                        maxObjectsInFile: 3, // write 3 spans to payload,
-                        maxObjectSize: .max
-                    ),
-                    uploadPerformance: UploadPerformanceMock(
-                        initialUploadDelay: 0.5, // wait enough until events are written,
-                        minUploadDelay: 1,
-                        maxUploadDelay: 1,
-                        uploadDelayChangeRate: 0
-                    )
+            dateProvider: SystemDateProvider(),
+            consentProvider: ConsentProvider(initialConsent: .granted),
+            userInfoProvider: .mockAny(),
+            performance: .combining(
+                storagePerformance: StoragePerformanceMock(
+                    maxFileSize: .max,
+                    maxDirectorySize: .max,
+                    maxFileAgeForWrite: .distantFuture, // write all events to single file,
+                    minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
+                    maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
+                    maxObjectsInFile: 3, // write 3 spans to payload,
+                    maxObjectSize: .max
+                ),
+                uploadPerformance: UploadPerformanceMock(
+                    initialUploadDelay: 0.5, // wait enough until events are written,
+                    minUploadDelay: 1,
+                    maxUploadDelay: 1,
+                    uploadDelayChangeRate: 0
                 )
             ),
-            appVersionProvider: .mockAny()
+            httpClient: httpClient,
+            encryption: nil,
+            v1Context: .mockAny(),
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny()
         )
 
         // Given
         let featureConfiguration: LoggingFeature.Configuration = .mockAny()
         let feature: LoggingFeature = try core.create(
-            storageConfiguration: createV2LoggingStorageConfiguration(),
-            uploadConfiguration: createV2LoggingUploadConfiguration(v1Configuration: featureConfiguration),
+            configuration: createLoggingConfiguration(intake: featureConfiguration.uploadURL, logEventMapper: nil),
             featureSpecificConfiguration: featureConfiguration
         )
         defer { feature.flush() }

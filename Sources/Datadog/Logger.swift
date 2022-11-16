@@ -344,7 +344,7 @@ public class Logger: LoggerProtocol {
         }
 
         private func buildOrThrow(in core: DatadogCoreProtocol) throws -> LoggerProtocol {
-            guard let context = core.v1.context else {
+            if core is NOPDatadogCore {
                 throw ProgrammerError(
                     description: "`Datadog.initialize()` must be called prior to `Logger.builder.build()`."
                 )
@@ -362,24 +362,20 @@ public class Logger: LoggerProtocol {
                 }
 
                 let configuration = RemoteLogger.Configuration(
-                    service: serviceName ?? context.service,
-                    loggerName: loggerName ?? context.applicationBundleIdentifier,
+                    service: serviceName,
+                    loggerName: loggerName ?? loggingFeature.configuration.applicationBundleIdentifier,
                     sendNetworkInfo: sendNetworkInfo,
                     threshold: datadogReportingThreshold,
                     eventMapper: loggingFeature.configuration.logEventMapper,
                     sampler: loggingFeature.configuration.remoteLoggingSampler
                 )
 
-                let rumEnabled = core.v1.feature(RUMFeature.self) != nil
-                let tracingEnabled = core.v1.feature(TracingFeature.self) != nil
-
                 return RemoteLogger(
                     core: core,
                     configuration: configuration,
-                    dateProvider: context.dateProvider,
-                    rumContextIntegration: (rumEnabled && bundleWithRUM) ? LoggingWithRUMContextIntegration() : nil,
-                    rumErrorsIntegration: rumEnabled ? LoggingWithRUMErrorsIntegration() : nil,
-                    activeSpanIntegration: (tracingEnabled && bundleWithTrace) ? LoggingWithActiveSpanIntegration() : nil
+                    dateProvider: loggingFeature.configuration.dateProvider,
+                    rumContextIntegration: bundleWithRUM,
+                    activeSpanIntegration: bundleWithTrace
                 )
             }()
 
@@ -395,7 +391,7 @@ public class Logger: LoggerProtocol {
 
                 return ConsoleLogger(
                     configuration: configuration,
-                    dateProvider: context.dateProvider,
+                    dateProvider: loggingFeature.configuration.dateProvider,
                     printFunction: consolePrint
                 )
             }()

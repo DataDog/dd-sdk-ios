@@ -8,29 +8,20 @@ import XCTest
 @testable import Datadog
 
 class LoggerBuilderTests: XCTestCase {
-    private let userInfoProvider: UserInfoProvider = .mockAny()
-    private let networkConnectionInfoProvider: NetworkConnectionInfoProviderMock = .mockAny()
-    private let carrierInfoProvider: CarrierInfoProviderMock = .mockAny()
     private lazy var core = DatadogCoreMock(
         context: .mockWith(
-            configuration: .mockWith(
-                applicationVersion: "1.2.3",
-                applicationBundleIdentifier: "com.datadog.unit-tests",
-                serviceName: "service-name",
-                environment: "tests"
-            ),
-            dependencies: .mockWith(
-                userInfoProvider: userInfoProvider,
-                networkConnectionInfoProvider: networkConnectionInfoProvider,
-                carrierInfoProvider: carrierInfoProvider
-            )
+            service: "service-name",
+            env: "tests",
+            version: "1.2.3"
         )
     )
 
     override func setUp() {
         super.setUp()
         temporaryDirectory.create()
-        let feature: LoggingFeature = .mockNoOp()
+        let feature: LoggingFeature = .mockNoOp(
+            configuration: .mockWith(applicationBundleIdentifier: "com.datadog.unit-tests")
+        )
         core.register(feature: feature)
     }
 
@@ -44,14 +35,13 @@ class LoggerBuilderTests: XCTestCase {
         let logger = Logger.builder.build(in: core)
 
         let remoteLogger = try XCTUnwrap(logger.v2Logger as? RemoteLogger)
-        XCTAssertEqual(remoteLogger.configuration.service, "service-name")
+        XCTAssertNil(remoteLogger.configuration.service)
         XCTAssertEqual(remoteLogger.configuration.loggerName, "com.datadog.unit-tests")
         XCTAssertFalse(remoteLogger.configuration.sendNetworkInfo)
         XCTAssertEqual(remoteLogger.configuration.threshold, .debug)
         XCTAssertNil(remoteLogger.configuration.eventMapper)
-        XCTAssertNil(remoteLogger.rumContextIntegration)
-        XCTAssertNil(remoteLogger.rumErrorsIntegration)
-        XCTAssertNil(remoteLogger.activeSpanIntegration)
+        XCTAssertTrue(remoteLogger.rumContextIntegration)
+        XCTAssertTrue(remoteLogger.activeSpanIntegration)
     }
 
     func testDefaultLoggerWithRUMEnabled() throws {
@@ -70,10 +60,10 @@ class LoggerBuilderTests: XCTestCase {
         core.register(feature: tracing)
 
         let logger1 = Logger.builder.build(in: core)
-        XCTAssertNotNil((logger1.v2Logger as? RemoteLogger)?.activeSpanIntegration)
+        XCTAssertTrue(try XCTUnwrap(logger1.v2Logger as? RemoteLogger).activeSpanIntegration)
 
         let logger2 = Logger.builder.bundleWithTrace(false).build(in: core)
-        XCTAssertNil((logger2.v2Logger as? RemoteLogger)?.activeSpanIntegration)
+        XCTAssertFalse(try XCTUnwrap(logger2.v2Logger as? RemoteLogger).activeSpanIntegration)
     }
 
     func testCustomizedLogger() throws {
@@ -98,9 +88,8 @@ class LoggerBuilderTests: XCTestCase {
         XCTAssertTrue(remoteLogger.configuration.sendNetworkInfo)
         XCTAssertEqual(remoteLogger.configuration.threshold, .error)
         XCTAssertNil(remoteLogger.configuration.eventMapper)
-        XCTAssertNil(remoteLogger.rumContextIntegration)
-        XCTAssertNotNil(remoteLogger.rumErrorsIntegration, "When RUM is enabled, `rumErrorsIntegration` should be available")
-        XCTAssertNil(remoteLogger.activeSpanIntegration)
+        XCTAssertFalse(remoteLogger.rumContextIntegration)
+        XCTAssertFalse(remoteLogger.activeSpanIntegration)
     }
 
     func testCombiningInternalLoggers() throws {

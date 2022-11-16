@@ -13,13 +13,8 @@ internal struct LogEventSanitizer {
         /// If any of those is used by the user, the attribute will be ignored.
         static let reservedAttributeNames: Set<String> = [
             "host", "message", "status", "service", "source", "ddtags",
-            TracingWithLoggingIntegration.TracingAttributes.traceID,
-            TracingWithLoggingIntegration.TracingAttributes.spanID,
-            RUMContextIntegration.Attributes.applicationID,
-            RUMContextIntegration.Attributes.sessionID,
-            RUMContextIntegration.Attributes.viewID,
-            LoggingWithActiveSpanIntegration.Attributes.traceID,
-            LoggingWithActiveSpanIntegration.Attributes.spanID,
+            "dd.trace_id", "dd.span_id",
+            "application_id", "session_id", "view.id", "user_action.id",
         ]
         /// Allowed first character of a tag name (given as ASCII values ranging from lowercased `a` to `z`) .
         /// Tags with name starting with different character will be dropped.
