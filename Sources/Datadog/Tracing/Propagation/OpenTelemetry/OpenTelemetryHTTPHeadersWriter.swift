@@ -118,7 +118,9 @@ public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
                     String(spanContext.spanID.rawValue),
                     "1",
                     parentSpanIdRawValue
-                ].compactMap { $0 }.joined(separator: "-")
+                ]
+                .compactMap { $0 }
+                .joined(separator: "-")
             } else {
                 tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Single.b3Field] = "0"
             }
