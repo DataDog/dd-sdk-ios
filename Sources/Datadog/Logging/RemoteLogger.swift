@@ -150,7 +150,7 @@ internal final class RemoteLogger: LoggerProtocol {
                     date: date,
                     level: level,
                     message: message,
-                    error: error.map { DDError(error: $0) },
+                    error: error,
                     attributes: .init(
                         userAttributes: userAttributes,
                         internalAttributes: internalAttributes
