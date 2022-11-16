@@ -45,24 +45,45 @@ internal final class ConsoleLogger: LoggerProtocol {
     // MARK: - Logging
 
     func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable]?) {
+        var errorString: String? = nil
+        if let error = error {
+            let ddError = DDError(error: error)
+            errorString = buildErrorString(error: ddError)
+        }
+
+        internalLog(level: level, message: message, errorString: errorString)
+    }
+
+    func log(level: LogLevel, message: String, errorKind: String?, errorMessage: String?, stackTrace: String?, attributes: [String: Encodable]?) {
+        var errorString: String? = nil
+        if errorKind != nil || errorMessage != nil || stackTrace != nil {
+            // Cross platform frameworks don't necessarilly send all values for errors. Send empty strings
+            // for any values that are empty.
+            let ddError = DDError(type: errorKind ?? "", message: errorMessage ?? "", stack: stackTrace ?? "")
+            errorString = buildErrorString(error: ddError)
+        }
+
+        internalLog(level: level, message: message, errorString: errorString)
+    }
+
+    private func internalLog(level: LogLevel, message: String, errorString: String?) {
         let time = timeFormatter.string(from: dateProvider.now)
         let status = level.asLogStatus.rawValue.uppercased()
 
         var log = "\(self.prefix)\(time) [\(status)] \(message)"
 
-        if let error = error {
-            log += "\n\nError details:\n\(buildErrorString(error: error))"
+        if let errorString = errorString {
+            log += "\n\nError details:\n\(errorString)"
         }
 
         printFunction(log)
     }
 
-    private func buildErrorString(error: Error) -> String {
-        let dderror = DDError(error: error)
+    private func buildErrorString(error: DDError) -> String {
         return """
-        → type: \(dderror.type)
-        → message: \(dderror.message)
-        → stack: \(dderror.stack)
+        → type: \(error.type)
+        → message: \(error.message)
+        → stack: \(error.stack)
         """
     }
 

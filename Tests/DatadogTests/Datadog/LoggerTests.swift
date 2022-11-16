@@ -185,6 +185,34 @@ class LoggerTests: XCTestCase {
         }
     }
 
+    func testLoggingErrorStrings() throws {
+        core.context = .mockAny()
+
+        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        core.register(feature: feature)
+
+        let logger = Logger.builder.build(in: core)
+        let errorKind = String.mockRandom()
+        let errorMessage = String.mockRandom()
+        let stackTrace = String.mockRandom()
+        logger.log(level: .info,
+                   message: .mockAny(),
+                   errorKind: errorKind,
+                   errorMessage: errorMessage,
+                   stackTrace: stackTrace,
+                   attributes: nil
+        )
+
+        let logMatchers = try feature.waitAndReturnLogMatchers(count: 1)
+        let logMatcher = logMatchers.first
+        XCTAssertNotNil(logMatcher)
+        if let logMatcher = logMatcher {
+            logMatcher.assertValue(forKeyPath: "error.kind", equals: errorKind)
+            logMatcher.assertValue(forKeyPath: "error.message", equals: errorMessage)
+            logMatcher.assertValue(forKeyPath: "error.stack", equals: stackTrace)
+        }
+    }
+
     // MARK: - Sampling
 
     func testSamplingEnabled() {
