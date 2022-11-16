@@ -26,10 +26,18 @@ internal struct FeatureRequestBuilderMock: FeatureRequestBuilder {
         self.format = format
     }
 
-    func request(for events: [Data], with context: DatadogContext) -> URLRequest {
+    func request(for events: [Data], with context: DatadogContext) throws -> URLRequest {
         let builder = URLRequestBuilder(url: url, queryItems: queryItems, headers: headers)
         let data = format.format(events)
         return builder.uploadRequest(with: data)
+    }
+}
+
+internal struct FailingRequestBuilderMock: FeatureRequestBuilder {
+    let error: Error
+
+    func request(for events: [Data], with context: DatadogContext) throws -> URLRequest {
+        throw error
     }
 }
 

@@ -12,10 +12,10 @@ public struct DatadogContext {
     /// [Datadog Site](https://docs.datadoghq.com/getting_started/site/) for data uploads. It can be `nil` in V1
     /// if the SDK is configured using deprecated APIs:
     /// `set(logsEndpoint:)`, `set(tracesEndpoint:)` and `set(rumEndpoint:)`.
-    let site: DatadogSite?
+    public let site: DatadogSite?
 
     /// The client token allowing for data uploads to [Datadog Site](https://docs.datadoghq.com/getting_started/site/).
-    let clientToken: String
+    public let clientToken: String
 
     /// The name of the service that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
     let service: String
@@ -24,14 +24,14 @@ public struct DatadogContext {
     let env: String
 
     /// The version of the application that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
-    let version: String
+    public let version: String
 
     /// Denotes the mobile application's platform, such as `"ios"` or `"flutter"` that data is generated from.
     ///  - See: Datadog [Reserved Attributes](https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#reserved-attributes).
-    let source: String
+    public let source: String
 
     /// The version of Datadog iOS SDK.
-    let sdkVersion: String
+    public let sdkVersion: String
 
     /// The name of [CI Visibility](https://docs.datadoghq.com/continuous_integration/) origin.
     /// It is only set if the SDK is running with a context passed from [Swift Tests](https://docs.datadoghq.com/continuous_integration/setup_tests/swift/?tab=swiftpackagemanager) library.
@@ -45,7 +45,7 @@ public struct DatadogContext {
     // MARK: - Application Specific
 
     /// The name of the application, read from `Info.plist` (`CFBundleExecutable`).
-    let applicationName: String
+    public let applicationName: String
 
     /// The bundle identifier, read from `Info.plist` (`CFBundleIdentifier`).
     let applicationBundleIdentifier: String
@@ -54,7 +54,7 @@ public struct DatadogContext {
     let sdkInitDate: Date
 
     /// Current device information.
-    let device: DeviceInfo
+    public let device: DeviceInfo
 
     /// Current user information.
     var userInfo: UserInfo?

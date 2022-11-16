@@ -7,7 +7,7 @@
 import Foundation
 
 /// Describes current device information.
-internal struct DeviceInfo {
+public struct DeviceInfo {
     // MARK: - Info
 
     /// Device manufacturer name.

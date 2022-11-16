@@ -8,7 +8,7 @@ import Foundation
 
 /// Datadog site that SDK sends data to.
 /// See: https://docs.datadoghq.com/getting_started/site/
-internal typealias DatadogSite = Datadog.Configuration.DatadogEndpoint
+public typealias DatadogSite = Datadog.Configuration.DatadogEndpoint
 
 /// The SDK context for V1, until the V2 context is created.
 ///

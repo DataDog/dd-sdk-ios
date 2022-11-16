@@ -124,3 +124,41 @@ extension String: AnyMockable, RandomMockable {
         }
     }
 }
+
+extension URL: AnyMockable, RandomMockable {
+    static func mockAny() -> URL {
+        return URL(string: "https://www.datadoghq.com")!
+    }
+
+    static func mockRandom() -> URL {
+        return URL(string: "https://www.foo.com/")!
+            .appendingPathComponent(
+                .mockRandom(
+                    among: .alphanumerics,
+                    length: 32
+                )
+            )
+    }
+}
+
+extension Array {
+    /// Chunks the array randomly, e.g.:
+    ///
+    ///     print([1, 2, 3, 4, 5].chunkedRandomly(numberOfChunks: 3))
+    ///     // [[1], [2, 3], [4, 5]]
+    ///
+    func chunkedRandomly(numberOfChunks: Int) -> [[Element]] {
+        assert(numberOfChunks <= count, "`numberOfChunks` must be less than or equal to \(count)")
+
+        var indexes = (1..<count).shuffled()
+        var slices: [Int] = [0, count]
+        while slices.count <= numberOfChunks {
+            slices.append(indexes.removeLast())
+        }
+        slices.sort()
+
+        return zip(slices, slices.dropFirst()).map { start, end in
+            return Array(self[start..<end])
+        }
+    }
+}
