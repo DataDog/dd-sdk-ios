@@ -133,7 +133,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertFalse(
             scope.process(
                 command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1"),
-                context: datadogContext,
+                context: context,
                 writer: writer
             )
         )
@@ -158,7 +158,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertFalse(
             scope.process(
                 command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1"),
-                context: datadogContext,
+                context: context,
                 writer: writer
             )
         )
