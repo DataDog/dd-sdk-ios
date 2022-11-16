@@ -56,7 +56,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     private var activeResourcesCount: Int = 0
 
     /// Callback called when a `RUMActionEvent` is submitted for storage.
-    private let onActionEventSent: () -> Void
+    private let onActionEventSent: (RUMActionEvent) -> Void
 
     init(
         parent: RUMContextProvider,
@@ -67,7 +67,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         startTime: Date,
         serverTimeOffset: TimeInterval,
         isContinuous: Bool,
-        onActionEventSent: @escaping () -> Void
+        onActionEventSent: @escaping (RUMActionEvent) -> Void
     ) {
         self.parent = parent
         self.dependencies = dependencies
@@ -85,14 +85,14 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     // MARK: - RUMContextProvider
 
     var context: RUMContext {
-        // Per `RUMCurrentContext.activeViewContext`, we currently only get the context from the parent scope (`RUMViewScope`) when it's still active (`viewScopes.last`).
+        // We currently only get the context from the parent scope (`RUMViewScope`) when it's still active (`viewScopes.last`).
         // This might change at some point and the following context might then hold the wrong active view's properties at that point as this is not checked inside `RUMViewScope.context`.
         return parent.context
     }
 
     // MARK: - RUMScope
 
-    func process(command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Bool {
+    func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
         if let expirationTime = possibleExpirationTime(currentTime: command.time), allResourcesCompletedLoading() {
             sendActionEvent(completionTime: expirationTime, on: nil, context: context, writer: writer)
             return false
@@ -100,7 +100,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
         lastActivityTime = command.time
         switch command {
-        case is RUMStopViewCommand:
+        case is RUMStartViewCommand, is RUMStopViewCommand:
             sendActionEvent(completionTime: command.time, on: command, context: context, writer: writer)
             return false
         case let command as RUMStopUserActionCommand:
@@ -128,31 +128,31 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
     // MARK: - Sending RUM Events
 
-    private func sendActionEvent(completionTime: Date, on command: RUMCommand?, context: DatadogV1Context, writer: Writer) {
+    private func sendActionEvent(completionTime: Date, on command: RUMCommand?, context: DatadogContext, writer: Writer) {
         if let commandAttributes = command?.attributes {
             attributes.merge(rumCommandAttributes: commandAttributes)
         }
 
+        var frustrations: [RUMActionEvent.Action.Frustration.FrustrationType]? = nil
+        if dependencies.frustrationTrackingEnabled, errorsCount > 0, actionType == .tap {
+            frustrations = [.errorTap]
+        }
+
         let actionEvent = RUMActionEvent(
             dd: .init(
+                action: nil,
                 browserSdkVersion: nil,
                 session: .init(plan: .plan1)
             ),
             action: .init(
                 crash: nil,
                 error: .init(count: errorsCount.toInt64),
-                frustration: nil,
+                frustration: frustrations.map { .init(type: $0) },
                 id: actionUUID.toRUMDataFormat,
                 loadingTime: completionTime.timeIntervalSince(actionStartTime).toInt64Nanoseconds,
                 longTask: .init(count: longTasksCount),
-                position: nil,
                 resource: .init(count: resourcesCount.toInt64),
-                target: .init(
-                    height: nil,
-                    name: name,
-                    selector: nil,
-                    width: nil
-                ),
+                target: .init(name: name),
                 type: actionType.toRUMDataFormat
             ),
             application: .init(id: self.context.rumApplicationID),
@@ -165,7 +165,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: nil,
+                hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
@@ -184,7 +184,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
         if let event = dependencies.eventBuilder.build(from: actionEvent) {
             writer.write(value: event)
-            onActionEventSent()
+            onActionEventSent(event)
         }
     }
 

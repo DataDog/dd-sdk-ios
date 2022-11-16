@@ -121,6 +121,26 @@
             value = "1"
             isEnabled = "YES">
          </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_APPLICATION_KEY"
+            value = "$(DD_SDK_SWIFT_TESTING_APPLICATION_KEY)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_CIVISIBILITY_GIT_UPLOAD_ENABLED"
+            value = "1"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_CIVISIBILITY_ITR_ENABLED"
+            value = "1"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_CIVISIBILITY_EXCLUDED_BRANCHES"
+            value = "develop,release/*,hotfix/*"
+            isEnabled = "YES">
+         </EnvironmentVariable>
       </EnvironmentVariables>
       <CodeCoverageTargets>
          <BuildableReference

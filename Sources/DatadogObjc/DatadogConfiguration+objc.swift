@@ -192,6 +192,22 @@ internal struct DDDataEncryptionBridge: DataEncryption {
 }
 
 @objc
+public protocol DDServerDateProvider: AnyObject {
+    /// Start the clock synchronisation with NTP server.
+    ///
+    /// Calls the `completion` by passing it the server time offset when the synchronization succeeds or`nil` if it fails.
+    func synchronize(update: @escaping (TimeInterval) -> Void)
+}
+
+internal struct DDServerDateProviderBridge: ServerDateProvider {
+    let objcProvider: DDServerDateProvider
+
+    func synchronize(update: @escaping (TimeInterval) -> Void) {
+        objcProvider.synchronize(update: update)
+    }
+}
+
+@objc
 public class DDConfiguration: NSObject {
     internal let sdkConfiguration: Datadog.Configuration
 
@@ -267,6 +283,20 @@ public class DDConfigurationBuilder: NSObject {
         _ = sdkBuilder.set(customRUMEndpoint: customRUMEndpoint)
     }
 
+    /// Sets a custom NTP synchronization interface.
+    ///
+    /// By default, the Datadog SDK synchronizes with dedicated NTP pools provided by the
+    /// https://www.ntppool.org/ . Using different pools or setting a no-op `DDServerDateProvider`
+    /// implementation will result in desynchronization of the SDK instance and the Datadog servers.
+    /// This can lead to significant time shift in RUM sessions or distributed traces.
+    ///
+    /// - Parameter serverDateProvider: An object that complies with `DDServerDateProvider`
+    ///                                 for provider clock synchronisation.
+    @objc
+    public func set(serverDateProvider: DDServerDateProvider) {
+        _ = sdkBuilder.set(serverDateProvider: DDServerDateProviderBridge(objcProvider: serverDateProvider))
+    }
+
     @available(*, deprecated, message: "This option is replaced by `set(endpoint:)`. Refer to the new API comment for details.")
     @objc
     public func set(logsEndpoint: DDLogsEndpoint) {
@@ -299,6 +329,11 @@ public class DDConfigurationBuilder: NSObject {
     @objc
     public func set(serviceName: String) {
         _ = sdkBuilder.set(serviceName: serviceName)
+    }
+
+    @objc
+    public func set(loggingSamplingRate: Float) {
+        _ = sdkBuilder.set(loggingSamplingRate: loggingSamplingRate)
     }
 
     @objc
@@ -394,6 +429,16 @@ public class DDConfigurationBuilder: NSObject {
             let objcEvent = DDRUMLongTaskEvent(swiftModel: swiftEvent)
             return mapper(objcEvent)?.swiftModel
         }
+    }
+
+    @objc
+    public func trackBackgroundEvents(_ enabled: Bool = true) {
+        _ = sdkBuilder.trackBackgroundEvents(enabled)
+    }
+
+    @objc
+    public func trackFrustrations(_ enabled: Bool = true) {
+        _ = sdkBuilder.trackFrustrations(enabled)
     }
 
     @objc

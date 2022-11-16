@@ -39,8 +39,8 @@ class CrashContextTests: XCTestCase {
         // Then
         let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
         try AssertEncodedRepresentationsEqual(
-            value1: deserializedContext.lastRUMViewEvent,
-            value2: randomRUMViewEvent
+            deserializedContext.lastRUMViewEvent,
+            randomRUMViewEvent
         )
     }
 
@@ -57,8 +57,8 @@ class CrashContextTests: XCTestCase {
         // Then
         let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
         try AssertEncodedRepresentationsEqual(
-            value1: deserializedContext.lastRUMSessionState,
-            value2: randomRUMSessionState
+            deserializedContext.lastRUMSessionState,
+            randomRUMSessionState
         )
     }
 
@@ -139,8 +139,8 @@ class CrashContextTests: XCTestCase {
         line: UInt = #line
     ) throws {
         try AssertEncodedRepresentationsEqual(
-            value1: dictionary1.mapValues { CodableValue($0) },
-            value2: dictionary2.mapValues { CodableValue($0) }
+            dictionary1.mapValues { CodableValue($0) },
+            dictionary2.mapValues { CodableValue($0) }
         )
     }
 }

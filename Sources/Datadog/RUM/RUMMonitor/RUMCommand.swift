@@ -146,8 +146,12 @@ internal protocol RUMResourceCommand: RUMCommand {
 /// Tracing information propagated by Tracing to the underlying `URLRequest`. It is passed to the RUM backend
 /// in order to create the APM span. The actual `Span` is not send by the SDK.
 internal struct RUMSpanContext {
+    /// The trace ID injected to `URLRequest` that issues RUM resource.
     let traceID: String
+    /// The span ID injected to `URLRequest` that issues RUM resource.
     let spanID: String
+    /// The sampling rate applied to the trace (a value between `0.0` and `1.0`).
+    let samplingRate: Double
 }
 
 internal struct RUMStartResourceCommand: RUMResourceCommand {
@@ -325,6 +329,18 @@ internal struct RUMKeepSessionAliveCommand: RUMCommand {
     let canStartBackgroundView = false
     let canStartApplicationLaunchView = false
     let isUserInteraction = false
+    var time: Date
+    var attributes: [AttributeKey: AttributeValue]
+}
+
+// MARK: - Cross-platform perf metrics
+
+internal struct RUMUpdatePerformanceMetric: RUMCommand {
+    let canStartBackgroundView = false
+    let canStartApplicationLaunchView = false
+    let isUserInteraction = false
+    let metric: PerformanceMetric
+    let value: Double
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
 }

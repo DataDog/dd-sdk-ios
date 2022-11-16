@@ -370,9 +370,13 @@ extension Bool: AnyMockable {
     }
 }
 
-extension Float: AnyMockable {
+extension Float: AnyMockable, RandomMockable {
     static func mockAny() -> Float {
         return 0
+    }
+
+    static func mockRandom() -> Float {
+        return .random(in: -Float(Int.min)...Float(Int.max))
     }
 }
 

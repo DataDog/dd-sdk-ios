@@ -8,182 +8,60 @@ import Foundation
 import CodeGeneration
 
 /// Adjusts naming and structure of generated code for RUM.
-public class RUMCodeDecorator: CodeDecorator {
-    public init() {}
-
-    // MARK: - CodeDecorator
-
-    public func decorate(code: GeneratedCode) throws -> GeneratedCode {
-        return GeneratedCode(
-            swiftTypes: try transform(types: code.swiftTypes)
-        )
-    }
-
-    // MARK: - Internal
-
-    /// Types which will shared between all input `types`. Sharing means detaching those types from nested declaration
-    /// and putting them at the root level of the resultant `types` array, so the type can be printed without being nested.
-    private let sharedTypeNames = [
-        "RUMConnectivity",
-        "RUMUser",
-        "RUMMethod",
-        "RUMEventAttributes",
-        "RUMCITest",
-        "RUMDevice",
-        "RUMOperatingSystem",
-        "RUMDisplay",
-        "RUMActionID",
-    ]
-
+public class RUMCodeDecorator: SwiftCodeDecorator {
     /// `RUMDataModel` protocol, implemented by all RUM models.
     private let rumDataModelProtocol = SwiftProtocol(name: "RUMDataModel", conformance: [codableProtocol])
 
-    /// Transformation context. It pushes `SwiftTypes` to and from the `context.stack`
-    /// so we can know the current level of recursive transformation.
-    private let context = TransformationContext<SwiftType>()
-
-    func transform(types: [SwiftType]) throws -> [SwiftType] {
-        sharedRootTypes = []
-
-        precondition(context.current == nil)
-        let transformed = try types.map { try transformAny(swiftType: $0) }
-        precondition(context.current == nil)
-
-        return transformed + sharedRootTypes
+    public init() {
+        super.init(
+            sharedTypeNames: [
+                "RUMConnectivity",
+                "RUMUser",
+                "RUMMethod",
+                "RUMEventAttributes",
+                "RUMCITest",
+                "RUMDevice",
+                "RUMOperatingSystem",
+                "RUMDisplay",
+                "RUMActionID",
+            ]
+        )
     }
 
-    // MARK: - Type Transformations
+    // MARK: - Types customiation
 
-    private func transformAny(swiftType: SwiftType) throws -> SwiftType {
-        context.enter(swiftType)
-        defer { context.leave() }
-
-        switch swiftType {
-        case let primitive as SwiftPrimitiveType:
-            return transform(primitive: primitive)
-        case let array as SwiftArray:
-            return try transform(array: array)
-        case let dictionary as SwiftDictionary:
-            return transform(dictionary: dictionary)
-        case let `enum` as SwiftEnum:
-            let transformed = transform(enum: `enum`)
-            return isSharedType(transformed) ? try replaceWithSharedTypeReference(transformed) : transformed
-        case let associatedTypeEnum as SwiftAssociatedTypeEnum:
-            let transformed = transform(associatedTypeEnum: associatedTypeEnum)
-            return isSharedType(transformed) ? try replaceWithSharedTypeReference(transformed) : transformed
-        case let `struct` as SwiftStruct:
-            let transformed = try transform(struct: `struct`)
-            return isSharedType(transformed) ? try replaceWithSharedTypeReference(transformed) : transformed
-        default:
-            throw Exception.unimplemented("RUM transformation is not implemented for \(type(of: swiftType))")
-        }
-    }
-
-    private func transform(primitive: SwiftPrimitiveType) -> SwiftPrimitiveType {
+    override public func transform(primitive: SwiftPrimitiveType) -> SwiftPrimitiveType {
         if primitive is SwiftPrimitive<Int> {
             return SwiftPrimitive<Int64>() // Replace all `Int` with `Int64`
         } else {
-            return primitive
+            return super.transform(primitive: primitive)
         }
     }
 
-    private func transform(dictionary: SwiftDictionary) -> SwiftDictionary {
-        var dictionary = dictionary
-        dictionary.value = transform(primitive: dictionary.value)
-        return dictionary
-    }
+    override public func transform(struct: SwiftStruct) throws -> SwiftStruct {
+        var `struct` = try super.transform(struct: `struct`)
 
-    private func transform(array: SwiftArray) throws -> SwiftArray {
-        var array = array
-        array.element = try transformAny(swiftType: array.element)
-        return array
-    }
-
-    private func transform(`enum`: SwiftEnum) -> SwiftEnum {
-        func transform(enumCase: SwiftEnum.Case) -> SwiftEnum.Case {
-            var enumCase = enumCase
-            enumCase.label = format(enumCaseName: enumCase.label)
-            return enumCase
-        }
-
-        var `enum` = `enum`
-        `enum`.name = format(enumName: `enum`.name)
-        `enum`.cases = `enum`.cases.map { transform(enumCase: $0) }
-        `enum`.conformance = [codableProtocol] // Conform all enums to `Codable`
-        return `enum`
-    }
-
-    private func transform(associatedTypeEnum: SwiftAssociatedTypeEnum) -> SwiftAssociatedTypeEnum {
-        func transform(enumCase: SwiftAssociatedTypeEnum.Case) -> SwiftAssociatedTypeEnum.Case {
-            var enumCase = enumCase
-            enumCase.label = format(enumCaseName: enumCase.label)
-            return enumCase
-        }
-
-        var associatedTypeEnum = associatedTypeEnum
-        associatedTypeEnum.name = format(enumName: associatedTypeEnum.name)
-        associatedTypeEnum.cases = associatedTypeEnum.cases.map { transform(enumCase: $0) }
-        associatedTypeEnum.conformance = [codableProtocol] // Conform all enums to `Codable`
-        return associatedTypeEnum
-    }
-
-    private func transform(`struct`: SwiftStruct) throws -> SwiftStruct {
-        func transform(structProperty: SwiftStruct.Property) throws -> SwiftStruct.Property {
-            func transform(defaultValue: SwiftPropertyDefaultValue) -> SwiftPropertyDefaultValue {
-                if var enumCase = defaultValue as? SwiftEnum.Case {
-                    enumCase.label = format(enumCaseName: enumCase.label)
-                    return enumCase
-                } else {
-                    return defaultValue
-                }
-            }
-
-            var structProperty = structProperty
-            structProperty.name = format(propertyName: structProperty.name)
-            structProperty.type = try transformAny(swiftType: structProperty.type)
-            structProperty.defaultValue = structProperty.defaultValue.ifNotNil { transform(defaultValue: $0) }
-            return structProperty
-        }
-
-        var `struct` = `struct`
-        `struct`.name = format(structName: `struct`.name)
-        `struct`.properties = try `struct`.properties
-            .map { try transform(structProperty: $0) }
         if context.parent == nil {
             `struct`.conformance = [rumDataModelProtocol] // Conform root structs to `RUMDataModel`
-        } else {
-            `struct`.conformance = [codableProtocol] // Conform other structs to `Codable`
         }
+
         return `struct`
     }
 
     // MARK: - Naming Conventions
 
-    private func format(structName: String) -> String {
-        fix(typeName: structName.upperCamelCased)
-    }
-
-    private func format(propertyName: String) -> String {
-        propertyName.lowerCamelCased
-    }
-
-    private func format(enumName: String) -> String {
-        fix(typeName: enumName.upperCamelCased)
-    }
-
-    private func format(enumCaseName: String) -> String {
+    override public func format(enumCaseName: String) -> String {
         // When generating enum cases for Resource's HTTP method, force lowercase
         // (`.get`, `.post`, ...)
         if (context.current as? SwiftEnum)?.name.lowercased() == "method" {
             return enumCaseName.lowercased()
         }
 
-        return enumCaseName.lowerCamelCased
+        return super.format(enumCaseName: enumCaseName)
     }
 
-    /// Some RUM type names need additional fix to not conflict with Swift keywords (like `Type`) or just to look better.
-    private func fix(typeName: String) -> String {
-        var fixedName = typeName
+    override public func fix(typeName: String) -> String {
+        var fixedName = super.fix(typeName: typeName)
 
         // If the type name uses an abbreviation, keep it uppercased.
         if fixedName.count <= 3 {
@@ -193,13 +71,6 @@ public class RUMCodeDecorator: CodeDecorator {
         // If the name starts with "rum" (any-cased), ensure it gets uppercased.
         if fixedName.lowercased().hasPrefix("rum") {
             fixedName = fixedName.prefix(3).uppercased() + fixedName.suffix(fixedName.count - 3)
-        }
-
-        // If the type name collides with Swift `Type` keyword, prefix it with parent type name.
-        if fixedName == "Type" {
-            let parentStruct = context.predecessor(matching: { $0 is SwiftStruct }) as? SwiftStruct
-            let parentTypeName = parentStruct?.name ?? ""
-            fixedName = format(structName: parentTypeName) + fixedName
         }
 
         if fixedName == "Connectivity" {
@@ -244,66 +115,4 @@ public class RUMCodeDecorator: CodeDecorator {
 
         return fixedName
     }
-
-    // MARK: - Shared Types
-
-    private var sharedRootTypes: [SwiftType] = []
-
-    /// Returns `true` if this `type` is configured to be shared.
-    private func isSharedType(_ type: SwiftType) -> Bool {
-        if let name = type.typeName {
-            return sharedTypeNames.contains(name)
-        } else {
-            return false
-        }
-    }
-
-    /// Detaches given `type` from nested declaration by replacing it with `SwiftTypeReference` and
-    /// appending to `sharedRootTypes`.
-    private func replaceWithSharedTypeReference(_ type: SwiftType) throws -> SwiftTypeReference {
-        guard let name = type.typeName else {
-            throw Exception.illegal("Type \(type) cannot be shared.")
-        }
-
-        if let existing = sharedRootTypes.first(where: { $0.typeName == name }) {
-            // If a type with given name is already declared as shared, its definition must be
-            // equal to `type`, otherwise sharing is not possible.
-            guard existing == type else {
-                throw Exception.inconsistency(
-                    """
-                    \(type) and \(existing) cannot be printed as a shared root type because their definitions are different.
-                    """
-                )
-            }
-        } else {
-            sharedRootTypes.append(type)
-        }
-
-        return SwiftTypeReference(referencedTypeName: name)
-    }
-}
-
-// MARK: - Utilities
-
-extension String {
-    private var camelCased: String {
-        guard !isEmpty else {
-            return ""
-        }
-
-        let words = components(separatedBy: CharacterSet.alphanumerics.inverted)
-        let first = words.first! // swiftlint:disable:this force_unwrapping
-        let rest = words.dropFirst().map { $0.uppercasingFirst }
-        return ([first] + rest).joined(separator: "")
-    }
-
-    /// Uppercases the first character.
-    var uppercasingFirst: String { prefix(1).uppercased() + dropFirst() }
-    /// Lowercases the first character.
-    var lowercasingFirst: String { prefix(1).lowercased() + dropFirst() }
-
-    /// "lowerCamelCased" notation.
-    var lowerCamelCased: String { camelCased.lowercasingFirst }
-    /// "UpperCamelCased" notation.
-    var upperCamelCased: String { camelCased.uppercasingFirst }
 }

@@ -22,10 +22,10 @@ internal struct RUMConnectivityInfoProvider {
 }
 
 extension RUMConnectivity {
-    init?(context: DatadogV1Context) {
+    init?(context: DatadogContext) {
         self.init(
-            networkInfo: context.networkConnectionInfoProvider.current,
-            carrierInfo: context.carrierInfoProvider.current
+            networkInfo: context.networkConnectionInfo,
+            carrierInfo: context.carrierInfo
         )
     }
 

@@ -11,37 +11,39 @@ let package = Package(
     products: [
         .library(
             name: "Datadog",
-            type: .dynamic,
             targets: ["Datadog"]
         ),
         .library(
             name: "DatadogObjc",
-            type: .dynamic,
             targets: ["DatadogObjc"]
         ),
         .library(
+            name: "DatadogDynamic",
+            type: .dynamic,
+            targets: ["Datadog"]
+        ),
+        .library(
+            name: "DatadogDynamicObjc",
+            type: .dynamic,
+            targets: ["DatadogObjc"]
+        ),
+        .library( // TODO: RUMM-2387 Consider removing explicit linkage variants
             name: "DatadogStatic",
             type: .static,
             targets: ["Datadog"]
         ),
-        .library(
+        .library( // TODO: RUMM-2387 Consider removing explicit linkage variants
             name: "DatadogStaticObjc",
             type: .static,
             targets: ["DatadogObjc"]
         ),
         .library(
             name: "DatadogCrashReporting",
-            type: .dynamic,
-            targets: ["DatadogCrashReporting"]
-        ),
-        .library(
-            name: "DatadogCrashReportingStatic",
-            type: .static,
             targets: ["DatadogCrashReporting"]
         ),
     ],
     dependencies: [
-        .package(name: "PLCrashReporter", url: "https://github.com/microsoft/plcrashreporter.git", from: "1.10.0"),
+        .package(name: "PLCrashReporter", url: "https://github.com/microsoft/plcrashreporter.git", from: "1.11.0"),
     ],
     targets: [
         .target(

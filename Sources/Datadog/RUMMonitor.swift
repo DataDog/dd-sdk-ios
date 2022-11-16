@@ -96,7 +96,7 @@ public enum RUMErrorSource {
     case custom
 }
 
-internal enum RUMInternalErrorSource {
+internal enum RUMInternalErrorSource: String {
     case custom
     case source
     case network
@@ -146,12 +146,25 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     /// User-targeted, debugging utility which can be toggled with `Datadog.debugRUM`.
     private(set) var debugging: RUMDebugging? = nil
 
+    /// RUM Attributes shared with other Feature registered in core.
+    internal struct Attributes {
+        /// The ID of RUM application (`String`).
+        internal static let applicationID = "application_id"
+        /// The ID of current RUM session (standard UUID `String`, lowercased).
+        /// In case the session is rejected (not sampled), RUM context is set to empty (`[:]`) in core.
+        internal static let sessionID = "session_id"
+        /// The ID of current RUM view (standard UUID `String`, lowercased).
+        internal static let viewID = "view.id"
+        /// The ID of current RUM action (standard UUID `String`, lowercased).
+        internal static let userActionID = "user_action.id"
+    }
+
     // MARK: - Initialization
 
     /// Initializes the Datadog RUM Monitor.
     public static func initialize(in core: DatadogCoreProtocol = defaultDatadogCore) -> DDRUMMonitor {
         do {
-            guard let context = core.v1.context else {
+            if core is NOPDatadogCore {
                 throw ProgrammerError(
                     description: "`Datadog.initialize()` must be called prior to `RUMMonitor.initialize()`."
                 )
@@ -174,10 +187,9 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 core: core,
                 dependencies: RUMScopeDependencies(
                     rumFeature: rumFeature,
-                    crashReportingFeature: crashReporting,
-                    context: context
+                    crashReportingFeature: crashReporting
                 ),
-                dateProvider: context.dateProvider
+                dateProvider: rumFeature.configuration.dateProvider
             )
 
             core.v1.feature(RUMInstrumentation.self)?.publish(to: monitor)
@@ -585,6 +597,23 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         }
     }
 
+    // MARK: - Cross-platform perf metrics
+
+    override public func updatePerformanceMetric(
+        metric: PerformanceMetric,
+        value: Double,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        process(
+            command: RUMUpdatePerformanceMetric(
+                metric: metric,
+                value: value,
+                time: dateProvider.now,
+                attributes: attributes
+            )
+        )
+    }
+
     // MARK: - Internal
 
     func enableRUMDebugging(_ enabled: Bool) {
@@ -597,21 +626,39 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     // MARK: - RUMCommandSubscriber
 
     func process(command: RUMCommand) {
-        guard let scope = core.v1.scope(for: RUMFeature.self) else {
-            return
-        }
+        // process command in event context
+        core.v1.scope(for: RUMFeature.self)?.eventWriteContext { context, writer in
+            self.queue.sync {
+                let transformedCommand = self.transform(command: command)
 
-        queue.async {
-            let transformedCommand = self.transform(command: command)
-
-            scope.eventWriteContext { context, writer in
                 _ = self.applicationScope.process(command: transformedCommand, context: context, writer: writer)
-            }
 
-            if let debugging = self.debugging {
-                debugging.debug(applicationScope: self.applicationScope)
+                if let debugging = self.debugging {
+                    debugging.debug(applicationScope: self.applicationScope)
+                }
             }
         }
+
+        // update the core context with rum context
+        core.set(feature: "rum", attributes: {
+            self.queue.sync {
+                let context = self.applicationScope.sessionScope?.viewScopes.last?.context ??
+                                self.applicationScope.sessionScope?.context ??
+                                self.applicationScope.context
+
+                guard context.sessionID != .nullUUID else {
+                    // if Session was sampled or not yet started
+                    return [:]
+                }
+
+                return [
+                    Attributes.applicationID: context.rumApplicationID,
+                    Attributes.sessionID: context.sessionID.rawValue.uuidString.lowercased(),
+                    Attributes.viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
+                    Attributes.userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased()
+                ]
+            }
+        })
     }
 
     // TODO: RUMM-896

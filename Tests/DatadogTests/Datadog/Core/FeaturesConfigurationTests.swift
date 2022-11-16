@@ -38,6 +38,28 @@ class FeaturesConfigurationTests: XCTestCase {
             appContext: .mockWith(bundleVersion: nil)
         )
         XCTAssertEqual(configuration.common.applicationVersion, "0.0.0", "should fallback to '0.0.0'")
+
+        let randomVersion: String = .mockRandom()
+        configuration = try FeaturesConfiguration(
+            configuration: .mockWith(additionalConfiguration: [CrossPlatformAttributes.version: randomVersion]),
+            appContext: .mockAny()
+        )
+        XCTAssertEqual(configuration.common.applicationVersion, randomVersion, "Version can be customized through additional configuration")
+    }
+
+    func testApplicationVariant() throws {
+        var configuration = try FeaturesConfiguration(
+            configuration: .mockAny(),
+            appContext: .mockAny()
+        )
+        XCTAssertNil(configuration.common.variant, "should not have a default variant")
+
+        let randomVariant: String = .mockRandom()
+        configuration = try FeaturesConfiguration(
+            configuration: .mockWith(additionalConfiguration: [CrossPlatformAttributes.variant: randomVariant]),
+            appContext: .mockAny()
+        )
+        XCTAssertEqual(configuration.common.variant, randomVariant, "Variant can be customized through additional configuration")
     }
 
     func testApplicationBundleIdentifier() throws {
@@ -527,6 +549,17 @@ class FeaturesConfigurationTests: XCTestCase {
             Use: `.enableLogging(true)` or `.enableRUM(true)`.
             """
         )
+    }
+
+    func testLoggingSamplingRate() throws {
+        let custom = try FeaturesConfiguration(
+            configuration: .mockWith(
+                loggingEnabled: true,
+                loggingSamplingRate: 12.34
+            ),
+            appContext: .mockAny()
+        )
+        XCTAssertEqual(custom.logging?.remoteLoggingSampler.samplingRate, 12.34)
     }
 
     // MARK: - URLSession Auto Instrumentation Configuration Tests

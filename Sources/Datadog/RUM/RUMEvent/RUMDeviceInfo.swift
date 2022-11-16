@@ -7,12 +7,17 @@
 import Foundation
 
 extension RUMDevice {
+    init(context: DatadogContext) {
+        self.init(device: context.device)
+    }
+
     init(context: DatadogV1Context) {
         self.init(device: context.device)
     }
 
     init(device: DeviceInfo) {
         self.init(
+            architecture: device.architecture,
             brand: device.brand,
             model: device.model,
             name: device.name,

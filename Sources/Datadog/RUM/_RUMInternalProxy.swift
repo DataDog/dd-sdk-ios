@@ -21,7 +21,7 @@ public class _RUMInternalProxy {
         self.subscriber = subscriber
     }
 
-    func addLongTask(at: Date, duration: TimeInterval, attributes: [AttributeKey: AttributeValue] = [:]) {
+    public func addLongTask(at: Date, duration: TimeInterval, attributes: [AttributeKey: AttributeValue] = [:]) {
         let longTaskCommand = RUMAddLongTaskCommand(time: at, attributes: attributes, duration: duration)
 
         subscriber?.process(command: longTaskCommand)

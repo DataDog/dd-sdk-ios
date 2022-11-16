@@ -10,8 +10,10 @@ import Foundation
 internal class ServerDateCorrector: DateCorrector {
     /// Server offset publisher.
     private let publisher: ValuePublisher<TimeInterval> = ValuePublisher(initialValue: 0)
+    private let provider: ServerDateProvider
 
     init(serverDateProvider: ServerDateProvider) {
+        self.provider = serverDateProvider
         serverDateProvider.synchronize(update: publisher.publishAsync)
     }
 

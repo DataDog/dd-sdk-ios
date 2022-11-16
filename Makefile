@@ -1,7 +1,7 @@
 all: dependencies xcodeproj-httpservermock templates
 
 # The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
-DD_SDK_SWIFT_TESTING_VERSION = 2.0.1
+DD_SDK_SWIFT_TESTING_VERSION = 2.2.0-rc.2
 
 define DD_SDK_TESTING_XCCONFIG_CI
 FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
@@ -13,6 +13,7 @@ DD_TEST_RUNNER=1\n
 DD_SDK_SWIFT_TESTING_SERVICE=dd-sdk-ios\n
 DD_SDK_SWIFT_TESTING_APIKEY=${DD_SDK_SWIFT_TESTING_APIKEY}\n
 DD_SDK_SWIFT_TESTING_ENV=ci\n
+DD_SDK_SWIFT_TESTING_APPLICATION_KEY=${DD_SDK_SWIFT_TESTING_APPLICATION_KEY}\n
 endef
 export DD_SDK_TESTING_XCCONFIG_CI
 
@@ -70,6 +71,11 @@ xcodeproj-httpservermock:
 		@cd instrumented-tests/http-server-mock/ && swift package generate-xcodeproj
 		@echo "OK 👌"
 
+xcodeproj-session-replay:
+		@echo "⚙️  Generating 'DatadogSessionReplay.xcodeproj'..."
+		@cd session-replay/ && swift package generate-xcodeproj
+		@echo "OK 👌"
+
 templates:
 		@echo "⚙️  Installing Xcode templates..."
 		./tools/xcode-templates/install-xcode-templates.sh
@@ -90,13 +96,25 @@ test-cocoapods:
 # Generate RUM data models from rum-events-format JSON Schemas
 rum-models-generate:
 		@echo "⚙️  Generating RUM models..."
-		./tools/rum-models-generator/run.sh generate
+		./tools/rum-models-generator/run.py generate rum
 		@echo "OK 👌"
 
 # Verify if RUM data models follow rum-events-format JSON Schemas
 rum-models-verify:
 		@echo "🧪  Verifying RUM models..."
-		./tools/rum-models-generator/run.sh verify
+		./tools/rum-models-generator/run.py verify rum
+		@echo "OK 👌"
+
+# Generate Session Replay data models from rum-events-format JSON Schemas
+sr-models-generate:
+		@echo "⚙️  Generating Session Replay models..."
+		./tools/rum-models-generator/run.py generate sr
+		@echo "OK 👌"
+
+# Verify if Session Replay data models follow rum-events-format JSON Schemas
+sr-models-verify:
+		@echo "🧪  Verifying Session Replay models..."
+		./tools/rum-models-generator/run.py verify sr
 		@echo "OK 👌"
 
 # Generate api-surface files for Datadog and DatadogObjc.

@@ -7,32 +7,10 @@
 import XCTest
 @testable import Datadog
 
-private class KronosClockMock: KronosClockProtocol {
-    typealias FirstCompletion = (Date, TimeInterval) -> Void
-    typealias EndCompletion = (Date?, TimeInterval?) -> Void
-
-    let now: Date? = nil
-
-    private(set) var currentPool: String? = nil
-    private(set) var first: FirstCompletion? = nil
-    private(set) var completion: EndCompletion? = nil
-
-    func sync(
-        from pool: String,
-        samples: Int,
-        first: FirstCompletion?,
-        completion: EndCompletion?
-    ) {
-        self.currentPool = pool
-        self.first = first
-        self.completion = completion
-    }
-}
-
 class DateCorrectorTests: XCTestCase {
     func testWhenInitialized_itSynchronizesWithOneOfDatadogNTPServers() throws {
         let kronos = KronosClockMock()
-        let serverDateProvider = NTPServerDateProvider(kronos: kronos)
+        let serverDateProvider = DatadogNTPDateProvider(kronos: kronos)
 
         var randomlyChosenServers: Set<String> = []
 
@@ -43,7 +21,7 @@ class DateCorrectorTests: XCTestCase {
             randomlyChosenServers.insert(pool)
         }
 
-        let allAvailableServers = Set(NTPServerDateProvider.datadogNTPServers)
+        let allAvailableServers = Set(DatadogNTPServers)
         XCTAssertEqual(randomlyChosenServers, allAvailableServers, "Each time Datadog NTP server should be picked randomly.")
     }
 
@@ -53,9 +31,10 @@ class DateCorrectorTests: XCTestCase {
 
         // When
         let kronos = KronosClockMock()
-        let serverDateProvider = NTPServerDateProvider(kronos: kronos)
+        let serverDateProvider = DatadogNTPDateProvider(kronos: kronos)
         serverDateProvider.synchronize { _ in }
-        kronos.completion?(.init(timeIntervalSinceNow: -1), nil)
+        kronos.update(offset: -1)
+        kronos.complete()
 
         // Then
         XCTAssertEqual(
@@ -73,16 +52,16 @@ class DateCorrectorTests: XCTestCase {
 
         // When
         let kronos = KronosClockMock()
-        let serverDateProvider = NTPServerDateProvider(kronos: kronos)
+        let serverDateProvider = DatadogNTPDateProvider(kronos: kronos)
         serverDateProvider.synchronize { _ in }
-        kronos.completion?(nil, -1)
+        kronos.complete()
 
         // Then
         XCTAssertEqual(
-            dd.logger.debugLog?.message,
+            dd.logger.errorLog?.message,
             """
-            NTP time synchronization completed.
-            Server time will be used for signing events (-1.0s difference with device time).
+            NTP time synchronization failed.
+            Device time will be used for signing events.
             """
         )
     }
@@ -93,9 +72,9 @@ class DateCorrectorTests: XCTestCase {
 
         // When
         let kronos = KronosClockMock()
-        let serverDateProvider = NTPServerDateProvider(kronos: kronos)
+        let serverDateProvider = DatadogNTPDateProvider(kronos: kronos)
         serverDateProvider.synchronize { _ in }
-        kronos.completion?(nil, nil)
+        kronos.complete()
 
         // Then
         XCTAssertEqual(
@@ -109,11 +88,11 @@ class DateCorrectorTests: XCTestCase {
 
     func testWhenServerTimeIsNotAvailable_itDoesNoCorrection() {
         let kronos = KronosClockMock()
-        let serverDateProvider = NTPServerDateProvider(kronos: kronos)
+        let serverDateProvider = DatadogNTPDateProvider(kronos: kronos)
 
         // When
         let corrector = ServerDateCorrector(serverDateProvider: serverDateProvider)
-        kronos.completion?(nil, nil)
+        kronos.complete()
 
         // Then
         let randomDeviceTime: Date = .mockRandomInThePast()
@@ -124,12 +103,12 @@ class DateCorrectorTests: XCTestCase {
         let deviceDateProvider = RelativeDateProvider(using: .mockRandomInThePast())
 
         let kronos = KronosClockMock()
-        let serverDateProvider = NTPServerDateProvider(kronos: kronos)
+        let serverDateProvider = DatadogNTPDateProvider(kronos: kronos)
 
         // When
         var serverOffset: TimeInterval = .mockRandomInThePast()
         let corrector = ServerDateCorrector(serverDateProvider: serverDateProvider)
-        kronos.first?(.mockAny(), serverOffset)
+        kronos.update(offset: serverOffset)
 
         // Then
         XCTAssertTrue(
@@ -150,7 +129,8 @@ class DateCorrectorTests: XCTestCase {
         )
 
         serverOffset = .mockRandomInThePast()
-        kronos.completion?(.mockAny(), serverOffset)
+        kronos.update(offset: serverOffset)
+        kronos.complete()
 
         XCTAssertTrue(
             datesEqual(
@@ -171,9 +151,9 @@ class DateCorrectorTests: XCTestCase {
 
     func testRandomlyCallingCorrectionConcurrentlyDoesNotCrash() {
         let kronos = KronosClockMock()
-        let serverDateProvider = NTPServerDateProvider(kronos: kronos)
+        let serverDateProvider = DatadogNTPDateProvider(kronos: kronos)
         let corrector = ServerDateCorrector(serverDateProvider: serverDateProvider)
-        kronos.completion?(nil, .mockRandomInThePast())
+        kronos.update(offset: .mockRandomInThePast())
 
         DispatchQueue.concurrentPerform(iterations: 50) { iteration in
             _ = Date.mockRandomInThePast().addingTimeInterval(corrector.offset)

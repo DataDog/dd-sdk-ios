@@ -148,7 +148,7 @@ class CarrierInfoProviderTests: XCTestCase {
 
     func testDifferentCarrierInfoRadioAccessTechnologies() {
         func initializeFrom(coreTelephonyConstant: String) -> CarrierInfo.RadioAccessTechnology {
-            return CarrierInfo.RadioAccessTechnology(ctRadioAccessTechnologyConstant: coreTelephonyConstant)
+            return CarrierInfo.RadioAccessTechnology(coreTelephonyConstant)
         }
 
         XCTAssertEqual(initializeFrom(coreTelephonyConstant: CTRadioAccessTechnologyGPRS), .GPRS)

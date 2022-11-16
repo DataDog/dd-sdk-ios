@@ -81,6 +81,22 @@
       {
         "key" : "BITRISE_BUILD_URL",
         "value" : "$(BITRISE_BUILD_URL)"
+      },
+      {
+        "key" : "DD_APPLICATION_KEY",
+        "value" : "$(DD_SDK_SWIFT_TESTING_APPLICATION_KEY)"
+      },
+      {
+        "key" : "DD_CIVISIBILITY_GIT_UPLOAD_ENABLED",
+        "value" : "1"
+      },
+      {
+        "key" : "DD_CIVISIBILITY_ITR_ENABLED",
+        "value" : "1"
+      },
+      {
+        "key" : "DD_CIVISIBILITY_EXCLUDED_BRANCHES",
+        "value" : "develop,release\/*,hotfix\/*"
       }
     ],
     "targetForVariableExpansion" : {

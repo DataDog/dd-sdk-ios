@@ -441,12 +441,12 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
 
     // MARK: - Transforming `JSONOneOfs`
 
-    func testTransformingRootJSONOneOfs() throws {
-        let oneOfs = JSONOneOfs(
+    func testTransformingRootJSONUnion() throws {
+        let oneOfs = JSONUnionType(
             name: "RootMultitype",
             comment: "Root description",
             types: [
-                JSONOneOfs.OneOf(
+                .init(
                     name: "Child1",
                     type: JSONObject(
                         name: "Child1",
@@ -463,7 +463,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         ]
                     )
                 ),
-                JSONOneOfs.OneOf(
+                .init(
                     name: "Child2",
                     type: JSONObject(
                         name: "Child2",
@@ -523,7 +523,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
         XCTAssertEqual(expected, actual)
     }
 
-    func testTransformingNestedJSONOneOfs() throws {
+    func testTransformingNestedJSONUnion() throws {
         let object = JSONObject(
             name: "RootObject",
             comment: nil,
@@ -531,11 +531,11 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                 JSONObject.Property(
                     name: "oneOfTypeProperty",
                     comment: "OneOf property description",
-                    type: JSONOneOfs(
+                    type: JSONUnionType(
                         name: "NestedOneOf",
                         comment: "OneOf property description",
                         types: [
-                            JSONOneOfs.OneOf(
+                            .init(
                                 name: "Child1",
                                 type: JSONObject(
                                     name: "Child1",
@@ -552,7 +552,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                     ]
                                 )
                             ),
-                            JSONOneOfs.OneOf(
+                            .init(
                                 name: "Child2",
                                 type: JSONObject(
                                     name: "Child2",
@@ -645,18 +645,18 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
         XCTAssertEqual(expected, actual[0])
     }
 
-    func testTransformingRootJSONOneOfsWithNestedJSONOneOfs() throws {
-        let rootOneOfs = JSONOneOfs(
+    func testTransformingRootJSONOneOfsWithNestedJSONUnion() throws {
+        let rootOneOfs = JSONUnionType(
             name: "Root oneOf",
             comment: "Root oneOf comment",
             types: [
-                JSONOneOfs.OneOf(
+                .init(
                     name: "Root 1",
-                    type: JSONOneOfs(
+                    type: JSONUnionType(
                         name: "Nested oneOf",
                         comment: "Nested oneOf comment",
                         types: [
-                            JSONOneOfs.OneOf(
+                            .init(
                                 name: "Nested 1A",
                                 type: JSONObject(
                                     name: "Nested 1A",
@@ -664,7 +664,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                     properties: []
                                 )
                             ),
-                            JSONOneOfs.OneOf(
+                            .init(
                                 name: "Nested 1B",
                                 type: JSONObject(
                                     name: "Nested 1B",
@@ -675,13 +675,13 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         ]
                     )
                 ),
-                JSONOneOfs.OneOf(
+                .init(
                     name: "Root 2",
-                    type: JSONOneOfs(
+                    type: JSONUnionType(
                         name: "Nested oneOf",
                         comment: "Nested oneOf comment",
                         types: [
-                            JSONOneOfs.OneOf(
+                            .init(
                                 name: "Nested 2A",
                                 type: JSONObject(
                                     name: "Nested 2A",
@@ -689,7 +689,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                     properties: []
                                 )
                             ),
-                            JSONOneOfs.OneOf(
+                            .init(
                                 name: "Nested 2B",
                                 type: JSONObject(
                                     name: "Nested 2B",
@@ -714,18 +714,18 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
         XCTAssertEqual(expected, actual)
     }
 
-    func testTransformingRootJSONOneOfsWithMixedOneOfTypes() throws {
-        let rootOneOfs = JSONOneOfs(
+    func testTransformingRootJSONUnionWithMixedOneOfTypes() throws {
+        let rootOneOfs = JSONUnionType(
             name: "Root oneOf",
             comment: "Root oneOf comment",
             types: [
-                JSONOneOfs.OneOf(
+                .init(
                     name: "Root 1",
-                    type: JSONOneOfs(
+                    type: JSONUnionType(
                         name: "Nested oneOf",
                         comment: "Nested oneOf comment",
                         types: [
-                            JSONOneOfs.OneOf(
+                            .init(
                                 name: "Nested oneOf A",
                                 type: JSONObject(
                                     name: "JSONObject 1A",
@@ -733,7 +733,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                                     properties: []
                                 )
                             ),
-                            JSONOneOfs.OneOf(
+                            .init(
                                 name: "Nested oneOf B",
                                 type: JSONObject(
                                     name: "JSONObject 1B",
@@ -744,7 +744,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         ]
                     )
                 ),
-                JSONOneOfs.OneOf(
+                .init(
                     name: "Root 2",
                     type: JSONObject(
                         name: "JSONObject 2",

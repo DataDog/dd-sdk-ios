@@ -42,13 +42,16 @@ final class GenerateModelsTests: XCTestCase {
 //            .deletingLastPathComponent()
 //            .deletingLastPathComponent()
 //            .deletingLastPathComponent()
-//            .appendingPathComponent("rum-events-format/session-replay-mobile-events-format.json")
+//            .appendingPathComponent("rum-events-format/session-replay-mobile-format.json")
 //
 //        print(">>>>>>>>>>>>>>>>>> Swift >>>>>>>>>>>>>>>>>>>>>>")
 //        let swiftCode = try ModelsGenerator()
 //            .generateCode(from: schema)
-//            .decorate(using: SRCodeDecorator)
-//            .print(using: OutputTemplate(header: "", footer: ""), and: SwiftPrinter())
+//            .decorate(using: SRCodeDecorator())
+//            .print(
+//                using: OutputTemplate(header: "", footer: ""),
+//                and: SwiftPrinter(configuration: .init(accessLevel: .internal))
+//            )
 //        print(swiftCode)
 //        print("<<<<<<<<<<<<<<<<<< Swift <<<<<<<<<<<<<<<<<<<<<<")
 //    }

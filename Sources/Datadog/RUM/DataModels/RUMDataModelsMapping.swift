@@ -53,6 +53,7 @@ internal extension RUMViewEvent.Source {
         case .browser: return .browser
         case .reactNative: return .reactNative
         case .flutter: return .flutter
+        case .roku: return .roku
         }
     }
 }

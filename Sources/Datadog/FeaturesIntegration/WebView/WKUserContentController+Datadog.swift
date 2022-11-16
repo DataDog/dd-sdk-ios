@@ -33,17 +33,16 @@ public extension WKUserContentController {
     }
 
     private func trackDatadogEventsOrThrow(in hosts: Set<String>, sdk core: DatadogCoreProtocol) throws {
-        guard let context = core.v1.context else {
+        guard let context = core.v1.legacyContext else {
             throw ProgrammerError(
                 description: "`Datadog.initialize()` must be called prior to `trackDatadogEvents(in:)`."
             )
         }
 
         addDatadogMessageHandler(
+            core: core,
             allowedWebViewHosts: hosts,
             hostsSanitizer: HostsSanitizer(),
-            loggingFeature: core.v1.feature(LoggingFeature.self),
-            rumFeature: core.v1.feature(RUMFeature.self),
             context: context
         )
     }
@@ -65,10 +64,9 @@ public extension WKUserContentController {
     }
 
     internal func addDatadogMessageHandler(
+        core: DatadogCoreProtocol,
         allowedWebViewHosts: Set<String>,
         hostsSanitizer: HostsSanitizing,
-        loggingFeature: LoggingFeature?,
-        rumFeature: RUMFeature?,
         context: DatadogV1Context
     ) {
         guard !isTracking else {
@@ -80,10 +78,12 @@ public extension WKUserContentController {
 
         let globalRUMMonitor = Global.rum as? RUMMonitor
 
-        var logEventConsumer: DefaultWebLogEventConsumer? = nil
-        if let loggingFeature = loggingFeature {
+        var logEventConsumer: WebEventConsumer?
+        var rumEventConsumer: WebEventConsumer?
+
+        if core.v1.feature(LoggingFeature.self) != nil {
             logEventConsumer = DefaultWebLogEventConsumer(
-                userLogsWriter: loggingFeature.storage.writer,
+                core: core,
                 dateCorrector: context.dateCorrector,
                 rumContextProvider: globalRUMMonitor?.contextProvider,
                 applicationVersion: context.version,
@@ -91,14 +91,13 @@ public extension WKUserContentController {
             )
         }
 
-        var rumEventConsumer: DefaultWebRUMEventConsumer? = nil
-        if let rumFeature = rumFeature {
+        if let rum = core.v1.feature(RUMFeature.self) {
             rumEventConsumer = DefaultWebRUMEventConsumer(
-                dataWriter: rumFeature.storage.writer,
+                core: core,
                 dateCorrector: context.dateCorrector,
                 contextProvider: globalRUMMonitor?.contextProvider,
                 rumCommandSubscriber: globalRUMMonitor,
-                dateProvider: context.dateProvider
+                dateProvider: rum.configuration.dateProvider
             )
         }
 

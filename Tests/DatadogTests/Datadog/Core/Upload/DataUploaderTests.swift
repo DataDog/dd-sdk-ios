@@ -10,22 +10,27 @@ import XCTest
 extension DataUploadStatus: EquatableInTests {}
 
 class DataUploaderTests: XCTestCase {
-    func testWhenUploadCompletesWithSuccess_itReturnsExpectedUploadStatus() {
+    func testWhenUploadCompletesWithSuccess_itReturnsExpectedUploadStatus() throws {
         // Given
         let randomResponse: HTTPURLResponse = .mockResponseWith(statusCode: (100...599).randomElement()!)
         let randomRequestIDOrNil: String? = Bool.random() ? .mockRandom() : nil
-        let requestIDHeaderOrNil: RequestBuilder.HTTPHeader? = randomRequestIDOrNil.flatMap { randomRequestID in
-            .init(field: RequestBuilder.HTTPHeader.ddRequestIDHeaderField, value: .constant(randomRequestID))
+        let requestIDHeaderOrNil: URLRequestBuilder.HTTPHeader? = randomRequestIDOrNil.flatMap { randomRequestID in
+                .init(field: URLRequestBuilder.HTTPHeader.ddRequestIDHeaderField, value: { randomRequestID })
         }
 
         let server = ServerMock(delivery: .success(response: randomResponse))
+        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+
         let uploader = DataUploader(
-            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            requestBuilder: .mockWith(headers: requestIDHeaderOrNil.map { [$0] } ?? [])
+            httpClient: httpClient,
+            requestBuilder: FeatureRequestBuilderMock(headers: requestIDHeaderOrNil.map { [$0] } ?? [])
         )
 
         // When
-        let uploadStatus = uploader.upload(data: .mockAny())
+        let uploadStatus = try uploader.upload(
+            events: .mockAny(),
+            context: .mockAny()
+        )
 
         // Then
         let expectedUploadStatus = DataUploadStatus(httpResponse: randomResponse, ddRequestID: randomRequestIDOrNil)
@@ -34,24 +39,44 @@ class DataUploaderTests: XCTestCase {
         server.waitFor(requestsCompletion: 1)
     }
 
-    func testWhenUploadCompletesWithFailure_itReturnsExpectedUploadStatus() {
+    func testWhenUploadCompletesWithFailure_itReturnsExpectedUploadStatus() throws {
         // Given
         let randomErrorDescription: String = .mockRandom()
         let randomError = NSError(domain: .mockRandom(), code: .mockRandom(), userInfo: [NSLocalizedDescriptionKey: randomErrorDescription])
 
         let server = ServerMock(delivery: .failure(error: randomError))
+        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+
         let uploader = DataUploader(
-            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
-            requestBuilder: .mockAny()
+            httpClient: httpClient,
+            requestBuilder: FeatureRequestBuilderMock()
         )
 
         // When
-        let uploadStatus = uploader.upload(data: .mockAny())
+        let uploadStatus = try uploader.upload(
+            events: .mockAny(),
+            context: .mockAny()
+        )
 
         // Then
         let expectedUploadStatus = DataUploadStatus(networkError: randomError)
 
         XCTAssertEqual(uploadStatus, expectedUploadStatus)
         server.waitFor(requestsCompletion: 1)
+    }
+
+    func testWhenUploadCannotBeInitiated_itThrows() throws {
+        // Given
+        let error = ErrorMock()
+
+        let uploader = DataUploader(
+            httpClient: .mockAny(),
+            requestBuilder: FailingRequestBuilderMock(error: error)
+        )
+
+        // When & Then
+        XCTAssertThrowsError(try uploader.upload(events: .mockAny(), context: .mockAny())) { error in
+            XCTAssertTrue(error is ErrorMock)
+        }
     }
 }

@@ -47,13 +47,13 @@ internal struct LogEventBuilder {
         error: DDError?,
         attributes: LogEvent.Attributes,
         tags: Set<String>,
-        context: DatadogV1Context,
+        context: DatadogContext,
         threadName: String
     ) -> LogEvent? {
-        let userInfo = context.userInfoProvider.value
+        let userInfo = context.userInfo ?? .empty
 
         let log = LogEvent(
-            date: date.addingTimeInterval(context.dateCorrector.offset),
+            date: date.addingTimeInterval(context.serverTimeOffset),
             status: level.asLogStatus,
             message: message,
             error: error.map {
@@ -75,8 +75,8 @@ internal struct LogEventBuilder {
                 email: userInfo.email,
                 extraInfo: userInfo.extraInfo
             ),
-            networkConnectionInfo: sendNetworkInfo ? context.networkConnectionInfoProvider.current : nil,
-            mobileCarrierInfo: sendNetworkInfo ? context.carrierInfoProvider.current : nil,
+            networkConnectionInfo: sendNetworkInfo ? context.networkConnectionInfo : nil,
+            mobileCarrierInfo: sendNetworkInfo ? context.carrierInfo : nil,
             attributes: attributes,
             tags: !tags.isEmpty ? Array(tags) : nil
         )
@@ -86,15 +86,6 @@ internal struct LogEventBuilder {
         }
 
         return log
-    }
-}
-
-/// Returns the name of current thread if available or the nature of thread otherwise: `"main" | "background"`.
-internal func getCurrentThreadName() -> String {
-    if let customName = Thread.current.name, !customName.isEmpty {
-        return customName
-    } else {
-        return Thread.isMainThread ? "main" : "background"
     }
 }
 

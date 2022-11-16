@@ -8,13 +8,11 @@ import XCTest
 @testable import Datadog
 
 class RUMUserActionScopeTests: XCTestCase {
-    let context: DatadogV1Context = .mockWith(
-        configuration: .mockWith(serviceName: "test-service"),
-        dependencies: .mockWith(
-            deviceInfo: .mockWith(
-                name: "device-name",
-                osName: "device-os"
-            )
+    let context: DatadogContext = .mockWith(
+        service: "test-service",
+        device: .mockWith(
+            name: "device-name",
+            osName: "device-os"
         )
     )
 
@@ -46,6 +44,10 @@ class RUMUserActionScopeTests: XCTestCase {
     }
 
     func testGivenActiveUserAction_whenViewIsStopped_itSendsUserActionEvent() throws {
+        let hasReplay: Bool = .mockRandom()
+        var context = self.context
+        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
+
         let scope = RUMViewScope.mockWith(
             parent: parent,
             dependencies: .mockAny(),
@@ -81,6 +83,49 @@ class RUMUserActionScopeTests: XCTestCase {
         let recordedAction = try XCTUnwrap(recordedActionEvents.last)
         XCTAssertEqual(recordedAction.action.type.rawValue, String(describing: mockUserActionCmd.actionType))
         XCTAssertEqual(recordedAction.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+        XCTAssertEqual(recordedAction.session.hasReplay, hasReplay)
+        XCTAssertEqual(recordedAction.source, .ios)
+        XCTAssertEqual(recordedAction.service, "test-service")
+        XCTAssertEqual(recordedAction.device?.name, "device-name")
+        XCTAssertEqual(recordedAction.os?.name, "device-os")
+    }
+
+    func testGivenActiveUserAction_whenNewViewStart_itSendsUserActionEvent() throws {
+        let scope = RUMViewScope.mockWith(
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: mockView,
+            attributes: [:],
+            startTime: Date()
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(identity: mockView),
+                context: context,
+                writer: writer
+            )
+        )
+        let mockUserActionCmd = RUMAddUserActionCommand.mockAny()
+        XCTAssertTrue(
+            scope.process(
+                command: mockUserActionCmd,
+                context: context,
+                writer: writer
+            )
+        )
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStartViewCommand.mockAny(),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let recordedActionEvents = writer.events(ofType: RUMActionEvent.self)
+        XCTAssertEqual(recordedActionEvents.count, 1)
+        let recordedAction = try XCTUnwrap(recordedActionEvents.last)
+        XCTAssertEqual(recordedAction.action.type.rawValue, String(describing: mockUserActionCmd.actionType))
+        XCTAssertEqual(recordedAction.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(recordedAction.source, .ios)
         XCTAssertEqual(recordedAction.service, "test-service")
         XCTAssertEqual(recordedAction.device?.name, "device-name")
@@ -89,7 +134,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
     func testGivenCustomSource_whenActionIsSent_itSendsCustomSource() throws {
         let source = String.mockAnySource()
-        let customContext: DatadogV1Context = .mockWith(configuration: .mockWith(source: source))
+        let customContext: DatadogContext = .mockWith(source: source)
 
         let scope = RUMViewScope.mockWith(
             parent: parent,
@@ -513,7 +558,7 @@ class RUMUserActionScopeTests: XCTestCase {
             actionType: .tap,
             startTime: currentTime,
             isContinuous: false,
-            onActionEventSent: {
+            onActionEventSent: { _ in
                 callbackCalled = true
             }
         )
@@ -555,7 +600,7 @@ class RUMUserActionScopeTests: XCTestCase {
             actionType: .tap,
             startTime: currentTime,
             isContinuous: false,
-            onActionEventSent: {
+            onActionEventSent: { _ in
                 callbackCalled = true
             }
         )
@@ -576,5 +621,134 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertNil(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertFalse(callbackCalled)
+    }
+
+    // MARK: - Actions with Frustrations
+
+    func testGivenTapUserActionWithError_itWritesErrorTapFrustration() throws {
+        var currentTime = Date()
+        let scope = RUMUserActionScope.mockWith(
+            parent: parent,
+            actionType: .tap,
+            startTime: currentTime,
+            isContinuous: false
+        )
+
+        currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration * 0.5)
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorObject(time: currentTime),
+                context: context,
+                writer: writer
+            )
+        )
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(identity: mockView),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
+        XCTAssertEqual(event.action.frustration?.type.first, .errorTap)
+    }
+
+    func testGivenDisabledFrustration_whenTapUserActionWithError_itDoesNotWriteFrustration() throws {
+        var currentTime = Date()
+        let scope = RUMUserActionScope.mockWith(
+            parent: parent,
+            dependencies: .mockWith(
+                frustrationTrackingEnabled: false
+            ),
+            actionType: .tap,
+            startTime: currentTime,
+            isContinuous: false
+        )
+
+        currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration * 0.5)
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorObject(time: currentTime),
+                context: context,
+                writer: writer
+            )
+        )
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(identity: mockView),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
+        XCTAssertNil(event.action.frustration)
+    }
+
+    func testGivenNotDiscreteUserActionWithError_itDoesNotWriteFrustration() throws {
+        var currentTime = Date()
+        let scope = RUMUserActionScope.mockWith(
+            parent: parent,
+            actionType: .scroll,
+            startTime: currentTime,
+            isContinuous: false
+        )
+
+        currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration * 0.5)
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorObject(time: currentTime),
+                context: context,
+                writer: writer
+            )
+        )
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(identity: mockView),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
+        XCTAssertNil(event.action.frustration)
+    }
+
+    func testGivenTimedoutTapUserActionWithError_itDoesNotWriteFrustration() throws {
+        var currentTime = Date()
+        let scope = RUMUserActionScope.mockWith(
+            parent: parent,
+            actionType: .tap,
+            startTime: currentTime,
+            isContinuous: false
+        )
+
+        currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration * 1.5)
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorObject(time: currentTime),
+                context: context,
+                writer: writer
+            )
+        )
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(identity: mockView),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
+        XCTAssertNil(event.action.frustration)
     }
 }

@@ -36,34 +36,44 @@ class RUMFeatureTests: XCTestCase {
         let randomEncryption: DataEncryption? = Bool.random() ? DataEncryptionMock() : nil
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
-            configuration: .mockWith(
-                clientToken: randomClientToken,
-                applicationName: randomApplicationName,
-                applicationVersion: randomApplicationVersion,
-                serviceName: randomServiceName,
-                environment: randomEnvironmentName,
-                source: randomSource,
-                origin: randomOrigin,
-                sdkVersion: randomSDKVersion,
-                encryption: randomEncryption
+            dateProvider: SystemDateProvider(),
+            consentProvider: ConsentProvider(initialConsent: .granted),
+            userInfoProvider: .mockAny(),
+            performance: .combining(
+                storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
+                uploadPerformance: .veryQuick
             ),
-            dependencies: .mockWith(
-                deviceInfo: .mockWith(
-                    name: randomDeviceName,
-                    osName: randomDeviceOSName,
-                    osVersion: randomDeviceOSVersion
+            httpClient: httpClient,
+            encryption: randomEncryption,
+            v1Context: .mockAny(),
+            contextProvider: .mockWith(
+                context: .mockWith(
+                    clientToken: randomClientToken,
+                    service: randomServiceName,
+                    env: randomEnvironmentName,
+                    version: randomApplicationVersion,
+                    source: randomSource,
+                    sdkVersion: randomSDKVersion,
+                    ciAppOrigin: randomOrigin,
+                    applicationName: randomApplicationName,
+                    device: .mockWith(
+                        name: randomDeviceName,
+                        osName: randomDeviceOSName,
+                        osVersion: randomDeviceOSVersion
+                    )
                 )
-            )
+            ),
+            applicationVersion: randomApplicationVersion
         )
 
         // Given
         let featureConfiguration: RUMFeature.Configuration = .mockWith(uploadURL: randomUploadURL)
         let feature: RUMFeature = try core.create(
-            storageConfiguration: createV2RUMStorageConfiguration(),
-            uploadConfiguration: createV2RUMUploadConfiguration(v1Configuration: featureConfiguration),
+            configuration: createRUMConfiguration(intake: randomUploadURL),
             featureSpecificConfiguration: featureConfiguration
         )
         defer { feature.flush() }
@@ -98,40 +108,105 @@ class RUMFeatureTests: XCTestCase {
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-REQUEST-ID"]?.matches(regex: .uuidRegex), true)
     }
 
-    // MARK: - HTTP Payload
+    // MARK: - HTTP Message with included variant
 
-    func testItUsesExpectedPayloadFormatForUploads() throws {
+    func testItUsesExpectedVariantQueryParaemterInMessage() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+
+        let randomVariant: String = .mockAny()
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
-            configuration: .mockAny(),
-            dependencies: .mockWith(
-                performance: .combining(
-                    storagePerformance: StoragePerformanceMock(
-                        maxFileSize: .max,
-                        maxDirectorySize: .max,
-                        maxFileAgeForWrite: .distantFuture, // write all events to single file,
-                        minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
-                        maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
-                        maxObjectsInFile: 3, // write 3 spans to payload,
-                        maxObjectSize: .max
-                    ),
-                    uploadPerformance: UploadPerformanceMock(
-                        initialUploadDelay: 0.5, // wait enough until events are written,
-                        minUploadDelay: 1,
-                        maxUploadDelay: 1,
-                        uploadDelayChangeRate: 0
-                    )
+            dateProvider: SystemDateProvider(),
+            consentProvider: ConsentProvider(initialConsent: .granted),
+            userInfoProvider: .mockAny(),
+            performance: .combining(
+                storagePerformance: StoragePerformanceMock(
+                    maxFileSize: .max,
+                    maxDirectorySize: .max,
+                    maxFileAgeForWrite: .distantFuture, // write all events to single file,
+                    minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
+                    maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
+                    maxObjectsInFile: 3, // write 3 spans to payload,
+                    maxObjectSize: .max
+                ),
+                uploadPerformance: UploadPerformanceMock(
+                    initialUploadDelay: 0.5, // wait enough until events are written,
+                    minUploadDelay: 1,
+                    maxUploadDelay: 1,
+                    uploadDelayChangeRate: 0
                 )
-            )
+            ),
+            httpClient: httpClient,
+            encryption: nil,
+            v1Context: .mockWith(variant: randomVariant),
+            contextProvider: .mockWith(
+                context: .mockWith(variant: randomVariant)
+            ),
+            applicationVersion: .mockAny()
         )
 
         // Given
         let featureConfiguration: RUMFeature.Configuration = .mockAny()
         let feature: RUMFeature = try core.create(
-            storageConfiguration: createV2RUMStorageConfiguration(),
-            uploadConfiguration: createV2RUMUploadConfiguration(v1Configuration: featureConfiguration),
+            configuration: createRUMConfiguration(intake: featureConfiguration.uploadURL),
+            featureSpecificConfiguration: featureConfiguration
+        )
+        defer { feature.flush() }
+        core.register(feature: feature)
+
+        // When
+        let monitor = RUMMonitor.initialize(in: core)
+        monitor.startView(viewController: mockView) // on starting the first view we sends `application_start` action event
+
+        // Then
+        let request = server.waitAndReturnRequests(count: 1)[0]
+        let requestURL = try XCTUnwrap(request.url)
+        let components = URLComponents(url: requestURL, resolvingAgainstBaseURL: false)
+        let tagsItem = components?.queryItems?.first(where: { $0.name == "ddtags" })
+        XCTAssertTrue(tagsItem?.value?.contains("variant:\(randomVariant)") == true)
+    }
+
+    // MARK: - HTTP Payload
+
+    func testItUsesExpectedPayloadFormatForUploads() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            consentProvider: ConsentProvider(initialConsent: .granted),
+            userInfoProvider: .mockAny(),
+            performance: .combining(
+                storagePerformance: StoragePerformanceMock(
+                    maxFileSize: .max,
+                    maxDirectorySize: .max,
+                    maxFileAgeForWrite: .distantFuture, // write all events to single file,
+                    minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
+                    maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
+                    maxObjectsInFile: 3, // write 3 spans to payload,
+                    maxObjectSize: .max
+                ),
+                uploadPerformance: UploadPerformanceMock(
+                    initialUploadDelay: 0.5, // wait enough until events are written,
+                    minUploadDelay: 1,
+                    maxUploadDelay: 1,
+                    uploadDelayChangeRate: 0
+                )
+            ),
+            httpClient: httpClient,
+            encryption: nil,
+            v1Context: .mockAny(),
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny()
+        )
+
+        // Given
+        let featureConfiguration: RUMFeature.Configuration = .mockAny()
+        let feature: RUMFeature = try core.create(
+            configuration: createRUMConfiguration(intake: featureConfiguration.uploadURL),
             featureSpecificConfiguration: featureConfiguration
         )
         defer { feature.flush() }
