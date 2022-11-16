@@ -18,28 +18,12 @@ let package = Package(
             targets: ["DatadogObjc"]
         ),
         .library(
-            name: "DatadogDynamic",
-            type: .dynamic,
-            targets: ["Datadog"]
-        ),
-        .library(
-            name: "DatadogDynamicObjc",
-            type: .dynamic,
-            targets: ["DatadogObjc"]
-        ),
-        .library( // TODO: RUMM-2387 Consider removing explicit linkage variants
-            name: "DatadogStatic",
-            type: .static,
-            targets: ["Datadog"]
-        ),
-        .library( // TODO: RUMM-2387 Consider removing explicit linkage variants
-            name: "DatadogStaticObjc",
-            type: .static,
-            targets: ["DatadogObjc"]
-        ),
-        .library(
             name: "DatadogCrashReporting",
             targets: ["DatadogCrashReporting"]
+        ),
+        .library(
+            name: "DatadogSessionReplay",
+            targets: ["DatadogSessionReplay"]
         ),
     ],
     dependencies: [
@@ -53,7 +37,6 @@ let package = Package(
             ],
             swiftSettings: [
                 .define("SPM_BUILD"),
-                .define("DD_SDK_ENABLE_INTERNAL_MONITORING"),
                 .define("DD_SDK_ENABLE_EXPERIMENTAL_APIS"),
             ]
         ),
@@ -63,7 +46,6 @@ let package = Package(
                 "Datadog",
             ],
             swiftSettings: [
-                .define("DD_SDK_ENABLE_INTERNAL_MONITORING"),
                 .define("DD_SDK_ENABLE_EXPERIMENTAL_APIS"),
             ]
         ),
@@ -77,9 +59,13 @@ let package = Package(
                 .product(name: "CrashReporter", package: "PLCrashReporter"),
             ],
             swiftSettings: [
-                .define("DD_SDK_ENABLE_INTERNAL_MONITORING"),
                 .define("DD_SDK_ENABLE_EXPERIMENTAL_APIS"),
             ]
-        )
+        ),
+        .target(
+            name: "DatadogSessionReplay",
+            dependencies: ["Datadog"],
+            path: "session-replay/Sources"
+        ),
     ]
 )
