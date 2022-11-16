@@ -18,7 +18,7 @@ internal class DDSpan: OTSpan {
     /// Span creation date
     internal let startTime: Date
     /// Writes span logs to Logging Feature. `nil` if Logging feature is disabled.
-    private let loggingIntegration: TracingWithLoggingIntegration?
+    private let loggingIntegration: TracingWithLoggingIntegration
 
     /// Queue used for synchronizing mutable properties access.
     private let queue: DispatchQueue
@@ -97,7 +97,7 @@ internal class DDSpan: OTSpan {
     func setActive() -> OTSpan {
         activityReference = ActivityReference()
         if let activityReference = activityReference {
-            ddTracer.activeSpansPool.addSpan(span: self, activityReference: activityReference)
+            ddTracer.addSpan(span: self, activityReference: activityReference)
         }
         return self
     }
@@ -121,7 +121,7 @@ internal class DDSpan: OTSpan {
 
         if !isFinished {
             if let activity = activityReference {
-                ddTracer.activeSpansPool.removeSpan(activityReference: activity)
+                ddTracer.removeSpan(activityReference: activity)
             }
             sendSpan(finishTime: time)
         }
@@ -140,26 +140,20 @@ internal class DDSpan: OTSpan {
         // Baggage items must be accessed outside the `tracer.queue` as it uses that queue for internal sync.
         let baggageItems = ddContext.baggageItems.all
 
-        // This queue adds performance optimisation by reading all `unsafe*` values in one block and performing
-        // the `builder.createSpan()` off the main thread. This is important as the span creation includes
-        // attributes encoding to JSON string values (for tags and extra user info). It captures `self` strongly
-        // as it is very likely to be deallocated after return.
-        queue.async {
-            tracing.eventWriteContext { context, writer in
+        tracing.eventWriteContext { context, writer in
+            // This queue adds performance optimisation by reading all `unsafe*` values in one block and performing
+            // the `builder.createSpan()` off the main thread. This is important as the span creation includes
+            // attributes encoding to JSON string values (for tags and extra user info). It captures `self` strongly
+            // as it is very likely to be deallocated after return.
+            let event: SpanEvent = self.queue.sync {
                 let builder = SpanEventBuilder(
-                    sdkVersion: context.sdkVersion,
-                    applicationVersion: context.version,
-                    serviceName: configuration.serviceName ?? context.service,
-                    userInfoProvider: context.userInfoProvider,
-                    networkConnectionInfoProvider: configuration.sendNetworkInfo ? context.networkConnectionInfoProvider : nil,
-                    carrierInfoProvider: configuration.sendNetworkInfo ? context.carrierInfoProvider : nil,
-                    dateCorrector: context.dateCorrector,
-                    source: context.source,
-                    origin: context.ciAppOrigin,
+                    serviceName: configuration.serviceName,
+                    sendNetworkInfo: configuration.sendNetworkInfo,
                     eventsMapper: self.ddTracer.spanEventMapper
                 )
 
-                let event = builder.createSpanEvent(
+                return builder.createSpanEvent(
+                    context: context,
                     traceID: self.ddContext.traceID,
                     spanID: self.ddContext.spanID,
                     parentSpanID: self.ddContext.parentSpanID,
@@ -170,21 +164,17 @@ internal class DDSpan: OTSpan {
                     baggageItems: baggageItems,
                     logFields: self.unsafeLogFields
                 )
-
-                let envelope = SpanEventsEnvelope(span: event, environment: context.env)
-                writer.write(value: envelope)
             }
+
+            let envelope = SpanEventsEnvelope(span: event, environment: context.env)
+            writer.write(value: envelope)
         }
     }
 
     private func sendSpanLogs(fields: [String: Encodable], date: Date) {
-        guard let loggingIntegration = loggingIntegration else {
-            queue.async {
-                DD.logger.warn("The log for span \"\(self.unsafeOperationName)\" will not be send, because the Logging feature is disabled.")
-            }
-            return
-        }
-        loggingIntegration.writeLog(withSpanContext: ddContext, fields: fields, date: date)
+        loggingIntegration.writeLog(withSpanContext: ddContext, fields: fields, date: date, else: {
+            self.queue.async { DD.logger.warn("The log for span \"\(self.unsafeOperationName)\" will not be send, because the Logging feature is disabled.") }
+        })
     }
 
     // MARK: - Private

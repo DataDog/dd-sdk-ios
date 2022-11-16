@@ -134,6 +134,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         XCTAssertNil(firstPartyResource1.dd.traceId, "`firstPartyGETResourceURL` should not be traced")
         XCTAssertNil(firstPartyResource1.dd.spanId, "`firstPartyGETResourceURL` should not be traced")
+        XCTAssertNil(firstPartyResource1.dd.rulePsr, "Not traced resource should not send sample rate")
 
         let firstPartyResource2 = try XCTUnwrap(
             session.viewVisits[0].resourceEvents.first { $0.resource.url == firstPartyPOSTResourceURL.absoluteString },
@@ -151,6 +152,8 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
             firstPartyPOSTRequestSpanID,
             "Tracing information should be propagated to `firstPartyPOSTResourceURL`"
         )
+        let firstPartyResource2SampleRate = try XCTUnwrap(firstPartyResource2.dd.rulePsr, "Traced resource should send sample rate")
+        XCTAssertTrue(isValid(sampleRate: firstPartyResource2SampleRate), "\(firstPartyResource2SampleRate) is not valid sample rate")
 
         let firstPartyResourceError1 = try XCTUnwrap(
             session.viewVisits[0].errorEvents.first { $0.error.resource?.url == firstPartyBadResourceURL.absoluteString },
@@ -172,6 +175,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertGreaterThan(thirdPartyResource1.resource.duration, 0)
         XCTAssertNil(thirdPartyResource1.dd.traceId, "3rd party RUM Resources should not be traced")
         XCTAssertNil(thirdPartyResource1.dd.spanId, "3rd party RUM Resources should not be traced")
+        XCTAssertNil(thirdPartyResource1.dd.rulePsr, "Not traced resource should not send sample rate")
 
         let thirdPartyResource2 = try XCTUnwrap(
             session.viewVisits[1].resourceEvents.first { $0.resource.url == thirdPartyPOSTResourceURL.absoluteString },
@@ -181,6 +185,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertGreaterThan(thirdPartyResource2.resource.duration, 0)
         XCTAssertNil(thirdPartyResource2.dd.traceId, "3rd party RUM Resources should not be traced")
         XCTAssertNil(thirdPartyResource2.dd.spanId, "3rd party RUM Resources should not be traced")
+        XCTAssertNil(thirdPartyResource2.dd.rulePsr, "Not traced resource should not send sample rate")
 
         XCTAssertTrue(
             thirdPartyResource1.resource.dns != nil || thirdPartyResource2.resource.dns != nil,
@@ -236,5 +241,9 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         var header = request.httpHeaders.first { $0.hasPrefix(prefix) }
         header?.removeFirst(prefix.count)
         return header
+    }
+
+    private func isValid(sampleRate: Double) -> Bool {
+        return sampleRate >= 0 && sampleRate <= 1
     }
 }

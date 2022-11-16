@@ -91,6 +91,21 @@ class DatadogTests: XCTestCase {
         Datadog.flushAndDeinitialize()
     }
 
+    func testGivenValidConfiguration_initializationCallsTelemetry() {
+        let dd = DD.mockWith(telemetry: TelemetryMock())
+        defer { dd.reset() }
+
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: defaultBuilder.build()
+        )
+
+        XCTAssertEqual(dd.telemetry.configurations.count, 1)
+
+        Datadog.flushAndDeinitialize()
+    }
+
     // MARK: - Toggling features
 
     func testEnablingAndDisablingFeatures() {
@@ -314,7 +329,7 @@ class DatadogTests: XCTestCase {
 
         let core = try XCTUnwrap(defaultDatadogCore as? DatadogCore)
         let rum = core.v1.feature(RUMFeature.self)
-        XCTAssertEqual(core.configuration.performance, expectedPerformancePreset)
+        XCTAssertEqual(core.performance, expectedPerformancePreset)
         XCTAssertEqual(rum?.configuration.sessionSampler.samplingRate, 100)
         XCTAssertEqual(Datadog.verbosityLevel, .debug)
 
@@ -359,11 +374,11 @@ class DatadogTests: XCTestCase {
         )
 
         let core = defaultDatadogCore as? DatadogCore
-        XCTAssertEqual(core?.dependencies.consentProvider.currentValue, initialConsent)
+        XCTAssertEqual(core?.consentProvider.currentValue, initialConsent)
 
         Datadog.set(trackingConsent: nextConsent)
 
-        XCTAssertEqual(core?.dependencies.consentProvider.currentValue, nextConsent)
+        XCTAssertEqual(core?.consentProvider.currentValue, nextConsent)
 
         Datadog.flushAndDeinitialize()
     }
@@ -377,11 +392,16 @@ class DatadogTests: XCTestCase {
 
         let core = defaultDatadogCore as? DatadogCore
 
-        XCTAssertNotNil(core?.dependencies.userInfoProvider.value)
-        XCTAssertNil(core?.dependencies.userInfoProvider.value.id)
-        XCTAssertNil(core?.dependencies.userInfoProvider.value.email)
-        XCTAssertNil(core?.dependencies.userInfoProvider.value.name)
-        XCTAssertEqual(core?.dependencies.userInfoProvider.value.extraInfo as? [String: Int], [:])
+        XCTAssertNotNil(core?.userInfoProvider.value)
+        XCTAssertNil(core?.userInfoProvider.value.id)
+        XCTAssertNil(core?.userInfoProvider.value.email)
+        XCTAssertNil(core?.userInfoProvider.value.name)
+        XCTAssertEqual(core?.userInfoProvider.value.extraInfo as? [String: Int], [:])
+
+        XCTAssertNil(core?.userInfoPublisher.current.id)
+        XCTAssertNil(core?.userInfoPublisher.current.email)
+        XCTAssertNil(core?.userInfoPublisher.current.name)
+        XCTAssertEqual(core?.userInfoPublisher.current.extraInfo as? [String: Int], [:])
 
         Datadog.setUserInfo(
             id: "foo",
@@ -390,10 +410,114 @@ class DatadogTests: XCTestCase {
             extraInfo: ["abc": 123]
         )
 
-        XCTAssertEqual(core?.dependencies.userInfoProvider.value.id, "foo")
-        XCTAssertEqual(core?.dependencies.userInfoProvider.value.name, "bar")
-        XCTAssertEqual(core?.dependencies.userInfoProvider.value.email, "foo@bar.com")
-        XCTAssertEqual(core?.dependencies.userInfoProvider.value.extraInfo as? [String: Int], ["abc": 123])
+        XCTAssertEqual(core?.userInfoProvider.value.id, "foo")
+        XCTAssertEqual(core?.userInfoProvider.value.name, "bar")
+        XCTAssertEqual(core?.userInfoProvider.value.email, "foo@bar.com")
+        XCTAssertEqual(core?.userInfoProvider.value.extraInfo as? [String: Int], ["abc": 123])
+
+        XCTAssertEqual(core?.userInfoPublisher.current.id, "foo")
+        XCTAssertEqual(core?.userInfoPublisher.current.name, "bar")
+        XCTAssertEqual(core?.userInfoPublisher.current.email, "foo@bar.com")
+        XCTAssertEqual(core?.userInfoPublisher.current.extraInfo as? [String: Int], ["abc": 123])
+
+        Datadog.flushAndDeinitialize()
+    }
+
+    func testAddUserPreoprties_mergesProperties() {
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: defaultBuilder.build()
+        )
+
+        let core = defaultDatadogCore as? DatadogCore
+
+        Datadog.setUserInfo(
+            id: "foo",
+            name: "bar",
+            email: "foo@bar.com",
+            extraInfo: ["abc": 123]
+        )
+
+        Datadog.addUserExtraInfo(["second": 667])
+
+        XCTAssertEqual(core?.userInfoProvider.value.id, "foo")
+        XCTAssertEqual(core?.userInfoProvider.value.name, "bar")
+        XCTAssertEqual(core?.userInfoProvider.value.email, "foo@bar.com")
+        XCTAssertEqual(
+            core?.userInfoProvider.value.extraInfo as? [String: Int],
+            ["abc": 123, "second": 667]
+        )
+
+        XCTAssertEqual(core?.userInfoPublisher.current.id, "foo")
+        XCTAssertEqual(core?.userInfoPublisher.current.name, "bar")
+        XCTAssertEqual(core?.userInfoPublisher.current.email, "foo@bar.com")
+        XCTAssertEqual(
+            core?.userInfoPublisher.current.extraInfo as? [String: Int],
+            ["abc": 123, "second": 667]
+        )
+
+        Datadog.flushAndDeinitialize()
+    }
+
+    func testAddUserPreoprties_removesProperties() {
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: defaultBuilder.build()
+        )
+
+        let core = defaultDatadogCore as? DatadogCore
+
+        Datadog.setUserInfo(
+            id: "foo",
+            name: "bar",
+            email: "foo@bar.com",
+            extraInfo: ["abc": 123]
+        )
+
+        Datadog.addUserExtraInfo(["abc": nil, "second": 667])
+
+        XCTAssertEqual(core?.userInfoProvider.value.id, "foo")
+        XCTAssertEqual(core?.userInfoProvider.value.name, "bar")
+        XCTAssertEqual(core?.userInfoProvider.value.email, "foo@bar.com")
+        XCTAssertEqual(core?.userInfoProvider.value.extraInfo as? [String: Int], ["second": 667])
+
+        XCTAssertEqual(core?.userInfoPublisher.current.id, "foo")
+        XCTAssertEqual(core?.userInfoPublisher.current.name, "bar")
+        XCTAssertEqual(core?.userInfoPublisher.current.email, "foo@bar.com")
+        XCTAssertEqual(core?.userInfoPublisher.current.extraInfo as? [String: Int], ["second": 667])
+
+        Datadog.flushAndDeinitialize()
+    }
+
+    func testAddUserPreoprties_overwritesProperties() {
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: defaultBuilder.build()
+        )
+
+        let core = defaultDatadogCore as? DatadogCore
+
+        Datadog.setUserInfo(
+            id: "foo",
+            name: "bar",
+            email: "foo@bar.com",
+            extraInfo: ["abc": 123]
+        )
+
+        Datadog.addUserExtraInfo(["abc": 444])
+
+        XCTAssertEqual(core?.userInfoProvider.value.id, "foo")
+        XCTAssertEqual(core?.userInfoProvider.value.name, "bar")
+        XCTAssertEqual(core?.userInfoProvider.value.email, "foo@bar.com")
+        XCTAssertEqual(core?.userInfoProvider.value.extraInfo as? [String: Int], ["abc": 444])
+
+        XCTAssertEqual(core?.userInfoPublisher.current.id, "foo")
+        XCTAssertEqual(core?.userInfoPublisher.current.name, "bar")
+        XCTAssertEqual(core?.userInfoPublisher.current.email, "foo@bar.com")
+        XCTAssertEqual(core?.userInfoPublisher.current.extraInfo as? [String: Int], ["abc": 444])
 
         Datadog.flushAndDeinitialize()
     }
@@ -415,7 +539,7 @@ class DatadogTests: XCTestCase {
         let core = defaultDatadogCore as? DatadogCore
 
         XCTAssertEqual(
-            core?.dependencies.consentProvider.currentValue,
+            core?.consentProvider.currentValue,
             .granted,
             "When using deprecated Datadog initialization API the consent should be set to `.granted`"
         )
@@ -442,9 +566,9 @@ class DatadogTests: XCTestCase {
         core.readWriteQueue.sync {}
 
         let featureDirectories: [FeatureDirectories] = [
-            try core.directory.getFeatureDirectories(configuration: createV2LoggingStorageConfiguration()),
-            try core.directory.getFeatureDirectories(configuration: createV2TracingStorageConfiguration()),
-            try core.directory.getFeatureDirectories(configuration: createV2RUMStorageConfiguration()),
+            try core.directory.getFeatureDirectories(forFeatureNamed: "logging"),
+            try core.directory.getFeatureDirectories(forFeatureNamed: "tracing"),
+            try core.directory.getFeatureDirectories(forFeatureNamed: "rum"),
         ]
 
         let allDirectories: [Directory] = featureDirectories.flatMap { [$0.authorized, $0.unauthorized] }
@@ -465,6 +589,56 @@ class DatadogTests: XCTestCase {
         XCTAssertEqual(newNumberOfFiles, 0, "All files must be removed")
 
         Datadog.flushAndDeinitialize()
+    }
+
+    func testServerDateProvider() throws {
+        // Given
+        let serverDateProvider = ServerDateProviderMock()
+
+        // When
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: defaultBuilder
+                .set(serverDateProvider: serverDateProvider)
+                .build()
+        )
+
+        serverDateProvider.offset = -1
+
+        // Then
+        let core = try XCTUnwrap(defaultDatadogCore as? DatadogCore)
+        let context = core.contextProvider.read()
+        XCTAssertEqual(context.serverTimeOffset, -1)
+
+        Datadog.flushAndDeinitialize()
+    }
+
+    func testRemoveV1DeprecatedFolders() throws {
+        // Given
+        let cache = try Directory.cache()
+        let directories = ["com.datadoghq.logs", "com.datadoghq.traces", "com.datadoghq.rum"]
+        try directories.forEach {
+            _ = try cache.createSubdirectory(path: $0).createFile(named: "test")
+        }
+
+        // When
+        Datadog.initialize(
+            appContext: .mockAny(),
+            trackingConsent: .mockRandom(),
+            configuration: defaultBuilder.build()
+        )
+
+        defer { Datadog.flushAndDeinitialize() }
+
+        let core = try XCTUnwrap(defaultDatadogCore as? DatadogCore)
+        // Wait for async deletion
+        core.readWriteQueue.sync {}
+
+        // Then
+        XCTAssertThrowsError(try cache.subdirectory(path: "com.datadoghq.logs"))
+        XCTAssertThrowsError(try cache.subdirectory(path: "com.datadoghq.traces"))
+        XCTAssertThrowsError(try cache.subdirectory(path: "com.datadoghq.rum"))
     }
 }
 

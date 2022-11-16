@@ -43,8 +43,16 @@ class UIDeviceMock: UIDevice {
         get { _isBatteryMonitoringEnabled }
         set { _isBatteryMonitoringEnabled = newValue }
     }
-    override var batteryState: UIDevice.BatteryState { _batteryState }
-    override var batteryLevel: Float { _batteryLevel }
+
+    override var batteryState: UIDevice.BatteryState {
+        get { _batteryState }
+        set { _batteryState = newValue }
+    }
+
+    override var batteryLevel: Float {
+        get { _batteryLevel }
+        set { _batteryLevel = newValue }
+    }
 
     private var _isBatteryMonitoringEnabled: Bool
     private var _batteryLevel: Float

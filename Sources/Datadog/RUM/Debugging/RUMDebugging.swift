@@ -123,8 +123,8 @@ internal class RUMDebugging {
 
 internal class RUMViewOutline: RUMDebugView {
     private struct Constants {
-        static let activeViewColor =  #colorLiteral(red: 0.3882352941, green: 0.1725490196, blue: 0.6509803922, alpha: 1)
-        static let inactiveViewColor =  #colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)
+        static let activeViewColor = #colorLiteral(red: 0.3882352941, green: 0.1725490196, blue: 0.6509803922, alpha: 1)
+        static let inactiveViewColor = #colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)
         static let labelHeight: CGFloat = 16
 
         static let viewNameTextAttributes: [NSAttributedString.Key: Any] = [

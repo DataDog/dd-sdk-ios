@@ -6,52 +6,126 @@
 
 import Foundation
 
-/// Creates V2 Storage configuration for V1 RUM.
-internal func createV2RUMStorageConfiguration() -> FeatureStorageConfiguration {
-    return FeatureStorageConfiguration(
-        directories: .init(
-            authorized: "rum/v2", // relative to `CoreDirectory.coreDirectory`
-            unauthorized: "rum/intermediate-v2", // relative to `CoreDirectory.coreDirectory`
-            deprecated: [
-                "com.datadoghq.rum", // relative to `CoreDirectory.osDirectory`
-            ]
-        ),
-        featureName: "RUM"
+/// Creates RUM Feature Configuration.
+///
+/// - Parameter intake: The RUM intake URL.
+/// - Returns: The RUM feature configuration.
+internal func createRUMConfiguration(intake: URL) -> DatadogFeatureConfiguration {
+    return DatadogFeatureConfiguration(
+        name: "rum",
+        requestBuilder: RUMRequestBuilder(intake: intake),
+        messageReceiver: RUMMessageReceiver()
     )
 }
 
-/// Creates V2 Upload configuration for V1 RUM.
-internal func createV2RUMUploadConfiguration(v1Configuration: FeaturesConfiguration.RUM) -> FeatureUploadConfiguration {
-    return FeatureUploadConfiguration(
-        featureName: "RUM",
-        createRequestBuilder: { v1Context in
-            return RequestBuilder(
-                url: v1Configuration.uploadURL,
-                queryItems: [
-                    .ddsource(source: v1Context.source),
-                    .ddtags(
-                        tags: [
-                            "service:\(v1Context.service)",
-                            "version:\(v1Context.version)",
-                            "sdk_version:\(v1Context.sdkVersion)",
-                            "env:\(v1Context.env)"
-                        ]
-                    )
-                ],
-                headers: [
-                    .contentTypeHeader(contentType: .textPlainUTF8),
-                    .userAgentHeader(
-                        appName: v1Context.applicationName,
-                        appVersion: v1Context.version,
-                        device: v1Context.device
-                    ),
-                    .ddAPIKeyHeader(clientToken: v1Context.clientToken),
-                    .ddEVPOriginHeader(source: v1Context.ciAppOrigin ?? v1Context.source),
-                    .ddEVPOriginVersionHeader(sdkVersion: v1Context.sdkVersion),
-                    .ddRequestIDHeader(),
-                ]
-            )
-        },
-        payloadFormat: DataFormat(prefix: "", suffix: "", separator: "\n")
-    )
+/// The RUM URL Request Builder for formatting and configuring the `URLRequest`
+/// to upload RUM data.
+internal struct RUMRequestBuilder: FeatureRequestBuilder {
+    /// The RUM intake.
+    let intake: URL
+
+    /// The RUM request body format.
+    let format = DataFormat(prefix: "", suffix: "", separator: "\n")
+
+    func request(for events: [Data], with context: DatadogContext) -> URLRequest {
+        var tags = [
+            "service:\(context.service)",
+            "version:\(context.version)",
+            "sdk_version:\(context.sdkVersion)",
+            "env:\(context.env)",
+        ]
+
+        if let variant = context.variant {
+            tags.append("variant:\(variant)")
+        }
+
+        let builder = URLRequestBuilder(
+            url: intake,
+            queryItems: [
+                .ddsource(source: context.source),
+                .ddtags(tags: tags)
+            ],
+            headers: [
+                .contentTypeHeader(contentType: .textPlainUTF8),
+                .userAgentHeader(
+                    appName: context.applicationName,
+                    appVersion: context.version,
+                    device: context.device
+                ),
+                .ddAPIKeyHeader(clientToken: context.clientToken),
+                .ddEVPOriginHeader(source: context.ciAppOrigin ?? context.source),
+                .ddEVPOriginVersionHeader(sdkVersion: context.sdkVersion),
+                .ddRequestIDHeader(),
+            ]
+        )
+
+        let data = format.format(events)
+        return builder.uploadRequest(with: data)
+    }
+}
+
+internal struct RUMMessageReceiver: FeatureMessageReceiver {
+    /// Process messages receives from the bus.
+    ///
+    /// - Parameters:
+    ///   - message: The Feature message
+    ///   - core: The core from which the message is transmitted.
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        switch message {
+        case .error(let message, let attributes):
+            return addError(message: message, attributes: attributes)
+        case .custom(let key, let attributes) where key == "crash":
+            return crash(attributes: attributes, to: core)
+        case .event(let target, let event) where target == "rum":
+            return write(event: event, to: core)
+        default:
+            return false
+        }
+    }
+
+    private func write(event: FeatureBaggage.AnyEncodable, to core: DatadogCoreProtocol) -> Bool {
+        core.v1.scope(for: RUMFeature.self)?.eventWriteContext { _, writer in
+            writer.write(value: event)
+        }
+
+        return true
+    }
+
+    private func crash(attributes: FeatureBaggage, to core: DatadogCoreProtocol) -> Bool {
+        guard let error = attributes["rum-error", type: RUMCrashEvent.self] else {
+            return false
+        }
+
+        // crash reporting is considering the user consent from previous session, if an event reached
+        // the message bus it means that consent was granted and we can safely bypass current consent.
+        core.v1.scope(for: RUMFeature.self)?.eventWriteContext(bypassConsent: true) { _, writer in
+            writer.write(value: error)
+
+            if let view = attributes["rum-view", type: RUMViewEvent.self] {
+                writer.write(value: view)
+            }
+        }
+
+        return true
+    }
+
+    /// Adds RUM Error with given message and stack to current RUM View.
+    private func addError(message: String, attributes: FeatureBaggage) -> Bool {
+        guard
+            let monitor = Global.rum as? RUMMonitor,
+            let source = attributes["source", type: RUMInternalErrorSource.self]
+        else {
+            return false
+        }
+
+        monitor.addError(
+            message: message,
+            type: attributes["type"],
+            stack: attributes["stack"],
+            source: source,
+            attributes: attributes["attributes"] ?? [:]
+        )
+
+        return true
+    }
 }

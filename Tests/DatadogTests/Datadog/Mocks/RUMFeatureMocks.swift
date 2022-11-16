@@ -9,18 +9,20 @@ import XCTest
 
 extension RUMFeature {
     /// Mocks feature instance which performs no writes and no uploads.
-    static func mockNoOp() -> RUMFeature {
+    static func mockNoOp(configuration: FeaturesConfiguration.RUM = .mockAny()) -> RUMFeature {
         return RUMFeature(
             storage: .mockNoOp(),
             upload: .mockNoOp(),
-            configuration: .mockAny()
+            configuration: configuration,
+            messageReceiver: NOPFeatureMessageReceiver()
         )
     }
 
     /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
     /// Use `RUMFeature.waitAndReturnRUMEventMatchers()` to inspect and assert recorded `RUMEvents`.
     static func mockByRecordingRUMEventMatchers(
-        featureConfiguration: FeaturesConfiguration.RUM = .mockAny()
+        configuration: FeaturesConfiguration.RUM = .mockAny(),
+        messageReceiver: FeatureMessageReceiver = RUMMessageReceiver()
     ) -> RUMFeature {
         // Mock storage with `InMemoryWriter`, used later for retrieving recorded events back:
         let interceptedStorage = FeatureStorage(
@@ -32,7 +34,8 @@ extension RUMFeature {
         return RUMFeature(
             storage: interceptedStorage,
             upload: .mockNoOp(),
-            configuration: featureConfiguration
+            configuration: configuration,
+            messageReceiver: messageReceiver
         )
     }
 
@@ -72,20 +75,16 @@ extension RUMTelemetry {
 
     static func mockWith(
         core: DatadogCoreProtocol,
-        sdkVersion: String = .mockAny(),
-        applicationID: String = .mockAny(),
-        source: String = .mockAnySource(),
         dateProvider: DateProvider = SystemDateProvider(),
-        dateCorrector: DateCorrector = DateCorrectorMock(),
+        configurationEventMapper: RUMTelemetryConfiguratoinMapper? = nil,
+        delayedDispatcher: RUMTelemetryDelayedDispatcher? = nil,
         sampler: Sampler = .init(samplingRate: 100)
     ) -> Self {
         .init(
             in: core,
-            sdkVersion: sdkVersion,
-            applicationID: applicationID,
-            source: source,
             dateProvider: dateProvider,
-            dateCorrector: dateCorrector,
+            configurationEventMapper: configurationEventMapper,
+            delayedDispatcher: delayedDispatcher,
             sampler: sampler
         )
     }
@@ -289,6 +288,32 @@ extension RUMAddViewTimingCommand: AnyMockable, RandomMockable {
     }
 }
 
+extension RUMSpanContext: AnyMockable, RandomMockable {
+    static func mockAny() -> RUMSpanContext {
+        return .mockWith()
+    }
+
+    static func mockRandom() -> RUMSpanContext {
+        return RUMSpanContext(
+            traceID: .mockRandom(),
+            spanID: .mockRandom(),
+            samplingRate: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        traceID: String = .mockAny(),
+        spanID: String = .mockAny(),
+        samplingRate: Double = .mockAny()
+    ) -> RUMSpanContext {
+        return RUMSpanContext(
+            traceID: traceID,
+            spanID: spanID,
+            samplingRate: samplingRate
+        )
+    }
+}
+
 extension RUMStartResourceCommand: AnyMockable, RandomMockable {
     static func mockAny() -> RUMStartResourceCommand { mockWith() }
 
@@ -301,7 +326,7 @@ extension RUMStartResourceCommand: AnyMockable, RandomMockable {
             httpMethod: .mockRandom(),
             kind: .mockAny(),
             isFirstPartyRequest: .mockRandom(),
-            spanContext: .init(traceID: .mockRandom(), spanID: .mockRandom())
+            spanContext: .init(traceID: .mockRandom(), spanID: .mockRandom(), samplingRate: .mockAny())
         )
     }
 
@@ -313,7 +338,7 @@ extension RUMStartResourceCommand: AnyMockable, RandomMockable {
         httpMethod: RUMMethod = .mockAny(),
         kind: RUMResourceType = .mockAny(),
         isFirstPartyRequest: Bool = .mockAny(),
-        spanContext: RUMSpanContext? = nil
+        spanContext: RUMSpanContext? = .mockAny()
     ) -> RUMStartResourceCommand {
         return RUMStartResourceCommand(
             resourceKey: resourceKey,
@@ -578,15 +603,26 @@ extension RUMSessionState: AnyMockable, RandomMockable {
     }
 
     static func mockRandom() -> RUMSessionState {
-        return .init(sessionUUID: .mockRandom(), isInitialSession: .mockRandom(), hasTrackedAnyView: .mockRandom())
+        return .init(
+            sessionUUID: .mockRandom(),
+            isInitialSession: .mockRandom(),
+            hasTrackedAnyView: .mockRandom(),
+            didStartWithReplay: .mockRandom()
+        )
     }
 
     static func mockWith(
         sessionUUID: UUID = .mockAny(),
         isInitialSession: Bool = .mockAny(),
-        hasTrackedAnyView: Bool = .mockAny()
+        hasTrackedAnyView: Bool = .mockAny(),
+        didStartWithReplay: Bool? = .mockAny()
     ) -> RUMSessionState {
-        return RUMSessionState(sessionUUID: sessionUUID, isInitialSession: isInitialSession, hasTrackedAnyView: hasTrackedAnyView)
+        return RUMSessionState(
+            sessionUUID: sessionUUID,
+            isInitialSession: isInitialSession,
+            hasTrackedAnyView: hasTrackedAnyView,
+            didStartWithReplay: didStartWithReplay
+        )
     }
 }
 
@@ -611,8 +647,7 @@ extension RUMScopeDependencies {
         rumApplicationID: String = .mockAny(),
         sessionSampler: Sampler = .mockKeepAll(),
         backgroundEventTrackingEnabled: Bool = .mockAny(),
-        appStateListener: AppStateListening = AppStateListenerMock.mockAny(),
-        launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock.mockAny(),
+        frustrationTrackingEnabled: Bool = true,
         firstPartyURLsFilter: FirstPartyURLsFilter = FirstPartyURLsFilter(hosts: []),
         eventBuilder: RUMEventBuilder = RUMEventBuilder(eventsMapper: .mockNoOp()),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
@@ -626,8 +661,7 @@ extension RUMScopeDependencies {
             rumApplicationID: rumApplicationID,
             sessionSampler: sessionSampler,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
-            appStateListener: appStateListener,
-            launchTimeProvider: launchTimeProvider,
+            frustrationTrackingEnabled: frustrationTrackingEnabled,
             firstPartyURLsFilter: firstPartyURLsFilter,
             eventBuilder: eventBuilder,
             rumUUIDGenerator: rumUUIDGenerator,
@@ -644,8 +678,7 @@ extension RUMScopeDependencies {
         rumApplicationID: String? = nil,
         sessionSampler: Sampler? = nil,
         backgroundEventTrackingEnabled: Bool? = nil,
-        appStateListener: AppStateListening? = nil,
-        launchTimeProvider: LaunchTimeProviderType? = nil,
+        frustrationTrackingEnabled: Bool? = nil,
         firstPartyUrls: Set<String>? = nil,
         eventBuilder: RUMEventBuilder? = nil,
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
@@ -659,8 +692,7 @@ extension RUMScopeDependencies {
             rumApplicationID: rumApplicationID ?? self.rumApplicationID,
             sessionSampler: sessionSampler ?? self.sessionSampler,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled ?? self.backgroundEventTrackingEnabled,
-            appStateListener: appStateListener ?? self.appStateListener,
-            launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider,
+            frustrationTrackingEnabled: frustrationTrackingEnabled ?? self.frustrationTrackingEnabled,
             firstPartyURLsFilter: firstPartyUrls.map { .init(hosts: $0) } ?? self.firstPartyURLsFilter,
             eventBuilder: eventBuilder ?? self.eventBuilder,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
@@ -689,13 +721,15 @@ extension RUMSessionScope {
         isInitialSession: Bool = .mockAny(),
         parent: RUMContextProvider = RUMContextProviderMock(),
         startTime: Date = .mockAny(),
-        dependencies: RUMScopeDependencies = .mockAny()
+        dependencies: RUMScopeDependencies = .mockAny(),
+        isReplayBeingRecorded: Bool? = .mockAny()
     ) -> RUMSessionScope {
         return RUMSessionScope(
             isInitialSession: isInitialSession,
             parent: parent,
             startTime: startTime,
-            dependencies: dependencies
+            dependencies: dependencies,
+            isReplayBeingRecorded: isReplayBeingRecorded
         )
     }
 }
@@ -780,7 +814,7 @@ extension RUMResourceScope {
         httpMethod: RUMMethod = .mockAny(),
         isFirstPartyResource: Bool? = nil,
         resourceKindBasedOnRequest: RUMResourceType? = nil,
-        spanContext: RUMSpanContext? = nil,
+        spanContext: RUMSpanContext? = .mockAny(),
         onResourceEventSent: @escaping () -> Void = {},
         onErrorEventSent: @escaping () -> Void = {}
     ) -> RUMResourceScope {
@@ -812,7 +846,7 @@ extension RUMUserActionScope {
         startTime: Date = .mockAny(),
         serverTimeOffset: TimeInterval = .zero,
         isContinuous: Bool = .mockAny(),
-        onActionEventSent: @escaping () -> Void = {}
+        onActionEventSent: @escaping (RUMActionEvent) -> Void = { _ in }
     ) -> RUMUserActionScope {
         return RUMUserActionScope(
                 parent: parent,
@@ -952,5 +986,17 @@ class ContinuousVitalReaderMock: ContinuousVitalReader {
         publishers.removeAll { existingPublisher in
             return existingPublisher === valuePublisher
         }
+    }
+}
+
+// MARK: - Dependency on Session Replay
+
+extension Dictionary where Key == String, Value == FeatureBaggage {
+    static func mockSessionReplayAttributes(hasReplay: Bool?) -> Self {
+        return [
+            SessionReplayDependency.srBaggageKey: [
+                SessionReplayDependency.hasReplay: hasReplay
+            ]
+        ]
     }
 }

@@ -138,23 +138,23 @@ extension XCTestCase {
 
     /// Asserts that JSON representations of two `Encodable` values are equal.
     /// This allows us testing if the information is not lost due to type erasing done in `CrashContext` serialization.
-    func AssertEncodedRepresentationsEqual<V: Encodable>(
-        value1: V,
-        value2: V,
+    func AssertEncodedRepresentationsEqual<RHS, LHS>(
+        _ rhs: RHS,
+        _ lhs: LHS,
         file: StaticString = #filePath,
         line: UInt = #line
-    ) throws {
+    ) throws where RHS: Encodable, LHS: Encodable {
         let prettyEncoder = JSONEncoder()
         prettyEncoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         do {
             let encodedValue1: Data
             let encodedValue2: Data
             if #available(iOS 13.0, *) {
-                encodedValue1 = try prettyEncoder.encode(value1)
-                encodedValue2 = try prettyEncoder.encode(value2)
+                encodedValue1 = try prettyEncoder.encode(rhs)
+                encodedValue2 = try prettyEncoder.encode(lhs)
             } else {
-                encodedValue1 = try prettyEncoder.encode(EncodingContainer(value1))
-                encodedValue2 = try prettyEncoder.encode(EncodingContainer(value2))
+                encodedValue1 = try prettyEncoder.encode(EncodingContainer(rhs))
+                encodedValue2 = try prettyEncoder.encode(EncodingContainer(lhs))
             }
             let value1JSONString = encodedValue1.utf8String
             let value2JSONString = encodedValue2.utf8String

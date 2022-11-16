@@ -22,7 +22,7 @@ class DDDatadogTests: XCTestCase {
 
     // MARK: - Initializing with configuration
 
-    func testItForwardsInitializationToSwift() {
+    func testItForwardsInitializationToSwift() throws {
         let configBuilder = DDConfiguration.builder(clientToken: "abcefghi", environment: "tests")
         configBuilder.trackURLSession(firstPartyHosts: ["example.com"])
 
@@ -35,8 +35,9 @@ class DDDatadogTests: XCTestCase {
         XCTAssertTrue(Datadog.isInitialized)
 
         let urlSessionInstrumentation = defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self)
-        XCTAssertEqual(defaultDatadogCore.v1.context?.applicationName, "app-name")
-        XCTAssertEqual(defaultDatadogCore.v1.context?.env, "tests")
+        let context = try XCTUnwrap(defaultDatadogCore as? DatadogCore).contextProvider.read()
+        XCTAssertEqual(context.applicationName, "app-name")
+        XCTAssertEqual(context.env, "tests")
         XCTAssertNotNil(urlSessionInstrumentation)
 
         urlSessionInstrumentation?.swizzler.unswizzle()
@@ -59,11 +60,11 @@ class DDDatadogTests: XCTestCase {
         )
 
         let core = defaultDatadogCore as? DatadogCore
-        XCTAssertEqual(core?.dependencies.consentProvider.currentValue, initialConsent.swift)
+        XCTAssertEqual(core?.consentProvider.currentValue, initialConsent.swift)
 
         DDDatadog.setTrackingConsent(consent: nextConsent.objc)
 
-        XCTAssertEqual(core?.dependencies.consentProvider.currentValue, nextConsent.swift)
+        XCTAssertEqual(core?.consentProvider.currentValue, nextConsent.swift)
 
         Datadog.flushAndDeinitialize()
     }
@@ -78,7 +79,7 @@ class DDDatadogTests: XCTestCase {
         )
 
         let core = defaultDatadogCore as? DatadogCore
-        let userInfo = try XCTUnwrap(core?.dependencies.userInfoProvider)
+        let userInfo = try XCTUnwrap(core?.userInfoProvider)
 
         DDDatadog.setUserInfo(
             id: "id",

@@ -27,15 +27,13 @@ class RUMInternalProxyTests: XCTestCase {
     private func createTestableRUMMonitor() throws -> DDRUMMonitor {
         let rumFeature: RUMFeature = try XCTUnwrap(core.v1.feature(RUMFeature.self), "RUM feature must be initialized before creating `RUMMonitor`")
         let crashReportingFeature = core.v1.feature(CrashReportingFeature.self)
-        let v1Context = try XCTUnwrap(core.v1.context, "`DatadogCore` must be initialized before creating `RUMMonitor`")
         return RUMMonitor(
             core: core,
             dependencies: RUMScopeDependencies(
                 rumFeature: rumFeature,
-                crashReportingFeature: crashReportingFeature,
-                context: v1Context
+                crashReportingFeature: crashReportingFeature
             ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-            dateProvider: v1Context.dateProvider
+            dateProvider: rumFeature.configuration.dateProvider
         )
     }
 

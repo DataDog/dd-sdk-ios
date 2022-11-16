@@ -8,7 +8,28 @@ import Foundation
 
 /// Generates Swift code from `SwiftTypes`.
 public class SwiftPrinter: BasePrinter, CodePrinter {
-    override public init() {}
+    public struct Configuration {
+        public enum AccessLevel {
+            /// Use to make all generated models visible in public interface.
+            case `public`
+            /// Use to make all generated models visible in internal interface.
+            case `internal`
+        }
+
+        /// Access level for for entities within printed code.
+        public let accessLevel: AccessLevel
+
+        public init(accessLevel: AccessLevel = .public) {
+            self.accessLevel = accessLevel
+        }
+    }
+
+    /// Configuration for printing code.
+    private let configuration: Configuration
+
+    public init(configuration: Configuration = Configuration()) {
+        self.configuration = configuration
+    }
 
     // MARK: - CodePrinter
 
@@ -45,7 +66,7 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
         let conformance = implementedProtocols.isEmpty ? "" : ": \(implementedProtocols.joined(separator: ", "))"
 
         printComment(swiftStruct.comment)
-        writeLine("public struct \(swiftStruct.name)\(conformance) {")
+        writeLine("\(configuration.accessLevel) struct \(swiftStruct.name)\(conformance) {")
         indentRight()
         try printPropertiesList(swiftStruct.properties)
         if swiftStruct.conforms(to: codableProtocol) {
@@ -58,7 +79,6 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
 
     private func printPropertiesList(_ properties: [SwiftStruct.Property]) throws {
         try properties.enumerated().forEach { index, property in
-            let accessLevel = "public"
             let kind: String
             switch property.mutability {
             case .mutable: kind = "var"
@@ -82,7 +102,7 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
             }
 
             printComment(property.comment)
-            writeLine("\(accessLevel) \(kind) \(name): \(type)\(optionality)\(defaultValue ?? "")")
+            writeLine("\(configuration.accessLevel) \(kind) \(name): \(type)\(optionality)\(defaultValue ?? "")")
 
             if index < properties.count - 1 {
                 writeEmptyLine()
@@ -162,7 +182,7 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
         let dynamicallyCodedProperty = dynamicallyCodedProperties.first
 
         func printEncodingImplemenation() throws {
-            writeLine("public func encode(to encoder: Encoder) throws {")
+            writeLine("\(configuration.accessLevel) func encode(to encoder: Encoder) throws {")
             indentRight()
 
             if !staticallyCodedProperties.isEmpty {
@@ -199,7 +219,7 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
         }
 
         func printDecodingImplemenation() throws {
-            writeLine("public init(from decoder: Decoder) throws {")
+            writeLine("\(configuration.accessLevel) init(from decoder: Decoder) throws {")
             indentRight()
 
             if !staticallyCodedProperties.isEmpty {
@@ -296,7 +316,7 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
         }()
 
         printComment(enumeration.comment)
-        writeLine("public enum \(enumeration.name): \(rawValueType)\(conformance) {")
+        writeLine("\(configuration.accessLevel) enum \(enumeration.name): \(rawValueType)\(conformance) {")
         indentRight()
         enumeration.cases.forEach { `case` in
             switch `case`.rawValue {
@@ -312,7 +332,7 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
 
     private func printAssociatedTypeEnum(_ enumeration: SwiftAssociatedTypeEnum) throws {
         func printEncodingImplemenation() {
-            writeLine("public func encode(to encoder: Encoder) throws {")
+            writeLine("\(configuration.accessLevel) func encode(to encoder: Encoder) throws {")
             indentRight()
                 writeLine("// Encode only the associated value, without encoding enum case")
                 writeLine("var container = encoder.singleValueContainer()")
@@ -332,7 +352,7 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
         }
 
         func printDecodingImplemenation() throws {
-            writeLine("public init(from decoder: Decoder) throws {")
+            writeLine("\(configuration.accessLevel) init(from decoder: Decoder) throws {")
             indentRight()
                 writeLine("// Decode enum case from associated value")
                 writeLine("let container = try decoder.singleValueContainer()")
@@ -366,7 +386,7 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
         let conformance = implementedProtocols.isEmpty ? "" : ": \(implementedProtocols.joined(separator: ", "))"
 
         printComment(enumeration.comment)
-        writeLine("public enum \(enumeration.name)\(conformance) {")
+        writeLine("\(configuration.accessLevel) enum \(enumeration.name)\(conformance) {")
         indentRight()
         try enumeration.cases.forEach { `case` in
             let associatedTypeDeclaration = try typeDeclaration(`case`.associatedType)
@@ -456,6 +476,19 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
             return swiftTypeReference.referencedTypeName
         default:
             throw Exception.unimplemented("Printing \(type) is not implemented.")
+        }
+    }
+}
+
+// MARK: - Convenience
+
+extension SwiftPrinter.Configuration.AccessLevel: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .public:
+            return "public"
+        case .internal:
+            return "internal"
         }
     }
 }

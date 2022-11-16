@@ -85,7 +85,7 @@ internal class RUMResourceScope: RUMScope {
 
     // MARK: - RUMScope
 
-    func process(command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Bool {
+    func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
         switch command {
         case let command as RUMStopResourceCommand where command.resourceKey == resourceKey:
             sendResourceEvent(on: command, context: context, writer: writer)
@@ -108,7 +108,7 @@ internal class RUMResourceScope: RUMScope {
 
     // MARK: - Sending RUM Events
 
-    private func sendResourceEvent(on command: RUMStopResourceCommand, context: DatadogV1Context, writer: Writer) {
+    private func sendResourceEvent(on command: RUMStopResourceCommand, context: DatadogContext, writer: Writer) {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let resourceStartTime: Date
@@ -118,6 +118,7 @@ internal class RUMResourceScope: RUMScope {
         // Check trace attributes
         let traceId = (attributes.removeValue(forKey: CrossPlatformAttributes.traceID) as? String) ?? spanContext?.traceID
         let spanId = (attributes.removeValue(forKey: CrossPlatformAttributes.spanID) as? String) ?? spanContext?.spanID
+        let traceSamplingRate = (attributes.removeValue(forKey: CrossPlatformAttributes.rulePSR) as? Double) ?? spanContext?.samplingRate
 
         /// Metrics values take precedence over other values.
         if let metrics = resourceMetrics {
@@ -134,6 +135,8 @@ internal class RUMResourceScope: RUMScope {
         let resourceEvent = RUMResourceEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                discarded: nil,
+                rulePsr: traceSamplingRate,
                 session: .init(plan: .plan1),
                 spanId: spanId,
                 traceId: traceId
@@ -197,7 +200,7 @@ internal class RUMResourceScope: RUMScope {
             ),
             service: context.service,
             session: .init(
-                hasReplay: nil,
+                hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
@@ -219,7 +222,7 @@ internal class RUMResourceScope: RUMScope {
         }
     }
 
-    private func sendErrorEvent(on command: RUMStopResourceWithErrorCommand, context: DatadogV1Context, writer: Writer) {
+    private func sendErrorEvent(on command: RUMStopResourceWithErrorCommand, context: DatadogContext, writer: Writer) {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let errorEvent = RUMErrorEvent(
@@ -257,7 +260,7 @@ internal class RUMResourceScope: RUMScope {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: nil,
+                hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),

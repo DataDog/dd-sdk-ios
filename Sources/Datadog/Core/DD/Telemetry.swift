@@ -24,6 +24,12 @@ internal protocol Telemetry {
     ///   - kind: The kind of error.
     ///   - stack: The stack trace.
     func error(id: String, message: String, kind: String?, stack: String?)
+
+    /// Sends a `TelemetryConfigurationEvent` event.
+    ///
+    /// - Parameters:
+    ///   - configuration: The current configuration
+    func configuration(configuration: FeaturesConfiguration)
 }
 
 extension Telemetry {
@@ -96,4 +102,5 @@ extension Telemetry {
 internal struct NOPTelemetry: Telemetry {
     func debug(id: String, message: String) {}
     func error(id: String, message: String, kind: String?, stack: String?) {}
+    func configuration(configuration: FeaturesConfiguration) {}
 }

@@ -11,7 +11,7 @@ extension DatadogCoreProtocol {
     // to access v1 related implementation.
     // If upcasting fails, a `NOOPDatadogCore` instance is returned.
     var v1: DatadogV1CoreProtocol {
-        self as? DatadogV1CoreProtocol ?? NOOPDatadogCore()
+        self as? DatadogV1CoreProtocol ?? NOPDatadogCore()
     }
 }
 
@@ -21,7 +21,7 @@ internal protocol DatadogV1CoreProtocol: DatadogCoreProtocol {
     // MARK: - V1 interface
 
     /// The SDK context created upon core initialization or `nil` if SDK was not yet initialized.
-    var context: DatadogV1Context? { get }
+    var legacyContext: DatadogV1Context? { get }
 
     /// Registers a feature instance by its type description.
     ///
@@ -42,25 +42,14 @@ internal protocol DatadogV1CoreProtocol: DatadogCoreProtocol {
     /// - Parameters:
     ///   - type: The feature instance type.
     /// - Returns: The feature scope if available.
-    func scope<T>(for featureType: T.Type) -> V1FeatureScope?
+    func scope<T>(for featureType: T.Type) -> FeatureScope?
 }
 
-/// Feature scope in v1 provide a context and a writer to build a record event.
-internal protocol V1FeatureScope {
-    /// Retrieve the event context and writer.
-    ///
-    /// The Feature scope provides the current Datadog context and event writer
-    /// for the Feature to build and record events.
-    ///
-    /// - Parameter block: The block to execute.
-    func eventWriteContext(_ block: (DatadogV1Context, Writer) throws -> Void)
-}
-
-extension NOOPDatadogCore: DatadogV1CoreProtocol {
+extension NOPDatadogCore: DatadogV1CoreProtocol {
     // MARK: - V1 interface
 
     /// Returns `nil`.
-    var context: DatadogV1Context? {
+    var legacyContext: DatadogV1Context? {
         return nil
     }
 
@@ -73,7 +62,7 @@ extension NOOPDatadogCore: DatadogV1CoreProtocol {
     }
 
     /// no-op
-    func scope<T>(for featureType: T.Type) -> V1FeatureScope? {
+    func scope<T>(for featureType: T.Type) -> FeatureScope? {
         return nil
     }
 }

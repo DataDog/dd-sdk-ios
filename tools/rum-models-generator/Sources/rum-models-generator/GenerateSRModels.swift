@@ -26,7 +26,11 @@ internal func generateSRSwiftModels(from schema: URL) throws -> String {
             """,
         footer: ""
     )
-    let printer = SwiftPrinter()
+    let printer = SwiftPrinter(
+        configuration: .init(
+            accessLevel: .internal
+        )
+    )
 
     return try generator
         .generateCode(from: schema)

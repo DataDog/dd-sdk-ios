@@ -22,12 +22,15 @@ internal final class LoggingFeature: V1FeatureInitializable, V1Feature {
     /// Logs upload worker.
     let upload: FeatureUpload
 
+    let messageReceiver: FeatureMessageReceiver
+
     // MARK: - Initialization
 
     init(
         storage: FeatureStorage,
         upload: FeatureUpload,
-        configuration: Configuration
+        configuration: Configuration,
+        messageReceiver: FeatureMessageReceiver
     ) {
         // Configuration
         self.configuration = configuration
@@ -35,6 +38,7 @@ internal final class LoggingFeature: V1FeatureInitializable, V1Feature {
         // Initialize stacks
         self.storage = storage
         self.upload = upload
+        self.messageReceiver = messageReceiver
     }
 
     internal func deinitialize() {

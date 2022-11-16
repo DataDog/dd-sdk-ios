@@ -23,7 +23,6 @@ only_rules: # we enable lint rules explicitly - only the ones listed below are a
   - empty_parentheses_with_trailing_closure
   - empty_xctest_method
   - first_where
-  - for_where
   - function_default_parameter_at_end
   - implicitly_unwrapped_optional
   - last_where
@@ -83,6 +82,7 @@ custom_rules:
 
 included:
   - ../../Tests
+  - ../../session-replay/Tests
   - ../../Datadog/E2ETests
   - ../../Datadog/E2EInstrumentationTests
   - ../../instrumented-tests/http-server-mock/Tests

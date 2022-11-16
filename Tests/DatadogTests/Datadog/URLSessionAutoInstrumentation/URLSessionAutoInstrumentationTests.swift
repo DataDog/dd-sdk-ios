@@ -17,14 +17,15 @@ class URLSessionAutoInstrumentationTests: XCTestCase {
 
     func testWhenURLSessionAutoInstrumentationIsEnabled_thenSharedInterceptorIsAvailable() {
         defaultDatadogCore = core
-        defer { defaultDatadogCore = NOOPDatadogCore() }
+        defer { defaultDatadogCore = NOPDatadogCore() }
 
         XCTAssertNil(URLSessionInterceptor.shared)
 
         // When
         let instrumentation = URLSessionAutoInstrumentation(
             configuration: .mockAny(),
-            commonDependencies: .mockAny()
+            dateProvider: SystemDateProvider(),
+            appStateListener: AppStateListenerMock.mockAny()
         )
 
         core.register(feature: instrumentation)
@@ -38,7 +39,8 @@ class URLSessionAutoInstrumentationTests: XCTestCase {
         let rum: RUMFeature = .mockNoOp()
         let instrumentation = URLSessionAutoInstrumentation(
             configuration: .mockAny(),
-            commonDependencies: .mockAny()
+            dateProvider: SystemDateProvider(),
+            appStateListener: AppStateListenerMock.mockAny()
         )
 
         core.register(feature: rum)

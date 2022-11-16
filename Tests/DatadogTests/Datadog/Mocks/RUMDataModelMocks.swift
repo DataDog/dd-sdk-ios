@@ -56,6 +56,7 @@ extension RUMEventAttributes: RandomMockable {
 extension RUMDevice: RandomMockable {
     static func mockRandom() -> RUMDevice {
         return .init(
+            architecture: .mockRandom(),
             brand: .mockRandom(),
             model: .mockRandom(),
             name: .mockRandom(),
@@ -146,9 +147,12 @@ extension RUMViewEvent: RandomMockable {
                 domContentLoaded: .mockRandom(),
                 domInteractive: .mockRandom(),
                 error: .init(count: .mockRandom()),
+                firstByte: .mockRandom(),
                 firstContentfulPaint: .mockRandom(),
                 firstInputDelay: .mockRandom(),
                 firstInputTime: .mockRandom(),
+                flutterBuildTime: nil,
+                flutterRasterTime: nil,
                 frozenFrame: .init(count: .mockRandom()),
                 frustration: nil,
                 id: .mockRandom(),
@@ -160,6 +164,7 @@ extension RUMViewEvent: RandomMockable {
                 ],
                 isActive: viewIsActive,
                 isSlowRendered: .mockRandom(),
+                jsRefreshRate: nil,
                 largestContentfulPaint: .mockRandom(),
                 loadEvent: .mockRandom(),
                 loadingTime: viewTimeSpent,
@@ -184,6 +189,8 @@ extension RUMResourceEvent: RandomMockable {
         return RUMResourceEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                discarded: nil,
+                rulePsr: nil,
                 session: .init(plan: .plan1),
                 spanId: .mockRandom(),
                 traceId: .mockRandom()
@@ -240,6 +247,14 @@ extension RUMActionEvent: RandomMockable {
     static func mockRandom() -> RUMActionEvent {
         return RUMActionEvent(
             dd: .init(
+                action: .init(
+                    position: nil,
+                    target: .init(
+                        height: nil,
+                        selector: nil,
+                        width: .mockRandom()
+                    )
+                ),
                 browserSdkVersion: nil,
                 session: .init(plan: .plan1)
             ),
@@ -250,9 +265,8 @@ extension RUMActionEvent: RandomMockable {
                 id: .mockRandom(),
                 loadingTime: .mockRandom(),
                 longTask: .init(count: .mockRandom()),
-                position: nil,
                 resource: .init(count: .mockRandom()),
-                target: .init(height: nil, name: .mockRandom(), selector: nil, width: .mockRandom()),
+                target: .init(name: .mockRandom()),
                 type: [.tap, .swipe, .scroll].randomElement()!
             ),
             application: .init(id: .mockRandom()),
@@ -364,6 +378,7 @@ extension RUMLongTaskEvent: RandomMockable {
         return RUMLongTaskEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                discarded: nil,
                 session: .init(plan: .plan1)
             ),
             action: .init(id: .mockRandom()),
@@ -383,6 +398,70 @@ extension RUMLongTaskEvent: RandomMockable {
             usr: .mockRandom(),
             version: .mockAny(),
             view: .init(id: .mockRandom(), name: .mockRandom(), referrer: .mockRandom(), url: .mockRandom())
+        )
+    }
+}
+
+extension TelemetryConfigurationEvent: EquatableInTests {
+}
+
+extension TelemetryConfigurationEvent: RandomMockable {
+    static func mockRandom() -> TelemetryConfigurationEvent {
+        return TelemetryConfigurationEvent(
+            dd: .init(),
+            action: .init(id: .mockRandom()),
+            application: .init(id: .mockRandom()),
+            date: .mockRandom(),
+            experimentalFeatures: nil,
+            service: .mockRandom(),
+            session: .init(id: .mockRandom()),
+            source: .ios,
+            telemetry: .init(
+                configuration: .init(
+                    actionNameAttribute: nil,
+                    batchSize: .mockAny(),
+                    batchUploadFrequency: .mockAny(),
+                    defaultPrivacyLevel: .mockAny(),
+                    forwardConsoleLogs: nil,
+                    forwardErrorsToLogs: nil,
+                    forwardReports: nil,
+                    initializationType: nil,
+                    mobileVitalsUpdatePeriod: .mockRandom(),
+                    premiumSampleRate: nil,
+                    replaySampleRate: nil,
+                    sessionReplaySampleRate: nil,
+                    sessionSampleRate: .mockRandom(),
+                    silentMultipleInit: nil,
+                    telemetryConfigurationSampleRate: .mockRandom(),
+                    telemetrySampleRate: .mockRandom(),
+                    traceSampleRate: .mockRandom(),
+                    trackBackgroundEvents: .mockRandom(),
+                    trackCrossPlatformLongTasks: .mockRandom(),
+                    trackErrors: .mockRandom(),
+                    trackFlutterPerformance: .mockRandom(),
+                    trackFrustrations: .mockRandom(),
+                    trackInteractions: .mockRandom(),
+                    trackNativeErrors: .mockRandom(),
+                    trackNativeLongTasks: .mockRandom(),
+                    trackNativeViews: .mockRandom(),
+                    trackNetworkRequests: .mockRandom(),
+                    trackSessionAcrossSubdomains: nil,
+                    trackViewsManually: nil,
+                    useAllowedTracingOrigins: .mockRandom(),
+                    useAttachToExisting: .mockRandom(),
+                    useBeforeSend: nil,
+                    useCrossSiteSessionCookie: nil,
+                    useExcludedActivityUrls: nil,
+                    useFirstPartyHosts: .mockRandom(),
+                    useLocalEncryption: .mockRandom(),
+                    useProxy: .mockRandom(),
+                    useSecureSessionCookie: nil,
+                    useTracing: .mockRandom(),
+                    viewTrackingStrategy: nil
+                )
+            ),
+            version: .mockAny(),
+            view: .init(id: .mockRandom())
         )
     }
 }
