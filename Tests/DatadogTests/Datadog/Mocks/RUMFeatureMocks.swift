@@ -573,15 +573,26 @@ extension RUMSessionState: AnyMockable, RandomMockable {
     }
 
     static func mockRandom() -> RUMSessionState {
-        return .init(sessionUUID: .mockRandom(), isInitialSession: .mockRandom(), hasTrackedAnyView: .mockRandom())
+        return .init(
+            sessionUUID: .mockRandom(),
+            isInitialSession: .mockRandom(),
+            hasTrackedAnyView: .mockRandom(),
+            didStartWithReplay: .mockRandom()
+        )
     }
 
     static func mockWith(
         sessionUUID: UUID = .mockAny(),
         isInitialSession: Bool = .mockAny(),
-        hasTrackedAnyView: Bool = .mockAny()
+        hasTrackedAnyView: Bool = .mockAny(),
+        didStartWithReplay: Bool? = .mockAny()
     ) -> RUMSessionState {
-        return RUMSessionState(sessionUUID: sessionUUID, isInitialSession: isInitialSession, hasTrackedAnyView: hasTrackedAnyView)
+        return RUMSessionState(
+            sessionUUID: sessionUUID,
+            isInitialSession: isInitialSession,
+            hasTrackedAnyView: hasTrackedAnyView,
+            didStartWithReplay: didStartWithReplay
+        )
     }
 }
 
@@ -676,13 +687,15 @@ extension RUMSessionScope {
         isInitialSession: Bool = .mockAny(),
         parent: RUMContextProvider = RUMContextProviderMock(),
         startTime: Date = .mockAny(),
-        dependencies: RUMScopeDependencies = .mockAny()
+        dependencies: RUMScopeDependencies = .mockAny(),
+        isReplayBeingRecorded: Bool? = .mockAny()
     ) -> RUMSessionScope {
         return RUMSessionScope(
             isInitialSession: isInitialSession,
             parent: parent,
             startTime: startTime,
-            dependencies: dependencies
+            dependencies: dependencies,
+            isReplayBeingRecorded: isReplayBeingRecorded
         )
     }
 }
@@ -939,5 +952,17 @@ class ContinuousVitalReaderMock: ContinuousVitalReader {
         publishers.removeAll { existingPublisher in
             return existingPublisher === valuePublisher
         }
+    }
+}
+
+// MARK: - Dependency on Session Replay
+
+extension Dictionary where Key == String, Value == FeatureBaggage {
+    static func mockSessionReplayAttributes(hasReplay: Bool?) -> Self {
+        return [
+            SessionReplayDependency.srBaggageKey: [
+                SessionReplayDependency.hasReplay: hasReplay
+            ]
+        ]
     }
 }

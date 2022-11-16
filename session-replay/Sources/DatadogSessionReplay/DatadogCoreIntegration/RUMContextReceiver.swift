@@ -5,7 +5,7 @@
  */
 
 import Foundation
-@testable import Datadog
+import Datadog
 
 /// The RUM context received from `DatadogCore`.
 internal struct RUMContext: Equatable {

@@ -65,7 +65,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             isInitialSession: true,
             parent: self,
             startTime: context.sdkInitDate,
-            dependencies: dependencies
+            dependencies: dependencies,
+            isReplayBeingRecorded: context.srBaggage?.isReplayBeingRecorded
         )
         sessionScope = initialSession
         sessionScopeDidUpdate(initialSession)

@@ -439,6 +439,7 @@ class RUMSessionScopeTests: XCTestCase {
     func testWhenSessionScopeIsCreated_thenItUpdatesLastRUMSessionStateInCrashContext() throws {
         let rumSessionStateProvider = ValuePublisher<RUMSessionState?>(initialValue: nil)
         let randomIsInitialSession: Bool = .mockRandom()
+        let randomIsReplayBeingRecorded: Bool? = .mockRandom()
 
         // When
         let scope: RUMSessionScope = .mockWith(
@@ -450,7 +451,8 @@ class RUMSessionScopeTests: XCTestCase {
                     rumViewEventProvider: .mockRandom(),
                     rumSessionStateProvider: rumSessionStateProvider
                 )
-            )
+            ),
+            isReplayBeingRecorded: randomIsReplayBeingRecorded
         )
 
         // Then
@@ -458,7 +460,8 @@ class RUMSessionScopeTests: XCTestCase {
         let expectedSessionState = RUMSessionState(
             sessionUUID: scope.sessionUUID.rawValue,
             isInitialSession: randomIsInitialSession,
-            hasTrackedAnyView: false
+            hasTrackedAnyView: false,
+            didStartWithReplay: randomIsReplayBeingRecorded
         )
         XCTAssertEqual(rumSessionStateInjectedToCrashContext, expectedSessionState, "It must inject expected session state to crash context")
     }
@@ -466,6 +469,7 @@ class RUMSessionScopeTests: XCTestCase {
     func testWhenSessionScopeStartsAnyView_thenItUpdatesLastRUMSessionStateInCrashContext() throws {
         let rumSessionStateProvider = ValuePublisher<RUMSessionState?>(initialValue: nil)
         let randomIsInitialSession: Bool = .mockRandom()
+        let randomIsReplayBeingRecorded: Bool? = .mockRandom()
 
         // Given
         let sessionStartTime = Date()
@@ -478,7 +482,8 @@ class RUMSessionScopeTests: XCTestCase {
                     rumViewEventProvider: .mockRandom(),
                     rumSessionStateProvider: rumSessionStateProvider
                 )
-            )
+            ),
+            isReplayBeingRecorded: randomIsReplayBeingRecorded
         )
 
         // When
@@ -491,7 +496,8 @@ class RUMSessionScopeTests: XCTestCase {
         let expectedSessionState = RUMSessionState(
             sessionUUID: scope.sessionUUID.rawValue,
             isInitialSession: randomIsInitialSession,
-            hasTrackedAnyView: true
+            hasTrackedAnyView: true,
+            didStartWithReplay: randomIsReplayBeingRecorded
         )
         XCTAssertEqual(rumSessionStateInjectedToCrashContext, expectedSessionState, "It must inject expected session state to crash context")
     }
