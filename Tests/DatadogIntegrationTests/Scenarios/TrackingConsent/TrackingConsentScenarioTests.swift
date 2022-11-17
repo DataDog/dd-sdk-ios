@@ -203,6 +203,7 @@ class TrackingConsentScenarioTests: IntegrationTests, LoggingCommonAsserts, Trac
 
         try recordedRUMRequests
             .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
+            .filter { event in try event.eventType() != "telemetry" }
             .forEach { event in
                 XCTAssertEqual(
                     try event.attribute(forKeyPath: "usr.current-consent-value"),
@@ -305,6 +306,7 @@ class TrackingConsentScenarioTests: IntegrationTests, LoggingCommonAsserts, Trac
 
         let eventMatchers = try recordedRequests
             .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
+            .filter { event in try event.eventType() != "telemetry" }
 
         try eventMatchers.forEach { event in
             XCTAssertEqual(
