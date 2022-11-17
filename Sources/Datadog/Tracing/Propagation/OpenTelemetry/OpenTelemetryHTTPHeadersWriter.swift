@@ -86,7 +86,7 @@ public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
     }
 
     public func inject(spanContext: OTSpanContext) {
-        guard let spanContext = spanContext.dd else { // TODO OpenTelemetry span context
+        guard let spanContext = spanContext.dd else {
             return
         }
 
@@ -95,35 +95,41 @@ public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
         switch openTelemetryHeaderType {
         case .multiple:
             tracePropagationHTTPHeaders = [
-                OpenTelemetryHTTPHeaders.Multiple.sampledField: samplingPriority ? "1" : "0"
+                OpenTelemetryHTTPHeaders.Multiple.sampledField: samplingPriority ? Constants.sampledValue : Constants.unsampledValue
             ]
 
             if samplingPriority {
-                tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Multiple.traceIDField] = String(spanContext.traceID.rawValue)
-                tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Multiple.spanIDField] = String(spanContext.spanID.rawValue)
-                if let parentSpanID = spanContext.parentSpanID?.rawValue {
-                    tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Multiple.parentSpanIDField] = String(parentSpanID)
+                tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Multiple.traceIDField] = spanContext.traceID.toHexadecimalString
+                tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Multiple.spanIDField] = spanContext.spanID.toHexadecimalString
+                if let parentSpanID = spanContext.parentSpanID {
+                    tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Multiple.parentSpanIDField] = parentSpanID.toHexadecimalString
                 }
             }
         case .single:
             if samplingPriority {
-                let parentSpanIdRawValue: String?
+                let parentSpanIdHexadecimalString: String?
                 if let parentSpanID = spanContext.parentSpanID {
-                    parentSpanIdRawValue = String(parentSpanID.rawValue)
+                    parentSpanIdHexadecimalString = parentSpanID.toHexadecimalString
                 } else {
-                    parentSpanIdRawValue = nil
+                    parentSpanIdHexadecimalString = nil
                 }
                 tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Single.b3Field] = [
-                    String(spanContext.traceID.rawValue),
-                    String(spanContext.spanID.rawValue),
-                    "1",
-                    parentSpanIdRawValue
+                    spanContext.traceID.toHexadecimalString,
+                    spanContext.spanID.toHexadecimalString,
+                    Constants.sampledValue,
+                    parentSpanIdHexadecimalString
                 ]
                 .compactMap { $0 }
-                .joined(separator: "-")
+                .joined(separator: Constants.b3Separator)
             } else {
-                tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Single.b3Field] = "0"
+                tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Single.b3Field] = Constants.unsampledValue
             }
         }
+    }
+
+    private enum Constants {
+        static let sampledValue = "1"
+        static let unsampledValue = "0"
+        static let b3Separator = "-"
     }
 }

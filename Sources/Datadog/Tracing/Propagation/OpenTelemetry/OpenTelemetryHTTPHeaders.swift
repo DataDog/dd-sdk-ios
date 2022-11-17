@@ -13,6 +13,7 @@ internal enum OpenTelemetryHTTPHeaders {
         /// The `X-B3-TraceId` header is encoded as 32 or 16 lower-hex characters.
         /// For example, a 128-bit TraceId header might look like: `X-B3-TraceId: 463ac35c9f6413ad48485a3953bb6124`.
         /// Unless propagating only the Sampling State, the `X-B3-TraceId` header is required.
+        /// Currently we support 64-bit only.
         static let traceIDField = "X-B3-TraceId"
 
         /// The `X-B3-SpanId` header is encoded as 16 lower-hex characters.

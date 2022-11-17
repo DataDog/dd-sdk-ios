@@ -810,6 +810,40 @@ class TracerTests: XCTestCase {
         XCTAssertNil(extractedSpanContext?.dd.parentSpanID)
     }
 
+    func testItExtractsSpanContextWithOpenTelemetryHTTPHeadersReader_forMultipleHeaders() {
+        let tracer: Tracer = .mockAny(in: PassthroughCoreMock())
+        let injectedSpanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
+
+        let httpHeadersWriter = OpenTelemetryHTTPHeadersWriter(sampler: .mockKeepAll(), openTelemetryHeaderType: .multiple)
+        tracer.inject(spanContext: injectedSpanContext, writer: httpHeadersWriter)
+
+        let httpHeadersReader = OpenTelemetryHTTPHeadersReader(
+            httpHeaderFields: httpHeadersWriter.tracePropagationHTTPHeaders
+        )
+        let extractedSpanContext = tracer.extract(reader: httpHeadersReader)
+
+        XCTAssertEqual(extractedSpanContext?.dd.traceID, injectedSpanContext.dd.traceID)
+        XCTAssertEqual(extractedSpanContext?.dd.spanID, injectedSpanContext.dd.spanID)
+        XCTAssertNil(extractedSpanContext?.dd.parentSpanID)
+    }
+
+    func testItExtractsSpanContextWithOpenTelemetryHTTPHeadersReader_forSingleHeader() {
+        let tracer: Tracer = .mockAny(in: PassthroughCoreMock())
+        let injectedSpanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
+
+        let httpHeadersWriter = OpenTelemetryHTTPHeadersWriter(sampler: .mockKeepAll(), openTelemetryHeaderType: .single)
+        tracer.inject(spanContext: injectedSpanContext, writer: httpHeadersWriter)
+
+        let httpHeadersReader = OpenTelemetryHTTPHeadersReader(
+            httpHeaderFields: httpHeadersWriter.tracePropagationHTTPHeaders
+        )
+        let extractedSpanContext = tracer.extract(reader: httpHeadersReader)
+
+        XCTAssertEqual(extractedSpanContext?.dd.traceID, injectedSpanContext.dd.traceID)
+        XCTAssertEqual(extractedSpanContext?.dd.spanID, injectedSpanContext.dd.spanID)
+        XCTAssertEqual(extractedSpanContext?.dd.parentSpanID, injectedSpanContext.dd.parentSpanID)
+    }
+
     // MARK: - Span Dates Correction
 
     func testGivenTimeDifferenceBetweenDeviceAndServer_whenCollectingSpans_thenSpanDateUsesServerTime() throws {
