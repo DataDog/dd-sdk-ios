@@ -323,7 +323,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         actionsCount += 1
 
         var attributes = self.attributes
-        var loadingTime: Int64? = nil
+        var loadingTime: Int64?
 
         if context.launchTime?.isActivePrewarm == true {
             // Set `active_pre_warm` attribute to true in case
@@ -351,13 +351,13 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 session: .init(plan: .plan1)
             ),
             action: .init(
-                crash: nil,
-                error: nil,
+                crash: .init(count: 0),
+                error: .init(count: 0),
                 frustration: nil,
                 id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 loadingTime: loadingTime,
-                longTask: nil,
-                resource: nil,
+                longTask: .init(count: 0),
+                resource: .init(count: 0),
                 target: nil,
                 type: .applicationStart
             ),
@@ -437,7 +437,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 action: .init(count: actionsCount.toInt64),
                 cpuTicksCount: cpuInfo?.greatestDiff,
                 cpuTicksPerSecond: cpuInfo?.greatestDiff?.divideIfNotZero(by: Double(timeSpent)),
-                crash: nil,
+                crash: .init(count: 0),
                 cumulativeLayoutShift: nil,
                 customTimings: customTimings.reduce(into: [:]) { acc, element in
                     acc[sanitizeCustomTimingName(customTiming: element.key)] = element.value
@@ -457,7 +457,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 id: viewUUID.toRUMDataFormat,
                 inForegroundPeriods: nil,
                 isActive: isActive,
-                isSlowRendered: isSlowRendered,
+                isSlowRendered: isSlowRendered ?? false,
                 jsRefreshRate: viewPerformanceMetrics[.jsFrameTimeSeconds]?.asJsRefreshRate(),
                 largestContentfulPaint: nil,
                 loadEvent: nil,
@@ -515,7 +515,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 handling: nil,
                 handlingStack: nil,
                 id: nil,
-                isCrash: command.isCrash,
+                isCrash: command.isCrash ?? false,
                 message: command.message,
                 resource: nil,
                 source: command.source.toRUMDataFormat,

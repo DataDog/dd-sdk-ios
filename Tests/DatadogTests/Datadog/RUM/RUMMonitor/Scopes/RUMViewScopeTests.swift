@@ -1073,7 +1073,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(error.error.source, .source)
         XCTAssertEqual(error.error.sourceType, .ios)
         XCTAssertNil(error.error.stack)
-        XCTAssertNil(error.error.isCrash)
+        XCTAssertTrue(error.error.isCrash == false)
         XCTAssertNil(error.error.resource)
         XCTAssertNil(error.action)
         XCTAssertEqual(error.context?.contextInfo as? [String: String], ["foo": "bar"])
