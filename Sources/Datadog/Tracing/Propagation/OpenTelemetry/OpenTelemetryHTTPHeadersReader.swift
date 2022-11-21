@@ -25,21 +25,23 @@ internal class OpenTelemetryHTTPHeadersReader: OTHTTPHeadersReader {
 
         if let traceIDValue = httpHeaderFields[OpenTelemetryHTTPHeaders.Multiple.traceIDField],
             let spanIDValue = httpHeaderFields[OpenTelemetryHTTPHeaders.Multiple.spanIDField],
-            let traceID = UInt64(traceIDValue).flatMap({ TracingUUID(rawValue: $0) }),
-            let spanID = UInt64(spanIDValue).flatMap({ TracingUUID(rawValue: $0) }) {
+            let parentSpanIDValue = httpHeaderFields[OpenTelemetryHTTPHeaders.Multiple.parentSpanIDField],
+            let traceID = TracingUUID(traceIDValue, .hexadecimal),
+            let spanID = TracingUUID(spanIDValue, .hexadecimal),
+            let parentSpanID = TracingUUID(parentSpanIDValue, .hexadecimal) {
             return DDSpanContext(
                 traceID: traceID,
                 spanID: spanID,
-                parentSpanID: nil,
+                parentSpanID: parentSpanID,
                 baggageItems: BaggageItems(targetQueue: baggageItemQueue, parentSpanItems: nil)
             )
         } else if let b3Value = httpHeaderFields[OpenTelemetryHTTPHeaders.Single.b3Field]?.components(separatedBy: "-"),
-            let traceID = b3Value[safe: 0]?.asTracingUUID,
-            let spanID = b3Value[safe: 1]?.asTracingUUID {
+            let traceID = TracingUUID(b3Value[safe: 0], .hexadecimal),
+            let spanID =  TracingUUID(b3Value[safe: 1], .hexadecimal) {
             return DDSpanContext(
                 traceID: traceID,
                 spanID: spanID,
-                parentSpanID: b3Value[safe: 3]?.asTracingUUID,
+                parentSpanID: TracingUUID(b3Value[safe: 3], .hexadecimal),
                 baggageItems: BaggageItems(targetQueue: baggageItemQueue, parentSpanItems: nil)
             )
         }
@@ -50,11 +52,5 @@ internal class OpenTelemetryHTTPHeadersReader: OTHTTPHeadersReader {
 private extension Array {
     subscript (safe index: Index) -> Element? {
         0 <= index && index < count ? self[index] : nil
-    }
-}
-
-private extension String {
-    var asTracingUUID: TracingUUID? {
-        return UInt64(self).flatMap({ TracingUUID(rawValue: $0) })
     }
 }

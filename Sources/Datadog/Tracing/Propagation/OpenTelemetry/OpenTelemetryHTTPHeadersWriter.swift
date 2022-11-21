@@ -35,7 +35,7 @@ public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
     /// Multiple header encoding uses an `X-B3-` prefixed header per item in the trace context.
     /// Single header delimits the context into into a single entry named b3.
     /// The single-header variant takes precedence over the multiple header one when extracting fields.
-    public enum OpenTelemetryHeaderType {
+    @objc public enum OpenTelemetryHeaderType: Int {
         case multiple, single
     }
 
@@ -99,23 +99,23 @@ public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
             ]
 
             if samplingPriority {
-                tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Multiple.traceIDField] = spanContext.traceID.toHexadecimalString
-                tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Multiple.spanIDField] = spanContext.spanID.toHexadecimalString
+                tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Multiple.traceIDField] = spanContext.traceID.toString(.hexadecimal)
+                tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Multiple.spanIDField] = spanContext.spanID.toString(.hexadecimal)
                 if let parentSpanID = spanContext.parentSpanID {
-                    tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Multiple.parentSpanIDField] = parentSpanID.toHexadecimalString
+                    tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Multiple.parentSpanIDField] = parentSpanID.toString(.hexadecimal)
                 }
             }
         case .single:
             if samplingPriority {
                 let parentSpanIdHexadecimalString: String?
                 if let parentSpanID = spanContext.parentSpanID {
-                    parentSpanIdHexadecimalString = parentSpanID.toHexadecimalString
+                    parentSpanIdHexadecimalString = parentSpanID.toString(.hexadecimal)
                 } else {
                     parentSpanIdHexadecimalString = nil
                 }
                 tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Single.b3Field] = [
-                    spanContext.traceID.toHexadecimalString,
-                    spanContext.spanID.toHexadecimalString,
+                    spanContext.traceID.toString(.hexadecimal),
+                    spanContext.spanID.toString(.hexadecimal),
                     Constants.sampledValue,
                     parentSpanIdHexadecimalString
                 ]

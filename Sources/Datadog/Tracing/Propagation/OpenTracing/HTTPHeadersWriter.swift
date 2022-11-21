@@ -70,8 +70,8 @@ public class HTTPHeadersWriter: OTHTTPHeadersWriter {
         ]
 
         if samplingPriority {
-            tracePropagationHTTPHeaders[TracingHTTPHeaders.traceIDField] = String(spanContext.traceID.rawValue)
-            tracePropagationHTTPHeaders[TracingHTTPHeaders.parentSpanIDField] = String(spanContext.spanID.rawValue)
+            tracePropagationHTTPHeaders[TracingHTTPHeaders.traceIDField] = spanContext.traceID.toString(.decimal)
+            tracePropagationHTTPHeaders[TracingHTTPHeaders.parentSpanIDField] = spanContext.spanID.toString(.decimal)
         }
     }
 }

@@ -235,8 +235,8 @@ public class Tracer: OTTracer {
         let context = activeSpan?.context as? DDSpanContext
 
         core.set(feature: "tracing", attributes: {[
-            Attributes.traceID: context.map { "\($0.traceID.rawValue)" },
-            Attributes.spanID: context.map { "\($0.spanID.rawValue)" }
+            Attributes.traceID: context.map { $0.traceID.toString(.decimal) },
+            Attributes.spanID: context.map { $0.spanID.toString(.decimal) }
         ]})
     }
 }

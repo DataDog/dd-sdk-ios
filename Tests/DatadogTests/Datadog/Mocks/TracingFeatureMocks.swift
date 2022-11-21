@@ -149,10 +149,14 @@ class RelativeTracingUUIDGenerator: TracingUUIDGenerator {
 
     func generateUnique() -> TracingUUID {
         return queue.sync {
-            defer { uuid = TracingUUID(rawValue: uuid.rawValue + count) }
+            defer { uuid = uuid + count }
             return uuid
         }
     }
+}
+
+private func +(lhs: TracingUUID, rhs: UInt64) -> TracingUUID {
+    return TracingUUID(rawValue: (UInt64(lhs.toString(.decimal)) ?? 0) + rhs)
 }
 
 extension SpanEvent: EquatableInTests {}

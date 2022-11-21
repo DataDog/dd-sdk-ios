@@ -189,8 +189,8 @@ class TracerTests: XCTestCase {
         // Assert child-parent relationship
 
         XCTAssertEqual(try grandchildMatcher.operationName(), "grandchild operation")
-        XCTAssertEqual(try grandchildMatcher.traceID(), rootSpan.context.dd.traceID.toHexadecimalString)
-        XCTAssertEqual(try grandchildMatcher.parentSpanID(), childSpan.context.dd.spanID.toHexadecimalString)
+        XCTAssertEqual(try grandchildMatcher.traceID(), rootSpan.context.dd.traceID.toString(.hexadecimal))
+        XCTAssertEqual(try grandchildMatcher.parentSpanID(), childSpan.context.dd.spanID.toString(.hexadecimal))
         XCTAssertNil(try? grandchildMatcher.metrics.isRootSpan())
         XCTAssertEqual(try grandchildMatcher.meta.custom(keyPath: "meta.root-item"), "foo")
         XCTAssertEqual(try grandchildMatcher.meta.custom(keyPath: "meta.child-item"), "bar")
@@ -199,8 +199,8 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(try grandchildMatcher.meta.custom(keyPath: "meta.overwritten"), "b", "Tags should have higher priority than baggage items")
 
         XCTAssertEqual(try childMatcher.operationName(), "child operation")
-        XCTAssertEqual(try childMatcher.traceID(), rootSpan.context.dd.traceID.toHexadecimalString)
-        XCTAssertEqual(try childMatcher.parentSpanID(), rootSpan.context.dd.spanID.toHexadecimalString)
+        XCTAssertEqual(try childMatcher.traceID(), rootSpan.context.dd.traceID.toString(.hexadecimal))
+        XCTAssertEqual(try childMatcher.parentSpanID(), rootSpan.context.dd.spanID.toString(.hexadecimal))
         XCTAssertNil(try? childMatcher.metrics.isRootSpan())
         XCTAssertEqual(try childMatcher.meta.custom(keyPath: "meta.root-item"), "foo")
         XCTAssertEqual(try childMatcher.meta.custom(keyPath: "meta.child-item"), "bar")
@@ -558,8 +558,8 @@ class TracerTests: XCTestCase {
 
         regularLogMatcher.assertStatus(equals: "info")
         regularLogMatcher.assertMessage(equals: "hello")
-        regularLogMatcher.assertValue(forKey: "dd.trace_id", equals: "\(span.context.dd.traceID.rawValue)")
-        regularLogMatcher.assertValue(forKey: "dd.span_id", equals: "\(span.context.dd.spanID.rawValue)")
+        regularLogMatcher.assertValue(forKey: "dd.trace_id", equals: span.context.dd.traceID.toString(.decimal))
+        regularLogMatcher.assertValue(forKey: "dd.span_id", equals: span.context.dd.spanID.toString(.decimal))
         regularLogMatcher.assertValue(forKey: "custom.field", equals: "value")
 
         errorLogMatcher.assertStatus(equals: "error")
@@ -567,8 +567,8 @@ class TracerTests: XCTestCase {
         errorLogMatcher.assertValue(forKey: "error.kind", equals: "Swift error")
         errorLogMatcher.assertValue(forKey: "error.message", equals: "Ops!")
         errorLogMatcher.assertMessage(equals: "Ops!")
-        errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: "\(span.context.dd.traceID.rawValue)")
-        errorLogMatcher.assertValue(forKey: "dd.span_id", equals: "\(span.context.dd.spanID.rawValue)")
+        errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: span.context.dd.traceID.toString(.decimal))
+        errorLogMatcher.assertValue(forKey: "dd.span_id", equals: span.context.dd.spanID.toString(.decimal))
     }
 
     func testSendingSpanLogsWithErrorFromArguments() throws {
@@ -592,8 +592,8 @@ class TracerTests: XCTestCase {
         errorLogMatcher.assertValue(forKey: "error.kind", equals: "Swift error")
         errorLogMatcher.assertValue(forKey: "error.message", equals: "Ops!")
         errorLogMatcher.assertMessage(equals: "Ops!")
-        errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: "\(span.context.dd.traceID.rawValue)")
-        errorLogMatcher.assertValue(forKey: "dd.span_id", equals: "\(span.context.dd.spanID.rawValue)")
+        errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: span.context.dd.traceID.toString(.decimal))
+        errorLogMatcher.assertValue(forKey: "dd.span_id", equals: span.context.dd.spanID.toString(.decimal))
     }
 
     func testSendingSpanLogsWithErrorFromNSError() throws {
@@ -623,8 +623,8 @@ class TracerTests: XCTestCase {
         errorLogMatcher.assertValue(forKey: "error.kind", equals: "Tracer - 1")
         errorLogMatcher.assertValue(forKey: "error.message", equals: "Ops!")
         errorLogMatcher.assertMessage(equals: "Ops!")
-        errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: "\(span.context.dd.traceID.rawValue)")
-        errorLogMatcher.assertValue(forKey: "dd.span_id", equals: "\(span.context.dd.spanID.rawValue)")
+        errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: span.context.dd.traceID.toString(.decimal))
+        errorLogMatcher.assertValue(forKey: "dd.span_id", equals: span.context.dd.spanID.toString(.decimal))
     }
 
     func testSendingSpanLogsWithErrorFromSwiftError() throws {
@@ -649,8 +649,8 @@ class TracerTests: XCTestCase {
         errorLogMatcher.assertValue(forKey: "error.kind", equals: "ErrorMock")
         errorLogMatcher.assertValue(forKey: "error.message", equals: "Ops!")
         errorLogMatcher.assertMessage(equals: "Ops!")
-        errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: "\(span.context.dd.traceID.rawValue)")
-        errorLogMatcher.assertValue(forKey: "dd.span_id", equals: "\(span.context.dd.spanID.rawValue)")
+        errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: span.context.dd.traceID.toString(.decimal))
+        errorLogMatcher.assertValue(forKey: "dd.span_id", equals: span.context.dd.spanID.toString(.decimal))
     }
 
     // MARK: - Integration With RUM Feature

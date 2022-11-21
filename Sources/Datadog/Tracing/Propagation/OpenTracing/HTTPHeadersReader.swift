@@ -22,8 +22,8 @@ internal class HTTPHeadersReader: OTHTTPHeadersReader {
         guard let baggageItemQueue = baggageItemQueue,
               let traceIDValue = httpHeaderFields[TracingHTTPHeaders.traceIDField],
               let spanIDValue = httpHeaderFields[TracingHTTPHeaders.parentSpanIDField],
-              let traceID = UInt64(traceIDValue).flatMap({ TracingUUID(rawValue: $0) }),
-              let spanID = UInt64(spanIDValue).flatMap({ TracingUUID(rawValue: $0) }) else {
+              let traceID = TracingUUID(traceIDValue, .decimal),
+              let spanID = TracingUUID(spanIDValue, .decimal) else {
             return nil
         }
 

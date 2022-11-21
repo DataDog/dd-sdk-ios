@@ -59,8 +59,8 @@ class URLSessionTracingHandlerTests: XCTestCase {
         let envelope: SpanEventsEnvelope? = core.events().last
         let span = try XCTUnwrap(envelope?.spans.first)
 
-        XCTAssertEqual(span.traceID.rawValue, 100)
-        XCTAssertEqual(span.spanID.rawValue, 200)
+        XCTAssertEqual(span.traceID.toString(.decimal), "100")
+        XCTAssertEqual(span.spanID.toString(.decimal), "200")
         XCTAssertEqual(span.operationName, "urlsession.request")
         XCTAssertFalse(span.isError)
         XCTAssertEqual(span.duration, 1)
@@ -158,11 +158,11 @@ class URLSessionTracingHandlerTests: XCTestCase {
         XCTAssertEqual(log.message, "network error")
         XCTAssertEqual(
             log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.traceID] as? String,
-            "\(span.traceID.rawValue)"
+            span.traceID.toString(.decimal)
         )
         XCTAssertEqual(
             log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.spanID] as? String,
-            "\(span.spanID.rawValue)"
+            span.spanID.toString(.decimal)
         )
         XCTAssertEqual(log.error?.kind, "domain - 123")
         XCTAssertEqual(log.attributes.internalAttributes?.count, 2)
@@ -222,11 +222,11 @@ class URLSessionTracingHandlerTests: XCTestCase {
         XCTAssertEqual(log.message, "404 not found")
         XCTAssertEqual(
             log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.traceID] as? String,
-            "\(span.traceID.rawValue)"
+            span.traceID.toString(.decimal)
         )
         XCTAssertEqual(
             log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.spanID] as? String,
-            "\(span.spanID.rawValue)"
+            span.spanID.toString(.decimal)
         )
         XCTAssertEqual(log.error?.kind, "HTTPURLResponse - 404")
         XCTAssertEqual(log.attributes.internalAttributes?.count, 2)

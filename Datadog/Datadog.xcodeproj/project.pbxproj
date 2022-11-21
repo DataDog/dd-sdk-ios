@@ -571,6 +571,9 @@
 		9EFD112C24B32D29003A1A2B /* FirstPartyURLsFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EFD112B24B32D29003A1A2B /* FirstPartyURLsFilter.swift */; };
 		A79B0F5C292B7C24008742B3 /* OpenTelemetryHTTPHeadersWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F5A292B7C06008742B3 /* OpenTelemetryHTTPHeadersWriterTests.swift */; };
 		A79B0F5D292B7C25008742B3 /* OpenTelemetryHTTPHeadersWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F5A292B7C06008742B3 /* OpenTelemetryHTTPHeadersWriterTests.swift */; };
+		A79B0F5F292BA435008742B3 /* OpenTelemetryHTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F5E292BA435008742B3 /* OpenTelemetryHTTPHeadersWriter+objc.swift */; };
+		A79B0F61292BB071008742B3 /* OpenTelemetryHTTPHeadersReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F60292BB071008742B3 /* OpenTelemetryHTTPHeadersReaderTests.swift */; };
+		A79B0F62292BB071008742B3 /* OpenTelemetryHTTPHeadersReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F60292BB071008742B3 /* OpenTelemetryHTTPHeadersReaderTests.swift */; };
 		A7F773D42924EA2D00AC1A62 /* OpenTelemetryHTTPHeaders.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F773D32924EA2D00AC1A62 /* OpenTelemetryHTTPHeaders.swift */; };
 		A7F773D52924EA2D00AC1A62 /* OpenTelemetryHTTPHeaders.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F773D32924EA2D00AC1A62 /* OpenTelemetryHTTPHeaders.swift */; };
 		A7F773DD29253F8B00AC1A62 /* OpenTelemetryHTTPHeadersWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F773DB29253F8B00AC1A62 /* OpenTelemetryHTTPHeadersWriter.swift */; };
@@ -1879,6 +1882,8 @@
 		9EF963E72537556300235F98 /* DDURLSessionDelegateAsSuperclassTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDURLSessionDelegateAsSuperclassTests.swift; sourceTree = "<group>"; };
 		9EFD112B24B32D29003A1A2B /* FirstPartyURLsFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstPartyURLsFilter.swift; sourceTree = "<group>"; };
 		A79B0F5A292B7C06008742B3 /* OpenTelemetryHTTPHeadersWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenTelemetryHTTPHeadersWriterTests.swift; sourceTree = "<group>"; };
+		A79B0F5E292BA435008742B3 /* OpenTelemetryHTTPHeadersWriter+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OpenTelemetryHTTPHeadersWriter+objc.swift"; sourceTree = "<group>"; };
+		A79B0F60292BB071008742B3 /* OpenTelemetryHTTPHeadersReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenTelemetryHTTPHeadersReaderTests.swift; sourceTree = "<group>"; };
 		A7F773D32924EA2D00AC1A62 /* OpenTelemetryHTTPHeaders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenTelemetryHTTPHeaders.swift; sourceTree = "<group>"; };
 		A7F773DB29253F8B00AC1A62 /* OpenTelemetryHTTPHeadersWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OpenTelemetryHTTPHeadersWriter.swift; sourceTree = "<group>"; };
 		A7F773DC29253F8B00AC1A62 /* OpenTelemetryHTTPHeadersReader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OpenTelemetryHTTPHeadersReader.swift; sourceTree = "<group>"; };
@@ -2800,6 +2805,7 @@
 			isa = PBXGroup;
 			children = (
 				6132BF4B24A49C8F00D7BD17 /* HTTPHeadersWriter+objc.swift */,
+				A79B0F5E292BA435008742B3 /* OpenTelemetryHTTPHeadersWriter+objc.swift */,
 			);
 			path = Propagation;
 			sourceTree = "<group>";
@@ -4220,6 +4226,7 @@
 			isa = PBXGroup;
 			children = (
 				A79B0F5A292B7C06008742B3 /* OpenTelemetryHTTPHeadersWriterTests.swift */,
+				A79B0F60292BB071008742B3 /* OpenTelemetryHTTPHeadersReaderTests.swift */,
 			);
 			path = Propagation;
 			sourceTree = "<group>";
@@ -5407,6 +5414,7 @@
 				6108676D2840FB35002DF3C0 /* TracingV2Configuration.swift in Sources */,
 				61D3E0D2277B23F1008BE766 /* KronosInternetAddress.swift in Sources */,
 				6156CB8E24DDA1B5008CB2B2 /* RUMContextProvider.swift in Sources */,
+				A79B0F5F292BA435008742B3 /* OpenTelemetryHTTPHeadersWriter+objc.swift in Sources */,
 				D2553826288F0B1A00727FAD /* BatteryStatusPublisher.swift in Sources */,
 				61C2C21224C5951400C0321C /* RUMViewScope.swift in Sources */,
 				61D3E0D5277B23F1008BE766 /* KronosNTPPacket.swift in Sources */,
@@ -5609,6 +5617,7 @@
 				D248ED4A28081D7500B315B4 /* RUMTelemetryTests.swift in Sources */,
 				61B0387D252724AB00518F3C /* URLSessionSwizzlerTests.swift in Sources */,
 				617CD0DD24CEDDD300B0B557 /* RUMUserActionScopeTests.swift in Sources */,
+				A79B0F61292BB071008742B3 /* OpenTelemetryHTTPHeadersReaderTests.swift in Sources */,
 				61B8BA91281812F60068AFF4 /* KronosInternetAddressTests.swift in Sources */,
 				D26F59332851E3440097C455 /* PassthroughCoreMock.swift in Sources */,
 				D29889C9273413ED00A4D1A9 /* RUMViewsHandlerTests.swift in Sources */,
@@ -6305,6 +6314,7 @@
 				616C0AA228573F6300C13264 /* RUMOperatingSystemInfoTests.swift in Sources */,
 				6194D51D287ECDC00091547D /* ConsoleLoggerTests.swift in Sources */,
 				D234612F28B76C1100055D4C /* FeatureMessageAttributesMock.swift in Sources */,
+				A79B0F62292BB071008742B3 /* OpenTelemetryHTTPHeadersReaderTests.swift in Sources */,
 				D2A1EE3C287EECC200D28DFB /* CarrierInfoPublisherTests.swift in Sources */,
 				D2CB6EDC27C520D400A62B57 /* ConsentAwareDataWriterTests.swift in Sources */,
 				D2CB6EDD27C520D400A62B57 /* UIApplicationSwizzlerTests.swift in Sources */,

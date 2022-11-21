@@ -67,8 +67,8 @@ internal struct TracingWithLoggingIntegration {
 
         // set tracing attributes
         let internalAttributes = [
-            TracingAttributes.traceID: "\(spanContext.traceID.rawValue)",
-            TracingAttributes.spanID: "\(spanContext.spanID.rawValue)"
+            TracingAttributes.traceID: spanContext.traceID.toString(.decimal),
+            TracingAttributes.spanID: spanContext.spanID.toString(.decimal)
         ]
 
         var extractedError: DDError?
