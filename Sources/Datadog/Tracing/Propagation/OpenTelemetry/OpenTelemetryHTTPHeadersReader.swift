@@ -25,17 +25,17 @@ internal class OpenTelemetryHTTPHeadersReader: OTHTTPHeadersReader {
 
         if let traceIDValue = httpHeaderFields[OpenTelemetryHTTPHeaders.Multiple.traceIDField],
             let spanIDValue = httpHeaderFields[OpenTelemetryHTTPHeaders.Multiple.spanIDField],
-            let parentSpanIDValue = httpHeaderFields[OpenTelemetryHTTPHeaders.Multiple.parentSpanIDField],
             let traceID = TracingUUID(traceIDValue, .hexadecimal),
-            let spanID = TracingUUID(spanIDValue, .hexadecimal),
-            let parentSpanID = TracingUUID(parentSpanIDValue, .hexadecimal) {
+            let spanID = TracingUUID(spanIDValue, .hexadecimal) {
             return DDSpanContext(
                 traceID: traceID,
                 spanID: spanID,
-                parentSpanID: parentSpanID,
+                parentSpanID: TracingUUID(httpHeaderFields[OpenTelemetryHTTPHeaders.Multiple.parentSpanIDField], .hexadecimal),
                 baggageItems: BaggageItems(targetQueue: baggageItemQueue, parentSpanItems: nil)
             )
-        } else if let b3Value = httpHeaderFields[OpenTelemetryHTTPHeaders.Single.b3Field]?.components(separatedBy: "-"),
+        } else if let b3Value = httpHeaderFields[OpenTelemetryHTTPHeaders.Single.b3Field]?.components(
+                separatedBy: OpenTelemetryHTTPHeaders.Constants.b3Separator
+            ),
             let traceID = TracingUUID(b3Value[safe: 0], .hexadecimal),
             let spanID = TracingUUID(b3Value[safe: 1], .hexadecimal) {
             return DDSpanContext(
@@ -46,11 +46,5 @@ internal class OpenTelemetryHTTPHeadersReader: OTHTTPHeadersReader {
             )
         }
         return nil
-    }
-}
-
-private extension Array {
-    subscript (safe index: Index) -> Element? {
-        0 <= index && index < count ? self[index] : nil
     }
 }

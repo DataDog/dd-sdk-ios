@@ -18,7 +18,7 @@ public class DDOpenTelemetryHTTPHeadersWriter: NSObject {
     @objc
     public init(
         samplingRate: Float = 20,
-        openTelemetryHeaderType: OpenTelemetryHTTPHeadersWriter.OpenTelemetryHeaderType = .single
+        openTelemetryHeaderType: OpenTelemetryHTTPHeadersWriter.InjectEncoding = .single
     ) {
         swiftOpenTelemetryHTTPHeadersWriter = OpenTelemetryHTTPHeadersWriter(
             samplingRate: samplingRate,

@@ -720,6 +720,7 @@ class TracerTests: XCTestCase {
         let tracer: Tracer = .mockAny(in: PassthroughCoreMock())
         let spanContext1 = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
         let spanContext2 = DDSpanContext(traceID: 4, spanID: 5, parentSpanID: 6, baggageItems: .mockAny())
+        let spanContext3 = DDSpanContext(traceID: 77, spanID: 88, parentSpanID: nil, baggageItems: .mockAny())
 
         let httpHeadersWriter = OpenTelemetryHTTPHeadersWriter(sampler: .mockKeepAll(), openTelemetryHeaderType: .multiple)
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, [:])
@@ -747,12 +748,24 @@ class TracerTests: XCTestCase {
             "X-B3-ParentSpanId": "6"
         ]
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders2)
+
+        // When
+        tracer.inject(spanContext: spanContext3, writer: httpHeadersWriter)
+
+        // Then
+        let expectedHTTPHeaders3 = [
+            "X-B3-TraceId": "4D",
+            "X-B3-SpanId": "58",
+            "X-B3-Sampled": "1"
+        ]
+        XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders3)
     }
 
     func testItInjectsSpanContextWithOpenTelemetryHTTPHeadersWriter_usingSingleHeader() {
         let tracer: Tracer = .mockAny(in: PassthroughCoreMock())
         let spanContext1 = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
         let spanContext2 = DDSpanContext(traceID: 4, spanID: 5, parentSpanID: 6, baggageItems: .mockAny())
+        let spanContext3 = DDSpanContext(traceID: 77, spanID: 88, parentSpanID: nil, baggageItems: .mockAny())
 
         let httpHeadersWriter = OpenTelemetryHTTPHeadersWriter(sampler: .mockKeepAll(), openTelemetryHeaderType: .single)
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, [:])
@@ -774,6 +787,15 @@ class TracerTests: XCTestCase {
             "b3": "4-5-1-6"
         ]
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders2)
+
+        // When
+        tracer.inject(spanContext: spanContext3, writer: httpHeadersWriter)
+
+        // Then
+        let expectedHTTPHeaders3 = [
+            "b3": "4D-58-1"
+        ]
+        XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders3)
     }
 
     func testItInjectsRejectedSpanContextWithHTTPHeadersWriter() {
@@ -812,7 +834,7 @@ class TracerTests: XCTestCase {
 
     func testItExtractsSpanContextWithOpenTelemetryHTTPHeadersReader_forMultipleHeaders() {
         let tracer: Tracer = .mockAny(in: PassthroughCoreMock())
-        let injectedSpanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
+        let injectedSpanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
 
         let httpHeadersWriter = OpenTelemetryHTTPHeadersWriter(sampler: .mockKeepAll(), openTelemetryHeaderType: .multiple)
         tracer.inject(spanContext: injectedSpanContext, writer: httpHeadersWriter)
@@ -824,12 +846,12 @@ class TracerTests: XCTestCase {
 
         XCTAssertEqual(extractedSpanContext?.dd.traceID, injectedSpanContext.dd.traceID)
         XCTAssertEqual(extractedSpanContext?.dd.spanID, injectedSpanContext.dd.spanID)
-        XCTAssertNil(extractedSpanContext?.dd.parentSpanID)
+        XCTAssertEqual(extractedSpanContext?.dd.parentSpanID, injectedSpanContext.dd.parentSpanID)
     }
 
     func testItExtractsSpanContextWithOpenTelemetryHTTPHeadersReader_forSingleHeader() {
         let tracer: Tracer = .mockAny(in: PassthroughCoreMock())
-        let injectedSpanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
+        let injectedSpanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
 
         let httpHeadersWriter = OpenTelemetryHTTPHeadersWriter(sampler: .mockKeepAll(), openTelemetryHeaderType: .single)
         tracer.inject(spanContext: injectedSpanContext, writer: httpHeadersWriter)

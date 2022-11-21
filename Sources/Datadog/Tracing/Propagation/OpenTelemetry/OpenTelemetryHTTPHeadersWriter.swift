@@ -26,7 +26,7 @@ import Foundation
 ///
 ///
 public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
-    /// Open Telemetry header type.
+    /// Open Telemetry header encoding.
     ///
     /// There are two encodings of B3:
     /// [Single Header](https://github.com/openzipkin/b3-propagation#single-header)
@@ -36,7 +36,7 @@ public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
     /// Single header delimits the context into into a single entry named b3.
     /// The single-header variant takes precedence over the multiple header one when extracting fields.
     @objc
-    public enum OpenTelemetryHeaderType: Int {
+    public enum InjectEncoding: Int {
         case multiple, single
     }
 
@@ -58,7 +58,7 @@ public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
     private let sampler: Sampler
 
     /// Determines the type of telemetry header type used by the writer.
-    private let openTelemetryHeaderType: OpenTelemetryHeaderType
+    private let openTelemetryHeaderType: InjectEncoding
 
     /// Creates a `OpenTelemetryHTTPHeadersWriter` to inject traces propagation headers
     /// to network request.
@@ -67,7 +67,7 @@ public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
     /// - Parameter openTelemetryHeaderType: Determines the type of telemetry header type used by the writer.
     public init(
         samplingRate: Float = 20,
-        openTelemetryHeaderType: OpenTelemetryHeaderType = .single
+        openTelemetryHeaderType: InjectEncoding = .single
     ) {
         self.sampler = Sampler(samplingRate: samplingRate)
         self.openTelemetryHeaderType = openTelemetryHeaderType
@@ -80,7 +80,7 @@ public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
     /// - Parameter openTelemetryHeaderType: Determines the type of telemetry header type used by the writer.
     internal init(
         sampler: Sampler,
-        openTelemetryHeaderType: OpenTelemetryHeaderType
+        openTelemetryHeaderType: InjectEncoding
     ) {
         self.sampler = sampler
         self.openTelemetryHeaderType = openTelemetryHeaderType
@@ -93,6 +93,8 @@ public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
 
         let samplingPriority = sampler.sample()
 
+        typealias Constants = OpenTelemetryHTTPHeaders.Constants
+
         switch openTelemetryHeaderType {
         case .multiple:
             tracePropagationHTTPHeaders = [
@@ -102,23 +104,15 @@ public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
             if samplingPriority {
                 tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Multiple.traceIDField] = spanContext.traceID.toString(.hexadecimal)
                 tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Multiple.spanIDField] = spanContext.spanID.toString(.hexadecimal)
-                if let parentSpanID = spanContext.parentSpanID {
-                    tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Multiple.parentSpanIDField] = parentSpanID.toString(.hexadecimal)
-                }
+                tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Multiple.parentSpanIDField] = spanContext.parentSpanID?.toString(.hexadecimal)
             }
         case .single:
             if samplingPriority {
-                let parentSpanIdHexadecimalString: String?
-                if let parentSpanID = spanContext.parentSpanID {
-                    parentSpanIdHexadecimalString = parentSpanID.toString(.hexadecimal)
-                } else {
-                    parentSpanIdHexadecimalString = nil
-                }
                 tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Single.b3Field] = [
                     spanContext.traceID.toString(.hexadecimal),
                     spanContext.spanID.toString(.hexadecimal),
                     Constants.sampledValue,
-                    parentSpanIdHexadecimalString
+                    spanContext.parentSpanID?.toString(.hexadecimal)
                 ]
                 .compactMap { $0 }
                 .joined(separator: Constants.b3Separator)
@@ -126,11 +120,5 @@ public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
                 tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Single.b3Field] = Constants.unsampledValue
             }
         }
-    }
-
-    private enum Constants {
-        static let sampledValue = "1"
-        static let unsampledValue = "0"
-        static let b3Separator = "-"
     }
 }

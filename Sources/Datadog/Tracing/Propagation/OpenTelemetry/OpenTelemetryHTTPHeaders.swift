@@ -41,4 +41,10 @@ internal enum OpenTelemetryHTTPHeaders {
         /// `b3={TraceId}-{SpanId}-{SamplingState}-{ParentSpanId}`, where the last two fields are optional.
         static let b3Field = "b3"
     }
+
+    enum Constants {
+        static let sampledValue = "1"
+        static let unsampledValue = "0"
+        static let b3Separator = "-"
+    }
 }

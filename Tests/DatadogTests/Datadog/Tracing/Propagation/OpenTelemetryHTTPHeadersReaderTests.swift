@@ -9,9 +9,9 @@ import XCTest
 
 class OpenTelemetryHTTPHeadersReaderTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional
-    var openTelemetryHTTPHeadersReader: OpenTelemetryHTTPHeadersReader?
-    var sampler: Sampler?
-    var context: OTSpanContext?
+    var openTelemetryHTTPHeadersReader: OpenTelemetryHTTPHeadersReader!
+    var sampler: Sampler!
+    var context: OTSpanContext!
     // swiftlint:enable implicitly_unwrapped_optional
 
     override func setUp() {
