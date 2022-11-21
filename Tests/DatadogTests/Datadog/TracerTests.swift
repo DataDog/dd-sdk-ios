@@ -722,7 +722,7 @@ class TracerTests: XCTestCase {
         let spanContext2 = DDSpanContext(traceID: 4, spanID: 5, parentSpanID: 6, baggageItems: .mockAny())
         let spanContext3 = DDSpanContext(traceID: 77, spanID: 88, parentSpanID: nil, baggageItems: .mockAny())
 
-        let httpHeadersWriter = OpenTelemetryHTTPHeadersWriter(sampler: .mockKeepAll(), openTelemetryHeaderType: .multiple)
+        let httpHeadersWriter = OpenTelemetryHTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .multiple)
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, [:])
 
         // When
@@ -767,7 +767,7 @@ class TracerTests: XCTestCase {
         let spanContext2 = DDSpanContext(traceID: 4, spanID: 5, parentSpanID: 6, baggageItems: .mockAny())
         let spanContext3 = DDSpanContext(traceID: 77, spanID: 88, parentSpanID: nil, baggageItems: .mockAny())
 
-        let httpHeadersWriter = OpenTelemetryHTTPHeadersWriter(sampler: .mockKeepAll(), openTelemetryHeaderType: .single)
+        let httpHeadersWriter = OpenTelemetryHTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .single)
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, [:])
 
         // When
@@ -836,7 +836,7 @@ class TracerTests: XCTestCase {
         let tracer: Tracer = .mockAny(in: PassthroughCoreMock())
         let injectedSpanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
 
-        let httpHeadersWriter = OpenTelemetryHTTPHeadersWriter(sampler: .mockKeepAll(), openTelemetryHeaderType: .multiple)
+        let httpHeadersWriter = OpenTelemetryHTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .multiple)
         tracer.inject(spanContext: injectedSpanContext, writer: httpHeadersWriter)
 
         let httpHeadersReader = OpenTelemetryHTTPHeadersReader(
@@ -853,7 +853,7 @@ class TracerTests: XCTestCase {
         let tracer: Tracer = .mockAny(in: PassthroughCoreMock())
         let injectedSpanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
 
-        let httpHeadersWriter = OpenTelemetryHTTPHeadersWriter(sampler: .mockKeepAll(), openTelemetryHeaderType: .single)
+        let httpHeadersWriter = OpenTelemetryHTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .single)
         tracer.inject(spanContext: injectedSpanContext, writer: httpHeadersWriter)
 
         let httpHeadersReader = OpenTelemetryHTTPHeadersReader(

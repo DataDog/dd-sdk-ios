@@ -32,7 +32,7 @@ class OpenTelemetryHTTPHeadersWriterTests: XCTestCase {
         )
         openTelemetryHTTPHeadersWriter = OpenTelemetryHTTPHeadersWriter(
             sampler: sampler,
-            openTelemetryHeaderType: .single
+            injectEncoding: .single
         )
         openTelemetryHTTPHeadersWriter.inject(spanContext: context)
 
@@ -50,7 +50,7 @@ class OpenTelemetryHTTPHeadersWriterTests: XCTestCase {
         )
         openTelemetryHTTPHeadersWriter = OpenTelemetryHTTPHeadersWriter(
             sampler: sampler,
-            openTelemetryHeaderType: .single
+            injectEncoding: .single
         )
         openTelemetryHTTPHeadersWriter.inject(spanContext: context)
 
@@ -68,7 +68,7 @@ class OpenTelemetryHTTPHeadersWriterTests: XCTestCase {
         )
         openTelemetryHTTPHeadersWriter = OpenTelemetryHTTPHeadersWriter(
             sampler: sampler,
-            openTelemetryHeaderType: .single
+            injectEncoding: .single
         )
         openTelemetryHTTPHeadersWriter.inject(spanContext: context)
 
@@ -86,7 +86,7 @@ class OpenTelemetryHTTPHeadersWriterTests: XCTestCase {
         )
         openTelemetryHTTPHeadersWriter = OpenTelemetryHTTPHeadersWriter(
             sampler: sampler,
-            openTelemetryHeaderType: .multiple
+            injectEncoding: .multiple
         )
         openTelemetryHTTPHeadersWriter.inject(spanContext: context)
 
@@ -107,7 +107,7 @@ class OpenTelemetryHTTPHeadersWriterTests: XCTestCase {
         )
         openTelemetryHTTPHeadersWriter = OpenTelemetryHTTPHeadersWriter(
             sampler: sampler,
-            openTelemetryHeaderType: .multiple
+            injectEncoding: .multiple
         )
         openTelemetryHTTPHeadersWriter.inject(spanContext: context)
 
@@ -128,7 +128,7 @@ class OpenTelemetryHTTPHeadersWriterTests: XCTestCase {
         )
         openTelemetryHTTPHeadersWriter = OpenTelemetryHTTPHeadersWriter(
             sampler: sampler,
-            openTelemetryHeaderType: .multiple
+            injectEncoding: .multiple
         )
         openTelemetryHTTPHeadersWriter.inject(spanContext: context)
 

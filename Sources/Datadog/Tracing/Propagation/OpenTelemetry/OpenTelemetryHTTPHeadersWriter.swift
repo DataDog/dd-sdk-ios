@@ -14,7 +14,7 @@ import Foundation
 ///
 ///     var request = URLRequest(...)
 ///
-///     let writer = OpenTelemetryHTTPHeadersWriter(openTelemetryHeaderType: .single)
+///     let writer = OpenTelemetryHTTPHeadersWriter(injectEncoding: .single)
 ///     let span = Global.sharedTracer.startSpan("network request")
 ///     writer.inject(spanContext: span.context)
 ///
@@ -58,32 +58,32 @@ public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
     private let sampler: Sampler
 
     /// Determines the type of telemetry header type used by the writer.
-    private let openTelemetryHeaderType: InjectEncoding
+    private let injectEncoding: InjectEncoding
 
     /// Creates a `OpenTelemetryHTTPHeadersWriter` to inject traces propagation headers
     /// to network request.
     ///
     /// - Parameter samplingRate: Tracing sampling rate. 20% by default.
-    /// - Parameter openTelemetryHeaderType: Determines the type of telemetry header type used by the writer.
+    /// - Parameter injectEncoding: Determines the type of telemetry header type used by the writer.
     public init(
         samplingRate: Float = 20,
-        openTelemetryHeaderType: InjectEncoding = .single
+        injectEncoding: InjectEncoding = .single
     ) {
         self.sampler = Sampler(samplingRate: samplingRate)
-        self.openTelemetryHeaderType = openTelemetryHeaderType
+        self.injectEncoding = injectEncoding
     }
 
     /// Creates a `OpenTelemetryHTTPHeadersWriter` to inject traces propagation headers
     /// to network request.
     ///
     /// - Parameter sampler: Tracing sampler responsible for randomizing the sample.
-    /// - Parameter openTelemetryHeaderType: Determines the type of telemetry header type used by the writer.
+    /// - Parameter injectEncoding: Determines the type of telemetry header type used by the writer.
     internal init(
         sampler: Sampler,
-        openTelemetryHeaderType: InjectEncoding
+        injectEncoding: InjectEncoding
     ) {
         self.sampler = sampler
-        self.openTelemetryHeaderType = openTelemetryHeaderType
+        self.injectEncoding = injectEncoding
     }
 
     public func inject(spanContext: OTSpanContext) {
@@ -95,7 +95,7 @@ public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
 
         typealias Constants = OpenTelemetryHTTPHeaders.Constants
 
-        switch openTelemetryHeaderType {
+        switch injectEncoding {
         case .multiple:
             tracePropagationHTTPHeaders = [
                 OpenTelemetryHTTPHeaders.Multiple.sampledField: samplingPriority ? Constants.sampledValue : Constants.unsampledValue
