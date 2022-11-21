@@ -37,7 +37,7 @@ internal class OpenTelemetryHTTPHeadersReader: OTHTTPHeadersReader {
             )
         } else if let b3Value = httpHeaderFields[OpenTelemetryHTTPHeaders.Single.b3Field]?.components(separatedBy: "-"),
             let traceID = TracingUUID(b3Value[safe: 0], .hexadecimal),
-            let spanID =  TracingUUID(b3Value[safe: 1], .hexadecimal) {
+            let spanID = TracingUUID(b3Value[safe: 1], .hexadecimal) {
             return DDSpanContext(
                 traceID: traceID,
                 spanID: spanID,

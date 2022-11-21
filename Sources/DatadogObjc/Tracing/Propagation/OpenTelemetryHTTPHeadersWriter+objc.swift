@@ -16,7 +16,10 @@ public class DDOpenTelemetryHTTPHeadersWriter: NSObject {
     }
 
     @objc
-    public init(samplingRate: Float = 20, openTelemetryHeaderType: OpenTelemetryHTTPHeadersWriter.OpenTelemetryHeaderType) {
+    public init(
+        samplingRate: Float = 20,
+        openTelemetryHeaderType: OpenTelemetryHTTPHeadersWriter.OpenTelemetryHeaderType = .single
+    ) {
         swiftOpenTelemetryHTTPHeadersWriter = OpenTelemetryHTTPHeadersWriter(
             samplingRate: samplingRate,
             openTelemetryHeaderType: openTelemetryHeaderType

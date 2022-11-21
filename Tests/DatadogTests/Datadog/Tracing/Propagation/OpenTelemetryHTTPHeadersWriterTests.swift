@@ -8,10 +8,11 @@ import XCTest
 @testable import Datadog
 
 class OpenTelemetryHTTPHeadersWriterTests: XCTestCase {
-
+    // swiftlint:disable implicitly_unwrapped_optional
     var openTelemetryHTTPHeadersWriter: OpenTelemetryHTTPHeadersWriter!
     var sampler: Sampler!
     var context: OTSpanContext!
+    // swiftlint:enable implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
@@ -21,12 +22,12 @@ class OpenTelemetryHTTPHeadersWriterTests: XCTestCase {
         super.tearDown()
     }
 
-    func test_OpenTelemetryHTTPHeadersWriter_writesSingleHeader() {
+    func testOpenTelemetryHTTPHeadersWriterwritesSingleHeader() {
         sampler = .mockKeepAll()
         context = DDSpanContext.mockWith(
-            traceID: .mock(1234),
-            spanID: .mock(2345),
-            parentSpanID: .mock(5678),
+            traceID: .mock(1_234),
+            spanID: .mock(2_345),
+            parentSpanID: .mock(5_678),
             baggageItems: .mockAny()
         )
         openTelemetryHTTPHeadersWriter = OpenTelemetryHTTPHeadersWriter(
@@ -39,12 +40,12 @@ class OpenTelemetryHTTPHeadersWriterTests: XCTestCase {
         XCTAssertEqual(headers[OpenTelemetryHTTPHeaders.Single.b3Field], "4D2-929-1-162E")
     }
 
-    func test_OpenTelemetryHTTPHeadersWriter_writesSingleHeaderWithSampling() {
+    func testOpenTelemetryHTTPHeadersWriterwritesSingleHeaderWithSampling() {
         sampler = .mockRejectAll()
         context = DDSpanContext.mockWith(
-            traceID: .mock(1234),
-            spanID: .mock(2345),
-            parentSpanID: .mock(5678),
+            traceID: .mock(1_234),
+            spanID: .mock(2_345),
+            parentSpanID: .mock(5_678),
             baggageItems: .mockAny()
         )
         openTelemetryHTTPHeadersWriter = OpenTelemetryHTTPHeadersWriter(
@@ -57,11 +58,11 @@ class OpenTelemetryHTTPHeadersWriterTests: XCTestCase {
         XCTAssertEqual(headers[OpenTelemetryHTTPHeaders.Single.b3Field], "0")
     }
 
-    func test_OpenTelemetryHTTPHeadersWriter_writesSingleHeaderWithoutOptionalValues() {
+    func testOpenTelemetryHTTPHeadersWriterwritesSingleHeaderWithoutOptionalValues() {
         sampler = .mockKeepAll()
         context = DDSpanContext.mockWith(
-            traceID: .mock(1234),
-            spanID: .mock(2345),
+            traceID: .mock(1_234),
+            spanID: .mock(2_345),
             parentSpanID: nil,
             baggageItems: .mockAny()
         )
@@ -75,12 +76,12 @@ class OpenTelemetryHTTPHeadersWriterTests: XCTestCase {
         XCTAssertEqual(headers[OpenTelemetryHTTPHeaders.Single.b3Field], "4D2-929-1")
     }
 
-    func test_OpenTelemetryHTTPHeadersWriter_writesMultipleHeader() {
+    func testOpenTelemetryHTTPHeadersWriterwritesMultipleHeader() {
         sampler = .mockKeepAll()
         context = DDSpanContext.mockWith(
-            traceID: .mock(1234),
-            spanID: .mock(2345),
-            parentSpanID: .mock(5678),
+            traceID: .mock(1_234),
+            spanID: .mock(2_345),
+            parentSpanID: .mock(5_678),
             baggageItems: .mockAny()
         )
         openTelemetryHTTPHeadersWriter = OpenTelemetryHTTPHeadersWriter(
@@ -96,12 +97,12 @@ class OpenTelemetryHTTPHeadersWriterTests: XCTestCase {
         XCTAssertEqual(headers[OpenTelemetryHTTPHeaders.Multiple.parentSpanIDField], "162E")
     }
 
-    func test_OpenTelemetryHTTPHeadersWriter_writesMultipleHeaderWithSampling() {
+    func testOpenTelemetryHTTPHeadersWriterwritesMultipleHeaderWithSampling() {
         sampler = .mockRejectAll()
         context = DDSpanContext.mockWith(
-            traceID: .mock(1234),
-            spanID: .mock(2345),
-            parentSpanID: .mock(5678),
+            traceID: .mock(1_234),
+            spanID: .mock(2_345),
+            parentSpanID: .mock(5_678),
             baggageItems: .mockAny()
         )
         openTelemetryHTTPHeadersWriter = OpenTelemetryHTTPHeadersWriter(
@@ -117,11 +118,11 @@ class OpenTelemetryHTTPHeadersWriterTests: XCTestCase {
         XCTAssertNil(headers[OpenTelemetryHTTPHeaders.Multiple.parentSpanIDField])
     }
 
-    func test_OpenTelemetryHTTPHeadersWriter_writesMultipleHeaderWithoutOptionalValues() {
+    func testOpenTelemetryHTTPHeadersWriterwritesMultipleHeaderWithoutOptionalValues() {
         sampler = .mockKeepAll()
         context = DDSpanContext.mockWith(
-            traceID: .mock(1234),
-            spanID: .mock(2345),
+            traceID: .mock(1_234),
+            spanID: .mock(2_345),
             parentSpanID: nil,
             baggageItems: .mockAny()
         )

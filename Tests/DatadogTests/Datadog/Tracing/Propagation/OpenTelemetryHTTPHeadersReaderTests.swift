@@ -8,10 +8,11 @@ import XCTest
 @testable import Datadog
 
 class OpenTelemetryHTTPHeadersReaderTests: XCTestCase {
-
-    var openTelemetryHTTPHeadersReader: OpenTelemetryHTTPHeadersReader!
-    var sampler: Sampler!
-    var context: OTSpanContext!
+    // swiftlint:disable implicitly_unwrapped_optional
+    var openTelemetryHTTPHeadersReader: OpenTelemetryHTTPHeadersReader?
+    var sampler: Sampler?
+    var context: OTSpanContext?
+    // swiftlint:enable implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
@@ -21,19 +22,19 @@ class OpenTelemetryHTTPHeadersReaderTests: XCTestCase {
         super.tearDown()
     }
 
-    func test_OpenTelemetryHTTPHeadersReader_readsSingleHeader() {
-        openTelemetryHTTPHeadersReader = OpenTelemetryHTTPHeadersReader(httpHeaderFields: ["b3":"4D2-929-1-162E"])
+    func testOpenTelemetryHTTPHeadersReaderreadsSingleHeader() {
+        openTelemetryHTTPHeadersReader = OpenTelemetryHTTPHeadersReader(httpHeaderFields: ["b3": "4D2-929-1-162E"])
         openTelemetryHTTPHeadersReader.use(baggageItemQueue: .main)
 
         let spanContext = openTelemetryHTTPHeadersReader.extract()?.dd
 
-        XCTAssertEqual(spanContext?.traceID, TracingUUID(rawValue: 1234))
-        XCTAssertEqual(spanContext?.spanID, TracingUUID(rawValue: 2345))
-        XCTAssertEqual(spanContext?.parentSpanID, TracingUUID(rawValue: 5678))
+        XCTAssertEqual(spanContext?.traceID, TracingUUID(rawValue: 1_234))
+        XCTAssertEqual(spanContext?.spanID, TracingUUID(rawValue: 2_345))
+        XCTAssertEqual(spanContext?.parentSpanID, TracingUUID(rawValue: 5_678))
     }
 
-    func test_OpenTelemetryHTTPHeadersReader_readsSingleHeaderWithSampling() {
-        openTelemetryHTTPHeadersReader = OpenTelemetryHTTPHeadersReader(httpHeaderFields: ["b3":"0"])
+    func testOpenTelemetryHTTPHeadersReaderreadsSingleHeaderWithSampling() {
+        openTelemetryHTTPHeadersReader = OpenTelemetryHTTPHeadersReader(httpHeaderFields: ["b3": "0"])
         openTelemetryHTTPHeadersReader.use(baggageItemQueue: .main)
 
         let spanContext = openTelemetryHTTPHeadersReader.extract()?.dd
@@ -43,18 +44,18 @@ class OpenTelemetryHTTPHeadersReaderTests: XCTestCase {
         XCTAssertNil(spanContext?.parentSpanID)
     }
 
-    func test_OpenTelemetryHTTPHeadersReader_readsSingleHeaderWithoutOptionalValues() {
-        openTelemetryHTTPHeadersReader = OpenTelemetryHTTPHeadersReader(httpHeaderFields: ["b3":"4D2-929"])
+    func testOpenTelemetryHTTPHeadersReaderreadsSingleHeaderWithoutOptionalValues() {
+        openTelemetryHTTPHeadersReader = OpenTelemetryHTTPHeadersReader(httpHeaderFields: ["b3": "4D2-929"])
         openTelemetryHTTPHeadersReader.use(baggageItemQueue: .main)
 
         let spanContext = openTelemetryHTTPHeadersReader.extract()?.dd
 
-        XCTAssertEqual(spanContext?.traceID, TracingUUID(rawValue: 1234))
-        XCTAssertEqual(spanContext?.spanID, TracingUUID(rawValue: 2345))
+        XCTAssertEqual(spanContext?.traceID, TracingUUID(rawValue: 1_234))
+        XCTAssertEqual(spanContext?.spanID, TracingUUID(rawValue: 2_345))
         XCTAssertNil(spanContext?.parentSpanID)
     }
 
-    func test_OpenTelemetryHTTPHeadersReader_readsMultipleHeader() {
+    func testOpenTelemetryHTTPHeadersReaderreadsMultipleHeader() {
         openTelemetryHTTPHeadersReader = OpenTelemetryHTTPHeadersReader(httpHeaderFields: [
             "X-B3-TraceId": "4D2",
             "X-B3-SpanId": "929",
@@ -65,14 +66,14 @@ class OpenTelemetryHTTPHeadersReaderTests: XCTestCase {
 
         let spanContext = openTelemetryHTTPHeadersReader.extract()?.dd
 
-        XCTAssertEqual(spanContext?.traceID, TracingUUID(rawValue: 1234))
-        XCTAssertEqual(spanContext?.spanID, TracingUUID(rawValue: 2345))
-        XCTAssertEqual(spanContext?.parentSpanID, TracingUUID(rawValue: 5678))
+        XCTAssertEqual(spanContext?.traceID, TracingUUID(rawValue: 1_234))
+        XCTAssertEqual(spanContext?.spanID, TracingUUID(rawValue: 2_345))
+        XCTAssertEqual(spanContext?.parentSpanID, TracingUUID(rawValue: 5_678))
     }
 
-    func test_OpenTelemetryHTTPHeadersReader_readsMultipleHeaderWithSampling() {
+    func testOpenTelemetryHTTPHeadersReaderreadsMultipleHeaderWithSampling() {
         openTelemetryHTTPHeadersReader = OpenTelemetryHTTPHeadersReader(httpHeaderFields: [
-            "X-B3-Sampled":"0"
+            "X-B3-Sampled": "0"
         ])
         openTelemetryHTTPHeadersReader.use(baggageItemQueue: .main)
 
@@ -83,7 +84,7 @@ class OpenTelemetryHTTPHeadersReaderTests: XCTestCase {
         XCTAssertNil(spanContext?.parentSpanID)
     }
 
-    func test_OpenTelemetryHTTPHeadersReader_readsMultipleHeaderWithoutOptionalValues() {
+    func testOpenTelemetryHTTPHeadersReaderreadsMultipleHeaderWithoutOptionalValues() {
         openTelemetryHTTPHeadersReader = OpenTelemetryHTTPHeadersReader(httpHeaderFields: [
             "X-B3-TraceId": "4D2",
             "X-B3-SpanId": "929"
@@ -92,8 +93,8 @@ class OpenTelemetryHTTPHeadersReaderTests: XCTestCase {
 
         let spanContext = openTelemetryHTTPHeadersReader.extract()?.dd
 
-        XCTAssertEqual(spanContext?.traceID, TracingUUID(rawValue: 1234))
-        XCTAssertEqual(spanContext?.spanID, TracingUUID(rawValue: 2345))
+        XCTAssertEqual(spanContext?.traceID, TracingUUID(rawValue: 1_234))
+        XCTAssertEqual(spanContext?.spanID, TracingUUID(rawValue: 2_345))
         XCTAssertNil(spanContext?.parentSpanID)
     }
 }

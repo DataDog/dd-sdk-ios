@@ -155,7 +155,7 @@ class RelativeTracingUUIDGenerator: TracingUUIDGenerator {
     }
 }
 
-private func +(lhs: TracingUUID, rhs: UInt64) -> TracingUUID {
+private func + (lhs: TracingUUID, rhs: UInt64) -> TracingUUID {
     return TracingUUID(rawValue: (UInt64(lhs.toString(.decimal)) ?? 0) + rhs)
 }
 

@@ -35,7 +35,8 @@ public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
     /// Multiple header encoding uses an `X-B3-` prefixed header per item in the trace context.
     /// Single header delimits the context into into a single entry named b3.
     /// The single-header variant takes precedence over the multiple header one when extracting fields.
-    @objc public enum OpenTelemetryHeaderType: Int {
+    @objc
+    public enum OpenTelemetryHeaderType: Int {
         case multiple, single
     }
 
@@ -66,7 +67,7 @@ public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
     /// - Parameter openTelemetryHeaderType: Determines the type of telemetry header type used by the writer.
     public init(
         samplingRate: Float = 20,
-        openTelemetryHeaderType: OpenTelemetryHeaderType
+        openTelemetryHeaderType: OpenTelemetryHeaderType = .single
     ) {
         self.sampler = Sampler(samplingRate: samplingRate)
         self.openTelemetryHeaderType = openTelemetryHeaderType

@@ -11,6 +11,28 @@ internal struct TracingUUID: Equatable, Hashable {
     /// - See also: [Datadog API Reference - Send Traces](https://docs.datadoghq.com/api/?lang=bash#send-traces)
     private let rawValue: UInt64
 
+    internal init?(_ string: String?, _ representation: Representation) {
+        guard let string = string else {
+            return nil
+        }
+        switch representation {
+        case .decimal:
+            guard let rawValue = UInt64(string) else {
+                return nil
+            }
+            self.init(rawValue: rawValue)
+        case .hexadecimal:
+            guard let rawValue = UInt64(string, radix: 16) else {
+                return nil
+            }
+            self.init(rawValue: rawValue)
+        }
+    }
+
+    internal init(rawValue: UInt64) {
+        self.rawValue = rawValue
+    }
+
     func toString(_ representation: Representation) -> String {
         switch representation {
         case .decimal:
@@ -18,22 +40,6 @@ internal struct TracingUUID: Equatable, Hashable {
         case .hexadecimal:
             return String(rawValue, radix: 16, uppercase: true)
         }
-    }
-
-    internal init?(_ string: String?, _ representation: Representation) {
-        guard let string = string else { return nil }
-        switch representation {
-        case .decimal:
-            guard let rawValue = UInt64(string) else { return nil }
-            self.init(rawValue: rawValue)
-        case .hexadecimal:
-            guard let rawValue = UInt64(string, radix: 16) else { return nil }
-            self.init(rawValue: rawValue)
-        }
-    }
-
-    internal init(rawValue: UInt64) {
-        self.rawValue = rawValue
     }
 }
 
