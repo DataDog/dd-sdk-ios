@@ -7,7 +7,9 @@
 import Foundation
 @testable import DatadogSessionReplay
 
-internal class SnapshotProducerMock: ViewTreeSnapshotProducer {
+// MARK: - `ViewTreeSnapshotProducer` Mocks
+
+internal class ViewTreeSnapshotProducerMock: ViewTreeSnapshotProducer {
     /// Succeding snapshots to return for each `takeSnapshot()`.
     var succeedingSnapshots: [ViewTreeSnapshot]
 
@@ -20,12 +22,27 @@ internal class SnapshotProducerMock: ViewTreeSnapshotProducer {
     }
 }
 
-internal class SnapshotProducerSpy: ViewTreeSnapshotProducer {
+internal class ViewTreeSnapshotProducerSpy: ViewTreeSnapshotProducer {
     /// Succeeding `context` values passed to `takeSnapshot(with:)`.
     var succeedingContexts: [Recorder.Context] = []
 
     func takeSnapshot(with context: Recorder.Context) throws -> ViewTreeSnapshot? {
         succeedingContexts.append(context)
         return nil
+    }
+}
+
+// MARK: - `TouchSnapshotProducer` Mocks
+
+internal class TouchSnapshotProducerMock: TouchSnapshotProducer {
+    /// Succeding snapshots to return for each `takeSnapshot()`.
+    var succeedingSnapshots: [TouchSnapshot]
+
+    init(succeedingSnapshots: [TouchSnapshot] = []) {
+        self.succeedingSnapshots = succeedingSnapshots
+    }
+
+    func takeSnapshot() -> TouchSnapshot? {
+        return succeedingSnapshots.isEmpty ? nil : succeedingSnapshots.removeFirst()
     }
 }

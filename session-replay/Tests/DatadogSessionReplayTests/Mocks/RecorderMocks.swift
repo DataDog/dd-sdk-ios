@@ -11,8 +11,9 @@ import UIKit
 // MARK: - Equatable conformances
 
 extension ViewTreeSnapshot: EquatableInTests {}
+extension TouchSnapshot: EquatableInTests {}
 
-// MARK: - Mocking extensions
+// MARK: - ViewTreeSnapshot Mocks
 
 extension ViewTreeSnapshot: AnyMockable, RandomMockable {
     static func mockAny() -> ViewTreeSnapshot {
@@ -219,6 +220,59 @@ extension ViewTreeSnapshotBuilder.Context: AnyMockable, RandomMockable {
     }
 }
 
+// MARK: - TouchSnapshot Mocks
+
+extension TouchSnapshot: AnyMockable, RandomMockable {
+    static func mockAny() -> TouchSnapshot {
+        return .mockWith()
+    }
+
+    static func mockRandom() -> TouchSnapshot {
+        return TouchSnapshot(
+            date: .mockRandom(),
+            touches: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        date: Date = .mockAny(),
+        touches: [Touch] = .mockAny()
+    ) -> TouchSnapshot {
+        return TouchSnapshot(
+            date: date,
+            touches: touches
+        )
+    }
+}
+
+extension TouchSnapshot.Touch: AnyMockable, RandomMockable {
+    static func mockAny() -> TouchSnapshot.Touch {
+        return .mockWith()
+    }
+
+    static func mockRandom() -> TouchSnapshot.Touch {
+        return TouchSnapshot.Touch(
+            id: .mockRandom(),
+            date: .mockRandom(),
+            position: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        id: TouchIdentifier = .mockAny(),
+        date: Date = .mockAny(),
+        position: CGPoint = .mockAny()
+    ) -> TouchSnapshot.Touch {
+        return TouchSnapshot.Touch(
+            id: id,
+            date: date,
+            position: position
+        )
+    }
+}
+
+// MARK: - Recorder Mocks
+
 extension RUMContext: AnyMockable, RandomMockable {
     static func mockAny() -> RUMContext {
         return .mockWith()
@@ -268,6 +322,16 @@ extension Recorder.Context: AnyMockable, RandomMockable {
             privacy: privacy,
             rumContext: rumContext
         )
+    }
+}
+
+extension UIApplicationSwizzler: AnyMockable {
+    static func mockAny() -> UIApplicationSwizzler {
+        class HandlerMock: UIEventHandler {
+            func notify_sendEvent(application: UIApplication, event: UIEvent) {}
+        }
+
+        return try! UIApplicationSwizzler(handler: HandlerMock())
     }
 }
 
