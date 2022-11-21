@@ -27,7 +27,6 @@ internal class OpenTelemetryHTTPHeadersReader: OTHTTPHeadersReader {
             let spanIDValue = httpHeaderFields[OpenTelemetryHTTPHeaders.Multiple.spanIDField],
             let traceID = UInt64(traceIDValue).flatMap({ TracingUUID(rawValue: $0) }),
             let spanID = UInt64(spanIDValue).flatMap({ TracingUUID(rawValue: $0) }) {
-            // TODO Open Telemetry span context
             return DDSpanContext(
                 traceID: traceID,
                 spanID: spanID,
