@@ -65,6 +65,7 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
         errorAttributes[DDError.wasTruncated] = crashReport.wasTruncated
 
         let user = crashContext.lastUserInfo
+        let deviceInfo = context.device
 
         return LogEvent(
             date: crashDate,
@@ -81,6 +82,9 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
             loggerVersion: context.sdkVersion,
             threadName: nil,
             applicationVersion: context.version,
+            dd: LogEvent.Dd(
+                device: LogEvent.DeviceInfo(architecture: deviceInfo.architecture)
+            ),
             userInfo: .init(
                 id: user?.id,
                 name: user?.name,

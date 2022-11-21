@@ -81,6 +81,7 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
         )
 
         // When
+        let mockArchitecture = String.mockRandom()
         let integration = CrashReportingWithLoggingIntegration(
             core: core,
             context: .mockWith(
@@ -88,6 +89,9 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
                 env: configuration.environment,
                 version: configuration.applicationVersion,
                 sdkVersion: configuration.sdkVersion,
+                device: .mockWith(
+                    architecture: mockArchitecture
+                ),
                 dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
             ),
             dateProvider: RelativeDateProvider(using: .mockRandomInThePast())
@@ -113,6 +117,7 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
             loggerVersion: configuration.sdkVersion,
             threadName: nil,
             applicationVersion: configuration.applicationVersion,
+            dd: .init(device: .init(architecture: mockArchitecture)),
             userInfo: .init(
                 id: user.id,
                 name: user.name,

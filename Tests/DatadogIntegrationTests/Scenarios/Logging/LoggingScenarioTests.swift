@@ -61,6 +61,7 @@ class LoggingScenarioTests: IntegrationTests, LoggingCommonAsserts {
                     "some-url": "redacted",
                 ]
             )
+            matcher.assertHasArchitecture()
 
             #if DEBUG
             matcher.assertTags(equal: ["env:integration", "build_configuration:debug", "tag1:tag-value", "tag2", "tag3:added", "version:1.0"])

@@ -54,6 +54,11 @@ internal class LogMatcher: JSONDataMatcher {
         static let errorKind = "error.kind"
         static let errorMessage = "error.message"
         static let errorStack = "error.stack"
+
+        // MARK: - Dd info
+        static let dd = "_dd"
+        static let ddDevice = "device"
+        static let ddDeviceArchitecture = "architecture"
     }
 
     /// Allowed values for `network.client.available_interfaces` attribute.
@@ -163,6 +168,16 @@ internal class LogMatcher: JSONDataMatcher {
         let logTags = Set(tagsString.split(separator: ",").map { String($0) })
 
         XCTAssertEqual(matcherTags, logTags, file: file, line: line)
+    }
+
+    func assertHasArchitecture() {
+        var architecture: String?
+        if let dd = json[JSONKey.dd] as? [String: Any],
+           let device = dd[JSONKey.ddDevice] as? [String: Any] {
+            architecture = device[JSONKey.ddDeviceArchitecture] as? String
+        }
+
+        XCTAssertNotNil(architecture)
     }
 }
 
