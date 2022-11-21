@@ -31,7 +31,6 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             assert: {
                 Global.sharedTracer is DDNoopTracer
                     && Global.rum is DDNoopRUMMonitor
-                    && Global.crashReporter == nil
             },
             problem: "All Global components must use no-op implementations.",
             solution: """
@@ -39,7 +38,6 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             ```
             Global.sharedTracer = DDNoopGlobals.tracer
             Global.rum = DDNoopRUMMonitor()
-            Global.crashReporter = nil
             ```
             """
         ),

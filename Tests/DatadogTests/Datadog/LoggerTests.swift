@@ -589,8 +589,8 @@ class LoggerTests: XCTestCase {
         Global.rum = RUMMonitor(
             core: core,
             dependencies: RUMScopeDependencies(
-                rumFeature: rum,
-                crashReportingFeature: nil
+                core: core,
+                rumFeature: rum
             ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
             dateProvider: SystemDateProvider()
         )

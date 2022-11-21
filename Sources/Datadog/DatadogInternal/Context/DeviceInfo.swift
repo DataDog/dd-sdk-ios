@@ -7,11 +7,11 @@
 import Foundation
 
 /// Describes current device information.
-public struct DeviceInfo {
+public struct DeviceInfo: Codable, Equatable {
     // MARK: - Info
 
-    /// Device manufacturer name.
-    let brand = "Apple"
+    /// Device manufacturer name. Always'Apple'
+    let brand: String
 
     /// Device marketing name, e.g. "iPhone", "iPad", "iPod touch".
     let name: String
@@ -35,6 +35,7 @@ public struct DeviceInfo {
         osVersion: String,
         architecture: String
     ) {
+        self.brand = "Apple"
         self.name = name
         self.model = model
         self.osName = osName

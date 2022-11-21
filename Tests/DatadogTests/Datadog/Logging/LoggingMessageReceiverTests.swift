@@ -170,7 +170,7 @@ class LoggingMessageReceiverTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let received: FeatureBaggage.AnyEncodable = try XCTUnwrap(core.events().last, "It should send event")
+        let received: FeatureMessage.AnyEncodable = try XCTUnwrap(core.events().last, "It should send event")
         try AssertEncodedRepresentationsEqual(received, sent)
     }
 

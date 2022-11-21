@@ -182,12 +182,11 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 )
             }
 
-            let crashReporting = core.v1.feature(CrashReportingFeature.self)
             let monitor = RUMMonitor(
                 core: core,
                 dependencies: RUMScopeDependencies(
-                    rumFeature: rumFeature,
-                    crashReportingFeature: crashReporting
+                    core: core,
+                    rumFeature: rumFeature
                 ),
                 dateProvider: rumFeature.configuration.dateProvider
             )

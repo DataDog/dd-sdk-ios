@@ -6,38 +6,29 @@
 
 @testable import Datadog
 
-extension CrashReportingFeature {
+extension CrashReporter {
     /// Mocks the Crash Reporting feature instance which doesn't load crash reports.
-    static func mockNoOp() -> CrashReportingFeature {
-        return mockWith(
-            configuration: .mockWith(crashReportingPlugin: NoopCrashReportingPlugin())
+    static func mockNoOp(
+            core: DatadogCoreProtocol = NOPDatadogCore(),
+            crashReportingPlugin: DDCrashReportingPluginType = NoopCrashReportingPlugin()
+    ) -> CrashReporter {
+        return .mockWith(
+            loggingOrRUMIntegration: CrashReportingWithRUMIntegration.mockWith(core: core),
+            crashReportingPlugin: crashReportingPlugin
         )
     }
 
     static func mockWith(
-        configuration: FeaturesConfiguration.CrashReporting = .mockAny(),
-        consentProvider: ConsentProvider = ConsentProvider(initialConsent: .granted),
-        userInfoProvider: UserInfoProvider = .mockAny(),
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
-            networkConnectionInfo: .mockWith(
-                reachability: .yes, // so it always meets the upload condition
-                availableInterfaces: [.wifi],
-                supportsIPv4: true,
-                supportsIPv6: true,
-                isExpensive: true,
-                isConstrained: false // so it always meets the upload condition
-            )
-        ),
-        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
-        appStateListener: AppStateListening = AppStateListenerMock.mockAny()
-    ) -> CrashReportingFeature {
-        return CrashReportingFeature(
-            configuration: configuration,
-            consentProvider: consentProvider,
-            userInfoProvider: userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider,
-            appStateListener: appStateListener
+        loggingOrRUMIntegration: CrashReportingIntegration,
+        crashReportingPlugin: DDCrashReportingPluginType = NoopCrashReportingPlugin(),
+        crashContextProvider: CrashContextProviderType = CrashContextProviderMock(),
+        messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+    ) -> CrashReporter {
+        .init(
+            crashReportingPlugin: crashReportingPlugin,
+            crashContextProvider: crashContextProvider,
+            loggingOrRUMIntegration: loggingOrRUMIntegration,
+            messageReceiver: messageReceiver
         )
     }
 }
@@ -73,11 +64,12 @@ internal class NoopCrashReportingPlugin: DDCrashReportingPluginType {
 }
 
 internal class CrashContextProviderMock: CrashContextProviderType {
-    private(set) var currentCrashContext: CrashContext
-    var onCrashContextChange: ((CrashContext) -> Void)?
+    private(set) var currentCrashContext: CrashContext?
+    var onCrashContextChange: (CrashContext) -> Void
 
     init(initialCrashContext: CrashContext = .mockAny()) {
         self.currentCrashContext = initialCrashContext
+        self.onCrashContextChange = { _ in }
     }
 }
 
@@ -85,9 +77,9 @@ class CrashReportingIntegrationMock: CrashReportingIntegration {
     var sentCrashReport: DDCrashReport?
     var sentCrashContext: CrashContext?
 
-    func send(crashReport: DDCrashReport, with crashContext: CrashContext) {
-        sentCrashReport = crashReport
-        sentCrashContext = crashContext
+    func send(report: DDCrashReport, with context: CrashContext) {
+        sentCrashReport = report
+        sentCrashContext = context
         didSendCrashReport?()
     }
 
@@ -102,32 +94,53 @@ extension CrashContext {
     }
 
     static func mockWith(
-        lastTrackingConsent: TrackingConsent = .granted,
-        lastUserInfo: UserInfo = .mockAny(),
+        serverTimeOffset: TimeInterval = .zero,
+        service: String = .mockAny(),
+        env: String = .mockAny(),
+        version: String = .mockAny(),
+        device: DeviceInfo = .mockAny(),
+        sdkVersion: String = .mockAny(),
+        source: String = .mockAny(),
+        trackingConsent: TrackingConsent = .granted,
+        userInfo: UserInfo? = .mockAny(),
+        networkConnectionInfo: NetworkConnectionInfo? = .mockAny(),
+        carrierInfo: CarrierInfo? = .mockAny(),
         lastRUMViewEvent: RUMViewEvent? = nil,
-        lastNetworkConnectionInfo: NetworkConnectionInfo? = .mockAny(),
-        lastCarrierInfo: CarrierInfo? = .mockAny(),
         lastRUMSessionState: RUMSessionState? = .mockAny(),
         lastIsAppInForeground: Bool = .mockAny()
-    ) -> CrashContext {
-        return CrashContext(
-            lastTrackingConsent: lastTrackingConsent,
-            lastUserInfo: lastUserInfo,
+    ) -> Self {
+        .init(
+            serverTimeOffset: serverTimeOffset,
+            service: service,
+            env: env,
+            version: version,
+            device: device,
+            sdkVersion: service,
+            source: source,
+            trackingConsent: trackingConsent,
+            userInfo: userInfo,
+            networkConnectionInfo: networkConnectionInfo,
+            carrierInfo: carrierInfo,
             lastRUMViewEvent: lastRUMViewEvent,
-            lastNetworkConnectionInfo: lastNetworkConnectionInfo,
-            lastCarrierInfo: lastCarrierInfo,
             lastRUMSessionState: lastRUMSessionState,
             lastIsAppInForeground: lastIsAppInForeground
         )
     }
 
-    static func mockRandom() -> CrashContext {
-        return CrashContext(
-            lastTrackingConsent: .mockRandom(),
-            lastUserInfo: .mockRandom(),
-            lastRUMViewEvent: .mockRandom(),
-            lastNetworkConnectionInfo: .mockRandom(),
-            lastCarrierInfo: .mockRandom(),
+    static func mockRandom() -> Self {
+        .init(
+            serverTimeOffset: .zero,
+            service: .mockRandom(),
+            env: .mockRandom(),
+            version: .mockRandom(),
+            device: .mockRandom(),
+            sdkVersion: .mockRandom(),
+            source: .mockRandom(),
+            trackingConsent: .granted,
+            userInfo: .mockRandom(),
+            networkConnectionInfo: .mockRandom(),
+            carrierInfo: .mockRandom(),
+            lastRUMViewEvent: nil,
             lastRUMSessionState: .mockRandom(),
             lastIsAppInForeground: .mockRandom()
         )
@@ -202,8 +215,7 @@ internal extension CrashReportingWithRUMIntegration {
         dateProvider: DateProvider = SystemDateProvider(),
         sessionSampler: Sampler = .mockKeepAll(),
         backgroundEventTrackingEnabled: Bool = true,
-        uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
-        context: DatadogV1Context = .mockAny()
+        uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
     ) -> Self {
         .init(
             core: core,
@@ -211,8 +223,7 @@ internal extension CrashReportingWithRUMIntegration {
             dateProvider: dateProvider,
             sessionSampler: sessionSampler,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
-            uuidGenerator: uuidGenerator,
-            context: context
+            uuidGenerator: uuidGenerator
         )
     }
 }

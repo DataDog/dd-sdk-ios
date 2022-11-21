@@ -485,7 +485,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
             // Update `CrashContext` with recent RUM view (no matter sampling - we want to always
             // have recent information if process is interrupted by crash):
-            dependencies.crashContextIntegration?.update(lastRUMViewEvent: event)
+            dependencies.core.send(
+                message: .custom(
+                    key: "rum",
+                    baggage: [RUMBaggageKeys.viewEvent: event]
+                )
+            )
         } else { // if event was dropped by mapper
             version -= 1
         }

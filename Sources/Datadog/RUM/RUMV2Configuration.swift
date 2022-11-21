@@ -64,6 +64,20 @@ internal struct RUMRequestBuilder: FeatureRequestBuilder {
     }
 }
 
+/// Defines keys referencing RUM baggage in `DatadogContext.featuresAttributes`.
+internal enum RUMBaggageKeys {
+    /// The key references RUM view event.
+    /// The view event associated with the key conforms to `Codable`.
+    static let viewEvent = "view-event"
+
+    /// The key references a `true` value if the RUM view is reset.
+    static let viewReset = "view-reset"
+
+    /// The key references RUM session state.
+    /// The state associated with the key conforms to `Codable`.
+    static let sessionState = "session-state"
+}
+
 internal struct RUMMessageReceiver: FeatureMessageReceiver {
     /// Process messages receives from the bus.
     ///
@@ -83,7 +97,7 @@ internal struct RUMMessageReceiver: FeatureMessageReceiver {
         }
     }
 
-    private func write(event: FeatureBaggage.AnyEncodable, to core: DatadogCoreProtocol) -> Bool {
+    private func write(event: FeatureMessage.AnyEncodable, to core: DatadogCoreProtocol) -> Bool {
         core.v1.scope(for: RUMFeature.self)?.eventWriteContext { _, writer in
             writer.write(value: event)
         }

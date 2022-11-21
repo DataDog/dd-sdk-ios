@@ -11,221 +11,128 @@ import Foundation
 ///
 /// Note: as it gets saved along with the crash report during process interruption, it's good
 /// to keep this data well-packed and as small as possible.
-internal struct CrashContext: Codable {
-    // MARK: - Initialization
+internal struct CrashContext: Codable, Equatable {
+    /// Interval between device and server time.
+    ///
+    /// The value can change as the device continue to sync with the server.
+    let serverTimeOffset: TimeInterval
 
-    init(
-        lastTrackingConsent: TrackingConsent,
-        lastUserInfo: UserInfo,
-        lastRUMViewEvent: RUMViewEvent?,
-        lastNetworkConnectionInfo: NetworkConnectionInfo?,
-        lastCarrierInfo: CarrierInfo?,
-        lastRUMSessionState: RUMSessionState?,
-        lastIsAppInForeground: Bool
-    ) {
-        self.codableTrackingConsent = .init(from: lastTrackingConsent)
-        self.codableLastUserInfo = .init(from: lastUserInfo)
-        self.lastRUMViewEvent = lastRUMViewEvent
-        self.codableLastNetworkConnectionInfo = lastNetworkConnectionInfo.flatMap { .init(from: $0) }
-        self.codableLastCarrierInfo = lastCarrierInfo.flatMap { .init(from: $0) }
-        self.lastRUMSessionState = lastRUMSessionState
-        self.lastIsAppInForeground = lastIsAppInForeground
-    }
+    /// The name of the service that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
+    let service: String
 
-    // MARK: - Codable values
+    /// The name of the environment that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
+    let env: String
 
-    private var codableTrackingConsent: CodableTrackingConsent
-    private var codableLastUserInfo: CodableUserInfo?
-    private var codableLastNetworkConnectionInfo: CodableNetworkConnectionInfo?
-    private var codableLastCarrierInfo: CodableCarrierInfo?
+    /// The version of the application that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
+    let version: String
 
-    enum CodingKeys: String, CodingKey {
-        case codableTrackingConsent = "ctc"
-        case codableLastUserInfo = "lui"
-        case codableLastNetworkConnectionInfo = "lni"
-        case codableLastCarrierInfo = "lci"
-        case lastRUMViewEvent = "lre"
-        case lastRUMSessionState = "rst"
-        case lastIsAppInForeground = "aif"
-    }
+    /// Current device information.
+    let device: DeviceInfo
 
-    // MARK: - Setters & Getters using managed types
+    /// The version of Datadog iOS SDK.
+    let sdkVersion: String
 
-    var lastTrackingConsent: TrackingConsent {
-        set { codableTrackingConsent = CodableTrackingConsent(from: newValue) }
-        get { codableTrackingConsent.managedValue }
-    }
+    /// Denotes the mobile application's platform, such as `"ios"` or `"flutter"` that data is generated from.
+    ///  - See: Datadog [Reserved Attributes](https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#reserved-attributes).
+    let source: String
 
-    var lastUserInfo: UserInfo? {
-        set { codableLastUserInfo = newValue.flatMap { CodableUserInfo(from: $0) } }
-        get { codableLastUserInfo?.managedValue }
-    }
+    /// The user's consent to data collection
+    let trackingConsent: TrackingConsent
 
-    var lastNetworkConnectionInfo: NetworkConnectionInfo? {
-        set { codableLastNetworkConnectionInfo = newValue.flatMap { CodableNetworkConnectionInfo(from: $0) } }
-        get { codableLastNetworkConnectionInfo?.managedValue }
-    }
+    /// Current user information.
+    let userInfo: UserInfo?
 
-    var lastCarrierInfo: CarrierInfo? {
-        set { codableLastCarrierInfo = newValue.flatMap { CodableCarrierInfo(from: $0) } }
-        get { codableLastCarrierInfo?.managedValue }
-    }
+    /// Network information.
+    ///
+    /// Represents the current state of the device network connectivity and interface.
+    /// The value can be `unknown` if the network interface is not available or if it has not
+    /// yet been evaluated.
+    let networkConnectionInfo: NetworkConnectionInfo?
 
-    // MARK: - Direct Codable values
+    /// Carrier information.
+    ///
+    /// Represents the current telephony service info of the device.
+    /// This value can be `nil` of no service is currently registered, or if the device does
+    /// not support telephony services.
+    let carrierInfo: CarrierInfo?
 
+    /// The last RUM view in crashed app process.
     var lastRUMViewEvent: RUMViewEvent?
 
     /// State of the last RUM session in crashed app process.
     var lastRUMSessionState: RUMSessionState?
 
     /// The last _"Is app in foreground?"_ information from crashed app process.
-    var lastIsAppInForeground: Bool
-}
+    let lastIsAppInForeground: Bool
 
-// MARK: - Bridging managed types to Codable representation
+    // MARK: - Initialization
 
-/// Codable representation of the public `TrackingConsent`. Uses `Int8` for optimized packing.
-private enum CodableTrackingConsent: Int8, Codable {
-    case granted
-    case notGranted
-    case pending
-
-    init(from managedValue: TrackingConsent) {
-        switch managedValue {
-        case .pending: self = .pending
-        case .granted: self = .granted
-        case .notGranted: self = .notGranted
-        }
+    init(
+        serverTimeOffset: TimeInterval,
+        service: String,
+        env: String,
+        version: String,
+        device: DeviceInfo,
+        sdkVersion: String,
+        source: String,
+        trackingConsent: TrackingConsent,
+        userInfo: UserInfo?,
+        networkConnectionInfo: NetworkConnectionInfo?,
+        carrierInfo: CarrierInfo?,
+        lastRUMViewEvent: RUMViewEvent?,
+        lastRUMSessionState: RUMSessionState?,
+        lastIsAppInForeground: Bool
+    ) {
+        self.serverTimeOffset = serverTimeOffset
+        self.service = service
+        self.env = env
+        self.version = version
+        self.device = device
+        self.sdkVersion = service
+        self.source = source
+        self.trackingConsent = trackingConsent
+        self.userInfo = userInfo
+        self.networkConnectionInfo = networkConnectionInfo
+        self.carrierInfo = carrierInfo
+        self.lastRUMViewEvent = lastRUMViewEvent
+        self.lastRUMSessionState = lastRUMSessionState
+        self.lastIsAppInForeground = lastIsAppInForeground
     }
 
-    var managedValue: TrackingConsent {
-        switch self {
-        case .pending: return .pending
-        case .granted: return .granted
-        case .notGranted: return .notGranted
-        }
-    }
-}
+    init(
+        _ context: DatadogContext,
+        lastRUMViewEvent: RUMViewEvent?,
+        lastRUMSessionState: RUMSessionState?
+    ) {
+        self.serverTimeOffset = context.serverTimeOffset
+        self.service = context.service
+        self.env = context.env
+        self.version = context.version
+        self.device = context.device
+        self.sdkVersion = context.sdkVersion
+        self.source = context.source
+        self.trackingConsent = context.trackingConsent
+        self.userInfo = context.userInfo
+        self.networkConnectionInfo = context.networkConnectionInfo
+        self.carrierInfo = context.carrierInfo
+        self.lastIsAppInForeground = context.applicationStateHistory.currentSnapshot.state.isRunningInForeground
 
-private struct CodableUserInfo: Codable {
-    private let id: String?
-    private let name: String?
-    private let email: String?
-    private let extraInfo: [AttributeKey: AttributeValue]
-
-    init(from managedValue: UserInfo) {
-        self.id = managedValue.id
-        self.name = managedValue.name
-        self.email = managedValue.email
-        self.extraInfo = managedValue.extraInfo
-    }
-
-    var managedValue: UserInfo {
-        return .init(
-            id: id,
-            name: name,
-            email: email,
-            extraInfo: extraInfo
-        )
+        self.lastRUMViewEvent = lastRUMViewEvent
+        self.lastRUMSessionState = lastRUMSessionState
     }
 
-    // MARK: - Codable
-
-    enum CodingKeys: String, CodingKey {
-        case id = "id"
-        case name = "nm"
-        case email = "em"
-        case extraInfo = "ei"
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-
-        self.id = try container.decodeIfPresent(String.self, forKey: .id)
-        self.name = try container.decodeIfPresent(String.self, forKey: .name)
-        self.email = try container.decodeIfPresent(String.self, forKey: .email)
-        self.extraInfo = try container.decode([String: CodableValue].self, forKey: .extraInfo)
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        let encodedExtraInfo = extraInfo.mapValues { CodableValue($0) }
-
-        try container.encode(id, forKey: .id)
-        try container.encode(name, forKey: .name)
-        try container.encode(email, forKey: .email)
-        try container.encode(encodedExtraInfo, forKey: .extraInfo)
-    }
-}
-
-private struct CodableNetworkConnectionInfo: Codable {
-    private let reachability: NetworkConnectionInfo.Reachability
-    private let availableInterfaces: [NetworkConnectionInfo.Interface]?
-    private let supportsIPv4: Bool?
-    private let supportsIPv6: Bool?
-    private let isExpensive: Bool?
-    private let isConstrained: Bool?
-
-    init(from managedValue: NetworkConnectionInfo) {
-        self.reachability = managedValue.reachability
-        self.availableInterfaces = managedValue.availableInterfaces
-        self.supportsIPv4 = managedValue.supportsIPv4
-        self.supportsIPv6 = managedValue.supportsIPv6
-        self.isExpensive = managedValue.isExpensive
-        self.isConstrained = managedValue.isConstrained
-    }
-
-    var managedValue: NetworkConnectionInfo {
-        return .init(
-            reachability: reachability,
-            availableInterfaces: availableInterfaces,
-            supportsIPv4: supportsIPv4,
-            supportsIPv6: supportsIPv6,
-            isExpensive: isExpensive,
-            isConstrained: isConstrained
-        )
-    }
-
-    // MARK: - Codable
-
-    enum CodingKeys: String, CodingKey {
-        case reachability = "rcb"
-        case availableInterfaces = "abi"
-        case supportsIPv4 = "si4"
-        case supportsIPv6 = "si6"
-        case isExpensive = "ise"
-        case isConstrained = "isc"
-    }
-}
-
-private struct CodableCarrierInfo: Codable {
-    private let carrierName: String?
-    private let carrierISOCountryCode: String?
-    private let carrierAllowsVOIP: Bool
-    private let radioAccessTechnology: CarrierInfo.RadioAccessTechnology
-
-    init(from managedValue: CarrierInfo) {
-        self.carrierName = managedValue.carrierName
-        self.carrierISOCountryCode = managedValue.carrierISOCountryCode
-        self.carrierAllowsVOIP = managedValue.carrierAllowsVOIP
-        self.radioAccessTechnology = managedValue.radioAccessTechnology
-    }
-
-    var managedValue: CarrierInfo {
-        return .init(
-            carrierName: carrierName,
-            carrierISOCountryCode: carrierISOCountryCode,
-            carrierAllowsVOIP: carrierAllowsVOIP,
-            radioAccessTechnology: radioAccessTechnology
-        )
-    }
-
-    // MARK: - Codable
-
-    enum CodingKeys: String, CodingKey {
-        case carrierName = "crn"
-        case carrierISOCountryCode = "cri"
-        case carrierAllowsVOIP = "cra"
-        case radioAccessTechnology = "rdt"
+    static func == (lhs: CrashContext, rhs: CrashContext) -> Bool {
+        lhs.serverTimeOffset == rhs.serverTimeOffset &&
+            lhs.service == rhs.service &&
+            lhs.env == rhs.env &&
+            lhs.version == rhs.version &&
+            lhs.source == rhs.source &&
+            lhs.trackingConsent == rhs.trackingConsent &&
+            lhs.networkConnectionInfo == rhs.networkConnectionInfo &&
+            lhs.carrierInfo == rhs.carrierInfo &&
+            lhs.lastIsAppInForeground == rhs.lastIsAppInForeground &&
+            lhs.userInfo?.id == rhs.userInfo?.id &&
+            lhs.userInfo?.name == rhs.userInfo?.name &&
+            lhs.userInfo?.email == rhs.userInfo?.email
     }
 }
