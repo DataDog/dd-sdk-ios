@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block navigation %}
+<nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active">All endpoints</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+  <table id="data" class="table table-striped">
+    <thead class="table-dark">
+      <tr>
+        <th>METHOD</th>
+        <th>PATH</th>
+        <th>SCHEMAS</th>
+        <th class="text-center">REQUESTS</th>
+        <th class="text-center">BYTES RECEIVED</th>
+        <th class="text-center">AVG. SIZE</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for endpoint in endpoints %}
+        <tr>
+          <td>{{ endpoint.method }}</td>
+          <td>{{ endpoint.path }}</td>
+          <td>
+            {% for schema in endpoint.schemas %}
+            <span class="badge {% if schema.is_known %}bg-success{% else %}bg-secondary{% endif %}">{{ schema.name }}</span>
+            {% endfor %}
+          </td>
+          <td class="text-center">{{ endpoint.requests_count() }}</td>
+          <td class="text-center">{{ endpoint.bytes_received()|filesizeformat(true) }}</td>
+          <td class="text-center">{{ endpoint.avg_request_size()|filesizeformat(true) }}</td>
+          <td class="text-center">
+            <a href="{{ endpoint.follow_url(schema=endpoint.schemas[0]) }}" role="button" class="btn btn-primary btn-sm">See requests</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

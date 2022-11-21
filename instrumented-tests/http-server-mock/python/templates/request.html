@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block navigation %}
+<nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ back_url }}">All endpoints</a></li>
+        <li class="breadcrumb-item"><a href="{{ endpoint.follow_url(schema=selected_schema) }}">{{ endpoint.name() }}</a></li>
+        <li class="breadcrumb-item active">{{ request.date.strftime('%H:%M:%S') }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+    <!-- Schema selector: -->
+    <ul class="nav nav-tabs">
+    {% for schema in request.schemas %}
+        <li class="nav-item">
+            <a class="nav-link{% if schema.name==selected_schema.name %} active{% endif %}" href="{{ request.follow_url(schema=schema) }}">
+                {{ schema.pretty_name }}
+            </a>
+        </li>
+    {% endfor %}
+    </ul>
+    </br>
+
+    <!-- Request Details -->
+    {% include selected_schema.request_template %}
+
+{% endblock %}
