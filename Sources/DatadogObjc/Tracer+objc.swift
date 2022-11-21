@@ -106,7 +106,23 @@ public class DDTracer: NSObject, DatadogObjc.OTTracer {
 
     @objc
     public func inject(_ spanContext: OTSpanContext, format: String, carrier: Any) throws {
-        guard format == OT.formatTextMap, let objcWriter = carrier as? DDHTTPHeadersWriter else {
+        if let objcWriter = carrier as? DDHTTPHeadersWriter, format == OT.formatTextMap {
+            guard let ddspanContext = spanContext.dd else {
+                return
+            }
+            swiftTracer.inject(
+                spanContext: ddspanContext.swiftSpanContext,
+                writer: objcWriter.swiftHTTPHeadersWriter
+            )
+        } else if let objcWriter = carrier as? DDOpenTelemetryHTTPHeadersWriter, format == OT.formatTextMap {
+            guard let ddspanContext = spanContext.dd else {
+                return
+            }
+            swiftTracer.inject(
+                spanContext: ddspanContext.swiftSpanContext,
+                writer: objcWriter.swiftOpenTelemetryHTTPHeadersWriter
+            )
+        } else {
             let error = NSError(
                 domain: "DDTracer",
                 code: 0,
@@ -117,13 +133,6 @@ public class DDTracer: NSObject, DatadogObjc.OTTracer {
             )
             throw error
         }
-        guard let ddspanContext = spanContext.dd else {
-            return
-        }
-        swiftTracer.inject(
-            spanContext: ddspanContext.swiftSpanContext,
-            writer: objcWriter.swiftHTTPHeadersWriter
-        )
     }
 
     @objc

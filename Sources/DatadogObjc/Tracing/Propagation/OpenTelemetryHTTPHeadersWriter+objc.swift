@@ -8,6 +8,23 @@ import Foundation
 import class Datadog.OpenTelemetryHTTPHeadersWriter
 
 @objc
+public enum DDInjectEncoding: Int {
+    case multiple = 0
+    case single = 1
+}
+
+private extension OpenTelemetryHTTPHeadersWriter.InjectEncoding {
+    init(_ value: DDInjectEncoding) {
+        switch value {
+        case .single:
+            self = .single
+        case .multiple:
+            self = .multiple
+        }
+    }
+}
+
+@objc
 public class DDOpenTelemetryHTTPHeadersWriter: NSObject {
     let swiftOpenTelemetryHTTPHeadersWriter: OpenTelemetryHTTPHeadersWriter
 
@@ -18,11 +35,11 @@ public class DDOpenTelemetryHTTPHeadersWriter: NSObject {
     @objc
     public init(
         samplingRate: Float = 20,
-        injectEncoding: OpenTelemetryHTTPHeadersWriter.InjectEncoding = .single
+        injectEncoding: DDInjectEncoding = .single
     ) {
         swiftOpenTelemetryHTTPHeadersWriter = OpenTelemetryHTTPHeadersWriter(
             samplingRate: samplingRate,
-            injectEncoding: injectEncoding
+            injectEncoding: .init(injectEncoding)
         )
     }
 }
