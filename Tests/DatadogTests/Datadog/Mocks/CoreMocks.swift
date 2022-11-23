@@ -65,7 +65,8 @@ extension Datadog.Configuration {
         uploadFrequency: UploadFrequency = .average,
         additionalConfiguration: [String: Any] = [:],
         proxyConfiguration: [AnyHashable: Any]? = nil,
-        internalMonitoringClientToken: String? = nil
+        internalMonitoringClientToken: String? = nil,
+        tracingHeaderType: TracingHeaderType = .openTracing
     ) -> Datadog.Configuration {
         return Datadog.Configuration(
             rumApplicationID: rumApplicationID,
@@ -98,7 +99,8 @@ extension Datadog.Configuration {
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
             additionalConfiguration: additionalConfiguration,
-            proxyConfiguration: proxyConfiguration
+            proxyConfiguration: proxyConfiguration,
+            tracingHeaderType: tracingHeaderType
         )
     }
 }
@@ -342,7 +344,9 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
         rumAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         instrumentTracing: Bool = true,
         instrumentRUM: Bool = true,
-        tracingSampler: Sampler = .mockKeepAll()
+        tracingSampler: Sampler = .mockKeepAll(),
+        tracingHeaderType: TracingHeaderType = .openTracing
+
     ) -> Self {
         return .init(
             userDefinedFirstPartyHosts: userDefinedFirstPartyHosts,
@@ -350,7 +354,8 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
             rumAttributesProvider: rumAttributesProvider,
             instrumentTracing: instrumentTracing,
             instrumentRUM: instrumentRUM,
-            tracingSampler: tracingSampler
+            tracingSampler: tracingSampler,
+            tracingHeaderType: tracingHeaderType
         )
     }
 }

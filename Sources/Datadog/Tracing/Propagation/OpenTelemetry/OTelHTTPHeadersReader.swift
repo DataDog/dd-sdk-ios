@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal class OpenTelemetryHTTPHeadersReader: OTHTTPHeadersReader {
+internal class OTelHTTPHeadersReader: OTHTTPHeadersReader, TracePropagationHeadersExctractor {
     private let httpHeaderFields: [String: String]
     private var baggageItemQueue: DispatchQueue?
 
@@ -23,18 +23,18 @@ internal class OpenTelemetryHTTPHeadersReader: OTHTTPHeadersReader {
             return nil
         }
 
-        if let traceIDValue = httpHeaderFields[OpenTelemetryHTTPHeaders.Multiple.traceIDField],
-            let spanIDValue = httpHeaderFields[OpenTelemetryHTTPHeaders.Multiple.spanIDField],
+        if let traceIDValue = httpHeaderFields[OTelHTTPHeaders.Multiple.traceIDField],
+            let spanIDValue = httpHeaderFields[OTelHTTPHeaders.Multiple.spanIDField],
             let traceID = TracingUUID(traceIDValue, .hexadecimal),
             let spanID = TracingUUID(spanIDValue, .hexadecimal) {
             return DDSpanContext(
                 traceID: traceID,
                 spanID: spanID,
-                parentSpanID: TracingUUID(httpHeaderFields[OpenTelemetryHTTPHeaders.Multiple.parentSpanIDField], .hexadecimal),
+                parentSpanID: TracingUUID(httpHeaderFields[OTelHTTPHeaders.Multiple.parentSpanIDField], .hexadecimal),
                 baggageItems: BaggageItems(targetQueue: baggageItemQueue, parentSpanItems: nil)
             )
-        } else if let b3Value = httpHeaderFields[OpenTelemetryHTTPHeaders.Single.b3Field]?.components(
-                separatedBy: OpenTelemetryHTTPHeaders.Constants.b3Separator
+        } else if let b3Value = httpHeaderFields[OTelHTTPHeaders.Single.b3Field]?.components(
+                separatedBy: OTelHTTPHeaders.Constants.b3Separator
             ),
             let traceID = TracingUUID(b3Value[safe: 0], .hexadecimal),
             let spanID = TracingUUID(b3Value[safe: 1], .hexadecimal) {

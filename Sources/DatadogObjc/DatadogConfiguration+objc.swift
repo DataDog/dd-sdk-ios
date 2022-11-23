@@ -160,6 +160,19 @@ public enum DDVitalsFrequency: Int {
 }
 
 @objc
+public enum DDTracingHeaderType: Int {
+    case openTracing
+    case openTelemetry
+
+    internal var swiftType: TracingHeaderType {
+        switch self {
+        case .openTracing: return .openTracing
+        case .openTelemetry: return .openTelemetry
+        }
+    }
+}
+
+@objc
 public protocol DDDataEncryption: AnyObject {
     /// Encrypts given `Data` with user-chosen encryption.
     ///
@@ -469,6 +482,11 @@ public class DDConfigurationBuilder: NSObject {
     @objc
     public func set(encryption: DDDataEncryption) {
         _ = sdkBuilder.set(encryption: DDDataEncryptionBridge(objcEncryption: encryption))
+    }
+
+    @objc
+    public func set(tracingHeaderType: DDTracingHeaderType) {
+        _ = sdkBuilder.set(tracingHeaderType: tracingHeaderType.swiftType)
     }
 
     @objc

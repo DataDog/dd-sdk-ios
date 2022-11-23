@@ -562,6 +562,16 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(custom.logging?.remoteLoggingSampler.samplingRate, 12.34)
     }
 
+    func testTracingHeaderType() throws {
+        let custom = try FeaturesConfiguration(
+            configuration: .mockWith(
+                tracingHeaderType: .openTelemetry
+            ),
+            appContext: .mockAny()
+        )
+        XCTAssertEqual(custom.urlSessionAutoInstrumentation?.tracingHeaderType, .openTelemetry)
+    }
+
     // MARK: - URLSession Auto Instrumentation Configuration Tests
 
     func testURLSessionAutoInstrumentationConfiguration() throws {

@@ -6,7 +6,7 @@
 
 import Foundation
 
-/// The `OpenTelemetryHTTPHeadersWriter` should be used to inject trace propagation headers to
+/// The `OTelHTTPHeadersWriter` should be used to inject trace propagation headers to
 /// the network requests send to the backend instrumented with Datadog APM.
 /// The injected headers conform to [Open Telemetry](https://github.com/openzipkin/b3-propagation) standard.
 ///
@@ -14,7 +14,7 @@ import Foundation
 ///
 ///     var request = URLRequest(...)
 ///
-///     let writer = OpenTelemetryHTTPHeadersWriter(injectEncoding: .single)
+///     let writer = OTelHTTPHeadersWriter(injectEncoding: .single)
 ///     let span = Global.sharedTracer.startSpan("network request")
 ///     writer.inject(spanContext: span.context)
 ///
@@ -25,7 +25,7 @@ import Foundation
 ///     // call span.finish() when the request completes
 ///
 ///
-public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
+public class OTelHTTPHeadersWriter: OTHTTPHeadersWriter, TracePropagationHeadersProvider {
     /// Open Telemetry header encoding.
     ///
     /// There are two encodings of B3:
@@ -35,8 +35,7 @@ public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
     /// Multiple header encoding uses an `X-B3-` prefixed header per item in the trace context.
     /// Single header delimits the context into into a single entry named b3.
     /// The single-header variant takes precedence over the multiple header one when extracting fields.
-    @objc
-    public enum InjectEncoding: Int {
+    public enum InjectEncoding {
         case multiple, single
     }
 
@@ -60,7 +59,7 @@ public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
     /// Determines the type of telemetry header type used by the writer.
     private let injectEncoding: InjectEncoding
 
-    /// Creates a `OpenTelemetryHTTPHeadersWriter` to inject traces propagation headers
+    /// Creates a `OTelHTTPHeadersWriter` to inject traces propagation headers
     /// to network request.
     ///
     /// - Parameter samplingRate: Tracing sampling rate. 20% by default.
@@ -73,14 +72,14 @@ public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
         self.injectEncoding = injectEncoding
     }
 
-    /// Creates a `OpenTelemetryHTTPHeadersWriter` to inject traces propagation headers
+    /// Creates a `OTelHTTPHeadersWriter` to inject traces propagation headers
     /// to network request.
     ///
     /// - Parameter sampler: Tracing sampler responsible for randomizing the sample.
     /// - Parameter injectEncoding: Determines the type of telemetry header type used by the writer.
     internal init(
         sampler: Sampler,
-        injectEncoding: InjectEncoding
+        injectEncoding: InjectEncoding = .single
     ) {
         self.sampler = sampler
         self.injectEncoding = injectEncoding
@@ -93,22 +92,22 @@ public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
 
         let samplingPriority = sampler.sample()
 
-        typealias Constants = OpenTelemetryHTTPHeaders.Constants
+        typealias Constants = OTelHTTPHeaders.Constants
 
         switch injectEncoding {
         case .multiple:
             tracePropagationHTTPHeaders = [
-                OpenTelemetryHTTPHeaders.Multiple.sampledField: samplingPriority ? Constants.sampledValue : Constants.unsampledValue
+                OTelHTTPHeaders.Multiple.sampledField: samplingPriority ? Constants.sampledValue : Constants.unsampledValue
             ]
 
             if samplingPriority {
-                tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Multiple.traceIDField] = spanContext.traceID.toString(.hexadecimal)
-                tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Multiple.spanIDField] = spanContext.spanID.toString(.hexadecimal)
-                tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Multiple.parentSpanIDField] = spanContext.parentSpanID?.toString(.hexadecimal)
+                tracePropagationHTTPHeaders[OTelHTTPHeaders.Multiple.traceIDField] = spanContext.traceID.toString(.hexadecimal)
+                tracePropagationHTTPHeaders[OTelHTTPHeaders.Multiple.spanIDField] = spanContext.spanID.toString(.hexadecimal)
+                tracePropagationHTTPHeaders[OTelHTTPHeaders.Multiple.parentSpanIDField] = spanContext.parentSpanID?.toString(.hexadecimal)
             }
         case .single:
             if samplingPriority {
-                tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Single.b3Field] = [
+                tracePropagationHTTPHeaders[OTelHTTPHeaders.Single.b3Field] = [
                     spanContext.traceID.toString(.hexadecimal),
                     spanContext.spanID.toString(.hexadecimal),
                     Constants.sampledValue,
@@ -117,7 +116,7 @@ public class OpenTelemetryHTTPHeadersWriter: OTHTTPHeadersWriter {
                 .compactMap { $0 }
                 .joined(separator: Constants.b3Separator)
             } else {
-                tracePropagationHTTPHeaders[OpenTelemetryHTTPHeaders.Single.b3Field] = Constants.unsampledValue
+                tracePropagationHTTPHeaders[OTelHTTPHeaders.Single.b3Field] = Constants.unsampledValue
             }
         }
     }

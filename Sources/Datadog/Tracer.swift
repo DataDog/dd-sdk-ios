@@ -175,10 +175,7 @@ public class Tracer: OTTracer {
 
     public func extract(reader: OTFormatReader) -> OTSpanContext? {
         // TODO: RUMM-385 - make `HTTPHeadersReader` available in public API
-        if let reader = reader as? HTTPHeadersReader {
-            reader.use(baggageItemQueue: queue)
-            return reader.extract()
-        } else if let reader = reader as? OpenTelemetryHTTPHeadersReader {
+        if let reader = reader as? TracePropagationHeadersExctractor {
             reader.use(baggageItemQueue: queue)
             return reader.extract()
         } else {

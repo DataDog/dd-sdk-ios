@@ -232,6 +232,9 @@ class DDConfigurationTests: XCTestCase {
         let serverDateProvider = ObjcServerDateProvider()
         objcBuilder.set(serverDateProvider: serverDateProvider)
         XCTAssertTrue((objcBuilder.build().sdkConfiguration.serverDateProvider as? DDServerDateProviderBridge)?.objcProvider === serverDateProvider)
+
+        objcBuilder.set(tracingHeaderType: .openTelemetry)
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.tracingHeaderType, .openTelemetry)
     }
 
     func testScrubbingRUMEvents() {
