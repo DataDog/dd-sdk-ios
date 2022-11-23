@@ -754,7 +754,7 @@ class TracerTests: XCTestCase {
 
         // Then
         let expectedHTTPHeaders3 = [
-            "X-B3-TraceId": "4D",
+            "X-B3-TraceId": "4d",
             "X-B3-SpanId": "58",
             "X-B3-Sampled": "1"
         ]
@@ -793,7 +793,7 @@ class TracerTests: XCTestCase {
 
         // Then
         let expectedHTTPHeaders3 = [
-            "b3": "4D-58-1"
+            "b3": "4d-58-1"
         ]
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders3)
     }
