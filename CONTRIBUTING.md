@@ -54,10 +54,16 @@ The workspace for SDK development and integration (tests, benchmarks, example ap
 
 #### Lint
 
-We're using swiftlint to ensure our codebase follows Swift standard syntax. You can run the lint with our custom rules with the following command line:
+We're using `swiftlint` to ensure our codebase follows Swift standard syntax. You can run the lint with our custom rules with the following command line:
 
 ```shell
 $ ./tools/lint/run-linter.sh
+```
+
+In order to apply automatic correction of violations use `--fix` flag:
+
+```shell
+$ ./tools/lint/run-linter.sh --fix
 ```
 
 #### Dependency manager tests
