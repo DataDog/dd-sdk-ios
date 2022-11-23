@@ -53,7 +53,7 @@ public class HTTPHeadersWriter: OTHTTPHeadersWriter {
     /// Creates a `HTTPHeadersWriter` to inject traces propagation headers
     /// to network request.
     ///
-    /// - Parameter samplingRate: Tracing sampling rate. 100% (keep all) by default.
+    /// - Parameter sampler: Tracing sampler responsible for randomizing the sample.
     internal init(sampler: Sampler) {
         self.sampler = sampler
     }
@@ -70,8 +70,8 @@ public class HTTPHeadersWriter: OTHTTPHeadersWriter {
         ]
 
         if samplingPriority {
-            tracePropagationHTTPHeaders[TracingHTTPHeaders.traceIDField] = String(spanContext.traceID.rawValue)
-            tracePropagationHTTPHeaders[TracingHTTPHeaders.parentSpanIDField] = String(spanContext.spanID.rawValue)
+            tracePropagationHTTPHeaders[TracingHTTPHeaders.traceIDField] = spanContext.traceID.toString(.decimal)
+            tracePropagationHTTPHeaders[TracingHTTPHeaders.parentSpanIDField] = spanContext.spanID.toString(.decimal)
         }
     }
 }

@@ -9,12 +9,42 @@ import XCTest
 
 class UUIDTests: XCTestCase {
     func testToHexadecimalStringConversion() {
-        XCTAssertEqual(TracingUUID(rawValue: 0).toHexadecimalString, "0")
-        XCTAssertEqual(TracingUUID(rawValue: 1).toHexadecimalString, "1")
-        XCTAssertEqual(TracingUUID(rawValue: 15).toHexadecimalString, "F")
-        XCTAssertEqual(TracingUUID(rawValue: 16).toHexadecimalString, "10")
-        XCTAssertEqual(TracingUUID(rawValue: 123).toHexadecimalString, "7B")
-        XCTAssertEqual(TracingUUID(rawValue: 123_456).toHexadecimalString, "1E240")
-        XCTAssertEqual(TracingUUID(rawValue: .max).toHexadecimalString, "FFFFFFFFFFFFFFFF")
+        XCTAssertEqual(TracingUUID(rawValue: 0).toString(.hexadecimal), "0")
+        XCTAssertEqual(TracingUUID(rawValue: 1).toString(.hexadecimal), "1")
+        XCTAssertEqual(TracingUUID(rawValue: 15).toString(.hexadecimal), "F")
+        XCTAssertEqual(TracingUUID(rawValue: 16).toString(.hexadecimal), "10")
+        XCTAssertEqual(TracingUUID(rawValue: 123).toString(.hexadecimal), "7B")
+        XCTAssertEqual(TracingUUID(rawValue: 123_456).toString(.hexadecimal), "1E240")
+        XCTAssertEqual(TracingUUID(rawValue: .max).toString(.hexadecimal), "FFFFFFFFFFFFFFFF")
+    }
+
+    func testToDecimalStringConversion() {
+        XCTAssertEqual(TracingUUID(rawValue: 0).toString(.decimal), "0")
+        XCTAssertEqual(TracingUUID(rawValue: 1).toString(.decimal), "1")
+        XCTAssertEqual(TracingUUID(rawValue: 15).toString(.decimal), "15")
+        XCTAssertEqual(TracingUUID(rawValue: 16).toString(.decimal), "16")
+        XCTAssertEqual(TracingUUID(rawValue: 123).toString(.decimal), "123")
+        XCTAssertEqual(TracingUUID(rawValue: 123_456).toString(.decimal), "123456")
+        XCTAssertEqual(TracingUUID(rawValue: .max).toString(.decimal), "\(UInt64.max)")
+    }
+
+    func testInitializationFromHexadecimal() {
+        XCTAssertEqual(TracingUUID("0", .hexadecimal)?.toString(.decimal), "0")
+        XCTAssertEqual(TracingUUID("1", .hexadecimal)?.toString(.decimal), "1")
+        XCTAssertEqual(TracingUUID("F", .hexadecimal)?.toString(.decimal), "15")
+        XCTAssertEqual(TracingUUID("10", .hexadecimal)?.toString(.decimal), "16")
+        XCTAssertEqual(TracingUUID("7B", .hexadecimal)?.toString(.decimal), "123")
+        XCTAssertEqual(TracingUUID("1E240", .hexadecimal)?.toString(.decimal), "123456")
+        XCTAssertEqual(TracingUUID("FFFFFFFFFFFFFFFF", .hexadecimal)?.toString(.decimal), "\(UInt64.max)")
+    }
+
+    func testInitializationFromDecimal() {
+        XCTAssertEqual(TracingUUID("0", .decimal)?.toString(.hexadecimal), "0")
+        XCTAssertEqual(TracingUUID("1", .decimal)?.toString(.hexadecimal), "1")
+        XCTAssertEqual(TracingUUID("15", .decimal)?.toString(.hexadecimal), "F")
+        XCTAssertEqual(TracingUUID("16", .decimal)?.toString(.hexadecimal), "10")
+        XCTAssertEqual(TracingUUID("123", .decimal)?.toString(.hexadecimal), "7B")
+        XCTAssertEqual(TracingUUID("123456", .decimal)?.toString(.hexadecimal), "1E240")
+        XCTAssertEqual(TracingUUID("\(UInt64.max)", .decimal)?.toString(.hexadecimal), "FFFFFFFFFFFFFFFF")
     }
 }

@@ -8,7 +8,7 @@ import Foundation
 
 /// Trace propagation headers as explained in
 /// https://docs.datadoghq.com/real_user_monitoring/connect_rum_and_traces/?tab=browserrum#how-are-rum-resources-linked-to-traces
-internal struct TracingHTTPHeaders {
+internal enum TracingHTTPHeaders {
     /// Trace propagation header.
     /// It is used both in Tracing and RUM features.
     static let traceIDField = "x-datadog-trace-id"
