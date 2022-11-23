@@ -565,6 +565,8 @@ class FeaturesConfigurationTests: XCTestCase {
     func testTracingHeaderType() throws {
         let custom = try FeaturesConfiguration(
             configuration: .mockWith(
+                tracingEnabled: true,
+                firstPartyHosts: .init(),
                 tracingHeaderType: .openTelemetry
             ),
             appContext: .mockAny()
