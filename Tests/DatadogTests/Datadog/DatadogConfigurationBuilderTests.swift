@@ -67,7 +67,8 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertNil(configuration.encryption)
             XCTAssertNil(configuration.serverDateProvider)
             XCTAssertEqual(configuration.tracingHeaderTypes.count, 1)
-            XCTAssertEqual(configuration.tracingHeaderTypes.first, .openTracing)        }
+            XCTAssertEqual(configuration.tracingHeaderTypes.first, .openTracing)
+        }
     }
 
     func testCustomizedBuilder() {

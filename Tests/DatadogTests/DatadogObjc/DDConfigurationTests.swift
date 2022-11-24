@@ -234,7 +234,6 @@ class DDConfigurationTests: XCTestCase {
         XCTAssertTrue((objcBuilder.build().sdkConfiguration.serverDateProvider as? DDServerDateProviderBridge)?.objcProvider === serverDateProvider)
 
         objcBuilder.set(tracingHeaderType: .openTelemetry)
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.tracingHeaderTypes, Set(arrayLiteral: .openTelemetry))
 
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.tracingHeaderTypes.count, 1)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.tracingHeaderTypes.first, .openTelemetry)
