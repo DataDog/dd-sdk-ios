@@ -127,7 +127,7 @@ class LoggingMessageReceiverTests: XCTestCase {
         let core = PassthroughCoreMock(
             context: .mockWith(service: "service-test"),
             expectation: expectation(description: "Open scope but don't send log"),
-            messageReceiver: LoggingMessageReceiver(logEventMapper: { _ in nil })
+            messageReceiver: LoggingMessageReceiver(logEventMapper: SyncLogEventMapper { _ in nil })
         )
 
         // When

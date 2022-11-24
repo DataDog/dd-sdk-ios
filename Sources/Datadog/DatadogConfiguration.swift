@@ -263,7 +263,7 @@ extension Datadog {
 
         private(set) var serviceName: String?
         private(set) var firstPartyHosts: Set<String>?
-        private(set) var logEventMapper: LogEventMapper?
+        var logEventMapper: LogEventMapper?
         private(set) var spanEventMapper: SpanEventMapper?
         private(set) var loggingSamplingRate: Float
         private(set) var tracingSamplingRate: Float
@@ -442,7 +442,7 @@ extension Datadog {
             /// The implementation should obtain a mutable version of the `LogEvent`, modify it and return it. Returning `nil` will result
             /// with dropping the Log event entirely, so it won't be send to Datadog.
             public func setLogEventMapper(_ mapper: @escaping (LogEvent) -> LogEvent?) -> Builder {
-                configuration.logEventMapper = mapper
+                configuration.logEventMapper = SyncLogEventMapper(mapper)
                 return self
             }
 

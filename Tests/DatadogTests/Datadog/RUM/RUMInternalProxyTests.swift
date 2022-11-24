@@ -37,24 +37,6 @@ class RUMInternalProxyTests: XCTestCase {
         )
     }
 
-    func testProxyAddLongTaskSendsCommand() {
-        // Given
-        let mockCommandSubscriber = RUMCommandSubscriberMock()
-
-        let duration: TimeInterval = .mockRandom()
-        let date = Date()
-        let internalProxy = _RUMInternalProxy(subscriber: mockCommandSubscriber)
-
-        // When
-        internalProxy.addLongTask(at: date, duration: duration)
-
-        // Then
-        let longTaskCommand = mockCommandSubscriber.lastReceivedCommand as? RUMAddLongTaskCommand
-        XCTAssertNotNil(longTaskCommand)
-        XCTAssertEqual(longTaskCommand?.time, date)
-        XCTAssertEqual(longTaskCommand?.duration, duration)
-    }
-
     func testProxyAddLongTaskSendsLongTasks() throws {
         // Given
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
@@ -62,18 +44,19 @@ class RUMInternalProxyTests: XCTestCase {
 
         let monitor = try createTestableRUMMonitor()
 
+        let date = Date()
         let duration: TimeInterval = .mockRandom()
-        let internalProxy = _RUMInternalProxy(subscriber: monitor as! RUMCommandSubscriber)
 
         // When
         monitor.startView(viewController: mockView)
-        internalProxy.addLongTask(at: Date(), duration: duration)
+        monitor._internal.addLongTask(at: date, duration: duration)
 
         let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 3)
 
         // Then
         let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
         let longTask = session.viewVisits[0].longTaskEvents.first
+        XCTAssertEqual(longTask?.date, (date - duration).timeIntervalSince1970.toInt64Nanoseconds)
         XCTAssertEqual(longTask?.longTask.duration, duration.toInt64Nanoseconds)
     }
 }
