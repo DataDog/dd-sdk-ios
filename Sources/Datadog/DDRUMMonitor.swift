@@ -286,15 +286,6 @@ public class DDRUMMonitor {
     /// - Parameter key: key for the attribute that will be removed.
     public func removeAttribute(forKey key: AttributeKey) {}
 
-    /// Adds a record for a cross-platform performance metric
-    /// - Parameters:
-    ///   - metric: the name of the performance metric.
-    ///   - value: recorded value of the metric.
-    public func updatePerformanceMetric(
-        metric: PerformanceMetric,
-        value: Double,
-        attributes: [AttributeKey: AttributeValue] = [:]
-    ) {}
 
     // MARK: - Internal
 

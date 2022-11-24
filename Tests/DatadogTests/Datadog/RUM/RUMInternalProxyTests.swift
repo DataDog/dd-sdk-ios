@@ -59,4 +59,39 @@ class RUMInternalProxyTests: XCTestCase {
         XCTAssertEqual(longTask?.date, (date - duration).timeIntervalSince1970.toInt64Nanoseconds)
         XCTAssertEqual(longTask?.longTask.duration, duration.toInt64Nanoseconds)
     }
+    
+    func testProxyRecordsPerformanceMetricsAreSent() throws {
+        // Given
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
+        core.register(feature: rum)
+
+        let monitor = try createTestableRUMMonitor()
+
+        let internalProxy = _RUMInternalProxy(subscriber: monitor as! RUMCommandSubscriber, dateProvider: SystemDateProvider())
+
+        // When
+        monitor.startView(viewController: mockView)
+        internalProxy.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.02)
+        internalProxy.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.02)
+        internalProxy.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.02)
+        internalProxy.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.04)
+        internalProxy.updatePerformanceMetric(metric: .flutterBuildTime, value: 32.0)
+        internalProxy.updatePerformanceMetric(metric: .flutterBuildTime, value: 52.0)
+        internalProxy.updatePerformanceMetric(metric: .flutterRasterTime, value: 42.0)
+        monitor.stopView(viewController: mockView)
+
+        let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 3)
+
+        try rumEventMatchers.lastRUMEvent(ofType: RUMViewEvent.self)
+            .model(ofType: RUMViewEvent.self) { rumModel in
+                XCTAssertEqual(rumModel.view.jsRefreshRate?.max, 50.0)
+                XCTAssertEqual(rumModel.view.jsRefreshRate?.min, 25.0)
+                XCTAssertEqual(rumModel.view.jsRefreshRate?.average, 40.0)
+
+                XCTAssertEqual(rumModel.view.flutterBuildTime?.max, 52.0)
+                XCTAssertEqual(rumModel.view.flutterBuildTime?.min, 32.0)
+                XCTAssertEqual(rumModel.view.flutterBuildTime?.average, 42.0)
+                XCTAssertEqual(rumModel.view.flutterRasterTime?.average, 42.0)
+            }
+    }
 }
