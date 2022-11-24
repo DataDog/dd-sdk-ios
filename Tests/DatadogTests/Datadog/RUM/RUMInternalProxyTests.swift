@@ -59,7 +59,7 @@ class RUMInternalProxyTests: XCTestCase {
         XCTAssertEqual(longTask?.date, (date - duration).timeIntervalSince1970.toInt64Nanoseconds)
         XCTAssertEqual(longTask?.longTask.duration, duration.toInt64Nanoseconds)
     }
-    
+
     func testProxyRecordsPerformanceMetricsAreSent() throws {
         // Given
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers()

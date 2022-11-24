@@ -25,7 +25,7 @@ extension DatadogExtension where ExtendedType: DDRUMMonitor {
         let longTaskCommand = RUMAddLongTaskCommand(time: at, attributes: attributes, duration: duration)
         type.process(command: longTaskCommand)
     }
-    
+
     public func updatePerformanceMetric(
         metric: PerformanceMetric,
         value: Double,
