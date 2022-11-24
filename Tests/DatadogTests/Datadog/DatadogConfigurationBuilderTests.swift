@@ -66,8 +66,8 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.additionalConfiguration.count, 0)
             XCTAssertNil(configuration.encryption)
             XCTAssertNil(configuration.serverDateProvider)
-            XCTAssertEqual(configuration.tracingHeaderType, .openTracing)
-        }
+            XCTAssertEqual(configuration.tracingHeaderTypes.count, 1)
+            XCTAssertEqual(configuration.tracingHeaderTypes.first, .openTracing)        }
     }
 
     func testCustomizedBuilder() {
@@ -187,7 +187,8 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.proxyConfiguration?[kCFProxyPasswordKey] as? String, "proxypass")
             XCTAssertTrue(configuration.encryption is DataEncryptionMock)
             XCTAssertTrue(configuration.serverDateProvider is ServerDateProviderMock)
-            XCTAssertEqual(configuration.tracingHeaderType, .openTelemetry)
+            XCTAssertEqual(configuration.tracingHeaderTypes.count, 1)
+            XCTAssertEqual(configuration.tracingHeaderTypes.first, .openTelemetry)
         }
 
         XCTAssertTrue(rumConfigurationWithDefaultValues.rumUIKitViewsPredicate is DefaultUIKitRUMViewsPredicate)

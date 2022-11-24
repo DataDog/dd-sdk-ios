@@ -101,17 +101,17 @@ public class OTelHTTPHeadersWriter: OTHTTPHeadersWriter, TracePropagationHeaders
             ]
 
             if samplingPriority {
-                tracePropagationHTTPHeaders[OTelHTTPHeaders.Multiple.traceIDField] = spanContext.traceID.toString(.hexadecimal)
-                tracePropagationHTTPHeaders[OTelHTTPHeaders.Multiple.spanIDField] = spanContext.spanID.toString(.hexadecimal)
-                tracePropagationHTTPHeaders[OTelHTTPHeaders.Multiple.parentSpanIDField] = spanContext.parentSpanID?.toString(.hexadecimal)
+                tracePropagationHTTPHeaders[OTelHTTPHeaders.Multiple.traceIDField] = spanContext.traceID.toString(.hexadecimal128)
+                tracePropagationHTTPHeaders[OTelHTTPHeaders.Multiple.spanIDField] = spanContext.spanID.toString(.hexadecimal64)
+                tracePropagationHTTPHeaders[OTelHTTPHeaders.Multiple.parentSpanIDField] = spanContext.parentSpanID?.toString(.hexadecimal64)
             }
         case .single:
             if samplingPriority {
                 tracePropagationHTTPHeaders[OTelHTTPHeaders.Single.b3Field] = [
-                    spanContext.traceID.toString(.hexadecimal),
-                    spanContext.spanID.toString(.hexadecimal),
+                    spanContext.traceID.toString(.hexadecimal128),
+                    spanContext.spanID.toString(.hexadecimal64),
                     Constants.sampledValue,
-                    spanContext.parentSpanID?.toString(.hexadecimal)
+                    spanContext.parentSpanID?.toString(.hexadecimal64)
                 ]
                 .compactMap { $0 }
                 .joined(separator: Constants.b3Separator)

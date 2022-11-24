@@ -287,7 +287,7 @@ extension Datadog {
         private(set) var additionalConfiguration: [String: Any]
         private(set) var proxyConfiguration: [AnyHashable: Any]?
         private(set) var encryption: DataEncryption?
-        private(set) var tracingHeaderType: TracingHeaderType
+        private(set) var tracingHeaderTypes: Set<TracingHeaderType>
 
         /// Creates the builder for configuring the SDK to work with RUM, Logging and Tracing features.
         /// - Parameter rumApplicationID: RUM Application ID obtained on Datadog website.
@@ -364,7 +364,7 @@ extension Datadog {
                     uploadFrequency: .average,
                     additionalConfiguration: [:],
                     proxyConfiguration: nil,
-                    tracingHeaderType: .openTracing
+                    tracingHeaderTypes: .init([.openTracing])
                 )
             }
 
@@ -839,7 +839,12 @@ extension Datadog {
             }
 
             public func set(tracingHeaderType: TracingHeaderType) -> Builder {
-                configuration.tracingHeaderType = tracingHeaderType
+                configuration.tracingHeaderTypes = .init(arrayLiteral: tracingHeaderType)
+                return self
+            }
+
+            public func set(tracingHeaderTypes: Set<TracingHeaderType>) -> Builder {
+                configuration.tracingHeaderTypes = tracingHeaderTypes
                 return self
             }
 

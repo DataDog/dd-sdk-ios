@@ -8,7 +8,6 @@ import XCTest
 @testable import Datadog
 
 class OTelHTTPHeadersReaderTests: XCTestCase {
-
     func testOTelHTTPHeadersReaderreadsSingleHeader() {
         let oTelHTTPHeadersReader = OTelHTTPHeadersReader(httpHeaderFields: ["b3": "4d2-929-1-162e"])
         oTelHTTPHeadersReader.use(baggageItemQueue: .main)
