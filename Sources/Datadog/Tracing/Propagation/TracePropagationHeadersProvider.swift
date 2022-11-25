@@ -6,6 +6,7 @@
 
 import Foundation
 
+/// Interface that defines shared responibilities of HTTP header writers.
 public protocol TracePropagationHeadersProvider {
     var tracePropagationHTTPHeaders: [String: String] { get }
 }

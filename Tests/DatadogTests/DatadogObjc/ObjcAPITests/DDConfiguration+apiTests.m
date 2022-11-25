@@ -133,7 +133,7 @@
     [builder setWithUploadFrequency:DDUploadFrequencyAverage];
     [builder setWithAdditionalConfiguration:@{}];
     [builder setWithEncryption:[CustomDDDataEncryption new]];
-    [builder setWithTracingHeaderType:DDTracingHeaderTypeOpenTelemetry];
+    [builder setWithTracingHeaderType:DDTracingHeaderTypeDd];
     [builder build];
 }
 

@@ -6,7 +6,8 @@
 
 import Foundation
 
-public protocol TracePropagationHeadersExctractor {
+/// Interface that defines shared responibilities of HTTP header readers.
+public protocol TracePropagationHeadersExtractor {
     func extract() -> OTSpanContext?
     func use(baggageItemQueue: DispatchQueue)
 }

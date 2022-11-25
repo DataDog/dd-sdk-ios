@@ -67,7 +67,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertNil(configuration.encryption)
             XCTAssertNil(configuration.serverDateProvider)
             XCTAssertEqual(configuration.tracingHeaderTypes.count, 1)
-            XCTAssertEqual(configuration.tracingHeaderTypes.first, .openTracing)
+            XCTAssertEqual(configuration.tracingHeaderTypes.first, .dd)
         }
     }
 
@@ -123,7 +123,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 ])
                 .set(encryption: DataEncryptionMock())
                 .set(serverDateProvider: ServerDateProviderMock())
-                .set(tracingHeaderType: .openTelemetry)
+                .set(tracingHeaderType: .dd)
 
             return builder
         }
@@ -189,7 +189,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertTrue(configuration.encryption is DataEncryptionMock)
             XCTAssertTrue(configuration.serverDateProvider is ServerDateProviderMock)
             XCTAssertEqual(configuration.tracingHeaderTypes.count, 1)
-            XCTAssertEqual(configuration.tracingHeaderTypes.first, .openTelemetry)
+            XCTAssertEqual(configuration.tracingHeaderTypes.first, .dd)
         }
 
         XCTAssertTrue(rumConfigurationWithDefaultValues.rumUIKitViewsPredicate is DefaultUIKitRUMViewsPredicate)

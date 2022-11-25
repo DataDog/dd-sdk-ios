@@ -570,7 +570,7 @@
 		9EF963E82537556300235F98 /* DDURLSessionDelegateAsSuperclassTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EF963E72537556300235F98 /* DDURLSessionDelegateAsSuperclassTests.swift */; };
 		9EFD112C24B32D29003A1A2B /* FirstPartyURLsFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EFD112B24B32D29003A1A2B /* FirstPartyURLsFilter.swift */; };
 		A71B1FFB292CE0B000C99F4F /* TracePropagationHeadersProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71B1FFA292CE0B000C99F4F /* TracePropagationHeadersProvider.swift */; };
-		A71B1FFD292CE22F00C99F4F /* TracePropagationHeadersExctractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71B1FFC292CE22F00C99F4F /* TracePropagationHeadersExctractor.swift */; };
+		A71B1FFD292CE22F00C99F4F /* TracePropagationHeadersExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71B1FFC292CE22F00C99F4F /* TracePropagationHeadersExtractor.swift */; };
 		A71B1FFF292CF0A400C99F4F /* TracingHeaderType.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71B1FFE292CF0A400C99F4F /* TracingHeaderType.swift */; };
 		A71B2000292CF0A400C99F4F /* TracingHeaderType.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71B1FFE292CF0A400C99F4F /* TracingHeaderType.swift */; };
 		A79B0F5C292B7C24008742B3 /* OTelHTTPHeadersWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F5A292B7C06008742B3 /* OTelHTTPHeadersWriterTests.swift */; };
@@ -1889,7 +1889,7 @@
 		9EF963E72537556300235F98 /* DDURLSessionDelegateAsSuperclassTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDURLSessionDelegateAsSuperclassTests.swift; sourceTree = "<group>"; };
 		9EFD112B24B32D29003A1A2B /* FirstPartyURLsFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstPartyURLsFilter.swift; sourceTree = "<group>"; };
 		A71B1FFA292CE0B000C99F4F /* TracePropagationHeadersProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracePropagationHeadersProvider.swift; sourceTree = "<group>"; };
-		A71B1FFC292CE22F00C99F4F /* TracePropagationHeadersExctractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracePropagationHeadersExctractor.swift; sourceTree = "<group>"; };
+		A71B1FFC292CE22F00C99F4F /* TracePropagationHeadersExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracePropagationHeadersExtractor.swift; sourceTree = "<group>"; };
 		A71B1FFE292CF0A400C99F4F /* TracingHeaderType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingHeaderType.swift; sourceTree = "<group>"; };
 		A79B0F5A292B7C06008742B3 /* OTelHTTPHeadersWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTelHTTPHeadersWriterTests.swift; sourceTree = "<group>"; };
 		A79B0F5E292BA435008742B3 /* OTelHTTPHeadersWriter+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTelHTTPHeadersWriter+objc.swift"; sourceTree = "<group>"; };
@@ -3724,7 +3724,7 @@
 				A7F773DA29253F6200AC1A62 /* OpenTelemetry */,
 				A7F773D929253F5900AC1A62 /* OpenTracing */,
 				A71B1FFA292CE0B000C99F4F /* TracePropagationHeadersProvider.swift */,
-				A71B1FFC292CE22F00C99F4F /* TracePropagationHeadersExctractor.swift */,
+				A71B1FFC292CE22F00C99F4F /* TracePropagationHeadersExtractor.swift */,
 			);
 			path = Propagation;
 			sourceTree = "<group>";
@@ -5516,7 +5516,7 @@
 				D20605AC2874C2040047275C /* NetworkConnectionInfo.swift in Sources */,
 				611529A525E3DD51004F740E /* ValuePublisher.swift in Sources */,
 				618DCFD724C7265300589570 /* RUMUUID.swift in Sources */,
-				A71B1FFD292CE22F00C99F4F /* TracePropagationHeadersExctractor.swift in Sources */,
+				A71B1FFD292CE22F00C99F4F /* TracePropagationHeadersExtractor.swift in Sources */,
 				61B038662527247800518F3C /* URLSessionInterceptor.swift in Sources */,
 				61B03898252724DE00518F3C /* TracingHTTPHeaders.swift in Sources */,
 				9E544A4F24753C6E00E83072 /* MethodSwizzler.swift in Sources */,

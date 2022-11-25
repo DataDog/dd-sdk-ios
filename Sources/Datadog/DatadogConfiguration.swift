@@ -364,7 +364,7 @@ extension Datadog {
                     uploadFrequency: .average,
                     additionalConfiguration: [:],
                     proxyConfiguration: nil,
-                    tracingHeaderTypes: .init([.openTracing])
+                    tracingHeaderTypes: .init([.dd])
                 )
             }
 

@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal class OTelHTTPHeadersReader: OTHTTPHeadersReader, TracePropagationHeadersExctractor {
+internal class OTelHTTPHeadersReader: OTHTTPHeadersReader, TracePropagationHeadersExtractor {
     private let httpHeaderFields: [String: String]
     private var baggageItemQueue: DispatchQueue?
 

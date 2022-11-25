@@ -248,10 +248,18 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
         tracingHeaderTypes.forEach {
             let writer: TracePropagationHeadersProvider & OTFormatWriter
             switch $0 {
-            case .openTracing:
+            case .dd:
                 writer = HTTPHeadersWriter(sampler: tracingSampler)
-            case .openTelemetry:
-                writer = OTelHTTPHeadersWriter(sampler: tracingSampler)
+            case .b3s:
+                writer = OTelHTTPHeadersWriter(
+                    sampler: tracingSampler,
+                    injectEncoding: .single
+                )
+            case .b3m:
+                writer = OTelHTTPHeadersWriter(
+                    sampler: tracingSampler,
+                    injectEncoding: .multiple
+                )
             }
             tracer.inject(spanContext: spanContext, writer: writer)
 

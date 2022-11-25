@@ -567,12 +567,12 @@ class FeaturesConfigurationTests: XCTestCase {
             configuration: .mockWith(
                 tracingEnabled: true,
                 firstPartyHosts: .init(),
-                tracingHeaderTypes: .init(arrayLiteral: .openTelemetry)
+                tracingHeaderTypes: .init(arrayLiteral: .dd)
             ),
             appContext: .mockAny()
         )
         XCTAssertEqual(custom.urlSessionAutoInstrumentation?.tracingHeaderTypes.count, 1)
-        XCTAssertEqual(custom.urlSessionAutoInstrumentation?.tracingHeaderTypes.first, .openTelemetry)
+        XCTAssertEqual(custom.urlSessionAutoInstrumentation?.tracingHeaderTypes.first, .dd)
     }
 
     // MARK: - URLSession Auto Instrumentation Configuration Tests
