@@ -133,7 +133,9 @@
     [builder setWithUploadFrequency:DDUploadFrequencyAverage];
     [builder setWithAdditionalConfiguration:@{}];
     [builder setWithEncryption:[CustomDDDataEncryption new]];
-    [builder setWithTracingHeaderType:DDTracingHeaderTypeDd];
+    [builder setWithTracingHeaderType:[DDTracingHeaderType dd]];
+    [builder setWithTracingHeaderTypes: [NSSet setWithObject: [DDTracingHeaderType b3s]]];
+
     [builder build];
 }
 

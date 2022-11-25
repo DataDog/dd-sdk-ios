@@ -160,18 +160,18 @@ public enum DDVitalsFrequency: Int {
 }
 
 @objc
-public enum DDTracingHeaderType: Int, Hashable {
-    case dd
-    case b3m
-    case b3s
-
-    internal var swiftType: TracingHeaderType {
-        switch self {
-        case .dd: return .dd
-        case .b3m: return .b3m
-        case .b3s: return .b3s
-        }
+public class DDTracingHeaderType: NSObject {
+    internal let swiftType: TracingHeaderType
+    private init(_ swiftType: TracingHeaderType) {
+        self.swiftType = swiftType
     }
+
+    @objc
+    public static let dd = DDTracingHeaderType(.dd)
+    @objc
+    public static let b3m = DDTracingHeaderType(.b3m)
+    @objc
+    public static let b3s = DDTracingHeaderType(.b3s)
 }
 
 @objc
@@ -492,10 +492,10 @@ public class DDConfigurationBuilder: NSObject {
     }
 
     @objc
-    public func set(tracingHeaderTypes: Set<Int>) {
+    public func set(tracingHeaderTypes: Set<DDTracingHeaderType>) {
         _ = sdkBuilder.set(
             tracingHeaderTypes: Set(tracingHeaderTypes
-                .compactMap { DDTracingHeaderType(rawValue: $0)?.swiftType })
+                .compactMap { $0.swiftType })
         )
     }
 
