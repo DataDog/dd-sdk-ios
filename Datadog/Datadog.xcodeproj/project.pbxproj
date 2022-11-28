@@ -573,6 +573,8 @@
 		A71B1FFD292CE22F00C99F4F /* TracePropagationHeadersExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71B1FFC292CE22F00C99F4F /* TracePropagationHeadersExtractor.swift */; };
 		A71B1FFF292CF0A400C99F4F /* TracingHeaderType.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71B1FFE292CF0A400C99F4F /* TracingHeaderType.swift */; };
 		A71B2000292CF0A400C99F4F /* TracingHeaderType.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71B1FFE292CF0A400C99F4F /* TracingHeaderType.swift */; };
+		A728ADA82934E2F100397996 /* TracePropagationHeadersExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71B1FFC292CE22F00C99F4F /* TracePropagationHeadersExtractor.swift */; };
+		A728ADA92934E2F800397996 /* TracePropagationHeadersProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71B1FFA292CE0B000C99F4F /* TracePropagationHeadersProvider.swift */; };
 		A79B0F5C292B7C24008742B3 /* OTelHTTPHeadersWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F5A292B7C06008742B3 /* OTelHTTPHeadersWriterTests.swift */; };
 		A79B0F5D292B7C25008742B3 /* OTelHTTPHeadersWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F5A292B7C06008742B3 /* OTelHTTPHeadersWriterTests.swift */; };
 		A79B0F61292BB071008742B3 /* OTelHTTPHeadersReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F60292BB071008742B3 /* OTelHTTPHeadersReaderTests.swift */; };
@@ -6171,6 +6173,7 @@
 				D2CB6E4927C50EAE00A62B57 /* AttributesSanitizer.swift in Sources */,
 				6194E4BD2878AF7600EB6307 /* ConsoleLogger.swift in Sources */,
 				D2CB6E4C27C50EAE00A62B57 /* RUMDataModelsMapping.swift in Sources */,
+				A728ADA92934E2F800397996 /* TracePropagationHeadersProvider.swift in Sources */,
 				D21C26C628A3B49C005DD405 /* FeatureStorage.swift in Sources */,
 				D2CB6E4D27C50EAE00A62B57 /* Globals.swift in Sources */,
 				D2CB6E4E27C50EAE00A62B57 /* ActiveSpansPool.swift in Sources */,
@@ -6245,6 +6248,7 @@
 				D2CB6E8B27C50EAE00A62B57 /* Attributes.swift in Sources */,
 				D20605CE28770C3B0047275C /* AppState.swift in Sources */,
 				D2CB6E8C27C50EAE00A62B57 /* File.swift in Sources */,
+				A728ADA82934E2F100397996 /* TracePropagationHeadersExtractor.swift in Sources */,
 				D2956CAD2869D1F2007D5462 /* DeviceInfo.swift in Sources */,
 				D2CB6E8D27C50EAE00A62B57 /* KronosNTPProtocol.swift in Sources */,
 				D2CB6E8E27C50EAE00A62B57 /* DDCrashReportingPluginType.swift in Sources */,
