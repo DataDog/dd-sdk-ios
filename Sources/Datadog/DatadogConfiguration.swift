@@ -838,11 +838,15 @@ extension Datadog {
                 return self
             }
 
+            /// Sets telemetry header to use use for automated URLSession tracing.
+            /// - Parameter tracingHeaderType: Type of the telemetry header.
             public func set(tracingHeaderType: TracingHeaderType) -> Builder {
                 configuration.tracingHeaderTypes = .init(arrayLiteral: tracingHeaderType)
                 return self
             }
 
+            /// Sets telemetry headers to use use for automated URLSession tracing.
+            /// - Parameter tracingHeaderType: Set of the telemetry headers.
             public func set(tracingHeaderTypes: Set<TracingHeaderType>) -> Builder {
                 configuration.tracingHeaderTypes = tracingHeaderTypes
                 return self

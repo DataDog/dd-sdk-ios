@@ -3002,6 +3002,7 @@
 		613F2405252B37B0006CD2D7 /* AutoInstrumentation */ = {
 			isa = PBXGroup;
 			children = (
+				A71B1FFE292CF0A400C99F4F /* TracingHeaderType.swift */,
 				61B03810252656F500518F3C /* URLSessionTracingHandler.swift */,
 			);
 			path = AutoInstrumentation;
@@ -3936,7 +3937,6 @@
 				D248ED4128070E2B00B315B4 /* Telemetry.swift */,
 				61E945E22869BF3D00A946C4 /* CoreLogger.swift */,
 				61DA8CB428643B220074A606 /* InternalLogger.swift */,
-				A71B1FFE292CF0A400C99F4F /* TracingHeaderType.swift */,
 			);
 			path = DD;
 			sourceTree = "<group>";

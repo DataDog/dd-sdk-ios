@@ -101,17 +101,17 @@ public class OTelHTTPHeadersWriter: OTHTTPHeadersWriter, TracePropagationHeaders
             ]
 
             if samplingPriority {
-                tracePropagationHTTPHeaders[OTelHTTPHeaders.Multiple.traceIDField] = spanContext.traceID.toString(.hexadecimal128)
-                tracePropagationHTTPHeaders[OTelHTTPHeaders.Multiple.spanIDField] = spanContext.spanID.toString(.hexadecimal64)
-                tracePropagationHTTPHeaders[OTelHTTPHeaders.Multiple.parentSpanIDField] = spanContext.parentSpanID?.toString(.hexadecimal64)
+                tracePropagationHTTPHeaders[OTelHTTPHeaders.Multiple.traceIDField] = spanContext.traceID.toString(.hexadecimal32Chars)
+                tracePropagationHTTPHeaders[OTelHTTPHeaders.Multiple.spanIDField] = spanContext.spanID.toString(.hexadecimal16Chars)
+                tracePropagationHTTPHeaders[OTelHTTPHeaders.Multiple.parentSpanIDField] = spanContext.parentSpanID?.toString(.hexadecimal16Chars)
             }
         case .single:
             if samplingPriority {
                 tracePropagationHTTPHeaders[OTelHTTPHeaders.Single.b3Field] = [
-                    spanContext.traceID.toString(.hexadecimal128),
-                    spanContext.spanID.toString(.hexadecimal64),
+                    spanContext.traceID.toString(.hexadecimal32Chars),
+                    spanContext.spanID.toString(.hexadecimal16Chars),
                     Constants.sampledValue,
-                    spanContext.parentSpanID?.toString(.hexadecimal64)
+                    spanContext.parentSpanID?.toString(.hexadecimal16Chars)
                 ]
                 .compactMap { $0 }
                 .joined(separator: Constants.b3Separator)
