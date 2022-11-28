@@ -7,7 +7,7 @@
 import Foundation
 
 /// The `OTelHTTPHeadersWriter` should be used to inject trace propagation headers to
-/// the network requests send to the backend instrumented with Datadog APM.
+/// the network requests send to the backend instrumented with Open Telemetry.
 /// The injected headers conform to [Open Telemetry](https://github.com/openzipkin/b3-propagation) standard.
 ///
 /// Usage:
@@ -40,7 +40,7 @@ public class OTelHTTPHeadersWriter: OTHTTPHeadersWriter, TracePropagationHeaders
     }
 
     /// A dictionary with HTTP Headers required to propagate the trace started in the mobile app
-    /// to the backend instrumented with Datadog APM.
+    /// to the backend instrumented with Open Telemetry.
     ///
     /// Usage:
     ///
