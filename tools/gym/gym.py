@@ -9,6 +9,8 @@
 import os
 import json
 import argparse
+import copy
+import re
 from jinja2 import Environment, FileSystemLoader  
 
 class Resolver:
@@ -62,9 +64,7 @@ class Resolver:
         if 'properties' in schema:
             schema['properties'] = map_values(lambda s: self.__resolve_schema(s, subschemas), schema['properties'])
 
-        # all properties from `allOf` will be merged into 'schema' - arguably opinionated
-        # we should probably let the template decide what to do with `allOf` and remove
-        # this transformation
+        # all properties from `allOf` will be merged into 'schema'
         self.__merge_allof(schema)
         return schema
 
@@ -77,8 +77,8 @@ class Resolver:
         required.extend(from_.get('required', []))
         if required: to_['required'] = remove_dup(required)
 
-        properties = to_.get('properties', {})
-        properties.update(from_.get('properties', {}))
+        properties = copy.deepcopy(to_.get('properties', {}))
+        deepmerge(properties, from_.get('properties', {}))
         if properties: to_['properties'] = properties
             
 
@@ -98,8 +98,16 @@ class Renderer:
         env = Environment(
             loader=loader,
             trim_blocks=True,
-            lstrip_blocks=True
+            lstrip_blocks=True,
         )
+
+        env.filters['camelcase'] = camelcase
+        env.filters['capitalcase'] = capitalcase
+        env.filters['constcase'] = constcase
+        env.filters['pascalcase'] = pascalcase
+        env.filters['snakecase'] = snakecase
+        env.filters['trimcase'] = trimcase
+        env.filters['alphanumcase'] = alphanumcase
         
         self.template = env.get_template(os.path.basename(template))
         self.output = output
@@ -128,6 +136,57 @@ def map_values(fn, obj: dict):
 
 def remove_dup(l: list):
     return list(dict.fromkeys(l))
+
+def deepmerge(obj: dict, merge_obj: dict):
+    """ Recursive dict merge. Inspired by :meth:``dict.update()``, instead of
+    updating only top-level keys, deepmerge recurses down into dicts nested
+    to an arbitrary depth, updating keys. The ``merge_obj`` is merged into
+    ``obj``.
+    :param obj: dict onto which the merge is executed
+    :param merge_obj: dict merged into obj
+    :return: None
+    """
+    for k in merge_obj:
+        if (k in obj and isinstance(obj[k], dict) and isinstance(merge_obj[k], dict)):
+            deepmerge(obj[k], merge_obj[k])
+        else: obj[k] = merge_obj[k]
+
+# From: https://github.com/okunishinishi/python-stringcase
+
+def camelcase(string):
+    string = re.sub(r"^[\-_\.]", '', string)
+    if not string: return string
+    return lowercase(string[0]) + re.sub(r"[\-_\.\s]([a-z])", lambda matched: capitalcase(matched.group(1)), string[1:])
+
+def capitalcase(string):
+    string = str(string)
+    if not string: return string
+    return uppercase(string[0]) + string[1:]
+
+def pascalcase(string):
+    return capitalcase(camelcase(string))
+
+def snakecase(string):
+    string = re.sub(r"[\-\.\s]", '_', str(string))
+    if not string:
+        return string
+    return lowercase(string[0]) + re.sub(r"[A-Z]", lambda matched: '_' + lowercase(matched.group(0)), string[1:])
+
+def trimcase(string):
+    return str(string).strip()
+
+def alphanumcase(string):
+    return ''.join(filter(str.isalnum, str(string)))
+
+def constcase(string):
+    return uppercase(snakecase(string))
+
+def uppercase(string):
+    return str(string).upper()
+
+def lowercase(string):
+    return str(string).lower()
+
 
 def main():
     """Generate Your Model."""

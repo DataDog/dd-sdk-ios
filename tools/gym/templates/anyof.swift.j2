@@ -1,22 +1,50 @@
 {% from 'macros.swift.j2' import swift_type with context %}
-
-{% macro name(case) %}
-{% if case.title -%}
-    {{ case.title|lower }}
-{%- elif case.type -%}
-    {{ case.type|lower }}
-{%- endif %}
-{% endmacro -%}
+{% from 'macros.swift.j2' import swift_case %}
+{% from 'macros.swift.j2' import swift_case_name %}
 
 /// {{ schema.description }}
 public enum {{ swift_type(schema, key) }}: Codable {
 {% for case in schema.anyOf %}
 
     /// {{ case.description }}
-    case {{ name(case) }}({{ swift_type(case) }})
+    {{ swift_case(case) }}
 {% endfor %}
 
 {%- for schema in schema.anyOf if schema['$parent'] == id %}
     {% filter indent %}{% include "schema.swift.j2" %}{% endfilter %}
 {% endfor %}
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+
+        {% for case in schema.oneOf %}
+        {% if loop.first %}
+        if let value = try? container.decode({{ swift_type(case) }}.self) {
+            self = .{{ swift_case_name(case) }}(value)
+
+        {%- else %} 
+        } else if let value = try? container.decode({{ swift_type(case) }}.self) {
+            self = .{{ swift_case_name(case) }}(value)
+
+        {%- endif %}
+        {% endfor %}
+
+        } else {
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "{{ swift_type(schema, key) }} cannot be decoded"
+            )
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+
+        switch self {
+        {% for case in schema.oneOf %}
+        case let .{{ swift_case_name(case) }}(value):
+            try container.encode(value)
+        {% endfor %}
+        }
+    }
 }

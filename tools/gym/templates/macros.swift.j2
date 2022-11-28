@@ -1,3 +1,9 @@
+{# private: __swift_type Prints a Swift type for a given schema.
+
+    :param schema_id: The current schema id that is being generating.
+    :param schema: The JSON schema.
+    :param key: (optional) the property key associated with the schema.
+#}
 {% macro __swift_type(schema_id, schema, key) %}
 {% if schema.type == "string" -%}
     String
@@ -15,10 +21,87 @@
 {%- elif schema.title -%}
     {{ schema.title }}
 {%- elif key -%}
-    {{ key|capitalize }}
+    {{ key|pascalcase }}
 {%- endif %}
 {% endmacro %}
 
+{# swift_type Prints a Swift type for a given schema.
+
+    This method should be imported with context so it can access
+    the current schema id:
+    ```
+    {% from 'macros.swift.j2' import swift_type with context %}
+    ```
+
+    :param schema: The JSON schema.
+    :param key: (optional) the property key associated with the schema.
+#}
 {% macro swift_type(schema, key) %}
 {{ __swift_type(id, schema, key) }}
+{%- endmacro %}
+
+{# swift_property_accessor Prints the property accessor.
+
+    The accessor is either 'let' or 'var'.
+
+    :param property: The JSON schema.
+#}
+{% macro swift_property_accessor(property) %}
+{% if property.readOnly or property.const -%} let
+{%- else -%} var
+{%- endif %}
+{%- endmacro %}
+
+{# swift_property_optional Prints '?' if the property is optional.
+
+    :param property: The JSON schema.
+    :param key: the property key associated with the schema.
+#}
+{% macro swift_property_optional(key, property) %}
+{% if not property.const and key in schema.required -%} ?
+{%- endif %}
+{%- endmacro %}
+
+{# swift_property_default Prints default value of the property.
+
+    :param property: The JSON schema.
+#}
+{% macro swift_property_default(property) %}
+{% if property.const -%}
+{% if property.type == "string" %} = "{{ property.const }}"
+{%- else %} = {{ property.const }}
+{%- endif %}
+{%- endif %}
+{%- endmacro %}
+
+{# swift_property Prints a schema property. e.g."
+    ```
+    let/var name: Type(?)(= default)
+    ```
+
+    :param key: the property key associated with the schema.
+    :param property: The JSON schema.
+#}
+{% macro swift_property(key, property) -%}
+{{ swift_property_accessor(property) }} {{ key|camelcase }}: {{ swift_type(property, key) }}{{ swift_property_optional(key,property) }}{{ swift_property_default(property) }}
+{%- endmacro %}
+
+{# swift_case_name Prints a Swift enum case name.
+
+    :param case: The JSON schema.
+#}
+{% macro swift_case_name(case) %}
+{% if case.title -%}
+    {{ case.title|camelcase }}
+{%- elif case.type -%}
+    {{ case.type|camelcase }}
+{%- endif %}
+{%- endmacro %}
+
+{# swift_case Prints a Swift enum case.
+
+    :param case: The JSON schema.
+#}
+{% macro swift_case(case) -%}
+case {{ swift_case_name(case) }}({{ swift_type(case) }})
 {%- endmacro %}
