@@ -170,6 +170,7 @@ public class DDTracingHeaderType: NSObject {
     @objc public static let dd = DDTracingHeaderType(.dd)
     @objc public static let b3m = DDTracingHeaderType(.b3m)
     @objc public static let b3s = DDTracingHeaderType(.b3s)
+    @objc public static let w3c = DDTracingHeaderType(.w3c)
 }
 
 @objc

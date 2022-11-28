@@ -43,7 +43,6 @@ public class W3CHTTPHeadersWriter: OTHTTPHeadersWriter, TracePropagationHeadersP
     /// and if `trace-id`, `span-id` are propagated.
     private let sampler: Sampler
 
-
     /// Creates a `W3CHTTPHeadersWriter` to inject traces propagation headers
     /// to network request.
     ///

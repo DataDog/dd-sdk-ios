@@ -260,6 +260,8 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
                     sampler: tracingSampler,
                     injectEncoding: .multiple
                 )
+            case .w3c:
+                writer = W3CHTTPHeadersWriter(sampler: tracingSampler)
             }
             tracer.inject(spanContext: spanContext, writer: writer)
 
@@ -280,7 +282,14 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
             return nil
         }
 
-        let reader = HTTPHeadersReader(httpHeaderFields: headers)
+        let reader: OTFormatReader
+        if tracingHeaderTypes.contains(.dd) {
+            reader = HTTPHeadersReader(httpHeaderFields: headers)
+        } else if tracingHeaderTypes.contains(.b3s) || tracingHeaderTypes.contains(.b3m) {
+            reader = OTelHTTPHeadersReader(httpHeaderFields: headers)
+        } else {
+            reader = W3CHTTPHeadersReader(httpHeaderFields: headers)
+        }
         return tracer.extract(reader: reader) as? DDSpanContext
     }
 }

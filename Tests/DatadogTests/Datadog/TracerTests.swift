@@ -832,6 +832,62 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
     }
 
+    // --
+    func testItInjectsSpanContextWithW3CHTTPHeadersWriter() {
+        let tracer: Tracer = .mockAny(in: PassthroughCoreMock())
+        let spanContext1 = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
+        let spanContext2 = DDSpanContext(traceID: 4, spanID: 5, parentSpanID: 6, baggageItems: .mockAny())
+        let spanContext3 = DDSpanContext(traceID: 77, spanID: 88, parentSpanID: nil, baggageItems: .mockAny())
+
+        let httpHeadersWriter = W3CHTTPHeadersWriter(sampler: .mockKeepAll())
+        XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, [:])
+
+        // When
+        tracer.inject(spanContext: spanContext1, writer: httpHeadersWriter)
+
+        // Then
+        let expectedHTTPHeaders1 = [
+            "traceparent": "00-00000000000000000000000000000001-0000000000000002-01"
+        ]
+        XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders1)
+
+        // When
+        tracer.inject(spanContext: spanContext2, writer: httpHeadersWriter)
+
+        // Then
+        let expectedHTTPHeaders2 = [
+            "traceparent": "00-00000000000000000000000000000004-0000000000000005-01"
+        ]
+        XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders2)
+
+        // When
+        tracer.inject(spanContext: spanContext3, writer: httpHeadersWriter)
+
+        // Then
+        let expectedHTTPHeaders3 = [
+            "traceparent": "00-0000000000000000000000000000004d-0000000000000058-01"
+        ]
+        XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders3)
+    }
+
+    func testItInjectsRejectedSpanContextWithW3CHTTPHeadersWriter() {
+        let tracer: Tracer = .mockAny(in: PassthroughCoreMock())
+        let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
+
+        let httpHeadersWriter = W3CHTTPHeadersWriter(sampler: .mockRejectAll())
+        XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, [:])
+
+        // When
+        tracer.inject(spanContext: spanContext, writer: httpHeadersWriter)
+
+        // Then
+        let expectedHTTPHeaders = [
+            "traceparent": "00-00000000000000000000000000000001-0000000000000002-00"
+        ]
+        XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
+    }
+    // --
+
     func testItInjectsRejectedSpanContextWithHTTPHeadersWriter() {
         let tracer: Tracer = .mockAny(in: PassthroughCoreMock())
         let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
@@ -898,6 +954,23 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(extractedSpanContext?.dd.traceID, injectedSpanContext.dd.traceID)
         XCTAssertEqual(extractedSpanContext?.dd.spanID, injectedSpanContext.dd.spanID)
         XCTAssertEqual(extractedSpanContext?.dd.parentSpanID, injectedSpanContext.dd.parentSpanID)
+    }
+
+    func testItExtractsSpanContextWithW3CHTTPHeadersReader() {
+        let tracer: Tracer = .mockAny(in: PassthroughCoreMock())
+        let injectedSpanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
+
+        let httpHeadersWriter = W3CHTTPHeadersWriter(sampler: .mockKeepAll())
+        tracer.inject(spanContext: injectedSpanContext, writer: httpHeadersWriter)
+
+        let httpHeadersReader = W3CHTTPHeadersReader(
+            httpHeaderFields: httpHeadersWriter.tracePropagationHTTPHeaders
+        )
+        let extractedSpanContext = tracer.extract(reader: httpHeadersReader)
+
+        XCTAssertEqual(extractedSpanContext?.dd.traceID, injectedSpanContext.dd.traceID)
+        XCTAssertEqual(extractedSpanContext?.dd.spanID, injectedSpanContext.dd.spanID)
+        XCTAssertNil(extractedSpanContext?.dd.parentSpanID)
     }
 
     // MARK: - Span Dates Correction
