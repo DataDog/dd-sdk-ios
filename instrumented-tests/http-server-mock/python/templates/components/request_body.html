@@ -1,6 +1,37 @@
+<!--
+ENV vars:
+- endpoint: GenericEndpoint
+- request: GenericRequest
+- selected_schema: Schema
+-->
+
 <div class="p-2 bg-dark text-light">
     <h6>Body:</h6>
 </div>
-<div class="p-2 bg-light text-dark bg-gradient">
-    <pre>{{ request.data.decode("utf-8") }}</pre>
+
+<!-- Body view selector  -->
+{% if selected_schema.body_views|length > 1 %}
+<div class="p-2 bg-secondary text-light">
+    <ul class="nav nav-pills mb-1" id="pills-tab" role="tablist">
+    {% for body_view in selected_schema.body_views %}
+        <li class="nav-item" role="presentation">
+        <button class="badge nav-link{% if loop.first %} active{% endif %}"
+                id="btn-body-view-{{ loop.index0 }}" data-bs-toggle="pill"
+                data-bs-target="#body-view{{ loop.index0 }}"  type="button" role="tab">{{ body_view.name }}</button>
+        </li>
+    {% endfor %}
+</ul>
 </div>
+{% endif %}
+
+<!-- Body views:  -->
+<div class="tab-content" id="pills-tabContent">
+{% for body_view in selected_schema.body_views %}
+  <div class="p-2 tab-pane bg-light text-dark{% if loop.first %} active{% endif %}" id="body-view{{ loop.index0 }}"
+       role="tabpanel">
+        <!-- Specific Body View: -->
+        {% include body_view.template %}
+  </div>
+{% endfor %}
+</div>
+

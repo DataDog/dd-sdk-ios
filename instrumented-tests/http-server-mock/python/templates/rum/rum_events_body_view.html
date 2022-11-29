@@ -1,0 +1,12 @@
+<!--
+ENV vars:
+- endpoint: GenericEndpoint
+- request: GenericRequest
+- selected_schema: RUMSchema(Schema)
+- body_view: RUMEventsBodyView(BodyView)
+-->
+
+{% for pretty_json in body_view.value %}
+    <pre>{{ pretty_json }}</pre>
+    <hr>
+{% endfor %}

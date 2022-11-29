@@ -16,5 +16,6 @@ class SRSchema(Schema):
     endpoint_template = 'session-replay/endpoint.html'
     request_template = 'session-replay/request.html'
 
-    def matches(self, method: str, path: str):
+    @staticmethod
+    def matches(method: str, path: str):
         return method == 'POST' and path.startswith('/replay/')

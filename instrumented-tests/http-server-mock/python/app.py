@@ -10,7 +10,7 @@ import datetime
 from hashlib import sha1
 from typing import Optional
 from dataclasses import dataclass
-from flask import Flask, request, render_template, url_for, redirect
+from flask import Flask, request, Request, render_template, url_for, redirect
 from schemas.schema import Schema
 from schemas.raw import RAWSchema
 from schemas.rum import RUMSchema
@@ -27,7 +27,7 @@ class GenericRequest:
     date: datetime
     content_type: str
     content_length: Optional[int]
-    data: bytes
+    data_as_text: str
     headers: [str]  # ['field1: value1', 'field2: value2', ...]
     schemas: [Schema]
 
@@ -41,11 +41,14 @@ class GenericRequest:
 
     def hash(self) -> str:
         meta = f'{self.method} {self.path} {self.date}'.encode('utf-8')
-        body = self.data
+        body = self.data_as_text.encode('utf-8')
         return sha1(meta + body).hexdigest()
 
     def endpoint_hash(self) -> str:
         return sha1(f'{self.method} {self.path}'.encode('utf-8')).hexdigest()
+
+    def schema_with_name(self, name: str):
+        return next((s for s in self.schemas if s.name == name), None)
 
 
 @dataclass()
@@ -77,22 +80,32 @@ class GenericEndpoint:
         return next((s for s in self.schemas if s.name == name), None)
 
 
-def schemas_for_request(method: str, path: str) -> [Schema]:
-    raw = RAWSchema()
-    rum = RUMSchema()
-    sr = SRSchema()
-
+def schemas_for_request(r: Request) -> [Schema]:
     schemas: [Schema] = []
-    if raw.matches(method, path):
-        schemas.append(raw)
-    if rum.matches(method, path):
-        schemas.append(rum)
-    if sr.matches(method, path):
-        schemas.append(sr)
+
+    if RAWSchema.matches(r.method, r.path):
+        schemas.append(RAWSchema(request=r))
+
+    if RUMSchema.matches(r.method, r.path):
+        schemas.append(RUMSchema(request=r))
+
+    # if SRSchema.matches(r.method, r.path):
+    #     schemas.append(SRSchema(request=r))
+
     return schemas
 
 
 endpoints: [GenericEndpoint] = []
+
+
+def write_to_file(endpoint: GenericEndpoint):
+    no = len(endpoint.requests)
+    if 'rum' in endpoint.path:
+        with open(f'fixtures/rum/{no}', 'wb') as f:
+            f.write(request.get_data())
+    elif 'replay' in endpoint.path:
+        with open(f'fixtures/replay/{no}', 'wb') as f:
+            f.write(request.get_data())
 
 
 @app.route('/<path:rest>', methods=['POST'])
@@ -110,9 +123,9 @@ def generic_post(rest):
         date=datetime.datetime.now(),
         content_type=request.content_type,
         content_length=request.content_length,
-        data=request.data,
+        data_as_text=request.get_data(as_text=True),
         headers=list(map(lambda h: f'{h[0]}: {h[1]}', request.headers)),
-        schemas=schemas_for_request(request.method, request.path)
+        schemas=schemas_for_request(request)
     )
 
     if existing := next((e for e in endpoints if e.hash() == gr.endpoint_hash()), None):
@@ -166,8 +179,8 @@ def inspect_request(schema_name, endpoint_hash, request_hash):
     global endpoints
 
     if endp := next((e for e in endpoints if e.hash() == endpoint_hash), None):
-        if schm := endp.schema_with_name(name=schema_name):
-            if req := next((r for r in endp.requests if r.hash() == request_hash), None):
+        if req := next((r for r in endp.requests if r.hash() == request_hash), None):
+            if schm := req.schema_with_name(name=schema_name):
                 return render_template(
                     'request.html',
                     back_url=url_for('inspect'),
