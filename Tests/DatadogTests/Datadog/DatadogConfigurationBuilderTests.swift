@@ -123,7 +123,6 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 ])
                 .set(encryption: DataEncryptionMock())
                 .set(serverDateProvider: ServerDateProviderMock())
-                .set(tracingHeaderType: .dd)
 
             return builder
         }

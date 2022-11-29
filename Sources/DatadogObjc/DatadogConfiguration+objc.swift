@@ -485,19 +485,6 @@ public class DDConfigurationBuilder: NSObject {
     }
 
     @objc
-    public func set(tracingHeaderType: DDTracingHeaderType) {
-        _ = sdkBuilder.set(tracingHeaderType: tracingHeaderType.swiftType)
-    }
-
-    @objc
-    public func set(tracingHeaderTypes: Set<DDTracingHeaderType>) {
-        _ = sdkBuilder.set(
-            tracingHeaderTypes: Set(tracingHeaderTypes
-                .compactMap { $0.swiftType })
-        )
-    }
-
-    @objc
     public func build() -> DDConfiguration {
         return DDConfiguration(sdkConfiguration: sdkBuilder.build())
     }
