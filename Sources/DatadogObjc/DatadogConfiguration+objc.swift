@@ -160,6 +160,19 @@ public enum DDVitalsFrequency: Int {
 }
 
 @objc
+public class DDTracingHeaderType: NSObject {
+    internal let swiftType: TracingHeaderType
+
+    private init(_ swiftType: TracingHeaderType) {
+        self.swiftType = swiftType
+    }
+
+    @objc public static let dd = DDTracingHeaderType(.dd)
+    @objc public static let b3m = DDTracingHeaderType(.b3m)
+    @objc public static let b3s = DDTracingHeaderType(.b3s)
+}
+
+@objc
 public protocol DDDataEncryption: AnyObject {
     /// Encrypts given `Data` with user-chosen encryption.
     ///

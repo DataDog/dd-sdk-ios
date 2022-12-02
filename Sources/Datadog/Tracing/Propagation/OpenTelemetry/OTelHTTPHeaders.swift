@@ -8,7 +8,7 @@ import Foundation
 
 /// Open Telemetry propagation headers as explained in
 /// https://github.com/openzipkin/b3-propagation/blob/master/RATIONALE.md
-internal enum OpenTelemetryHTTPHeaders {
+internal enum OTelHTTPHeaders {
     enum Multiple {
         /// The `X-B3-TraceId` header is encoded as 32 or 16 lower-hex characters.
         /// For example, a 128-bit TraceId header might look like: `X-B3-TraceId: 463ac35c9f6413ad48485a3953bb6124`.

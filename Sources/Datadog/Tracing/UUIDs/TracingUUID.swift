@@ -21,7 +21,7 @@ internal struct TracingUUID: Equatable, Hashable {
                 return nil
             }
             self.init(rawValue: rawValue)
-        case .hexadecimal:
+        case .hexadecimal, .hexadecimal16Chars, .hexadecimal32Chars:
             guard let rawValue = UInt64(string, radix: 16) else {
                 return nil
             }
@@ -38,14 +38,18 @@ internal struct TracingUUID: Equatable, Hashable {
         case .decimal:
             return String(rawValue)
         case .hexadecimal:
-            return String(rawValue, radix: 16, uppercase: true)
+            return String(rawValue, radix: 16)
+        case .hexadecimal16Chars:
+            return String(format: "%016x", rawValue)
+        case .hexadecimal32Chars:
+            return String(format: "%032x", rawValue)
         }
     }
 }
 
 extension TracingUUID {
     internal enum Representation {
-        case decimal, hexadecimal
+        case decimal, hexadecimal, hexadecimal16Chars, hexadecimal32Chars
     }
 }
 

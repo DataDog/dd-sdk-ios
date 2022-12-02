@@ -242,28 +242,28 @@ class DDTracerTests: XCTestCase {
         )
     }
 
-    func testInjectingSpanContextToValidCarrierAndFormatForOpenTelemetry() throws {
+    func testInjectingSpanContextToValidCarrierAndFormatForOTel() throws {
         let objcTracer = DDTracer(swiftTracer: Tracer.mockAny(in: core))
         let objcSpanContext = DDSpanContextObjc(
             swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2)
         )
 
-        let objcWriter = DDOpenTelemetryHTTPHeadersWriter(samplingRate: 100)
+        let objcWriter = DDOTelHTTPHeadersWriter(samplingRate: 100)
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
 
         let expectedHTTPHeaders = [
-            "b3": "1-2-1-0"
+            "b3": "00000000000000000000000000000001-0000000000000002-1-0000000000000000"
         ]
         XCTAssertEqual(objcWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
     }
 
-    func testInjectingRejectedSpanContextToValidCarrierAndFormatForOpenTelemetry() throws {
+    func testInjectingRejectedSpanContextToValidCarrierAndFormatForOTel() throws {
         let objcTracer = DDTracer(swiftTracer: Tracer.mockAny(in: core))
         let objcSpanContext = DDSpanContextObjc(
             swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2)
         )
 
-        let objcWriter = DDOpenTelemetryHTTPHeadersWriter(samplingRate: 0)
+        let objcWriter = DDOTelHTTPHeadersWriter(samplingRate: 0)
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
 
         let expectedHTTPHeaders = [
@@ -272,11 +272,11 @@ class DDTracerTests: XCTestCase {
         XCTAssertEqual(objcWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
     }
 
-    func testInjectingSpanContextToInvalidCarrierOrFormatForOpenTelemetry() throws {
+    func testInjectingSpanContextToInvalidCarrierOrFormatForOTel() throws {
         let objcTracer = DDTracer(swiftTracer: Tracer.mockAny(in: core))
         let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2))
 
-        let objcValidWriter = DDOpenTelemetryHTTPHeadersWriter(samplingRate: 100)
+        let objcValidWriter = DDOTelHTTPHeadersWriter(samplingRate: 100)
         let objcInvalidFormat = "foo"
         XCTAssertThrowsError(
             try objcTracer.inject(objcSpanContext, format: objcInvalidFormat, carrier: objcValidWriter)

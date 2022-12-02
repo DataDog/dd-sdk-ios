@@ -716,13 +716,13 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders2)
     }
 
-    func testItInjectsSpanContextWithOpenTelemetryHTTPHeadersWriter_usingMultipleHeaders() {
+    func testItInjectsSpanContextWithOTelHTTPHeadersWriter_usingMultipleHeaders() {
         let tracer: Tracer = .mockAny(in: PassthroughCoreMock())
         let spanContext1 = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
         let spanContext2 = DDSpanContext(traceID: 4, spanID: 5, parentSpanID: 6, baggageItems: .mockAny())
         let spanContext3 = DDSpanContext(traceID: 77, spanID: 88, parentSpanID: nil, baggageItems: .mockAny())
 
-        let httpHeadersWriter = OpenTelemetryHTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .multiple)
+        let httpHeadersWriter = OTelHTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .multiple)
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, [:])
 
         // When
@@ -730,10 +730,10 @@ class TracerTests: XCTestCase {
 
         // Then
         let expectedHTTPHeaders1 = [
-            "X-B3-TraceId": "1",
-            "X-B3-SpanId": "2",
+            "X-B3-TraceId": "00000000000000000000000000000001",
+            "X-B3-SpanId": "0000000000000002",
             "X-B3-Sampled": "1",
-            "X-B3-ParentSpanId": "3"
+            "X-B3-ParentSpanId": "0000000000000003"
         ]
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders1)
 
@@ -742,10 +742,10 @@ class TracerTests: XCTestCase {
 
         // Then
         let expectedHTTPHeaders2 = [
-            "X-B3-TraceId": "4",
-            "X-B3-SpanId": "5",
+            "X-B3-TraceId": "00000000000000000000000000000004",
+            "X-B3-SpanId": "0000000000000005",
             "X-B3-Sampled": "1",
-            "X-B3-ParentSpanId": "6"
+            "X-B3-ParentSpanId": "0000000000000006"
         ]
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders2)
 
@@ -754,20 +754,20 @@ class TracerTests: XCTestCase {
 
         // Then
         let expectedHTTPHeaders3 = [
-            "X-B3-TraceId": "4D",
-            "X-B3-SpanId": "58",
+            "X-B3-TraceId": "0000000000000000000000000000004d",
+            "X-B3-SpanId": "0000000000000058",
             "X-B3-Sampled": "1"
         ]
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders3)
     }
 
-    func testItInjectsSpanContextWithOpenTelemetryHTTPHeadersWriter_usingSingleHeader() {
+    func testItInjectsSpanContextWithOTelHTTPHeadersWriter_usingSingleHeader() {
         let tracer: Tracer = .mockAny(in: PassthroughCoreMock())
         let spanContext1 = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
         let spanContext2 = DDSpanContext(traceID: 4, spanID: 5, parentSpanID: 6, baggageItems: .mockAny())
         let spanContext3 = DDSpanContext(traceID: 77, spanID: 88, parentSpanID: nil, baggageItems: .mockAny())
 
-        let httpHeadersWriter = OpenTelemetryHTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .single)
+        let httpHeadersWriter = OTelHTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .single)
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, [:])
 
         // When
@@ -775,7 +775,7 @@ class TracerTests: XCTestCase {
 
         // Then
         let expectedHTTPHeaders1 = [
-            "b3": "1-2-1-3"
+            "b3": "00000000000000000000000000000001-0000000000000002-1-0000000000000003"
         ]
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders1)
 
@@ -784,7 +784,7 @@ class TracerTests: XCTestCase {
 
         // Then
         let expectedHTTPHeaders2 = [
-            "b3": "4-5-1-6"
+            "b3": "00000000000000000000000000000004-0000000000000005-1-0000000000000006"
         ]
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders2)
 
@@ -793,9 +793,43 @@ class TracerTests: XCTestCase {
 
         // Then
         let expectedHTTPHeaders3 = [
-            "b3": "4D-58-1"
+            "b3": "0000000000000000000000000000004d-0000000000000058-1"
         ]
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders3)
+    }
+
+    func testItInjectsRejectedSpanContextWithOTelHTTPHeadersWriter_usingSingleHeader() {
+        let tracer: Tracer = .mockAny(in: PassthroughCoreMock())
+        let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
+
+        let httpHeadersWriter = OTelHTTPHeadersWriter(sampler: .mockRejectAll())
+        XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, [:])
+
+        // When
+        tracer.inject(spanContext: spanContext, writer: httpHeadersWriter)
+
+        // Then
+        let expectedHTTPHeaders = [
+            "b3": "0"
+        ]
+        XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
+    }
+
+    func testItInjectsRejectedSpanContextWithOTelHTTPHeadersWriter_usingMultipleHeader() {
+        let tracer: Tracer = .mockAny(in: PassthroughCoreMock())
+        let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
+
+        let httpHeadersWriter = OTelHTTPHeadersWriter(sampler: .mockRejectAll(), injectEncoding: .multiple)
+        XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, [:])
+
+        // When
+        tracer.inject(spanContext: spanContext, writer: httpHeadersWriter)
+
+        // Then
+        let expectedHTTPHeaders = [
+            "X-B3-Sampled": "0"
+        ]
+        XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
     }
 
     func testItInjectsRejectedSpanContextWithHTTPHeadersWriter() {
@@ -832,14 +866,14 @@ class TracerTests: XCTestCase {
         XCTAssertNil(extractedSpanContext?.dd.parentSpanID)
     }
 
-    func testItExtractsSpanContextWithOpenTelemetryHTTPHeadersReader_forMultipleHeaders() {
+    func testItExtractsSpanContextWithOTelHTTPHeadersReader_forMultipleHeaders() {
         let tracer: Tracer = .mockAny(in: PassthroughCoreMock())
         let injectedSpanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
 
-        let httpHeadersWriter = OpenTelemetryHTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .multiple)
+        let httpHeadersWriter = OTelHTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .multiple)
         tracer.inject(spanContext: injectedSpanContext, writer: httpHeadersWriter)
 
-        let httpHeadersReader = OpenTelemetryHTTPHeadersReader(
+        let httpHeadersReader = OTelHTTPHeadersReader(
             httpHeaderFields: httpHeadersWriter.tracePropagationHTTPHeaders
         )
         let extractedSpanContext = tracer.extract(reader: httpHeadersReader)
@@ -849,14 +883,14 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(extractedSpanContext?.dd.parentSpanID, injectedSpanContext.dd.parentSpanID)
     }
 
-    func testItExtractsSpanContextWithOpenTelemetryHTTPHeadersReader_forSingleHeader() {
+    func testItExtractsSpanContextWithOTelHTTPHeadersReader_forSingleHeader() {
         let tracer: Tracer = .mockAny(in: PassthroughCoreMock())
         let injectedSpanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
 
-        let httpHeadersWriter = OpenTelemetryHTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .single)
+        let httpHeadersWriter = OTelHTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .single)
         tracer.inject(spanContext: injectedSpanContext, writer: httpHeadersWriter)
 
-        let httpHeadersReader = OpenTelemetryHTTPHeadersReader(
+        let httpHeadersReader = OTelHTTPHeadersReader(
             httpHeaderFields: httpHeadersWriter.tracePropagationHTTPHeaders
         )
         let extractedSpanContext = tracer.extract(reader: httpHeadersReader)

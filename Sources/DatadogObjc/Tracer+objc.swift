@@ -114,13 +114,13 @@ public class DDTracer: NSObject, DatadogObjc.OTTracer {
                 spanContext: ddspanContext.swiftSpanContext,
                 writer: objcWriter.swiftHTTPHeadersWriter
             )
-        } else if let objcWriter = carrier as? DDOpenTelemetryHTTPHeadersWriter, format == OT.formatTextMap {
+        } else if let objcWriter = carrier as? DDOTelHTTPHeadersWriter, format == OT.formatTextMap {
             guard let ddspanContext = spanContext.dd else {
                 return
             }
             swiftTracer.inject(
                 spanContext: ddspanContext.swiftSpanContext,
-                writer: objcWriter.swiftOpenTelemetryHTTPHeadersWriter
+                writer: objcWriter.swiftOTelHTTPHeadersWriter
             )
         } else {
             let error = NSError(
