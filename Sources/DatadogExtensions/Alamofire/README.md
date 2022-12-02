@@ -31,7 +31,7 @@ following to your `Package.swift` file:
     ],
 ]
 ```
-`DatadogSDKAlamofireExtension` requires Datadog SDK `1.5.0` or higher and `Alamofire 5.0` or higher.
+`DatadogSDKAlamofireExtension` requires Datadog SDK `1.5.0` or later and `Alamofire 5.0` or later.
 
 ### Carthage
 
