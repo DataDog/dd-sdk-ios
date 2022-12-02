@@ -9,9 +9,9 @@ import Foundation
 internal protocol HostsSanitizing {
     func sanitized(hosts: Set<String>, warningMessage: String) -> Set<String>
     func sanitized(
-        hostsWithHeaderTypes: [String: Set<TracingHeaderType>],
+        firstPartyHosts: FirstPartyHosts,
         warningMessage: String
-    ) -> [String: Set<TracingHeaderType>]
+    ) -> FirstPartyHosts
 }
 
 internal struct HostsSanitizer: HostsSanitizing {
@@ -60,12 +60,12 @@ internal struct HostsSanitizer: HostsSanitizing {
     }
 
     func sanitized(
-        hostsWithHeaderTypes: [String: Set<TracingHeaderType>],
+        firstPartyHosts: FirstPartyHosts,
         warningMessage: String
-    ) -> [String: Set<TracingHeaderType>] {
+    ) -> FirstPartyHosts {
         var warnings: [String] = []
 
-        let sanitized: [String: Set<TracingHeaderType>] = hostsWithHeaderTypes.reduce(into: [:]) { partialResult, item in
+        let sanitized: FirstPartyHosts = firstPartyHosts.reduce(into: [:]) { partialResult, item in
             let host = item.key
             if host.range(of: urlRegex, options: .regularExpression) != nil {
                 // if an URL is given instead of the host, take its `host` part

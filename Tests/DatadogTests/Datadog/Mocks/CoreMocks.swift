@@ -49,7 +49,7 @@ extension Datadog.Configuration {
         tracesEndpoint: TracesEndpoint = .us1,
         rumEndpoint: RUMEndpoint = .us1,
         serviceName: String? = .mockAny(),
-        firstPartyHosts: Set<String>? = nil,
+        firstPartyHostsWithHeaderTypes: FirstPartyHosts? = nil,
         loggingSamplingRate: Float = 100.0,
         tracingSamplingRate: Float = 100.0,
         rumSessionsSamplingRate: Float = 100.0,
@@ -83,7 +83,7 @@ extension Datadog.Configuration {
             tracesEndpoint: tracesEndpoint,
             rumEndpoint: rumEndpoint,
             serviceName: serviceName,
-            firstPartyHosts: firstPartyHosts,
+            firstPartyHostsWithHeaderTypes: firstPartyHostsWithHeaderTypes,
             loggingSamplingRate: loggingSamplingRate,
             tracingSamplingRate: tracingSamplingRate,
             rumSessionsSamplingRate: rumSessionsSamplingRate,
@@ -337,8 +337,7 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
     static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
-        userDefinedFirstPartyHosts: Set<String> = [],
-        userDefinedHostsWithHeaderTypes: [String: Set<TracingHeaderType>] = [:],
+        userDefinedHostsWithHeaderTypes: FirstPartyHosts = [:],
         sdkInternalURLs: Set<String> = [],
         rumAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         instrumentTracing: Bool = true,
@@ -346,7 +345,6 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
         tracingSampler: Sampler = .mockKeepAll()
     ) -> Self {
         return .init(
-            userDefinedFirstPartyHosts: userDefinedFirstPartyHosts,
             userDefinedHostsWithHeaderTypes: userDefinedHostsWithHeaderTypes,
             sdkInternalURLs: sdkInternalURLs,
             rumAttributesProvider: rumAttributesProvider,
@@ -1115,13 +1113,13 @@ class MockHostsSanitizer: HostsSanitizing {
         return hosts
     }
 
-    private(set) var sanitizationsWithHeaderTypes = [(hostsWithHeaderTypes: [String: Set<TracingHeaderType>], warningMessage: String)]()
+    private(set) var sanitizationsWithHeaderTypes = [(firstPartyHosts: FirstPartyHosts, warningMessage: String)]()
     func sanitized(
-        hostsWithHeaderTypes: [String: Set<TracingHeaderType>],
+        firstPartyHosts: FirstPartyHosts,
         warningMessage: String
-    ) -> [String: Set<TracingHeaderType>] {
-        sanitizationsWithHeaderTypes.append((hostsWithHeaderTypes: hostsWithHeaderTypes, warningMessage: warningMessage))
-        return hostsWithHeaderTypes
+    ) -> FirstPartyHosts {
+        sanitizationsWithHeaderTypes.append((firstPartyHosts: firstPartyHosts, warningMessage: warningMessage))
+        return firstPartyHosts
     }
 }
 

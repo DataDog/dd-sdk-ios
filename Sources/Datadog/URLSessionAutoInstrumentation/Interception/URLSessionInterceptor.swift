@@ -80,10 +80,10 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
         configuration: FeaturesConfiguration.URLSessionAutoInstrumentation,
         handler: URLSessionInterceptionHandler
     ) {
-        self.defaultFirstPartyURLsFilter = FirstPartyURLsFilter(hosts: configuration.userDefinedFirstPartyHosts)
+        self.defaultFirstPartyURLsFilter = FirstPartyURLsFilter(hosts: configuration.userDefinedHostsWithHeaderTypes.hosts)
         self.internalURLsFilter = InternalURLsFilter(urls: configuration.sdkInternalURLs)
         self.tracingHeaderTypesProvider = TracingHeaderTypesProvider(
-            hostsWithHeaderTypes: configuration.userDefinedHostsWithHeaderTypes
+            firstPartyHosts: configuration.userDefinedHostsWithHeaderTypes
         )
         self.handler = handler
         self.tracingSampler = configuration.tracingSampler

@@ -7,22 +7,24 @@
 import Foundation
 
 internal struct TracingHeaderTypesProvider {
-    private let hostsWithHeaderTypes: [String: Set<TracingHeaderType>]
-    private let defaultValue: TracingHeaderType = .dd
+    private let firstPartyHosts: FirstPartyHosts
 
     init(
-        hostsWithHeaderTypes: [String: Set<TracingHeaderType>]
+        firstPartyHosts: FirstPartyHosts
     ) {
-        self.hostsWithHeaderTypes = hostsWithHeaderTypes
+        self.firstPartyHosts = firstPartyHosts
     }
 
     func tracingHeaderTypes(for url: URL?) -> Set<TracingHeaderType> {
-        for (key, value) in hostsWithHeaderTypes {
+        for (key, value) in firstPartyHosts {
             let regex = "^(.*\\.)*[.]?\(NSRegularExpression.escapedPattern(for: key))$"
+            if url?.host?.range(of: regex, options: .regularExpression) != nil {
+                return value
+            }
             if url?.absoluteString.range(of: regex, options: .regularExpression) != nil {
                 return value
             }
         }
-        return .init(arrayLiteral: defaultValue)
+        return .init()
     }
 }

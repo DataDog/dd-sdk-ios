@@ -274,7 +274,6 @@ public class Logger: LoggerProtocol {
         internal var sendLogsToDatadog = true
         internal var consoleLogFormat: ConsoleLogFormat? = nil
         internal var datadogReportingThreshold: LogLevel = .debug
-        internal var samplingRate: Float?
 
         /// Sets the service name that will appear in logs.
         /// - Parameter serviceName: the service name  (default value is set to application bundle identifier)

@@ -8,7 +8,7 @@ import XCTest
 @testable import Datadog
 
 class TracingHeaderTypesProviderTests: XCTestCase {
-    let hostsWithHeaderTypes: [String: Set<TracingHeaderType>] = [
+    let firstPartyHosts: FirstPartyHosts = [
         "http://first-party.com/": .init(arrayLiteral: .w3c, .b3s),
         "https://first-party.com/": .init(arrayLiteral: .w3c, .b3s),
         "https://api.first-party.com/v2/users": .init(arrayLiteral: .w3c, .b3s),
@@ -38,39 +38,42 @@ class TracingHeaderTypesProviderTests: XCTestCase {
 
     func test_TracingHeaderTypesProviderWithEmptyDictionary_itReturnsDefaultTracingHeaderTypes() {
         let headerTypesProvider = TracingHeaderTypesProvider(
-            hostsWithHeaderTypes: [:]
+            firstPartyHosts: [:]
         )
-        (hostsWithHeaderTypes.keys + otherHosts).forEach { fixture in
+        (firstPartyHosts.keys + otherHosts).forEach { fixture in
             let url = URL(string: fixture)
-            XCTAssertEqual(headerTypesProvider.tracingHeaderTypes(for: url), .init(arrayLiteral: .dd))
+            XCTAssertEqual(headerTypesProvider.tracingHeaderTypes(for: url), .init())
         }
     }
 
     func test_TracingHeaderTypesProviderWithEmptyTracingHeaderTypes_itReturnsNoTracingHeaderTypes() {
         let headerTypesProvider = TracingHeaderTypesProvider(
-            hostsWithHeaderTypes: ["http://first-party.com/": .init()]
+            firstPartyHosts: ["http://first-party.com/": .init()]
         )
         XCTAssertEqual(headerTypesProvider.tracingHeaderTypes(for: URL(string: "http://first-party.com/")), .init())
     }
 
     func test_TracingHeaderTypesProviderWithValidDictionary_itReturnsTracingHeaderTypes_forSubdomainURL() {
         let headerTypesProvider = TracingHeaderTypesProvider(
-            hostsWithHeaderTypes: ["first-party.com/": .init(arrayLiteral: .b3m)]
+            firstPartyHosts: ["first-party.com": .init(arrayLiteral: .b3m)]
         )
-        XCTAssertEqual(headerTypesProvider.tracingHeaderTypes(for: URL(string: "api.first-party.com/")), .init(arrayLiteral: .b3m))
+        XCTAssertEqual(headerTypesProvider.tracingHeaderTypes(for: URL(string: "api.first-party.com")), .init(arrayLiteral: .b3m))
+        XCTAssertEqual(headerTypesProvider.tracingHeaderTypes(for: URL(string: "apifirst-party.com")), .init())
+        XCTAssertEqual(headerTypesProvider.tracingHeaderTypes(for: URL(string: "https://api.first-party.com/v1/endpoint")), .init(arrayLiteral: .b3m))
+
     }
 
     func test_TracingHeaderTypesProviderWithValidDictionary_itReturnsCorrectTracingHeaderTypes() {
         let headerTypesProvider = TracingHeaderTypesProvider(
-            hostsWithHeaderTypes: hostsWithHeaderTypes
+            firstPartyHosts: firstPartyHosts
         )
-        hostsWithHeaderTypes.keys.forEach { fixture in
+        firstPartyHosts.keys.forEach { fixture in
             let url = URL(string: fixture)
             XCTAssertEqual(headerTypesProvider.tracingHeaderTypes(for: url), .init(arrayLiteral: .w3c, .b3s))
         }
         otherHosts.forEach { fixture in
             let url = URL(string: fixture)
-            XCTAssertEqual(headerTypesProvider.tracingHeaderTypes(for: url), .init(arrayLiteral: .dd))
+            XCTAssertEqual(headerTypesProvider.tracingHeaderTypes(for: url), .init())
         }
     }
 }

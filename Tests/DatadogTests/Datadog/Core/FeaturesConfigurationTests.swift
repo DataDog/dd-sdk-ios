@@ -570,7 +570,10 @@ class FeaturesConfigurationTests: XCTestCase {
         let randomCustomTracesEndpoint: URL? = Bool.random() ? .mockRandom() : nil
         let randomCustomRUMEndpoint: URL? = Bool.random() ? .mockRandom() : nil
 
-        let firstPartyHosts: Set<String> = ["example.com", "foo.eu"]
+        let firstPartyHostsWithHeaderTypes: FirstPartyHosts = [
+            "example.com": .init(arrayLiteral: .dd),
+            "foo.eu": .init(arrayLiteral: .dd)
+        ]
         let expectedSDKInternalURLs: Set<String> = [
             randomCustomLogsEndpoint?.absoluteString ?? randomDatadogEndpoint.logsEndpoint.url,
             randomCustomTracesEndpoint?.absoluteString ?? randomDatadogEndpoint.tracesEndpoint.url,
@@ -580,7 +583,7 @@ class FeaturesConfigurationTests: XCTestCase {
         func createConfiguration(
             tracingEnabled: Bool,
             rumEnabled: Bool,
-            firstPartyHosts: Set<String>?
+            firstPartyHostsWithHeaderTypes: FirstPartyHosts?
         ) throws -> FeaturesConfiguration {
             try FeaturesConfiguration(
                 configuration: .mockWith(
@@ -590,7 +593,7 @@ class FeaturesConfigurationTests: XCTestCase {
                     customLogsEndpoint: randomCustomLogsEndpoint,
                     customTracesEndpoint: randomCustomTracesEndpoint,
                     customRUMEndpoint: randomCustomRUMEndpoint,
-                    firstPartyHosts: firstPartyHosts
+                    firstPartyHostsWithHeaderTypes: firstPartyHostsWithHeaderTypes
                 ),
                 appContext: .mockAny()
             )
@@ -600,9 +603,9 @@ class FeaturesConfigurationTests: XCTestCase {
         var configuration = try createConfiguration(
             tracingEnabled: true,
             rumEnabled: true,
-            firstPartyHosts: firstPartyHosts
+            firstPartyHostsWithHeaderTypes: firstPartyHostsWithHeaderTypes
         )
-        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedFirstPartyHosts, firstPartyHosts)
+        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedHostsWithHeaderTypes, firstPartyHostsWithHeaderTypes)
         XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.sdkInternalURLs, expectedSDKInternalURLs)
         XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentTracing)
         XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentRUM)
@@ -611,9 +614,9 @@ class FeaturesConfigurationTests: XCTestCase {
         configuration = try createConfiguration(
             tracingEnabled: true,
             rumEnabled: false,
-            firstPartyHosts: firstPartyHosts
+            firstPartyHostsWithHeaderTypes: firstPartyHostsWithHeaderTypes
         )
-        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedFirstPartyHosts, firstPartyHosts)
+        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedHostsWithHeaderTypes, firstPartyHostsWithHeaderTypes)
         XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.sdkInternalURLs, expectedSDKInternalURLs)
         XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentTracing)
         XCTAssertFalse(configuration.urlSessionAutoInstrumentation!.instrumentRUM)
@@ -622,9 +625,9 @@ class FeaturesConfigurationTests: XCTestCase {
         configuration = try createConfiguration(
             tracingEnabled: false,
             rumEnabled: true,
-            firstPartyHosts: firstPartyHosts
+            firstPartyHostsWithHeaderTypes: firstPartyHostsWithHeaderTypes
         )
-        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedFirstPartyHosts, firstPartyHosts)
+        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedHostsWithHeaderTypes, firstPartyHostsWithHeaderTypes)
         XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.sdkInternalURLs, expectedSDKInternalURLs)
         XCTAssertFalse(configuration.urlSessionAutoInstrumentation!.instrumentTracing)
         XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentRUM)
@@ -633,7 +636,7 @@ class FeaturesConfigurationTests: XCTestCase {
         configuration = try createConfiguration(
             tracingEnabled: true,
             rumEnabled: true,
-            firstPartyHosts: nil
+            firstPartyHostsWithHeaderTypes: nil
         )
         XCTAssertNil(
             configuration.urlSessionAutoInstrumentation,
@@ -644,7 +647,7 @@ class FeaturesConfigurationTests: XCTestCase {
         configuration = try createConfiguration(
             tracingEnabled: true,
             rumEnabled: true,
-            firstPartyHosts: []
+            firstPartyHostsWithHeaderTypes: [:]
         )
         XCTAssertNotNil(
             configuration.urlSessionAutoInstrumentation,
@@ -658,7 +661,7 @@ class FeaturesConfigurationTests: XCTestCase {
             configuration: .mockWith(
                 tracingEnabled: .random(),
                 rumEnabled: true,
-                firstPartyHosts: ["foo.com"],
+                firstPartyHostsWithHeaderTypes: ["foo.com": .init(arrayLiteral: .dd)],
                 rumResourceAttributesProvider: { _, _, _, _ in [:] }
             ),
             appContext: .mockAny()
@@ -667,7 +670,7 @@ class FeaturesConfigurationTests: XCTestCase {
             configuration: .mockWith(
                 tracingEnabled: .random(),
                 rumEnabled: true,
-                firstPartyHosts: ["foo.com"],
+                firstPartyHostsWithHeaderTypes: ["foo.com": .init(arrayLiteral: .dd)],
                 rumResourceAttributesProvider: nil
             ),
             appContext: .mockAny()
@@ -685,7 +688,7 @@ class FeaturesConfigurationTests: XCTestCase {
 
         _ = try FeaturesConfiguration(
             configuration: .mockWith(
-                firstPartyHosts: nil,
+                firstPartyHostsWithHeaderTypes: nil,
                 rumResourceAttributesProvider: { _, _, _, _ in nil }
             ),
             appContext: .mockAny()
@@ -742,7 +745,7 @@ class FeaturesConfigurationTests: XCTestCase {
         defer { consolePrint = { print($0) } }
 
         // Given
-        let firstPartyHosts: Set<String> = ["first-party.com"]
+        let firstPartyHostsWithHeaderTypes: FirstPartyHosts = ["first-party.com": .init(arrayLiteral: .dd)]
 
         // When
         let tracingEnabled = false
@@ -750,7 +753,11 @@ class FeaturesConfigurationTests: XCTestCase {
 
         // Then
         let configuration = try FeaturesConfiguration(
-            configuration: .mockWith(tracingEnabled: tracingEnabled, rumEnabled: rumEnabled, firstPartyHosts: firstPartyHosts),
+            configuration: .mockWith(
+                tracingEnabled: tracingEnabled,
+                rumEnabled: rumEnabled,
+                firstPartyHostsWithHeaderTypes: firstPartyHostsWithHeaderTypes
+            ),
             appContext: .mockAny()
         )
 
@@ -770,23 +777,23 @@ class FeaturesConfigurationTests: XCTestCase {
 
     func testWhenFirstPartyHostsAreProvided_itPassesThemToSanitizer() throws {
         // When
-        let firstPartyHosts: Set<String> = [
-            "https://first-party.com",
-            "http://api.first-party.com",
-            "https://first-party.com/v2/api"
+        let firstPartyHostsWithHeaderTypes: FirstPartyHosts = [
+            "https://first-party.com": .init(arrayLiteral: .dd),
+            "http://api.first-party.com": .init(arrayLiteral: .dd),
+            "https://first-party.com/v2/api": .init(arrayLiteral: .dd)
         ]
 
         // Then
         let mockHostsSanitizer = MockHostsSanitizer()
         _ = try FeaturesConfiguration(
-            configuration: .mockWith(rumEnabled: true, firstPartyHosts: firstPartyHosts),
+            configuration: .mockWith(rumEnabled: true, firstPartyHostsWithHeaderTypes: firstPartyHostsWithHeaderTypes),
             appContext: .mockAny(),
             hostsSanitizer: mockHostsSanitizer
         )
 
         XCTAssertEqual(mockHostsSanitizer.sanitizations.count, 1)
         let sanitization = try XCTUnwrap(mockHostsSanitizer.sanitizations.first)
-        XCTAssertEqual(sanitization.hosts, firstPartyHosts)
+        XCTAssertEqual(sanitization.hosts, firstPartyHostsWithHeaderTypes.hosts)
         XCTAssertEqual(sanitization.warningMessage, "The first party host configured for Datadog SDK is not valid")
     }
 

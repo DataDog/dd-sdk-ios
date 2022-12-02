@@ -78,4 +78,26 @@ class FirstPartyURLsFilterTests: XCTestCase {
             }
         }
     }
+
+    func testWhenURLHostIsSubdomain_itIsConsideredFirstParty() {
+        let filter = FirstPartyURLsFilter(
+            hosts: ["first-party.com"]
+        )
+        let url = URL(string: "https://api.first-party.com")!
+        XCTAssertTrue(
+            filter.isFirstParty(url: url),
+            "The url: `\(url)` should NOT be matched as first party."
+        )
+    }
+
+    func testWhenURLHostIsNotSubdomain_itIsNotConsideredFirstParty() {
+        let filter = FirstPartyURLsFilter(
+            hosts: ["first-party.com"]
+        )
+        let url = URL(string: "https://apifirst-party.com")!
+        XCTAssertFalse(
+            filter.isFirstParty(url: url),
+            "The url: `\(url)` should NOT be matched as first party."
+        )
+    }
 }

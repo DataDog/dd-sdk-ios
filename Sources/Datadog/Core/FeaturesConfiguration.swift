@@ -75,11 +75,8 @@ internal struct FeaturesConfiguration {
     }
 
     struct URLSessionAutoInstrumentation {
-        /// First party hosts defined by the user.
-        let userDefinedFirstPartyHosts: Set<String>
-
         /// First party hosts defined by the user with custom tracing header types.
-        let userDefinedHostsWithHeaderTypes: [String: Set<TracingHeaderType>]
+        let userDefinedHostsWithHeaderTypes: FirstPartyHosts
 
         /// URLs used internally by the SDK - they are not instrumented.
         let sdkInternalURLs: Set<String>
@@ -213,7 +210,7 @@ extension FeaturesConfiguration {
         }
 
         var sanitizedHosts: Set<String> = []
-        if let firstPartyHosts = configuration.firstPartyHosts {
+        if let firstPartyHosts = configuration.firstPartyHostsWithHeaderTypes?.hosts {
             sanitizedHosts = hostsSanitizer.sanitized(
                 hosts: firstPartyHosts,
                 warningMessage: "The first party host configured for Datadog SDK is not valid"
@@ -258,18 +255,17 @@ extension FeaturesConfiguration {
             }
         }
 
-        var sanitizedHostsWithHeaderTypes: [String: Set<TracingHeaderType>] = [:]
-        if let hostsWithHeaderTypes = configuration.firstPartyHostsWithHeaderTypes {
+        var sanitizedHostsWithHeaderTypes: FirstPartyHosts = [:]
+        if let firstPartyHosts = configuration.firstPartyHostsWithHeaderTypes {
             sanitizedHostsWithHeaderTypes = hostsSanitizer.sanitized(
-                hostsWithHeaderTypes: hostsWithHeaderTypes,
+                firstPartyHosts: firstPartyHosts,
                 warningMessage: "The first party host with header types configured for Datadog SDK is not valid"
             )
         }
 
-        if configuration.firstPartyHosts != nil {
+        if configuration.firstPartyHostsWithHeaderTypes?.hosts != nil {
             if configuration.tracingEnabled || configuration.rumEnabled {
                 urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
-                    userDefinedFirstPartyHosts: sanitizedHosts,
                     userDefinedHostsWithHeaderTypes: sanitizedHostsWithHeaderTypes,
                     sdkInternalURLs: [
                         logsEndpoint.url,

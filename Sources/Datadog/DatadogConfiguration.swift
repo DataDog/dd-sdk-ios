@@ -262,8 +262,7 @@ extension Datadog {
         private(set) var rumEndpoint: RUMEndpoint
 
         private(set) var serviceName: String?
-        private(set) var firstPartyHosts: Set<String>?
-        private(set) var firstPartyHostsWithHeaderTypes: [String: Set<TracingHeaderType>]?
+        private(set) var firstPartyHostsWithHeaderTypes: FirstPartyHosts?
         var logEventMapper: LogEventMapper?
         private(set) var spanEventMapper: SpanEventMapper?
         private(set) var loggingSamplingRate: Float
@@ -343,7 +342,6 @@ extension Datadog {
                     tracesEndpoint: .us1,
                     rumEndpoint: .us1,
                     serviceName: nil,
-                    firstPartyHosts: nil,
                     firstPartyHostsWithHeaderTypes: nil,
                     spanEventMapper: nil,
                     loggingSamplingRate: 100.0,
@@ -530,16 +528,13 @@ extension Datadog {
             ///
             /// - Parameter firstPartyHosts: empty set by default
             public func trackURLSession(firstPartyHosts: Set<String> = []) -> Builder {
-                configuration.firstPartyHosts = firstPartyHosts
-                configuration.firstPartyHostsWithHeaderTypes = firstPartyHosts.reduce(into: [:], { partialResult, host in
+                return trackURLSession(firstPartyHostsWithHeaderTypes: firstPartyHosts.reduce(into: [:], { partialResult, host in
                     partialResult[host] = .init(arrayLiteral: .dd)
-                })
-                return self
+                }))
             }
 
-            public func trackURLSession(firstPartyHostsWithHeaderTypes: [String: Set<TracingHeaderType>]) -> Builder {
+            public func trackURLSession(firstPartyHostsWithHeaderTypes: FirstPartyHosts) -> Builder {
                 configuration.firstPartyHostsWithHeaderTypes = firstPartyHostsWithHeaderTypes
-                configuration.firstPartyHosts = Set(firstPartyHostsWithHeaderTypes.keys)
                 return self
             }
 
