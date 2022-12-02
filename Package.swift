@@ -41,9 +41,14 @@ let package = Package(
             name: "DatadogCrashReporting",
             targets: ["DatadogCrashReporting"]
         ),
+        .library(
+            name: "DatadogAlamofireExtension",
+            targets: ["DatadogAlamofireExtension"]
+        )
     ],
     dependencies: [
         .package(name: "PLCrashReporter", url: "https://github.com/microsoft/plcrashreporter.git", from: "1.11.0"),
+        .package(name: "Alamofire", url: "https://github.com/Alamofire/Alamofire.git", from: "5.0.0")
     ],
     targets: [
         .target(
@@ -68,6 +73,14 @@ let package = Package(
                 "Datadog",
                 .product(name: "CrashReporter", package: "PLCrashReporter"),
             ]
-        )
+        ),
+        .target(
+            name: "DatadogAlamofireExtension",
+            dependencies: [
+                "Datadog",
+                "Alamofire"
+            ],
+            path: "Sources/DatadogExtensions/Alamofire/"
+        ),
     ]
 )

@@ -6,6 +6,7 @@
 
 import class Datadog.URLSessionInterceptor
 import Alamofire
+import Foundation
 
 /// An `Alamofire.EventMonitor` which instruments `Alamofire.Session` with Datadog RUM and Tracing.
 public class DDEventMonitor: EventMonitor {
