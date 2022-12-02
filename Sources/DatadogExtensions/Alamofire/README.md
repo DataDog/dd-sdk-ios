@@ -35,7 +35,7 @@ following to your `Package.swift` file:
 
 ### Carthage
 
-The Datadog [Alamofire][1] integration doesn't support [Carthage][2], however, the code needed for set up is very low. You may want to include the source files from this folder directly in your project.
+The Datadog [Alamofire][1] integration doesn't support [Carthage][2]; however, the code needed for set up is minimal. You may want to include the source files from this folder directly in your project.
 
 ### Initial setup
 
