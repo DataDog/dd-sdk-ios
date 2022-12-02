@@ -3,21 +3,25 @@ ENV vars:
 - tab: CardTab (for `tab.object` definition, see `RUMSchema.rum_events_body_view_data()`)
 -->
 
-{% for object in tab.object %}
+<small>You can reference all events in JS console with <code>dd_events</code></small><br><br>
+
+{% for object in tab.object['events'] %}
+    <!-- Schema validation result -->
     {% if object['rum_validation'].all_ok %}
     <div class="alert alert-success" role="alert">
-        <small>This event <b>is valid</b> - JSON validated with <code>{{ object['rum_validation'].schema_name }}</code></small>
+        <small>This record <b>is valid</b> - matches <code>{{ object['rum_validation'].schema_name }}</code> schema.</small>
     </div>
     {% else %}
     <div class="alert alert-danger" role="alert">
         <small>
-            This event <b>is not valid</b> - JSON validated with <code>{{ object['rum_validation'].schema_name }}</code>
+            This record <b>is not valid</b> - does not match <code>{{ object['rum_validation'].schema_name }} schema.</code>
             <br><br>
             <b>Error details:</b> {{ object['rum_validation'].error }}
         </small>
     </div>
     {% endif %}
 
+    <!-- Pills -->
     <div>
     {% for pill in object['pills'] %}
     <span class="badge rounded-pill text-bg-{% if loop.first %}secondary{% else %}light{% endif %}">{{ pill }}</span>
@@ -25,6 +29,10 @@ ENV vars:
     </div>
     <br>
 
-    <pre>{{ object['pretty_json'] }}</pre>
+    <!-- JSON -->
+    <small><pre>{{ object['pretty_json'] }}</pre></small>
     <hr>
 {% endfor %}
+
+<!-- Export to JS: -->
+<script>var dd_events = {{ tab.object['dd_events']|safe }}</script>

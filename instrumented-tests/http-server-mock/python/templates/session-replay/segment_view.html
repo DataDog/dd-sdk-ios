@@ -3,18 +3,23 @@ ENV vars:
 - tab: CardTab (for `tab.object` definition, see `SRSchema.segment_body_view_data()`)
 -->
 
+<small>You can reference this segment in JS console with <code>dd_segment</code></small>.<br><br>
+
 {% if tab.object['sr_validation'].all_ok %}
 <div class="alert alert-success" role="alert">
-    <small>This segment <b>is valid</b> - JSON validated with <code>{{ tab.object['sr_validation'].schema_name }}</code></small>
+    <small>This segment <b>is valid</b> - matches <code>{{ tab.object['sr_validation'].schema_name }}</code> schema.</small>
 </div>
 {% else %}
 <div class="alert alert-danger" role="alert">
     <small>
-        This segment <b>is not valid</b> - JSON validated with <code>{{ tab.object['sr_validation'].schema_name }}</code>
+        This segment <b>is not valid</b> - does not match<code>{{ tab.object['sr_validation'].schema_name }} schema.</code>
         <br><br>
         <b>Error details:</b> {{ tab.object['sr_validation'].error }}
     </small>
 </div>
 {% endif %}
 
-<pre>{{ tab.object['pretty_json'] }}</pre>
+<small><pre>{{ tab.object['pretty_json'] }}</pre></small>
+
+<!-- Export to JS: -->
+<script>var dd_segment = {{ tab.object['dd_segment']|safe }}</script>

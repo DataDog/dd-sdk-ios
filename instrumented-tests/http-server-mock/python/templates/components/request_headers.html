@@ -3,6 +3,8 @@ ENV vars:
 - tab: CardTab (where `tab.object` is `dict` of headers)
 -->
 
+<small>
 <pre>
 {% for header in tab.object %}{{ header }}{% if not loop.last %}<br>{% endif %}{% endfor %}
 </pre>
+</small>

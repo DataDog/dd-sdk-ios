@@ -31,14 +31,14 @@ class SRSchema(Schema):
 
     def body_views_card(self) -> Card:
         return Card(
-            title='Segment',
+            title='View as:',
             tabs=[
-                self.segment_body_view_data(),
-                self.segment_body_view_data(),
+                self.segment_data(),
+                self.records_data(),
             ]
         )
 
-    def segment_body_view_data(self) -> CardTab:
+    def segment_data(self) -> CardTab:
         vd = validate_event(
             event=self.segment_json,
             schema_path='/Users/maciek.grzybowski/Temp/rum-events-format/session-replay-mobile-format.json'
@@ -46,15 +46,54 @@ class SRSchema(Schema):
 
         obj = {
             'pretty_json': json.dumps(self.segment_json, indent=4),
-            'sr_validation': vd
+            'sr_validation': vd,
+            'dd_segment': json.dumps(self.segment_json),  # for integration with JS console
         }
 
         return CardTab(title='Segment', template='session-replay/segment_view.html', object=obj)
 
-    def records_body_view_data(self) -> CardTab:
-        try:
+    def records_data(self) -> CardTab:
+        record_name_by_type = {
+            4: 'meta',
+            6: 'focus',
+            7: 'view-end',
+            8: 'visual-viewport',
+            10: 'full snapshot',
+            11: 'incremental snapshot',
+        }
 
-        except:
+        record_schema_path_by_type = {
+            4: '/Users/maciek.grzybowski/Temp/rum-events-format/schemas/session-replay/common/meta-record-schema.json',
+            6: '/Users/maciek.grzybowski/Temp/rum-events-format/schemas/session-replay/common/focus-record-schema.json',
+            7: '/Users/maciek.grzybowski/Temp/rum-events-format/schemas/session-replay/common/view-end-record-schema.json',
+            8: '/Users/maciek.grzybowski/Temp/rum-events-format/schemas/session-replay/common/visual-viewport-record-schema.json',
+            10: '/Users/maciek.grzybowski/Temp/rum-events-format/schemas/session-replay/mobile/full-snapshot-record-schema.json',
+            11: '/Users/maciek.grzybowski/Temp/rum-events-format/schemas/session-replay/mobile/incremental-snapshot-record-schema.json',
+        }
+
+        obj = {
+            'records': [],
+            'dd_records': json.dumps(self.segment_json['records']),  # for integration with JS console
+        }
+
+        for record in self.segment_json['records']:
+            vd = validate_event(
+                event=record,
+                schema_path=record_schema_path_by_type[record['type']]
+            )
+
+            pills = [
+                f"{record_name_by_type[record['type']]}"
+            ]
+
+            obj['records'].append({
+                'pills': pills,
+                'pretty_json': json.dumps(record, indent=4),
+                'sr_validation': vd,
+            })
+
+        records_count = len(self.segment_json['records'])
+        return CardTab(title=f'Records ({records_count})', template='session-replay/records_view.html', object=obj)
 
     @staticmethod
     def matches(method: str, path: str):

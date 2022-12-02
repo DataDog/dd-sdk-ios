@@ -1,8 +1,0 @@
-<!--
-ENV vars:
-- tab: CardTab (where `tab.object` is a `dict` with dynamically computed meta values)
--->
-
-{% for key in tab.object %}
-    {{ key }}: {{ tab.object[key] }}<br>
-{% endfor %}

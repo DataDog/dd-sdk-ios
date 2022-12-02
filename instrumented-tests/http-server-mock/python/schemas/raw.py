@@ -41,7 +41,7 @@ class RAWSchema(Schema):
 
         tabs.append(CardTab(title='RAW (original)', template='raw/text_body_view.html', object=self.data_as_text))
 
-        return Card(title='Body', tabs=tabs)
+        return Card(title='View as:', tabs=tabs)
 
     @staticmethod
     def matches(method: str, path: str):

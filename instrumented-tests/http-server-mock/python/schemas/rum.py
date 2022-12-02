@@ -34,14 +34,17 @@ class RUMSchema(Schema):
 
     def body_views_card(self) -> Card:
         return Card(
-            title='RUM events',
+            title='',
             tabs=[
-                self.rum_events_body_view_data(),
+                self.events_data(),
             ]
         )
 
-    def rum_events_body_view_data(self) -> CardTab:
-        obj = []  # the object injected into template
+    def events_data(self) -> CardTab:
+        obj = {
+            'events': [],
+            'dd_events': json.dumps(self.event_jsons),
+        }
 
         for event in self.event_jsons:
             vd = validate_event(
@@ -58,14 +61,13 @@ class RUMSchema(Schema):
                     f"application.id: {event['application']['id']}"
                 ]
 
-            obj.append({
+            obj['events'].append({
                 'pills': pills,
                 'pretty_json': json.dumps(event, indent=4),
                 'rum_validation': vd
             })
 
-        return CardTab(title='RUM events', template='rum/rum_events_body_view.html', object=obj)
-
+        return CardTab(title='RUM events', template='rum/events_view.html', object=obj)
 
     @staticmethod
     def matches(method: str, path: str):

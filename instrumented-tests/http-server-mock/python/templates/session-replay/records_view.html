@@ -1,0 +1,38 @@
+<!--
+ENV vars:
+- tab: CardTab (for `tab.object` definition, see `SRSchema.records_data()`)
+-->
+
+<small>You can reference these records in JS console with <code>dd_records</code></small>.<br><br>
+
+{% for record in tab.object['records'] %}
+    <!-- Schema validation result -->
+    {% if record['sr_validation'].all_ok %}
+    <div class="alert alert-success" role="alert">
+        <small>This record <b>is valid</b> - matches <code>{{ record['sr_validation'].schema_name }}</code> schema.</small>
+    </div>
+    {% else %}
+    <div class="alert alert-danger" role="alert">
+        <small>
+            This record <b>is not valid</b> - does not match <code>{{ record['sr_validation'].schema_name }} schema.</code>
+            <br><br>
+            <b>Error details:</b> {{ record['sr_validation'].error }}
+        </small>
+    </div>
+    {% endif %}
+
+    <!-- Pills -->
+    <div>
+    {% for pill in record['pills'] %}
+    <span class="badge rounded-pill text-bg-{% if loop.first %}secondary{% else %}light{% endif %}">{{ pill }}</span>
+    {% endfor %}
+    </div>
+    <br>
+
+    <!-- JSON -->
+    <small><pre>{{ record['pretty_json'] }}</pre></small>
+    <hr>
+{% endfor %}
+
+<!-- Export to JS: -->
+<script>var dd_records = {{ tab.object['dd_records']|safe }}</script>
