@@ -118,6 +118,7 @@ class URLSessionInterceptorTests: XCTestCase {
     ) -> FeaturesConfiguration.URLSessionAutoInstrumentation {
         return .mockWith(
             userDefinedFirstPartyHosts: ["first-party.com"],
+            userDefinedHostsWithHeaderTypes: ["first-party.com": .init(arrayLiteral: .dd)],
             sdkInternalURLs: ["https://dd.internal.com"],
             instrumentTracing: tracingInstrumentationEnabled,
             instrumentRUM: rumInstrumentationEnabled,

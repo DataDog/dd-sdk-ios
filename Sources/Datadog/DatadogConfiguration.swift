@@ -263,6 +263,7 @@ extension Datadog {
 
         private(set) var serviceName: String?
         private(set) var firstPartyHosts: Set<String>?
+        private(set) var firstPartyHostsWithHeaderTypes: Dictionary<String, Set<TracingHeaderType>>?
         var logEventMapper: LogEventMapper?
         private(set) var spanEventMapper: SpanEventMapper?
         private(set) var loggingSamplingRate: Float
@@ -287,7 +288,6 @@ extension Datadog {
         private(set) var additionalConfiguration: [String: Any]
         private(set) var proxyConfiguration: [AnyHashable: Any]?
         private(set) var encryption: DataEncryption?
-        private(set) var tracingHeaderTypes: Set<TracingHeaderType>
 
         /// Creates the builder for configuring the SDK to work with RUM, Logging and Tracing features.
         /// - Parameter rumApplicationID: RUM Application ID obtained on Datadog website.
@@ -344,6 +344,7 @@ extension Datadog {
                     rumEndpoint: .us1,
                     serviceName: nil,
                     firstPartyHosts: nil,
+                    firstPartyHostsWithHeaderTypes: nil,
                     spanEventMapper: nil,
                     loggingSamplingRate: 100.0,
                     tracingSamplingRate: 20.0,
@@ -363,8 +364,7 @@ extension Datadog {
                     batchSize: .medium,
                     uploadFrequency: .average,
                     additionalConfiguration: [:],
-                    proxyConfiguration: nil,
-                    tracingHeaderTypes: .init([.dd])
+                    proxyConfiguration: nil
                 )
             }
 
@@ -531,6 +531,15 @@ extension Datadog {
             /// - Parameter firstPartyHosts: empty set by default
             public func trackURLSession(firstPartyHosts: Set<String> = []) -> Builder {
                 configuration.firstPartyHosts = firstPartyHosts
+                configuration.firstPartyHostsWithHeaderTypes = firstPartyHosts.reduce(into: [:], { partialResult, host in
+                    partialResult[host] = .init(arrayLiteral: .dd)
+                })
+                return self
+            }
+
+            public func trackURLSession(firstPartyHostsWithHeaderTypes: Dictionary<String, Set<TracingHeaderType>>) -> Builder {
+                configuration.firstPartyHostsWithHeaderTypes = firstPartyHostsWithHeaderTypes
+                configuration.firstPartyHosts = Set(firstPartyHostsWithHeaderTypes.keys)
                 return self
             }
 

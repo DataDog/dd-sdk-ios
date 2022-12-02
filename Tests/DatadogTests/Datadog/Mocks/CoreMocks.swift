@@ -65,8 +65,7 @@ extension Datadog.Configuration {
         uploadFrequency: UploadFrequency = .average,
         additionalConfiguration: [String: Any] = [:],
         proxyConfiguration: [AnyHashable: Any]? = nil,
-        internalMonitoringClientToken: String? = nil,
-        tracingHeaderTypes: Set<TracingHeaderType> = .init(arrayLiteral: .dd)
+        internalMonitoringClientToken: String? = nil
     ) -> Datadog.Configuration {
         return Datadog.Configuration(
             rumApplicationID: rumApplicationID,
@@ -99,8 +98,7 @@ extension Datadog.Configuration {
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
             additionalConfiguration: additionalConfiguration,
-            proxyConfiguration: proxyConfiguration,
-            tracingHeaderTypes: tracingHeaderTypes
+            proxyConfiguration: proxyConfiguration
         )
     }
 }
@@ -340,21 +338,21 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
 
     static func mockWith(
         userDefinedFirstPartyHosts: Set<String> = [],
+        userDefinedHostsWithHeaderTypes: [String: Set<TracingHeaderType>] = [:],
         sdkInternalURLs: Set<String> = [],
         rumAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         instrumentTracing: Bool = true,
         instrumentRUM: Bool = true,
-        tracingSampler: Sampler = .mockKeepAll(),
-        tracingHeaderTypes: Set<TracingHeaderType> = .init(arrayLiteral: .dd)
+        tracingSampler: Sampler = .mockKeepAll()
     ) -> Self {
         return .init(
             userDefinedFirstPartyHosts: userDefinedFirstPartyHosts,
+            userDefinedHostsWithHeaderTypes: userDefinedHostsWithHeaderTypes,
             sdkInternalURLs: sdkInternalURLs,
             rumAttributesProvider: rumAttributesProvider,
             instrumentTracing: instrumentTracing,
             instrumentRUM: instrumentRUM,
-            tracingSampler: tracingSampler,
-            tracingHeaderTypes: tracingHeaderTypes
+            tracingSampler: tracingSampler
         )
     }
 }
@@ -1115,6 +1113,15 @@ class MockHostsSanitizer: HostsSanitizing {
     func sanitized(hosts: Set<String>, warningMessage: String) -> Set<String> {
         sanitizations.append((hosts: hosts, warningMessage: warningMessage))
         return hosts
+    }
+
+    private(set) var sanitizationsWithHeaderTypes = [(hostsWithHeaderTypes: [String : Set<TracingHeaderType>], warningMessage: String)]()
+    func sanitized(
+        hostsWithHeaderTypes: [String : Set<TracingHeaderType>],
+        warningMessage: String
+    ) -> [String : Set<TracingHeaderType>] {
+        sanitizationsWithHeaderTypes.append((hostsWithHeaderTypes: hostsWithHeaderTypes, warningMessage: warningMessage))
+        return hostsWithHeaderTypes
     }
 }
 

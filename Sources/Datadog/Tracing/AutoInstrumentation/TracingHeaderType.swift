@@ -12,7 +12,7 @@ import Foundation
 /// - `b3s` - Open Telemetry B3 [Single header](https://github.com/openzipkin/b3-propagation#single-headers).
 /// - `b3m` - Open Telemetry B3 [Multiple headers](https://github.com/openzipkin/b3-propagation#multiple-headers).
 /// - `w3c` - W3C [Trace Context header](https://www.w3.org/TR/trace-context/#tracestate-header)
-public enum TracingHeaderType {
+public enum TracingHeaderType: Hashable {
     case dd
     case b3s
     case b3m
