@@ -7,7 +7,14 @@ ENV vars:
 
 
 <!-- Headers -->
-{% include 'components/request_headers.html' %}
+{% with card=request.headers_card() %}
+    {% include 'components/card.html' %}
+{% endwith %}
+
+<br>
 
 <!-- Body -->
-{% include 'components/request_body.html' %}
+
+{% with card=selected_schema.body_views_card() %}
+    {% include 'components/card.html' %}
+{% endwith %}

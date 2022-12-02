@@ -1,0 +1,44 @@
+<!--
+ENV vars:
+- card: Card
+-->
+
+<style>
+    .nav-pills .nav-link.active, .nav-pills .show>.nav-link {
+        color: #FFFFFF;
+        background-color: #632CA6;
+    }
+    .nav-pills .nav-link {
+        color: #632CA6;
+        background-color: #efe9f6;
+    }
+</style>
+
+<div class="card">
+    <div class="card-header">
+        <!-- Card header (title with tab selector)  -->
+        <ul class="nav nav-pills mb-1" id="pills-tab-{{ card.id }}" role="tablist">
+            {{ card.title }}
+            {% if card.tabs|length > 1 %}
+            {% for tab in card.tabs %}
+            <li class="nav-item" role="presentation">
+            <button class="badge nav-link mx-2{% if loop.first %} active{% endif %}"
+                    id="btn-body-view-{{ card.id }}-{{ loop.index0 }}" data-bs-toggle="pill"
+                    data-bs-target="#body-view-{{ card.id }}-{{ loop.index0 }}" type="button"
+                    role="tab">{{ tab.title }}</button>
+            </li>
+            {% endfor %}
+            {% endif %}
+        </ul>
+    </div>
+    <div class="card-body">
+        <!-- Card body:  -->
+        <div class="tab-content" id="pills-tabContent-{{ card.id }}">
+        {% for tab in card.tabs %}
+            <!-- Tab content -->
+            <div class="p-2 tab-pane text-dark{% if loop.first %} active{% endif %}"
+                 id="body-view-{{ card.id }}-{{ loop.index0 }}" role="tabpanel">{% include tab.template %}</div>
+        {% endfor %}
+        </div>
+    </div>
+</div>

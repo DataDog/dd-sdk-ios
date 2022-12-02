@@ -6,6 +6,9 @@
 # Copyright 2019-2020 Datadog, Inc.
 # -----------------------------------------------------------
 
+import os
+import json
+
 import datetime
 from hashlib import sha1
 from typing import Optional
@@ -15,6 +18,7 @@ from schemas.schema import Schema
 from schemas.raw import RAWSchema
 from schemas.rum import RUMSchema
 from schemas.session_replay import SRSchema
+from templates.components.card import Card, CardTab
 
 
 app = Flask(__name__)
@@ -49,6 +53,12 @@ class GenericRequest:
 
     def schema_with_name(self, name: str):
         return next((s for s in self.schemas if s.name == name), None)
+
+    def headers_card(self) -> Card:
+        return Card(
+            title='Headers',
+            tabs=[CardTab(title='', template='components/request_headers.html', object=self.headers)]
+        )
 
 
 @dataclass()
@@ -89,8 +99,8 @@ def schemas_for_request(r: Request) -> [Schema]:
     if RUMSchema.matches(r.method, r.path):
         schemas.append(RUMSchema(request=r))
 
-    # if SRSchema.matches(r.method, r.path):
-    #     schemas.append(SRSchema(request=r))
+    if SRSchema.matches(r.method, r.path):
+        schemas.append(SRSchema(request=r))
 
     return schemas
 
@@ -101,8 +111,9 @@ endpoints: [GenericEndpoint] = []
 def write_to_file(endpoint: GenericEndpoint):
     no = len(endpoint.requests)
     if 'rum' in endpoint.path:
-        with open(f'fixtures/rum/{no}', 'wb') as f:
-            f.write(request.get_data())
+        pass
+        # with open(f'fixtures/rum/{no}', 'wb') as f:
+        #     f.write(request.get_data())
     elif 'replay' in endpoint.path:
         with open(f'fixtures/replay/{no}', 'wb') as f:
             f.write(request.get_data())
@@ -130,6 +141,7 @@ def generic_post(rest):
 
     if existing := next((e for e in endpoints if e.hash() == gr.endpoint_hash()), None):
         existing.requests.append(gr)
+        write_to_file(endpoint=existing)
         return f'OK - request recorded to known endpoint\n'
     else:
         endpoints.append(
@@ -140,6 +152,7 @@ def generic_post(rest):
                 schemas=gr.schemas
             )
         )
+        write_to_file(endpoint=endpoints[len(endpoints)-1])
         return f'OK - request recorded to new endpoint\n'
 
 

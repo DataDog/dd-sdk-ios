@@ -5,33 +5,41 @@ ENV vars:
 - selected_schema: Schema
 -->
 
-<div class="p-2 bg-dark text-light">
-    <h6>Body:</h6>
+<style>
+    .nav-pills .nav-link.active, .nav-pills .show>.nav-link {
+        color: #FFFFFF;
+        background-color: #632CA6;
+    }
+    .nav-pills .nav-link {
+        color: #632CA6;
+        background-color: #efe9f6;
+    }
+</style>
+<div class="card">
+    <div class="card-header">
+        <!-- Body view selector  -->
+        <ul class="nav nav-pills mb-1" id="pills-tab" role="tablist">
+            Body
+            {% if selected_schema.body_views|length > 1 %}
+            {% for body_view in selected_schema.body_views %}
+            <li class="nav-item" role="presentation">
+            <button class="badge nav-link mx-2{% if loop.first %} active{% endif %}"
+                    id="btn-body-view-{{ loop.index0 }}" data-bs-toggle="pill"
+                    data-bs-target="#body-view{{ loop.index0 }}" type="button"
+                    role="tab">{{ body_view.name }}</button>
+            </li>
+            {% endfor %}
+            {% endif %}
+        </ul>
+    </div>
+    <div class="card-body">
+        <!-- Body Views container:  -->
+        <div class="tab-content" id="pills-tabContent">
+        {% for body_view in selected_schema.body_views %}
+            <!-- Specific Body View, i.e. `<schema>/some_body_view.html` -->
+            <div class="p-2 tab-pane text-dark{% if loop.first %} active{% endif %}"
+                 id="body-view{{ loop.index0 }}" role="tabpanel">{% include body_view.template %}</div>
+        {% endfor %}
+        </div>
+    </div>
 </div>
-
-<!-- Body view selector  -->
-{% if selected_schema.body_views|length > 1 %}
-<div class="p-2 bg-secondary text-light">
-    <ul class="nav nav-pills mb-1" id="pills-tab" role="tablist">
-    {% for body_view in selected_schema.body_views %}
-        <li class="nav-item" role="presentation">
-        <button class="badge nav-link{% if loop.first %} active{% endif %}"
-                id="btn-body-view-{{ loop.index0 }}" data-bs-toggle="pill"
-                data-bs-target="#body-view{{ loop.index0 }}"  type="button" role="tab">{{ body_view.name }}</button>
-        </li>
-    {% endfor %}
-</ul>
-</div>
-{% endif %}
-
-<!-- Body views:  -->
-<div class="tab-content" id="pills-tabContent">
-{% for body_view in selected_schema.body_views %}
-  <div class="p-2 tab-pane bg-light text-dark{% if loop.first %} active{% endif %}" id="body-view{{ loop.index0 }}"
-       role="tabpanel">
-        <!-- Specific Body View: -->
-        {% include body_view.template %}
-  </div>
-{% endfor %}
-</div>
-

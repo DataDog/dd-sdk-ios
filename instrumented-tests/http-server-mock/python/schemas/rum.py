@@ -8,22 +8,10 @@
 
 import zlib
 import json
-from schemas.schema import Schema
 from flask import Request
-from schemas.schema import Schema, BodyView
-
-
-class RUMEventsBodyView(BodyView):
-    """
-    Data model for rendering RUM payload as a list of separate RUM events.
-    Each event is displayed with pretty JSON and additional header field (listing some of its metadata).
-    """
-    def __init__(self, value: [str]):
-        super().__init__(
-            name='RUM Pretty JSON',
-            template='rum/rum_events_body_view.html',
-            value=value  # an array of pretty-JSON strings
-        )
+from schemas.schema import Schema
+from templates.components.card import Card, CardTab
+from validation.validation import validate_event
 
 
 class RUMSchema(Schema):
@@ -32,7 +20,9 @@ class RUMSchema(Schema):
     is_known = True
     endpoint_template = 'rum/endpoint.html'
     request_template = 'rum/request.html'
-    body_views: [BodyView]
+
+    # RUM-specific:
+    event_jsons: [dict]
 
     def __init__(self, request: Request):
         if request.headers.get('Content-Encoding', None) == 'deflate':
@@ -40,10 +30,42 @@ class RUMSchema(Schema):
         else:
             payload = request.get_data().decode('utf-8')
 
-        events = map(lambda e: json.loads(e), payload.splitlines())
-        pretty_json_strings = map(lambda e: json.dumps(e, indent=4), events)
+        self.event_jsons = list(map(lambda e: json.loads(e), payload.splitlines()))
 
-        self.body_views = [RUMEventsBodyView(value=list(pretty_json_strings))]
+    def body_views_card(self) -> Card:
+        return Card(
+            title='RUM events',
+            tabs=[
+                self.rum_events_body_view_data(),
+            ]
+        )
+
+    def rum_events_body_view_data(self) -> CardTab:
+        obj = []  # the object injected into template
+
+        for event in self.event_jsons:
+            vd = validate_event(
+                event=event,
+                schema_path='/Users/maciek.grzybowski/Temp/rum-events-format/rum-events-format.json'
+            )
+
+            pills = []  # pills rendered below validation result
+            if vd.all_ok:
+                pills = [
+                    f"{event['type']}",
+                    f"view.id: {event['view']['id']}",
+                    f"session.id: {event['session']['id']}",
+                    f"application.id: {event['application']['id']}"
+                ]
+
+            obj.append({
+                'pills': pills,
+                'pretty_json': json.dumps(event, indent=4),
+                'rum_validation': vd
+            })
+
+        return CardTab(title='RUM events', template='rum/rum_events_body_view.html', object=obj)
+
 
     @staticmethod
     def matches(method: str, path: str):

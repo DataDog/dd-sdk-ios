@@ -1,0 +1,20 @@
+<!--
+ENV vars:
+- tab: CardTab (for `tab.object` definition, see `SRSchema.segment_body_view_data()`)
+-->
+
+{% if tab.object['sr_validation'].all_ok %}
+<div class="alert alert-success" role="alert">
+    <small>This segment <b>is valid</b> - JSON validated with <code>{{ tab.object['sr_validation'].schema_name }}</code></small>
+</div>
+{% else %}
+<div class="alert alert-danger" role="alert">
+    <small>
+        This segment <b>is not valid</b> - JSON validated with <code>{{ tab.object['sr_validation'].schema_name }}</code>
+        <br><br>
+        <b>Error details:</b> {{ tab.object['sr_validation'].error }}
+    </small>
+</div>
+{% endif %}
+
+<pre>{{ tab.object['pretty_json'] }}</pre>

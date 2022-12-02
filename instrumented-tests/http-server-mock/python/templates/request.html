@@ -1,3 +1,10 @@
+<!--
+ENV vars:
+- endpoint: GenericEndpoint
+- request: GenericRequest
+- selected_schema: Schema
+-->
+
 {% extends "base.html" %}
 
 {% block navigation %}
@@ -11,19 +18,22 @@
 {% endblock %}
 
 {% block content %}
-    <!-- Schema selector: -->
-    <ul class="nav nav-tabs">
-    {% for schema in request.schemas %}
-        <li class="nav-item">
-            <a class="nav-link{% if schema.name==selected_schema.name %} active{% endif %}" href="{{ request.follow_url(schema=schema) }}">
-                {{ schema.pretty_name }}
-            </a>
-        </li>
-    {% endfor %}
-    </ul>
-    </br>
+    <div class="card">
+        <!-- Schema selector: -->
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs">
+                {% for schema in request.schemas %}
+                <li class="nav-item">
+                    <a class="nav-link{% if schema.name==selected_schema.name %} active{% endif %}"
+                       href="{{ request.follow_url(schema=schema) }}">{{ schema.pretty_name }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
 
-    <!-- Request Details -->
-    {% include selected_schema.request_template %}
-
+        <!-- Request Details → `<schema>/request.html` -->
+        <div class="card-body">
+        {% include selected_schema.request_template %}
+        </div>
+    </div>
 {% endblock %}

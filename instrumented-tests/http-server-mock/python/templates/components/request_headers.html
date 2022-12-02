@@ -1,6 +1,8 @@
-<div class="p-2 bg-dark text-light">
-    <h6>Headers:</h6>
-</div>
-<div class="p-2 bg-light text-dark">
-    <pre>{% for header in request.headers %}{{ header }}<br>{% endfor %}</pre>
-</div>
+<!--
+ENV vars:
+- tab: CardTab (where `tab.object` is `dict` of headers)
+-->
+
+<pre>
+{% for header in tab.object %}{{ header }}{% if not loop.last %}<br>{% endif %}{% endfor %}
+</pre>

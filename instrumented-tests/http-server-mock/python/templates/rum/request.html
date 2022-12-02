@@ -5,9 +5,11 @@ ENV vars:
 - selected_schema: RUMSchema(Schema)
 -->
 
+Succeeding RUM events in this request:
 
-<!-- Headers -->
-{% include 'components/request_headers.html' %}
+<br><br>
 
 <!-- Body -->
-{% include 'components/request_body.html' %}
+{% with card=selected_schema.body_views_card() %}
+    {% include 'components/card.html' %}
+{% endwith %}

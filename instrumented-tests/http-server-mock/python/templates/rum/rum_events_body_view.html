@@ -1,12 +1,30 @@
 <!--
 ENV vars:
-- endpoint: GenericEndpoint
-- request: GenericRequest
-- selected_schema: RUMSchema(Schema)
-- body_view: RUMEventsBodyView(BodyView)
+- tab: CardTab (for `tab.object` definition, see `RUMSchema.rum_events_body_view_data()`)
 -->
 
-{% for pretty_json in body_view.value %}
-    <pre>{{ pretty_json }}</pre>
+{% for object in tab.object %}
+    {% if object['rum_validation'].all_ok %}
+    <div class="alert alert-success" role="alert">
+        <small>This event <b>is valid</b> - JSON validated with <code>{{ object['rum_validation'].schema_name }}</code></small>
+    </div>
+    {% else %}
+    <div class="alert alert-danger" role="alert">
+        <small>
+            This event <b>is not valid</b> - JSON validated with <code>{{ object['rum_validation'].schema_name }}</code>
+            <br><br>
+            <b>Error details:</b> {{ object['rum_validation'].error }}
+        </small>
+    </div>
+    {% endif %}
+
+    <div>
+    {% for pill in object['pills'] %}
+    <span class="badge rounded-pill text-bg-{% if loop.first %}secondary{% else %}light{% endif %}">{{ pill }}</span>
+    {% endfor %}
+    </div>
+    <br>
+
+    <pre>{{ object['pretty_json'] }}</pre>
     <hr>
 {% endfor %}

@@ -7,28 +7,10 @@
 # -----------------------------------------------------------
 
 import zlib
+from typing import Optional
 from flask import Request
-from schemas.schema import Schema, BodyView
-
-
-class RAWTextBodyView(BodyView):
-    def __init__(self, value: str):
-        print(f'Creating RAWTextBodyView for {value}')
-        super().__init__(
-            name='RAW text',
-            template='raw/text_body_view.html',
-            value=value  # a text
-        )
-
-
-class RAWUncompressedTextBodyView(BodyView):
-    def __init__(self, value: str):
-        print(f'Creating RAWUncompressedTextBodyView for {value}')
-        super().__init__(
-            name='RAW text (uncompressed)',
-            template='raw/text_body_view.html',
-            value=value  # a text
-        )
+from schemas.schema import Schema
+from templates.components.card import Card, CardTab
 
 
 class RAWSchema(Schema):
@@ -37,15 +19,29 @@ class RAWSchema(Schema):
     is_known = False
     endpoint_template = 'raw/endpoint.html'
     request_template = 'raw/request.html'
-    body_views: [BodyView]
+
+    # RAW-specific:
+    data_as_text: str
+    decompressed_data: Optional[str]  # `None` if data was not compressed
 
     def __init__(self, request: Request):
-        views: [BodyView] = [RAWTextBodyView(value=request.get_data(as_text=True))]
-
+        self.data_as_text = request.get_data(as_text=True)
         if request.headers.get('Content-Encoding', None) == 'deflate':
-            views.append(RAWUncompressedTextBodyView(value=zlib.decompress(request.get_data()).decode('utf-8')))
+            self.decompressed_data = zlib.decompress(request.get_data()).decode('utf-8')
+        else:
+            self.decompressed_data = None
 
-        self.body_views = views
+    def body_views_card(self) -> Card:
+        tabs = []
+
+        if self.decompressed_data:
+            tabs.append(
+                CardTab(title='RAW (decompressed)', template='raw/text_body_view.html', object=self.decompressed_data)
+            )
+
+        tabs.append(CardTab(title='RAW (original)', template='raw/text_body_view.html', object=self.data_as_text))
+
+        return Card(title='Body', tabs=tabs)
 
     @staticmethod
     def matches(method: str, path: str):

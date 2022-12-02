@@ -1,7 +1,15 @@
-SR Request:
+<!--
+ENV vars:
+- endpoint: GenericEndpoint
+- request: GenericRequest
+- selected_schema: SRSchema(Schema)
+-->
 
-<!-- Headers -->
-{% include 'components/request_headers.html' %}
+SR segment in this request:
+
+<br><br>
 
 <!-- Body -->
-{% include 'components/request_body.html' %}
+{% with card=selected_schema.body_views_card() %}
+    {% include 'components/card.html' %}
+{% endwith %}

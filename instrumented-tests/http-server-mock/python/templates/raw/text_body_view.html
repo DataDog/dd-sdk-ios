@@ -1,9 +1,6 @@
 <!--
 ENV vars:
-- endpoint: GenericEndpoint
-- request: GenericRequest
-- selected_schema: Schema
-- body_view: RAWTextBodyView(BodyView) | RAWUncompressedTextBodyView(BodyView)
+- tab: CardTab (where `tab.object` is `str`)
 -->
 
-<pre style="white-space:pre-line">{{ body_view.value }}</pre>
+<pre style="white-space:pre-line">{{ tab.object }}</pre>
