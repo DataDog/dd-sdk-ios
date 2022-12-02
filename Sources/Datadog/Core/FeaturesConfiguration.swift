@@ -79,7 +79,7 @@ internal struct FeaturesConfiguration {
         let userDefinedFirstPartyHosts: Set<String>
 
         /// First party hosts defined by the user with custom tracing header types.
-        let userDefinedHostsWithHeaderTypes: Dictionary<String, Set<TracingHeaderType>>
+        let userDefinedHostsWithHeaderTypes: [String: Set<TracingHeaderType>]
 
         /// URLs used internally by the SDK - they are not instrumented.
         let sdkInternalURLs: Set<String>

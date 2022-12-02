@@ -7,11 +7,11 @@
 import Foundation
 
 internal struct TracingHeaderTypesProvider {
-    private let hostsWithHeaderTypes: Dictionary<String, Set<TracingHeaderType>>
+    private let hostsWithHeaderTypes: [String: Set<TracingHeaderType>]
     private let defaultValue: TracingHeaderType = .dd
-    
+
     init(
-        hostsWithHeaderTypes: Dictionary<String, Set<TracingHeaderType>>
+        hostsWithHeaderTypes: [String: Set<TracingHeaderType>]
     ) {
         self.hostsWithHeaderTypes = hostsWithHeaderTypes
     }

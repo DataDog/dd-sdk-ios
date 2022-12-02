@@ -263,7 +263,7 @@ extension Datadog {
 
         private(set) var serviceName: String?
         private(set) var firstPartyHosts: Set<String>?
-        private(set) var firstPartyHostsWithHeaderTypes: Dictionary<String, Set<TracingHeaderType>>?
+        private(set) var firstPartyHostsWithHeaderTypes: [String: Set<TracingHeaderType>]?
         var logEventMapper: LogEventMapper?
         private(set) var spanEventMapper: SpanEventMapper?
         private(set) var loggingSamplingRate: Float
@@ -537,7 +537,7 @@ extension Datadog {
                 return self
             }
 
-            public func trackURLSession(firstPartyHostsWithHeaderTypes: Dictionary<String, Set<TracingHeaderType>>) -> Builder {
+            public func trackURLSession(firstPartyHostsWithHeaderTypes: [String: Set<TracingHeaderType>]) -> Builder {
                 configuration.firstPartyHostsWithHeaderTypes = firstPartyHostsWithHeaderTypes
                 configuration.firstPartyHosts = Set(firstPartyHostsWithHeaderTypes.keys)
                 return self

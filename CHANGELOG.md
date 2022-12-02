@@ -3,6 +3,7 @@
 - [IMPROVEMENT] Add a method for sending error attributes on logs as strings.
 - [IMPROVEMENT] Add manual Open Telemetry b3 headers injection. See [#1057][]
 - [IMPROVEMENT] Add automatic Open Telemetry b3 headers injection. See [#1061][]
+- [IMPROVEMENT] Add manual and automatic W3C traceparent header injection. See [#1071][]
 
 # 1.13.0 / 08-11-2022
 
@@ -418,6 +419,7 @@
 [#1045]: https://github.com/DataDog/dd-sdk-ios/pull/1045
 [#1057]: https://github.com/DataDog/dd-sdk-ios/pull/1057
 [#1061]: https://github.com/DataDog/dd-sdk-ios/pull/1061
+[#1071]: https://github.com/DataDog/dd-sdk-ios/pull/1071
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

@@ -8,7 +8,7 @@ import XCTest
 @testable import Datadog
 
 class TracingHeaderTypesProviderTests: XCTestCase {
-    let hostsWithHeaderTypes: Dictionary<String, Set<TracingHeaderType>> = [
+    let hostsWithHeaderTypes: [String: Set<TracingHeaderType>] = [
         "http://first-party.com/": .init(arrayLiteral: .w3c, .b3s),
         "https://first-party.com/": .init(arrayLiteral: .w3c, .b3s),
         "https://api.first-party.com/v2/users": .init(arrayLiteral: .w3c, .b3s),

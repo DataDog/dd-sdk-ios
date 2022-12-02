@@ -1115,11 +1115,11 @@ class MockHostsSanitizer: HostsSanitizing {
         return hosts
     }
 
-    private(set) var sanitizationsWithHeaderTypes = [(hostsWithHeaderTypes: [String : Set<TracingHeaderType>], warningMessage: String)]()
+    private(set) var sanitizationsWithHeaderTypes = [(hostsWithHeaderTypes: [String: Set<TracingHeaderType>], warningMessage: String)]()
     func sanitized(
-        hostsWithHeaderTypes: [String : Set<TracingHeaderType>],
+        hostsWithHeaderTypes: [String: Set<TracingHeaderType>],
         warningMessage: String
-    ) -> [String : Set<TracingHeaderType>] {
+    ) -> [String: Set<TracingHeaderType>] {
         sanitizationsWithHeaderTypes.append((hostsWithHeaderTypes: hostsWithHeaderTypes, warningMessage: warningMessage))
         return hostsWithHeaderTypes
     }
