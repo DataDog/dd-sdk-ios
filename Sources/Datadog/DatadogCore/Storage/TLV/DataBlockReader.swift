@@ -6,55 +6,6 @@
 
 import Foundation
 
-/// Block size binary type
-internal typealias BlockSize = UInt32
-
-/// Block type supported in data stream
-internal enum BlockType: UInt16 {
-    case event = 0x00
-}
-
-/// Reported errors while manipulating data blocks.
-internal enum DataBlockError: Error {
-    case readOperationFailed(streamError: Error?)
-    case invalidByteSequence
-    case dataLenghtExceedsLimit
-}
-
-/// A data block in defined by its type and a byte sequence.
-///
-/// A block can be serialized in data stream by following TLV format.
-internal struct DataBlock {
-    /// Type describing the data block.
-    let type: BlockType
-
-    /// The data.
-    var data: Data
-
-    /// Returns a Data block in Type-Lenght-Value format.
-    ///
-    /// A block follow TLV with bytes aligned such as:
-    ///
-    ///     +-  2 bytes -+-   4 bytes   -+- n bytes -|
-    ///     | block type | data size (n) |    data   |
-    ///     +------------+---------------+-----------+
-    ///
-    /// - Returns: a data block in TLV.
-    func serialize() throws -> Data {
-        var buffer = Data()
-        // T
-        withUnsafeBytes(of: type.rawValue) { buffer.append(contentsOf: $0) }
-        // L
-        guard let length = BlockSize(exactly: data.count) else {
-            throw DataBlockError.dataLenghtExceedsLimit
-        }
-        withUnsafeBytes(of: length) { buffer.append(contentsOf: $0) }
-        // V
-        buffer += data
-        return buffer
-    }
-}
-
 /// A block reader can read TLV formatted blocks from a data input.
 ///
 /// This class provides methods to iteratively retrieve a sequence of
@@ -71,6 +22,14 @@ internal final class DataBlockReader {
     /// - Parameter data: The data input
     convenience init(data: Data) {
         self.init(input: InputStream(data: data))
+    }
+
+    convenience init?(url: URL) {
+        guard let stream = InputStream(url: url) else {
+            return nil
+        }
+
+        self.init(input: stream)
     }
 
     /// Reads block from an input stream.
@@ -96,20 +55,25 @@ internal final class DataBlockReader {
     /// - Throws: `DataBlockError` while reading the input stream.
     /// - Returns: The next block or nil if none could be found.
     func next() throws -> DataBlock? {
-        // look for the next known block
-        while stream.hasBytesAvailable {
-            // read an entire block before inferring the data type
-            // to leave the stream in a usuable state if an unkown
-            // type was encountered.
+        // read an entire block before inferring the data type
+        // to leave the stream in a usuable state if an unkown
+        // type was encountered.
+        do {
             let type = try readType()
             let data = try readData()
 
             if let type = BlockType(rawValue: type) {
                 return DataBlock(type: type, data: data)
             }
-        }
 
-        return nil
+            // try next block if the block type is unknown
+            return try next()
+
+        } catch DataBlockError.endOfBuffer {
+            return nil
+        } catch {
+            throw error
+        }
     }
 
     /// Reads all data blocks from current index in the stream.
@@ -139,7 +103,11 @@ internal final class DataBlockReader {
             throw DataBlockError.readOperationFailed(streamError: stream.streamError)
         }
 
-        guard count == length else {
+        if count == 0 {
+            throw DataBlockError.endOfBuffer
+        }
+
+        if count != length {
             throw DataBlockError.invalidByteSequence
         }
 
@@ -165,5 +133,20 @@ internal final class DataBlockReader {
         }
 
         return try read(length: length)
+    }
+
+    func flush(to output: OutputStream, chunk: Int = 256) {
+        while true {
+            var bytes = [UInt8](repeating: 0, count: chunk)
+            let count = stream.read(&bytes, maxLength: chunk)
+            guard count > 0 else {
+                return
+            }
+
+            output.write(bytes, maxLength: count)
+            guard count > 0 else {
+                return
+            }
+        }
     }
 }

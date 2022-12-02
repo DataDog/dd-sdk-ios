@@ -41,6 +41,36 @@ internal struct FeatureUpload {
         )
     }
 
+    init(
+        featureName: String,
+        contextProvider: DatadogContextProvider,
+        bufferReader: BufferReader,
+        requestBuilder: FeatureRequestBuilder_,
+        httpClient: HTTPClient,
+        performance: PerformancePreset
+    ) {
+        let queue = DispatchQueue(
+            label: "com.datadoghq.ios-sdk-\(featureName)-upload",
+            target: .global(qos: .utility)
+        )
+
+        let uploader = BufferUploadWorker(
+            feature: featureName,
+            queue: queue,
+            reader: bufferReader,
+            requestBuilder: requestBuilder,
+            httpClient: httpClient,
+            performance: performance,
+            contextProvider: contextProvider,
+            uploadConditions: DataUploadConditions(),
+            delay: DataUploadDelay(performance: performance)
+        )
+
+        uploader.run()
+
+        self.init(uploader: uploader)
+    }
+
     init(uploader: DataUploadWorkerType) {
         self.uploader = uploader
     }

@@ -21,15 +21,19 @@ internal struct FeatureStorage {
     /// Orchestrates contents of both `.pending` and `.granted` directories.
     let dataOrchestrator: DataOrchestratorType
 
+    let buffer: FeatureBuffer
+
     init(
         featureName: String,
         queue: DispatchQueue,
-        directories: FeatureDirectories,
+        directory: CoreDirectory,
         dateProvider: DateProvider,
         consentProvider: ConsentProvider,
         performance: PerformancePreset,
         encryption: DataEncryption?
-    ) {
+    ) throws {
+        let directories = try directory.getFeatureDirectories(forFeatureNamed: featureName)
+
         let authorizedFilesOrchestrator = FilesOrchestrator(
             directory: directories.authorized,
             performance: performance,
@@ -78,13 +82,22 @@ internal struct FeatureStorage {
                 orchestrator: authorizedFilesOrchestrator,
                 encryption: encryption
             )
+        )        
+
+        let buffer = try FeatureBuffer(
+            name: featureName,
+            directory: directory.coreDirectory.url,
+            queue: queue,
+            encoder: .default(),
+            encryption: encryption
         )
 
         self.init(
             writer: consentAwareDataWriter,
             reader: authorisedDataReader,
             arbitraryAuthorizedWriter: arbitraryDataWriter,
-            dataOrchestrator: dataOrchestrator
+            dataOrchestrator: dataOrchestrator,
+            buffer: buffer
         )
     }
 
@@ -92,12 +105,14 @@ internal struct FeatureStorage {
         writer: AsyncWriter,
         reader: SyncReader,
         arbitraryAuthorizedWriter: AsyncWriter,
-        dataOrchestrator: DataOrchestratorType
+        dataOrchestrator: DataOrchestratorType,
+        buffer: FeatureBuffer
     ) {
         self.writer = writer
         self.reader = reader
         self.arbitraryAuthorizedWriter = arbitraryAuthorizedWriter
         self.dataOrchestrator = dataOrchestrator
+        self.buffer = buffer
     }
 
     func clearAllData() {

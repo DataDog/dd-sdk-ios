@@ -24,14 +24,62 @@ internal func createLoggingConfiguration(
 
 /// The Logging URL Request Builder for formatting and configuring the `URLRequest`
 /// to upload logs data.
-internal struct LoggingRequestBuilder: FeatureRequestBuilder {
+internal struct LoggingRequestBuilder: FeatureRequestBuilder, FeatureRequestBuilder_ {
+
     /// The logs intake.
     let intake: URL
+
+    let maxBodySize = 4 * 1_024 * 1_024 // 4MB
+    let maxObjectsInRequest = 500
+    let maxObjectSize = 512 * 1_024 // 512KB
 
     /// The logs request body format.
     let format = DataFormat(prefix: "[", suffix: "]", separator: ",")
 
     func request(for events: [Data], with context: DatadogContext) -> URLRequest {
+        let builder = URLRequestBuilder(
+            url: intake,
+            queryItems: [
+                .ddsource(source: context.source)
+            ],
+            headers: [
+                .contentTypeHeader(contentType: .applicationJSON),
+                .userAgentHeader(
+                    appName: context.applicationName,
+                    appVersion: context.version,
+                    device: context.device
+                ),
+                .ddAPIKeyHeader(clientToken: context.clientToken),
+                .ddEVPOriginHeader(source: context.ciAppOrigin ?? context.source),
+                .ddEVPOriginVersionHeader(sdkVersion: context.sdkVersion),
+                .ddRequestIDHeader(),
+            ]
+        )
+
+        let data = format.format(events)
+        return builder.uploadRequest(with: data)
+    }
+
+    func request(stream: BufferStream, with context: DatadogContext) throws -> URLRequest {
+        var bodySize: Int = 0
+
+        let events: [Data] = try stream.reduce([]) { events, block in
+            guard events.count < self.maxObjectsInRequest, bodySize < self.maxBodySize else {
+                return false
+            }
+
+            if block.type == .event, block.data.count < self.maxObjectSize {
+                events.append(block.data)
+                bodySize += block.data.count
+            }
+
+            return true
+        }
+
+        guard bodySize > 0 else {
+            throw BufferStreamError.dataRejected
+        }
+
         let builder = URLRequestBuilder(
             url: intake,
             queryItems: [

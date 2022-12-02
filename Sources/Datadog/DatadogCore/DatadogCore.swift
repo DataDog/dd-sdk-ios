@@ -168,6 +168,13 @@ internal final class DatadogCore {
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     func set(trackingConsent: TrackingConsent) {
         consentProvider.changeConsent(to: trackingConsent)
+
+        features.values
+            .forEach { $0.storage.buffer.update(consent: trackingConsent) }
+
+        v1Features.values
+            .compactMap { $0 as? V1Feature }
+            .forEach { $0.storage.buffer.update(consent: trackingConsent) }
     }
 }
 
@@ -182,12 +189,10 @@ extension DatadogCore: DatadogCoreProtocol {
     ///
     /// - Parameter feature: The Feature instance.
     /* public */ func register(feature: DatadogFeature) throws {
-        let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: feature.name)
-
-        let storage = FeatureStorage(
+        let storage = try FeatureStorage(
             featureName: feature.name,
             queue: readWriteQueue,
-            directories: featureDirectories,
+            directory: directory,
             dateProvider: dateProvider,
             consentProvider: consentProvider,
             performance: performance,
@@ -262,6 +267,7 @@ extension DatadogCore: DatadogCoreProtocol {
 
         return DatadogCoreFeatureScope(
             contextProvider: contextProvider,
+            consentProvider: consentProvider,
             storage: storage
         )
     }
@@ -317,6 +323,7 @@ extension DatadogCore: DatadogV1CoreProtocol {
 
         return DatadogCoreFeatureScope(
             contextProvider: contextProvider,
+            consentProvider: consentProvider,
             storage: feature.storage
         )
     }
@@ -338,26 +345,39 @@ extension DatadogCore: DatadogV1CoreProtocol {
         configuration: DatadogFeatureConfiguration,
         featureSpecificConfiguration: Feature.Configuration
     ) throws -> Feature {
-        let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: configuration.name)
 
-        let storage = FeatureStorage(
+        let storage = try FeatureStorage(
             featureName: configuration.name,
             queue: readWriteQueue,
-            directories: featureDirectories,
+            directory: directory,
             dateProvider: dateProvider,
             consentProvider: consentProvider,
             performance: performance,
             encryption: encryption
         )
 
-        let upload = FeatureUpload(
-            featureName: configuration.name,
-            contextProvider: contextProvider,
-            fileReader: storage.reader,
-            requestBuilder: configuration.requestBuilder,
-            httpClient: httpClient,
-            performance: performance
-        )
+        let upload: FeatureUpload
+
+        if let requestBuilder = configuration.requestBuilder as? FeatureRequestBuilder_ {
+            upload = FeatureUpload(
+                featureName: configuration.name,
+                contextProvider: contextProvider,
+                bufferReader: storage.buffer.reader,
+                requestBuilder: requestBuilder,
+                httpClient: httpClient,
+                performance: performance
+            )
+
+        } else {
+            upload = FeatureUpload(
+                featureName: configuration.name,
+                contextProvider: contextProvider,
+                fileReader: storage.reader,
+                requestBuilder: configuration.requestBuilder,
+                httpClient: httpClient,
+                performance: performance
+            )
+        }
 
         return Feature(
             storage: storage,
@@ -387,12 +407,17 @@ internal protocol V1Feature {
 /// context is provided on it's own queue.
 internal struct DatadogCoreFeatureScope: FeatureScope {
     let contextProvider: DatadogContextProvider
+    let consentProvider: ConsentProvider
     let storage: FeatureStorage
 
     func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void) {
         contextProvider.read { context in
             do {
-                let writer = bypassConsent ? storage.arbitraryAuthorizedWriter : storage.writer
+//                let writer = bypassConsent ? storage.arbitraryAuthorizedWriter : storage.writer
+                let writer = bypassConsent ?
+                    storage.buffer.writer(for: .granted) :
+                    storage.buffer.writer(for: consentProvider.currentValue)
+
                 try block(context, writer)
             } catch {
                 DD.telemetry.error("Failed to execute feature scope", error: error)

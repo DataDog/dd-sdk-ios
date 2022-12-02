@@ -18,3 +18,7 @@ internal protocol AsyncWriter: Writer {
 
     func flushAndCancelSynchronously()
 }
+
+internal struct NOPWriter: Writer {
+    func write<T: Encodable>(value: T) {}
+}

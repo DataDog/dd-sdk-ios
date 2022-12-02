@@ -27,3 +27,49 @@ public protocol FeatureRequestBuilder {
     /// - Returns: The URL request.
     func request(for events: [Data], with context: DatadogContext) throws -> URLRequest
 }
+
+public enum BufferStreamError: Error {
+    case noData
+    case notEnoughData
+    case dataRejected
+    case decodingFailure(error: Error)
+}
+
+public protocol BufferStream {
+
+    func stream(_ next: (DataBlock) throws -> Bool) throws
+}
+
+/// The `FeatureRequestBuilder` defines an interface for building a single `URLRequest`
+/// for a list of data events and the current core context.
+///
+/// A Feature should use this interface for creating requests that needs be sent to its Datadog Intake.
+/// The request will be transported by `DatadogCore`.
+public protocol FeatureRequestBuilder_ {
+    /// Builds an `URLRequest` for a list of events and the current core context to be uploaded
+    /// to the Feature's Intake.
+    ///
+    /// The returned request must include all necessary information, i.e. HTTP headers and
+    /// URL queries required by the Feature's Intake. The request will be sent by the core.
+    ///
+    /// **Note:** When `Error` is thrown, underlying data will be dropped permanently and never retried. The
+    /// implementation should make a wise consideration of throwing vs recovering strategy.
+    ///
+    /// - Parameters:
+    ///   - context: The current core context.
+    ///   - events: The events data to be uploaded.
+    /// - Returns: The URL request.
+    func request(stream: BufferStream, with context: DatadogContext) throws -> URLRequest
+}
+
+extension BufferStream {
+    func reduce<T>(_ result: T, _ block: (inout T, DataBlock) throws -> Bool) throws -> T {
+        var result = result
+        return try reduce(in: &result, block)
+    }
+
+    func reduce<T>(in result: inout T, _ block: (inout T, DataBlock) throws -> Bool) throws -> T {
+        try stream { try block(&result, $0) }
+        return result
+    }
+}
