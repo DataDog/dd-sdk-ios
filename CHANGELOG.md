@@ -2,6 +2,7 @@
 
 - [IMPROVEMENT] Add a method for sending error attributes on logs as strings.
 - [IMPROVEMENT] Add manual Open Telemetry b3 headers injection. See [#1057][]
+- [IMPROVEMENT] Vend `DatadogAlamofireExtension` from Package.swift. See [#1069][]
 
 # 1.13.0 / 08-11-2022
 
