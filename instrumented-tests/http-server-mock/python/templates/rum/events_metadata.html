@@ -1,0 +1,14 @@
+<!--
+ENV vars:
+- tab: CardTab (for `tab.object` definition, see `RUMSchema.events_metadata()`)
+-->
+
+{% for object in tab.object['events'] %}
+    <!-- Pills -->
+    <div>
+    {% for pill in object['pills'] %}
+    <span class="badge rounded-pill text-bg-{% if loop.first %}secondary{% else %}light{% endif %}">{{ pill }}</span>
+    {% endfor %}
+    </div>
+    <hr>
+{% endfor %}

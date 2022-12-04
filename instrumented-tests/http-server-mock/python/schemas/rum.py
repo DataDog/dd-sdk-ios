@@ -34,9 +34,10 @@ class RUMSchema(Schema):
 
     def body_views_card(self) -> Card:
         return Card(
-            title='',
+            title='View as:',
             tabs=[
                 self.events_data(),
+                self.events_metadata(),
             ]
         )
 
@@ -67,7 +68,13 @@ class RUMSchema(Schema):
                 'rum_validation': vd
             })
 
-        return CardTab(title='RUM events', template='rum/events_view.html', object=obj)
+        return CardTab(title='Events', template='rum/events_view.html', object=obj)
+
+    def events_metadata(self) -> CardTab:
+        data = self.events_data()
+        data.title = 'Metadata'
+        data.template = 'rum/events_metadata.html'
+        return data
 
     @staticmethod
     def matches(method: str, path: str):

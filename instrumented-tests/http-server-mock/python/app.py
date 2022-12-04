@@ -32,7 +32,6 @@ class GenericRequest:
     content_type: str
     content_length: Optional[int]
     data_as_text: str
-    headers: [str]  # ['field1: value1', 'field2: value2', ...]
     schemas: [Schema]
 
     def follow_url(self, schema: Schema):
@@ -53,12 +52,6 @@ class GenericRequest:
 
     def schema_with_name(self, name: str):
         return next((s for s in self.schemas if s.name == name), None)
-
-    def headers_card(self) -> Card:
-        return Card(
-            title='Headers',
-            tabs=[CardTab(title='', template='components/request_headers.html', object=self.headers)]
-        )
 
 
 @dataclass()
@@ -135,7 +128,6 @@ def generic_post(rest):
         content_type=request.content_type,
         content_length=request.content_length,
         data_as_text=request.get_data(as_text=True),
-        headers=list(map(lambda h: f'{h[0]}: {h[1]}', request.headers)),
         schemas=schemas_for_request(request)
     )
 

@@ -1,0 +1,8 @@
+<!--
+ENV vars:
+- tab: CardTab (for `tab.object` definition, see `RAWSchema.headers_card()`)
+-->
+
+<small>
+<pre>{% for header in tab.object %}{{ header }}{% if not loop.last %}<br>{% endif %}{% endfor %}</pre>
+</small>
