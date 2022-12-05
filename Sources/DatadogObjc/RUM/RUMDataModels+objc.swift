@@ -856,6 +856,10 @@ public class DDRUMErrorEvent: NSObject {
         DDRUMErrorEventError(root: root)
     }
 
+    @objc public var featureFlags: DDRUMErrorEventFeatureFlags? {
+        root.swiftModel.featureFlags != nil ? DDRUMErrorEventFeatureFlags(root: root) : nil
+    }
+
     @objc public var os: DDRUMErrorEventRUMOperatingSystem? {
         root.swiftModel.os != nil ? DDRUMErrorEventRUMOperatingSystem(root: root) : nil
     }
@@ -1572,6 +1576,19 @@ public enum DDRUMErrorEventErrorSourceType: Int {
     case reactNative
     case flutter
     case roku
+}
+
+@objc
+public class DDRUMErrorEventFeatureFlags: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var featureFlagsInfo: [String: Any] {
+        root.swiftModel.featureFlags!.featureFlagsInfo.castToObjectiveC()
+    }
 }
 
 @objc
@@ -3334,6 +3351,10 @@ public class DDRUMViewEvent: NSObject {
         root.swiftModel.display != nil ? DDRUMViewEventRUMDisplay(root: root) : nil
     }
 
+    @objc public var featureFlags: DDRUMViewEventFeatureFlags? {
+        root.swiftModel.featureFlags != nil ? DDRUMViewEventFeatureFlags(root: root) : nil
+    }
+
     @objc public var os: DDRUMViewEventRUMOperatingSystem? {
         root.swiftModel.os != nil ? DDRUMViewEventRUMOperatingSystem(root: root) : nil
     }
@@ -3661,6 +3682,19 @@ public class DDRUMViewEventRUMDisplayViewport: NSObject {
 
     @objc public var width: NSNumber {
         root.swiftModel.display!.viewport!.width as NSNumber
+    }
+}
+
+@objc
+public class DDRUMViewEventFeatureFlags: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var featureFlagsInfo: [String: Any] {
+        root.swiftModel.featureFlags!.featureFlagsInfo.castToObjectiveC()
     }
 }
 
@@ -4756,7 +4790,8 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
     }
 
     @objc public var initializationType: String? {
-        root.swiftModel.telemetry.configuration.initializationType
+        set { root.swiftModel.telemetry.configuration.initializationType = newValue }
+        get { root.swiftModel.telemetry.configuration.initializationType }
     }
 
     @objc public var mobileVitalsUpdatePeriod: NSNumber? {
@@ -4818,7 +4853,8 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
     }
 
     @objc public var trackFrustrations: NSNumber? {
-        root.swiftModel.telemetry.configuration.trackFrustrations as NSNumber?
+        set { root.swiftModel.telemetry.configuration.trackFrustrations = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.trackFrustrations as NSNumber? }
     }
 
     @objc public var trackInteractions: NSNumber? {
@@ -4827,7 +4863,8 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
     }
 
     @objc public var trackLongTask: NSNumber? {
-        root.swiftModel.telemetry.configuration.trackLongTask as NSNumber?
+        set { root.swiftModel.telemetry.configuration.trackLongTask = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.trackLongTask as NSNumber? }
     }
 
     @objc public var trackNativeErrors: NSNumber? {
@@ -4851,7 +4888,8 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
     }
 
     @objc public var trackResources: NSNumber? {
-        root.swiftModel.telemetry.configuration.trackResources as NSNumber?
+        set { root.swiftModel.telemetry.configuration.trackResources = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.trackResources as NSNumber? }
     }
 
     @objc public var trackSessionAcrossSubdomains: NSNumber? {
@@ -4996,4 +5034,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/967a42ea2b74d4383df455c580ce12355bbf8903
+// Generated from https://github.com/DataDog/rum-events-format/tree/083edbb0f9fec392224820bd05c6336ce6d62c30

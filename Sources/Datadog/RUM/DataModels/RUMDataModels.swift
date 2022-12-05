@@ -412,6 +412,9 @@ public struct RUMErrorEvent: RUMDataModel {
     /// Error properties
     public var error: Error
 
+    /// Feature flags properties
+    public internal(set) var featureFlags: FeatureFlags?
+
     /// Operating system properties
     public let os: RUMOperatingSystem?
 
@@ -450,6 +453,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case device = "device"
         case display = "display"
         case error = "error"
+        case featureFlags = "feature_flags"
         case os = "os"
         case service = "service"
         case session = "session"
@@ -685,6 +689,19 @@ public struct RUMErrorEvent: RUMDataModel {
         }
     }
 
+    /// Feature flags properties
+    public struct FeatureFlags: Codable {
+        public internal(set) var featureFlagsInfo: [String: Encodable]
+
+        struct DynamicCodingKey: CodingKey {
+            var stringValue: String
+            var intValue: Int?
+            init?(stringValue: String) { self.stringValue = stringValue }
+            init?(intValue: Int) { return nil }
+            init(_ string: String) { self.stringValue = string }
+        }
+    }
+
     /// Session properties
     public struct Session: Codable {
         /// Whether this session has a replay
@@ -762,6 +779,30 @@ public struct RUMErrorEvent: RUMDataModel {
             case referrer = "referrer"
             case url = "url"
         }
+    }
+}
+
+extension RUMErrorEvent.FeatureFlags {
+    public func encode(to encoder: Encoder) throws {
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try featureFlagsInfo.forEach {
+            let key = DynamicCodingKey($0)
+            try dynamicContainer.encode(CodableValue($1), forKey: key)
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode other properties into [String: Codable] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        let dynamicKeys = dynamicContainer.allKeys
+        var dictionary: [String: Codable] = [:]
+
+        try dynamicKeys.forEach { codingKey in
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(CodableValue.self, forKey: codingKey)
+        }
+
+        self.featureFlagsInfo = dictionary
     }
 }
 
@@ -1448,6 +1489,9 @@ public struct RUMViewEvent: RUMDataModel {
     /// Display properties
     public let display: RUMDisplay?
 
+    /// Feature flags properties
+    public internal(set) var featureFlags: FeatureFlags?
+
     /// Operating system properties
     public let os: RUMOperatingSystem?
 
@@ -1484,6 +1528,7 @@ public struct RUMViewEvent: RUMDataModel {
         case date = "date"
         case device = "device"
         case display = "display"
+        case featureFlags = "feature_flags"
         case os = "os"
         case service = "service"
         case session = "session"
@@ -1540,6 +1585,19 @@ public struct RUMViewEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
+        }
+    }
+
+    /// Feature flags properties
+    public struct FeatureFlags: Codable {
+        public internal(set) var featureFlagsInfo: [String: Encodable]
+
+        struct DynamicCodingKey: CodingKey {
+            var stringValue: String
+            var intValue: Int?
+            init?(stringValue: String) { self.stringValue = stringValue }
+            init?(intValue: Int) { return nil }
+            init(_ string: String) { self.stringValue = string }
         }
     }
 
@@ -1910,6 +1968,30 @@ public struct RUMViewEvent: RUMDataModel {
                 case count = "count"
             }
         }
+    }
+}
+
+extension RUMViewEvent.FeatureFlags {
+    public func encode(to encoder: Encoder) throws {
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try featureFlagsInfo.forEach {
+            let key = DynamicCodingKey($0)
+            try dynamicContainer.encode(CodableValue($1), forKey: key)
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode other properties into [String: Codable] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        let dynamicKeys = dynamicContainer.allKeys
+        var dictionary: [String: Codable] = [:]
+
+        try dynamicKeys.forEach { codingKey in
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(CodableValue.self, forKey: codingKey)
+        }
+
+        self.featureFlagsInfo = dictionary
     }
 }
 
@@ -2332,7 +2414,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             public let forwardReports: ForwardReports?
 
             /// The type of initialization the SDK used, in case multiple are supported
-            public let initializationType: String?
+            public var initializationType: String?
 
             /// The period between each Mobile Vital sample (in milliseconds)
             public var mobileVitalsUpdatePeriod: Int64?
@@ -2374,13 +2456,13 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             public var trackFlutterPerformance: Bool?
 
             /// Whether user frustrations are tracked
-            public let trackFrustrations: Bool?
+            public var trackFrustrations: Bool?
 
             /// Whether user actions are tracked
             public var trackInteractions: Bool?
 
             /// Whether long tasks are tracked
-            public let trackLongTask: Bool?
+            public var trackLongTask: Bool?
 
             /// Whether native error monitoring & crash reporting is enabled (for cross platform SDKs)
             public var trackNativeErrors: Bool?
@@ -2395,7 +2477,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             public var trackNetworkRequests: Bool?
 
             /// Whether resources are tracked
-            public let trackResources: Bool?
+            public var trackResources: Bool?
 
             /// Whether sessions across subdomains for the same site are tracked
             public let trackSessionAcrossSubdomains: Bool?
@@ -2876,4 +2958,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/967a42ea2b74d4383df455c580ce12355bbf8903
+// Generated from https://github.com/DataDog/rum-events-format/tree/083edbb0f9fec392224820bd05c6336ce6d62c30
