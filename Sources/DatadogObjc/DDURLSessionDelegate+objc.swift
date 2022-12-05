@@ -19,6 +19,22 @@ open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionD
         swiftDelegate = DDURLSessionDelegate()
     }
 
+    @objc
+    public init(additionalFirstPartyHosts: Set<String>) {
+        swiftDelegate = DDURLSessionDelegate(additionalFirstPartyHosts: additionalFirstPartyHosts.reduce(into: [:], { partialResult, host in
+            partialResult[host] = .init(.dd)
+        }))
+    }
+
+    @objc
+    public init(additionalFirstPartyHostsWithHeaderTypes: [String: Set<DDTracingHeaderType>]) {
+        swiftDelegate = DDURLSessionDelegate(
+            additionalFirstPartyHosts: additionalFirstPartyHostsWithHeaderTypes.mapValues { tracingHeaderTypes in
+                return Set(tracingHeaderTypes.map { $0.swiftType })
+            }
+        )
+    }
+
     public init(additionalFirstPartyHosts: FirstPartyHosts) {
         swiftDelegate = DDURLSessionDelegate(additionalFirstPartyHosts: additionalFirstPartyHosts)
     }

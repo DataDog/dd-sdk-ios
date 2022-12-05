@@ -20,7 +20,8 @@
 
 - (void)testDDNSURLSessionDelegateAPI {
     [[DDNSURLSessionDelegate alloc] init];
-//    [[DDNSURLSessionDelegate alloc] initWithAdditionalFirstPartyHosts:[NSSet setWithArray:@[]]];
+    [[DDNSURLSessionDelegate alloc] initWithAdditionalFirstPartyHosts:[NSSet setWithArray:@[]]];
+    [[DDNSURLSessionDelegate alloc] initWithAdditionalFirstPartyHostsWithHeaderTypes:@{@"host": [[NSSet alloc] initWithObjects:[DDTracingHeaderType dd], nil]}];
 }
 
 #pragma clang diagnostic pop
