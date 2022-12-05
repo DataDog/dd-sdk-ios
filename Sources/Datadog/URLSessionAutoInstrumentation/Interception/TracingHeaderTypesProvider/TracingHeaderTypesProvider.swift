@@ -16,15 +16,18 @@ internal struct TracingHeaderTypesProvider {
     }
 
     func tracingHeaderTypes(for url: URL?) -> Set<TracingHeaderType> {
-        for (key, value) in firstPartyHosts {
-            let regex = "^(.*\\.)*[.]?\(NSRegularExpression.escapedPattern(for: key))$"
+        return firstPartyHosts.compactMap { item -> Set<TracingHeaderType>? in
+            let regex = "^(.*\\.)*\(NSRegularExpression.escapedPattern(for: item.key))$"
             if url?.host?.range(of: regex, options: .regularExpression) != nil {
-                return value
+                return item.value
             }
             if url?.absoluteString.range(of: regex, options: .regularExpression) != nil {
-                return value
+                return item.value
             }
+            return nil
         }
-        return .init()
+        .reduce(into: Set(), { partialResult, value in
+            partialResult.formUnion(value)
+        })
     }
 }

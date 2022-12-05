@@ -33,18 +33,20 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDat
     }
 
     let firstPartyURLsFilter: FirstPartyURLsFilter
+    let tracingHeaderTypesProvider: TracingHeaderTypesProvider
 
     private let core: () -> DatadogCoreProtocol
 
     @objc
     override public init() {
         core = { defaultDatadogCore }
-        firstPartyURLsFilter = FirstPartyURLsFilter(hosts: [])
+        firstPartyURLsFilter = FirstPartyURLsFilter(hosts: [:])
+        tracingHeaderTypesProvider = TracingHeaderTypesProvider(firstPartyHosts: [:])
         super.init()
     }
 
     public convenience init(in core: DatadogCoreProtocol) {
-        self.init(in: core, additionalFirstPartyHosts: [])
+        self.init(in: core, additionalFirstPartyHosts: [:])
     }
 
     /// Automatically tracked hosts can be customized per instance with this initializer.
@@ -53,8 +55,7 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDat
     ///
     /// - Parameter additionalFirstPartyHosts: these hosts are tracked **in addition to** what was
     ///             passed to `DatadogConfiguration.Builder` via `trackURLSession(firstPartyHosts:)`
-    @objc
-    public convenience init(additionalFirstPartyHosts: Set<String>) {
+    public convenience init(additionalFirstPartyHosts: FirstPartyHosts) {
         self.init(in: defaultDatadogCore, additionalFirstPartyHosts: additionalFirstPartyHosts)
     }
 
@@ -64,9 +65,10 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDat
     ///   - core: Datadog SDK core.
     ///   - additionalFirstPartyHosts: additionalFirstPartyHosts: these hosts are tracked **in addition to** what was
     ///                                passed to `DatadogConfiguration.Builder` via `trackURLSession(firstPartyHosts:)`
-    public init(in core: @autoclosure @escaping () -> DatadogCoreProtocol, additionalFirstPartyHosts: Set<String>) {
+    public init(in core: @autoclosure @escaping () -> DatadogCoreProtocol, additionalFirstPartyHosts: FirstPartyHosts) {
         self.core = core
         self.firstPartyURLsFilter = FirstPartyURLsFilter(hosts: additionalFirstPartyHosts)
+        self.tracingHeaderTypesProvider = TracingHeaderTypesProvider(firstPartyHosts: additionalFirstPartyHosts)
         super.init()
     }
 

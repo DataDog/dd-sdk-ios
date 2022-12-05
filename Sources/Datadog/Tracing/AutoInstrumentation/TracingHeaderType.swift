@@ -26,3 +26,9 @@ extension FirstPartyHosts {
         return Set(keys)
     }
 }
+
+public extension Set where Element == TracingHeaderType {
+    init(_ tracingHeaderType: TracingHeaderType) {
+        self.init(arrayLiteral: tracingHeaderType)
+    }
+}

@@ -571,8 +571,8 @@ class FeaturesConfigurationTests: XCTestCase {
         let randomCustomRUMEndpoint: URL? = Bool.random() ? .mockRandom() : nil
 
         let firstPartyHostsWithHeaderTypes: FirstPartyHosts = [
-            "example.com": .init(arrayLiteral: .dd),
-            "foo.eu": .init(arrayLiteral: .dd)
+            "example.com": .init(.dd),
+            "foo.eu": .init(.dd)
         ]
         let expectedSDKInternalURLs: Set<String> = [
             randomCustomLogsEndpoint?.absoluteString ?? randomDatadogEndpoint.logsEndpoint.url,
@@ -661,7 +661,7 @@ class FeaturesConfigurationTests: XCTestCase {
             configuration: .mockWith(
                 tracingEnabled: .random(),
                 rumEnabled: true,
-                firstPartyHostsWithHeaderTypes: ["foo.com": .init(arrayLiteral: .dd)],
+                firstPartyHostsWithHeaderTypes: ["foo.com": .init(.dd)],
                 rumResourceAttributesProvider: { _, _, _, _ in [:] }
             ),
             appContext: .mockAny()
@@ -670,7 +670,7 @@ class FeaturesConfigurationTests: XCTestCase {
             configuration: .mockWith(
                 tracingEnabled: .random(),
                 rumEnabled: true,
-                firstPartyHostsWithHeaderTypes: ["foo.com": .init(arrayLiteral: .dd)],
+                firstPartyHostsWithHeaderTypes: ["foo.com": .init(.dd)],
                 rumResourceAttributesProvider: nil
             ),
             appContext: .mockAny()
@@ -745,7 +745,7 @@ class FeaturesConfigurationTests: XCTestCase {
         defer { consolePrint = { print($0) } }
 
         // Given
-        let firstPartyHostsWithHeaderTypes: FirstPartyHosts = ["first-party.com": .init(arrayLiteral: .dd)]
+        let firstPartyHostsWithHeaderTypes: FirstPartyHosts = ["first-party.com": .init(.dd)]
 
         // When
         let tracingEnabled = false
@@ -778,9 +778,9 @@ class FeaturesConfigurationTests: XCTestCase {
     func testWhenFirstPartyHostsAreProvided_itPassesThemToSanitizer() throws {
         // When
         let firstPartyHostsWithHeaderTypes: FirstPartyHosts = [
-            "https://first-party.com": .init(arrayLiteral: .dd),
-            "http://api.first-party.com": .init(arrayLiteral: .dd),
-            "https://first-party.com/v2/api": .init(arrayLiteral: .dd)
+            "https://first-party.com": .init(.dd),
+            "http://api.first-party.com": .init(.dd),
+            "https://first-party.com/v2/api": .init(.dd)
         ]
 
         // Then
@@ -791,10 +791,10 @@ class FeaturesConfigurationTests: XCTestCase {
             hostsSanitizer: mockHostsSanitizer
         )
 
-        XCTAssertEqual(mockHostsSanitizer.sanitizations.count, 1)
-        let sanitization = try XCTUnwrap(mockHostsSanitizer.sanitizations.first)
-        XCTAssertEqual(sanitization.hosts, firstPartyHostsWithHeaderTypes.hosts)
-        XCTAssertEqual(sanitization.warningMessage, "The first party host configured for Datadog SDK is not valid")
+        XCTAssertEqual(mockHostsSanitizer.sanitizationsWithHeaderTypes.count, 1)
+        let sanitization = try XCTUnwrap(mockHostsSanitizer.sanitizationsWithHeaderTypes.first)
+        XCTAssertEqual(sanitization.firstPartyHosts.hosts, firstPartyHostsWithHeaderTypes.hosts)
+        XCTAssertEqual(sanitization.warningMessage, "The first party host with header types configured for Datadog SDK is not valid")
     }
 
     // MARK: - Helpers

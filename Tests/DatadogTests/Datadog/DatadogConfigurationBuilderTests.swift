@@ -154,7 +154,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.customLogsEndpoint, URL(string: "https://api.custom.logs/")!)
             XCTAssertEqual(configuration.customTracesEndpoint, URL(string: "https://api.custom.traces/")!)
             XCTAssertEqual(configuration.customRUMEndpoint, URL(string: "https://api.custom.rum/")!)
-            XCTAssertEqual(configuration.firstPartyHostsWithHeaderTypes, ["example.com": .init(arrayLiteral: .dd)])
+            XCTAssertEqual(configuration.firstPartyHostsWithHeaderTypes, ["example.com": .init(.dd)])
             XCTAssertEqual(configuration.loggingSamplingRate, 66)
             XCTAssertEqual(configuration.tracingSamplingRate, 75)
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 42.5)
@@ -206,7 +206,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
 
         let configuration = builder.build()
 
-        XCTAssertEqual(configuration.firstPartyHostsWithHeaderTypes, ["example.com": .init(arrayLiteral: .dd)])
+        XCTAssertEqual(configuration.firstPartyHostsWithHeaderTypes, ["example.com": .init(.dd)])
         XCTAssertEqual(configuration.logsEndpoint, .eu1)
         XCTAssertEqual(configuration.tracesEndpoint, .eu1)
         XCTAssertEqual(configuration.rumEndpoint, .eu1)

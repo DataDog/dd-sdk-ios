@@ -8,39 +8,27 @@ import Foundation
 
 /// Filters `URLs` which match the first party hosts given by the user.
 internal struct FirstPartyURLsFilter {
-    /// A regexp for matching hosts, e.g. when `hosts` is "example.com", it will match
-    /// "example.com", "api.example.com", but not "foo.com".
-    private let regex: String?
 
-    init(hosts: Set<String>) {
-        if hosts.isEmpty {
-            self.regex = nil
-        } else {
-            // pattern = "^(.*\\.)*tracedHost1$|tracedHost2$|...$"
-            let escapedHosts = hosts
-                .map { "\(NSRegularExpression.escapedPattern(for: $0))$" }
-                .joined(separator: "|")
-            self.regex = "^(.*\\.)*\(escapedHosts)"
-        }
+    private let tracingHeaderTypesProvider: TracingHeaderTypesProvider
+
+    internal init(hosts: FirstPartyHosts) {
+        self.tracingHeaderTypesProvider = TracingHeaderTypesProvider(firstPartyHosts: hosts)
     }
 
     /// Returns `true` if given `URL` matches the first party hosts defined by the user; `false` otherwise.
     func isFirstParty(url: URL?) -> Bool {
-        guard let regex = self.regex,
-              let host = url?.host else {
+        guard let host = url?.host, let url = URL(string: host) else {
             return false
         }
-        return host.range(of: regex, options: .regularExpression) != nil
+        return !tracingHeaderTypesProvider.tracingHeaderTypes(for: url).isEmpty
     }
 
     // Returns `true` if given `String` can be parsed as a URL and matches the first
     // party hosts defined by the user; `false` otherwise
     func isFirstParty(string: String) -> Bool {
-        guard let url = URL(string: string),
-              let regex = self.regex,
-              let host = url.host else {
+        guard let url = URL(string: string) else {
             return false
         }
-        return host.range(of: regex, options: .regularExpression) != nil
+        return isFirstParty(url: url)
     }
 }

@@ -69,7 +69,7 @@ internal struct FeaturesConfiguration {
         let backgroundEventTrackingEnabled: Bool
         let frustrationTrackingEnabled: Bool
         let onSessionStart: RUMSessionListener?
-        let firstPartyHosts: Set<String>
+        let firstPartyHosts: FirstPartyHosts
         let vitalsFrequency: TimeInterval?
         let dateProvider: DateProvider
     }
@@ -209,11 +209,11 @@ extension FeaturesConfiguration {
             )
         }
 
-        var sanitizedHosts: Set<String> = []
-        if let firstPartyHosts = configuration.firstPartyHostsWithHeaderTypes?.hosts {
-            sanitizedHosts = hostsSanitizer.sanitized(
-                hosts: firstPartyHosts,
-                warningMessage: "The first party host configured for Datadog SDK is not valid"
+        var sanitizedHostsWithHeaderTypes: FirstPartyHosts = [:]
+        if let firstPartyHosts = configuration.firstPartyHostsWithHeaderTypes {
+            sanitizedHostsWithHeaderTypes = hostsSanitizer.sanitized(
+                firstPartyHosts: firstPartyHosts,
+                warningMessage: "The first party host with header types configured for Datadog SDK is not valid"
             )
         }
 
@@ -240,7 +240,7 @@ extension FeaturesConfiguration {
                     backgroundEventTrackingEnabled: configuration.rumBackgroundEventTrackingEnabled,
                     frustrationTrackingEnabled: configuration.rumFrustrationSignalsTrackingEnabled,
                     onSessionStart: configuration.rumSessionsListener,
-                    firstPartyHosts: sanitizedHosts,
+                    firstPartyHosts: sanitizedHostsWithHeaderTypes,
                     vitalsFrequency: configuration.mobileVitalsFrequency.timeInterval,
                     dateProvider: dateProvider
                 )
@@ -253,14 +253,6 @@ extension FeaturesConfiguration {
                 )
                 consolePrint("\(error)")
             }
-        }
-
-        var sanitizedHostsWithHeaderTypes: FirstPartyHosts = [:]
-        if let firstPartyHosts = configuration.firstPartyHostsWithHeaderTypes {
-            sanitizedHostsWithHeaderTypes = hostsSanitizer.sanitized(
-                firstPartyHosts: firstPartyHosts,
-                warningMessage: "The first party host with header types configured for Datadog SDK is not valid"
-            )
         }
 
         if configuration.firstPartyHostsWithHeaderTypes?.hosts != nil {

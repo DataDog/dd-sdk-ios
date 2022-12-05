@@ -76,4 +76,34 @@ class TracingHeaderTypesProviderTests: XCTestCase {
             XCTAssertEqual(headerTypesProvider.tracingHeaderTypes(for: url), .init())
         }
     }
+
+    func testTracingHeaderTypes() {
+        let firstPartyHosts: FirstPartyHosts = [
+            "example.com": [.dd, .b3m],
+            "subdomain.example.com": [.w3c],
+            "otherdomain.com": [.b3s]
+        ]
+
+        let provider = TracingHeaderTypesProvider(firstPartyHosts: firstPartyHosts)
+
+        let url1 = URL(string: "http://example.com/path1")
+        let url2 = URL(string: "https://subdomain.example.com/path2")
+        let url3 = URL(string: "http://otherdomain.com/path3")
+        let url4 = URL(string: "https://somedomain.com/path4")
+
+        let expected1 = Set<TracingHeaderType>([.dd, .b3m])
+        let expected2 = Set<TracingHeaderType>([.w3c, .dd, .b3m])
+        let expected3 = Set<TracingHeaderType>([.b3s])
+        let expected4 = Set<TracingHeaderType>()
+
+        let actual1 = provider.tracingHeaderTypes(for: url1)
+        let actual2 = provider.tracingHeaderTypes(for: url2)
+        let actual3 = provider.tracingHeaderTypes(for: url3)
+        let actual4 = provider.tracingHeaderTypes(for: url4)
+
+        XCTAssertEqual(actual1, expected1)
+        XCTAssertEqual(actual2, expected2)
+        XCTAssertEqual(actual3, expected3)
+        XCTAssertEqual(actual4, expected4)
+    }
 }

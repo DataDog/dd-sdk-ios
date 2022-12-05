@@ -529,7 +529,7 @@ extension Datadog {
             /// - Parameter firstPartyHosts: empty set by default
             public func trackURLSession(firstPartyHosts: Set<String> = []) -> Builder {
                 return trackURLSession(firstPartyHostsWithHeaderTypes: firstPartyHosts.reduce(into: [:], { partialResult, host in
-                    partialResult[host] = .init(arrayLiteral: .dd)
+                    partialResult[host] = .init(.dd)
                 }))
             }
 

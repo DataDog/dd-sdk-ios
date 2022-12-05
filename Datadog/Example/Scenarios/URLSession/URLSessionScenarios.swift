@@ -163,9 +163,9 @@ class URLSessionBaseScenario: NSObject {
         case .directWithAdditionalFirstyPartyHosts:
             delegate = DDURLSessionDelegate(
                 additionalFirstPartyHosts: [
-                    customGETResourceURL.host!,
-                    customPOSTRequest.url!.host!,
-                    badResourceURL.host!
+                    customGETResourceURL.host!: .init(.dd),
+                    customPOSTRequest.url!.host!: .init(.dd),
+                    badResourceURL.host!: .init(.dd)
                 ]
             )
         case .inheritance:

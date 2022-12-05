@@ -19,84 +19,75 @@ internal struct HostsSanitizer: HostsSanitizing {
     private let hostRegex = #"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)+([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$"#
     private let ipRegex = #"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"#
 
+    private func sanitize(host: String, warningMessage: String) -> (String?, String?) {
+        if host.range(of: urlRegex, options: .regularExpression) != nil {
+            // if an URL is given instead of the host, take its `host` part
+            if let sanitizedHost = URL(string: host)?.host {
+                let warning = "'\(host)' is an url and will be sanitized to: '\(sanitizedHost)'."
+                return (sanitizedHost, warning)
+            } else {
+                // otherwise, drop
+                let warning = "'\(host)' is not a valid host name and will be dropped."
+                return (nil, warning)
+            }
+        } else if host.range(of: hostRegex, options: .regularExpression) != nil {
+            // if a valid host name is given, accept it
+            return (host, nil)
+        } else if host.range(of: ipRegex, options: .regularExpression) != nil {
+            // if a valid IP address is given, accept it
+            return (host, nil)
+        } else if host == "localhost" {
+            // if "localhost" given, accept it
+            return (host, nil)
+        } else {
+            // otherwise, drop
+            let warning = "'\(host)' is not a valid host name and will be dropped."
+            return (nil, warning)
+        }
+    }
+
+    private func printWarnings(_ warningMessage: String, _ warnings: [String]) {
+        warnings.forEach { warning in
+            consolePrint(
+                    """
+                    ⚠️ \(warningMessage): \(warning)
+                    """
+            )
+        }
+    }
+
     func sanitized(hosts: Set<String>, warningMessage: String) -> Set<String> {
         var warnings: [String] = []
 
         let array: [String] = hosts.compactMap { host in
-            if host.range(of: urlRegex, options: .regularExpression) != nil {
-                // if an URL is given instead of the host, take its `host` part
-                if let sanitizedHost = URL(string: host)?.host {
-                    warnings.append("'\(host)' is an url and will be sanitized to: '\(sanitizedHost)'.")
-                    return sanitizedHost
-                } else {
-                    warnings.append("'\(host)' is not a valid host name and will be dropped.")
-                    return nil
-                }
-            } else if host.range(of: hostRegex, options: .regularExpression) != nil {
-                // if a valid host name is given, accept it
-                return host
-            } else if host.range(of: ipRegex, options: .regularExpression) != nil {
-                // if a valid IP address is given, accept it
-                return host
-            } else if host == "localhost" {
-                // if "localhost" given, accept it
-                return host
-            } else {
-                // otherwise, drop
-                warnings.append("'\(host)' is not a valid host name and will be dropped.")
-                return nil
+            let (sanitizedHost, warning) = sanitize(host: host, warningMessage: warningMessage)
+            if let warning = warning {
+                warnings.append(warning)
             }
+            return sanitizedHost
         }
 
-        warnings.forEach { warning in
-            consolePrint(
-                    """
-                    ⚠️ \(warningMessage): \(warning)
-                    """
-            )
-        }
+        printWarnings(warningMessage, warnings)
 
         return Set(array)
     }
 
-    func sanitized(
-        firstPartyHosts: FirstPartyHosts,
-        warningMessage: String
-    ) -> FirstPartyHosts {
+
+    func sanitized(firstPartyHosts: FirstPartyHosts, warningMessage: String) -> FirstPartyHosts {
         var warnings: [String] = []
 
         let sanitized: FirstPartyHosts = firstPartyHosts.reduce(into: [:]) { partialResult, item in
             let host = item.key
-            if host.range(of: urlRegex, options: .regularExpression) != nil {
-                // if an URL is given instead of the host, take its `host` part
-                if let sanitizedHost = URL(string: host)?.host {
-                    warnings.append("'\(host)' is an url and will be sanitized to: '\(sanitizedHost)'.")
-                    partialResult[sanitizedHost] = item.value
-                } else {
-                    warnings.append("'\(host)' is not a valid host name and will be dropped.")
-                }
-            } else if host.range(of: hostRegex, options: .regularExpression) != nil {
-                // if a valid host name is given, accept it
-                partialResult[host] = item.value
-            } else if host.range(of: ipRegex, options: .regularExpression) != nil {
-                // if a valid IP address is given, accept it
-                partialResult[host] = item.value
-            } else if host == "localhost" {
-                // if "localhost" given, accept it
-                partialResult[host] = item.value
-            } else {
-                // otherwise, drop
-                warnings.append("'\(host)' is not a valid host name and will be dropped.")
+            let (sanitizedHost, warning) = sanitize(host: host, warningMessage: warningMessage)
+            if let warning = warning {
+                warnings.append(warning)
+            }
+            if let sanitizedHost = sanitizedHost {
+                partialResult[sanitizedHost] = item.value
             }
         }
 
-        warnings.forEach { warning in
-            consolePrint(
-                    """
-                    ⚠️ \(warningMessage): \(warning)
-                    """
-            )
-        }
+        printWarnings(warningMessage, warnings)
 
         return sanitized
     }

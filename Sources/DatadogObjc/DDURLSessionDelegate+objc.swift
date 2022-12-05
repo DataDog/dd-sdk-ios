@@ -19,8 +19,7 @@ open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionD
         swiftDelegate = DDURLSessionDelegate()
     }
 
-    @objc
-    public init(additionalFirstPartyHosts: Set<String>) {
+    public init(additionalFirstPartyHosts: FirstPartyHosts) {
         swiftDelegate = DDURLSessionDelegate(additionalFirstPartyHosts: additionalFirstPartyHosts)
     }
 

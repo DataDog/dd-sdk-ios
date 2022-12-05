@@ -293,7 +293,7 @@ extension FeaturesConfiguration.RUM {
         backgroundEventTrackingEnabled: Bool = false,
         frustrationTrackingEnabled: Bool = true,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener(),
-        firstPartyHosts: Set<String> = [],
+        firstPartyHosts: FirstPartyHosts = [:],
         vitalsFrequency: TimeInterval? = 0.5,
         dateProvider: DateProvider = SystemDateProvider()
     ) -> Self {

@@ -117,7 +117,7 @@ class URLSessionInterceptorTests: XCTestCase {
         tracingSampler: Sampler = .mockKeepAll()
     ) -> FeaturesConfiguration.URLSessionAutoInstrumentation {
         return .mockWith(
-            userDefinedHostsWithHeaderTypes: ["first-party.com": .init(arrayLiteral: .dd)],
+            userDefinedHostsWithHeaderTypes: ["first-party.com": .init(.dd)],
             sdkInternalURLs: ["https://dd.internal.com"],
             instrumentTracing: tracingInstrumentationEnabled,
             instrumentRUM: rumInstrumentationEnabled,
@@ -138,7 +138,7 @@ class URLSessionInterceptorTests: XCTestCase {
         Global.sharedTracer = Tracer.mockAny(in: core)
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
         let sessionWithCustomFirstPartyHosts = URLSession.mockWith(
-            DDURLSessionDelegate(additionalFirstPartyHosts: [alternativeFirstPartyRequest.url!.host!])
+            DDURLSessionDelegate(additionalFirstPartyHosts: [alternativeFirstPartyRequest.url!.host!: .init(.dd)])
         )
 
         // When
@@ -314,7 +314,7 @@ class URLSessionInterceptorTests: XCTestCase {
         Global.sharedTracer = Tracer.mockAny(in: core)
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
         let sessionWithCustomFirstPartyHosts = URLSession.mockWith(
-            DDURLSessionDelegate(additionalFirstPartyHosts: [alternativeFirstPartyRequest.url!.host!])
+            DDURLSessionDelegate(additionalFirstPartyHosts: [alternativeFirstPartyRequest.url!.host!: .init(.dd)])
         )
 
         let interceptedFirstPartyRequest = interceptor.modify(request: firstPartyRequest)
