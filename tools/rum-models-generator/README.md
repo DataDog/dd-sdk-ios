@@ -4,10 +4,11 @@
 
 ## Usage
 
+To update the data models to the latest version:
+
 ```
-# rum-models-generator generate-swift --path <path>
+# make rum-models-generator
 ```
-where `<path>` references the folder containing `rum-events-format` schema files.
 
 ## License
 
