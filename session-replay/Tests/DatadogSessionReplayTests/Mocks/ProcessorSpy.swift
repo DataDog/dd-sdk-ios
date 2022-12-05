@@ -9,10 +9,10 @@ import Foundation
 
 /// Spies the interaction with `Processing`.
 internal class ProcessorSpy: Processing {
-    /// An array of snapshots recorded in `process(snapshot:)`
-    private(set) var processedSnapshots: [ViewTreeSnapshot] = []
+    /// An array of snapshots recorded in `process(viewTreeSnapshot:touchSnapshot:)`
+    private(set) var processedSnapshots: [(viewTreeSnapshot: ViewTreeSnapshot, touchSnapshot: TouchSnapshot?)] = []
 
-    func process(snapshot: ViewTreeSnapshot) {
-        processedSnapshots.append(snapshot)
+    func process(viewTreeSnapshot: ViewTreeSnapshot, touchSnapshot: TouchSnapshot?) {
+        processedSnapshots.append((viewTreeSnapshot, touchSnapshot))
     }
 }

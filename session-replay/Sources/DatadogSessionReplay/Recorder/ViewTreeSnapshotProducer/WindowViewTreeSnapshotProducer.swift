@@ -7,8 +7,8 @@
 import Foundation
 import UIKit
 
-/// Produces `ViewTreeSnapshot` for key window in current application.
-internal struct WindowSnapshotProducer: ViewTreeSnapshotProducer {
+/// Produces `ViewTreeSnapshot` of the key window in current application.
+internal struct WindowViewTreeSnapshotProducer: ViewTreeSnapshotProducer {
     /// Finds the right window to capture snapshot in.
     let windowObserver: AppWindowObserver
     /// Builds snapshot from the app window.

@@ -86,5 +86,26 @@ internal class RecordsBuilder {
         return .incrementalSnapshotRecord(value: record)
     }
 
+    func createIncrementalSnapshotRecord(from snapshot: TouchSnapshot) -> SRRecord {
+        let record = SRIncrementalSnapshotRecord(
+            data: .touchData(
+                value: .init(
+                    positions: snapshot.touches
+                        .map { touch in
+                            return .init(
+                                id: touch.id,
+                                timestamp: touch.date.timeIntervalSince1970.toInt64Milliseconds,
+                                x: Int64(withNoOverflow: touch.position.x),
+                                y: Int64(withNoOverflow: touch.position.y)
+                            )
+                        }
+                )
+            ),
+            timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
+        )
+
+        return .incrementalSnapshotRecord(value: record)
+    }
+
     // TODO: RUMM-2250 Bring other types of records
 }

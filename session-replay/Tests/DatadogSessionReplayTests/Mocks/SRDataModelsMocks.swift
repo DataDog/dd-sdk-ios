@@ -980,4 +980,20 @@ internal extension SRRecord {
         case .visualViewportRecord(let record):         return record.timestamp
         }
     }
+
+    var incrementalSnapshot: SRIncrementalSnapshotRecord? {
+        switch self {
+        case .incrementalSnapshotRecord(let value): return value
+        default: return nil
+        }
+    }
+}
+
+extension SRIncrementalSnapshotRecord {
+    var touchData: SRIncrementalSnapshotRecord.Data.TouchData? {
+        switch data {
+        case .touchData(let value): return value
+        default: return nil
+        }
+    }
 }

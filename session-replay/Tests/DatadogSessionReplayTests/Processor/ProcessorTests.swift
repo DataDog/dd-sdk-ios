@@ -18,7 +18,9 @@ private class WriterMock: Writing {
 class ProcessorTests: XCTestCase {
     private let writer = WriterMock()
 
-    func testWhenProcessingFirstSnapshot_itWritesRecordsThatIndicateStartOfASegment() throws {
+    // MARK: - Processing `ViewTreeSnapshots`
+
+    func testWhenProcessingFirstViewTreeSnapshot_itWritesRecordsThatIndicateStartOfASegment() throws {
         let time = Date()
         let rum: RUMContext = .mockRandom()
 
@@ -27,8 +29,8 @@ class ProcessorTests: XCTestCase {
         let viewTree = try generateSimpleViewTree()
 
         // When
-        let snapshot = generateSnapshot(of: viewTree, date: time, rumContext: rum)
-        processor.process(snapshot: snapshot)
+        let snapshot = generateViewTreeSnapshot(for: viewTree, date: time, rumContext: rum)
+        processor.process(viewTreeSnapshot: snapshot, touchSnapshot: nil)
 
         // Then
         XCTAssertEqual(writer.records.count, 1)
@@ -46,7 +48,7 @@ class ProcessorTests: XCTestCase {
         XCTAssertTrue(enrichedRecord.records[2].isFullSnapshotRecord && enrichedRecord.hasFullSnapshot)
     }
 
-    func testWhenRUMContextDoesNotChangeInSucceedingSnapshots_itWritesRecordsThatContinueCurrentSegment() throws {
+    func testWhenRUMContextDoesNotChangeInSucceedingViewTreeSnapshots_itWritesRecordsThatContinueCurrentSegment() throws {
         let time = Date()
         let rum: RUMContext = .mockRandom()
 
@@ -55,13 +57,13 @@ class ProcessorTests: XCTestCase {
         let viewTree = try generateSimpleViewTree()
 
         // When
-        let snapshot1 = generateSnapshot(of: viewTree, date: time, rumContext: rum)
-        let snapshot2 = generateSnapshot(of: morphed(viewTree: viewTree), date: time.addingTimeInterval(1), rumContext: rum)
-        let snapshot3 = generateSnapshot(of: morphed(viewTree: viewTree), date: time.addingTimeInterval(2), rumContext: rum)
+        let snapshot1 = generateViewTreeSnapshot(for: viewTree, date: time, rumContext: rum)
+        let snapshot2 = generateViewTreeSnapshot(for: morphed(viewTree: viewTree), date: time.addingTimeInterval(1), rumContext: rum)
+        let snapshot3 = generateViewTreeSnapshot(for: morphed(viewTree: viewTree), date: time.addingTimeInterval(2), rumContext: rum)
 
-        processor.process(snapshot: snapshot1)
-        processor.process(snapshot: snapshot2)
-        processor.process(snapshot: snapshot3)
+        processor.process(viewTreeSnapshot: snapshot1, touchSnapshot: nil)
+        processor.process(viewTreeSnapshot: snapshot2, touchSnapshot: nil)
+        processor.process(viewTreeSnapshot: snapshot3, touchSnapshot: nil)
 
         // Then
         let enrichedRecords = writer.records
@@ -89,7 +91,7 @@ class ProcessorTests: XCTestCase {
         }
     }
 
-    func testWhenRUMContextChangesInSucceedingSnapshots_itWritesRecordsThatIndicateNextSegments() throws {
+    func testWhenRUMContextChangesInSucceedingViewTreeSnapshots_itWritesRecordsThatIndicateNextSegments() throws {
         let time = Date()
         let rum1: RUMContext = .mockRandom()
         let rum2: RUMContext = .mockRandom()
@@ -99,15 +101,15 @@ class ProcessorTests: XCTestCase {
         let viewTree = try generateSimpleViewTree()
 
         // When
-        let snapshot1 = generateSnapshot(of: viewTree, date: time, rumContext: rum1)
-        let snapshot2 = generateSnapshot(of: morphed(viewTree: viewTree), date: time.addingTimeInterval(1), rumContext: rum1)
-        let snapshot3 = generateSnapshot(of: morphed(viewTree: viewTree), date: time.addingTimeInterval(2), rumContext: rum2)
-        let snapshot4 = generateSnapshot(of: morphed(viewTree: viewTree), date: time.addingTimeInterval(3), rumContext: rum2)
+        let snapshot1 = generateViewTreeSnapshot(for: viewTree, date: time, rumContext: rum1)
+        let snapshot2 = generateViewTreeSnapshot(for: morphed(viewTree: viewTree), date: time.addingTimeInterval(1), rumContext: rum1)
+        let snapshot3 = generateViewTreeSnapshot(for: morphed(viewTree: viewTree), date: time.addingTimeInterval(2), rumContext: rum2)
+        let snapshot4 = generateViewTreeSnapshot(for: morphed(viewTree: viewTree), date: time.addingTimeInterval(3), rumContext: rum2)
 
-        processor.process(snapshot: snapshot1)
-        processor.process(snapshot: snapshot2)
-        processor.process(snapshot: snapshot3)
-        processor.process(snapshot: snapshot4)
+        processor.process(viewTreeSnapshot: snapshot1, touchSnapshot: nil)
+        processor.process(viewTreeSnapshot: snapshot2, touchSnapshot: nil)
+        processor.process(viewTreeSnapshot: snapshot3, touchSnapshot: nil)
+        processor.process(viewTreeSnapshot: snapshot4, touchSnapshot: nil)
 
         // Then
         let enrichedRecords = writer.records
@@ -136,11 +138,51 @@ class ProcessorTests: XCTestCase {
         }
     }
 
-    // MARK: - ViewTreeSnapshot generation
+    // MARK: - Processing `TouchSnapshots`
+
+    func testWhenProcessingTouchSnapshot_itWritesRecordsThatContinueCurrentSegment() throws {
+        let earliestTouchTime = Date()
+        let snapshotTime = earliestTouchTime.addingTimeInterval(5)
+        let numberOfTouches = 10
+        let rum: RUMContext = .mockRandom()
+
+        // Given
+        let processor = Processor(queue: NoQueue(), writer: writer)
+
+        // When
+        let touchSnapshot = generateTouchSnapshot(startAt: earliestTouchTime, endAt: snapshotTime, numberOfTouches: numberOfTouches)
+        processor.process(viewTreeSnapshot: .mockWith(date: snapshotTime, rumContext: rum), touchSnapshot: touchSnapshot)
+
+        // Then
+        XCTAssertEqual(writer.records.count, 1)
+
+        let enrichedRecord = try XCTUnwrap(writer.records.first)
+        XCTAssertEqual(enrichedRecord.applicationID, rum.applicationID)
+        XCTAssertEqual(enrichedRecord.sessionID, rum.sessionID)
+        XCTAssertEqual(enrichedRecord.viewID, rum.viewID)
+        XCTAssertEqual(enrichedRecord.earliestTimestamp, earliestTouchTime.timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(enrichedRecord.latestTimestamp, snapshotTime.timeIntervalSince1970.toInt64Milliseconds)
+
+        XCTAssertEqual(enrichedRecord.records.count, 4)
+        XCTAssertTrue(
+            enrichedRecord.records[0].isMetaRecord &&
+            enrichedRecord.records[1].isFocusRecord &&
+            enrichedRecord.records[2].isFullSnapshotRecord && enrichedRecord.hasFullSnapshot,
+            "Segment must start with 'meta' → 'focus' → 'full snapshot' records"
+        )
+        let touchData = try XCTUnwrap(enrichedRecord.records[3].incrementalSnapshot?.touchData, "Touch information must be send in 'incremental snapshot'")
+        XCTAssertEqual(touchData.positions?.count, numberOfTouches, "It must include information on all touches")
+        touchData.positions?.forEach { touch in
+            XCTAssertGreaterThanOrEqual(touch.timestamp, earliestTouchTime.timeIntervalSince1970.toInt64Milliseconds)
+            XCTAssertLessThanOrEqual(touch.timestamp, snapshotTime.timeIntervalSince1970.toInt64Milliseconds)
+        }
+    }
+
+    // MARK: - `ViewTreeSnapshot` generation
 
     private let snapshotBuilder = ViewTreeSnapshotBuilder()
 
-    private func generateSnapshot(of viewTree: UIView, date: Date, rumContext: RUMContext) -> ViewTreeSnapshot {
+    private func generateViewTreeSnapshot(for viewTree: UIView, date: Date, rumContext: RUMContext) -> ViewTreeSnapshot {
         snapshotBuilder.createSnapshot(of: viewTree, with: .init(date: date, privacy: .allowAll, rumContext: rumContext))
     }
 
@@ -158,5 +200,21 @@ class ProcessorTests: XCTestCase {
         childFrame = childFrame.applying(.init(translationX: .mockRandom(min: 1, max: 10), y: .mockRandom(min: 1, max: 10)))
         viewTree.subviews.first?.frame = childFrame
         return viewTree
+    }
+
+    // MARK: - `TouchSnapshot` generation
+
+    private func generateTouchSnapshot(startAt startTime: Date, endAt endTime: Date, numberOfTouches: Int) -> TouchSnapshot {
+        let dt = endTime.timeIntervalSince(startTime)
+        return TouchSnapshot(
+            date: startTime,
+            touches: (0..<numberOfTouches).map { index in
+                    .init(
+                        id: .mockRandom(min: 0, max: TouchIdentifier(numberOfTouches)),
+                        date: startTime.addingTimeInterval(Double(index) * (dt / Double(numberOfTouches))),
+                        position: .mockRandom()
+                    )
+            }
+        )
     }
 }
