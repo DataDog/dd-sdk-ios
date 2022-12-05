@@ -60,7 +60,6 @@ class TracingHeaderTypesProviderTests: XCTestCase {
         XCTAssertEqual(headerTypesProvider.tracingHeaderTypes(for: URL(string: "api.first-party.com")), .init(arrayLiteral: .b3m))
         XCTAssertEqual(headerTypesProvider.tracingHeaderTypes(for: URL(string: "apifirst-party.com")), .init())
         XCTAssertEqual(headerTypesProvider.tracingHeaderTypes(for: URL(string: "https://api.first-party.com/v1/endpoint")), .init(arrayLiteral: .b3m))
-
     }
 
     func test_TracingHeaderTypesProviderWithValidDictionary_itReturnsCorrectTracingHeaderTypes() {

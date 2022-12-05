@@ -8,7 +8,6 @@ import Foundation
 
 /// Filters `URLs` which match the first party hosts given by the user.
 internal struct FirstPartyURLsFilter {
-
     private let tracingHeaderTypesProvider: TracingHeaderTypesProvider
 
     internal init(hosts: FirstPartyHosts) {

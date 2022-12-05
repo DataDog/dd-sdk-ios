@@ -72,7 +72,6 @@ internal struct HostsSanitizer: HostsSanitizing {
         return Set(array)
     }
 
-
     func sanitized(firstPartyHosts: FirstPartyHosts, warningMessage: String) -> FirstPartyHosts {
         var warnings: [String] = []
 
