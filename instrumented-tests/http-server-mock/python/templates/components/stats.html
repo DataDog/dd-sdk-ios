@@ -1,0 +1,19 @@
+<!--
+ENV vars:
+- stats: [Stat]
+-->
+
+<div class="container text-center">
+    <div class="row">
+        {% for stat in stats %}
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                <h5 class="card-title">{{ stat.value }}</h5>
+                <p class="card-text"><small>{{ stat.title }}</small></p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>

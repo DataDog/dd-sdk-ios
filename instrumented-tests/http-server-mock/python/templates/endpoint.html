@@ -10,22 +10,26 @@
 {% endblock %}
 
 {% block content %}
-    <div class="card">
-        <!-- Schema selector: -->
-        <div class="card-header">
-            <ul class="nav nav-tabs card-header-tabs">
-                {% for schema in endpoint.schemas %}
-                <li class="nav-item">
-                    <a class="nav-link{% if schema.name==selected_schema.name %} active{% endif %}"
-                       href="{{ endpoint.follow_url(schema=schema) }}">{{ schema.pretty_name }} requests</a>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
+<h3><code>{{ endpoint.method }} {{ endpoint.path }}</code> endpoint:</h3>
+List of all requests sent to <code>{{ endpoint.method }} {{ endpoint.path }}</code>:
+<br><br>
 
-        <!-- List of requests: -->
-        <div class="card-body">
-        {% include selected_schema.endpoint_template %}
-        </div>
+<div class="card">
+    <!-- Schema selector: -->
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs">
+            {% for schema in endpoint.schemas %}
+            <li class="nav-item">
+                <a class="nav-link{% if schema.name==selected_schema.name %} active{% endif %}"
+                   href="{{ endpoint.follow_url(schema=schema) }}">{{ schema.pretty_name }} requests</a>
+            </li>
+            {% endfor %}
+        </ul>
     </div>
+
+    <!-- List of requests: -->
+    <div class="card-body">
+    {% include selected_schema.endpoint_template %}
+    </div>
+</div>
 {% endblock %}

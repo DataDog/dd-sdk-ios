@@ -11,7 +11,18 @@ import json
 from flask import Request
 from schemas.schema import Schema
 from templates.components.card import Card, CardTab
+from templates.components.stat import Stat
 from validation.validation import validate_event
+
+
+record_name_by_type = {
+    4: 'meta',
+    6: 'focus',
+    7: 'view-end',
+    8: 'visual-viewport',
+    10: 'full snapshot',
+    11: 'incremental snapshot',
+}
 
 
 class SRSchema(Schema):
@@ -22,12 +33,14 @@ class SRSchema(Schema):
     request_template = 'session-replay/request.html'
 
     # SR-specific
+    stats = [Stat]
     segment_json: dict
 
     def __init__(self, request: Request):
         segment_file = request.files['segment'].read()
         segment_json_string = zlib.decompress(segment_file).decode('utf-8')
         self.segment_json = json.loads(segment_json_string)
+        self.stats = SRSchema.create_stats(records=self.segment_json['records'])
 
     def body_views_card(self) -> Card:
         return Card(
@@ -53,15 +66,6 @@ class SRSchema(Schema):
         return CardTab(title='Segment', template='session-replay/segment_view.html', object=obj)
 
     def records_data(self) -> CardTab:
-        record_name_by_type = {
-            4: 'meta',
-            6: 'focus',
-            7: 'view-end',
-            8: 'visual-viewport',
-            10: 'full snapshot',
-            11: 'incremental snapshot',
-        }
-
         record_schema_path_by_type = {
             4: '/Users/maciek.grzybowski/Temp/rum-events-format/schemas/session-replay/common/meta-record-schema.json',
             6: '/Users/maciek.grzybowski/Temp/rum-events-format/schemas/session-replay/common/focus-record-schema.json',
@@ -98,3 +102,18 @@ class SRSchema(Schema):
     @staticmethod
     def matches(method: str, path: str):
         return method == 'POST' and path.startswith('/api/v2/replay')
+
+    @staticmethod
+    def create_stats(records: dict) -> [Stat]:
+        stats: [Stat] = []
+        for r_type in record_name_by_type:
+            count = 0
+
+            for record in records:
+                if record['type'] == r_type:
+                    count += 1
+
+            stat = Stat(title=f'"{record_name_by_type[r_type]}" records', value=f'{count}')
+            stats.append(stat)
+
+        return stats

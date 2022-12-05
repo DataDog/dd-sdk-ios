@@ -9,36 +9,38 @@
 {% endblock %}
 
 {% block content %}
-  <table id="data" class="table table-striped">
-    <thead class="table-dark">
+<h3>All endpoints</h3>
+List of all endpoints this server received requests to:
+<br><br>
+
+<table id="data" class="table table-striped">
+  <thead class="table-dark">
+    <tr>
+      <th>METHOD</th>
+      <th>PATH</th>
+      <th class="text-center">REQUESTS</th>
+      <th class="text-center">BYTES RECEIVED</th>
+      <th>SCHEMAS</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for endpoint in endpoints %}
       <tr>
-        <th>METHOD</th>
-        <th>PATH</th>
-        <th>SCHEMAS</th>
-        <th class="text-center">REQUESTS</th>
-        <th class="text-center">BYTES RECEIVED</th>
-        <th class="text-center">AVG. SIZE</th>
-        <th></th>
+        <td>{{ endpoint.method }}</td>
+        <td><code>{{ endpoint.path }}</code></td>
+        <td class="text-center">{{ endpoint.requests_count() }}</td>
+        <td class="text-center">{{ endpoint.bytes_received()|filesizeformat(true) }}</td>
+        <td>
+          {% for schema in endpoint.schemas %}
+          <span class="badge {% if schema.is_known %}bg-success{% else %}bg-secondary{% endif %}">{{ schema.name }}</span>
+          {% endfor %}
+        </td>
+        <td class="text-center">
+          <a href="{{ endpoint.follow_url(schema=endpoint.schemas[0]) }}" role="button" class="btn btn-primary btn-sm">See requests</a>
+        </td>
       </tr>
-    </thead>
-    <tbody>
-      {% for endpoint in endpoints %}
-        <tr>
-          <td>{{ endpoint.method }}</td>
-          <td>{{ endpoint.path }}</td>
-          <td>
-            {% for schema in endpoint.schemas %}
-            <span class="badge {% if schema.is_known %}bg-success{% else %}bg-secondary{% endif %}">{{ schema.name }}</span>
-            {% endfor %}
-          </td>
-          <td class="text-center">{{ endpoint.requests_count() }}</td>
-          <td class="text-center">{{ endpoint.bytes_received()|filesizeformat(true) }}</td>
-          <td class="text-center">{{ endpoint.avg_request_size()|filesizeformat(true) }}</td>
-          <td class="text-center">
-            <a href="{{ endpoint.follow_url(schema=endpoint.schemas[0]) }}" role="button" class="btn btn-primary btn-sm">See requests</a>
-          </td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    {% endfor %}
+  </tbody>
+</table>
 {% endblock %}

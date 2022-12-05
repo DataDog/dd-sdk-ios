@@ -11,6 +11,7 @@ import json
 from flask import Request
 from schemas.schema import Schema
 from templates.components.card import Card, CardTab
+from templates.components.stat import Stat
 from validation.validation import validate_event
 
 
@@ -22,6 +23,7 @@ class RUMSchema(Schema):
     request_template = 'rum/request.html'
 
     # RUM-specific:
+    stats = [Stat]
     event_jsons: [dict]
 
     def __init__(self, request: Request):
@@ -31,6 +33,9 @@ class RUMSchema(Schema):
             payload = request.get_data().decode('utf-8')
 
         self.event_jsons = list(map(lambda e: json.loads(e), payload.splitlines()))
+        self.stats = [
+            Stat(title='number of events', value=f'{len(self.event_jsons)}')
+        ]
 
     def body_views_card(self) -> Card:
         return Card(
@@ -68,7 +73,7 @@ class RUMSchema(Schema):
                 'rum_validation': vd
             })
 
-        return CardTab(title='Events', template='rum/events_view.html', object=obj)
+        return CardTab(title=f'Events ({len(self.event_jsons)})', template='rum/events_view.html', object=obj)
 
     def events_metadata(self) -> CardTab:
         data = self.events_data()

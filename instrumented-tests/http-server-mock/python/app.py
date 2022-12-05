@@ -28,11 +28,22 @@ app = Flask(__name__)
 class GenericRequest:
     method: str
     path: str
+    query_string: str
     date: datetime
     content_type: str
     content_length: Optional[int]
     data_as_text: str
     schemas: [Schema]
+
+    def __init__(self, r: Request):
+        self.method = r.method
+        self.path = r.path
+        self.query_string = f'?{request.query_string.decode("utf-8")}' if request.query_string else ''
+        self.date = datetime.datetime.now()
+        self.content_type = r.content_type
+        self.content_length = r.content_length
+        self.data_as_text = r.get_data(as_text=True)
+        self.schemas = schemas_for_request(request)
 
     def follow_url(self, schema: Schema):
         return url_for(
@@ -70,9 +81,6 @@ class GenericEndpoint:
     def bytes_received(self):
         return sum(map(lambda r: r.content_length, self.requests))
 
-    def avg_request_size(self):
-        return self.bytes_received() / len(self.requests)
-
     def follow_url(self, schema: Schema):
         return url_for('inspect_endpoint', schema_name=schema.name, endpoint_hash=self.hash())
 
@@ -105,8 +113,8 @@ def write_to_file(endpoint: GenericEndpoint):
     no = len(endpoint.requests)
     if 'rum' in endpoint.path:
         pass
-        # with open(f'fixtures/rum/{no}', 'wb') as f:
-        #     f.write(request.get_data())
+        with open(f'fixtures/rum/{no}', 'wb') as f:
+            f.write(request.get_data())
     elif 'replay' in endpoint.path:
         with open(f'fixtures/replay/{no}', 'wb') as f:
             f.write(request.get_data())
@@ -121,19 +129,11 @@ def generic_post(rest):
     """
     global endpoints
 
-    gr = GenericRequest(
-        method=request.method,
-        path=request.path,
-        date=datetime.datetime.now(),
-        content_type=request.content_type,
-        content_length=request.content_length,
-        data_as_text=request.get_data(as_text=True),
-        schemas=schemas_for_request(request)
-    )
+    gr = GenericRequest(r=request)
 
     if existing := next((e for e in endpoints if e.hash() == gr.endpoint_hash()), None):
         existing.requests.append(gr)
-        write_to_file(endpoint=existing)
+        # write_to_file(endpoint=existing)
         return f'OK - request recorded to known endpoint\n'
     else:
         endpoints.append(
@@ -144,7 +144,7 @@ def generic_post(rest):
                 schemas=gr.schemas
             )
         )
-        write_to_file(endpoint=endpoints[len(endpoints)-1])
+        # write_to_file(endpoint=endpoints[len(endpoints)-1])
         return f'OK - request recorded to new endpoint\n'
 
 

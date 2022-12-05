@@ -5,15 +5,6 @@ ENV vars:
 - selected_schema: RAWSchema(Schema)
 -->
 
-<!-- Start Line -->
-<div class="card">
-    <div class="card-body">
-        <h5><code>{{ selected_schema.start_line }}</code></h5>
-    </div>
-</div>
-
-<br>
-
 <!-- Headers -->
 {% with card=selected_schema.headers_card() %}
     {% include 'components/card.html' %}
@@ -22,7 +13,6 @@ ENV vars:
 <br>
 
 <!-- Body -->
-
 {% with card=selected_schema.body_views_card() %}
     {% include 'components/card.html' %}
 {% endwith %}

@@ -7,13 +7,10 @@
 # -----------------------------------------------------------
 
 
-class Schema:
-    name: str  # displayed in the UI
-    pretty_name: str
-    is_known: bool
-    endpoint_template: str
-    request_template: str
+class Stat:
+    title: str
+    value: str
 
-    @staticmethod
-    def matches(method: str, path: str):
-        pass
+    def __init__(self, title: str, value: str):
+        self.title = title
+        self.value = value

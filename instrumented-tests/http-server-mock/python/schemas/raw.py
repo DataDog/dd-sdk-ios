@@ -21,16 +21,11 @@ class RAWSchema(Schema):
     request_template = 'raw/request.html'
 
     # RAW-specific:
-    start_line: str
     headers: [str]  # ['field1: value1', 'field2: value2', ...]
     data_as_text: str
     decompressed_data: Optional[str]  # `None` if data was not compressed
 
     def __init__(self, request: Request):
-        if request.query_string:
-            self.start_line = f'{request.method} {request.path}?{request.query_string.decode("utf-8")}'
-        else:
-            self.start_line = f'{request.method} {request.path}'
         self.headers = list(map(lambda h: f'{h[0]}: {h[1]}', request.headers))
         self.data_as_text = request.get_data(as_text=True)
         if request.headers.get('Content-Encoding', None) == 'deflate':

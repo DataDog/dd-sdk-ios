@@ -5,6 +5,13 @@ ENV vars:
 - selected_schema: RUMSchema(Schema)
 -->
 
+<!-- Stats -->
+{% with stats=selected_schema.stats %}
+    {% include 'components/stats.html' %}
+{% endwith %}
+
+<br>
+
 <!-- Body -->
 {% with card=selected_schema.body_views_card() %}
     {% include 'components/card.html' %}

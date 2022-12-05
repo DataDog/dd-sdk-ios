@@ -18,22 +18,30 @@ ENV vars:
 {% endblock %}
 
 {% block content %}
-    <div class="card">
-        <!-- Schema selector: -->
-        <div class="card-header">
-            <ul class="nav nav-tabs card-header-tabs">
-                {% for schema in request.schemas %}
-                <li class="nav-item">
-                    <a class="nav-link{% if schema.name==selected_schema.name %} active{% endif %}"
-                       href="{{ request.follow_url(schema=schema) }}">{{ schema.pretty_name }}</a>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <!-- Request Details → `<schema>/request.html` -->
-        <div class="card-body">
-        {% include selected_schema.request_template %}
-        </div>
+<!-- Start Line (<method> <path><query_string>) -->
+<div class="card">
+    <div class="card-body">
+        <h5><code>{{ request.method }} {{ request.path }}{{ request.query_string }}</code></h5>
     </div>
+</div>
+<br>
+
+<div class="card">
+    <!-- Schema selector: -->
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs">
+            {% for schema in request.schemas %}
+            <li class="nav-item">
+                <a class="nav-link{% if schema.name==selected_schema.name %} active{% endif %}"
+                   href="{{ request.follow_url(schema=schema) }}">{{ schema.pretty_name }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Request Details → `<schema>/request.html` -->
+    <div class="card-body">
+    {% include selected_schema.request_template %}
+    </div>
+</div>
 {% endblock %}
