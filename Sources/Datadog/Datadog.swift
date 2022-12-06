@@ -365,10 +365,6 @@ public class Datadog {
         // Deinitialize `Datadog`:
         defaultDatadogCore = NOPDatadogCore()
     }
-
-    // MARK: - Internal Proxy - exposure of internal classes (Mostly used for cross platform libraries)
-
-    public private(set) static var _internal = _InternalProxy()
 }
 
 /// Convenience typealias.

@@ -146,7 +146,7 @@ internal final class RemoteLogger: LoggerProtocol {
                     eventMapper: self.configuration.eventMapper
                 )
 
-                let log = builder.createLogEvent(
+                builder.createLogEvent(
                     date: date,
                     level: level,
                     message: message,
@@ -158,28 +158,24 @@ internal final class RemoteLogger: LoggerProtocol {
                     tags: userTags,
                     context: context,
                     threadName: threadName
-                )
+                ) { log in
+                    writer.write(value: log)
 
-                guard let log = log else {
-                    return
-                }
+                    guard log.status == .error || log.status == .critical else {
+                        return
+                    }
 
-                writer.write(value: log)
-
-                guard log.status == .error || log.status == .critical else {
-                    return
-                }
-
-                self.core.send(
-                    message: .error(
-                        message: log.error?.message ?? log.message,
-                        baggage: [
-                            "type": log.error?.kind,
-                            "stack": log.error?.stack,
-                            "source": "logger"
-                        ]
+                    self.core.send(
+                        message: .error(
+                            message: log.error?.message ?? log.message,
+                            baggage: [
+                                "type": log.error?.kind,
+                                "stack": log.error?.stack,
+                                "source": "logger"
+                            ]
+                        )
                     )
-                )
+                }
             }
         }
     }

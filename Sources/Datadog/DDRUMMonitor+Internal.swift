@@ -6,6 +6,8 @@
 
 import Foundation
 
+extension DDRUMMonitor: DatadogInternal {}
+
 /// This class exposes internal methods that are used by other Datadog modules and cross platform
 /// frameworks. It is not meant for public use.
 ///
@@ -14,16 +16,13 @@ import Foundation
 ///
 /// Methods, members, and functionality of this class  are subject to change without notice, as they
 /// are not considered part of the public interface of the Datadog SDK.
-public class _RUMInternalProxy {
-    weak var subscriber: RUMCommandSubscriber?
-
-    init(subscriber: RUMCommandSubscriber) {
-        self.subscriber = subscriber
-    }
-
+extension DatadogExtension where ExtendedType: DDRUMMonitor {
     public func addLongTask(at: Date, duration: TimeInterval, attributes: [AttributeKey: AttributeValue] = [:]) {
-        let longTaskCommand = RUMAddLongTaskCommand(time: at, attributes: attributes, duration: duration)
+        guard let type = type as? RUMCommandSubscriber else {
+            return
+        }
 
-        subscriber?.process(command: longTaskCommand)
+        let longTaskCommand = RUMAddLongTaskCommand(time: at, attributes: attributes, duration: duration)
+        type.process(command: longTaskCommand)
     }
 }

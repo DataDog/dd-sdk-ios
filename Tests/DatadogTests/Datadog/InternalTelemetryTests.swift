@@ -9,7 +9,7 @@ import Foundation
 import XCTest
 @testable import Datadog
 
-class InternalProxyTests: XCTestCase {
+class InternalTelemetryTests: XCTestCase {
     func testProxyDebugCallsTelemetryDebug() {
         // Given
         let dd = DD.mockWith(telemetry: TelemetryMock())
@@ -19,7 +19,7 @@ class InternalProxyTests: XCTestCase {
         let message: String = .mockAny()
 
         // When
-        Datadog._internal._telemetry.debug(id: id, message: message)
+        Datadog._internal.telemetry.debug(id: id, message: message)
 
         // Then
         XCTAssertEqual(dd.telemetry.debugs.count, 1)
@@ -37,7 +37,7 @@ class InternalProxyTests: XCTestCase {
         let kind: String = .mockAny()
 
         // When
-        Datadog._internal._telemetry.error(id: id, message: message, kind: kind, stack: stack)
+        Datadog._internal.telemetry.error(id: id, message: message, kind: kind, stack: stack)
 
         // Then
         XCTAssertEqual(dd.telemetry.errors.count, 1)

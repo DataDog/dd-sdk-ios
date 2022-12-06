@@ -296,8 +296,6 @@ public class DDRUMMonitor {
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {}
 
-    public internal(set) var _internal: _RUMInternalProxy? = nil
-
     // MARK: - Internal
 
     internal init() {}

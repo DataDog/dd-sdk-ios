@@ -48,8 +48,9 @@ internal struct LogEventBuilder {
         attributes: LogEvent.Attributes,
         tags: Set<String>,
         context: DatadogContext,
-        threadName: String
-    ) -> LogEvent? {
+        threadName: String,
+        callback: @escaping (LogEvent) -> Void
+    ) {
         let userInfo = context.userInfo ?? .empty
 
         let log = LogEvent(
@@ -84,11 +85,7 @@ internal struct LogEventBuilder {
             tags: !tags.isEmpty ? Array(tags) : nil
         )
 
-        if let mapper = eventMapper {
-            return mapper(log)
-        }
-
-        return log
+        eventMapper?.map(event: log, callback: callback) ?? callback(log)
     }
 }
 
