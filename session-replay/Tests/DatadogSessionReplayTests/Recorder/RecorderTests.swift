@@ -24,7 +24,8 @@ private class RUMContextObserverMock: RUMContextObserver {
 class RecorderTests: XCTestCase {
     func testGivenRUMContextAvailable_whenStarted_itCapturesSnapshotsAndPassesThemToProcessor() {
         let numberOfSnapshots = 10
-        let mockSnapshots: [ViewTreeSnapshot] = .mockRandom(count: numberOfSnapshots)
+        let mockViewTreeSnapshots: [ViewTreeSnapshot] = .mockRandom(count: numberOfSnapshots)
+        let mockTouchSnapshots: [TouchSnapshot] = .mockRandom(count: numberOfSnapshots)
         let rumContextObserver = RUMContextObserverMock()
         let processor = ProcessorSpy()
 
@@ -32,8 +33,10 @@ class RecorderTests: XCTestCase {
         let recorder = Recorder(
             configuration: .mockAny(),
             rumContextObserver: rumContextObserver,
+            uiApplicationSwizzler: .mockAny(),
             scheduler: TestScheduler(numberOfRepeats: numberOfSnapshots),
-            snapshotProducer: SnapshotProducerMock(succeedingSnapshots: mockSnapshots),
+            viewTreeSnapshotProducer: ViewTreeSnapshotProducerMock(succeedingSnapshots: mockViewTreeSnapshots),
+            touchSnapshotProducer: TouchSnapshotProducerMock(succeedingSnapshots: mockTouchSnapshots),
             snapshotProcessor: processor
         )
         rumContextObserver.notify(rumContext: .mockAny())
@@ -43,7 +46,8 @@ class RecorderTests: XCTestCase {
 
         // Then
         XCTAssertEqual(processor.processedSnapshots.count, numberOfSnapshots, "Processor should receive \(numberOfSnapshots) snapshots")
-        XCTAssertEqual(processor.processedSnapshots, mockSnapshots)
+        XCTAssertEqual(processor.processedSnapshots.map { $0.viewTreeSnapshot }, mockViewTreeSnapshots)
+        XCTAssertEqual(processor.processedSnapshots.map { $0.touchSnapshot }, mockTouchSnapshots)
     }
 
     func testGivenNoRUMContextAvailable_whenStarted_itDoesNotCaptureAnySnapshots() {
@@ -54,8 +58,10 @@ class RecorderTests: XCTestCase {
         let recorder = Recorder(
             configuration: .mockAny(),
             rumContextObserver: rumContextObserver,
+            uiApplicationSwizzler: .mockAny(),
             scheduler: TestScheduler(numberOfRepeats: 1),
-            snapshotProducer: SnapshotProducerMock(succeedingSnapshots: .mockAny(count: 1)),
+            viewTreeSnapshotProducer: ViewTreeSnapshotProducerMock(succeedingSnapshots: .mockAny(count: 1)),
+            touchSnapshotProducer: TouchSnapshotProducerMock(succeedingSnapshots: .mockAny(count: 1)),
             snapshotProcessor: processor
         )
         rumContextObserver.notify(rumContext: nil)
@@ -67,18 +73,21 @@ class RecorderTests: XCTestCase {
         XCTAssertTrue(processor.processedSnapshots.isEmpty)
     }
 
-    func testGivenRUMContextAvailable_whenCapturingSnapshot_itUsesDefaultRecorderContext() {
+    func testGivenRUMContextAvailable_whenCapturingSnapshots_itUsesDefaultRecorderContext() {
         let randomPrivacy: SessionReplayPrivacy = .mockRandom()
         let randomRUMContext: RUMContext = .mockRandom()
         let rumContextObserver = RUMContextObserverMock()
-        let snapshotProducer = SnapshotProducerSpy()
+        let viewTreeSnapshotProducer = ViewTreeSnapshotProducerSpy()
+        let touchSnapshotProducer = TouchSnapshotProducerMock()
 
         // Given
         let recorder = Recorder(
             configuration: SessionReplayConfiguration(privacy: randomPrivacy),
             rumContextObserver: rumContextObserver,
+            uiApplicationSwizzler: .mockAny(),
             scheduler: TestScheduler(numberOfRepeats: 1),
-            snapshotProducer: snapshotProducer,
+            viewTreeSnapshotProducer: viewTreeSnapshotProducer,
+            touchSnapshotProducer: touchSnapshotProducer,
             snapshotProcessor: ProcessorSpy()
         )
         rumContextObserver.notify(rumContext: randomRUMContext)
@@ -87,21 +96,24 @@ class RecorderTests: XCTestCase {
         recorder.start()
 
         // Then
-        XCTAssertEqual(snapshotProducer.succeedingContexts.count, 1)
-        XCTAssertEqual(snapshotProducer.succeedingContexts[0].privacy, randomPrivacy)
-        XCTAssertEqual(snapshotProducer.succeedingContexts[0].rumContext, randomRUMContext)
+        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts.count, 1)
+        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].privacy, randomPrivacy)
+        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].rumContext, randomRUMContext)
     }
 
-    func testGivenRUMContextAvailable_whenCapturingSnapshot_itUsesCurrentRecorderContext() {
+    func testGivenRUMContextAvailable_whenCapturingSnapshots_itUsesCurrentRecorderContext() {
         let rumContextObserver = RUMContextObserverMock()
-        let snapshotProducer = SnapshotProducerSpy()
+        let viewTreeSnapshotProducer = ViewTreeSnapshotProducerSpy()
+        let touchSnapshotProducer = TouchSnapshotProducerMock()
 
         // Given
         let recorder = Recorder(
             configuration: SessionReplayConfiguration(privacy: .mockRandom()),
             rumContextObserver: rumContextObserver,
+            uiApplicationSwizzler: .mockAny(),
             scheduler: TestScheduler(numberOfRepeats: 1),
-            snapshotProducer: snapshotProducer,
+            viewTreeSnapshotProducer: viewTreeSnapshotProducer,
+            touchSnapshotProducer: touchSnapshotProducer,
             snapshotProcessor: ProcessorSpy()
         )
         rumContextObserver.notify(rumContext: .mockRandom())
@@ -116,8 +128,8 @@ class RecorderTests: XCTestCase {
         recorder.start()
 
         // Then
-        XCTAssertEqual(snapshotProducer.succeedingContexts.count, 1)
-        XCTAssertEqual(snapshotProducer.succeedingContexts[0].privacy, currentPrivacy)
-        XCTAssertEqual(snapshotProducer.succeedingContexts[0].rumContext, currentRUMContext)
+        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts.count, 1)
+        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].privacy, currentPrivacy)
+        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].rumContext, currentRUMContext)
     }
 }

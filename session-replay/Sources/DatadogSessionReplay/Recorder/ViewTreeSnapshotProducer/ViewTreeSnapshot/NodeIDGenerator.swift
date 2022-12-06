@@ -69,8 +69,8 @@ internal final class NodeIDGenerator {
 
 // MARK: - UIView tagging
 
-fileprivate var associatedNodeIDKey: UInt8 = 201
-fileprivate var associatedNodeID2Key: UInt8 = 201
+fileprivate var associatedNodeIDKey: UInt8 = 1
+fileprivate var associatedNodeID2Key: UInt8 = 2
 
 private extension UIView {
     var nodeID: NodeID? {

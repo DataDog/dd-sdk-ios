@@ -41,3 +41,36 @@ extension UIView: AnyMockable, RandomMockable {
         return view as! Self
     }
 }
+
+class UITouchMock: UITouch {
+    var _phase: UITouch.Phase
+    var _location: CGPoint
+
+    init(phase: UITouch.Phase = .began, location: CGPoint = .zero) {
+        self._phase = phase
+        self._location = location
+    }
+
+    override var phase: UITouch.Phase {
+        get { _phase }
+        set { _phase = newValue }
+    }
+
+    override func location(in view: UIView?) -> CGPoint {
+        return _location
+    }
+}
+
+class UITouchEventMock: UIEvent {
+    var _touches: Set<UITouchMock>
+
+    init(touches: [UITouchMock] = []) {
+        self._touches = Set(touches)
+    }
+
+    override var type: UIEvent.EventType { .touches }
+
+    override func touches(for window: UIWindow) -> Set<UITouch>? {
+        return _touches
+    }
+}

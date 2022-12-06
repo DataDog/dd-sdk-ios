@@ -24,7 +24,7 @@ import Foundation
 ///     // call span.finish() when the request completes
 ///
 ///
-public class HTTPHeadersWriter: OTHTTPHeadersWriter {
+public class HTTPHeadersWriter: OTHTTPHeadersWriter, TracePropagationHeadersProvider {
     /// A dictionary with HTTP Headers required to propagate the trace started in the mobile app
     /// to the backend instrumented with Datadog APM.
     ///

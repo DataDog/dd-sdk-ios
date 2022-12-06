@@ -133,6 +133,7 @@
     [builder setWithUploadFrequency:DDUploadFrequencyAverage];
     [builder setWithAdditionalConfiguration:@{}];
     [builder setWithEncryption:[CustomDDDataEncryption new]];
+
     [builder build];
 }
 

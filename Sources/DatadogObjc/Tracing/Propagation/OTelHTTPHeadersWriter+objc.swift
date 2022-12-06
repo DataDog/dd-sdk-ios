@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import class Datadog.OpenTelemetryHTTPHeadersWriter
+import class Datadog.OTelHTTPHeadersWriter
 
 @objc
 public enum DDInjectEncoding: Int {
@@ -13,7 +13,7 @@ public enum DDInjectEncoding: Int {
     case single = 1
 }
 
-private extension OpenTelemetryHTTPHeadersWriter.InjectEncoding {
+private extension OTelHTTPHeadersWriter.InjectEncoding {
     init(_ value: DDInjectEncoding) {
         switch value {
         case .single:
@@ -25,11 +25,11 @@ private extension OpenTelemetryHTTPHeadersWriter.InjectEncoding {
 }
 
 @objc
-public class DDOpenTelemetryHTTPHeadersWriter: NSObject {
-    let swiftOpenTelemetryHTTPHeadersWriter: OpenTelemetryHTTPHeadersWriter
+public class DDOTelHTTPHeadersWriter: NSObject {
+    let swiftOTelHTTPHeadersWriter: OTelHTTPHeadersWriter
 
     @objc public var tracePropagationHTTPHeaders: [String: String] {
-        swiftOpenTelemetryHTTPHeadersWriter.tracePropagationHTTPHeaders
+        swiftOTelHTTPHeadersWriter.tracePropagationHTTPHeaders
     }
 
     @objc
@@ -37,7 +37,7 @@ public class DDOpenTelemetryHTTPHeadersWriter: NSObject {
         samplingRate: Float = 20,
         injectEncoding: DDInjectEncoding = .single
     ) {
-        swiftOpenTelemetryHTTPHeadersWriter = OpenTelemetryHTTPHeadersWriter(
+        swiftOTelHTTPHeadersWriter = OTelHTTPHeadersWriter(
             samplingRate: samplingRate,
             injectEncoding: .init(injectEncoding)
         )
