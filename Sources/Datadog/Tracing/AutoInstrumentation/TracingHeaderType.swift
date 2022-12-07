@@ -18,17 +18,3 @@ public enum TracingHeaderType: Hashable {
     case b3m
     case w3c
 }
-
-public typealias FirstPartyHosts = [String: Set<TracingHeaderType>]
-
-extension FirstPartyHosts {
-    var hosts: Set<String> {
-        return Set(keys)
-    }
-}
-
-public extension Set where Element == TracingHeaderType {
-    init(_ tracingHeaderType: TracingHeaderType) {
-        self.init(arrayLiteral: tracingHeaderType)
-    }
-}

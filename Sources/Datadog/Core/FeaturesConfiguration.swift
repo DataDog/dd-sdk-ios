@@ -209,7 +209,7 @@ extension FeaturesConfiguration {
             )
         }
 
-        var sanitizedHostsWithHeaderTypes: FirstPartyHosts = [:]
+        var sanitizedHostsWithHeaderTypes: FirstPartyHosts = .init()
         if let firstPartyHosts = configuration.firstPartyHostsWithHeaderTypes {
             sanitizedHostsWithHeaderTypes = hostsSanitizer.sanitized(
                 firstPartyHosts: firstPartyHosts,

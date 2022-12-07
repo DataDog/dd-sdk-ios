@@ -570,10 +570,10 @@ class FeaturesConfigurationTests: XCTestCase {
         let randomCustomTracesEndpoint: URL? = Bool.random() ? .mockRandom() : nil
         let randomCustomRUMEndpoint: URL? = Bool.random() ? .mockRandom() : nil
 
-        let firstPartyHostsWithHeaderTypes: FirstPartyHosts = [
-            "example.com": .init(.dd),
-            "foo.eu": .init(.dd)
-        ]
+        let firstPartyHostsWithHeaderTypes: FirstPartyHosts = .init([
+            "example.com": .init([.dd]),
+            "foo.eu": .init([.dd])
+        ])
         let expectedSDKInternalURLs: Set<String> = [
             randomCustomLogsEndpoint?.absoluteString ?? randomDatadogEndpoint.logsEndpoint.url,
             randomCustomTracesEndpoint?.absoluteString ?? randomDatadogEndpoint.tracesEndpoint.url,
@@ -647,7 +647,7 @@ class FeaturesConfigurationTests: XCTestCase {
         configuration = try createConfiguration(
             tracingEnabled: true,
             rumEnabled: true,
-            firstPartyHostsWithHeaderTypes: [:]
+            firstPartyHostsWithHeaderTypes: .init()
         )
         XCTAssertNotNil(
             configuration.urlSessionAutoInstrumentation,
@@ -661,7 +661,7 @@ class FeaturesConfigurationTests: XCTestCase {
             configuration: .mockWith(
                 tracingEnabled: .random(),
                 rumEnabled: true,
-                firstPartyHostsWithHeaderTypes: ["foo.com": .init(.dd)],
+                firstPartyHostsWithHeaderTypes: .init(["foo.com": .init([.dd])]),
                 rumResourceAttributesProvider: { _, _, _, _ in [:] }
             ),
             appContext: .mockAny()
@@ -670,7 +670,7 @@ class FeaturesConfigurationTests: XCTestCase {
             configuration: .mockWith(
                 tracingEnabled: .random(),
                 rumEnabled: true,
-                firstPartyHostsWithHeaderTypes: ["foo.com": .init(.dd)],
+                firstPartyHostsWithHeaderTypes: .init(["foo.com": .init([.dd])]),
                 rumResourceAttributesProvider: nil
             ),
             appContext: .mockAny()
@@ -745,7 +745,7 @@ class FeaturesConfigurationTests: XCTestCase {
         defer { consolePrint = { print($0) } }
 
         // Given
-        let firstPartyHostsWithHeaderTypes: FirstPartyHosts = ["first-party.com": .init(.dd)]
+        let firstPartyHostsWithHeaderTypes: FirstPartyHosts = .init(["first-party.com": .init([.dd])])
 
         // When
         let tracingEnabled = false
@@ -777,11 +777,11 @@ class FeaturesConfigurationTests: XCTestCase {
 
     func testWhenFirstPartyHostsAreProvided_itPassesThemToSanitizer() throws {
         // When
-        let firstPartyHostsWithHeaderTypes: FirstPartyHosts = [
-            "https://first-party.com": .init(.dd),
-            "http://api.first-party.com": .init(.dd),
-            "https://first-party.com/v2/api": .init(.dd)
-        ]
+        let firstPartyHostsWithHeaderTypes: FirstPartyHosts = .init([
+            "https://first-party.com": .init([.dd]),
+            "http://api.first-party.com": .init([.dd]),
+            "https://first-party.com/v2/api": .init([.dd])
+        ])
 
         // Then
         let mockHostsSanitizer = MockHostsSanitizer()

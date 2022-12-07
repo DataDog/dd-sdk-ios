@@ -832,7 +832,6 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
     }
 
-    // --
     func testItInjectsSpanContextWithW3CHTTPHeadersWriter() {
         let tracer: Tracer = .mockAny(in: PassthroughCoreMock())
         let spanContext1 = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
@@ -886,7 +885,6 @@ class TracerTests: XCTestCase {
         ]
         XCTAssertEqual(httpHeadersWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
     }
-    // --
 
     func testItInjectsRejectedSpanContextWithHTTPHeadersWriter() {
         let tracer: Tracer = .mockAny(in: PassthroughCoreMock())

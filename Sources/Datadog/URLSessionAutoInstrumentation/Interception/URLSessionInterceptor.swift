@@ -32,13 +32,10 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
         return instrumentation?.interceptor as? URLSessionInterceptor
     }
 
-    /// Filters first party `URLs` defined by the user.
-    private let defaultFirstPartyURLsFilter: FirstPartyURLsFilter
+    /// First party hosts defined by the user.
+    private let firstPartyHosts: FirstPartyHosts
     /// Filters internal `URLs` used by the SDK.
     private let internalURLsFilter: InternalURLsFilter
-
-    /// Returns tracing header types for given host.
-    private let tracingHeaderTypesProvider: TracingHeaderTypesProvider
     /// Handles resources interception.
     /// Depending on which instrumentation is enabled, this can be either RUM or Tracing handler sending respectively: RUM Resource or tracing Span.
     internal let handler: URLSessionInterceptionHandler
@@ -80,11 +77,8 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
         configuration: FeaturesConfiguration.URLSessionAutoInstrumentation,
         handler: URLSessionInterceptionHandler
     ) {
-        self.defaultFirstPartyURLsFilter = FirstPartyURLsFilter(hosts: configuration.userDefinedHostsWithHeaderTypes)
+        self.firstPartyHosts = configuration.userDefinedHostsWithHeaderTypes
         self.internalURLsFilter = InternalURLsFilter(urls: configuration.sdkInternalURLs)
-        self.tracingHeaderTypesProvider = TracingHeaderTypesProvider(
-            firstPartyHosts: configuration.userDefinedHostsWithHeaderTypes
-        )
         self.handler = handler
         self.tracingSampler = configuration.tracingSampler
 
@@ -226,11 +220,10 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
 
     private func isFirstParty(request: URLRequest, for session: URLSession?) -> Bool {
         guard let delegate = session?.delegate as? DDURLSessionDelegate else {
-            return defaultFirstPartyURLsFilter.isFirstParty(url: request.url)
+            return firstPartyHosts.isFirstParty(url: request.url)
         }
 
-        return delegate.firstPartyURLsFilter.isFirstParty(url: request.url) ||
-                defaultFirstPartyURLsFilter.isFirstParty(url: request.url)
+        return delegate.firstPartyHosts.isFirstParty(url: request.url) || firstPartyHosts.isFirstParty(url: request.url)
     }
 
     private func finishInterception(task: URLSessionTask, interception: TaskInterception) {
@@ -249,8 +242,8 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
 
         var newRequest = firstPartyRequest
         let additionalFirstPartyHostsTracingHeaderTypes = (session?.delegate as? DDURLSessionDelegate)?
-            .tracingHeaderTypesProvider.tracingHeaderTypes(for: newRequest.url) ?? .init()
-        let tracingHeaderTypes = tracingHeaderTypesProvider.tracingHeaderTypes(for: newRequest.url)
+            .firstPartyHosts.tracingHeaderTypes(for: newRequest.url) ?? .init()
+        let tracingHeaderTypes = firstPartyHosts.tracingHeaderTypes(for: newRequest.url)
 
         tracingHeaderTypes.union(additionalFirstPartyHostsTracingHeaderTypes).forEach {
             let writer: TracePropagationHeadersProvider & OTFormatWriter
@@ -290,8 +283,8 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
         }
 
         let additionalFirstPartyHostsTracingHeaderTypes = (session?.delegate as? DDURLSessionDelegate)?
-            .tracingHeaderTypesProvider.tracingHeaderTypes(for: request.url) ?? .init()
-        let tracingHeaderTypes = tracingHeaderTypesProvider.tracingHeaderTypes(for: request.url)
+            .firstPartyHosts.tracingHeaderTypes(for: request.url) ?? .init()
+        let tracingHeaderTypes = firstPartyHosts.tracingHeaderTypes(for: request.url)
             .union(additionalFirstPartyHostsTracingHeaderTypes)
 
         let reader: OTFormatReader

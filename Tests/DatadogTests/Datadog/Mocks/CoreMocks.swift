@@ -293,7 +293,7 @@ extension FeaturesConfiguration.RUM {
         backgroundEventTrackingEnabled: Bool = false,
         frustrationTrackingEnabled: Bool = true,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener(),
-        firstPartyHosts: FirstPartyHosts = [:],
+        firstPartyHosts: FirstPartyHosts = .init(),
         vitalsFrequency: TimeInterval? = 0.5,
         dateProvider: DateProvider = SystemDateProvider()
     ) -> Self {
@@ -337,7 +337,7 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
     static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
-        userDefinedHostsWithHeaderTypes: FirstPartyHosts = [:],
+        userDefinedHostsWithHeaderTypes: FirstPartyHosts = .init(),
         sdkInternalURLs: Set<String> = [],
         rumAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         instrumentTracing: Bool = true,

@@ -75,7 +75,7 @@ internal struct HostsSanitizer: HostsSanitizing {
     func sanitized(firstPartyHosts: FirstPartyHosts, warningMessage: String) -> FirstPartyHosts {
         var warnings: [String] = []
 
-        let sanitized: FirstPartyHosts = firstPartyHosts.reduce(into: [:]) { partialResult, item in
+        let sanitized: FirstPartyHosts = .init(firstPartyHosts.hostsDictionary.reduce(into: [:]) { partialResult, item in
             let host = item.key
             let (sanitizedHost, warning) = sanitize(host: host, warningMessage: warningMessage)
             if let warning = warning {
@@ -84,7 +84,7 @@ internal struct HostsSanitizer: HostsSanitizing {
             if let sanitizedHost = sanitizedHost {
                 partialResult[sanitizedHost] = item.value
             }
-        }
+        })
 
         printWarnings(warningMessage, warnings)
 

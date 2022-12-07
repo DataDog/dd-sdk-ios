@@ -22,7 +22,7 @@ internal struct RUMScopeDependencies {
     let sessionSampler: Sampler
     let backgroundEventTrackingEnabled: Bool
     let frustrationTrackingEnabled: Bool
-    let firstPartyURLsFilter: FirstPartyURLsFilter
+    let firstPartyHosts: FirstPartyHosts
     let eventBuilder: RUMEventBuilder
     let rumUUIDGenerator: RUMUUIDGenerator
     /// Integration with CIApp tests. It contains the CIApp test context when active.
@@ -45,7 +45,7 @@ internal extension RUMScopeDependencies {
             sessionSampler: rumFeature.configuration.sessionSampler,
             backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled,
             frustrationTrackingEnabled: rumFeature.configuration.frustrationTrackingEnabled,
-            firstPartyURLsFilter: FirstPartyURLsFilter(hosts: rumFeature.configuration.firstPartyHosts),
+            firstPartyHosts: rumFeature.configuration.firstPartyHosts,
             eventBuilder: RUMEventBuilder(
                 eventsMapper: RUMEventsMapper(
                     viewEventMapper: rumFeature.configuration.viewEventMapper,

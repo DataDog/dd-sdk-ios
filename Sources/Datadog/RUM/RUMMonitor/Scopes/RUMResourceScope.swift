@@ -76,7 +76,7 @@ internal class RUMResourceScope: RUMScope {
         self.resourceLoadingStartTime = startTime
         self.serverTimeOffset = serverTimeOffset
         self.resourceHTTPMethod = httpMethod
-        self.isFirstPartyResource = dependencies.firstPartyURLsFilter.isFirstParty(string: url)
+        self.isFirstPartyResource = dependencies.firstPartyHosts.isFirstParty(string: url)
         self.resourceKindBasedOnRequest = resourceKindBasedOnRequest
         self.spanContext = spanContext
         self.onResourceEventSent = onResourceEventSent
