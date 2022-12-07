@@ -471,7 +471,7 @@ internal struct RUMCrashEvent: RUMDataModel {
 
         // TODO: RUMM-1463 Remove this `errorAttributes` property once new error format is managed through `RUMDataModels`
         try additionalAttributes?.forEach { attribute in
-            try container.encode(CodableValue(attribute.value), forKey: DynamicCodingKey(attribute.key))
+            try container.encode(AnyEncodable(attribute.value), forKey: DynamicCodingKey(attribute.key))
         }
 
         // Encode the sanitized `RUMErrorEvent`.
@@ -487,7 +487,7 @@ internal struct RUMCrashEvent: RUMDataModel {
         var dictionary: [String: Codable] = [:]
 
         try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(CodableValue.self, forKey: codingKey)
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
         }
 
         self.additionalAttributes = dictionary

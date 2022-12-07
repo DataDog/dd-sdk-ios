@@ -31,7 +31,7 @@ class DDRUMViewTests: XCTestCase {
     func testItCreatesSwiftRUMView() {
         let objcRUMView = DDRUMView(name: "name", attributes: ["foo": "bar"])
         XCTAssertEqual(objcRUMView.swiftView.name, "name")
-        XCTAssertEqual((objcRUMView.swiftView.attributes["foo"] as? DatadogObjc.AnyEncodable)?.value as? String, "bar")
+        XCTAssertEqual((objcRUMView.swiftView.attributes["foo"] as? AnyEncodable)?.value as? String, "bar")
         XCTAssertEqual(objcRUMView.name, "name")
         XCTAssertEqual(objcRUMView.attributes["foo"] as? String, "bar")
     }
@@ -77,7 +77,7 @@ class DDRUMActionTests: XCTestCase {
     func testItCreatesSwiftRUMAction() {
         let objcRUMAction = DDRUMAction(name: "name", attributes: ["foo": "bar"])
         XCTAssertEqual(objcRUMAction.swiftAction.name, "name")
-        XCTAssertEqual((objcRUMAction.swiftAction.attributes["foo"] as? DatadogObjc.AnyEncodable)?.value as? String, "bar")
+        XCTAssertEqual((objcRUMAction.swiftAction.attributes["foo"] as? AnyEncodable)?.value as? String, "bar")
         XCTAssertEqual(objcRUMAction.name, "name")
         XCTAssertEqual(objcRUMAction.attributes["foo"] as? String, "bar")
     }

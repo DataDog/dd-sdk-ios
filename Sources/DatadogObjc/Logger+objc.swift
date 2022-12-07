@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import struct Datadog.DDAnyEncodable
 import class Datadog.Logger
 
 @objc
@@ -130,7 +131,7 @@ public class DDLogger: NSObject {
 
     @objc
     public func addAttribute(forKey key: String, value: Any) {
-        sdkLogger.addAttribute(forKey: key, value: AnyEncodable(value))
+        sdkLogger.addAttribute(forKey: key, value: DDAnyEncodable(value))
     }
 
     @objc

@@ -1037,7 +1037,7 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         @objc
         public class DDFooBar: NSObject {
-            internal let swiftModel: Foo.Bar
+            internal var swiftModel: Foo.Bar
             internal var root: DDFooBar { self }
 
             internal init(swiftModel: Foo.Bar) {
@@ -1051,7 +1051,7 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         @objc
         public class DDFooBizz: NSObject {
-            internal let swiftModel: Foo.Bizz
+            internal var swiftModel: Foo.Bizz
             internal var root: DDFooBizz { self }
 
             internal init(swiftModel: Foo.Bizz) {

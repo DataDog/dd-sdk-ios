@@ -1053,12 +1053,6 @@ extension AppVersionProvider: AnyMockable {
     }
 }
 
-extension CodableValue {
-    static func mockAny() -> CodableValue {
-        return CodableValue(String.mockAny())
-    }
-}
-
 extension ValuePublisher: AnyMockable where Value: AnyMockable {
     static func mockAny() -> Self {
         return .init(initialValue: .mockAny())

@@ -670,9 +670,9 @@ class RUMMonitorTests: XCTestCase {
 
         let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 11)
         let expectedUserInfo = RUMUser(email: "foo@bar.com", id: "abc-123", name: "Foo", usrInfo: [
-            "str": CodableValue("value"),
-            "int": CodableValue(11_235),
-            "bool": CodableValue(true)
+            "str": AnyEncodable("value"),
+            "int": AnyEncodable(11_235),
+            "bool": AnyEncodable(true)
         ])
         try rumEventMatchers.forEach { event in
             XCTAssertEqual(try event.attribute(forKeyPath: "usr.str"), "value")
