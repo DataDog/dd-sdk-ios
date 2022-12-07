@@ -19,7 +19,7 @@ internal struct UINavigationBarRecorder: NodeRecorder {
             color: inferColor(of: navigationBar)
         )
 
-        return SpecificContainer(wireframesBuilder: builder)
+        return SpecificElement(wireframesBuilder: builder, recordSubtree: true)
     }
 
     private func inferOccupiedFrame(of navigationBar: UINavigationBar, in context: ViewTreeSnapshotBuilder.Context) -> CGRect {

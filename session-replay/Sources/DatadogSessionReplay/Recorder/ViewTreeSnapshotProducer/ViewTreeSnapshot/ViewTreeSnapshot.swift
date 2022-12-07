@@ -138,6 +138,9 @@ internal protocol NodeSemantics {
     /// the same view. In that case, the semantics with higher `importance` takes precedence.
     static var importance: Int { get }
 
+    /// Whether the `Recorder` should continue with traversing the subtree of this node.
+    var recordSubtree: Bool { get }
+
     /// A type defining how to build SR wireframes for the UI element this semantic was recorded for.
     var wireframesBuilder: NodeWireframesBuilder? { get }
 }
@@ -155,6 +158,7 @@ extension NodeSemantics {
 internal struct UnknownElement: NodeSemantics {
     static let importance: Int = .min
     let wireframesBuilder: NodeWireframesBuilder? = nil
+    let recordSubtree = true
 
     /// Use `UnknownElement.constant` instead.
     private init () {}
@@ -169,6 +173,7 @@ internal struct UnknownElement: NodeSemantics {
 internal struct InvisibleElement: NodeSemantics {
     static let importance: Int = 0
     let wireframesBuilder: NodeWireframesBuilder? = nil
+    let recordSubtree = false // no point of recording children if the parent is invisible
 
     /// Use `InvisibleElement.constant` instead.
     private init () {}
@@ -184,19 +189,16 @@ internal struct InvisibleElement: NodeSemantics {
 internal struct AmbiguousElement: NodeSemantics {
     static let importance: Int = 0
     let wireframesBuilder: NodeWireframesBuilder?
-}
-
-internal struct SpecificContainer: NodeSemantics {
-    static let importance: Int = .max - 1
-    let wireframesBuilder: NodeWireframesBuilder?
+    let recordSubtree = true
 }
 
 /// A semantics of an UI element that is one of `UIView` subclasses. This semantics mean that we know its full identity along with set of
 /// subclass-specific attributes that will be used to render it in SR (e.g. all base `UIView` attributes plus the text in `UILabel` or the
 /// "on" / "off" state of `UISwitch` control).
 ///
-/// The view-tree traversal algorithm will skip visiting the subtree of given `UIView` if it has `SpecificElement` semantics.
+/// Depending on `recordSubtree`, the view-tree traversal algorithm will skip or continue visiting the subtree of views with this semantics.
 internal struct SpecificElement: NodeSemantics {
     static let importance: Int = .max
     let wireframesBuilder: NodeWireframesBuilder?
+    let recordSubtree: Bool
 }

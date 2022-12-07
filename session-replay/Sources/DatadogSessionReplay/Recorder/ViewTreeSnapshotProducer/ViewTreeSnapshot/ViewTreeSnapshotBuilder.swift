@@ -83,9 +83,7 @@ internal struct ViewTreeSnapshotBuilder {
             viewAttributes: viewAttributes,
             semantics: semantics,
             children: {
-                if semantics.importance != .max {
-                    // Only resolve child nodes if the semantics of parent node is low (so if the
-                    // sub-tree remains ambiguous):
+                if semantics.recordSubtree {
                     return anyView.subviews.map { createNode(for: $0, in: context) }
                 } else {
                     return []

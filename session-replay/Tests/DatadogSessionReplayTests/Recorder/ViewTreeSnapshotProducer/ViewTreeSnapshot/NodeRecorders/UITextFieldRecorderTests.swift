@@ -50,8 +50,8 @@ class UITextFieldRecorderTests: XCTestCase {
         textField.layoutSubviews() // force layout (so TF creates its sub-tree)
 
         // Then
-        let semantics = try XCTUnwrap(recorder.semantics(of: textField, with: viewAttributes, in: .mockAny()))
-        XCTAssertTrue(semantics is SpecificElement)
+        let semantics = try XCTUnwrap(recorder.semantics(of: textField, with: viewAttributes, in: .mockAny()) as? SpecificElement)
+        XCTAssertFalse(semantics.recordSubtree, "TextField's subtree should not be recorded")
 
         let builder = try XCTUnwrap(semantics.wireframesBuilder as? UITextFieldWireframesBuilder)
         XCTAssertEqual(builder.text, randomText)

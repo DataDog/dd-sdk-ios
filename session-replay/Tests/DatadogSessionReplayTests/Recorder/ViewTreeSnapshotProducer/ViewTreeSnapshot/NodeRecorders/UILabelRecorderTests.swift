@@ -47,8 +47,8 @@ class UILabelRecorderTests: XCTestCase {
         ])
 
         // Then
-        let semantics = try XCTUnwrap(recorder.semantics(of: label, with: viewAttributes, in: .mockAny()))
-        XCTAssertTrue(semantics is SpecificElement)
+        let semantics = try XCTUnwrap(recorder.semantics(of: label, with: viewAttributes, in: .mockAny()) as? SpecificElement)
+        XCTAssertFalse(semantics.recordSubtree, "Label's subtree should not be recorded")
 
         let builder = try XCTUnwrap(semantics.wireframesBuilder as? UILabelWireframesBuilder)
         XCTAssertEqual(builder.attributes, viewAttributes)

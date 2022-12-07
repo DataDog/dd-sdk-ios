@@ -176,7 +176,7 @@ func mockRandomNodeSemantics() -> NodeSemantics {
         UnknownElement.constant,
         InvisibleElement.constant,
         AmbiguousElement(wireframesBuilder: NOPWireframesBuilderMock()),
-        SpecificElement(wireframesBuilder: NOPWireframesBuilderMock()),
+        SpecificElement(wireframesBuilder: NOPWireframesBuilderMock(), recordSubtree: .mockRandom()),
     ]
     return all.randomElement()!
 }

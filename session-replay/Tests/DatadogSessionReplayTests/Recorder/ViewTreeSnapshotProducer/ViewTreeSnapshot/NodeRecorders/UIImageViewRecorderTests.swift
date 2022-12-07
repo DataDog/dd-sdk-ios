@@ -44,8 +44,8 @@ class UIImageViewRecorderTests: XCTestCase {
         ])
 
         // Then
-        let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: .mockAny()))
-        XCTAssertTrue(semantics is SpecificElement)
+        let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: .mockAny()) as? SpecificElement)
+        XCTAssertFalse(semantics.recordSubtree, "Image view's subtree should not be recorded")
 
         let builder = try XCTUnwrap(semantics.wireframesBuilder as? UIImageViewWireframesBuilder)
         XCTAssertEqual(builder.attributes, viewAttributes)

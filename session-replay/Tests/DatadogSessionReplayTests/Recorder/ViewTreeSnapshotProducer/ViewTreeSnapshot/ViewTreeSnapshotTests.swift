@@ -136,22 +136,16 @@ class ViewAttributesTests: XCTestCase {
 // swiftlint:enable opening_brace
 
 class NodeSemanticsTests: XCTestCase {
-    func testSemanticsImportance() {
+    func testImportance() {
         let unknownElement = UnknownElement.constant
         let invisibleElement = InvisibleElement.constant
         let ambiguousElement = AmbiguousElement(wireframesBuilder: nil)
-        let specificContainer = SpecificContainer(wireframesBuilder: nil)
-        let specificElement = SpecificElement(wireframesBuilder: nil)
+        let specificElement = SpecificElement(wireframesBuilder: nil, recordSubtree: .mockAny())
 
         XCTAssertGreaterThan(
             specificElement.importance,
-            specificContainer.importance,
-            "`SpecificContainer` should override `SpecificElement` semantics"
-        )
-        XCTAssertGreaterThan(
-            specificContainer.importance,
             ambiguousElement.importance,
-            "`SpecificContainer` should override `AmbiguousElement` semantics"
+            "`SpecificElement` should override `AmbiguousElement` semantics"
         )
         XCTAssertGreaterThanOrEqual(
             invisibleElement.importance,
@@ -165,7 +159,24 @@ class NodeSemanticsTests: XCTestCase {
         XCTAssertGreaterThan(invisibleElement.importance, unknownElement.importance, "All semantics should override `UnknownElement`")
         XCTAssertGreaterThan(ambiguousElement.importance, unknownElement.importance, "All semantics should override `UnknownElement`")
         XCTAssertGreaterThan(specificElement.importance, unknownElement.importance, "All semantics should override `UnknownElement`")
-        XCTAssertGreaterThan(specificContainer.importance, unknownElement.importance, "All semantics should override `UnknownElement`")
         XCTAssertEqual(specificElement.importance, .max)
+    }
+
+    func testRecordSubtree() {
+        XCTAssertTrue(
+            UnknownElement.constant.recordSubtree,
+            "Subtree should be recorded for 'unknown' elements as a fallback"
+        )
+        XCTAssertFalse(
+            InvisibleElement.constant.recordSubtree,
+            "Subtree should not be recorded for 'invisible' elements as nothing in it will be visible anyway"
+        )
+        XCTAssertTrue(
+            AmbiguousElement(wireframesBuilder: nil).recordSubtree,
+            "Subtree should be recorded for 'ambiguous' elements as it may contain other elements"
+        )
+
+        let random: Bool = .mockRandom()
+        XCTAssertEqual(SpecificElement(wireframesBuilder: nil, recordSubtree: random).recordSubtree, random)
     }
 }

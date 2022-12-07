@@ -28,7 +28,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
             attributes: attributes,
             wireframeRect: imageFrame
         )
-        return SpecificElement(wireframesBuilder: builder)
+        return SpecificElement(wireframesBuilder: builder, recordSubtree: false)
     }
 }
 

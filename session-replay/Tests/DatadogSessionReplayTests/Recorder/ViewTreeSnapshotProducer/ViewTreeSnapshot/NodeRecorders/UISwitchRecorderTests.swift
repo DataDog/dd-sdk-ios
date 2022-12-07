@@ -35,8 +35,8 @@ class UISwitchRecorderTests: XCTestCase {
         viewAttributes = .mock(fixture: .visibleWithSomeAppearance)
 
         // Then
-        let semantics = try XCTUnwrap(recorder.semantics(of: `switch`, with: viewAttributes, in: .mockAny()))
-        XCTAssertTrue(semantics is SpecificElement)
+        let semantics = try XCTUnwrap(recorder.semantics(of: `switch`, with: viewAttributes, in: .mockAny()) as? SpecificElement)
+        XCTAssertFalse(semantics.recordSubtree, "Switch's subtree should not be recorded")
 
         let builder = try XCTUnwrap(semantics.wireframesBuilder as? UISwitchWireframesBuilder)
         XCTAssertEqual(builder.attributes, viewAttributes)

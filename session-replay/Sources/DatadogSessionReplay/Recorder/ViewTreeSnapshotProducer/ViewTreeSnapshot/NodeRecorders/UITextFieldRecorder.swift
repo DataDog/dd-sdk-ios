@@ -56,7 +56,7 @@ internal struct UITextFieldRecorder: NodeRecorder {
             textObfuscator: context.recorder.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator,
             wireframeRect: textFrame
         )
-        return SpecificElement(wireframesBuilder: builder)
+        return SpecificElement(wireframesBuilder: builder, recordSubtree: false)
     }
 }
 
