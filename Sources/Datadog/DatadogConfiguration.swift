@@ -262,7 +262,7 @@ extension Datadog {
         private(set) var rumEndpoint: RUMEndpoint
 
         private(set) var serviceName: String?
-        private(set) var firstPartyHostsWithHeaderTypes: FirstPartyHosts?
+        private(set) var firstPartyHosts: FirstPartyHosts?
         var logEventMapper: LogEventMapper?
         private(set) var spanEventMapper: SpanEventMapper?
         private(set) var loggingSamplingRate: Float
@@ -342,7 +342,7 @@ extension Datadog {
                     tracesEndpoint: .us1,
                     rumEndpoint: .us1,
                     serviceName: nil,
-                    firstPartyHostsWithHeaderTypes: nil,
+                    firstPartyHosts: nil,
                     spanEventMapper: nil,
                     loggingSamplingRate: 100.0,
                     tracingSamplingRate: 20.0,
@@ -567,7 +567,7 @@ extension Datadog {
             /// - Parameter firstPartyHostsWithHeaderTypes: Object used to classify network requests as 1st-party
             /// and determine the HTTP header types to use for Distributed Tracing.
             public func trackURLSession(firstPartyHostsWithHeaderTypes: FirstPartyHosts) -> Builder {
-                configuration.firstPartyHostsWithHeaderTypes = firstPartyHostsWithHeaderTypes
+                configuration.firstPartyHosts = firstPartyHostsWithHeaderTypes
                 return self
             }
 

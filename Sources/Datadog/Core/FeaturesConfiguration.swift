@@ -209,7 +209,7 @@ extension FeaturesConfiguration {
             )
         }
 
-        let firstPartyHosts = configuration.firstPartyHostsWithHeaderTypes ?? .init()
+        let firstPartyHosts = configuration.firstPartyHosts ?? .init()
 
         if configuration.rumEnabled {
             let instrumentation = RUM.Instrumentation(
@@ -249,7 +249,7 @@ extension FeaturesConfiguration {
             }
         }
 
-        if configuration.firstPartyHostsWithHeaderTypes?.hosts != nil {
+        if configuration.firstPartyHosts?.hosts != nil {
             if configuration.tracingEnabled || configuration.rumEnabled {
                 urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
                     userDefinedHostsWithHeaderTypes: firstPartyHosts,
