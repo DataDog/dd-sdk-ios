@@ -51,7 +51,7 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDat
     ///
     /// **NOTE:** If `trackURLSession(firstPartyHostsWithHeaderTypes:)` is never called, automatic tracking will **not** take place.
     ///
-    /// - Parameter additionalFirstPartyHostsWithHeaderTypes: these hosts are tracked **in addition to** what was
+    /// - Parameter additionalFirstPartyHosts: these hosts are tracked **in addition to** what was
     ///             passed to `DatadogConfiguration.Builder` via `trackURLSession(firstPartyHostsWithHeaderTypes:)`
     public convenience init(additionalFirstPartyHosts: FirstPartyHosts) {
         self.init(in: defaultDatadogCore, additionalFirstPartyHosts: additionalFirstPartyHosts)
