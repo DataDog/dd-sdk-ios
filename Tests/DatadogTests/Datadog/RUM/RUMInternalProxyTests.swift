@@ -64,22 +64,24 @@ class RUMInternalProxyTests: XCTestCase {
         // Given
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
         core.register(feature: rum)
+        let date: Date = .mockRandomInThePast()
 
         let monitor = try createTestableRUMMonitor()
 
         // When
         monitor.startView(viewController: mockView)
-        monitor._internal.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.02)
-        monitor._internal.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.02)
-        monitor._internal.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.02)
-        monitor._internal.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.04)
-        monitor._internal.updatePerformanceMetric(metric: .flutterBuildTime, value: 32.0)
-        monitor._internal.updatePerformanceMetric(metric: .flutterBuildTime, value: 52.0)
-        monitor._internal.updatePerformanceMetric(metric: .flutterRasterTime, value: 42.0)
+        monitor._internal.updatePerformanceMetric(at: date, metric: .jsFrameTimeSeconds, value: 0.02)
+        monitor._internal.updatePerformanceMetric(at: date, metric: .jsFrameTimeSeconds, value: 0.02)
+        monitor._internal.updatePerformanceMetric(at: date, metric: .jsFrameTimeSeconds, value: 0.02)
+        monitor._internal.updatePerformanceMetric(at: date, metric: .jsFrameTimeSeconds, value: 0.04)
+        monitor._internal.updatePerformanceMetric(at: date, metric: .flutterBuildTime, value: 32.0)
+        monitor._internal.updatePerformanceMetric(at: date, metric: .flutterBuildTime, value: 52.0)
+        monitor._internal.updatePerformanceMetric(at: date, metric: .flutterRasterTime, value: 42.0)
         monitor.stopView(viewController: mockView)
 
         let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 3)
 
+        // Then
         try rumEventMatchers.lastRUMEvent(ofType: RUMViewEvent.self)
             .model(ofType: RUMViewEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.jsRefreshRate?.max, 50.0)
