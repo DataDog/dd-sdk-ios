@@ -27,18 +27,19 @@ extension DatadogExtension where ExtendedType: DDRUMMonitor {
     }
 
     public func updatePerformanceMetric(
+        at: Date,
         metric: PerformanceMetric,
         value: Double,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
-        guard let type = type as? RUMMonitor else {
+        guard let type = type as? RUMCommandSubscriber else {
             return
         }
 
         let performanceMetric = RUMUpdatePerformanceMetric(
             metric: metric,
             value: value,
-            time: type.dateProvider.now,
+            time: at,
             attributes: attributes
         )
 
