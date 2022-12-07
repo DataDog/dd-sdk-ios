@@ -9,9 +9,9 @@ import Foundation
 internal protocol HostsSanitizing {
     func sanitized(hosts: Set<String>, warningMessage: String) -> Set<String>
     func sanitized(
-        firstPartyHosts: FirstPartyHosts,
+        hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>],
         warningMessage: String
-    ) -> FirstPartyHosts
+    ) -> [String: Set<TracingHeaderType>]
 }
 
 internal struct HostsSanitizer: HostsSanitizing {
@@ -72,10 +72,13 @@ internal struct HostsSanitizer: HostsSanitizing {
         return Set(array)
     }
 
-    func sanitized(firstPartyHosts: FirstPartyHosts, warningMessage: String) -> FirstPartyHosts {
+    func sanitized(
+        hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>],
+        warningMessage: String
+    ) -> [String: Set<TracingHeaderType>] {
         var warnings: [String] = []
 
-        let sanitized: FirstPartyHosts = .init(firstPartyHosts.hostsDictionary.reduce(into: [:]) { partialResult, item in
+        let sanitized: [String: Set<TracingHeaderType>] = hostsWithTracingHeaderTypes.reduce(into: [:]) { partialResult, item in
             let host = item.key
             let (sanitizedHost, warning) = sanitize(host: host, warningMessage: warningMessage)
             if let warning = warning {
@@ -84,7 +87,7 @@ internal struct HostsSanitizer: HostsSanitizing {
             if let sanitizedHost = sanitizedHost {
                 partialResult[sanitizedHost] = item.value
             }
-        })
+        }
 
         printWarnings(warningMessage, warnings)
 

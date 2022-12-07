@@ -1113,13 +1113,12 @@ class MockHostsSanitizer: HostsSanitizing {
         return hosts
     }
 
-    private(set) var sanitizationsWithHeaderTypes = [(firstPartyHosts: FirstPartyHosts, warningMessage: String)]()
     func sanitized(
-        firstPartyHosts: FirstPartyHosts,
+        hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>],
         warningMessage: String
-    ) -> FirstPartyHosts {
-        sanitizationsWithHeaderTypes.append((firstPartyHosts: firstPartyHosts, warningMessage: warningMessage))
-        return firstPartyHosts
+    ) -> [String: Set<TracingHeaderType>] {
+        sanitizations.append((hosts: Set(hostsWithTracingHeaderTypes.keys), warningMessage: warningMessage))
+        return hostsWithTracingHeaderTypes
     }
 }
 

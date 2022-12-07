@@ -256,7 +256,7 @@ private extension FeaturesConfiguration {
             useBeforeSend: nil,
             useCrossSiteSessionCookie: nil,
             useExcludedActivityUrls: nil,
-            useFirstPartyHosts: !(self.rum?.firstPartyHosts.hostsDictionary.isEmpty ?? true),
+            useFirstPartyHosts: !(self.rum?.firstPartyHosts.hosts.isEmpty ?? true),
             useLocalEncryption: self.common.encryption != nil,
             useProxy: self.common.proxyConfiguration != nil,
             useSecureSessionCookie: nil,

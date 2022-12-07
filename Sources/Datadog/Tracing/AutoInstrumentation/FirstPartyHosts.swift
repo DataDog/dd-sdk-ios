@@ -8,24 +8,34 @@ import Foundation
 
 /// A struct that represents a dictionary of host names and tracing header types.
 public struct FirstPartyHosts: Equatable {
-    var hostsDictionary: [String: Set<TracingHeaderType>]
+    private var hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>]
 
     var hosts: Set<String> {
-        return Set(hostsDictionary.keys)
+        return Set(hostsWithTracingHeaderTypes.keys)
     }
 
     /// Creates a `FirstPartyHosts` instance with the given dictionary of host names and tracing header types.
     ///
-    /// - Parameter hostsDictionary: The dictionary of host names and tracing header types.
-    public init(_ hostsDictionary: [String: Set<TracingHeaderType>] = [:]) {
-        self.hostsDictionary = hostsDictionary
+    /// - Parameter hostsWithTracingHeaderTypes: The dictionary of host names and tracing header types.
+    public init(_ hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>] = [:]) {
+        self.init(hostsWithTracingHeaderTypes: hostsWithTracingHeaderTypes)
+    }
+
+    internal init(
+        hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>],
+        hostsSanitizer: HostsSanitizing = HostsSanitizer()
+    ) {
+        self.hostsWithTracingHeaderTypes = hostsSanitizer.sanitized(
+            hostsWithTracingHeaderTypes: hostsWithTracingHeaderTypes,
+            warningMessage: "The first party host with header types configured for Datadog SDK is not valid"
+        )
     }
 
     /// The function takes a `URL` and returns a `Set<TracingHeaderType>` of matching values.
     /// If one than more match is found it will return union of matching values.
     func tracingHeaderTypes(for url: URL?) -> Set<TracingHeaderType> {
-        return hostsDictionary.compactMap { item -> Set<TracingHeaderType>? in
-            let regex = "^(.*\\.)*[.]?\(NSRegularExpression.escapedPattern(for: item.key))$"
+        return hostsWithTracingHeaderTypes.compactMap { item -> Set<TracingHeaderType>? in
+            let regex = "^(.*\\.)*\(NSRegularExpression.escapedPattern(for: item.key))$"
             if url?.host?.range(of: regex, options: .regularExpression) != nil {
                 return item.value
             }

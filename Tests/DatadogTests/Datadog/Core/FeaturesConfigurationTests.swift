@@ -776,24 +776,26 @@ class FeaturesConfigurationTests: XCTestCase {
     }
 
     func testWhenFirstPartyHostsAreProvided_itPassesThemToSanitizer() throws {
-        // When
-        let firstPartyHostsWithHeaderTypes: FirstPartyHosts = .init([
-            "https://first-party.com": .init([.dd]),
-            "http://api.first-party.com": .init([.dd]),
-            "https://first-party.com/v2/api": .init([.dd])
-        ])
-
-        // Then
+        // Given
         let mockHostsSanitizer = MockHostsSanitizer()
-        _ = try FeaturesConfiguration(
-            configuration: .mockWith(rumEnabled: true, firstPartyHostsWithHeaderTypes: firstPartyHostsWithHeaderTypes),
-            appContext: .mockAny(),
+        let firstPartyHostsWithHeaderTypes = FirstPartyHosts(
+            hostsWithTracingHeaderTypes: [
+                "https://first-party.com": .init([.dd]),
+                "http://api.first-party.com": .init([.dd]),
+                "https://first-party.com/v2/api": .init([.dd])
+            ],
             hostsSanitizer: mockHostsSanitizer
         )
 
-        XCTAssertEqual(mockHostsSanitizer.sanitizationsWithHeaderTypes.count, 1)
-        let sanitization = try XCTUnwrap(mockHostsSanitizer.sanitizationsWithHeaderTypes.first)
-        XCTAssertEqual(sanitization.firstPartyHosts.hosts, firstPartyHostsWithHeaderTypes.hosts)
+        // When
+        _ = try FeaturesConfiguration(
+            configuration: .mockWith(rumEnabled: true, firstPartyHostsWithHeaderTypes: firstPartyHostsWithHeaderTypes),
+            appContext: .mockAny()
+        )
+
+        XCTAssertEqual(mockHostsSanitizer.sanitizations.count, 1)
+        let sanitization = try XCTUnwrap(mockHostsSanitizer.sanitizations.first)
+        XCTAssertEqual(sanitization.hosts, firstPartyHostsWithHeaderTypes.hosts)
         XCTAssertEqual(sanitization.warningMessage, "The first party host with header types configured for Datadog SDK is not valid")
     }
 

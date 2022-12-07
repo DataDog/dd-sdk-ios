@@ -120,7 +120,7 @@ extension FeaturesConfiguration {
     ///
     /// Throws an error on invalid user input, i.e. broken custom URL.
     /// Prints a warning if configuration is inconsistent, i.e. RUM is enabled, but RUM Application ID was not specified.
-    init(configuration: Datadog.Configuration, appContext: AppContext, hostsSanitizer: HostsSanitizing = HostsSanitizer()) throws {
+    init(configuration: Datadog.Configuration, appContext: AppContext) throws {
         var logging: Logging?
         var tracing: Tracing?
         var rum: RUM?
@@ -209,13 +209,7 @@ extension FeaturesConfiguration {
             )
         }
 
-        var sanitizedHostsWithHeaderTypes: FirstPartyHosts = .init()
-        if let firstPartyHosts = configuration.firstPartyHostsWithHeaderTypes {
-            sanitizedHostsWithHeaderTypes = hostsSanitizer.sanitized(
-                firstPartyHosts: firstPartyHosts,
-                warningMessage: "The first party host with header types configured for Datadog SDK is not valid"
-            )
-        }
+        let firstPartyHosts = configuration.firstPartyHostsWithHeaderTypes ?? .init()
 
         if configuration.rumEnabled {
             let instrumentation = RUM.Instrumentation(
@@ -240,7 +234,7 @@ extension FeaturesConfiguration {
                     backgroundEventTrackingEnabled: configuration.rumBackgroundEventTrackingEnabled,
                     frustrationTrackingEnabled: configuration.rumFrustrationSignalsTrackingEnabled,
                     onSessionStart: configuration.rumSessionsListener,
-                    firstPartyHosts: sanitizedHostsWithHeaderTypes,
+                    firstPartyHosts: firstPartyHosts,
                     vitalsFrequency: configuration.mobileVitalsFrequency.timeInterval,
                     dateProvider: dateProvider
                 )
@@ -258,7 +252,7 @@ extension FeaturesConfiguration {
         if configuration.firstPartyHostsWithHeaderTypes?.hosts != nil {
             if configuration.tracingEnabled || configuration.rumEnabled {
                 urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
-                    userDefinedHostsWithHeaderTypes: sanitizedHostsWithHeaderTypes,
+                    userDefinedHostsWithHeaderTypes: firstPartyHosts,
                     sdkInternalURLs: [
                         logsEndpoint.url,
                         tracesEndpoint.url,

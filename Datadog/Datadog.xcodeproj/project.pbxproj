@@ -3025,6 +3025,7 @@
 		613F2404252B3791006CD2D7 /* Autoinstrumentation */ = {
 			isa = PBXGroup;
 			children = (
+				A762BDE329351A250058D8E7 /* FirstPartyHostsTests.swift */,
 				61B03876252724AB00518F3C /* URLSessionTracingHandlerTests.swift */,
 			);
 			path = Autoinstrumentation;
@@ -3623,7 +3624,6 @@
 		61B03873252724AB00518F3C /* Interception */ = {
 			isa = PBXGroup;
 			children = (
-				A762BDE229351A070058D8E7 /* TracingHeaderTypesProvider */,
 				613F23E2252B05D7006CD2D7 /* URLFiltering */,
 				61B03874252724AB00518F3C /* URLSessionInterceptorTests.swift */,
 				613F23E3252B062F006CD2D7 /* TaskInterceptionTests.swift */,
@@ -4277,14 +4277,6 @@
 				A728ADA02934CE5D00397996 /* W3CHTTPHeadersReader.swift */,
 			);
 			path = W3C;
-			sourceTree = "<group>";
-		};
-		A762BDE229351A070058D8E7 /* TracingHeaderTypesProvider */ = {
-			isa = PBXGroup;
-			children = (
-				A762BDE329351A250058D8E7 /* FirstPartyHostsTests.swift */,
-			);
-			path = TracingHeaderTypesProvider;
 			sourceTree = "<group>";
 		};
 		A79B0F59292B7BF5008742B3 /* Propagation */ = {

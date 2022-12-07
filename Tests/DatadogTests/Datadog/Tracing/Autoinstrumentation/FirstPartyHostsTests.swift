@@ -37,9 +37,7 @@ class FirstPartyHostsTests: XCTestCase {
     ]
 
     func testGivenEmptyDictionary_itReturnsDefaultTracingHeaderTypes() {
-        let headerTypesProvider = FirstPartyHosts(
-            [:]
-        )
+        let headerTypesProvider = FirstPartyHosts()
         (hostsDictionary.keys + otherHosts).forEach { fixture in
             let url = URL(string: fixture)
             XCTAssertEqual(headerTypesProvider.tracingHeaderTypes(for: url), .init())
@@ -92,40 +90,6 @@ class FirstPartyHostsTests: XCTestCase {
                 "The url: `\(url)` should NOT be matched as first party."
             )
         }
-    }
-
-    func testGivenURLHostEndingMatchesAnyUserDefinedHost_itIsConsideredFirstParty() {
-        // NOTE: RUMM-722 why that for loop here? https://github.com/DataDog/dd-sdk-ios/pull/384
-        for _ in 0...5 {
-            let filter = FirstPartyHosts([
-                "first-party.com": .init([.dd]),
-                "eu": .init([.dd])
-            ])
-            hostsDictionary.keys.forEach { fixture in
-                let url = URL(string: fixture)!
-                XCTAssertTrue(
-                    filter.isFirstParty(url: url),
-                    "The url: `\(url)` should be matched as first party."
-                )
-            }
-        }
-    }
-
-    func testGivenURLHostDoesNotMatchEndingOfAnyOfUserDefinedHosts_itIsNotConsideredFirstParty() {
-        // NOTE: RUMM-722 why that for loop here? https://github.com/DataDog/dd-sdk-ios/pull/384
-//        for _ in 0...5 {
-            let filter = FirstPartyHosts([
-                "first-party.com": .init([.dd]),
-                "eu": .init([.b3m])
-            ])
-            hostsDictionary.keys.forEach { fixture in
-                let url = URL(string: fixture)!
-                XCTAssertFalse(
-                    filter.isFirstParty(url: url),
-                    "The url: `\(url)` should NOT be matched as first party."
-                )
-            }
-//        }
     }
 
     func testGivenURLHostIsSubdomain_itIsConsideredFirstParty() {
