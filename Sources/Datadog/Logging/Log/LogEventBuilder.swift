@@ -36,8 +36,7 @@ internal struct LogEventBuilder {
     ///   - tags: tags to associate with log
     ///   - context: SDK context from the moment of creating log
     ///   - threadName: the name of the thread on which the log is created.
-    ///
-    /// - Returns: the `LogEvent` or `nil` if the log was dropped by the user (from event mapper API).
+    ///   - callback: The callback to return the modified `LogEvent`.
     ///
     /// - Note: `date` and `threadName` must be collected on the user thread.
     func createLogEvent(
