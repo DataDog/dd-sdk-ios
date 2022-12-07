@@ -150,15 +150,15 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
 
     // MARK: - Recording Certain Node Semantics
 
-    func testItRecordsInvisibleViews() throws {
+    func testItRecordsInvisibleViews() {
         // Given
         let builder = ViewTreeSnapshotBuilder()
         let views: [UIView] = [
-            try UIView.mock(withFixture: .invisible),
-            try UILabel.mock(withFixture: .invisible),
-            try UIImageView.mock(withFixture: .invisible),
-            try UITextField.mock(withFixture: .invisible),
-            try UISwitch.mock(withFixture: .invisible),
+            UIView.mock(withFixture: .invisible),
+            UILabel.mock(withFixture: .invisible),
+            UIImageView.mock(withFixture: .invisible),
+            UITextField.mock(withFixture: .invisible),
+            UISwitch.mock(withFixture: .invisible),
         ]
 
         // When
@@ -176,15 +176,15 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         }
     }
 
-    func testItRecordsViewsWithNoAppearance() throws {
+    func testItRecordsViewsWithNoAppearance() {
         // Given
         let builder = ViewTreeSnapshotBuilder()
 
-        let view = try UIView.mock(withFixture: .visibleWithNoAppearance)
-        let label = try UILabel.mock(withFixture: .visibleWithNoAppearance)
-        let imageView = try UIImageView.mock(withFixture: .visibleWithNoAppearance)
-        let textField = try UITextField.mock(withFixture: .visibleWithNoAppearance)
-        let `switch` = try UISwitch.mock(withFixture: .visibleWithNoAppearance)
+        let view = UIView.mock(withFixture: .visibleWithNoAppearance)
+        let label = UILabel.mock(withFixture: .visibleWithNoAppearance)
+        let imageView = UIImageView.mock(withFixture: .visibleWithNoAppearance)
+        let textField = UITextField.mock(withFixture: .visibleWithNoAppearance)
+        let `switch` = UISwitch.mock(withFixture: .visibleWithNoAppearance)
 
         // When
         let viewSnapshot = builder.createSnapshot(of: view, with: .mockRandom())
@@ -234,10 +234,10 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         )
     }
 
-    func testItRecordsBaseViewWithSomeAppearance() throws {
+    func testItRecordsBaseViewWithSomeAppearance() {
         // Given
         let builder = ViewTreeSnapshotBuilder()
-        let view = try UIView.mock(withFixture: .visibleWithSomeAppearance)
+        let view = UIView.mock(withFixture: .visibleWithSomeAppearance)
 
         // When
         let snapshot = builder.createSnapshot(of: view, with: .mockRandom())
@@ -253,14 +253,14 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         )
     }
 
-    func testItRecordsSpecialisedViewsWithSomeAppearance() throws {
+    func testItRecordsSpecialisedViewsWithSomeAppearance() {
         // Given
         let builder = ViewTreeSnapshotBuilder()
         let views: [UIView] = [
-            try UILabel.mock(withFixture: .visibleWithSomeAppearance),
-            try UIImageView.mock(withFixture: .visibleWithSomeAppearance),
-            try UITextField.mock(withFixture: .visibleWithSomeAppearance),
-            try UISwitch.mock(withFixture: .visibleWithSomeAppearance),
+            UILabel.mock(withFixture: .visibleWithSomeAppearance),
+            UIImageView.mock(withFixture: .visibleWithSomeAppearance),
+            UITextField.mock(withFixture: .visibleWithSomeAppearance),
+            UISwitch.mock(withFixture: .visibleWithSomeAppearance),
         ]
 
         // When
@@ -273,6 +273,29 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
                 """
                 All specialised subclasses of `UIView` should record `SpecificElement` semantics as
                 long as they are visible. Got \(type(of: snapshot.root.semantics)) instead.
+                """
+            )
+        }
+    }
+
+    func testItRecordsTabAndNavigationBars() {
+        // Given
+        let builder = ViewTreeSnapshotBuilder()
+        let views: [UIView] = [
+            UITabBar.mock(withFixture: .allCases.randomElement()!),
+            UINavigationBar.mock(withFixture: .allCases.randomElement()!),
+        ]
+
+        // When
+        let snapshots = views.map { builder.createSnapshot(of: $0, with: .mockRandom()) }
+
+        // Then
+        zip(snapshots, views).forEach { snapshot, view in
+            XCTAssertTrue(
+                snapshot.root.semantics is SpecificContainer,
+                """
+                Tab and navigation bars should record `SpecificContainer` no matter of
+                their state. Got \(type(of: snapshot.root.semantics)) instead.
                 """
             )
         }

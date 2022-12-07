@@ -22,8 +22,9 @@ class ViewAttributesTests: XCTestCase {
         XCTAssertEqual(attributes.layerBorderColor, view.layer.borderColor)
         XCTAssertEqual(attributes.layerBorderWidth, view.layer.borderWidth)
         XCTAssertEqual(attributes.layerCornerRadius, view.layer.cornerRadius)
-        XCTAssertEqual(attributes.intrinsicContentSize, view.intrinsicContentSize)
         XCTAssertEqual(attributes.alpha, view.alpha)
+        XCTAssertEqual(attributes.isHidden, view.isHidden)
+        XCTAssertEqual(attributes.intrinsicContentSize, view.intrinsicContentSize)
     }
 
     func testWhenViewIsVisible() {
@@ -101,6 +102,36 @@ class ViewAttributesTests: XCTestCase {
         let attributes = ViewAttributes(frameInRootView: view.frame, view: view)
         XCTAssertFalse(attributes.hasAnyAppearance)
     }
+
+    func testWhenViewIsTranslucent() {
+        // Given
+        let view: UIView = .mockRandom()
+
+        // When
+        oneOrMoreOf([
+            { view.isHidden = true },
+            { view.alpha = .mockRandom(min: 0, max: 0.99) },
+            { view.frame = .zero },
+        ])
+
+        // Then
+        let attributes = ViewAttributes(frameInRootView: view.frame, view: view)
+        XCTAssertTrue(attributes.isTranslucent)
+    }
+
+    func testWhenViewIsNotTranslucent() {
+        // Given
+        let view: UIView = .mockRandom()
+
+        // When
+        view.alpha = 1
+        view.isHidden = false
+        view.frame = .mockRandom(minWidth: 10, minHeight: 10)
+
+        // Then
+        let attributes = ViewAttributes(frameInRootView: view.frame, view: view)
+        XCTAssertFalse(attributes.isTranslucent)
+    }
 }
 // swiftlint:enable opening_brace
 
@@ -109,12 +140,18 @@ class NodeSemanticsTests: XCTestCase {
         let unknownElement = UnknownElement.constant
         let invisibleElement = InvisibleElement.constant
         let ambiguousElement = AmbiguousElement(wireframesBuilder: nil)
+        let specificContainer = SpecificContainer(wireframesBuilder: nil)
         let specificElement = SpecificElement(wireframesBuilder: nil)
 
         XCTAssertGreaterThan(
             specificElement.importance,
+            specificContainer.importance,
+            "`SpecificContainer` should override `SpecificElement` semantics"
+        )
+        XCTAssertGreaterThan(
+            specificContainer.importance,
             ambiguousElement.importance,
-            "`SpecificElement` should override `AmbiguousElement` semantics"
+            "`SpecificContainer` should override `AmbiguousElement` semantics"
         )
         XCTAssertGreaterThanOrEqual(
             invisibleElement.importance,
@@ -128,6 +165,7 @@ class NodeSemanticsTests: XCTestCase {
         XCTAssertGreaterThan(invisibleElement.importance, unknownElement.importance, "All semantics should override `UnknownElement`")
         XCTAssertGreaterThan(ambiguousElement.importance, unknownElement.importance, "All semantics should override `UnknownElement`")
         XCTAssertGreaterThan(specificElement.importance, unknownElement.importance, "All semantics should override `UnknownElement`")
+        XCTAssertGreaterThan(specificContainer.importance, unknownElement.importance, "All semantics should override `UnknownElement`")
         XCTAssertEqual(specificElement.importance, .max)
     }
 }

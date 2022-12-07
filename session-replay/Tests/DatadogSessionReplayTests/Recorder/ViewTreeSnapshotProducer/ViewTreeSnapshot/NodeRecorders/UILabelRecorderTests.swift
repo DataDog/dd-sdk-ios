@@ -21,7 +21,7 @@ class UILabelRecorderTests: XCTestCase {
             { self.label.text = nil },
             { self.label.text = "" },
         ])
-        viewAttributes = .mockWith(hasAnyAppearance: false)
+        viewAttributes = .mock(fixture: .visibleWithNoAppearance)
 
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: label, with: viewAttributes, in: .mockAny()))
@@ -34,15 +34,15 @@ class UILabelRecorderTests: XCTestCase {
         oneOf([
             {
                 self.label.text = .mockRandom()
-                self.viewAttributes = .mockWith(hasAnyAppearance: true)
+                self.viewAttributes = .mock(fixture: .visibleWithSomeAppearance)
             },
             {
                 self.label.text = nil
-                self.viewAttributes = .mockWith(hasAnyAppearance: true)
+                self.viewAttributes = .mock(fixture: .visibleWithSomeAppearance)
             },
             {
                 self.label.text = .mockRandom()
-                self.viewAttributes = .mockWith(hasAnyAppearance: false)
+                self.viewAttributes = .mock(fixture: .visibleWithNoAppearance)
             },
         ])
 

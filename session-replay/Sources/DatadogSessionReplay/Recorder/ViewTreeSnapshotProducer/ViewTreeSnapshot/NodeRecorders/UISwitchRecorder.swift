@@ -25,7 +25,8 @@ internal struct UISwitchRecorder: NodeRecorder {
             isOn: `switch`.isOn,
             thumbTintColor: `switch`.thumbTintColor?.cgColor,
             onTintColor: `switch`.onTintColor?.cgColor,
-            offTintColor: `switch`.tintColor?.cgColor
+            offTintColor: `switch`.tintColor?.cgColor,
+            wireframeRect: attributes.frame
         )
         return SpecificElement(wireframesBuilder: builder)
     }
@@ -54,13 +55,15 @@ internal struct UISwitchWireframesBuilder: NodeWireframesBuilder {
     /// The custom color of the background in "off" state.
     let offTintColor: CGColor?
 
+    let wireframeRect: CGRect
+
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         let radius = attributes.frame.height * 0.5
         let backgroundColor = isOn ? (onTintColor ?? SystemDefaults.onTintColor) : (offTintColor ?? SystemDefaults.offTintColor)
 
         let background = builder.createShapeWireframe(
             id: backgroundWireframeID,
-            frame: attributes.frame,
+            frame: wireframeRect,
             borderColor: nil,
             borderWidth: nil,
             backgroundColor: backgroundColor,
@@ -69,8 +72,8 @@ internal struct UISwitchWireframesBuilder: NodeWireframesBuilder {
         )
 
         let thumbFrame = CGRect(
-            x: attributes.frame.minX + (isOn ? radius : 0.0),
-            y: attributes.frame.minY,
+            x: wireframeRect.minX + (isOn ? radius : 0.0),
+            y: wireframeRect.minY,
             width: radius * 2,
             height: attributes.frame.height
         )

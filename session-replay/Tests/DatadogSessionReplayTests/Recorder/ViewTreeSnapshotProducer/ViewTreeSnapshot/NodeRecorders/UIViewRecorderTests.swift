@@ -16,7 +16,7 @@ class UIViewRecorderTests: XCTestCase {
 
     func testWhenViewIsNotVisible() throws {
         // When
-        viewAttributes = .mockWith(isVisible: false)
+        viewAttributes = .mock(fixture: .invisible)
 
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
@@ -26,7 +26,7 @@ class UIViewRecorderTests: XCTestCase {
 
     func testWhenViewIsVisible() throws {
         // When
-        viewAttributes = .mockWith(isVisible: true)
+        viewAttributes = .mock(fixture: .visibleWithSomeAppearance)
 
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
