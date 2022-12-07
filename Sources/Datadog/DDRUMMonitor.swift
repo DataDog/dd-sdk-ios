@@ -286,7 +286,6 @@ public class DDRUMMonitor {
     /// - Parameter key: key for the attribute that will be removed.
     public func removeAttribute(forKey key: AttributeKey) {}
 
-
     // MARK: - Internal
 
     internal init() {}

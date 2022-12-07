@@ -67,17 +67,15 @@ class RUMInternalProxyTests: XCTestCase {
 
         let monitor = try createTestableRUMMonitor()
 
-        let internalProxy = _RUMInternalProxy(subscriber: monitor as! RUMCommandSubscriber, dateProvider: SystemDateProvider())
-
         // When
         monitor.startView(viewController: mockView)
-        internalProxy.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.02)
-        internalProxy.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.02)
-        internalProxy.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.02)
-        internalProxy.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.04)
-        internalProxy.updatePerformanceMetric(metric: .flutterBuildTime, value: 32.0)
-        internalProxy.updatePerformanceMetric(metric: .flutterBuildTime, value: 52.0)
-        internalProxy.updatePerformanceMetric(metric: .flutterRasterTime, value: 42.0)
+        monitor._internal.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.02)
+        monitor._internal.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.02)
+        monitor._internal.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.02)
+        monitor._internal.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.04)
+        monitor._internal.updatePerformanceMetric(metric: .flutterBuildTime, value: 32.0)
+        monitor._internal.updatePerformanceMetric(metric: .flutterBuildTime, value: 52.0)
+        monitor._internal.updatePerformanceMetric(metric: .flutterRasterTime, value: 42.0)
         monitor.stopView(viewController: mockView)
 
         let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 3)

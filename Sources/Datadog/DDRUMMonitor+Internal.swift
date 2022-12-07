@@ -31,13 +31,17 @@ extension DatadogExtension where ExtendedType: DDRUMMonitor {
         value: Double,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
+        guard let type = type as? RUMMonitor else {
+            return
+        }
+
         let performanceMetric = RUMUpdatePerformanceMetric(
             metric: metric,
             value: value,
-            time: dateProvider.now,
+            time: type.dateProvider.now,
             attributes: attributes
         )
 
-        subscriber?.process(command: performanceMetric)
+        type.process(command: performanceMetric)
     }
 }

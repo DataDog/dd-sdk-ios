@@ -135,7 +135,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     /// Current RUM context provider for integrations with Logging and Tracing.
     internal let contextProvider: RUMCurrentContext
     /// Time provider.
-    private let dateProvider: DateProvider
+    internal let dateProvider: DateProvider
     /// Attributes associated with every command.
     private var rumAttributes: [AttributeKey: AttributeValue] = [:]
     /// Queue for processing RUM commands off the main thread and providing current RUM context.
