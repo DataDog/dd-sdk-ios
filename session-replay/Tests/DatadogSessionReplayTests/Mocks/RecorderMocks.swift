@@ -103,6 +103,7 @@ extension ViewAttributes: AnyMockable, RandomMockable {
         var alpha: CGFloat?
         var isHidden: Bool?
 
+        // swiftlint:disable opening_brace
         switch fixture {
         case .invisible:
             isHidden = true
@@ -131,8 +132,8 @@ extension ViewAttributes: AnyMockable, RandomMockable {
                 },
                 { backgroundColor = UIColor.mockRandomWith(alpha: .mockRandom(min: 0.1, max: 1)).cgColor }
             ])
-            break
         }
+        // swiftlint:enable opening_brace
 
         let mock = ViewAttributes(
             frame: frame ?? .mockRandom(minWidth: 10, minHeight: 10),
