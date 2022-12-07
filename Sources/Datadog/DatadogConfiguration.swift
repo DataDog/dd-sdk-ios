@@ -37,7 +37,7 @@ extension Datadog {
 
         /// Defines the frequency at which Datadog SDK will collect mobile vitals, such as CPU
         /// and memory usage.
-        public enum VitalsFrequency {
+        public enum VitalsFrequency: String {
             /// Collect mobile vitals every 100ms.
             case frequent
             /// Collect mobile vitals every 500ms.

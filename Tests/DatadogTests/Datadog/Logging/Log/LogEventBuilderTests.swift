@@ -192,7 +192,7 @@ class LogEventBuilderTests: XCTestCase {
         wait(for: [expectation], timeout: 0)
     }
 
-    func testGivenBuilderWithEventMapper_whenEventIsDropped_itReturnsNil() throws {
+    func testGivenBuilderWithEventMapper_whenEventIsDropped_thenCallbackIsNotCalled() throws {
         let expectation = expectation(description: "build log event")
         expectation.isInverted = true
 
