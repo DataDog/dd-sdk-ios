@@ -337,7 +337,7 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
     static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
-        userDefinedHostsWithHeaderTypes: FirstPartyHosts = .init(),
+        userDefinedFirstPartyHosts: FirstPartyHosts = .init(),
         sdkInternalURLs: Set<String> = [],
         rumAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         instrumentTracing: Bool = true,
@@ -345,7 +345,7 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
         tracingSampler: Sampler = .mockKeepAll()
     ) -> Self {
         return .init(
-            userDefinedHostsWithHeaderTypes: userDefinedHostsWithHeaderTypes,
+            userDefinedFirstPartyHosts: userDefinedFirstPartyHosts,
             sdkInternalURLs: sdkInternalURLs,
             rumAttributesProvider: rumAttributesProvider,
             instrumentTracing: instrumentTracing,

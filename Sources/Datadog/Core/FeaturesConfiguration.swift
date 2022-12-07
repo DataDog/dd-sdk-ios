@@ -76,7 +76,7 @@ internal struct FeaturesConfiguration {
 
     struct URLSessionAutoInstrumentation {
         /// First party hosts defined by the user with custom tracing header types.
-        let userDefinedHostsWithHeaderTypes: FirstPartyHosts
+        let userDefinedFirstPartyHosts: FirstPartyHosts
 
         /// URLs used internally by the SDK - they are not instrumented.
         let sdkInternalURLs: Set<String>
@@ -252,7 +252,7 @@ extension FeaturesConfiguration {
         if configuration.firstPartyHosts?.hosts != nil {
             if configuration.tracingEnabled || configuration.rumEnabled {
                 urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
-                    userDefinedHostsWithHeaderTypes: firstPartyHosts,
+                    userDefinedFirstPartyHosts: firstPartyHosts,
                     sdkInternalURLs: [
                         logsEndpoint.url,
                         tracesEndpoint.url,

@@ -605,7 +605,7 @@ class FeaturesConfigurationTests: XCTestCase {
             rumEnabled: true,
             firstPartyHosts: firstPartyHosts
         )
-        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedHostsWithHeaderTypes, firstPartyHosts)
+        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedFirstPartyHosts, firstPartyHosts)
         XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.sdkInternalURLs, expectedSDKInternalURLs)
         XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentTracing)
         XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentRUM)
@@ -616,7 +616,7 @@ class FeaturesConfigurationTests: XCTestCase {
             rumEnabled: false,
             firstPartyHosts: firstPartyHosts
         )
-        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedHostsWithHeaderTypes, firstPartyHosts)
+        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedFirstPartyHosts, firstPartyHosts)
         XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.sdkInternalURLs, expectedSDKInternalURLs)
         XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentTracing)
         XCTAssertFalse(configuration.urlSessionAutoInstrumentation!.instrumentRUM)
@@ -627,7 +627,7 @@ class FeaturesConfigurationTests: XCTestCase {
             rumEnabled: true,
             firstPartyHosts: firstPartyHosts
         )
-        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedHostsWithHeaderTypes, firstPartyHosts)
+        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedFirstPartyHosts, firstPartyHosts)
         XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.sdkInternalURLs, expectedSDKInternalURLs)
         XCTAssertFalse(configuration.urlSessionAutoInstrumentation!.instrumentTracing)
         XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentRUM)
