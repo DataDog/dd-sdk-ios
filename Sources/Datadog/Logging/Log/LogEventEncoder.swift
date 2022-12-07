@@ -37,11 +37,11 @@ public struct LogEvent: Encodable {
     }
     public struct Error {
         // The Log error kind
-        public let kind: String?
+        public var kind: String?
         // The Log error message
-        public let message: String?
+        public var message: String?
         // The Log error stack
-        public let stack: String?
+        public var stack: String?
     }
     public struct DeviceInfo: Codable {
         // The architecture of the device
@@ -67,7 +67,7 @@ public struct LogEvent: Encodable {
     /// The log message
     public var message: String
     /// The associated log error
-    public let error: Error?
+    public var error: Error?
     /// The service name configured for Logs.
     public let serviceName: String
     /// The current log environement.
