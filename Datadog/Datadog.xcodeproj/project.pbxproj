@@ -897,7 +897,6 @@
 		D2CB6EB327C50EAE00A62B57 /* KronosNTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0CE277B23F0008BE766 /* KronosNTPClient.swift */; };
 		D2CB6EB427C50EAE00A62B57 /* VitalInfoSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9973F0268DF69500D8059B /* VitalInfoSampler.swift */; };
 		D2CB6EB527C50EAE00A62B57 /* VitalRefreshRateReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EA3CA6826775A3500B16871 /* VitalRefreshRateReader.swift */; };
-		D2CB6EB627C50EAE00A62B57 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		D2CB6EB727C50EAE00A62B57 /* URLSessionTracingHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B03810252656F500518F3C /* URLSessionTracingHandler.swift */; };
 		D2CB6EB827C50EAE00A62B57 /* RUMEventSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61122ED325B1B84D00F9C7F5 /* RUMEventSanitizer.swift */; };
 		D2CB6EB927C50EAE00A62B57 /* DDError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61363D9C24D999F70084CD6F /* DDError.swift */; };
@@ -6314,7 +6313,6 @@
 				D2CB6EB327C50EAE00A62B57 /* KronosNTPClient.swift in Sources */,
 				D2CB6EB427C50EAE00A62B57 /* VitalInfoSampler.swift in Sources */,
 				D2CB6EB527C50EAE00A62B57 /* VitalRefreshRateReader.swift in Sources */,
-				D2CB6EB627C50EAE00A62B57 /* (null) in Sources */,
 				E179FB4F28F80A6400CC2698 /* PerformanceMetric.swift in Sources */,
 				D2CB6EB727C50EAE00A62B57 /* URLSessionTracingHandler.swift in Sources */,
 				D2CB6EB827C50EAE00A62B57 /* RUMEventSanitizer.swift in Sources */,
