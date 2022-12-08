@@ -4966,7 +4966,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1250;
-				LastUpgradeCheck = 1310;
+				LastUpgradeCheck = 1410;
 				ORGANIZATIONNAME = Datadog;
 				TargetAttributes = {
 					61133B81242393DE00786299 = {
