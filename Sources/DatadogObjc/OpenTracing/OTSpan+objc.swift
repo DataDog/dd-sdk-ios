@@ -7,7 +7,8 @@
 import Foundation
 
 /// Corresponds to: https://github.com/opentracing/opentracing-objc/blob/master/Pod/Classes/OTSpan.h
-@objc public protocol OTSpan {
+@objc
+public protocol OTSpan {
     var context: OTSpanContext { get }
     var tracer: OTTracer { get }
 

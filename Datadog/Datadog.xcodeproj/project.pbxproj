@@ -5214,7 +5214,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ \"$CARTHAGE\" == \"YES\" ]; then\n  echo \"Skipping linting for carthage build...\"\nelif which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
+			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\"\n\nif [ \"$CARTHAGE\" == \"YES\" ]; then\n  echo \"Skipping linting for carthage build...\"\nelif which swiftlint > /dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		6170DC2325C18762003AED5C /* ⚙️ Run linter */ = {
@@ -5234,7 +5234,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ \"$CARTHAGE\" == \"YES\" ]; then\n  echo \"Skipping linting for carthage build...\"\nelif which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
+			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\"\n\nif [ \"$CARTHAGE\" == \"YES\" ]; then\n  echo \"Skipping linting for carthage build...\"\nelif which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		6170DC2425C18784003AED5C /* ⚙️ Run linter */ = {
@@ -5254,7 +5254,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
+			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\"\n\nif which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		61993671265BBF8E009D7EA8 /* ⚙️ Run linter */ = {
@@ -5274,7 +5274,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
+			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\"\n\nif which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		61BACC00267279CB00AB58DC /* ShellScript */ = {
@@ -5313,7 +5313,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
+			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\"\n\nif which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		D2CB6ECB27C50EAE00A62B57 /* ⚙️ Run linter */ = {
@@ -5333,7 +5333,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ \"$CARTHAGE\" == \"YES\" ]; then\n  echo \"Skipping linting for carthage build...\"\nelif which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
+			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\"\n\nif [ \"$CARTHAGE\" == \"YES\" ]; then\n  echo \"Skipping linting for carthage build...\"\nelif which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		D2CB6F8A27C520D400A62B57 /* ⚙️ Run linter */ = {
@@ -5353,7 +5353,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
+			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\"\n\nif which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		D2CB6FC927C5348200A62B57 /* ⚙️ Run linter */ = {
@@ -5373,7 +5373,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ \"$CARTHAGE\" == \"YES\" ]; then\n  echo \"Skipping linting for carthage build...\"\nelif which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
+			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\"\n\nif [ \"$CARTHAGE\" == \"YES\" ]; then\n  echo \"Skipping linting for carthage build...\"\nelif which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		D2CB6FE727C5352300A62B57 /* ⚙️ Run linter */ = {
@@ -5393,7 +5393,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
+			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\"\n\nif which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
