@@ -1852,18 +1852,22 @@ class RUMViewScopeTests: XCTestCase {
     // MARK: Integration with Crash Context
 
     func testWhenViewIsStarted_thenItUpdatesLastRUMViewEventInCrashContext() throws {
-        let rumViewEventProvider = ValuePublisher<RUMViewEvent?>(initialValue: nil)
+        var viewEvent: RUMViewEvent? = nil
+        let messageReciever = FeatureMessageReceiverMock { message in
+            if case let .custom(_, baggage) = message {
+                viewEvent = baggage[RUMBaggageKeys.viewEvent]
+            }
+        }
+
+        let core = PassthroughCoreMock(
+            messageReceiver: messageReciever
+        )
 
         // Given
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(
-                crashContextIntegration: RUMWithCrashContextIntegration(
-                    rumViewEventProvider: rumViewEventProvider,
-                    rumSessionStateProvider: .mockAny()
-                )
-            ),
+            dependencies: .mockWith(core: core),
             identity: mockView,
             path: "UIViewController",
             name: "ViewController",
@@ -1874,17 +1878,18 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // When
-        XCTAssertTrue(
-            scope.process(
-                command: RUMStartViewCommand.mockWith(identity: mockView),
-                context: context,
-                writer: writer
+        core.eventWriteContext { context, writer in
+            XCTAssertTrue(
+                scope.process(
+                    command: RUMStartViewCommand.mockWith(identity: mockView),
+                    context: context,
+                    writer: writer
+                )
             )
-        )
+        }
 
         // Then
-        let rumViewSent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last, "It should send view event")
-        let rumViewInjectedToCrashContext = try XCTUnwrap(rumViewEventProvider.currentValue, "It must inject view event to crash context")
-        XCTAssertEqual(rumViewSent, rumViewInjectedToCrashContext, "It must inject sent event to crash context")
+        let rumViewSent = try XCTUnwrap(core.events(ofType: RUMViewEvent.self).last, "It should send view event")
+        XCTAssertEqual(viewEvent, rumViewSent, "It must inject sent event to crash context")
     }
 }

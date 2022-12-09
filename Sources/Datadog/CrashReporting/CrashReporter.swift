@@ -6,27 +6,25 @@
 
 import Foundation
 
-internal class CrashReporter {
+/* public */ internal class CrashReporter: DatadogFeatureIntegration {
+    /* public */ let name = "crash-reporter"
+
+    /* public */ let messageReceiver: FeatureMessageReceiver
+
     /// Queue for synchronizing internal operations.
     private let queue: DispatchQueue
+
+    let crashContextProvider: CrashContextProviderType
 
     /// An interface for accessing the `DDCrashReportingPlugin` from `DatadogCrashReporting`.
     let plugin: DDCrashReportingPluginType
     /// Integration enabling sending crash reports as Logs or RUM Errors.
     let loggingOrRUMIntegration: CrashReportingIntegration
 
-    let crashContextProvider: CrashContextProviderType
-
-    // MARK: - Initialization
-
     convenience init?(
         core: DatadogCoreProtocol,
-        context: DatadogV1Context
+        configuration: FeaturesConfiguration.CrashReporting
     ) {
-        guard let feature = core.v1.feature(CrashReportingFeature.self) else {
-            return nil
-        }
-
         let loggingOrRUMIntegration: CrashReportingIntegration?
 
         // If RUM rum is enabled prefer it for sending crash reports, otherwise use Logging feature.
@@ -37,13 +35,11 @@ internal class CrashReporter {
                 dateProvider: rum.configuration.dateProvider,
                 sessionSampler: rum.configuration.sessionSampler,
                 backgroundEventTrackingEnabled: rum.configuration.backgroundEventTrackingEnabled,
-                uuidGenerator: rum.configuration.uuidGenerator,
-                context: context
+                uuidGenerator: rum.configuration.uuidGenerator
             )
         } else if let logging = core.v1.feature(LoggingFeature.self) {
             loggingOrRUMIntegration = CrashReportingWithLoggingIntegration(
                 core: core,
-                context: context,
                 dateProvider: logging.configuration.dateProvider
             )
         } else {
@@ -62,25 +58,21 @@ internal class CrashReporter {
             return nil
         }
 
+        let contextProvider = CrashContextProvider()
+
         self.init(
-            crashReportingPlugin: feature.configuration.crashReportingPlugin,
-            crashContextProvider: CrashContextProvider(
-                consentProvider: feature.consentProvider,
-                userInfoProvider: feature.userInfoProvider,
-                networkConnectionInfoProvider: feature.networkConnectionInfoProvider,
-                carrierInfoProvider: feature.carrierInfoProvider,
-                rumViewEventProvider: feature.rumViewEventProvider,
-                rumSessionStateProvider: feature.rumSessionStateProvider,
-                appStateListener: feature.appStateListener
-            ),
-            loggingOrRUMIntegration: availableLoggingOrRUMIntegration
+            crashReportingPlugin: configuration.crashReportingPlugin,
+            crashContextProvider: contextProvider,
+            loggingOrRUMIntegration: availableLoggingOrRUMIntegration,
+            messageReceiver: contextProvider
         )
     }
 
     init(
         crashReportingPlugin: DDCrashReportingPluginType,
         crashContextProvider: CrashContextProviderType,
-        loggingOrRUMIntegration: CrashReportingIntegration
+        loggingOrRUMIntegration: CrashReportingIntegration,
+        messageReceiver: FeatureMessageReceiver
     ) {
         self.queue = DispatchQueue(
             label: "com.datadoghq.crash-reporter",
@@ -89,16 +81,16 @@ internal class CrashReporter {
         self.plugin = crashReportingPlugin
         self.loggingOrRUMIntegration = loggingOrRUMIntegration
         self.crashContextProvider = crashContextProvider
+        self.messageReceiver = messageReceiver
 
         // Inject current `CrashContext`
-        self.inject(currentCrashContext: crashContextProvider.currentCrashContext)
+        if let context = crashContextProvider.currentCrashContext {
+            inject(currentCrashContext: context)
+        }
 
         // Register for future `CrashContext` changes
-        self.crashContextProvider.onCrashContextChange = { [weak self] newCrashContext in
-            guard let self = self else {
-                return
-            }
-            self.inject(currentCrashContext: newCrashContext)
+        self.crashContextProvider.onCrashContextChange = { [weak self] in
+            self?.inject(currentCrashContext: $0)
         }
     }
 
@@ -120,7 +112,7 @@ internal class CrashReporter {
                     return true
                 }
 
-                self.loggingOrRUMIntegration.send(crashReport: availableCrashReport, with: crashContext)
+                self.loggingOrRUMIntegration.send(report: availableCrashReport, with: crashContext)
                 return true
             }
         }

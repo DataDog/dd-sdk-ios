@@ -59,7 +59,7 @@ public protocol DatadogCoreProtocol: AnyObject {
     ///   - name: The Feature Integration's name.
     ///   - type: The Feature Integration instance type.
     /// - Returns: The Feature Integration if any.
-    func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature
+    func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeatureIntegration
 
     /// Retrieves a Feature Scope by its name.
     ///
@@ -134,7 +134,7 @@ extension DatadogCoreProtocol {
     /// - Parameters:
     ///   - name: The Feature Integration's name.
     /// - Returns: The Feature Integration if any.
-    func integration<T>(named name: String) -> T? where T: DatadogFeature {
+    func integration<T>(named name: String) -> T? where T: DatadogFeatureIntegration {
         integration(named: name, type: T.self)
     }
 
@@ -188,7 +188,7 @@ internal class NOPDatadogCore: DatadogCoreProtocol {
     /// no-op
     func register(integration: DatadogFeatureIntegration) throws { }
     /// no-op
-    func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature { nil }
+    func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeatureIntegration { nil }
     /// no-op
     func scope(for feature: String) -> FeatureScope? { nil }
     /// no-op

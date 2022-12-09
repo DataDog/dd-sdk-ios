@@ -38,6 +38,8 @@ internal final class DatadogCore {
 
     /// The user consent provider.
     let consentProvider: ConsentProvider
+    /// The user consent publisher.
+    let consentPublisher: TrackingConsentPublisher
 
     /// The user info provider that provide values to the
     /// `v1Context`.
@@ -60,7 +62,7 @@ internal final class DatadogCore {
     let applicationVersionPublisher: ApplicationVersionPublisher
 
     /// The message bus used to dispatch messages to registered features.
-    private var messageBus: [FeatureMessageReceiver] = []
+    private var messageBus: [String: FeatureMessageReceiver] = [:]
 
     /// Registry for Features.
     private var features: [String: (
@@ -97,7 +99,7 @@ internal final class DatadogCore {
     init(
         directory: CoreDirectory,
         dateProvider: DateProvider,
-        consentProvider: ConsentProvider,
+        initialConsent: TrackingConsent,
         userInfoProvider: UserInfoProvider,
     	performance: PerformancePreset,
     	httpClient: HTTPClient,
@@ -108,7 +110,6 @@ internal final class DatadogCore {
     ) {
         self.directory = directory
         self.dateProvider = dateProvider
-        self.consentProvider = consentProvider
         self.userInfoProvider = userInfoProvider
         self.performance = performance
         self.httpClient = httpClient
@@ -116,9 +117,12 @@ internal final class DatadogCore {
         self.v1Context = v1Context
         self.contextProvider = contextProvider
         self.applicationVersionPublisher = ApplicationVersionPublisher(version: applicationVersion)
+        self.consentProvider = ConsentProvider(initialConsent: initialConsent)
+        self.consentPublisher = TrackingConsentPublisher(consent: initialConsent)
 
         self.contextProvider.subscribe(\.userInfo, to: userInfoPublisher)
         self.contextProvider.subscribe(\.version, to: applicationVersionPublisher)
+        self.contextProvider.subscribe(\.trackingConsent, to: consentPublisher)
 
         // forward any context change on the message-bus
         self.contextProvider.publish { [weak self] context in
@@ -168,6 +172,21 @@ internal final class DatadogCore {
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     func set(trackingConsent: TrackingConsent) {
         consentProvider.changeConsent(to: trackingConsent)
+        consentPublisher.consent = trackingConsent
+    }
+
+    /// Adds a message receiver to the bus.
+    ///
+    /// After being added to the bus, the core will send the current context to receiver.
+    ///
+    /// - Parameters:
+    ///   - messageReceiver: The new message receiver.
+    ///   - key: The key associated with the receiver.
+    private func add(messageReceiver: FeatureMessageReceiver, forKey key: String) {
+        messageBusQueue.async { self.messageBus[key] = messageReceiver }
+        contextProvider.read { context in
+            self.messageBusQueue.async { messageReceiver.receive(message: .context(context), from: self) }
+        }
     }
 }
 
@@ -209,7 +228,7 @@ extension DatadogCore: DatadogCoreProtocol {
             upload: upload
         )
 
-        connectBus()
+        add(messageReceiver: feature.messageReceiver, forKey: feature.name)
     }
 
     /// Retrieves a Feature by its name and type.
@@ -237,7 +256,7 @@ extension DatadogCore: DatadogCoreProtocol {
     /// - Parameter integration: The Feature Integration instance.
     /* public */ func register(integration: DatadogFeatureIntegration) throws {
         integrations[integration.name] = integration
-        connectBus()
+        add(messageReceiver: integration.messageReceiver, forKey: integration.name)
     }
 
     /// Retrieves a Feature Integration by its name and type.
@@ -251,7 +270,7 @@ extension DatadogCore: DatadogCoreProtocol {
     ///   - name: The Feature Integration's name.
     ///   - type: The Feature Integration instance type.
     /// - Returns: The Feature Integration if any.
-    /* public */ func integration<T>(named name: String, type: T.Type = T.self) -> T? where T: DatadogFeature {
+    /* public */ func integration<T>(named name: String, type: T.Type = T.self) -> T? where T: DatadogFeatureIntegration {
         integrations[name] as? T
     }
 
@@ -272,7 +291,7 @@ extension DatadogCore: DatadogCoreProtocol {
 
     /* public */ func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
         messageBusQueue.async {
-            let receivers = self.messageBus.filter {
+            let receivers = self.messageBus.values.filter {
                 $0.receive(message: message, from: self)
             }
 
@@ -280,17 +299,6 @@ extension DatadogCore: DatadogCoreProtocol {
                 fallback()
             }
         }
-    }
-
-    private func connectBus() {
-        let messageBus = self.v1Features.values
-            .compactMap { $0 as? V1Feature }
-            .map(\.messageReceiver)
-            + features.values.map(\.feature.messageReceiver)
-            + integrations.values.map(\.messageReceiver)
-
-        // connect the message bus
-        messageBusQueue.async { self.messageBus = messageBus }
     }
 }
 
@@ -300,7 +308,10 @@ extension DatadogCore: DatadogV1CoreProtocol {
     func register<T>(feature instance: T?) {
         let key = String(describing: T.self)
         v1Features[key] = instance
-        connectBus()
+
+        if let feature = instance as? V1Feature {
+            add(messageReceiver: feature.messageReceiver, forKey: key)
+        }
     }
 
     func feature<T>(_ type: T.Type) -> T? {

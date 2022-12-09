@@ -34,7 +34,6 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
     private let uuidGenerator: RUMUUIDGenerator
 
     private let core: DatadogCoreProtocol
-    private let context: DatadogV1Context
 
     // MARK: - Initialization
 
@@ -44,8 +43,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         dateProvider: DateProvider,
         sessionSampler: Sampler,
         backgroundEventTrackingEnabled: Bool,
-        uuidGenerator: RUMUUIDGenerator,
-        context: DatadogV1Context
+        uuidGenerator: RUMUUIDGenerator
     ) {
         self.core = core
         self.applicationID = applicationID
@@ -53,34 +51,33 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         self.sessionSampler = sessionSampler
         self.backgroundEventTrackingEnabled = backgroundEventTrackingEnabled
         self.uuidGenerator = uuidGenerator
-        self.context = context
     }
 
     // MARK: - CrashReportingIntegration
 
-    func send(crashReport: DDCrashReport, with crashContext: CrashContext) {
-        guard crashContext.lastTrackingConsent == .granted else {
+    func send(report: DDCrashReport, with context: CrashContext) {
+        guard context.trackingConsent == .granted else {
             return // Only authorized crash reports can be send
         }
 
         // The `crashReport.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
         // to the server time before processing. Following use of the current correction is not ideal (it's not the correction
         // from the moment of crash), but this is the best approximation we can get.
-        let currentTimeCorrection = context.dateCorrector.offset
+        let currentTimeCorrection = context.serverTimeOffset
 
-        let crashDate = crashReport.date ?? dateProvider.now
+        let crashDate = report.date ?? dateProvider.now
         let adjustedCrashTimings = AdjustedCrashTimings(
             crashDate: crashDate,
             realCrashDate: crashDate.addingTimeInterval(currentTimeCorrection),
             realDateNow: dateProvider.now.addingTimeInterval(currentTimeCorrection)
         )
 
-        if let lastRUMViewEvent = crashContext.lastRUMViewEvent {
-            sendCrashReportLinkedToLastViewInPreviousSession(crashReport, lastRUMViewEventInPreviousSession: lastRUMViewEvent, using: adjustedCrashTimings)
-        } else if let lastRUMSessionState = crashContext.lastRUMSessionState {
-            sendCrashReportToPreviousSession(crashReport, crashContext: crashContext, lastRUMSessionStateInPreviousSession: lastRUMSessionState, using: adjustedCrashTimings)
+        if let lastRUMViewEvent = context.lastRUMViewEvent {
+            sendCrashReportLinkedToLastViewInPreviousSession(report, lastRUMViewEventInPreviousSession: lastRUMViewEvent, using: adjustedCrashTimings)
+        } else if let lastRUMSessionState = context.lastRUMSessionState {
+            sendCrashReportToPreviousSession(report, crashContext: context, lastRUMSessionStateInPreviousSession: lastRUMSessionState, using: adjustedCrashTimings)
         } else if sessionSampler.sample() { // before producing a new RUM session, we must consider sampling
-            sendCrashReportToNewSession(crashReport, crashContext: crashContext, using: adjustedCrashTimings)
+            sendCrashReportToNewSession(report, crashContext: context, using: adjustedCrashTimings)
         } else {
             DD.logger.debug("There was a crash in previous session, but it is ignored due to sampling.")
         }
@@ -136,7 +133,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 url: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
                 startDate: crashTimings.realCrashDate,
                 sessionUUID: RUMUUID(rawValue: lastRUMSessionState.sessionUUID), // link it to previous RUM Session
-                crashContext: crashContext,
+                context: crashContext,
                 hasReplay: lastRUMSessionState.didStartWithReplay
             )
         case .handleInBackgroundView:
@@ -147,7 +144,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 url: RUMOffViewEventsHandlingRule.Constants.backgroundViewURL,
                 startDate: crashTimings.realCrashDate,
                 sessionUUID: RUMUUID(rawValue: lastRUMSessionState.sessionUUID), // link it to previous RUM Session
-                crashContext: crashContext,
+                context: crashContext,
                 hasReplay: lastRUMSessionState.didStartWithReplay
             )
         case .doNotHandle:
@@ -185,7 +182,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 url: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
                 startDate: crashTimings.realCrashDate,
                 sessionUUID: uuidGenerator.generateUnique(), // create new RUM session
-                crashContext: crashContext,
+                context: crashContext,
                 // As the crash occured after initializing SDK but before starting the first view,
                 // we can't know if Session Replay was configured. However, lack of view implies
                 // that there must be no replay collected:
@@ -197,7 +194,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
                 url: RUMOffViewEventsHandlingRule.Constants.backgroundViewURL,
                 startDate: crashTimings.realCrashDate,
                 sessionUUID: uuidGenerator.generateUnique(), // create new RUM session
-                crashContext: crashContext,
+                context: crashContext,
                 // As the crash occured after initializing SDK but before starting the first view,
                 // we can't know if Session Replay was configured. However, lack of view implies
                 // that there must be no replay collected:
@@ -364,7 +361,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         url viewURL: String,
         startDate: Date,
         sessionUUID: RUMUUID,
-        crashContext: CrashContext,
+        context: CrashContext,
         hasReplay: Bool?
     ) -> RUMViewEvent {
         let viewUUID = uuidGenerator.generateUnique()
@@ -380,27 +377,27 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             ),
             ciTest: CITestIntegration.active?.rumCITest,
             connectivity: RUMConnectivity(
-                networkInfo: crashContext.lastNetworkConnectionInfo,
-                carrierInfo: crashContext.lastCarrierInfo
+                networkInfo: context.networkConnectionInfo,
+                carrierInfo: context.carrierInfo
             ),
             context: nil,
             date: startDate.timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(context: context),
+            device: .init(device: context.device),
             display: nil,
             // RUMM-2197: In very rare cases, the OS info computed below might not be exactly the one
             // that the app crashed on. This would correspond to a scenario when the device OS was upgraded
             // before restarting the app after crash. To solve this, the OS information would have to be
             // persisted in `crashContext` the same way as we do for other dynamic information.
-            os: .init(context: context),
+            os: .init(device: context.device),
             service: context.service,
             session: .init(
                 hasReplay: hasReplay,
                 id: sessionUUID.toRUMDataFormat,
                 type: CITestIntegration.active != nil ? .ciTest : .user
             ),
-            source: RUMViewEvent.Source(rawValue: context.source) ?? .ios,
+            source: .init(rawValue: context.source) ?? .ios,
             synthetics: nil,
-            usr: crashContext.lastUserInfo.flatMap { RUMUser(userInfo: $0) },
+            usr: context.userInfo.map { RUMUser(userInfo: $0) },
             version: context.version,
             view: .init(
                 action: .init(count: 0),
@@ -494,15 +491,6 @@ internal struct RUMCrashEvent: RUMDataModel {
         }
 
         self.additionalAttributes = dictionary
-    }
-
-    /// Coding keys for dynamic `RUMEvent` attributes specified by user.
-    private struct DynamicCodingKey: CodingKey {
-        var stringValue: String
-        var intValue: Int?
-        init?(stringValue: String) { self.stringValue = stringValue }
-        init?(intValue: Int) { return nil }
-        init(_ string: String) { self.stringValue = string }
     }
 }
 

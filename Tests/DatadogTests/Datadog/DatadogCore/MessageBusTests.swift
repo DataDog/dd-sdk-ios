@@ -16,7 +16,7 @@ class MessageBusTests: XCTestCase {
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
-            consentProvider: .mockAny(),
+            initialConsent: .mockRandom(),
             userInfoProvider: .mockAny(),
             performance: .mockAny(),
             httpClient: .mockAny(),
@@ -28,12 +28,15 @@ class MessageBusTests: XCTestCase {
 
         defer { temporaryCoreDirectory.delete() }
 
-        let receiver = FeatureMessageReceiverMock(expectation: expectation) { message in
+        let receiver = FeatureMessageReceiverMock { message in
             // Then
             switch message {
             case .custom(let key, let attributes):
                 XCTAssertEqual(key, "test")
                 XCTAssertEqual(attributes["key"], "value")
+                expectation.fulfill()
+            case .context:
+                break
             default:
                 XCTFail("wrong message case")
             }

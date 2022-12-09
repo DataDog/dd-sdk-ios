@@ -437,7 +437,18 @@ class RUMSessionScopeTests: XCTestCase {
     // MARK: Integration with Crash Context
 
     func testWhenSessionScopeIsCreated_thenItUpdatesLastRUMSessionStateInCrashContext() throws {
-        let rumSessionStateProvider = ValuePublisher<RUMSessionState?>(initialValue: nil)
+        var sessionState: RUMSessionState? = nil
+
+        let messageReciever = FeatureMessageReceiverMock { message in
+            if case let .custom(_, baggage) = message {
+                sessionState = baggage[RUMBaggageKeys.sessionState]
+            }
+        }
+
+        let core = PassthroughCoreMock(
+            messageReceiver: messageReciever
+        )
+
         let randomIsInitialSession: Bool = .mockRandom()
         let randomIsReplayBeingRecorded: Bool? = .mockRandom()
 
@@ -446,28 +457,34 @@ class RUMSessionScopeTests: XCTestCase {
             isInitialSession: randomIsInitialSession,
             parent: parent,
             dependencies: .mockWith(
-                sessionSampler: .mockRandom(), // no matter if sampled or not
-                crashContextIntegration: RUMWithCrashContextIntegration(
-                    rumViewEventProvider: .mockRandom(),
-                    rumSessionStateProvider: rumSessionStateProvider
-                )
+                core: core,
+                sessionSampler: .mockRandom() // no matter if sampled or not
             ),
             isReplayBeingRecorded: randomIsReplayBeingRecorded
         )
 
         // Then
-        let rumSessionStateInjectedToCrashContext = try XCTUnwrap(rumSessionStateProvider.currentValue, "It must inject session state to crash context")
         let expectedSessionState = RUMSessionState(
             sessionUUID: scope.sessionUUID.rawValue,
             isInitialSession: randomIsInitialSession,
             hasTrackedAnyView: false,
             didStartWithReplay: randomIsReplayBeingRecorded
         )
-        XCTAssertEqual(rumSessionStateInjectedToCrashContext, expectedSessionState, "It must inject expected session state to crash context")
+        XCTAssertEqual(sessionState, expectedSessionState, "It must inject expected session state to crash context")
     }
 
     func testWhenSessionScopeStartsAnyView_thenItUpdatesLastRUMSessionStateInCrashContext() throws {
-        let rumSessionStateProvider = ValuePublisher<RUMSessionState?>(initialValue: nil)
+        var sessionState: RUMSessionState? = nil
+        let messageReciever = FeatureMessageReceiverMock { message in
+            if case let .custom(_, baggage) = message, let state = baggage[RUMBaggageKeys.sessionState, type: RUMSessionState.self] {
+                sessionState = state
+            }
+        }
+
+        let core = PassthroughCoreMock(
+            messageReceiver: messageReciever
+        )
+
         let randomIsInitialSession: Bool = .mockRandom()
         let randomIsReplayBeingRecorded: Bool? = .mockRandom()
 
@@ -477,45 +494,49 @@ class RUMSessionScopeTests: XCTestCase {
             isInitialSession: randomIsInitialSession,
             parent: parent,
             startTime: sessionStartTime,
-            dependencies: .mockWith(
-                crashContextIntegration: RUMWithCrashContextIntegration(
-                    rumViewEventProvider: .mockRandom(),
-                    rumSessionStateProvider: rumSessionStateProvider
-                )
-            ),
+            dependencies: .mockWith(core: core),
             isReplayBeingRecorded: randomIsReplayBeingRecorded
         )
 
         // When
-        _ = scope.process(command: RUMStartViewCommand.mockWith(time: sessionStartTime), context: context, writer: writer)
+        core.eventWriteContext { context, writer in
+            _ = scope.process(command: RUMStartViewCommand.mockWith(time: sessionStartTime), context: context, writer: writer)
+        }
 
         XCTAssertFalse(scope.viewScopes.isEmpty, "Session started some view")
 
         // Then
-        let rumSessionStateInjectedToCrashContext = try XCTUnwrap(rumSessionStateProvider.currentValue, "It must inject session state to crash context")
         let expectedSessionState = RUMSessionState(
             sessionUUID: scope.sessionUUID.rawValue,
             isInitialSession: randomIsInitialSession,
             hasTrackedAnyView: true,
             didStartWithReplay: randomIsReplayBeingRecorded
         )
-        XCTAssertEqual(rumSessionStateInjectedToCrashContext, expectedSessionState, "It must inject expected session state to crash context")
+
+        XCTAssertEqual(sessionState, expectedSessionState, "It must inject expected session state to crash context")
     }
 
     func testWhenSessionScopeHasNoActiveView_thenItUpdatesLastRUMViewEventInCrashContext() throws {
-        let rumViewEventProvider = ValuePublisher<RUMViewEvent?>(initialValue: nil)
+        var viewEvent: RUMViewEvent? = nil
+        let messageReciever = FeatureMessageReceiverMock { message in
+            if case let .custom(_, baggage) = message, let event = baggage[RUMBaggageKeys.viewEvent, type: RUMViewEvent.self] {
+                viewEvent = event
+            } else if case let .custom(_, baggage) = message, baggage[RUMBaggageKeys.viewReset, type: Bool.self] == true {
+                viewEvent = nil
+            }
+        }
+
+        let core = PassthroughCoreMock(
+            context: context,
+            messageReceiver: messageReciever
+        )
 
         // Given
         let sessionStartTime = Date()
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
             startTime: sessionStartTime,
-            dependencies: .mockWith(
-                crashContextIntegration: RUMWithCrashContextIntegration(
-                    rumViewEventProvider: rumViewEventProvider,
-                    rumSessionStateProvider: .mockAny()
-                )
-            )
+            dependencies: .mockWith(core: core)
         )
 
         // When
@@ -523,13 +544,13 @@ class RUMSessionScopeTests: XCTestCase {
         _ = scope.process(command: command, context: context, writer: writer)
 
         // Then
-        XCTAssertNotNil(rumViewEventProvider.currentValue, "Crash context must be include rum view event, because there is an active view")
+        XCTAssertNotNil(viewEvent, "Crash context must be include rum view event, because there is an active view")
 
         // When
         _ = scope.process(command: RUMStopViewCommand.mockWith(time: sessionStartTime.addingTimeInterval(1), identity: mockView), context: context, writer: writer)
 
         // Then
-        XCTAssertNil(rumViewEventProvider.currentValue, "Crash context must not include rum view event, because there is no active view")
+        XCTAssertNil(viewEvent, "Crash context must not include rum view event, because there is no active view")
     }
 
     // MARK: - Usage

@@ -15,8 +15,4 @@ public struct Global {
 
     /// Shared RUM Monitor instance to use throughout the app.
     public static var rum: DDRUMMonitor = DDNoopRUMMonitor()
-
-    /// Shared Crash Reporter instance used internally by the SDK.
-    /// `nil` if the crash reporting feature is not enabled.
-    internal static var crashReporter: CrashReporter?
 }

@@ -7,7 +7,7 @@
 import Foundation
 
 /// Provides the application launch time.
-/* public */ internal struct LaunchTime {
+/* public */ internal struct LaunchTime: Codable, Equatable {
     /// The app process launch duration (in seconds) measured as the time from process start time
     /// to receiving `UIApplication.didBecomeActiveNotification` notification.
     ///

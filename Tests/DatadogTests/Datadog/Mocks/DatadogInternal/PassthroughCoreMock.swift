@@ -68,6 +68,8 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
         self.expectation = expectation
         self.bypassConsentExpectation = bypassConsentExpectation
         self.messageReceiver = messageReceiver
+
+        messageReceiver.receive(message: .context(context), from: self)
     }
 
     /// no-op
@@ -77,7 +79,7 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     /// no-op
     func register(integration: DatadogFeatureIntegration) throws { }
     /// no-op
-    func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature { nil }
+    func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeatureIntegration { nil }
     /// no-op
     func register<T>(feature instance: T?) { }
     /// Returns `nil`

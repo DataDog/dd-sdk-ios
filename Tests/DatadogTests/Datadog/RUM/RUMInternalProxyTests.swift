@@ -26,12 +26,11 @@ class RUMInternalProxyTests: XCTestCase {
     /// The only difference vs. `RUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
     private func createTestableRUMMonitor() throws -> DDRUMMonitor {
         let rumFeature: RUMFeature = try XCTUnwrap(core.v1.feature(RUMFeature.self), "RUM feature must be initialized before creating `RUMMonitor`")
-        let crashReportingFeature = core.v1.feature(CrashReportingFeature.self)
         return RUMMonitor(
             core: core,
             dependencies: RUMScopeDependencies(
-                rumFeature: rumFeature,
-                crashReportingFeature: crashReportingFeature
+                core: core,
+                rumFeature: rumFeature
             ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
             dateProvider: rumFeature.configuration.dateProvider
         )

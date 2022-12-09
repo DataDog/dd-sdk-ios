@@ -16,10 +16,6 @@ class GlobalTests: XCTestCase {
         XCTAssertTrue(Global.rum is DDNoopRUMMonitor)
     }
 
-    func testWhenCrashReportingIsNotEnabled_thenCrashReporterIsNotSet() {
-        XCTAssertNil(Global.crashReporter)
-    }
-
     func testDDGlobalIsGlobalTypealias() {
         XCTAssertTrue(DDGlobal.self == Global.self)
     }

@@ -26,12 +26,11 @@ class RUMMonitorTests: XCTestCase {
     /// The only difference vs. `RUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
     private func createTestableRUMMonitor() throws -> DDRUMMonitor {
         let rumFeature: RUMFeature = try XCTUnwrap(core.v1.feature(RUMFeature.self), "RUM feature must be initialized before creating `RUMMonitor`")
-        let crashReportingFeature = core.v1.feature(CrashReportingFeature.self)
         return RUMMonitor(
             core: core,
             dependencies: RUMScopeDependencies(
-                rumFeature: rumFeature,
-                crashReportingFeature: crashReportingFeature
+                core: core,
+                rumFeature: rumFeature
             ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
             dateProvider: rumFeature.configuration.dateProvider
         )
@@ -1113,17 +1112,17 @@ class RUMMonitorTests: XCTestCase {
         )
 
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
-        let crashReporting: CrashReportingFeature = .mockNoOp()
-
         core.register(feature: rum)
-        core.register(feature: crashReporting)
 
         // Given
-        Global.crashReporter = CrashReporter(
-            core: core,
-            context: .mockAny()
+        let crashReporter = try XCTUnwrap(
+            CrashReporter(
+                core: core,
+                configuration: .mockAny()
+            )
         )
-        defer { Global.crashReporter = nil }
+
+        try core.register(integration: crashReporter)
 
         // When
         let monitor = try createTestableRUMMonitor()
@@ -1133,9 +1132,7 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 2)
         let lastRUMViewEventSent: RUMViewEvent = try rumEventMatchers[1].model()
 
-        let currentCrashContext = try XCTUnwrap(Global.crashReporter?.crashContextProvider.currentCrashContext)
-        let currentLastRUMViewEventSent = try XCTUnwrap(currentCrashContext.lastRUMViewEvent)
-
+        let currentLastRUMViewEventSent = try XCTUnwrap(crashReporter.crashContextProvider.currentCrashContext?.lastRUMViewEvent)
         try AssertEncodedRepresentationsEqual(currentLastRUMViewEventSent, lastRUMViewEventSent)
     }
 
