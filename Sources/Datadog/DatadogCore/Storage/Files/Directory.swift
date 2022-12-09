@@ -95,7 +95,7 @@ internal struct Directory {
         try retry(times: 3, delay: 0.001) {
             try files().forEach { file in
                 let destinationFileURL = destinationDirectory.url.appendingPathComponent(file.name)
-                try? retry(times: 3, delay: 0.000_1) {
+                try? retry(times: 3, delay: 0.0001) {
                     try FileManager.default.moveItem(at: file.url, to: destinationFileURL)
                 }
             }

@@ -33,7 +33,7 @@ class KronosTimeStoragePolicyTests: XCTestCase {
 class KronosTimeStorageTests: XCTestCase {
     func testStoringAndRetrievingTimeFreeze() {
         var storage = KronosTimeStorage(storagePolicy: .standard)
-        let sampleFreeze = KronosTimeFreeze(offset: 5_000.324_23)
+        let sampleFreeze = KronosTimeFreeze(offset: 5_000.32423)
         storage.stableTime = sampleFreeze
 
         let fromDefaults = storage.stableTime
@@ -42,7 +42,7 @@ class KronosTimeStorageTests: XCTestCase {
     }
 
     func testRetrievingTimeFreezeAfterReboot() {
-        let sampleFreeze = KronosTimeFreeze(offset: 5_000.324_23)
+        let sampleFreeze = KronosTimeFreeze(offset: 5_000.32423)
         var storedData = sampleFreeze.toDictionary()
         storedData["Uptime"] = storedData["Uptime"]! + 10
 
