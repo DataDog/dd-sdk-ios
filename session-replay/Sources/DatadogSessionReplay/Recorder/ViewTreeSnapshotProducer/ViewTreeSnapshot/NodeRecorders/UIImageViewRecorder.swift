@@ -18,15 +18,10 @@ internal struct UIImageViewRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
-        // TODO: RUMM-2455
-        // Enhance image placeholders rendering by considering `.contentMode` and resizing
-        // the wireframe to fit the actual image, not surrounding `UIImageView`.
-        let imageFrame = attributes.frame
-
         let builder = UIImageViewWireframesBuilder(
             wireframeID: context.ids.nodeID(for: imageView),
             attributes: attributes,
-            wireframeRect: imageFrame
+            imageFrame: imageView.imageFrame(in: attributes.frame)
         )
         return SpecificElement(wireframesBuilder: builder, recordSubtree: false)
     }
@@ -56,5 +51,157 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
                 opacity: attributes.alpha
             )
         ]
+    }
+}
+
+extension UIImageView {
+    var scaleAspectFillRect: CGRect {
+        guard let image = image else { return bounds }
+
+        let scale: CGFloat
+        if image.size.width < image.size.height {
+            scale = bounds.width / image.size.width
+        } else {
+            scale = bounds.height / image.size.height
+        }
+
+        let size = CGSize(width: image.size.width * scale, height: image.size.height * scale)
+        let x = (bounds.width - size.width) / 2.0
+        let y = (bounds.height - size.height) / 2.0
+
+        return CGRect(x: x, y: y, width: size.width, height: size.height)
+    }
+
+    var scaleAspectFitRect: CGRect {
+        guard let image = image else {
+            return .zero
+        }
+        let imageWidth = image.size.width
+        let imageHeight = image.size.height
+
+        let wv = frame.width
+        let hv = frame.height
+
+        let ri = imageHeight / imageWidth
+        let rv = hv / wv
+
+        var x, y, w, h: CGFloat
+
+        if ri > rv {
+            h = hv
+            w = h / ri
+            x = (wv / 2) - (w / 2)
+            y = 0
+        } else {
+            w = wv
+            h = w * ri
+            x = 0
+            y = (hv / 2) - (h / 2)
+        }
+        return CGRect(x: x, y: y, width: w, height: h)
+    }
+
+    func imageFrame(in frame: CGRect) -> CGRect {
+        let imageSize = image?.size ?? .zero
+        let imageFrame: CGRect
+        switch contentMode {
+        case .scaleAspectFit:
+            let realImageRect = scaleAspectFitRect
+            imageFrame = CGRect(
+                x: frame.origin.x + realImageRect.origin.x,
+                y: frame.origin.y + realImageRect.origin.y,
+                width: realImageRect.size.width,
+                height: realImageRect.size.height
+            )
+
+        case .scaleAspectFill:
+            let realImageRect = scaleAspectFillRect
+            imageFrame = CGRect(
+                x: frame.origin.x + realImageRect.origin.x,
+                y: frame.origin.y + realImageRect.origin.y,
+                width: realImageRect.size.width,
+                height: realImageRect.size.height
+            )
+        case .redraw, .center:
+            imageFrame = CGRect(
+                x: frame.origin.x + (frame.width - imageSize.width) / 2,
+                y: frame.origin.y + (frame.height - imageSize.height) / 2,
+                width: imageSize.width,
+                height: imageSize.height
+            )
+        case .scaleToFill:
+            return frame
+
+        case .topLeft:
+            imageFrame = CGRect(
+                x: frame.origin.x,
+                y: frame.origin.y,
+                width: imageSize.width,
+                height: imageSize.height
+            )
+        case .topRight:
+            imageFrame = CGRect(
+                x: frame.origin.x + (frame.width - imageSize.width),
+                y: frame.origin.y,
+                width: imageSize.width,
+                height: imageSize.height
+            )
+        case .bottomLeft:
+            imageFrame = CGRect(
+                x: frame.origin.x,
+                y: frame.origin.y + (frame.height - imageSize.height),
+                width: imageSize.width,
+                height: imageSize.height
+            )
+        case .bottomRight:
+            imageFrame = CGRect(
+                x: frame.origin.x + (frame.width - imageSize.width),
+                y: frame.origin.y + (frame.height - imageSize.height),
+                width: imageSize.width,
+                height: imageSize.height
+            )
+        case .top:
+            imageFrame = CGRect(
+                x: frame.origin.x + (frame.width - imageSize.width) / 2,
+                y: frame.origin.y,
+                width: imageSize.width,
+                height: imageSize.height
+            )
+        case .bottom:
+            imageFrame = CGRect(
+                x: frame.origin.x + (frame.width - imageSize.width) / 2,
+                y: frame.origin.y + (frame.height - imageSize.height),
+                width: imageSize.width,
+                height: imageSize.height
+            )
+        case .left:
+            imageFrame = CGRect(
+                x: frame.origin.x,
+                y: frame.origin.y + (frame.height - imageSize.height) / 2,
+                width: imageSize.width,
+                height: imageSize.height
+            )
+        case .right:
+            imageFrame = CGRect(
+                x: frame.origin.x + (frame.width - imageSize.width),
+                y: frame.origin.y + (frame.height - imageSize.height) / 2,
+                width: imageSize.width,
+                height: imageSize.height
+            )
+
+        @unknown default:
+            imageFrame = frame
+        }
+
+        if clipsToBounds {
+            return CGRect(
+                x: (imageFrame.width > frame.width) ? frame.origin.x : imageFrame.origin.x,
+                y: (imageFrame.height > frame.height) ? frame.origin.y : imageFrame.origin.y,
+                width: (imageFrame.width > frame.width) ? frame.width : imageFrame.width,
+                height: (imageFrame.height > frame.height) ?  frame.height : imageFrame.height
+            )
+        } else {
+            return imageFrame
+        }
     }
 }
