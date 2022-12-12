@@ -6,21 +6,6 @@
 
 import Foundation
 
-/// Reduces the values from shared `NetworkConnectionInfoProvider` and `CarrierInfoProvider` to `RUMConnectivity` format.
-internal struct RUMConnectivityInfoProvider {
-    /// Shared network connection info provider.
-    let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
-    /// Shared mobile carrier info provider.
-    let carrierInfoProvider: CarrierInfoProviderType
-
-    var current: RUMConnectivity? {
-        return RUMConnectivity(
-            networkInfo: networkConnectionInfoProvider.current,
-            carrierInfo: carrierInfoProvider.current
-        )
-    }
-}
-
 extension RUMConnectivity {
     init?(context: DatadogContext) {
         self.init(
