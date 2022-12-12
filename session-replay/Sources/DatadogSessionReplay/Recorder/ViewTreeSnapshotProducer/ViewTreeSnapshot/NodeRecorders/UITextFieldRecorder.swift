@@ -40,6 +40,10 @@ internal struct UITextFieldRecorder: NodeRecorder {
             return textFieldText
         }()
 
+        // TODO: RUMM-2459
+        // Enhance text fields rendering by calculating the actual frame of the text:
+        let textFrame = attributes.frame
+
         let builder = UITextFieldWireframesBuilder(
             wireframeID: context.ids.nodeID(for: textField),
             attributes: attributes,
@@ -49,9 +53,10 @@ internal struct UITextFieldRecorder: NodeRecorder {
             textColor: textField.textColor?.cgColor,
             font: textField.font,
             editor: editorProperties,
-            textObfuscator: context.recorder.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator
+            textObfuscator: context.recorder.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator,
+            wireframeRect: textFrame
         )
-        return SpecificElement(wireframesBuilder: builder)
+        return SpecificElement(wireframesBuilder: builder, recordSubtree: false)
     }
 }
 
@@ -70,6 +75,8 @@ internal struct UITextFieldWireframesBuilder: NodeWireframesBuilder {
     /// Text obfuscator for masking text.
     let textObfuscator: TextObfuscating
 
+    let wireframeRect: CGRect
+
     struct EditorFieldProperties {
         /// Editor view's `.backgorundColor`.
         var backgroundColor: CGColor? = nil
@@ -82,16 +89,12 @@ internal struct UITextFieldWireframesBuilder: NodeWireframesBuilder {
     }
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
-        // TODO: RUMM-2459
-        // Enhance text fields rendering by calculating the actual frame of the text:
-        let textFrame = attributes.frame
-
         return [
             builder.createTextWireframe(
                 id: wireframeID,
                 frame: attributes.frame,
                 text: textObfuscator.mask(text: text),
-                textFrame: textFrame,
+                textFrame: wireframeRect,
                 textColor: textColor,
                 font: font,
                 borderColor: editor?.layerBorderColor ?? attributes.layerBorderColor,

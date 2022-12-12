@@ -16,7 +16,7 @@ class UISwitchRecorderTests: XCTestCase {
 
     func testWhenSwitchIsNotVisible() throws {
         // When
-        viewAttributes = .mockWith(isVisible: false)
+        viewAttributes = .mock(fixture: .invisible)
 
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: `switch`, with: viewAttributes, in: .mockAny()))
@@ -32,11 +32,11 @@ class UISwitchRecorderTests: XCTestCase {
         `switch`.tintColor = .mockRandom()
 
         // When
-        viewAttributes = .mockWith(isVisible: true)
+        viewAttributes = .mock(fixture: .visibleWithSomeAppearance)
 
         // Then
-        let semantics = try XCTUnwrap(recorder.semantics(of: `switch`, with: viewAttributes, in: .mockAny()))
-        XCTAssertTrue(semantics is SpecificElement)
+        let semantics = try XCTUnwrap(recorder.semantics(of: `switch`, with: viewAttributes, in: .mockAny()) as? SpecificElement)
+        XCTAssertFalse(semantics.recordSubtree, "Switch's subtree should not be recorded")
 
         let builder = try XCTUnwrap(semantics.wireframesBuilder as? UISwitchWireframesBuilder)
         XCTAssertEqual(builder.attributes, viewAttributes)

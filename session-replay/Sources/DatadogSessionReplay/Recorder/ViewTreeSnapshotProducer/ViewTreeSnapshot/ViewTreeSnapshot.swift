@@ -66,18 +66,37 @@ internal struct ViewAttributes: Equatable {
     /// Original view's `.alpha` (between `0.0` and `1.0`).
     let alpha: CGFloat
 
+    /// Original view's `.isHidden`.
+    let isHidden: Bool
+
     /// Original view's `.intrinsicContentSize`.
     let intrinsicContentSize: CGSize
 
-    /// If the view is visible (considering: alpha + hidden state + non-zero frame).
+    /// If the view is technically visible (different than `!isHidden` because it also considers `alpha` and `frame != .zero`).
+    /// A view can be technically visible, but it may have no appearance in practise (e.g. if its colors use `0` alpha component).
     ///
-    /// Example: A can be not visible if it has `.zero` size or it is fully transparent.
-    let isVisible: Bool
+    /// Example 1: A view is invisible if it has `.zero` size or it is fully transparent (`alpha == 0`).
+    /// Example 2: A view can be visible if it has fully transparent background color, but its `alpha` is `0.5` or it occupies non-zero area.
+    var isVisible: Bool { !isHidden && alpha > 0 && frame != .zero }
 
-    /// If the view has any visible appearance (considering: background color + border style)
+    /// If the view has any visible appearance (considering: background color + border style).
+    /// In other words: if this view brings anything visual.
     ///
     /// Example: A view might have no appearance if it has `0` border width and transparent fill color.
-    let hasAnyAppearance: Bool
+    var hasAnyAppearance: Bool {
+        let borderAlpha = layerBorderColor?.alpha ?? 0
+        let hasBorderAppearance = layerBorderWidth > 0 && borderAlpha > 0
+
+        let fillAlpha = backgroundColor?.alpha ?? 0
+        let hasFillAppearance = fillAlpha > 0
+
+        return isVisible && (hasBorderAppearance || hasFillAppearance)
+    }
+
+    /// If the view is translucent, meaining if any content underneath it can be seen.
+    ///
+    /// Example: A view with with blue background of alpha `0.5` is considered "translucent".
+    var isTranslucent: Bool { !isVisible || alpha < 1 }
 }
 
 extension ViewAttributes {
@@ -87,25 +106,9 @@ extension ViewAttributes {
         self.layerBorderColor = view.layer.borderColor
         self.layerBorderWidth = view.layer.borderWidth
         self.layerCornerRadius = view.layer.cornerRadius
-        self.intrinsicContentSize = view.intrinsicContentSize
         self.alpha = view.alpha
-
-        let hasBorderAppearance: Bool = {
-            guard view.layer.borderWidth > 0, let borderAlpha = view.layer.borderColor?.alpha else {
-                return false
-            }
-            return borderAlpha > 0
-        }()
-
-        let hasFillAppearance: Bool = {
-            guard let fillAlpha = view.backgroundColor?.cgColor.alpha else {
-                return false
-            }
-            return fillAlpha > 0
-        }()
-
-        self.isVisible = !view.isHidden && view.alpha > 0 && frame != .zero
-        self.hasAnyAppearance = self.isVisible && (hasBorderAppearance || hasFillAppearance)
+        self.isHidden = view.isHidden
+        self.intrinsicContentSize = view.intrinsicContentSize
     }
 }
 
@@ -135,6 +138,9 @@ internal protocol NodeSemantics {
     /// the same view. In that case, the semantics with higher `importance` takes precedence.
     static var importance: Int { get }
 
+    /// Whether the `Recorder` should continue with traversing the subtree of this node.
+    var recordSubtree: Bool { get }
+
     /// A type defining how to build SR wireframes for the UI element this semantic was recorded for.
     var wireframesBuilder: NodeWireframesBuilder? { get }
 }
@@ -152,6 +158,7 @@ extension NodeSemantics {
 internal struct UnknownElement: NodeSemantics {
     static let importance: Int = .min
     let wireframesBuilder: NodeWireframesBuilder? = nil
+    let recordSubtree = true
 
     /// Use `UnknownElement.constant` instead.
     private init () {}
@@ -166,6 +173,7 @@ internal struct UnknownElement: NodeSemantics {
 internal struct InvisibleElement: NodeSemantics {
     static let importance: Int = 0
     let wireframesBuilder: NodeWireframesBuilder? = nil
+    let recordSubtree = false // no point of recording children if the parent is invisible
 
     /// Use `InvisibleElement.constant` instead.
     private init () {}
@@ -176,15 +184,21 @@ internal struct InvisibleElement: NodeSemantics {
 
 /// A semantics of an UI element that is of `UIView` type. This semantics mean that the element has visual appearance in SR, but
 /// it will only utilize its base `UIView` attributes. The full identity of the node will remain ambiguous if not overwritten with `SpecificElement`.
+///
+/// The view-tree traversal algorithm will continue visiting the subtree of given `UIView` if it has `AmbiguousElement` semantics.
 internal struct AmbiguousElement: NodeSemantics {
     static let importance: Int = 0
     let wireframesBuilder: NodeWireframesBuilder?
+    let recordSubtree = true
 }
 
 /// A semantics of an UI element that is one of `UIView` subclasses. This semantics mean that we know its full identity along with set of
 /// subclass-specific attributes that will be used to render it in SR (e.g. all base `UIView` attributes plus the text in `UILabel` or the
 /// "on" / "off" state of `UISwitch` control).
+///
+/// Depending on `recordSubtree`, the view-tree traversal algorithm will skip or continue visiting the subtree of views with this semantics.
 internal struct SpecificElement: NodeSemantics {
     static let importance: Int = .max
     let wireframesBuilder: NodeWireframesBuilder?
+    let recordSubtree: Bool
 }

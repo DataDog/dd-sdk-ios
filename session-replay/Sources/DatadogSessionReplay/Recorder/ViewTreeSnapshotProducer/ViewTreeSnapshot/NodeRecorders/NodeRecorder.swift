@@ -26,6 +26,9 @@ internal protocol NodeRecorder {
 ///
 /// **Note:** The `NodeWireframesBuilder` is used on background thread by `Processor`.
 internal protocol NodeWireframesBuilder {
+    /// The frame of produced wireframe in screen coordinates.
+    var wireframeRect: CGRect { get }
+
     /// Creates wireframes that are later uploaded to SR backend.
     /// - Parameter builder: the generic builder for constructing SR data models.
     /// - Returns: one or more wireframes that describe a node in SR.

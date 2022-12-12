@@ -26,9 +26,9 @@ internal struct UIImageViewRecorder: NodeRecorder {
         let builder = UIImageViewWireframesBuilder(
             wireframeID: context.ids.nodeID(for: imageView),
             attributes: attributes,
-            imageFrame: imageFrame
+            wireframeRect: imageFrame
         )
-        return SpecificElement(wireframesBuilder: builder)
+        return SpecificElement(wireframesBuilder: builder, recordSubtree: false)
     }
 }
 
@@ -41,14 +41,14 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
     let wireframeID: WireframeID
     /// Attributes of the base `UIView`.
     let attributes: ViewAttributes
-    /// The actual frame of the image, in screen coordinates.
-    let imageFrame: CGRect
+
+    let wireframeRect: CGRect
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         return [
             builder.createShapeWireframe(
                 id: wireframeID,
-                frame: imageFrame,
+                frame: wireframeRect,
                 borderColor: attributes.layerBorderColor,
                 borderWidth: attributes.layerBorderWidth,
                 backgroundColor: attributes.backgroundColor ?? Defaults.placeholderColor,

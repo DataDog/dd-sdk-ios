@@ -17,7 +17,7 @@ class UITextFieldRecorderTests: XCTestCase {
 
     func testWhenTextFieldIsNotVisible() throws {
         // When
-        viewAttributes = .mockWith(isVisible: false)
+        viewAttributes = .mock(fixture: .invisible)
 
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: textField, with: viewAttributes, in: .mockAny()))
@@ -46,12 +46,12 @@ class UITextFieldRecorderTests: XCTestCase {
                 self.textField.placeholder = .mockRandom()
             },
         ])
-        viewAttributes = .mockWith(isVisible: true)
+        viewAttributes = .mock(fixture: .visibleWithSomeAppearance)
         textField.layoutSubviews() // force layout (so TF creates its sub-tree)
 
         // Then
-        let semantics = try XCTUnwrap(recorder.semantics(of: textField, with: viewAttributes, in: .mockAny()))
-        XCTAssertTrue(semantics is SpecificElement)
+        let semantics = try XCTUnwrap(recorder.semantics(of: textField, with: viewAttributes, in: .mockAny()) as? SpecificElement)
+        XCTAssertFalse(semantics.recordSubtree, "TextField's subtree should not be recorded")
 
         let builder = try XCTUnwrap(semantics.wireframesBuilder as? UITextFieldWireframesBuilder)
         XCTAssertEqual(builder.text, randomText)
@@ -65,6 +65,7 @@ class UITextFieldRecorderTests: XCTestCase {
         textField.text = .mockRandom()
 
         // When
+        viewAttributes = .mock(fixture: .visibleWithSomeAppearance)
         let semantics1 = try XCTUnwrap(recorder.semantics(of: textField, with: viewAttributes, in: .mockWith(recorder: .mockWith(privacy: .maskAll))))
         let semantics2 = try XCTUnwrap(recorder.semantics(of: textField, with: viewAttributes, in: .mockWith(recorder: .mockWith(privacy: .allowAll))))
 

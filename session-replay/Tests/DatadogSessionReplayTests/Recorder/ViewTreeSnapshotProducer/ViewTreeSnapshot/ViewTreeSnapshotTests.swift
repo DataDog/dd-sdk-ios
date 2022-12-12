@@ -22,8 +22,9 @@ class ViewAttributesTests: XCTestCase {
         XCTAssertEqual(attributes.layerBorderColor, view.layer.borderColor)
         XCTAssertEqual(attributes.layerBorderWidth, view.layer.borderWidth)
         XCTAssertEqual(attributes.layerCornerRadius, view.layer.cornerRadius)
-        XCTAssertEqual(attributes.intrinsicContentSize, view.intrinsicContentSize)
         XCTAssertEqual(attributes.alpha, view.alpha)
+        XCTAssertEqual(attributes.isHidden, view.isHidden)
+        XCTAssertEqual(attributes.intrinsicContentSize, view.intrinsicContentSize)
     }
 
     func testWhenViewIsVisible() {
@@ -101,15 +102,45 @@ class ViewAttributesTests: XCTestCase {
         let attributes = ViewAttributes(frameInRootView: view.frame, view: view)
         XCTAssertFalse(attributes.hasAnyAppearance)
     }
+
+    func testWhenViewIsTranslucent() {
+        // Given
+        let view: UIView = .mockRandom()
+
+        // When
+        oneOrMoreOf([
+            { view.isHidden = true },
+            { view.alpha = .mockRandom(min: 0, max: 0.99) },
+            { view.frame = .zero },
+        ])
+
+        // Then
+        let attributes = ViewAttributes(frameInRootView: view.frame, view: view)
+        XCTAssertTrue(attributes.isTranslucent)
+    }
+
+    func testWhenViewIsNotTranslucent() {
+        // Given
+        let view: UIView = .mockRandom()
+
+        // When
+        view.alpha = 1
+        view.isHidden = false
+        view.frame = .mockRandom(minWidth: 10, minHeight: 10)
+
+        // Then
+        let attributes = ViewAttributes(frameInRootView: view.frame, view: view)
+        XCTAssertFalse(attributes.isTranslucent)
+    }
 }
 // swiftlint:enable opening_brace
 
 class NodeSemanticsTests: XCTestCase {
-    func testSemanticsImportance() {
+    func testImportance() {
         let unknownElement = UnknownElement.constant
         let invisibleElement = InvisibleElement.constant
         let ambiguousElement = AmbiguousElement(wireframesBuilder: nil)
-        let specificElement = SpecificElement(wireframesBuilder: nil)
+        let specificElement = SpecificElement(wireframesBuilder: nil, recordSubtree: .mockAny())
 
         XCTAssertGreaterThan(
             specificElement.importance,
@@ -129,5 +160,23 @@ class NodeSemanticsTests: XCTestCase {
         XCTAssertGreaterThan(ambiguousElement.importance, unknownElement.importance, "All semantics should override `UnknownElement`")
         XCTAssertGreaterThan(specificElement.importance, unknownElement.importance, "All semantics should override `UnknownElement`")
         XCTAssertEqual(specificElement.importance, .max)
+    }
+
+    func testRecordSubtree() {
+        XCTAssertTrue(
+            UnknownElement.constant.recordSubtree,
+            "Subtree should be recorded for 'unknown' elements as a fallback"
+        )
+        XCTAssertFalse(
+            InvisibleElement.constant.recordSubtree,
+            "Subtree should not be recorded for 'invisible' elements as nothing in it will be visible anyway"
+        )
+        XCTAssertTrue(
+            AmbiguousElement(wireframesBuilder: nil).recordSubtree,
+            "Subtree should be recorded for 'ambiguous' elements as it may contain other elements"
+        )
+
+        let random: Bool = .mockRandom()
+        XCTAssertEqual(SpecificElement(wireframesBuilder: nil, recordSubtree: random).recordSubtree, random)
     }
 }

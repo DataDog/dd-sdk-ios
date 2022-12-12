@@ -26,7 +26,7 @@ class ProcessorTests: XCTestCase {
 
         // Given
         let processor = Processor(queue: NoQueue(), writer: writer)
-        let viewTree = try generateSimpleViewTree()
+        let viewTree = generateSimpleViewTree()
 
         // When
         let snapshot = generateViewTreeSnapshot(for: viewTree, date: time, rumContext: rum)
@@ -48,13 +48,13 @@ class ProcessorTests: XCTestCase {
         XCTAssertTrue(enrichedRecord.records[2].isFullSnapshotRecord && enrichedRecord.hasFullSnapshot)
     }
 
-    func testWhenRUMContextDoesNotChangeInSucceedingViewTreeSnapshots_itWritesRecordsThatContinueCurrentSegment() throws {
+    func testWhenRUMContextDoesNotChangeInSucceedingViewTreeSnapshots_itWritesRecordsThatContinueCurrentSegment() {
         let time = Date()
         let rum: RUMContext = .mockRandom()
 
         // Given
         let processor = Processor(queue: NoQueue(), writer: writer)
-        let viewTree = try generateSimpleViewTree()
+        let viewTree = generateSimpleViewTree()
 
         // When
         let snapshot1 = generateViewTreeSnapshot(for: viewTree, date: time, rumContext: rum)
@@ -91,14 +91,14 @@ class ProcessorTests: XCTestCase {
         }
     }
 
-    func testWhenRUMContextChangesInSucceedingViewTreeSnapshots_itWritesRecordsThatIndicateNextSegments() throws {
+    func testWhenRUMContextChangesInSucceedingViewTreeSnapshots_itWritesRecordsThatIndicateNextSegments() {
         let time = Date()
         let rum1: RUMContext = .mockRandom()
         let rum2: RUMContext = .mockRandom()
 
         // Given
         let processor = Processor(queue: NoQueue(), writer: writer)
-        let viewTree = try generateSimpleViewTree()
+        let viewTree = generateSimpleViewTree()
 
         // When
         let snapshot1 = generateViewTreeSnapshot(for: viewTree, date: time, rumContext: rum1)
@@ -186,9 +186,9 @@ class ProcessorTests: XCTestCase {
         snapshotBuilder.createSnapshot(of: viewTree, with: .init(date: date, privacy: .allowAll, rumContext: rumContext))
     }
 
-    private func generateSimpleViewTree() throws -> UIView {
-        let root = try UIView.mock(withFixture: .visibleWithNoAppearance)
-        let child = try UIView.mock(withFixture: .visibleWithNoAppearance)
+    private func generateSimpleViewTree() -> UIView {
+        let root = UIView.mock(withFixture: .visibleWithNoAppearance)
+        let child = UIView.mock(withFixture: .visibleWithNoAppearance)
         root.addSubview(child)
         return root
     }

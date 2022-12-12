@@ -22,9 +22,15 @@ internal struct NodesFlattener {
             if !(nextNode.semantics is InvisibleElement) {
                 // When accepting nodes, remove ones that are covered by another opaque node:
                 flattened = flattened.compactMap { previousNode in
-                    let isPreviousNodeCovered = nextNode.viewAttributes.frame.contains(previousNode.viewAttributes.frame)
-                    let isNextNodeOpaque = nextNode.viewAttributes.alpha == 1
-                    return (isPreviousNodeCovered && isNextNodeOpaque) ? nil : previousNode
+                    let previousFrame = previousNode.semantics.wireframesBuilder?.wireframeRect ?? .zero
+                    let nextFrame = nextNode.semantics.wireframesBuilder?.wireframeRect ?? .zero
+
+                    // Drop previous node when:
+                    let dropPreviousNode = nextFrame.contains(previousFrame) // its rect is fully covered by the next node
+                        && nextNode.viewAttributes.hasAnyAppearance // and the next node brings something visual
+                        && !nextNode.viewAttributes.isTranslucent // and the next node is opaque
+
+                    return dropPreviousNode ? nil : previousNode
                 }
 
                 flattened.append(nextNode)

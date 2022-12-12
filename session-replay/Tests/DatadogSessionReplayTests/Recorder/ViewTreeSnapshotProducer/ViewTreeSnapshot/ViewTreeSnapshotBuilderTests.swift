@@ -49,13 +49,14 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         XCTAssertEqual(recorders[2].queriedViews, [rootView, childView, grandchildView])
     }
 
+    // 👀
     func testItQueriesNodeRecordersInOrderUntilOneFindsBestSemantics() {
         // Given
         let view = UIView(frame: .mockRandom())
 
         let unknownElement = UnknownElement.constant
         let ambiguousElement = AmbiguousElement(wireframesBuilder: NOPWireframesBuilderMock())
-        let specificElement = SpecificElement(wireframesBuilder: NOPWireframesBuilderMock())
+        let specificElement = SpecificElement(wireframesBuilder: NOPWireframesBuilderMock(), recordSubtree: .mockRandom())
 
         // When
         let recorders: [NodeRecorderMock] = [
@@ -102,24 +103,31 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         // Given
         let rootView = UIView(frame: .mockRandom(minWidth: 1, minHeight: 1))
         let ambiguousChild = UIView(frame: .mockRandom(minWidth: 1, minHeight: 1))
-        let specificChild = UILabel(frame: .mockRandom(minWidth: 1, minHeight: 1))
+        let specificChild1 = UILabel(frame: .mockRandom(minWidth: 1, minHeight: 1))
+        let specificChild2 = UILabel(frame: .mockRandom(minWidth: 1, minHeight: 1))
         let childOfAmbiguousElement = UIView(frame: .mockAny())
-        let childOfSpecificElement = UIView(frame: .mockAny())
+        let childOfSpecificElement1 = UIView(frame: .mockAny())
+        let childOfSpecificElement2 = UIView(frame: .mockAny())
 
         ambiguousChild.addSubview(childOfAmbiguousElement)
-        specificChild.addSubview(childOfSpecificElement)
+        specificChild1.addSubview(childOfSpecificElement1)
+        specificChild2.addSubview(childOfSpecificElement2)
         rootView.addSubview(ambiguousChild)
-        rootView.addSubview(specificChild)
+        rootView.addSubview(specificChild1)
+        rootView.addSubview(specificChild2)
 
         let ambiguousElement = AmbiguousElement(wireframesBuilder: NOPWireframesBuilderMock())
-        let specificElement = SpecificElement(wireframesBuilder: NOPWireframesBuilderMock())
+        let specificElement1 = SpecificElement(wireframesBuilder: NOPWireframesBuilderMock(), recordSubtree: true)
+        let specificElement2 = SpecificElement(wireframesBuilder: NOPWireframesBuilderMock(), recordSubtree: false)
 
         let semanticsByView: [UIView: NodeSemantics] = [
             rootView: ambiguousElement,
             ambiguousChild: ambiguousElement,
-            specificChild: specificElement,
+            specificChild1: specificElement1,
+            specificChild2: specificElement2,
             childOfAmbiguousElement: ambiguousElement,
-            childOfSpecificElement: specificElement,
+            childOfSpecificElement1: specificElement1,
+            childOfSpecificElement2: specificElement2,
         ]
 
         // When
@@ -129,36 +137,43 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
 
         // Then
         XCTAssertTrue(snapshot.root.semantics is AmbiguousElement)
-        XCTAssertEqual(snapshot.root.children.count, 2)
+        XCTAssertEqual(snapshot.root.children.count, 3)
         XCTAssertTrue(snapshot.root.children[0].semantics is AmbiguousElement)
         XCTAssertTrue(snapshot.root.children[1].semantics is SpecificElement)
-        XCTAssertEqual(snapshot.root.children[0].children.count, 1, "It should resolve this sub-tree as parent node doesn't have 'specific' semantics")
-        XCTAssertEqual(snapshot.root.children[1].children.count, 0, "It should NOT resolve this sub-tree as parent has 'specific' semantics")
+        XCTAssertTrue(snapshot.root.children[2].semantics is SpecificElement)
+        XCTAssertEqual(snapshot.root.children[0].children.count, 1, "It should record this sub-tree as parent node has 'ambiguous' semantics")
+        XCTAssertEqual(snapshot.root.children[1].children.count, 1, "It should record this sub-tree as parent has 'specific' semantics with `recordSubtree: true`")
+        XCTAssertEqual(snapshot.root.children[2].children.count, 0, "It should NOT record this sub-tree as parent has 'specific' semantics with `recordSubtree: false`")
 
         XCTAssertTrue(nodeRecorder.queriedViews.contains(rootView))
         XCTAssertTrue(nodeRecorder.queriedViews.contains(ambiguousChild))
-        XCTAssertTrue(nodeRecorder.queriedViews.contains(specificChild))
+        XCTAssertTrue(nodeRecorder.queriedViews.contains(specificChild1))
+        XCTAssertTrue(nodeRecorder.queriedViews.contains(specificChild2))
         XCTAssertTrue(
             nodeRecorder.queriedViews.contains(childOfAmbiguousElement),
-            "It should query `childViewOfBasicSemantis`, because the parent does not have 'specific' semantics"
+            "It should query `childOfAmbiguousElement`, because the parent has 'ambiguous' semantics"
+        )
+        XCTAssertTrue(
+            nodeRecorder.queriedViews.contains(childOfSpecificElement1),
+            "It should query `childOfSpecificElement1`, because the parent has 'specific' semantics with `recordSubtree: true`"
         )
         XCTAssertFalse(
-            nodeRecorder.queriedViews.contains(childOfSpecificElement),
-            "It should NOT query `childViewOfMeaningfulSemantis`, because the parent has 'specific' semantics"
+            nodeRecorder.queriedViews.contains(childOfSpecificElement2),
+            "It should NOT query `childOfSpecificElement1`, because the parent has 'specific' semantics with `recordSubtree: false`"
         )
     }
 
     // MARK: - Recording Certain Node Semantics
 
-    func testItRecordsInvisibleViews() throws {
+    func testItRecordsInvisibleViews() {
         // Given
         let builder = ViewTreeSnapshotBuilder()
         let views: [UIView] = [
-            try UIView.mock(withFixture: .invisible),
-            try UILabel.mock(withFixture: .invisible),
-            try UIImageView.mock(withFixture: .invisible),
-            try UITextField.mock(withFixture: .invisible),
-            try UISwitch.mock(withFixture: .invisible),
+            UIView.mock(withFixture: .invisible),
+            UILabel.mock(withFixture: .invisible),
+            UIImageView.mock(withFixture: .invisible),
+            UITextField.mock(withFixture: .invisible),
+            UISwitch.mock(withFixture: .invisible),
         ]
 
         // When
@@ -176,15 +191,15 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         }
     }
 
-    func testItRecordsViewsWithNoAppearance() throws {
+    func testItRecordsViewsWithNoAppearance() {
         // Given
         let builder = ViewTreeSnapshotBuilder()
 
-        let view = try UIView.mock(withFixture: .visibleWithNoAppearance)
-        let label = try UILabel.mock(withFixture: .visibleWithNoAppearance)
-        let imageView = try UIImageView.mock(withFixture: .visibleWithNoAppearance)
-        let textField = try UITextField.mock(withFixture: .visibleWithNoAppearance)
-        let `switch` = try UISwitch.mock(withFixture: .visibleWithNoAppearance)
+        let view = UIView.mock(withFixture: .visibleWithNoAppearance)
+        let label = UILabel.mock(withFixture: .visibleWithNoAppearance)
+        let imageView = UIImageView.mock(withFixture: .visibleWithNoAppearance)
+        let textField = UITextField.mock(withFixture: .visibleWithNoAppearance)
+        let `switch` = UISwitch.mock(withFixture: .visibleWithNoAppearance)
 
         // When
         let viewSnapshot = builder.createSnapshot(of: view, with: .mockRandom())
@@ -234,10 +249,10 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         )
     }
 
-    func testItRecordsBaseViewWithSomeAppearance() throws {
+    func testItRecordsBaseViewWithSomeAppearance() {
         // Given
         let builder = ViewTreeSnapshotBuilder()
-        let view = try UIView.mock(withFixture: .visibleWithSomeAppearance)
+        let view = UIView.mock(withFixture: .visibleWithSomeAppearance)
 
         // When
         let snapshot = builder.createSnapshot(of: view, with: .mockRandom())
@@ -253,14 +268,16 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         )
     }
 
-    func testItRecordsSpecialisedViewsWithSomeAppearance() throws {
+    func testItRecordsSpecialisedViewsWithSomeAppearance() {
         // Given
         let builder = ViewTreeSnapshotBuilder()
         let views: [UIView] = [
-            try UILabel.mock(withFixture: .visibleWithSomeAppearance),
-            try UIImageView.mock(withFixture: .visibleWithSomeAppearance),
-            try UITextField.mock(withFixture: .visibleWithSomeAppearance),
-            try UISwitch.mock(withFixture: .visibleWithSomeAppearance),
+            UILabel.mock(withFixture: .visibleWithSomeAppearance),
+            UIImageView.mock(withFixture: .visibleWithSomeAppearance),
+            UITextField.mock(withFixture: .visibleWithSomeAppearance),
+            UISwitch.mock(withFixture: .visibleWithSomeAppearance),
+            UITabBar.mock(withFixture: .visibleWithSomeAppearance),
+            UINavigationBar.mock(withFixture: .visibleWithSomeAppearance),
         ]
 
         // When
