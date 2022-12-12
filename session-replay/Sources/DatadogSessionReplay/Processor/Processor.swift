@@ -6,15 +6,16 @@
 
 import Foundation
 
-/// A type turning succeeding `ViewTreeSnapshots` into sequence of Mobile Session Replay records.
+/// A type turning succeeding view-tree and touch snapshots into sequence of Mobile Session Replay records.
 ///
 /// This is the actual brain of Session Replay. Based on the sequence of snapshots it receives, it computes the sequence
 /// of records that will to be send to SR BE. It implements the logic of reducing snapshots into Full or Incremental
 /// mutation records.
 internal protocol Processing {
-    /// Accepts next `ViewTreeSnapshot`
-    /// - Parameter snapshot: the `ViewTreeSnapshot`
-    func process(snapshot: ViewTreeSnapshot)
+    /// Accepts next view-tree and touch snapshots.
+    /// - Parameter viewTreeSnapshot: the snapshot of a next view tree
+    /// - Parameter touchSnapshot: the snapshot of next touch interactions (or `nil` if no interactions happened)
+    func process(viewTreeSnapshot: ViewTreeSnapshot, touchSnapshot: TouchSnapshot?)
 }
 
 /// The brain of the Session Replay.
@@ -52,46 +53,52 @@ internal class Processor: Processing {
 
     // MARK: - Processing
 
-    func process(snapshot: ViewTreeSnapshot) {
-        queue.run { self.processSync(snapshot: snapshot) }
+    func process(viewTreeSnapshot: ViewTreeSnapshot, touchSnapshot: TouchSnapshot?) {
+        queue.run { self.processSync(viewTreeSnapshot: viewTreeSnapshot, touchSnapshot: touchSnapshot) }
     }
 
-    private func processSync(snapshot: ViewTreeSnapshot) {
-        let flattenedNodes = nodesFlattener.flattenNodes(in: snapshot)
+    private func processSync(viewTreeSnapshot: ViewTreeSnapshot, touchSnapshot: TouchSnapshot?) {
+        let flattenedNodes = nodesFlattener.flattenNodes(in: viewTreeSnapshot)
         let wireframes: [SRWireframe] = flattenedNodes
             .compactMap { node in node.semantics.wireframesBuilder }
             .flatMap { nodeBuilder in nodeBuilder.buildWireframes(with: wireframesBuilder) }
 
         var records: [SRRecord] = []
 
-        if snapshot.rumContext != lastSnapshot?.rumContext {
+        // Create records for describing UI:
+        if viewTreeSnapshot.rumContext != lastSnapshot?.rumContext {
             // If RUM context has changed, new segment should be started.
             // Segment must always start with "meta" → "focus" → "full snapshot" records.
-            records.append(recordsBuilder.createMetaRecord(from: snapshot))
-            records.append(recordsBuilder.createFocusRecord(from: snapshot))
-            records.append(recordsBuilder.createFullSnapshotRecord(from: snapshot, wireframes: wireframes))
+            records.append(recordsBuilder.createMetaRecord(from: viewTreeSnapshot))
+            records.append(recordsBuilder.createFocusRecord(from: viewTreeSnapshot))
+            records.append(recordsBuilder.createFullSnapshotRecord(from: viewTreeSnapshot, wireframes: wireframes))
         } else {
             // No change to RUM context means we're recording new records within the same RUM view.
             // Such can be added to current segment.
             // Prefer creating "incremental snapshot" records but fallback to "full snapshot" (unexpected):
             if let lastWireframes = lastWireframes {
-                let record = recordsBuilder.createIncrementalSnapshotRecord(from: snapshot, with: wireframes, lastWireframes: lastWireframes)
+                let record = recordsBuilder.createIncrementalSnapshotRecord(from: viewTreeSnapshot, with: wireframes, lastWireframes: lastWireframes)
                 record.flatMap { records.append($0) }
             } else {
                 // unexpected, TODO: RUMM-2410 Use `DD.logger` and / or `DD.telemetry`
-                records.append(recordsBuilder.createFullSnapshotRecord(from: snapshot, wireframes: wireframes))
+                records.append(recordsBuilder.createFullSnapshotRecord(from: viewTreeSnapshot, wireframes: wireframes))
             }
+        }
+
+        // Create records for denoting touch interaction:
+        if let touchSnapshot = touchSnapshot {
+            records.append(recordsBuilder.createIncrementalSnapshotRecord(from: touchSnapshot))
         }
 
         if !records.isEmpty {
             // Transform `[SRRecord]` to `EnrichedRecord` so we can write it to `DatadogCore` and
             // later read it back (as `EnrichedRecordJSON`) for preparing upload request(s):
-            let enrichedRecord = EnrichedRecord(rumContext: snapshot.rumContext, records: records)
+            let enrichedRecord = EnrichedRecord(rumContext: viewTreeSnapshot.rumContext, records: records)
             writer.write(nextRecord: enrichedRecord)
         }
 
         // Track state:
-        lastSnapshot = snapshot
+        lastSnapshot = viewTreeSnapshot
         lastWireframes = wireframes
     }
 }

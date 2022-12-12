@@ -33,7 +33,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// Information about this session state, shared with `CrashContext`.
     private var state: RUMSessionState {
         didSet {
-            dependencies.crashContextIntegration?.update(lastRUMSessionState: state)
+            dependencies.core.send(message: .custom(key: "rum", baggage: [RUMBaggageKeys.sessionState: state]))
         }
     }
 
@@ -79,7 +79,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         )
 
         // Update `CrashContext` with recent RUM session state:
-        dependencies.crashContextIntegration?.update(lastRUMSessionState: state)
+        dependencies.core.send(message: .custom(key: "rum", baggage: [RUMBaggageKeys.sessionState: state]))
     }
 
     /// Creates a new Session upon expiration of the previous one.
@@ -176,7 +176,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             // won't be associated to an inactive view and instead we will consider starting background view to track it.
             // It means that with Background Events Tracking disabled, eventual off-view crashes will be dropped
             // similar to how we drop other events.
-            dependencies.crashContextIntegration?.update(lastRUMViewEvent: nil)
+            dependencies.core.send(message: .custom(key: "rum", baggage: [RUMBaggageKeys.viewReset: true]))
         }
 
         return true

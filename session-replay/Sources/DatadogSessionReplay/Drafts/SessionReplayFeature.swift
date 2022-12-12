@@ -36,7 +36,7 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
     init(
         core: DatadogCoreProtocol,
         configuration: SessionReplayConfiguration
-    ) {
+    ) throws {
         let writer = Writer()
 
         let processor = Processor(
@@ -45,7 +45,7 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
         )
 
         let messageReceiver = RUMContextReceiver()
-        let recorder = Recorder(
+        let recorder = try Recorder(
             configuration: configuration,
             rumContextObserver: messageReceiver,
             processor: processor

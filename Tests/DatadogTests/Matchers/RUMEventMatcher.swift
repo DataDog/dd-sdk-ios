@@ -80,6 +80,8 @@ internal class RUMEventMatcher {
         return (try? jsonDataDecoder.decode(DM.self, from: jsonData)) != nil
     }
 
+    func eventType()            throws -> String { try jsonMatcher.value(forKeyPath: "type") }
+
     func userID()               throws -> String { try jsonMatcher.value(forKeyPath: "usr.id") }
     func userName()             throws -> String { try jsonMatcher.value(forKeyPath: "usr.name") }
     func userEmail()            throws -> String { try jsonMatcher.value(forKeyPath: "usr.email") }

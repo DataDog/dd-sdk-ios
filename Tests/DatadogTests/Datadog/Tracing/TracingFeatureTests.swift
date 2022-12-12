@@ -39,7 +39,7 @@ class TracingFeatureTests: XCTestCase {
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
-            consentProvider: ConsentProvider(initialConsent: .granted),
+            initialConsent: .granted,
             userInfoProvider: .mockAny(),
             performance: .combining(
                 storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
@@ -110,7 +110,7 @@ class TracingFeatureTests: XCTestCase {
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
-            consentProvider: ConsentProvider(initialConsent: .granted),
+            initialConsent: .granted,
             userInfoProvider: .mockAny(),
             performance: .combining(
                 storagePerformance: StoragePerformanceMock(

@@ -6,5 +6,5 @@
 
 /// An integration for sending crash reports to Datadog.
 internal protocol CrashReportingIntegration {
-    func send(crashReport: DDCrashReport, with crashContext: CrashContext)
+    func send(report: DDCrashReport, with context: CrashContext)
 }

@@ -55,7 +55,7 @@ class WebRUMEventConsumerTests: XCTestCase {
 
         try eventConsumer.consume(event: webRUMEvent)
 
-        let data = try JSONEncoder().encode(core.events.first as? FeatureBaggage.AnyEncodable)
+        let data = try JSONEncoder().encode(core.events.first as? FeatureMessage.AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
         AssertDictionariesEqual(writtenJSON, expectedWebRUMEvent)
@@ -88,7 +88,7 @@ class WebRUMEventConsumerTests: XCTestCase {
 
         try eventConsumer.consume(event: webRUMEvent)
 
-        let data = try JSONEncoder().encode(core.events.first as? FeatureBaggage.AnyEncodable)
+        let data = try JSONEncoder().encode(core.events.first as? FeatureMessage.AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
         AssertDictionariesEqual(writtenJSON, webRUMEvent)
@@ -113,7 +113,7 @@ class WebRUMEventConsumerTests: XCTestCase {
 
         try eventConsumer.consume(event: webRUMEvent)
 
-        let data = try JSONEncoder().encode(core.events.first as? FeatureBaggage.AnyEncodable)
+        let data = try JSONEncoder().encode(core.events.first as? FeatureMessage.AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
         AssertDictionariesEqual(writtenJSON, webRUMEvent)
@@ -137,7 +137,7 @@ class WebRUMEventConsumerTests: XCTestCase {
 
         try eventConsumer.consume(event: unknownWebRUMEvent)
 
-        let data = try JSONEncoder().encode(core.events.first as? FeatureBaggage.AnyEncodable)
+        let data = try JSONEncoder().encode(core.events.first as? FeatureMessage.AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
         AssertDictionariesEqual(writtenJSON, unknownWebRUMEvent)

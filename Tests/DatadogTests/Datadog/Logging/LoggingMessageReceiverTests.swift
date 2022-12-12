@@ -127,7 +127,7 @@ class LoggingMessageReceiverTests: XCTestCase {
         let core = PassthroughCoreMock(
             context: .mockWith(service: "service-test"),
             expectation: expectation(description: "Open scope but don't send log"),
-            messageReceiver: LoggingMessageReceiver(logEventMapper: { _ in nil })
+            messageReceiver: LoggingMessageReceiver(logEventMapper: SyncLogEventMapper { _ in nil })
         )
 
         // When
@@ -170,7 +170,7 @@ class LoggingMessageReceiverTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let received: FeatureBaggage.AnyEncodable = try XCTUnwrap(core.events().last, "It should send event")
+        let received: FeatureMessage.AnyEncodable = try XCTUnwrap(core.events().last, "It should send event")
         try AssertEncodedRepresentationsEqual(received, sent)
     }
 

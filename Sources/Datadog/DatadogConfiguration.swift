@@ -37,7 +37,7 @@ extension Datadog {
 
         /// Defines the frequency at which Datadog SDK will collect mobile vitals, such as CPU
         /// and memory usage.
-        public enum VitalsFrequency {
+        public enum VitalsFrequency: String {
             /// Collect mobile vitals every 100ms.
             case frequent
             /// Collect mobile vitals every 500ms.
@@ -263,7 +263,7 @@ extension Datadog {
 
         private(set) var serviceName: String?
         private(set) var firstPartyHosts: Set<String>?
-        private(set) var logEventMapper: LogEventMapper?
+        var logEventMapper: LogEventMapper?
         private(set) var spanEventMapper: SpanEventMapper?
         private(set) var loggingSamplingRate: Float
         private(set) var tracingSamplingRate: Float
@@ -287,6 +287,7 @@ extension Datadog {
         private(set) var additionalConfiguration: [String: Any]
         private(set) var proxyConfiguration: [AnyHashable: Any]?
         private(set) var encryption: DataEncryption?
+        private(set) var tracingHeaderTypes: Set<TracingHeaderType>
 
         /// Creates the builder for configuring the SDK to work with RUM, Logging and Tracing features.
         /// - Parameter rumApplicationID: RUM Application ID obtained on Datadog website.
@@ -362,7 +363,8 @@ extension Datadog {
                     batchSize: .medium,
                     uploadFrequency: .average,
                     additionalConfiguration: [:],
-                    proxyConfiguration: nil
+                    proxyConfiguration: nil,
+                    tracingHeaderTypes: .init([.dd])
                 )
             }
 
@@ -442,7 +444,7 @@ extension Datadog {
             /// The implementation should obtain a mutable version of the `LogEvent`, modify it and return it. Returning `nil` will result
             /// with dropping the Log event entirely, so it won't be send to Datadog.
             public func setLogEventMapper(_ mapper: @escaping (LogEvent) -> LogEvent?) -> Builder {
-                configuration.logEventMapper = mapper
+                configuration.logEventMapper = SyncLogEventMapper(mapper)
                 return self
             }
 

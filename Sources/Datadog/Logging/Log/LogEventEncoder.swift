@@ -37,11 +37,27 @@ public struct LogEvent: Encodable {
     }
     public struct Error {
         // The Log error kind
-        public let kind: String?
+        public var kind: String?
         // The Log error message
-        public let message: String?
+        public var message: String?
         // The Log error stack
-        public let stack: String?
+        public var stack: String?
+    }
+    public struct DeviceInfo: Codable {
+        // The architecture of the device
+        public let architecture: String
+
+        enum CodingKeys: String, CodingKey {
+            case architecture = "architecture"
+        }
+    }
+    public struct Dd: Codable {
+        // Device informatino
+        public let device: DeviceInfo
+
+        enum CodingKeys: String, CodingKey {
+            case device = "device"
+        }
     }
 
     /// The log's timestamp
@@ -51,7 +67,7 @@ public struct LogEvent: Encodable {
     /// The log message
     public var message: String
     /// The associated log error
-    public let error: Error?
+    public var error: Error?
     /// The service name configured for Logs.
     public let serviceName: String
     /// The current log environement.
@@ -64,6 +80,8 @@ public struct LogEvent: Encodable {
     public let threadName: String?
     /// The current application version.
     public let applicationVersion: String
+    /// Datadog specific attributes
+    public let dd: Dd
     /// Custom user information configured globally for the SDK.
     public var userInfo: UserInfo
     /// The network connection information from the moment the log was sent.
@@ -101,6 +119,9 @@ internal struct LogEventEncoder {
         // MARK: - Application info
 
         case applicationVersion = "version"
+
+        // MARK: - Dd info
+        case dd = "_dd"
 
         // MARK: - Logger info
 
@@ -161,6 +182,8 @@ internal struct LogEventEncoder {
 
         // Encode application info
         try container.encode(log.applicationVersion, forKey: .applicationVersion)
+
+        try container.encode(log.dd, forKey: .dd)
 
         // Encode user info
         try log.userInfo.id.ifNotNil { try container.encode($0, forKey: .userId) }

@@ -242,6 +242,53 @@ class DDTracerTests: XCTestCase {
         )
     }
 
+    func testInjectingSpanContextToValidCarrierAndFormatForOTel() throws {
+        let objcTracer = DDTracer(swiftTracer: Tracer.mockAny(in: core))
+        let objcSpanContext = DDSpanContextObjc(
+            swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2)
+        )
+
+        let objcWriter = DDOTelHTTPHeadersWriter(samplingRate: 100)
+        try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
+
+        let expectedHTTPHeaders = [
+            "b3": "00000000000000000000000000000001-0000000000000002-1-0000000000000000"
+        ]
+        XCTAssertEqual(objcWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
+    }
+
+    func testInjectingRejectedSpanContextToValidCarrierAndFormatForOTel() throws {
+        let objcTracer = DDTracer(swiftTracer: Tracer.mockAny(in: core))
+        let objcSpanContext = DDSpanContextObjc(
+            swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2)
+        )
+
+        let objcWriter = DDOTelHTTPHeadersWriter(samplingRate: 0)
+        try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
+
+        let expectedHTTPHeaders = [
+            "b3": "0",
+        ]
+        XCTAssertEqual(objcWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
+    }
+
+    func testInjectingSpanContextToInvalidCarrierOrFormatForOTel() throws {
+        let objcTracer = DDTracer(swiftTracer: Tracer.mockAny(in: core))
+        let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2))
+
+        let objcValidWriter = DDOTelHTTPHeadersWriter(samplingRate: 100)
+        let objcInvalidFormat = "foo"
+        XCTAssertThrowsError(
+            try objcTracer.inject(objcSpanContext, format: objcInvalidFormat, carrier: objcValidWriter)
+        )
+
+        let objcInvalidWriter = NSObject()
+        let objcValidFormat = OT.formatTextMap
+        XCTAssertThrowsError(
+            try objcTracer.inject(objcSpanContext, format: objcValidFormat, carrier: objcInvalidWriter)
+        )
+    }
+
     // MARK: - Usage errors
 
     func testsWhenTagsDictionaryContainsInvalidKeys_thenThosesTagsAreDropped() throws {

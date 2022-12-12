@@ -16,7 +16,7 @@ public struct SessionReplay {
         in datadogInstance: DatadogCoreProtocol = defaultDatadogCore
     ) -> SessionReplayController {
         do {
-            let feature = SessionReplayFeature(
+            let feature = try SessionReplayFeature(
                 core: datadogInstance,
                 configuration: configuration
             )

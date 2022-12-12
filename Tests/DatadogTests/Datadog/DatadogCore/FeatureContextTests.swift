@@ -13,7 +13,7 @@ class FeatureContextTests: XCTestCase {
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
-            consentProvider: .mockAny(),
+            initialConsent: .granted,
             userInfoProvider: .mockAny(),
             performance: .mockAny(),
             httpClient: .mockAny(),

@@ -16,10 +16,10 @@ class TracingUUIDGeneratorTests: XCTestCase {
 
     func testItGeneratesUUIDsFromGivenBoundaries() {
         let generator = DefaultTracingUUIDGenerator(range: 10...15)
-        var generatedUUIDs: Set<UInt64> = []
+        var generatedUUIDs: Set<TracingUUID> = []
 
         (0..<1_000).forEach { _ in
-            generatedUUIDs.insert(generator.generateUnique().rawValue)
+            generatedUUIDs.insert(generator.generateUnique())
         }
 
         XCTAssertEqual(generatedUUIDs, [10, 11, 12, 13, 14, 15])

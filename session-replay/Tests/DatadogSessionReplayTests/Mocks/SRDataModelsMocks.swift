@@ -21,6 +21,7 @@ extension SRTextWireframe: AnyMockable, RandomMockable {
     static func mockRandomWith(id: WireframeID) -> SRTextWireframe {
         return SRTextWireframe(
             border: .mockRandom(),
+            clip: .mockRandom(),
             height: .mockRandom(),
             id: id,
             shapeStyle: .mockRandom(),
@@ -35,6 +36,7 @@ extension SRTextWireframe: AnyMockable, RandomMockable {
 
     static func mockWith(
         border: SRShapeBorder? = .mockAny(),
+        clip: SRContentClip? = .mockAny(),
         height: Int64 = .mockAny(),
         id: Int64 = .mockAny(),
         shapeStyle: SRShapeStyle? = .mockAny(),
@@ -48,6 +50,7 @@ extension SRTextWireframe: AnyMockable, RandomMockable {
     ) -> SRTextWireframe {
         return SRTextWireframe(
             border: border,
+            clip: clip,
             height: height,
             id: id,
             shapeStyle: shapeStyle,
@@ -194,6 +197,7 @@ extension SRShapeWireframe: AnyMockable, RandomMockable {
     static func mockRandomWith(id: WireframeID) -> SRShapeWireframe {
         return SRShapeWireframe(
             border: .mockRandom(),
+            clip: .mockRandom(),
             height: .mockRandom(),
             id: id,
             shapeStyle: .mockRandom(),
@@ -205,6 +209,7 @@ extension SRShapeWireframe: AnyMockable, RandomMockable {
 
     static func mockWith(
         border: SRShapeBorder? = .mockAny(),
+        clip: SRContentClip? = .mockAny(),
         height: Int64 = .mockAny(),
         id: Int64 = .mockAny(),
         shapeStyle: SRShapeStyle? = .mockAny(),
@@ -214,6 +219,7 @@ extension SRShapeWireframe: AnyMockable, RandomMockable {
     ) -> SRShapeWireframe {
         return SRShapeWireframe(
             border: border,
+            clip: clip,
             height: height,
             id: id,
             shapeStyle: shapeStyle,
@@ -269,6 +275,35 @@ extension SRShapeBorder: AnyMockable, RandomMockable {
         return SRShapeBorder(
             color: color,
             width: width
+        )
+    }
+}
+
+extension SRContentClip: AnyMockable, RandomMockable {
+    static func mockAny() -> SRContentClip {
+        return .mockWith()
+    }
+
+    static func mockRandom() -> SRContentClip {
+        return SRContentClip(
+            bottom: .mockRandom(),
+            left: .mockRandom(),
+            right: .mockRandom(),
+            top: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        bottom: Int64? = .mockAny(),
+        left: Int64? = .mockAny(),
+        right: Int64? = .mockAny(),
+        top: Int64? = .mockAny()
+    ) -> SRContentClip {
+        return SRContentClip(
+            bottom: bottom,
+            left: left,
+            right: right,
+            top: top
         )
     }
 }
@@ -514,7 +549,68 @@ extension SRIncrementalSnapshotRecord.Data: AnyMockable, RandomMockable {
         return [
             .mutationData(value: .mockRandom()),
             .touchData(value: .mockRandom()),
-            .viewportResizeData(value: .mockRandom())
+            .viewportResizeData(value: .mockRandom()),
+            .pointerInteractionData(value: .mockRandom())
+        ].randomElement()!
+    }
+}
+
+extension SRIncrementalSnapshotRecord.Data.PointerInteractionData: AnyMockable, RandomMockable {
+    static func mockAny() -> SRIncrementalSnapshotRecord.Data.PointerInteractionData {
+        return .mockWith()
+    }
+
+    static func mockRandom() -> SRIncrementalSnapshotRecord.Data.PointerInteractionData {
+        return SRIncrementalSnapshotRecord.Data.PointerInteractionData(
+            pointerEventType: .mockRandom(),
+            pointerId: .mockRandom(),
+            pointerType: .mockRandom(),
+            x: .mockRandom(),
+            y: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        pointerEventType: PointerEventType = .mockAny(),
+        pointerId: Int64 = .mockAny(),
+        pointerType: PointerType = .mockAny(),
+        x: Double = .mockAny(),
+        y: Double = .mockAny()
+    ) -> SRIncrementalSnapshotRecord.Data.PointerInteractionData {
+        return SRIncrementalSnapshotRecord.Data.PointerInteractionData(
+            pointerEventType: pointerEventType,
+            pointerId: pointerId,
+            pointerType: pointerType,
+            x: x,
+            y: y
+        )
+    }
+}
+
+extension SRIncrementalSnapshotRecord.Data.PointerInteractionData.PointerType: AnyMockable, RandomMockable {
+    static func mockAny() -> SRIncrementalSnapshotRecord.Data.PointerInteractionData.PointerType {
+        return .mouse
+    }
+
+    static func mockRandom() -> SRIncrementalSnapshotRecord.Data.PointerInteractionData.PointerType {
+        return [
+            .mouse,
+            .touch,
+            .pen
+        ].randomElement()!
+    }
+}
+
+extension SRIncrementalSnapshotRecord.Data.PointerInteractionData.PointerEventType: AnyMockable, RandomMockable {
+    static func mockAny() -> SRIncrementalSnapshotRecord.Data.PointerInteractionData.PointerEventType {
+        return .down
+    }
+
+    static func mockRandom() -> SRIncrementalSnapshotRecord.Data.PointerInteractionData.PointerEventType {
+        return [
+            .down,
+            .up,
+            .move
         ].randomElement()!
     }
 }
@@ -638,6 +734,7 @@ extension SRIncrementalSnapshotRecord.Data.MutationData.Updates.ShapeWireframeUp
     static func mockRandom() -> SRIncrementalSnapshotRecord.Data.MutationData.Updates.ShapeWireframeUpdate {
         return SRIncrementalSnapshotRecord.Data.MutationData.Updates.ShapeWireframeUpdate(
             border: .mockRandom(),
+            clip: .mockRandom(),
             height: .mockRandom(),
             id: .mockRandom(),
             shapeStyle: .mockRandom(),
@@ -649,6 +746,7 @@ extension SRIncrementalSnapshotRecord.Data.MutationData.Updates.ShapeWireframeUp
 
     static func mockWith(
         border: SRShapeBorder? = .mockAny(),
+        clip: SRContentClip? = .mockAny(),
         height: Int64? = .mockAny(),
         id: Int64 = .mockAny(),
         shapeStyle: SRShapeStyle? = .mockAny(),
@@ -658,6 +756,7 @@ extension SRIncrementalSnapshotRecord.Data.MutationData.Updates.ShapeWireframeUp
     ) -> SRIncrementalSnapshotRecord.Data.MutationData.Updates.ShapeWireframeUpdate {
         return SRIncrementalSnapshotRecord.Data.MutationData.Updates.ShapeWireframeUpdate(
             border: border,
+            clip: clip,
             height: height,
             id: id,
             shapeStyle: shapeStyle,
@@ -676,6 +775,7 @@ extension SRIncrementalSnapshotRecord.Data.MutationData.Updates.TextWireframeUpd
     static func mockRandom() -> SRIncrementalSnapshotRecord.Data.MutationData.Updates.TextWireframeUpdate {
         return SRIncrementalSnapshotRecord.Data.MutationData.Updates.TextWireframeUpdate(
             border: .mockRandom(),
+            clip: .mockRandom(),
             height: .mockRandom(),
             id: .mockRandom(),
             shapeStyle: .mockRandom(),
@@ -690,6 +790,7 @@ extension SRIncrementalSnapshotRecord.Data.MutationData.Updates.TextWireframeUpd
 
     static func mockWith(
         border: SRShapeBorder? = .mockAny(),
+        clip: SRContentClip? = .mockAny(),
         height: Int64? = .mockAny(),
         id: Int64 = .mockAny(),
         shapeStyle: SRShapeStyle? = .mockAny(),
@@ -702,6 +803,7 @@ extension SRIncrementalSnapshotRecord.Data.MutationData.Updates.TextWireframeUpd
     ) -> SRIncrementalSnapshotRecord.Data.MutationData.Updates.TextWireframeUpdate {
         return SRIncrementalSnapshotRecord.Data.MutationData.Updates.TextWireframeUpdate(
             border: border,
+            clip: clip,
             height: height,
             id: id,
             shapeStyle: shapeStyle,
@@ -978,6 +1080,22 @@ internal extension SRRecord {
         case .focusRecord(let record):                  return record.timestamp
         case .viewEndRecord(let record):                return record.timestamp
         case .visualViewportRecord(let record):         return record.timestamp
+        }
+    }
+
+    var incrementalSnapshot: SRIncrementalSnapshotRecord? {
+        switch self {
+        case .incrementalSnapshotRecord(let value): return value
+        default: return nil
+        }
+    }
+}
+
+extension SRIncrementalSnapshotRecord {
+    var touchData: SRIncrementalSnapshotRecord.Data.TouchData? {
+        switch data {
+        case .touchData(let value): return value
+        default: return nil
         }
     }
 }

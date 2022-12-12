@@ -34,6 +34,7 @@ public class SRCodeDecorator: SwiftCodeDecorator {
                 "SRWireframe",
                 // For convenience, detach styles from each wireframe to shared, root-level definition:
                 "SRShapeBorder",
+                "SRContentClip",
                 "SRShapeStyle",
                 "SRTextPosition",
                 "SRTextStyle",
@@ -107,6 +108,9 @@ public class SRCodeDecorator: SwiftCodeDecorator {
         let parentWireframe = context.predecessorStruct(matching: { $0.name.lowercased().contains("wireframe") })
         if parentWireframe != nil && fixedName == "Border" {
             fixedName = "SRShapeBorder"
+        }
+        if parentWireframe != nil && fixedName == "Clip" {
+            fixedName = "SRContentClip"
         }
         if parentWireframe != nil && fixedName == "ShapeStyle" {
             fixedName = "SRShapeStyle"

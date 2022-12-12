@@ -46,3 +46,28 @@ extension DatadogExtended {
         set {}
     }
 }
+
+/// Protocol describing the `_internal` extension points for Datadog extended types.
+public protocol DatadogInternal {
+    /// Type being extended.
+    associatedtype ExtendedType
+
+    /// Static Datadog extension point.
+    static var _internal: DatadogExtension<ExtendedType>.Type { get set }
+    /// Instance Datadog extension point.
+    var _internal: DatadogExtension<ExtendedType> { get set }
+}
+
+extension DatadogInternal {
+    /// Static Datadog extension point.
+    public static var _internal: DatadogExtension<Self>.Type {
+        get { DatadogExtension<Self>.self }
+        set {}
+    }
+
+    /// Instance Datadog extension point.
+    public var _internal: DatadogExtension<Self> {
+        get { DatadogExtension(self) }
+        set {}
+    }
+}

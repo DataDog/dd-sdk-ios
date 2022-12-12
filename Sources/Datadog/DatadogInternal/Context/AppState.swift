@@ -7,7 +7,7 @@
 import Foundation
 
 /// Application state.
-internal enum AppState: Equatable {
+internal enum AppState: Codable {
     /// The app is running in the foreground and currently receiving events.
     case active
     /// The app is running in the foreground but is not receiving events.
@@ -28,9 +28,9 @@ internal enum AppState: Equatable {
 }
 
 /// A data structure to represent recorded app states in a given period of time
-internal struct AppStateHistory: Equatable {
+internal struct AppStateHistory: Codable, Equatable {
     /// Snapshot of the app state at `date`
-    struct Snapshot: Equatable {
+    struct Snapshot: Codable, Equatable {
         /// The app state at this `date`.
         let state: AppState
         /// Date of recording this snapshot.

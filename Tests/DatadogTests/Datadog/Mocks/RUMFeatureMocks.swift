@@ -644,6 +644,7 @@ extension RUMScopeDependencies {
     }
 
     static func mockWith(
+        core: DatadogCoreProtocol = NOPDatadogCore(),
         rumApplicationID: String = .mockAny(),
         sessionSampler: Sampler = .mockKeepAll(),
         backgroundEventTrackingEnabled: Bool = .mockAny(),
@@ -651,13 +652,13 @@ extension RUMScopeDependencies {
         firstPartyURLsFilter: FirstPartyURLsFilter = FirstPartyURLsFilter(hosts: []),
         eventBuilder: RUMEventBuilder = RUMEventBuilder(eventsMapper: .mockNoOp()),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
-        crashContextIntegration: RUMWithCrashContextIntegration? = nil,
         ciTest: RUMCITest? = nil,
         viewUpdatesThrottlerFactory: @escaping () -> RUMViewUpdatesThrottlerType = { NoOpRUMViewUpdatesThrottler() },
         vitalsReaders: VitalsReaders? = nil,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
+            core: core,
             rumApplicationID: rumApplicationID,
             sessionSampler: sessionSampler,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
@@ -665,7 +666,6 @@ extension RUMScopeDependencies {
             firstPartyURLsFilter: firstPartyURLsFilter,
             eventBuilder: eventBuilder,
             rumUUIDGenerator: rumUUIDGenerator,
-            crashContextIntegration: crashContextIntegration,
             ciTest: ciTest,
             viewUpdatesThrottlerFactory: viewUpdatesThrottlerFactory,
             vitalsReaders: vitalsReaders,
@@ -682,13 +682,13 @@ extension RUMScopeDependencies {
         firstPartyUrls: Set<String>? = nil,
         eventBuilder: RUMEventBuilder? = nil,
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
-        crashContextIntegration: RUMWithCrashContextIntegration? = nil,
         ciTest: RUMCITest? = nil,
         viewUpdatesThrottlerFactory: (() -> RUMViewUpdatesThrottlerType)? = nil,
         vitalsReaders: VitalsReaders? = nil,
         onSessionStart: RUMSessionListener? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
+            core: self.core,
             rumApplicationID: rumApplicationID ?? self.rumApplicationID,
             sessionSampler: sessionSampler ?? self.sessionSampler,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled ?? self.backgroundEventTrackingEnabled,
@@ -696,7 +696,6 @@ extension RUMScopeDependencies {
             firstPartyURLsFilter: firstPartyUrls.map { .init(hosts: $0) } ?? self.firstPartyURLsFilter,
             eventBuilder: eventBuilder ?? self.eventBuilder,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
-            crashContextIntegration: crashContextIntegration ?? self.crashContextIntegration,
             ciTest: ciTest ?? self.ciTest,
             viewUpdatesThrottlerFactory: viewUpdatesThrottlerFactory ?? self.viewUpdatesThrottlerFactory,
             vitalsReaders: vitalsReaders ?? self.vitalsReaders,

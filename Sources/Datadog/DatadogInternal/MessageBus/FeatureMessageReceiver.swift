@@ -25,6 +25,7 @@ public protocol FeatureMessageReceiver {
     ///   - message: The message
     ///   - core: An instance of the core from which the message is transmitted.
     /// - Returns: `true` if the message was processed by the receiver;`false` if it was ignored.
+    @discardableResult
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool
 }
 

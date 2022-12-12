@@ -12,7 +12,8 @@ public class OT: NSObject {
 }
 
 /// Corresponds to: https://github.com/opentracing/opentracing-objc/blob/master/Pod/Classes/OTTracer.h
-@objc public protocol OTTracer {
+@objc
+public protocol OTTracer {
     func startSpan(_ operationName: String) -> OTSpan
     func startSpan(_ operationName: String, tags: NSDictionary?) -> OTSpan
     func startSpan(_ operationName: String, childOf parent: OTSpanContext?) -> OTSpan

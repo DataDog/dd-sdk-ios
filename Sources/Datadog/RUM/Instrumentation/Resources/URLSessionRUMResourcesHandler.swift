@@ -47,8 +47,8 @@ internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler, RUM
                 kind: RUMResourceType(request: interception.request),
                 spanContext: interception.spanContext.map {
                     .init(
-                        traceID: String($0.traceID.rawValue),
-                        spanID: String($0.spanID.rawValue),
+                        traceID: $0.traceID.toString(.decimal),
+                        spanID: $0.spanID.toString(.decimal),
                         samplingRate: Double(tracingSampler.samplingRate) / 100.0
                     )
                 }

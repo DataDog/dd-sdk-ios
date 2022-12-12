@@ -191,12 +191,4 @@ internal class DDNoopRUMMonitor: DDRUMMonitor {
     override func removeAttribute(forKey key: AttributeKey) {
         warn()
     }
-
-    override func updatePerformanceMetric(
-        metric: PerformanceMetric,
-        value: Double,
-        attributes: [AttributeKey: AttributeValue] = [:]
-    ) {
-        warn()
-    }
 }

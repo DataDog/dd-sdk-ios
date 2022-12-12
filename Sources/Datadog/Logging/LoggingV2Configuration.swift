@@ -78,7 +78,7 @@ internal struct LoggingMessageReceiver: FeatureMessageReceiver {
         }
     }
 
-    private func write(event: FeatureBaggage.AnyEncodable, to core: DatadogCoreProtocol) -> Bool {
+    private func write(event: FeatureMessage.AnyEncodable, to core: DatadogCoreProtocol) -> Bool {
         core.v1.scope(for: LoggingFeature.self)?.eventWriteContext { _, writer in
             writer.write(value: event)
         }
@@ -119,7 +119,7 @@ internal struct LoggingMessageReceiver: FeatureMessageReceiver {
                 eventMapper: logEventMapper
             )
 
-            let log = builder.createLogEvent(
+            builder.createLogEvent(
                 date: date,
                 level: level,
                 message: message,
@@ -130,12 +130,9 @@ internal struct LoggingMessageReceiver: FeatureMessageReceiver {
                 ),
                 tags: [],
                 context: context,
-                threadName: threadName
+                threadName: threadName,
+                callback: writer.write
             )
-
-            if let log = log {
-                writer.write(value: log)
-            }
         }
 
         return true

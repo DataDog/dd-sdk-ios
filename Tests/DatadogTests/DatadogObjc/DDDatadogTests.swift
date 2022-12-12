@@ -94,7 +94,7 @@ class DDDatadogTests: XCTestCase {
         XCTAssertEqual(userInfo.value.id, "id")
         XCTAssertEqual(userInfo.value.name, "name")
         XCTAssertEqual(userInfo.value.email, "email")
-        let extraInfo = try XCTUnwrap(userInfo.value.extraInfo as? [String: AnyEncodable])
+        let extraInfo = try XCTUnwrap(userInfo.value.extraInfo as? [String: DatadogObjc.AnyEncodable])
         XCTAssertEqual(extraInfo["attribute-int"]?.value as? Int, 42)
         XCTAssertEqual(extraInfo["attribute-double"]?.value as? Double, 42.5)
         XCTAssertEqual(extraInfo["attribute-string"]?.value as? String, "string value")

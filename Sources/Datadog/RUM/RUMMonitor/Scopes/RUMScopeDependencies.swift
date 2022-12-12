@@ -17,6 +17,7 @@ internal struct RUMScopeDependencies {
         let refreshRate: ContinuousVitalReader
     }
 
+    let core: DatadogCoreProtocol
     let rumApplicationID: String
     let sessionSampler: Sampler
     let backgroundEventTrackingEnabled: Bool
@@ -24,9 +25,6 @@ internal struct RUMScopeDependencies {
     let firstPartyURLsFilter: FirstPartyURLsFilter
     let eventBuilder: RUMEventBuilder
     let rumUUIDGenerator: RUMUUIDGenerator
-    /// Integration with Crash Reporting. It updates the crash context with RUM info.
-    /// `nil` if Crash Reporting feature is not enabled.
-    let crashContextIntegration: RUMWithCrashContextIntegration?
     /// Integration with CIApp tests. It contains the CIApp test context when active.
     let ciTest: RUMCITest?
     /// Produces `RUMViewUpdatesThrottlerType` for each started RUM view scope.
@@ -38,10 +36,11 @@ internal struct RUMScopeDependencies {
 
 internal extension RUMScopeDependencies {
     init(
-        rumFeature: RUMFeature,
-        crashReportingFeature: CrashReportingFeature?
+        core: DatadogCoreProtocol,
+        rumFeature: RUMFeature
     ) {
         self.init(
+            core: core,
             rumApplicationID: rumFeature.configuration.applicationID,
             sessionSampler: rumFeature.configuration.sessionSampler,
             backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled,
@@ -57,7 +56,6 @@ internal extension RUMScopeDependencies {
                 )
             ),
             rumUUIDGenerator: rumFeature.configuration.uuidGenerator,
-            crashContextIntegration: crashReportingFeature.map { .init(crashReporting: $0) },
             ciTest: CITestIntegration.active?.rumCITest,
             viewUpdatesThrottlerFactory: { RUMViewUpdatesThrottler() },
             vitalsReaders: rumFeature.configuration.vitalsFrequency.map {

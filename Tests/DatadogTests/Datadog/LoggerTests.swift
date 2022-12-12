@@ -29,7 +29,8 @@ class LoggerTests: XCTestCase {
             service: "default-service-name",
             env: "tests",
             version: "1.0.0",
-            sdkVersion: "1.2.3"
+            sdkVersion: "1.2.3",
+            device: .mockWith(architecture: "testArch")
         )
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers(
@@ -53,7 +54,12 @@ class LoggerTests: XCTestCase {
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:00.000Z",
           "version": "1.0.0",
-          "ddtags": "env:tests,version:1.0.0"
+          "ddtags": "env:tests,version:1.0.0",
+          "_dd": {
+            "device": {
+              "architecture": "testArch"
+            }
+          }
         }
         """)
     }
@@ -182,6 +188,34 @@ class LoggerTests: XCTestCase {
             matcher.assertValue(forKeyPath: "error.stack", equals: "TestError(description: \"Test description\")")
             matcher.assertValue(forKeyPath: "error.message", equals: "TestError(description: \"Test description\")")
             matcher.assertValue(forKeyPath: "error.kind", equals: "TestError")
+        }
+    }
+
+    func testLoggingErrorStrings() throws {
+        core.context = .mockAny()
+
+        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        core.register(feature: feature)
+
+        let logger = Logger.builder.build(in: core)
+        let errorKind = String.mockRandom()
+        let errorMessage = String.mockRandom()
+        let stackTrace = String.mockRandom()
+        logger.log(level: .info,
+                   message: .mockAny(),
+                   errorKind: errorKind,
+                   errorMessage: errorMessage,
+                   stackTrace: stackTrace,
+                   attributes: nil
+        )
+
+        let logMatchers = try feature.waitAndReturnLogMatchers(count: 1)
+        let logMatcher = logMatchers.first
+        XCTAssertNotNil(logMatcher)
+        if let logMatcher = logMatcher {
+            logMatcher.assertValue(forKeyPath: "error.kind", equals: errorKind)
+            logMatcher.assertValue(forKeyPath: "error.message", equals: errorMessage)
+            logMatcher.assertValue(forKeyPath: "error.stack", equals: stackTrace)
         }
     }
 
@@ -555,8 +589,8 @@ class LoggerTests: XCTestCase {
         Global.rum = RUMMonitor(
             core: core,
             dependencies: RUMScopeDependencies(
-                rumFeature: rum,
-                crashReportingFeature: nil
+                core: core,
+                rumFeature: rum
             ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
             dateProvider: SystemDateProvider()
         )
@@ -614,11 +648,11 @@ class LoggerTests: XCTestCase {
         let logMatchers = try logging.waitAndReturnLogMatchers(count: 2)
         logMatchers[0].assertValue(
             forKeyPath: "dd.trace_id",
-            equals: "\(span.context.dd.traceID.rawValue)"
+            equals: span.context.dd.traceID.toString(.decimal)
         )
         logMatchers[0].assertValue(
             forKeyPath: "dd.span_id",
-            equals: "\(span.context.dd.spanID.rawValue)"
+            equals: span.context.dd.spanID.toString(.decimal)
         )
         logMatchers[1].assertNoValue(forKey: "dd.trace_id")
         logMatchers[1].assertNoValue(forKey: "dd.span_id")

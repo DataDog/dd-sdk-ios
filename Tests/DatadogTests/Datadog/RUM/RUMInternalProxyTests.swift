@@ -26,33 +26,14 @@ class RUMInternalProxyTests: XCTestCase {
     /// The only difference vs. `RUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
     private func createTestableRUMMonitor() throws -> DDRUMMonitor {
         let rumFeature: RUMFeature = try XCTUnwrap(core.v1.feature(RUMFeature.self), "RUM feature must be initialized before creating `RUMMonitor`")
-        let crashReportingFeature = core.v1.feature(CrashReportingFeature.self)
         return RUMMonitor(
             core: core,
             dependencies: RUMScopeDependencies(
-                rumFeature: rumFeature,
-                crashReportingFeature: crashReportingFeature
+                core: core,
+                rumFeature: rumFeature
             ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
             dateProvider: rumFeature.configuration.dateProvider
         )
-    }
-
-    func testProxyAddLongTaskSendsCommand() {
-        // Given
-        let mockCommandSubscriber = RUMCommandSubscriberMock()
-
-        let duration: TimeInterval = .mockRandom()
-        let date = Date()
-        let internalProxy = _RUMInternalProxy(subscriber: mockCommandSubscriber)
-
-        // When
-        internalProxy.addLongTask(at: date, duration: duration)
-
-        // Then
-        let longTaskCommand = mockCommandSubscriber.lastReceivedCommand as? RUMAddLongTaskCommand
-        XCTAssertNotNil(longTaskCommand)
-        XCTAssertEqual(longTaskCommand?.time, date)
-        XCTAssertEqual(longTaskCommand?.duration, duration)
     }
 
     func testProxyAddLongTaskSendsLongTasks() throws {
@@ -62,18 +43,54 @@ class RUMInternalProxyTests: XCTestCase {
 
         let monitor = try createTestableRUMMonitor()
 
+        let date = Date()
         let duration: TimeInterval = .mockRandom()
-        let internalProxy = _RUMInternalProxy(subscriber: monitor as! RUMCommandSubscriber)
 
         // When
         monitor.startView(viewController: mockView)
-        internalProxy.addLongTask(at: Date(), duration: duration)
+        monitor._internal.addLongTask(at: date, duration: duration)
 
         let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 3)
 
         // Then
         let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
         let longTask = session.viewVisits[0].longTaskEvents.first
+        XCTAssertEqual(longTask?.date, (date - duration).timeIntervalSince1970.toInt64Nanoseconds)
         XCTAssertEqual(longTask?.longTask.duration, duration.toInt64Nanoseconds)
+    }
+
+    func testProxyRecordsPerformanceMetricsAreSent() throws {
+        // Given
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
+        core.register(feature: rum)
+        let date: Date = .mockRandomInThePast()
+
+        let monitor = try createTestableRUMMonitor()
+
+        // When
+        monitor.startView(viewController: mockView)
+        monitor._internal.updatePerformanceMetric(at: date, metric: .jsFrameTimeSeconds, value: 0.02)
+        monitor._internal.updatePerformanceMetric(at: date, metric: .jsFrameTimeSeconds, value: 0.02)
+        monitor._internal.updatePerformanceMetric(at: date, metric: .jsFrameTimeSeconds, value: 0.02)
+        monitor._internal.updatePerformanceMetric(at: date, metric: .jsFrameTimeSeconds, value: 0.04)
+        monitor._internal.updatePerformanceMetric(at: date, metric: .flutterBuildTime, value: 32.0)
+        monitor._internal.updatePerformanceMetric(at: date, metric: .flutterBuildTime, value: 52.0)
+        monitor._internal.updatePerformanceMetric(at: date, metric: .flutterRasterTime, value: 42.0)
+        monitor.stopView(viewController: mockView)
+
+        let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 3)
+
+        // Then
+        try rumEventMatchers.lastRUMEvent(ofType: RUMViewEvent.self)
+            .model(ofType: RUMViewEvent.self) { rumModel in
+                XCTAssertEqual(rumModel.view.jsRefreshRate?.max, 50.0)
+                XCTAssertEqual(rumModel.view.jsRefreshRate?.min, 25.0)
+                XCTAssertEqual(rumModel.view.jsRefreshRate?.average, 40.0)
+
+                XCTAssertEqual(rumModel.view.flutterBuildTime?.max, 52.0)
+                XCTAssertEqual(rumModel.view.flutterBuildTime?.min, 32.0)
+                XCTAssertEqual(rumModel.view.flutterBuildTime?.average, 42.0)
+                XCTAssertEqual(rumModel.view.flutterRasterTime?.average, 42.0)
+            }
     }
 }

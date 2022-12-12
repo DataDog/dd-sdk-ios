@@ -30,10 +30,15 @@ internal class Recorder: Recording {
         let rumContext: RUMContext
     }
 
+    /// Swizzles `UIApplication` for recording touch events.
+    private let uiApplicationSwizzler: UIApplicationSwizzler
+
     /// Schedules view tree captures.
     private let scheduler: Scheduler
     /// Captures view tree snapshot (an intermediate representation of the view tree).
-    private let snapshotProducer: ViewTreeSnapshotProducer
+    private let viewTreeSnapshotProducer: ViewTreeSnapshotProducer
+    /// Captures touch snapshot.
+    private let touchSnapshotProducer: TouchSnapshotProducer
     /// Turns view tree snapshots into data models that will be uploaded to SR BE.
     private let snapshotProcessor: Processing
 
@@ -49,15 +54,23 @@ internal class Recorder: Recording {
         configuration: SessionReplayConfiguration,
         rumContextObserver: RUMContextObserver,
         processor: Processing
-    ) {
+    ) throws {
+        let windowObserver = KeyWindowObserver()
+        let viewTreeSnapshotProducer = WindowViewTreeSnapshotProducer(
+            windowObserver: windowObserver,
+            snapshotBuilder: ViewTreeSnapshotBuilder()
+        )
+        let touchSnapshotProducer = WindowTouchSnapshotProducer(
+            windowObserver: windowObserver
+        )
+
         self.init(
             configuration: configuration,
             rumContextObserver: rumContextObserver,
+            uiApplicationSwizzler: try UIApplicationSwizzler(handler: touchSnapshotProducer),
             scheduler: MainThreadScheduler(interval: 0.1),
-            snapshotProducer: WindowSnapshotProducer(
-                windowObserver: KeyWindowObserver(),
-                snapshotBuilder: ViewTreeSnapshotBuilder()
-            ),
+            viewTreeSnapshotProducer: viewTreeSnapshotProducer,
+            touchSnapshotProducer: touchSnapshotProducer,
             snapshotProcessor: processor
         )
     }
@@ -65,12 +78,16 @@ internal class Recorder: Recording {
     init(
         configuration: SessionReplayConfiguration,
         rumContextObserver: RUMContextObserver,
+        uiApplicationSwizzler: UIApplicationSwizzler,
         scheduler: Scheduler,
-        snapshotProducer: ViewTreeSnapshotProducer,
+        viewTreeSnapshotProducer: ViewTreeSnapshotProducer,
+        touchSnapshotProducer: TouchSnapshotProducer,
         snapshotProcessor: Processing
     ) {
+        self.uiApplicationSwizzler = uiApplicationSwizzler
         self.scheduler = scheduler
-        self.snapshotProducer = snapshotProducer
+        self.viewTreeSnapshotProducer = viewTreeSnapshotProducer
+        self.touchSnapshotProducer = touchSnapshotProducer
         self.snapshotProcessor = snapshotProcessor
         self.rumContextObserver = rumContextObserver
         self.currentPrivacy = configuration.privacy
@@ -82,6 +99,12 @@ internal class Recorder: Recording {
         rumContextObserver.observe(on: scheduler.queue) { [weak self] rumContext in
             self?.currentRUMContext = rumContext
         }
+
+        uiApplicationSwizzler.swizzle()
+    }
+
+    deinit {
+        uiApplicationSwizzler.unswizzle()
     }
 
     // MARK: - Recording
@@ -115,12 +138,12 @@ internal class Recorder: Recording {
                 rumContext: rumContext
             )
 
-            guard let snapshot = try snapshotProducer.takeSnapshot(with: recorderContext) else {
+            guard let viewTreeSnapshot = try viewTreeSnapshotProducer.takeSnapshot(with: recorderContext) else {
                 // There is nothing visible yet (i.e. the key window is not yet ready).
                 return
             }
-
-            snapshotProcessor.process(snapshot: snapshot)
+            let touchSnapshot = touchSnapshotProducer.takeSnapshot()
+            snapshotProcessor.process(viewTreeSnapshot: viewTreeSnapshot, touchSnapshot: touchSnapshot)
         } catch {
             print("Failed to capture the snapshot: \(error)") // TODO: RUMM-2410 Use `DD.logger` and / or `DD.telemetry`
         }

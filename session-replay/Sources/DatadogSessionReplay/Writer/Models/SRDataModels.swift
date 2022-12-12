@@ -106,6 +106,28 @@ internal struct SRShapeBorder: Codable, Hashable {
     }
 }
 
+/// Schema of clipping information for a Wireframe.
+internal struct SRContentClip: Codable, Hashable {
+    /// The amount of space in pixels that needs to be clipped (masked) at the bottom of the wireframe.
+    internal let bottom: Int64?
+
+    /// The amount of space in pixels that needs to be clipped (masked) at the left of the wireframe.
+    internal let left: Int64?
+
+    /// The amount of space in pixels that needs to be clipped (masked) at the right of the wireframe.
+    internal let right: Int64?
+
+    /// The amount of space in pixels that needs to be clipped (masked) at the top of the wireframe.
+    internal let top: Int64?
+
+    enum CodingKeys: String, CodingKey {
+        case bottom = "bottom"
+        case left = "left"
+        case right = "right"
+        case top = "top"
+    }
+}
+
 /// The style of this wireframe.
 internal struct SRShapeStyle: Codable, Hashable {
     /// The background color for this wireframe as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. The default value is #FFFFFF00.
@@ -128,6 +150,9 @@ internal struct SRShapeStyle: Codable, Hashable {
 internal struct SRShapeWireframe: Codable, Hashable {
     /// The border properties of this wireframe. The default value is null (no-border).
     internal let border: SRShapeBorder?
+
+    /// Schema of clipping information for a Wireframe.
+    internal let clip: SRContentClip?
 
     /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
     internal let height: Int64
@@ -152,6 +177,7 @@ internal struct SRShapeWireframe: Codable, Hashable {
 
     enum CodingKeys: String, CodingKey {
         case border = "border"
+        case clip = "clip"
         case height = "height"
         case id = "id"
         case shapeStyle = "shapeStyle"
@@ -245,6 +271,9 @@ internal struct SRTextWireframe: Codable, Hashable {
     /// The border properties of this wireframe. The default value is null (no-border).
     internal let border: SRShapeBorder?
 
+    /// Schema of clipping information for a Wireframe.
+    internal let clip: SRContentClip?
+
     /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
     internal let height: Int64
 
@@ -277,6 +306,7 @@ internal struct SRTextWireframe: Codable, Hashable {
 
     enum CodingKeys: String, CodingKey {
         case border = "border"
+        case clip = "clip"
         case height = "height"
         case id = "id"
         case shapeStyle = "shapeStyle"
@@ -380,6 +410,7 @@ internal struct SRIncrementalSnapshotRecord: Codable {
         case mutationData(value: MutationData)
         case touchData(value: TouchData)
         case viewportResizeData(value: ViewportResizeData)
+        case pointerInteractionData(value: PointerInteractionData)
 
         // MARK: - Codable
 
@@ -393,6 +424,8 @@ internal struct SRIncrementalSnapshotRecord: Codable {
             case .touchData(let value):
                 try container.encode(value)
             case .viewportResizeData(let value):
+                try container.encode(value)
+            case .pointerInteractionData(let value):
                 try container.encode(value)
             }
         }
@@ -411,6 +444,10 @@ internal struct SRIncrementalSnapshotRecord: Codable {
             }
             if let value = try? container.decode(ViewportResizeData.self) {
                 self = .viewportResizeData(value: value)
+                return
+            }
+            if let value = try? container.decode(PointerInteractionData.self) {
+                self = .pointerInteractionData(value: value)
                 return
             }
             let error = DecodingError.Context(
@@ -512,6 +549,9 @@ internal struct SRIncrementalSnapshotRecord: Codable {
                     /// The border properties of this wireframe. The default value is null (no-border).
                     internal let border: SRShapeBorder?
 
+                    /// Schema of clipping information for a Wireframe.
+                    internal let clip: SRContentClip?
+
                     /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
                     internal let height: Int64?
 
@@ -544,6 +584,7 @@ internal struct SRIncrementalSnapshotRecord: Codable {
 
                     enum CodingKeys: String, CodingKey {
                         case border = "border"
+                        case clip = "clip"
                         case height = "height"
                         case id = "id"
                         case shapeStyle = "shapeStyle"
@@ -561,6 +602,9 @@ internal struct SRIncrementalSnapshotRecord: Codable {
                 internal struct ShapeWireframeUpdate: Codable {
                     /// The border properties of this wireframe. The default value is null (no-border).
                     internal let border: SRShapeBorder?
+
+                    /// Schema of clipping information for a Wireframe.
+                    internal let clip: SRContentClip?
 
                     /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
                     internal let height: Int64?
@@ -585,6 +629,7 @@ internal struct SRIncrementalSnapshotRecord: Codable {
 
                     enum CodingKeys: String, CodingKey {
                         case border = "border"
+                        case clip = "clip"
                         case height = "height"
                         case id = "id"
                         case shapeStyle = "shapeStyle"
@@ -647,6 +692,50 @@ internal struct SRIncrementalSnapshotRecord: Codable {
                 case height = "height"
                 case source = "source"
                 case width = "width"
+            }
+        }
+
+        /// Schema of a PointerInteractionData.
+        internal struct PointerInteractionData: Codable {
+            /// Schema of an PointerEventType
+            internal let pointerEventType: PointerEventType
+
+            /// Id of the pointer of this PointerInteraction.
+            internal let pointerId: Int64
+
+            /// Schema of an PointerType
+            internal let pointerType: PointerType
+
+            /// The source of this type of incremental data.
+            internal let source: Int64 = 9
+
+            /// X-axis coordinate for this PointerInteraction.
+            internal let x: Double
+
+            /// Y-axis coordinate for this PointerInteraction.
+            internal let y: Double
+
+            enum CodingKeys: String, CodingKey {
+                case pointerEventType = "pointerEventType"
+                case pointerId = "pointerId"
+                case pointerType = "pointerType"
+                case source = "source"
+                case x = "x"
+                case y = "y"
+            }
+
+            /// Schema of an PointerEventType
+            internal enum PointerEventType: String, Codable {
+                case down = "down"
+                case up = "up"
+                case move = "move"
+            }
+
+            /// Schema of an PointerType
+            internal enum PointerType: String, Codable {
+                case mouse = "mouse"
+                case touch = "touch"
+                case pen = "pen"
             }
         }
     }
@@ -841,4 +930,4 @@ internal enum SRRecord: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/7320f7c483c80f5fc0d868b1f40c97f22af8b0d1
+// Generated from https://github.com/DataDog/rum-events-format/tree/a11dcc7f76ebd39c1ad41ba2ad2ca575874d0ac8

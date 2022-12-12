@@ -26,12 +26,11 @@ class RUMMonitorTests: XCTestCase {
     /// The only difference vs. `RUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
     private func createTestableRUMMonitor() throws -> DDRUMMonitor {
         let rumFeature: RUMFeature = try XCTUnwrap(core.v1.feature(RUMFeature.self), "RUM feature must be initialized before creating `RUMMonitor`")
-        let crashReportingFeature = core.v1.feature(CrashReportingFeature.self)
         return RUMMonitor(
             core: core,
             dependencies: RUMScopeDependencies(
-                rumFeature: rumFeature,
-                crashReportingFeature: crashReportingFeature
+                core: core,
+                rumFeature: rumFeature
             ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
             dateProvider: rumFeature.configuration.dateProvider
         )
@@ -1113,17 +1112,17 @@ class RUMMonitorTests: XCTestCase {
         )
 
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
-        let crashReporting: CrashReportingFeature = .mockNoOp()
-
         core.register(feature: rum)
-        core.register(feature: crashReporting)
 
         // Given
-        Global.crashReporter = CrashReporter(
-            core: core,
-            context: .mockAny()
+        let crashReporter = try XCTUnwrap(
+            CrashReporter(
+                core: core,
+                configuration: .mockAny()
+            )
         )
-        defer { Global.crashReporter = nil }
+
+        try core.register(integration: crashReporter)
 
         // When
         let monitor = try createTestableRUMMonitor()
@@ -1133,9 +1132,7 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 2)
         let lastRUMViewEventSent: RUMViewEvent = try rumEventMatchers[1].model()
 
-        let currentCrashContext = try XCTUnwrap(Global.crashReporter?.crashContextProvider.currentCrashContext)
-        let currentLastRUMViewEventSent = try XCTUnwrap(currentCrashContext.lastRUMViewEvent)
-
+        let currentLastRUMViewEventSent = try XCTUnwrap(crashReporter.crashContextProvider.currentCrashContext?.lastRUMViewEvent)
         try AssertEncodedRepresentationsEqual(currentLastRUMViewEventSent, lastRUMViewEventSent)
     }
 
@@ -1343,39 +1340,6 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertTrue(transformedCommand.attributes.isEmpty)
         XCTAssertNotEqual(transformedCommand.time, mockCommand.time)
         XCTAssertEqual(transformedCommand.time, Date(timeIntervalSince1970: 1)) // 1 in seconds
-    }
-
-    // MARK: - Cross-platform performance metrics
-
-    func testWhenViewIsStarted_performanceMetricsAreSent() throws {
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
-        core.register(feature: rum)
-
-        let monitor = try createTestableRUMMonitor()
-
-        monitor.startView(viewController: mockView)
-        monitor.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.02)
-        monitor.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.02)
-        monitor.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.02)
-        monitor.updatePerformanceMetric(metric: .jsFrameTimeSeconds, value: 0.04)
-        monitor.updatePerformanceMetric(metric: .flutterBuildTime, value: 32.0)
-        monitor.updatePerformanceMetric(metric: .flutterBuildTime, value: 52.0)
-        monitor.updatePerformanceMetric(metric: .flutterRasterTime, value: 42.0)
-        monitor.stopView(viewController: mockView)
-
-        let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 3)
-
-        try rumEventMatchers.lastRUMEvent(ofType: RUMViewEvent.self)
-            .model(ofType: RUMViewEvent.self) { rumModel in
-                XCTAssertEqual(rumModel.view.jsRefreshRate?.max, 50.0)
-                XCTAssertEqual(rumModel.view.jsRefreshRate?.min, 25.0)
-                XCTAssertEqual(rumModel.view.jsRefreshRate?.average, 40.0)
-
-                XCTAssertEqual(rumModel.view.flutterBuildTime?.max, 52.0)
-                XCTAssertEqual(rumModel.view.flutterBuildTime?.min, 32.0)
-                XCTAssertEqual(rumModel.view.flutterBuildTime?.average, 42.0)
-                XCTAssertEqual(rumModel.view.flutterRasterTime?.average, 42.0)
-            }
     }
 
     // MARK: - Private helpers

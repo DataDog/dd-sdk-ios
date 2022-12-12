@@ -257,6 +257,14 @@ workflows:
         Runs integration tests from Datadog.xcworkspace.
         Only ran if 'DD_RUN_INTEGRATION_TESTS' is '1'.
     steps:
+    - script:
+        title: Generate mock server address
+        run_if: '{{enveq "DD_RUN_INTEGRATION_TESTS" "1"}}'
+        inputs:
+        - content: |-
+            #!/usr/bin/env zsh
+            set -e
+            ./tools/config/generate-http-server-mock-config.sh
     - xcode-test:
         title: Run benchmarks - DatadogBenchmarkTests on iOS Simulator
         run_if: '{{enveq "DD_RUN_INTEGRATION_TESTS" "1"}}'

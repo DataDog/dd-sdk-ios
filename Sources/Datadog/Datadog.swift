@@ -186,7 +186,6 @@ public class Datadog {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
 
-        let consentProvider = ConsentProvider(initialConsent: initialTrackingConsent)
         let userInfoProvider = UserInfoProvider()
         let serverDateProvider = configuration.common.serverDateProvider ?? DatadogNTPDateProvider()
         let dateCorrector = ServerDateCorrector(serverDateProvider: serverDateProvider)
@@ -198,7 +197,7 @@ public class Datadog {
         let core = DatadogCore(
             directory: try CoreDirectory(in: Directory.cache(), from: configuration.common),
             dateProvider: configuration.common.dateProvider,
-            consentProvider: consentProvider,
+            initialConsent: initialTrackingConsent,
             userInfoProvider: userInfoProvider,
             performance: configuration.common.performance,
             httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
@@ -223,7 +222,6 @@ public class Datadog {
         var logging: LoggingFeature?
         var tracing: TracingFeature?
         var rum: RUMFeature?
-        var crashReporting: CrashReportingFeature?
 
         var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
         var rumInstrumentation: RUMInstrumentation?
@@ -275,19 +273,6 @@ public class Datadog {
             core.register(feature: tracing)
         }
 
-        if let crashReportingConfiguration = configuration.crashReporting {
-            crashReporting = CrashReportingFeature(
-                configuration: crashReportingConfiguration,
-                consentProvider: consentProvider,
-                userInfoProvider: userInfoProvider,
-                networkConnectionInfoProvider: networkConnectionInfoProvider,
-                carrierInfoProvider: carrierInfoProvider,
-                appStateListener: appStateListener
-            )
-
-            core.register(feature: crashReporting)
-        }
-
         if let urlSessionAutoInstrumentationConfiguration = configuration.urlSessionAutoInstrumentation {
             urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
                 configuration: urlSessionAutoInstrumentationConfiguration,
@@ -305,8 +290,11 @@ public class Datadog {
 
         // After everything is set up, if the Crash Reporting feature was enabled,
         // register crash reporter and send crash report if available:
-        if let reporter = CrashReporter(core: core, context: core.v1Context) {
-            Global.crashReporter = reporter
+        if
+            let configuration = configuration.crashReporting,
+            let reporter = CrashReporter(core: core, configuration: configuration)
+        {
+            try core.register(integration: reporter)
             reporter.sendCrashReportIfFound()
         }
 
@@ -358,17 +346,12 @@ public class Datadog {
         // Reset Globals:
         Global.sharedTracer = DDNoopGlobals.tracer
         Global.rum = DDNoopRUMMonitor()
-        Global.crashReporter?.deinitialize()
-        Global.crashReporter = nil
+        defaultDatadogCore.integration(named: "crash-reporter", type: CrashReporter.self)?.deinitialize()
         DD.telemetry = NOPTelemetry()
 
         // Deinitialize `Datadog`:
         defaultDatadogCore = NOPDatadogCore()
     }
-
-    // MARK: - Internal Proxy - exposure of internal classes (Mostly used for cross platform libraries)
-
-    public private(set) static var _internal = _InternalProxy()
 }
 
 /// Convenience typealias.

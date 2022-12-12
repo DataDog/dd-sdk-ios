@@ -62,6 +62,9 @@ public struct DatadogContext {
     /// Current user information.
     var userInfo: UserInfo?
 
+    /// The user's consent to data collection
+    var trackingConsent: TrackingConsent = .pending
+
     /// Application launch time.
     ///
     /// Can be `nil` if the launch could not yet been evaluated.

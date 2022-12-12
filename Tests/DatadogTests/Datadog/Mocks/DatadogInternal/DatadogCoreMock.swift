@@ -72,6 +72,8 @@ extension DatadogCoreMock: DatadogCoreProtocol {
             feature: feature,
             writer: InMemoryWriter()
         )
+
+        feature.messageReceiver.receive(message: .context(context), from: self)
     }
 
     func feature<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature {
@@ -80,9 +82,10 @@ extension DatadogCoreMock: DatadogCoreProtocol {
 
     func register(integration: DatadogFeatureIntegration) throws {
         integrations[integration.name] = integration
+        integration.messageReceiver.receive(message: .context(context), from: self)
     }
 
-    func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature {
+    func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeatureIntegration {
         integrations[name] as? T
     }
 

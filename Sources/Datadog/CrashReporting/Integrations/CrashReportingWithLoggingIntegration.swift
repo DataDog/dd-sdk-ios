@@ -20,32 +20,28 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
     /// Time provider.
     private let dateProvider: DateProvider
 
-    private let context: DatadogV1Context
-
     init(
         core: DatadogCoreProtocol,
-        context: DatadogV1Context,
         dateProvider: DateProvider
     ) {
         self.core = core
-        self.context = context
         self.dateProvider = dateProvider
     }
 
-    func send(crashReport: DDCrashReport, with crashContext: CrashContext) {
-        guard crashContext.lastTrackingConsent == .granted else {
+    func send(report: DDCrashReport, with context: CrashContext) {
+        guard context.trackingConsent == .granted else {
             return // Only authorized crash reports can be send
         }
 
-        // The `crashReport.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
+        // The `report.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
         // to the server time before processing. Following use of the current correction is not ideal, but this is the best
         // approximation we can get.
-        let currentTimeCorrection = context.dateCorrector.offset
+        let currentTimeCorrection = context.serverTimeOffset
 
-        let crashDate = crashReport.date ?? dateProvider.now
+        let crashDate = report.date ?? dateProvider.now
         let realCrashDate = crashDate.addingTimeInterval(currentTimeCorrection)
 
-        let log = createLog(from: crashReport, crashContext: crashContext, crashDate: realCrashDate)
+        let log = createLog(from: report, context: context, date: realCrashDate)
 
         core.send(
             message: .custom(
@@ -57,23 +53,24 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
 
     // MARK: - Building Log
 
-    private func createLog(from crashReport: DDCrashReport, crashContext: CrashContext, crashDate: Date) -> LogEvent {
+    private func createLog(from report: DDCrashReport, context: CrashContext, date: Date) -> LogEvent {
         var errorAttributes: [AttributeKey: AttributeValue] = [:]
-        errorAttributes[DDError.threads] = crashReport.threads
-        errorAttributes[DDError.binaryImages] = crashReport.binaryImages
-        errorAttributes[DDError.meta] = crashReport.meta
-        errorAttributes[DDError.wasTruncated] = crashReport.wasTruncated
+        errorAttributes[DDError.threads] = report.threads
+        errorAttributes[DDError.binaryImages] = report.binaryImages
+        errorAttributes[DDError.meta] = report.meta
+        errorAttributes[DDError.wasTruncated] = report.wasTruncated
 
-        let user = crashContext.lastUserInfo
+        let user = context.userInfo
+        let deviceInfo = context.device
 
         return LogEvent(
-            date: crashDate,
+            date: date,
             status: .emergency,
-            message: crashReport.message,
+            message: report.message,
             error: .init(
-                kind: crashReport.type,
-                message: crashReport.message,
-                stack: crashReport.stack
+                kind: report.type,
+                message: report.message,
+                stack: report.stack
             ),
             serviceName: context.service,
             environment: context.env,
@@ -81,14 +78,17 @@ internal struct CrashReportingWithLoggingIntegration: CrashReportingIntegration 
             loggerVersion: context.sdkVersion,
             threadName: nil,
             applicationVersion: context.version,
+            dd: .init(
+                device: .init(architecture: deviceInfo.architecture)
+            ),
             userInfo: .init(
                 id: user?.id,
                 name: user?.name,
                 email: user?.email,
                 extraInfo: user?.extraInfo ?? [:]
             ),
-            networkConnectionInfo: crashContext.lastNetworkConnectionInfo,
-            mobileCarrierInfo: crashContext.lastCarrierInfo,
+            networkConnectionInfo: context.networkConnectionInfo,
+            mobileCarrierInfo: context.carrierInfo,
             attributes: .init(userAttributes: [:], internalAttributes: errorAttributes),
             tags: nil
         )

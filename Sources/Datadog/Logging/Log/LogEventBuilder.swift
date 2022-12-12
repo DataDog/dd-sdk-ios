@@ -36,8 +36,7 @@ internal struct LogEventBuilder {
     ///   - tags: tags to associate with log
     ///   - context: SDK context from the moment of creating log
     ///   - threadName: the name of the thread on which the log is created.
-    ///
-    /// - Returns: the `LogEvent` or `nil` if the log was dropped by the user (from event mapper API).
+    ///   - callback: The callback to return the modified `LogEvent`.
     ///
     /// - Note: `date` and `threadName` must be collected on the user thread.
     func createLogEvent(
@@ -48,8 +47,9 @@ internal struct LogEventBuilder {
         attributes: LogEvent.Attributes,
         tags: Set<String>,
         context: DatadogContext,
-        threadName: String
-    ) -> LogEvent? {
+        threadName: String,
+        callback: @escaping (LogEvent) -> Void
+    ) {
         let userInfo = context.userInfo ?? .empty
 
         let log = LogEvent(
@@ -69,6 +69,9 @@ internal struct LogEventBuilder {
             loggerVersion: context.sdkVersion,
             threadName: threadName,
             applicationVersion: context.version,
+            dd: LogEvent.Dd(
+                device: LogEvent.DeviceInfo(architecture: context.device.architecture)
+            ),
             userInfo: .init(
                 id: userInfo.id,
                 name: userInfo.name,
@@ -81,11 +84,7 @@ internal struct LogEventBuilder {
             tags: !tags.isEmpty ? Array(tags) : nil
         )
 
-        if let mapper = eventMapper {
-            return mapper(log)
-        }
-
-        return log
+        eventMapper?.map(event: log, callback: callback) ?? callback(log)
     }
 }
 
