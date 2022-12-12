@@ -47,7 +47,6 @@ class LoggingFeatureTests: XCTestCase {
             ),
             httpClient: httpClient,
             encryption: randomEncryption,
-            v1Context: .mockAny(),
             contextProvider: .mockWith(
                 context: .mockWith(
                     clientToken: randomClientToken,
@@ -129,7 +128,6 @@ class LoggingFeatureTests: XCTestCase {
             ),
             httpClient: httpClient,
             encryption: nil,
-            v1Context: .mockAny(),
             contextProvider: .mockAny(),
             applicationVersion: .mockAny()
         )

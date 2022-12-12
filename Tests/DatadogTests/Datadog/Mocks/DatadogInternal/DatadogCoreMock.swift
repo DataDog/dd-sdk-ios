@@ -21,10 +21,6 @@ internal final class DatadogCoreMock: Flushable {
 
     private var v1Features: [String: Any] = [:]
 
-    var legacyContext: DatadogV1Context? {
-        .init(context)
-    }
-
     var context: DatadogContext {
         get { synchronize { _context } }
         set { synchronize { _context = newValue } }
@@ -139,64 +135,5 @@ extension DatadogCoreMock: DatadogV1CoreProtocol {
         }
 
         return Scope(context: context, writer: feature.storage.writer)
-    }
-}
-
-extension DatadogV1Context: AnyMockable {
-    static func mockAny() -> DatadogV1Context {
-        return mockWith()
-    }
-
-    static func mockWith(
-        service: String = .mockAny(),
-        env: String = .mockAny(),
-        version: String = .mockAny(),
-        source: String = .mockAny(),
-        variant: String? = nil,
-        sdkVersion: String = .mockAny(),
-        device: DeviceInfo = .mockAny(),
-        dateCorrector: DateCorrector = DateCorrectorMock(),
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
-            networkConnectionInfo: .mockWith(
-                reachability: .yes, // so it always meets the upload condition
-                availableInterfaces: [.wifi],
-                supportsIPv4: true,
-                supportsIPv6: true,
-                isExpensive: true,
-                isConstrained: false // so it always meets the upload condition
-            )
-        ),
-        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
-        userInfoProvider: UserInfoProvider = .mockAny()
-    ) -> DatadogV1Context {
-        DatadogV1Context(
-            service: service,
-            env: env,
-            version: version,
-            source: source,
-            variant: variant,
-            sdkVersion: sdkVersion,
-            device: device,
-            dateCorrector: dateCorrector,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider,
-            userInfoProvider: userInfoProvider
-        )
-    }
-
-    init(_ v2: DatadogContext) {
-        self.init(
-            service: v2.service,
-            env: v2.env,
-            version: v2.version,
-            source: v2.source,
-            variant: v2.variant,
-            sdkVersion: v2.sdkVersion,
-            device: v2.device,
-            dateCorrector: DateCorrectorMock(offset: v2.serverTimeOffset),
-            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: v2.networkConnectionInfo),
-            carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: v2.carrierInfo),
-            userInfoProvider: UserInfoProvider.mockWith(userInfo: v2.userInfo ?? .empty)
-        )
     }
 }

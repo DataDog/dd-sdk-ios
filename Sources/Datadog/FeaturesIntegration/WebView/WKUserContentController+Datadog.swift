@@ -33,17 +33,10 @@ public extension WKUserContentController {
     }
 
     private func trackDatadogEventsOrThrow(in hosts: Set<String>, sdk core: DatadogCoreProtocol) throws {
-        guard let context = core.v1.legacyContext else {
-            throw ProgrammerError(
-                description: "`Datadog.initialize()` must be called prior to `trackDatadogEvents(in:)`."
-            )
-        }
-
         addDatadogMessageHandler(
             core: core,
             allowedWebViewHosts: hosts,
-            hostsSanitizer: HostsSanitizer(),
-            context: context
+            hostsSanitizer: HostsSanitizer()
         )
     }
 
@@ -66,8 +59,7 @@ public extension WKUserContentController {
     internal func addDatadogMessageHandler(
         core: DatadogCoreProtocol,
         allowedWebViewHosts: Set<String>,
-        hostsSanitizer: HostsSanitizing,
-        context: DatadogV1Context
+        hostsSanitizer: HostsSanitizing
     ) {
         guard !isTracking else {
             DD.logger.warn("`trackDatadogEvents(in:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")

@@ -1009,40 +1009,6 @@ extension CarrierInfo: RandomMockable {
     }
 }
 
-class CarrierInfoProviderMock: CarrierInfoProviderType {
-    private let queue = DispatchQueue(label: "com.datadoghq.CarrierInfoProviderMock")
-    private var _current: CarrierInfo?
-
-    init(carrierInfo: CarrierInfo?) {
-        _current = carrierInfo
-    }
-
-    func set(current: CarrierInfo?) {
-        queue.async { self._current = current }
-    }
-
-    // MARK: - CarrierInfoProviderType
-
-    var current: CarrierInfo? {
-        queue.sync { _current }
-    }
-
-    func subscribe<Observer: CarrierInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == CarrierInfo? {
-    }
-
-    // MARK: - Mocking
-
-    static func mockAny() -> CarrierInfoProviderMock {
-        return mockWith()
-    }
-
-    static func mockWith(
-        carrierInfo: CarrierInfo = .mockAny()
-    ) -> CarrierInfoProviderMock {
-        return CarrierInfoProviderMock(carrierInfo: carrierInfo)
-    }
-}
-
 extension AppVersionProvider: AnyMockable {
     static func mockAny() -> AppVersionProvider {
         return AppVersionProvider(configuration: .mockAny())

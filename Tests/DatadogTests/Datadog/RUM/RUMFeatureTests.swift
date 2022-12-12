@@ -49,7 +49,6 @@ class RUMFeatureTests: XCTestCase {
             ),
             httpClient: httpClient,
             encryption: randomEncryption,
-            v1Context: .mockAny(),
             contextProvider: .mockWith(
                 context: .mockWith(
                     clientToken: randomClientToken,
@@ -140,7 +139,6 @@ class RUMFeatureTests: XCTestCase {
             ),
             httpClient: httpClient,
             encryption: nil,
-            v1Context: .mockWith(variant: randomVariant),
             contextProvider: .mockWith(
                 context: .mockWith(variant: randomVariant)
             ),
@@ -198,7 +196,6 @@ class RUMFeatureTests: XCTestCase {
             ),
             httpClient: httpClient,
             encryption: nil,
-            v1Context: .mockAny(),
             contextProvider: .mockAny(),
             applicationVersion: .mockAny()
         )

@@ -50,8 +50,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
         controller.addDatadogMessageHandler(
             core: PassthroughCoreMock(),
             allowedWebViewHosts: ["datadoghq.com"],
-            hostsSanitizer: mockSanitizer,
-            context: .mockAny()
+            hostsSanitizer: mockSanitizer
         )
 
         XCTAssertEqual(controller.userScripts.count, initialUserScriptCount + 1)
@@ -77,8 +76,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
             controller.addDatadogMessageHandler(
                 core: PassthroughCoreMock(),
                 allowedWebViewHosts: ["datadoghq.com"],
-                hostsSanitizer: mockSanitizer,
-                context: .mockAny()
+                hostsSanitizer: mockSanitizer
             )
         }
 
@@ -130,8 +128,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
         controller.addDatadogMessageHandler(
             core: PassthroughCoreMock(),
             allowedWebViewHosts: ["datadoghq.com"],
-            hostsSanitizer: MockHostsSanitizer(),
-            context: .mockAny()
+            hostsSanitizer: MockHostsSanitizer()
         )
 
         let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DatadogMessageHandler
@@ -173,8 +170,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
         controller.addDatadogMessageHandler(
             core: core,
             allowedWebViewHosts: ["datadoghq.com"],
-            hostsSanitizer: MockHostsSanitizer(),
-            context: core.legacyContext!
+            hostsSanitizer: MockHostsSanitizer()
         )
 
         let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DatadogMessageHandler
