@@ -938,40 +938,6 @@ extension NetworkConnectionInfo: RandomMockable {
     }
 }
 
-class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType, WrappedNetworkConnectionInfoProvider {
-    private let queue = DispatchQueue(label: "com.datadoghq.NetworkConnectionInfoProviderMock")
-    private var _current: NetworkConnectionInfo?
-
-    init(networkConnectionInfo: NetworkConnectionInfo?) {
-        _current = networkConnectionInfo
-    }
-
-    func set(current: NetworkConnectionInfo?) {
-        queue.async { self._current = current }
-    }
-
-    // MARK: - NetworkConnectionInfoProviderType
-
-    var current: NetworkConnectionInfo? {
-        queue.sync { _current }
-    }
-
-    func subscribe<Observer: NetworkConnectionInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == NetworkConnectionInfo? {
-    }
-
-    // MARK: - Mocking
-
-    static func mockAny() -> NetworkConnectionInfoProviderMock {
-        return mockWith()
-    }
-
-    static func mockWith(
-        networkConnectionInfo: NetworkConnectionInfo? = .mockAny()
-    ) -> NetworkConnectionInfoProviderMock {
-        return NetworkConnectionInfoProviderMock(networkConnectionInfo: networkConnectionInfo)
-    }
-}
-
 extension CarrierInfo.RadioAccessTechnology: RandomMockable {
     static func mockAny() -> CarrierInfo.RadioAccessTechnology { .LTE }
 
