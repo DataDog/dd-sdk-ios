@@ -975,16 +975,6 @@ extension CarrierInfo: RandomMockable {
     }
 }
 
-extension AppVersionProvider: AnyMockable {
-    static func mockAny() -> AppVersionProvider {
-        return AppVersionProvider(configuration: .mockAny())
-    }
-
-    static func mockWith(version: String) -> AppVersionProvider {
-        return AppVersionProvider(configuration: .mockWith(applicationVersion: version))
-    }
-}
-
 extension ValuePublisher: AnyMockable where Value: AnyMockable {
     static func mockAny() -> Self {
         return .init(initialValue: .mockAny())
