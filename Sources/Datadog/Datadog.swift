@@ -236,7 +236,10 @@ public class Datadog {
             )
 
             rum = try core.create(
-                configuration: createRUMConfiguration(intake: rumConfiguration.uploadURL),
+                configuration: createRUMConfiguration(
+                    intake: rumConfiguration.uploadURL,
+                    dateProvider: rumConfiguration.dateProvider
+                ),
                 featureSpecificConfiguration: rumConfiguration
             )
 

@@ -149,7 +149,13 @@ class WKUserContentController_DatadogTests: XCTestCase {
                 service: "default-service-name",
                 env: "tests",
                 version: "1.0.0",
-                applicationBundleIdentifier: "com.datadoghq.ios-sdk"
+                applicationBundleIdentifier: "com.datadoghq.ios-sdk",
+                featuresAttributes: [
+                    "rum": [
+                        RUMContextAttributes.sessionID: UUID.nullUUID.uuidString.lowercased(),
+                        RUMContextAttributes.applicationID: String.mockAny()
+                    ]
+                ]
             )
         )
         defer { core.flush() }

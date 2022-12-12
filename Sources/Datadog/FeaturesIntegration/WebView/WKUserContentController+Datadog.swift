@@ -76,37 +76,10 @@ public extension WKUserContentController {
 
         let bridgeName = DatadogMessageHandler.name
 
-        let globalRUMMonitor = Global.rum as? RUMMonitor
-
-        var logEventConsumer: WebEventConsumer?
-        var rumEventConsumer: WebEventConsumer?
-
-        if core.v1.feature(LoggingFeature.self) != nil {
-            logEventConsumer = DefaultWebLogEventConsumer(
-                core: core,
-                dateCorrector: context.dateCorrector,
-                rumContextProvider: globalRUMMonitor?.contextProvider,
-                applicationVersion: context.version,
-                environment: context.env
-            )
-        }
-
-        if let rum = core.v1.feature(RUMFeature.self) {
-            rumEventConsumer = DefaultWebRUMEventConsumer(
-                core: core,
-                dateCorrector: context.dateCorrector,
-                contextProvider: globalRUMMonitor?.contextProvider,
-                rumCommandSubscriber: globalRUMMonitor,
-                dateProvider: rum.configuration.dateProvider
-            )
-        }
-
         let messageHandler = DatadogMessageHandler(
-            eventBridge: WebEventBridge(
-                logEventConsumer: logEventConsumer,
-                rumEventConsumer: rumEventConsumer
-            )
+            eventBridge: WebEventBridge(core: core)
         )
+
         add(messageHandler, name: bridgeName)
 
         // WebKit installs message handlers with the given name format below

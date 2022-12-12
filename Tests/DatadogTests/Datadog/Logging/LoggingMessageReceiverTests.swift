@@ -161,17 +161,23 @@ class LoggingMessageReceiverTests: XCTestCase {
         )
 
         // When
-        let sent = Event(test: .mockRandom())
+        let value: String = .mockRandom()
 
         core.send(
-            message: .event(target: "log", event: .init(sent))
+            message: .custom(key: LoggingMessageKeys.browserLog, baggage: .init([
+                "test": value
+            ]))
         )
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
-
         let received: AnyEncodable = try XCTUnwrap(core.events().last, "It should send event")
-        try AssertEncodedRepresentationsEqual(received, sent)
+        let expected: [String: Any] = [
+            "ddtags": "version:abc,env:abc",
+            "test": value
+        ]
+
+        try AssertEncodedRepresentationsEqual(received, AnyEncodable(expected))
     }
 
     func testReceiveCrashLog() throws {
@@ -185,7 +191,7 @@ class LoggingMessageReceiverTests: XCTestCase {
         let sent: LogEvent = .mockRandom()
 
         core.send(
-            message: .custom(key: "crash", baggage: [
+            message: .custom(key: LoggingMessageKeys.crash, baggage: [
                 "log": sent
             ])
         )
@@ -195,5 +201,97 @@ class LoggingMessageReceiverTests: XCTestCase {
 
         let received: LogEvent = try XCTUnwrap(core.events().last, "It should send event")
         try AssertEncodedRepresentationsEqual(received, sent)
+    }
+
+    // MARK: - Web-view log
+
+    func testWhenValidWebLogEventPassed_itDecoratesAndPassesToWriter() throws {
+        let applicationVersion: String = .mockRandom()
+        let environment: String = .mockRandom()
+        let mockSessionID: UUID = .mockRandom()
+
+        let core = PassthroughCoreMock(
+            context: .mockWith(
+                env: environment,
+                version: applicationVersion,
+                serverTimeOffset: 123,
+                featuresAttributes: [
+                    "rum": [
+                        RUMContextAttributes.applicationID: "123456",
+                        RUMContextAttributes.sessionID: mockSessionID.uuidString.lowercased()
+                    ]
+                ]
+            ),
+            messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
+        )
+
+        let webLogEvent: JSON = [
+            "date": 1_635_932_927_012,
+            "error": ["origin": "console"],
+            "message": "console error: error",
+            "session_id": "0110cab4-7471-480e-aa4e-7ce039ced355",
+            "status": "error",
+            "view": ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"]
+        ]
+
+        let expectedWebLogEvent: JSON = [
+            "date": 1_635_932_927_012 + 123.toInt64Milliseconds,
+            "error": ["origin": "console"],
+            "message": "console error: error",
+            "application_id": "123456",
+            "session_id": mockSessionID.uuidString.lowercased(),
+            "status": "error",
+            "ddtags": "version:\(applicationVersion),env:\(environment)",
+            "view": ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"]
+        ]
+
+        core.send(
+            message: .custom(
+                key: LoggingMessageKeys.browserLog,
+                baggage: .init(webLogEvent)
+            )
+        )
+
+        let data = try JSONEncoder().encode(core.events.first as? AnyEncodable)
+        let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
+
+        AssertDictionariesEqual(writtenJSON, expectedWebLogEvent)
+    }
+
+    func testWhenContextIsUnavailable_itPassesWebviewEventAsIs() throws {
+        let applicationVersion = String.mockRandom()
+        let environment = String.mockRandom()
+
+        let core = PassthroughCoreMock(
+            context: .mockWith(
+                env: environment,
+                version: applicationVersion
+            ),
+            messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
+        )
+
+        let webLogEvent: JSON = [
+            "date": 1_635_932_927_012,
+            "error": ["origin": "console"],
+            "message": "console error: error",
+            "session_id": "0110cab4-7471-480e-aa4e-7ce039ced355",
+            "status": "error",
+            "view": ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"]
+        ]
+
+        var expectedWebLogEvent: JSON = webLogEvent
+        expectedWebLogEvent["ddtags"] = "version:\(applicationVersion),env:\(environment)"
+
+        core.send(
+            message: .custom(
+                key: LoggingMessageKeys.browserLog,
+                baggage: .init(webLogEvent)
+            )
+        )
+
+        let data = try JSONEncoder().encode(core.events.first as? AnyEncodable)
+        let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
+
+        AssertDictionariesEqual(writtenJSON, expectedWebLogEvent)
     }
 }

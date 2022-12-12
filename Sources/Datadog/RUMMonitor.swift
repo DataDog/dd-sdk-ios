@@ -146,19 +146,6 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     /// User-targeted, debugging utility which can be toggled with `Datadog.debugRUM`.
     private(set) var debugging: RUMDebugging? = nil
 
-    /// RUM Attributes shared with other Feature registered in core.
-    internal struct Attributes {
-        /// The ID of RUM application (`String`).
-        internal static let applicationID = "application_id"
-        /// The ID of current RUM session (standard UUID `String`, lowercased).
-        /// In case the session is rejected (not sampled), RUM context is set to empty (`[:]`) in core.
-        internal static let sessionID = "session_id"
-        /// The ID of current RUM view (standard UUID `String`, lowercased).
-        internal static let viewID = "view.id"
-        /// The ID of current RUM action (standard UUID `String`, lowercased).
-        internal static let userActionID = "user_action.id"
-    }
-
     // MARK: - Initialization
 
     /// Initializes the Datadog RUM Monitor.
@@ -632,10 +619,10 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 }
 
                 return [
-                    Attributes.applicationID: context.rumApplicationID,
-                    Attributes.sessionID: context.sessionID.rawValue.uuidString.lowercased(),
-                    Attributes.viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
-                    Attributes.userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased()
+                    RUMContextAttributes.applicationID: context.rumApplicationID,
+                    RUMContextAttributes.sessionID: context.sessionID.rawValue.uuidString.lowercased(),
+                    RUMContextAttributes.viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
+                    RUMContextAttributes.userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased()
                 ]
             }
         })

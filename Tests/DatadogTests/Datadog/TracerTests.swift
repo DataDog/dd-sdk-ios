@@ -676,11 +676,11 @@ class TracerTests: XCTestCase {
         // then
         let spanMatcher = try tracing.waitAndReturnSpanMatchers(count: 1)[0]
         XCTAssertEqual(
-            try spanMatcher.meta.custom(keyPath: "meta.\(RUMMonitor.Attributes.applicationID)"),
+            try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextAttributes.applicationID)"),
             rum.configuration.applicationID
         )
-        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMMonitor.Attributes.sessionID)"))
-        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMMonitor.Attributes.viewID)"))
+        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextAttributes.sessionID)"))
+        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextAttributes.viewID)"))
     }
 
     // MARK: - Injecting span context into carrier

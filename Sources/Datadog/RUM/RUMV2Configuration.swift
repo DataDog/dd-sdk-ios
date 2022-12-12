@@ -10,11 +10,11 @@ import Foundation
 ///
 /// - Parameter intake: The RUM intake URL.
 /// - Returns: The RUM feature configuration.
-internal func createRUMConfiguration(intake: URL) -> DatadogFeatureConfiguration {
+internal func createRUMConfiguration(intake: URL, dateProvider: DateProvider = SystemDateProvider()) -> DatadogFeatureConfiguration {
     return DatadogFeatureConfiguration(
         name: "rum",
         requestBuilder: RUMRequestBuilder(intake: intake),
-        messageReceiver: RUMMessageReceiver()
+        messageReceiver: RUMMessageReceiver(dateProvider: dateProvider)
     )
 }
 
@@ -78,7 +78,21 @@ internal enum RUMBaggageKeys {
     static let sessionState = "session-state"
 }
 
+/// Defines keys referencing RUM messages supported on the bus.
+internal enum RUMMessageKeys {
+    /// The key references a crash message.
+    static let crash = "crash"
+
+    /// The key references a browser event message.
+    static let browserEvent = "browser-rum-event"
+}
+
 internal struct RUMMessageReceiver: FeatureMessageReceiver {
+    let webviewReceiver: WebViewEventReceiver
+
+    init(dateProvider: DateProvider = SystemDateProvider()) {
+        webviewReceiver = WebViewEventReceiver(dateProvider: dateProvider)
+    }
     /// Process messages receives from the bus.
     ///
     /// - Parameters:
@@ -88,21 +102,14 @@ internal struct RUMMessageReceiver: FeatureMessageReceiver {
         switch message {
         case .error(let message, let attributes):
             return addError(message: message, attributes: attributes)
-        case .custom(let key, let attributes) where key == "crash":
+        case .custom(let key, let attributes) where key == RUMMessageKeys.crash:
             return crash(attributes: attributes, to: core)
-        case .event(let target, let event) where target == "rum":
-            return write(event: event, to: core)
+        case .custom(let key, let baggage) where key == RUMMessageKeys.browserEvent:
+            webviewReceiver.write(event: baggage.all(), to: core)
+            return true
         default:
             return false
         }
-    }
-
-    private func write(event: AnyEncodable, to core: DatadogCoreProtocol) -> Bool {
-        core.v1.scope(for: RUMFeature.self)?.eventWriteContext { _, writer in
-            writer.write(value: event)
-        }
-
-        return true
     }
 
     private func crash(attributes: FeatureBaggage, to core: DatadogCoreProtocol) -> Bool {

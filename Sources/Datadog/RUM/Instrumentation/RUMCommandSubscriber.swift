@@ -27,3 +27,10 @@ internal protocol RUMCommandPublisher: AnyObject {
     /// - Parameter subscriber: The RUM command subscriber.
     func publish(to subscriber: RUMCommandSubscriber)
 }
+
+internal final class GlobalRUMCommandSubscriber: RUMCommandSubscriber {
+    func process(command: RUMCommand) {
+        let subscriber = Global.rum as? RUMCommandSubscriber
+        subscriber?.process(command: command)
+    }
+}
