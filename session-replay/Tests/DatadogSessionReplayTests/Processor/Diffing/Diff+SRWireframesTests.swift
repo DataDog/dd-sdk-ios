@@ -116,6 +116,7 @@ extension SRWireframe {
     private func merge(update: ShapeWireframeUpdate, into wireframe: SRShapeWireframe) -> SRShapeWireframe {
         return SRShapeWireframe(
             border: update.border ?? wireframe.border,
+            clip: update.clip ?? wireframe.clip,
             height: update.height ?? wireframe.height,
             id: update.id,
             shapeStyle: update.shapeStyle ?? wireframe.shapeStyle,
@@ -128,6 +129,7 @@ extension SRWireframe {
     private func merge(update: TextWireframeUpdate, into wireframe: SRTextWireframe) -> SRTextWireframe {
         return SRTextWireframe(
             border: update.border ?? wireframe.border,
+            clip: update.clip ?? wireframe.clip,
             height: update.height ?? wireframe.height,
             id: update.id,
             shapeStyle: update.shapeStyle ?? wireframe.shapeStyle,

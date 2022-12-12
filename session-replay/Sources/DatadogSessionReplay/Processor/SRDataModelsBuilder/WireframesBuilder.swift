@@ -41,6 +41,7 @@ internal class WireframesBuilder {
     ) -> SRWireframe {
         let wireframe = SRShapeWireframe(
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
+            clip: nil,
             height: Int64(withNoOverflow: frame.height),
             id: id,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
@@ -88,6 +89,7 @@ internal class WireframesBuilder {
 
         let wireframe = SRTextWireframe(
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
+            clip: nil,
             height: Int64(withNoOverflow: frame.height),
             id: id,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),

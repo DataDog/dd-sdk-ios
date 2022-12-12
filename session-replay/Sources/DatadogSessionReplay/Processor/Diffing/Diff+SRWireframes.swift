@@ -74,6 +74,7 @@ extension SRShapeWireframe: MutableWireframe {
         return .shapeWireframeUpdate(
             value: .init(
                 border: use(border, ifDifferentThan: other.border),
+                clip: use(clip, ifDifferentThan: other.clip),
                 height: use(height, ifDifferentThan: other.height),
                 id: id,
                 shapeStyle: use(shapeStyle, ifDifferentThan: other.shapeStyle),
@@ -97,6 +98,7 @@ extension SRTextWireframe: MutableWireframe {
         return .textWireframeUpdate(
             value: .init(
                 border: use(border, ifDifferentThan: other.border),
+                clip: use(clip, ifDifferentThan: other.clip),
                 height: use(height, ifDifferentThan: other.height),
                 id: id,
                 shapeStyle: use(shapeStyle, ifDifferentThan: other.shapeStyle),
