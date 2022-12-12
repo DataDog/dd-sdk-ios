@@ -684,15 +684,6 @@ class RelativeDateProvider: DateProvider {
     }
 }
 
-/// `DateCorrector` mock, correcting dates by adding predefined offset.
-class DateCorrectorMock: DateCorrector {
-    var offset: TimeInterval
-
-    init(offset: TimeInterval = 0) {
-        self.offset = offset
-    }
-}
-
 extension AppState: AnyMockable, RandomMockable {
     static func mockAny() -> AppState {
         return .active
