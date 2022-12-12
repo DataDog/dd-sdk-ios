@@ -286,6 +286,7 @@ extension TouchSnapshot.Touch: AnyMockable, RandomMockable {
     static func mockRandom() -> TouchSnapshot.Touch {
         return TouchSnapshot.Touch(
             id: .mockRandom(),
+            phase: [.down, .move, .up].randomElement()!,
             date: .mockRandom(),
             position: .mockRandom()
         )
@@ -293,11 +294,13 @@ extension TouchSnapshot.Touch: AnyMockable, RandomMockable {
 
     static func mockWith(
         id: TouchIdentifier = .mockAny(),
+        phase: TouchSnapshot.TouchPhase = .move,
         date: Date = .mockAny(),
         position: CGPoint = .mockAny()
     ) -> TouchSnapshot.Touch {
         return TouchSnapshot.Touch(
             id: id,
+            phase: phase,
             date: date,
             position: position
         )

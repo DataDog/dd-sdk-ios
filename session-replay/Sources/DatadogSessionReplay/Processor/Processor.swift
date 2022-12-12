@@ -87,7 +87,9 @@ internal class Processor: Processing {
 
         // Create records for denoting touch interaction:
         if let touchSnapshot = touchSnapshot {
-            records.append(recordsBuilder.createIncrementalSnapshotRecord(from: touchSnapshot))
+            records.append(
+                contentsOf: recordsBuilder.createIncrementalSnapshotRecords(from: touchSnapshot)
+            )
         }
 
         if !records.isEmpty {

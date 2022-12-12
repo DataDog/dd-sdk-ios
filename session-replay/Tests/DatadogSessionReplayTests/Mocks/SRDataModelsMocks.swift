@@ -1092,9 +1092,9 @@ internal extension SRRecord {
 }
 
 extension SRIncrementalSnapshotRecord {
-    var touchData: SRIncrementalSnapshotRecord.Data.TouchData? {
+    var pointerInteractionData: SRIncrementalSnapshotRecord.Data.PointerInteractionData? {
         switch data {
-        case .touchData(let value): return value
+        case .pointerInteractionData(let value): return value
         default: return nil
         }
     }
