@@ -22,7 +22,7 @@
     [[DDNSURLSessionDelegate alloc] init];
     [[DDNSURLSessionDelegate alloc] initWithAdditionalFirstPartyHosts:[NSSet setWithArray:@[]]];
     [[DDNSURLSessionDelegate alloc] initWithAdditionalFirstPartyHostsWithHeaderTypes:@{
-        @"host": [[NSSet alloc] initWithObjects:[DDTracingHeaderType dd], nil]
+        @"host": [[NSSet alloc] initWithObjects:[DDTracingHeaderType datadog], nil]
     }];
 }
 

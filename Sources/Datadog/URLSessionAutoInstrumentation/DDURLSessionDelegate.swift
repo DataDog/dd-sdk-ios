@@ -66,7 +66,7 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDat
     @objc
     public convenience init(additionalFirstPartyHosts: Set<String>) {
         self.init(additionalFirstPartyHosts: .init(additionalFirstPartyHosts.reduce(into: [:], { partialResult, host in
-            partialResult[host] = .init(arrayLiteral: .dd)
+            partialResult[host] = [.datadog]
         })))
     }
 

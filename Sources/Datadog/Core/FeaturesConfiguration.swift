@@ -209,8 +209,6 @@ extension FeaturesConfiguration {
             )
         }
 
-        let firstPartyHosts = configuration.firstPartyHosts ?? .init()
-
         if configuration.rumEnabled {
             let instrumentation = RUM.Instrumentation(
                 uiKitRUMViewsPredicate: configuration.rumUIKitViewsPredicate,
@@ -234,7 +232,7 @@ extension FeaturesConfiguration {
                     backgroundEventTrackingEnabled: configuration.rumBackgroundEventTrackingEnabled,
                     frustrationTrackingEnabled: configuration.rumFrustrationSignalsTrackingEnabled,
                     onSessionStart: configuration.rumSessionsListener,
-                    firstPartyHosts: firstPartyHosts,
+                    firstPartyHosts: configuration.firstPartyHosts ?? .init(),
                     vitalsFrequency: configuration.mobileVitalsFrequency.timeInterval,
                     dateProvider: dateProvider
                 )
@@ -249,7 +247,7 @@ extension FeaturesConfiguration {
             }
         }
 
-        if configuration.firstPartyHosts?.hosts != nil {
+        if let firstPartyHosts = configuration.firstPartyHosts {
             if configuration.tracingEnabled || configuration.rumEnabled {
                 urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
                     userDefinedFirstPartyHosts: firstPartyHosts,

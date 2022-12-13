@@ -528,11 +528,13 @@ extension Datadog {
             ///
             /// **NOTE 2:** The `URLSession` instrumentation will NOT work without using `DDURLSessionDelegate`.
             ///
+            /// **NOTE 3:** If used simultaneously with `trackURLSession(firstPartyHostsWithHeaderTypes:)` it will merge first party hosts provided in both.
+            ///
             /// - Parameter firstPartyHosts: empty set by default
             public func trackURLSession(firstPartyHosts: Set<String> = []) -> Builder {
-                return trackURLSession(firstPartyHostsWithHeaderTypes: .init(firstPartyHosts.reduce(into: [:], { partialResult, host in
-                    partialResult[host] = .init([.dd])
-                })))
+                return trackURLSession(firstPartyHostsWithHeaderTypes: firstPartyHosts.reduce(into: [:], { partialResult, host in
+                    partialResult[host] = [.datadog]
+                }))
             }
 
             /// The `trackURLSession(firstPartyHostsWithHeaderTypes:)` function is an alternate version of `trackURLSession(firstPartyHosts:)`
@@ -543,10 +545,10 @@ extension Datadog {
             /// If set, the SDK will intercept all network requests made by `URLSession` instances which use `DDURLSessionDelegate`.
             ///
             /// Each request will be classified as 1st- or 3rd-party based on the host comparison, i.e.:
-            /// * if `firstPartyHostsWithHeaderTypes` is `["example.com": .init([.dd])]`:
+            /// * if `firstPartyHostsWithHeaderTypes` is `["example.com": [.datadog]]`:
             ///     - 1st-party URL examples: https://example.com/, https://api.example.com/v2/users
             ///     - 3rd-party URL examples: https://foo.com/
-            /// * if `firstPartyHostsWithHeaderTypes` is `["api.example.com": .init([.dd])]]`:
+            /// * if `firstPartyHostsWithHeaderTypes` is `["api.example.com": [.datadog]]]`:
             ///     - 1st-party URL examples: https://api.example.com/, https://api.example.com/v2/users
             ///     - 3rd-party URL examples: https://example.com/, https://foo.com/
             ///
@@ -564,10 +566,12 @@ extension Datadog {
             ///
             /// **NOTE 2:** The `URLSession` instrumentation will NOT work without using `DDURLSessionDelegate`.
             ///
-            /// - Parameter firstPartyHostsWithHeaderTypes: Object used to classify network requests as 1st-party
-            /// and determine the HTTP header types to use for Distributed Tracing.
-            public func trackURLSession(firstPartyHostsWithHeaderTypes: FirstPartyHosts) -> Builder {
-                configuration.firstPartyHosts = firstPartyHostsWithHeaderTypes
+            /// **NOTE 3:** If used simultaneously with `trackURLSession(firstPartyHosts:)` it will merge first party hosts provided in both.
+            ///
+            /// - Parameter firstPartyHostsWithHeaderTypes: Dictionary used to classify network requests as 1st-party
+            /// and determine the HTTP header types to use for Distributed Tracing. Key is a host and value is a set of tracing header types.
+            public func trackURLSession(firstPartyHostsWithHeaderTypes: [String: Set<TracingHeaderType>]) -> Builder {
+                configuration.firstPartyHosts += FirstPartyHosts(firstPartyHostsWithHeaderTypes)
                 return self
             }
 

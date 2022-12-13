@@ -571,8 +571,8 @@ class FeaturesConfigurationTests: XCTestCase {
         let randomCustomRUMEndpoint: URL? = Bool.random() ? .mockRandom() : nil
 
         let firstPartyHosts: FirstPartyHosts = .init([
-            "example.com": .init([.dd]),
-            "foo.eu": .init([.dd])
+            "example.com": [.datadog],
+            "foo.eu": [.datadog]
         ])
         let expectedSDKInternalURLs: Set<String> = [
             randomCustomLogsEndpoint?.absoluteString ?? randomDatadogEndpoint.logsEndpoint.url,
@@ -661,7 +661,7 @@ class FeaturesConfigurationTests: XCTestCase {
             configuration: .mockWith(
                 tracingEnabled: .random(),
                 rumEnabled: true,
-                firstPartyHosts: .init(["foo.com": .init([.dd])]),
+                firstPartyHosts: .init(["foo.com": [.datadog]]),
                 rumResourceAttributesProvider: { _, _, _, _ in [:] }
             ),
             appContext: .mockAny()
@@ -670,7 +670,7 @@ class FeaturesConfigurationTests: XCTestCase {
             configuration: .mockWith(
                 tracingEnabled: .random(),
                 rumEnabled: true,
-                firstPartyHosts: .init(["foo.com": .init([.dd])]),
+                firstPartyHosts: .init(["foo.com": [.datadog]]),
                 rumResourceAttributesProvider: nil
             ),
             appContext: .mockAny()
@@ -745,7 +745,7 @@ class FeaturesConfigurationTests: XCTestCase {
         defer { consolePrint = { print($0) } }
 
         // Given
-        let firstPartyHosts: FirstPartyHosts = .init(["first-party.com": .init([.dd])])
+        let firstPartyHosts: FirstPartyHosts = .init(["first-party.com": [.datadog]])
 
         // When
         let tracingEnabled = false
@@ -780,9 +780,9 @@ class FeaturesConfigurationTests: XCTestCase {
         let mockHostsSanitizer = MockHostsSanitizer()
         let firstPartyHosts = FirstPartyHosts(
             hostsWithTracingHeaderTypes: [
-                "https://first-party.com": .init([.dd]),
-                "http://api.first-party.com": .init([.dd]),
-                "https://first-party.com/v2/api": .init([.dd])
+                "https://first-party.com": [.datadog],
+                "http://api.first-party.com": [.datadog],
+                "https://first-party.com/v2/api": [.datadog]
             ],
             hostsSanitizer: mockHostsSanitizer
         )

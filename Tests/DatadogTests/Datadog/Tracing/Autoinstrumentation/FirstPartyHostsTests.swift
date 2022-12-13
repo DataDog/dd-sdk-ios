@@ -9,17 +9,17 @@ import XCTest
 
 class FirstPartyHostsTests: XCTestCase {
     let hostsDictionary: [String: Set<TracingHeaderType>] = [
-        "http://first-party.com/": .init(arrayLiteral: .w3c, .b3s),
-        "https://first-party.com/": .init(arrayLiteral: .w3c, .b3s),
-        "https://api.first-party.com/v2/users": .init(arrayLiteral: .w3c, .b3s),
-        "https://www.first-party.com/": .init(arrayLiteral: .w3c, .b3s),
-        "https://login:p4ssw0rd@first-party.com:999/": .init(arrayLiteral: .w3c, .b3s),
-        "http://any-domain.eu/": .init(arrayLiteral: .w3c, .b3s),
-        "https://any-domain.eu/": .init(arrayLiteral: .w3c, .b3s),
-        "https://api.any-domain.eu/v2/users": .init(arrayLiteral: .w3c, .b3s),
-        "https://www.any-domain.eu/": .init(arrayLiteral: .w3c, .b3s),
-        "https://login:p4ssw0rd@www.any-domain.eu:999/": .init(arrayLiteral: .w3c, .b3s),
-        "https://api.any-domain.org.eu/": .init(arrayLiteral: .w3c, .b3s),
+        "http://first-party.com/": [.tracecontext, .b3],
+        "https://first-party.com/": [.tracecontext, .b3],
+        "https://api.first-party.com/v2/users": [.tracecontext, .b3],
+        "https://www.first-party.com/": [.tracecontext, .b3],
+        "https://login:p4ssw0rd@first-party.com:999/": [.tracecontext, .b3],
+        "http://any-domain.eu/": [.tracecontext, .b3],
+        "https://any-domain.eu/": [.tracecontext, .b3],
+        "https://api.any-domain.eu/v2/users": [.tracecontext, .b3],
+        "https://www.any-domain.eu/": [.tracecontext, .b3],
+        "https://login:p4ssw0rd@www.any-domain.eu:999/": [.tracecontext, .b3],
+        "https://api.any-domain.org.eu/": [.tracecontext, .b3],
     ]
 
     let otherHosts = [
@@ -54,31 +54,40 @@ class FirstPartyHostsTests: XCTestCase {
 
     func testGivenValidDictionary_itReturnsTracingHeaderTypes_forSubdomainURL() {
         let firstPartyHosts = FirstPartyHosts([
-            "first-party.com": .init([.b3m]),
-            "example.com": [.dd, .b3m],
-            "subdomain.example.com": [.w3c],
-            "otherdomain.com": [.b3s]
+            "first-party.com": .init([.b3multiple]),
+            "example.com": [.datadog, .b3multiple],
+            "subdomain.example.com": [.tracecontext],
+            "otherdomain.com": [.b3]
         ])
 
-        XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "http://example.com/path1")), [.dd, .b3m])
-        XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "https://subdomain.example.com/path2")), [.w3c, .dd, .b3m])
-        XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "http://otherdomain.com/path3")), [.b3s])
+        XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "http://example.com/path1")), [.datadog, .b3multiple])
+        XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "https://subdomain.example.com/path2")), [.tracecontext, .datadog, .b3multiple])
+        XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "http://otherdomain.com/path3")), [.b3])
         XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "https://somedomain.com/path4")), [])
-        XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "api.first-party.com")), [.b3m])
-        XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "apifirst-party.com")), [])
-        XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "https://api.first-party.com/v1/endpoint")), [.b3m])
+        XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "http://api.first-party.com")), [.b3multiple])
+        XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "http://apifirst-party.com")), [])
+        XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "https://api.first-party.com/v1/endpoint")), [.b3multiple])
     }
 
     func testGivenValidDictionary_itReturnsCorrectTracingHeaderTypes() {
         let headerTypesProvider = FirstPartyHosts(hostsDictionary)
         hostsDictionary.keys.forEach { fixture in
             let url = URL(string: fixture)
-            XCTAssertEqual(headerTypesProvider.tracingHeaderTypes(for: url), .init(arrayLiteral: .w3c, .b3s))
+            XCTAssertEqual(headerTypesProvider.tracingHeaderTypes(for: url), [.tracecontext, .b3])
         }
         otherHosts.forEach { fixture in
             let url = URL(string: fixture)
             XCTAssertEqual(headerTypesProvider.tracingHeaderTypes(for: url), .init())
         }
+    }
+
+    func testFalsePositiveURL_itReturnsEmptyTracingHeaderTypes() {
+        let filter = FirstPartyHosts(
+            hostsWithTracingHeaderTypes: ["example.com": [.datadog, .b3multiple]]
+        )
+        let url = URL(string: "http://foo.com/something.example.com")
+
+        XCTAssertEqual(filter.tracingHeaderTypes(for: url), [])
     }
 
     func testGivenFilterIsInitializedWithEmptySet_itNeverReturnsFirstParty() {
@@ -94,7 +103,7 @@ class FirstPartyHostsTests: XCTestCase {
 
     func testGivenURLHostIsSubdomain_itIsConsideredFirstParty() {
         let filter = FirstPartyHosts([
-            "first-party.com": .init([.dd])
+            "first-party.com": .init([.datadog])
         ])
         let url = URL(string: "https://api.first-party.com")!
         XCTAssertTrue(
@@ -105,7 +114,7 @@ class FirstPartyHostsTests: XCTestCase {
 
     func testGivenURLHostIsNotSubdomain_itIsNotConsideredFirstParty() {
         let filter = FirstPartyHosts([
-            "first-party.com": .init([.dd])
+            "first-party.com": .init([.datadog])
         ])
         let urlString = "https://apifirst-party.com"
         let url = URL(string: urlString)!
@@ -121,7 +130,7 @@ class FirstPartyHostsTests: XCTestCase {
 
     func testGivenWRongURL_itIsNotConsideredFirstParty() {
         let filter = FirstPartyHosts([
-            "first-party.com": .init([.dd])
+            "first-party.com": .init([.datadog])
         ])
         let badUrlString = ""
         let badUrl = URL(string: badUrlString)

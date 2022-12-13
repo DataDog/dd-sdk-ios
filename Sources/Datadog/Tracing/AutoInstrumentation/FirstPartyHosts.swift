@@ -8,7 +8,7 @@ import Foundation
 
 /// A struct that represents a dictionary of host names and tracing header types.
 public struct FirstPartyHosts: Equatable {
-    private var hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>]
+    fileprivate var hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>]
 
     var hosts: Set<String> {
         return Set(hostsWithTracingHeaderTypes.keys)
@@ -39,9 +39,6 @@ public struct FirstPartyHosts: Equatable {
             if url?.host?.range(of: regex, options: .regularExpression) != nil {
                 return item.value
             }
-            if url?.absoluteString.range(of: regex, options: .regularExpression) != nil {
-                return item.value
-            }
             return nil
         }
         .reduce(into: Set(), { partialResult, value in
@@ -51,9 +48,6 @@ public struct FirstPartyHosts: Equatable {
 
     /// Returns `true` if given `URL` matches the first party hosts defined by the user; `false` otherwise.
     func isFirstParty(url: URL?) -> Bool {
-        guard let host = url?.host, let url = URL(string: host) else {
-            return false
-        }
         return !tracingHeaderTypes(for: url).isEmpty
     }
 
@@ -65,4 +59,12 @@ public struct FirstPartyHosts: Equatable {
         }
         return isFirstParty(url: url)
     }
+}
+
+internal func += (left: inout FirstPartyHosts?, right: FirstPartyHosts) {
+    left = FirstPartyHosts(
+        left?.hostsWithTracingHeaderTypes.merging(right.hostsWithTracingHeaderTypes, uniquingKeysWith: { left, right in
+            left.union(right)
+        }) ?? right.hostsWithTracingHeaderTypes
+    )
 }

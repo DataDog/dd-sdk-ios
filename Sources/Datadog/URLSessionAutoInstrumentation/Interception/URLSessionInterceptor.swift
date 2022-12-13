@@ -248,19 +248,19 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
         tracingHeaderTypes.union(additionalFirstPartyHostsTracingHeaderTypes).forEach {
             let writer: TracePropagationHeadersProvider & OTFormatWriter
             switch $0 {
-            case .dd:
+            case .datadog:
                 writer = HTTPHeadersWriter(sampler: tracingSampler)
-            case .b3s:
+            case .b3:
                 writer = OTelHTTPHeadersWriter(
                     sampler: tracingSampler,
                     injectEncoding: .single
                 )
-            case .b3m:
+            case .b3multiple:
                 writer = OTelHTTPHeadersWriter(
                     sampler: tracingSampler,
                     injectEncoding: .multiple
                 )
-            case .w3c:
+            case .tracecontext:
                 writer = W3CHTTPHeadersWriter(sampler: tracingSampler)
             }
             tracer.inject(spanContext: spanContext, writer: writer)
@@ -288,9 +288,9 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
             .union(additionalFirstPartyHostsTracingHeaderTypes)
 
         let reader: OTFormatReader
-        if tracingHeaderTypes.contains(.dd) {
+        if tracingHeaderTypes.contains(.datadog) {
             reader = HTTPHeadersReader(httpHeaderFields: headers)
-        } else if tracingHeaderTypes.contains(.b3s) || tracingHeaderTypes.contains(.b3m) {
+        } else if tracingHeaderTypes.contains(.b3) || tracingHeaderTypes.contains(.b3multiple) {
             reader = OTelHTTPHeadersReader(httpHeaderFields: headers)
         } else {
             reader = W3CHTTPHeadersReader(httpHeaderFields: headers)

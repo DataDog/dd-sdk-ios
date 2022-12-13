@@ -34,7 +34,7 @@ class DDNSURLSessionDelegateTests: XCTestCase {
     }
 
     func testInitWithAdditionalFirstPartyHosts() {
-        let delegate = DDNSURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: ["foo.com": .init([.dd])])
+        let delegate = DDNSURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: ["foo.com": [.datadog]])
         let url = URL(string: "http://foo.com")
         XCTAssertTrue(delegate.swiftDelegate.firstPartyHosts.isFirstParty(url: url))
     }

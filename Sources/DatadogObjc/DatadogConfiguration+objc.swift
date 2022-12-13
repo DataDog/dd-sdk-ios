@@ -167,10 +167,10 @@ public class DDTracingHeaderType: NSObject {
         self.swiftType = swiftType
     }
 
-    @objc public static let dd = DDTracingHeaderType(.dd)
-    @objc public static let b3m = DDTracingHeaderType(.b3m)
-    @objc public static let b3s = DDTracingHeaderType(.b3s)
-    @objc public static let w3c = DDTracingHeaderType(.w3c)
+    @objc public static let datadog = DDTracingHeaderType(.datadog)
+    @objc public static let b3multiple = DDTracingHeaderType(.b3multiple)
+    @objc public static let b3 = DDTracingHeaderType(.b3)
+    @objc public static let tracecontext = DDTracingHeaderType(.tracecontext)
 }
 
 @objc
