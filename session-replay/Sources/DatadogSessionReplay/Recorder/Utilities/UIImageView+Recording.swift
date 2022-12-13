@@ -8,10 +8,12 @@ import UIKit
 
 extension UIImageView {
     private var scaleAspectFillRect: CGRect {
-        guard let image = image else { return bounds }
+        guard let image = image else {
+            return bounds
+        }
 
         let scale: CGFloat
-        if image.size.width < image.size.height {
+        if (image.size.width - frame.size.width) < (image.size.height - frame.size.height) {
             scale = bounds.width / image.size.width
         } else {
             scale = bounds.height / image.size.height
@@ -27,7 +29,9 @@ extension UIImageView {
     }
 
     private var scaleAspectFitRect: CGRect {
-        guard let image = image else { return bounds }
+        guard let image = image else {
+            return bounds
+        }
 
         let imageAspectRatio = image.size.height / image.size.width
         let frameAspectRatio = frame.height / frame.width
@@ -46,7 +50,6 @@ extension UIImageView {
         }
         return CGRect(x: x, y: y, width: width, height: height)
     }
-
 
     func imageFrame(in frame: CGRect) -> CGRect {
         let imageSize = image?.size ?? .zero
@@ -145,7 +148,7 @@ extension UIImageView {
                 x: (imageFrame.width > frame.width) ? frame.origin.x : imageFrame.origin.x,
                 y: (imageFrame.height > frame.height) ? frame.origin.y : imageFrame.origin.y,
                 width: (imageFrame.width > frame.width) ? frame.width : imageFrame.width,
-                height: (imageFrame.height > frame.height) ?  frame.height : imageFrame.height
+                height: (imageFrame.height > frame.height) ? frame.height : imageFrame.height
             )
         } else {
             return imageFrame

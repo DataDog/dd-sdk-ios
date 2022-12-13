@@ -9,8 +9,8 @@ import UIKit
 @testable import DatadogSessionReplay
 
 class UIImageViewRecordingTests: XCTestCase {
-    var frame: CGRect!
-    var imageView: UIImageView!
+    var frame: CGRect = .zero
+    var imageView: UIImageView = .init()
 
     override func setUp() {
         super.setUp()
@@ -22,8 +22,8 @@ class UIImageViewRecordingTests: XCTestCase {
     }
 
     override func tearDown() {
-        imageView = nil
-        frame = nil
+        imageView = .init()
+        frame = .zero
         super.tearDown()
     }
 
