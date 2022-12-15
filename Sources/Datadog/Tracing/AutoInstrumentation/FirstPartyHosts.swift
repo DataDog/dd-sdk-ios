@@ -7,7 +7,7 @@
 import Foundation
 
 /// A struct that represents a dictionary of host names and tracing header types.
-public struct FirstPartyHosts: Equatable {
+internal struct FirstPartyHosts: Equatable {
     fileprivate var hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>]
 
     var hosts: Set<String> {
@@ -17,7 +17,7 @@ public struct FirstPartyHosts: Equatable {
     /// Creates a `FirstPartyHosts` instance with the given dictionary of host names and tracing header types.
     ///
     /// - Parameter hostsWithTracingHeaderTypes: The dictionary of host names and tracing header types.
-    public init(_ hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>] = [:]) {
+    internal init(_ hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>] = [:]) {
         self.init(hostsWithTracingHeaderTypes: hostsWithTracingHeaderTypes)
     }
 

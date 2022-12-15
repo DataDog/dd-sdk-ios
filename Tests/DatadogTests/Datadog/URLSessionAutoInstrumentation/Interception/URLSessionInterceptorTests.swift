@@ -138,7 +138,7 @@ class URLSessionInterceptorTests: XCTestCase {
         Global.sharedTracer = Tracer.mockAny(in: core)
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
         let sessionWithCustomFirstPartyHosts = URLSession.mockWith(
-            DDURLSessionDelegate(additionalFirstPartyHosts: .init([alternativeFirstPartyRequest.url!.host!: [.datadog]]))
+            DDURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: [alternativeFirstPartyRequest.url!.host!: [.datadog]])
         )
 
         // When
@@ -314,7 +314,7 @@ class URLSessionInterceptorTests: XCTestCase {
         Global.sharedTracer = Tracer.mockAny(in: core)
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
         let sessionWithCustomFirstPartyHosts = URLSession.mockWith(
-            DDURLSessionDelegate(additionalFirstPartyHosts: .init([alternativeFirstPartyRequest.url!.host!: [.datadog]]))
+            DDURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: [alternativeFirstPartyRequest.url!.host!: [.datadog]])
         )
 
         let interceptedFirstPartyRequest = interceptor.modify(request: firstPartyRequest)

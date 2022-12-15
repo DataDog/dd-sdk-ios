@@ -22,9 +22,9 @@ open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionD
     @objc
     public init(additionalFirstPartyHostsWithHeaderTypes: [String: Set<DDTracingHeaderType>]) {
         swiftDelegate = DDURLSessionDelegate(
-            additionalFirstPartyHosts: .init(additionalFirstPartyHostsWithHeaderTypes.mapValues { tracingHeaderTypes in
+            additionalFirstPartyHostsWithHeaderTypes: additionalFirstPartyHostsWithHeaderTypes.mapValues { tracingHeaderTypes in
                 return Set(tracingHeaderTypes.map { $0.swiftType })
-            })
+            }
         )
     }
 

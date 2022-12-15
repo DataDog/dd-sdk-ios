@@ -341,6 +341,13 @@ public class DDConfigurationBuilder: NSObject {
     }
 
     @objc
+    public func trackURLSession(firstPartyHostsWithHeaderTypes: [String: Set<DDTracingHeaderType>]) {
+        _ = sdkBuilder.trackURLSession(firstPartyHostsWithHeaderTypes: firstPartyHostsWithHeaderTypes.mapValues { tracingHeaderTypes in
+            return Set(tracingHeaderTypes.map { $0.swiftType })
+        })
+    }
+
+    @objc
     public func set(serviceName: String) {
         _ = sdkBuilder.set(serviceName: serviceName)
     }
