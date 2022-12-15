@@ -9,8 +9,7 @@ LD_RUNPATH_SEARCH_PATHS[sdk=iphonesimulator*]=$$(inherited) $$(SRCROOT)/../instr
 FRAMEWORK_SEARCH_PATHS[sdk=appletvsimulator*]=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/tvos-arm64_x86_64-simulator/\n
 LD_RUNPATH_SEARCH_PATHS[sdk=appletvsimulator*]=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/tvos-arm64_x86_64-simulator/\n
 OTHER_LDFLAGS[sdk=iphonesimulator*]=$$(inherited) -framework DatadogSDKTesting\n
-// Temporarily disabled - causes "Touching Example\ tvOS.app" exit code: 65 on CI
-// OTHER_LDFLAGS[sdk=appletvsimulator*]=$$(inherited) -framework DatadogSDKTesting\n
+OTHER_LDFLAGS[sdk=appletvsimulator*]=$$(inherited) -framework DatadogSDKTesting\n
 DD_TEST_RUNNER=1\n
 DD_SDK_SWIFT_TESTING_SERVICE=dd-sdk-ios\n
 DD_SDK_SWIFT_TESTING_APIKEY=${DD_SDK_SWIFT_TESTING_APIKEY}\n
