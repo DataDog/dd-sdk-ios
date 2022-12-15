@@ -14,10 +14,18 @@ internal struct TouchSnapshot {
         /// An unique identifier of the touch. It persists throughout a multi-touch sequence (it is created on "touch down",
         /// continues thru "touch move" and ends in "touch up").
         let id: TouchIdentifier
+        /// Phase of the touch as distinguished in session replay.
+        let phase: TouchPhase
         /// A time of recording this touch
         let date: Date
         /// The position of this touch in application window.
         let position: CGPoint
+    }
+
+    enum TouchPhase {
+        case down
+        case move
+        case up
     }
 
     /// The time of the earliest touch.

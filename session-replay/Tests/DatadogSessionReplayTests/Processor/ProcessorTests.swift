@@ -163,18 +163,22 @@ class ProcessorTests: XCTestCase {
         XCTAssertEqual(enrichedRecord.earliestTimestamp, earliestTouchTime.timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(enrichedRecord.latestTimestamp, snapshotTime.timeIntervalSince1970.toInt64Milliseconds)
 
-        XCTAssertEqual(enrichedRecord.records.count, 4)
+        XCTAssertEqual(enrichedRecord.records.count, 13)
         XCTAssertTrue(
             enrichedRecord.records[0].isMetaRecord &&
             enrichedRecord.records[1].isFocusRecord &&
             enrichedRecord.records[2].isFullSnapshotRecord && enrichedRecord.hasFullSnapshot,
             "Segment must start with 'meta' → 'focus' → 'full snapshot' records"
         )
-        let touchData = try XCTUnwrap(enrichedRecord.records[3].incrementalSnapshot?.touchData, "Touch information must be send in 'incremental snapshot'")
-        XCTAssertEqual(touchData.positions?.count, numberOfTouches, "It must include information on all touches")
-        touchData.positions?.forEach { touch in
-            XCTAssertGreaterThanOrEqual(touch.timestamp, earliestTouchTime.timeIntervalSince1970.toInt64Milliseconds)
-            XCTAssertLessThanOrEqual(touch.timestamp, snapshotTime.timeIntervalSince1970.toInt64Milliseconds)
+
+        try enrichedRecord.records[3..<13].forEach { record in
+            let pointerInteractionData = try XCTUnwrap(
+                record.incrementalSnapshot?.pointerInteractionData,
+                "Touch information must be send in 'incremental snapshot'"
+            )
+            XCTAssertEqual(pointerInteractionData.pointerType, .touch)
+            XCTAssertGreaterThanOrEqual(record.timestamp, earliestTouchTime.timeIntervalSince1970.toInt64Milliseconds)
+            XCTAssertLessThanOrEqual(record.timestamp, snapshotTime.timeIntervalSince1970.toInt64Milliseconds)
         }
     }
 
@@ -211,6 +215,7 @@ class ProcessorTests: XCTestCase {
             touches: (0..<numberOfTouches).map { index in
                     .init(
                         id: .mockRandom(min: 0, max: TouchIdentifier(numberOfTouches)),
+                        phase: [.down, .move, .up].randomElement()!,
                         date: startTime.addingTimeInterval(Double(index) * (dt / Double(numberOfTouches))),
                         position: .mockRandom()
                     )

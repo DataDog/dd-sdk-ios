@@ -36,23 +36,23 @@ internal final class TouchIdentifierGenerator {
     /// - Parameter touch: the `UITouch` object
     /// - Returns: the `TouchIdentifier` of queried instance.
     func touchIdentifier(for touch: UITouch) -> TouchIdentifier {
-        switch touch.phase {
-        case .began, .regionEntered:
+        switch touch.phase.dd {
+        case .down:
             return persistNextID(in: touch)
-        case .moved, .regionMoved, .stationary:
+        case .move:
             guard let persistedID = touch.identifier else {
                 // It means the touch began before SR was enabled → persit next ID in this touch:
                 return persistNextID(in: touch)
             }
             return persistedID
-        case .ended, .cancelled, .regionExited:
+        case .up:
             guard let persistedID = touch.identifier else {
                 // It means the touch began before SR was enabled → only return next ID as we know the touch is ending:
                 return getNextID()
             }
             touch.identifier = nil
             return persistedID
-        @unknown default:
+        default:
             return persistNextID(in: touch)
         }
     }

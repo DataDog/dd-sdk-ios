@@ -42,13 +42,30 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
         }
 
         for touch in touches {
+            guard let phase = touch.phase.dd else {
+                continue
+            }
+
             buffer.append(
                 TouchSnapshot.Touch(
                     id: idsGenerator.touchIdentifier(for: touch),
+                    phase: phase,
                     date: Date(), // TODO: RUMM-2688 Synchronize SR snapshot timestamps with current RUM time (+ NTP offset)
                     position: touch.location(in: window)
                 )
             )
+        }
+    }
+}
+
+internal extension UITouch.Phase {
+    /// Converts `UITouch.Phase` to touch phases distinguished in session replay.
+    var dd: TouchSnapshot.TouchPhase? {
+        switch self {
+        case .began, .regionEntered: return .down
+        case .moved, .regionMoved, .stationary: return .move
+        case .ended, .cancelled, .regionExited: return .up
+        @unknown default: return nil
         }
     }
 }
