@@ -123,7 +123,10 @@ extension _AnyEncodable {
         case let encodable as Encodable:
             try encodable.encode(to: encoder)
         default:
-            let context = EncodingError.Context(codingPath: container.codingPath, debugDescription: "AnyEncodable value cannot be encoded")
+            let context = EncodingError.Context(
+                codingPath: container.codingPath,
+                debugDescription: "AnyEncodable value cannot be encoded: \(type(of: value))"
+            )
             throw EncodingError.invalidValue(value, context)
         }
     }
@@ -132,7 +135,9 @@ extension _AnyEncodable {
     private func encode(nsnumber: NSNumber, into container: inout SingleValueEncodingContainer) throws {
         // objCType: A C string containing the Objective-C type of the data contained
         // in the value object. This property provides the same string produced by
-        // the @encode() compiler directive.
+        // the @encode() compiler directive. This property is more reliable than
+        // CFNumberGetType(nsnumber) which can return a wrong type after casting a
+        // Swift fixed-width numeric.
         //
         // The list of NSNumber encoding value can be found in the following links:
         // - https://developer.apple.com/documentation/foundation/nsnumber
