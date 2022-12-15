@@ -607,6 +607,8 @@
 		D20605CB2875A83F0047275C /* ContextValueReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605C62875A77D0047275C /* ContextValueReader.swift */; };
 		D20605CD28770C3B0047275C /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605CC28770C3B0047275C /* AppState.swift */; };
 		D20605CE28770C3B0047275C /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605CC28770C3B0047275C /* AppState.swift */; };
+		D2079DC8294C91DE00C4D25E /* ConcurrencyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2079DC7294C91DE00C4D25E /* ConcurrencyTests.swift */; };
+		D2079DC9294C91DE00C4D25E /* ConcurrencyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2079DC7294C91DE00C4D25E /* ConcurrencyTests.swift */; };
 		D2135330270CA722000315AD /* DataCompressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D213532F270CA722000315AD /* DataCompressionTests.swift */; };
 		D21C26C528A3B49C005DD405 /* FeatureStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26C428A3B49C005DD405 /* FeatureStorage.swift */; };
 		D21C26C628A3B49C005DD405 /* FeatureStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26C428A3B49C005DD405 /* FeatureStorage.swift */; };
@@ -715,6 +717,8 @@
 		D29889C9273413ED00A4D1A9 /* RUMViewsHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29889C72734136200A4D1A9 /* RUMViewsHandlerTests.swift */; };
 		D29CDD3228211A2200F7DAA5 /* DataBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29CDD3128211A2200F7DAA5 /* DataBlock.swift */; };
 		D29CDD3328211A2200F7DAA5 /* DataBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29CDD3128211A2200F7DAA5 /* DataBlock.swift */; };
+		D29CF4BE294C7C98008CD037 /* Concurrency.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29CF4BD294C7C98008CD037 /* Concurrency.swift */; };
+		D29CF4BF294C7C98008CD037 /* Concurrency.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29CF4BD294C7C98008CD037 /* Concurrency.swift */; };
 		D29D5A4D273BF8B400A687C1 /* SwiftUIActionModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */; };
 		D2A1EE23287740B500D28DFB /* ApplicationStatePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE22287740B500D28DFB /* ApplicationStatePublisher.swift */; };
 		D2A1EE24287740B500D28DFB /* ApplicationStatePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE22287740B500D28DFB /* ApplicationStatePublisher.swift */; };
@@ -1904,6 +1908,7 @@
 		D20605BB28757BFB0047275C /* KronosClockMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KronosClockMock.swift; sourceTree = "<group>"; };
 		D20605C62875A77D0047275C /* ContextValueReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextValueReader.swift; sourceTree = "<group>"; };
 		D20605CC28770C3B0047275C /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		D2079DC7294C91DE00C4D25E /* ConcurrencyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConcurrencyTests.swift; sourceTree = "<group>"; };
 		D213532F270CA722000315AD /* DataCompressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCompressionTests.swift; sourceTree = "<group>"; };
 		D21C26C428A3B49C005DD405 /* FeatureStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureStorage.swift; sourceTree = "<group>"; };
 		D21C26C928A406A3005DD405 /* DatadogFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogFeature.swift; sourceTree = "<group>"; };
@@ -1951,6 +1956,7 @@
 		D2956CB02869D54E007D5462 /* DeviceInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInfoTests.swift; sourceTree = "<group>"; };
 		D29889C72734136200A4D1A9 /* RUMViewsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewsHandlerTests.swift; sourceTree = "<group>"; };
 		D29CDD3128211A2200F7DAA5 /* DataBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataBlock.swift; sourceTree = "<group>"; };
+		D29CF4BD294C7C98008CD037 /* Concurrency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Concurrency.swift; sourceTree = "<group>"; };
 		D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIActionModifier.swift; sourceTree = "<group>"; };
 		D2A1EE22287740B500D28DFB /* ApplicationStatePublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationStatePublisher.swift; sourceTree = "<group>"; };
 		D2A1EE25287C35DE00D28DFB /* ContextValueReaderMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextValueReaderMock.swift; sourceTree = "<group>"; };
@@ -4436,6 +4442,7 @@
 				D2CBC25C294215BE00134409 /* Codable */,
 				D2956CAF2869D520007D5462 /* Context */,
 				D29294E5291D65EA00F8EFF9 /* _InternalProxyTests.swift */,
+				D2079DC7294C91DE00C4D25E /* ConcurrencyTests.swift */,
 			);
 			path = DatadogInternal;
 			sourceTree = "<group>";
@@ -4448,6 +4455,14 @@
 				D21C26E628AF9388005DD405 /* FeatureMessageAttributesTests.swift */,
 			);
 			path = Context;
+			sourceTree = "<group>";
+		};
+		D29CF4C0294C7CA6008CD037 /* Concurrency */ = {
+			isa = PBXGroup;
+			children = (
+				D29CF4BD294C7C98008CD037 /* Concurrency.swift */,
+			);
+			path = Concurrency;
 			sourceTree = "<group>";
 		};
 		D29D5A48273BF7E100A687C1 /* UIKit */ = {
@@ -4496,6 +4511,7 @@
 				D2956CAA2869D1DF007D5462 /* Context */,
 				D26C49C128899B4100802B2D /* Upload */,
 				D21C26CC28A411BE005DD405 /* MessageBus */,
+				D29CF4C0294C7CA6008CD037 /* Concurrency */,
 				D21C26E228AD3071005DD405 /* Extensions */,
 				D2CBC2522942003B00134409 /* Codable */,
 				61E945DF2869BEF500A946C4 /* DD.swift */,
@@ -5462,6 +5478,7 @@
 				6139CD712589FAFD007E8BB7 /* Retrying.swift in Sources */,
 				D2CBC2542942007800134409 /* AnyEncodable.swift in Sources */,
 				61BBD19524ED4E9E0023E65F /* FeaturesConfiguration.swift in Sources */,
+				D29CF4BE294C7C98008CD037 /* Concurrency.swift in Sources */,
 				618D9DE7263AD78900A3FAD2 /* SpanEventMapper.swift in Sources */,
 				D2A1EE29287D914900D28DFB /* LaunchTime.swift in Sources */,
 				6114FE2F257687310084E372 /* ConsentProvider.swift in Sources */,
@@ -5668,6 +5685,7 @@
 				61133C5A2423990D00786299 /* FileTests.swift in Sources */,
 				61AD4E3A24534075006E34EA /* TracingFeatureTests.swift in Sources */,
 				613C6B922768FF3100870CBF /* SamplerTests.swift in Sources */,
+				D2079DC8294C91DE00C4D25E /* ConcurrencyTests.swift in Sources */,
 				61133C6B2423990D00786299 /* LogMatcher.swift in Sources */,
 				D2135330270CA722000315AD /* DataCompressionTests.swift in Sources */,
 				61DB33B225DEDFC200F7EA71 /* CustomObjcViewController.m in Sources */,
@@ -6159,6 +6177,7 @@
 				D20605B32874E1660047275C /* CarrierInfoPublisher.swift in Sources */,
 				D2CB6E4027C50EAE00A62B57 /* UIViewControllerSwizzler.swift in Sources */,
 				D2CB6E4127C50EAE00A62B57 /* RUMCurrentContext.swift in Sources */,
+				D29CF4BF294C7C98008CD037 /* Concurrency.swift in Sources */,
 				D2CB6E4227C50EAE00A62B57 /* RUMConnectivityInfoProvider.swift in Sources */,
 				61FD9FCA2851E67100214BD9 /* Sysctl.swift in Sources */,
 				D248ED462807193B00B315B4 /* RUMTelemetry.swift in Sources */,
@@ -6412,6 +6431,7 @@
 				D2CB6F1027C520D400A62B57 /* DDNSURLSessionDelegateTests.swift in Sources */,
 				D2CB6F1127C520D400A62B57 /* CrashReportingWithRUMIntegrationTests.swift in Sources */,
 				D2CB6F1227C520D400A62B57 /* LoggerBuilderTests.swift in Sources */,
+				D2079DC9294C91DE00C4D25E /* ConcurrencyTests.swift in Sources */,
 				D2CB6F1327C520D400A62B57 /* DDConfigurationTests.swift in Sources */,
 				D2CB6F1427C520D400A62B57 /* UUID.swift in Sources */,
 				D2CB6F1527C520D400A62B57 /* URLSessionRUMResourcesHandlerTests.swift in Sources */,

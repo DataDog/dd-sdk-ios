@@ -10,21 +10,7 @@ import Foundation
 internal final class TracingWithRUMIntegration {
     /// The RUM attributes that should be added as Span tags.
     ///
-    /// These attributes are synchronized using a fair and recursive lock.
-    var attribues: [String: Encodable]? {
-        get { synchronize { _attribues } }
-        set { synchronize { _attribues = newValue } }
-    }
-
-    /// Fair and recursive lock.
-    private let lock = NSRecursiveLock()
-
-    /// Unsafe attributes.
-    private var _attribues: [String: Encodable]?
-
-    private func synchronize<T>(_ block: () -> T) -> T {
-        lock.lock()
-        defer { lock.unlock() }
-        return block()
-    }
+    /// These attributes are synchronized using a read-write lock.
+    @_pthread_rwlock
+    var attribues: [String: Encodable]?
 }

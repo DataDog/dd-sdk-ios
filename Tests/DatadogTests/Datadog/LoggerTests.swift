@@ -469,6 +469,7 @@ class LoggerTests: XCTestCase {
 
     func testSendingMessageAttributes() throws {
         core.context = .mockAny()
+        core.queue = DispatchQueue(label: "context-queue")
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: feature)
@@ -503,6 +504,7 @@ class LoggerTests: XCTestCase {
             env: "tests",
             version: "1.2.3"
         )
+        core.queue = DispatchQueue(label: "context-queue")
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: feature)

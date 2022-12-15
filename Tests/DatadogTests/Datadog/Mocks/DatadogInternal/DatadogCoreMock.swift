@@ -21,25 +21,26 @@ internal final class DatadogCoreMock: Flushable {
 
     private var v1Features: [String: Any] = [:]
 
+    @_pthread_rwlock
     var context: DatadogContext {
-        get { synchronize { _context } }
-        set { synchronize { _context = newValue } }
+        didSet { send(message: .context(context)) }
     }
 
-    /// ordered/non-recursive lock on the context.
-    private let lock = NSLock()
-    private var _context: DatadogContext {
-        didSet { send(message: .context(_context)) }
-    }
+    /// This queue used for invoking Feature scopes.
+    var queue: DispatchQueue?
 
-    init(context: DatadogContext = .mockAny()) {
-        _context = context
-    }
-
-    private func synchronize<T>(_ block: () -> T) -> T {
-        lock.lock()
-        defer { lock.unlock() }
-        return block()
+    /// Creates a DatadogCore mock.
+    ///
+    /// - Parameters:
+    ///   - context: The default context.
+    ///   - queue: The queue for invoking Feature scopes. If `nil`, the scope will be
+    ///   in sync.
+    init(
+        context: DatadogContext = .mockAny(),
+        queue: DispatchQueue? = nil
+    ) {
+        self.context = context
+        self.queue = queue
     }
 
     /// Flush resgistered features.
@@ -109,11 +110,20 @@ extension DatadogCoreMock: DatadogV1CoreProtocol {
     // MARK: V1 interface
 
     struct Scope: FeatureScope {
+        let queue: DispatchQueue?
         let context: DatadogContext
         let writer: Writer
 
         func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void) {
-            XCTAssertNoThrow(try block(context, writer), "Encountered an error when executing `eventWriteContext`")
+            let block = {
+                do {
+                    try block(context, writer)
+                } catch {
+                    XCTFail("Encountered an error when executing `eventWriteContext`. error: \(error)")
+                }
+            }
+
+            queue?.async(execute: block) ?? block()
         }
     }
 
@@ -134,6 +144,10 @@ extension DatadogCoreMock: DatadogV1CoreProtocol {
             return nil
         }
 
-        return Scope(context: context, writer: feature.storage.writer)
+        return Scope(
+            queue: queue,
+            context: context,
+            writer: feature.storage.writer
+        )
     }
 }
