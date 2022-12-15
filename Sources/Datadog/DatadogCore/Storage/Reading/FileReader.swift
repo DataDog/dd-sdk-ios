@@ -31,7 +31,7 @@ internal final class FileReader: Reader {
         }
 
         do {
-            let events = try decode(data: file.read())
+            let events = try decode(stream: file.readStream())
             return Batch(events: events, file: file)
         } catch {
             DD.telemetry.error("Failed to read data from file", error: error)
@@ -45,10 +45,10 @@ internal final class FileReader: Reader {
     /// consumed and decrypted if encryption is available. Decrypted events are finally joined with
     /// data-format separator.
     ///
-    /// - Parameter data: The data to decode.
+    /// - Parameter stream: The InputStream that provides data to decode.
     /// - Returns: The decoded and formatted data.
-    private func decode(data: Data) throws -> [Data] {
-        let reader = DataBlockReader(data: data)
+    private func decode(stream: InputStream) throws -> [Data] {
+        let reader = DataBlockReader(input: stream)
 
         var failure: String? = nil
         defer {

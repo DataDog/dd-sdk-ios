@@ -30,6 +30,9 @@ internal protocol ReadableFile {
     /// Reads the available data in this file.
     func read() throws -> Data
 
+    /// Creates InputStream for reading the available data from this file.
+    func readStream() throws -> InputStream
+
     /// Deletes this file.
     func delete() throws
 }
@@ -129,6 +132,13 @@ internal struct File: WritableFile, ReadableFile {
         return data
     }
 
+    func readStream() throws -> InputStream {
+        guard let stream = InputStream(url: url) else {
+            throw Errors.unableToCreateInputStream
+        }
+        return stream
+    }
+
     func size() throws -> UInt64 {
         let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
         return attributes[.size] as? UInt64 ?? 0
@@ -137,4 +147,8 @@ internal struct File: WritableFile, ReadableFile {
     func delete() throws {
         try FileManager.default.removeItem(at: url)
     }
+}
+
+private enum Errors: Error {
+    case unableToCreateInputStream
 }
