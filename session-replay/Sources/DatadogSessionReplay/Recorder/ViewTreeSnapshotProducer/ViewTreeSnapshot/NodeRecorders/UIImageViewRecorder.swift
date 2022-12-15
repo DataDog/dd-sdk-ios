@@ -21,7 +21,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
         let builder = UIImageViewWireframesBuilder(
             wireframeID: context.ids.nodeID(for: imageView),
             attributes: attributes,
-            imageFrame: imageView.imageFrame(in: attributes.frame)
+            wireframeRect: imageView.imageFrame(in: attributes.frame)
         )
         return SpecificElement(wireframesBuilder: builder, recordSubtree: false)
     }
