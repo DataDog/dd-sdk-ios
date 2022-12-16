@@ -255,7 +255,7 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
                     sampler: tracingSampler,
                     injectEncoding: .single
                 )
-            case .b3multiple:
+            case .b3multi:
                 writer = OTelHTTPHeadersWriter(
                     sampler: tracingSampler,
                     injectEncoding: .multiple
@@ -290,7 +290,7 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
         let reader: OTFormatReader
         if tracingHeaderTypes.contains(.datadog) {
             reader = HTTPHeadersReader(httpHeaderFields: headers)
-        } else if tracingHeaderTypes.contains(.b3) || tracingHeaderTypes.contains(.b3multiple) {
+        } else if tracingHeaderTypes.contains(.b3) || tracingHeaderTypes.contains(.b3multi) {
             reader = OTelHTTPHeadersReader(httpHeaderFields: headers)
         } else {
             reader = W3CHTTPHeadersReader(httpHeaderFields: headers)

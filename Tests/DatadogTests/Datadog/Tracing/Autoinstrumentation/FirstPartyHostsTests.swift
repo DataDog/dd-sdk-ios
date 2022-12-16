@@ -54,19 +54,19 @@ class FirstPartyHostsTests: XCTestCase {
 
     func testGivenValidDictionary_itReturnsTracingHeaderTypes_forSubdomainURL() {
         let firstPartyHosts = FirstPartyHosts([
-            "first-party.com": .init([.b3multiple]),
-            "example.com": [.datadog, .b3multiple],
+            "first-party.com": .init([.b3multi]),
+            "example.com": [.datadog, .b3multi],
             "subdomain.example.com": [.tracecontext],
             "otherdomain.com": [.b3]
         ])
 
-        XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "http://example.com/path1")), [.datadog, .b3multiple])
-        XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "https://subdomain.example.com/path2")), [.tracecontext, .datadog, .b3multiple])
+        XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "http://example.com/path1")), [.datadog, .b3multi])
+        XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "https://subdomain.example.com/path2")), [.tracecontext, .datadog, .b3multi])
         XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "http://otherdomain.com/path3")), [.b3])
         XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "https://somedomain.com/path4")), [])
-        XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "http://api.first-party.com")), [.b3multiple])
+        XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "http://api.first-party.com")), [.b3multi])
         XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "http://apifirst-party.com")), [])
-        XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "https://api.first-party.com/v1/endpoint")), [.b3multiple])
+        XCTAssertEqual(firstPartyHosts.tracingHeaderTypes(for: URL(string: "https://api.first-party.com/v1/endpoint")), [.b3multi])
     }
 
     func testGivenValidDictionary_itReturnsCorrectTracingHeaderTypes() {
@@ -83,7 +83,7 @@ class FirstPartyHostsTests: XCTestCase {
 
     func testFalsePositiveURL_itReturnsEmptyTracingHeaderTypes() {
         let filter = FirstPartyHosts(
-            hostsWithTracingHeaderTypes: ["example.com": [.datadog, .b3multiple]]
+            hostsWithTracingHeaderTypes: ["example.com": [.datadog, .b3multi]]
         )
         let url = URL(string: "http://foo.com/something.example.com")
 

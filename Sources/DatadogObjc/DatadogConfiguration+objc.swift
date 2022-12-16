@@ -168,7 +168,7 @@ public class DDTracingHeaderType: NSObject {
     }
 
     @objc public static let datadog = DDTracingHeaderType(.datadog)
-    @objc public static let b3multiple = DDTracingHeaderType(.b3multiple)
+    @objc public static let b3multi = DDTracingHeaderType(.b3multi)
     @objc public static let b3 = DDTracingHeaderType(.b3)
     @objc public static let tracecontext = DDTracingHeaderType(.tracecontext)
 }
