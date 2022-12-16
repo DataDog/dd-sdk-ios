@@ -453,6 +453,14 @@ workflows:
         - scheme: HTTPServerMock-Package
         - destination: platform=OS X,arch=x86_64
         - project_path: instrumented-tests/http-server-mock/HTTPServerMock.xcodeproj
+    - script:
+        title: Run unit tests for rum-models-generator
+        run_if: '{{enveq "DD_RUN_TOOLS_TESTS" "1"}}'
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            swift test --package-path tools/rum-models-generator
 
   create_dogfooding_pr:
     description: |-
