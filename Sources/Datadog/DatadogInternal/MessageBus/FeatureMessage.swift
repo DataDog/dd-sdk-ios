@@ -18,7 +18,7 @@ public enum FeatureMessage {
     /// as-is through a Feature.
     case event(
         target: String,
-        event: AnyEncodable
+        event: DDAnyEncodable
     )
 
     /// A custom message with generic encodable
@@ -33,27 +33,4 @@ public enum FeatureMessage {
     /// The core will send updated context throught the bus. Do not send new context values
     /// from a Feature or Integration.
     case context(DatadogContext)
-}
-
-extension FeatureMessage {
-    /// Type-erasure wrapper for any `Encodable` type to be transmitted through
-    /// the message bus.
-    public struct AnyEncodable: Encodable {
-        /// The wrapped encodable value.
-        let value: Encodable
-
-        /// Creates a type-erasure wrapper for the given encodable value.
-        ///
-        /// - Parameter value: The encodable value.
-        public init<T>(_ value: T) where T: Encodable {
-            self.value = value
-        }
-
-        /// Encodes this value into the given encoder.
-        ///
-        /// - Parameter encoder: The encoder to write data to.
-        public func encode(to encoder: Encoder) throws {
-            try value.encode(to: encoder)
-        }
-    }
 }

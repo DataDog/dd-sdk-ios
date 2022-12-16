@@ -282,14 +282,6 @@ final class SwiftPrinterTests: XCTestCase {
 
         public struct Foo: Codable {
             public let context: [String: Codable]
-
-            struct DynamicCodingKey: CodingKey {
-                var stringValue: String
-                var intValue: Int?
-                init?(stringValue: String) { self.stringValue = stringValue }
-                init?(intValue: Int) { return nil }
-                init(_ string: String) { self.stringValue = string }
-            }
         }
 
         extension Foo {
@@ -298,7 +290,7 @@ final class SwiftPrinterTests: XCTestCase {
                 var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
                 try context.forEach {
                     let key = DynamicCodingKey($0)
-                    try dynamicContainer.encode(CodableValue($1), forKey: key)
+                    try dynamicContainer.encode(AnyEncodable($1), forKey: key)
                 }
             }
 
@@ -309,7 +301,7 @@ final class SwiftPrinterTests: XCTestCase {
                 var dictionary: [String: Codable] = [:]
 
                 try dynamicKeys.forEach { codingKey in
-                    dictionary[codingKey.stringValue] = try dynamicContainer.decode(CodableValue.self, forKey: codingKey)
+                    dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
                 }
 
                 self.context = dictionary
@@ -375,14 +367,6 @@ final class SwiftPrinterTests: XCTestCase {
                 case property1 = "property_1"
                 case property2 = "property_2"
             }
-
-            struct DynamicCodingKey: CodingKey {
-                var stringValue: String
-                var intValue: Int?
-                init?(stringValue: String) { self.stringValue = stringValue }
-                init?(intValue: Int) { return nil }
-                init(_ string: String) { self.stringValue = string }
-            }
         }
 
         extension Foo {
@@ -396,7 +380,7 @@ final class SwiftPrinterTests: XCTestCase {
                 var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
                 try context.forEach {
                     let key = DynamicCodingKey($0)
-                    try dynamicContainer.encode(CodableValue($1), forKey: key)
+                    try dynamicContainer.encode(AnyEncodable($1), forKey: key)
                 }
             }
 
@@ -413,7 +397,7 @@ final class SwiftPrinterTests: XCTestCase {
                 var dictionary: [String: Codable] = [:]
 
                 try dynamicKeys.forEach { codingKey in
-                    dictionary[codingKey.stringValue] = try dynamicContainer.decode(CodableValue.self, forKey: codingKey)
+                    dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
                 }
 
                 self.context = dictionary

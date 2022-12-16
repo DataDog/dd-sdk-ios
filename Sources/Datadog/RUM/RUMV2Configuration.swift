@@ -97,7 +97,7 @@ internal struct RUMMessageReceiver: FeatureMessageReceiver {
         }
     }
 
-    private func write(event: FeatureMessage.AnyEncodable, to core: DatadogCoreProtocol) -> Bool {
+    private func write(event: AnyEncodable, to core: DatadogCoreProtocol) -> Bool {
         core.v1.scope(for: RUMFeature.self)?.eventWriteContext { _, writer in
             writer.write(value: event)
         }

@@ -40,7 +40,7 @@ internal class DefaultWebRUMEventConsumer: WebEventConsumer {
         let mappedEvent = map(event: event, with: rumContext)
 
         let jsonData = try JSONSerialization.data(withJSONObject: mappedEvent, options: [])
-        let encodableEvent = try jsonDecoder.decode(CodableValue.self, from: jsonData)
+        let encodableEvent = try jsonDecoder.decode(AnyCodable.self, from: jsonData)
 
         core.send(message: .event(target: "rum", event: .init(encodableEvent)), else: {
             DD.logger.warn("A WebView RUM event is lost because RUM is disabled in the SDK")

@@ -69,7 +69,7 @@ internal class DefaultWebLogEventConsumer: WebEventConsumer {
         }
 
         let jsonData = try JSONSerialization.data(withJSONObject: mutableEvent, options: [])
-        let encodableEvent = try jsonDecoder.decode(CodableValue.self, from: jsonData)
+        let encodableEvent = try jsonDecoder.decode(AnyCodable.self, from: jsonData)
 
         core.send(message: .event(target: "log", event: .init(encodableEvent)), else: {
             DD.logger.warn("A WebView log is lost because Logging is disabled in the SDK")

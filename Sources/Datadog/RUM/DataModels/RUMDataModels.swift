@@ -692,14 +692,6 @@ public struct RUMErrorEvent: RUMDataModel {
     /// Feature flags properties
     public struct FeatureFlags: Codable {
         public internal(set) var featureFlagsInfo: [String: Encodable]
-
-        struct DynamicCodingKey: CodingKey {
-            var stringValue: String
-            var intValue: Int?
-            init?(stringValue: String) { self.stringValue = stringValue }
-            init?(intValue: Int) { return nil }
-            init(_ string: String) { self.stringValue = string }
-        }
     }
 
     /// Session properties
@@ -788,7 +780,7 @@ extension RUMErrorEvent.FeatureFlags {
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try featureFlagsInfo.forEach {
             let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(CodableValue($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
         }
     }
 
@@ -799,7 +791,7 @@ extension RUMErrorEvent.FeatureFlags {
         var dictionary: [String: Codable] = [:]
 
         try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(CodableValue.self, forKey: codingKey)
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
         }
 
         self.featureFlagsInfo = dictionary
@@ -1591,14 +1583,6 @@ public struct RUMViewEvent: RUMDataModel {
     /// Feature flags properties
     public struct FeatureFlags: Codable {
         public internal(set) var featureFlagsInfo: [String: Encodable]
-
-        struct DynamicCodingKey: CodingKey {
-            var stringValue: String
-            var intValue: Int?
-            init?(stringValue: String) { self.stringValue = stringValue }
-            init?(intValue: Int) { return nil }
-            init(_ string: String) { self.stringValue = string }
-        }
     }
 
     /// Session properties
@@ -1977,7 +1961,7 @@ extension RUMViewEvent.FeatureFlags {
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try featureFlagsInfo.forEach {
             let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(CodableValue($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
         }
     }
 
@@ -1988,7 +1972,7 @@ extension RUMViewEvent.FeatureFlags {
         var dictionary: [String: Codable] = [:]
 
         try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(CodableValue.self, forKey: codingKey)
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
         }
 
         self.featureFlagsInfo = dictionary
@@ -2728,14 +2712,6 @@ public struct RUMConnectivity: Codable {
 /// User provided context
 public struct RUMEventAttributes: Codable {
     public internal(set) var contextInfo: [String: Encodable]
-
-    struct DynamicCodingKey: CodingKey {
-        var stringValue: String
-        var intValue: Int?
-        init?(stringValue: String) { self.stringValue = stringValue }
-        init?(intValue: Int) { return nil }
-        init(_ string: String) { self.stringValue = string }
-    }
 }
 
 extension RUMEventAttributes {
@@ -2744,7 +2720,7 @@ extension RUMEventAttributes {
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try contextInfo.forEach {
             let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(CodableValue($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
         }
     }
 
@@ -2755,7 +2731,7 @@ extension RUMEventAttributes {
         var dictionary: [String: Codable] = [:]
 
         try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(CodableValue.self, forKey: codingKey)
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
         }
 
         self.contextInfo = dictionary
@@ -2859,14 +2835,6 @@ public struct RUMUser: Codable {
         case id = "id"
         case name = "name"
     }
-
-    struct DynamicCodingKey: CodingKey {
-        var stringValue: String
-        var intValue: Int?
-        init?(stringValue: String) { self.stringValue = stringValue }
-        init?(intValue: Int) { return nil }
-        init(_ string: String) { self.stringValue = string }
-    }
 }
 
 extension RUMUser {
@@ -2881,7 +2849,7 @@ extension RUMUser {
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try usrInfo.forEach {
             let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(CodableValue($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
         }
     }
 
@@ -2899,7 +2867,7 @@ extension RUMUser {
         var dictionary: [String: Codable] = [:]
 
         try dynamicKeys.forEach { codingKey in
-            dictionary[codingKey.stringValue] = try dynamicContainer.decode(CodableValue.self, forKey: codingKey)
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
         }
 
         self.usrInfo = dictionary

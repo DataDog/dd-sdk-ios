@@ -132,8 +132,8 @@ class CrashContextTests: XCTestCase {
         line: UInt = #line
     ) throws {
         try AssertEncodedRepresentationsEqual(
-            dictionary1.mapValues { CodableValue($0) },
-            dictionary2.mapValues { CodableValue($0) }
+            dictionary1.mapValues { AnyEncodable($0) },
+            dictionary2.mapValues { AnyEncodable($0) }
         )
     }
 }
