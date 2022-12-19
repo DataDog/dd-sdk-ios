@@ -331,6 +331,10 @@ public class Datadog {
     internal static func internalFlushAndDeinitialize() {
         assert(Datadog.isInitialized, "SDK must be first initialized.")
 
+        // Flush the context provider's work items
+        let core = defaultDatadogCore as? DatadogCore
+        core?.contextProvider.queue.sync(flags: .barrier) { }
+
         // Tear down and deinitialize all features:
         let logging = defaultDatadogCore.v1.feature(LoggingFeature.self)
         let tracing = defaultDatadogCore.v1.feature(TracingFeature.self)
