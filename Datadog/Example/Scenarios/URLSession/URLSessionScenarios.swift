@@ -163,10 +163,14 @@ class URLSessionBaseScenario: NSObject {
         case .directWithAdditionalFirstyPartyHosts:
             delegate = DDURLSessionDelegate(
                 additionalFirstPartyHostsWithHeaderTypes: [
-                    customGETResourceURL.host!: [.datadog],
-                    customPOSTRequest.url!.host!: [.datadog],
-                    badResourceURL.host!: [.datadog]
+                    customGETResourceURL.host,
+                    customPOSTRequest.url?.host,
+                    badResourceURL.host
                 ]
+                .compactMap { $0 }
+                .reduce(into: [:], { partialResult, value in
+                    partialResult[value] = [.datadog] // Prevents duplicates
+                })
             )
         case .inheritance:
             delegate = InheritedURLSessionDelegate()
