@@ -123,6 +123,14 @@ public class DDTracer: NSObject, DatadogObjc.OTTracer {
                 spanContext: ddspanContext.swiftSpanContext,
                 writer: objcWriter.swiftOTelHTTPHeadersWriter
             )
+        } else if let objcWriter = carrier as? DDW3CHTTPHeadersWriter, format == OT.formatTextMap {
+            guard let ddspanContext = spanContext.dd else {
+                return
+            }
+            swiftTracer.inject(
+                spanContext: ddspanContext.swiftSpanContext,
+                writer: objcWriter.swiftW3CHTTPHeadersWriter
+            )
         } else {
             let error = NSError(
                 domain: "DDTracer",

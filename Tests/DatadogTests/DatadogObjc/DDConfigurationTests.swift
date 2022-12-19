@@ -136,7 +136,13 @@ class DDConfigurationTests: XCTestCase {
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.serviceName, "service-name")
 
         objcBuilder.trackURLSession(firstPartyHosts: ["example.com"])
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.firstPartyHosts, ["example.com"])
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.firstPartyHosts, .init(["example.com": [.datadog]]))
+
+        objcBuilder.trackURLSession(firstPartyHostsWithHeaderTypes: ["example2.com": [.tracecontext]])
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.firstPartyHosts, .init([
+            "example2.com": [.tracecontext],
+            "example.com": [.datadog]
+        ]))
 
         objcBuilder.set(loggingSamplingRate: 66)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.loggingSamplingRate, 66)
@@ -232,9 +238,6 @@ class DDConfigurationTests: XCTestCase {
         let serverDateProvider = ObjcServerDateProvider()
         objcBuilder.set(serverDateProvider: serverDateProvider)
         XCTAssertTrue((objcBuilder.build().sdkConfiguration.serverDateProvider as? DDServerDateProviderBridge)?.objcProvider === serverDateProvider)
-
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.tracingHeaderTypes.count, 1)
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.tracingHeaderTypes.first, .dd)
     }
 
     func testScrubbingRUMEvents() {

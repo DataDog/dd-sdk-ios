@@ -17,7 +17,7 @@ class RUMResourceScopeTests: XCTestCase {
     )
 
     private let dependencies: RUMScopeDependencies = .mockWith(
-        firstPartyURLsFilter: FirstPartyURLsFilter(hosts: ["firstparty.com"])
+        firstPartyHosts: FirstPartyHosts(["firstparty.com": [.datadog]])
     )
 
     private let rumContext = RUMContext.mockWith(

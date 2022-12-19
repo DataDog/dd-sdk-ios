@@ -7,23 +7,19 @@
 #import <XCTest/XCTest.h>
 @import DatadogObjc;
 
-@interface DDNSURLSessionDelegate_apiTests : XCTestCase
+@interface DDW3CHTTPHeadersWriter_apiTests : XCTestCase
 @end
 
 /*
  * `DatadogObjc` APIs smoke tests - only check if the interface is available to Objc.
  */
-@implementation DDNSURLSessionDelegate_apiTests
+@implementation DDW3CHTTPHeadersWriter_apiTests
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-value"
 
-- (void)testDDNSURLSessionDelegateAPI {
-    [[DDNSURLSessionDelegate alloc] init];
-    [[DDNSURLSessionDelegate alloc] initWithAdditionalFirstPartyHosts:[NSSet setWithArray:@[]]];
-    [[DDNSURLSessionDelegate alloc] initWithAdditionalFirstPartyHostsWithHeaderTypes:@{
-        @"host": [[NSSet alloc] initWithObjects:[DDTracingHeaderType datadog], nil]
-    }];
+- (void)testInitWithSamplingRate {
+    [[DDW3CHTTPHeadersWriter alloc] initWithSamplingRate:50];
 }
 
 #pragma clang diagnostic pop

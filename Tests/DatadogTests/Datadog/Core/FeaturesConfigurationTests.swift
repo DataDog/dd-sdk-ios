@@ -562,19 +562,6 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(custom.logging?.remoteLoggingSampler.samplingRate, 12.34)
     }
 
-    func testTracingHeaderType() throws {
-        let custom = try FeaturesConfiguration(
-            configuration: .mockWith(
-                tracingEnabled: true,
-                firstPartyHosts: .init(),
-                tracingHeaderTypes: .init(arrayLiteral: .dd)
-            ),
-            appContext: .mockAny()
-        )
-        XCTAssertEqual(custom.urlSessionAutoInstrumentation?.tracingHeaderTypes.count, 1)
-        XCTAssertEqual(custom.urlSessionAutoInstrumentation?.tracingHeaderTypes.first, .dd)
-    }
-
     // MARK: - URLSession Auto Instrumentation Configuration Tests
 
     func testURLSessionAutoInstrumentationConfiguration() throws {
@@ -583,7 +570,10 @@ class FeaturesConfigurationTests: XCTestCase {
         let randomCustomTracesEndpoint: URL? = Bool.random() ? .mockRandom() : nil
         let randomCustomRUMEndpoint: URL? = Bool.random() ? .mockRandom() : nil
 
-        let firstPartyHosts: Set<String> = ["example.com", "foo.eu"]
+        let firstPartyHosts: FirstPartyHosts = .init([
+            "example.com": [.datadog],
+            "foo.eu": [.datadog]
+        ])
         let expectedSDKInternalURLs: Set<String> = [
             randomCustomLogsEndpoint?.absoluteString ?? randomDatadogEndpoint.logsEndpoint.url,
             randomCustomTracesEndpoint?.absoluteString ?? randomDatadogEndpoint.tracesEndpoint.url,
@@ -593,7 +583,7 @@ class FeaturesConfigurationTests: XCTestCase {
         func createConfiguration(
             tracingEnabled: Bool,
             rumEnabled: Bool,
-            firstPartyHosts: Set<String>?
+            firstPartyHosts: FirstPartyHosts?
         ) throws -> FeaturesConfiguration {
             try FeaturesConfiguration(
                 configuration: .mockWith(
@@ -657,7 +647,7 @@ class FeaturesConfigurationTests: XCTestCase {
         configuration = try createConfiguration(
             tracingEnabled: true,
             rumEnabled: true,
-            firstPartyHosts: []
+            firstPartyHosts: .init()
         )
         XCTAssertNotNil(
             configuration.urlSessionAutoInstrumentation,
@@ -671,7 +661,7 @@ class FeaturesConfigurationTests: XCTestCase {
             configuration: .mockWith(
                 tracingEnabled: .random(),
                 rumEnabled: true,
-                firstPartyHosts: ["foo.com"],
+                firstPartyHosts: .init(["foo.com": [.datadog]]),
                 rumResourceAttributesProvider: { _, _, _, _ in [:] }
             ),
             appContext: .mockAny()
@@ -680,7 +670,7 @@ class FeaturesConfigurationTests: XCTestCase {
             configuration: .mockWith(
                 tracingEnabled: .random(),
                 rumEnabled: true,
-                firstPartyHosts: ["foo.com"],
+                firstPartyHosts: .init(["foo.com": [.datadog]]),
                 rumResourceAttributesProvider: nil
             ),
             appContext: .mockAny()
@@ -755,7 +745,7 @@ class FeaturesConfigurationTests: XCTestCase {
         defer { consolePrint = { print($0) } }
 
         // Given
-        let firstPartyHosts: Set<String> = ["first-party.com"]
+        let firstPartyHosts: FirstPartyHosts = .init(["first-party.com": [.datadog]])
 
         // When
         let tracingEnabled = false
@@ -763,7 +753,11 @@ class FeaturesConfigurationTests: XCTestCase {
 
         // Then
         let configuration = try FeaturesConfiguration(
-            configuration: .mockWith(tracingEnabled: tracingEnabled, rumEnabled: rumEnabled, firstPartyHosts: firstPartyHosts),
+            configuration: .mockWith(
+                tracingEnabled: tracingEnabled,
+                rumEnabled: rumEnabled,
+                firstPartyHosts: firstPartyHosts
+            ),
             appContext: .mockAny()
         )
 
@@ -782,25 +776,27 @@ class FeaturesConfigurationTests: XCTestCase {
     }
 
     func testWhenFirstPartyHostsAreProvided_itPassesThemToSanitizer() throws {
-        // When
-        let firstPartyHosts: Set<String> = [
-            "https://first-party.com",
-            "http://api.first-party.com",
-            "https://first-party.com/v2/api"
-        ]
-
-        // Then
+        // Given
         let mockHostsSanitizer = MockHostsSanitizer()
+        let firstPartyHosts = FirstPartyHosts(
+            hostsWithTracingHeaderTypes: [
+                "https://first-party.com": [.datadog],
+                "http://api.first-party.com": [.datadog],
+                "https://first-party.com/v2/api": [.datadog]
+            ],
+            hostsSanitizer: mockHostsSanitizer
+        )
+
+        // When
         _ = try FeaturesConfiguration(
             configuration: .mockWith(rumEnabled: true, firstPartyHosts: firstPartyHosts),
-            appContext: .mockAny(),
-            hostsSanitizer: mockHostsSanitizer
+            appContext: .mockAny()
         )
 
         XCTAssertEqual(mockHostsSanitizer.sanitizations.count, 1)
         let sanitization = try XCTUnwrap(mockHostsSanitizer.sanitizations.first)
-        XCTAssertEqual(sanitization.hosts, firstPartyHosts)
-        XCTAssertEqual(sanitization.warningMessage, "The first party host configured for Datadog SDK is not valid")
+        XCTAssertEqual(sanitization.hosts, firstPartyHosts.hosts)
+        XCTAssertEqual(sanitization.warningMessage, "The first party host with header types configured for Datadog SDK is not valid")
     }
 
     // MARK: - Helpers

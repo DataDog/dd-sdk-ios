@@ -20,6 +20,15 @@ open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionD
     }
 
     @objc
+    public init(additionalFirstPartyHostsWithHeaderTypes: [String: Set<DDTracingHeaderType>]) {
+        swiftDelegate = DDURLSessionDelegate(
+            additionalFirstPartyHostsWithHeaderTypes: additionalFirstPartyHostsWithHeaderTypes.mapValues { tracingHeaderTypes in
+                return Set(tracingHeaderTypes.map { $0.swiftType })
+            }
+        )
+    }
+
+    @objc
     public init(additionalFirstPartyHosts: Set<String>) {
         swiftDelegate = DDURLSessionDelegate(additionalFirstPartyHosts: additionalFirstPartyHosts)
     }

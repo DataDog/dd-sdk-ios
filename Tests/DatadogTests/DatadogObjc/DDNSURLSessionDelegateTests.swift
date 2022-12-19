@@ -30,13 +30,13 @@ class DDNSURLSessionDelegateTests: XCTestCase {
     func testInit() {
         let delegate = DDNSURLSessionDelegate()
         let url = URL(string: "foo.com")
-        XCTAssertFalse(delegate.swiftDelegate.firstPartyURLsFilter.isFirstParty(url: url))
+        XCTAssertFalse(delegate.swiftDelegate.firstPartyHosts.isFirstParty(url: url))
     }
 
     func testInitWithAdditionalFirstPartyHosts() {
-        let delegate = DDNSURLSessionDelegate(additionalFirstPartyHosts: ["foo.com"])
+        let delegate = DDNSURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: ["foo.com": [.datadog]])
         let url = URL(string: "http://foo.com")
-        XCTAssertTrue(delegate.swiftDelegate.firstPartyURLsFilter.isFirstParty(url: url))
+        XCTAssertTrue(delegate.swiftDelegate.firstPartyHosts.isFirstParty(url: url))
     }
 
     func testItForwardsCallsToSwiftDelegate() {

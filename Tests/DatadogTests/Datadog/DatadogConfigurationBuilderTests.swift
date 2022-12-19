@@ -66,8 +66,6 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.additionalConfiguration.count, 0)
             XCTAssertNil(configuration.encryption)
             XCTAssertNil(configuration.serverDateProvider)
-            XCTAssertEqual(configuration.tracingHeaderTypes.count, 1)
-            XCTAssertEqual(configuration.tracingHeaderTypes.first, .dd)
         }
     }
 
@@ -99,6 +97,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .set(loggingSamplingRate: 66)
                 .set(tracingSamplingRate: 75)
                 .trackURLSession(firstPartyHosts: ["example.com"])
+                .trackURLSession(firstPartyHostsWithHeaderTypes: ["example2.com": [.b3]])
                 .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock())
                 .trackUIKitRUMActions(using: UIKitRUMUserActionsPredicateMock())
                 .trackRUMLongTasks(threshold: 100.0)
@@ -156,7 +155,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.customLogsEndpoint, URL(string: "https://api.custom.logs/")!)
             XCTAssertEqual(configuration.customTracesEndpoint, URL(string: "https://api.custom.traces/")!)
             XCTAssertEqual(configuration.customRUMEndpoint, URL(string: "https://api.custom.rum/")!)
-            XCTAssertEqual(configuration.firstPartyHosts, ["example.com"])
+            XCTAssertEqual(configuration.firstPartyHosts, .init(["example.com": [.datadog], "example2.com": [.b3]]))
             XCTAssertEqual(configuration.loggingSamplingRate, 66)
             XCTAssertEqual(configuration.tracingSamplingRate, 75)
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 42.5)
@@ -186,8 +185,6 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.proxyConfiguration?[kCFProxyPasswordKey] as? String, "proxypass")
             XCTAssertTrue(configuration.encryption is DataEncryptionMock)
             XCTAssertTrue(configuration.serverDateProvider is ServerDateProviderMock)
-			XCTAssertEqual(configuration.tracingHeaderTypes.count, 1)
-            XCTAssertEqual(configuration.tracingHeaderTypes.first, .dd)
 
             // Aync mapper:
             configuration.logEventMapper?.map(event: .mockRandom()) { event in
@@ -210,7 +207,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
 
         let configuration = builder.build()
 
-        XCTAssertEqual(configuration.firstPartyHosts, ["example.com"])
+        XCTAssertEqual(configuration.firstPartyHosts, .init(["example.com": [.datadog]]))
         XCTAssertEqual(configuration.logsEndpoint, .eu1)
         XCTAssertEqual(configuration.tracesEndpoint, .eu1)
         XCTAssertEqual(configuration.rumEndpoint, .eu1)

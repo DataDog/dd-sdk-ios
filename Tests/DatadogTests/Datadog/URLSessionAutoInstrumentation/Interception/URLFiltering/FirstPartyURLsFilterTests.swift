@@ -37,7 +37,7 @@ class FirstPartyURLsFilterTests: XCTestCase {
     ]
 
     func testWhenFilterIsInitializedWithEmptySet_itNeverReturnsFirstParty() {
-        let filter = FirstPartyURLsFilter(hosts: [])
+        let filter = FirstPartyURLsFilter(hosts: [:])
         (fixtures1stParty + fixtures3rdParty).forEach { fixture in
             let url = URL(string: fixture)!
             XCTAssertFalse(
@@ -51,7 +51,7 @@ class FirstPartyURLsFilterTests: XCTestCase {
         // NOTE: RUMM-722 why that for loop here? https://github.com/DataDog/dd-sdk-ios/pull/384
         for _ in 0...5 {
             let filter = FirstPartyURLsFilter(
-                hosts: ["first-party.com", "eu"]
+                hosts: ["first-party.com": .init(.dd), "eu": .init(.dd)]
             )
             fixtures1stParty.forEach { fixture in
                 let url = URL(string: fixture)!
@@ -67,7 +67,7 @@ class FirstPartyURLsFilterTests: XCTestCase {
         // NOTE: RUMM-722 why that for loop here? https://github.com/DataDog/dd-sdk-ios/pull/384
         for _ in 0...5 {
             let filter = FirstPartyURLsFilter(
-                hosts: ["first-party.com", "eu"]
+                hosts: ["first-party.com": .init(.dd), "eu": .init(.b3m)]
             )
             fixtures3rdParty.forEach { fixture in
                 let url = URL(string: fixture)!
@@ -77,5 +77,27 @@ class FirstPartyURLsFilterTests: XCTestCase {
                 )
             }
         }
+    }
+
+    func testWhenURLHostIsSubdomain_itIsConsideredFirstParty() {
+        let filter = FirstPartyURLsFilter(
+            hosts: ["first-party.com": .init(.dd)]
+        )
+        let url = URL(string: "https://api.first-party.com")!
+        XCTAssertTrue(
+            filter.isFirstParty(url: url),
+            "The url: `\(url)` should NOT be matched as first party."
+        )
+    }
+
+    func testWhenURLHostIsNotSubdomain_itIsNotConsideredFirstParty() {
+        let filter = FirstPartyURLsFilter(
+            hosts: ["first-party.com": .init(.dd)]
+        )
+        let url = URL(string: "https://apifirst-party.com")!
+        XCTAssertFalse(
+            filter.isFirstParty(url: url),
+            "The url: `\(url)` should NOT be matched as first party."
+        )
     }
 }

@@ -49,7 +49,7 @@ extension Datadog.Configuration {
         tracesEndpoint: TracesEndpoint = .us1,
         rumEndpoint: RUMEndpoint = .us1,
         serviceName: String? = .mockAny(),
-        firstPartyHosts: Set<String>? = nil,
+        firstPartyHosts: FirstPartyHosts? = nil,
         loggingSamplingRate: Float = 100.0,
         tracingSamplingRate: Float = 100.0,
         rumSessionsSamplingRate: Float = 100.0,
@@ -65,8 +65,7 @@ extension Datadog.Configuration {
         uploadFrequency: UploadFrequency = .average,
         additionalConfiguration: [String: Any] = [:],
         proxyConfiguration: [AnyHashable: Any]? = nil,
-        internalMonitoringClientToken: String? = nil,
-        tracingHeaderTypes: Set<TracingHeaderType> = .init(arrayLiteral: .dd)
+        internalMonitoringClientToken: String? = nil
     ) -> Datadog.Configuration {
         return Datadog.Configuration(
             rumApplicationID: rumApplicationID,
@@ -99,8 +98,7 @@ extension Datadog.Configuration {
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
             additionalConfiguration: additionalConfiguration,
-            proxyConfiguration: proxyConfiguration,
-            tracingHeaderTypes: tracingHeaderTypes
+            proxyConfiguration: proxyConfiguration
         )
     }
 }
@@ -295,7 +293,7 @@ extension FeaturesConfiguration.RUM {
         backgroundEventTrackingEnabled: Bool = false,
         frustrationTrackingEnabled: Bool = true,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener(),
-        firstPartyHosts: Set<String> = [],
+        firstPartyHosts: FirstPartyHosts = .init(),
         vitalsFrequency: TimeInterval? = 0.5,
         dateProvider: DateProvider = SystemDateProvider()
     ) -> Self {
@@ -339,13 +337,12 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
     static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
-        userDefinedFirstPartyHosts: Set<String> = [],
+        userDefinedFirstPartyHosts: FirstPartyHosts = .init(),
         sdkInternalURLs: Set<String> = [],
         rumAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         instrumentTracing: Bool = true,
         instrumentRUM: Bool = true,
-        tracingSampler: Sampler = .mockKeepAll(),
-        tracingHeaderTypes: Set<TracingHeaderType> = .init(arrayLiteral: .dd)
+        tracingSampler: Sampler = .mockKeepAll()
     ) -> Self {
         return .init(
             userDefinedFirstPartyHosts: userDefinedFirstPartyHosts,
@@ -353,8 +350,7 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
             rumAttributesProvider: rumAttributesProvider,
             instrumentTracing: instrumentTracing,
             instrumentRUM: instrumentRUM,
-            tracingSampler: tracingSampler,
-            tracingHeaderTypes: tracingHeaderTypes
+            tracingSampler: tracingSampler
         )
     }
 }
@@ -1115,6 +1111,14 @@ class MockHostsSanitizer: HostsSanitizing {
     func sanitized(hosts: Set<String>, warningMessage: String) -> Set<String> {
         sanitizations.append((hosts: hosts, warningMessage: warningMessage))
         return hosts
+    }
+
+    func sanitized(
+        hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>],
+        warningMessage: String
+    ) -> [String: Set<TracingHeaderType>] {
+        sanitizations.append((hosts: Set(hostsWithTracingHeaderTypes.keys), warningMessage: warningMessage))
+        return hostsWithTracingHeaderTypes
     }
 }
 

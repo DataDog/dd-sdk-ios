@@ -167,9 +167,10 @@ public class DDTracingHeaderType: NSObject {
         self.swiftType = swiftType
     }
 
-    @objc public static let dd = DDTracingHeaderType(.dd)
-    @objc public static let b3m = DDTracingHeaderType(.b3m)
-    @objc public static let b3s = DDTracingHeaderType(.b3s)
+    @objc public static let datadog = DDTracingHeaderType(.datadog)
+    @objc public static let b3multi = DDTracingHeaderType(.b3multi)
+    @objc public static let b3 = DDTracingHeaderType(.b3)
+    @objc public static let tracecontext = DDTracingHeaderType(.tracecontext)
 }
 
 @objc
@@ -337,6 +338,13 @@ public class DDConfigurationBuilder: NSObject {
     @objc
     public func trackURLSession(firstPartyHosts: Set<String>) {
         _ = sdkBuilder.trackURLSession(firstPartyHosts: firstPartyHosts)
+    }
+
+    @objc
+    public func trackURLSession(firstPartyHostsWithHeaderTypes: [String: Set<DDTracingHeaderType>]) {
+        _ = sdkBuilder.trackURLSession(firstPartyHostsWithHeaderTypes: firstPartyHostsWithHeaderTypes.mapValues { tracingHeaderTypes in
+            return Set(tracingHeaderTypes.map { $0.swiftType })
+        })
     }
 
     @objc
