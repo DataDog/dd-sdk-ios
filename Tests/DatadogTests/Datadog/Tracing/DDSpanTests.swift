@@ -29,7 +29,7 @@ class DDSpanTests: XCTestCase {
 
     func testWhenLoggingSpanEvent_itWritesLogToLogOutput() throws {
         let core = PassthroughCoreMock(
-            messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
+            messageReceiver: LogMessageReceiver.mockAny()
         )
 
         core.expectation = expectation(description: "write span event")

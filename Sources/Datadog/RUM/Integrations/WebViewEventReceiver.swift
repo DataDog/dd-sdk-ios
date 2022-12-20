@@ -9,7 +9,13 @@ import Foundation
 internal typealias JSON = [String: Any]
 
 /// Receiver to consume a RUM event coming from Browser SDK.
-internal final class WebViewEventReceiver {
+internal final class WebViewEventReceiver: FeatureMessageReceiver {
+    /// Defines keys referencing Browser event message on the bus.
+    enum MessageKeys {
+        /// The key references a browser event message.
+        static let browserEvent = "browser-rum-event"
+    }
+
     /// Subscriber that can process a `RUMKeepSessionAliveCommand`.
     let commandSubscriber: RUMCommandSubscriber
 
@@ -27,6 +33,28 @@ internal final class WebViewEventReceiver {
     ) {
         self.commandSubscriber = commandSubscriber
         self.dateProvider = dateProvider
+    }
+
+    /// Receives messages from the message bus.
+    ///
+    /// The message can be used to build an event or execute custom routine in the Feature.
+    ///
+    /// This method is always called on the same thread managed by core. If the implementation
+    /// of `FeatureMessageReceiver` needs to manage a state it can consider its mutations started
+    /// from `receive(message:from:)` to be thread-safe. The implementation should be mindful of
+    /// not blocking the caller thread to not delay processing of other messages in the system.
+    ///
+    /// - Parameters:
+    ///   - message: The message
+    ///   - core: An instance of the core from which the message is transmitted.
+    /// - Returns: `true` if the message was processed by the receiver;`false` if it was ignored.
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        if case let .custom(key, baggage) = message, key == MessageKeys.browserEvent {
+            write(event: baggage.all(), to: core)
+            return true
+        }
+
+        return false
     }
 
     /// Writes a Browser RUM event to the core.

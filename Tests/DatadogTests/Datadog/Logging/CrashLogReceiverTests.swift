@@ -7,10 +7,34 @@
 import XCTest
 @testable import Datadog
 
-class CrashReportingWithLoggingIntegrationTests: XCTestCase {
-    let core = PassthroughCoreMock(
-        messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
-    )
+class CrashLogReceiverTests: XCTestCase {
+    func testReceiveCrashLog() throws {
+        // Given
+        let core = PassthroughCoreMock(
+            bypassConsentExpectation: expectation(description: "Send Event Bypass Consent"),
+            messageReceiver: CrashLogReceiver.mockAny()
+        )
+
+        // When
+        let sent: LogEvent = .mockRandom()
+
+        core.send(
+            message: .custom(key: LoggingMessageKeys.crash, baggage: [
+                "report": DDCrashReport.mockAny(),
+                "context": CrashContext.mockWith(lastRUMViewEvent: nil)
+            ])
+        )
+
+        core.send(
+            message: .custom(key: LoggingMessageKeys.crash, baggage: [
+                "log": sent
+            ])
+        )
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        XCTAssertEqual(core.events(ofType: LogEvent.self).count, 1, "It should send log event")
+    }
 
     // MARK: - Testing Conditional Uploads
 
@@ -22,10 +46,12 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
         )
 
         // When
-        let integration = CrashReportingWithLoggingIntegration(
-            core: core,
-            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+        let core = PassthroughCoreMock(
+            messageReceiver: CrashLogReceiver.mockWith(
+                dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+            )
         )
+        let integration = CrashReportingCoreIntegration(core: core)
         integration.send(report: crashReport, with: crashContext)
 
         // Then
@@ -82,11 +108,13 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
         )
 
         // When
-        let integration = CrashReportingWithLoggingIntegration(
-            core: core,
-            dateProvider: RelativeDateProvider(using: .mockRandomInThePast())
+        let core = PassthroughCoreMock(
+            messageReceiver: CrashLogReceiver.mockWith(
+                dateProvider: RelativeDateProvider(using: .mockRandomInThePast())
+            )
         )
 
+        let integration = CrashReportingCoreIntegration(core: core)
         integration.send(report: crashReport, with: crashContext)
 
         // Then
@@ -104,7 +132,7 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
             ),
             serviceName: crashContext.service,
             environment: crashContext.env,
-            loggerName: CrashReportingWithLoggingIntegration.Constants.loggerName,
+            loggerName: "crash-reporter",
             loggerVersion: crashContext.sdkVersion,
             threadName: nil,
             applicationVersion: crashContext.version,

@@ -72,7 +72,7 @@ class RUMFeatureTests: XCTestCase {
         // Given
         let featureConfiguration: RUMFeature.Configuration = .mockWith(uploadURL: randomUploadURL)
         let feature: RUMFeature = try core.create(
-            configuration: createRUMConfiguration(intake: randomUploadURL),
+            configuration: createRUMConfiguration(configuration: featureConfiguration),
             featureSpecificConfiguration: featureConfiguration
         )
         defer { feature.flush() }
@@ -148,7 +148,7 @@ class RUMFeatureTests: XCTestCase {
         // Given
         let featureConfiguration: RUMFeature.Configuration = .mockAny()
         let feature: RUMFeature = try core.create(
-            configuration: createRUMConfiguration(intake: featureConfiguration.uploadURL),
+            configuration: createRUMConfiguration(configuration: featureConfiguration),
             featureSpecificConfiguration: featureConfiguration
         )
         defer { feature.flush() }
@@ -203,7 +203,7 @@ class RUMFeatureTests: XCTestCase {
         // Given
         let featureConfiguration: RUMFeature.Configuration = .mockAny()
         let feature: RUMFeature = try core.create(
-            configuration: createRUMConfiguration(intake: featureConfiguration.uploadURL),
+            configuration: createRUMConfiguration(configuration: featureConfiguration),
             featureSpecificConfiguration: featureConfiguration
         )
         defer { feature.flush() }

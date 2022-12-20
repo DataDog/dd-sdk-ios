@@ -9,7 +9,7 @@ import XCTest
 
 class TracingWithLoggingIntegrationTests: XCTestCase {
     private let core = PassthroughCoreMock(
-        messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
+        messageReceiver: LogMessageReceiver.mockAny()
     )
 
     func testSendingLogWithOTMessageField() throws {

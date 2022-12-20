@@ -583,7 +583,7 @@ class LoggerTests: XCTestCase {
         let logging: LoggingFeature = .mockNoOp()
         core.register(feature: logging)
 
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(messageReceiver: ErrorMessageReceiver())
         core.register(feature: rum)
 
         // given

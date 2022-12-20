@@ -25,7 +25,7 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
-            loggingOrRUMIntegration: integration,
+            integration: integration,
             messageReceiver: NOPFeatureMessageReceiver()
         )
 
@@ -58,7 +58,7 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
-            loggingOrRUMIntegration: integration,
+            integration: integration,
             messageReceiver: NOPFeatureMessageReceiver()
         )
 
@@ -86,7 +86,7 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
-            loggingOrRUMIntegration: integration,
+            integration: integration,
             messageReceiver: NOPFeatureMessageReceiver()
         )
 
@@ -113,7 +113,7 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(initialCrashContext: initialCrashContext),
-            loggingOrRUMIntegration: CrashReportingIntegrationMock(),
+            integration: CrashReportingIntegrationMock(),
             messageReceiver: NOPFeatureMessageReceiver()
         )
 
@@ -137,7 +137,7 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: crashContextProvider,
-            loggingOrRUMIntegration: CrashReportingIntegrationMock(),
+            integration: CrashReportingIntegrationMock(),
             messageReceiver: NOPFeatureMessageReceiver()
         )
 
@@ -153,6 +153,38 @@ class CrashReporterTests: XCTestCase {
                 try updatedCrashContext.data.toJSONObject()
             )
         }
+    }
+
+    func testGivenAnyCrashWithUnauthorizedTrackingConsent_whenSending_itIsDropped() throws {
+        let expectation = self.expectation(description: "`plugin` checks the crash report")
+        // Given
+        let core = PassthroughCoreMock()
+
+        let crashReport: DDCrashReport = .mockWith(
+            date: .mockDecember15th2019At10AMUTC(),
+            context: CrashContext.mockWith(
+                trackingConsent: [.pending, .notGranted].randomElement()!,
+                lastRUMViewEvent: Bool.random() ? .mockRandom() : nil // no matter if in RUM session or not
+            ).data
+        )
+
+        let plugin = CrashReportingPluginMock()
+        plugin.pendingCrashReport = crashReport
+        plugin.didReadPendingCrashReport = { expectation.fulfill() }
+
+        let crashReporter = CrashReporter(
+            crashReportingPlugin: plugin,
+            crashContextProvider: CrashContextProviderMock(),
+            integration: CrashReportingCoreIntegration(core: core),
+            messageReceiver: NOPFeatureMessageReceiver()
+        )
+
+        // When
+        crashReporter.sendCrashReportIfFound()
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        XCTAssertEqual(core.events.count, 0, "Crash must not be send as it doesn't have `.granted` consent")
     }
 
     // MARK: - Thread safety
@@ -179,7 +211,7 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: crashContextProvider,
-            loggingOrRUMIntegration: CrashReportingIntegrationMock(),
+            integration: CrashReportingIntegrationMock(),
             messageReceiver: NOPFeatureMessageReceiver()
         )
 
@@ -199,23 +231,32 @@ class CrashReporterTests: XCTestCase {
     // MARK: - Usage
 
     func testGivenPendingCrashReport_whenLoggingOrRUMIntegrationCannotBeObtained_itCannotBeInstantiated() {
+        let expectation = self.expectation(description: "`plugin` checks the crash report")
+
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
         let core = PassthroughCoreMock()
         let plugin = CrashReportingPluginMock()
+        plugin.pendingCrashReport = .mockWith(
+            context: CrashContext.mockAny().data
+        )
 
-        // Given
-        plugin.pendingCrashReport = .mockAny()
+        plugin.didReadPendingCrashReport = { expectation.fulfill() }
 
         // When
         let crashReporter = CrashReporter(
-            core: core,
-            configuration: .mockAny()
+            crashReportingPlugin: plugin,
+            crashContextProvider: CrashContextProviderMock(),
+            integration: CrashReportingCoreIntegration(core: core),
+            messageReceiver: NOPFeatureMessageReceiver()
         )
 
+        // When
+        crashReporter.sendCrashReportIfFound()
+
         // Then
-        XCTAssertNil(crashReporter)
+        waitForExpectations(timeout: 0.5, handler: nil)
         XCTAssertEqual(
             dd.logger.errorLog?.message,
             """

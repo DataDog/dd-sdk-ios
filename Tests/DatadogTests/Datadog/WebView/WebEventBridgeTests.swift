@@ -44,7 +44,7 @@ class WebEventBridgeTests: XCTestCase {
 
     func testWhenEventTypeIsLog_itGoesToLogEventConsumer() throws {
         let core = PassthroughCoreMock(
-            messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
+            messageReceiver: WebViewLogReceiver()
         )
 
         let bridge = WebEventBridge(core: core)
@@ -61,7 +61,7 @@ class WebEventBridgeTests: XCTestCase {
 
     func testWhenEventTypeIsNonLog_itGoesToRUMEventConsumer() throws {
         let core = PassthroughCoreMock(
-            messageReceiver: RUMMessageReceiver()
+            messageReceiver: WebViewEventReceiver.mockAny()
         )
 
         let bridge = WebEventBridge(core: core)

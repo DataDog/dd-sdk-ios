@@ -13,13 +13,13 @@ extension CrashReporter {
             crashReportingPlugin: DDCrashReportingPluginType = NoopCrashReportingPlugin()
     ) -> CrashReporter {
         return .mockWith(
-            loggingOrRUMIntegration: CrashReportingWithRUMIntegration.mockWith(core: core),
+            integration: CrashReportingCoreIntegration(core: core),
             crashReportingPlugin: crashReportingPlugin
         )
     }
 
     static func mockWith(
-        loggingOrRUMIntegration: CrashReportingIntegration,
+        integration: CrashReportingIntegration,
         crashReportingPlugin: DDCrashReportingPluginType = NoopCrashReportingPlugin(),
         crashContextProvider: CrashContextProviderType = CrashContextProviderMock(),
         messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
@@ -27,7 +27,7 @@ extension CrashReporter {
         .init(
             crashReportingPlugin: crashReportingPlugin,
             crashContextProvider: crashContextProvider,
-            loggingOrRUMIntegration: loggingOrRUMIntegration,
+            integration: integration,
             messageReceiver: messageReceiver
         )
     }
@@ -146,7 +146,7 @@ extension CrashContext {
         )
     }
 
-    var data: Data { try! JSONEncoder().encode(self) }
+    var data: Data { try! JSONEncoder.default().encode(self) }
 }
 
 extension DDCrashReport: EquatableInTests {}
@@ -204,26 +204,6 @@ internal extension DDCrashReport.Meta {
             codeType: nil,
             exceptionType: nil,
             exceptionCodes: nil
-        )
-    }
-}
-
-internal extension CrashReportingWithRUMIntegration {
-    static func mockWith(
-        core: DatadogCoreProtocol,
-        applicationID: String = .mockAny(),
-        dateProvider: DateProvider = SystemDateProvider(),
-        sessionSampler: Sampler = .mockKeepAll(),
-        backgroundEventTrackingEnabled: Bool = true,
-        uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
-    ) -> Self {
-        .init(
-            core: core,
-            applicationID: applicationID,
-            dateProvider: dateProvider,
-            sessionSampler: sessionSampler,
-            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
-            uuidGenerator: uuidGenerator
         )
     }
 }

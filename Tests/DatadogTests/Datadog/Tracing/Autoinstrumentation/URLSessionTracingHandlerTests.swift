@@ -9,7 +9,7 @@ import XCTest
 
 class URLSessionTracingHandlerTests: XCTestCase {
     private let core = PassthroughCoreMock(
-        messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
+        messageReceiver: LogMessageReceiver.mockAny()
     )
 
     private let handler = URLSessionTracingHandler(

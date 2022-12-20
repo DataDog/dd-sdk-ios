@@ -10,11 +10,23 @@ import Foundation
 ///
 /// - Parameter intake: The RUM intake URL.
 /// - Returns: The RUM feature configuration.
-internal func createRUMConfiguration(intake: URL, dateProvider: DateProvider = SystemDateProvider()) -> DatadogFeatureConfiguration {
+internal func createRUMConfiguration(configuration: FeaturesConfiguration.RUM) -> DatadogFeatureConfiguration {
     return DatadogFeatureConfiguration(
         name: "rum",
-        requestBuilder: RUMRequestBuilder(intake: intake),
-        messageReceiver: RUMMessageReceiver(dateProvider: dateProvider)
+        requestBuilder: RUMRequestBuilder(intake: configuration.uploadURL),
+        messageReceiver: MUXFeatureMessageReceiver(
+            ErrorMessageReceiver(),
+            WebViewEventReceiver(
+                dateProvider: configuration.dateProvider
+            ),
+            CrashReportReceiver(
+                applicationID: configuration.applicationID,
+                dateProvider: configuration.dateProvider,
+                sessionSampler: configuration.sessionSampler,
+                backgroundEventTrackingEnabled: configuration.backgroundEventTrackingEnabled,
+                uuidGenerator: configuration.uuidGenerator
+            )
+        )
     )
 }
 
@@ -78,61 +90,11 @@ internal enum RUMBaggageKeys {
     static let sessionState = "session-state"
 }
 
-/// Defines keys referencing RUM messages supported on the bus.
-internal enum RUMMessageKeys {
-    /// The key references a crash message.
-    static let crash = "crash"
-
-    /// The key references a browser event message.
-    static let browserEvent = "browser-rum-event"
-}
-
-internal struct RUMMessageReceiver: FeatureMessageReceiver {
-    let webviewReceiver: WebViewEventReceiver
-
-    init(dateProvider: DateProvider = SystemDateProvider()) {
-        webviewReceiver = WebViewEventReceiver(dateProvider: dateProvider)
-    }
-    /// Process messages receives from the bus.
-    ///
-    /// - Parameters:
-    ///   - message: The Feature message
-    ///   - core: The core from which the message is transmitted.
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        switch message {
-        case .error(let message, let attributes):
-            return addError(message: message, attributes: attributes)
-        case .custom(let key, let attributes) where key == RUMMessageKeys.crash:
-            return crash(attributes: attributes, to: core)
-        case .custom(let key, let baggage) where key == RUMMessageKeys.browserEvent:
-            webviewReceiver.write(event: baggage.all(), to: core)
-            return true
-        default:
-            return false
-        }
-    }
-
-    private func crash(attributes: FeatureBaggage, to core: DatadogCoreProtocol) -> Bool {
-        guard let error = attributes["rum-error", type: RUMCrashEvent.self] else {
-            return false
-        }
-
-        // crash reporting is considering the user consent from previous session, if an event reached
-        // the message bus it means that consent was granted and we can safely bypass current consent.
-        core.v1.scope(for: RUMFeature.self)?.eventWriteContext(bypassConsent: true) { _, writer in
-            writer.write(value: error)
-
-            if let view = attributes["rum-view", type: RUMViewEvent.self] {
-                writer.write(value: view)
-            }
-        }
-
-        return true
-    }
-
+internal struct ErrorMessageReceiver: FeatureMessageReceiver {
     /// Adds RUM Error with given message and stack to current RUM View.
-    private func addError(message: String, attributes: FeatureBaggage) -> Bool {
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         guard
+            case let .error(message, attributes) = message,
             let monitor = Global.rum as? RUMMonitor,
             let source = attributes["source", type: RUMInternalErrorSource.self]
         else {

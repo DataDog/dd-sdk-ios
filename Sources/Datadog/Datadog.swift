@@ -225,10 +225,7 @@ public class Datadog {
             )
 
             rum = try core.create(
-                configuration: createRUMConfiguration(
-                    intake: rumConfiguration.uploadURL,
-                    dateProvider: rumConfiguration.dateProvider
-                ),
+                configuration: createRUMConfiguration(configuration: rumConfiguration),
                 featureSpecificConfiguration: rumConfiguration
             )
 
@@ -248,6 +245,7 @@ public class Datadog {
             logging = try core.create(
                 configuration: createLoggingConfiguration(
                     intake: loggingConfiguration.uploadURL,
+                    dateProvider: loggingConfiguration.dateProvider,
                     logEventMapper: loggingConfiguration.logEventMapper
                 ),
                 featureSpecificConfiguration: loggingConfiguration
