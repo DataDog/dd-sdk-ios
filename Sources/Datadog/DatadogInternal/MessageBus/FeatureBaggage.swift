@@ -8,8 +8,8 @@ import Foundation
 
 /// A `FeatureBaggage` holds keyed values and adds semantics for type-safe access.
 ///
-/// Values are uniquely identified by key as `String`, the value type is validated on `get` either explicity, when specified,
-/// or inferred.
+/// Values are uniquely identified by key as `String`, the value type is validated on `get`
+/// either explicity, when specified, or inferred.
 ///
 /// ## Defining a Feature Baggage
 /// A baggage is expressible by dictionary literal with `Any?` value type.
@@ -21,7 +21,8 @@ import Foundation
 ///     ]
 ///
 /// ## Accessing Values
-/// Values are accessible using `subscript` methods with support for dynamic member lookup.
+/// Values are accessible using `subscript` methods with support for dynamic member
+/// lookup.
 ///
 ///     let baggage: FeatureBaggage = [...]
 ///     // get by key and explicit value type
@@ -38,29 +39,98 @@ import Foundation
 ///     // set dynamic member
 ///     baggage.string = "value"
 ///
-/// A Feature Baggage does not ensure thread-safety of values that holds references, make sure that any value can be accessibe
-/// from any thread.
+/// A Feature Baggage does not ensure thread-safety of values that holds references, make
+/// sure that any value can be accessibe from any thread.
 @dynamicMemberLookup
 public struct FeatureBaggage {
     /// The attributes dictionary.
-    private var attributes: [String: Any]
+    private(set) var attributes: [String: Any]
 
-    /// Boolean value that indicates whether the baggage is empty.
+    /// A Boolean value indicating whether the baggage is empty.
     public var isEmpty: Bool {
         attributes.isEmpty
     }
 
     /// Creates an instance initialized with the given key-value pairs.
-    public init(_ attributes: [String: Any?]) {
-        self.attributes = attributes.compactMapValues { $0 }
+    public init(_ attributes: [String: Any]) {
+        let encoder = AnyEncoder()
+        self.attributes = attributes
+            .compactMapValues { try? encoder.encode(AnyEncodable($0)) }
     }
 
-    /// Returns all attributes where the value is of type `T`.
+    public func value<T>(forKey key: String, type: T.Type = T.self) throws -> T? where T: Decodable {
+        let decoder = AnyDecoder()
+        return try decoder.decode(from: attributes[key])
+    }
+
+    /// Updates the value stored in the baggage for the given key, or adds a
+    /// new key-value pair if the key does not exist.
     ///
-    /// - Parameter type: The requested value type.
-    /// - Returns: A dictionary of attribute where the value is of type `T`
-    public func all<T>(of type: T.Type = T.self) -> [String: T] {
-        attributes.compactMapValues { $0 as? T }
+    /// Use this method instead of key-based subscribing when you need to know
+    /// whether the baggage was successfully updated. If the update fails, an error
+    /// will be thrown.
+    ///
+    ///     var baggage = ["Heliotrope": 296, "Coral": 16, "Aquamarine": 156]
+    ///     do {
+    ///         baggage.updateValue(18, forKey: "Coral")
+    ///     } catch {
+    ///         print(error)
+    ///     }
+    ///
+    /// If the given key is not present in the dictionary, this method adds the
+    /// key-value pair.
+    ///
+    /// - Parameters:
+    ///   - value: The new encodable value to add to the dictionary.
+    ///   - key: The key to associate with `value`. If `key` already exists in
+    ///     the dictionary, `value` replaces the existing associated value. If
+    ///     `key` isn't already a key of the dictionary, the `(key, value)` pair
+    ///     is added.
+    public mutating func updateValue<T>(_ value: T, forKey key: String) throws where T: Encodable {
+        let encoder = AnyEncoder()
+        attributes[key] = try encoder.encode(value)
+    }
+
+    /// Returns a  dictionary containing only the key-value pairs that have
+    /// non-`nil` values as the result of transformation by the given closure.
+    ///
+    /// Use this method to receive a attributes with non-optional values when
+    /// your transformation produces optional values.
+    ///
+    /// - Parameter transform: A closure that transforms a value. `transform`
+    ///   accepts each value of the dictionary as its parameter and returns an
+    ///   optional transformed value of the same or of a different type.
+    /// - Returns: A dictionary containing the keys and non-`nil` transformed
+    ///   values of this dictionary.
+    public func compactMapValues<T>(_ transform: (Any) throws -> T?) rethrows -> [String: T] {
+        try attributes.compactMapValues(transform)
+    }
+
+    /// Accesses the value associated with the given key for reading an attribute.
+    ///
+    /// This *key-based* subscript returns the value for the given key if the key
+    /// with a value of type `T` is found in the attributes, or `nil` otherwise.
+    ///
+    /// The following example creates a new `FeatureMessageAttributes` and
+    /// prints the value of a key found in the attributes object (`"coral"`).
+    ///
+    ///     var hues: FeatureMessageAttributes = [
+    ///         "heliotrope": 296,
+    ///         "coral": 16,
+    ///         "aquamarine": 156
+    ///     ]
+    ///     print(hues["coral", type: Int.self])
+    ///     // Prints "Optional(16)"
+    ///     print(hues["coral", type: String.self])
+    ///     // Prints "null"
+    ///
+    /// - Parameters:
+    ///   - key: The key to find in the dictionary.
+    ///   - type: The expected value type.
+    /// - Returns: The value associated with `key` if `key` is in the attributes.
+    ///   `nil` otherwise.
+    public subscript<T>(key: String, type t: T.Type = T.self) -> T? where T: Decodable {
+        try? value(forKey: key, type: t)
     }
 
     /// Accesses the value associated with the given key for reading and writing
@@ -105,31 +175,41 @@ public struct FeatureBaggage {
     ///   - type: The expected value type.
     /// - Returns: The value associated with `key` if `key` is in the attributes.
     ///   `nil` otherwise.
-    public subscript<T>(key: String, type t: T.Type = T.self) -> T? {
-        get { attributes[key] as? T }
-        set { attributes[key] = newValue }
+    public subscript<T>(key: String, type t: T.Type = T.self) -> T? where T: Codable {
+        get { try? value(forKey: key, type: t) }
+        set { try? updateValue(newValue, forKey: key) }
     }
 
-    /// Accesses `RawRepresentable` from its `RawValue` associated with the given key
-    /// for reading an attribute.
+    /// Accesses the value associated with the given key for reading an attribute type.
     ///
-    /// The attribute for the given key will be used as the `rawValue` for initializing the
-    /// `RawRepresentable` type.
+    /// This *dynamic-member-based* subscript returns the value for the given key if the key
+    /// with a value of type `T` is found in the attributes, or `nil`otherwise.
     ///
-    /// - Parameters:
-    ///   - key: The key to find in the dictionary.
-    ///   - type: The expected value type.
-    /// - Returns: The value associated with `key` if `rawValue` is in the attributes.
+    /// The following example creates a new `FeatureMessageAttributes` and
+    /// prints the value of a key found in the attributes object (`"coral"`) and a key not
+    /// found in the dictionary (`"cerise"`).
+    ///
+    ///     var hues: FeatureMessageAttributes = [
+    ///         "heliotrope": 296,
+    ///         "coral": 16,
+    ///         "aquamarine": 156
+    ///     ]
+    ///     let coral: Int? = hues.coral
+    ///     print(coral as? Int)
+    ///     // Prints "16"
+    ///     let cerise: Int? = hues.cerise
+    ///     print(cerise)
+    ///     // Prints "null"
+    ///
+    /// - Parameter key: The key to find in the dictionary.
+    /// - Returns: The value associated with `key` if `key` is in the attributes.
     ///   `nil` otherwise.
-    public subscript<T>(key: String, type t: T.Type = T.self) -> T? where T: RawRepresentable {
-        attributes[key]
-            .flatMap { $0 as? T.RawValue }
-            .flatMap { .init(rawValue: $0) }
-        ?? attributes[key] as? T
+    public subscript<T>(dynamicMember key: String) -> T? where T: Decodable {
+        try? value(forKey: key, type: T.self)
     }
 
     /// Accesses the value associated with the given key for reading and writing
-    /// a attribute type.
+    /// an attribute type.
     ///
     /// This *dynamic-member-based* subscript returns the value for the given key if the key
     /// with a value of type `T` is found in the attributes, or `nil`otherwise.
@@ -168,31 +248,18 @@ public struct FeatureBaggage {
     /// - Parameter key: The key to find in the dictionary.
     /// - Returns: The value associated with `key` if `key` is in the attributes.
     ///   `nil` otherwise.
-    public subscript<T>(dynamicMember key: String) -> T? {
-        get { self[key, type: T.self] }
-        set { self[key, type: T.self] = newValue }
-    }
-
-    /// Accesses `RawRepresentable` from its `RawValue` associated with the given key
-    /// for reading an attribute.
-    ///
-    /// The attribute for the given key will be used as the `rawValue` for initializing the
-    /// `RawRepresentable` type.
-    ///
-    /// - Parameter key: The key to find in the dictionary.
-    /// - Returns: The value associated with `key` if `rawValue` is in the attributes.
-    ///   `nil` otherwise.
-    public subscript<T>(dynamicMember key: String) -> T? where T: RawRepresentable {
-        get { self[key, type: T.self] }
-        set { self[key, type: T.self] = newValue }
+    public subscript<T>(dynamicMember key: String) -> T? where T: Codable {
+        get { try? value(forKey: key, type: T.self) }
+        set { try? updateValue(newValue, forKey: key) }
     }
 }
 
 extension FeatureBaggage: ExpressibleByDictionaryLiteral {
     /// Creates an instance initialized with the given key-value pairs.
     public init(dictionaryLiteral elements: (String, Any?)...) {
+        let encoder = AnyEncoder()
         self.attributes = elements.reduce(into: [:]) { attributes, element in
-            attributes[element.0] = element.1
+            attributes[element.0] = try? encoder.encode(AnyEncodable(element.1))
         }
     }
 }

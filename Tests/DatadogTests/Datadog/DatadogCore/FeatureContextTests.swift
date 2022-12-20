@@ -25,12 +25,12 @@ class FeatureContextTests: XCTestCase {
         defer { temporaryCoreDirectory.delete() }
 
         // When
-        let attributes: FeatureBaggage = ["key": "value"]
-        core.set(feature: "test", attributes: { attributes })
+        let baggage: FeatureBaggage = ["key": "value"]
+        core.set(feature: "test", attributes: { baggage })
 
         // Then
         let context = core.contextProvider.read()
-        let testAttributes = try XCTUnwrap(context.featuresAttributes["test"])
-        DDAssertDictionariesEqual(testAttributes.all(), attributes.all())
+        let testBaggage = try XCTUnwrap(context.featuresAttributes["test"])
+        DDAssertDictionariesEqual(testBaggage.attributes, baggage.attributes)
     }
 }

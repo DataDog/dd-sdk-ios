@@ -44,16 +44,16 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         XCTAssertEqual(log.date, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(log.status, .info)
         XCTAssertEqual(log.message, "hello")
-        XCTAssertEqual(
-            log.attributes.userAttributes as? [String: Int],
-            ["custom field": 123]
+        DDAssertJSONEqual(
+            AnyEncodable(log.attributes.userAttributes),
+            AnyEncodable(["custom field": 123])
         )
-        XCTAssertEqual(
-            log.attributes.internalAttributes as? [String: String],
-            [
+        DDAssertJSONEqual(
+            AnyEncodable(log.attributes.internalAttributes),
+            AnyEncodable([
                 Tracer.Attributes.spanID: "2",
                 Tracer.Attributes.traceID: "1"
-            ]
+            ])
         )
     }
 
@@ -118,16 +118,16 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         XCTAssertEqual(log.date, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(log.status, .info)
         XCTAssertEqual(log.message, "Span event", "It should use default message.")
-        XCTAssertEqual(
-            log.attributes.userAttributes as? [String: Int],
-            ["custom field": 123]
+        DDAssertJSONEqual(
+            AnyEncodable(log.attributes.userAttributes),
+            AnyEncodable(["custom field": 123])
         )
-        XCTAssertEqual(
-            log.attributes.internalAttributes as? [String: String],
-            [
+        DDAssertJSONEqual(
+            AnyEncodable(log.attributes.internalAttributes),
+            AnyEncodable([
                 Tracer.Attributes.spanID: "2",
                 Tracer.Attributes.traceID: "1"
-            ]
+            ])
         )
     }
 }

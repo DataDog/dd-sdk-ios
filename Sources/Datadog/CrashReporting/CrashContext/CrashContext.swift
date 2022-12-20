@@ -57,10 +57,10 @@ internal struct CrashContext: Codable, Equatable {
     let carrierInfo: CarrierInfo?
 
     /// The last RUM view in crashed app process.
-    var lastRUMViewEvent: RUMViewEvent?
+    var lastRUMViewEvent: AnyCodable?
 
     /// State of the last RUM session in crashed app process.
-    var lastRUMSessionState: RUMSessionState?
+    var lastRUMSessionState: AnyCodable?
 
     /// The last _"Is app in foreground?"_ information from crashed app process.
     let lastIsAppInForeground: Bool
@@ -79,8 +79,8 @@ internal struct CrashContext: Codable, Equatable {
         userInfo: UserInfo?,
         networkConnectionInfo: NetworkConnectionInfo?,
         carrierInfo: CarrierInfo?,
-        lastRUMViewEvent: RUMViewEvent?,
-        lastRUMSessionState: RUMSessionState?,
+        lastRUMViewEvent: AnyCodable?,
+        lastRUMSessionState: AnyCodable?,
         lastIsAppInForeground: Bool
     ) {
         self.serverTimeOffset = serverTimeOffset
@@ -101,8 +101,8 @@ internal struct CrashContext: Codable, Equatable {
 
     init(
         _ context: DatadogContext,
-        lastRUMViewEvent: RUMViewEvent?,
-        lastRUMSessionState: RUMSessionState?
+        lastRUMViewEvent: AnyCodable?,
+        lastRUMSessionState: AnyCodable?
     ) {
         self.serverTimeOffset = context.serverTimeOffset
         self.service = context.service

@@ -7,7 +7,7 @@
 import Foundation
 
 /// Common representation of Swift `Error` used by different features.
-internal struct DDError: Equatable {
+internal struct DDError: Equatable, Codable {
     /// Common error key encoding threads information in Crash Reporting.
     /// See "RFC - iOS Crash Reports Minimization" for more context.
     static let threads = "error.threads"

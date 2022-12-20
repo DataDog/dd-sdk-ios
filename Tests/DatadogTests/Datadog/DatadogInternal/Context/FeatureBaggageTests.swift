@@ -8,8 +8,8 @@ import XCTest
 
 @testable import Datadog
 
-class FeatureMessageAttributesTests: XCTestCase {
-    private enum EnumAttribute: String {
+class FeatureBaggageTests: XCTestCase {
+    private enum EnumAttribute: String, Codable {
         case test
     }
 

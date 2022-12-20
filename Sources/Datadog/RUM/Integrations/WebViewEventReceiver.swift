@@ -37,7 +37,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         if case let .custom(key, baggage) = message, key == MessageKeys.browserEvent {
-            write(event: baggage.all(), to: core)
+            write(event: baggage.attributes, to: core)
             return true
         }
 

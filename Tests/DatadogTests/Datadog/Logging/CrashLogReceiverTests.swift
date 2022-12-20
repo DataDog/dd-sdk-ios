@@ -104,7 +104,7 @@ class CrashLogReceiverTests: XCTestCase {
             userInfo: Bool.random() ? .mockRandom() : .empty,
             networkConnectionInfo: .mockRandom(),
             carrierInfo: .mockRandom(),
-            lastRUMViewEvent: .mockRandom()
+            lastRUMViewEvent: AnyCodable(mockRandomAttributes())
         )
 
         // When
@@ -157,6 +157,6 @@ class CrashLogReceiverTests: XCTestCase {
             tags: nil
         )
 
-        DDAssertReflectionEqual(expectedLog, log)
+        DDAssertJSONEqual(expectedLog, log)
     }
 }

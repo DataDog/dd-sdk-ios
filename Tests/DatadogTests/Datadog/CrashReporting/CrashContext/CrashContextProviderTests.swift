@@ -56,11 +56,11 @@ class CrashContextProviderTests: XCTestCase {
         let crashContextProvider = CrashContextProvider()
         let core = PassthroughCoreMock(messageReceiver: crashContextProvider)
 
-        let viewEvent: RUMViewEvent = .mockRandom()
+        let viewEvent = AnyCodable(mockRandomAttributes())
 
         // When
         crashContextProvider.onCrashContextChange = {
-            DDAssertReflectionEqual($0.lastRUMViewEvent, viewEvent)
+            DDAssertJSONEqual($0.lastRUMViewEvent, viewEvent)
             expectation.fulfill()
         }
 
@@ -78,7 +78,7 @@ class CrashContextProviderTests: XCTestCase {
         let crashContextProvider = CrashContextProvider()
         let core = PassthroughCoreMock(messageReceiver: crashContextProvider)
 
-        var viewEvent: RUMViewEvent? = .mockRandom()
+        var viewEvent: AnyCodable? = AnyCodable(mockRandomAttributes())
 
         // When
         crashContextProvider.onCrashContextChange = {
@@ -103,11 +103,11 @@ class CrashContextProviderTests: XCTestCase {
         let crashContextProvider = CrashContextProvider()
         let core = PassthroughCoreMock(messageReceiver: crashContextProvider)
 
-        let sessionState: RUMSessionState = .mockRandom()
+        let sessionState: AnyCodable? = AnyCodable(mockRandomAttributes())
 
         // When
         crashContextProvider.onCrashContextChange = {
-            XCTAssertEqual($0.lastRUMSessionState, sessionState)
+            DDAssertJSONEqual($0.lastRUMSessionState, sessionState)
             expectation.fulfill()
         }
 

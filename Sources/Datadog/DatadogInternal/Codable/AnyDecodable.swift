@@ -85,7 +85,11 @@ extension _AnyDecodable {
             self.init(bool)
         } else if let int = try? container.decode(Int.self) {
             self.init(int)
+        } else if let int = try? container.decode(Int64.self) {
+            self.init(int)
         } else if let uint = try? container.decode(UInt.self) {
+            self.init(uint)
+        } else if let uint = try? container.decode(UInt64.self) {
             self.init(uint)
         } else if let double = try? container.decode(Double.self) {
             self.init(double)
