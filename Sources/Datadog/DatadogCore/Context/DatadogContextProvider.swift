@@ -47,7 +47,7 @@ internal final class DatadogContextProvider {
     ///
     /// Concurrent queue is used for performant reads, `.barrier` must be used
     /// to make writes exclusive.
-    private let queue = DispatchQueue(
+    internal let queue = DispatchQueue(
         label: "com.datadoghq.core-context",
         qos: .utility
     )
