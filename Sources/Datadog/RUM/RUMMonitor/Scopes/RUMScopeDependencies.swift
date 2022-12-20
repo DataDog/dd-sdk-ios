@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -17,18 +17,14 @@ internal struct RUMScopeDependencies {
         let refreshRate: ContinuousVitalReader
     }
 
+    let core: DatadogCoreProtocol
     let rumApplicationID: String
     let sessionSampler: Sampler
     let backgroundEventTrackingEnabled: Bool
     let frustrationTrackingEnabled: Bool
-    let appStateListener: AppStateListening
-    let launchTimeProvider: LaunchTimeProviderType
-    let firstPartyURLsFilter: FirstPartyURLsFilter
+    let firstPartyHosts: FirstPartyHosts
     let eventBuilder: RUMEventBuilder
     let rumUUIDGenerator: RUMUUIDGenerator
-    /// Integration with Crash Reporting. It updates the crash context with RUM info.
-    /// `nil` if Crash Reporting feature is not enabled.
-    let crashContextIntegration: RUMWithCrashContextIntegration?
     /// Integration with CIApp tests. It contains the CIApp test context when active.
     let ciTest: RUMCITest?
     /// Produces `RUMViewUpdatesThrottlerType` for each started RUM view scope.
@@ -40,18 +36,16 @@ internal struct RUMScopeDependencies {
 
 internal extension RUMScopeDependencies {
     init(
-        rumFeature: RUMFeature,
-        crashReportingFeature: CrashReportingFeature?,
-        context: DatadogV1Context
+        core: DatadogCoreProtocol,
+        rumFeature: RUMFeature
     ) {
         self.init(
+            core: core,
             rumApplicationID: rumFeature.configuration.applicationID,
             sessionSampler: rumFeature.configuration.sessionSampler,
             backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled,
             frustrationTrackingEnabled: rumFeature.configuration.frustrationTrackingEnabled,
-            appStateListener: context.appStateListener,
-            launchTimeProvider: context.launchTimeProvider,
-            firstPartyURLsFilter: FirstPartyURLsFilter(hosts: rumFeature.configuration.firstPartyHosts),
+            firstPartyHosts: rumFeature.configuration.firstPartyHosts,
             eventBuilder: RUMEventBuilder(
                 eventsMapper: RUMEventsMapper(
                     viewEventMapper: rumFeature.configuration.viewEventMapper,
@@ -62,7 +56,6 @@ internal extension RUMScopeDependencies {
                 )
             ),
             rumUUIDGenerator: rumFeature.configuration.uuidGenerator,
-            crashContextIntegration: crashReportingFeature.map { .init(crashReporting: $0) },
             ciTest: CITestIntegration.active?.rumCITest,
             viewUpdatesThrottlerFactory: { RUMViewUpdatesThrottler() },
             vitalsReaders: rumFeature.configuration.vitalsFrequency.map {

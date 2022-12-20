@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 #if !os(tvOS)
@@ -48,10 +48,9 @@ class WKUserContentController_DatadogTests: XCTestCase {
         let initialUserScriptCount = controller.userScripts.count
 
         controller.addDatadogMessageHandler(
+            core: PassthroughCoreMock(),
             allowedWebViewHosts: ["datadoghq.com"],
             hostsSanitizer: mockSanitizer,
-            loggingFeature: nil,
-            rumFeature: nil,
             context: .mockAny()
         )
 
@@ -76,10 +75,9 @@ class WKUserContentController_DatadogTests: XCTestCase {
         let multipleTimes = 5
         (0..<multipleTimes).forEach { _ in
             controller.addDatadogMessageHandler(
+                core: PassthroughCoreMock(),
                 allowedWebViewHosts: ["datadoghq.com"],
                 hostsSanitizer: mockSanitizer,
-                loggingFeature: nil,
-                rumFeature: nil,
                 context: .mockAny()
             )
         }
@@ -130,10 +128,9 @@ class WKUserContentController_DatadogTests: XCTestCase {
 
         let controller = DDUserContentController()
         controller.addDatadogMessageHandler(
+            core: PassthroughCoreMock(),
             allowedWebViewHosts: ["datadoghq.com"],
             hostsSanitizer: MockHostsSanitizer(),
-            loggingFeature: nil,
-            rumFeature: nil,
             context: .mockAny()
         )
 
@@ -149,16 +146,10 @@ class WKUserContentController_DatadogTests: XCTestCase {
     func testSendingWebEvents() throws {
         let core = DatadogCoreMock(
             context: .mockWith(
-                configuration: .mockWith(
-                    applicationBundleIdentifier: "com.datadoghq.ios-sdk",
-                    serviceName: "default-service-name",
-                    environment: "tests",
-                    sdkVersion: "1.2.3"
-                ),
-                dependencies: .mockWith(
-                    dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
-                ),
-                appVersionProvider: .mockWith(version: "1.0.0")
+                service: "default-service-name",
+                env: "tests",
+                version: "1.0.0",
+                applicationBundleIdentifier: "com.datadoghq.ios-sdk"
             )
         )
         defer { core.flush() }
@@ -174,11 +165,10 @@ class WKUserContentController_DatadogTests: XCTestCase {
 
         let controller = DDUserContentController()
         controller.addDatadogMessageHandler(
+            core: core,
             allowedWebViewHosts: ["datadoghq.com"],
             hostsSanitizer: MockHostsSanitizer(),
-            loggingFeature: logging,
-            rumFeature: rum,
-            context: core.context!
+            context: core.legacyContext!
         )
 
         let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DatadogMessageHandler

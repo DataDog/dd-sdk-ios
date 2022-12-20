@@ -1,7 +1,7 @@
 # -----------------------------------------------------------
 # Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
 # This product includes software developed at Datadog (https://www.datadoghq.com/).
-# Copyright 2019-2020 Datadog, Inc.
+# Copyright 2019-Present Datadog, Inc.
 # -----------------------------------------------------------
 
 import json
@@ -24,6 +24,7 @@ class TriggerENVs:
     ENVs defined for a trigger in `bitrise.yml`.
     """
     DD_RUN_UNIT_TESTS: str
+    DD_RUN_SR_UNIT_TESTS: str
     DD_RUN_INTEGRATION_TESTS: str
     DD_RUN_SMOKE_TESTS: str
     DD_RUN_TOOLS_TESTS: str
@@ -35,6 +36,7 @@ class BuildENVs:
     Optional ENVs passed from outside (when starting build manually).
     """
     DD_OVERRIDE_RUN_UNIT_TESTS: Optional[str]
+    DD_OVERRIDE_RUN_SR_UNIT_TESTS: Optional[str]
     DD_OVERRIDE_RUN_INTEGRATION_TESTS: Optional[str]
     DD_OVERRIDE_RUN_SMOKE_TESTS: Optional[str]
     DD_OVERRIDE_RUN_TOOLS_TESTS: Optional[str]
@@ -85,6 +87,7 @@ class PullRequestFiles:
 def get_ci_context() -> CIContext:
     trigger_env = TriggerENVs(
         DD_RUN_UNIT_TESTS=os.environ.get('DD_RUN_UNIT_TESTS') or "0",
+        DD_RUN_SR_UNIT_TESTS=os.environ.get('DD_RUN_SR_UNIT_TESTS') or "0",
         DD_RUN_INTEGRATION_TESTS=os.environ.get('DD_RUN_INTEGRATION_TESTS') or "0",
         DD_RUN_SMOKE_TESTS=os.environ.get('DD_RUN_SMOKE_TESTS') or "0",
         DD_RUN_TOOLS_TESTS=os.environ.get('DD_RUN_TOOLS_TESTS') or "0"
@@ -92,6 +95,7 @@ def get_ci_context() -> CIContext:
 
     build_env = BuildENVs(
         DD_OVERRIDE_RUN_UNIT_TESTS=os.environ.get('DD_OVERRIDE_RUN_UNIT_TESTS'),
+        DD_OVERRIDE_RUN_SR_UNIT_TESTS=os.environ.get('DD_OVERRIDE_RUN_SR_UNIT_TESTS'),
         DD_OVERRIDE_RUN_INTEGRATION_TESTS=os.environ.get('DD_OVERRIDE_RUN_INTEGRATION_TESTS'),
         DD_OVERRIDE_RUN_SMOKE_TESTS=os.environ.get('DD_OVERRIDE_RUN_SMOKE_TESTS'),
         DD_OVERRIDE_RUN_TOOLS_TESTS=os.environ.get('DD_OVERRIDE_RUN_TOOLS_TESTS')

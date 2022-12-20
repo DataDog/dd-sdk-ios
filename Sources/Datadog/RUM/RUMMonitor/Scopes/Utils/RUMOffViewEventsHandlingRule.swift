@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -15,6 +15,8 @@ internal struct RUMSessionState: Equatable, Codable {
     let isInitialSession: Bool
     /// If this session has ever tracked any view (used to reason about "application launch" events).
     let hasTrackedAnyView: Bool
+    /// If the there was a Session Replay recording pending at the moment of starting this session (`nil` if SR Feature was not configured).
+    let didStartWithReplay: Bool?
 }
 
 /// The rule for handling RUM events which are tracked while there is no active view.

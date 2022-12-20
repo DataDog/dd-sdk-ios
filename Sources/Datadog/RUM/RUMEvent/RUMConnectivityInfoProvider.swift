@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -22,10 +22,10 @@ internal struct RUMConnectivityInfoProvider {
 }
 
 extension RUMConnectivity {
-    init?(context: DatadogV1Context) {
+    init?(context: DatadogContext) {
         self.init(
-            networkInfo: context.networkConnectionInfoProvider.current,
-            carrierInfo: context.carrierInfoProvider.current
+            networkInfo: context.networkConnectionInfo,
+            carrierInfo: context.carrierInfo
         )
     }
 

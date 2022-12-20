@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -48,6 +48,29 @@ public protocol LoggerProtocol {
     ///   - attributes: a dictionary of attributes (optional) to add for this message. If an attribute with
     /// the same key already exist in this logger, it will be overridden (only for this message).
     func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable]?)
+
+    /// General purpose logging method.
+    /// Sends a log with certain `level`, `message`, `errorKind`,  `errorMessage`,  `stackTrace` and `attributes`.
+    ///
+    /// This method is meant for non-native or cross platform frameworks (such as React Native or Flutter) to send error information
+    /// to Datadog. Although it can be used directly, it is recommended to use other methods declared on `Logger`.
+    ///
+    /// - Parameters:
+    ///   - level: the log level
+    ///   - message: the message to be logged
+    ///   - errorKind: the kind of error reported
+    ///   - errorMessage: the message attached to the error
+    ///   - stackTrace: a string representation of the error's stack trace
+    ///   - attributes: a dictionary of attributes (optional) to add for this message. If an attribute with
+    /// the same key already exist in this logger, it will be overridden (only for this message).
+    func log(
+        level: LogLevel,
+        message: String,
+        errorKind: String?,
+        errorMessage: String?,
+        stackTrace: String?,
+        attributes: [String: Encodable]?
+    )
 
     // MARK: - Attributes
 
@@ -184,6 +207,23 @@ public class Logger: LoggerProtocol {
 
     public func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable]?) {
         v2Logger.log(level: level, message: message, error: error, attributes: attributes)
+    }
+
+    public func log(
+        level: LogLevel,
+        message: String,
+        errorKind: String?,
+        errorMessage: String?,
+        stackTrace: String?,
+        attributes: [String: Encodable]?) {
+        v2Logger.log(
+            level: level,
+            message: message,
+             errorKind: errorKind,
+             errorMessage: errorMessage,
+             stackTrace: stackTrace,
+             attributes: attributes
+        )
     }
 
     public func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
@@ -343,7 +383,7 @@ public class Logger: LoggerProtocol {
         }
 
         private func buildOrThrow(in core: DatadogCoreProtocol) throws -> LoggerProtocol {
-            guard let context = core.v1.context else {
+            if core is NOPDatadogCore {
                 throw ProgrammerError(
                     description: "`Datadog.initialize()` must be called prior to `Logger.builder.build()`."
                 )
@@ -361,23 +401,20 @@ public class Logger: LoggerProtocol {
                 }
 
                 let configuration = RemoteLogger.Configuration(
-                    service: serviceName ?? context.service,
-                    loggerName: loggerName ?? context.applicationBundleIdentifier,
+                    service: serviceName,
+                    loggerName: loggerName ?? loggingFeature.configuration.applicationBundleIdentifier,
                     sendNetworkInfo: sendNetworkInfo,
                     threshold: datadogReportingThreshold,
-                    eventMapper: loggingFeature.configuration.logEventMapper
+                    eventMapper: loggingFeature.configuration.logEventMapper,
+                    sampler: loggingFeature.configuration.remoteLoggingSampler
                 )
-
-                let rumEnabled = core.v1.feature(RUMFeature.self) != nil
-                let tracingEnabled = core.v1.feature(TracingFeature.self) != nil
 
                 return RemoteLogger(
                     core: core,
                     configuration: configuration,
-                    dateProvider: context.dateProvider,
-                    rumContextIntegration: (rumEnabled && bundleWithRUM) ? LoggingWithRUMContextIntegration() : nil,
-                    rumErrorsIntegration: rumEnabled ? LoggingWithRUMErrorsIntegration() : nil,
-                    activeSpanIntegration: (tracingEnabled && bundleWithTrace) ? LoggingWithActiveSpanIntegration() : nil
+                    dateProvider: loggingFeature.configuration.dateProvider,
+                    rumContextIntegration: bundleWithRUM,
+                    activeSpanIntegration: bundleWithTrace
                 )
             }()
 
@@ -393,7 +430,7 @@ public class Logger: LoggerProtocol {
 
                 return ConsoleLogger(
                     configuration: configuration,
-                    dateProvider: context.dateProvider,
+                    dateProvider: loggingFeature.configuration.dateProvider,
                     printFunction: consolePrint
                 )
             }()
@@ -415,12 +452,31 @@ public class Logger: LoggerProtocol {
     }
 }
 
-/// Combines multiple loggers together into single `Logger` interface.
+/// Combines multiple loggers together into single `LoggerProtocol` interface.
 internal struct CombinedLogger: LoggerProtocol {
     let combinedLoggers: [LoggerProtocol]
 
     func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable]?) {
         combinedLoggers.forEach { $0.log(level: level, message: message, error: error, attributes: attributes) }
+    }
+
+    func log(
+        level: LogLevel,
+        message: String,
+        errorKind: String?,
+        errorMessage: String?,
+        stackTrace: String?,
+        attributes: [String: Encodable]?) {
+        combinedLoggers.forEach {
+            $0.log(
+                level: level,
+                message: message,
+                errorKind: errorKind,
+                errorMessage: errorMessage,
+                stackTrace: stackTrace,
+                attributes: attributes
+            )
+        }
     }
 
     func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
@@ -450,6 +506,7 @@ internal struct CombinedLogger: LoggerProtocol {
 
 internal struct NOPLogger: LoggerProtocol {
     func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable]?) {}
+    func log(level: LogLevel, message: String, errorKind: String?, errorMessage: String?, stackTrace: String?, attributes: [String: Encodable]?) {}
     func addAttribute(forKey key: AttributeKey, value: AttributeValue) {}
     func removeAttribute(forKey key: AttributeKey) {}
     func addTag(withKey key: String, value: String) {}

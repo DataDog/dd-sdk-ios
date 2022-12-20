@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -148,11 +148,11 @@ internal struct SpanEventEncoder {
 
     func encode(_ span: SpanEvent, to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: StaticCodingKeys.self)
-        try container.encode(span.traceID.toHexadecimalString, forKey: .traceID)
-        try container.encode(span.spanID.toHexadecimalString, forKey: .spanID)
+        try container.encode(span.traceID.toString(.hexadecimal), forKey: .traceID)
+        try container.encode(span.spanID.toString(.hexadecimal), forKey: .spanID)
 
         let parentSpanID = span.parentID ?? TracingUUID(rawValue: 0) // 0 is a reserved ID for a root span (ref: DDTracer.java#L600)
-        try container.encode(parentSpanID.toHexadecimalString, forKey: .parentID)
+        try container.encode(parentSpanID.toString(.hexadecimal), forKey: .parentID)
 
         try container.encode(span.operationName, forKey: .operationName)
         try container.encode(span.serviceName, forKey: .serviceName)

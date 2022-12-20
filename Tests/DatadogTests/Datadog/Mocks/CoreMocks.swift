@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -49,7 +49,8 @@ extension Datadog.Configuration {
         tracesEndpoint: TracesEndpoint = .us1,
         rumEndpoint: RUMEndpoint = .us1,
         serviceName: String? = .mockAny(),
-        firstPartyHosts: Set<String>? = nil,
+        firstPartyHosts: FirstPartyHosts? = nil,
+        loggingSamplingRate: Float = 100.0,
         tracingSamplingRate: Float = 100.0,
         rumSessionsSamplingRate: Float = 100.0,
         rumUIKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
@@ -83,6 +84,7 @@ extension Datadog.Configuration {
             rumEndpoint: rumEndpoint,
             serviceName: serviceName,
             firstPartyHosts: firstPartyHosts,
+            loggingSamplingRate: loggingSamplingRate,
             tracingSamplingRate: tracingSamplingRate,
             rumSessionsSamplingRate: rumSessionsSamplingRate,
             rumUIKitViewsPredicate: rumUIKitViewsPredicate,
@@ -204,14 +206,15 @@ extension FeaturesConfiguration.Common {
         applicationBundleIdentifier: String = .mockAny(),
         serviceName: String = .mockAny(),
         environment: String = .mockAny(),
-        performance: PerformancePreset = .init(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
+        performance: PerformancePreset = .mockAny(),
         source: String = .mockAny(),
         variant: String? = nil,
         origin: String? = nil,
         sdkVersion: String = .mockAny(),
         proxyConfiguration: [AnyHashable: Any]? = nil,
         encryption: DataEncryption? = nil,
-        serverDateProvider: ServerDateProvider? = nil
+        serverDateProvider: ServerDateProvider? = nil,
+        dateProvider: DateProvider = SystemDateProvider()
     ) -> Self {
         return .init(
             site: site,
@@ -228,7 +231,8 @@ extension FeaturesConfiguration.Common {
             sdkVersion: sdkVersion,
             proxyConfiguration: proxyConfiguration,
             encryption: encryption,
-            serverDateProvider: serverDateProvider
+            serverDateProvider: serverDateProvider,
+            dateProvider: dateProvider
         )
     }
 }
@@ -238,11 +242,17 @@ extension FeaturesConfiguration.Logging {
 
     static func mockWith(
         uploadURL: URL = .mockAny(),
-        logEventMapper: LogEventMapper? = nil
+        logEventMapper: LogEventMapper? = nil,
+        dateProvider: DateProvider = SystemDateProvider(),
+        applicationBundleIdentifier: String = .mockAny(),
+        remoteLoggingSampler: Sampler = Sampler(samplingRate: 100.0)
     ) -> Self {
         return .init(
             uploadURL: uploadURL,
-            logEventMapper: logEventMapper
+            logEventMapper: logEventMapper,
+            dateProvider: dateProvider,
+            applicationBundleIdentifier: applicationBundleIdentifier,
+            remoteLoggingSampler: remoteLoggingSampler
         )
     }
 }
@@ -253,12 +263,14 @@ extension FeaturesConfiguration.Tracing {
     static func mockWith(
         uploadURL: URL = .mockAny(),
         uuidGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
-        spanEventMapper: SpanEventMapper? = nil
+        spanEventMapper: SpanEventMapper? = nil,
+        dateProvider: DateProvider = SystemDateProvider()
     ) -> Self {
         return .init(
             uploadURL: uploadURL,
             uuidGenerator: uuidGenerator,
-            spanEventMapper: spanEventMapper
+            spanEventMapper: spanEventMapper,
+            dateProvider: dateProvider
         )
     }
 }
@@ -281,8 +293,9 @@ extension FeaturesConfiguration.RUM {
         backgroundEventTrackingEnabled: Bool = false,
         frustrationTrackingEnabled: Bool = true,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener(),
-        firstPartyHosts: Set<String> = [],
-        vitalsFrequency: TimeInterval? = 0.5
+        firstPartyHosts: FirstPartyHosts = .init(),
+        vitalsFrequency: TimeInterval? = 0.5,
+        dateProvider: DateProvider = SystemDateProvider()
     ) -> Self {
         return .init(
             uploadURL: uploadURL,
@@ -300,7 +313,8 @@ extension FeaturesConfiguration.RUM {
             frustrationTrackingEnabled: frustrationTrackingEnabled,
             onSessionStart: onSessionStart,
             firstPartyHosts: firstPartyHosts,
-            vitalsFrequency: vitalsFrequency
+            vitalsFrequency: vitalsFrequency,
+            dateProvider: dateProvider
         )
     }
 }
@@ -323,7 +337,7 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
     static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
-        userDefinedFirstPartyHosts: Set<String> = [],
+        userDefinedFirstPartyHosts: FirstPartyHosts = .init(),
         sdkInternalURLs: Set<String> = [],
         rumAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         instrumentTracing: Bool = true,
@@ -464,7 +478,11 @@ struct UploadPerformanceMock: UploadPerformancePreset {
 }
 
 extension PerformancePreset {
-    static func combining(storagePerformance storage: StoragePerformanceMock, uploadPerformance upload: UploadPerformanceMock) -> PerformancePreset {
+    static func mockAny() -> Self {
+        PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp)
+    }
+
+    static func combining(storagePerformance storage: StoragePerformanceMock, uploadPerformance upload: UploadPerformanceMock) -> Self {
         PerformancePreset(
             maxFileSize: storage.maxFileSize,
             maxDirectorySize: storage.maxDirectorySize,
@@ -477,117 +495,6 @@ extension PerformancePreset {
             minUploadDelay: upload.minUploadDelay,
             maxUploadDelay: upload.maxUploadDelay,
             uploadDelayChangeRate: upload.uploadDelayChangeRate
-        )
-    }
-}
-
-// MARK: - Features Common Mocks
-
-extension FeaturesCommonDependencies {
-    static func mockAny() -> FeaturesCommonDependencies {
-        return .mockWith()
-    }
-
-    /// Mocks features common dependencies.
-    /// Default values describe the environment setup where data can be uploaded to the server (device is online and battery is full).
-    static func mockWith(
-        consentProvider: ConsentProvider = ConsentProvider(initialConsent: .granted),
-        performance: PerformancePreset = .combining(
-            storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
-            uploadPerformance: .veryQuick
-        ),
-        deviceInfo: DeviceInfo = .mockAny(),
-        batteryStatusProvider: BatteryStatusProviderType = BatteryStatusProviderMock.mockAny(),
-        sdkInitDate: Date = Date(),
-        dateProvider: DateProvider = SystemDateProvider(),
-        dateCorrector: DateCorrector = DateCorrectorMock(),
-        userInfoProvider: UserInfoProvider = .mockAny(),
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockWith(
-            networkConnectionInfo: .mockWith(
-                reachability: .yes, // so it always meets the upload condition
-                availableInterfaces: [.wifi],
-                supportsIPv4: true,
-                supportsIPv6: true,
-                isExpensive: true,
-                isConstrained: false // so it always meets the upload condition
-            )
-        ),
-        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
-        launchTimeProvider: LaunchTimeProviderType = LaunchTimeProviderMock.mockAny(),
-        appStateListener: AppStateListening = AppStateListenerMock.mockAny(),
-        encryption: DataEncryption? = nil
-    ) -> FeaturesCommonDependencies {
-        let httpClient: HTTPClient
-
-        if let activeServer = ServerMock.activeInstance {
-            httpClient = HTTPClient(session: activeServer.getInterceptedURLSession())
-        } else {
-            class AssertedHTTPClient: HTTPClient {
-                // swiftlint:disable:next unavailable_function
-                override func send(request: URLRequest, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void) {
-                    preconditionFailure(
-                        """
-                        ⚠️ Request to \(request.url?.absoluteString ?? "null") was sent but there is no `ServerMock` instance set up for its interception.
-                        All unit tests must be configured to either send data to mocked `FeatureStorage` (`XYZFeature.mockByRecordingXYZ(...)`)
-                        or use `ServerMock` instance and `serverMock.getInterceptedURLSession()` for requests interception.
-                        """
-                    )
-                }
-            }
-
-            httpClient = AssertedHTTPClient()
-        }
-
-        return FeaturesCommonDependencies(
-            consentProvider: consentProvider,
-            performance: performance,
-            httpClient: httpClient,
-            deviceInfo: deviceInfo,
-            batteryStatusProvider: batteryStatusProvider,
-            sdkInitDate: sdkInitDate,
-            dateProvider: dateProvider,
-            dateCorrector: dateCorrector,
-            userInfoProvider: userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider,
-            launchTimeProvider: launchTimeProvider,
-            appStateListener: appStateListener,
-            encryption: encryption
-        )
-    }
-
-    /// Creates new instance of `FeaturesCommonDependencies` by replacing individual dependencies.
-    func replacing(
-        consentProvider: ConsentProvider? = nil,
-        performance: PerformancePreset? = nil,
-        httpClient: HTTPClient? = nil,
-        deviceInfo: DeviceInfo? = nil,
-        batteryStatusProvider: BatteryStatusProviderType? = nil,
-        sdkInitDate: Date? = nil,
-        dateProvider: DateProvider? = nil,
-        dateCorrector: DateCorrector? = nil,
-        userInfoProvider: UserInfoProvider? = nil,
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType? = nil,
-        carrierInfoProvider: CarrierInfoProviderType? = nil,
-        launchTimeProvider: LaunchTimeProviderType? = nil,
-        appStateListener: AppStateListening? = nil,
-        encryption: DataEncryption? = nil
-    ) -> FeaturesCommonDependencies {
-        return FeaturesCommonDependencies(
-            consentProvider: consentProvider ?? self.consentProvider,
-            performance: performance ?? self.performance,
-            httpClient: httpClient ?? self.httpClient,
-            deviceInfo: deviceInfo ?? self.deviceInfo,
-            batteryStatusProvider: batteryStatusProvider ?? self.batteryStatusProvider,
-            sdkInitDate: sdkInitDate ?? self.sdkInitDate,
-            dateProvider: dateProvider ?? self.dateProvider,
-            dateCorrector: dateCorrector ?? self.dateCorrector,
-            userInfoProvider: userInfoProvider ?? self.userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider ?? self.networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider ?? self.carrierInfoProvider,
-            launchTimeProvider: launchTimeProvider ?? self.launchTimeProvider,
-            appStateListener: appStateListener ?? self.appStateListener,
-            encryption: encryption ?? self.encryption
         )
     }
 }
@@ -605,7 +512,7 @@ extension FeatureStorage {
 
 extension FeatureUpload {
     static func mockNoOp() -> FeatureUpload {
-        return FeatureUpload(uploader: NoOpDataUploadWorker())
+        return FeatureUpload(uploader: NOPDataUploadWorker())
     }
 }
 
@@ -709,7 +616,10 @@ internal class InMemoryWriter: AsyncWriter {
             fatalError()
         }
 
-        return queue.sync { events }
+        return queue.sync {
+            waitAndReturnEventsDataExpectation = nil
+            return events
+        }
     }
 }
 
@@ -779,25 +689,6 @@ class DateCorrectorMock: DateCorrector {
     }
 }
 
-struct LaunchTimeProviderMock: LaunchTimeProviderType {
-    let launchTime: TimeInterval
-    let isActivePrewarm: Bool
-}
-
-extension LaunchTimeProviderMock {
-    static func mockAny() -> LaunchTimeProviderMock {
-        return mockWith(launchTime: 0, isActivePrewarm: false)
-    }
-
-    static func mockWith(launchTime: TimeInterval, isActivePrewarm: Bool = false) -> LaunchTimeProviderMock {
-        return LaunchTimeProviderMock(launchTime: launchTime, isActivePrewarm: isActivePrewarm)
-    }
-
-    static func mockRandom(launchTime: TimeInterval = .mockRandom(), isActivePrewarm: Bool = .random()) -> LaunchTimeProviderMock {
-        return mockWith(launchTime: launchTime, isActivePrewarm: isActivePrewarm)
-    }
-}
-
 extension AppState: AnyMockable, RandomMockable {
     static func mockAny() -> AppState {
         return .active
@@ -809,6 +700,24 @@ extension AppState: AnyMockable, RandomMockable {
 
     static func mockRandom(runningInForeground: Bool) -> AppState {
         return runningInForeground ? [.active, .inactive].randomElement()! : .background
+    }
+}
+
+extension AppStateHistory: AnyMockable {
+    static func mockAny() -> Self {
+        return mockAppInForeground(since: .mockDecember15th2019At10AMUTC())
+    }
+
+    static func mockAppInForeground(since date: Date = Date()) -> Self {
+        return .init(initialSnapshot: .init(state: .active, date: date), recentDate: date)
+    }
+
+    static func mockAppInBackground(since date: Date = Date()) -> Self {
+        return .init(initialSnapshot: .init(state: .background, date: date), recentDate: date)
+    }
+
+    static func mockRandom(since date: Date = Date()) -> Self {
+        return Bool.random() ? mockAppInForeground(since: date) : mockAppInBackground(since: date)
     }
 }
 
@@ -825,18 +734,20 @@ class AppStateListenerMock: AppStateListening, AnyMockable {
 
     static func mockAppInForeground(since date: Date = Date()) -> Self {
         return .init(
-            history: .init(initialSnapshot: .init(state: .active, date: date), recentDate: date)
+            history: .mockAppInForeground(since: date)
         )
     }
 
     static func mockAppInBackground(since date: Date = Date()) -> Self {
         return .init(
-            history: .init(initialSnapshot: .init(state: .background, date: date), recentDate: date)
+            history: .mockAppInBackground(since: date)
         )
     }
 
     static func mockRandom(since date: Date = Date()) -> Self {
-        return Bool.random() ? mockAppInForeground(since: date) : mockAppInBackground(since: date)
+        return .init(
+            history: .mockRandom(since: date)
+        )
     }
 
     func subscribe<Observer: AppStateHistoryObserver>(_ subscriber: Observer) where Observer.ObservedValue == AppStateHistory {}
@@ -875,59 +786,13 @@ extension UserInfoProvider {
     }
 }
 
-extension RequestBuilder.QueryItem: RandomMockable, AnyMockable {
-    static func mockRandom() -> RequestBuilder.QueryItem {
-        let all: [RequestBuilder.QueryItem] = [
-            .ddsource(source: .mockRandom()),
-            .ddtags(tags: .mockRandom()),
-        ]
-        return all.randomElement()!
-    }
-
-    static func mockAny() -> RequestBuilder.QueryItem {
-        return .ddsource(source: .mockRandom(among: .alphanumerics))
-    }
-}
-
-extension RequestBuilder.HTTPHeader: RandomMockable, AnyMockable {
-    static func mockRandom() -> RequestBuilder.HTTPHeader {
-        let all: [RequestBuilder.HTTPHeader] = [
-            .contentTypeHeader(contentType: Bool.random() ? .applicationJSON : .textPlainUTF8),
-            .userAgentHeader(appName: .mockRandom(among: .alphanumerics), appVersion: .mockRandom(among: .alphanumerics), device: .mockAny()),
-            .ddAPIKeyHeader(clientToken: .mockRandom(among: .alphanumerics)),
-            .ddEVPOriginHeader(source: .mockRandom(among: .alphanumerics)),
-            .ddEVPOriginVersionHeader(sdkVersion: .mockRandom(among: .alphanumerics)),
-            .ddRequestIDHeader()
-        ]
-        return all.randomElement()!
-    }
-
-    static func mockAny() -> RequestBuilder.HTTPHeader {
-        return .ddEVPOriginVersionHeader(sdkVersion: "1.2.3")
-    }
-}
-
-extension RequestBuilder: AnyMockable {
-    static func mockAny() -> RequestBuilder {
-        return mockWith()
-    }
-
-    static func mockWith(
-        url: URL = .mockAny(),
-        queryItems: [QueryItem] = [],
-        headers: [HTTPHeader] = []
-    ) -> RequestBuilder {
-        return RequestBuilder(url: url, queryItems: queryItems, headers: headers)
-    }
-}
-
 extension HTTPClient {
     static func mockAny() -> HTTPClient {
         return HTTPClient(session: URLSession())
     }
 }
 
-class NoOpDataUploadWorker: DataUploadWorkerType {
+class NOPDataUploadWorker: DataUploadWorkerType {
     func flushSynchronously() {}
     func cancelSynchronously() {}
 }
@@ -935,10 +800,10 @@ class NoOpDataUploadWorker: DataUploadWorkerType {
 struct DataUploaderMock: DataUploaderType {
     let uploadStatus: DataUploadStatus
 
-    var onUpload: (() -> Void)? = nil
+    var onUpload: (() throws -> Void)? = nil
 
-    func upload(data: Data) -> DataUploadStatus {
-        onUpload?()
+    func upload(events: [Data], context: DatadogContext) throws -> DataUploadStatus {
+        try onUpload?()
         return uploadStatus
     }
 }
@@ -1010,22 +875,9 @@ extension BatteryStatus {
 
     static func mockWith(
         state: State = .charging,
-        level: Float = 0.5,
-        isLowPowerModeEnabled: Bool = false
+        level: Float = 0.5
     ) -> BatteryStatus {
-        return BatteryStatus(state: state, level: level, isLowPowerModeEnabled: isLowPowerModeEnabled)
-    }
-}
-
-struct BatteryStatusProviderMock: BatteryStatusProviderType {
-    let current: BatteryStatus
-
-    static func mockWith(status: BatteryStatus ) -> BatteryStatusProviderMock {
-        return BatteryStatusProviderMock(current: status)
-    }
-
-    static func mockAny() -> BatteryStatusProviderMock {
-        return BatteryStatusProviderMock(current: .mockAny())
+        return BatteryStatus(state: state, level: level)
     }
 }
 
@@ -1197,12 +1049,6 @@ extension AppVersionProvider: AnyMockable {
     }
 }
 
-extension CodableValue {
-    static func mockAny() -> CodableValue {
-        return CodableValue(String.mockAny())
-    }
-}
-
 extension ValuePublisher: AnyMockable where Value: AnyMockable {
     static func mockAny() -> Self {
         return .init(initialValue: .mockAny())
@@ -1265,6 +1111,14 @@ class MockHostsSanitizer: HostsSanitizing {
     func sanitized(hosts: Set<String>, warningMessage: String) -> Set<String> {
         sanitizations.append((hosts: hosts, warningMessage: warningMessage))
         return hosts
+    }
+
+    func sanitized(
+        hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>],
+        warningMessage: String
+    ) -> [String: Set<TracingHeaderType>] {
+        sanitizations.append((hosts: Set(hostsWithTracingHeaderTypes.keys), warningMessage: warningMessage))
+        return hostsWithTracingHeaderTypes
     }
 }
 
@@ -1331,6 +1185,7 @@ class CoreLoggerMock: CoreLogger {
 class TelemetryMock: Telemetry, CustomStringConvertible {
     private(set) var debugs: [String] = []
     private(set) var errors: [(message: String, kind: String?, stack: String?)] = []
+    private(set) var configurations: [FeaturesConfiguration] = []
     private(set) var description: String = "Telemetry logs:"
 
     func debug(id: String, message: String) {
@@ -1341,6 +1196,11 @@ class TelemetryMock: Telemetry, CustomStringConvertible {
     func error(id: String, message: String, kind: String?, stack: String?) {
         errors.append((message: message, kind: kind, stack: stack))
         description.append("\n - [error] \(message), kind: \(kind ?? "nil"), stack: \(stack ?? "nil")")
+    }
+
+    func configuration(configuration: FeaturesConfiguration) {
+        configurations.append(configuration)
+        description.append("\n - [configuration] \(configuration)")
     }
 }
 

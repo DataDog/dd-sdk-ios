@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -117,7 +117,7 @@ class URLSessionInterceptorTests: XCTestCase {
         tracingSampler: Sampler = .mockKeepAll()
     ) -> FeaturesConfiguration.URLSessionAutoInstrumentation {
         return .mockWith(
-            userDefinedFirstPartyHosts: ["first-party.com"],
+            userDefinedFirstPartyHosts: .init(["first-party.com": [.datadog]]),
             sdkInternalURLs: ["https://dd.internal.com"],
             instrumentTracing: tracingInstrumentationEnabled,
             instrumentRUM: rumInstrumentationEnabled,
@@ -138,7 +138,7 @@ class URLSessionInterceptorTests: XCTestCase {
         Global.sharedTracer = Tracer.mockAny(in: core)
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
         let sessionWithCustomFirstPartyHosts = URLSession.mockWith(
-            DDURLSessionDelegate(additionalFirstPartyHosts: [alternativeFirstPartyRequest.url!.host!])
+            DDURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: [alternativeFirstPartyRequest.url!.host!: [.datadog]])
         )
 
         // When
@@ -314,7 +314,7 @@ class URLSessionInterceptorTests: XCTestCase {
         Global.sharedTracer = Tracer.mockAny(in: core)
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
         let sessionWithCustomFirstPartyHosts = URLSession.mockWith(
-            DDURLSessionDelegate(additionalFirstPartyHosts: [alternativeFirstPartyRequest.url!.host!])
+            DDURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: [alternativeFirstPartyRequest.url!.host!: [.datadog]])
         )
 
         let interceptedFirstPartyRequest = interceptor.modify(request: firstPartyRequest)

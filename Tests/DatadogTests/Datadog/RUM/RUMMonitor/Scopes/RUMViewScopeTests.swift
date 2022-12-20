@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -9,16 +9,14 @@ import UIKit
 @testable import Datadog
 
 class RUMViewScopeTests: XCTestCase {
-    let context: DatadogV1Context = .mockWith(
-        configuration: .mockWith(serviceName: "test-service"),
-        dependencies: .mockWith(
-            deviceInfo: .mockWith(
-                name: "device-name",
-                osName: "device-os"
-            ),
-            networkConnectionInfoProvider: NetworkConnectionInfoProviderMock(networkConnectionInfo: nil),
-            carrierInfoProvider: CarrierInfoProviderMock(carrierInfo: nil)
-        )
+    let context: DatadogContext = .mockWith(
+        service: "test-service",
+        device: .mockWith(
+            name: "device-name",
+            osName: "device-os"
+        ),
+        networkConnectionInfo: nil,
+        carrierInfo: nil
     )
 
     let writer = FileWriterMock()
@@ -89,12 +87,20 @@ class RUMViewScopeTests: XCTestCase {
     func testWhenInitialViewReceivesAnyCommand_itSendsApplicationStartAction() throws {
         // Given
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        var context = self.context
+        context.launchTime = .init(
+            launchTime: 2,
+            launchDate: .distantPast,
+            isActivePrewarm: false
+        )
+
+        let hasReplay: Bool = .mockRandom()
+        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
+
         let scope = RUMViewScope(
             isInitialView: true,
             parent: parent,
-            dependencies: .mockWith(
-                launchTimeProvider: LaunchTimeProviderMock.mockWith(launchTime: 2) // 2 seconds
-            ),
+            dependencies: .mockAny(),
             identity: mockView,
             path: "UIViewController",
             name: "ViewName",
@@ -117,6 +123,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
+        XCTAssertEqual(event.session.hasReplay, hasReplay)
         XCTAssertValidRumUUID(event.view.id)
         XCTAssertEqual(event.view.url, "UIViewController")
         XCTAssertEqual(event.view.name, "ViewName")
@@ -135,14 +142,12 @@ class RUMViewScopeTests: XCTestCase {
         // Given
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let source = String.mockAnySource()
-        let custonContext: DatadogV1Context = .mockWith(configuration: .mockWith(source: source))
+        let customContext: DatadogContext = .mockWith(source: source)
 
         let scope = RUMViewScope(
             isInitialView: true,
             parent: parent,
-            dependencies: .mockWith(
-                launchTimeProvider: LaunchTimeProviderMock.mockWith(launchTime: 2) // 2 seconds
-            ),
+            dependencies: .mockAny(),
             identity: mockView,
             path: "UIViewController",
             name: "ViewName",
@@ -155,7 +160,7 @@ class RUMViewScopeTests: XCTestCase {
         // When
         _ = scope.process(
             command: RUMCommandMock(time: currentTime),
-            context: custonContext,
+            context: customContext,
             writer: writer
         )
 
@@ -164,17 +169,49 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.source, .init(rawValue: source))
     }
 
-    func testWhenActivePrewarm_itSendsApplicationStartAction_withoutLoadingTime() throws {
+    func testWhenNoLoadingTime_itSendsApplicationStartAction_basedOnLoadingDate() throws {
         // Given
+        var context = self.context
+        let date = Date()
+        context.launchTime = .init(
+            launchTime: nil,
+            launchDate: date.addingTimeInterval(-2),
+            isActivePrewarm: false
+        )
+
         let scope: RUMViewScope = .mockWith(
             isInitialView: true,
             parent: parent,
-            dependencies: .mockWith(
-                launchTimeProvider: LaunchTimeProviderMock.mockWith(
-                    launchTime: 2, // 2 seconds
-                    isActivePrewarm: true
-                )
-            ),
+            dependencies: .mockAny(),
+            identity: mockView,
+            startTime: date
+        )
+
+        // When
+        _ = scope.process(
+            command: RUMCommandMock(),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
+        XCTAssertEqual(event.action.loadingTime, 2_000_000_000) // 2e+9 ns
+    }
+
+    func testWhenActivePrewarm_itSendsApplicationStartAction_withoutLoadingTime() throws {
+        // Given
+        var context = self.context
+        context.launchTime = .init(
+            launchTime: 2,
+            launchDate: .distantPast,
+            isActivePrewarm: true
+        )
+
+        let scope: RUMViewScope = .mockWith(
+            isInitialView: true,
+            parent: parent,
+            dependencies: .mockAny(),
             identity: mockView
         )
 
@@ -194,6 +231,10 @@ class RUMViewScopeTests: XCTestCase {
     }
 
     func testWhenInitialViewReceivesAnyCommand_itSendsViewUpdateEvent() throws {
+        let hasReplay: Bool = .mockRandom()
+        var context = self.context
+        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
+
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
             isInitialView: true,
@@ -219,6 +260,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
+        XCTAssertEqual(event.session.hasReplay, hasReplay)
         XCTAssertValidRumUUID(event.view.id)
         XCTAssertEqual(event.view.url, "UIViewController")
         XCTAssertEqual(event.view.name, "ViewName")
@@ -241,7 +283,7 @@ class RUMViewScopeTests: XCTestCase {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let source = String.mockAnySource()
 
-        let customContext: DatadogV1Context = .mockWith(configuration: .mockWith(source: source))
+        let customContext: DatadogContext = .mockWith(source: source)
 
         let scope = RUMViewScope(
             isInitialView: true,
@@ -979,6 +1021,10 @@ class RUMViewScopeTests: XCTestCase {
     // MARK: - Error Tracking
 
     func testWhenViewErrorIsAdded_itSendsErrorEventAndViewUpdateEvent() throws {
+        let hasReplay: Bool = .mockRandom()
+        var context = self.context
+        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
+
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
@@ -1016,6 +1062,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(error.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(error.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(error.session.type, .user)
+        XCTAssertEqual(error.session.hasReplay, hasReplay)
         XCTAssertValidRumUUID(error.view.id)
         XCTAssertEqual(error.view.url, "UIViewController")
         XCTAssertEqual(error.view.name, "ViewName")
@@ -1026,7 +1073,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(error.error.source, .source)
         XCTAssertEqual(error.error.sourceType, .ios)
         XCTAssertNil(error.error.stack)
-        XCTAssertNil(error.error.isCrash)
+        XCTAssertTrue(error.error.isCrash == false)
         XCTAssertNil(error.error.resource)
         XCTAssertNil(error.action)
         XCTAssertEqual(error.context?.contextInfo as? [String: String], ["foo": "bar"])
@@ -1044,7 +1091,7 @@ class RUMViewScopeTests: XCTestCase {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let source = String.mockAnySource()
 
-        let customContext: DatadogV1Context = .mockWith(configuration: .mockWith(source: source))
+        let customContext: DatadogContext = .mockWith(source: source)
 
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
@@ -1088,11 +1135,9 @@ class RUMViewScopeTests: XCTestCase {
 
         let customSource = String.mockAnySource()
         let expectedSource = RUMErrorEvent.Source(rawValue: customSource)
-        let customContext: DatadogV1Context = .mockWith(
-            configuration: .mockWith(
-                serviceName: "test-service",
-                source: customSource
-            )
+        let customContext: DatadogContext = .mockWith(
+            service: "test-service",
+            source: customSource
         )
 
         let scope: RUMViewScope = .mockWith(
@@ -1183,6 +1228,10 @@ class RUMViewScopeTests: XCTestCase {
     // MARK: - Long tasks
 
     func testWhenLongTaskIsAdded_itSendsLongTaskEventAndViewUpdateEvent() throws {
+        let hasReplay: Bool = .mockRandom()
+        var context = self.context
+        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
+
         let startViewDate: Date = .mockDecember15th2019At10AMUTC()
 
         let scope = RUMViewScope(
@@ -1223,6 +1272,8 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertEqual(event.action?.id.stringValue, scope.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.session.hasReplay, hasReplay)
         XCTAssertNil(event.connectivity)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.date, longTaskStartingDate.timeIntervalSince1970.toInt64Milliseconds)
@@ -1244,7 +1295,7 @@ class RUMViewScopeTests: XCTestCase {
         let startViewDate: Date = .mockDecember15th2019At10AMUTC()
 
         let source = String.mockAnySource()
-        let customContext: DatadogV1Context = .mockWith(configuration: .mockWith(source: source))
+        let customContext: DatadogContext = .mockWith(source: source)
 
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
@@ -1801,18 +1852,22 @@ class RUMViewScopeTests: XCTestCase {
     // MARK: Integration with Crash Context
 
     func testWhenViewIsStarted_thenItUpdatesLastRUMViewEventInCrashContext() throws {
-        let rumViewEventProvider = ValuePublisher<RUMViewEvent?>(initialValue: nil)
+        var viewEvent: RUMViewEvent? = nil
+        let messageReciever = FeatureMessageReceiverMock { message in
+            if case let .custom(_, baggage) = message {
+                viewEvent = baggage[RUMBaggageKeys.viewEvent]
+            }
+        }
+
+        let core = PassthroughCoreMock(
+            messageReceiver: messageReciever
+        )
 
         // Given
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(
-                crashContextIntegration: RUMWithCrashContextIntegration(
-                    rumViewEventProvider: rumViewEventProvider,
-                    rumSessionStateProvider: .mockAny()
-                )
-            ),
+            dependencies: .mockWith(core: core),
             identity: mockView,
             path: "UIViewController",
             name: "ViewController",
@@ -1823,17 +1878,18 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // When
-        XCTAssertTrue(
-            scope.process(
-                command: RUMStartViewCommand.mockWith(identity: mockView),
-                context: context,
-                writer: writer
+        core.eventWriteContext { context, writer in
+            XCTAssertTrue(
+                scope.process(
+                    command: RUMStartViewCommand.mockWith(identity: mockView),
+                    context: context,
+                    writer: writer
+                )
             )
-        )
+        }
 
         // Then
-        let rumViewSent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last, "It should send view event")
-        let rumViewInjectedToCrashContext = try XCTUnwrap(rumViewEventProvider.currentValue, "It must inject view event to crash context")
-        XCTAssertEqual(rumViewSent, rumViewInjectedToCrashContext, "It must inject sent event to crash context")
+        let rumViewSent = try XCTUnwrap(core.events(ofType: RUMViewEvent.self).last, "It should send view event")
+        XCTAssertEqual(viewEvent, rumViewSent, "It must inject sent event to crash context")
     }
 }

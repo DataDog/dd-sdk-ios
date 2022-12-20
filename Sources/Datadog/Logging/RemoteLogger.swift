@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -11,7 +11,7 @@ internal final class RemoteLogger: LoggerProtocol {
     struct Configuration {
         /// The `service` value for logs.
         /// See: [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
-        let service: String
+        let service: String?
         /// The `logger.name` value for logs.
         let loggerName: String
         /// Whether to send the network info in `network.client.*` log attributes.
@@ -20,6 +20,8 @@ internal final class RemoteLogger: LoggerProtocol {
         let threshold: LogLevel
         /// Allows for modifying (or dropping) logs before they get sent.
         let eventMapper: LogEventMapper?
+        /// Sampler for remote logger. Default is using `100.0` sampling rate.
+        let sampler: Sampler
     }
 
     /// `DatadogCore` instance managing this logger.
@@ -36,25 +38,19 @@ internal final class RemoteLogger: LoggerProtocol {
 
     /// Date provider for logs.
     private let dateProvider: DateProvider
-    /// Builds log events.
-    private let builder: LogEventBuilder
     /// Integration with RUM. It is used to correlate Logs with RUM events by injecting RUM context to `LogEvent`.
-    /// Can be `nil` if the integration is disabled for this logger or if RUM feature is disabled.
-    internal let rumContextIntegration: LoggingWithRUMContextIntegration?
-    /// Integration with RUM. It is used to send RUM errors for logs of high severity (`.error` and above).
-    /// Can be `nil` if RUM feature is disabled.
-    internal let rumErrorsIntegration: LoggingWithRUMErrorsIntegration?
+    /// Can be `false` if the integration is disabled for this logger.
+    internal let rumContextIntegration: Bool
     /// Integration with Tracing. It is used to correlate Logs with Spans by injecting `Span` context to `LogEvent`.
-    /// Can be `nil` if the integration is disabled for this logger or if Tracing feature is disabled.
-    internal let activeSpanIntegration: LoggingWithActiveSpanIntegration?
+    /// Can be `false` if the integration is disabled for this logger.
+    internal let activeSpanIntegration: Bool
 
     init(
         core: DatadogCoreProtocol,
         configuration: Configuration,
         dateProvider: DateProvider,
-        rumContextIntegration: LoggingWithRUMContextIntegration?,
-        rumErrorsIntegration: LoggingWithRUMErrorsIntegration?,
-        activeSpanIntegration: LoggingWithActiveSpanIntegration?
+        rumContextIntegration: Bool,
+        activeSpanIntegration: Bool
     ) {
         self.core = core
         self.configuration = configuration
@@ -63,14 +59,8 @@ internal final class RemoteLogger: LoggerProtocol {
             label: "com.datadoghq.logger-\(configuration.loggerName)",
             target: .global(qos: .userInteractive)
         )
-        self.builder = LogEventBuilder(
-            service: configuration.service,
-            loggerName: configuration.loggerName,
-            sendNetworkInfo: configuration.sendNetworkInfo,
-            eventMapper: configuration.eventMapper
-        )
+
         self.rumContextIntegration = rumContextIntegration
-        self.rumErrorsIntegration = rumErrorsIntegration
         self.activeSpanIntegration = activeSpanIntegration
     }
 
@@ -105,52 +95,86 @@ internal final class RemoteLogger: LoggerProtocol {
     // MARK: - Logging
 
     func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable]?) {
+        internalLog(level: level, message: message, error: error.map { DDError(error: $0) }, attributes: attributes)
+    }
+
+    func log(level: LogLevel, message: String, errorKind: String?, errorMessage: String?, stackTrace: String?, attributes: [String: Encodable]?) {
+        var ddError: DDError?
+        if errorKind != nil || errorMessage != nil || stackTrace != nil {
+            // Cross platform frameworks don't necessarilly send all values for errors. Send empty strings
+            // for any values that are empty.
+            ddError = DDError(type: errorKind ?? "", message: errorMessage ?? "", stack: stackTrace ?? "")
+        }
+
+        internalLog(level: level, message: message, error: ddError, attributes: attributes)
+    }
+
+    func internalLog(level: LogLevel, message: String, error: DDError?, attributes: [String: Encodable]?) {
+        guard configuration.sampler.sample() else {
+            return
+        }
         guard level.rawValue >= configuration.threshold.rawValue else {
             return
         }
 
         // on user thread:
         let date = dateProvider.now
-        let threadName = getCurrentThreadName()
+        let threadName = Thread.current.dd.name
 
         // SDK context must be requested on the user thread to ensure that it provides values
         // that are up-to-date for the caller.
         self.core.v1.scope(for: LoggingFeature.self)?.eventWriteContext { context, writer in
-            var userAttributes: [String: Encodable] = [:]
-            var internalAttributes: [String: Encodable] = [:]
-            var userTags: Set<String> = []
+            self.queue.async {
+                let userAttributes = self.unsafeAttributes.merging(attributes ?? [:]) { $1 } // prefer message attributes
+                var internalAttributes: [String: Encodable] = [:]
+                let userTags = self.unsafeTags
 
-            queue.sync {
-                userAttributes = self.unsafeAttributes.merging(attributes ?? [:]) { $1 } // prefer message attributes
-                userTags = self.unsafeTags
+                let contextAttributes = context.featuresAttributes
 
-                if let rumContextAttributes = self.rumContextIntegration?.currentRUMContextAttributes {
-                    internalAttributes.merge(rumContextAttributes) { $1 }
+                if self.rumContextIntegration, let attributes = contextAttributes["rum"] {
+                    internalAttributes.merge(attributes.all()) { $1 }
                 }
-                if let activeSpanAttributes = self.activeSpanIntegration?.activeSpanAttributes {
-                    internalAttributes.merge(activeSpanAttributes) { $1 }
+
+                if self.activeSpanIntegration, let attributes = contextAttributes["tracing"] {
+                    internalAttributes.merge(attributes.all()) { $1 }
                 }
-            }
 
-            let log = self.builder.createLogEvent(
-                date: date,
-                level: level,
-                message: message,
-                error: error.map { DDError(error: $0) },
-                attributes: .init(
-                    userAttributes: userAttributes,
-                    internalAttributes: internalAttributes
-                ),
-                tags: userTags,
-                context: context,
-                threadName: threadName
-            )
+                let builder = LogEventBuilder(
+                    service: self.configuration.service ?? context.service,
+                    loggerName: self.configuration.loggerName,
+                    sendNetworkInfo: self.configuration.sendNetworkInfo,
+                    eventMapper: self.configuration.eventMapper
+                )
 
-            if let log = log {
-                writer.write(value: log)
+                builder.createLogEvent(
+                    date: date,
+                    level: level,
+                    message: message,
+                    error: error,
+                    attributes: .init(
+                        userAttributes: userAttributes,
+                        internalAttributes: internalAttributes
+                    ),
+                    tags: userTags,
+                    context: context,
+                    threadName: threadName
+                ) { log in
+                    writer.write(value: log)
 
-                if log.status == .error || log.status == .critical {
-                    self.rumErrorsIntegration?.addError(for: log)
+                    guard log.status == .error || log.status == .critical else {
+                        return
+                    }
+
+                    self.core.send(
+                        message: .error(
+                            message: log.error?.message ?? log.message,
+                            baggage: [
+                                "type": log.error?.kind,
+                                "stack": log.error?.stack,
+                                "source": "logger"
+                            ]
+                        )
+                    )
                 }
             }
         }

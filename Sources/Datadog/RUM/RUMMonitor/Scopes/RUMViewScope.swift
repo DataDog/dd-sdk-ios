@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -139,7 +139,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     // MARK: - RUMScope
 
-    func process(command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Bool {
+    func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
         // Tells if the View did change and an update event should be send.
         needsViewUpdate = false
 
@@ -295,7 +295,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         userActionScope = createDiscreteUserActionScope(on: command)
     }
 
-    private func sendDiscreteCustomUserAction(on command: RUMAddUserActionCommand, context: DatadogV1Context, writer: Writer) {
+    private func sendDiscreteCustomUserAction(on command: RUMAddUserActionCommand, context: DatadogContext, writer: Writer) {
         let customActionScope = createDiscreteUserActionScope(on: command)
         _ = customActionScope.process(
             command: RUMStopUserActionCommand(
@@ -319,19 +319,29 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     // MARK: - Sending RUM Events
 
-    private func sendApplicationStartAction(context: DatadogV1Context, writer: Writer) {
+    private func sendApplicationStartAction(context: DatadogContext, writer: Writer) {
         actionsCount += 1
 
         var attributes = self.attributes
-        var loadingTime: Int64? = nil
+        var loadingTime: Int64?
 
-        if dependencies.launchTimeProvider.isActivePrewarm {
+        if context.launchTime?.isActivePrewarm == true {
             // Set `active_pre_warm` attribute to true in case
-            // of pre-warmed app
+            // of pre-warmed app.
             attributes[Constants.activePrewarm] = true
-        } else {
+        } else if let launchTime = context.launchTime?.launchTime {
             // Report Application Launch Time only if not pre-warmed
-            loadingTime = dependencies.launchTimeProvider.launchTime.toInt64Nanoseconds
+            loadingTime = launchTime.toInt64Nanoseconds
+        } else if let launchDate = context.launchTime?.launchDate {
+            // The launchTime can be `nil` if the application is not yet
+            // active (UIApplicationDidBecomeActiveNotification). That is
+            // the case when instrumenting a SwiftUI application that start
+            // a RUM view on `SwiftUI.View/onAppear`.
+            //
+            // In that case, we consider the time between the application
+            // launch and the first view start as the application loading
+            // time.
+            loadingTime = viewStartTime.timeIntervalSince(launchDate).toInt64Nanoseconds
         }
 
         let actionEvent = RUMActionEvent(
@@ -341,13 +351,13 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 session: .init(plan: .plan1)
             ),
             action: .init(
-                crash: nil,
-                error: nil,
+                crash: .init(count: 0),
+                error: .init(count: 0),
                 frustration: nil,
                 id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 loadingTime: loadingTime,
-                longTask: nil,
-                resource: nil,
+                longTask: .init(count: 0),
+                resource: .init(count: 0),
                 target: nil,
                 type: .applicationStart
             ),
@@ -361,7 +371,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: nil,
+                hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
@@ -386,7 +396,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
     }
 
-    private func sendViewUpdateEvent(on command: RUMCommand, context: DatadogV1Context, writer: Writer) {
+    private func sendViewUpdateEvent(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         version += 1
         attributes.merge(rumCommandAttributes: command.attributes)
 
@@ -415,7 +425,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: nil,
+                hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
@@ -427,7 +437,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 action: .init(count: actionsCount.toInt64),
                 cpuTicksCount: cpuInfo?.greatestDiff,
                 cpuTicksPerSecond: cpuInfo?.greatestDiff?.divideIfNotZero(by: Double(timeSpent)),
-                crash: nil,
+                crash: .init(count: 0),
                 cumulativeLayoutShift: nil,
                 customTimings: customTimings.reduce(into: [:]) { acc, element in
                     acc[sanitizeCustomTimingName(customTiming: element.key)] = element.value
@@ -447,7 +457,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 id: viewUUID.toRUMDataFormat,
                 inForegroundPeriods: nil,
                 isActive: isActive,
-                isSlowRendered: isSlowRendered,
+                isSlowRendered: isSlowRendered ?? false,
                 jsRefreshRate: viewPerformanceMetrics[.jsFrameTimeSeconds]?.asJsRefreshRate(),
                 largestContentfulPaint: nil,
                 loadEvent: nil,
@@ -475,13 +485,18 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
             // Update `CrashContext` with recent RUM view (no matter sampling - we want to always
             // have recent information if process is interrupted by crash):
-            dependencies.crashContextIntegration?.update(lastRUMViewEvent: event)
+            dependencies.core.send(
+                message: .custom(
+                    key: "rum",
+                    baggage: [RUMBaggageKeys.viewEvent: event]
+                )
+            )
         } else { // if event was dropped by mapper
             version -= 1
         }
     }
 
-    private func sendErrorEvent(on command: RUMAddCurrentViewErrorCommand, context: DatadogV1Context, writer: Writer) {
+    private func sendErrorEvent(on command: RUMAddCurrentViewErrorCommand, context: DatadogContext, writer: Writer) {
         errorsCount += 1
         attributes.merge(rumCommandAttributes: command.attributes)
 
@@ -505,7 +520,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 handling: nil,
                 handlingStack: nil,
                 id: nil,
-                isCrash: command.isCrash,
+                isCrash: command.isCrash ?? false,
                 message: command.message,
                 resource: nil,
                 source: command.source.toRUMDataFormat,
@@ -516,7 +531,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: nil,
+                hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
@@ -541,7 +556,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
     }
 
-    private func sendLongTaskEvent(on command: RUMAddLongTaskCommand, context: DatadogV1Context, writer: Writer) {
+    private func sendLongTaskEvent(on command: RUMAddLongTaskCommand, context: DatadogContext, writer: Writer) {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let taskDurationInNs = command.duration.toInt64Nanoseconds
@@ -567,7 +582,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: nil,
+                hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),

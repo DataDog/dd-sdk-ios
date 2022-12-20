@@ -1,14 +1,16 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
 @testable import Datadog
 
 class CrashReportingWithLoggingIntegrationTests: XCTestCase {
-    private let logOutput = LogOutputMock()
+    let core = PassthroughCoreMock(
+        messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
+    )
 
     // MARK: - Testing Conditional Uploads
 
@@ -16,34 +18,23 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
         // Given
         let crashReport: DDCrashReport = .mockWith(date: .mockDecember15th2019At10AMUTC())
         let crashContext: CrashContext = .mockWith(
-            lastTrackingConsent: [.pending, .notGranted].randomElement()!
+            trackingConsent: [.pending, .notGranted].randomElement()!
         )
 
         // When
         let integration = CrashReportingWithLoggingIntegration(
-            logOutput: logOutput,
-            context: .mockWith(
-                dependencies: .mockWith(
-                    dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
-                    dateCorrector: DateCorrectorMock()
-                )
-            )
+            core: core,
+            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
         )
-        integration.send(crashReport: crashReport, with: crashContext)
+        integration.send(report: crashReport, with: crashContext)
 
         // Then
-        XCTAssertNil(logOutput.recordedLog)
+        XCTAssertTrue(core.events(ofType: LogEvent.self).isEmpty)
     }
 
     // MARK: - Testing Uploaded Data
 
     func testWhenSendingCrashReport_itIncludesAllErrorInformation() throws {
-        let configuration: FeaturesConfiguration.Common = .mockWith(
-            applicationVersion: .mockRandom(),
-            serviceName: .mockRandom(),
-            environment: .mockRandom(),
-            sdkVersion: .mockRandom()
-        )
         let dateCorrectionOffset: TimeInterval = .mockRandom()
 
         // Given
@@ -73,30 +64,34 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
             ),
             wasTruncated: false
         )
+
+        let mockArchitecture = String.mockRandom()
         let crashContext: CrashContext = .mockWith(
-            lastUserInfo: Bool.random() ? .mockRandom() : .empty,
-            lastRUMViewEvent: .mockRandom(),
-            lastNetworkConnectionInfo: .mockRandom(),
-            lastCarrierInfo: .mockRandom()
+            serverTimeOffset: dateCorrectionOffset,
+            service: .mockRandom(),
+            env: .mockRandom(),
+            version: .mockRandom(),
+            device: .mockWith(
+                architecture: mockArchitecture
+            ),
+            sdkVersion: .mockRandom(),
+            userInfo: Bool.random() ? .mockRandom() : .empty,
+            networkConnectionInfo: .mockRandom(),
+            carrierInfo: .mockRandom(),
+            lastRUMViewEvent: .mockRandom()
         )
 
         // When
         let integration = CrashReportingWithLoggingIntegration(
-            logOutput: logOutput,
-            context: .mockWith(
-                configuration: configuration,
-                dependencies: .mockWith(
-                    dateProvider: RelativeDateProvider(using: .mockRandomInThePast()),
-                    dateCorrector: DateCorrectorMock(offset: dateCorrectionOffset)
-                ),
-                appVersionProvider: .mockWith(version: configuration.applicationVersion)
-            )
+            core: core,
+            dateProvider: RelativeDateProvider(using: .mockRandomInThePast())
         )
-        integration.send(crashReport: crashReport, with: crashContext)
+
+        integration.send(report: crashReport, with: crashContext)
 
         // Then
-        let log = try XCTUnwrap(logOutput.recordedLog)
-        let user = try XCTUnwrap(crashContext.lastUserInfo)
+        let log = try XCTUnwrap(core.events(ofType: LogEvent.self).first)
+        let user = try XCTUnwrap(crashContext.userInfo)
 
         let expectedLog = LogEvent(
             date: crashReport.date!.addingTimeInterval(dateCorrectionOffset),
@@ -107,20 +102,21 @@ class CrashReportingWithLoggingIntegrationTests: XCTestCase {
                 message: crashReport.message,
                 stack: crashReport.stack
             ),
-            serviceName: configuration.serviceName,
-            environment: configuration.environment,
+            serviceName: crashContext.service,
+            environment: crashContext.env,
             loggerName: CrashReportingWithLoggingIntegration.Constants.loggerName,
-            loggerVersion: configuration.sdkVersion,
+            loggerVersion: crashContext.sdkVersion,
             threadName: nil,
-            applicationVersion: configuration.applicationVersion,
+            applicationVersion: crashContext.version,
+            dd: .init(device: .init(architecture: mockArchitecture)),
             userInfo: .init(
                 id: user.id,
                 name: user.name,
                 email: user.email,
                 extraInfo: user.extraInfo
             ),
-            networkConnectionInfo: crashContext.lastNetworkConnectionInfo,
-            mobileCarrierInfo: crashContext.lastCarrierInfo,
+            networkConnectionInfo: crashContext.networkConnectionInfo,
+            mobileCarrierInfo: crashContext.carrierInfo,
             attributes: .init(
                 userAttributes: [:],
                 internalAttributes: [

@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -70,6 +70,7 @@ extension RUMSessionMatcher {
     class func sessions(maxCount: Int, from requests: [HTTPServerMock.Request], eventsPatch: ((Data) throws -> Data)? = nil) throws -> [RUMSessionMatcher] {
         let eventMatchers = try requests
             .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody, eventsPatch: eventsPatch) }
+            .filter { event in try event.eventType() != "telemetry" }
         let sessionMatchers = try RUMSessionMatcher.groupMatchersBySessions(eventMatchers)
 
         if sessionMatchers.count > maxCount {

@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -138,23 +138,23 @@ extension XCTestCase {
 
     /// Asserts that JSON representations of two `Encodable` values are equal.
     /// This allows us testing if the information is not lost due to type erasing done in `CrashContext` serialization.
-    func AssertEncodedRepresentationsEqual<V: Encodable>(
-        value1: V,
-        value2: V,
+    func AssertEncodedRepresentationsEqual<RHS, LHS>(
+        _ rhs: RHS,
+        _ lhs: LHS,
         file: StaticString = #filePath,
         line: UInt = #line
-    ) throws {
+    ) throws where RHS: Encodable, LHS: Encodable {
         let prettyEncoder = JSONEncoder()
         prettyEncoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         do {
             let encodedValue1: Data
             let encodedValue2: Data
             if #available(iOS 13.0, *) {
-                encodedValue1 = try prettyEncoder.encode(value1)
-                encodedValue2 = try prettyEncoder.encode(value2)
+                encodedValue1 = try prettyEncoder.encode(rhs)
+                encodedValue2 = try prettyEncoder.encode(lhs)
             } else {
-                encodedValue1 = try prettyEncoder.encode(EncodingContainer(value1))
-                encodedValue2 = try prettyEncoder.encode(EncodingContainer(value2))
+                encodedValue1 = try prettyEncoder.encode(EncodingContainer(rhs))
+                encodedValue2 = try prettyEncoder.encode(EncodingContainer(lhs))
             }
             let value1JSONString = encodedValue1.utf8String
             let value2JSONString = encodedValue2.utf8String

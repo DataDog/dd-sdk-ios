@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -36,8 +36,7 @@ internal struct LogEventBuilder {
     ///   - tags: tags to associate with log
     ///   - context: SDK context from the moment of creating log
     ///   - threadName: the name of the thread on which the log is created.
-    ///
-    /// - Returns: the `LogEvent` or `nil` if the log was dropped by the user (from event mapper API).
+    ///   - callback: The callback to return the modified `LogEvent`.
     ///
     /// - Note: `date` and `threadName` must be collected on the user thread.
     func createLogEvent(
@@ -47,13 +46,14 @@ internal struct LogEventBuilder {
         error: DDError?,
         attributes: LogEvent.Attributes,
         tags: Set<String>,
-        context: DatadogV1Context,
-        threadName: String
-    ) -> LogEvent? {
-        let userInfo = context.userInfoProvider.value
+        context: DatadogContext,
+        threadName: String,
+        callback: @escaping (LogEvent) -> Void
+    ) {
+        let userInfo = context.userInfo ?? .empty
 
         let log = LogEvent(
-            date: date.addingTimeInterval(context.dateCorrector.offset),
+            date: date.addingTimeInterval(context.serverTimeOffset),
             status: level.asLogStatus,
             message: message,
             error: error.map {
@@ -69,32 +69,22 @@ internal struct LogEventBuilder {
             loggerVersion: context.sdkVersion,
             threadName: threadName,
             applicationVersion: context.version,
+            dd: LogEvent.Dd(
+                device: LogEvent.DeviceInfo(architecture: context.device.architecture)
+            ),
             userInfo: .init(
                 id: userInfo.id,
                 name: userInfo.name,
                 email: userInfo.email,
                 extraInfo: userInfo.extraInfo
             ),
-            networkConnectionInfo: sendNetworkInfo ? context.networkConnectionInfoProvider.current : nil,
-            mobileCarrierInfo: sendNetworkInfo ? context.carrierInfoProvider.current : nil,
+            networkConnectionInfo: sendNetworkInfo ? context.networkConnectionInfo : nil,
+            mobileCarrierInfo: sendNetworkInfo ? context.carrierInfo : nil,
             attributes: attributes,
             tags: !tags.isEmpty ? Array(tags) : nil
         )
 
-        if let mapper = eventMapper {
-            return mapper(log)
-        }
-
-        return log
-    }
-}
-
-/// Returns the name of current thread if available or the nature of thread otherwise: `"main" | "background"`.
-internal func getCurrentThreadName() -> String {
-    if let customName = Thread.current.name, !customName.isEmpty {
-        return customName
-    } else {
-        return Thread.isMainThread ? "main" : "background"
+        eventMapper?.map(event: log, callback: callback) ?? callback(log)
     }
 }
 

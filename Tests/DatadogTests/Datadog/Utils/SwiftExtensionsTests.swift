@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -38,11 +38,11 @@ class TimeIntervalExtensionTests: XCTestCase {
         XCTAssertEqual(date15Dec2019.timeIntervalSince1970.toNanoseconds, 1_576_404_000_000_000_000)
 
         // As `TimeInterval` yields sub-millisecond precision this rounds up to the nearest millisecond:
-        let dateAdvanced = date15Dec2019 + 9.999_999_999
+        let dateAdvanced = date15Dec2019 + 9.999999999
         XCTAssertEqual(dateAdvanced.timeIntervalSince1970.toNanoseconds, 1_576_404_010_000_000_000)
 
         // As `TimeInterval` yields sub-millisecond precision this rounds up to the nearest millisecond:
-        let dateAgo = date15Dec2019 - 0.000_000_001
+        let dateAgo = date15Dec2019 - 0.000000001
         XCTAssertEqual(dateAgo.timeIntervalSince1970.toNanoseconds, 1_576_404_000_000_000_000)
 
         let overflownDate = Date(timeIntervalSinceReferenceDate: .greatestFiniteMagnitude)
@@ -62,14 +62,14 @@ class UUIDExtensionTests: XCTestCase {
 
 class IntegerOverflowExtensionTests: XCTestCase {
     func testHappyPath() {
-        let reasonableDouble = Double(1_000.123_456)
+        let reasonableDouble = Double(1_000.123456)
 
         XCTAssertNoThrow(try UInt64(withReportingOverflow: reasonableDouble))
         XCTAssertEqual(try UInt64(withReportingOverflow: reasonableDouble), 1_000)
     }
 
     func testNegative() {
-        let negativeDouble = Double(-1_000.123_456)
+        let negativeDouble = Double(-1_000.123456)
 
         XCTAssertThrowsError(try UInt64(withReportingOverflow: negativeDouble)) { error in
             XCTAssertTrue(error is FixedWidthIntegerError<Double>)
@@ -80,7 +80,7 @@ class IntegerOverflowExtensionTests: XCTestCase {
     }
 
     func testFloat() {
-        let simpleFloat = Float(222.123_456)
+        let simpleFloat = Float(222.123456)
 
         XCTAssertNoThrow(try UInt8(withReportingOverflow: simpleFloat))
         XCTAssertEqual(try UInt8(withReportingOverflow: simpleFloat), 222)

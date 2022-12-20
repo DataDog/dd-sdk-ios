@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -18,7 +18,7 @@ class DDTracerTests: XCTestCase {
     }
 
     override func tearDown() {
-        defaultDatadogCore = NOOPDatadogCore()
+        defaultDatadogCore = NOPDatadogCore()
         core.flush()
         core = nil
         super.tearDown()
@@ -230,6 +230,100 @@ class DDTracerTests: XCTestCase {
         let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2))
 
         let objcValidWriter = DDHTTPHeadersWriter(samplingRate: 100)
+        let objcInvalidFormat = "foo"
+        XCTAssertThrowsError(
+            try objcTracer.inject(objcSpanContext, format: objcInvalidFormat, carrier: objcValidWriter)
+        )
+
+        let objcInvalidWriter = NSObject()
+        let objcValidFormat = OT.formatTextMap
+        XCTAssertThrowsError(
+            try objcTracer.inject(objcSpanContext, format: objcValidFormat, carrier: objcInvalidWriter)
+        )
+    }
+
+    func testInjectingSpanContextToValidCarrierAndFormatForOTel() throws {
+        let objcTracer = DDTracer(swiftTracer: Tracer.mockAny(in: core))
+        let objcSpanContext = DDSpanContextObjc(
+            swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2)
+        )
+
+        let objcWriter = DDOTelHTTPHeadersWriter(samplingRate: 100)
+        try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
+
+        let expectedHTTPHeaders = [
+            "b3": "00000000000000000000000000000001-0000000000000002-1-0000000000000000"
+        ]
+        XCTAssertEqual(objcWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
+    }
+
+    func testInjectingRejectedSpanContextToValidCarrierAndFormatForOTel() throws {
+        let objcTracer = DDTracer(swiftTracer: Tracer.mockAny(in: core))
+        let objcSpanContext = DDSpanContextObjc(
+            swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2)
+        )
+
+        let objcWriter = DDOTelHTTPHeadersWriter(samplingRate: 0)
+        try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
+
+        let expectedHTTPHeaders = [
+            "b3": "0",
+        ]
+        XCTAssertEqual(objcWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
+    }
+
+    func testInjectingSpanContextToInvalidCarrierOrFormatForOTel() throws {
+        let objcTracer = DDTracer(swiftTracer: Tracer.mockAny(in: core))
+        let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2))
+
+        let objcValidWriter = DDOTelHTTPHeadersWriter(samplingRate: 100)
+        let objcInvalidFormat = "foo"
+        XCTAssertThrowsError(
+            try objcTracer.inject(objcSpanContext, format: objcInvalidFormat, carrier: objcValidWriter)
+        )
+
+        let objcInvalidWriter = NSObject()
+        let objcValidFormat = OT.formatTextMap
+        XCTAssertThrowsError(
+            try objcTracer.inject(objcSpanContext, format: objcValidFormat, carrier: objcInvalidWriter)
+        )
+    }
+
+    func testInjectingSpanContextToValidCarrierAndFormatForW3C() throws {
+        let objcTracer = DDTracer(swiftTracer: Tracer.mockAny(in: core))
+        let objcSpanContext = DDSpanContextObjc(
+            swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2)
+        )
+
+        let objcWriter = DDW3CHTTPHeadersWriter(samplingRate: 100)
+        try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
+
+        let expectedHTTPHeaders = [
+            "traceparent": "00-00000000000000000000000000000001-0000000000000002-01"
+        ]
+        XCTAssertEqual(objcWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
+    }
+
+    func testInjectingRejectedSpanContextToValidCarrierAndFormatForW3C() throws {
+        let objcTracer = DDTracer(swiftTracer: Tracer.mockAny(in: core))
+        let objcSpanContext = DDSpanContextObjc(
+            swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2)
+        )
+
+        let objcWriter = DDW3CHTTPHeadersWriter(samplingRate: 0)
+        try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
+
+        let expectedHTTPHeaders = [
+            "traceparent": "00-00000000000000000000000000000001-0000000000000002-00"
+        ]
+        XCTAssertEqual(objcWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
+    }
+
+    func testInjectingSpanContextToInvalidCarrierOrFormatForW3C() throws {
+        let objcTracer = DDTracer(swiftTracer: Tracer.mockAny(in: core))
+        let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2))
+
+        let objcValidWriter = DDW3CHTTPHeadersWriter(samplingRate: 100)
         let objcInvalidFormat = "foo"
         XCTAssertThrowsError(
             try objcTracer.inject(objcSpanContext, format: objcInvalidFormat, carrier: objcValidWriter)

@@ -1,37 +1,47 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
 
-internal class CrashReporter {
+/* public */ internal class CrashReporter: DatadogFeatureIntegration {
+    /* public */ let name = "crash-reporter"
+
+    /* public */ let messageReceiver: FeatureMessageReceiver
+
     /// Queue for synchronizing internal operations.
     private let queue: DispatchQueue
+
+    let crashContextProvider: CrashContextProviderType
 
     /// An interface for accessing the `DDCrashReportingPlugin` from `DatadogCrashReporting`.
     let plugin: DDCrashReportingPluginType
     /// Integration enabling sending crash reports as Logs or RUM Errors.
     let loggingOrRUMIntegration: CrashReportingIntegration
 
-    let crashContextProvider: CrashContextProviderType
-
-    // MARK: - Initialization
-
     convenience init?(
-        crashReportingFeature: CrashReportingFeature,
-        loggingFeature: LoggingFeature?,
-        rumFeature: RUMFeature?,
-        context: DatadogV1Context
+        core: DatadogCoreProtocol,
+        configuration: FeaturesConfiguration.CrashReporting
     ) {
         let loggingOrRUMIntegration: CrashReportingIntegration?
 
         // If RUM rum is enabled prefer it for sending crash reports, otherwise use Logging feature.
-        if let rumFeature = rumFeature {
-            loggingOrRUMIntegration = CrashReportingWithRUMIntegration(rumFeature: rumFeature, context: context)
-        } else if let loggingFeature = loggingFeature {
-            loggingOrRUMIntegration = CrashReportingWithLoggingIntegration(loggingFeature: loggingFeature, context: context)
+        if let rum = core.v1.feature(RUMFeature.self) {
+            loggingOrRUMIntegration = CrashReportingWithRUMIntegration(
+                core: core,
+                applicationID: rum.configuration.applicationID,
+                dateProvider: rum.configuration.dateProvider,
+                sessionSampler: rum.configuration.sessionSampler,
+                backgroundEventTrackingEnabled: rum.configuration.backgroundEventTrackingEnabled,
+                uuidGenerator: rum.configuration.uuidGenerator
+            )
+        } else if let logging = core.v1.feature(LoggingFeature.self) {
+            loggingOrRUMIntegration = CrashReportingWithLoggingIntegration(
+                core: core,
+                dateProvider: logging.configuration.dateProvider
+            )
         } else {
             loggingOrRUMIntegration = nil
         }
@@ -48,25 +58,21 @@ internal class CrashReporter {
             return nil
         }
 
+        let contextProvider = CrashContextProvider()
+
         self.init(
-            crashReportingPlugin: crashReportingFeature.configuration.crashReportingPlugin,
-            crashContextProvider: CrashContextProvider(
-                consentProvider: crashReportingFeature.consentProvider,
-                userInfoProvider: crashReportingFeature.userInfoProvider,
-                networkConnectionInfoProvider: crashReportingFeature.networkConnectionInfoProvider,
-                carrierInfoProvider: crashReportingFeature.carrierInfoProvider,
-                rumViewEventProvider: crashReportingFeature.rumViewEventProvider,
-                rumSessionStateProvider: crashReportingFeature.rumSessionStateProvider,
-                appStateListener: crashReportingFeature.appStateListener
-            ),
-            loggingOrRUMIntegration: availableLoggingOrRUMIntegration
+            crashReportingPlugin: configuration.crashReportingPlugin,
+            crashContextProvider: contextProvider,
+            loggingOrRUMIntegration: availableLoggingOrRUMIntegration,
+            messageReceiver: contextProvider
         )
     }
 
     init(
         crashReportingPlugin: DDCrashReportingPluginType,
         crashContextProvider: CrashContextProviderType,
-        loggingOrRUMIntegration: CrashReportingIntegration
+        loggingOrRUMIntegration: CrashReportingIntegration,
+        messageReceiver: FeatureMessageReceiver
     ) {
         self.queue = DispatchQueue(
             label: "com.datadoghq.crash-reporter",
@@ -75,16 +81,16 @@ internal class CrashReporter {
         self.plugin = crashReportingPlugin
         self.loggingOrRUMIntegration = loggingOrRUMIntegration
         self.crashContextProvider = crashContextProvider
+        self.messageReceiver = messageReceiver
 
         // Inject current `CrashContext`
-        self.inject(currentCrashContext: crashContextProvider.currentCrashContext)
+        if let context = crashContextProvider.currentCrashContext {
+            inject(currentCrashContext: context)
+        }
 
         // Register for future `CrashContext` changes
-        self.crashContextProvider.onCrashContextChange = { [weak self] newCrashContext in
-            guard let self = self else {
-                return
-            }
-            self.inject(currentCrashContext: newCrashContext)
+        self.crashContextProvider.onCrashContextChange = { [weak self] in
+            self?.inject(currentCrashContext: $0)
         }
     }
 
@@ -106,7 +112,7 @@ internal class CrashReporter {
                     return true
                 }
 
-                self.loggingOrRUMIntegration.send(crashReport: availableCrashReport, with: crashContext)
+                self.loggingOrRUMIntegration.send(report: availableCrashReport, with: crashContext)
                 return true
             }
         }

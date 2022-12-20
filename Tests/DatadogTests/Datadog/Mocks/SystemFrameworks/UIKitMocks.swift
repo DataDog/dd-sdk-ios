@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import UIKit
@@ -43,8 +43,16 @@ class UIDeviceMock: UIDevice {
         get { _isBatteryMonitoringEnabled }
         set { _isBatteryMonitoringEnabled = newValue }
     }
-    override var batteryState: UIDevice.BatteryState { _batteryState }
-    override var batteryLevel: Float { _batteryLevel }
+
+    override var batteryState: UIDevice.BatteryState {
+        get { _batteryState }
+        set { _batteryState = newValue }
+    }
+
+    override var batteryLevel: Float {
+        get { _batteryLevel }
+        set { _batteryLevel = newValue }
+    }
 
     private var _isBatteryMonitoringEnabled: Bool
     private var _batteryLevel: Float

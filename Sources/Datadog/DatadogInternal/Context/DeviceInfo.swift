@@ -1,17 +1,17 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
 
 /// Describes current device information.
-internal struct DeviceInfo {
+public struct DeviceInfo: Codable, Equatable {
     // MARK: - Info
 
-    /// Device manufacturer name.
-    let brand = "Apple"
+    /// Device manufacturer name. Always'Apple'
+    let brand: String
 
     /// Device marketing name, e.g. "iPhone", "iPad", "iPod touch".
     let name: String
@@ -35,6 +35,7 @@ internal struct DeviceInfo {
         osVersion: String,
         architecture: String
     ) {
+        self.brand = "Apple"
         self.name = name
         self.model = model
         self.osName = osName

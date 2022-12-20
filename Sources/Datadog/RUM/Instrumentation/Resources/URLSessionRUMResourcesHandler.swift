@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -47,8 +47,8 @@ internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler, RUM
                 kind: RUMResourceType(request: interception.request),
                 spanContext: interception.spanContext.map {
                     .init(
-                        traceID: String($0.traceID.rawValue),
-                        spanID: String($0.spanID.rawValue),
+                        traceID: $0.traceID.toString(.decimal),
+                        spanID: $0.spanID.toString(.decimal),
                         samplingRate: Double(tracingSampler.samplingRate) / 100.0
                     )
                 }

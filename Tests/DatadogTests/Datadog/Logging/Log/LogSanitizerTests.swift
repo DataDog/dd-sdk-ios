@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -111,12 +111,9 @@ class LogSanitizerTests: XCTestCase {
         let log = LogEvent.mockWith(
             attributes: .mockWith(
                 internalAttributes: [
-                    // reserved attributes:
-                    TracingWithLoggingIntegration.TracingAttributes.traceID: mockValue(),
-                    TracingWithLoggingIntegration.TracingAttributes.spanID: mockValue(),
-
-                    // custom attribute:
-                    "attribute1": mockValue(),
+                    Tracer.Attributes.traceID: mockValue(),
+                    Tracer.Attributes.spanID: mockValue(),
+                    "attribute3": mockValue(),
                 ]
             )
         )
@@ -124,6 +121,34 @@ class LogSanitizerTests: XCTestCase {
         let sanitized = LogEventSanitizer().sanitize(log: log)
 
         XCTAssertEqual(sanitized.attributes.internalAttributes?.count, 3)
+    }
+
+    func testReservedAttributesAreSanitized() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        let log = LogEvent.mockWith(
+            attributes: .mockWith(
+                userAttributes: [
+                    Tracer.Attributes.traceID: mockValue(),
+                    Tracer.Attributes.spanID: mockValue(),
+                    RUMMonitor.Attributes.applicationID: mockValue(),
+                    RUMMonitor.Attributes.sessionID: mockValue(),
+                    RUMMonitor.Attributes.viewID: mockValue(),
+                    RUMMonitor.Attributes.userActionID: mockValue(),
+                    "attribute3": mockValue(),
+                ]
+            )
+        )
+
+        let sanitized = LogEventSanitizer().sanitize(log: log)
+
+        XCTAssertEqual(sanitized.attributes.userAttributes.count, 1)
+        let logs = dd.logger.errorLogs
+        XCTAssertEqual(logs.count, 6)
+        dd.logger.errorLogs.forEach {
+            XCTAssertTrue($0.message.matches(regex: "'.*' is a reserved attribute name. This attribute will be ignored."))
+        }
     }
 
     // MARK: - Tags sanitization

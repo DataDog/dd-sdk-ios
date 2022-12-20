@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -17,7 +17,7 @@ class RUMScopeTests: XCTestCase {
         }
 
         let context = RUMContext.mockWith(rumApplicationID: .mockAny(), sessionID: .nullUUID)
-        func process(command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Bool { !isCompleted }
+        func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool { !isCompleted }
     }
 
     func testWhenPropagatingCommand_itRemovesCompletedScope() {

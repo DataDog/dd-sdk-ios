@@ -1,14 +1,17 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
 @testable import Datadog
 
 class WebLogEventConsumerTests: XCTestCase {
-    let mockUserLogsWriter = FileWriterMock()
+    let core = PassthroughCoreMock(
+        messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
+    )
+
     let mockDateCorrector = DateCorrectorMock()
     let mockContextProvider = RUMContextProviderMock(context: .mockWith(rumApplicationID: "123456"))
 
@@ -19,7 +22,7 @@ class WebLogEventConsumerTests: XCTestCase {
         let applicationVersion = String.mockRandom()
         let environment = String.mockRandom()
         let eventConsumer = DefaultWebLogEventConsumer(
-            userLogsWriter: mockUserLogsWriter,
+            core: core,
             dateCorrector: mockDateCorrector,
             rumContextProvider: mockContextProvider,
             applicationVersion: applicationVersion,
@@ -45,9 +48,9 @@ class WebLogEventConsumerTests: XCTestCase {
             "view": ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"]
         ]
 
-        try eventConsumer.consume(event: webLogEvent, internalLog: false)
+        try eventConsumer.consume(event: webLogEvent)
 
-        let data = try JSONEncoder().encode(mockUserLogsWriter.events.first as? CodableValue)
+        let data = try JSONEncoder().encode(core.events.first as? AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
         AssertDictionariesEqual(writtenJSON, expectedWebLogEvent)
@@ -57,7 +60,7 @@ class WebLogEventConsumerTests: XCTestCase {
         let applicationVersion = String.mockRandom()
         let environment = String.mockRandom()
         let eventConsumer = DefaultWebLogEventConsumer(
-            userLogsWriter: mockUserLogsWriter,
+            core: core,
             dateCorrector: mockDateCorrector,
             rumContextProvider: nil,
             applicationVersion: applicationVersion,
@@ -75,9 +78,9 @@ class WebLogEventConsumerTests: XCTestCase {
         var expectedWebLogEvent: JSON = webLogEvent
         expectedWebLogEvent["ddtags"] = "version:\(applicationVersion),env:\(environment)"
 
-        try eventConsumer.consume(event: webLogEvent, internalLog: false)
+        try eventConsumer.consume(event: webLogEvent)
 
-        let data = try JSONEncoder().encode(mockUserLogsWriter.events.first as? CodableValue)
+        let data = try JSONEncoder().encode(core.events.first as? AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
         AssertDictionariesEqual(writtenJSON, expectedWebLogEvent)

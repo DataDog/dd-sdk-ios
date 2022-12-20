@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -32,8 +32,8 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
         return instrumentation?.interceptor as? URLSessionInterceptor
     }
 
-    /// Filters first party `URLs` defined by the user.
-    private let defaultFirstPartyURLsFilter: FirstPartyURLsFilter
+    /// First party hosts defined by the user.
+    private let firstPartyHosts: FirstPartyHosts
     /// Filters internal `URLs` used by the SDK.
     private let internalURLsFilter: InternalURLsFilter
     /// Handles resources interception.
@@ -77,7 +77,7 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
         configuration: FeaturesConfiguration.URLSessionAutoInstrumentation,
         handler: URLSessionInterceptionHandler
     ) {
-        self.defaultFirstPartyURLsFilter = FirstPartyURLsFilter(hosts: configuration.userDefinedFirstPartyHosts)
+        self.firstPartyHosts = configuration.userDefinedFirstPartyHosts
         self.internalURLsFilter = InternalURLsFilter(urls: configuration.sdkInternalURLs)
         self.handler = handler
         self.tracingSampler = configuration.tracingSampler
@@ -119,7 +119,7 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
         }
         let isFirstPartyRequest = isFirstParty(request: request, for: session)
         if injectTracingHeadersToFirstPartyRequests && isFirstPartyRequest {
-            return injectSpanContext(into: request)
+            return injectSpanContext(into: request, session: session)
         }
         return request
     }
@@ -140,7 +140,7 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
             )
             self.interceptionByTask[task] = interception
 
-            if let spanContext = self.extractSpanContext(from: request) {
+            if let spanContext = self.extractSpanContext(from: request, session: session) {
                 interception.register(spanContext: spanContext)
             }
 
@@ -220,11 +220,10 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
 
     private func isFirstParty(request: URLRequest, for session: URLSession?) -> Bool {
         guard let delegate = session?.delegate as? DDURLSessionDelegate else {
-            return defaultFirstPartyURLsFilter.isFirstParty(url: request.url)
+            return firstPartyHosts.isFirstParty(url: request.url)
         }
 
-        return delegate.firstPartyURLsFilter.isFirstParty(url: request.url) ||
-                defaultFirstPartyURLsFilter.isFirstParty(url: request.url)
+        return delegate.firstPartyHosts.isFirstParty(url: request.url) || firstPartyHosts.isFirstParty(url: request.url)
     }
 
     private func finishInterception(task: URLSessionTask, interception: TaskInterception) {
@@ -234,35 +233,68 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
 
     // MARK: - SpanContext Injection & Extraction
 
-    private func injectSpanContext(into firstPartyRequest: URLRequest) -> URLRequest {
+    private func injectSpanContext(into firstPartyRequest: URLRequest, session: URLSession?) -> URLRequest {
         guard let tracer = Global.sharedTracer as? Tracer else {
             return firstPartyRequest
         }
 
-        let writer = HTTPHeadersWriter(sampler: tracingSampler)
         let spanContext = tracer.createSpanContext()
 
-        tracer.inject(spanContext: spanContext, writer: writer)
-
         var newRequest = firstPartyRequest
-        writer.tracePropagationHTTPHeaders.forEach { field, value in
-            newRequest.setValue(value, forHTTPHeaderField: field)
-        }
+        let additionalFirstPartyHostsTracingHeaderTypes = (session?.delegate as? DDURLSessionDelegate)?
+            .firstPartyHosts.tracingHeaderTypes(for: newRequest.url) ?? .init()
+        let tracingHeaderTypes = firstPartyHosts.tracingHeaderTypes(for: newRequest.url)
 
-        additionalHeadersForFirstPartyRequests?.forEach { field, value in
-            newRequest.setValue(value, forHTTPHeaderField: field)
-        }
+        tracingHeaderTypes.union(additionalFirstPartyHostsTracingHeaderTypes).forEach {
+            let writer: TracePropagationHeadersProvider & OTFormatWriter
+            switch $0 {
+            case .datadog:
+                writer = HTTPHeadersWriter(sampler: tracingSampler)
+            case .b3:
+                writer = OTelHTTPHeadersWriter(
+                    sampler: tracingSampler,
+                    injectEncoding: .single
+                )
+            case .b3multi:
+                writer = OTelHTTPHeadersWriter(
+                    sampler: tracingSampler,
+                    injectEncoding: .multiple
+                )
+            case .tracecontext:
+                writer = W3CHTTPHeadersWriter(sampler: tracingSampler)
+            }
+            tracer.inject(spanContext: spanContext, writer: writer)
 
+            writer.tracePropagationHTTPHeaders.forEach { field, value in
+                newRequest.setValue(value, forHTTPHeaderField: field)
+            }
+
+            additionalHeadersForFirstPartyRequests?.forEach { field, value in
+                newRequest.setValue(value, forHTTPHeaderField: field)
+            }
+        }
         return newRequest
     }
 
-    private func extractSpanContext(from request: URLRequest) -> DDSpanContext? {
+    private func extractSpanContext(from request: URLRequest, session: URLSession?) -> DDSpanContext? {
         guard let tracer = Global.sharedTracer as? Tracer,
               let headers = request.allHTTPHeaderFields else {
             return nil
         }
 
-        let reader = HTTPHeadersReader(httpHeaderFields: headers)
+        let additionalFirstPartyHostsTracingHeaderTypes = (session?.delegate as? DDURLSessionDelegate)?
+            .firstPartyHosts.tracingHeaderTypes(for: request.url) ?? .init()
+        let tracingHeaderTypes = firstPartyHosts.tracingHeaderTypes(for: request.url)
+            .union(additionalFirstPartyHostsTracingHeaderTypes)
+
+        let reader: OTFormatReader
+        if tracingHeaderTypes.contains(.datadog) {
+            reader = HTTPHeadersReader(httpHeaderFields: headers)
+        } else if tracingHeaderTypes.contains(.b3) || tracingHeaderTypes.contains(.b3multi) {
+            reader = OTelHTTPHeadersReader(httpHeaderFields: headers)
+        } else {
+            reader = W3CHTTPHeadersReader(httpHeaderFields: headers)
+        }
         return tracer.extract(reader: reader) as? DDSpanContext
     }
 }

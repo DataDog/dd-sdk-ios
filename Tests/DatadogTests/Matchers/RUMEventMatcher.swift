@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -79,6 +79,8 @@ internal class RUMEventMatcher {
     func model<DM: Decodable>(isTypeOf type: DM.Type) -> Bool {
         return (try? jsonDataDecoder.decode(DM.self, from: jsonData)) != nil
     }
+
+    func eventType()            throws -> String { try jsonMatcher.value(forKeyPath: "type") }
 
     func userID()               throws -> String { try jsonMatcher.value(forKeyPath: "usr.id") }
     func userName()             throws -> String { try jsonMatcher.value(forKeyPath: "usr.name") }

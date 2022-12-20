@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -45,6 +45,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertNil(configuration.firstPartyHosts)
             XCTAssertNil(configuration.logEventMapper)
             XCTAssertNil(configuration.spanEventMapper)
+            XCTAssertEqual(configuration.loggingSamplingRate, 100.0)
             XCTAssertEqual(configuration.tracingSamplingRate, 20.0)
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 100.0)
             XCTAssertNil(configuration.rumSessionsListener)
@@ -93,8 +94,10 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .onRUMSessionStart { _, _ in }
                 .setLogEventMapper { _ in mockLogEvent }
                 .setSpanEventMapper { _ in mockSpanEvent }
+                .set(loggingSamplingRate: 66)
                 .set(tracingSamplingRate: 75)
                 .trackURLSession(firstPartyHosts: ["example.com"])
+                .trackURLSession(firstPartyHostsWithHeaderTypes: ["example2.com": [.b3]])
                 .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock())
                 .trackUIKitRUMActions(using: UIKitRUMUserActionsPredicateMock())
                 .trackRUMLongTasks(threshold: 100.0)
@@ -152,7 +155,8 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.customLogsEndpoint, URL(string: "https://api.custom.logs/")!)
             XCTAssertEqual(configuration.customTracesEndpoint, URL(string: "https://api.custom.traces/")!)
             XCTAssertEqual(configuration.customRUMEndpoint, URL(string: "https://api.custom.rum/")!)
-            XCTAssertEqual(configuration.firstPartyHosts, ["example.com"])
+            XCTAssertEqual(configuration.firstPartyHosts, .init(["example.com": [.datadog], "example2.com": [.b3]]))
+            XCTAssertEqual(configuration.loggingSamplingRate, 66)
             XCTAssertEqual(configuration.tracingSamplingRate, 75)
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 42.5)
             XCTAssertNotNil(configuration.rumSessionsListener)
@@ -160,7 +164,6 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertTrue(configuration.rumUIKitViewsPredicate is UIKitRUMViewsPredicateMock)
             XCTAssertTrue(configuration.rumUIKitUserActionsPredicate is UIKitRUMUserActionsPredicateMock)
             XCTAssertEqual(configuration.rumLongTaskDurationThreshold, 100.0)
-            XCTAssertEqual(configuration.logEventMapper?(.mockRandom()), mockLogEvent)
             XCTAssertEqual(configuration.spanEventMapper?(.mockRandom()), mockSpanEvent)
             XCTAssertEqual(configuration.rumViewEventMapper?(.mockRandom()), mockRUMViewEvent)
             XCTAssertEqual(configuration.rumResourceEventMapper?(.mockRandom()), mockRUMResourceEvent)
@@ -182,6 +185,11 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.proxyConfiguration?[kCFProxyPasswordKey] as? String, "proxypass")
             XCTAssertTrue(configuration.encryption is DataEncryptionMock)
             XCTAssertTrue(configuration.serverDateProvider is ServerDateProviderMock)
+
+            // Aync mapper:
+            configuration.logEventMapper?.map(event: .mockRandom()) { event in
+                XCTAssertEqual(event, mockLogEvent)
+            }
         }
 
         XCTAssertTrue(rumConfigurationWithDefaultValues.rumUIKitViewsPredicate is DefaultUIKitRUMViewsPredicate)
@@ -199,7 +207,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
 
         let configuration = builder.build()
 
-        XCTAssertEqual(configuration.firstPartyHosts, ["example.com"])
+        XCTAssertEqual(configuration.firstPartyHosts, .init(["example.com": [.datadog]]))
         XCTAssertEqual(configuration.logsEndpoint, .eu1)
         XCTAssertEqual(configuration.tracesEndpoint, .eu1)
         XCTAssertEqual(configuration.rumEndpoint, .eu1)

@@ -1,25 +1,23 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
 @testable import Datadog
 
 class RUMResourceScopeTests: XCTestCase {
-    let datadogContext: DatadogV1Context = .mockWith(
-        configuration: .mockWith(serviceName: "test-service"),
-        dependencies: .mockWith(
-            deviceInfo: .mockWith(
-                name: "device-name",
-                osName: "device-os"
-            )
+    let context: DatadogContext = .mockWith(
+        service: "test-service",
+        device: .mockWith(
+            name: "device-name",
+            osName: "device-os"
         )
     )
 
     private let dependencies: RUMScopeDependencies = .mockWith(
-        firstPartyURLsFilter: FirstPartyURLsFilter(hosts: ["firstparty.com"])
+        firstPartyHosts: FirstPartyHosts(["firstparty.com": [.datadog]])
     )
 
     private let rumContext = RUMContext.mockWith(
@@ -50,6 +48,10 @@ class RUMResourceScopeTests: XCTestCase {
     }
 
     func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEvent() throws {
+        let hasReplay: Bool = .mockRandom()
+        var context = self.context
+        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
+
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
@@ -77,7 +79,7 @@ class RUMResourceScopeTests: XCTestCase {
                     httpStatusCode: 200,
                     size: 1_024
                 ),
-                context: datadogContext,
+                context: context,
                 writer: writer
             )
         )
@@ -88,6 +90,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
+        XCTAssertEqual(event.session.hasReplay, hasReplay)
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.view.id, rumContext.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.view.url, "FooViewController")
@@ -130,7 +133,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertFalse(
             scope.process(
                 command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1"),
-                context: datadogContext,
+                context: context,
                 writer: writer
             )
         )
@@ -155,7 +158,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertFalse(
             scope.process(
                 command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1"),
-                context: datadogContext,
+                context: context,
                 writer: writer
             )
         )
@@ -172,7 +175,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Given
         let customSource: String = .mockAnySource()
-        let customContext: DatadogV1Context = .mockWith(configuration: .mockWith(source: customSource))
+        let customContext: DatadogContext = .mockWith(source: customSource)
 
         let scope = RUMResourceScope.mockWith(
             context: rumContext,
@@ -233,7 +236,7 @@ class RUMResourceScopeTests: XCTestCase {
                     httpStatusCode: 200,
                     size: 1_024
                 ),
-                context: datadogContext,
+                context: context,
                 writer: writer
             )
         )
@@ -301,7 +304,7 @@ class RUMResourceScopeTests: XCTestCase {
                     httpStatusCode: 200,
                     size: 1_024
                 ),
-                context: datadogContext,
+                context: context,
                 writer: writer
             )
         )
@@ -366,7 +369,7 @@ class RUMResourceScopeTests: XCTestCase {
                     httpStatusCode: 500,
                     attributes: ["foo": "bar"]
                 ),
-                context: datadogContext,
+                context: context,
                 writer: writer
             )
         )
@@ -402,8 +405,9 @@ class RUMResourceScopeTests: XCTestCase {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         let source = String.mockAnySource()
-        let customContext: DatadogV1Context = .mockWith(
-            configuration: .mockWith(serviceName: "test-service", source: source)
+        let customContext: DatadogContext = .mockWith(
+            service: "test-service",
+            source: source
         )
 
         // Given
@@ -494,7 +498,7 @@ class RUMResourceScopeTests: XCTestCase {
             )
         )
 
-        XCTAssertTrue(scope.process(command: metricsCommand, context: datadogContext, writer: writer))
+        XCTAssertTrue(scope.process(command: metricsCommand, context: context, writer: writer))
 
         currentTime.addTimeInterval(1)
 
@@ -508,7 +512,7 @@ class RUMResourceScopeTests: XCTestCase {
                     httpStatusCode: 200,
                     size: 1_024
                 ),
-                context: datadogContext,
+                context: context,
                 writer: writer
             )
         )
@@ -567,12 +571,12 @@ class RUMResourceScopeTests: XCTestCase {
         // When
         _ = scope1.process(
             command: RUMStopResourceCommand.mockWith(resourceKey: resourceKey),
-            context: datadogContext,
+            context: context,
             writer: writer
         )
         _ = scope2.process(
             command: RUMStopResourceCommand.mockWith(resourceKey: resourceKey),
-            context: datadogContext,
+            context: context,
             writer: writer
         )
 
@@ -607,7 +611,7 @@ class RUMResourceScopeTests: XCTestCase {
                     resourceKey: "/resource/1",
                     kind: kindBasedOnResponse
                 ),
-                context: datadogContext,
+                context: context,
                 writer: writer
             )
         )
@@ -637,7 +641,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertFalse(
             scope.process(
                 command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1"),
-                context: datadogContext,
+                context: context,
                 writer: writer
             )
         )
@@ -670,7 +674,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertFalse(
             scope.process(
                 command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1"),
-                context: datadogContext,
+                context: context,
                 writer: writer
             )
         )
@@ -700,7 +704,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertFalse(
             scope.process(
                 command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/1"),
-                context: datadogContext,
+                context: context,
                 writer: writer
             )
         )
@@ -734,7 +738,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertFalse(
             scope.process(
                 command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/1"),
-                context: datadogContext,
+                context: context,
                 writer: writer
             )
         )
@@ -769,7 +773,7 @@ class RUMResourceScopeTests: XCTestCase {
                     time: currentTime,
                     attributes: [CrossPlatformAttributes.errorSourceType: "react-native"]
                 ),
-                context: datadogContext,
+                context: context,
                 writer: writer
             )
         )
@@ -821,7 +825,7 @@ class RUMResourceScopeTests: XCTestCase {
                     httpStatusCode: 200,
                     size: 1_024
                 ),
-                context: datadogContext,
+                context: context,
                 writer: writer
             )
         )
@@ -829,7 +833,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertFalse(
             scope2.process(
                 command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/2"),
-                context: datadogContext,
+                context: context,
                 writer: writer
             )
         )
@@ -897,7 +901,7 @@ class RUMResourceScopeTests: XCTestCase {
                     httpStatusCode: 200,
                     size: 1_024
                 ),
-                context: datadogContext,
+                context: context,
                 writer: writer
             )
         )
@@ -905,7 +909,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertFalse(
             scope2.process(
                 command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/2"),
-                context: datadogContext,
+                context: context,
                 writer: writer
             )
         )

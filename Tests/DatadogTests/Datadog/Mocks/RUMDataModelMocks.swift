@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 @testable import Datadog
@@ -398,6 +398,71 @@ extension RUMLongTaskEvent: RandomMockable {
             usr: .mockRandom(),
             version: .mockAny(),
             view: .init(id: .mockRandom(), name: .mockRandom(), referrer: .mockRandom(), url: .mockRandom())
+        )
+    }
+}
+
+extension TelemetryConfigurationEvent: EquatableInTests {
+}
+
+extension TelemetryConfigurationEvent: RandomMockable {
+    static func mockRandom() -> TelemetryConfigurationEvent {
+        return TelemetryConfigurationEvent(
+            dd: .init(),
+            action: .init(id: .mockRandom()),
+            application: .init(id: .mockRandom()),
+            date: .mockRandom(),
+            experimentalFeatures: nil,
+            service: .mockRandom(),
+            session: .init(id: .mockRandom()),
+            source: .ios,
+            telemetry: .init(
+                configuration: .init(
+                    actionNameAttribute: nil,
+                    batchSize: .mockAny(),
+                    batchUploadFrequency: .mockAny(),
+                    defaultPrivacyLevel: .mockAny(),
+                    forwardConsoleLogs: nil,
+                    forwardErrorsToLogs: nil,
+                    forwardReports: nil,
+                    initializationType: nil,
+                    mobileVitalsUpdatePeriod: .mockRandom(),
+                    premiumSampleRate: nil,
+                    replaySampleRate: nil,
+                    sessionReplaySampleRate: nil,
+                    sessionSampleRate: .mockRandom(),
+                    silentMultipleInit: nil,
+                    telemetryConfigurationSampleRate: .mockRandom(),
+                    telemetrySampleRate: .mockRandom(),
+                    traceSampleRate: .mockRandom(),
+                    trackBackgroundEvents: .mockRandom(),
+                    trackCrossPlatformLongTasks: .mockRandom(),
+                    trackErrors: .mockRandom(),
+                    trackFlutterPerformance: .mockRandom(),
+                    trackFrustrations: .mockRandom(),
+                    trackInteractions: .mockRandom(),
+                    trackLongTask: .mockRandom(),
+                    trackNativeErrors: .mockRandom(),
+                    trackNativeLongTasks: .mockRandom(),
+                    trackNativeViews: .mockRandom(),
+                    trackNetworkRequests: .mockRandom(),
+                    trackResources: .mockRandom(),
+                    trackSessionAcrossSubdomains: nil,
+                    trackViewsManually: nil,
+                    useAllowedTracingOrigins: .mockRandom(),
+                    useBeforeSend: nil,
+                    useCrossSiteSessionCookie: nil,
+                    useExcludedActivityUrls: nil,
+                    useFirstPartyHosts: .mockRandom(),
+                    useLocalEncryption: .mockRandom(),
+                    useProxy: .mockRandom(),
+                    useSecureSessionCookie: nil,
+                    useTracing: .mockRandom(),
+                    viewTrackingStrategy: nil
+                )
+            ),
+            version: .mockAny(),
+            view: .init(id: .mockRandom())
         )
     }
 }

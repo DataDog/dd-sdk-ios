@@ -1,25 +1,27 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 @testable import Datadog
 
 extension LoggingFeature {
     /// Mocks the feature instance which performs no writes and no uploads.
-    static func mockNoOp() -> LoggingFeature {
+    static func mockNoOp(configuration: FeaturesConfiguration.Logging = .mockAny()) -> LoggingFeature {
         return LoggingFeature(
             storage: .mockNoOp(),
             upload: .mockNoOp(),
-            configuration: .mockAny()
+            configuration: configuration,
+            messageReceiver: NOPFeatureMessageReceiver()
         )
     }
 
     /// Mocks the feature instance which performs writes to `InMemoryWriter`.
     /// Use `LogFeature.waitAndReturnLogMatchers()` to inspect and assert recorded `Logs`.
     static func mockByRecordingLogMatchers(
-        featureConfiguration: FeaturesConfiguration.Logging = .mockAny()
+        configuration: FeaturesConfiguration.Logging = .mockAny(),
+        messageReceiver: FeatureMessageReceiver = LoggingMessageReceiver(logEventMapper: nil)
     ) -> LoggingFeature {
         // Mock storage with `InMemoryWriter`, used later for retrieving recorded events back:
         let interceptedStorage = FeatureStorage(
@@ -31,7 +33,8 @@ extension LoggingFeature {
         return LoggingFeature(
             storage: interceptedStorage,
             upload: .mockNoOp(),
-            configuration: featureConfiguration
+            configuration: configuration,
+            messageReceiver: messageReceiver
         )
     }
 
@@ -92,6 +95,7 @@ extension LogEvent: AnyMockable, RandomMockable {
         loggerVersion: String = .mockAny(),
         threadName: String = .mockAny(),
         applicationVersion: String = .mockAny(),
+        dd: LogEvent.Dd = .mockAny(),
         userInfo: UserInfo = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo = .mockAny(),
         mobileCarrierInfo: CarrierInfo? = .mockAny(),
@@ -109,6 +113,7 @@ extension LogEvent: AnyMockable, RandomMockable {
             loggerVersion: loggerVersion,
             threadName: threadName,
             applicationVersion: applicationVersion,
+            dd: dd,
             userInfo: userInfo,
             networkConnectionInfo: networkConnectionInfo,
             mobileCarrierInfo: mobileCarrierInfo,
@@ -129,6 +134,7 @@ extension LogEvent: AnyMockable, RandomMockable {
             loggerVersion: .mockRandom(),
             threadName: .mockRandom(),
             applicationVersion: .mockRandom(),
+            dd: .mockRandom(),
             userInfo: .mockRandom(),
             networkConnectionInfo: .mockRandom(),
             mobileCarrierInfo: .mockRandom(),
@@ -172,6 +178,34 @@ extension LogEvent.UserInfo: AnyMockable, RandomMockable {
     }
 }
 
+extension LogEvent.Dd: AnyMockable, RandomMockable {
+    static func mockAny() -> LogEvent.Dd {
+        return LogEvent.Dd(
+            device: .mockAny()
+        )
+    }
+
+    static func mockRandom() -> LogEvent.Dd {
+        return LogEvent.Dd(
+            device: .mockRandom()
+        )
+    }
+}
+
+extension LogEvent.DeviceInfo: AnyMockable, RandomMockable {
+    static func mockAny() -> LogEvent.DeviceInfo {
+        return LogEvent.DeviceInfo(
+            architecture: .mockAny()
+        )
+    }
+
+    static func mockRandom() -> LogEvent.DeviceInfo {
+        return LogEvent.DeviceInfo(
+            architecture: .mockRandom()
+        )
+    }
+}
+
 extension LogEvent.Error: RandomMockable {
     static func mockRandom() -> Self {
         return .init(
@@ -193,7 +227,8 @@ extension LogEventBuilder: AnyMockable {
         service: String = .mockAny(),
         loggerName: String = .mockAny(),
         sendNetworkInfo: Bool = .mockAny(),
-        eventMapper: LogEventMapper? = nil
+        eventMapper: LogEventMapper? = nil,
+        deviceInfo: DeviceInfo = .mockAny()
     ) -> LogEventBuilder {
         return LogEventBuilder(
             service: service,

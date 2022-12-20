@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -31,7 +31,6 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             assert: {
                 Global.sharedTracer is DDNoopTracer
                     && Global.rum is DDNoopRUMMonitor
-                    && Global.crashReporter == nil
             },
             problem: "All Global components must use no-op implementations.",
             solution: """
@@ -39,13 +38,12 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             ```
             Global.sharedTracer = DDNoopGlobals.tracer
             Global.rum = DDNoopRUMMonitor()
-            Global.crashReporter = nil
             ```
             """
         ),
         .init(
             assert: {
-                defaultDatadogCore is NOOPDatadogCore
+                defaultDatadogCore is NOPDatadogCore
             },
             problem: "`defaultDatadogCore` must be reset after each test.",
             solution: """

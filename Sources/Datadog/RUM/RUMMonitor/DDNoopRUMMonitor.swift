@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import UIKit
@@ -189,14 +189,6 @@ internal class DDNoopRUMMonitor: DDRUMMonitor {
     }
 
     override func removeAttribute(forKey key: AttributeKey) {
-        warn()
-    }
-
-    override func updatePerformanceMetric(
-        metric: PerformanceMetric,
-        value: Double,
-        attributes: [AttributeKey: AttributeValue] = [:]
-    ) {
         warn()
     }
 }

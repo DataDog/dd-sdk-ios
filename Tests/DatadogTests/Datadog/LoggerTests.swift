@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -26,19 +26,18 @@ class LoggerTests: XCTestCase {
 
     func testSendingLogWithDefaultLogger() throws {
         core.context = .mockWith(
-            configuration: .mockWith(
-                applicationBundleIdentifier: "com.datadoghq.ios-sdk",
-                serviceName: "default-service-name",
-                environment: "tests",
-                sdkVersion: "1.2.3"
-            ),
-            dependencies: .mockWith(
-                dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
-            ),
-            appVersionProvider: .mockWith(version: "1.0.0")
+            service: "default-service-name",
+            env: "tests",
+            version: "1.0.0",
+            sdkVersion: "1.2.3",
+            device: .mockWith(architecture: "testArch")
         )
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        let feature: LoggingFeature = .mockByRecordingLogMatchers(
+            configuration: .mockWith(
+                dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
+                applicationBundleIdentifier: "com.datadoghq.ios-sdk")
+        )
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
@@ -55,7 +54,12 @@ class LoggerTests: XCTestCase {
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:00.000Z",
           "version": "1.0.0",
-          "ddtags": "env:tests,version:1.0.0"
+          "ddtags": "env:tests,version:1.0.0",
+          "_dd": {
+            "device": {
+              "architecture": "testArch"
+            }
+          }
         }
         """)
     }
@@ -94,13 +98,11 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending Customized Logs
 
     func testSendingLogsWithDifferentDates() throws {
-        core.context = .mockWith(
-            dependencies: .mockWith(
+        let feature: LoggingFeature = .mockByRecordingLogMatchers(
+            configuration: .mockWith(
                 dateProvider: RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC(), advancingBySeconds: 1)
             )
         )
-
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
@@ -189,15 +191,77 @@ class LoggerTests: XCTestCase {
         }
     }
 
+    func testLoggingErrorStrings() throws {
+        core.context = .mockAny()
+
+        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        core.register(feature: feature)
+
+        let logger = Logger.builder.build(in: core)
+        let errorKind = String.mockRandom()
+        let errorMessage = String.mockRandom()
+        let stackTrace = String.mockRandom()
+        logger.log(level: .info,
+                   message: .mockAny(),
+                   errorKind: errorKind,
+                   errorMessage: errorMessage,
+                   stackTrace: stackTrace,
+                   attributes: nil
+        )
+
+        let logMatchers = try feature.waitAndReturnLogMatchers(count: 1)
+        let logMatcher = logMatchers.first
+        XCTAssertNotNil(logMatcher)
+        if let logMatcher = logMatcher {
+            logMatcher.assertValue(forKeyPath: "error.kind", equals: errorKind)
+            logMatcher.assertValue(forKeyPath: "error.message", equals: errorMessage)
+            logMatcher.assertValue(forKeyPath: "error.stack", equals: stackTrace)
+        }
+    }
+
+    // MARK: - Sampling
+
+    func testSamplingEnabled() {
+        core.context = .mockAny()
+        let feature: LoggingFeature = .mockByRecordingLogMatchers(configuration: .mockWith(remoteLoggingSampler: Sampler(samplingRate: 100)))
+        core.register(feature: feature)
+
+        let logger = Logger.builder
+            .build(in: core)
+
+        logger.debug(.mockAny())
+        logger.info(.mockAny())
+        logger.notice(.mockAny())
+        logger.warn(.mockAny())
+        logger.error(.mockAny())
+        logger.critical(.mockAny())
+
+        XCTAssertEqual(try feature.waitAndReturnLogMatchers(count: 6).count, 6)
+    }
+
+    func testSamplingDisabled() {
+        core.context = .mockAny()
+        let feature: LoggingFeature = .mockByRecordingLogMatchers(configuration: .mockWith(remoteLoggingSampler: Sampler(samplingRate: 0)))
+        core.register(feature: feature)
+
+        let logger = Logger.builder
+            .build(in: core)
+
+        logger.debug(.mockAny())
+        logger.info(.mockAny())
+        logger.notice(.mockAny())
+        logger.warn(.mockAny())
+        logger.error(.mockAny())
+        logger.critical(.mockAny())
+
+        XCTAssertEqual(try feature.waitAndReturnLogMatchers(count: 0).count, 0)
+    }
+
     // MARK: - Sending user info
 
     func testSendingUserInfo() throws {
-        let userInfoProvider = UserInfoProvider()
-
         core.context = .mockWith(
-            dependencies: .mockWith(
-                userInfoProvider: userInfoProvider
-            )
+            userInfo: .empty
         )
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers()
@@ -205,13 +269,12 @@ class LoggerTests: XCTestCase {
 
         let logger = Logger.builder.build(in: core)
 
-        userInfoProvider.value = .empty
         logger.debug("message with no user info")
 
-        userInfoProvider.value = UserInfo(id: "abc-123", name: "Foo", email: nil, extraInfo: [:])
+        core.context.userInfo = UserInfo(id: "abc-123", name: "Foo", email: nil, extraInfo: [:])
         logger.debug("message with user `id` and `name`")
 
-        userInfoProvider.value = UserInfo(
+        core.context.userInfo = UserInfo(
             id: "abc-123",
             name: "Foo",
             email: "foo@example.com",
@@ -223,7 +286,7 @@ class LoggerTests: XCTestCase {
         )
         logger.debug("message with user `id`, `name`, `email` and `extraInfo`")
 
-        userInfoProvider.value = .empty
+        core.context.userInfo = .empty
         logger.debug("message with no user info")
 
         let logMatchers = try feature.waitAndReturnLogMatchers(count: 4)
@@ -248,12 +311,8 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending carrier info
 
     func testSendingCarrierInfoWhenEnteringAndLeavingCellularServiceRange() throws {
-        let carrierInfoProvider = CarrierInfoProviderMock(carrierInfo: nil)
-
         core.context = .mockWith(
-            dependencies: .mockWith(
-                carrierInfoProvider: carrierInfoProvider
-            )
+            carrierInfo: nil
         )
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers()
@@ -264,19 +323,17 @@ class LoggerTests: XCTestCase {
             .build(in: core)
 
         // simulate entering cellular service range
-        carrierInfoProvider.set(
-            current: .mockWith(
-                carrierName: "Carrier",
-                carrierISOCountryCode: "US",
-                carrierAllowsVOIP: true,
-                radioAccessTechnology: .LTE
-            )
+        core.context.carrierInfo = .mockWith(
+            carrierName: "Carrier",
+            carrierISOCountryCode: "US",
+            carrierAllowsVOIP: true,
+            radioAccessTechnology: .LTE
         )
 
         logger.debug("message")
 
         // simulate leaving cellular service range
-        carrierInfoProvider.set(current: nil)
+        core.context.carrierInfo = nil
 
         logger.debug("message")
 
@@ -291,12 +348,8 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending network info
 
     func testSendingNetworkConnectionInfoWhenReachabilityChanges() throws {
-        let networkConnectionInfoProvider = NetworkConnectionInfoProviderMock.mockAny()
-
         core.context = .mockWith(
-            dependencies: .mockWith(
-                networkConnectionInfoProvider: networkConnectionInfoProvider
-            )
+            networkConnectionInfo: nil
         )
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers()
@@ -307,29 +360,25 @@ class LoggerTests: XCTestCase {
             .build(in: core)
 
         // simulate reachable network
-        networkConnectionInfoProvider.set(
-            current: .mockWith(
-                reachability: .yes,
-                availableInterfaces: [.wifi, .cellular],
-                supportsIPv4: true,
-                supportsIPv6: true,
-                isExpensive: false,
-                isConstrained: false
-            )
+        core.context.networkConnectionInfo = .mockWith(
+            reachability: .yes,
+            availableInterfaces: [.wifi, .cellular],
+            supportsIPv4: true,
+            supportsIPv6: true,
+            isExpensive: false,
+            isConstrained: false
         )
 
         logger.debug("message")
 
         // simulate unreachable network
-        networkConnectionInfoProvider.set(
-            current: .mockWith(
-                reachability: .no,
-                availableInterfaces: [],
-                supportsIPv4: false,
-                supportsIPv6: false,
-                isExpensive: false,
-                isConstrained: false
-            )
+        core.context.networkConnectionInfo = .mockWith(
+            reachability: .no,
+            availableInterfaces: [],
+            supportsIPv4: false,
+            supportsIPv6: false,
+            isExpensive: false,
+            isConstrained: false
         )
 
         logger.debug("message")
@@ -451,10 +500,8 @@ class LoggerTests: XCTestCase {
 
     func testSendingTags() throws {
         core.context = .mockWith(
-            configuration: .mockWith(
-                environment: "tests"
-            ),
-            appVersionProvider: .mockWith(version: "1.2.3")
+            env: "tests",
+            version: "1.2.3"
         )
 
         let feature: LoggingFeature = .mockByRecordingLogMatchers()
@@ -513,59 +560,24 @@ class LoggerTests: XCTestCase {
         // then
         let logMatcher = try logging.waitAndReturnLogMatchers(count: 1)[0]
         logMatcher.assertValue(
-            forKeyPath: RUMContextIntegration.Attributes.applicationID,
+            forKeyPath: RUMMonitor.Attributes.applicationID,
             equals: rum.configuration.applicationID
         )
         logMatcher.assertValue(
-            forKeyPath: RUMContextIntegration.Attributes.sessionID,
+            forKeyPath: RUMMonitor.Attributes.sessionID,
             isTypeOf: String.self
         )
         logMatcher.assertValue(
-            forKeyPath: RUMContextIntegration.Attributes.viewID,
+            forKeyPath: RUMMonitor.Attributes.viewID,
             isTypeOf: String.self
         )
         logMatcher.assertValue(
-            forKeyPath: RUMContextIntegration.Attributes.actionID,
+            forKeyPath: RUMMonitor.Attributes.userActionID,
             isTypeOf: String.self
         )
-    }
-
-    func testGivenBundlingWithRUMEnabledButRUMMonitorNotRegistered_whenSendingLog_itPrintsWarning() throws {
-        core.context = .mockAny()
-
-        let logging: LoggingFeature = .mockByRecordingLogMatchers()
-        core.register(feature: logging)
-
-        let rum: RUMFeature = .mockNoOp()
-        core.register(feature: rum)
-
-        let dd = DD.mockWith(logger: CoreLoggerMock())
-        defer { dd.reset() }
-
-        // given
-        let logger = Logger.builder.build(in: core)
-        XCTAssertTrue(Global.rum is DDNoopRUMMonitor)
-
-        // when
-        logger.info("info message")
-
-        // then
-        try XCTAssertTrue(
-            XCTUnwrap(dd.logger.warnLog?.message)
-                .contains("RUM feature is enabled, but no `RUMMonitor` is registered. The RUM integration with Logging will not work.")
-        )
-
-        let logMatcher = try logging.waitAndReturnLogMatchers(count: 1)[0]
-        logMatcher.assertNoValue(forKeyPath: RUMContextIntegration.Attributes.applicationID)
-        logMatcher.assertNoValue(forKeyPath: RUMContextIntegration.Attributes.sessionID)
-        logMatcher.assertNoValue(forKeyPath: RUMContextIntegration.Attributes.viewID)
-        logMatcher.assertNoValue(forKeyPath: RUMContextIntegration.Attributes.actionID)
     }
 
     func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorForCurrentView() throws {
-        let v1Context: DatadogV1Context = .mockAny()
-        core.context = v1Context
-
         let logging: LoggingFeature = .mockNoOp()
         core.register(feature: logging)
 
@@ -577,11 +589,10 @@ class LoggerTests: XCTestCase {
         Global.rum = RUMMonitor(
             core: core,
             dependencies: RUMScopeDependencies(
-                rumFeature: rum,
-                crashReportingFeature: nil,
-                context: v1Context
+                core: core,
+                rumFeature: rum
             ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-            dateProvider: v1Context.dateProvider
+            dateProvider: SystemDateProvider()
         )
         Global.rum.startView(viewController: mockView)
         defer { Global.rum = DDNoopRUMMonitor() }
@@ -636,45 +647,15 @@ class LoggerTests: XCTestCase {
         // then
         let logMatchers = try logging.waitAndReturnLogMatchers(count: 2)
         logMatchers[0].assertValue(
-            forKeyPath: LoggingWithActiveSpanIntegration.Attributes.traceID,
-            equals: "\(span.context.dd.traceID.rawValue)"
+            forKeyPath: "dd.trace_id",
+            equals: span.context.dd.traceID.toString(.decimal)
         )
         logMatchers[0].assertValue(
-            forKeyPath: LoggingWithActiveSpanIntegration.Attributes.spanID,
-            equals: "\(span.context.dd.spanID.rawValue)"
+            forKeyPath: "dd.span_id",
+            equals: span.context.dd.spanID.toString(.decimal)
         )
-        logMatchers[1].assertNoValue(forKey: LoggingWithActiveSpanIntegration.Attributes.traceID)
-        logMatchers[1].assertNoValue(forKey: LoggingWithActiveSpanIntegration.Attributes.spanID)
-    }
-
-    func testGivenBundlingWithTraceEnabledButTracerNotRegistered_whenSendingLog_itPrintsWarning() throws {
-        core.context = .mockAny()
-
-        let logging: LoggingFeature = .mockByRecordingLogMatchers()
-        core.register(feature: logging)
-
-        let tracing: TracingFeature = .mockNoOp()
-        core.register(feature: tracing)
-
-        let dd = DD.mockWith(logger: CoreLoggerMock())
-        defer { dd.reset() }
-
-        // given
-        let logger = Logger.builder.build(in: core)
-        XCTAssertTrue(Global.sharedTracer is DDNoopTracer)
-
-        // when
-        logger.info("info message")
-
-        // then
-        try XCTAssertTrue(
-            XCTUnwrap(dd.logger.warnLog?.message)
-                .contains("Tracing feature is enabled, but no `Tracer` is registered. The Tracing integration with Logging will not work.")
-        )
-
-        let logMatcher = try logging.waitAndReturnLogMatchers(count: 1)[0]
-        logMatcher.assertNoValue(forKeyPath: LoggingWithActiveSpanIntegration.Attributes.traceID)
-        logMatcher.assertNoValue(forKeyPath: LoggingWithActiveSpanIntegration.Attributes.spanID)
+        logMatchers[1].assertNoValue(forKey: "dd.trace_id")
+        logMatchers[1].assertNoValue(forKey: "dd.span_id")
     }
 
     // MARK: - Log Dates Correction
@@ -682,17 +663,16 @@ class LoggerTests: XCTestCase {
     func testGivenTimeDifferenceBetweenDeviceAndServer_whenCollectingLogs_thenLogDateUsesServerTime() throws {
         // Given
         let deviceTime: Date = .mockDecember15th2019At10AMUTC()
-        let serverTimeDifference = TimeInterval.random(in: -5..<5).rounded() // few seconds difference
+        let serverTimeOffset = TimeInterval.random(in: -5..<5).rounded() // few seconds difference
 
         core.context = .mockWith(
-            dependencies: .mockWith(
-                dateProvider: RelativeDateProvider(using: deviceTime),
-                dateCorrector: DateCorrectorMock(offset: serverTimeDifference)
-            )
+            serverTimeOffset: serverTimeOffset
         )
 
         // When
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        let feature: LoggingFeature = .mockByRecordingLogMatchers(
+            configuration: .mockWith(dateProvider: RelativeDateProvider(using: deviceTime))
+        )
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
@@ -701,7 +681,7 @@ class LoggerTests: XCTestCase {
         // Then
         let logMatchers = try feature.waitAndReturnLogMatchers(count: 1)
         logMatchers[0].assertDate { logDate in
-            logDate == deviceTime.addingTimeInterval(serverTimeDifference)
+            logDate == deviceTime.addingTimeInterval(serverTimeOffset)
         }
     }
 
@@ -739,7 +719,7 @@ class LoggerTests: XCTestCase {
         defer { dd.reset() }
 
         // given
-        core.context = nil
+        let core = NOPDatadogCore()
 
         // when
         let logger = Logger.builder.build(in: core)

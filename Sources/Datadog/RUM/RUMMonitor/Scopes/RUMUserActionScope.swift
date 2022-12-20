@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -85,14 +85,14 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     // MARK: - RUMContextProvider
 
     var context: RUMContext {
-        // Per `RUMCurrentContext.activeViewContext`, we currently only get the context from the parent scope (`RUMViewScope`) when it's still active (`viewScopes.last`).
+        // We currently only get the context from the parent scope (`RUMViewScope`) when it's still active (`viewScopes.last`).
         // This might change at some point and the following context might then hold the wrong active view's properties at that point as this is not checked inside `RUMViewScope.context`.
         return parent.context
     }
 
     // MARK: - RUMScope
 
-    func process(command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Bool {
+    func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
         if let expirationTime = possibleExpirationTime(currentTime: command.time), allResourcesCompletedLoading() {
             sendActionEvent(completionTime: expirationTime, on: nil, context: context, writer: writer)
             return false
@@ -128,7 +128,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
     // MARK: - Sending RUM Events
 
-    private func sendActionEvent(completionTime: Date, on command: RUMCommand?, context: DatadogV1Context, writer: Writer) {
+    private func sendActionEvent(completionTime: Date, on command: RUMCommand?, context: DatadogContext, writer: Writer) {
         if let commandAttributes = command?.attributes {
             attributes.merge(rumCommandAttributes: commandAttributes)
         }
@@ -145,7 +145,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                 session: .init(plan: .plan1)
             ),
             action: .init(
-                crash: nil,
+                crash: .init(count: 0),
                 error: .init(count: errorsCount.toInt64),
                 frustration: frustrations.map { .init(type: $0) },
                 id: actionUUID.toRUMDataFormat,
@@ -165,7 +165,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: nil,
+                hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),

@@ -1,7 +1,7 @@
 /*
 * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
 * This product includes software developed at Datadog (https://www.datadoghq.com/).
-* Copyright 2019-2020 Datadog, Inc.
+* Copyright 2019-Present Datadog, Inc.
 */
 
 import XCTest
@@ -136,7 +136,16 @@ class DDConfigurationTests: XCTestCase {
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.serviceName, "service-name")
 
         objcBuilder.trackURLSession(firstPartyHosts: ["example.com"])
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.firstPartyHosts, ["example.com"])
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.firstPartyHosts, .init(["example.com": [.datadog]]))
+
+        objcBuilder.trackURLSession(firstPartyHostsWithHeaderTypes: ["example2.com": [.tracecontext]])
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.firstPartyHosts, .init([
+            "example2.com": [.tracecontext],
+            "example.com": [.datadog]
+        ]))
+
+        objcBuilder.set(loggingSamplingRate: 66)
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.loggingSamplingRate, 66)
 
         objcBuilder.set(tracingSamplingRate: 75)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.tracingSamplingRate, 75)

@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -25,7 +25,8 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
-            loggingOrRUMIntegration: integration
+            loggingOrRUMIntegration: integration,
+            messageReceiver: NOPFeatureMessageReceiver()
         )
 
         // Then
@@ -57,7 +58,8 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
-            loggingOrRUMIntegration: integration
+            loggingOrRUMIntegration: integration,
+            messageReceiver: NOPFeatureMessageReceiver()
         )
 
         // Then
@@ -84,7 +86,8 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
-            loggingOrRUMIntegration: integration
+            loggingOrRUMIntegration: integration,
+            messageReceiver: NOPFeatureMessageReceiver()
         )
 
         // Then
@@ -110,7 +113,8 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(initialCrashContext: initialCrashContext),
-            loggingOrRUMIntegration: CrashReportingIntegrationMock()
+            loggingOrRUMIntegration: CrashReportingIntegrationMock(),
+            messageReceiver: NOPFeatureMessageReceiver()
         )
 
         try withExtendedLifetime(crashReporter) {
@@ -133,13 +137,14 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: crashContextProvider,
-            loggingOrRUMIntegration: CrashReportingIntegrationMock()
+            loggingOrRUMIntegration: CrashReportingIntegrationMock(),
+            messageReceiver: NOPFeatureMessageReceiver()
         )
 
         try withExtendedLifetime(crashReporter) {
             // When
             let updatedCrashContext: CrashContext = .mockRandom()
-            crashContextProvider.onCrashContextChange?(updatedCrashContext)
+            crashContextProvider.onCrashContextChange(updatedCrashContext)
 
             // Then
             waitForExpectations(timeout: 2, handler: nil)
@@ -174,13 +179,14 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: crashContextProvider,
-            loggingOrRUMIntegration: CrashReportingIntegrationMock()
+            loggingOrRUMIntegration: CrashReportingIntegrationMock(),
+            messageReceiver: NOPFeatureMessageReceiver()
         )
 
         // swiftlint:disable opening_brace
         callConcurrently(
             closures: [
-                { crashContextProvider.onCrashContextChange?(.mockRandom()) },
+                { crashContextProvider.onCrashContextChange(.mockRandom()) },
                 { crashReporter.sendCrashReportIfFound() }
             ],
             iterations: 50 // each closure is called 50 times
@@ -196,6 +202,7 @@ class CrashReporterTests: XCTestCase {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
+        let core = PassthroughCoreMock()
         let plugin = CrashReportingPluginMock()
 
         // Given
@@ -203,10 +210,8 @@ class CrashReporterTests: XCTestCase {
 
         // When
         let crashReporter = CrashReporter(
-            crashReportingFeature: .mockNoOp(),
-            loggingFeature: nil,
-            rumFeature: nil,
-            context: .mockAny()
+            core: core,
+            configuration: .mockAny()
         )
 
         // Then

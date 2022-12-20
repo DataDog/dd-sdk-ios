@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -37,11 +37,27 @@ public struct LogEvent: Encodable {
     }
     public struct Error {
         // The Log error kind
-        public let kind: String?
+        public var kind: String?
         // The Log error message
-        public let message: String?
+        public var message: String?
         // The Log error stack
-        public let stack: String?
+        public var stack: String?
+    }
+    public struct DeviceInfo: Codable {
+        // The architecture of the device
+        public let architecture: String
+
+        enum CodingKeys: String, CodingKey {
+            case architecture = "architecture"
+        }
+    }
+    public struct Dd: Codable {
+        // Device informatino
+        public let device: DeviceInfo
+
+        enum CodingKeys: String, CodingKey {
+            case device = "device"
+        }
     }
 
     /// The log's timestamp
@@ -51,7 +67,7 @@ public struct LogEvent: Encodable {
     /// The log message
     public var message: String
     /// The associated log error
-    public let error: Error?
+    public var error: Error?
     /// The service name configured for Logs.
     public let serviceName: String
     /// The current log environement.
@@ -64,6 +80,8 @@ public struct LogEvent: Encodable {
     public let threadName: String?
     /// The current application version.
     public let applicationVersion: String
+    /// Datadog specific attributes
+    public let dd: Dd
     /// Custom user information configured globally for the SDK.
     public var userInfo: UserInfo
     /// The network connection information from the moment the log was sent.
@@ -101,6 +119,9 @@ internal struct LogEventEncoder {
         // MARK: - Application info
 
         case applicationVersion = "version"
+
+        // MARK: - Dd info
+        case dd = "_dd"
 
         // MARK: - Logger info
 
@@ -162,6 +183,8 @@ internal struct LogEventEncoder {
         // Encode application info
         try container.encode(log.applicationVersion, forKey: .applicationVersion)
 
+        try container.encode(log.dd, forKey: .dd)
+
         // Encode user info
         try log.userInfo.id.ifNotNil { try container.encode($0, forKey: .userId) }
         try log.userInfo.name.ifNotNil { try container.encode($0, forKey: .userName) }
@@ -197,19 +220,19 @@ internal struct LogEventEncoder {
         // 1. user info attributes
         try log.userInfo.extraInfo.forEach {
             let key = DynamicCodingKey("usr.\($0)")
-            try attributesContainer.encode(CodableValue($1), forKey: key)
+            try attributesContainer.encode(AnyEncodable($1), forKey: key)
         }
 
         // 2. user attributes
         let encodableUserAttributes = Dictionary(
-            uniqueKeysWithValues: log.attributes.userAttributes.map { name, value in (name, CodableValue(value)) }
+            uniqueKeysWithValues: log.attributes.userAttributes.map { name, value in (name, AnyEncodable(value)) }
         )
         try encodableUserAttributes.forEach { try attributesContainer.encode($0.value, forKey: DynamicCodingKey($0.key)) }
 
         // 3. internal attributes
         if let internalAttributes = log.attributes.internalAttributes {
             let encodableInternalAttributes = Dictionary(
-                uniqueKeysWithValues: internalAttributes.map { name, value in (name, CodableValue(value)) }
+                uniqueKeysWithValues: internalAttributes.map { name, value in (name, AnyEncodable(value)) }
             )
             try encodableInternalAttributes.forEach { try attributesContainer.encode($0.value, forKey: DynamicCodingKey($0.key)) }
         }

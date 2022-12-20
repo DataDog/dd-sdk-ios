@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -186,48 +186,42 @@ public class Datadog {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
 
-        let consentProvider = ConsentProvider(initialConsent: initialTrackingConsent)
         let userInfoProvider = UserInfoProvider()
-        let dateProvider = SystemDateProvider()
-        let dateCorrector = ServerDateCorrector(
-            serverDateProvider: configuration.common.serverDateProvider ?? DatadogNTPDateProvider()
-        )
+        let serverDateProvider = configuration.common.serverDateProvider ?? DatadogNTPDateProvider()
+        let dateCorrector = ServerDateCorrector(serverDateProvider: serverDateProvider)
         let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
         let carrierInfoProvider = CarrierInfoProvider()
-        let launchTimeProvider = LaunchTimeProvider()
-        let appVersionProvider = AppVersionProvider(configuration: configuration.common)
-
-        // Bundle all core dependencies provided by `DatadogCore` to features:
-        let commonDependencies = CoreDependencies(
-            consentProvider: consentProvider,
-            performance: configuration.common.performance,
-            httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
-            deviceInfo: .init(),
-            batteryStatusProvider: BatteryStatusProvider(),
-            sdkInitDate: dateProvider.now,
-            dateProvider: dateProvider,
-            dateCorrector: dateCorrector,
-            userInfoProvider: userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider,
-            launchTimeProvider: launchTimeProvider,
-            appStateListener: AppStateListener(dateProvider: dateProvider),
-            encryption: configuration.common.encryption
-        )
+        let appStateListener = AppStateListener(dateProvider: configuration.common.dateProvider)
 
         // Set default `DatadogCore`:
         let core = DatadogCore(
             directory: try CoreDirectory(in: Directory.cache(), from: configuration.common),
-            configuration: configuration.common,
-            dependencies: commonDependencies,
-            appVersionProvider: appVersionProvider
+            dateProvider: configuration.common.dateProvider,
+            initialConsent: initialTrackingConsent,
+            userInfoProvider: userInfoProvider,
+            performance: configuration.common.performance,
+            httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
+            encryption: configuration.common.encryption,
+            v1Context: DatadogV1Context(
+                configuration: configuration.common,
+                device: .init(),
+                dateCorrector: dateCorrector,
+                networkConnectionInfoProvider: networkConnectionInfoProvider,
+                carrierInfoProvider: carrierInfoProvider,
+                userInfoProvider: userInfoProvider
+            ),
+            contextProvider: DatadogContextProvider(
+                configuration: configuration.common,
+                device: .init(),
+                serverDateProvider: serverDateProvider
+            ),
+            applicationVersion: configuration.common.applicationVersion
         )
 
         // First, initialize features:
         var logging: LoggingFeature?
         var tracing: TracingFeature?
         var rum: RUMFeature?
-        var crashReporting: CrashReportingFeature?
 
         var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
         var rumInstrumentation: RUMInstrumentation?
@@ -235,17 +229,14 @@ public class Datadog {
         if let rumConfiguration = configuration.rum {
             DD.telemetry = RUMTelemetry(
                 in: core,
-                sdkVersion: configuration.common.sdkVersion,
-                applicationID: rumConfiguration.applicationID,
-                source: configuration.common.source,
-                dateProvider: dateProvider,
-                dateCorrector: dateCorrector,
+                dateProvider: rumConfiguration.dateProvider,
+                configurationEventMapper: nil,
+                delayedDispatcher: nil,
                 sampler: rumConfiguration.telemetrySampler
             )
 
             rum = try core.create(
-                storageConfiguration: createV2RUMStorageConfiguration(),
-                uploadConfiguration: createV2RUMUploadConfiguration(v1Configuration: rumConfiguration),
+                configuration: createRUMConfiguration(intake: rumConfiguration.uploadURL),
                 featureSpecificConfiguration: rumConfiguration
             )
 
@@ -254,7 +245,7 @@ public class Datadog {
             if let instrumentationConfiguration = rumConfiguration.instrumentation {
                 rumInstrumentation = RUMInstrumentation(
                     configuration: instrumentationConfiguration,
-                    dateProvider: dateProvider
+                    dateProvider: rumConfiguration.dateProvider
                 )
 
                 core.register(feature: rumInstrumentation)
@@ -263,35 +254,30 @@ public class Datadog {
 
         if let loggingConfiguration = configuration.logging {
             logging = try core.create(
-                storageConfiguration: createV2LoggingStorageConfiguration(),
-                uploadConfiguration: createV2LoggingUploadConfiguration(v1Configuration: loggingConfiguration),
+                configuration: createLoggingConfiguration(
+                    intake: loggingConfiguration.uploadURL,
+                    logEventMapper: loggingConfiguration.logEventMapper
+                ),
                 featureSpecificConfiguration: loggingConfiguration
             )
+
             core.register(feature: logging)
         }
 
         if let tracingConfiguration = configuration.tracing {
             tracing = try core.create(
-                storageConfiguration: createV2TracingStorageConfiguration(),
-                uploadConfiguration: createV2TracingUploadConfiguration(v1Configuration: tracingConfiguration),
+                configuration: createTracingConfiguration(intake: tracingConfiguration.uploadURL),
                 featureSpecificConfiguration: tracingConfiguration
             )
+
             core.register(feature: tracing)
-        }
-
-        if let crashReportingConfiguration = configuration.crashReporting {
-            crashReporting = CrashReportingFeature(
-                configuration: crashReportingConfiguration,
-                commonDependencies: commonDependencies
-            )
-
-            core.register(feature: crashReporting)
         }
 
         if let urlSessionAutoInstrumentationConfiguration = configuration.urlSessionAutoInstrumentation {
             urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
                 configuration: urlSessionAutoInstrumentationConfiguration,
-                commonDependencies: commonDependencies
+                dateProvider: configuration.common.dateProvider,
+                appStateListener: appStateListener
             )
 
             core.register(feature: urlSessionAutoInstrumentation)
@@ -304,19 +290,31 @@ public class Datadog {
 
         // After everything is set up, if the Crash Reporting feature was enabled,
         // register crash reporter and send crash report if available:
-        if let crashReportingFeature = core.v1.feature(CrashReportingFeature.self) {
-            Global.crashReporter = CrashReporter(
-                crashReportingFeature: crashReportingFeature,
-                loggingFeature: logging,
-                rumFeature: rum,
-                context: core.v1Context
-            )
-
-            Global.crashReporter?.sendCrashReportIfFound()
+        if
+            let configuration = configuration.crashReporting,
+            let reporter = CrashReporter(core: core, configuration: configuration)
+        {
+            try core.register(integration: reporter)
+            reporter.sendCrashReportIfFound()
         }
+
+        deleteV1Folders(in: core)
+
+        DD.telemetry.configuration(configuration: configuration)
     }
 
     internal init() {
+    }
+
+    private static func deleteV1Folders(in core: DatadogCore) {
+        let deprecated = ["com.datadoghq.logs", "com.datadoghq.traces", "com.datadoghq.rum"].compactMap {
+            try? Directory.cache().subdirectory(path: $0) // ignore errors - deprecated paths likely do not exist
+        }
+
+        core.readWriteQueue.async {
+            // ignore errors
+            deprecated.forEach { try? FileManager.default.removeItem(at: $0.url) }
+        }
     }
 
     /// Flushes all authorised data for each feature, tears down and deinitializes the SDK.
@@ -333,6 +331,10 @@ public class Datadog {
     internal static func internalFlushAndDeinitialize() {
         assert(Datadog.isInitialized, "SDK must be first initialized.")
 
+        // Flush the context provider's work items
+        let core = defaultDatadogCore as? DatadogCore
+        core?.contextProvider.queue.sync(flags: .barrier) { }
+
         // Tear down and deinitialize all features:
         let logging = defaultDatadogCore.v1.feature(LoggingFeature.self)
         let tracing = defaultDatadogCore.v1.feature(TracingFeature.self)
@@ -348,17 +350,12 @@ public class Datadog {
         // Reset Globals:
         Global.sharedTracer = DDNoopGlobals.tracer
         Global.rum = DDNoopRUMMonitor()
-        Global.crashReporter?.deinitialize()
-        Global.crashReporter = nil
+        defaultDatadogCore.integration(named: "crash-reporter", type: CrashReporter.self)?.deinitialize()
         DD.telemetry = NOPTelemetry()
 
         // Deinitialize `Datadog`:
-        defaultDatadogCore = NOOPDatadogCore()
+        defaultDatadogCore = NOPDatadogCore()
     }
-
-    // MARK: - Internal Proxy - exposure of internal classes (Mostly used for cross platform libraries)
-
-    public private(set) static var _internal = _InternalProxy()
 }
 
 /// Convenience typealias.

@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -13,13 +13,8 @@ internal struct LogEventSanitizer {
         /// If any of those is used by the user, the attribute will be ignored.
         static let reservedAttributeNames: Set<String> = [
             "host", "message", "status", "service", "source", "ddtags",
-            TracingWithLoggingIntegration.TracingAttributes.traceID,
-            TracingWithLoggingIntegration.TracingAttributes.spanID,
-            RUMContextIntegration.Attributes.applicationID,
-            RUMContextIntegration.Attributes.sessionID,
-            RUMContextIntegration.Attributes.viewID,
-            LoggingWithActiveSpanIntegration.Attributes.traceID,
-            LoggingWithActiveSpanIntegration.Attributes.spanID,
+            "dd.trace_id", "dd.span_id",
+            "application_id", "session_id", "view.id", "user_action.id",
         ]
         /// Allowed first character of a tag name (given as ASCII values ranging from lowercased `a` to `z`) .
         /// Tags with name starting with different character will be dropped.

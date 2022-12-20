@@ -1,25 +1,27 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 @testable import Datadog
 
 extension TracingFeature {
     /// Mocks feature instance which performs no writes and no uploads.
-    static func mockNoOp() -> TracingFeature {
+    static func mockNoOp(configuration: FeaturesConfiguration.Tracing = .mockAny()) -> TracingFeature {
         return TracingFeature(
             storage: .mockNoOp(),
             upload: .mockNoOp(),
-            configuration: .mockAny()
+            configuration: configuration,
+            messageReceiver: NOPFeatureMessageReceiver()
         )
     }
 
     /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
     /// Use `TracingFeature.waitAndReturnSpanMatchers()` to inspect and assert recorded `Spans`.
     static func mockByRecordingSpanMatchers(
-        featureConfiguration: FeaturesConfiguration.Tracing = .mockAny()
+        configuration: FeaturesConfiguration.Tracing = .mockAny(),
+        messageReceiver: FeatureMessageReceiver = TracingMessageReceiver()
     ) -> TracingFeature {
         // Mock storage with `InMemoryWriter`, used later for retrieving recorded events back:
         let interceptedStorage = FeatureStorage(
@@ -31,7 +33,8 @@ extension TracingFeature {
         return TracingFeature(
             storage: interceptedStorage,
             upload: .mockNoOp(),
-            configuration: featureConfiguration
+            configuration: configuration,
+            messageReceiver: messageReceiver
         )
     }
 
@@ -146,10 +149,14 @@ class RelativeTracingUUIDGenerator: TracingUUIDGenerator {
 
     func generateUnique() -> TracingUUID {
         return queue.sync {
-            defer { uuid = TracingUUID(rawValue: uuid.rawValue + count) }
+            defer { uuid = uuid + count }
             return uuid
         }
     }
+}
+
+private func + (lhs: TracingUUID, rhs: UInt64) -> TracingUUID {
+    return TracingUUID(rawValue: (UInt64(lhs.toString(.decimal)) ?? 0) + rhs)
 }
 
 extension SpanEvent: EquatableInTests {}
@@ -259,16 +266,17 @@ extension Tracer {
         configuration: Configuration = .init(),
         spanEventMapper: SpanEventMapper? = nil,
         tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
-        rumContextIntegration: TracingWithRUMContextIntegration? = nil,
-        loggingIntegration: TracingWithLoggingIntegration? = nil
+        dateProvider: DateProvider = SystemDateProvider(),
+        rumIntegration: TracingWithRUMIntegration? = nil
     ) -> Tracer {
         return Tracer(
             core: core,
             configuration: configuration,
             spanEventMapper: spanEventMapper,
             tracingUUIDGenerator: tracingUUIDGenerator,
-            rumContextIntegration: rumContextIntegration,
-            loggingIntegration: loggingIntegration
+            dateProvider: dateProvider,
+            rumIntegration: rumIntegration,
+            loggingIntegration: .init(core: core, tracerConfiguration: configuration)
         )
     }
 }
@@ -279,28 +287,24 @@ extension SpanEventBuilder {
     }
 
     static func mockWith(
-        applicationVersion: String = .mockAny(),
         serviceName: String = .mockAny(),
-        userInfoProvider: UserInfoProvider = .mockAny(),
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType = NetworkConnectionInfoProviderMock.mockAny(),
-        carrierInfoProvider: CarrierInfoProviderType = CarrierInfoProviderMock.mockAny(),
-        dateCorrector: DateCorrector = DateCorrectorMock(),
-        source: String = .mockAny(),
-        origin: String? = nil,
-        sdkVersion: String = .mockAny(),
+        sendNetworkInfo: Bool = false,
         eventsMapper: SpanEventMapper? = nil
     ) -> SpanEventBuilder {
         return SpanEventBuilder(
-            sdkVersion: sdkVersion,
-            applicationVersion: applicationVersion,
             serviceName: serviceName,
-            userInfoProvider: userInfoProvider,
-            networkConnectionInfoProvider: networkConnectionInfoProvider,
-            carrierInfoProvider: carrierInfoProvider,
-            dateCorrector: dateCorrector,
-            source: source,
-            origin: origin,
+            sendNetworkInfo: sendNetworkInfo,
             eventsMapper: eventsMapper
+        )
+    }
+}
+
+extension TracingWithLoggingIntegration.Configuration: AnyMockable {
+    static func mockAny() -> TracingWithLoggingIntegration.Configuration {
+        .init(
+            service: .mockAny(),
+            loggerName: .mockAny(),
+            sendNetworkInfo: true
         )
     }
 }

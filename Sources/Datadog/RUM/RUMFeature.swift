@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -22,12 +22,15 @@ internal final class RUMFeature: V1FeatureInitializable, V1Feature {
     /// RUM upload worker.
     let upload: FeatureUpload
 
+    let messageReceiver: FeatureMessageReceiver
+
     // MARK: - Initialization
 
     init(
         storage: FeatureStorage,
         upload: FeatureUpload,
-        configuration: Configuration
+        configuration: Configuration,
+        messageReceiver: FeatureMessageReceiver
     ) {
         // Configuration
         self.configuration = configuration
@@ -35,6 +38,7 @@ internal final class RUMFeature: V1FeatureInitializable, V1Feature {
         // Initialize stacks
         self.storage = storage
         self.upload = upload
+        self.messageReceiver = messageReceiver
     }
 
     internal func deinitialize() {

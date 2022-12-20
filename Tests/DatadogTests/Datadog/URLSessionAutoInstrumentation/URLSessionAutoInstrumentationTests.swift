@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -17,14 +17,15 @@ class URLSessionAutoInstrumentationTests: XCTestCase {
 
     func testWhenURLSessionAutoInstrumentationIsEnabled_thenSharedInterceptorIsAvailable() {
         defaultDatadogCore = core
-        defer { defaultDatadogCore = NOOPDatadogCore() }
+        defer { defaultDatadogCore = NOPDatadogCore() }
 
         XCTAssertNil(URLSessionInterceptor.shared)
 
         // When
         let instrumentation = URLSessionAutoInstrumentation(
             configuration: .mockAny(),
-            commonDependencies: .mockAny()
+            dateProvider: SystemDateProvider(),
+            appStateListener: AppStateListenerMock.mockAny()
         )
 
         core.register(feature: instrumentation)
@@ -38,7 +39,8 @@ class URLSessionAutoInstrumentationTests: XCTestCase {
         let rum: RUMFeature = .mockNoOp()
         let instrumentation = URLSessionAutoInstrumentation(
             configuration: .mockAny(),
-            commonDependencies: .mockAny()
+            dateProvider: SystemDateProvider(),
+            appStateListener: AppStateListenerMock.mockAny()
         )
 
         core.register(feature: rum)

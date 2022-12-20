@@ -1,10 +1,11 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
+import struct Datadog.DDAnyEncodable
 import class Datadog.Logger
 
 @objc
@@ -130,7 +131,7 @@ public class DDLogger: NSObject {
 
     @objc
     public func addAttribute(forKey key: String, value: Any) {
-        sdkLogger.addAttribute(forKey: key, value: AnyEncodable(value))
+        sdkLogger.addAttribute(forKey: key, value: DDAnyEncodable(value))
     }
 
     @objc

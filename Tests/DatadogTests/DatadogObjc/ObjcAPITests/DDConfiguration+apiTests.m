@@ -1,7 +1,7 @@
 /*
 * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
 * This product includes software developed at Datadog (https://www.datadoghq.com/).
-* Copyright 2019-2020 Datadog, Inc.
+* Copyright 2019-Present Datadog, Inc.
 */
 
 #import <XCTest/XCTest.h>
@@ -101,6 +101,7 @@
     [builder setWithCustomRUMEndpoint:[NSURL new]];
     [builder trackURLSessionWithFirstPartyHosts:[NSSet setWithArray:@[]]];
     [builder setWithTracingSamplingRate:75];
+    [builder setWithLoggingSamplingRate:100];
     [builder setWithServiceName:@""];
     [builder setWithRumSessionsSamplingRate:50];
     [builder setOnRUMSessionStart:^(NSString * _Nonnull sessionId, BOOL isDiscarded) {}];
@@ -132,6 +133,7 @@
     [builder setWithUploadFrequency:DDUploadFrequencyAverage];
     [builder setWithAdditionalConfiguration:@{}];
     [builder setWithEncryption:[CustomDDDataEncryption new]];
+
     [builder build];
 }
 

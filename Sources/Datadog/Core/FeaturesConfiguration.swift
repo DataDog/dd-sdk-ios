@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -29,17 +29,22 @@ internal struct FeaturesConfiguration {
         let proxyConfiguration: [AnyHashable: Any]?
         let encryption: DataEncryption?
         let serverDateProvider: ServerDateProvider?
+        let dateProvider: DateProvider
     }
 
     struct Logging {
         let uploadURL: URL
         let logEventMapper: LogEventMapper?
+        let dateProvider: DateProvider
+        let applicationBundleIdentifier: String
+        let remoteLoggingSampler: Sampler
     }
 
     struct Tracing {
         let uploadURL: URL
         let uuidGenerator: TracingUUIDGenerator
         let spanEventMapper: SpanEventMapper?
+        let dateProvider: DateProvider
     }
 
     struct RUM {
@@ -64,13 +69,15 @@ internal struct FeaturesConfiguration {
         let backgroundEventTrackingEnabled: Bool
         let frustrationTrackingEnabled: Bool
         let onSessionStart: RUMSessionListener?
-        let firstPartyHosts: Set<String>
+        let firstPartyHosts: FirstPartyHosts
         let vitalsFrequency: TimeInterval?
+        let dateProvider: DateProvider
     }
 
     struct URLSessionAutoInstrumentation {
-        /// First party hosts defined by the user.
-        let userDefinedFirstPartyHosts: Set<String>
+        /// First party hosts defined by the user with custom tracing header types.
+        let userDefinedFirstPartyHosts: FirstPartyHosts
+
         /// URLs used internally by the SDK - they are not instrumented.
         let sdkInternalURLs: Set<String>
         /// An optional RUM Resource attributes provider.
@@ -113,7 +120,7 @@ extension FeaturesConfiguration {
     ///
     /// Throws an error on invalid user input, i.e. broken custom URL.
     /// Prints a warning if configuration is inconsistent, i.e. RUM is enabled, but RUM Application ID was not specified.
-    init(configuration: Datadog.Configuration, appContext: AppContext, hostsSanitizer: HostsSanitizing = HostsSanitizer()) throws {
+    init(configuration: Datadog.Configuration, appContext: AppContext) throws {
         var logging: Logging?
         var tracing: Tracing?
         var rum: RUM?
@@ -158,6 +165,8 @@ extension FeaturesConfiguration {
             Datadog.verbosityLevel = .debug
         }
 
+        let dateProvider = SystemDateProvider()
+
         let common = Common(
             site: configuration.datadogEndpoint,
             clientToken: try ifValid(clientToken: configuration.clientToken),
@@ -177,13 +186,17 @@ extension FeaturesConfiguration {
             sdkVersion: sdkVersion,
             proxyConfiguration: configuration.proxyConfiguration,
             encryption: configuration.encryption,
-            serverDateProvider: configuration.serverDateProvider
+            serverDateProvider: configuration.serverDateProvider,
+            dateProvider: dateProvider
         )
 
         if configuration.loggingEnabled {
             logging = Logging(
                 uploadURL: try ifValid(endpointURLString: logsEndpoint.url),
-                logEventMapper: configuration.logEventMapper
+                logEventMapper: configuration.logEventMapper,
+                dateProvider: dateProvider,
+                applicationBundleIdentifier: common.applicationBundleIdentifier,
+                remoteLoggingSampler: Sampler(samplingRate: debugOverride ? 100 : configuration.loggingSamplingRate)
             )
         }
 
@@ -191,15 +204,8 @@ extension FeaturesConfiguration {
             tracing = Tracing(
                 uploadURL: try ifValid(endpointURLString: tracesEndpoint.url),
                 uuidGenerator: DefaultTracingUUIDGenerator(),
-                spanEventMapper: configuration.spanEventMapper
-            )
-        }
-
-        var sanitizedHosts: Set<String> = []
-        if let firstPartyHosts = configuration.firstPartyHosts {
-            sanitizedHosts = hostsSanitizer.sanitized(
-                hosts: firstPartyHosts,
-                warningMessage: "The first party host configured for Datadog SDK is not valid"
+                spanEventMapper: configuration.spanEventMapper,
+                dateProvider: dateProvider
             )
         }
 
@@ -226,8 +232,9 @@ extension FeaturesConfiguration {
                     backgroundEventTrackingEnabled: configuration.rumBackgroundEventTrackingEnabled,
                     frustrationTrackingEnabled: configuration.rumFrustrationSignalsTrackingEnabled,
                     onSessionStart: configuration.rumSessionsListener,
-                    firstPartyHosts: sanitizedHosts,
-                    vitalsFrequency: configuration.mobileVitalsFrequency.timeInterval
+                    firstPartyHosts: configuration.firstPartyHosts ?? .init(),
+                    vitalsFrequency: configuration.mobileVitalsFrequency.timeInterval,
+                    dateProvider: dateProvider
                 )
             } else {
                 let error = ProgrammerError(
@@ -240,10 +247,10 @@ extension FeaturesConfiguration {
             }
         }
 
-        if configuration.firstPartyHosts != nil {
+        if let firstPartyHosts = configuration.firstPartyHosts {
             if configuration.tracingEnabled || configuration.rumEnabled {
                 urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
-                    userDefinedFirstPartyHosts: sanitizedHosts,
+                    userDefinedFirstPartyHosts: firstPartyHosts,
                     sdkInternalURLs: [
                         logsEndpoint.url,
                         tracesEndpoint.url,

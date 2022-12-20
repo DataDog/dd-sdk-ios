@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -28,15 +28,15 @@ class DDSpanTests: XCTestCase {
     // MARK: - Sending Span Logs
 
     func testWhenLoggingSpanEvent_itWritesLogToLogOutput() throws {
-        let core = PassthroughCoreMock()
+        let core = PassthroughCoreMock(
+            messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
+        )
+
         core.expectation = expectation(description: "write span event")
         core.expectation?.expectedFulfillmentCount = 2
 
         // Given
-        let tracer: Tracer = .mockWith(
-            core: core,
-            loggingIntegration: .init(core: core, logBuilder: .mockAny())
-        )
+        let tracer: Tracer = .mockWith(core: core)
         let span: DDSpan = .mockWith(tracer: tracer)
 
         // When
@@ -169,12 +169,9 @@ class DDSpanTests: XCTestCase {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
-        let core = PassthroughCoreMock()
+        let core = PassthroughCoreMock(messageReceiver: FeatureMessageReceiverMock())
         let span: DDSpan = .mockWith(
-            tracer: .mockWith(
-                core: core,
-                loggingIntegration: .init(core: core, logBuilder: .mockAny())
-            ),
+            tracer: .mockWith(core: core),
             operationName: "the span"
         )
         span.finish()

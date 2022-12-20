@@ -1,20 +1,18 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
 @testable import Datadog
 
 class RUMUserActionScopeTests: XCTestCase {
-    let context: DatadogV1Context = .mockWith(
-        configuration: .mockWith(serviceName: "test-service"),
-        dependencies: .mockWith(
-            deviceInfo: .mockWith(
-                name: "device-name",
-                osName: "device-os"
-            )
+    let context: DatadogContext = .mockWith(
+        service: "test-service",
+        device: .mockWith(
+            name: "device-name",
+            osName: "device-os"
         )
     )
 
@@ -46,6 +44,10 @@ class RUMUserActionScopeTests: XCTestCase {
     }
 
     func testGivenActiveUserAction_whenViewIsStopped_itSendsUserActionEvent() throws {
+        let hasReplay: Bool = .mockRandom()
+        var context = self.context
+        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
+
         let scope = RUMViewScope.mockWith(
             parent: parent,
             dependencies: .mockAny(),
@@ -81,6 +83,7 @@ class RUMUserActionScopeTests: XCTestCase {
         let recordedAction = try XCTUnwrap(recordedActionEvents.last)
         XCTAssertEqual(recordedAction.action.type.rawValue, String(describing: mockUserActionCmd.actionType))
         XCTAssertEqual(recordedAction.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+        XCTAssertEqual(recordedAction.session.hasReplay, hasReplay)
         XCTAssertEqual(recordedAction.source, .ios)
         XCTAssertEqual(recordedAction.service, "test-service")
         XCTAssertEqual(recordedAction.device?.name, "device-name")
@@ -131,7 +134,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
     func testGivenCustomSource_whenActionIsSent_itSendsCustomSource() throws {
         let source = String.mockAnySource()
-        let customContext: DatadogV1Context = .mockWith(configuration: .mockWith(source: source))
+        let customContext: DatadogContext = .mockWith(source: source)
 
         let scope = RUMViewScope.mockWith(
             parent: parent,

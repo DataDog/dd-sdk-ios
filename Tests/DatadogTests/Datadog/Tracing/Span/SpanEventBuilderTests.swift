@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -9,9 +9,11 @@ import XCTest
 
 class SpanEventBuilderTests: XCTestCase {
     func testBuildingBasicSpan() {
-        let builder: SpanEventBuilder = .mockWith(serviceName: "test-service-name", sdkVersion: "1.2.3")
+        let context: DatadogContext = .mockWith(sdkVersion: "1.2.3")
+        let builder: SpanEventBuilder = .mockWith(serviceName: "test-service-name")
 
         let span = builder.createSpanEvent(
+            context: context,
             traceID: 1,
             spanID: 2,
             parentSpanID: 1,
@@ -50,6 +52,7 @@ class SpanEventBuilderTests: XCTestCase {
         )
 
         let span = builder.createSpanEvent(
+            context: .mockAny(),
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -70,6 +73,7 @@ class SpanEventBuilderTests: XCTestCase {
 
         // given
         var span = builder.createSpanEvent(
+            context: .mockAny(),
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -87,6 +91,7 @@ class SpanEventBuilderTests: XCTestCase {
 
         // given
         span = builder.createSpanEvent(
+            context: .mockAny(),
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -108,6 +113,7 @@ class SpanEventBuilderTests: XCTestCase {
 
         // given
         var span = builder.createSpanEvent(
+            context: .mockAny(),
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -127,6 +133,7 @@ class SpanEventBuilderTests: XCTestCase {
 
         // given
         span = builder.createSpanEvent(
+            context: .mockAny(),
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -158,6 +165,7 @@ class SpanEventBuilderTests: XCTestCase {
 
         // given
         span = builder.createSpanEvent(
+            context: .mockAny(),
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -183,6 +191,7 @@ class SpanEventBuilderTests: XCTestCase {
 
         // given
         var span = builder.createSpanEvent(
+            context: .mockAny(),
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -203,6 +212,7 @@ class SpanEventBuilderTests: XCTestCase {
 
         // given
         span = builder.createSpanEvent(
+            context: .mockAny(),
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -227,6 +237,7 @@ class SpanEventBuilderTests: XCTestCase {
 
         // given
         let span = builder.createSpanEvent(
+            context: .mockAny(),
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -250,6 +261,7 @@ class SpanEventBuilderTests: XCTestCase {
 
         // When
         let span = builder.createSpanEvent(
+            context: .mockAny(),
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -316,6 +328,7 @@ class SpanEventBuilderTests: XCTestCase {
 
         // When
         let span = builder.createSpanEvent(
+            context: .mockAny(),
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -334,19 +347,18 @@ class SpanEventBuilderTests: XCTestCase {
     }
 
     func testWhenBuildingSpan_itConvertsUserExtraInfoValuesToString() {
-        let builder: SpanEventBuilder = .mockWith(
-            userInfoProvider: .mockWith(
+        let builder: SpanEventBuilder = .mockAny()
+
+        // When
+        let span = builder.createSpanEvent(
+            context: .mockWith(
                 userInfo: .init(
                     id: .mockRandom(),
                     name: .mockRandom(),
                     email: .mockRandom(),
                     extraInfo: createMockAttributes()
                 )
-            )
-        )
-
-        // When
-        let span = builder.createSpanEvent(
+            ),
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -372,6 +384,7 @@ class SpanEventBuilderTests: XCTestCase {
 
         // When
         let span = builder.createSpanEvent(
+            context: .mockAny(),
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),

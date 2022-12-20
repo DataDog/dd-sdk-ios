@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -22,7 +22,7 @@ class FileWriterTests: XCTestCase {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
-                performance: PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
+                performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
             )
         )
@@ -90,7 +90,7 @@ class FileWriterTests: XCTestCase {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
-                performance: PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
+                performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
             )
         )
@@ -108,7 +108,7 @@ class FileWriterTests: XCTestCase {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
-                performance: PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
+                performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
             )
         )
@@ -178,7 +178,7 @@ class FileWriterTests: XCTestCase {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
-                performance: PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp),
+                performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
             ),
             encryption: DataEncryptionMock(

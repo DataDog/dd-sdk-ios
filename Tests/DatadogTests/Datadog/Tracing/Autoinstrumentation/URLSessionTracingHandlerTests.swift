@@ -1,14 +1,17 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
 @testable import Datadog
 
 class URLSessionTracingHandlerTests: XCTestCase {
-    private let core = PassthroughCoreMock()
+    private let core = PassthroughCoreMock(
+        messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
+    )
+
     private let handler = URLSessionTracingHandler(
         appStateListener: AppStateListenerMock(
             history: .init(
@@ -20,18 +23,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
     )
 
     override func setUp() {
-        Global.sharedTracer = Tracer.mockWith(
-            core: core,
-            loggingIntegration: .init(
-                core: core,
-                logBuilder: .init(
-                    service: .mockAny(),
-                    loggerName: .mockAny(),
-                    sendNetworkInfo: .mockAny(),
-                    eventMapper: nil
-                )
-            )
-        )
+        Global.sharedTracer = Tracer.mockWith(core: core)
         super.setUp()
     }
 
@@ -67,8 +59,8 @@ class URLSessionTracingHandlerTests: XCTestCase {
         let envelope: SpanEventsEnvelope? = core.events().last
         let span = try XCTUnwrap(envelope?.spans.first)
 
-        XCTAssertEqual(span.traceID.rawValue, 100)
-        XCTAssertEqual(span.spanID.rawValue, 200)
+        XCTAssertEqual(span.traceID.toString(.decimal), "100")
+        XCTAssertEqual(span.spanID.toString(.decimal), "200")
         XCTAssertEqual(span.operationName, "urlsession.request")
         XCTAssertFalse(span.isError)
         XCTAssertEqual(span.duration, 1)
@@ -166,11 +158,11 @@ class URLSessionTracingHandlerTests: XCTestCase {
         XCTAssertEqual(log.message, "network error")
         XCTAssertEqual(
             log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.traceID] as? String,
-            "\(span.traceID.rawValue)"
+            span.traceID.toString(.decimal)
         )
         XCTAssertEqual(
             log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.spanID] as? String,
-            "\(span.spanID.rawValue)"
+            span.spanID.toString(.decimal)
         )
         XCTAssertEqual(log.error?.kind, "domain - 123")
         XCTAssertEqual(log.attributes.internalAttributes?.count, 2)
@@ -230,11 +222,11 @@ class URLSessionTracingHandlerTests: XCTestCase {
         XCTAssertEqual(log.message, "404 not found")
         XCTAssertEqual(
             log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.traceID] as? String,
-            "\(span.traceID.rawValue)"
+            span.traceID.toString(.decimal)
         )
         XCTAssertEqual(
             log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.spanID] as? String,
-            "\(span.spanID.rawValue)"
+            span.spanID.toString(.decimal)
         )
         XCTAssertEqual(log.error?.kind, "HTTPURLResponse - 404")
         XCTAssertEqual(log.attributes.internalAttributes?.count, 2)

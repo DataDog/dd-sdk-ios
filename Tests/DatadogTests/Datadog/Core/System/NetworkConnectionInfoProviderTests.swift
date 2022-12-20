@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -94,51 +94,5 @@ class NetworkConnectionInfoProviderTests: XCTestCase {
         DispatchQueue.concurrentPerform(iterations: 1_000) { _ in
             _ = provider.current
         }
-    }
-}
-
-class NetworkConnectionInfoConversionTests: XCTestCase {
-    typealias Reachability = NetworkConnectionInfo.Reachability
-    typealias Interface = NetworkConnectionInfo.Interface
-
-    func testNWPathStatus() {
-        if #available(iOS 12.0, tvOS 12, *) {
-            XCTAssertEqual(Reachability(from: .satisfied), .yes)
-            XCTAssertEqual(Reachability(from: .unsatisfied), .no)
-            XCTAssertEqual(Reachability(from: .requiresConnection), .maybe)
-        }
-    }
-
-    func testNWInterface() {
-        if #available(iOS 12.0, tvOS 12, *) {
-            XCTAssertEqual(Array(fromInterfaceTypes: []), [])
-            XCTAssertEqual(Array(fromInterfaceTypes: [.wifi]), [.wifi])
-            XCTAssertEqual(Array(fromInterfaceTypes: [.wiredEthernet]), [.wiredEthernet])
-            XCTAssertEqual(Array(fromInterfaceTypes: [.wifi, .wifi]), [.wifi, .wifi])
-            XCTAssertEqual(Array(fromInterfaceTypes: [.wifi, .cellular]), [.wifi, .cellular])
-            XCTAssertEqual(Array(fromInterfaceTypes: [.loopback, .other]), [.loopback, .other])
-        }
-    }
-
-    func testSCReachability() {
-        let reachable = SCNetworkReachabilityFlags(arrayLiteral: .reachable)
-        XCTAssertEqual(Reachability(from: reachable), .yes)
-
-        let unreachable = SCNetworkReachabilityFlags(arrayLiteral: .connectionOnDemand)
-        XCTAssertEqual(Reachability(from: unreachable), .no)
-
-        let null: SCNetworkReachabilityFlags? = nil
-        XCTAssertEqual(Reachability(from: null), .maybe)
-    }
-
-    func testSCInterface() {
-        let cellular = SCNetworkReachabilityFlags(arrayLiteral: .isWWAN)
-        XCTAssertEqual(Array(fromReachabilityFlags: cellular), [.cellular])
-
-        let null: SCNetworkReachabilityFlags? = nil
-        XCTAssertNil(Array(fromReachabilityFlags: null))
-
-        let nonCellularReachable = SCNetworkReachabilityFlags(arrayLiteral: .reachable)
-        XCTAssertNil(Array(fromReachabilityFlags: nonCellularReachable))
     }
 }

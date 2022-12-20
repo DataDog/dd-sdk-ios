@@ -4,7 +4,7 @@
 # -----------------------------------------------------------
 # Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
 # This product includes software developed at Datadog (https://www.datadoghq.com/).
-# Copyright 2019-2020 Datadog, Inc.
+# Copyright 2019-Present Datadog, Inc.
 # -----------------------------------------------------------
 
 import sys
@@ -27,6 +27,20 @@ def should_run_unit_tests(ctx: CIContext) -> bool:
             'Tests/DatadogTests',
             'Tests/DatadogCrashReportingTests',
             'Datadog/Datadog.xcodeproj/',
+        ],
+        pr_file_extensions=[]
+    )
+
+
+def should_run_sr_unit_tests(ctx: CIContext) -> bool:
+    print('⚙️ Resolving `unit tests` phase for Session Replay:')
+    return should_run_phase(
+        ctx=ctx,
+        trigger_env=context.trigger_env.DD_RUN_SR_UNIT_TESTS,
+        build_env=context.build_env.DD_OVERRIDE_RUN_SR_UNIT_TESTS,
+        pr_keyword='[x] Run unit tests for Session Replay',
+        pr_path_prefixes=[
+            'session-replay/',
         ],
         pr_file_extensions=[]
     )
@@ -147,6 +161,9 @@ if __name__ == "__main__":
 
         if should_run_unit_tests(context):
             export_env('DD_RUN_UNIT_TESTS', '1', dry_run=dry_run)
+
+        if should_run_sr_unit_tests(context):
+            export_env('DD_RUN_SR_UNIT_TESTS', '1', dry_run=dry_run)
 
         if should_run_integration_tests(context):
             export_env('DD_RUN_INTEGRATION_TESTS', '1', dry_run=dry_run)

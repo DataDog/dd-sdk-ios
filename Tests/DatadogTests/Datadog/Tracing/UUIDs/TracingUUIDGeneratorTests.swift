@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -16,10 +16,10 @@ class TracingUUIDGeneratorTests: XCTestCase {
 
     func testItGeneratesUUIDsFromGivenBoundaries() {
         let generator = DefaultTracingUUIDGenerator(range: 10...15)
-        var generatedUUIDs: Set<UInt64> = []
+        var generatedUUIDs: Set<TracingUUID> = []
 
         (0..<1_000).forEach { _ in
-            generatedUUIDs.insert(generator.generateUnique().rawValue)
+            generatedUUIDs.insert(generator.generateUnique())
         }
 
         XCTAssertEqual(generatedUUIDs, [10, 11, 12, 13, 14, 15])

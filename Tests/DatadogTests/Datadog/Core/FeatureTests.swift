@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -27,9 +27,14 @@ class FeatureStorageTests: XCTestCase {
         let storage = FeatureStorage(
             featureName: .mockAny(),
             queue: queue,
-            dataFormat: DataFormat(prefix: "", suffix: "", separator: "#"),
             directories: temporaryFeatureDirectories,
-            commonDependencies: .mockWith(consentProvider: consentProvider)
+            dateProvider: SystemDateProvider(),
+            consentProvider: consentProvider,
+            performance: .combining(
+                storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
+                uploadPerformance: .veryQuick
+            ),
+            encryption: nil
         )
 
         // When
@@ -67,9 +72,14 @@ class FeatureStorageTests: XCTestCase {
         let storage = FeatureStorage(
             featureName: .mockAny(),
             queue: queue,
-            dataFormat: DataFormat(prefix: "", suffix: "", separator: "#"),
             directories: temporaryFeatureDirectories,
-            commonDependencies: .mockWith(consentProvider: .init(initialConsent: .granted))
+            dateProvider: SystemDateProvider(),
+            consentProvider: .init(initialConsent: .granted),
+            performance: .combining(
+                storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
+                uploadPerformance: .veryQuick
+            ),
+            encryption: nil
         )
 
         // When
@@ -98,9 +108,14 @@ class FeatureStorageTests: XCTestCase {
         let storage = FeatureStorage(
             featureName: .mockAny(),
             queue: queue,
-            dataFormat: DataFormat(prefix: "", suffix: "", separator: "#"),
             directories: temporaryFeatureDirectories,
-            commonDependencies: .mockWith(consentProvider: .init(initialConsent: .granted))
+            dateProvider: SystemDateProvider(),
+            consentProvider: .init(initialConsent: .granted),
+            performance: .combining(
+                storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
+                uploadPerformance: .veryQuick
+            ),
+            encryption: nil
         )
 
         // When
@@ -134,7 +149,7 @@ class FeatureStorageTests: XCTestCase {
 
         (0..<limit).forEach { _ in
             if let nextBatch = storage.reader.readNextBatch() {
-                dataAuthorizedForUpload.append(nextBatch.data)
+                dataAuthorizedForUpload.append(contentsOf: nextBatch.events)
                 storage.reader.markBatchAsRead(nextBatch)
             }
         }

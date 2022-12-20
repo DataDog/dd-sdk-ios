@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -76,7 +76,7 @@ internal class RUMResourceScope: RUMScope {
         self.resourceLoadingStartTime = startTime
         self.serverTimeOffset = serverTimeOffset
         self.resourceHTTPMethod = httpMethod
-        self.isFirstPartyResource = dependencies.firstPartyURLsFilter.isFirstParty(string: url)
+        self.isFirstPartyResource = dependencies.firstPartyHosts.isFirstParty(string: url)
         self.resourceKindBasedOnRequest = resourceKindBasedOnRequest
         self.spanContext = spanContext
         self.onResourceEventSent = onResourceEventSent
@@ -85,7 +85,7 @@ internal class RUMResourceScope: RUMScope {
 
     // MARK: - RUMScope
 
-    func process(command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Bool {
+    func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
         switch command {
         case let command as RUMStopResourceCommand where command.resourceKey == resourceKey:
             sendResourceEvent(on: command, context: context, writer: writer)
@@ -108,7 +108,7 @@ internal class RUMResourceScope: RUMScope {
 
     // MARK: - Sending RUM Events
 
-    private func sendResourceEvent(on command: RUMStopResourceCommand, context: DatadogV1Context, writer: Writer) {
+    private func sendResourceEvent(on command: RUMStopResourceCommand, context: DatadogContext, writer: Writer) {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let resourceStartTime: Date
@@ -187,20 +187,20 @@ internal class RUMResourceScope: RUMScope {
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
                     )
                 },
-                size: size,
+                size: size ?? 0,
                 ssl: resourceMetrics?.ssl.map { metric in
                     .init(
                         duration: metric.duration.toInt64Nanoseconds,
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
                     )
                 },
-                statusCode: command.httpStatusCode?.toInt64,
+                statusCode: command.httpStatusCode?.toInt64 ?? 0,
                 type: resourceType,
                 url: resourceURL
             ),
             service: context.service,
             session: .init(
-                hasReplay: nil,
+                hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
@@ -222,7 +222,7 @@ internal class RUMResourceScope: RUMScope {
         }
     }
 
-    private func sendErrorEvent(on command: RUMStopResourceWithErrorCommand, context: DatadogV1Context, writer: Writer) {
+    private func sendErrorEvent(on command: RUMStopResourceWithErrorCommand, context: DatadogContext, writer: Writer) {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let errorEvent = RUMErrorEvent(
@@ -260,7 +260,7 @@ internal class RUMResourceScope: RUMScope {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: nil,
+                hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),

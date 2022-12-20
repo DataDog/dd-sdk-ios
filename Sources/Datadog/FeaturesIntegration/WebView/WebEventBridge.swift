@@ -1,18 +1,14 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
 
 internal typealias JSON = [String: Any]
 
-internal protocol WebLogEventConsumer {
-    func consume(event: JSON, internalLog: Bool) throws
-}
-
-internal protocol WebRUMEventConsumer {
+internal protocol WebEventConsumer {
     func consume(event: JSON) throws
 }
 
@@ -28,13 +24,12 @@ internal class WebEventBridge {
         static let eventTypeKey = "eventType"
         static let eventKey = "event"
         static let eventTypeLog = "log"
-        static let eventTypeInternalLog = "internal_log"
     }
 
-    private let logEventConsumer: WebLogEventConsumer?
-    private let rumEventConsumer: WebRUMEventConsumer?
+    private let logEventConsumer: WebEventConsumer?
+    private let rumEventConsumer: WebEventConsumer?
 
-    init(logEventConsumer: WebLogEventConsumer?, rumEventConsumer: WebRUMEventConsumer?) {
+    init(logEventConsumer: WebEventConsumer?, rumEventConsumer: WebEventConsumer?) {
         self.logEventConsumer = logEventConsumer
         self.rumEventConsumer = rumEventConsumer
     }
@@ -51,22 +46,10 @@ internal class WebEventBridge {
             throw WebEventError.missingKey(key: Constants.eventKey)
         }
 
-        if eventType == Constants.eventTypeLog ||
-            eventType == Constants.eventTypeInternalLog {
-            if let consumer = logEventConsumer {
-                try consumer.consume(
-                    event: wrappedEvent,
-                    internalLog: (eventType == Constants.eventTypeInternalLog)
-                )
-            } else {
-                DD.logger.warn("A WebView log is lost because Logging is disabled in the SDK")
-            }
+        if eventType == Constants.eventTypeLog {
+            try logEventConsumer?.consume(event: wrappedEvent)
         } else {
-            if let consumer = rumEventConsumer {
-                try consumer.consume(event: wrappedEvent)
-            } else {
-                DD.logger.warn("A WebView RUM event is lost because RUM is disabled in the SDK")
-           }
+            try rumEventConsumer?.consume(event: wrappedEvent)
         }
     }
 

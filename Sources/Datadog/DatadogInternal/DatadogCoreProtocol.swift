@@ -1,66 +1,198 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
 
-public internal(set) var defaultDatadogCore: DatadogCoreProtocol = NOOPDatadogCore()
+public internal(set) var defaultDatadogCore: DatadogCoreProtocol = NOPDatadogCore()
 
-/// A Datadog Core holds a set of features and is responsible of managing their storage
+/// A Datadog Core holds a set of Features and is responsible for managing their storage
 /// and upload mechanism. It also provides a thread-safe scope for writing events.
-public protocol DatadogCoreProtocol {
+///
+/// Any reference to `DatadogCoreProtocol` must be captured as `weak` within a Feature. This is to avoid
+/// retain cycle of core holding the Feature and vice-versa.
+public protocol DatadogCoreProtocol: AnyObject {
+    /// Registers a Feature instance.
+    ///
+    /// Feature collects and transfers data to a Datadog Product (e.g. Logs, RUM, ...). Upon registration, the Feature can
+    /// retrieve a `FeatureScope` interface for writing events to the core. The core will store and upload events efficiently
+    /// according to the performance presets defined on initialization.
+    ///
+    /// A Feature can also communicate to other Features by sending messages on the message bus managed by core.
+    ///
+    /// - Parameter feature: The Feature instance - it will be retained and held by core.
+    func register(feature: DatadogFeature) throws
+
+    /// Retrieves previously registered Feature by its name and type.
+    ///
+    /// A Feature type can be specified as parameter or inferred from the return type:
+    ///
+    ///     let feature = core.feature(named: "foo", type: Foo.self)
+    ///     let feature: Foo? = core.feature(named: "foo")
+    ///
+    /// - Parameters:
+    ///   - name: The Feature's name.
+    ///   - type: The Feature instance type.
+    /// - Returns: The Feature if any.
+    func feature<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature
+
+    /// Registers a Feature Integration instance.
+    ///
+    /// A Feature Integration collects and transfers data to a local Datadog Feature. An Integration will not store nor upload,
+    /// it will collect data for other Features to consume.
+    ///
+    /// An Integration can commicate to Features via dependency or a communication channel such as the message-bus.
+    ///
+    /// - Parameter integration: The Feature Integration instance.
+    func register(integration: DatadogFeatureIntegration) throws
+
+    /// Retrieves a Feature Integration by its name and type.
+    ///
+    /// A Feature Integration type can be specified as parameter or inferred from the return type:
+    ///
+    ///     let integration = core.integration(named: "foo", type: Foo.self)
+    ///     let integration: Foo? = core.integration(named: "foo")
+    ///
+    /// - Parameters:
+    ///   - name: The Feature Integration's name.
+    ///   - type: The Feature Integration instance type.
+    /// - Returns: The Feature Integration if any.
+    func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeatureIntegration
+
+    /// Retrieves a Feature Scope by its name.
+    ///
+    /// Feature Scope collects data to Datadog Product (e.g. Logs, RUM, ...). Upon registration, the Feature retrieves
+    /// its `FeatureScope` interface for writing events to the core. The core will store and upload events efficiently
+    /// according to the performance presets defined on initialization.
+    ///
+    /// - Parameters:
+    ///   - feature: The Feature's name.
+    /// - Returns: The Feature scope if a Feature with given name was registered.
+    func scope(for feature: String) -> FeatureScope?
+
+    /// Sets given attributes for a given Feature for sharing data through `DatadogContext`.
+    ///
+    /// This method provides a passive communication chanel between Features of the Core.
+    /// For an active Feature-to-Feature communication, please use the `send(message:)`
+    /// method.
+    ///
+    /// Setting attributes will update the Core Context and will be shared across Features.
+    /// In the following examples, the Feature `foo` will set an attribute and a second
+    /// Feature `bar` will read it through the event write context.
+    ///
+    ///     // Foo.swift
+    ///     core.set(feature: "foo", attributes: [
+    ///         "id": 1
+    ///     ])
+    ///
+    ///     // Bar.swift
+    ///     core.scope(for: "bar").eventWriteContext { context, writer in
+    ///         let fooID: Int? = context.featuresAttributes["foo"]?.id
+    ///     }
+    ///
+    /// - Parameters:
+    ///   - feature: The Feature's name.
+    ///   - attributes: The Feature's attributes to set.
+    func set(feature: String, attributes: @escaping () -> FeatureBaggage)
+
+    /// Sends a message on the bus shared by features registered in this core.
+    ///
+    /// If the message could not be processed by any registered feature, the fallback closure
+    /// will be invoked. Do not make any assumption on which thread the fallback is called.
+    ///
+    /// - Parameters:
+    ///   - message: The message.
+    ///   - fallback: The fallback closure to call when the message could not be
+    ///               processed by any Features on the bus.
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void)
 }
 
-/// Provide feature specific storage configuration.
-internal struct FeatureStorageConfiguration {
-    /// A set of paths for managing persisted data for this Feature.
-    /// Each path is relative to the root folder of given SDK instance.
-    struct Directories {
-        /// The path for writing authorized data (when tracking consent is granted).
-        /// This path must be relative to the core directory created for given instance of the SDK.
-        let authorized: String
-        /// The path for writing unauthorized data (when tracking consent is pending).
-        /// This path must be relative to the core directory created for given instance of the SDK.
-        let unauthorized: String
-        /// The list of deprecated paths from previous versions of this feature. It is used to perform cleanup.
-        /// These paths must be relative to the known OS location (`/Library/Caches/`) containing core directories for different instances of the SDK.
-        let deprecated: [String]
+extension DatadogCoreProtocol {
+    /// Retrieves a Feature by its name and type.
+    ///
+    /// A Feature type can be specified as parameter or inferred from the return type:
+    ///
+    ///     let feature = core.feature(named: "foo", type: Foo.self)
+    ///     let feature: Foo? = core.feature(named: "foo")
+    ///
+    /// - Parameters:
+    ///   - name: The Feature's name.
+    /// - Returns: The Feature if any.
+    func feature<T>(named name: String) -> T? where T: DatadogFeature {
+        feature(named: name, type: T.self)
     }
 
-    /// Directories storing data for this Feature.
-    let directories: Directories
+    /// Retrieves a Feature Integration by its name and type.
+    ///
+    /// A Feature Integration type can be specified as parameter or inferred from the return type:
+    ///
+    ///     let integration = core.integration(named: "foo", type: Foo.self)
+    ///     let integration: Foo? = core.integration(named: "foo")
+    ///
+    /// - Parameters:
+    ///   - name: The Feature Integration's name.
+    /// - Returns: The Feature Integration if any.
+    func integration<T>(named name: String) -> T? where T: DatadogFeatureIntegration {
+        integration(named: name, type: T.self)
+    }
 
-    // MARK: - V1 interface
-
-    /// A human-readable name of this Feature used for naming internal queues specific to this Feature and annotating
-    /// origin of telemetry and verbosity logs produced by the SDK.
-    let featureName: String
+    /// Sends a message on the bus shared by features registered in this core.
+    ///
+    /// - Parameters:
+    ///   - message: The message.
+    func send(message: FeatureMessage) {
+        send(message: message, else: {})
+    }
 }
 
-/// Provide feature specific upload configuration.
-internal struct FeatureUploadConfiguration {
-    // MARK: - V1 interface
-
-    /// A human-readable name of this Feature used for naming internal queues specific to this Feature and annotating
-    /// origin of telemetry and verbosity logs produced by the SDK.
-    let featureName: String
-
-    /// Creates the V1's `RequetsBuilder` for uploading data in this Feature.
-    /// In V2 we will change it to build requests based on V2 context and batch metadata.
-    let createRequestBuilder: (DatadogV1Context) -> RequestBuilder
-
-    /// Data format for constructing Feature payloads in V1. It is applied by the reader when reading data from batch and
-    /// before passing it to the uploader.
-    let payloadFormat: DataFormat
-}
-
-/// A datadog feature providing thread-safe scope for writing events.
+/// Feature scope provides a context and a writer to build a record event.
 public protocol FeatureScope {
-    // TODO: RUMM-2133
+    /// Retrieve the event context and writer.
+    ///
+    /// The Feature scope provides the current Datadog context and event writer
+    /// for the Feature to build and record events.
+    ///
+    /// A Feature has the ability to bypass the current user consent for data collection. The `bypassConsent`
+    /// must be set to `true` only if the Feature is already aware of the user's consent for the event it is about
+    /// to write.
+    ///
+    /// - Parameters:
+    ///   - bypassConsent: `true` to bypass the current core consent and write events as authorized.
+    ///                    Default is `false`, setting `true` must still respect user's consent for
+    ///                    collecting information.
+    ///   - block: The block to execute.
+    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void)
+}
+
+/// Feature scope provides a context and a writer to build a record event.
+public extension FeatureScope {
+    /// Retrieve the event context and writer.
+    ///
+    /// The Feature scope provides the current Datadog context and event writer
+    /// for the Feature to build and record events.
+    ///
+    /// - Parameter block: The block to execute.
+    func eventWriteContext(_ block: @escaping (DatadogContext, Writer) throws -> Void) {
+        self.eventWriteContext(bypassConsent: false, block)
+    }
 }
 
 /// No-op implementation of `DatadogFeatureRegistry`.
-internal struct NOOPDatadogCore: DatadogCoreProtocol {
+internal class NOPDatadogCore: DatadogCoreProtocol {
+    /// no-op
+    func register(feature: DatadogFeature) throws { }
+    /// no-op
+    func feature<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature { nil }
+    /// no-op
+    func register(integration: DatadogFeatureIntegration) throws { }
+    /// no-op
+    func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeatureIntegration { nil }
+    /// no-op
+    func scope(for feature: String) -> FeatureScope? { nil }
+    /// no-op
+    func set(feature: String, attributes: @escaping @autoclosure () -> FeatureBaggage) { }
+    /// no-op
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
 }

@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import HTTPServerMock
@@ -203,6 +203,7 @@ class TrackingConsentScenarioTests: IntegrationTests, LoggingCommonAsserts, Trac
 
         try recordedRUMRequests
             .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
+            .filter { event in try event.eventType() != "telemetry" }
             .forEach { event in
                 XCTAssertEqual(
                     try event.attribute(forKeyPath: "usr.current-consent-value"),
@@ -305,6 +306,7 @@ class TrackingConsentScenarioTests: IntegrationTests, LoggingCommonAsserts, Trac
 
         let eventMatchers = try recordedRequests
             .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
+            .filter { event in try event.eventType() != "telemetry" }
 
         try eventMatchers.forEach { event in
             XCTAssertEqual(

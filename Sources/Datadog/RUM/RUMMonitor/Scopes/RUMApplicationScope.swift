@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -35,7 +35,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     // MARK: - RUMScope
 
-    func process(command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Bool {
+    func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
         if sessionScope == nil {
             startInitialSession(context: context)
         }
@@ -53,19 +53,20 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     // MARK: - Private
 
-    private func refresh(expiredSession: RUMSessionScope, on command: RUMCommand, context: DatadogV1Context, writer: Writer) {
+    private func refresh(expiredSession: RUMSessionScope, on command: RUMCommand, context: DatadogContext, writer: Writer) {
         let refreshedSession = RUMSessionScope(from: expiredSession, startTime: command.time, context: context)
         sessionScope = refreshedSession
         sessionScopeDidUpdate(refreshedSession)
         _ = refreshedSession.process(command: command, context: context, writer: writer)
     }
 
-    private func startInitialSession(context: DatadogV1Context) {
+    private func startInitialSession(context: DatadogContext) {
         let initialSession = RUMSessionScope(
             isInitialSession: true,
             parent: self,
             startTime: context.sdkInitDate,
-            dependencies: dependencies
+            dependencies: dependencies,
+            isReplayBeingRecorded: context.srBaggage?.isReplayBeingRecorded
         )
         sessionScope = initialSession
         sessionScopeDidUpdate(initialSession)

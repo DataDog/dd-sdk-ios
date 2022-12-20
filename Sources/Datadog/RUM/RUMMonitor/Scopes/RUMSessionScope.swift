@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -20,7 +20,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     private(set) var viewScopes: [RUMViewScope] = [] {
         didSet {
             if !state.hasTrackedAnyView && !viewScopes.isEmpty {
-                state = RUMSessionState(sessionUUID: state.sessionUUID, isInitialSession: state.isInitialSession, hasTrackedAnyView: true)
+                state = RUMSessionState(
+                    sessionUUID: state.sessionUUID,
+                    isInitialSession: state.isInitialSession,
+                    hasTrackedAnyView: true,
+                    didStartWithReplay: state.didStartWithReplay
+                )
             }
         }
     }
@@ -28,7 +33,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// Information about this session state, shared with `CrashContext`.
     private var state: RUMSessionState {
         didSet {
-            dependencies.crashContextIntegration?.update(lastRUMSessionState: state)
+            dependencies.core.send(message: .custom(key: "rum", baggage: [RUMBaggageKeys.sessionState: state]))
         }
     }
 
@@ -55,7 +60,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         isInitialSession: Bool,
         parent: RUMContextProvider,
         startTime: Date,
-        dependencies: RUMScopeDependencies
+        dependencies: RUMScopeDependencies,
+        isReplayBeingRecorded: Bool?
     ) {
         self.parent = parent
         self.dependencies = dependencies
@@ -65,23 +71,29 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.sessionStartTime = startTime
         self.lastInteractionTime = startTime
         self.backgroundEventTrackingEnabled = dependencies.backgroundEventTrackingEnabled
-        self.state = RUMSessionState(sessionUUID: sessionUUID.rawValue, isInitialSession: isInitialSession, hasTrackedAnyView: false)
+        self.state = RUMSessionState(
+            sessionUUID: sessionUUID.rawValue,
+            isInitialSession: isInitialSession,
+            hasTrackedAnyView: false,
+            didStartWithReplay: isReplayBeingRecorded
+        )
 
         // Update `CrashContext` with recent RUM session state:
-        dependencies.crashContextIntegration?.update(lastRUMSessionState: state)
+        dependencies.core.send(message: .custom(key: "rum", baggage: [RUMBaggageKeys.sessionState: state]))
     }
 
     /// Creates a new Session upon expiration of the previous one.
     convenience init(
         from expiredSession: RUMSessionScope,
         startTime: Date,
-        context: DatadogV1Context
+        context: DatadogContext
     ) {
         self.init(
             isInitialSession: false,
             parent: expiredSession.parent,
             startTime: startTime,
-            dependencies: expiredSession.dependencies
+            dependencies: expiredSession.dependencies,
+            isReplayBeingRecorded: context.srBaggage?.isReplayBeingRecorded
         )
 
         // Transfer active Views by creating new `RUMViewScopes` for their identity objects:
@@ -99,7 +111,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 attributes: expiredView.attributes,
                 customTimings: expiredView.customTimings,
                 startTime: startTime,
-                serverTimeOffset: context.dateCorrector.offset
+                serverTimeOffset: context.serverTimeOffset
             )
         }
     }
@@ -114,7 +126,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     // MARK: - RUMScope
 
-    func process(command: RUMCommand, context: DatadogV1Context, writer: Writer) -> Bool {
+    func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
         if timedOutOrExpired(currentTime: command.time) {
             return false // no longer keep this session
         }
@@ -133,7 +145,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             // Otherwise, if there is no active view scope, consider starting artificial scope for handling this command
             let handlingRule = RUMOffViewEventsHandlingRule(
                 sessionState: state,
-                isAppInForeground: dependencies.appStateListener.history.currentSnapshot.state.isRunningInForeground,
+                isAppInForeground: context.applicationStateHistory.currentSnapshot.state.isRunningInForeground,
                 isBETEnabled: backgroundEventTrackingEnabled
             )
 
@@ -164,7 +176,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             // won't be associated to an inactive view and instead we will consider starting background view to track it.
             // It means that with Background Events Tracking disabled, eventual off-view crashes will be dropped
             // similar to how we drop other events.
-            dependencies.crashContextIntegration?.update(lastRUMViewEvent: nil)
+            dependencies.core.send(message: .custom(key: "rum", baggage: [RUMBaggageKeys.viewReset: true]))
         }
 
         return true
@@ -177,7 +189,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     // MARK: - RUMCommands Processing
 
-    private func startView(on command: RUMStartViewCommand, context: DatadogV1Context) {
+    private func startView(on command: RUMStartViewCommand, context: DatadogContext) {
         let isStartingInitialView = isInitialSession && !state.hasTrackedAnyView
         viewScopes.append(
             RUMViewScope(
@@ -190,12 +202,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 attributes: command.attributes,
                 customTimings: [:],
                 startTime: command.time,
-                serverTimeOffset: context.dateCorrector.offset
+                serverTimeOffset: context.serverTimeOffset
             )
         )
     }
 
-    private func startApplicationLaunchView(on command: RUMCommand, context: DatadogV1Context) {
+    private func startApplicationLaunchView(on command: RUMCommand, context: DatadogContext) {
         viewScopes.append(
             RUMViewScope(
                 isInitialView: true,
@@ -207,12 +219,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 attributes: command.attributes,
                 customTimings: [:],
                 startTime: sessionStartTime,
-                serverTimeOffset: context.dateCorrector.offset
+                serverTimeOffset: context.serverTimeOffset
             )
         )
     }
 
-    private func startBackgroundView(on command: RUMCommand, context: DatadogV1Context) {
+    private func startBackgroundView(on command: RUMCommand, context: DatadogContext) {
         let isStartingInitialView = isInitialSession && !state.hasTrackedAnyView
         viewScopes.append(
             RUMViewScope(
@@ -225,7 +237,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 attributes: command.attributes,
                 customTimings: [:],
                 startTime: command.time,
-                serverTimeOffset: context.dateCorrector.offset
+                serverTimeOffset: context.serverTimeOffset
             )
         )
     }

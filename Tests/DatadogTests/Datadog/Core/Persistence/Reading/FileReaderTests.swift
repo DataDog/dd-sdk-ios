@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -20,7 +20,6 @@ class FileReaderTests: XCTestCase {
 
     func testItReadsSingleBatch() throws {
         let reader = FileReader(
-            dataFormat: .mockWith(prefix: "[", suffix: "]"),
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
                 performance: StoragePerformanceMock.readAllFiles,
@@ -33,7 +32,7 @@ class FileReaderTests: XCTestCase {
 
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
         let batch = reader.readNextBatch()
-        XCTAssertEqual(batch?.data, "[ABCD]".utf8Data)
+        XCTAssertEqual(batch?.events, ["ABCD".utf8Data])
     }
 
     func testItReadsSingleEncryptedBatch() throws {
@@ -47,7 +46,6 @@ class FileReaderTests: XCTestCase {
             .append(data: data)
 
         let reader = FileReader(
-            dataFormat: .mockWith(prefix: "[", suffix: "]", separator: ","),
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
                 performance: StoragePerformanceMock.readAllFiles,
@@ -62,13 +60,12 @@ class FileReaderTests: XCTestCase {
         let batch = reader.readNextBatch()
 
         // Then
-        XCTAssertEqual(batch?.data, "[bar,bar,bar]".utf8Data)
+        XCTAssertEqual(batch?.events, ["bar","bar","bar"].map { $0.utf8Data })
     }
 
     func testItMarksBatchesAsRead() throws {
         let dateProvider = RelativeDateProvider(advancingBySeconds: 60)
         let reader = FileReader(
-            dataFormat: .mockWith(prefix: "[", suffix: "]"),
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
                 performance: StoragePerformanceMock.readAllFiles,
@@ -86,15 +83,15 @@ class FileReaderTests: XCTestCase {
 
         var batch: Batch
         batch = try reader.readNextBatch().unwrapOrThrow()
-        XCTAssertEqual(batch.data, "[1]".utf8Data)
+        XCTAssertEqual(batch.events.first, "1".utf8Data)
         reader.markBatchAsRead(batch)
 
         batch = try reader.readNextBatch().unwrapOrThrow()
-        XCTAssertEqual(batch.data, "[2]".utf8Data)
+        XCTAssertEqual(batch.events.first, "2".utf8Data)
         reader.markBatchAsRead(batch)
 
         batch = try reader.readNextBatch().unwrapOrThrow()
-        XCTAssertEqual(batch.data, "[3]".utf8Data)
+        XCTAssertEqual(batch.events.first, "3".utf8Data)
         reader.markBatchAsRead(batch)
 
         XCTAssertNil(reader.readNextBatch())

@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -157,6 +157,20 @@ public enum DDVitalsFrequency: Int {
         case .never: return .never
         }
     }
+}
+
+@objc
+public class DDTracingHeaderType: NSObject {
+    internal let swiftType: TracingHeaderType
+
+    private init(_ swiftType: TracingHeaderType) {
+        self.swiftType = swiftType
+    }
+
+    @objc public static let datadog = DDTracingHeaderType(.datadog)
+    @objc public static let b3multi = DDTracingHeaderType(.b3multi)
+    @objc public static let b3 = DDTracingHeaderType(.b3)
+    @objc public static let tracecontext = DDTracingHeaderType(.tracecontext)
 }
 
 @objc
@@ -327,8 +341,20 @@ public class DDConfigurationBuilder: NSObject {
     }
 
     @objc
+    public func trackURLSession(firstPartyHostsWithHeaderTypes: [String: Set<DDTracingHeaderType>]) {
+        _ = sdkBuilder.trackURLSession(firstPartyHostsWithHeaderTypes: firstPartyHostsWithHeaderTypes.mapValues { tracingHeaderTypes in
+            return Set(tracingHeaderTypes.map { $0.swiftType })
+        })
+    }
+
+    @objc
     public func set(serviceName: String) {
         _ = sdkBuilder.set(serviceName: serviceName)
+    }
+
+    @objc
+    public func set(loggingSamplingRate: Float) {
+        _ = sdkBuilder.set(loggingSamplingRate: loggingSamplingRate)
     }
 
     @objc

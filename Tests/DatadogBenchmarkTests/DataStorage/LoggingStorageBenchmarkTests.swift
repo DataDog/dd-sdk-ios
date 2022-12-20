@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -23,13 +23,14 @@ class LoggingStorageBenchmarkTests: XCTestCase {
         let storage = FeatureStorage(
             featureName: "logging",
             queue: queue,
-            dataFormat: DataFormat(prefix: "[", suffix: "]", separator: ","),
             directories: .init(
-                deprecated: [],
                 unauthorized: directory,
                 authorized: directory
             ),
-            commonDependencies: .mockAny()
+            dateProvider: SystemDateProvider(),
+            consentProvider: ConsentProvider(initialConsent: .granted),
+            performance: .benchmarksPreset,
+            encryption: nil
         )
 
         self.writer = storage.writer
@@ -96,6 +97,7 @@ class LoggingStorageBenchmarkTests: XCTestCase {
             loggerVersion: "0.0.0",
             threadName: "main",
             applicationVersion: "0.0.0",
+            dd: .init(device: .init(architecture: "testArch")),
             userInfo: .init(id: "abc-123", name: "foo", email: "foo@bar.com", extraInfo: ["str": "value", "int": 11_235, "bool": true]),
             networkConnectionInfo: .init(
                 reachability: .yes,

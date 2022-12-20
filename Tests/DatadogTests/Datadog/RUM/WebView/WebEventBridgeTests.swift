@@ -1,27 +1,17 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
 @testable import Datadog
 
-fileprivate class MockEventConsumer: WebLogEventConsumer, WebRUMEventConsumer {
-    private(set) var consumedLogEvents: [JSON] = []
-    private(set) var consumedInternalLogEvents: [JSON] = []
-    private(set) var consumedRUMEvents: [JSON] = []
-
-    func consume(event: JSON, internalLog: Bool) throws {
-        if internalLog {
-            consumedInternalLogEvents.append(event)
-        } else {
-            consumedLogEvents.append(event)
-        }
-    }
+fileprivate class MockEventConsumer: WebEventConsumer {
+    private(set) var events: [JSON] = []
 
     func consume(event: JSON) throws {
-        consumedRUMEvents.append(event)
+        events.append(event)
     }
 }
 
@@ -68,14 +58,10 @@ class WebEventBridgeTests: XCTestCase {
         """
         try eventBridge.consume(messageLog)
 
-        XCTAssertEqual(mockLogEventConsumer.consumedLogEvents.count, 1)
-        XCTAssertEqual(mockLogEventConsumer.consumedInternalLogEvents.count, 0)
-        XCTAssertEqual(mockLogEventConsumer.consumedRUMEvents.count, 0)
-        XCTAssertEqual(mockRUMEventConsumer.consumedLogEvents.count, 0)
-        XCTAssertEqual(mockRUMEventConsumer.consumedInternalLogEvents.count, 0)
-        XCTAssertEqual(mockRUMEventConsumer.consumedRUMEvents.count, 0)
+        XCTAssertEqual(mockLogEventConsumer.events.count, 1)
+        XCTAssertEqual(mockRUMEventConsumer.events.count, 0)
 
-        let consumedEvent = try XCTUnwrap(mockLogEventConsumer.consumedLogEvents.first)
+        let consumedEvent = try XCTUnwrap(mockLogEventConsumer.events.first)
         XCTAssertEqual(consumedEvent["session_id"] as? String, "0110cab4-7471-480e-aa4e-7ce039ced355")
         XCTAssertEqual((consumedEvent["view"] as? JSON)?["url"] as? String, "https://datadoghq.dev/browser-sdk-test-playground")
     }
@@ -86,13 +72,10 @@ class WebEventBridgeTests: XCTestCase {
         """
         try eventBridge.consume(messageRUM)
 
-        XCTAssertEqual(
-            mockLogEventConsumer.consumedLogEvents.count + mockLogEventConsumer.consumedInternalLogEvents.count,
-            0
-        )
-        XCTAssertEqual(mockRUMEventConsumer.consumedRUMEvents.count, 1)
+        XCTAssertEqual(mockLogEventConsumer.events.count, 0)
+        XCTAssertEqual(mockRUMEventConsumer.events.count, 1)
 
-        let consumedEvent = try XCTUnwrap(mockRUMEventConsumer.consumedRUMEvents.first)
+        let consumedEvent = try XCTUnwrap(mockRUMEventConsumer.events.first)
         XCTAssertEqual((consumedEvent["session"] as? JSON)?["id"] as? String, "0110cab4-7471-480e-aa4e-7ce039ced355")
         XCTAssertEqual((consumedEvent["view"] as? JSON)?["url"] as? String, "http://localhost:8080/test.html")
     }
