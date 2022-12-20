@@ -151,10 +151,6 @@ class LoggingMessageReceiverTests: XCTestCase {
 
     func testReceiveEvent() throws {
         // Given
-        struct Event: Encodable {
-            let test: String
-        }
-
         let core = PassthroughCoreMock(
             expectation: expectation(description: "Send Event"),
             messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
@@ -252,10 +248,8 @@ class LoggingMessageReceiverTests: XCTestCase {
             )
         )
 
-        let data = try JSONEncoder().encode(core.events.first as? AnyEncodable)
-        let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
-
-        AssertDictionariesEqual(writtenJSON, expectedWebLogEvent)
+        let received = try XCTUnwrap(core.events.first, "It should send event")
+        try AssertEncodedRepresentationsEqual(received, AnyEncodable(expectedWebLogEvent))
     }
 
     func testWhenContextIsUnavailable_itPassesWebviewEventAsIs() throws {
@@ -289,9 +283,7 @@ class LoggingMessageReceiverTests: XCTestCase {
             )
         )
 
-        let data = try JSONEncoder().encode(core.events.first as? AnyEncodable)
-        let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
-
-        AssertDictionariesEqual(writtenJSON, expectedWebLogEvent)
+        let received = try XCTUnwrap(core.events.first, "It should send event")
+        try AssertEncodedRepresentationsEqual(received, AnyEncodable(expectedWebLogEvent))
     }
 }

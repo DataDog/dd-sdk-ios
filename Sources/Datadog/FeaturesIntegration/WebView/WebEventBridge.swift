@@ -49,7 +49,7 @@ internal class WebEventBridge {
             })
         } else {
             core.send(message: .custom(key: Constants.browserEvent, baggage: .init(event)), else: {
-                DD.logger.warn("A WebView log is lost because Logging is disabled in the SDK")
+                DD.logger.warn("A WebView RUM event is lost because RUM is disabled in the SDK")
             })
         }
     }
