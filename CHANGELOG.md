@@ -1,5 +1,7 @@
 # Unreleased
 
+# 1.14.0 / 20-12-2022
+
 - [IMPROVEMENT] Add a method for sending error attributes on logs as strings.
 - [IMPROVEMENT] Add manual Open Telemetry b3 headers injection. See [#1057][]
 - [IMPROVEMENT] Add automatic Open Telemetry b3 headers injection. See [#1061][]
