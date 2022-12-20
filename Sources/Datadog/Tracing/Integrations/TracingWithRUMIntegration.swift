@@ -11,6 +11,6 @@ internal final class TracingWithRUMIntegration {
     /// The RUM attributes that should be added as Span tags.
     ///
     /// These attributes are synchronized using a read-write lock.
-    @_pthread_rwlock
+    @ReadWriteLock
     var attribues: [String: Encodable]?
 }

@@ -8,7 +8,7 @@ import XCTest
 @testable import Datadog
 
 final class ConcurrencyTests: XCTestCase {
-    @_pthread_rwlock
+    @ReadWriteLock
     var value: Int = 0
 
     func testRandomlyCallingValueConcurrentlyDoesNotCrash() {

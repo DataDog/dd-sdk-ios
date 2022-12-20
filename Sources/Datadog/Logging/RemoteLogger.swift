@@ -37,10 +37,10 @@ internal final class RemoteLogger: LoggerProtocol {
     /// Can be `false` if the integration is disabled for this logger.
     internal let activeSpanIntegration: Bool
     /// Logger-specific attributes.
-    @_pthread_rwlock
+    @ReadWriteLock
     private var attributes: [String: Encodable] = [:]
     /// Logger-specific tags.
-    @_pthread_rwlock
+    @ReadWriteLock
     private var tags: Set<String> = []
 
     init(

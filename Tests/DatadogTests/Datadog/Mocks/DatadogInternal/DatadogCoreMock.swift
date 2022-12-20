@@ -21,7 +21,7 @@ internal final class DatadogCoreMock: Flushable {
 
     private var v1Features: [String: Any] = [:]
 
-    @_pthread_rwlock
+    @ReadWriteLock
     var context: DatadogContext {
         didSet { send(message: .context(context)) }
     }

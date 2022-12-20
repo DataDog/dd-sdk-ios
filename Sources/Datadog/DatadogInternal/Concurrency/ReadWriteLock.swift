@@ -13,7 +13,7 @@ import Foundation
 /// An additional method `mutate` allow to safely mutate the value in-place (to read it
 /// and write it while obtaining the lock only once).
 @propertyWrapper
-/* public */ internal final class _pthread_rwlock<Value> {
+/* public */ internal final class ReadWriteLock<Value> {
     /// The wrapped value.
     private var value: Value
 

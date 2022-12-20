@@ -717,8 +717,8 @@
 		D29889C9273413ED00A4D1A9 /* RUMViewsHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29889C72734136200A4D1A9 /* RUMViewsHandlerTests.swift */; };
 		D29CDD3228211A2200F7DAA5 /* DataBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29CDD3128211A2200F7DAA5 /* DataBlock.swift */; };
 		D29CDD3328211A2200F7DAA5 /* DataBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29CDD3128211A2200F7DAA5 /* DataBlock.swift */; };
-		D29CF4BE294C7C98008CD037 /* Concurrency.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29CF4BD294C7C98008CD037 /* Concurrency.swift */; };
-		D29CF4BF294C7C98008CD037 /* Concurrency.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29CF4BD294C7C98008CD037 /* Concurrency.swift */; };
+		D29CF4BE294C7C98008CD037 /* ReadWriteLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29CF4BD294C7C98008CD037 /* ReadWriteLock.swift */; };
+		D29CF4BF294C7C98008CD037 /* ReadWriteLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29CF4BD294C7C98008CD037 /* ReadWriteLock.swift */; };
 		D29D5A4D273BF8B400A687C1 /* SwiftUIActionModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */; };
 		D2A1EE23287740B500D28DFB /* ApplicationStatePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE22287740B500D28DFB /* ApplicationStatePublisher.swift */; };
 		D2A1EE24287740B500D28DFB /* ApplicationStatePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE22287740B500D28DFB /* ApplicationStatePublisher.swift */; };
@@ -1956,7 +1956,7 @@
 		D2956CB02869D54E007D5462 /* DeviceInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInfoTests.swift; sourceTree = "<group>"; };
 		D29889C72734136200A4D1A9 /* RUMViewsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewsHandlerTests.swift; sourceTree = "<group>"; };
 		D29CDD3128211A2200F7DAA5 /* DataBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataBlock.swift; sourceTree = "<group>"; };
-		D29CF4BD294C7C98008CD037 /* Concurrency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Concurrency.swift; sourceTree = "<group>"; };
+		D29CF4BD294C7C98008CD037 /* ReadWriteLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadWriteLock.swift; sourceTree = "<group>"; };
 		D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIActionModifier.swift; sourceTree = "<group>"; };
 		D2A1EE22287740B500D28DFB /* ApplicationStatePublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationStatePublisher.swift; sourceTree = "<group>"; };
 		D2A1EE25287C35DE00D28DFB /* ContextValueReaderMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextValueReaderMock.swift; sourceTree = "<group>"; };
@@ -4460,7 +4460,7 @@
 		D29CF4C0294C7CA6008CD037 /* Concurrency */ = {
 			isa = PBXGroup;
 			children = (
-				D29CF4BD294C7C98008CD037 /* Concurrency.swift */,
+				D29CF4BD294C7C98008CD037 /* ReadWriteLock.swift */,
 			);
 			path = Concurrency;
 			sourceTree = "<group>";
@@ -5478,7 +5478,7 @@
 				6139CD712589FAFD007E8BB7 /* Retrying.swift in Sources */,
 				D2CBC2542942007800134409 /* AnyEncodable.swift in Sources */,
 				61BBD19524ED4E9E0023E65F /* FeaturesConfiguration.swift in Sources */,
-				D29CF4BE294C7C98008CD037 /* Concurrency.swift in Sources */,
+				D29CF4BE294C7C98008CD037 /* ReadWriteLock.swift in Sources */,
 				618D9DE7263AD78900A3FAD2 /* SpanEventMapper.swift in Sources */,
 				D2A1EE29287D914900D28DFB /* LaunchTime.swift in Sources */,
 				6114FE2F257687310084E372 /* ConsentProvider.swift in Sources */,
@@ -6177,7 +6177,7 @@
 				D20605B32874E1660047275C /* CarrierInfoPublisher.swift in Sources */,
 				D2CB6E4027C50EAE00A62B57 /* UIViewControllerSwizzler.swift in Sources */,
 				D2CB6E4127C50EAE00A62B57 /* RUMCurrentContext.swift in Sources */,
-				D29CF4BF294C7C98008CD037 /* Concurrency.swift in Sources */,
+				D29CF4BF294C7C98008CD037 /* ReadWriteLock.swift in Sources */,
 				D2CB6E4227C50EAE00A62B57 /* RUMConnectivityInfoProvider.swift in Sources */,
 				61FD9FCA2851E67100214BD9 /* Sysctl.swift in Sources */,
 				D248ED462807193B00B315B4 /* RUMTelemetry.swift in Sources */,

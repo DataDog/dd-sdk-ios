@@ -16,7 +16,7 @@ import XCTest
 /// store all events in the `events` property..
 internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     /// Current context that will be passed to feature-scopes.
-    @_pthread_rwlock
+    @ReadWriteLock
     var context: DatadogContext {
         didSet { send(message: .context(context)) }
     }
