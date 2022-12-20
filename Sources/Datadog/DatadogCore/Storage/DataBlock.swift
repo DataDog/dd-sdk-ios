@@ -149,8 +149,8 @@ internal final class DataBlockReader {
             return Data()
         }
 
-        // Load from stream to data without unnecessary copies
-        var data = Data(repeating: 0, count: length)
+        // Load from stream directly to data without unnecessary copies
+        var data = Data(count: length)
         let count = try data.withUnsafeMutableBytes { (bytes: UnsafeMutableRawBufferPointer) in
             guard let buffer = bytes.assumingMemoryBound(to: UInt8.self).baseAddress else {
                 throw DataBlockError.dataAllocationFailure
@@ -162,7 +162,7 @@ internal final class DataBlockReader {
             throw DataBlockError.readOperationFailed(streamError: stream.streamError)
         }
 
-        if count == 0, stream.streamStatus == .atEnd {
+        if count == 0 {
             throw DataBlockError.endOfStream
         }
 
