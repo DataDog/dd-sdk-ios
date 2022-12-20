@@ -26,7 +26,7 @@ internal final class DatadogCoreMock: Flushable {
         didSet { send(message: .context(context)) }
     }
 
-    /// This queue used for invoking Feature scopes.
+    /// This queue is used for invoking Feature scopes.
     var queue: DispatchQueue?
 
     /// Creates a DatadogCore mock.

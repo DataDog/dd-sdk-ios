@@ -7,19 +7,20 @@
 import Foundation
 
 /// A property wrapper using a fair, POSIX conforming reader-writer lock for atomic
-/// access to the value.
+/// access to the value.  It is optimised for concurrent reads and exclusive writes.
 ///
 /// The wrapper is a class to prevent copying the lock, it creates and initilaizes a `pthread_rwlock_t`.
-/// An additional method `mutate` allow to safely mutate the value within a closure.
+/// An additional method `mutate` allow to safely mutate the value in-place (to read it
+/// and write it while obtaining the lock only once).
 @propertyWrapper
-public final class _pthread_rwlock<Value> {
+/* public */ internal final class _pthread_rwlock<Value> {
     /// The wrapped value.
     private var value: Value
 
     /// The lock object.
     private var rwlock = pthread_rwlock_t()
 
-    public init(wrappedValue value: Value) {
+    /* public */ init(wrappedValue value: Value) {
         pthread_rwlock_init(&rwlock, nil)
         self.value = value
     }
@@ -32,7 +33,7 @@ public final class _pthread_rwlock<Value> {
     ///
     /// The `get` will acquire the lock for reading while the `set` will acquire for
     /// writing.
-    public var wrappedValue: Value {
+    /* public */ var wrappedValue: Value {
         get {
             pthread_rwlock_rdlock(&rwlock)
             defer { pthread_rwlock_unlock(&rwlock) }
@@ -45,10 +46,11 @@ public final class _pthread_rwlock<Value> {
         }
     }
 
-    /// Provides a closure for mutation that will be called synchronously.
+    /// Provides a non-escaping closure for mutation.
+    /// The lock will be acquired once for writing before invoking the closure.
     ///
     /// - Parameter closure: The closure with the mutable value.
-    public func mutate(_ closure: (inout Value) -> Void) {
+    /* public */ func mutate(_ closure: (inout Value) -> Void) {
         pthread_rwlock_wrlock(&rwlock)
         closure(&value)
         pthread_rwlock_unlock(&rwlock)
