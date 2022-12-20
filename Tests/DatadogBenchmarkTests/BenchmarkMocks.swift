@@ -6,10 +6,6 @@
 
 @testable import Datadog
 
-private struct DateCorrectorMock: DateCorrector {
-    let offset: TimeInterval = 0
-}
-
 extension PerformancePreset {
     static let benchmarksPreset = PerformancePreset(batchSize: .small, uploadFrequency: .frequent, bundleType: .iOSApp)
 }

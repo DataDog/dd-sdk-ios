@@ -106,17 +106,19 @@ class RUMMessageReceiverTests: XCTestCase {
         )
 
         // When
-        let sent = Event(test: .mockRandom())
+        let sent: [String: Any] = [
+            "test": String.mockRandom()
+        ]
 
         core.send(
-            message: .event(target: "rum", event: .init(sent))
+            message: .custom(key: RUMMessageKeys.browserEvent, baggage: .init(sent))
         )
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
         let received: AnyEncodable = try XCTUnwrap(core.events().last, "It should send event")
-        try AssertEncodedRepresentationsEqual(received, sent)
+        try AssertEncodedRepresentationsEqual(received, AnyEncodable(sent))
     }
 
     func testReceiveCrashEvent() throws {
@@ -130,7 +132,7 @@ class RUMMessageReceiverTests: XCTestCase {
         let sentError: RUMCrashEvent = .mockRandom()
 
         core.send(
-            message: .custom(key: "crash", baggage: [
+            message: .custom(key: RUMMessageKeys.crash, baggage: [
                 "rum-error": sentError
             ])
         )
@@ -154,7 +156,7 @@ class RUMMessageReceiverTests: XCTestCase {
         let sentView: RUMViewEvent = .mockRandom()
 
         core.send(
-            message: .custom(key: "crash", baggage: [
+            message: .custom(key: RUMMessageKeys.crash, baggage: [
                 "rum-error": sentError,
                 "rum-view": sentView
             ])

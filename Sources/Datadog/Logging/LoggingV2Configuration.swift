@@ -56,6 +56,18 @@ internal struct LoggingRequestBuilder: FeatureRequestBuilder {
     }
 }
 
+/// Defines keys referencing RUM messages supported on the bus.
+internal enum LoggingMessageKeys {
+    /// The key references a log entry message.
+    static let log = "log"
+
+    /// The key references a crash message.
+    static let crash = "crash"
+
+    /// The key references a browser log message.
+    static let browserLog = "browser-log"
+}
+
 internal struct LoggingMessageReceiver: FeatureMessageReceiver {
     /// The log event mapper
     let logEventMapper: LogEventMapper?
@@ -67,20 +79,45 @@ internal struct LoggingMessageReceiver: FeatureMessageReceiver {
     ///   - core: The core from which the message is transmitted.
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         switch message {
-        case .custom(let key, let attributes) where key == "log":
+        case .custom(let key, let attributes) where key == LoggingMessageKeys.log:
             return log(attributes: attributes, to: core)
-        case .custom(let key, let attributes) where key == "crash":
+        case .custom(let key, let attributes) where key == LoggingMessageKeys.crash:
             return crash(attributes: attributes, to: core)
-        case .event(let target, let event) where target == "log":
-            return write(event: event, to: core)
+        case .custom(let key, let baggage) where key == LoggingMessageKeys.browserLog:
+            return write(event: baggage.all(), to: core)
         default:
             return false
         }
     }
 
-    private func write(event: AnyEncodable, to core: DatadogCoreProtocol) -> Bool {
-        core.v1.scope(for: LoggingFeature.self)?.eventWriteContext { _, writer in
-            writer.write(value: event)
+    private func write(event: [String: Any], to core: DatadogCoreProtocol) -> Bool {
+        var event = event
+
+        let versionKey = LogEventEncoder.StaticCodingKeys.applicationVersion.rawValue
+        let envKey = LogEventEncoder.StaticCodingKeys.environment.rawValue
+        let tagsKey = LogEventEncoder.StaticCodingKeys.tags.rawValue
+        let dateKey = LogEventEncoder.StaticCodingKeys.date.rawValue
+
+        core.v1.scope(for: LoggingFeature.self)?.eventWriteContext { context, writer in
+            let ddTags = "\(versionKey):\(context.version),\(envKey):\(context.env)"
+
+            if let tags = event[tagsKey] as? String, !tags.isEmpty {
+                event[tagsKey] = "\(ddTags),\(tags)"
+            } else {
+                event[tagsKey] = ddTags
+            }
+
+            if let timestampInMs = event[dateKey] as? Int {
+                let serverTimeOffsetInMs = context.serverTimeOffset.toInt64Milliseconds
+                let correctedTimestamp = Int64(timestampInMs) + serverTimeOffsetInMs
+                event[dateKey] = correctedTimestamp
+            }
+
+            if let attributes = context.featuresAttributes["rum"] {
+                event.merge(attributes.all()) { $1 }
+            }
+
+            writer.write(value: AnyEncodable(event))
         }
 
         return true

@@ -20,9 +20,6 @@ extension DatadogCoreProtocol {
 internal protocol DatadogV1CoreProtocol: DatadogCoreProtocol {
     // MARK: - V1 interface
 
-    /// The SDK context created upon core initialization or `nil` if SDK was not yet initialized.
-    var legacyContext: DatadogV1Context? { get }
-
     /// Registers a feature instance by its type description.
     ///
     /// - Parameter instance: The feaure instance to register
@@ -47,11 +44,6 @@ internal protocol DatadogV1CoreProtocol: DatadogCoreProtocol {
 
 extension NOPDatadogCore: DatadogV1CoreProtocol {
     // MARK: - V1 interface
-
-    /// Returns `nil`.
-    var legacyContext: DatadogV1Context? {
-        return nil
-    }
 
     /// no-op
     func register<T>(feature instance: T?) {}

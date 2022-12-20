@@ -27,3 +27,15 @@ internal protocol RUMCommandPublisher: AnyObject {
     /// - Parameter subscriber: The RUM command subscriber.
     func publish(to subscriber: RUMCommandSubscriber)
 }
+
+/// A Global Subscriber instance will forward commands to the global
+/// RUM monitor.
+internal final class GlobalRUMCommandSubscriber: RUMCommandSubscriber {
+    /// Forward commands to the global RUM monitor.
+    ///
+    /// - Parameter command: The RUM command to process.
+    func process(command: RUMCommand) {
+        let subscriber = Global.rum as? RUMCommandSubscriber
+        subscriber?.process(command: command)
+    }
+}

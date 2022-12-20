@@ -18,7 +18,6 @@ class FeatureContextTests: XCTestCase {
             performance: .mockAny(),
             httpClient: .mockAny(),
             encryption: nil,
-            v1Context: .mockAny(),
             contextProvider: .mockAny(),
             applicationVersion: .mockAny()
         )

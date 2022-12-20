@@ -50,8 +50,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
         controller.addDatadogMessageHandler(
             core: PassthroughCoreMock(),
             allowedWebViewHosts: ["datadoghq.com"],
-            hostsSanitizer: mockSanitizer,
-            context: .mockAny()
+            hostsSanitizer: mockSanitizer
         )
 
         XCTAssertEqual(controller.userScripts.count, initialUserScriptCount + 1)
@@ -77,8 +76,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
             controller.addDatadogMessageHandler(
                 core: PassthroughCoreMock(),
                 allowedWebViewHosts: ["datadoghq.com"],
-                hostsSanitizer: mockSanitizer,
-                context: .mockAny()
+                hostsSanitizer: mockSanitizer
             )
         }
 
@@ -130,8 +128,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
         controller.addDatadogMessageHandler(
             core: PassthroughCoreMock(),
             allowedWebViewHosts: ["datadoghq.com"],
-            hostsSanitizer: MockHostsSanitizer(),
-            context: .mockAny()
+            hostsSanitizer: MockHostsSanitizer()
         )
 
         let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DatadogMessageHandler
@@ -149,7 +146,13 @@ class WKUserContentController_DatadogTests: XCTestCase {
                 service: "default-service-name",
                 env: "tests",
                 version: "1.0.0",
-                applicationBundleIdentifier: "com.datadoghq.ios-sdk"
+                applicationBundleIdentifier: "com.datadoghq.ios-sdk",
+                featuresAttributes: [
+                    "rum": [
+                        RUMContextAttributes.sessionID: UUID.nullUUID.uuidString.lowercased(),
+                        RUMContextAttributes.applicationID: String.mockAny()
+                    ]
+                ]
             )
         )
         defer { core.flush() }
@@ -167,8 +170,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
         controller.addDatadogMessageHandler(
             core: core,
             allowedWebViewHosts: ["datadoghq.com"],
-            hostsSanitizer: MockHostsSanitizer(),
-            context: core.legacyContext!
+            hostsSanitizer: MockHostsSanitizer()
         )
 
         let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DatadogMessageHandler

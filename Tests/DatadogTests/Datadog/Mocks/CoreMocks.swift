@@ -680,15 +680,6 @@ class RelativeDateProvider: DateProvider {
     }
 }
 
-/// `DateCorrector` mock, correcting dates by adding predefined offset.
-class DateCorrectorMock: DateCorrector {
-    var offset: TimeInterval
-
-    init(offset: TimeInterval = 0) {
-        self.offset = offset
-    }
-}
-
 extension AppState: AnyMockable, RandomMockable {
     static func mockAny() -> AppState {
         return .active
@@ -934,40 +925,6 @@ extension NetworkConnectionInfo: RandomMockable {
     }
 }
 
-class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType, WrappedNetworkConnectionInfoProvider {
-    private let queue = DispatchQueue(label: "com.datadoghq.NetworkConnectionInfoProviderMock")
-    private var _current: NetworkConnectionInfo?
-
-    init(networkConnectionInfo: NetworkConnectionInfo?) {
-        _current = networkConnectionInfo
-    }
-
-    func set(current: NetworkConnectionInfo?) {
-        queue.async { self._current = current }
-    }
-
-    // MARK: - NetworkConnectionInfoProviderType
-
-    var current: NetworkConnectionInfo? {
-        queue.sync { _current }
-    }
-
-    func subscribe<Observer: NetworkConnectionInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == NetworkConnectionInfo? {
-    }
-
-    // MARK: - Mocking
-
-    static func mockAny() -> NetworkConnectionInfoProviderMock {
-        return mockWith()
-    }
-
-    static func mockWith(
-        networkConnectionInfo: NetworkConnectionInfo? = .mockAny()
-    ) -> NetworkConnectionInfoProviderMock {
-        return NetworkConnectionInfoProviderMock(networkConnectionInfo: networkConnectionInfo)
-    }
-}
-
 extension CarrierInfo.RadioAccessTechnology: RandomMockable {
     static func mockAny() -> CarrierInfo.RadioAccessTechnology { .LTE }
 
@@ -1002,50 +959,6 @@ extension CarrierInfo: RandomMockable {
             carrierAllowsVOIP: .random(),
             radioAccessTechnology: .mockRandom()
         )
-    }
-}
-
-class CarrierInfoProviderMock: CarrierInfoProviderType {
-    private let queue = DispatchQueue(label: "com.datadoghq.CarrierInfoProviderMock")
-    private var _current: CarrierInfo?
-
-    init(carrierInfo: CarrierInfo?) {
-        _current = carrierInfo
-    }
-
-    func set(current: CarrierInfo?) {
-        queue.async { self._current = current }
-    }
-
-    // MARK: - CarrierInfoProviderType
-
-    var current: CarrierInfo? {
-        queue.sync { _current }
-    }
-
-    func subscribe<Observer: CarrierInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == CarrierInfo? {
-    }
-
-    // MARK: - Mocking
-
-    static func mockAny() -> CarrierInfoProviderMock {
-        return mockWith()
-    }
-
-    static func mockWith(
-        carrierInfo: CarrierInfo = .mockAny()
-    ) -> CarrierInfoProviderMock {
-        return CarrierInfoProviderMock(carrierInfo: carrierInfo)
-    }
-}
-
-extension AppVersionProvider: AnyMockable {
-    static func mockAny() -> AppVersionProvider {
-        return AppVersionProvider(configuration: .mockAny())
-    }
-
-    static func mockWith(version: String) -> AppVersionProvider {
-        return AppVersionProvider(configuration: .mockWith(applicationVersion: version))
     }
 }
 

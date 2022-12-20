@@ -45,6 +45,11 @@ public struct FeatureBaggage {
     /// The attributes dictionary.
     private var attributes: [String: Any]
 
+    /// Boolean value that indicates whether the baggage is empty.
+    public var isEmpty: Bool {
+        attributes.isEmpty
+    }
+
     /// Creates an instance initialized with the given key-value pairs.
     public init(_ attributes: [String: Any?]) {
         self.attributes = attributes.compactMapValues { $0 }

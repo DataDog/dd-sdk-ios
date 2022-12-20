@@ -560,19 +560,19 @@ class LoggerTests: XCTestCase {
         // then
         let logMatcher = try logging.waitAndReturnLogMatchers(count: 1)[0]
         logMatcher.assertValue(
-            forKeyPath: RUMMonitor.Attributes.applicationID,
+            forKeyPath: RUMContextAttributes.applicationID,
             equals: rum.configuration.applicationID
         )
         logMatcher.assertValue(
-            forKeyPath: RUMMonitor.Attributes.sessionID,
+            forKeyPath: RUMContextAttributes.sessionID,
             isTypeOf: String.self
         )
         logMatcher.assertValue(
-            forKeyPath: RUMMonitor.Attributes.viewID,
+            forKeyPath: RUMContextAttributes.viewID,
             isTypeOf: String.self
         )
         logMatcher.assertValue(
-            forKeyPath: RUMMonitor.Attributes.userActionID,
+            forKeyPath: RUMContextAttributes.userActionID,
             isTypeOf: String.self
         )
     }

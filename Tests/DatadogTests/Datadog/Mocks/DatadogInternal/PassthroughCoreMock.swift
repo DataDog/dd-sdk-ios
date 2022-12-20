@@ -16,10 +16,6 @@ import XCTest
 /// store all events in the `events` property..
 internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     /// Current context that will be passed to feature-scopes.
-    internal var legacyContext: DatadogV1Context? {
-        .init(context)
-    }
-
     var context: DatadogContext {
         get { synchronize { _context } }
         set { synchronize { _context = newValue } }

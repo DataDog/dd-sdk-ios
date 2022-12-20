@@ -77,9 +77,6 @@ internal final class DatadogCore {
     /// Registry for v1 features.
     private var v1Features: [String: Any] = [:]
 
-    /// The SDK Context for V1.
-    internal private(set) var v1Context: DatadogV1Context
-
     /// The core context provider.
     internal let contextProvider: DatadogContextProvider
 
@@ -93,7 +90,6 @@ internal final class DatadogCore {
     ///   - performance: The core SDK performance presets.
     ///   - httpClient: The HTTP Client for uploads.
     ///   - encryption: The on-disk data encryption.
-    ///   - v1Context: The v1 context.
     ///   - contextProvider: The core context provider.
     ///   - applicationVersion: The application version.
     init(
@@ -104,7 +100,6 @@ internal final class DatadogCore {
     	performance: PerformancePreset,
     	httpClient: HTTPClient,
     	encryption: DataEncryption?,
-        v1Context: DatadogV1Context,
         contextProvider: DatadogContextProvider,
         applicationVersion: String
     ) {
@@ -114,7 +109,6 @@ internal final class DatadogCore {
         self.performance = performance
         self.httpClient = httpClient
         self.encryption = encryption
-        self.v1Context = v1Context
         self.contextProvider = contextProvider
         self.applicationVersionPublisher = ApplicationVersionPublisher(version: applicationVersion)
         self.consentProvider = ConsentProvider(initialConsent: initialConsent)
@@ -332,10 +326,6 @@ extension DatadogCore: DatadogV1CoreProtocol {
         )
     }
 
-    var legacyContext: DatadogV1Context? {
-        return v1Context
-    }
-
     /// Creates V1 Feature using its V2 configuration.
     ///
     /// `DatadogCore` uses its core `configuration` to inject feature-agnostic parts of V1 setup.
@@ -409,39 +399,6 @@ internal struct DatadogCoreFeatureScope: FeatureScope {
                 DD.telemetry.error("Failed to execute feature scope", error: error)
             }
         }
-    }
-}
-
-extension DatadogV1Context {
-    /// Create V1 context with the given congiguration and provider.
-    ///
-    /// - Parameters:
-    ///   - configuration: The configuration.
-    ///   - device: The device description.
-    ///   - dateCorrector: The server date corrector.
-    ///   - networkConnectionInfoProvider: The network info provider.
-    ///   - carrierInfoProvider: The carrier info provider.
-    ///   - userInfoProvider: The user info provider.
-    init(
-        configuration: CoreConfiguration,
-        device: DeviceInfo,
-        dateCorrector: DateCorrector,
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
-        carrierInfoProvider: CarrierInfoProviderType,
-        userInfoProvider: UserInfoProvider
-    ) {
-        self.service = configuration.serviceName
-        self.env = configuration.environment
-        self.version = configuration.applicationVersion
-        self.source = configuration.source
-        self.variant = configuration.variant
-        self.sdkVersion = configuration.sdkVersion
-
-        self.device = device
-        self.dateCorrector = dateCorrector
-        self.networkConnectionInfoProvider = networkConnectionInfoProvider
-        self.carrierInfoProvider = carrierInfoProvider
-        self.userInfoProvider = userInfoProvider
     }
 }
 

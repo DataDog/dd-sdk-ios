@@ -7,23 +7,26 @@
 import XCTest
 @testable import Datadog
 
-class WebRUMEventConsumerTests: XCTestCase {
-    let core = PassthroughCoreMock(messageReceiver: RUMMessageReceiver())
-    let mockDateCorrector = DateCorrectorMock()
-    let mockContextProvider = RUMContextProviderMock(context: .mockWith(rumApplicationID: "123456"))
+class WebViewEventReceiverTests: XCTestCase {
+    let core = PassthroughCoreMock(
+        context: .mockWith(
+            serverTimeOffset: 123,
+            featuresAttributes: [
+                "rum": [
+                    RUMContextAttributes.applicationID: "123456",
+                    RUMContextAttributes.sessionID: "e9796469-c2a1-43d6-b0f6-65c47d33cf5f"
+                ]
+            ]
+        ),
+        messageReceiver: RUMMessageReceiver()
+    )
+
     let mockCommandSubscriber = RUMCommandSubscriberMock()
-    let mockDateProvider = RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC(), advancingBySeconds: 0.0)
 
     func testWhenValidWebRUMEventPassed_itDecoratesAndPassesToCoreMessageBus() throws {
-        let mockSessionID = UUID(uuidString: "e9796469-c2a1-43d6-b0f6-65c47d33cf5f")!
-        mockContextProvider.context.sessionID = RUMUUID(rawValue: mockSessionID)
-        mockDateCorrector.offset = 123
-        let eventConsumer = DefaultWebRUMEventConsumer(
-            core: core,
-            dateCorrector: mockDateCorrector,
-            contextProvider: mockContextProvider,
-            rumCommandSubscriber: mockCommandSubscriber,
-            dateProvider: mockDateProvider
+        let receiver = WebViewEventReceiver(
+            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
+            commandSubscriber: mockCommandSubscriber
         )
 
         let webRUMEvent: JSON = [
@@ -39,21 +42,22 @@ class WebRUMEventConsumerTests: XCTestCase {
             ],
             "type": "action"
         ]
+
         let expectedWebRUMEvent: JSON = [
             "_dd": [
                 "session": ["plan": 1]
             ],
-            "application": ["id": mockContextProvider.context.rumApplicationID],
+            "application": ["id": "123456"],
             "date": 1_640_252_823_292 + 123.toInt64Milliseconds,
             "service": "shopist-web-ui",
-            "session": ["id": mockContextProvider.context.sessionID.toRUMDataFormat],
+            "session": ["id": "e9796469-c2a1-43d6-b0f6-65c47d33cf5f"],
             "view": [
                 "id": "00413060-599f-4a77-80de-5d3beab3da2e"
             ],
             "type": "action"
         ]
 
-        try eventConsumer.consume(event: webRUMEvent)
+        receiver.write(event: webRUMEvent, to: core)
 
         let data = try JSONEncoder().encode(core.events.first as? AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
@@ -64,12 +68,11 @@ class WebRUMEventConsumerTests: XCTestCase {
     }
 
     func testWhenValidWebRUMEventPassedWithoutRUMContext_itPassesToCoreMessageBus() throws {
-        let eventConsumer = DefaultWebRUMEventConsumer(
-            core: core,
-            dateCorrector: mockDateCorrector,
-            contextProvider: nil,
-            rumCommandSubscriber: mockCommandSubscriber,
-            dateProvider: mockDateProvider
+        core.context.featuresAttributes = [:]
+
+        let receiver = WebViewEventReceiver(
+            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
+            commandSubscriber: mockCommandSubscriber
         )
 
         let webRUMEvent: JSON = [
@@ -86,7 +89,7 @@ class WebRUMEventConsumerTests: XCTestCase {
             "type": "action"
         ]
 
-        try eventConsumer.consume(event: webRUMEvent)
+        receiver.write(event: webRUMEvent, to: core)
 
         let data = try JSONEncoder().encode(core.events.first as? AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
@@ -97,13 +100,9 @@ class WebRUMEventConsumerTests: XCTestCase {
     }
 
     func testWhenNativeSessionIsSampledOut_itPassesWebEventToWriter() throws {
-        mockContextProvider.context.sessionID = RUMUUID.nullUUID
-        let eventConsumer = DefaultWebRUMEventConsumer(
-            core: core,
-            dateCorrector: mockDateCorrector,
-            contextProvider: mockContextProvider,
-            rumCommandSubscriber: mockCommandSubscriber,
-            dateProvider: mockDateProvider
+        let receiver = WebViewEventReceiver(
+            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
+            commandSubscriber: mockCommandSubscriber
         )
 
         let webRUMEvent: JSON = [
@@ -111,7 +110,7 @@ class WebRUMEventConsumerTests: XCTestCase {
             "type": "unknown"
         ]
 
-        try eventConsumer.consume(event: webRUMEvent)
+        receiver.write(event: webRUMEvent, to: core)
 
         let data = try JSONEncoder().encode(core.events.first as? AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
@@ -122,12 +121,9 @@ class WebRUMEventConsumerTests: XCTestCase {
     }
 
     func testWhenUnknownWebRUMEventPassed_itPassesToCoreMessageBus() throws {
-        let eventConsumer = DefaultWebRUMEventConsumer(
-            core: core,
-            dateCorrector: mockDateCorrector,
-            contextProvider: mockContextProvider,
-            rumCommandSubscriber: mockCommandSubscriber,
-            dateProvider: mockDateProvider
+        let receiver = WebViewEventReceiver(
+            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
+            commandSubscriber: mockCommandSubscriber
         )
 
         let unknownWebRUMEvent: JSON = [
@@ -135,7 +131,7 @@ class WebRUMEventConsumerTests: XCTestCase {
             "type": "unknown"
         ]
 
-        try eventConsumer.consume(event: unknownWebRUMEvent)
+        receiver.write(event: unknownWebRUMEvent, to: core)
 
         let data = try JSONEncoder().encode(core.events.first as? AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)

@@ -188,9 +188,6 @@ public class Datadog {
 
         let userInfoProvider = UserInfoProvider()
         let serverDateProvider = configuration.common.serverDateProvider ?? DatadogNTPDateProvider()
-        let dateCorrector = ServerDateCorrector(serverDateProvider: serverDateProvider)
-        let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
-        let carrierInfoProvider = CarrierInfoProvider()
         let appStateListener = AppStateListener(dateProvider: configuration.common.dateProvider)
 
         // Set default `DatadogCore`:
@@ -202,14 +199,6 @@ public class Datadog {
             performance: configuration.common.performance,
             httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
             encryption: configuration.common.encryption,
-            v1Context: DatadogV1Context(
-                configuration: configuration.common,
-                device: .init(),
-                dateCorrector: dateCorrector,
-                networkConnectionInfoProvider: networkConnectionInfoProvider,
-                carrierInfoProvider: carrierInfoProvider,
-                userInfoProvider: userInfoProvider
-            ),
             contextProvider: DatadogContextProvider(
                 configuration: configuration.common,
                 device: .init(),
@@ -236,7 +225,10 @@ public class Datadog {
             )
 
             rum = try core.create(
-                configuration: createRUMConfiguration(intake: rumConfiguration.uploadURL),
+                configuration: createRUMConfiguration(
+                    intake: rumConfiguration.uploadURL,
+                    dateProvider: rumConfiguration.dateProvider
+                ),
                 featureSpecificConfiguration: rumConfiguration
             )
 
