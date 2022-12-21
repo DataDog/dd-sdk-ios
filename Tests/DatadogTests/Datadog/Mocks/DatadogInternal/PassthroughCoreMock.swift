@@ -16,21 +16,9 @@ import XCTest
 /// store all events in the `events` property..
 internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     /// Current context that will be passed to feature-scopes.
+    @ReadWriteLock
     var context: DatadogContext {
-        get { synchronize { _context } }
-        set { synchronize { _context = newValue } }
-    }
-
-    /// ordered/non-recursive lock on the context.
-    private let lock = NSLock()
-    private var _context: DatadogContext {
-        didSet { send(message: .context(_context)) }
-    }
-
-    private func synchronize<T>(_ block: () -> T) -> T {
-        lock.lock()
-        defer { lock.unlock() }
-        return block()
+        didSet { send(message: .context(context)) }
     }
 
     internal let writer = FileWriterMock()
@@ -60,7 +48,7 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
         bypassConsentExpectation: XCTestExpectation? = nil,
         messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
     ) {
-        self._context = context
+        self.context = context
         self.expectation = expectation
         self.bypassConsentExpectation = bypassConsentExpectation
         self.messageReceiver = messageReceiver
