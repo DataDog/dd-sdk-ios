@@ -105,4 +105,18 @@ class DataBlockTests: XCTestCase {
         XCTAssertEqual(block?.data.first, 0xFF)
         XCTAssertEqual(block?.data.count, 10_000_000)
     }
+
+    func testDataBlockReader_skipsVeryLargeBytesBlock() throws {
+        let data = Data([0x00, 0x00, 0x00, 0x2D, 0x31, 0x01]) + Data.mockRepeating(byte: 0xFF, times: 20_000_000) // 20MB
+        let reader = DataBlockReader(data: data)
+
+        do {
+            _ = try reader.next()
+            XCTFail("Expected error to be thrown")
+        } catch DataBlockError.dataLengthExceedsLimit {
+            // Expected
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
 }
