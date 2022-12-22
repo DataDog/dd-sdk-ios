@@ -23,7 +23,7 @@ internal struct UITextViewRecorder: NodeRecorder {
             textObfuscator: context.recorder.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator,
             wireframeRect: CGRect(origin: textView.contentOffset, size: textView.contentSize)
         )
-        return SpecificElement(wireframesBuilder: builder, recordSubtree: false)
+        return SpecificElement(wireframesBuilder: builder, recordSubtree: true)
     }
 }
 
@@ -42,20 +42,20 @@ internal struct UITextViewWireframesBuilder: NodeWireframesBuilder {
     /// The frame of the text content
     var wireframeRect: CGRect
 
-    var clip: SRContentClip {
+    private var clip: SRContentClip {
         let top = abs(wireframeRect.origin.y)
         let left = abs(wireframeRect.origin.x)
         let bottom = max(wireframeRect.height - attributes.frame.height - top, 0)
         let right = max(wireframeRect.width - attributes.frame.width - left, 0)
         return SRContentClip(
-            bottom: Int64(bottom),
-            left: Int64(left),
-            right: Int64(right),
-            top: Int64(top)
+            bottom: Int64(withNoOverflow: bottom),
+            left: Int64(withNoOverflow: left),
+            right: Int64(withNoOverflow: right),
+            top: Int64(withNoOverflow: top)
         )
     }
 
-    var intersectedRect: CGRect {
+    private var intersectedRect: CGRect {
         CGRect(
             x: attributes.frame.origin.x - wireframeRect.origin.x,
             y: attributes.frame.origin.y - wireframeRect.origin.y,
