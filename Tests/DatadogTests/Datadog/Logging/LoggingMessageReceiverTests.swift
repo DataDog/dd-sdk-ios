@@ -249,7 +249,7 @@ class LoggingMessageReceiverTests: XCTestCase {
         )
 
         let received = try XCTUnwrap(core.events.first, "It should send event")
-        try AssertEncodedRepresentationsEqual(received, AnyEncodable(expectedWebLogEvent))
+        try AssertEncodedRepresentationsEqual(AnyEncodable(received), AnyEncodable(expectedWebLogEvent))
     }
 
     func testWhenContextIsUnavailable_itPassesWebviewEventAsIs() throws {
@@ -284,6 +284,6 @@ class LoggingMessageReceiverTests: XCTestCase {
         )
 
         let received = try XCTUnwrap(core.events.first, "It should send event")
-        try AssertEncodedRepresentationsEqual(received, AnyEncodable(expectedWebLogEvent))
+        try AssertEncodedRepresentationsEqual(AnyEncodable(received), AnyEncodable(expectedWebLogEvent))
     }
 }
