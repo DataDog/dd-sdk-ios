@@ -390,7 +390,7 @@ internal struct DatadogCoreFeatureScope: FeatureScope {
     let contextProvider: DatadogContextProvider
     let storage: FeatureStorage
 
-    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void) {
+    func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void) {
         contextProvider.read { context in
             do {
                 let writer = bypassConsent ? storage.arbitraryAuthorizedWriter : storage.writer

@@ -26,10 +26,10 @@ internal final class FileWriter: Writer {
     // MARK: - Writing data
 
     /// Encodes given value to JSON data and writes it to the file.
-    func write<T: Encodable>(value: T) {
+    func write<T: Encodable>(value: T, forceNewBatch: Bool) {
         do {
             let data = try encode(event: value)
-            let file = try orchestrator.getWritableFile(writeSize: UInt64(data.count))
+            let file = try orchestrator.getWritableFile(writeSize: UInt64(data.count)) // TODO: RUMM-2821 use `forceNewBatch`
             try file.append(data: data)
         } catch {
             DD.logger.error("Failed to write data", error: error)

@@ -114,7 +114,7 @@ extension DatadogCoreMock: DatadogV1CoreProtocol {
         let context: DatadogContext
         let writer: Writer
 
-        func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void) {
+        func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void) {
             let block = {
                 do {
                     try block(context, writer)

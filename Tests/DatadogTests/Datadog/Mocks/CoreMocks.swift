@@ -519,11 +519,16 @@ extension FeatureUpload {
 class FileWriterMock: Writer {
     /// Recorded events.
     internal private(set) var events: [Encodable] = []
+    /// Expected value of `forceNewBatch` passed to this writer.
+    internal var expectedForceNewBatch = false
 
     /// Adds an `Encodable` event to the events stack.
     ///
-    /// - Parameter value: The event value to record.
-    func write<T>(value: T) where T: Encodable {
+    /// - Parameters:
+    ///   - value: The event value to record.
+    ///   - forceNewBatch: to enforce that data will be written to a separate file than any previous data.
+    func write<T>(value: T, forceNewBatch: Bool) where T: Encodable {
+        XCTAssertEqual(forceNewBatch, expectedForceNewBatch)
         events.append(value)
     }
 
@@ -542,7 +547,7 @@ struct NoOpDataOrchestrator: DataOrchestratorType {
 
 class NoOpFileWriter: AsyncWriter {
     var queue: DispatchQueue { DispatchQueue(label: .mockRandom()) }
-    func write<T>(value: T) where T: Encodable {}
+    func write<T>(value: T, forceNewBatch: Bool) where T: Encodable {}
     func flushAndCancelSynchronously() {}
 }
 
@@ -560,7 +565,12 @@ internal class InMemoryWriter: AsyncWriter {
     private let encoder: JSONEncoder = .default()
     private var events: [Data] = []
 
-    func write<T>(value: T) where T: Encodable {
+    /// Expected value of `forceNewBatch` passed to this writer.
+    internal var expectedForceNewBatch = false
+
+    func write<T>(value: T, forceNewBatch: Bool) where T: Encodable {
+        XCTAssertEqual(forceNewBatch, expectedForceNewBatch)
+
         queue.async {
             do {
                 let eventData = try self.encoder.encode(value)

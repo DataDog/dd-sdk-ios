@@ -24,12 +24,12 @@ internal class ArbitraryDataWriter: AsyncWriter {
 
     // MARK: - Writer
 
-    func write<T>(value: T) where T: Encodable {
+    func write<T>(value: T, forceNewBatch: Bool) where T: Encodable {
         queue.async {
             #if DD_SDK_COMPILED_FOR_TESTING
             assert(!self.isCanceled, "Trying to write data, but the writer is canceled.")
             #endif
-            self.writer.write(value: value)
+            self.writer.write(value: value, forceNewBatch: forceNewBatch)
         }
     }
 

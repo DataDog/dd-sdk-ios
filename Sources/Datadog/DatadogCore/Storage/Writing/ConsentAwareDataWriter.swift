@@ -42,9 +42,9 @@ internal class ConsentAwareDataWriter: AsyncWriter, TrackingConsentObserver {
 
     // MARK: - Writer
 
-    func write<T>(value: T) where T: Encodable {
+    func write<T>(value: T, forceNewBatch: Bool) where T: Encodable {
         queue.async {
-            self.currentWriter?.write(value: value)
+            self.currentWriter?.write(value: value, forceNewBatch: forceNewBatch)
         }
     }
 
