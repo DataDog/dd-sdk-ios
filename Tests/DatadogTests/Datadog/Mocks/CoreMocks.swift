@@ -141,8 +141,12 @@ extension UploadFrequency: CaseIterable {
     }
 }
 
-extension BundleType: CaseIterable {
+extension BundleType: CaseIterable, RandomMockable {
     public static var allCases: [Self] { [.iOSApp, iOSAppExtension] }
+
+    static func mockRandom() -> BundleType {
+        return allCases.randomElement()!
+    }
 }
 
 extension Datadog.Configuration.DatadogEndpoint: AnyMockable, RandomMockable {
@@ -477,9 +481,13 @@ struct UploadPerformanceMock: UploadPerformancePreset {
     )
 }
 
-extension PerformancePreset {
-    static func mockAny() -> Self {
+extension PerformancePreset: AnyMockable, RandomMockable {
+    static func mockAny() -> PerformancePreset {
         PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp)
+    }
+
+    static func mockRandom() -> PerformancePreset {
+        PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .mockRandom(), bundleType: .mockRandom())
     }
 
     static func combining(storagePerformance storage: StoragePerformanceMock, uploadPerformance upload: UploadPerformanceMock) -> Self {

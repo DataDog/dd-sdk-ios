@@ -29,7 +29,8 @@ internal final class FileWriter: Writer {
     func write<T: Encodable>(value: T, forceNewBatch: Bool) {
         do {
             let data = try encode(event: value)
-            let file = try orchestrator.getWritableFile(writeSize: UInt64(data.count)) // TODO: RUMM-2821 use `forceNewBatch`
+            let dataSize = UInt64(data.count)
+            let file = try (forceNewBatch ? orchestrator.getNewWritableFile(writeSize: dataSize) : orchestrator.getWritableFile(writeSize: dataSize))
             try file.append(data: data)
         } catch {
             DD.logger.error("Failed to write data", error: error)

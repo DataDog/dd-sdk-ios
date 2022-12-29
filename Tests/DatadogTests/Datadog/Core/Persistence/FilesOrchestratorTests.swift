@@ -8,7 +8,7 @@ import XCTest
 @testable import Datadog
 
 class FilesOrchestratorTests: XCTestCase {
-    private let performance: PerformancePreset = .mockAny()
+    private let performance: PerformancePreset = .mockRandom()
 
     override func setUp() {
         super.setUp()
@@ -29,77 +29,90 @@ class FilesOrchestratorTests: XCTestCase {
         )
     }
 
-    // MARK: - Writable file tests
+    // MARK: - Obtaining Reusable Writable File
 
-    func testGivenDefaultWriteConditions_whenUsedFirstTime_itCreatesNewWritableFile() throws {
+    func testWhenWritableFileIsObtainedFirstTime_itCreatesNewFile() throws {
         let dateProvider = RelativeDateProvider()
         let orchestrator = configureOrchestrator(using: dateProvider)
+
+        // When
         _ = try orchestrator.getWritableFile(writeSize: 1)
 
+        // Then
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
         XCTAssertNotNil(try temporaryDirectory.file(named: dateProvider.now.toFileName))
     }
 
-    func testGivenDefaultWriteConditions_whenUsedNextTime_itReusesWritableFile() throws {
-        let orchestrator = configureOrchestrator(using: RelativeDateProvider(advancingBySeconds: 1))
+    func testWhenWritableFileIsObtainedAnotherTime_itReusesSameFile() throws {
+        let orchestrator = configureOrchestrator(using: RelativeDateProvider(advancingBySeconds: 0.001))
         let file1 = try orchestrator.getWritableFile(writeSize: 1)
+
+        // When
         let file2 = try orchestrator.getWritableFile(writeSize: 1)
 
+        // Then
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
         XCTAssertEqual(file1.name, file2.name)
     }
 
-    func testGivenDefaultWriteConditions_whenFileCanNotBeUsedMoreTimes_itCreatesNewFile() throws {
+    func testWhenSameWritableFileWasUsedMaxNumberOfTimes_itCreatesNewFile() throws {
         let orchestrator = configureOrchestrator(using: RelativeDateProvider(advancingBySeconds: 0.001))
-
         var previousFile: WritableFile = try orchestrator.getWritableFile(writeSize: 1) // first use of a new file
         var nextFile: WritableFile
 
         for _ in (0..<5) {
+            // When
             for _ in (0 ..< performance.maxObjectsInFile).dropLast() { // skip first use
                 nextFile = try orchestrator.getWritableFile(writeSize: 1)
-                XCTAssertEqual(nextFile.name, previousFile.name, "It must reuse the file when number of events is below the limit")
+                XCTAssertEqual(nextFile.name, previousFile.name, "It should reuse the file \(performance.maxObjectsInFile) times")
                 previousFile = nextFile
             }
 
+            // Then
             nextFile = try orchestrator.getWritableFile(writeSize: 1) // first use of a new file
-            XCTAssertNotEqual(nextFile.name, previousFile.name, "It must obtain a new file when number of events exceeds the limit")
+            XCTAssertNotEqual(nextFile.name, previousFile.name, "It should create a new file when previous one is used \(performance.maxObjectsInFile) times")
             previousFile = nextFile
         }
     }
 
-    func testGivenDefaultWriteConditions_whenFileHasNoRoomForMore_itCreatesNewFile() throws {
-        let orchestrator = configureOrchestrator(using: RelativeDateProvider(advancingBySeconds: 1))
+    func testWhenWritableFileHasNoEnoughSpaceLeft_itCreatesNewFile() throws {
+        let orchestrator = configureOrchestrator(using: RelativeDateProvider(advancingBySeconds: 0.001))
         let chunkedData: [Data] = .mockChunksOf(
             totalSize: performance.maxFileSize,
             maxChunkSize: performance.maxObjectSize
         )
 
+        // When
         let file1 = try orchestrator.getWritableFile(writeSize: performance.maxObjectSize)
         try chunkedData.forEach { chunk in try file1.append(data: chunk) }
-        let file2 = try orchestrator.getWritableFile(writeSize: 1)
 
+        // Then
+        let file2 = try orchestrator.getWritableFile(writeSize: 1)
         XCTAssertNotEqual(file1.name, file2.name)
     }
 
-    func testGivenDefaultWriteConditions_fileIsNotRecentEnough_itCreatesNewFile() throws {
+    func testWhenWritableFileIsTooOld_itCreatesNewFile() throws {
         let dateProvider = RelativeDateProvider()
         let orchestrator = configureOrchestrator(using: dateProvider)
-
         let file1 = try orchestrator.getWritableFile(writeSize: 1)
-        dateProvider.advance(bySeconds: 1 + performance.maxFileAgeForWrite)
-        let file2 = try orchestrator.getWritableFile(writeSize: 1)
 
+        // When
+        dateProvider.advance(bySeconds: 1 + performance.maxFileAgeForWrite)
+
+        // Then
+        let file2 = try orchestrator.getWritableFile(writeSize: 1)
         XCTAssertNotEqual(file1.name, file2.name)
     }
 
-    func testWhenCurrentWritableFileIsDeleted_itCreatesNewOne() throws {
-        let orchestrator = configureOrchestrator(using: RelativeDateProvider(advancingBySeconds: 1))
-
+    func testWhenWritableFileWasDeleted_itCreatesNewFile() throws {
+        let orchestrator = configureOrchestrator(using: RelativeDateProvider(advancingBySeconds: 0.001))
         let file1 = try orchestrator.getWritableFile(writeSize: 1)
-        try temporaryDirectory.files().forEach { try $0.delete() }
-        let file2 = try orchestrator.getWritableFile(writeSize: 1)
 
+        // When
+        try temporaryDirectory.files().forEach { try $0.delete() }
+
+        // Then
+        let file2 = try orchestrator.getWritableFile(writeSize: 1)
         XCTAssertNotEqual(file1.name, file2.name)
     }
 
@@ -121,7 +134,7 @@ class FilesOrchestratorTests: XCTestCase {
     func testWhenFilesDirectorySizeIsBig_itKeepsItUnderLimit_byRemovingOldestFilesFirst() throws {
         let oneMB: UInt64 = 1_024 * 1_024
 
-            let orchestrator = FilesOrchestrator(
+        let orchestrator = FilesOrchestrator(
             directory: temporaryDirectory,
             performance: StoragePerformanceMock(
                 maxFileSize: oneMB, // 1MB
@@ -161,39 +174,69 @@ class FilesOrchestratorTests: XCTestCase {
         XCTAssertNil(try? temporaryDirectory.file(named: file2.name))
     }
 
-    // MARK: - Readable file tests
+    // MARK: - Obtaining New Writable File
 
-    func testGivenDefaultReadConditions_whenThereAreNoFiles_itReturnsNil() throws {
+    func testWhenNewWritableFileIsObtained_itAlwaysCreatesNewFile() throws {
+        let orchestrator = configureOrchestrator(using: RelativeDateProvider(advancingBySeconds: 0.001))
+
+        // When
+        let file1 = try orchestrator.getNewWritableFile(writeSize: 1)
+        let file2 = try orchestrator.getNewWritableFile(writeSize: 1)
+        let file3 = try orchestrator.getNewWritableFile(writeSize: 1)
+
+        // Then
+        XCTAssertEqual(try temporaryDirectory.files().count, 3)
+        XCTAssertNotEqual(file1.name, file2.name)
+        XCTAssertNotEqual(file2.name, file3.name)
+        XCTAssertNotEqual(file3.name, file1.name)
+    }
+
+    // MARK: - Obtaining Readable File
+
+    func testGivenNoReadableFiles_whenObtainingFile_itReturnsNil() {
         let dateProvider = RelativeDateProvider()
+
+        // Given
         let orchestrator = configureOrchestrator(using: dateProvider)
         dateProvider.advance(bySeconds: 1 + performance.minFileAgeForRead)
+
+        // When & Then
         XCTAssertNil(orchestrator.getReadableFile())
     }
 
-    func testGivenDefaultReadConditions_whenFileIsOldEnough_itReturnsReadableFile() throws {
+    func testWhenReadableFileIsOldEnough_itReturnsFile() throws {
         let dateProvider = RelativeDateProvider()
         let orchestrator = configureOrchestrator(using: dateProvider)
         let file = try temporaryDirectory.createFile(named: dateProvider.now.toFileName)
 
+        // When
         dateProvider.advance(bySeconds: 1 + performance.minFileAgeForRead)
+
+        // Then
         XCTAssertEqual(orchestrator.getReadableFile()?.name, file.name)
     }
 
-    func testGivenDefaultReadConditions_whenFileIsTooYoung_itReturnsNoFile() throws {
+    func testWhenReadableFileIsNotOldEnough_itReturnsNil() throws {
         let dateProvider = RelativeDateProvider()
         let orchestrator = configureOrchestrator(using: dateProvider)
         _ = try temporaryDirectory.createFile(named: dateProvider.now.toFileName)
 
+        // When
         dateProvider.advance(bySeconds: 0.5 * performance.minFileAgeForRead)
+
+        // Then
         XCTAssertNil(orchestrator.getReadableFile())
     }
 
-    func testGivenDefaultReadConditions_whenThereAreSeveralFiles_itReturnsTheOldestOne() throws {
+    func testWhenThereAreMultipleReadableFiles_itReturnsOldestFile() throws {
         let dateProvider = RelativeDateProvider(advancingBySeconds: 1)
         let orchestrator = configureOrchestrator(using: dateProvider)
+
+        // When
         let fileNames = (0..<4).map { _ in dateProvider.now.toFileName }
         try fileNames.forEach { fileName in _ = try temporaryDirectory.createFile(named: fileName) }
 
+        // Then
         dateProvider.advance(bySeconds: 1 + performance.minFileAgeForRead)
         XCTAssertEqual(orchestrator.getReadableFile()?.name, fileNames[0])
         try temporaryDirectory.file(named: fileNames[0]).delete()
@@ -206,30 +249,36 @@ class FilesOrchestratorTests: XCTestCase {
         XCTAssertNil(orchestrator.getReadableFile())
     }
 
-    func testGivenDefaultReadConditions_whenThereAreSeveralFiles_itExcludesGivenFileNames() throws {
+    func testsWhenThereAreMultipleReadableFiles_itReturnsFileByExcludingCertainNames() throws {
         let dateProvider = RelativeDateProvider(advancingBySeconds: 1)
         let orchestrator = configureOrchestrator(using: dateProvider)
+
+        // When
         let fileNames = (0..<4).map { _ in dateProvider.now.toFileName }
         try fileNames.forEach { fileName in _ = try temporaryDirectory.createFile(named: fileName) }
 
+        // Then
         dateProvider.advance(bySeconds: 1 + performance.minFileAgeForRead)
-
         XCTAssertEqual(
             orchestrator.getReadableFile(excludingFilesNamed: Set(fileNames[0...2]))?.name,
             fileNames[3]
         )
     }
 
-    func testGivenDefaultReadConditions_whenFileIsTooOld_itGetsDeleted() throws {
+    func testWhenReadableFileIsTooOld_itGetsDeleted() throws {
         let dateProvider = RelativeDateProvider()
         let orchestrator = configureOrchestrator(using: dateProvider)
         _ = try temporaryDirectory.createFile(named: dateProvider.now.toFileName)
 
+        // When
         dateProvider.advance(bySeconds: 2 * performance.maxFileAgeForRead)
 
+        // Then
         XCTAssertNil(orchestrator.getReadableFile())
         XCTAssertEqual(try temporaryDirectory.files().count, 0)
     }
+
+    // MARK: - Deleting Files
 
     func testItDeletesReadableFile() throws {
         let dateProvider = RelativeDateProvider()
