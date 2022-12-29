@@ -55,7 +55,7 @@ internal struct UITextViewWireframesBuilder: NodeWireframesBuilder {
         )
     }
 
-    private var intersectedRect: CGRect {
+    private var relativeIntersectedRect: CGRect {
         CGRect(
             x: attributes.frame.origin.x - wireframeRect.origin.x,
             y: attributes.frame.origin.y - wireframeRect.origin.y,
@@ -68,7 +68,7 @@ internal struct UITextViewWireframesBuilder: NodeWireframesBuilder {
         return [
             builder.createTextWireframe(
                 id: wireframeID,
-                frame: intersectedRect,
+                frame: relativeIntersectedRect,
                 text: textObfuscator.mask(text: text),
                 clip: clip,
                 textColor: textColor,

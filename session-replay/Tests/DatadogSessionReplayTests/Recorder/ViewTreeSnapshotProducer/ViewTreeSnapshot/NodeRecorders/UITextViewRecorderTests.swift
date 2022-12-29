@@ -11,7 +11,7 @@ import XCTest
 class UITextViewRecorderTests: XCTestCase {
     private let recorder = UITextViewRecorder()
     /// The label under test.
-    private let textView = UITextView(frame: .mockAny())
+    private let textView = UITextView()
     /// `ViewAttributes` simulating common attributes of text view's `UIView`.
     private var viewAttributes: ViewAttributes = .mockAny()
 
@@ -29,16 +29,16 @@ class UITextViewRecorderTests: XCTestCase {
         // Given
         let randomText: String = .mockRandom()
         textView.textColor = .mockRandom()
+        textView.layoutManager.allowsNonContiguousLayout = true
         textView.font = .systemFont(ofSize: .mockRandom())
 
         // When
         textView.text = randomText
         viewAttributes = .mock(fixture: .visibleWithSomeAppearance)
-        textView.layoutSubviews() // force layout (so TF creates its sub-tree)
 
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: textView, with: viewAttributes, in: .mockAny()) as? SpecificElement)
-        XCTAssertFalse(semantics.recordSubtree, "TextView's subtree should not be recorded")
+        XCTAssertTrue(semantics.recordSubtree, "TextView's subtree should be recorded")
 
         let builder = try XCTUnwrap(semantics.wireframesBuilder as? UITextViewWireframesBuilder)
         XCTAssertEqual(builder.text, randomText)
