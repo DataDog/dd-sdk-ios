@@ -7,23 +7,27 @@
 import UIKit
 
 internal struct UIImageViewRecorder: NodeRecorder {
-    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeSnapshotBuilder.Context) -> NodeSemantics? {
+    func semantics(
+        of view: UIView,
+        with attributes: ViewAttributes,
+        in context: ViewTreeSnapshotBuilder.Context
+    ) -> NodeSemantics? {
         guard let imageView = view as? UIImageView else {
             return nil
         }
 
-        let hasImage = imageView.image != nil
-
-        guard hasImage || attributes.hasAnyAppearance else {
-            return InvisibleElement.constant
-        }
-
+        let ids = context.ids.nodeID2(for: imageView)
         let builder = UIImageViewWireframesBuilder(
-            wireframeID: context.ids.nodeID(for: imageView),
+            wireframeID: ids.0,
+            imageWireframeID: ids.1,
             attributes: attributes,
-            wireframeRect: imageView.imageFrame(in: attributes.frame)
+            contentFrame: attributes.frame.contentFrame(
+                for: imageView.image?.size,
+                using: imageView.contentMode
+            ),
+            clipsToBounds: imageView.clipsToBounds
         )
-        return SpecificElement(wireframesBuilder: builder, recordSubtree: false)
+        return SpecificElement(wireframesBuilder: builder, recordSubtree: true)
     }
 }
 
@@ -34,22 +38,64 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
     }
 
     let wireframeID: WireframeID
-    /// Attributes of the base `UIView`.
+
+    var wireframeRect: CGRect {
+        attributes.frame
+    }
+
+    let imageWireframeID: WireframeID
+
     let attributes: ViewAttributes
 
-    let wireframeRect: CGRect
+    let contentFrame: CGRect?
+
+    let clipsToBounds: Bool
+
+    private var clip: SRContentClip? {
+        guard let contentFrame = contentFrame else {
+            return nil
+        }
+        let top = max(relativeIntersectedRect.origin.y - contentFrame.origin.y, 0)
+        let left = max(relativeIntersectedRect.origin.x - contentFrame.origin.x, 0)
+        let bottom = max(contentFrame.height - (relativeIntersectedRect.height + top), 0)
+        let right = max(contentFrame.width - (relativeIntersectedRect.width + left), 0)
+        return SRContentClip(
+            bottom: Int64(withNoOverflow: bottom),
+            left: Int64(withNoOverflow: left),
+            right: Int64(withNoOverflow: right),
+            top: Int64(withNoOverflow: top)
+        )
+    }
+
+    private var relativeIntersectedRect: CGRect {
+        guard let contentFrame = contentFrame else {
+            return .zero
+        }
+        return attributes.frame.intersection(contentFrame)
+    }
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
-        return [
+        var wireframes = [
             builder.createShapeWireframe(
                 id: wireframeID,
-                frame: wireframeRect,
+                frame: attributes.frame,
                 borderColor: attributes.layerBorderColor,
                 borderWidth: attributes.layerBorderWidth,
-                backgroundColor: attributes.backgroundColor ?? Defaults.placeholderColor,
+                backgroundColor: attributes.backgroundColor,
                 cornerRadius: attributes.layerCornerRadius,
                 opacity: attributes.alpha
             )
         ]
+        if let contentFrame = contentFrame {
+            wireframes.append(
+                builder.createShapeWireframe(
+                    id: imageWireframeID,
+                    frame: contentFrame,
+                    clip: clipsToBounds ? clip : nil,
+                    backgroundColor: Defaults.placeholderColor
+                )
+            )
+        }
+        return wireframes
     }
 }
