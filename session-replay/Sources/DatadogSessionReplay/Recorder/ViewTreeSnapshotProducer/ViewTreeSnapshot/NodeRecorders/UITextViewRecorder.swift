@@ -21,7 +21,7 @@ internal struct UITextViewRecorder: NodeRecorder {
             textColor: textView.textColor?.cgColor ?? UIColor.black.cgColor,
             font: textView.font,
             textObfuscator: context.recorder.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator,
-            wireframeRect: CGRect(origin: textView.contentOffset, size: textView.contentSize)
+            contentRect: CGRect(origin: textView.contentOffset, size: textView.contentSize)
         )
         return SpecificElement(wireframesBuilder: builder, recordSubtree: true)
     }
@@ -40,13 +40,17 @@ internal struct UITextViewWireframesBuilder: NodeWireframesBuilder {
     /// Text obfuscator for masking text.
     let textObfuscator: TextObfuscating
     /// The frame of the text content
-    var wireframeRect: CGRect
+    let contentRect: CGRect
+
+    var wireframeRect: CGRect {
+        attributes.frame
+    }
 
     private var clip: SRContentClip {
-        let top = abs(wireframeRect.origin.y)
-        let left = abs(wireframeRect.origin.x)
-        let bottom = max(wireframeRect.height - attributes.frame.height - top, 0)
-        let right = max(wireframeRect.width - attributes.frame.width - left, 0)
+        let top = abs(contentRect.origin.y)
+        let left = abs(contentRect.origin.x)
+        let bottom = max(contentRect.height - attributes.frame.height - top, 0)
+        let right = max(contentRect.width - attributes.frame.width - left, 0)
         return SRContentClip(
             bottom: Int64(withNoOverflow: bottom),
             left: Int64(withNoOverflow: left),
@@ -57,10 +61,10 @@ internal struct UITextViewWireframesBuilder: NodeWireframesBuilder {
 
     private var relativeIntersectedRect: CGRect {
         CGRect(
-            x: attributes.frame.origin.x - wireframeRect.origin.x,
-            y: attributes.frame.origin.y - wireframeRect.origin.y,
-            width: max(wireframeRect.width, attributes.frame.width),
-            height: max(wireframeRect.height, attributes.frame.height)
+            x: attributes.frame.origin.x - contentRect.origin.x,
+            y: attributes.frame.origin.y - contentRect.origin.y,
+            width: max(contentRect.width, attributes.frame.width),
+            height: max(contentRect.height, attributes.frame.height)
         )
     }
 

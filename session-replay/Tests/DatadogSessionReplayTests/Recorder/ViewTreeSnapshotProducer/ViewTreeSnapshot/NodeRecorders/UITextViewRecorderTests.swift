@@ -29,8 +29,9 @@ class UITextViewRecorderTests: XCTestCase {
         // Given
         let randomText: String = .mockRandom()
         textView.textColor = .mockRandom()
-        textView.layoutManager.allowsNonContiguousLayout = true
         textView.font = .systemFont(ofSize: .mockRandom())
+        // RUMM-2681 Following is required to avoid "CALayer position contains NaN: [0 nan]. (...) (CALayerInvalidGeometry)" error
+        textView.layoutManager.allowsNonContiguousLayout = true
 
         // When
         textView.text = randomText
