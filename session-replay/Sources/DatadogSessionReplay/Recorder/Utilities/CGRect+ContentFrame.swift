@@ -11,6 +11,9 @@ extension CGRect {
         for contentSize: CGSize,
         using contentMode: UIView.ContentMode
     ) -> CGRect {
+        guard width > 0 && height > 0 && contentSize.width > 0 && contentSize.height > 0 else {
+            return .zero
+        }
         let contentFrame: CGRect
         switch contentMode {
         case .scaleAspectFit:
