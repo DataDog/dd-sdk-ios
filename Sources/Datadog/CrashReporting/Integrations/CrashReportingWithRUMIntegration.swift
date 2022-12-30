@@ -72,8 +72,10 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
             realDateNow: dateProvider.now.addingTimeInterval(currentTimeCorrection)
         )
 
-        if let lastRUMViewEvent = context.lastRUMViewEvent {
-            sendCrashReportLinkedToLastViewInPreviousSession(report, lastRUMViewEventInPreviousSession: lastRUMViewEvent, using: adjustedCrashTimings)
+        if let lastRUMViewEvent = crashContext.lastRUMViewEvent {
+            if (lastRUMViewEvent.view.crash?.count ?? 0 < 1) { // if a cross-platform crash was reported, do not send its native version
+                sendCrashReportLinkedToLastViewInPreviousSession(crashReport, lastRUMViewEventInPreviousSession: lastRUMViewEvent, using: adjustedCrashTimings)
+            }
         } else if let lastRUMSessionState = context.lastRUMSessionState {
             sendCrashReportToPreviousSession(report, crashContext: context, lastRUMSessionStateInPreviousSession: lastRUMSessionState, using: adjustedCrashTimings)
         } else if sessionSampler.sample() { // before producing a new RUM session, we must consider sampling

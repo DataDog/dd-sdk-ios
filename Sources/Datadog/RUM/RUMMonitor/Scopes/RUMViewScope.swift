@@ -399,9 +399,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private func sendViewUpdateEvent(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         version += 1
         attributes.merge(rumCommandAttributes: command.attributes)
+        let isCrash = command is RUMAddCurrentViewErrorCommand && ((command as! RUMAddCurrentViewErrorCommand).isCrash != nil)
 
         // RUMM-1779 Keep view active as long as we have ongoing resources
-        let isActive = isActiveView || !resourceScopes.isEmpty
+        // RUMM-2516 Close the View if a cross platform crash is sent - this will trigger the view update to be sent
+        let isActive = (isActiveView || !resourceScopes.isEmpty) && !isCrash
         // RUMM-2079 `time_spent` can't be lower than 1ns
         let timeSpent = max(1e-9, command.time.timeIntervalSince(viewStartTime))
         let cpuInfo = vitalInfoSampler?.cpu
@@ -437,7 +439,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 action: .init(count: actionsCount.toInt64),
                 cpuTicksCount: cpuInfo?.greatestDiff,
                 cpuTicksPerSecond: cpuInfo?.greatestDiff?.divideIfNotZero(by: Double(timeSpent)),
-                crash: .init(count: 0),
+                crash: isCrash ? .init(count: 1) : .init(count: 0),
                 cumulativeLayoutShift: nil,
                 customTimings: customTimings.reduce(into: [:]) { acc, element in
                     acc[sanitizeCustomTimingName(customTiming: element.key)] = element.value
