@@ -15,6 +15,9 @@ internal struct UIImageViewRecorder: NodeRecorder {
         guard let imageView = view as? UIImageView else {
             return nil
         }
+        guard attributes.hasAnyAppearance || imageView.image != nil else {
+            return InvisibleElement.constant
+        }
 
         let ids = context.ids.nodeID2(for: imageView)
         let builder = UIImageViewWireframesBuilder(
