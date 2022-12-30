@@ -15,6 +15,17 @@ class UIImageViewRecorderTests: XCTestCase {
     /// `ViewAttributes` simulating common attributes of image view's `UIView`.
     private var viewAttributes: ViewAttributes = .mockAny()
 
+    func testWhenImageViewHasNoImageAndNoAppearance() throws {
+        // When
+        imageView.image = nil
+        viewAttributes = .mock(fixture: .visibleWithNoAppearance)
+
+        // Then
+        let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: .mockAny()))
+        XCTAssertTrue(semantics is InvisibleElement)
+        XCTAssertFalse(semantics.recordSubtree, "Image view's subtree should not be recorded")
+    }
+
     func testWhenImageViewHasNoImageAndSomeAppearance() throws {
         // When
         imageView.image = nil

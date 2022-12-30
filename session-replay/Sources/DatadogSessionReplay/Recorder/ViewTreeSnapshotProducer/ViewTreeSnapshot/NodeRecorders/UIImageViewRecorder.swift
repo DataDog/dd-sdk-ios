@@ -20,14 +20,20 @@ internal struct UIImageViewRecorder: NodeRecorder {
         }
 
         let ids = context.ids.nodeID2(for: imageView)
+        let contentFrame: CGRect?
+        if let image = imageView.image {
+            contentFrame = attributes.frame.contentFrame(
+                for: image.size,
+                using: imageView.contentMode
+            )
+        } else {
+            contentFrame = nil
+        }
         let builder = UIImageViewWireframesBuilder(
             wireframeID: ids.0,
             imageWireframeID: ids.1,
             attributes: attributes,
-            contentFrame: attributes.frame.contentFrame(
-                for: imageView.image?.size,
-                using: imageView.contentMode
-            ),
+            contentFrame: contentFrame,
             clipsToBounds: imageView.clipsToBounds
         )
         return SpecificElement(wireframesBuilder: builder, recordSubtree: true)

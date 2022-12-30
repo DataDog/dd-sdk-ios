@@ -8,92 +8,89 @@ import UIKit
 
 extension CGRect {
     func contentFrame(
-        for contentSize: CGSize?,
+        for contentSize: CGSize,
         using contentMode: UIView.ContentMode
-    ) -> CGRect? {
-        guard let contentSize = contentSize else {
-            return nil
-        }
-        let imageFrame: CGRect
+    ) -> CGRect {
+        let contentFrame: CGRect
         switch contentMode {
         case .scaleAspectFit:
-            let realImageRect = self.size.scaleAspectFitRect(for: contentSize)
-            imageFrame = CGRect(
-                x: self.origin.x + realImageRect.origin.x,
-                y: self.origin.y + realImageRect.origin.y,
-                width: realImageRect.size.width,
-                height: realImageRect.size.height
+            let actualContentRect = self.size.scaleAspectFitRect(for: contentSize)
+            contentFrame = CGRect(
+                x: self.origin.x + actualContentRect.origin.x,
+                y: self.origin.y + actualContentRect.origin.y,
+                width: actualContentRect.size.width,
+                height: actualContentRect.size.height
             )
 
         case .scaleAspectFill:
-            let realImageRect = self.size.scaleAspectFillRect(for: contentSize)
-            imageFrame = CGRect(
-                x: self.origin.x + realImageRect.origin.x,
-                y: self.origin.y + realImageRect.origin.y,
-                width: realImageRect.size.width,
-                height: realImageRect.size.height
+            let actualContentRect = self.size.scaleAspectFillRect(for: contentSize)
+            contentFrame = CGRect(
+                x: self.origin.x + actualContentRect.origin.x,
+                y: self.origin.y + actualContentRect.origin.y,
+                width: actualContentRect.size.width,
+                height: actualContentRect.size.height
             )
         case .redraw, .center:
-            imageFrame = CGRect(
+            contentFrame = CGRect(
                 x: self.origin.x + (self.width - contentSize.width) / 2,
                 y: self.origin.y + (self.height - contentSize.height) / 2,
                 width: contentSize.width,
                 height: contentSize.height
             )
         case .scaleToFill:
-            imageFrame = self
+            contentFrame = self
 
         case .topLeft:
-            imageFrame = CGRect(
+            contentFrame = CGRect(
                 x: self.origin.x,
                 y: self.origin.y,
                 width: contentSize.width,
                 height: contentSize.height
             )
         case .topRight:
-            imageFrame = CGRect(
+            contentFrame = CGRect(
                 x: self.origin.x + (self.width - contentSize.width),
                 y: self.origin.y,
                 width: contentSize.width,
                 height: contentSize.height
             )
         case .bottomLeft:
-            imageFrame = CGRect(
+            contentFrame = CGRect(
                 x: self.origin.x,
                 y: self.origin.y + (self.height - contentSize.height),
                 width: contentSize.width,
                 height: contentSize.height
             )
         case .bottomRight:
-            imageFrame = CGRect(
+            contentFrame = CGRect(
                 x: self.origin.x + (self.width - contentSize.width),
                 y: self.origin.y + (self.height - contentSize.height),
                 width: contentSize.width,
                 height: contentSize.height
             )
         case .top:
-            imageFrame = CGRect(
+            contentFrame = CGRect(
                 x: self.origin.x + (self.width - contentSize.width) / 2,
                 y: self.origin.y,
                 width: contentSize.width,
                 height: contentSize.height
             )
         case .bottom:
-            imageFrame = CGRect(
+            contentFrame = CGRect(
                 x: self.origin.x + (self.width - contentSize.width) / 2,
                 y: self.origin.y + (self.height - contentSize.height),
                 width: contentSize.width,
                 height: contentSize.height
             )
         case .left:
-            imageFrame = CGRect(
+            contentFrame = CGRect(
                 x: self.origin.x,
                 y: self.origin.y + (self.height - contentSize.height) / 2,
                 width: contentSize.width,
                 height: contentSize.height
             )
         case .right:
-            imageFrame = CGRect(
+            contentFrame = CGRect(
                 x: self.origin.x + (self.width - contentSize.width),
                 y: self.origin.y + (self.height - contentSize.height) / 2,
                 width: contentSize.width,
@@ -101,14 +98,17 @@ extension CGRect {
             )
 
         @unknown default:
-            imageFrame = self
+            contentFrame = self
         }
-        return imageFrame
+        return contentFrame
     }
 }
 
 fileprivate extension CGSize {
     func scaleAspectFillRect(for contentSize: CGSize) -> CGRect {
+        guard contentSize.width > 0 && contentSize.height > 0 else {
+            return .zero
+        }
         let scale: CGFloat
         if (contentSize.width - width) < (contentSize.height - height) {
             scale = width / contentSize.width
@@ -126,8 +126,11 @@ fileprivate extension CGSize {
     }
 
     func scaleAspectFitRect(for contentSize: CGSize) -> CGRect {
+        guard width > 0 && height > 0 && contentSize.width > 0 && contentSize.height > 0 else {
+            return .zero
+        }
         let imageAspectRatio = contentSize.height / contentSize.width
-        let frameAspectRatio = self.height / self.width
+        let frameAspectRatio = height / width
 
         var x, y, width, height: CGFloat
         if imageAspectRatio > frameAspectRatio {
