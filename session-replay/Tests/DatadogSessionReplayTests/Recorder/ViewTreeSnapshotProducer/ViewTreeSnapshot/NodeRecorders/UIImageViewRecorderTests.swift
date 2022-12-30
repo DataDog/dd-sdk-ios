@@ -63,7 +63,6 @@ class UIImageViewRecorderTests: XCTestCase {
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: .mockAny()) as? SpecificElement)
 
-
         let builder = try XCTUnwrap(semantics.wireframesBuilder as? UIImageViewWireframesBuilder)
         XCTAssertEqual(builder.attributes, viewAttributes)
         XCTAssertEqual(builder.wireframeRect, viewAttributes.frame)
