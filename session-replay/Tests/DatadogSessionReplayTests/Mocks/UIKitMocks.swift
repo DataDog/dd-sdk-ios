@@ -74,3 +74,9 @@ class UITouchEventMock: UIEvent {
         return _touches
     }
 }
+
+extension UIView.ContentMode {
+    static func mockRandom() -> UIView.ContentMode {
+        UIView.ContentMode(rawValue: Int.random(in: 0...12)) ?? .scaleToFill
+    }
+}
