@@ -109,9 +109,6 @@ extension CGRect {
 
 fileprivate extension CGSize {
     func scaleAspectFillRect(for contentSize: CGSize) -> CGRect {
-        guard contentSize.width > 0 && contentSize.height > 0 else {
-            return .zero
-        }
         let scale: CGFloat
         if (contentSize.width - width) < (contentSize.height - height) {
             scale = width / contentSize.width
@@ -129,9 +126,6 @@ fileprivate extension CGSize {
     }
 
     func scaleAspectFitRect(for contentSize: CGSize) -> CGRect {
-        guard width > 0 && height > 0 && contentSize.width > 0 && contentSize.height > 0 else {
-            return .zero
-        }
         let imageAspectRatio = contentSize.height / contentSize.width
         let frameAspectRatio = height / width
 

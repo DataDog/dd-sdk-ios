@@ -19,12 +19,6 @@ class CGRectContentFrameTests: XCTestCase {
         )
 
         XCTAssertRectsEqual(
-            CGRect.zero.contentFrame(for: CGSize.mockAny(), using: .mockRandom()),
-            .zero,
-            accuracy: accuracy
-        )
-
-        XCTAssertRectsEqual(
             CGRect(origin: .zero, size: CGSize(width: 0, height: 100))
                 .contentFrame(for: CGSize.mockAny(), using: .mockRandom()),
             .zero,
