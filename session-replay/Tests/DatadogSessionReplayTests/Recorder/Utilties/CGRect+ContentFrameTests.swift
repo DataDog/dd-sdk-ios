@@ -67,7 +67,8 @@ class CGRectContentFrameTests: XCTestCase {
         )
         XCTAssertRectsEqual(
             frame.contentFrame(for: contentSize, using: .scaleAspectFill),
-            CGRect(x: 6.153846153846146, y: 9.999999999999993, width: 107.69230769230771, height: 100.00000000000001), accuracy: accuracy
+            CGRect(x: 6.153846153846146, y: 9.999999999999993, width: 107.69230769230771, height: 100.00000000000001),
+            accuracy: accuracy
         )
         XCTAssertRectsEqual(
             frame.contentFrame(for: contentSize, using: .scaleToFill),
