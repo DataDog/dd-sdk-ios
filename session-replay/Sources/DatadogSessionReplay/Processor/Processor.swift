@@ -64,7 +64,6 @@ internal class Processor: Processing {
             .flatMap { nodeBuilder in nodeBuilder.buildWireframes(with: wireframesBuilder) }
 
         var records: [SRRecord] = []
-
         // Create records for describing UI:
         if viewTreeSnapshot.rumContext != lastSnapshot?.rumContext {
             // If RUM context has changed, new segment should be started.
@@ -72,17 +71,23 @@ internal class Processor: Processing {
             records.append(recordsBuilder.createMetaRecord(from: viewTreeSnapshot))
             records.append(recordsBuilder.createFocusRecord(from: viewTreeSnapshot))
             records.append(recordsBuilder.createFullSnapshotRecord(from: viewTreeSnapshot, wireframes: wireframes))
-        } else {
+        } else if let lastWireframes = lastWireframes {
             // No change to RUM context means we're recording new records within the same RUM view.
             // Such can be added to current segment.
             // Prefer creating "incremental snapshot" records but fallback to "full snapshot" (unexpected):
-            if let lastWireframes = lastWireframes {
-                let record = recordsBuilder.createIncrementalSnapshotRecord(from: viewTreeSnapshot, with: wireframes, lastWireframes: lastWireframes)
-                record.flatMap { records.append($0) }
-            } else {
-                // unexpected, TODO: RUMM-2410 Use `DD.logger` and / or `DD.telemetry`
-                records.append(recordsBuilder.createFullSnapshotRecord(from: viewTreeSnapshot, wireframes: wireframes))
+            let record = recordsBuilder.createIncrementalSnapshotRecord(from: viewTreeSnapshot, with: wireframes, lastWireframes: lastWireframes)
+            record.flatMap { records.append($0) }
+
+            // Create viewport orientation change record
+            if let lastSnapshot = lastSnapshot {
+                recordsBuilder.createViewport(
+                    from: viewTreeSnapshot,
+                    lastSnapshot: lastSnapshot
+                ).flatMap { records.append($0) }
             }
+        } else {
+            // unexpected, TODO: RUMM-2410 Use `DD.logger` and / or `DD.telemetry`
+            records.append(recordsBuilder.createFullSnapshotRecord(from: viewTreeSnapshot, wireframes: wireframes))
         }
 
         // Create records for denoting touch interaction:
