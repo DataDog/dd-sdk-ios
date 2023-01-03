@@ -91,6 +91,45 @@ class ProcessorTests: XCTestCase {
         }
     }
 
+    func testWhenOrientationChanges_itWritesRecordsViewportResizeDataSegment() {
+        let time = Date()
+        let rum: RUMContext = .mockRandom()
+
+        // Given
+        let processor = Processor(queue: NoQueue(), writer: writer)
+        let view = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 200))
+        let rotatedView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 100))
+
+        // When
+        let snapshot1 = generateViewTreeSnapshot(for: view, date: time, rumContext: rum)
+        let snapshot2 = generateViewTreeSnapshot(for: rotatedView, date: time.addingTimeInterval(1), rumContext: rum)
+
+        processor.process(viewTreeSnapshot: snapshot1, touchSnapshot: nil)
+        processor.process(viewTreeSnapshot: snapshot2, touchSnapshot: nil)
+
+        // Then
+        let enrichedRecords = writer.records
+        XCTAssertEqual(writer.records.count, 2)
+
+        XCTAssertEqual(enrichedRecords[0].records.count, 3, "Segment must start with 'meta' → 'focus' → 'full snapshot' records")
+        XCTAssertTrue(enrichedRecords[0].records[0].isMetaRecord)
+        XCTAssertTrue(enrichedRecords[0].records[1].isFocusRecord)
+        XCTAssertTrue(enrichedRecords[0].records[2].isFullSnapshotRecord && enrichedRecords[0].hasFullSnapshot)
+
+        XCTAssertEqual(enrichedRecords[1].records.count, 2, "It should follow with two 'incremental snapshot' records")
+        XCTAssertTrue(enrichedRecords[1].records[0].isIncrementalSnapshotRecord)
+        XCTAssertTrue(enrichedRecords[1].records[1].isIncrementalSnapshotRecord)
+
+        if case let .incrementalSnapshotRecord(value: value) = enrichedRecords[1].records[1] {
+            if case let .viewportResizeData(value: data) = value.data {
+                XCTAssertEqual(data.height, 100)
+                XCTAssertEqual(data.width, 200)
+            } else {
+                XCTFail("Record associated data should be `ViewportResizeData`")
+            }
+        }
+    }
+
     func testWhenRUMContextChangesInSucceedingViewTreeSnapshots_itWritesRecordsThatIndicateNextSegments() {
         let time = Date()
         let rum1: RUMContext = .mockRandom()
