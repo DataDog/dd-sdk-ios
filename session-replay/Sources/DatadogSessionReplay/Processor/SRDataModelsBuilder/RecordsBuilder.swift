@@ -137,4 +137,3 @@ internal class RecordsBuilder {
 
     // TODO: RUMM-2250 Bring other types of records
 }
-

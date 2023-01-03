@@ -83,7 +83,8 @@ internal class Processor: Processing {
                 recordsBuilder.createViewport(
                     from: viewTreeSnapshot,
                     lastSnapshot: lastSnapshot
-                ).flatMap { records.append($0) }
+                )
+                .flatMap { records.append($0) }
             }
         } else {
             // unexpected, TODO: RUMM-2410 Use `DD.logger` and / or `DD.telemetry`

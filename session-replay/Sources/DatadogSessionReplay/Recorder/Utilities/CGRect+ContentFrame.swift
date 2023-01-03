@@ -109,7 +109,9 @@ extension CGRect {
 
 extension CGSize {
     var aspectRatio: CGFloat {
-        guard width > 0 else { return 0 }
+        guard width > 0 else {
+            return 0
+        }
         return height / width
     }
 }
