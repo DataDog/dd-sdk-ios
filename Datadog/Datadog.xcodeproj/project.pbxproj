@@ -743,6 +743,8 @@
 		D2A1EE3F2885D7EC00D28DFB /* LaunchTimePublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE3D2885D7EC00D28DFB /* LaunchTimePublisherTests.swift */; };
 		D2A1EE442886B8B400D28DFB /* UserInfoPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE432886B8B400D28DFB /* UserInfoPublisherTests.swift */; };
 		D2A1EE452886B8B400D28DFB /* UserInfoPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A1EE432886B8B400D28DFB /* UserInfoPublisherTests.swift */; };
+		D2A717CF2965DAB300EEC7D7 /* FeatureMessageReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A717CE2965DAB300EEC7D7 /* FeatureMessageReceiverTests.swift */; };
+		D2A717D02965DAB300EEC7D7 /* FeatureMessageReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A717CE2965DAB300EEC7D7 /* FeatureMessageReceiverTests.swift */; };
 		D2B3F0442823EE8400C2B5EE /* DataBlockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F0432823EE8300C2B5EE /* DataBlockTests.swift */; };
 		D2B3F0452823EE8400C2B5EE /* DataBlockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F0432823EE8300C2B5EE /* DataBlockTests.swift */; };
 		D2B3F04728292D6E00C2B5EE /* DataMigratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F04628292D6E00C2B5EE /* DataMigratorTests.swift */; };
@@ -1968,6 +1970,7 @@
 		D2A1EE3A287EECA800D28DFB /* CarrierInfoPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierInfoPublisherTests.swift; sourceTree = "<group>"; };
 		D2A1EE3D2885D7EC00D28DFB /* LaunchTimePublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchTimePublisherTests.swift; sourceTree = "<group>"; };
 		D2A1EE432886B8B400D28DFB /* UserInfoPublisherTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserInfoPublisherTests.swift; sourceTree = "<group>"; };
+		D2A717CE2965DAB300EEC7D7 /* FeatureMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureMessageReceiverTests.swift; sourceTree = "<group>"; };
 		D2B3F0432823EE8300C2B5EE /* DataBlockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataBlockTests.swift; sourceTree = "<group>"; };
 		D2B3F04628292D6E00C2B5EE /* DataMigratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataMigratorTests.swift; sourceTree = "<group>"; };
 		D2B3F0492829510600C2B5EE /* DatadogCoreProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogCoreProtocol.swift; sourceTree = "<group>"; };
@@ -4443,6 +4446,7 @@
 				D2956CAF2869D520007D5462 /* Context */,
 				D29294E5291D65EA00F8EFF9 /* _InternalProxyTests.swift */,
 				D2079DC7294C91DE00C4D25E /* ConcurrencyTests.swift */,
+				D2A717CE2965DAB300EEC7D7 /* FeatureMessageReceiverTests.swift */,
 			);
 			path = DatadogInternal;
 			sourceTree = "<group>";
@@ -5702,6 +5706,7 @@
 				61B038BA2527257B00518F3C /* URLSessionAutoInstrumentationMocks.swift in Sources */,
 				D2375C282954785A00473EA0 /* WebViewLogReceiverTests.swift in Sources */,
 				9E53889C2773C4B300A7DC42 /* WebViewEventReceiverTests.swift in Sources */,
+				D2A717CF2965DAB300EEC7D7 /* FeatureMessageReceiverTests.swift in Sources */,
 				D2CBC264294217AD00134409 /* AnyCodableTests.swift in Sources */,
 				6114FDEC257659E90084E372 /* DirectoriesMock.swift in Sources */,
 				61122EE825B1C92500F9C7F5 /* SpanSanitizerTests.swift in Sources */,
@@ -6513,6 +6518,7 @@
 				D2B3F053282E827B00C2B5EE /* DDHTTPHeadersWriter+apiTests.m in Sources */,
 				D2CB6F5827C520D400A62B57 /* RUMScopeTests.swift in Sources */,
 				D20605BA2875729E0047275C /* ContextValuePublisherMock.swift in Sources */,
+				D2A717D02965DAB300EEC7D7 /* FeatureMessageReceiverTests.swift in Sources */,
 				D2CB6F5927C520D400A62B57 /* WarningsTests.swift in Sources */,
 				D2CB6F5A27C520D400A62B57 /* SwiftExtensionsTests.swift in Sources */,
 				615950F0291C05CD00470E0C /* SessionReplayDependencyTests.swift in Sources */,

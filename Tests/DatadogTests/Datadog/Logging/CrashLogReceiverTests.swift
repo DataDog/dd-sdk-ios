@@ -51,8 +51,8 @@ class CrashLogReceiverTests: XCTestCase {
                 dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
             )
         )
-        let integration = MessageBusSender(core: core)
-        integration.send(report: crashReport, with: crashContext)
+        let sender = MessageBusSender(core: core)
+        sender.send(report: crashReport, with: crashContext)
 
         // Then
         XCTAssertTrue(core.events(ofType: LogEvent.self).isEmpty)
@@ -114,8 +114,8 @@ class CrashLogReceiverTests: XCTestCase {
             )
         )
 
-        let integration = MessageBusSender(core: core)
-        integration.send(report: crashReport, with: crashContext)
+        let sender = MessageBusSender(core: core)
+        sender.send(report: crashReport, with: crashContext)
 
         // Then
         let log = try XCTUnwrap(core.events(ofType: LogEvent.self).first)
