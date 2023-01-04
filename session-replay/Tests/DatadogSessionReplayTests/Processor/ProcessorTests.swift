@@ -119,15 +119,8 @@ class ProcessorTests: XCTestCase {
         XCTAssertEqual(enrichedRecords[1].records.count, 2, "It should follow with two 'incremental snapshot' records")
         XCTAssertTrue(enrichedRecords[1].records[0].isIncrementalSnapshotRecord)
         XCTAssertTrue(enrichedRecords[1].records[1].isIncrementalSnapshotRecord)
-
-        if case let .incrementalSnapshotRecord(value: value) = enrichedRecords[1].records[1] {
-            if case let .viewportResizeData(value: data) = value.data {
-                XCTAssertEqual(data.height, 100)
-                XCTAssertEqual(data.width, 200)
-            } else {
-                XCTFail("Record associated data should be `ViewportResizeData`")
-            }
-        }
+        XCTAssertEqual(enrichedRecords[1].records[1].viewportResizeData?.height, 100)
+        XCTAssertEqual(enrichedRecords[1].records[1].viewportResizeData?.width, 200)
     }
 
     func testWhenRUMContextChangesInSucceedingViewTreeSnapshots_itWritesRecordsThatIndicateNextSegments() {
