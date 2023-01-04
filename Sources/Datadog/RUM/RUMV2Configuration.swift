@@ -14,7 +14,7 @@ internal func createRUMConfiguration(configuration: FeaturesConfiguration.RUM) -
     return DatadogFeatureConfiguration(
         name: "rum",
         requestBuilder: RUMRequestBuilder(intake: configuration.uploadURL),
-        messageReceiver: MUXFeatureMessageReceiver(
+        messageReceiver: CombinedFeatureMessageReceiver(
             ErrorMessageReceiver(),
             WebViewEventReceiver(
                 dateProvider: configuration.dateProvider

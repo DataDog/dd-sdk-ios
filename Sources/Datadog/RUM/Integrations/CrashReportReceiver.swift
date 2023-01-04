@@ -55,19 +55,6 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         self.uuidGenerator = uuidGenerator
     }
 
-    /// Receives messages from the message bus.
-    ///
-    /// The message can be used to build an event or execute custom routine in the Feature.
-    ///
-    /// This method is always called on the same thread managed by core. If the implementation
-    /// of `FeatureMessageReceiver` needs to manage a state it can consider its mutations started
-    /// from `receive(message:from:)` to be thread-safe. The implementation should be mindful of
-    /// not blocking the caller thread to not delay processing of other messages in the system.
-    ///
-    /// - Parameters:
-    ///   - message: The message
-    ///   - core: An instance of the core from which the message is transmitted.
-    /// - Returns: `true` if the message was processed by the receiver;`false` if it was ignored.
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         if case let .custom(key, baggage) = message, key == MessageKeys.crash {
             return write(crash: baggage, to: core)
@@ -76,8 +63,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         return false
     }
 
-    // MARK: - CrashReportingIntegration
-    func write(crash attributes: FeatureBaggage, to core: DatadogCoreProtocol) -> Bool {
+    private func write(crash attributes: FeatureBaggage, to core: DatadogCoreProtocol) -> Bool {
         guard
             let report = attributes["report", type: DDCrashReport.self],
             let context = attributes["context", type: CrashContext.self]
@@ -88,7 +74,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         return send(report: report, with: context, to: core)
     }
 
-    func send(report: DDCrashReport, with context: CrashContext, to core: DatadogCoreProtocol) -> Bool {
+    private func send(report: DDCrashReport, with context: CrashContext, to core: DatadogCoreProtocol) -> Bool {
         // The `crashReport.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
         // to the server time before processing. Following use of the current correction is not ideal (it's not the correction
         // from the moment of crash), but this is the best approximation we can get.

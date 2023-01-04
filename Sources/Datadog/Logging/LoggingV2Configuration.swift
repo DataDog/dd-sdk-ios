@@ -19,7 +19,7 @@ internal func createLoggingConfiguration(
     return DatadogFeatureConfiguration(
         name: "logging",
         requestBuilder: LoggingRequestBuilder(intake: intake),
-        messageReceiver: MUXFeatureMessageReceiver(
+        messageReceiver: CombinedFeatureMessageReceiver(
             LogMessageReceiver(logEventMapper: logEventMapper),
             CrashLogReceiver(dateProvider: dateProvider),
             WebViewLogReceiver()

@@ -4,8 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-/// An integration for sending crash reports.
-internal protocol CrashReportingIntegration {
+/// An object for sending crash reports.
+internal protocol CrashReportSender {
     /// Send the crash report et context to integrations.
     ///
     /// - Parameters:
@@ -14,14 +14,20 @@ internal protocol CrashReportingIntegration {
     func send(report: DDCrashReport, with context: CrashContext)
 }
 
-/// An integration for sending crash reports to Datadog Core.
-internal struct CrashReportingCoreIntegration: CrashReportingIntegration {
+/// An object for sending crash reports on the Core message-bus.
+internal struct MessageBusSender: CrashReportSender {
     /// Defines keys referencing Crash Report message on the bus.
     internal enum MessageKeys {
         /// The key for a crash message.
+        ///
+        /// Use this key when the crash should be reported
+        /// as a RUM event.
         static let crash = "crash"
 
         /// The key for a crash log message.
+        ///
+        /// Use this key when the crash should be reported
+        /// as a log event.
         static let crashLog = "crash-log"
     }
 
@@ -35,7 +41,7 @@ internal struct CrashReportingCoreIntegration: CrashReportingIntegration {
     ///   - context: The crash context
     func send(report: DDCrashReport, with context: CrashContext) {
         guard context.trackingConsent == .granted else {
-            return // Only authorized crash reports can be send
+            return
         }
 
         sendRUM(

@@ -13,13 +13,13 @@ extension CrashReporter {
             crashReportingPlugin: DDCrashReportingPluginType = NoopCrashReportingPlugin()
     ) -> CrashReporter {
         return .mockWith(
-            integration: CrashReportingCoreIntegration(core: core),
+            integration: MessageBusSender(core: core),
             crashReportingPlugin: crashReportingPlugin
         )
     }
 
     static func mockWith(
-        integration: CrashReportingIntegration,
+        integration: CrashReportSender,
         crashReportingPlugin: DDCrashReportingPluginType = NoopCrashReportingPlugin(),
         crashContextProvider: CrashContextProviderType = CrashContextProviderMock(),
         messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
@@ -27,7 +27,7 @@ extension CrashReporter {
         .init(
             crashReportingPlugin: crashReportingPlugin,
             crashContextProvider: crashContextProvider,
-            integration: integration,
+            sender: integration,
             messageReceiver: messageReceiver
         )
     }
@@ -73,7 +73,7 @@ internal class CrashContextProviderMock: CrashContextProviderType {
     }
 }
 
-class CrashReportingIntegrationMock: CrashReportingIntegration {
+class CrashReportSenderMock: CrashReportSender {
     var sentCrashReport: DDCrashReport?
     var sentCrashContext: CrashContext?
 

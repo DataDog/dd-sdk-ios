@@ -75,10 +75,13 @@ class CrashReportReceiverTests: XCTestCase {
 
         // When
         XCTAssertTrue(
-            receiver.write(crash: [
-                "report": crashReport,
-                "context": crashContext
-            ], to: core)
+            receiver.receive(message: .custom(
+                key: CrashReportReceiver.MessageKeys.crash,
+                baggage: [
+                    "report": crashReport,
+                    "context": crashContext
+                ]
+            ), from: core)
         )
 
         // Then
@@ -109,10 +112,13 @@ class CrashReportReceiverTests: XCTestCase {
 
         // When
         XCTAssertTrue(
-            receiver.write(crash: [
-                "report": crashReport,
-                "context": crashContext
-            ], to: core)
+            receiver.receive(message: .custom(
+                key: CrashReportReceiver.MessageKeys.crash,
+                baggage: [
+                    "report": crashReport,
+                    "context": crashContext
+                ]
+            ), from: core)
         )
 
         // Then
@@ -141,10 +147,13 @@ class CrashReportReceiverTests: XCTestCase {
 
         // When
         XCTAssertTrue(
-            receiver.write(crash: [
-                "report": crashReport,
-                "context": crashContext
-            ], to: core)
+            receiver.receive(message: .custom(
+                key: CrashReportReceiver.MessageKeys.crash,
+                baggage: [
+                    "report": crashReport,
+                    "context": crashContext
+                ]
+            ), from: core)
         )
 
         // Then
@@ -173,10 +182,13 @@ class CrashReportReceiverTests: XCTestCase {
 
         // When
         XCTAssertTrue(
-            receiver.write(crash: [
-                "report": crashReport,
-                "context": crashContext
-            ], to: core)
+            receiver.receive(message: .custom(
+                key: CrashReportReceiver.MessageKeys.crash,
+                baggage: [
+                    "report": crashReport,
+                    "context": crashContext
+                ]
+            ), from: core)
         )
 
         // Then
@@ -205,10 +217,13 @@ class CrashReportReceiverTests: XCTestCase {
 
         // When
         XCTAssertFalse(
-            receiver.write(crash: [
-                "report": crashReport,
-                "context": crashContext
-            ], to: core)
+            receiver.receive(message: .custom(
+                key: CrashReportReceiver.MessageKeys.crash,
+                baggage: [
+                    "report": crashReport,
+                    "context": crashContext
+                ]
+            ), from: core)
         )
 
         // Then
@@ -235,10 +250,13 @@ class CrashReportReceiverTests: XCTestCase {
 
         // When
         XCTAssertTrue(
-            receiver.write(crash: [
-                "report": crashReport,
-                "context": crashContext
-            ], to: core)
+            receiver.receive(message: .custom(
+                key: CrashReportReceiver.MessageKeys.crash,
+                baggage: [
+                    "report": crashReport,
+                    "context": crashContext
+                ]
+            ), from: core)
         )
 
         // Then
@@ -270,10 +288,13 @@ class CrashReportReceiverTests: XCTestCase {
 
         // When
         XCTAssertTrue(
-            receiver.write(crash: [
-                "report": crashReport,
-                "context": crashContext
-            ], to: core)
+            receiver.receive(message: .custom(
+                key: CrashReportReceiver.MessageKeys.crash,
+                baggage: [
+                    "report": crashReport,
+                    "context": crashContext
+                ]
+            ), from: core)
         )
 
         // Then
@@ -303,10 +324,13 @@ class CrashReportReceiverTests: XCTestCase {
 
         // When
         XCTAssertTrue(
-            receiver.write(crash: [
-                "report": crashReport,
-                "context": crashContext
-            ], to: core)
+            receiver.receive(message: .custom(
+                key: CrashReportReceiver.MessageKeys.crash,
+                baggage: [
+                    "report": crashReport,
+                    "context": crashContext
+                ]
+            ), from: core)
         )
 
         // Then
@@ -400,10 +424,13 @@ class CrashReportReceiverTests: XCTestCase {
 
         // When
         XCTAssertTrue(
-            receiver.write(crash: [
-                "report": crashReport,
-                "context": crashContext
-            ], to: core)
+            receiver.receive(message: .custom(
+                key: CrashReportReceiver.MessageKeys.crash,
+                baggage: [
+                    "report": crashReport,
+                    "context": crashContext
+                ]
+            ), from: core)
         )
 
         // Then
@@ -500,10 +527,13 @@ class CrashReportReceiverTests: XCTestCase {
 
             // When
             XCTAssertTrue(
-                receiver.write(crash: [
-                    "report": crashReport,
-                    "context": crashContext
-                ], to: core)
+                receiver.receive(message: .custom(
+                    key: CrashReportReceiver.MessageKeys.crash,
+                    baggage: [
+                        "report": crashReport,
+                        "context": crashContext
+                    ]
+                ), from: core)
             )
 
             // Then
@@ -640,10 +670,13 @@ class CrashReportReceiverTests: XCTestCase {
 
             // When
             XCTAssertTrue(
-                receiver.write(crash: [
-                    "report": crashReport,
-                    "context": crashContext
-                ], to: core)
+                receiver.receive(message: .custom(
+                    key: CrashReportReceiver.MessageKeys.crash,
+                    baggage: [
+                        "report": crashReport,
+                        "context": crashContext
+                    ]
+                ), from: core)
             )
 
             // Then

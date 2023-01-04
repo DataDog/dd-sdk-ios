@@ -36,12 +36,17 @@ public struct NOPFeatureMessageReceiver: FeatureMessageReceiver {
     }
 }
 
-public struct MUXFeatureMessageReceiver: FeatureMessageReceiver {
+public struct CombinedFeatureMessageReceiver: FeatureMessageReceiver {
     let receivers: [FeatureMessageReceiver]
 
     /// Creates an instance initialized with the given receivers.
-    public init(_ elements: FeatureMessageReceiver...) {
-        receivers = Array(elements)
+    public init(_ receivers: FeatureMessageReceiver...) {
+        self.receivers = Array(receivers)
+    }
+
+    /// Creates an instance initialized with the given receivers.
+    public init(_ receivers: [FeatureMessageReceiver]) {
+        self.receivers = receivers
     }
 
     /// Receiving a message will loop though receivers and stop on the first that is able to
@@ -50,7 +55,7 @@ public struct MUXFeatureMessageReceiver: FeatureMessageReceiver {
     /// - Parameters:
     ///   - message: The message.
     ///   - core: An instance of the core from which the message is transmitted.
-    /// - Returns: `true` if the message was processed by one of the receiver;`false` if it was ignored.
+    /// - Returns: `true` if the message was processed by one of the receiver; `false` if it was ignored.
     public func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         receivers.contains(where: { $0.receive(message: message, from: core) })
     }

@@ -51,7 +51,7 @@ class CrashLogReceiverTests: XCTestCase {
                 dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
             )
         )
-        let integration = CrashReportingCoreIntegration(core: core)
+        let integration = MessageBusSender(core: core)
         integration.send(report: crashReport, with: crashContext)
 
         // Then
@@ -114,7 +114,7 @@ class CrashLogReceiverTests: XCTestCase {
             )
         )
 
-        let integration = CrashReportingCoreIntegration(core: core)
+        let integration = MessageBusSender(core: core)
         integration.send(report: crashReport, with: crashContext)
 
         // Then

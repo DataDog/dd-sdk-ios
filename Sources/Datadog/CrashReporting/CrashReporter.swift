@@ -19,7 +19,7 @@ import Foundation
     /// An interface for accessing the `DDCrashReportingPlugin` from `DatadogCrashReporting`.
     let plugin: DDCrashReportingPluginType
     /// Integration enabling sending crash reports as Logs or RUM Errors.
-    let integration: CrashReportingIntegration
+    let sender: CrashReportSender
 
     convenience init?(
         core: DatadogCoreProtocol,
@@ -30,7 +30,7 @@ import Foundation
         self.init(
             crashReportingPlugin: configuration.crashReportingPlugin,
             crashContextProvider: contextProvider,
-            integration: CrashReportingCoreIntegration(core: core),
+            sender: MessageBusSender(core: core),
             messageReceiver: contextProvider
         )
     }
@@ -38,7 +38,7 @@ import Foundation
     init(
         crashReportingPlugin: DDCrashReportingPluginType,
         crashContextProvider: CrashContextProviderType,
-        integration: CrashReportingIntegration,
+        sender: CrashReportSender,
         messageReceiver: FeatureMessageReceiver
     ) {
         self.queue = DispatchQueue(
@@ -46,7 +46,7 @@ import Foundation
             target: .global(qos: .utility)
         )
         self.plugin = crashReportingPlugin
-        self.integration = integration
+        self.sender = sender
         self.crashContextProvider = crashContextProvider
         self.messageReceiver = messageReceiver
 
@@ -79,7 +79,7 @@ import Foundation
                     return true
                 }
 
-                self.integration.send(report: availableCrashReport, with: crashContext)
+                self.sender.send(report: availableCrashReport, with: crashContext)
                 return true
             }
         }
