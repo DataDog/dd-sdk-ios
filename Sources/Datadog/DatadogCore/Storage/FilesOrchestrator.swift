@@ -6,8 +6,16 @@
 
 import Foundation
 
+internal protocol FilesOrchestratorType: AnyObject {
+    func getWritableFile(writeSize: UInt64) throws -> WritableFile
+    func getReadableFile(excludingFilesNamed excludedFileNames: Set<String>) -> ReadableFile?
+    func delete(readableFile: ReadableFile)
+
+    var ignoreFilesAgeWhenReading: Bool { get set }
+}
+
 /// Orchestrates files in a single directory.
-internal class FilesOrchestrator {
+internal class FilesOrchestrator: FilesOrchestratorType {
     /// Directory where files are stored.
     private let directory: Directory
     /// Date provider.
@@ -120,14 +128,6 @@ internal class FilesOrchestrator {
             try readableFile.delete()
         } catch {
             DD.telemetry.error("Failed to delete file", error: error)
-        }
-    }
-
-    func deleteAllReadableFiles() {
-        do {
-            try directory.deleteAllFiles()
-        } catch {
-            DD.telemetry.error("Failed to delete all readable file", error: error)
         }
     }
 

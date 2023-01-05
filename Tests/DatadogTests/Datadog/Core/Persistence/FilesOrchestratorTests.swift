@@ -244,21 +244,6 @@ class FilesOrchestratorTests: XCTestCase {
         XCTAssertEqual(try temporaryDirectory.files().count, 0)
     }
 
-    func testItDeletesAllFiles() throws {
-        let numberOfFiles: Int = .mockRandom(min: 10, max: 100)
-        let dateProvider = RelativeDateProvider()
-        let orchestrator = configureOrchestrator(using: dateProvider)
-
-        try (0..<numberOfFiles).forEach { _ in
-            dateProvider.advance(bySeconds: 1 + performance.minFileAgeForRead)
-            _ = try temporaryDirectory.createFile(named: dateProvider.now.toFileName)
-        }
-
-        XCTAssertEqual(try temporaryDirectory.files().count, numberOfFiles, "Directory should contain \(numberOfFiles) before deletion")
-        orchestrator.deleteAllReadableFiles()
-        XCTAssertEqual(try temporaryDirectory.files().count, 0, "Directory should have no files after deletion")
-    }
-
     // MARK: - File names tests
 
     // swiftlint:disable number_separator

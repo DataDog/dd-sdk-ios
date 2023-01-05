@@ -24,7 +24,8 @@ class FileWriterTests: XCTestCase {
                 directory: temporaryDirectory,
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
-            )
+            ),
+            encryption: nil
         )
 
         writer.write(value: ["key1": "value1"])
@@ -63,7 +64,8 @@ class FileWriterTests: XCTestCase {
                     maxObjectSize: 23 // 23 bytes is enough for TLV with {"key1":"value1"} JSON
                 ),
                 dateProvider: SystemDateProvider()
-            )
+            ),
+            encryption: nil
         )
 
         writer.write(value: ["key1": "value1"]) // will be written
@@ -92,7 +94,8 @@ class FileWriterTests: XCTestCase {
                 directory: temporaryDirectory,
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
-            )
+            ),
+            encryption: nil
         )
 
         writer.write(value: FailingEncodableMock(errorMessage: "failed to encode `FailingEncodable`."))
@@ -110,7 +113,8 @@ class FileWriterTests: XCTestCase {
                 directory: temporaryDirectory,
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
-            )
+            ),
+            encryption: nil
         )
 
         writer.write(value: ["ok"]) // will create the file
@@ -137,7 +141,8 @@ class FileWriterTests: XCTestCase {
                     maxObjectSize: .max
                 ),
                 dateProvider: SystemDateProvider()
-            )
+            ),
+            encryption: nil
         )
 
         let ioInterruptionQueue = DispatchQueue(label: "com.datadohq.file-writer-random-io")

@@ -6,22 +6,15 @@
 
 import Foundation
 
-/// Writes data to files.
-internal final class FileWriter: Writer {
-    /// Orchestrator producing reference to writable file.
-    private let orchestrator: FilesOrchestrator
-    /// JSON encoder used to encode data.
-    private let jsonEncoder: JSONEncoder
-    private let encryption: DataEncryption?
+/// JSON encoder used to encode data.
+private let jsonEncoder: JSONEncoder = .default()
 
-    init(
-        orchestrator: FilesOrchestrator,
-        encryption: DataEncryption? = nil
-    ) {
-        self.orchestrator = orchestrator
-        self.jsonEncoder = .default()
-        self.encryption = encryption
-    }
+/// Writes data to files.
+internal struct FileWriter: Writer {
+    /// Orchestrator producing reference to writable file.
+    let orchestrator: FilesOrchestratorType
+    /// Algorithm to encrypt written data.
+    let encryption: DataEncryption?
 
     // MARK: - Writing data
 

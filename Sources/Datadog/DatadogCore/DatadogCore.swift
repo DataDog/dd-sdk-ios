@@ -36,8 +36,6 @@ internal final class DatadogCore {
     /// The system date provider.
     let dateProvider: DateProvider
 
-    /// The user consent provider.
-    let consentProvider: ConsentProvider
     /// The user consent publisher.
     let consentPublisher: TrackingConsentPublisher
 
@@ -111,7 +109,6 @@ internal final class DatadogCore {
         self.encryption = encryption
         self.contextProvider = contextProvider
         self.applicationVersionPublisher = ApplicationVersionPublisher(version: applicationVersion)
-        self.consentProvider = ConsentProvider(initialConsent: initialConsent)
         self.consentPublisher = TrackingConsentPublisher(consent: initialConsent)
 
         self.contextProvider.subscribe(\.userInfo, to: userInfoPublisher)
@@ -165,7 +162,8 @@ internal final class DatadogCore {
     /// 
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     func set(trackingConsent: TrackingConsent) {
-        consentProvider.changeConsent(to: trackingConsent)
+        let previousConsent = consentPublisher.consent
+        allStorages.forEach { $0.migrateData(fromConsent: previousConsent, toConsent: trackingConsent) }
         consentPublisher.consent = trackingConsent
     }
 
@@ -181,6 +179,13 @@ internal final class DatadogCore {
         contextProvider.read { context in
             self.messageBusQueue.async { messageReceiver.receive(message: .context(context), from: self) }
         }
+    }
+
+    /// A list of storage units of currently registered Features.
+    private var allStorages: [FeatureStorage] {
+        let v1Storages = v1Features.values.compactMap { $0 as? V1Feature }.map { $0.storage }
+        let v2Storages = v2Features.values.map { $0.storage }
+        return v1Storages + v2Storages
     }
 }
 
@@ -202,7 +207,6 @@ extension DatadogCore: DatadogCoreProtocol {
             queue: readWriteQueue,
             directories: featureDirectories,
             dateProvider: dateProvider,
-            consentProvider: consentProvider,
             performance: performance,
             encryption: encryption
         )
@@ -221,6 +225,10 @@ extension DatadogCore: DatadogCoreProtocol {
             storage: storage,
             upload: upload
         )
+
+        // If there is any persisted data recorded with `.pending` consent,
+        // it should be deleted on Feature startup:
+        storage.clearUnauthorizedData()
 
         add(messageReceiver: feature.messageReceiver, forKey: feature.name)
     }
@@ -346,7 +354,6 @@ extension DatadogCore: DatadogV1CoreProtocol {
             queue: readWriteQueue,
             directories: featureDirectories,
             dateProvider: dateProvider,
-            consentProvider: consentProvider,
             performance: performance,
             encryption: encryption
         )
@@ -359,6 +366,10 @@ extension DatadogCore: DatadogV1CoreProtocol {
             httpClient: httpClient,
             performance: performance
         )
+
+        // If there is any persisted data recorded with `.pending` consent,
+        // it should be deleted on Feature startup:
+        storage.clearUnauthorizedData()
 
         return Feature(
             storage: storage,
@@ -381,19 +392,19 @@ internal protocol V1Feature {
     var messageReceiver: FeatureMessageReceiver { get }
 }
 
-/// This Scope complies with `V1FeatureScope` to provide context and writer to
-/// v1 Features.
-///
-/// The execution block is currently running in `sync`, this will change once the
-/// context is provided on it's own queue.
 internal struct DatadogCoreFeatureScope: FeatureScope {
     let contextProvider: DatadogContextProvider
     let storage: FeatureStorage
 
     func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void) {
+        // On user thread: request SDK context.
         contextProvider.read { context in
+            // On context thread: request writer for current tracking consent.
+            let writer = storage.writer(for: bypassConsent ? .granted : context.trackingConsent)
+
+            // Still on context thread: send `Writer` to EWC caller. The writer implements `AsyncWriter`, so
+            // the implementation of `writer.write(value:)` will run asynchronously without blocking the context thread.
             do {
-                let writer = bypassConsent ? storage.arbitraryAuthorizedWriter : storage.writer
                 try block(context, writer)
             } catch {
                 DD.telemetry.error("Failed to execute feature scope", error: error)

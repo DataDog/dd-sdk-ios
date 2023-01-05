@@ -17,9 +17,3 @@ internal protocol Reader {
     func readNextBatch() -> Batch?
     func markBatchAsRead(_ batch: Batch)
 }
-
-/// Reader performing reads synchronously on a given queue.
-internal protocol SyncReader: Reader {
-    /// Queue used for synchronous reads.
-    var queue: DispatchQueue { get }
-}
