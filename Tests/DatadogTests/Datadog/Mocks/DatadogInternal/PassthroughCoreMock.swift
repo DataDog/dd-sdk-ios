@@ -13,7 +13,7 @@ import XCTest
 ///
 /// The `DatadogCoreProtocol` implementation does not require any feature registration,
 /// it will always provide a `FeatureScope` with the current context and a `writer` that will
-/// store all events in the `events` property..
+/// store all events in the `events` property.
 internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     /// Current context that will be passed to feature-scopes.
     @ReadWriteLock
@@ -68,6 +68,10 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     func register<T>(feature instance: T?) { }
     /// Returns `nil`
     func feature<T>(_ type: T.Type) -> T? { nil }
+    /// no-op
+    func flush() { }
+    /// no-op
+    func flushAndTearDown() { }
 
     /// Always returns a feature-scope.
     func scope<T>(for featureType: T.Type) -> FeatureScope? {
@@ -83,8 +87,8 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
         context.featuresAttributes[feature] = attributes()
     }
 
-    func send(message: FeatureMessage, else fallback: () -> Void) {
-        if !messageReceiver.receive(message: message, from: self) {
+    func send(message: FeatureMessage, sender: DatadogCoreProtocol, else fallback: () -> Void) {
+        if !messageReceiver.receive(message: message, from: sender) {
             fallback()
         }
     }

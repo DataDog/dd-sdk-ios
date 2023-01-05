@@ -88,10 +88,10 @@ internal struct FeatureStorage {
         }
     }
 
-    func setIgnoreFilesAgeWhenReading() {
+    func setIgnoreFilesAgeWhenReading(to value: Bool) {
         queue.sync {
-            authorizedFilesOrchestrator.ignoreFilesAgeWhenReading = true
-            unauthorizedFilesOrchestrator.ignoreFilesAgeWhenReading = true
+            authorizedFilesOrchestrator.ignoreFilesAgeWhenReading = value
+            unauthorizedFilesOrchestrator.ignoreFilesAgeWhenReading = value
         }
     }
 }

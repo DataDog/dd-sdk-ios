@@ -63,7 +63,8 @@ internal final class DatadogCore {
     private var messageBus: [String: FeatureMessageReceiver] = [:]
 
     /// Registry for Features.
-    private var features: [String: (
+    @ReadWriteLock
+    private var v2Features: [String: (
         feature: DatadogFeature,
         storage: FeatureStorage,
         upload: FeatureUpload
@@ -167,6 +168,11 @@ internal final class DatadogCore {
         consentPublisher.consent = trackingConsent
     }
 
+    /// Clears all data that has not already yet been uploaded Datadog servers.
+    func clearAllData() {
+        allStorages.forEach { $0.clearAllData() }
+    }
+
     /// Adds a message receiver to the bus.
     ///
     /// After being added to the bus, the core will send the current context to receiver.
@@ -186,6 +192,17 @@ internal final class DatadogCore {
         let v1Storages = v1Features.values.compactMap { $0 as? V1Feature }.map { $0.storage }
         let v2Storages = v2Features.values.map { $0.storage }
         return v1Storages + v2Storages
+    }
+
+    /// A list of upload units of currently registered Features.
+    private var allUploads: [FeatureUpload] {
+        let v1Uploads = [
+            feature(LoggingFeature.self)?.upload,
+            feature(TracingFeature.self)?.upload,
+            feature(RUMFeature.self)?.upload,
+        ].compactMap { $0 }
+        let v2Uploads = v2Features.values.map { $0.upload }
+        return v1Uploads + v2Uploads
     }
 }
 
@@ -220,7 +237,7 @@ extension DatadogCore: DatadogCoreProtocol {
             performance: performance
         )
 
-        features[feature.name] = (
+        v2Features[feature.name] = (
             feature: feature,
             storage: storage,
             upload: upload
@@ -245,7 +262,7 @@ extension DatadogCore: DatadogCoreProtocol {
     ///   - type: The Feature instance type.
     /// - Returns: The Feature if any.
     /* public */ func feature<T>(named name: String, type: T.Type = T.self) -> T? where T: DatadogFeature {
-        features[name]?.feature as? T
+        v2Features[name]?.feature as? T
     }
 
     /// Registers a Feature Integration instance.
@@ -277,7 +294,7 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 
     /* public */ func scope(for feature: String) -> FeatureScope? {
-        guard let storage = features[feature]?.storage else {
+        guard let storage = v2Features[feature]?.storage else {
             return nil
         }
 
@@ -291,16 +308,53 @@ extension DatadogCore: DatadogCoreProtocol {
         contextProvider.write { $0.featuresAttributes[feature] = attributes() }
     }
 
-    /* public */ func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
+    /* public */ func send(message: FeatureMessage, sender: DatadogCoreProtocol, else fallback: @escaping () -> Void) {
         messageBusQueue.async {
             let receivers = self.messageBus.values.filter {
-                $0.receive(message: message, from: self)
+                $0.receive(message: message, from: sender)
             }
 
             if receivers.isEmpty {
                 fallback()
             }
         }
+    }
+
+    /* public */ func flush() {
+        // The order of flushing below must be considered cautiously and
+        // follow our design choices around SDK core's threading.
+
+        // First, flush bus queue - because messages can lead to obtaining "event write context" (reading
+        // context & performing write) in other Features:
+        messageBusQueue.flush(numberOfTimes: 5) // 5 is arbitrary limit (we don't expect longer chains)
+
+        // Next, flush context queue - because it indicates the entry point to "event write context" and
+        // actual writes dispatched from it:
+        contextProvider.queue.flush(numberOfTimes: 5)
+
+        // Last, flush read-write queue - it always comes last, no matter if the write operation is dispatched
+        // from "event write context" started on user thread OR if it happens upon receiving an "event" message
+        // in other Feature:
+        readWriteQueue.flush(numberOfTimes: 5)
+
+        // At this point we can assume that all write operations completed and resulted with writing events to
+        // storage. We now temporarily authorize storage for making all files readable ("uploadable") and perform
+        // arbitrary uploads (without retrying on failure).
+        allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: true) }
+        allUploads.forEach { $0.flushAndTearDown() }
+        allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: false) }
+    }
+
+    /* public */ func flushAndTearDown() {
+        flush()
+
+        // Deinitialize arbitrary V1 Features:
+        feature(RUMInstrumentation.self)?.deinitialize()
+        feature(URLSessionAutoInstrumentation.self)?.deinitialize()
+
+        // Deallocate all Features and their storage & upload units:
+        v1Features = [:]
+        v2Features = [:]
     }
 }
 

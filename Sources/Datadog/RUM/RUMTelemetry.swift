@@ -18,7 +18,7 @@ internal typealias RUMTelemetryDelayedDispatcher = (@escaping () -> Void) -> Voi
 /// configured at initialisation. Duplicates are discared.
 internal final class RUMTelemetry: Telemetry {
     /// Maximium number of telemetry events allowed per user sessions.
-    static let MaxEventsPerSessions: Int = 100
+    static let maxEventsPerSessions: Int = 100
 
     let core: DatadogCoreProtocol
     let dateProvider: DateProvider
@@ -27,16 +27,12 @@ internal final class RUMTelemetry: Telemetry {
     let sampler: Sampler
 
     /// Keeps track of current session
+    @ReadWriteLock
     private var currentSessionID: String?
 
     /// Keeps track of event's ids recorded during a user session.
+    @ReadWriteLock
     private var eventIDs: Set<String> = []
-
-    /// Queue for processing RUM Telemetry
-    private let queue = DispatchQueue(
-        label: "com.datadoghq.rum-telemetry",
-        target: .global(qos: .utility)
-    )
 
     /// Creates a RUM Telemetry instance.
     ///
@@ -201,17 +197,15 @@ internal final class RUMTelemetry: Telemetry {
             let attributes = context.featuresAttributes["rum"]
             let sessionId = attributes?[RUMContextAttributes.sessionID, type: String.self]
 
-            self.queue.async {
-                if sessionId != self.currentSessionID {
-                    self.currentSessionID = sessionId
-                    self.eventIDs = []
-                }
+            if sessionId != self.currentSessionID {
+                self.currentSessionID = sessionId
+                self.eventIDs = []
+            }
 
-                // record up de `MaxEventsPerSessions`, discard duplicates
-                if self.eventIDs.count < RUMTelemetry.MaxEventsPerSessions, !self.eventIDs.contains(id) {
-                    self.eventIDs.insert(id)
-                    operation(context, writer)
-                }
+            // record up to `maxEventsPerSessions`, discard duplicates
+            if self.eventIDs.count < RUMTelemetry.maxEventsPerSessions, !self.eventIDs.contains(id) {
+                self.eventIDs.insert(id)
+                operation(context, writer)
             }
         }
     }
