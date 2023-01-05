@@ -596,8 +596,8 @@
 		D20605CB2875A83F0047275C /* ContextValueReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605C62875A77D0047275C /* ContextValueReader.swift */; };
 		D20605CD28770C3B0047275C /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605CC28770C3B0047275C /* AppState.swift */; };
 		D20605CE28770C3B0047275C /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605CC28770C3B0047275C /* AppState.swift */; };
-		D2079DC8294C91DE00C4D25E /* ConcurrencyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2079DC7294C91DE00C4D25E /* ConcurrencyTests.swift */; };
-		D2079DC9294C91DE00C4D25E /* ConcurrencyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2079DC7294C91DE00C4D25E /* ConcurrencyTests.swift */; };
+		D2079DC8294C91DE00C4D25E /* ReadWriteLockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2079DC7294C91DE00C4D25E /* ReadWriteLockTests.swift */; };
+		D2079DC9294C91DE00C4D25E /* ReadWriteLockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2079DC7294C91DE00C4D25E /* ReadWriteLockTests.swift */; };
 		D2135330270CA722000315AD /* DataCompressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D213532F270CA722000315AD /* DataCompressionTests.swift */; };
 		D21C26C528A3B49C005DD405 /* FeatureStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26C428A3B49C005DD405 /* FeatureStorage.swift */; };
 		D21C26C628A3B49C005DD405 /* FeatureStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26C428A3B49C005DD405 /* FeatureStorage.swift */; };
@@ -1864,7 +1864,7 @@
 		D20605BB28757BFB0047275C /* KronosClockMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KronosClockMock.swift; sourceTree = "<group>"; };
 		D20605C62875A77D0047275C /* ContextValueReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextValueReader.swift; sourceTree = "<group>"; };
 		D20605CC28770C3B0047275C /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
-		D2079DC7294C91DE00C4D25E /* ConcurrencyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConcurrencyTests.swift; sourceTree = "<group>"; };
+		D2079DC7294C91DE00C4D25E /* ReadWriteLockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadWriteLockTests.swift; sourceTree = "<group>"; };
 		D213532F270CA722000315AD /* DataCompressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCompressionTests.swift; sourceTree = "<group>"; };
 		D21C26C428A3B49C005DD405 /* FeatureStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureStorage.swift; sourceTree = "<group>"; };
 		D21C26C928A406A3005DD405 /* DatadogFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogFeature.swift; sourceTree = "<group>"; };
@@ -4346,7 +4346,7 @@
 				D2CBC25C294215BE00134409 /* Codable */,
 				D2956CAF2869D520007D5462 /* Context */,
 				D29294E5291D65EA00F8EFF9 /* _InternalProxyTests.swift */,
-				D2079DC7294C91DE00C4D25E /* ConcurrencyTests.swift */,
+				D2079DC7294C91DE00C4D25E /* ReadWriteLockTests.swift */,
 			);
 			path = DatadogInternal;
 			sourceTree = "<group>";
@@ -5583,7 +5583,7 @@
 				61133C5A2423990D00786299 /* FileTests.swift in Sources */,
 				61AD4E3A24534075006E34EA /* TracingFeatureTests.swift in Sources */,
 				613C6B922768FF3100870CBF /* SamplerTests.swift in Sources */,
-				D2079DC8294C91DE00C4D25E /* ConcurrencyTests.swift in Sources */,
+				D2079DC8294C91DE00C4D25E /* ReadWriteLockTests.swift in Sources */,
 				61133C6B2423990D00786299 /* LogMatcher.swift in Sources */,
 				D2135330270CA722000315AD /* DataCompressionTests.swift in Sources */,
 				61DB33B225DEDFC200F7EA71 /* CustomObjcViewController.m in Sources */,
@@ -6311,7 +6311,7 @@
 				D2CB6F1027C520D400A62B57 /* DDNSURLSessionDelegateTests.swift in Sources */,
 				D2CB6F1127C520D400A62B57 /* CrashReportingWithRUMIntegrationTests.swift in Sources */,
 				D2CB6F1227C520D400A62B57 /* LoggerBuilderTests.swift in Sources */,
-				D2079DC9294C91DE00C4D25E /* ConcurrencyTests.swift in Sources */,
+				D2079DC9294C91DE00C4D25E /* ReadWriteLockTests.swift in Sources */,
 				D2CB6F1327C520D400A62B57 /* DDConfigurationTests.swift in Sources */,
 				D2CB6F1427C520D400A62B57 /* UUID.swift in Sources */,
 				D2CB6F1527C520D400A62B57 /* URLSessionRUMResourcesHandlerTests.swift in Sources */,
