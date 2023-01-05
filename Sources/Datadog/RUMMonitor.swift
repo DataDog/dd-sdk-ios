@@ -132,8 +132,6 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     internal let core: DatadogCoreProtocol
     /// The root scope of RUM monitoring.
     internal let applicationScope: RUMApplicationScope
-    /// Current RUM context provider for integrations with Logging and Tracing.
-    internal let contextProvider: RUMCurrentContext
     /// Time provider.
     internal let dateProvider: DateProvider
     /// Attributes associated with every command.
@@ -192,10 +190,6 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         self.core = core
         self.applicationScope = RUMApplicationScope(dependencies: dependencies)
         self.dateProvider = dateProvider
-        self.contextProvider = RUMCurrentContext(
-            applicationScope: applicationScope,
-            queue: queue
-        )
 
         super.init()
 
