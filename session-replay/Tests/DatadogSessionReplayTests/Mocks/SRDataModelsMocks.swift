@@ -1089,21 +1089,19 @@ internal extension SRRecord {
         default: return nil
         }
     }
-
-    var viewportResizeData: SRIncrementalSnapshotRecord.Data.ViewportResizeData? {
-        if case let .incrementalSnapshotRecord(value: value) = self {
-            if case let .viewportResizeData(value: data) = value.data {
-                return data
-            }
-        }
-        return nil
-    }
 }
 
 extension SRIncrementalSnapshotRecord {
     var pointerInteractionData: SRIncrementalSnapshotRecord.Data.PointerInteractionData? {
         switch data {
         case .pointerInteractionData(let value): return value
+        default: return nil
+        }
+    }
+
+    var viewportResizeData: SRIncrementalSnapshotRecord.Data.ViewportResizeData? {
+        switch data {
+        case .viewportResizeData(let value): return value
         default: return nil
         }
     }

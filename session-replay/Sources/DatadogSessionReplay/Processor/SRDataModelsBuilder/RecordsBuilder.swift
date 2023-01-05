@@ -114,25 +114,22 @@ internal class RecordsBuilder {
         from snapshot: ViewTreeSnapshot,
         lastSnapshot: ViewTreeSnapshot
     ) -> SRRecord? {
-        let record: SRRecord?
         let lastSize = lastSnapshot.root.viewAttributes.frame.size
         let currentSize = snapshot.root.viewAttributes.frame.size
-        if lastSize.aspectRatio != currentSize.aspectRatio {
-            record = .incrementalSnapshotRecord(
-                value: SRIncrementalSnapshotRecord(
-                    data: .viewportResizeData(
-                        value: .init(
-                            height: Int64(withNoOverflow: currentSize.height),
-                            width: Int64(withNoOverflow: currentSize.width)
-                        )
-                    ),
-                    timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
-                )
-            )
-        } else {
-            record = nil
+        guard lastSize.aspectRatio != currentSize.aspectRatio else {
+            return nil
         }
-        return record
+        return .incrementalSnapshotRecord(
+            value: SRIncrementalSnapshotRecord(
+                data: .viewportResizeData(
+                    value: .init(
+                        height: Int64(withNoOverflow: currentSize.height),
+                        width: Int64(withNoOverflow: currentSize.width)
+                    )
+                ),
+                timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
+            )
+        )
     }
 
     // TODO: RUMM-2250 Bring other types of records
