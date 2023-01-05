@@ -8,7 +8,7 @@ import XCTest
 @testable import Datadog
 
 class URLSessionInterceptorTests: XCTestCase {
-    private var core: DatadogCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
+    private var core: PassthroughCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
 
     private let handler = URLSessionInterceptionHandlerMock()
     /// Mock request made to a first party URL.
@@ -22,12 +22,12 @@ class URLSessionInterceptorTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        core = DatadogCoreMock()
-        core.register(feature: TracingFeature.mockByRecordingSpanMatchers())
+        core = PassthroughCoreMock()
+        core.register(feature: TracingFeature.mockWith())
     }
 
     override func tearDown() {
-        core.flush()
+        core.flushAndTearDown()
         core = nil
         super.tearDown()
     }

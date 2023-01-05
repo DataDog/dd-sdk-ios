@@ -8,20 +8,25 @@ import XCTest
 @testable import Datadog
 
 class RUMTelemetryTests: XCTestCase {
-    let core = DatadogCoreMock(context: .mockWith(
-        version: .mockRandom(),
-        source: .mockAnySource(),
-        sdkVersion: .mockRandom()
-    ))
+    private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
+        core = DatadogCoreProxy(
+            context: .mockWith(
+                version: .mockRandom(),
+                source: .mockAnySource(),
+                sdkVersion: .mockRandom()
+            )
+        )
+
+        let rum: RUMFeature = .mockAny()
         core.register(feature: rum)
     }
 
     override func tearDown() {
-        core.flush()
+        core.flushAndTearDown()
+        core = nil
         super.tearDown()
     }
 
@@ -40,7 +45,7 @@ class RUMTelemetryTests: XCTestCase {
         telemetry.debug("Hello world!")
 
         // Then
-        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 1)
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         try rumEventMatchers.lastRUMEvent(ofType: TelemetryDebugEvent.self).model(ofType: TelemetryDebugEvent.self) { event in
             XCTAssertEqual(event.date, 0)
             XCTAssertEqual(event.version, core.context.sdkVersion)
@@ -63,7 +68,7 @@ class RUMTelemetryTests: XCTestCase {
         telemetry.error("Oops", kind: "OutOfMemory", stack: "a\nhay\nneedle\nstack")
 
         // Then
-        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 1)
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         try rumEventMatchers.lastRUMEvent(ofType: TelemetryErrorEvent.self).model(ofType: TelemetryErrorEvent.self) { event in
             XCTAssertEqual(event.date, 0)
             XCTAssertEqual(event.version, core.context.sdkVersion)
@@ -94,7 +99,7 @@ class RUMTelemetryTests: XCTestCase {
         telemetry.debug("telemetry debug")
 
         // Then
-        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 1)
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         try rumEventMatchers.lastRUMEvent(ofType: TelemetryDebugEvent.self).model(ofType: TelemetryDebugEvent.self) { event in
             XCTAssertEqual(event.telemetry.message, "telemetry debug")
             XCTAssertEqual(event.application?.id, applicationId)
@@ -123,7 +128,7 @@ class RUMTelemetryTests: XCTestCase {
         telemetry.error("telemetry error")
 
         // Then
-        let rumEventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 1)
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         try rumEventMatchers.lastRUMEvent(ofType: TelemetryErrorEvent.self).model(ofType: TelemetryErrorEvent.self) { event in
             XCTAssertEqual(event.telemetry.message, "telemetry error")
             XCTAssertEqual(event.application?.id, applicationId)
@@ -215,7 +220,7 @@ class RUMTelemetryTests: XCTestCase {
         telemetry.debug("telemetry debug 11")
 
         // Then
-        let events = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 10).compactMap(TelemetryDebugEvent.self)
+        let events = try core.waitAndReturnRUMEventMatchers().compactMap(TelemetryDebugEvent.self)
         XCTAssertEqual(events.count, 10)
         XCTAssertEqual(events[0].telemetry.message, "telemetry debug 0")
         XCTAssertEqual(events[1].telemetry.message, "telemetry debug 3")
@@ -230,12 +235,12 @@ class RUMTelemetryTests: XCTestCase {
 
         // When
         // sends 101 telemetry events
-        for index in 0...RUMTelemetry.MaxEventsPerSessions {
+        for index in 0...RUMTelemetry.maxEventsPerSessions {
             telemetry.debug(id: "\(index)", message: "telemetry debug")
         }
 
         // Then
-        let eventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 100)
+        let eventMatchers = try core.waitAndReturnRUMEventMatchers()
         let events = try eventMatchers.compactMap(TelemetryDebugEvent.self)
         XCTAssertEqual(events.count, 100)
     }
@@ -251,7 +256,7 @@ class RUMTelemetryTests: XCTestCase {
         }
 
         // Then
-        let eventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 0)
+        let eventMatchers = try core.waitAndReturnRUMEventMatchers()
         let events = try eventMatchers.compactMap(TelemetryDebugEvent.self)
         XCTAssertEqual(events.count, 0)
     }
@@ -277,7 +282,7 @@ class RUMTelemetryTests: XCTestCase {
         telemetry.debug(id: "0", message: "telemetry debug")
 
         // Then
-        let eventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 2)
+        let eventMatchers = try core.waitAndReturnRUMEventMatchers()
         let events = try eventMatchers.compactMap(TelemetryDebugEvent.self)
         XCTAssertEqual(events.count, 2)
     }
@@ -297,14 +302,14 @@ class RUMTelemetryTests: XCTestCase {
         telemetry.configuration(configuration: .mockAny())
 
         // Then immediately
-        var eventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 0)
+        var eventMatchers = try core.waitAndReturnRUMEventMatchers()
         var events = try eventMatchers.compactMap(TelemetryConfigurationEvent.self)
         XCTAssertEqual(events.count, 0)
 
         // Then later
         delayedDispatch?()
 
-        eventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 1)
+        eventMatchers = try core.waitAndReturnRUMEventMatchers()
         events = try eventMatchers.compactMap(TelemetryConfigurationEvent.self)
         XCTAssertEqual(events.count, 1)
     }
@@ -312,14 +317,10 @@ class RUMTelemetryTests: XCTestCase {
     func testSendTelemetry_callsTelemetryMapperBeforeSend() throws {
         // Given
         var delayedDispatch: (() -> Void)?
-        var mapperCalled = false
         let modifiedEvent = TelemetryConfigurationEvent.mockRandom()
         let telemetry: RUMTelemetry = .mockWith(
             core: core,
-            configurationEventMapper: { event in
-                mapperCalled = true
-                return modifiedEvent
-            },
+            configurationEventMapper: { event in modifiedEvent },
             delayedDispatcher: { block in delayedDispatch = block },
             sampler: .mockKeepAll()
         )
@@ -328,17 +329,15 @@ class RUMTelemetryTests: XCTestCase {
         telemetry.configuration(configuration: .mockAny())
 
         // Then immediately
-        var eventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 0)
+        var eventMatchers = try core.waitAndReturnRUMEventMatchers()
         var events = try eventMatchers.compactMap(TelemetryConfigurationEvent.self)
-        XCTAssertFalse(mapperCalled)
         XCTAssertEqual(events.count, 0)
 
         // Then later
         delayedDispatch?()
 
-        eventMatchers = try RUMFeature.waitAndReturnRUMEventMatchers(in: core, count: 1)
+        eventMatchers = try core.waitAndReturnRUMEventMatchers()
         events = try eventMatchers.compactMap(TelemetryConfigurationEvent.self)
-        XCTAssertTrue(mapperCalled)
         XCTAssertEqual(events.count, 1)
         XCTAssertEqual(events[0], modifiedEvent)
     }
@@ -353,6 +352,7 @@ class RUMTelemetryTests: XCTestCase {
             closures: [
                 { telemetry.debug(id: .mockRandom(), message: "telemetry debug") },
                 { telemetry.error(id: .mockRandom(), message: "telemetry error", kind: nil, stack: nil) },
+                { telemetry.configuration(configuration: .mockAny()) },
                 {
                     self.core.set(feature: "rum", attributes: {[
                         RUMContextAttributes.applicationID: String.mockRandom(),

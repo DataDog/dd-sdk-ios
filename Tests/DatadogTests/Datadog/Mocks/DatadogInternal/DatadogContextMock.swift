@@ -71,7 +71,7 @@ extension DatadogContext: AnyMockable {
             env: .mockRandom(),
             version: .mockRandom(),
             variant: .mockRandom(),
-            source: .mockRandom(),
+            source: .mockAnySource(),
             sdkVersion: .mockRandom(),
             ciAppOrigin: .mockRandom(),
             serverTimeOffset: .mockRandomInThePast(),

@@ -68,6 +68,7 @@ class RUMFeatureTests: XCTestCase {
             ),
             applicationVersion: randomApplicationVersion
         )
+        defer { core.flushAndTearDown() }
 
         // Given
         let featureConfiguration: RUMFeature.Configuration = .mockWith(uploadURL: randomUploadURL)
@@ -75,7 +76,6 @@ class RUMFeatureTests: XCTestCase {
             configuration: createRUMConfiguration(intake: randomUploadURL),
             featureSpecificConfiguration: featureConfiguration
         )
-        defer { feature.flush() }
         core.register(feature: feature)
 
         // When
@@ -144,6 +144,7 @@ class RUMFeatureTests: XCTestCase {
             ),
             applicationVersion: .mockAny()
         )
+        defer { core.flushAndTearDown() }
 
         // Given
         let featureConfiguration: RUMFeature.Configuration = .mockAny()
@@ -151,7 +152,6 @@ class RUMFeatureTests: XCTestCase {
             configuration: createRUMConfiguration(intake: featureConfiguration.uploadURL),
             featureSpecificConfiguration: featureConfiguration
         )
-        defer { feature.flush() }
         core.register(feature: feature)
 
         // When
@@ -199,6 +199,7 @@ class RUMFeatureTests: XCTestCase {
             contextProvider: .mockAny(),
             applicationVersion: .mockAny()
         )
+        defer { core.flushAndTearDown() }
 
         // Given
         let featureConfiguration: RUMFeature.Configuration = .mockAny()
@@ -206,7 +207,6 @@ class RUMFeatureTests: XCTestCase {
             configuration: createRUMConfiguration(intake: featureConfiguration.uploadURL),
             featureSpecificConfiguration: featureConfiguration
         )
-        defer { feature.flush() }
         core.register(feature: feature)
 
         let writer = feature.storage.writer(for: .granted)

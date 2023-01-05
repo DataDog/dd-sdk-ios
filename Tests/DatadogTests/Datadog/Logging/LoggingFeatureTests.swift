@@ -64,6 +64,7 @@ class LoggingFeatureTests: XCTestCase {
             ),
             applicationVersion: randomApplicationVersion
         )
+        defer { core.flushAndTearDown() }
 
         // Given
         let featureConfiguration: LoggingFeature.Configuration = .mockWith(uploadURL: randomUploadURL)
@@ -71,7 +72,6 @@ class LoggingFeatureTests: XCTestCase {
             configuration: createLoggingConfiguration(intake: randomUploadURL, logEventMapper: nil),
             featureSpecificConfiguration: featureConfiguration
         )
-        defer { feature.flush() }
         core.register(feature: feature)
 
         // When
@@ -131,6 +131,7 @@ class LoggingFeatureTests: XCTestCase {
             contextProvider: .mockAny(),
             applicationVersion: .mockAny()
         )
+        defer { core.flushAndTearDown() }
 
         // Given
         let featureConfiguration: LoggingFeature.Configuration = .mockAny()
@@ -138,7 +139,6 @@ class LoggingFeatureTests: XCTestCase {
             configuration: createLoggingConfiguration(intake: featureConfiguration.uploadURL, logEventMapper: nil),
             featureSpecificConfiguration: featureConfiguration
         )
-        defer { feature.flush() }
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)

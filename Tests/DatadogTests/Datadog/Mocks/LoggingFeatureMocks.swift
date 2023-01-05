@@ -7,54 +7,27 @@
 @testable import Datadog
 
 extension LoggingFeature {
-    /// Mocks the feature instance which performs no writes and no uploads.
-    static func mockNoOp(configuration: FeaturesConfiguration.Logging = .mockAny()) -> LoggingFeature {
-        return LoggingFeature(
-            storage: .mockNoOp(),
-            upload: .mockNoOp(),
-            configuration: configuration,
-            messageReceiver: NOPFeatureMessageReceiver()
-        )
-    }
+    /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
+    static func mockAny() -> LoggingFeature { .mockWith() }
 
-    /// Mocks the feature instance which performs writes to `InMemoryWriter`.
-    /// Use `LogFeature.waitAndReturnLogMatchers()` to inspect and assert recorded `Logs`.
-    static func mockByRecordingLogMatchers(
+    /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
+    static func mockWith(
         configuration: FeaturesConfiguration.Logging = .mockAny(),
         messageReceiver: FeatureMessageReceiver = LoggingMessageReceiver(logEventMapper: nil)
     ) -> LoggingFeature {
-        // Mock storage with `InMemoryWriter`, used later for retrieving recorded events back:
-        let interceptedStorage = FeatureStorage(
-            writer: InMemoryWriter(),
-            reader: NoOpFileReader(),
-            arbitraryAuthorizedWriter: NoOpFileWriter(),
-            dataOrchestrator: NoOpDataOrchestrator()
-        )
         return LoggingFeature(
-            storage: interceptedStorage,
+            storage: .mockNoOp(),
             upload: .mockNoOp(),
             configuration: configuration,
             messageReceiver: messageReceiver
         )
     }
+}
 
-    // MARK: - Expecting Logs Data
-
-    func waitAndReturnLogMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
-        guard let inMemoryWriter = storage.writer as? InMemoryWriter else {
-            preconditionFailure("Retrieving matchers requires that feature is mocked with `.mockByRecordingLogMatchers()`")
-        }
-        return try inMemoryWriter.waitAndReturnEventsData(count: count, file: file, line: line)
-            .map { eventData in try LogMatcher.fromJSONObjectData(eventData) }
-    }
-
-    // swiftlint:disable:next function_default_parameter_at_end
-    static func waitAndReturnLogMatchers(in core: DatadogCoreProtocol = defaultDatadogCore, count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
-        guard let logging = core.v1.feature(LoggingFeature.self) else {
-            preconditionFailure("LoggingFeature is not registered in core")
-        }
-
-        return try logging.waitAndReturnLogMatchers(count: count, file: file, line: line)
+extension DatadogCoreProxy {
+    func waitAndReturnLogMatchers(file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
+        return try waitAndReturnEventsData(of: LoggingFeature.self)
+            .map { data in try LogMatcher.fromJSONObjectData(data) }
     }
 }
 
