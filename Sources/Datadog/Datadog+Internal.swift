@@ -56,4 +56,44 @@ extension DatadogExtension where ExtendedType: Datadog.Configuration.Builder {
         type.configuration.logEventMapper = mapper
         return type
     }
+
+    /// Sets a custom async  mapper for `RUMViewEvent`. This can be used to modify view events before they are sent to Datadog.
+    ///
+    /// - Parameter mapper: the mapper
+    public func setRUMViewEventMapper(_ mapper: RUMViewEventMapper) -> ExtendedType {
+        type.configuration.rumViewEventMapper = mapper
+        return type
+    }
+
+    /// Sets a custom async  mapper for `RUMResourceEvent`. This can be used to modify view events before they are sent to Datadog.
+    ///
+    /// - Parameter mapper: the mapper
+    public func setRUMResourceEventMapper(_ mapper: RUMResourceEventMapper) -> ExtendedType {
+        type.configuration.rumResourceEventMapper = mapper
+        return type
+    }
+
+    /// Sets a custom async  mapper for `RUMActionEvent`. This can be used to modify view events before they are sent to Datadog.
+    ///
+    /// - Parameter mapper: the mapper
+    public func setRUMActionEventMapper(_ mapper: RUMActionEventMapper) -> ExtendedType {
+        type.configuration.rumActionEventMapper = mapper
+        return type
+    }
+
+    /// Sets a custom async  mapper for `RUMErrorEvent`. This can be used to modify view events before they are sent to Datadog.
+    ///
+    /// - Parameter mapper: the mapper
+    public func setRUMErrorEventMapper(_ mapper: RUMErrorEventMapper) -> ExtendedType {
+        type.configuration.rumErrorEventMapper = mapper
+        return type
+    }
+
+    /// Sets a custom async  mapper for `RUMLongTaskEvent`. This can be used to modify view events before they are sent to Datadog.
+    ///
+    /// - Parameter mapper: the mapper
+    public func setRUMLongTaskEventMapper(_ mapper: RUMLongTaskEventMapper) -> ExtendedType {
+        type.configuration.rumLongTaskEventMapper = mapper
+        return type
+    }
 }

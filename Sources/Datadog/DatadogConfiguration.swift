@@ -272,11 +272,11 @@ extension Datadog {
         private(set) var rumUIKitViewsPredicate: UIKitRUMViewsPredicate?
         private(set) var rumUIKitUserActionsPredicate: UIKitRUMUserActionsPredicate?
         private(set) var rumLongTaskDurationThreshold: TimeInterval?
-        private(set) var rumViewEventMapper: RUMViewEventMapper?
-        private(set) var rumResourceEventMapper: RUMResourceEventMapper?
-        private(set) var rumActionEventMapper: RUMActionEventMapper?
-        private(set) var rumErrorEventMapper: RUMErrorEventMapper?
-        private(set) var rumLongTaskEventMapper: RUMLongTaskEventMapper?
+        var rumViewEventMapper: RUMViewEventMapper?
+        var rumResourceEventMapper: RUMResourceEventMapper?
+        var rumActionEventMapper: RUMActionEventMapper?
+        var rumErrorEventMapper: RUMErrorEventMapper?
+        var rumLongTaskEventMapper: RUMLongTaskEventMapper?
         private(set) var rumResourceAttributesProvider: URLSessionRUMAttributesProvider?
         private(set) var rumBackgroundEventTrackingEnabled: Bool
         private(set) var rumFrustrationSignalsTrackingEnabled: Bool

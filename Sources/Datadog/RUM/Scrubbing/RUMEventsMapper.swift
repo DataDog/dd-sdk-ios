@@ -6,11 +6,14 @@
 
 import Foundation
 
-internal protocol RUMViewEventMapper {
+/// A protocol to asynchronously modify `RUMViewEvent`s before they are sent to Datadog.
+///
+/// This protocol is part of the internal interface for Datadog and not meant for public use.
+public protocol RUMViewEventMapper {
     func map(event: RUMViewEvent, callback: @escaping (RUMViewEvent) -> Void)
 }
 
-public class SyncRUMViewEventMapper: RUMViewEventMapper {
+internal class SyncRUMViewEventMapper: RUMViewEventMapper {
     let mapper: (RUMViewEvent) -> RUMViewEvent
 
     init(_ mapper: @escaping (RUMViewEvent) -> RUMViewEvent) {
@@ -22,11 +25,14 @@ public class SyncRUMViewEventMapper: RUMViewEventMapper {
     }
 }
 
-internal protocol RUMErrorEventMapper {
+/// A protocol to asynchronously modify `RUMErrorEvent`s before they are sent to Datadog.
+///
+/// This protocol is part of the internal interface for Datadog and not meant for public use.
+public protocol RUMErrorEventMapper {
     func map(event: RUMErrorEvent, callback: @escaping (RUMErrorEvent?) -> Void)
 }
 
-public class SyncRUMErrorEventMapper: RUMErrorEventMapper {
+internal class SyncRUMErrorEventMapper: RUMErrorEventMapper {
     let mapper: (RUMErrorEvent) -> RUMErrorEvent?
 
     init(_ mapper: @escaping (RUMErrorEvent) -> RUMErrorEvent?) {
@@ -38,11 +44,14 @@ public class SyncRUMErrorEventMapper: RUMErrorEventMapper {
     }
 }
 
-internal protocol RUMResourceEventMapper {
+/// A protocol to asynchronously modify `RUMResourceEvent`s before they are sent to Datadog.
+///
+/// This protocol is part of the internal interface for Datadog and not meant for public use.
+public protocol RUMResourceEventMapper {
     func map(event: RUMResourceEvent, callback: @escaping (RUMResourceEvent?) -> Void)
 }
 
-public class SyncRUMResourceEventMapper: RUMResourceEventMapper {
+internal class SyncRUMResourceEventMapper: RUMResourceEventMapper {
     let mapper: (RUMResourceEvent) -> RUMResourceEvent?
 
     init(_ mapper: @escaping (RUMResourceEvent) -> RUMResourceEvent?) {
@@ -54,11 +63,14 @@ public class SyncRUMResourceEventMapper: RUMResourceEventMapper {
     }
 }
 
-internal protocol RUMActionEventMapper {
+/// A protocol to asynchronously modify `RUMActionEvent`s before they are sent to Datadog.
+///
+/// This protocol is part of the internal interface for Datadog and not meant for public use.
+public protocol RUMActionEventMapper {
     func map(event: RUMActionEvent, callback: @escaping (RUMActionEvent?) -> Void)
 }
 
-public class SyncRUMActionEventMapper: RUMActionEventMapper {
+class SyncRUMActionEventMapper: RUMActionEventMapper {
     let mapper: (RUMActionEvent) -> RUMActionEvent?
 
     init(_ mapper: @escaping (RUMActionEvent) -> RUMActionEvent?) {
@@ -70,11 +82,14 @@ public class SyncRUMActionEventMapper: RUMActionEventMapper {
     }
 }
 
-internal protocol RUMLongTaskEventMapper {
+/// A protocol to asynchronously modify `RUMLongTaskEvent`s before they are sent to Datadog.
+///
+/// This protocol is part of the internal interface for Datadog and not meant for public use.
+public protocol RUMLongTaskEventMapper {
     func map(event: RUMLongTaskEvent, callback: @escaping (RUMLongTaskEvent?) -> Void)
 }
 
-public class SyncRUMLongTaskEventMapper: RUMLongTaskEventMapper {
+internal class SyncRUMLongTaskEventMapper: RUMLongTaskEventMapper {
     let mapper: (RUMLongTaskEvent) -> RUMLongTaskEvent?
 
     init(_ mapper: @escaping (RUMLongTaskEvent) -> RUMLongTaskEvent?) {
