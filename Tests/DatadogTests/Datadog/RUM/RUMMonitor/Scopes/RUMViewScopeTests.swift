@@ -1601,7 +1601,7 @@ class RUMViewScopeTests: XCTestCase {
 
     func testGivenViewScopeWithDependentActionsResourcesErrors_whenDroppingEvents_thenCountsAreAdjusted() throws {
         struct ResourceMapperHolder {
-            var resourceEventMapper: RUMResourceEventMapper?
+            var resourceEventMapper: ((RUMResourceEvent) -> RUMResourceEvent?)?
         }
         var resourceMapperHolder = ResourceMapperHolder()
 
@@ -1611,15 +1611,15 @@ class RUMViewScopeTests: XCTestCase {
         // - discards `RUMResourceEvent` from `RUMStartResourceCommand` /resource/1
         let eventBuilder = RUMEventBuilder(
             eventsMapper: .mockWith(
-                errorEventMapper: { event in
+                errorEventMapper: SyncRUMErrorEventMapper({ event in
                     nil
-                },
-                resourceEventMapper: {
+                }),
+                resourceEventMapper: SyncRUMResourceEventMapper({
                     resourceMapperHolder.resourceEventMapper?($0)
-                },
-                actionEventMapper: { event in
+                }),
+                actionEventMapper: SyncRUMActionEventMapper({ event in
                     event.action.type == .applicationStart ? event : nil
-                }
+                })
             )
         )
         let dependencies: RUMScopeDependencies = .mockWith(
@@ -1721,9 +1721,9 @@ class RUMViewScopeTests: XCTestCase {
     func testGivenViewScopeWithDroppingEventsMapper_whenProcessingApplicationStartAction_thenCountIsAdjusted() throws {
         let eventBuilder = RUMEventBuilder(
             eventsMapper: .mockWith(
-                actionEventMapper: { event in
+                actionEventMapper: SyncRUMActionEventMapper({ event in
                     nil
-                }
+                })
             )
         )
         let dependencies: RUMScopeDependencies = .mockWith(

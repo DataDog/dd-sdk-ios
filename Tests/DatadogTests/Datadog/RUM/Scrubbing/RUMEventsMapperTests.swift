@@ -28,35 +28,79 @@ class RUMEventsMapperTests: XCTestCase {
 
         // Given
         let mapper = RUMEventsMapper(
-            viewEventMapper: { viewEvent in
+            viewEventMapper: SyncRUMViewEventMapper({ viewEvent in
                 XCTAssertEqual(viewEvent, originalViewEvent, "Mapper should be called with the original event.")
                 return modifiedViewEvent
-            },
-            errorEventMapper: { errorEvent in
+            }),
+            errorEventMapper: SyncRUMErrorEventMapper({ errorEvent in
                 XCTAssertEqual(errorEvent, originalErrorEvent, "Mapper should be called with the original event.")
                 return modifiedErrorEvent
-            },
-            resourceEventMapper: { resourceEvent in
+            }),
+            resourceEventMapper: SyncRUMResourceEventMapper({ resourceEvent in
                 XCTAssertEqual(resourceEvent, originalResourceEvent, "Mapper should be called with the original event.")
                 return modifiedResourceEvent
-            },
-            actionEventMapper: { actionEvent in
+            }),
+            actionEventMapper: SyncRUMActionEventMapper({ actionEvent in
                 XCTAssertEqual(actionEvent, originalActionEvent, "Mapper should be called with the original event.")
                 return modifiedActionEvent
-            },
-            longTaskEventMapper: { longTaskEvent in
+            }),
+            longTaskEventMapper: SyncRUMLongTaskEventMapper({ longTaskEvent in
                 XCTAssertEqual(longTaskEvent, originalLongTaskEvent, "Mapper should be called with the original event.")
                 return modifiedLongTaskEvent
-            }
+            })
         )
 
         // When
-        let mappedViewEvent = mapper.map(event: originalViewEvent)
-        let mappedErrorEvent = mapper.map(event: originalErrorEvent)
-        let mappedCrashEvent = mapper.map(event: originalCrashEvent)
-        let mappedResourceEvent = mapper.map(event: originalResourceEvent)
-        let mappedActionEvent = mapper.map(event: originalActionEvent)
-        let mappedLongTaskEvent = mapper.map(event: originalLongTaskEvent)
+        let viewEventExpectation = XCTestExpectation(description: "View Event Mapper Callback called")
+        var mappedViewEvent: RUMViewEvent?
+        mapper.map(event: originalViewEvent) { event in
+            mappedViewEvent = event
+            viewEventExpectation.fulfill()
+        }
+
+        let errorEventExpectation = XCTestExpectation(description: "Error Event Mapper Callback called")
+        var mappedErrorEvent: RUMErrorEvent?
+        mapper.map(event: originalErrorEvent) { event in
+            mappedErrorEvent = event
+            errorEventExpectation.fulfill()
+        }
+
+        let crashEventExpectation = XCTestExpectation(description: "Crash Event Mapper Callback called")
+        var mappedCrashEvent: RUMCrashEvent?
+        mapper.map(event: originalCrashEvent) { event in
+            mappedCrashEvent = event
+            crashEventExpectation.fulfill()
+        }
+
+        let resourceEventExpectation = XCTestExpectation(description: "Resource Event Mapper Callback called")
+        var mappedResourceEvent: RUMResourceEvent?
+        mapper.map(event: originalResourceEvent) { event in
+            mappedResourceEvent = event
+            resourceEventExpectation.fulfill()
+        }
+
+        let actionEventExpectation = XCTestExpectation(description: "Action Event Mapper Callback called")
+        var mappedActionEvent: RUMActionEvent?
+        mapper.map(event: originalActionEvent) { event in
+            mappedActionEvent = event
+            actionEventExpectation.fulfill()
+        }
+
+        let longTaskEventExpectation = XCTestExpectation(description: "Long Task Event Mapper Callback called")
+        var mappedLongTaskEvent: RUMLongTaskEvent?
+        mapper.map(event: originalLongTaskEvent) { event in
+            mappedLongTaskEvent = event
+            longTaskEventExpectation.fulfill()
+        }
+
+        wait(for: [
+            viewEventExpectation,
+            errorEventExpectation,
+            crashEventExpectation,
+            resourceEventExpectation,
+            actionEventExpectation,
+            longTaskEventExpectation
+        ], timeout: 0.1)
 
         // Then
         XCTAssertEqual(try XCTUnwrap(mappedViewEvent), modifiedViewEvent, "Mapper should return modified event.")
@@ -83,30 +127,67 @@ class RUMEventsMapperTests: XCTestCase {
         // Given
         let mapper = RUMEventsMapper(
             viewEventMapper: nil,
-            errorEventMapper: { errorEvent in
+            errorEventMapper: SyncRUMErrorEventMapper({ errorEvent in
                 XCTAssertTrue(errorEvent == originalErrorEvent || errorEvent == originalCrashEvent.model, "Mapper should be called with the original event.")
                 return nil
-            },
-            resourceEventMapper: { resourceEvent in
+            }),
+            resourceEventMapper: SyncRUMResourceEventMapper({ resourceEvent in
                 XCTAssertEqual(resourceEvent, originalResourceEvent, "Mapper should be called with the original event.")
                 return nil
-            },
-            actionEventMapper: { actionEvent in
+            }),
+            actionEventMapper: SyncRUMActionEventMapper({ actionEvent in
                 XCTAssertEqual(actionEvent, originalActionEvent, "Mapper should be called with the original event.")
                 return nil
-            },
-            longTaskEventMapper: { longTaskEvent in
+            }),
+            longTaskEventMapper: SyncRUMLongTaskEventMapper({ longTaskEvent in
                 XCTAssertEqual(longTaskEvent, originalLongTaskEvent, "Mapper should be called with the original event.")
                 return nil
-            }
+            })
         )
 
         // When
-        let mappedErrorEvent = mapper.map(event: originalErrorEvent)
-        let mappedCrashEvent = mapper.map(event: originalCrashEvent)
-        let mappedResourceEvent = mapper.map(event: originalResourceEvent)
-        let mappedActionEvent = mapper.map(event: originalActionEvent)
-        let mappedLongTaskEvent = mapper.map(event: originalLongTaskEvent)
+        let errorEventExpectation = XCTestExpectation(description: "Error Event Mapper Callback called")
+        var mappedErrorEvent: RUMErrorEvent?
+        mapper.map(event: originalErrorEvent) { event in
+            mappedErrorEvent = event
+            errorEventExpectation.fulfill()
+        }
+
+        let crashEventExpectation = XCTestExpectation(description: "Crash Event Mapper Callback called")
+        var mappedCrashEvent: RUMCrashEvent?
+        mapper.map(event: originalCrashEvent) { event in
+            mappedCrashEvent = event
+            crashEventExpectation.fulfill()
+        }
+
+        let resourceEventExpectation = XCTestExpectation(description: "Resource Event Mapper Callback called")
+        var mappedResourceEvent: RUMResourceEvent?
+        mapper.map(event: originalResourceEvent) { event in
+            mappedResourceEvent = event
+            resourceEventExpectation.fulfill()
+        }
+
+        let actionEventExpectation = XCTestExpectation(description: "Action Event Mapper Callback called")
+        var mappedActionEvent: RUMActionEvent?
+        mapper.map(event: originalActionEvent) { event in
+            mappedActionEvent = event
+            actionEventExpectation.fulfill()
+        }
+
+        let longTaskEventExpectation = XCTestExpectation(description: "Long Task Event Mapper Callback called")
+        var mappedLongTaskEvent: RUMLongTaskEvent?
+        mapper.map(event: originalLongTaskEvent) { event in
+            mappedLongTaskEvent = event
+            longTaskEventExpectation.fulfill()
+        }
+
+        wait(for: [
+            errorEventExpectation,
+            crashEventExpectation,
+            resourceEventExpectation,
+            actionEventExpectation,
+            longTaskEventExpectation
+        ], timeout: 0.1)
 
         // Then
         XCTAssertNil(mappedErrorEvent, "Mapper should return nil.")
@@ -134,12 +215,56 @@ class RUMEventsMapperTests: XCTestCase {
         )
 
         // When
-        let mappedViewEvent = mapper.map(event: originalViewEvent)
-        let mappedErrorEvent = mapper.map(event: originalErrorEvent)
-        let mappedCrashEvent = mapper.map(event: originalCrashEvent)
-        let mappedResourceEvent = mapper.map(event: originalResourceEvent)
-        let mappedActionEvent = mapper.map(event: originalActionEvent)
-        let mappedLongTaskEvent = mapper.map(event: originalLongTaskEvent)
+        let viewEventExpectation = XCTestExpectation(description: "View Event Mapper Callback called")
+        var mappedViewEvent: RUMViewEvent?
+        mapper.map(event: originalViewEvent) { event in
+            mappedViewEvent = event
+            viewEventExpectation.fulfill()
+        }
+
+        let errorEventExpectation = XCTestExpectation(description: "Error Event Mapper Callback called")
+        var mappedErrorEvent: RUMErrorEvent?
+        mapper.map(event: originalErrorEvent) { event in
+            mappedErrorEvent = event
+            errorEventExpectation.fulfill()
+        }
+
+        let crashEventExpectation = XCTestExpectation(description: "Crash Event Mapper Callback called")
+        var mappedCrashEvent: RUMCrashEvent?
+        mapper.map(event: originalCrashEvent) { event in
+            mappedCrashEvent = event
+            crashEventExpectation.fulfill()
+        }
+
+        let resourceEventExpectation = XCTestExpectation(description: "Resource Event Mapper Callback called")
+        var mappedResourceEvent: RUMResourceEvent?
+        mapper.map(event: originalResourceEvent) { event in
+            mappedResourceEvent = event
+            resourceEventExpectation.fulfill()
+        }
+
+        let actionEventExpectation = XCTestExpectation(description: "Action Event Mapper Callback called")
+        var mappedActionEvent: RUMActionEvent?
+        mapper.map(event: originalActionEvent) { event in
+            mappedActionEvent = event
+            actionEventExpectation.fulfill()
+        }
+
+        let longTaskEventExpectation = XCTestExpectation(description: "Long Task Event Mapper Callback called")
+        var mappedLongTaskEvent: RUMLongTaskEvent?
+        mapper.map(event: originalLongTaskEvent) { event in
+            mappedLongTaskEvent = event
+            longTaskEventExpectation.fulfill()
+        }
+
+        wait(for: [
+            viewEventExpectation,
+            errorEventExpectation,
+            crashEventExpectation,
+            resourceEventExpectation,
+            actionEventExpectation,
+            longTaskEventExpectation
+        ], timeout: 0.1)
 
         // Then
         XCTAssertEqual(try XCTUnwrap(mappedViewEvent), originalViewEvent, "Mapper should return the original event.")
@@ -161,15 +286,22 @@ class RUMEventsMapperTests: XCTestCase {
         // When
         let mapper = RUMEventsMapper(
             viewEventMapper: nil,
-            errorEventMapper: { _ in nil },
-            resourceEventMapper: { _ in nil },
-            actionEventMapper: { _ in nil },
-            longTaskEventMapper: { _ in nil }
+            errorEventMapper: SyncRUMErrorEventMapper({ _ in nil }),
+            resourceEventMapper: SyncRUMResourceEventMapper({ _ in nil }),
+            actionEventMapper: SyncRUMActionEventMapper({ _ in nil }),
+            longTaskEventMapper: SyncRUMLongTaskEventMapper({ _ in nil })
         )
 
-        let mappedEvent = try XCTUnwrap(mapper.map(event: originalEvent))
+        let callbackExpectation = XCTestExpectation(description: "Mapper callback called")
+        var mappedEvent: UnrecognizedEvent?
+        mapper.map(event: originalEvent) { event in
+            mappedEvent = event
+            callbackExpectation.fulfill()
+        }
+
+        wait(for: [callbackExpectation], timeout: 0.1)
 
         // Then
-        XCTAssertEqual(mappedEvent.value, originalEvent.value)
+        XCTAssertEqual(try XCTUnwrap(mappedEvent).value, originalEvent.value)
     }
 }

@@ -216,9 +216,11 @@ internal class RUMResourceScope: RUMScope {
             )
         )
 
-        if let event = dependencies.eventBuilder.build(from: resourceEvent) {
-            writer.write(value: event)
-            onResourceEventSent()
+        dependencies.eventBuilder.build(from: resourceEvent) { event in
+            if let event = event {
+                writer.write(value: event)
+                self.onResourceEventSent()
+            }
         }
     }
 
@@ -277,9 +279,11 @@ internal class RUMResourceScope: RUMScope {
             )
         )
 
-        if let event = dependencies.eventBuilder.build(from: errorEvent) {
-            writer.write(value: event)
-            onErrorEventSent()
+        dependencies.eventBuilder.build(from: errorEvent) { event in
+            if let event = event {
+                writer.write(value: event)
+                self.onErrorEventSent()
+            }
         }
     }
 

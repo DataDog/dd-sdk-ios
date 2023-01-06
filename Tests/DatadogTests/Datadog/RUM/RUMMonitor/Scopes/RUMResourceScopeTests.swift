@@ -852,12 +852,12 @@ class RUMResourceScopeTests: XCTestCase {
         // Given
         let eventBuilder = RUMEventBuilder(
             eventsMapper: RUMEventsMapper.mockWith(
-                errorEventMapper: { event in
+                errorEventMapper: SyncRUMErrorEventMapper({ event in
                     nil
-                },
-                resourceEventMapper: { event in
+                }),
+                resourceEventMapper: SyncRUMResourceEventMapper({ event in
                     nil
-                }
+                })
             )
         )
         let dependencies: RUMScopeDependencies = .mockWith(

@@ -990,18 +990,18 @@ class RUMMonitorTests: XCTestCase {
     func testModifyingEventsBeforeTheyGetSend() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
             configuration: .mockWith(
-                viewEventMapper: { viewEvent in
+                viewEventMapper: SyncRUMViewEventMapper({ viewEvent in
                     var viewEvent = viewEvent
                     viewEvent.view.url = "ModifiedViewURL"
                     viewEvent.view.name = "ModifiedViewName"
                     return viewEvent
-                },
-                resourceEventMapper: { resourceEvent in
+                }),
+                resourceEventMapper: SyncRUMResourceEventMapper({ resourceEvent in
                     var resourceEvent = resourceEvent
                     resourceEvent.resource.url = "https://foo.com?q=modified-resource-url"
                     return resourceEvent
-                },
-                actionEventMapper: { actionEvent in
+                }),
+                actionEventMapper: SyncRUMActionEventMapper({ actionEvent in
                     if actionEvent.action.type == .applicationStart {
                         return nil // drop `.applicationStart` action
                     } else {
@@ -1009,17 +1009,17 @@ class RUMMonitorTests: XCTestCase {
                         actionEvent.action.target?.name = "Modified tap action name"
                         return actionEvent
                     }
-                },
-                errorEventMapper: { errorEvent in
+                }),
+                errorEventMapper: SyncRUMErrorEventMapper({ errorEvent in
                     var errorEvent = errorEvent
                     errorEvent.error.message = "Modified error message"
                     return errorEvent
-                },
-                longTaskEventMapper: { longTaskEvent in
+                }),
+                longTaskEventMapper: SyncRUMLongTaskEventMapper({ longTaskEvent in
                     var mutableLongTaskEvent = longTaskEvent
                     mutableLongTaskEvent.view.name = "ModifiedLongTaskViewName"
                     return mutableLongTaskEvent
-                },
+                }),
                 dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
             )
         )
@@ -1058,12 +1058,12 @@ class RUMMonitorTests: XCTestCase {
     func testDroppingEventsBeforeTheyGetSent() throws {
         let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
             configuration: .mockWith(
-                resourceEventMapper: { _ in nil },
-                actionEventMapper: { event in
+                resourceEventMapper: SyncRUMResourceEventMapper({ _ in nil }),
+                actionEventMapper: SyncRUMActionEventMapper({ event in
                     return event.action.type == .applicationStart ? event : nil
-                },
-                errorEventMapper: { _ in nil },
-                longTaskEventMapper: { _ in nil }
+                }),
+                errorEventMapper: SyncRUMErrorEventMapper({ _ in nil }),
+                longTaskEventMapper: SyncRUMLongTaskEventMapper({ _ in nil })
             )
         )
         core.register(feature: rum)

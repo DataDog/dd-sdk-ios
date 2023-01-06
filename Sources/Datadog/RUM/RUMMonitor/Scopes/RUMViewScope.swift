@@ -388,11 +388,13 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         )
 
-        if let event = dependencies.eventBuilder.build(from: actionEvent) {
-            writer.write(value: event)
-            needsViewUpdate = true
-        } else {
-            actionsCount -= 1
+        dependencies.eventBuilder.build(from: actionEvent) { event in
+            if let event = event {
+                writer.write(value: event)
+                self.needsViewUpdate = true
+            } else {
+                self.actionsCount -= 1
+            }
         }
     }
 
@@ -476,23 +478,25 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         )
 
-        if let event = dependencies.eventBuilder.build(from: viewEvent) {
-            if viewUpdatesThrottler.accept(event: event) {
-                writer.write(value: event)
-            } else { // if event was dropped by sampler
-                version -= 1
-            }
+        dependencies.eventBuilder.build(from: viewEvent) { event in
+            if let event = event {
+                if self.viewUpdatesThrottler.accept(event: event) {
+                    writer.write(value: event)
+                } else { // if event was dropped by sampler
+                    self.version -= 1
+                }
 
-            // Update `CrashContext` with recent RUM view (no matter sampling - we want to always
-            // have recent information if process is interrupted by crash):
-            dependencies.core.send(
-                message: .custom(
-                    key: "rum",
-                    baggage: [RUMBaggageKeys.viewEvent: event]
+                // Update `CrashContext` with recent RUM view (no matter sampling - we want to always
+                // have recent information if process is interrupted by crash):
+                self.dependencies.core.send(
+                    message: .custom(
+                        key: "rum",
+                        baggage: [RUMBaggageKeys.viewEvent: event]
+                    )
                 )
-            )
-        } else { // if event was dropped by mapper
-            version -= 1
+            } else { // if event was dropped by mapper
+                self.version -= 1
+            }
         }
     }
 
@@ -548,11 +552,13 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         )
 
-        if let event = dependencies.eventBuilder.build(from: errorEvent) {
-            writer.write(value: event)
-            needsViewUpdate = true
-        } else {
-            errorsCount -= 1
+        dependencies.eventBuilder.build(from: errorEvent) { event in
+            if let event = event {
+                writer.write(value: event)
+                self.needsViewUpdate = true
+            } else {
+                self.errorsCount -= 1
+            }
         }
     }
 
@@ -598,13 +604,15 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             )
         )
 
-        if let event = dependencies.eventBuilder.build(from: longTaskEvent) {
-            writer.write(value: event)
-            longTasksCount += 1
-            needsViewUpdate = true
+        dependencies.eventBuilder.build(from: longTaskEvent) { event in
+            if let event = event {
+                writer.write(value: event)
+                self.longTasksCount += 1
+                self.needsViewUpdate = true
 
-            if command.duration.toInt64Nanoseconds > Constants.frozenFrameThresholdInNs {
-                frozenFramesCount += 1
+                if command.duration.toInt64Nanoseconds > Constants.frozenFrameThresholdInNs {
+                    self.frozenFramesCount += 1
+                }
             }
         }
     }

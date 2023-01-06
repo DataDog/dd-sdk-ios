@@ -34,8 +34,23 @@ class RUMEventFileOutputTests: XCTestCase {
 
         let dataModel1 = RUMDataModelMock(attribute: "foo", context: RUMEventAttributes(contextInfo: ["custom.attribute": "value"]))
         let dataModel2 = RUMDataModelMock(attribute: "bar")
-        let event1 = try XCTUnwrap(builder.build(from: dataModel1))
-        let event2 = try XCTUnwrap(builder.build(from: dataModel2))
+
+        let event1Expectation = XCTestExpectation(description: "Event 1 callback called")
+        let event2Expectation = XCTestExpectation(description: "Event 2 callback called")
+        var event1: RUMDataModelMock?
+        var event2: RUMDataModelMock?
+        builder.build(from: dataModel1) { event in
+            event1 = event
+            event1Expectation.fulfill()
+        }
+        builder.build(from: dataModel2) { event in
+            event2 = event
+            event2Expectation.fulfill()
+        }
+        wait(for: [event1Expectation, event2Expectation], timeout: 0.1)
+
+        event1 = try XCTUnwrap(event1)
+        event2 = try XCTUnwrap(event2)
 
         writer.write(value: event1)
 

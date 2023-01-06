@@ -14,11 +14,12 @@ internal class RUMEventBuilder {
         self.eventsMapper = eventsMapper
     }
 
-    func build<Event>(from event: Event) -> Event? where Event: RUMSanitizableEvent {
-        guard let transformedEvent = eventsMapper.map(event: event) else {
-            return nil
+    func build<Event>(from event: Event, callback: @escaping (Event?) -> Void) -> Void where Event: RUMSanitizableEvent {
+        eventsMapper.map(event: event) { transformedEvent in
+            guard let transformedEvent = transformedEvent else {
+                return callback(nil)
+            }
+            callback(self.sanitizer.sanitize(event: transformedEvent))
         }
-
-        return sanitizer.sanitize(event: transformedEvent)
     }
 }

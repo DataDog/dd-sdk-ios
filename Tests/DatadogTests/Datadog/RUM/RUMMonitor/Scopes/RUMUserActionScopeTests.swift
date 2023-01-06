@@ -584,9 +584,9 @@ class RUMUserActionScopeTests: XCTestCase {
         // swiftlint:disable trailing_closure
         let eventBuilder = RUMEventBuilder(
             eventsMapper: .mockWith(
-                actionEventMapper: { event in
+                actionEventMapper: SyncRUMActionEventMapper({ event in
                     nil
-                }
+                })
             )
         )
 

@@ -182,9 +182,11 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             )
         )
 
-        if let event = dependencies.eventBuilder.build(from: actionEvent) {
-            writer.write(value: event)
-            onActionEventSent(event)
+        dependencies.eventBuilder.build(from: actionEvent) { event in
+            if let event = event {
+                writer.write(value: event)
+                self.onActionEventSent(event)
+            }
         }
     }
 

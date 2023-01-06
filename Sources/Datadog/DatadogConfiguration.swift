@@ -719,7 +719,7 @@ extension Datadog {
             ///
             /// Use the `UIKitRUMViewsPredicate` API to ensure upstream consideration or filtering out of `UIViewController`/`RUMView`s.
             public func setRUMViewEventMapper(_ mapper: @escaping (RUMViewEvent) -> RUMViewEvent) -> Builder {
-                configuration.rumViewEventMapper = mapper
+                configuration.rumViewEventMapper = SyncRUMViewEventMapper(mapper)
                 return self
             }
 
@@ -728,7 +728,7 @@ extension Datadog {
             /// The implementation should obtain a mutable version of the `RUMResourceEvent`, modify it and return. Returning `nil` will result
             /// with dropping the RUM Resource event entirely, so it won't be send to Datadog.
             public func setRUMResourceEventMapper(_ mapper: @escaping (RUMResourceEvent) -> RUMResourceEvent?) -> Builder {
-                configuration.rumResourceEventMapper = mapper
+                configuration.rumResourceEventMapper = SyncRUMResourceEventMapper(mapper)
                 return self
             }
 
@@ -737,7 +737,7 @@ extension Datadog {
             /// The implementation should obtain a mutable version of the `RUMActionEvent`, modify it and return. Returning `nil` will result
             /// with dropping the RUM Action event entirely, so it won't be send to Datadog.
             public func setRUMActionEventMapper(_ mapper: @escaping (RUMActionEvent) -> RUMActionEvent?) -> Builder {
-                configuration.rumActionEventMapper = mapper
+                configuration.rumActionEventMapper = SyncRUMActionEventMapper(mapper)
                 return self
             }
 
@@ -746,7 +746,7 @@ extension Datadog {
             /// The implementation should obtain a mutable version of the `RUMErrorEvent`, modify it and return. Returning `nil` will result
             /// with dropping the RUM Error event entirely, so it won't be send to Datadog.
             public func setRUMErrorEventMapper(_ mapper: @escaping (RUMErrorEvent) -> RUMErrorEvent?) -> Builder {
-                configuration.rumErrorEventMapper = mapper
+                configuration.rumErrorEventMapper = SyncRUMErrorEventMapper(mapper)
                 return self
             }
 
@@ -755,7 +755,7 @@ extension Datadog {
             /// The implementation should obtain a mutable version of the `RUMLongTaskEvent`, modify it and return. Returning `nil` will result
             /// with dropping the RUM Long Task event entirely, so it won't be send to Datadog.
             public func setRUMLongTaskEventMapper(_ mapper: @escaping (RUMLongTaskEvent) -> RUMLongTaskEvent?) -> Builder {
-                configuration.rumLongTaskEventMapper = mapper
+                configuration.rumLongTaskEventMapper = SyncRUMLongTaskEventMapper(mapper)
                 return self
             }
 

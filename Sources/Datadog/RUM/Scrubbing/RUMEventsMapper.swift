@@ -6,11 +6,85 @@
 
 import Foundation
 
-internal typealias RUMViewEventMapper = (RUMViewEvent) -> RUMViewEvent
-internal typealias RUMErrorEventMapper = (RUMErrorEvent) -> RUMErrorEvent?
-internal typealias RUMResourceEventMapper = (RUMResourceEvent) -> RUMResourceEvent?
-internal typealias RUMActionEventMapper = (RUMActionEvent) -> RUMActionEvent?
-internal typealias RUMLongTaskEventMapper = (RUMLongTaskEvent) -> RUMLongTaskEvent?
+internal protocol RUMViewEventMapper {
+    func map(event: RUMViewEvent, callback: @escaping (RUMViewEvent) -> Void)
+}
+
+public class SyncRUMViewEventMapper: RUMViewEventMapper {
+    let mapper: (RUMViewEvent) -> RUMViewEvent
+
+    init(_ mapper: @escaping (RUMViewEvent) -> RUMViewEvent) {
+        self.mapper = mapper
+    }
+
+    func map(event: RUMViewEvent, callback: @escaping (RUMViewEvent) -> Void) {
+        callback(mapper(event))
+    }
+}
+
+internal protocol RUMErrorEventMapper {
+    func map(event: RUMErrorEvent, callback: @escaping (RUMErrorEvent?) -> Void)
+}
+
+public class SyncRUMErrorEventMapper: RUMErrorEventMapper {
+    let mapper: (RUMErrorEvent) -> RUMErrorEvent?
+
+    init(_ mapper: @escaping (RUMErrorEvent) -> RUMErrorEvent?) {
+        self.mapper = mapper
+    }
+
+    func map(event: RUMErrorEvent, callback: @escaping (RUMErrorEvent?) -> Void) {
+        callback(mapper(event))
+    }
+}
+
+internal protocol RUMResourceEventMapper {
+    func map(event: RUMResourceEvent, callback: @escaping (RUMResourceEvent?) -> Void)
+}
+
+public class SyncRUMResourceEventMapper: RUMResourceEventMapper {
+    let mapper: (RUMResourceEvent) -> RUMResourceEvent?
+
+    init(_ mapper: @escaping (RUMResourceEvent) -> RUMResourceEvent?) {
+        self.mapper = mapper
+    }
+
+    func map(event: RUMResourceEvent, callback: @escaping (RUMResourceEvent?) -> Void) {
+        callback(mapper(event))
+    }
+}
+
+internal protocol RUMActionEventMapper {
+    func map(event: RUMActionEvent, callback: @escaping (RUMActionEvent?) -> Void)
+}
+
+public class SyncRUMActionEventMapper: RUMActionEventMapper {
+    let mapper: (RUMActionEvent) -> RUMActionEvent?
+
+    init(_ mapper: @escaping (RUMActionEvent) -> RUMActionEvent?) {
+        self.mapper = mapper
+    }
+
+    func map(event: RUMActionEvent, callback: @escaping (RUMActionEvent?) -> Void) {
+        callback(mapper(event))
+    }
+}
+
+internal protocol RUMLongTaskEventMapper {
+    func map(event: RUMLongTaskEvent, callback: @escaping (RUMLongTaskEvent?) -> Void)
+}
+
+public class SyncRUMLongTaskEventMapper: RUMLongTaskEventMapper {
+    let mapper: (RUMLongTaskEvent) -> RUMLongTaskEvent?
+
+    init(_ mapper: @escaping (RUMLongTaskEvent) -> RUMLongTaskEvent?) {
+        self.mapper = mapper
+    }
+
+    func map(event: RUMLongTaskEvent, callback: @escaping (RUMLongTaskEvent?) -> Void) {
+        callback(mapper(event))
+    }
+}
 
 /// The `EventMapper` for RUM events.
 internal struct RUMEventsMapper {
@@ -24,36 +98,70 @@ internal struct RUMEventsMapper {
 
     /// Data scrubbing interface.
     /// It takes an `event` and returns its modified representation or `nil` (for dropping the event).
-    func map<T>(event: T) -> T? {
+    func map<T>(event: T, callback: @escaping (T?) -> Void) {
         switch event {
-        case let event as RUMViewEvent:
-            return map(event: event, using: viewEventMapper) as? T
-        case let event as RUMErrorEvent:
-            return map(event: event, using: errorEventMapper) as? T
-        case let event as RUMCrashEvent:
-            guard let model = map(event: event.model, using: errorEventMapper) else {
-                return nil
+        case let viewEvent as RUMViewEvent:
+            guard let mapper = viewEventMapper else {
+                return callback(event)
             }
-            return RUMCrashEvent(error: model, additionalAttributes: event.additionalAttributes) as? T
-        case let event as RUMResourceEvent:
-            return map(event: event, using: resourceEventMapper) as? T
-        case let event as RUMActionEvent:
-            return map(event: event, using: actionEventMapper) as? T
-        case let event as RUMLongTaskEvent:
-            return map(event: event, using: longTaskEventMapper) as? T
+            guard let callback = callback as? (RUMViewEvent?) -> Void else {
+                DD.telemetry.error("Callback for `RUMViewEventMapper` is of wrong type: \(type(of: callback))")
+                return callback(event)
+            }
+            mapper.map(event: viewEvent, callback: callback)
+        case let errorEvent as RUMErrorEvent:
+            guard let mapper = errorEventMapper else {
+                return callback(event)
+            }
+            guard let callback = callback as? (RUMErrorEvent?) -> Void else {
+                DD.telemetry.error("Callback for `RUMErrorEventMapper` is of wrong type: \(type(of: callback))")
+                return callback(event)
+            }
+            mapper.map(event: errorEvent, callback: callback)
+        case let crashEvent as RUMCrashEvent:
+            guard let mapper = errorEventMapper else {
+                return callback(event)
+            }
+            guard let callback = callback as? (RUMCrashEvent?) -> Void else {
+                DD.telemetry.error("Callback for Crash mapper is of wrong type: \(type(of: callback))")
+                return callback(event)
+            }
+            mapper.map(event: crashEvent.model) { model in
+                guard let model = model else {
+                    return callback(nil)
+                }
+                callback(RUMCrashEvent(error: model, additionalAttributes: crashEvent.additionalAttributes))
+            }
+        case let resourceEvent as RUMResourceEvent:
+            guard let mapper = resourceEventMapper else {
+                return callback(event)
+            }
+            guard let callback = callback as? (RUMResourceEvent?) -> Void else {
+                DD.telemetry.error("Callback for `RUMResourceEventMapper` is of wrong type: \(type(of: callback))")
+                return callback(event)
+            }
+            mapper.map(event: resourceEvent, callback: callback)
+        case let actionEvent as RUMActionEvent:
+            guard let mapper = actionEventMapper else {
+                return callback(event)
+            }
+            guard let callback = callback as? (RUMActionEvent?) -> Void else {
+                DD.telemetry.error("Callback for `RUMActionEventMapper` is of wrong type: \(type(of: callback))")
+                return callback(event)
+            }
+            mapper.map(event: actionEvent, callback: callback)
+        case let longTaskEvent as RUMLongTaskEvent:
+            guard let mapper = longTaskEventMapper else {
+                return callback(event)
+            }
+            guard let callback = callback as? (RUMLongTaskEvent?) -> Void else {
+                DD.telemetry.error("Callback for `RUMLongTaskEventMapper` is of wrong type: \(type(of: callback))")
+                return callback(event)
+            }
+            mapper.map(event: longTaskEvent, callback: callback)
         default:
             DD.telemetry.error("No `RUMEventMapper` is registered for \(type(of: event))")
-            return event
+            return callback(event)
         }
-    }
-
-    // MARK: - Private
-
-    private func map<Event>(event: Event, using mapper: ((Event) -> Event?)?) -> Event? {
-        guard let mapper = mapper else {
-            return event // if no mapper is provided, do not modify the `rumEvent`
-        }
-
-        return mapper(event)
     }
 }

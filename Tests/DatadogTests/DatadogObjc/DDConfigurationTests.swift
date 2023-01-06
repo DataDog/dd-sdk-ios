@@ -289,11 +289,48 @@ class DDConfigurationTests: XCTestCase {
 
         let configuration = objcBuilder.build().sdkConfiguration
 
-        let redactedSwiftViewEvent = configuration.rumViewEventMapper?(swiftViewEvent)
-        let redactedSwiftResourceEvent = configuration.rumResourceEventMapper?(swiftResourceEvent)
-        let redactedSwiftActionEvent = configuration.rumActionEventMapper?(swiftActionEvent)
-        let redactedSwiftErrorEvent = configuration.rumErrorEventMapper?(swiftErrorEvent)
-        let redactedSwiftLongTaskEvent = configuration.rumLongTaskEventMapper?(swiftLongTaskEvent)
+        let viewEventExpectation = XCTestExpectation(description: "View Event Mapper Callback called")
+        var redactedSwiftViewEvent: RUMViewEvent?
+        configuration.rumViewEventMapper?.map(event: swiftViewEvent) { event in
+            redactedSwiftViewEvent = event
+            viewEventExpectation.fulfill()
+        }
+
+        let errorEventExpectation = XCTestExpectation(description: "Error Event Mapper Callback called")
+        var redactedSwiftErrorEvent: RUMErrorEvent?
+        configuration.rumErrorEventMapper?.map(event: swiftErrorEvent) { event in
+            redactedSwiftErrorEvent = event
+            errorEventExpectation.fulfill()
+        }
+
+        let resourceEventExpectation = XCTestExpectation(description: "Resource Event Mapper Callback called")
+        var redactedSwiftResourceEvent: RUMResourceEvent?
+        configuration.rumResourceEventMapper?.map(event: swiftResourceEvent) { event in
+            redactedSwiftResourceEvent = event
+            resourceEventExpectation.fulfill()
+        }
+
+        let actionEventExpectation = XCTestExpectation(description: "Action Event Mapper Callback called")
+        var redactedSwiftActionEvent: RUMActionEvent?
+        configuration.rumActionEventMapper?.map(event: swiftActionEvent) { event in
+            redactedSwiftActionEvent = event
+            actionEventExpectation.fulfill()
+        }
+
+        let longTaskEventExpectation = XCTestExpectation(description: "Long Task Event Mapper Callback called")
+        var redactedSwiftLongTaskEvent: RUMLongTaskEvent?
+        configuration.rumLongTaskEventMapper?.map(event: swiftLongTaskEvent) { event in
+            redactedSwiftLongTaskEvent = event
+            longTaskEventExpectation.fulfill()
+        }
+
+        wait(for: [
+            viewEventExpectation,
+            errorEventExpectation,
+            resourceEventExpectation,
+            actionEventExpectation,
+            longTaskEventExpectation
+        ], timeout: 0.1)
 
         XCTAssertEqual(redactedSwiftViewEvent?.view.url, "redacted view.url")
         XCTAssertEqual(redactedSwiftResourceEvent?.view.url, "redacted view.url")
@@ -320,10 +357,36 @@ class DDConfigurationTests: XCTestCase {
 
         let configuration = objcBuilder.build().sdkConfiguration
 
-        XCTAssertNil(configuration.rumResourceEventMapper?(.mockRandom()))
-        XCTAssertNil(configuration.rumActionEventMapper?(.mockRandom()))
-        XCTAssertNil(configuration.rumErrorEventMapper?(.mockRandom()))
-        XCTAssertNil(configuration.rumLongTaskEventMapper?(.mockRandom()))
+        let errorEventExpectation = XCTestExpectation(description: "Error Event Mapper Callback called")
+        configuration.rumErrorEventMapper?.map(event: .mockRandom()) { event in
+            XCTAssertNil(event)
+            errorEventExpectation.fulfill()
+        }
+
+        let resourceEventExpectation = XCTestExpectation(description: "Resource Event Mapper Callback called")
+        configuration.rumResourceEventMapper?.map(event: .mockRandom()) { event in
+            XCTAssertNil(event)
+            resourceEventExpectation.fulfill()
+        }
+
+        let actionEventExpectation = XCTestExpectation(description: "Action Event Mapper Callback called")
+        configuration.rumActionEventMapper?.map(event: .mockRandom()) { event in
+            XCTAssertNil(event)
+            actionEventExpectation.fulfill()
+        }
+
+        let longTaskEventExpectation = XCTestExpectation(description: "Long Task Event Mapper Callback called")
+        configuration.rumLongTaskEventMapper?.map(event: .mockRandom()) { event in
+            XCTAssertNil(event)
+            longTaskEventExpectation.fulfill()
+        }
+
+        wait(for: [
+            errorEventExpectation,
+            resourceEventExpectation,
+            actionEventExpectation,
+            longTaskEventExpectation
+        ], timeout: 0.1)
     }
 
     func testDataEncryption() throws {

@@ -165,11 +165,40 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertTrue(configuration.rumUIKitUserActionsPredicate is UIKitRUMUserActionsPredicateMock)
             XCTAssertEqual(configuration.rumLongTaskDurationThreshold, 100.0)
             XCTAssertEqual(configuration.spanEventMapper?(.mockRandom()), mockSpanEvent)
-            XCTAssertEqual(configuration.rumViewEventMapper?(.mockRandom()), mockRUMViewEvent)
-            XCTAssertEqual(configuration.rumResourceEventMapper?(.mockRandom()), mockRUMResourceEvent)
-            XCTAssertEqual(configuration.rumActionEventMapper?(.mockRandom()), mockRUMActionEvent)
-            XCTAssertEqual(configuration.rumErrorEventMapper?(.mockRandom()), mockRUMErrorEvent)
-            XCTAssertEqual(configuration.rumLongTaskEventMapper?(.mockRandom()), mockRUMLongTaskEvent)
+
+            let viewMappingExpectation = XCTestExpectation(description: "View Mapping Callback Called")
+            configuration.rumViewEventMapper?.map(event: .mockRandom()) { event in
+                XCTAssertEqual(event, mockRUMViewEvent)
+                viewMappingExpectation.fulfill()
+            }
+
+            let resourceMappingExpectation = XCTestExpectation(description: "Resource Mapping Callback Called")
+            configuration.rumResourceEventMapper?.map(event: .mockRandom()) { event in
+                XCTAssertEqual(event, mockRUMResourceEvent)
+                resourceMappingExpectation.fulfill()
+            }
+
+            let actionMappingExpectation = XCTestExpectation(description: "Action Mapping Callback Called")
+            configuration.rumActionEventMapper?.map(event: .mockRandom()) { event in
+                XCTAssertEqual(event, mockRUMActionEvent)
+                actionMappingExpectation.fulfill()
+            }
+
+            let errorMappingExpectation = XCTestExpectation(description: "Error Mapping Callback Called")
+            configuration.rumErrorEventMapper?.map(event: .mockRandom()) { event in
+                XCTAssertEqual(event, mockRUMErrorEvent)
+                errorMappingExpectation.fulfill()
+            }
+
+            let longTaskMappingExpectation = XCTestExpectation(description: "LongTask Mapping Callback Called")
+            configuration.rumLongTaskEventMapper?.map(event: .mockRandom()) { event in
+                XCTAssertEqual(event, mockRUMLongTaskEvent)
+                longTaskMappingExpectation.fulfill()
+            }
+
+            wait(for: [viewMappingExpectation, resourceMappingExpectation, actionMappingExpectation, errorMappingExpectation,longTaskMappingExpectation], timeout: 0.1)
+
+
             XCTAssertEqual(configuration.rumResourceAttributesProvider?(.mockAny(), nil, nil, nil) as? [String: String], ["foo": "bar"])
             XCTAssertFalse(configuration.rumBackgroundEventTrackingEnabled)
             XCTAssertFalse(configuration.rumFrustrationSignalsTrackingEnabled)

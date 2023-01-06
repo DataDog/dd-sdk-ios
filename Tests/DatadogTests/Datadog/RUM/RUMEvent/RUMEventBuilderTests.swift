@@ -11,42 +11,52 @@ class RUMEventBuilderTests: XCTestCase {
     func testGivenEventBuilderWithEventMapper_whenEventIsModified_itBuildsModifiedEvent() throws {
         let builder = RUMEventBuilder(
             eventsMapper: .mockWith(
-                viewEventMapper: { viewEvent in
+                viewEventMapper: SyncRUMViewEventMapper({ viewEvent in
                     return RUMViewEvent.mockRandom()
-                }
+                })
             )
         )
+        let expectation = XCTestExpectation(description: "Mapper callback called.")
         let originalEventModel = RUMViewEvent.mockRandom()
-        let event = try XCTUnwrap(
-            builder.build(from: RUMViewEvent.mockRandom())
-        )
-        XCTAssertNotEqual(event, originalEventModel)
+        builder.build(from: RUMViewEvent.mockRandom()) { event in
+            XCTAssertNotNil(event)
+            XCTAssertNotEqual(event, originalEventModel)
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 0.1)
     }
 
     func testGivenEventBuilderWithEventMapper_whenEventIsDropped_itBuildsNoEvent() {
         let builder = RUMEventBuilder(
             eventsMapper: .mockWith(
-                resourceEventMapper: { event in
+                resourceEventMapper: SyncRUMResourceEventMapper({ event in
                     return nil
-                }
+                })
             )
         )
-        let event = builder.build(from: RUMResourceEvent.mockRandom())
-        XCTAssertNil(event)
+        let expectation = XCTestExpectation(description: "Mapper callback called.")
+        builder.build(from: RUMResourceEvent.mockRandom()) { event in
+            XCTAssertNil(event)
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 0.1)
     }
 
     func testGivenEventBuilderWithNoEventMapper_whenBuildingAnEvent_itBuildsEventWithOriginalModel() throws {
         let builder = RUMEventBuilder(
             eventsMapper: .mockWith(
-                resourceEventMapper: { event in
+                resourceEventMapper: SyncRUMResourceEventMapper({ event in
                     return event
-                }
+                })
             )
         )
+        let expectation = XCTestExpectation(description: "Mapper callback called.")
         let originalEventModel = RUMResourceEvent.mockRandom()
-        let event = try XCTUnwrap(
-            builder.build(from: originalEventModel)
-        )
-        XCTAssertEqual(event, originalEventModel)
+        builder.build(from: originalEventModel) { event in
+            XCTAssertNotNil(event)
+            XCTAssertEqual(event, originalEventModel)
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 0.1)
     }
 }
