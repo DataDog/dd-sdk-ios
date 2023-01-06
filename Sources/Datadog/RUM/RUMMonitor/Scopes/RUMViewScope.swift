@@ -320,8 +320,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - Sending RUM Events
 
     private func sendApplicationStartAction(context: DatadogContext, writer: Writer) {
-        actionsCount += 1
-
         var attributes = self.attributes
         var loadingTime: Int64?
 
@@ -390,10 +388,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         dependencies.eventBuilder.build(from: actionEvent) { event in
             if let event = event {
+                self.actionsCount += 1
                 writer.write(value: event)
                 self.needsViewUpdate = true
-            } else {
-                self.actionsCount -= 1
             }
         }
     }
@@ -501,7 +498,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     }
 
     private func sendErrorEvent(on command: RUMAddCurrentViewErrorCommand, context: DatadogContext, writer: Writer) {
-        errorsCount += 1
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let errorEvent = RUMErrorEvent(
@@ -554,10 +550,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         dependencies.eventBuilder.build(from: errorEvent) { event in
             if let event = event {
+                self.errorsCount += 1
                 writer.write(value: event)
                 self.needsViewUpdate = true
-            } else {
-                self.errorsCount -= 1
             }
         }
     }
