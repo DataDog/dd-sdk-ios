@@ -198,7 +198,6 @@ class DatadogConfigurationBuilderTests: XCTestCase {
 
             wait(for: [viewMappingExpectation, resourceMappingExpectation, actionMappingExpectation, errorMappingExpectation,longTaskMappingExpectation], timeout: 0.1)
 
-
             XCTAssertEqual(configuration.rumResourceAttributesProvider?(.mockAny(), nil, nil, nil) as? [String: String], ["foo": "bar"])
             XCTAssertFalse(configuration.rumBackgroundEventTrackingEnabled)
             XCTAssertFalse(configuration.rumFrustrationSignalsTrackingEnabled)

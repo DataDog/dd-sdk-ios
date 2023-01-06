@@ -84,7 +84,7 @@ class AnyCodableTests: XCTestCase {
 
         XCTAssertEqual(dictionary["boolean"]?.value as! Bool, true)
         XCTAssertEqual(dictionary["integer"]?.value as! Int, 42)
-        XCTAssertEqual(dictionary["double"]?.value as! Double, 3.141592653589793, accuracy: 0.001)
+        XCTAssertEqual(dictionary["double"]?.value as! Double, 3.141_592_653_589_793, accuracy: 0.001)
         XCTAssertEqual(dictionary["string"]?.value as! String, "string")
         XCTAssertEqual(dictionary["array"]?.value as! [Int], [1, 2, 3])
         XCTAssertEqual(dictionary["nested"]?.value as! [String: String], ["a": "alpha", "b": "bravo", "c": "charlie"])
@@ -135,7 +135,7 @@ class AnyCodableTests: XCTestCase {
         let dictionary: [String: Any?] = [
             "boolean": true,
             "integer": 42,
-            "double": 3.141592653589793,
+            "double": 3.141_592_653_589_793,
             "string": "string",
             "stringInterpolation": "string \(injectedValue)",
             "array": [1, 2, 3],

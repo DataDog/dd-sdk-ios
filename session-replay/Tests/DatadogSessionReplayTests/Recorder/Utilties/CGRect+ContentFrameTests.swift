@@ -56,12 +56,12 @@ class CGRectContentFrameTests: XCTestCase {
         let contentSize = CGSize(width: 21, height: 19.5)
         XCTAssertRectsEqual(
             frame.contentFrame(for: contentSize, using: .scaleAspectFit),
-            CGRect(x: 10.0, y: 13.57142857142857, width: 100.0, height: 92.85714285714286),
+            CGRect(x: 10.0, y: 13.571_428_571_428_57, width: 100.0, height: 92.857_142_857_142_86),
             accuracy: accuracy
         )
         XCTAssertRectsEqual(
             frame.contentFrame(for: contentSize, using: .scaleAspectFill),
-            CGRect(x: 6.153846153846146, y: 9.999999999999993, width: 107.69230769230771, height: 100.00000000000001),
+            CGRect(x: 6.153_846_153_846_146, y: 9.999_999_999_999_993, width: 107.692_307_692_307_71, height: 100.000_000_000_000_01),
             accuracy: accuracy
         )
         XCTAssertRectsEqual(

@@ -54,7 +54,7 @@ class AnyEncodableTests: XCTestCase {
         let dictionary: [String: Any?] = [
             "boolean": true,
             "integer": 42,
-            "double": 3.141592653589793,
+            "double": 3.141_592_653_589_793,
             "string": "string",
             "array": [1, 2, 3],
             "nested": [
@@ -112,7 +112,7 @@ class AnyEncodableTests: XCTestCase {
             "ushort": 65_535,
             "ulong": 4_294_967_295,
             "ulonglong": 18_446_744_073_709_615,
-            "double": 3.141592653589793,
+            "double": 3.141_592_653_589_793,
         ]
 
         let encoder = JSONEncoder()
@@ -160,7 +160,7 @@ class AnyEncodableTests: XCTestCase {
         let dictionary: [String: Any] = [
             "boolean": "\(true)",
             "integer": "\(42)",
-            "double": "\(3.141592653589793)",
+            "double": "\(3.141_592_653_589_793)",
             "string": "\("string")",
             "array": "\([1, 2, 3])",
         ]

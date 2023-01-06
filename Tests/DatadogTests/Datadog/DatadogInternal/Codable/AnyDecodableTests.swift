@@ -49,7 +49,7 @@ class AnyDecodableTests: XCTestCase {
 
         XCTAssertEqual(dictionary["boolean"]?.value as! Bool, true)
         XCTAssertEqual(dictionary["integer"]?.value as! Int, 42)
-        XCTAssertEqual(dictionary["double"]?.value as! Double, 3.141592653589793, accuracy: 0.001)
+        XCTAssertEqual(dictionary["double"]?.value as! Double, 3.141_592_653_589_793, accuracy: 0.001)
         XCTAssertEqual(dictionary["string"]?.value as! String, "string")
         XCTAssertEqual(dictionary["array"]?.value as! [Int], [1, 2, 3])
         XCTAssertEqual(dictionary["nested"]?.value as! [String: String], ["a": "alpha", "b": "bravo", "c": "charlie"])
