@@ -320,7 +320,7 @@ public class Datadog {
         assert(Datadog.isInitialized, "SDK must be first initialized.")
 
         // Flush and tear down SDK core:
-        defaultDatadogCore.flushAndTearDown()
+        (defaultDatadogCore as? DatadogCore)?.flushAndTearDown()
 
         // Reset Globals:
         Global.sharedTracer = DDNoopGlobals.tracer

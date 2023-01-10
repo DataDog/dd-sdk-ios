@@ -204,6 +204,52 @@ internal final class DatadogCore {
         let v2Uploads = v2Features.values.map { $0.upload }
         return v1Uploads + v2Uploads
     }
+
+    /// Flushes asynchronous operations related to events write, context and message bus propagation in this instance of the SDK
+    /// with **blocking the caller thread** till their completion.
+    ///
+    /// Upon return, it is safe to assume that all events are stored. No assumption on their upload should be made - to force events upload
+    /// use `flushAndTearDown()` instead.
+    func flush() {
+        // The order of flushing below must be considered cautiously and
+        // follow our design choices around SDK core's threading.
+
+        // First, flush bus queue - because messages can lead to obtaining "event write context" (reading
+        // context & performing write) in other Features:
+        messageBusQueue.sync { }
+
+        // Next, flush context queue - because it indicates the entry point to "event write context" and
+        // actual writes dispatched from it:
+        contextProvider.queue.sync { }
+
+        // Last, flush read-write queue - it always comes last, no matter if the write operation is dispatched
+        // from "event write context" started on user thread OR if it happens upon receiving an "event" message
+        // in other Feature:
+        readWriteQueue.sync { }
+    }
+
+    /// Awaits completion of all asynchronous operations, forces uploads (without retrying) and deinitializes
+    /// this instance of the SDK. It **blocks the caller thread**.
+    ///
+    /// Upon return, it is safe to assume that all events were stored and got uploaded. The SDK was deinitialised so this instance of core is missfunctional.
+    func flushAndTearDown() {
+        flush()
+
+        // At this point we can assume that all write operations completed and resulted with writing events to
+        // storage. We now temporarily authorize storage for making all files readable ("uploadable") and perform
+        // arbitrary uploads (without retrying on failure).
+        allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: true) }
+        allUploads.forEach { $0.flushAndTearDown() }
+        allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: false) }
+
+        // Deinitialize arbitrary V1 Features:
+        feature(RUMInstrumentation.self)?.deinitialize()
+        feature(URLSessionAutoInstrumentation.self)?.deinitialize()
+
+        // Deallocate all Features and their storage & upload units:
+        v1Features = [:]
+        v2Features = [:]
+    }
 }
 
 extension DatadogCore: DatadogCoreProtocol {
@@ -318,43 +364,6 @@ extension DatadogCore: DatadogCoreProtocol {
                 fallback()
             }
         }
-    }
-
-    /* public */ func flush() {
-        // The order of flushing below must be considered cautiously and
-        // follow our design choices around SDK core's threading.
-
-        // First, flush bus queue - because messages can lead to obtaining "event write context" (reading
-        // context & performing write) in other Features:
-        messageBusQueue.flush(numberOfTimes: 5) // 5 is arbitrary limit (we don't expect longer chains)
-
-        // Next, flush context queue - because it indicates the entry point to "event write context" and
-        // actual writes dispatched from it:
-        contextProvider.queue.flush(numberOfTimes: 5)
-
-        // Last, flush read-write queue - it always comes last, no matter if the write operation is dispatched
-        // from "event write context" started on user thread OR if it happens upon receiving an "event" message
-        // in other Feature:
-        readWriteQueue.flush(numberOfTimes: 5)
-
-        // At this point we can assume that all write operations completed and resulted with writing events to
-        // storage. We now temporarily authorize storage for making all files readable ("uploadable") and perform
-        // arbitrary uploads (without retrying on failure).
-        allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: true) }
-        allUploads.forEach { $0.flushAndTearDown() }
-        allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: false) }
-    }
-
-    /* public */ func flushAndTearDown() {
-        flush()
-
-        // Deinitialize arbitrary V1 Features:
-        feature(RUMInstrumentation.self)?.deinitialize()
-        feature(URLSessionAutoInstrumentation.self)?.deinitialize()
-
-        // Deallocate all Features and their storage & upload units:
-        v1Features = [:]
-        v2Features = [:]
     }
 }
 

@@ -25,13 +25,14 @@ import Foundation
 ///     ```
 ///
 internal class DatadogCoreProxy: DatadogCoreProtocol {
-    private let proxy: DatadogCoreProtocol & DatadogV1CoreProtocol
+    /// The SDK core managed by this proxy.
+    private let core: DatadogCore
 
     private var featureScopeInterceptors: [String: FeatureScopeInterceptor] = [:]
 
     init(context: DatadogContext = .mockAny()) {
         self.context = context
-        self.proxy = DatadogCore(
+        self.core = DatadogCore(
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: context.trackingConsent,
@@ -46,74 +47,75 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
 
     var context: DatadogContext {
         didSet {
-            let core = self.proxy as! DatadogCore
             core.contextProvider.replace(context: context)
         }
     }
 
     func register(feature: DatadogFeature) throws {
         featureScopeInterceptors[feature.name] = FeatureScopeInterceptor()
-        try proxy.register(feature: feature)
+        try core.register(feature: feature)
     }
 
     func feature<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature {
-        return proxy.feature(named: name, type: type)
+        return core.feature(named: name, type: type)
     }
 
     func register(integration: DatadogFeatureIntegration) throws {
-        try proxy.register(integration: integration)
+        try core.register(integration: integration)
     }
 
     func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeatureIntegration {
-        return proxy.integration(named: name, type: type)
+        return core.integration(named: name, type: type)
     }
 
     func scope(for feature: String) -> FeatureScope? {
-        return proxy.scope(for: feature).map { scope in
+        return core.scope(for: feature).map { scope in
             FeatureScopeProxy(proxy: scope, interceptor: featureScopeInterceptors[feature]!)
         }
     }
 
     func set(feature: String, attributes: @escaping () -> FeatureBaggage) {
-        proxy.set(feature: feature, attributes: attributes)
+        core.set(feature: feature, attributes: attributes)
     }
 
     func send(message: FeatureMessage, sender: DatadogCoreProtocol, else fallback: @escaping () -> Void) {
-        proxy.send(message: message, sender: self, else: fallback)
-    }
-
-    func flush() {
-        proxy.flush()
-    }
-
-    func flushAndTearDown() {
-        proxy.flushAndTearDown()
-
-        if temporaryCoreDirectory.coreDirectory.exists() {
-            temporaryCoreDirectory.coreDirectory.delete()
-        }
-        if temporaryCoreDirectory.osDirectory.exists() {
-            temporaryCoreDirectory.osDirectory.delete()
-        }
+        core.send(message: message, sender: self, else: fallback)
     }
 }
 
 extension DatadogCoreProxy: DatadogV1CoreProtocol {
     func feature<T>(_ type: T.Type) -> T? {
-        return proxy.feature(type)
+        return core.feature(type)
     }
 
     func register<T>(feature instance: T?) {
         let key = String(describing: T.self)
         featureScopeInterceptors[key] = FeatureScopeInterceptor()
 
-        proxy.register(feature: instance)
+        core.register(feature: instance)
     }
 
     func scope<T>(for featureType: T.Type) -> FeatureScope? {
-        return proxy.scope(for: featureType).map { scope in
+        return core.scope(for: featureType).map { scope in
             let key = String(describing: T.self)
             return FeatureScopeProxy(proxy: scope, interceptor: featureScopeInterceptors[key]!)
+        }
+    }
+}
+
+extension DatadogCoreProxy {
+    func flush() {
+        core.flush()
+    }
+
+    func flushAndTearDown() {
+        core.flushAndTearDown()
+
+        if temporaryCoreDirectory.coreDirectory.exists() {
+            temporaryCoreDirectory.coreDirectory.delete()
+        }
+        if temporaryCoreDirectory.osDirectory.exists() {
+            temporaryCoreDirectory.osDirectory.delete()
         }
     }
 }

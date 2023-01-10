@@ -13,8 +13,6 @@
 		4927490C2880490000ECD49B /* RUMInternalProxyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49274908288048F400ECD49B /* RUMInternalProxyTests.swift */; };
 		61020C2A2757AD91005EEAEA /* BackgroundLocationMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61020C292757AD91005EEAEA /* BackgroundLocationMonitor.swift */; };
 		61020C2C2758E853005EEAEA /* DebugBackgroundEventsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61020C2B2758E853005EEAEA /* DebugBackgroundEventsViewController.swift */; };
-		6104E3492966FA53000BD2C1 /* FoundationExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6104E3482966FA53000BD2C1 /* FoundationExtensions.swift */; };
-		6104E34A2966FA53000BD2C1 /* FoundationExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6104E3482966FA53000BD2C1 /* FoundationExtensions.swift */; };
 		6108676D2840FB35002DF3C0 /* TracingV2Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6108676C2840FB35002DF3C0 /* TracingV2Configuration.swift */; };
 		6108676E2840FB35002DF3C0 /* TracingV2Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6108676C2840FB35002DF3C0 /* TracingV2Configuration.swift */; };
 		61098D2B27FEE3F00021237A /* MessagePortChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61098D2A27FEE3F00021237A /* MessagePortChannel.swift */; };
@@ -1325,7 +1323,6 @@
 		49274908288048F400ECD49B /* RUMInternalProxyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMInternalProxyTests.swift; sourceTree = "<group>"; };
 		61020C292757AD91005EEAEA /* BackgroundLocationMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundLocationMonitor.swift; sourceTree = "<group>"; };
 		61020C2B2758E853005EEAEA /* DebugBackgroundEventsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugBackgroundEventsViewController.swift; sourceTree = "<group>"; };
-		6104E3482966FA53000BD2C1 /* FoundationExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoundationExtensions.swift; sourceTree = "<group>"; };
 		6108676C2840FB35002DF3C0 /* TracingV2Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingV2Configuration.swift; sourceTree = "<group>"; };
 		61098D2A27FEE3F00021237A /* MessagePortChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagePortChannel.swift; sourceTree = "<group>"; };
 		61098D2E27FF16A20021237A /* RUMSessionEndView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSessionEndView.swift; sourceTree = "<group>"; };
@@ -2133,14 +2130,6 @@
 				61020C292757AD91005EEAEA /* BackgroundLocationMonitor.swift */,
 			);
 			path = BackgroundEvents;
-			sourceTree = "<group>";
-		};
-		6104E3472966FA0A000BD2C1 /* Utils */ = {
-			isa = PBXGroup;
-			children = (
-				6104E3482966FA53000BD2C1 /* FoundationExtensions.swift */,
-			);
-			path = Utils;
 			sourceTree = "<group>";
 		};
 		6111542325C992D9007C84C9 /* CrashReporting */ = {
@@ -4403,7 +4392,6 @@
 				D2EFA866286DA82700F1FAA6 /* Context */,
 				61133BA62423979B00786299 /* Storage */,
 				D26C49B428893E5300802B2D /* Upload */,
-				6104E3472966FA0A000BD2C1 /* Utils */,
 			);
 			path = DatadogCore;
 			sourceTree = "<group>";
@@ -5395,7 +5383,6 @@
 				6122514827FDFF82004F5AE4 /* RUMScopeDependencies.swift in Sources */,
 				615950EE291C058F00470E0C /* SessionReplayDependency.swift in Sources */,
 				D2FB125D292FBB56005B13F8 /* Datadog+Internal.swift in Sources */,
-				6104E3492966FA53000BD2C1 /* FoundationExtensions.swift in Sources */,
 				A71B1FFB292CE0B000C99F4F /* TracePropagationHeadersProvider.swift in Sources */,
 				6141014F251A57AF00E3C2D9 /* UIApplicationSwizzler.swift in Sources */,
 				D21C26CA28A406A3005DD405 /* DatadogFeature.swift in Sources */,
@@ -6077,7 +6064,6 @@
 				615950F1291C05D500470E0C /* SessionReplayDependency.swift in Sources */,
 				D2DC4BF727F484AA00E4FB96 /* DataEncryption.swift in Sources */,
 				D2CB6E4727C50EAE00A62B57 /* TracingUUID.swift in Sources */,
-				6104E34A2966FA53000BD2C1 /* FoundationExtensions.swift in Sources */,
 				D29294E1291D5ED500F8EFF9 /* ApplicationVersionPublisher.swift in Sources */,
 				D20605A7287476230047275C /* ServerOffsetPublisher.swift in Sources */,
 				D2CB6E4927C50EAE00A62B57 /* AttributesSanitizer.swift in Sources */,

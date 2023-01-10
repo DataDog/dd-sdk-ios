@@ -68,10 +68,6 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     func register<T>(feature instance: T?) { }
     /// Returns `nil`
     func feature<T>(_ type: T.Type) -> T? { nil }
-    /// no-op
-    func flush() { }
-    /// no-op
-    func flushAndTearDown() { }
 
     /// Always returns a feature-scope.
     func scope<T>(for featureType: T.Type) -> FeatureScope? {

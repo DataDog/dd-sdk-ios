@@ -107,13 +107,6 @@ public protocol DatadogCoreProtocol: AnyObject {
     ///   - fallback: The fallback closure to call when the message could not be
     ///               processed by any Features on the bus.
     func send(message: FeatureMessage, sender: DatadogCoreProtocol, else fallback: @escaping () -> Void)
-
-    /// Flushes all asynchronous operations in the SDK by **blocking the caller thread** till their completion.
-    func flush()
-
-    /// Awaits completion of all asynchronous operations and deinitializes this instance of the SDK.
-    /// It **blocks the caller thread**.
-    func flushAndTearDown()
 }
 
 internal extension DatadogCoreProtocol {
@@ -210,8 +203,4 @@ internal class NOPDatadogCore: DatadogCoreProtocol {
     func set(feature: String, attributes: @escaping @autoclosure () -> FeatureBaggage) { }
     /// no-op
     func send(message: FeatureMessage, sender: DatadogCoreProtocol, else fallback: @escaping () -> Void) { }
-    /// no-op
-    func flush() { }
-    /// no-op
-    func flushAndTearDown() { }
 }

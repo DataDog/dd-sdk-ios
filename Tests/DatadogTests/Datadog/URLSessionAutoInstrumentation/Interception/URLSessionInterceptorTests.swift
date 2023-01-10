@@ -27,7 +27,6 @@ class URLSessionInterceptorTests: XCTestCase {
     }
 
     override func tearDown() {
-        core.flushAndTearDown()
         core = nil
         super.tearDown()
     }
