@@ -163,9 +163,10 @@ internal final class DatadogCore {
     /// 
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     func set(trackingConsent: TrackingConsent) {
-        let previousConsent = consentPublisher.consent
-        allStorages.forEach { $0.migrateData(fromConsent: previousConsent, toConsent: trackingConsent) }
-        consentPublisher.consent = trackingConsent
+        if trackingConsent != consentPublisher.consent {
+            allStorages.forEach { $0.migrateUnauthorizedData(toConsent: trackingConsent) }
+            consentPublisher.consent = trackingConsent
+        }
     }
 
     /// Clears all data that has not already yet been uploaded Datadog servers.

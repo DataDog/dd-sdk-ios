@@ -47,20 +47,20 @@ internal struct FeatureStorage {
         )
     }
 
-    func migrateData(fromConsent: TrackingConsent, toConsent: TrackingConsent) {
+    func migrateUnauthorizedData(toConsent consent: TrackingConsent) {
         queue.async {
             do {
-                switch (fromConsent, toConsent) {
-                case (.pending, .notGranted):
+                switch consent {
+                case .notGranted:
                     try directories.unauthorized.deleteAllFiles()
-                case (.pending, .granted):
+                case .granted:
                     try directories.unauthorized.moveAllFiles(to: directories.authorized)
-                default:
+                case .pending:
                     break
                 }
             } catch {
                 DD.telemetry.error(
-                    "Failed to migrate data in \(featureName) after consent change from \(fromConsent) to \(toConsent)",
+                    "Failed to migrate unauthorized data in \(featureName) after consent change to to \(consent)",
                     error: error
                 )
             }

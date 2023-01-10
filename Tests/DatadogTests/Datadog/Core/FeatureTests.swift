@@ -53,7 +53,7 @@ class FeatureStorageTests: XCTestCase {
         storage.writer(for: .notGranted).write(value: ["event.consent": "notGranted"])
 
         // When
-        storage.migrateData(fromConsent: .pending, toConsent: .granted)
+        storage.migrateUnauthorizedData(toConsent: .granted)
 
         // Then
         var batch = try XCTUnwrap(storage.reader.readNextBatch())
@@ -74,7 +74,7 @@ class FeatureStorageTests: XCTestCase {
         storage.writer(for: .notGranted).write(value: ["event.consent": "notGranted"])
 
         // When
-        storage.migrateData(fromConsent: .pending, toConsent: .notGranted)
+        storage.migrateUnauthorizedData(toConsent: .notGranted)
 
         // Then
         let batch = try XCTUnwrap(storage.reader.readNextBatch())
@@ -83,7 +83,7 @@ class FeatureStorageTests: XCTestCase {
 
         XCTAssertNil(storage.reader.readNextBatch(), "There must be no other batches")
 
-        storage.migrateData(fromConsent: .pending, toConsent: .granted)
+        storage.migrateUnauthorizedData(toConsent: .granted)
         XCTAssertNil(storage.reader.readNextBatch(), "There must be no other batches, because pending events were deleted")
     }
 
