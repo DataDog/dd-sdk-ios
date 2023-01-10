@@ -471,9 +471,23 @@ struct UploadPerformanceMock: UploadPerformancePreset {
     )
 }
 
-extension PerformancePreset {
+extension BundleType: AnyMockable, RandomMockable {
+    static func mockAny() -> BundleType {
+        return .iOSApp
+    }
+
+    static func mockRandom() -> BundleType {
+        return [.iOSApp, .iOSAppExtension].randomElement()!
+    }
+}
+
+extension PerformancePreset: AnyMockable, RandomMockable {
     static func mockAny() -> Self {
         PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp)
+    }
+
+    static func mockRandom() -> PerformancePreset {
+        PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .mockRandom(), bundleType: .mockRandom())
     }
 
     static func combining(storagePerformance storage: StoragePerformanceMock, uploadPerformance upload: UploadPerformanceMock) -> Self {
@@ -709,7 +723,7 @@ extension UserInfoProvider {
 
 extension HTTPClient {
     static func mockAny() -> HTTPClient {
-        return HTTPClient(session: URLSession())
+        return HTTPClient(session: .mockAny())
     }
 }
 

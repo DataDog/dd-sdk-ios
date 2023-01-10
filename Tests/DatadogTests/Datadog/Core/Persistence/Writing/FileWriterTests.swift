@@ -18,7 +18,7 @@ class FileWriterTests: XCTestCase {
         super.tearDown()
     }
 
-    func testItWritesDataToSingleFile() throws {
+    func testItWritesDataToSingleFileInTLVFormat() throws {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
