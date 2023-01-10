@@ -49,7 +49,7 @@ internal class ThirdPartyCrashReporterMock: ThirdPartyCrashReporter {
 }
 
 internal extension DDCrashReport {
-    static func mockAny() -> DDCrashReport {
+    public static func mockAny() -> DDCrashReport {
         return DDCrashReport(
             date: Date(),
             type: "any",
@@ -185,7 +185,7 @@ internal class PLCrashReportMock: PLCrashReport {
 // swiftlint:enable implicitly_unwrapped_optional
 
 extension CrashReport {
-    static func mockAny() -> CrashReport {
+    public static func mockAny() -> CrashReport {
         return mockWith()
     }
 

@@ -90,11 +90,11 @@ extension CrashLogReceiver: AnyMockable {
 // MARK: - Log Mocks
 
 extension LogLevel: AnyMockable, RandomMockable {
-    static func mockAny() -> LogLevel {
+    public static func mockAny() -> LogLevel {
         return .debug
     }
 
-    static func mockRandom() -> LogLevel {
+    public static func mockRandom() -> LogLevel {
         return [
             LogLevel.debug,
             LogLevel.info,
@@ -109,7 +109,7 @@ extension LogLevel: AnyMockable, RandomMockable {
 extension LogEvent: EquatableInTests {}
 
 extension LogEvent: AnyMockable, RandomMockable {
-    static func mockAny() -> LogEvent {
+    public static func mockAny() -> LogEvent {
         return mockWith()
     }
 
@@ -151,7 +151,7 @@ extension LogEvent: AnyMockable, RandomMockable {
         )
     }
 
-    static func mockRandom() -> LogEvent {
+    public static func mockRandom() -> LogEvent {
         return LogEvent(
             date: .mockRandomInThePast(),
             status: .mockRandom(),
@@ -174,17 +174,17 @@ extension LogEvent: AnyMockable, RandomMockable {
 }
 
 extension LogEvent.Status: RandomMockable {
-    static func mockAny() -> LogEvent.Status {
+    public static func mockAny() -> LogEvent.Status {
         return .info
     }
 
-    static func mockRandom() -> LogEvent.Status {
+    public static func mockRandom() -> LogEvent.Status {
         return allCases.randomElement()!
     }
 }
 
 extension LogEvent.UserInfo: AnyMockable, RandomMockable {
-    static func mockAny() -> LogEvent.UserInfo {
+    public static func mockAny() -> LogEvent.UserInfo {
         return mockEmpty()
     }
 
@@ -197,7 +197,7 @@ extension LogEvent.UserInfo: AnyMockable, RandomMockable {
         )
     }
 
-    static func mockRandom() -> LogEvent.UserInfo {
+    public static func mockRandom() -> LogEvent.UserInfo {
         return .init(
             id: .mockRandom(),
             name: .mockRandom(),
@@ -208,13 +208,13 @@ extension LogEvent.UserInfo: AnyMockable, RandomMockable {
 }
 
 extension LogEvent.Dd: AnyMockable, RandomMockable {
-    static func mockAny() -> LogEvent.Dd {
+    public static func mockAny() -> LogEvent.Dd {
         return LogEvent.Dd(
             device: .mockAny()
         )
     }
 
-    static func mockRandom() -> LogEvent.Dd {
+    public static func mockRandom() -> LogEvent.Dd {
         return LogEvent.Dd(
             device: .mockRandom()
         )
@@ -222,13 +222,13 @@ extension LogEvent.Dd: AnyMockable, RandomMockable {
 }
 
 extension LogEvent.DeviceInfo: AnyMockable, RandomMockable {
-    static func mockAny() -> LogEvent.DeviceInfo {
+    public static func mockAny() -> LogEvent.DeviceInfo {
         return LogEvent.DeviceInfo(
             architecture: .mockAny()
         )
     }
 
-    static func mockRandom() -> LogEvent.DeviceInfo {
+    public static func mockRandom() -> LogEvent.DeviceInfo {
         return LogEvent.DeviceInfo(
             architecture: .mockRandom()
         )
@@ -236,7 +236,7 @@ extension LogEvent.DeviceInfo: AnyMockable, RandomMockable {
 }
 
 extension LogEvent.Error: RandomMockable {
-    static func mockRandom() -> Self {
+    public static func mockRandom() -> Self {
         return .init(
             kind: .mockRandom(),
             message: .mockRandom(),
@@ -248,7 +248,7 @@ extension LogEvent.Error: RandomMockable {
 // MARK: - Component Mocks
 
 extension LogEventBuilder: AnyMockable {
-    static func mockAny() -> LogEventBuilder {
+    public static func mockAny() -> LogEventBuilder {
         return mockWith()
     }
 
@@ -269,7 +269,7 @@ extension LogEventBuilder: AnyMockable {
 }
 
 extension LogEvent.Attributes: Equatable {
-    static func mockAny() -> LogEvent.Attributes {
+    public static func mockAny() -> LogEvent.Attributes {
         return mockWith()
     }
 
@@ -283,7 +283,7 @@ extension LogEvent.Attributes: Equatable {
         )
     }
 
-    static func mockRandom() -> LogEvent.Attributes {
+    public static func mockRandom() -> LogEvent.Attributes {
         return .init(
             userAttributes: mockRandomAttributes(),
             internalAttributes: mockRandomAttributes()

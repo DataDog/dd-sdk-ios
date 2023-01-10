@@ -5,11 +5,11 @@
  */
 
 import Foundation
-
+import TestUtilities
 @testable import Datadog
 
 extension DatadogContext: AnyMockable {
-    static func mockAny() -> DatadogContext { mockWith() }
+    public static func mockAny() -> DatadogContext { mockWith() }
 
     static func mockWith(
         site: DatadogSite? = .mockAny(),
@@ -63,7 +63,7 @@ extension DatadogContext: AnyMockable {
         )
     }
 
-    static func mockRandom() -> DatadogContext {
+    public static func mockRandom() -> DatadogContext {
         .init(
             site: .mockRandom(),
             clientToken: .mockRandom(),
@@ -93,7 +93,7 @@ extension DatadogContext: AnyMockable {
 }
 
 extension LaunchTime: AnyMockable {
-    static func mockAny() -> LaunchTime {
+    public static func mockAny() -> LaunchTime {
         .init(
             launchTime: .mockAny(),
             launchDate: .mockAny(),

@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import TestUtilities
 
 /*
 A collection of mocks for different `UIKit` types.
@@ -13,7 +14,7 @@ It follows the mocking conventions described in `FoundationMocks.swift`.
 
 #if !os(tvOS)
 extension UIDevice.BatteryState {
-    static func mockAny() -> UIDevice.BatteryState {
+    public static func mockAny() -> UIDevice.BatteryState {
         return .full
     }
 }
@@ -123,7 +124,7 @@ private class UIPressesEventMock: UIPressesEvent {
 }
 
 extension UITouch {
-    static func mockAny() -> UITouch {
+    public static func mockAny() -> UITouch {
         return mockWith(view: UIView())
     }
 
@@ -136,7 +137,7 @@ extension UITouch {
 }
 
 extension UIPress {
-    static func mockAny() -> UIPress {
+    public static func mockAny() -> UIPress {
         return mockWith(type: .select, view: UIView())
     }
 
@@ -179,11 +180,11 @@ private class UIPressMock: UIPress {
 }
 
 extension UIApplication.State: AnyMockable, RandomMockable {
-    static func mockAny() -> UIApplication.State {
+    public static func mockAny() -> UIApplication.State {
         return .active
     }
 
-    static func mockRandom() -> UIApplication.State {
+    public static func mockRandom() -> UIApplication.State {
         return [.active, .inactive, .background].randomElement()!
     }
 }

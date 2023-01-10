@@ -90,7 +90,7 @@ class CrashReportSenderMock: CrashReportSender {
 extension CrashContext: EquatableInTests {}
 
 extension CrashContext {
-    static func mockAny() -> CrashContext {
+    public static func mockAny() -> CrashContext {
         return mockWith()
     }
 
@@ -128,7 +128,7 @@ extension CrashContext {
         )
     }
 
-    static func mockRandom() -> Self {
+    public static func mockRandom() -> Self {
         .init(
             serverTimeOffset: .zero,
             service: .mockRandom(),
@@ -156,7 +156,7 @@ extension DDCrashReport.BinaryImage: EquatableInTests {}
 extension DDCrashReport.Meta: EquatableInTests {}
 
 internal extension DDCrashReport {
-    static func mockAny() -> DDCrashReport {
+    public static func mockAny() -> DDCrashReport {
         return .mockWith()
     }
 
@@ -196,7 +196,7 @@ internal extension DDCrashReport {
 }
 
 internal extension DDCrashReport.Meta {
-    static func mockAny() -> DDCrashReport.Meta {
+    public static func mockAny() -> DDCrashReport.Meta {
         return DDCrashReport.Meta(
             incidentIdentifier: nil,
             processName: nil,

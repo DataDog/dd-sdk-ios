@@ -62,7 +62,7 @@ extension TracingFeature {
 // MARK: - Span Mocks
 
 extension DDSpanContext {
-    static func mockAny() -> DDSpanContext {
+    public static func mockAny() -> DDSpanContext {
         return mockWith()
     }
 
@@ -82,7 +82,7 @@ extension DDSpanContext {
 }
 
 extension BaggageItems {
-    static func mockAny() -> BaggageItems {
+    public static func mockAny() -> BaggageItems {
         return BaggageItems(
             targetQueue: DispatchQueue(label: "com.datadoghq.baggage-items"),
             parentSpanItems: nil
@@ -129,7 +129,7 @@ extension DDSpan {
 }
 
 extension TracingUUID {
-    static func mockAny() -> TracingUUID {
+    public static func mockAny() -> TracingUUID {
         return TracingUUID(rawValue: .mockAny())
     }
 
@@ -203,9 +203,9 @@ extension SpanEvent: AnyMockable, RandomMockable {
         )
     }
 
-    static func mockAny() -> SpanEvent { .mockWith() }
+    public static func mockAny() -> SpanEvent { .mockWith() }
 
-    static func mockRandom() -> SpanEvent {
+    public static func mockRandom() -> SpanEvent {
         return SpanEvent(
             traceID: .init(rawValue: .mockRandom()),
             spanID: .init(rawValue: .mockRandom()),
@@ -243,9 +243,9 @@ extension SpanEvent.UserInfo: AnyMockable, RandomMockable {
         )
     }
 
-    static func mockAny() -> SpanEvent.UserInfo { .mockWith() }
+    public static func mockAny() -> SpanEvent.UserInfo { .mockWith() }
 
-    static func mockRandom() -> SpanEvent.UserInfo {
+    public static func mockRandom() -> SpanEvent.UserInfo {
         return SpanEvent.UserInfo(
             id: .mockRandom(),
             name: .mockRandom(),
@@ -283,7 +283,7 @@ extension Tracer {
 }
 
 extension SpanEventBuilder {
-    static func mockAny() -> SpanEventBuilder {
+    public static func mockAny() -> SpanEventBuilder {
         return mockWith()
     }
 
@@ -301,7 +301,7 @@ extension SpanEventBuilder {
 }
 
 extension TracingWithLoggingIntegration.Configuration: AnyMockable {
-    static func mockAny() -> TracingWithLoggingIntegration.Configuration {
+    public static func mockAny() -> TracingWithLoggingIntegration.Configuration {
         .init(
             service: .mockAny(),
             loggerName: .mockAny(),

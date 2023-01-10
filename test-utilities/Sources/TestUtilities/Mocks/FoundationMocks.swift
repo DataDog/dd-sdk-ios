@@ -12,13 +12,13 @@ import Foundation
  
  ```
  extension URL {
-    static func mockAny() -> URL {
+    public static func mockAny() -> URL {
         // ...
     }
  }
  
  extension URLSession {
-    static func mockDeliverySuccess(data: Data, response: HTTPURLResponse) -> URLSessionMock {
+    public static func mockDeliverySuccess(data: Data, response: HTTPURLResponse) -> URLSessionMock {
         // ...
     }
  }
@@ -33,28 +33,28 @@ import Foundation
 
 // MARK: - Basic types
 
-protocol AnyMockable {
+public protocol AnyMockable {
     static func mockAny() -> Self
 }
 
-protocol RandomMockable {
+public protocol RandomMockable {
     static func mockRandom() -> Self
 }
 
 extension Data: AnyMockable, RandomMockable {
-    static func mockAny() -> Data {
+    public static func mockAny() -> Data {
         return .mock(ofSize: 256)
     }
 
-    static func mockRepeating(byte: UInt8, times count: Int) -> Data {
+    public static func mockRepeating(byte: UInt8, times count: Int) -> Data {
         return Data(repeating: byte, count: count)
     }
 
-    static func mock<Size>(ofSize size: Size) -> Data where Size: BinaryInteger {
+    public static func mock<Size>(ofSize size: Size) -> Data where Size: BinaryInteger {
         return mockRepeating(byte: .mockRandom(), times: Int(size))
     }
 
-    static func mockRandom<Size>(ofSize size: Size) -> Data where Size: BinaryInteger {
+    public static func mockRandom<Size>(ofSize size: Size) -> Data where Size: BinaryInteger {
         let count = Int(size)
         let bytes = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
         defer { bytes.deallocate() }
@@ -67,26 +67,26 @@ extension Data: AnyMockable, RandomMockable {
         return Data(bytes: bytes, count: count)
     }
 
-    static func mockRandom() -> Data {
+    public static func mockRandom() -> Data {
         return mockRandom(ofSize: Int.mockRandom(min: 16, max: 512))
     }
 }
 
 extension Optional: AnyMockable where Wrapped: AnyMockable {
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         return .some(.mockAny())
     }
 }
 
 extension Optional: RandomMockable where Wrapped: RandomMockable {
-    static func mockRandom() -> Self {
+    public static func mockRandom() -> Self {
         return .some(.mockRandom())
     }
 }
 
 extension Array where Element == Data {
     /// Returns chunks of mocked data. Accumulative size of all chunks equals `totalSize`.
-    static func mockChunksOf(totalSize: UInt64, maxChunkSize: UInt64) -> [Data] {
+    public static func mockChunksOf(totalSize: UInt64, maxChunkSize: UInt64) -> [Data] {
         var chunks: [Data] = []
         var bytesWritten: UInt64 = 0
 
@@ -102,58 +102,58 @@ extension Array where Element == Data {
     }
 }
 
-extension Array {
+public extension Array {
     func randomElements() -> [Element] {
         return compactMap { Bool.random() ? $0 : nil }
     }
 }
 
 extension Array: AnyMockable where Element: AnyMockable {
-    static func mockAny() -> [Element] {
+    public static func mockAny() -> [Element] {
         return (0..<10).map { _ in .mockAny() }
     }
 }
 
 extension Array: RandomMockable where Element: RandomMockable {
-    static func mockRandom() -> [Element] {
+    public static func mockRandom() -> [Element] {
         return (0..<10).map { _ in .mockRandom() }
     }
 }
 
 extension Dictionary: AnyMockable where Key: AnyMockable, Value: AnyMockable {
-    static func mockAny() -> Dictionary {
+    public static func mockAny() -> Dictionary {
         return [Key.mockAny(): Value.mockAny()]
     }
 }
 
 extension Dictionary: RandomMockable where Key: RandomMockable, Value: RandomMockable {
-    static func mockRandom() -> Dictionary {
+    public static func mockRandom() -> Dictionary {
         return [Key.mockRandom(): Value.mockRandom()]
     }
 }
 
 extension Set: AnyMockable where Element: AnyMockable {
-    static func mockAny() -> Set<Element> {
+    public static func mockAny() -> Set<Element> {
         return Set([Element.mockAny()])
     }
 }
 
 extension Set: RandomMockable where Element: RandomMockable {
-    static func mockRandom() -> Set<Element> {
+    public static func mockRandom() -> Set<Element> {
         return Set([Element].mockRandom())
     }
 }
 
 extension Date: AnyMockable {
-    static func mockAny() -> Date {
+    public static func mockAny() -> Date {
         return Date(timeIntervalSinceReferenceDate: 1)
     }
 
-    static func mockRandomInThePast() -> Date {
+    public static func mockRandomInThePast() -> Date {
         return Date(timeIntervalSinceReferenceDate: TimeInterval.mockRandomInThePast())
     }
 
-    static func mockSpecificUTCGregorianDate(year: Int, month: Int, day: Int, hour: Int, minute: Int = 0, second: Int = 0) -> Date {
+    public static func mockSpecificUTCGregorianDate(year: Int, month: Int, day: Int, hour: Int, minute: Int = 0, second: Int = 0) -> Date {
         var dateComponents = DateComponents()
         dateComponents.year = year
         dateComponents.month = month
@@ -166,40 +166,40 @@ extension Date: AnyMockable {
         return dateComponents.date!
     }
 
-    static func mockDecember15th2019At10AMUTC(addingTimeInterval timeInterval: TimeInterval = 0) -> Date {
+    public static func mockDecember15th2019At10AMUTC(addingTimeInterval timeInterval: TimeInterval = 0) -> Date {
         return mockSpecificUTCGregorianDate(year: 2_019, month: 12, day: 15, hour: 10)
             .addingTimeInterval(timeInterval)
     }
 }
 
 extension TimeZone: AnyMockable {
-    static var UTC: TimeZone { TimeZone(abbreviation: "UTC")! }
-    static var EET: TimeZone { TimeZone(abbreviation: "EET")! }
-    static func mockAny() -> TimeZone { .EET }
+    public static var UTC: TimeZone { TimeZone(abbreviation: "UTC")! }
+    public static var EET: TimeZone { TimeZone(abbreviation: "EET")! }
+    public static func mockAny() -> TimeZone { .EET }
 }
 
-extension Calendar {
+public extension Calendar {
     static var gregorian: Calendar {
         return Calendar(identifier: .gregorian)
     }
 }
 
 extension URL: AnyMockable, RandomMockable {
-    static func mockAny() -> URL {
+    public static func mockAny() -> URL {
         return URL(string: "https://www.datadoghq.com")!
     }
 
-    static func mockWith(pathComponent: String) -> URL {
+    public static func mockWith(pathComponent: String) -> URL {
         return URL(string: "https://www.foo.com/")!.appendingPathComponent(pathComponent)
     }
 
-    static func mockWith(url: String, queryParams: [URLQueryItem]) -> URL {
+    public static func mockWith(url: String, queryParams: [URLQueryItem]) -> URL {
         var urlComponents = URLComponents(string: url)
         urlComponents!.queryItems = queryParams
         return urlComponents!.url!
     }
 
-    static func mockRandom() -> URL {
+    public static func mockRandom() -> URL {
         return URL(string: "https://www.foo.com/")!
             .appendingPathComponent(
                 .mockRandom(
@@ -209,7 +209,7 @@ extension URL: AnyMockable, RandomMockable {
             )
     }
 
-    static func mockRandomPath(containing subpathComponents: [String] = []) -> URL {
+    public static func mockRandomPath(containing subpathComponents: [String] = []) -> URL {
         let count: Int = .mockRandom(min: 2, max: 10)
         var components: [String] = (0..<count).map { _ in
             .mockRandom(
@@ -223,38 +223,38 @@ extension URL: AnyMockable, RandomMockable {
 }
 
 extension UUID: AnyMockable, RandomMockable {
-    static func mockAny() -> UUID {
+    public static func mockAny() -> UUID {
         return UUID()
     }
 
-    static func mockRandom() -> UUID {
+    public static func mockRandom() -> UUID {
         return UUID()
     }
 }
 
 extension String: AnyMockable, RandomMockable {
-    static func mockAny() -> String {
+    public static func mockAny() -> String {
         return "abc"
     }
 
-    static func mockRandom() -> String {
+    public static func mockRandom() -> String {
         return mockRandom(length: 10)
     }
 
-    static func mockRandom(length: Int) -> String {
+    public static func mockRandom(length: Int) -> String {
         return mockRandom(among: .alphanumericsAndWhitespace, length: length)
     }
 
-    static func mockRandom(among characters: RandomStringCharacterSet, length: Int = 10) -> String {
+    public static func mockRandom(among characters: RandomStringCharacterSet, length: Int = 10) -> String {
         return characters.random(ofLength: length)
     }
 
-    static func mockRepeating(character: Character, times: Int) -> String {
+    public static func mockRepeating(character: Character, times: Int) -> String {
         let characters = (0..<times).map { _ in character }
         return String(characters)
     }
 
-    enum RandomStringCharacterSet {
+    public enum RandomStringCharacterSet {
         private static let alphanumericCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         private static let decimalDigitCharacters = "0123456789"
 
@@ -269,7 +269,7 @@ extension String: AnyMockable, RandomMockable {
         /// All Unicode scalars.
         case allUnicodes
 
-        func random(ofLength length: Int) -> String {
+        public func random(ofLength length: Int) -> String {
             var characters: String
             switch self {
             case .alphanumerics:
@@ -292,15 +292,15 @@ extension String: AnyMockable, RandomMockable {
 }
 
 extension Character: AnyMockable, RandomMockable {
-    static func mockAny() -> Character { "c" }
+    public static func mockAny() -> Character { "c" }
 
-    static func mockRandom() -> Character {
+    public static func mockRandom() -> Character {
         return Character(Unicode.Scalar.mockRandom())
     }
 }
 
 extension Unicode.Scalar: RandomMockable {
-    static func mockRandom() -> Self {
+    public static func mockRandom() -> Self {
         // From `Unicode.Scalar.init?(_ v: UInt32))`:
         //
         // > - Parameter v: The Unicode code point to use for the scalar. The
@@ -316,13 +316,13 @@ extension Unicode.Scalar: RandomMockable {
 }
 
 extension Bool: RandomMockable {
-    static func mockRandom() -> Bool {
+    public static func mockRandom() -> Bool {
         return .random()
     }
 }
 
 extension Range where Bound == Int {
-    static func mockRandomBetween(min: Int, max: Int) -> Range<Int> {
+    public static func mockRandomBetween(min: Int, max: Int) -> Range<Int> {
         let bound1: Int = .mockRandom(min: min, max: max)
         let bound2: Int = .mockRandom(min: min, max: max)
         return bound1 < bound2 ? bound1..<bound2 : bound2..<bound1
@@ -330,11 +330,11 @@ extension Range where Bound == Int {
 }
 
 extension FixedWidthInteger where Self: RandomMockable {
-    static func mockRandom() -> Self {
+    public static func mockRandom() -> Self {
         return .random(in: min...max)
     }
 
-    static func mockRandom(min: Self = .min, max: Self = .max, otherThan values: Set<Self> = []) -> Self {
+    public static func mockRandom(min: Self = .min, max: Self = .max, otherThan values: Set<Self> = []) -> Self {
         var random: Self = .random(in: min...max)
         while values.contains(random) { random = .random(in: min...max) }
         return random
@@ -342,7 +342,7 @@ extension FixedWidthInteger where Self: RandomMockable {
 }
 
 extension ExpressibleByIntegerLiteral where Self: AnyMockable {
-    static func mockAny() -> Self { 0 }
+    public static func mockAny() -> Self { 0 }
 }
 
 extension UInt: AnyMockable, RandomMockable { }
@@ -357,7 +357,7 @@ extension Int32: AnyMockable, RandomMockable { }
 extension Int64: AnyMockable, RandomMockable { }
 
 extension UInt64 {
-    static func mockRandom(otherThan value: UInt64) -> UInt64 {
+    public static func mockRandom(otherThan value: UInt64) -> UInt64 {
         var random: UInt64 = .mockRandom()
         while random == value { random = .mockRandom() }
         return random
@@ -365,70 +365,74 @@ extension UInt64 {
 }
 
 extension Bool: AnyMockable {
-    static func mockAny() -> Bool {
+    public static func mockAny() -> Bool {
         return false
     }
 }
 
 extension Float: AnyMockable, RandomMockable {
-    static func mockAny() -> Float {
+    public static func mockAny() -> Float {
         return 0
     }
 
-    static func mockRandom() -> Float {
+    public static func mockRandom() -> Float {
         return .random(in: -Float(Int.min)...Float(Int.max))
     }
 }
 
 extension Double: AnyMockable, RandomMockable {
-    static func mockAny() -> Double {
+    public static func mockAny() -> Double {
         return 0
     }
 
-    static func mockRandom() -> Double {
+    public static func mockRandom() -> Double {
         return mockRandom(min: 0, max: .greatestFiniteMagnitude)
     }
 
-    static func mockRandom(min: Double, max: Double) -> Double {
+    public static func mockRandom(min: Double, max: Double) -> Double {
         return .random(in: min...max)
     }
 }
 
 extension TimeInterval {
-    static let distantFuture = TimeInterval(integerLiteral: .max)
+    public static let distantFuture = TimeInterval(integerLiteral: .max)
 
-    static func mockRandomInThePast() -> TimeInterval {
+    public static func mockRandomInThePast() -> TimeInterval {
         return random(in: 0..<Date().timeIntervalSinceReferenceDate)
     }
 }
 
-struct ErrorMock: Error, CustomStringConvertible {
-    let description: String
+public struct ErrorMock: Error, CustomStringConvertible {
+    public let description: String
 
-    init(_ description: String = "") {
+    public init(_ description: String = "") {
         self.description = description
     }
 }
 
-struct FailingEncodableMock: Encodable {
-    let errorMessage: String
+public struct FailingEncodableMock: Encodable {
+    public let errorMessage: String
 
-    func encode(to encoder: Encoder) throws {
+    public init(errorMessage: String) {
+        self.errorMessage = errorMessage
+    }
+
+    public func encode(to encoder: Encoder) throws {
         throw ErrorMock(errorMessage)
     }
 }
 
 extension NSError: AnyMockable, RandomMockable {
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         .init(domain: .mockAny(), code: .mockAny())
     }
 
-    static func mockRandom() -> Self {
+    public static func mockRandom() -> Self {
         .init(domain: .mockRandom(), code: .mockRandom())
     }
 }
 
-class BundleMock: Bundle {
+public class BundleMock: Bundle {
     // swiftlint:disable identifier_name
     fileprivate var _bundlePath: String = .mockAny()
     fileprivate var _bundleIdentifier: String? = nil
@@ -437,9 +441,9 @@ class BundleMock: Bundle {
     fileprivate var _CFBundleExecutable: String? = nil
     // swiftlint:enable identifier_name
 
-    override var bundlePath: String { _bundlePath }
-    override var bundleIdentifier: String? { _bundleIdentifier }
-    override func object(forInfoDictionaryKey key: String) -> Any? {
+    override public var bundlePath: String { _bundlePath }
+    override public var bundleIdentifier: String? { _bundleIdentifier }
+    override public func object(forInfoDictionaryKey key: String) -> Any? {
         switch key {
         case "CFBundleVersion": return _CFBundleVersion
         case "CFBundleShortVersionString": return _CFBundleShortVersionString
@@ -450,11 +454,11 @@ class BundleMock: Bundle {
 }
 
 extension Bundle {
-    static func mockAny() -> Bundle {
+    public static func mockAny() -> Bundle {
         return mockWith()
     }
 
-    static func mockWith(
+    public static func mockWith(
         bundlePath: String = .mockAny(),
         bundleIdentifier: String? = .mockAny(),
         CFBundleVersion: String? = .mockAny(),
@@ -474,15 +478,15 @@ extension Bundle {
 // MARK: - HTTP
 
 extension URLResponse {
-    static func mockAny() -> HTTPURLResponse {
+    public static func mockAny() -> HTTPURLResponse {
         return .mockResponseWith(statusCode: 200)
     }
 
-    static func mockResponseWith(statusCode: Int) -> HTTPURLResponse {
+    public static func mockResponseWith(statusCode: Int) -> HTTPURLResponse {
         return HTTPURLResponse(url: .mockAny(), statusCode: statusCode, httpVersion: nil, headerFields: nil)!
     }
 
-    static func mockWith(
+    public static func mockWith(
         statusCode: Int = 200,
         mimeType: String? = "application/json"
     ) -> HTTPURLResponse {
@@ -497,17 +501,17 @@ extension URLResponse {
 }
 
 extension URLRequest: AnyMockable {
-    static func mockAny() -> URLRequest {
+    public static func mockAny() -> URLRequest {
         return URLRequest(url: .mockAny())
     }
 
-    static func mockWith(httpMethod: String) -> URLRequest {
+    public static func mockWith(httpMethod: String) -> URLRequest {
         var request = URLRequest(url: .mockAny())
         request.httpMethod = httpMethod
         return request
     }
 
-    static func mockWith(url: String, queryParams: [URLQueryItem], httpMethod: String) -> URLRequest {
+    public static func mockWith(url: String, queryParams: [URLQueryItem], httpMethod: String) -> URLRequest {
         let url: URL = .mockWith(url: url, queryParams: queryParams)
         var request = URLRequest(url: url)
         request.httpMethod = httpMethod
@@ -517,45 +521,45 @@ extension URLRequest: AnyMockable {
 
 // MARK: - Process
 
-class ProcessInfoMock: ProcessInfo {
+public class ProcessInfoMock: ProcessInfo {
     private var _isLowPowerModeEnabled: Bool
     private var _arguments: [String]
 
-    init(isLowPowerModeEnabled: Bool = .mockAny(), arguments: [String] = []) {
+    public init(isLowPowerModeEnabled: Bool = .mockAny(), arguments: [String] = []) {
         _isLowPowerModeEnabled = isLowPowerModeEnabled
         _arguments = arguments
     }
 
-    override var isLowPowerModeEnabled: Bool { _isLowPowerModeEnabled }
+    public override var isLowPowerModeEnabled: Bool { _isLowPowerModeEnabled }
 
-    override var arguments: [String] { _arguments }
+    public override var arguments: [String] { _arguments }
 }
 
 // MARK: - URLSession
 
 extension URLSession {
-    static func mockAny() -> URLSession {
+    public static func mockAny() -> URLSession {
         return .shared
     }
 }
 
 extension URLSessionTask {
-    static func mockAny() -> URLSessionTask {
+    public static func mockAny() -> URLSessionTask {
         return URLSessionTaskMock(request: .mockAny(), response: .mockAny())
     }
 
-    static func mockWith(request: URLRequest, response: HTTPURLResponse) -> URLSessionTask {
+    public static func mockWith(request: URLRequest, response: HTTPURLResponse) -> URLSessionTask {
         return URLSessionTaskMock(request: request, response: response)
     }
 }
 
 extension URLSessionTaskMetrics {
-    static func mockAny() -> URLSessionTaskMetrics {
+    public static func mockAny() -> URLSessionTaskMetrics {
         return URLSessionTaskMetrics()
     }
 
     @available(iOS 13, *)
-    static func mockWith(
+    public static func mockWith(
         taskInterval: DateInterval = .init(start: Date(), duration: 1),
         transactionMetrics: [URLSessionTaskTransactionMetrics] = []
     ) -> URLSessionTaskMetrics {
@@ -567,13 +571,13 @@ extension URLSessionTaskMetrics {
 }
 
 extension URLSessionTaskTransactionMetrics {
-    static func mockAny() -> URLSessionTaskTransactionMetrics {
+    public static func mockAny() -> URLSessionTaskTransactionMetrics {
         return URLSessionTaskTransactionMetrics()
     }
 
     /// Mocks `URLSessionTaskTransactionMetrics` by spreading out detailed values between `start` and `end`.
     @available(iOS 13, *)
-    static func mockBySpreadingDetailsBetween(
+    public static func mockBySpreadingDetailsBetween(
         start: Date,
         end: Date,
         resourceFetchType: URLSessionTaskMetrics.ResourceFetchType = .networkLoad
@@ -610,7 +614,7 @@ extension URLSessionTaskTransactionMetrics {
     }
 
     @available(iOS 13, *)
-    static func mockWith(
+    public static func mockWith(
         resourceFetchType: URLSessionTaskMetrics.ResourceFetchType = .networkLoad,
         fetchStartDate: Date? = nil,
         domainLookupStartDate: Date? = nil,

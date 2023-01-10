@@ -11,7 +11,7 @@ import TestUtilities
 // MARK: - Configuration Mocks
 
 extension TrackingConsent {
-    static func mockRandom() -> TrackingConsent {
+    public static func mockRandom() -> TrackingConsent {
         return [.granted, .notGranted, .pending].randomElement()!
     }
 
@@ -26,13 +26,13 @@ extension TrackingConsent {
 }
 
 extension ConsentProvider {
-    static func mockAny() -> ConsentProvider {
+    public static func mockAny() -> ConsentProvider {
         return ConsentProvider(initialConsent: .mockRandom())
     }
 }
 
 extension Datadog.Configuration {
-    static func mockAny() -> Datadog.Configuration { .mockWith() }
+    public static func mockAny() -> Datadog.Configuration { .mockWith() }
 
     static func mockWith(
         rumApplicationID: String? = .mockAny(),
@@ -105,11 +105,11 @@ extension Datadog.Configuration {
 }
 
 extension Sampler: AnyMockable, RandomMockable {
-    static func mockAny() -> Sampler {
+    public static func mockAny() -> Sampler {
         return .init(samplingRate: 50)
     }
 
-    static func mockRandom() -> Sampler {
+    public static func mockRandom() -> Sampler {
         return .init(samplingRate: .random(in: (0.0...100.0)))
     }
 
@@ -127,7 +127,7 @@ typealias BatchSize = Datadog.Configuration.BatchSize
 extension BatchSize: CaseIterable {
     public static var allCases: [Self] { [.small, .medium, .large] }
 
-    static func mockRandom() -> Self {
+    public static func mockRandom() -> Self {
         allCases.randomElement()!
     }
 }
@@ -137,7 +137,7 @@ typealias UploadFrequency = Datadog.Configuration.UploadFrequency
 extension UploadFrequency: CaseIterable {
     public static var allCases: [Self] { [.frequent, .average, .rare] }
 
-    static func mockRandom() -> Self {
+    public static func mockRandom() -> Self {
         allCases.randomElement()!
     }
 }
@@ -147,35 +147,35 @@ extension BundleType: CaseIterable {
 }
 
 extension Datadog.Configuration.DatadogEndpoint: AnyMockable, RandomMockable {
-    static func mockAny() -> Datadog.Configuration.DatadogEndpoint {
+    public static func mockAny() -> Datadog.Configuration.DatadogEndpoint {
         return .us1
     }
 
-    static func mockRandom() -> Self {
+    public static func mockRandom() -> Self {
         return [.us1, .us3, .eu1, .us1_fed].randomElement()!
     }
 }
 
 extension Datadog.Configuration.LogsEndpoint {
-    static func mockRandom() -> Self {
+    public static func mockRandom() -> Self {
         return [.us1, .us3, .eu1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
     }
 }
 
 extension Datadog.Configuration.TracesEndpoint {
-    static func mockRandom() -> Self {
+    public static func mockRandom() -> Self {
         return [.us1, .us3, .eu1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
     }
 }
 
 extension Datadog.Configuration.RUMEndpoint {
-    static func mockRandom() -> Self {
+    public static func mockRandom() -> Self {
         return [.us1, .us3, .eu1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
     }
 }
 
 extension FeaturesConfiguration {
-    static func mockAny() -> Self { mockWith() }
+    public static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
         common: Common = .mockAny(),
@@ -197,7 +197,7 @@ extension FeaturesConfiguration {
 }
 
 extension FeaturesConfiguration.Common {
-    static func mockAny() -> Self { mockWith() }
+    public static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
         site: DatadogSite? = .mockAny(),
@@ -239,7 +239,7 @@ extension FeaturesConfiguration.Common {
 }
 
 extension FeaturesConfiguration.Logging {
-    static func mockAny() -> Self { mockWith() }
+    public static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
         uploadURL: URL = .mockAny(),
@@ -259,7 +259,7 @@ extension FeaturesConfiguration.Logging {
 }
 
 extension FeaturesConfiguration.Tracing {
-    static func mockAny() -> Self { mockWith() }
+    public static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
         uploadURL: URL = .mockAny(),
@@ -277,7 +277,7 @@ extension FeaturesConfiguration.Tracing {
 }
 
 extension FeaturesConfiguration.RUM {
-    static func mockAny() -> Self { mockWith() }
+    public static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
         uploadURL: URL = .mockAny(),
@@ -321,7 +321,7 @@ extension FeaturesConfiguration.RUM {
 }
 
 extension FeaturesConfiguration.CrashReporting {
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         return mockWith()
     }
 
@@ -335,7 +335,7 @@ extension FeaturesConfiguration.CrashReporting {
 }
 
 extension FeaturesConfiguration.URLSessionAutoInstrumentation {
-    static func mockAny() -> Self { mockWith() }
+    public static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
         userDefinedFirstPartyHosts: FirstPartyHosts = .init(),
@@ -357,7 +357,7 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
 }
 
 extension AppContext {
-    static func mockAny() -> AppContext {
+    public static func mockAny() -> AppContext {
         return mockWith()
     }
 
@@ -479,7 +479,7 @@ struct UploadPerformanceMock: UploadPerformancePreset {
 }
 
 extension PerformancePreset {
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp)
     }
 
@@ -625,7 +625,7 @@ internal class InMemoryWriter: AsyncWriter {
 }
 
 extension DataFormat {
-    static func mockAny() -> DataFormat {
+    public static func mockAny() -> DataFormat {
         return mockWith()
     }
 
@@ -682,11 +682,11 @@ class RelativeDateProvider: DateProvider {
 }
 
 extension AppState: AnyMockable, RandomMockable {
-    static func mockAny() -> AppState {
+    public static func mockAny() -> AppState {
         return .active
     }
 
-    static func mockRandom() -> AppState {
+    public static func mockRandom() -> AppState {
         return [.active, .inactive, .background].randomElement()!
     }
 
@@ -696,7 +696,7 @@ extension AppState: AnyMockable, RandomMockable {
 }
 
 extension AppStateHistory: AnyMockable {
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         return mockAppInForeground(since: .mockDecember15th2019At10AMUTC())
     }
 
@@ -720,7 +720,7 @@ class AppStateListenerMock: AppStateListening, AnyMockable {
         self.history = history
     }
 
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         return mockAppInForeground(since: .mockDecember15th2019At10AMUTC())
     }
 
@@ -746,7 +746,7 @@ class AppStateListenerMock: AppStateListening, AnyMockable {
 }
 
 extension UserInfo: AnyMockable, RandomMockable {
-    static func mockAny() -> UserInfo {
+    public static func mockAny() -> UserInfo {
         return mockEmpty()
     }
 
@@ -754,7 +754,7 @@ extension UserInfo: AnyMockable, RandomMockable {
         return UserInfo(id: nil, name: nil, email: nil, extraInfo: [:])
     }
 
-    static func mockRandom() -> UserInfo {
+    public static func mockRandom() -> UserInfo {
         return .init(
             id: .mockRandom(),
             name: .mockRandom(),
@@ -767,7 +767,7 @@ extension UserInfo: AnyMockable, RandomMockable {
 extension UserInfo: EquatableInTests {}
 
 extension UserInfoProvider {
-    static func mockAny() -> UserInfoProvider {
+    public static func mockAny() -> UserInfoProvider {
         return mockWith()
     }
 
@@ -779,7 +779,7 @@ extension UserInfoProvider {
 }
 
 extension HTTPClient {
-    static func mockAny() -> HTTPClient {
+    public static func mockAny() -> HTTPClient {
         return HTTPClient(session: URLSession())
     }
 }
@@ -801,7 +801,7 @@ struct DataUploaderMock: DataUploaderType {
 }
 
 extension DataUploadStatus: RandomMockable {
-    static func mockRandom() -> DataUploadStatus {
+    public static func mockRandom() -> DataUploadStatus {
         return DataUploadStatus(
             needsRetry: .random(),
             userDebugDescription: .mockRandom(),
@@ -823,7 +823,7 @@ extension DataUploadStatus: RandomMockable {
 }
 
 extension DeviceInfo {
-    static func mockAny() -> DeviceInfo {
+    public static func mockAny() -> DeviceInfo {
         return .mockWith()
     }
 
@@ -843,7 +843,7 @@ extension DeviceInfo {
         )
     }
 
-    static func mockRandom() -> DeviceInfo {
+    public static func mockRandom() -> DeviceInfo {
         return .init(
             name: .mockRandom(),
             model: .mockRandom(),
@@ -861,7 +861,7 @@ extension BatteryStatus.State {
 }
 
 extension BatteryStatus {
-    static func mockAny() -> BatteryStatus {
+    public static func mockAny() -> BatteryStatus {
         return mockWith()
     }
 
@@ -874,7 +874,7 @@ extension BatteryStatus {
 }
 
 extension NetworkConnectionInfo.Reachability {
-    static func mockAny() -> NetworkConnectionInfo.Reachability {
+    public static func mockAny() -> NetworkConnectionInfo.Reachability {
         return .maybe
     }
 
@@ -886,13 +886,13 @@ extension NetworkConnectionInfo.Reachability {
 }
 
 extension NetworkConnectionInfo.Interface: RandomMockable {
-    static func mockRandom() -> NetworkConnectionInfo.Interface {
+    public static func mockRandom() -> NetworkConnectionInfo.Interface {
         return allCases.randomElement()!
     }
 }
 
 extension NetworkConnectionInfo: RandomMockable {
-    static func mockAny() -> NetworkConnectionInfo {
+    public static func mockAny() -> NetworkConnectionInfo {
         return mockWith()
     }
 
@@ -914,7 +914,7 @@ extension NetworkConnectionInfo: RandomMockable {
         )
     }
 
-    static func mockRandom() -> NetworkConnectionInfo {
+    public static func mockRandom() -> NetworkConnectionInfo {
         return NetworkConnectionInfo(
             reachability: .mockRandom(),
             availableInterfaces: .mockRandom(),
@@ -927,15 +927,15 @@ extension NetworkConnectionInfo: RandomMockable {
 }
 
 extension CarrierInfo.RadioAccessTechnology: RandomMockable {
-    static func mockAny() -> CarrierInfo.RadioAccessTechnology { .LTE }
+    public static func mockAny() -> CarrierInfo.RadioAccessTechnology { .LTE }
 
-    static func mockRandom() -> CarrierInfo.RadioAccessTechnology {
+    public static func mockRandom() -> CarrierInfo.RadioAccessTechnology {
         return allCases.randomElement()!
     }
 }
 
 extension CarrierInfo: RandomMockable {
-    static func mockAny() -> CarrierInfo {
+    public static func mockAny() -> CarrierInfo {
         return mockWith()
     }
 
@@ -953,7 +953,7 @@ extension CarrierInfo: RandomMockable {
         )
     }
 
-    static func mockRandom() -> CarrierInfo {
+    public static func mockRandom() -> CarrierInfo {
         return CarrierInfo(
             carrierName: .mockRandom(),
             carrierISOCountryCode: .mockRandom(),
@@ -964,13 +964,13 @@ extension CarrierInfo: RandomMockable {
 }
 
 extension ValuePublisher: AnyMockable where Value: AnyMockable {
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         return .init(initialValue: .mockAny())
     }
 }
 
 extension ValuePublisher: RandomMockable where Value: RandomMockable {
-    static func mockRandom() -> Self {
+    public static func mockRandom() -> Self {
         return .init(initialValue: .mockRandom())
     }
 }
@@ -1003,7 +1003,7 @@ internal class ValueObserverMock<Value>: ValueObserver {
 }
 
 extension DDError: AnyMockable, RandomMockable {
-    static func mockAny() -> DDError {
+    public static func mockAny() -> DDError {
         return DDError(
             type: .mockAny(),
             message: .mockAny(),
@@ -1011,7 +1011,7 @@ extension DDError: AnyMockable, RandomMockable {
         )
     }
 
-    static func mockRandom() -> DDError {
+    public static func mockRandom() -> DDError {
         return DDError(
             type: .mockRandom(),
             message: .mockRandom(),

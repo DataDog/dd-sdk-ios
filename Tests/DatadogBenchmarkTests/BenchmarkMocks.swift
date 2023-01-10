@@ -26,7 +26,7 @@ struct FeatureRequestBuilderMock: FeatureRequestBuilder {
 }
 
 extension DatadogContext: AnyMockable {
-    static func mockAny() -> DatadogContext {
+    public static func mockAny() -> DatadogContext {
         .init(
             site: .us1,
             clientToken: .mockAny(),

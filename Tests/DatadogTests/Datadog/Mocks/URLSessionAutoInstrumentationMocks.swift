@@ -96,7 +96,7 @@ class URLSessionInterceptionHandlerMock: URLSessionInterceptionHandler {
 }
 
 extension ResourceCompletion {
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         return mockWith()
     }
 
@@ -109,7 +109,7 @@ extension ResourceCompletion {
 }
 
 extension ResourceMetrics {
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         return mockWith()
     }
 
