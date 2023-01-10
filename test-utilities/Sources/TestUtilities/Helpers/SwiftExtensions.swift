@@ -12,7 +12,7 @@ import XCTest
  Extensions using Datadog domain objects should be put in `DatadogExtensions.swift`.
 */
 
-extension Optional {
+public extension Optional {
     struct UnwrappingException: Error {}
 
     func unwrapOrThrow(file: StaticString = #file, line: UInt = #line) throws -> Wrapped {
@@ -26,13 +26,13 @@ extension Optional {
     }
 }
 
-extension Date {
+public extension Date {
     func secondsAgo(_ seconds: TimeInterval) -> Date {
         return addingTimeInterval(-seconds)
     }
 }
 
-extension String {
+public extension String {
     var utf8Data: Data { data(using: .utf8)! }
 
     func removingPrefix(_ prefix: String) -> String {
@@ -54,11 +54,11 @@ extension String {
     }
 }
 
-extension Data {
+public extension Data {
     var utf8String: String { String(data: self, encoding: .utf8)! }
 }
 
-extension InputStream {
+public extension InputStream {
     func readAllBytes(expectedSize: Int) -> Data {
         var data = Data()
 
@@ -86,7 +86,7 @@ extension InputStream {
     }
 }
 
-extension URLRequest {
+public extension URLRequest {
     func removing(httpHeaderField: String) -> URLRequest {
         var request = self
         request.setValue(nil, forHTTPHeaderField: httpHeaderField)
@@ -129,7 +129,7 @@ extension URLRequest {
     }
 }
 
-extension URLSessionTask.State {
+public extension URLSessionTask.State {
     func dump() -> String {
         switch self {
         case .running: return "running"
@@ -141,7 +141,7 @@ extension URLSessionTask.State {
     }
 }
 
-extension URLSessionTask {
+public extension URLSessionTask {
     func dump() -> String {
         func indent(string: String, by prefix: String) -> String {
             return string
@@ -166,7 +166,7 @@ extension URLSessionTask {
 
 /// Combines two arrays together, e.g. `["a", "b"].combined(with: [1, 2, 3])` gives
 /// `[("a", 1), ("a", 2), ("a", 3), ("b", 1), ("b", 2), ("b", 3)]`.
-extension Array {
+public extension Array {
     func combined<B>(with other: [B]) -> [(Element, B)] {
         return self.flatMap { a in other.map { b in (a, b) } }
     }

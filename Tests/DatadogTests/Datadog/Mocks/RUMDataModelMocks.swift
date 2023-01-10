@@ -5,6 +5,7 @@
  */
 
 @testable import Datadog
+import TestUtilities
 
 extension RUMUser: EquatableInTests {}
 extension RUMConnectivity: EquatableInTests {}

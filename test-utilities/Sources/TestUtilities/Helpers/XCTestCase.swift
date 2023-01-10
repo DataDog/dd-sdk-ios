@@ -7,7 +7,7 @@
 import Foundation
 import XCTest
 
-extension XCTestCase {
+public extension XCTestCase {
     /// Calls given closures concurrently from multiple threads.
     /// Each closure is called only once.
     func callConcurrently(
@@ -67,7 +67,7 @@ extension XCTestCase {
         )
     }
 
-    private func AssertDictionariesEqual(
+    func AssertDictionariesEqual(
         _ dictionary1: [String: Any],
         _ dictionary2: [String: Any],
         keyPath: String,

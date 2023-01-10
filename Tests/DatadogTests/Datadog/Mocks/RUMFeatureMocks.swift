@@ -5,6 +5,7 @@
  */
 
 @testable import Datadog
+import TestUtilities
 import XCTest
 
 extension RUMFeature {

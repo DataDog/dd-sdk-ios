@@ -5,6 +5,7 @@
  */
 
 @testable import Datadog
+import TestUtilities
 
 extension CrashReporter {
     /// Mocks the Crash Reporting feature instance which doesn't load crash reports.

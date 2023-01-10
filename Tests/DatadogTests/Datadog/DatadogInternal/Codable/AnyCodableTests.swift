@@ -24,6 +24,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import Datadog
 
 class AnyCodableTests: XCTestCase {

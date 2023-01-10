@@ -5,13 +5,14 @@
  */
 
 import Foundation
+import TestUtilities
 
 /// Utility protocol adding `Equatable` conformance to any arbitrary type.
 /// The equatability is determined based on comparing type mirrors and values.
-protocol EquatableInTests: Equatable {}
+public protocol EquatableInTests: Equatable {}
 
-extension EquatableInTests {
-    public static func == (lhs: Self, rhs: Self) -> Bool {
+public extension EquatableInTests {
+    static func == (lhs: Self, rhs: Self) -> Bool {
         return equals(lhs: lhs, rhs: rhs)
     }
 }
