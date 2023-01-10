@@ -1098,4 +1098,11 @@ extension SRIncrementalSnapshotRecord {
         default: return nil
         }
     }
+
+    var viewportResizeData: SRIncrementalSnapshotRecord.Data.ViewportResizeData? {
+        switch data {
+        case .viewportResizeData(let value): return value
+        default: return nil
+        }
+    }
 }

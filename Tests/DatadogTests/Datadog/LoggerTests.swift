@@ -582,7 +582,7 @@ class LoggerTests: XCTestCase {
         let logging: LoggingFeature = .mockAny()
         core.register(feature: logging)
 
-        let rum: RUMFeature = .mockAny()
+        let rum: RUMFeature = .mockWith(messageReceiver: ErrorMessageReceiver())
         core.register(feature: rum)
 
         // given

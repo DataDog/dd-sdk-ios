@@ -753,7 +753,7 @@ For more information, see the [URLSessionConfiguration.connectionProxyDictionary
 [1]: https://app.datadoghq.com/rum/application/create
 [2]: https://docs.datadoghq.com/real_user_monitoring/ios
 [3]: https://docs.datadoghq.com/real_user_monitoring/ios/data_collected
-[4]: https://docs.datadoghq.com/real_user_monitoring/explorer/?tab=measures#setup-facets-and-measures
+[4]: https://docs.datadoghq.com/real_user_monitoring/explorer/search/#setup-facets-and-measures
 [5]: https://docs.datadoghq.com/real_user_monitoring/ios/data_collected/?tab=error#error-attributes
 [6]: https://docs.datadoghq.com/real_user_monitoring/connect_rum_and_traces?tab=browserrum
 [7]: https://docs.datadoghq.com/real_user_monitoring/ios/data_collected?tab=session#default-attributes

@@ -23,7 +23,35 @@ class UIImageViewRecorderTests: XCTestCase {
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: .mockAny()))
         XCTAssertTrue(semantics is InvisibleElement)
-        XCTAssertNil(semantics.wireframesBuilder)
+        XCTAssertFalse(semantics.recordSubtree, "Image view's subtree should not be recorded")
+    }
+
+    func testWhenImageViewHasNoImageAndSomeAppearance() throws {
+        // When
+        imageView.image = nil
+        viewAttributes = .mock(fixture: .visibleWithSomeAppearance)
+
+        // Then
+        let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: .mockAny()))
+        XCTAssertTrue(semantics is SpecificElement)
+        XCTAssertTrue(semantics.recordSubtree, "Image view's subtree should be recorded")
+
+        let builder = try XCTUnwrap(semantics.wireframesBuilder as? UIImageViewWireframesBuilder)
+        XCTAssertEqual(builder.buildWireframes(with: WireframesBuilder()).count, 1)
+    }
+
+    func testWhenImageViewHasImageAndSomeAppearance() throws {
+        // When
+        imageView.image = UIImage()
+        viewAttributes = .mock(fixture: .visibleWithSomeAppearance)
+
+        // Then
+        let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: .mockAny()))
+        XCTAssertTrue(semantics is SpecificElement)
+        XCTAssertTrue(semantics.recordSubtree, "Image view's subtree should be recorded")
+
+        let builder = try XCTUnwrap(semantics.wireframesBuilder as? UIImageViewWireframesBuilder)
+        XCTAssertEqual(builder.buildWireframes(with: WireframesBuilder()).count, 2)
     }
 
     func testWhenImageViewHasImageOrAppearance() throws {
@@ -45,7 +73,6 @@ class UIImageViewRecorderTests: XCTestCase {
 
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: .mockAny()) as? SpecificElement)
-        XCTAssertFalse(semantics.recordSubtree, "Image view's subtree should not be recorded")
 
         let builder = try XCTUnwrap(semantics.wireframesBuilder as? UIImageViewWireframesBuilder)
         XCTAssertEqual(builder.attributes, viewAttributes)

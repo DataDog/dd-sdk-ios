@@ -18,10 +18,37 @@ class WebViewEventReceiverTests: XCTestCase {
                 ]
             ]
         ),
-        messageReceiver: RUMMessageReceiver()
+        messageReceiver: WebViewEventReceiver.mockAny()
     )
 
     let mockCommandSubscriber = RUMCommandSubscriberMock()
+
+    func testReceiveEvent() throws {
+        // Given
+        struct Event: Encodable {
+            let test: String
+        }
+
+        let core = PassthroughCoreMock(
+            expectation: expectation(description: "Send Event"),
+            messageReceiver: WebViewEventReceiver.mockAny()
+        )
+
+        // When
+        let sent: [String: Any] = [
+            "test": String.mockRandom()
+        ]
+
+        core.send(
+            message: .custom(key: WebViewEventReceiver.MessageKeys.browserEvent, baggage: .init(sent))
+        )
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let received: AnyEncodable = try XCTUnwrap(core.events().last, "It should send event")
+        try AssertEncodedRepresentationsEqual(received, AnyEncodable(sent))
+    }
 
     func testWhenValidWebRUMEventPassed_itDecoratesAndPassesToCoreMessageBus() throws {
         let receiver = WebViewEventReceiver(

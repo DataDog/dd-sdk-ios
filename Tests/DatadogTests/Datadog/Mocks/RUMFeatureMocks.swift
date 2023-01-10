@@ -14,7 +14,7 @@ extension RUMFeature {
     /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
     static func mockWith(
         configuration: FeaturesConfiguration.RUM = .mockAny(),
-        messageReceiver: FeatureMessageReceiver = RUMMessageReceiver()
+        messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
     ) -> RUMFeature {
         return RUMFeature(
             storage: .mockNoOp(),
@@ -29,6 +29,44 @@ extension DatadogCoreProxy {
     func waitAndReturnRUMEventMatchers(file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
         return try waitAndReturnEventsData(of: RUMFeature.self)
             .map { data in try RUMEventMatcher.fromJSONObjectData(data) }
+    }
+}
+
+extension WebViewEventReceiver: AnyMockable {
+    static func mockAny() -> Self {
+        .mockWith()
+    }
+
+    static func mockWith(
+        dateProvider: DateProvider = SystemDateProvider(),
+        commandSubscriber: RUMCommandSubscriber = GlobalRUMCommandSubscriber()
+    ) -> Self {
+        .init(
+            dateProvider: dateProvider,
+            commandSubscriber: commandSubscriber
+        )
+    }
+}
+
+extension CrashReportReceiver: AnyMockable {
+    static func mockAny() -> Self {
+        .mockWith()
+    }
+
+    static func mockWith(
+        applicationID: String = .mockAny(),
+        dateProvider: DateProvider = SystemDateProvider(),
+        sessionSampler: Sampler = .mockKeepAll(),
+        backgroundEventTrackingEnabled: Bool = true,
+        uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
+    ) -> Self {
+        .init(
+            applicationID: applicationID,
+            dateProvider: dateProvider,
+            sessionSampler: sessionSampler,
+            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
+            uuidGenerator: uuidGenerator
+        )
     }
 }
 

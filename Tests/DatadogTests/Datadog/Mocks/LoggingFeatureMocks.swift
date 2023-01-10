@@ -13,7 +13,7 @@ extension LoggingFeature {
     /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
     static func mockWith(
         configuration: FeaturesConfiguration.Logging = .mockAny(),
-        messageReceiver: FeatureMessageReceiver = LoggingMessageReceiver(logEventMapper: nil)
+        messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
     ) -> LoggingFeature {
         return LoggingFeature(
             storage: .mockNoOp(),
@@ -28,6 +28,34 @@ extension DatadogCoreProxy {
     func waitAndReturnLogMatchers(file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
         return try waitAndReturnEventsData(of: LoggingFeature.self)
             .map { data in try LogMatcher.fromJSONObjectData(data) }
+    }
+}
+
+extension LogMessageReceiver: AnyMockable {
+    static func mockAny() -> Self {
+        .mockWith()
+    }
+
+    static func mockWith(
+        logEventMapper: LogEventMapper? = nil
+    ) -> Self {
+        .init(
+            logEventMapper: logEventMapper
+        )
+    }
+}
+
+extension CrashLogReceiver: AnyMockable {
+    static func mockAny() -> Self {
+        .mockWith()
+    }
+
+    static func mockWith(
+        dateProvider: DateProvider = SystemDateProvider()
+    ) -> Self {
+        .init(
+            dateProvider: dateProvider
+        )
     }
 }
 

@@ -33,6 +33,7 @@ internal class WireframesBuilder {
     func createShapeWireframe(
         id: WireframeID,
         frame: CGRect,
+        clip: SRContentClip? = nil,
         borderColor: CGColor? = nil,
         borderWidth: CGFloat? = nil,
         backgroundColor: CGColor? = nil,
@@ -41,7 +42,7 @@ internal class WireframesBuilder {
     ) -> SRWireframe {
         let wireframe = SRShapeWireframe(
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
-            clip: nil,
+            clip: clip,
             height: Int64(withNoOverflow: frame.height),
             id: id,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
@@ -58,6 +59,7 @@ internal class WireframesBuilder {
         frame: CGRect,
         text: String,
         textFrame: CGRect? = nil,
+        clip: SRContentClip? = nil,
         textColor: CGColor? = nil,
         font: UIFont? = nil,
         borderColor: CGColor? = nil,
@@ -89,7 +91,7 @@ internal class WireframesBuilder {
 
         let wireframe = SRTextWireframe(
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
-            clip: nil,
+            clip: clip,
             height: Int64(withNoOverflow: frame.height),
             id: id,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),

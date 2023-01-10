@@ -8,13 +8,15 @@ import XCTest
 
 @testable import Datadog
 
-class RUMMessageReceiverTests: XCTestCase {
+class ErrorMessageReceiverTests: XCTestCase {
+    let messageReceiver = ErrorMessageReceiver()
+
     func testReceiveIncompleteError() throws {
         let expectation = expectation(description: "Don't send error fallback")
 
         // Given
         let core = PassthroughCoreMock(
-            messageReceiver: RUMMessageReceiver()
+            messageReceiver: messageReceiver
         )
 
         Global.rum = RUMMonitor.init(core: core, dependencies: .mockAny(), dateProvider: SystemDateProvider())
@@ -38,7 +40,7 @@ class RUMMessageReceiverTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock(
             expectation: expectation(description: "Send Error"),
-            messageReceiver: RUMMessageReceiver()
+            messageReceiver: messageReceiver
         )
 
         Global.rum = RUMMonitor.init(core: core, dependencies: .mockAny(), dateProvider: SystemDateProvider())
@@ -66,7 +68,7 @@ class RUMMessageReceiverTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock(
             expectation: expectation(description: "Send Error"),
-            messageReceiver: RUMMessageReceiver()
+            messageReceiver: messageReceiver
         )
 
         Global.rum = RUMMonitor.init(core: core, dependencies: .mockAny(), dateProvider: SystemDateProvider())
@@ -92,82 +94,5 @@ class RUMMessageReceiverTests: XCTestCase {
         XCTAssertEqual(event.error.type, "type-test")
         XCTAssertEqual(event.error.stack, "stack-test")
         XCTAssertEqual(event.error.source, .logger)
-    }
-
-    func testReceiveEvent() throws {
-        // Given
-        struct Event: Encodable {
-            let test: String
-        }
-
-        let core = PassthroughCoreMock(
-            expectation: expectation(description: "Send Event"),
-            messageReceiver: RUMMessageReceiver()
-        )
-
-        // When
-        let sent: [String: Any] = [
-            "test": String.mockRandom()
-        ]
-
-        core.send(
-            message: .custom(key: RUMMessageKeys.browserEvent, baggage: .init(sent))
-        )
-
-        // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        let received: AnyEncodable = try XCTUnwrap(core.events().last, "It should send event")
-        try AssertEncodedRepresentationsEqual(received, AnyEncodable(sent))
-    }
-
-    func testReceiveCrashEvent() throws {
-        // Given
-        let core = PassthroughCoreMock(
-            bypassConsentExpectation: expectation(description: "Send Event Bypass Consent"),
-            messageReceiver: RUMMessageReceiver()
-        )
-
-        // When
-        let sentError: RUMCrashEvent = .mockRandom()
-
-        core.send(
-            message: .custom(key: RUMMessageKeys.crash, baggage: [
-                "rum-error": sentError
-            ])
-        )
-
-        // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        let receivedError: RUMCrashEvent = try XCTUnwrap(core.events().last, "It should send event")
-        try AssertEncodedRepresentationsEqual(sentError, receivedError)
-    }
-
-    func testReceiveCrashAndViewEvent() throws {
-        // Given
-        let core = PassthroughCoreMock(
-            bypassConsentExpectation: expectation(description: "Send Event Bypass Consent"),
-            messageReceiver: RUMMessageReceiver()
-        )
-
-        // When
-        let sentError: RUMCrashEvent = .mockRandom()
-        let sentView: RUMViewEvent = .mockRandom()
-
-        core.send(
-            message: .custom(key: RUMMessageKeys.crash, baggage: [
-                "rum-error": sentError,
-                "rum-view": sentView
-            ])
-        )
-
-        // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        let receivedError: RUMCrashEvent = try XCTUnwrap(core.events().last, "It should send event")
-        let receivedView: RUMViewEvent = try XCTUnwrap(core.events().last, "It should send event")
-        try AssertEncodedRepresentationsEqual(sentError, receivedError)
-        try AssertEncodedRepresentationsEqual(sentView, receivedView)
     }
 }
