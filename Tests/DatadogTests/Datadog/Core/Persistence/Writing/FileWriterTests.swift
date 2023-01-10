@@ -25,7 +25,8 @@ class FileWriterTests: XCTestCase {
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
             ),
-            encryption: nil
+            encryption: nil,
+            forceNewFile: false
         )
 
         writer.write(value: ["key1": "value1"])
@@ -47,6 +48,40 @@ class FileWriterTests: XCTestCase {
         XCTAssertEqual(block?.data, #"{"key3":"value3"}"#.utf8Data)
     }
 
+    func testWhenForceNewBatchIsSet_itWritesDataToSeparateFilesInTLVFormat() throws {
+        let writer = FileWriter(
+            orchestrator: FilesOrchestrator(
+                directory: temporaryDirectory,
+                performance: PerformancePreset.mockAny(),
+                dateProvider: RelativeDateProvider(advancingBySeconds: 1)
+            ),
+            encryption: nil,
+            forceNewFile: true
+        )
+
+        writer.write(value: ["key1": "value1"])
+        writer.write(value: ["key2": "value2"])
+        writer.write(value: ["key3": "value3"])
+
+        XCTAssertEqual(try temporaryDirectory.files().count, 3)
+
+        let dataBlocks = try temporaryDirectory.files()
+            .sorted { $0.name < $1.name } // read files in their creation order
+            .map { try DataBlockReader(data: $0.read()).all() }
+
+        XCTAssertEqual(dataBlocks[0].count, 1)
+        XCTAssertEqual(dataBlocks[0][0].type, .event)
+        XCTAssertEqual(dataBlocks[0][0].data, #"{"key1":"value1"}"#.utf8Data)
+
+        XCTAssertEqual(dataBlocks[1].count, 1)
+        XCTAssertEqual(dataBlocks[1][0].type, .event)
+        XCTAssertEqual(dataBlocks[1][0].data, #"{"key2":"value2"}"#.utf8Data)
+
+        XCTAssertEqual(dataBlocks[2].count, 1)
+        XCTAssertEqual(dataBlocks[2][0].type, .event)
+        XCTAssertEqual(dataBlocks[2][0].data, #"{"key3":"value3"}"#.utf8Data)
+    }
+
     func testGivenErrorVerbosity_whenIndividualDataExceedsMaxWriteSize_itDropsDataAndPrintsError() throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
@@ -65,7 +100,8 @@ class FileWriterTests: XCTestCase {
                 ),
                 dateProvider: SystemDateProvider()
             ),
-            encryption: nil
+            encryption: nil,
+            forceNewFile: false
         )
 
         writer.write(value: ["key1": "value1"]) // will be written
@@ -95,7 +131,8 @@ class FileWriterTests: XCTestCase {
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
             ),
-            encryption: nil
+            encryption: nil,
+            forceNewFile: false
         )
 
         writer.write(value: FailingEncodableMock(errorMessage: "failed to encode `FailingEncodable`."))
@@ -114,7 +151,8 @@ class FileWriterTests: XCTestCase {
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
             ),
-            encryption: nil
+            encryption: nil,
+            forceNewFile: false
         )
 
         writer.write(value: ["ok"]) // will create the file
@@ -142,7 +180,8 @@ class FileWriterTests: XCTestCase {
                 ),
                 dateProvider: SystemDateProvider()
             ),
-            encryption: nil
+            encryption: nil,
+            forceNewFile: false
         )
 
         let ioInterruptionQueue = DispatchQueue(label: "com.datadohq.file-writer-random-io")
@@ -188,7 +227,8 @@ class FileWriterTests: XCTestCase {
             ),
             encryption: DataEncryptionMock(
                 encrypt: { _ in "foo".utf8Data }
-            )
+            ),
+            forceNewFile: false
         )
 
         // When

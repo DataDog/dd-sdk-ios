@@ -30,7 +30,8 @@ class RUMEventFileOutputTests: XCTestCase {
                 ),
                 dateProvider: fileCreationDateProvider
             ),
-            encryption: nil
+            encryption: nil,
+            forceNewFile: false
         )
 
         let dataModel1 = RUMDataModelMock(attribute: "foo", context: RUMEventAttributes(contextInfo: ["custom.attribute": "value"]))

@@ -560,6 +560,7 @@ internal class NOPFilesOrchestrator: FilesOrchestratorType {
         func delete() throws { }
     }
 
+    func getNewWritableFile(writeSize: UInt64) throws -> WritableFile { NOPFile() }
     func getWritableFile(writeSize: UInt64) throws -> WritableFile { NOPFile() }
     func getReadableFile(excludingFilesNamed excludedFileNames: Set<String>) -> ReadableFile? { NOPFile() }
     func delete(readableFile: ReadableFile) { }

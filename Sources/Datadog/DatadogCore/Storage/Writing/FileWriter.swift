@@ -15,6 +15,8 @@ internal struct FileWriter: Writer {
     let orchestrator: FilesOrchestratorType
     /// Algorithm to encrypt written data.
     let encryption: DataEncryption?
+    /// If this writer should force creation of a new file for writing events.
+    let forceNewFile: Bool
 
     // MARK: - Writing data
 
@@ -22,7 +24,8 @@ internal struct FileWriter: Writer {
     func write<T: Encodable>(value: T) {
         do {
             let data = try encode(event: value)
-            let file = try orchestrator.getWritableFile(writeSize: UInt64(data.count))
+            let writeSize = UInt64(data.count)
+            let file = try forceNewFile ? orchestrator.getNewWritableFile(writeSize: writeSize) : orchestrator.getWritableFile(writeSize: writeSize)
             try file.append(data: data)
         } catch {
             DD.logger.error("Failed to write data", error: error)

@@ -31,8 +31,12 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     internal var expectation: XCTestExpectation?
 
     /// Test expectation that will be fullfilled when the `eventWriteContext` closure
-    /// is executed with `bypassConsent` parameter to `true`.
+    /// is executed with `bypassConsent` parameter set to `true`.
     internal var bypassConsentExpectation: XCTestExpectation?
+
+    /// Test expectation that will be fullfilled when the `eventWriteContext` closure
+    /// is executed with `forceNewBatch` parameter set to `true`.
+    internal var forceNewBatchExpectation: XCTestExpectation?
 
     /// Creates a Passthrough core mock.
     ///
@@ -41,16 +45,21 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     ///   - expectation: The test exepection to fullfill when `eventWriteContext`
     ///                  is invoked.
     ///   - bypassConsentExpectation: The test exepection to fullfill when `eventWriteContext`
-    ///                  is invoked with `bypassConsent` parameter to `true`..
+    ///                  is invoked with `bypassConsent` parameter set to `true`.
+    ///   - forceNewBatchExpectation: The test exepection to fullfill when `eventWriteContext`
+    ///                  is invoked with `forceNewBatch` parameter set to `true`.
+
     init(
         context: DatadogContext = .mockAny(),
         expectation: XCTestExpectation? = nil,
         bypassConsentExpectation: XCTestExpectation? = nil,
+        forceNewBatchExpectation: XCTestExpectation? = nil,
         messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
     ) {
         self.context = context
         self.expectation = expectation
         self.bypassConsentExpectation = bypassConsentExpectation
+        self.forceNewBatchExpectation = forceNewBatchExpectation
         self.messageReceiver = messageReceiver
 
         messageReceiver.receive(message: .context(context), from: self)
@@ -92,12 +101,16 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     /// Execute `block` with the current context and a `writer` to record events.
     ///
     /// - Parameter block: The block to execute.
-    func eventWriteContext(bypassConsent: Bool, _ block: (DatadogContext, Writer) throws -> Void) {
+    func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: (DatadogContext, Writer) throws -> Void) {
         XCTAssertNoThrow(try block(context, writer), "Encountered an error when executing `eventWriteContext`")
         expectation?.fulfill()
 
         if bypassConsent {
             bypassConsentExpectation?.fulfill()
+        }
+
+        if forceNewBatch {
+            forceNewBatchExpectation?.fulfill()
         }
     }
 

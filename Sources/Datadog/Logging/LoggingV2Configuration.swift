@@ -95,7 +95,7 @@ internal struct LogMessageReceiver: FeatureMessageReceiver {
             return false
         }
 
-        core.v1.scope(for: LoggingFeature.self)?.eventWriteContext { context, writer in
+        core.v1.scope(for: LoggingFeature.self)?.eventWriteContext(bypassConsent: false, forceNewBatch: false) { context, writer in
             let builder = LogEventBuilder(
                 service: attributes["service"] ?? context.service,
                 loggerName: loggerName,

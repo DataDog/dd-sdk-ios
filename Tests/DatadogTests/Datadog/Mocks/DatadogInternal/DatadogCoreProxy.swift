@@ -124,9 +124,9 @@ private struct FeatureScopeProxy: FeatureScope {
     let proxy: FeatureScope
     let interceptor: FeatureScopeInterceptor
 
-    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void) {
+    func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void) {
         interceptor.enter()
-        proxy.eventWriteContext(bypassConsent: bypassConsent) { context, writer in
+        proxy.eventWriteContext(bypassConsent: bypassConsent, forceNewBatch: forceNewBatch) { context, writer in
             try block(context, interceptor.intercept(writer: writer))
             interceptor.leave()
         }
@@ -180,18 +180,6 @@ extension DatadogCoreProxy {
 
         let key = String(describing: F.self)
         let interceptor = self.featureScopeInterceptors[key]!
-        return interceptor.waitAndReturnEvents().compactMap { $0.event as? T }
-    }
-
-    /// Returns all events of given type for certain Feature.
-    ///
-    /// - Parameter featureName: The name of the Feature to retrieve events from
-    /// - Parameter type: The type of events to filter out
-    /// - Returns: A list of events.
-    func waitAndReturnEvents<T>(ofFeatureNamed featureName: String, ofType type: T.Type) -> [T] where T: Encodable {
-        flush()
-
-        let interceptor = self.featureScopeInterceptors[featureName]!
         return interceptor.waitAndReturnEvents().compactMap { $0.event as? T }
     }
 

@@ -30,7 +30,8 @@ class LogFileOutputTests: XCTestCase {
                     ),
                     dateProvider: fileCreationDateProvider
                 ),
-                encryption: nil
+                encryption: nil,
+                forceNewFile: false
             )
         )
 

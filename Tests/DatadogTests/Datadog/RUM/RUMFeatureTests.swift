@@ -209,7 +209,7 @@ class RUMFeatureTests: XCTestCase {
         )
         core.register(feature: feature)
 
-        let writer = feature.storage.writer(for: .granted)
+        let writer = feature.storage.writer(for: .granted, forceNewBatch: false)
         writer.write(value: RUMDataModelMock(attribute: "1st event"))
         writer.write(value: RUMDataModelMock(attribute: "2nd event"))
         writer.write(value: RUMDataModelMock(attribute: "3rd event"))
