@@ -22,7 +22,7 @@ extension RUMFeature {
     /// Use `RUMFeature.waitAndReturnRUMEventMatchers()` to inspect and assert recorded `RUMEvents`.
     static func mockByRecordingRUMEventMatchers(
         configuration: FeaturesConfiguration.RUM = .mockAny(),
-        messageReceiver: FeatureMessageReceiver = RUMMessageReceiver()
+        messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
     ) -> RUMFeature {
         // Mock storage with `InMemoryWriter`, used later for retrieving recorded events back:
         let interceptedStorage = FeatureStorage(
@@ -55,6 +55,44 @@ extension RUMFeature {
             preconditionFailure("RUMFeature is not registered in core")
         }
         return try rum.waitAndReturnRUMEventMatchers(count: count, file: file, line: line)
+    }
+}
+
+extension WebViewEventReceiver: AnyMockable {
+    static func mockAny() -> Self {
+        .mockWith()
+    }
+
+    static func mockWith(
+        dateProvider: DateProvider = SystemDateProvider(),
+        commandSubscriber: RUMCommandSubscriber = GlobalRUMCommandSubscriber()
+    ) -> Self {
+        .init(
+            dateProvider: dateProvider,
+            commandSubscriber: commandSubscriber
+        )
+    }
+}
+
+extension CrashReportReceiver: AnyMockable {
+    static func mockAny() -> Self {
+        .mockWith()
+    }
+
+    static func mockWith(
+        applicationID: String = .mockAny(),
+        dateProvider: DateProvider = SystemDateProvider(),
+        sessionSampler: Sampler = .mockKeepAll(),
+        backgroundEventTrackingEnabled: Bool = true,
+        uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
+    ) -> Self {
+        .init(
+            applicationID: applicationID,
+            dateProvider: dateProvider,
+            sessionSampler: sessionSampler,
+            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
+            uuidGenerator: uuidGenerator
+        )
     }
 }
 

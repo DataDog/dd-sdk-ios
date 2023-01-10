@@ -10,8 +10,8 @@ import XCTest
 class CrashReporterTests: XCTestCase {
     // MARK: - Sending Crash Report
 
-    func testGivenPendingCrashReport_whenLoggingOrRUMIntegrationIsEnabled_itSendsAndPurgesTheCrashReport() throws {
-        let expectation = self.expectation(description: "`LoggingOrRUMIntegration` sends the crash report")
+    func testWhenPendingCrashReportIsFound_itIsSentAndPurged() throws {
+        let expectation = self.expectation(description: "`LoggingOrRUMsender` sends the crash report")
         let crashContext: CrashContext = .mockRandom()
         let crashReport: DDCrashReport = .mockRandomWith(context: crashContext)
         let plugin = CrashReportingPluginMock()
@@ -21,21 +21,21 @@ class CrashReporterTests: XCTestCase {
         plugin.injectedContextData = crashContext.data
 
         // When
-        let integration = CrashReportingIntegrationMock()
+        let sender = CrashReportSenderMock()
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
-            loggingOrRUMIntegration: integration,
+            sender: sender,
             messageReceiver: NOPFeatureMessageReceiver()
         )
 
         // Then
-        integration.didSendCrashReport = { expectation.fulfill() }
+        sender.didSendCrashReport = { expectation.fulfill() }
         crashReporter.sendCrashReportIfFound()
 
         waitForExpectations(timeout: 0.5, handler: nil)
-        XCTAssertEqual(integration.sentCrashReport, crashReport, "It should send the crash report retrieved from the `plugin`")
-        let sentCrashContext = try XCTUnwrap(integration.sentCrashContext, "It should send the crash context")
+        XCTAssertEqual(sender.sentCrashReport, crashReport, "It should send the crash report retrieved from the `plugin`")
+        let sentCrashContext = try XCTUnwrap(sender.sentCrashContext, "It should send the crash context")
         AssertDictionariesEqual(
             try sentCrashContext.data.toJSONObject(),
             try crashContext.data.toJSONObject(),
@@ -45,7 +45,7 @@ class CrashReporterTests: XCTestCase {
         XCTAssertTrue(plugin.hasPurgedCrashReport == true, "It should ask to purge the crash report")
     }
 
-    func testGivenNoPendingCrashReport_whenLoggingOrRUMIntegrationIsEnabled_itDoesNotSendTheCrashReport() {
+    func testWhenPendingCrashReportIsNotFound_itDoesNothing() {
         let expectation = self.expectation(description: "`plugin` checks the crash report")
         let plugin = CrashReportingPluginMock()
 
@@ -54,11 +54,11 @@ class CrashReporterTests: XCTestCase {
         plugin.injectedContextData = nil
 
         // When
-        let integration = CrashReportingIntegrationMock()
+        let sender = CrashReportSenderMock()
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
-            loggingOrRUMIntegration: integration,
+            sender: sender,
             messageReceiver: NOPFeatureMessageReceiver()
         )
 
@@ -67,13 +67,13 @@ class CrashReporterTests: XCTestCase {
         crashReporter.sendCrashReportIfFound()
 
         waitForExpectations(timeout: 0.5, handler: nil)
-        XCTAssertNil(integration.sentCrashReport, "It should not send the crash report")
-        XCTAssertNil(integration.sentCrashContext, "It should not send the crash context")
+        XCTAssertNil(sender.sentCrashReport, "It should not send the crash report")
+        XCTAssertNil(sender.sentCrashContext, "It should not send the crash context")
         XCTAssertTrue(plugin.hasPurgedCrashReport == false, "It should not purge the crash report")
     }
 
-    func testGivenPendingCrashReportWithUnavailableCrashContext_whenLoggingOrRUMIntegrationIsEnabled_itPurgesTheCrashReportWithNoSending() {
-        let expectation = self.expectation(description: "`LoggingOrRUMIntegration` does not send the crash report")
+    func testWhenPendingCrashReportIsFoundButItHasUnavailableCrashContext_itPurgesTheCrashReportWithNoSending() {
+        let expectation = self.expectation(description: "`LoggingOrRUMsender` does not send the crash report")
         expectation.isInverted = true
         let plugin = CrashReportingPluginMock()
 
@@ -82,16 +82,16 @@ class CrashReporterTests: XCTestCase {
         plugin.injectedContextData = nil
 
         // When
-        let integration = CrashReportingIntegrationMock()
+        let sender = CrashReportSenderMock()
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
-            loggingOrRUMIntegration: integration,
+            sender: sender,
             messageReceiver: NOPFeatureMessageReceiver()
         )
 
         // Then
-        integration.didSendCrashReport = { expectation.fulfill() }
+        sender.didSendCrashReport = { expectation.fulfill() }
         crashReporter.sendCrashReportIfFound()
 
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -113,7 +113,7 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(initialCrashContext: initialCrashContext),
-            loggingOrRUMIntegration: CrashReportingIntegrationMock(),
+            sender: CrashReportSenderMock(),
             messageReceiver: NOPFeatureMessageReceiver()
         )
 
@@ -137,7 +137,7 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: crashContextProvider,
-            loggingOrRUMIntegration: CrashReportingIntegrationMock(),
+            sender: CrashReportSenderMock(),
             messageReceiver: NOPFeatureMessageReceiver()
         )
 
@@ -153,6 +153,38 @@ class CrashReporterTests: XCTestCase {
                 try updatedCrashContext.data.toJSONObject()
             )
         }
+    }
+
+    func testGivenAnyCrashWithUnauthorizedTrackingConsent_whenSending_itIsDropped() throws {
+        let expectation = self.expectation(description: "`plugin` checks the crash report")
+        // Given
+        let core = PassthroughCoreMock()
+
+        let crashReport: DDCrashReport = .mockWith(
+            date: .mockDecember15th2019At10AMUTC(),
+            context: CrashContext.mockWith(
+                trackingConsent: [.pending, .notGranted].randomElement()!,
+                lastRUMViewEvent: Bool.random() ? .mockRandom() : nil // no matter if in RUM session or not
+            ).data
+        )
+
+        let plugin = CrashReportingPluginMock()
+        plugin.pendingCrashReport = crashReport
+        plugin.didReadPendingCrashReport = { expectation.fulfill() }
+
+        let crashReporter = CrashReporter(
+            crashReportingPlugin: plugin,
+            crashContextProvider: CrashContextProviderMock(),
+            sender: MessageBusSender(core: core),
+            messageReceiver: NOPFeatureMessageReceiver()
+        )
+
+        // When
+        crashReporter.sendCrashReportIfFound()
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        XCTAssertEqual(core.events.count, 0, "Crash must not be send as it doesn't have `.granted` consent")
     }
 
     // MARK: - Thread safety
@@ -179,7 +211,7 @@ class CrashReporterTests: XCTestCase {
         let crashReporter = CrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: crashContextProvider,
-            loggingOrRUMIntegration: CrashReportingIntegrationMock(),
+            sender: CrashReportSenderMock(),
             messageReceiver: NOPFeatureMessageReceiver()
         )
 
@@ -198,24 +230,33 @@ class CrashReporterTests: XCTestCase {
 
     // MARK: - Usage
 
-    func testGivenPendingCrashReport_whenLoggingOrRUMIntegrationCannotBeObtained_itCannotBeInstantiated() {
+    func testGivenNoRegisteredCrashReportReceiver_whenPendingCrashReportIsFound_itPrintsError() {
+        let expectation = self.expectation(description: "`plugin` checks the crash report")
+
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
         let core = PassthroughCoreMock()
         let plugin = CrashReportingPluginMock()
+        plugin.pendingCrashReport = .mockWith(
+            context: CrashContext.mockAny().data
+        )
 
-        // Given
-        plugin.pendingCrashReport = .mockAny()
+        plugin.didReadPendingCrashReport = { expectation.fulfill() }
 
         // When
         let crashReporter = CrashReporter(
-            core: core,
-            configuration: .mockAny()
+            crashReportingPlugin: plugin,
+            crashContextProvider: CrashContextProviderMock(),
+            sender: MessageBusSender(core: core),
+            messageReceiver: NOPFeatureMessageReceiver()
         )
 
+        // When
+        crashReporter.sendCrashReportIfFound()
+
         // Then
-        XCTAssertNil(crashReporter)
+        waitForExpectations(timeout: 0.5, handler: nil)
         XCTAssertEqual(
             dd.logger.errorLog?.message,
             """

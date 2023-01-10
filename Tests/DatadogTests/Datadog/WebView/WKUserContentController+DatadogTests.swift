@@ -157,10 +157,16 @@ class WKUserContentController_DatadogTests: XCTestCase {
         )
         defer { core.flush() }
 
-        let logging: LoggingFeature = .mockByRecordingLogMatchers()
+        let logging: LoggingFeature = .mockByRecordingLogMatchers(
+            messageReceiver: WebViewLogReceiver()
+        )
+
         core.register(feature: logging)
 
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
+        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
+            messageReceiver: WebViewEventReceiver.mockAny()
+        )
+
         core.register(feature: rum)
 
         Global.rum = RUMMonitor.initialize(in: core)

@@ -19,51 +19,18 @@ import Foundation
     /// An interface for accessing the `DDCrashReportingPlugin` from `DatadogCrashReporting`.
     let plugin: DDCrashReportingPluginType
     /// Integration enabling sending crash reports as Logs or RUM Errors.
-    let loggingOrRUMIntegration: CrashReportingIntegration
+    let sender: CrashReportSender
 
     convenience init?(
         core: DatadogCoreProtocol,
         configuration: FeaturesConfiguration.CrashReporting
     ) {
-        let loggingOrRUMIntegration: CrashReportingIntegration?
-
-        // If RUM rum is enabled prefer it for sending crash reports, otherwise use Logging feature.
-        if let rum = core.v1.feature(RUMFeature.self) {
-            loggingOrRUMIntegration = CrashReportingWithRUMIntegration(
-                core: core,
-                applicationID: rum.configuration.applicationID,
-                dateProvider: rum.configuration.dateProvider,
-                sessionSampler: rum.configuration.sessionSampler,
-                backgroundEventTrackingEnabled: rum.configuration.backgroundEventTrackingEnabled,
-                uuidGenerator: rum.configuration.uuidGenerator
-            )
-        } else if let logging = core.v1.feature(LoggingFeature.self) {
-            loggingOrRUMIntegration = CrashReportingWithLoggingIntegration(
-                core: core,
-                dateProvider: logging.configuration.dateProvider
-            )
-        } else {
-            loggingOrRUMIntegration = nil
-        }
-
-        guard let availableLoggingOrRUMIntegration = loggingOrRUMIntegration else {
-            // This case is not reachable in higher abstraction but we add sanity warning.
-            DD.logger.error(
-                """
-                In order to use Crash Reporting, RUM or Logging feature must be enabled.
-                Make sure `.enableRUM(true)` or `.enableLogging(true)` are configured
-                when initializing Datadog SDK.
-                """
-            )
-            return nil
-        }
-
         let contextProvider = CrashContextProvider()
 
         self.init(
             crashReportingPlugin: configuration.crashReportingPlugin,
             crashContextProvider: contextProvider,
-            loggingOrRUMIntegration: availableLoggingOrRUMIntegration,
+            sender: MessageBusSender(core: core),
             messageReceiver: contextProvider
         )
     }
@@ -71,7 +38,7 @@ import Foundation
     init(
         crashReportingPlugin: DDCrashReportingPluginType,
         crashContextProvider: CrashContextProviderType,
-        loggingOrRUMIntegration: CrashReportingIntegration,
+        sender: CrashReportSender,
         messageReceiver: FeatureMessageReceiver
     ) {
         self.queue = DispatchQueue(
@@ -79,7 +46,7 @@ import Foundation
             target: .global(qos: .utility)
         )
         self.plugin = crashReportingPlugin
-        self.loggingOrRUMIntegration = loggingOrRUMIntegration
+        self.sender = sender
         self.crashContextProvider = crashContextProvider
         self.messageReceiver = messageReceiver
 
@@ -112,7 +79,7 @@ import Foundation
                     return true
                 }
 
-                self.loggingOrRUMIntegration.send(report: availableCrashReport, with: crashContext)
+                self.sender.send(report: availableCrashReport, with: crashContext)
                 return true
             }
         }

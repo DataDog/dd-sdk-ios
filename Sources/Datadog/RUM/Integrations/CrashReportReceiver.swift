@@ -6,8 +6,14 @@
 
 import Foundation
 
-/// An integration sending crash reports as RUM Errors.
-internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
+/// Receiver to consume crash reports as RUM events.
+internal struct CrashReportReceiver: FeatureMessageReceiver {
+    /// Defines keys referencing Crash message on the bus.
+    enum MessageKeys {
+        /// The key references a crash message.
+        static let crash = "crash"
+    }
+
     struct Constants {
         /// Maximum time since the crash (in seconds) enabling us to send the RUM View event to associate it with the interrupted RUM Session:
         /// * if the app is restarted earlier than crash time + this interval, then we send both the `RUMErrorEvent` and `RUMViewEvent`,
@@ -33,19 +39,15 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
     private let backgroundEventTrackingEnabled: Bool
     private let uuidGenerator: RUMUUIDGenerator
 
-    private let core: DatadogCoreProtocol
-
     // MARK: - Initialization
 
     init(
-        core: DatadogCoreProtocol,
         applicationID: String,
         dateProvider: DateProvider,
         sessionSampler: Sampler,
         backgroundEventTrackingEnabled: Bool,
         uuidGenerator: RUMUUIDGenerator
     ) {
-        self.core = core
         self.applicationID = applicationID
         self.dateProvider = dateProvider
         self.sessionSampler = sessionSampler
@@ -53,13 +55,26 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         self.uuidGenerator = uuidGenerator
     }
 
-    // MARK: - CrashReportingIntegration
-
-    func send(report: DDCrashReport, with context: CrashContext) {
-        guard context.trackingConsent == .granted else {
-            return // Only authorized crash reports can be send
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        if case let .custom(key, baggage) = message, key == MessageKeys.crash {
+            return write(crash: baggage, to: core)
         }
 
+        return false
+    }
+
+    private func write(crash attributes: FeatureBaggage, to core: DatadogCoreProtocol) -> Bool {
+        guard
+            let report = attributes["report", type: DDCrashReport.self],
+            let context = attributes["context", type: CrashContext.self]
+        else {
+            return false
+        }
+
+        return send(report: report, with: context, to: core)
+    }
+
+    private func send(report: DDCrashReport, with context: CrashContext, to core: DatadogCoreProtocol) -> Bool {
         // The `crashReport.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
         // to the server time before processing. Following use of the current correction is not ideal (it's not the correction
         // from the moment of crash), but this is the best approximation we can get.
@@ -73,14 +88,17 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         )
 
         if let lastRUMViewEvent = context.lastRUMViewEvent {
-            sendCrashReportLinkedToLastViewInPreviousSession(report, lastRUMViewEventInPreviousSession: lastRUMViewEvent, using: adjustedCrashTimings)
+            sendCrashReportLinkedToLastViewInPreviousSession(report, lastRUMViewEventInPreviousSession: lastRUMViewEvent, using: adjustedCrashTimings, to: core)
         } else if let lastRUMSessionState = context.lastRUMSessionState {
-            sendCrashReportToPreviousSession(report, crashContext: context, lastRUMSessionStateInPreviousSession: lastRUMSessionState, using: adjustedCrashTimings)
+            sendCrashReportToPreviousSession(report, crashContext: context, lastRUMSessionStateInPreviousSession: lastRUMSessionState, using: adjustedCrashTimings, to: core)
         } else if sessionSampler.sample() { // before producing a new RUM session, we must consider sampling
-            sendCrashReportToNewSession(report, crashContext: context, using: adjustedCrashTimings)
+            sendCrashReportToNewSession(report, crashContext: context, using: adjustedCrashTimings, to: core)
         } else {
             DD.logger.debug("There was a crash in previous session, but it is ignored due to sampling.")
+            return false
         }
+
+        return true
     }
 
     /// If the crash occured in an existing RUM session and we know its `lastRUMViewEvent` we send the error using that session UUID and link
@@ -88,21 +106,19 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
     private func sendCrashReportLinkedToLastViewInPreviousSession(
         _ crashReport: DDCrashReport,
         lastRUMViewEventInPreviousSession lastRUMViewEvent: RUMViewEvent,
-        using crashTimings: AdjustedCrashTimings
+        using crashTimings: AdjustedCrashTimings,
+        to core: DatadogCoreProtocol
     ) {
         if crashTimings.realDateNow.timeIntervalSince(crashTimings.realCrashDate) < Constants.viewEventAvailabilityThreshold {
-            send(crashReport: crashReport, to: lastRUMViewEvent, using: crashTimings.realCrashDate)
+            send(crashReport: crashReport, to: lastRUMViewEvent, using: crashTimings.realCrashDate, to: core)
         } else {
             // We know it is too late for sending RUM view to previous RUM session as it is now stale on backend.
             // To avoid inconsistency, we only send the RUM error.
             DD.logger.debug("Sending crash as RUM error.")
             let rumError = createRUMError(from: crashReport, and: lastRUMViewEvent, crashDate: crashTimings.realCrashDate)
-            core.send(
-                message: .custom(
-                    key: "crash",
-                    baggage: ["rum-error": rumError]
-                )
-            )
+            core.v1.scope(for: RUMFeature.self)?.eventWriteContext(bypassConsent: true) { _, writer in
+                writer.write(value: rumError)
+            }
         }
     }
 
@@ -113,7 +129,8 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         _ crashReport: DDCrashReport,
         crashContext: CrashContext,
         lastRUMSessionStateInPreviousSession lastRUMSessionState: RUMSessionState,
-        using crashTimings: AdjustedCrashTimings
+        using crashTimings: AdjustedCrashTimings,
+        to core: DatadogCoreProtocol
     ) {
         let handlingRule = RUMOffViewEventsHandlingRule(
             sessionState: lastRUMSessionState,
@@ -153,7 +170,7 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         }
 
         if let newRUMView = newRUMView {
-            send(crashReport: crashReport, to: newRUMView, using: crashTimings.realCrashDate)
+            send(crashReport: crashReport, to: newRUMView, using: crashTimings.realCrashDate, to: core)
         }
     }
 
@@ -162,7 +179,8 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
     private func sendCrashReportToNewSession(
         _ crashReport: DDCrashReport,
         crashContext: CrashContext,
-        using crashTimings: AdjustedCrashTimings
+        using crashTimings: AdjustedCrashTimings,
+        to core: DatadogCoreProtocol
     ) {
         // We can ignore `sessionState` for building the rule as we can assume there was no session sent - otherwise,
         // the `lastRUMSessionState` would have been set in `CrashContext` and we could be sending the crash to previous session
@@ -206,25 +224,22 @@ internal struct CrashReportingWithRUMIntegration: CrashReportingIntegration {
         }
 
         if let newRUMView = newRUMView {
-            send(crashReport: crashReport, to: newRUMView, using: crashTimings.realCrashDate)
+            send(crashReport: crashReport, to: newRUMView, using: crashTimings.realCrashDate, to: core)
         }
     }
 
     /// Sends given `CrashReport` by linking it to given `rumView` and updating view counts accordingly.
-    private func send(crashReport: DDCrashReport, to rumView: RUMViewEvent, using realCrashDate: Date) {
+    private func send(crashReport: DDCrashReport, to rumView: RUMViewEvent, using realCrashDate: Date, to core: DatadogCoreProtocol) {
         DD.logger.debug("Updating RUM view with crash report.")
         let updatedRUMView = updateRUMViewWithNewError(rumView, crashDate: realCrashDate)
         let rumError = createRUMError(from: crashReport, and: updatedRUMView, crashDate: realCrashDate)
 
-        core.send(
-            message: .custom(
-                key: "crash",
-                baggage: [
-                    "rum-error": rumError,
-                    "rum-view": updatedRUMView
-                ]
-            )
-        )
+        // crash reporting is considering the user consent from previous session, if an event reached
+        // the message bus it means that consent was granted and we can safely bypass current consent.
+        core.v1.scope(for: RUMFeature.self)?.eventWriteContext(bypassConsent: true) { _, writer in
+            writer.write(value: rumError)
+            writer.write(value: updatedRUMView)
+        }
     }
 
     // MARK: - Building RUM events

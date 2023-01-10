@@ -22,7 +22,7 @@ public protocol FeatureMessageReceiver {
     /// not blocking the caller thread to not delay processing of other messages in the system.
     ///
     /// - Parameters:
-    ///   - message: The message
+    ///   - message: The message.
     ///   - core: An instance of the core from which the message is transmitted.
     /// - Returns: `true` if the message was processed by the receiver;`false` if it was ignored.
     @discardableResult
@@ -33,5 +33,30 @@ public struct NOPFeatureMessageReceiver: FeatureMessageReceiver {
     /// no-op: returns `false`
     public func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         return false
+    }
+}
+
+public struct CombinedFeatureMessageReceiver: FeatureMessageReceiver {
+    let receivers: [FeatureMessageReceiver]
+
+    /// Creates an instance initialized with the given receivers.
+    public init(_ receivers: FeatureMessageReceiver...) {
+        self.receivers = Array(receivers)
+    }
+
+    /// Creates an instance initialized with the given receivers.
+    public init(_ receivers: [FeatureMessageReceiver]) {
+        self.receivers = receivers
+    }
+
+    /// Receiving a message will loop though receivers and stop on the first that is able to
+    /// consume the given message.
+    ///
+    /// - Parameters:
+    ///   - message: The message.
+    ///   - core: An instance of the core from which the message is transmitted.
+    /// - Returns: `true` if the message was processed by one of the receiver; `false` if it was ignored.
+    public func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        receivers.contains(where: { $0.receive(message: message, from: core) })
     }
 }

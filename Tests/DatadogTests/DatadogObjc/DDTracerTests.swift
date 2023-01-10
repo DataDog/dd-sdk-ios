@@ -117,7 +117,9 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogs() throws {
-        let logging: LoggingFeature = .mockByRecordingLogMatchers()
+        let logging: LoggingFeature = .mockByRecordingLogMatchers(
+            messageReceiver: LogMessageReceiver.mockAny()
+        )
         core.register(feature: logging)
 
         let tracing: TracingFeature = .mockByRecordingSpanMatchers()
@@ -139,7 +141,9 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromArguments() throws {
-        let logging: LoggingFeature = .mockByRecordingLogMatchers()
+        let logging: LoggingFeature = .mockByRecordingLogMatchers(
+            messageReceiver: LogMessageReceiver.mockAny()
+        )
         core.register(feature: logging)
 
         let tracing: TracingFeature = .mockByRecordingSpanMatchers()
@@ -164,7 +168,9 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromNSError() throws {
-        let logging: LoggingFeature = .mockByRecordingLogMatchers()
+        let logging: LoggingFeature = .mockByRecordingLogMatchers(
+            messageReceiver: LogMessageReceiver.mockAny()
+        )
         core.register(feature: logging)
 
         let tracing: TracingFeature = .mockByRecordingSpanMatchers()

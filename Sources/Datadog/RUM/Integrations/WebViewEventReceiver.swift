@@ -9,7 +9,13 @@ import Foundation
 internal typealias JSON = [String: Any]
 
 /// Receiver to consume a RUM event coming from Browser SDK.
-internal final class WebViewEventReceiver {
+internal final class WebViewEventReceiver: FeatureMessageReceiver {
+    /// Defines keys referencing Browser event message on the bus.
+    enum MessageKeys {
+        /// The key references a browser event message.
+        static let browserEvent = "browser-rum-event"
+    }
+
     /// Subscriber that can process a `RUMKeepSessionAliveCommand`.
     let commandSubscriber: RUMCommandSubscriber
 
@@ -27,6 +33,15 @@ internal final class WebViewEventReceiver {
     ) {
         self.commandSubscriber = commandSubscriber
         self.dateProvider = dateProvider
+    }
+
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        if case let .custom(key, baggage) = message, key == MessageKeys.browserEvent {
+            write(event: baggage.all(), to: core)
+            return true
+        }
+
+        return false
     }
 
     /// Writes a Browser RUM event to the core.

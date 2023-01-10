@@ -21,7 +21,7 @@ extension LoggingFeature {
     /// Use `LogFeature.waitAndReturnLogMatchers()` to inspect and assert recorded `Logs`.
     static func mockByRecordingLogMatchers(
         configuration: FeaturesConfiguration.Logging = .mockAny(),
-        messageReceiver: FeatureMessageReceiver = LoggingMessageReceiver(logEventMapper: nil)
+        messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
     ) -> LoggingFeature {
         // Mock storage with `InMemoryWriter`, used later for retrieving recorded events back:
         let interceptedStorage = FeatureStorage(
@@ -55,6 +55,34 @@ extension LoggingFeature {
         }
 
         return try logging.waitAndReturnLogMatchers(count: count, file: file, line: line)
+    }
+}
+
+extension LogMessageReceiver: AnyMockable {
+    static func mockAny() -> Self {
+        .mockWith()
+    }
+
+    static func mockWith(
+        logEventMapper: LogEventMapper? = nil
+    ) -> Self {
+        .init(
+            logEventMapper: logEventMapper
+        )
+    }
+}
+
+extension CrashLogReceiver: AnyMockable {
+    static func mockAny() -> Self {
+        .mockWith()
+    }
+
+    static func mockWith(
+        dateProvider: DateProvider = SystemDateProvider()
+    ) -> Self {
+        .init(
+            dateProvider: dateProvider
+        )
     }
 }
 
