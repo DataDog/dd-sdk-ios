@@ -191,6 +191,8 @@
 		614B0A4D24EBD71500A2A780 /* RUMUserInfoProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B0A4C24EBD71500A2A780 /* RUMUserInfoProviderTests.swift */; };
 		614B0A4F24EBDC6B00A2A780 /* RUMConnectivityInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B0A4E24EBDC6B00A2A780 /* RUMConnectivityInfoProvider.swift */; };
 		614B0A5324EBFE5500A2A780 /* DDRUMMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B0A5224EBFE5500A2A780 /* DDRUMMonitor.swift */; };
+		614B78F1296D7B63009C6B92 /* LowPowerModePublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B78EC296D7B63009C6B92 /* LowPowerModePublisherTests.swift */; };
+		614B78F2296D7B63009C6B92 /* LowPowerModePublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B78EC296D7B63009C6B92 /* LowPowerModePublisherTests.swift */; };
 		614BF37E2670AE9D002379C8 /* AttributesMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614BF37D2670AE9D002379C8 /* AttributesMocks.swift */; };
 		614BF37F2670AEBD002379C8 /* AttributesMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614BF37D2670AE9D002379C8 /* AttributesMocks.swift */; };
 		614BF3802670AEC1002379C8 /* RUMDataModelMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613E820425A879AF0084B751 /* RUMDataModelMocks.swift */; };
@@ -1500,6 +1502,7 @@
 		614B0A4C24EBD71500A2A780 /* RUMUserInfoProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUserInfoProviderTests.swift; sourceTree = "<group>"; };
 		614B0A4E24EBDC6B00A2A780 /* RUMConnectivityInfoProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMConnectivityInfoProvider.swift; sourceTree = "<group>"; };
 		614B0A5224EBFE5500A2A780 /* DDRUMMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDRUMMonitor.swift; sourceTree = "<group>"; };
+		614B78EC296D7B63009C6B92 /* LowPowerModePublisherTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LowPowerModePublisherTests.swift; sourceTree = "<group>"; };
 		614BF37D2670AE9D002379C8 /* AttributesMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributesMocks.swift; sourceTree = "<group>"; };
 		614CADCD250FCA0200B93D2D /* TestScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestScenarios.swift; sourceTree = "<group>"; };
 		614CADD62510BAC000B93D2D /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
@@ -4462,6 +4465,7 @@
 		D2EFA873286E010100F1FAA6 /* DatadogCore */ = {
 			isa = PBXGroup;
 			children = (
+				614B78EC296D7B63009C6B92 /* LowPowerModePublisherTests.swift */,
 				D2EFA874286E011900F1FAA6 /* DatadogContextProviderTests.swift */,
 				D29294E2291D652900F8EFF9 /* ApplicationVersionPublisherTests.swift */,
 				D2A1EE34287EB8DB00D28DFB /* ServerOffsetPublisherTests.swift */,
@@ -5737,6 +5741,7 @@
 				D2FB1257292E0F0E005B13F8 /* TrackingConsentPublisherTests.swift in Sources */,
 				D2EFA871286DFF7900F1FAA6 /* DatadogContextMock.swift in Sources */,
 				617B954024BF4DB300E6F443 /* RUMApplicationScopeTests.swift in Sources */,
+				614B78F1296D7B63009C6B92 /* LowPowerModePublisherTests.swift in Sources */,
 				D21C26D728A647DB005DD405 /* MessageBusMock.swift in Sources */,
 				61F2724925C943C500D54BF8 /* CrashReporterTests.swift in Sources */,
 				6172472725D673D7007085B3 /* CrashContextTests.swift in Sources */,
@@ -6262,6 +6267,7 @@
 				D2CB6EEB27C520D400A62B57 /* DataCompressionTests.swift in Sources */,
 				D2CB6EEC27C520D400A62B57 /* CustomObjcViewController.m in Sources */,
 				D2EFA876286E011900F1FAA6 /* DatadogContextProviderTests.swift in Sources */,
+				614B78F2296D7B63009C6B92 /* LowPowerModePublisherTests.swift in Sources */,
 				D2CB6EEE27C520D400A62B57 /* DDErrorTests.swift in Sources */,
 				D2CB6EEF27C520D400A62B57 /* Casting+RUM.swift in Sources */,
 				D2CB6EF127C520D400A62B57 /* RUMEventFileOutputTests.swift in Sources */,
