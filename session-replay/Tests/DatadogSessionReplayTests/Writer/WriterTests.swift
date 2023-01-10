@@ -20,5 +20,11 @@ class WriterTests: XCTestCase {
         // Implementing this test requires creating mocks for `DatadogContext` (passed in `FeatureScope`),
         // which is yet not possible as we lack separate, shared module to facilitate tests.
     }
+
+    func testWhenSucceedingRecordsDescribeDifferentRUMViews_itWritesThemToSeparateBatches() {
+        // TODO: RUMM-2690
+        // Implementing this test requires creating mocks for `DatadogContext` (passed in `FeatureScope`),
+        // which is yet not possible as we lack separate, shared module to facilitate tests.
+    }
 }
 // swiftlint:enable empty_xctest_method

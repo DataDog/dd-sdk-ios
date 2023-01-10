@@ -12,38 +12,38 @@ class SegmentJSONBuilderTests: XCTestCase {
 
     func testGivenSRSegmentWithRecords_whenCreatingSegmentJSON_itEcodesToTheSameJSON() throws {
         // Given
-        let expectedSegment = generateSegment(maxRecordsCount: 1)
+        let expectedSegment = generateSegment(maxRecordsCount: 50)
         let records = try generateEnrichedRecordJSONs(for: expectedSegment)
 
         // When
-        let actualSegments = builder.createSegmentJSONs(from: records)
+        let actualSegment = try builder.createSegmentJSON(from: records)
 
         // Then
-        XCTAssertEqual(actualSegments.count, 1)
         XCTAssertEqual(
             try prettyJSONString(for: expectedSegment),
-            try prettyJSONString(for: actualSegments[0]),
+            try prettyJSONString(for: actualSegment),
             "`SegmentJSON` must encode the same JSON string as `SRSegment: Codable`"
         )
     }
 
-    func testGivenMultipleSRSegmentsWithRecords_whenCreatingSegmentJSONs_theyEcodeToTheSameJSON() throws {
-        let expectedSegments = (0..<50).map { generateSegment(maxRecordsCount: $0 + 1) }
+    func testWhenBuildingSegmentWithNoRecords_itThrows() {
+        // When
+        XCTAssertThrowsError(try builder.createSegmentJSON(from: [])) { error in
+            // Then
+            XCTAssertEqual((error as? SegmentJSONBuilderError)?.description, "Records array must not be empty.")
+        }
+    }
 
+    func testWhenBuildingSegmentWithInvalidRecords_itThrows() throws {
         // Given
-        let records = try expectedSegments.flatMap { try generateEnrichedRecordJSONs(for: $0) }
+        let segment1 = generateSegment(maxRecordsCount: 25)
+        let segment2 = generateSegment(maxRecordsCount: 25)
+        let records = try generateEnrichedRecordJSONs(for: segment1) + generateEnrichedRecordJSONs(for: segment2)
 
         // When
-        let actualSegments = builder.createSegmentJSONs(from: records)
-
-        // Then
-        XCTAssertEqual(actualSegments.count, expectedSegments.count)
-        try zip(actualSegments, expectedSegments).forEach { actual, expected in
-            XCTAssertEqual(
-                try prettyJSONString(for: expected),
-                try prettyJSONString(for: actual),
-                "`SegmentJSON` must encode the same JSON string as `SRSegment: Codable`"
-            )
+        XCTAssertThrowsError(try builder.createSegmentJSON(from: records)) { error in
+            // Then
+            XCTAssertEqual((error as? SegmentJSONBuilderError)?.description, "All records must reference the same RUM context.")
         }
     }
 

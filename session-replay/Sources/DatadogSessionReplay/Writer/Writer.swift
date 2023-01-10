@@ -26,6 +26,12 @@ internal class Writer: Writing {
     /// Because SR is started after SF Feature gets registered, no other thread-safety measures are required.
     private var scope: FeatureScope?
 
+    /// The `viewID`  of last group of records written to core. If that ID changes, we request the core
+    /// to write new events to separate batch, so we receive them separately in `RequestBuilder`.
+    ///
+    /// This is to fulfill the SR payload requirement that each view needs to be send in separate segment.
+    private var lastViewID: String?
+
     // MARK: - Writing
 
     func startWriting(to featureScope: FeatureScope) {
@@ -33,7 +39,10 @@ internal class Writer: Writing {
     }
 
     func write(nextRecord: EnrichedRecord) {
-        scope?.eventWriteContext { _, writer in
+        let forceNewBatch = lastViewID != nextRecord.viewID
+        lastViewID = nextRecord.viewID
+
+        scope?.eventWriteContext(bypassConsent: false, forceNewBatch: forceNewBatch) { _, writer in
             writer.write(value: nextRecord)
         }
     }
