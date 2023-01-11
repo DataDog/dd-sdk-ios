@@ -9,11 +9,12 @@ import Foundation
 /// Orchestrates files in a single directory.
 internal class FilesOrchestrator {
     /// Directory where files are stored.
-    private let directory: Directory
+    let directory: Directory
     /// Date provider.
-    private let dateProvider: DateProvider
+    let dateProvider: DateProvider
     /// Performance rules for writing and reading files.
-    private let performance: StoragePerformancePreset
+    let performance: StoragePerformancePreset
+
     /// Name of the last file returned by `getWritableFile()`.
     private var lastWritableFileName: String? = nil
     /// Tracks number of times the file at `lastWritableFileURL` was returned from `getWritableFile()`.
@@ -33,10 +34,6 @@ internal class FilesOrchestrator {
     // MARK: - `WritableFile` orchestration
 
     func getWritableFile(writeSize: UInt64) throws -> WritableFile {
-        if writeSize > performance.maxObjectSize {
-            throw InternalError(description: "data exceeds the maximum size of \(performance.maxObjectSize) bytes.")
-        }
-
         let lastWritableFileOrNil = reuseLastWritableFileIfPossible(writeSize: writeSize)
 
         if let lastWritableFile = lastWritableFileOrNil { // if last writable file can be reused

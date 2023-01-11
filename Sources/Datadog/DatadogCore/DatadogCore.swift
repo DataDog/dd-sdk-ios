@@ -24,6 +24,7 @@ internal final class DatadogCore {
     /// The storage r/w GDC queue.
     let readWriteQueue = DispatchQueue(
         label: "com.datadoghq.ios-sdk-read-write",
+        autoreleaseFrequency: .workItem,
         target: .global(qos: .utility)
     )
 

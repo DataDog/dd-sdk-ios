@@ -20,6 +20,7 @@ internal struct FeatureUpload {
     ) {
         let uploadQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-\(featureName)-upload",
+            autoreleaseFrequency: .workItem,
             target: .global(qos: .utility)
         )
 
