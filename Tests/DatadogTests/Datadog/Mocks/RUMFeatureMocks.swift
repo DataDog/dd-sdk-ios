@@ -60,7 +60,7 @@ extension RUMFeature {
 }
 
 extension WebViewEventReceiver: AnyMockable {
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         .mockWith()
     }
 
@@ -76,7 +76,7 @@ extension WebViewEventReceiver: AnyMockable {
 }
 
 extension CrashReportReceiver: AnyMockable {
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         .mockWith()
     }
 

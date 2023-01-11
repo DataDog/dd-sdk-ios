@@ -60,7 +60,7 @@ extension LoggingFeature {
 }
 
 extension LogMessageReceiver: AnyMockable {
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         .mockWith()
     }
 
@@ -74,7 +74,7 @@ extension LogMessageReceiver: AnyMockable {
 }
 
 extension CrashLogReceiver: AnyMockable {
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         .mockWith()
     }
 

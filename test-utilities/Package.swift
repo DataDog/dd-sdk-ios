@@ -15,14 +15,10 @@ let package = Package(
             targets: ["TestUtilities"]),
     ],
     dependencies: [
-        .package(name: "Datadog", path: ".."),
     ],
     targets: [
         .target(
             name: "TestUtilities",
-            dependencies: []),
-        .testTarget(
-            name: "TestUtilitiesTests",
-            dependencies: ["TestUtilities"]),
+            dependencies: [])
     ]
 )

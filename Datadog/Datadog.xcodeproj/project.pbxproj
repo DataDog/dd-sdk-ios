@@ -530,6 +530,9 @@
 		A7609F282940AB4B00020D85 /* FirstPartyHosts.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7609F262940AB4B00020D85 /* FirstPartyHosts.swift */; };
 		A762BDE429351A250058D8E7 /* FirstPartyHostsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A762BDE329351A250058D8E7 /* FirstPartyHostsTests.swift */; };
 		A762BDE529351A250058D8E7 /* FirstPartyHostsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A762BDE329351A250058D8E7 /* FirstPartyHostsTests.swift */; };
+		A790A678296EC4810036460B /* TestUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = A790A677296EC4810036460B /* TestUtilities */; };
+		A790A67A296EC4A70036460B /* TestUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = A790A679296EC4A70036460B /* TestUtilities */; };
+		A790A67C296EC6130036460B /* TestUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = A790A67B296EC6130036460B /* TestUtilities */; };
 		A793E6692948C785002A195D /* W3CHTTPHeadersWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A728AD9E2934CE5000397996 /* W3CHTTPHeadersWriter.swift */; };
 		A793E66A2948C796002A195D /* W3CHTTPHeadersReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A728ADA02934CE5D00397996 /* W3CHTTPHeadersReader.swift */; };
 		A793E66B2948C7B1002A195D /* W3CHTTPHeaders.swift in Sources */ = {isa = PBXBuildFile; fileRef = A728AD9C2934CE4400397996 /* W3CHTTPHeaders.swift */; };
@@ -2078,6 +2081,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A790A67C296EC6130036460B /* TestUtilities in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2094,6 +2098,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A790A678296EC4810036460B /* TestUtilities in Frameworks */,
 				61B7885D25C180CB002675B5 /* DatadogCrashReporting.framework in Frameworks */,
 				619A29F326E64910007D62A3 /* CrashReporter.xcframework in Frameworks */,
 			);
@@ -2150,6 +2155,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A790A67A296EC4A70036460B /* TestUtilities in Frameworks */,
 				D2CB6FF327C5369600A62B57 /* DatadogCrashReporting.framework in Frameworks */,
 				D2CB6FE527C5352300A62B57 /* CrashReporter.xcframework in Frameworks */,
 			);
@@ -4795,6 +4801,9 @@
 				6199366B265BBEDC009D7EA8 /* PBXTargetDependency */,
 			);
 			name = E2ETests;
+			packageProductDependencies = (
+				A790A67B296EC6130036460B /* TestUtilities */,
+			);
 			productName = E2ETests;
 			productReference = 61993665265BBEDC009D7EA8 /* E2ETests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -4835,6 +4844,9 @@
 				61B7888025C18147002675B5 /* PBXTargetDependency */,
 			);
 			name = "DatadogCrashReportingTests iOS";
+			packageProductDependencies = (
+				A790A677296EC4810036460B /* TestUtilities */,
+			);
 			productName = DatadogCrashReportingTests;
 			productReference = 61B7885C25C180CB002675B5 /* DatadogCrashReportingTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -4958,6 +4970,9 @@
 				D240686B27CF686F00C04F44 /* PBXTargetDependency */,
 			);
 			name = "DatadogCrashReportingTests tvOS";
+			packageProductDependencies = (
+				A790A679296EC4A70036460B /* TestUtilities */,
+			);
 			productName = DatadogCrashReportingTests;
 			productReference = D2CB6FEC27C5352300A62B57 /* DatadogCrashReportingTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -5407,7 +5422,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				A7DEFD00296D97DF00CABC48 /* ValuePublisher.swift in Sources */,
-				6112B10B25C849C000B37771 /* CrashReportingWithRUMIntegration.swift in Sources */,
 				61E917D12465423600E6C631 /* TracerConfiguration.swift in Sources */,
 				D24985A22728048B00B4F72D /* SwiftUIViewHandler.swift in Sources */,
 				D24985A327280FD100B4F72D /* SwiftUIViewModifier.swift in Sources */,
@@ -6097,7 +6111,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				A7DEFD01296D97DF00CABC48 /* ValuePublisher.swift in Sources */,
-				D2CB6E1027C50EAE00A62B57 /* CrashReportingWithRUMIntegration.swift in Sources */,
 				D2DC4BBC27F234D600E4FB96 /* CITestIntegration.swift in Sources */,
 				D2CB6E1127C50EAE00A62B57 /* TracerConfiguration.swift in Sources */,
 				D20605AA2874C1CD0047275C /* NetworkConnectionInfoPublisher.swift in Sources */,
@@ -8317,6 +8330,18 @@
 		6152C83D24BE1C91006A1679 /* HTTPServerMock */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = HTTPServerMock;
+		};
+		A790A677296EC4810036460B /* TestUtilities */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TestUtilities;
+		};
+		A790A679296EC4A70036460B /* TestUtilities */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TestUtilities;
+		};
+		A790A67B296EC6130036460B /* TestUtilities */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TestUtilities;
 		};
 		A7DEFD18296D9C7100CABC48 /* TestUtilities */ = {
 			isa = XCSwiftPackageProductDependency;

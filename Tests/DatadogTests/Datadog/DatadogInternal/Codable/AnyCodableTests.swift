@@ -52,7 +52,7 @@ class AnyCodableTests: XCTestCase {
             var bazz: [Int: Int]
         }
 
-        public static func mockRandom() -> Foo {
+        static func mockRandom() -> Foo {
             return Foo(
                 bar: .mockRandom(),
                 bizz: .init(

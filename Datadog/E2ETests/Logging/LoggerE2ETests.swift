@@ -5,6 +5,7 @@
  */
 
 import Datadog
+import TestUtilities
 
 class LoggerE2ETests: E2ETests {
     private var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional

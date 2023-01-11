@@ -720,7 +720,7 @@ class AppStateListenerMock: AppStateListening, AnyMockable {
         self.history = history
     }
 
-    public static func mockAny() -> Self {
+    static func mockAny() -> Self {
         return mockAppInForeground(since: .mockDecember15th2019At10AMUTC())
     }
 

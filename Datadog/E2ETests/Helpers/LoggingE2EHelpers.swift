@@ -5,6 +5,7 @@
  */
 
 import Datadog
+import TestUtilities
 
 extension Logger {
     func sendRandomLog(with attributes: [AttributeKey: AttributeValue]) {
