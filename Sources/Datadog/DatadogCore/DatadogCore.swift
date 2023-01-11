@@ -215,18 +215,22 @@ internal final class DatadogCore {
         // The order of flushing below must be considered cautiously and
         // follow our design choices around SDK core's threading.
 
-        // First, flush bus queue - because messages can lead to obtaining "event write context" (reading
-        // context & performing write) in other Features:
-        messageBusQueue.sync { }
+        // The flushing is repeated few times, to make sure that operations spawned from other operations
+        // on these queues are also awaited.
+        for _ in 0..<5 {
+            // First, flush bus queue - because messages can lead to obtaining "event write context" (reading
+            // context & performing write) in other Features:
+            messageBusQueue.sync { }
 
-        // Next, flush context queue - because it indicates the entry point to "event write context" and
-        // actual writes dispatched from it:
-        contextProvider.queue.sync { }
+            // Next, flush context queue - because it indicates the entry point to "event write context" and
+            // actual writes dispatched from it:
+            contextProvider.queue.sync { }
 
-        // Last, flush read-write queue - it always comes last, no matter if the write operation is dispatched
-        // from "event write context" started on user thread OR if it happens upon receiving an "event" message
-        // in other Feature:
-        readWriteQueue.sync { }
+            // Last, flush read-write queue - it always comes last, no matter if the write operation is dispatched
+            // from "event write context" started on user thread OR if it happens upon receiving an "event" message
+            // in other Feature:
+            readWriteQueue.sync { }
+        }
     }
 
     /// Awaits completion of all asynchronous operations, forces uploads (without retrying) and deinitializes
