@@ -42,8 +42,8 @@ class LogFileOutputTests: XCTestCase {
         output.write(log: log2)
 
         let log1FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC())
-        let log1FileData = try temporaryDirectory.file(named: log1FileName).read()
-        var reader = DataBlockReader(data: log1FileData)
+        let log1FileStream = try temporaryDirectory.file(named: log1FileName).stream()
+        var reader = DataBlockReader(input: log1FileStream)
         let logBlock1 = try XCTUnwrap(reader.next())
         XCTAssertEqual(logBlock1.type, .event)
 
@@ -52,8 +52,8 @@ class LogFileOutputTests: XCTestCase {
         log1Matcher.assertMessage(equals: "log message 1")
 
         let log2FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
-        let log2FileData = try temporaryDirectory.file(named: log2FileName).read()
-        reader = DataBlockReader(data: log2FileData)
+        let log2FileStream = try temporaryDirectory.file(named: log2FileName).stream()
+        reader = DataBlockReader(input: log2FileStream)
         let logBlock2 = try XCTUnwrap(reader.next())
         XCTAssertEqual(logBlock2.type, .event)
 

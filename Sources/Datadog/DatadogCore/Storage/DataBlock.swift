@@ -9,8 +9,8 @@ import Foundation
 /// Block size binary type
 internal typealias BlockSize = UInt32
 
-/// Block max size (safety check) - 10 MB
-private let MAX_BLOCK_SIZE = 10 * 1_024 * 1_024
+/// Default max data lenght in block (safety check) - 10 MB
+private let MAX_DATA_LENGHT: UInt64 = 10 * 1_024 * 1_024
 
 /// Block type supported in data stream
 internal enum BlockType: UInt16 {
@@ -20,8 +20,9 @@ internal enum BlockType: UInt16 {
 /// Reported errors while manipulating data blocks.
 internal enum DataBlockError: Error {
     case readOperationFailed(streamError: Error?)
+    case invalidDataType
     case invalidByteSequence
-    case dataLengthExceedsLimit
+    case bytesLengthExceedsLimit(limit: UInt64)
     case dataAllocationFailure
     case endOfStream
 }
@@ -43,15 +44,15 @@ internal struct DataBlock {
     ///     +-  2 bytes -+-   4 bytes   -+- n bytes -|
     ///     | block type | data size (n) |    data   |
     ///     +------------+---------------+-----------+
-    ///
+    /// - Parameter maxLenght: Maximum data lenght of a block.
     /// - Returns: a data block in TLV.
-    func serialize() throws -> Data {
+    func serialize(maxLenght: UInt64 = MAX_DATA_LENGHT) throws -> Data {
         var buffer = Data()
         // T
         withUnsafeBytes(of: type.rawValue) { buffer.append(contentsOf: $0) }
         // L
-        guard let length = BlockSize(exactly: data.count), length < MAX_BLOCK_SIZE else {
-            throw DataBlockError.dataLengthExceedsLimit
+        guard let length = BlockSize(exactly: data.count), length <= maxLenght else {
+            throw DataBlockError.bytesLengthExceedsLimit(limit: maxLenght)
         }
         withUnsafeBytes(of: length) { buffer.append(contentsOf: $0) }
         // V
@@ -68,14 +69,25 @@ internal final class DataBlockReader {
     /// The input data stream.
     private let stream: InputStream
 
+    /// Maximum data lenght of a block.
+    private let maxBlockLenght: UInt64
+
     /// Reads block from data input.
     ///
     /// At initilization, the reader will open a stream targeting the input data.
     /// The stream will be closed when the reader instance is deallocated.
     ///
-    /// - Parameter data: The data input
-    convenience init(data: Data) {
-        self.init(input: InputStream(data: data))
+    /// - Parameters:
+    ///   - data: The data input
+    ///   - maxBlockLenght: Maximum data lenght of a block.
+    convenience init(
+        data: Data,
+        maxBlockLenght: UInt64 = MAX_DATA_LENGHT
+    ) {
+        self.init(
+            input: InputStream(data: data),
+            maxBlockLenght: maxBlockLenght
+        )
     }
 
     /// Reads block from an input stream.
@@ -84,7 +96,11 @@ internal final class DataBlockReader {
     /// when the reader instance is deallocated.
     ///
     /// - Parameter stream: The input stream
-    init(input stream: InputStream) {
+    init(
+        input stream: InputStream,
+        maxBlockLenght: UInt64 = MAX_DATA_LENGHT
+    ) {
+        self.maxBlockLenght = maxBlockLenght
         self.stream = stream
         stream.open()
     }
@@ -102,34 +118,25 @@ internal final class DataBlockReader {
     /// - Returns: The next block or nil if none could be found.
     func next() throws -> DataBlock? {
         // look for the next known block
-        while stream.hasBytesAvailable {
-            // read an entire block before inferring the data type
-            // to leave the stream in a usuable state if an unkown
-            // type was encountered.
-            let type: BlockType.RawValue
+        while true {
             do {
-                type = try readType()
+                return try readBlock()
+            } catch DataBlockError.invalidDataType {
+                continue
             } catch DataBlockError.endOfStream {
                 // Some streams won't return false for hasBytesAvailable until a read is attempted
                 return nil
             } catch {
                 throw error
             }
-            let data = try readData()
-
-            if let type = BlockType(rawValue: type) {
-                return DataBlock(type: type, data: data)
-            }
         }
-
-        return nil
     }
 
     /// Reads all data blocks from current index in the stream.
     ///
     /// - Throws: `DataBlockError` while reading the input stream.
     /// - Returns: The block sequence found in the input
-    func all() throws -> [DataBlock] {
+    func all(maxDataLenght: UInt64 = MAX_DATA_LENGHT) throws -> [DataBlock] {
         var blocks: [DataBlock] = []
 
         while let block = try next() {
@@ -151,8 +158,8 @@ internal final class DataBlockReader {
 
         // Load from stream directly to data without unnecessary copies
         var data = Data(count: length)
-        let count = try data.withUnsafeMutableBytes { (bytes: UnsafeMutableRawBufferPointer) in
-            guard let buffer = bytes.assumingMemoryBound(to: UInt8.self).baseAddress else {
+        let count = try data.withUnsafeMutableBytes {
+            guard let buffer = $0.assumingMemoryBound(to: UInt8.self).baseAddress else {
                 throw DataBlockError.dataAllocationFailure
             }
             return stream.read(buffer, maxLength: length)
@@ -173,6 +180,21 @@ internal final class DataBlockReader {
         return data
     }
 
+    /// Reads a block.
+    private func readBlock() throws -> DataBlock {
+        // read an entire block before inferring the data type
+        // to leave the stream in a usuable state if an unkown
+        // type was encountered.
+        let type = try readType()
+        let data = try readData()
+
+        guard let type = BlockType(rawValue: type) else {
+            throw DataBlockError.invalidDataType
+        }
+
+        return DataBlock(type: type, data: data)
+    }
+
     /// Reads a block type.
     private func readType() throws -> BlockType.RawValue {
         let data = try read(length: MemoryLayout<BlockType.RawValue>.size)
@@ -189,8 +211,8 @@ internal final class DataBlockReader {
         // length.
         // Additionally check that length hasn't been corrupted and
         // we don't try to generate a huge buffer.
-        guard let length = Int(exactly: size), length < MAX_BLOCK_SIZE else {
-            throw DataBlockError.dataLengthExceedsLimit
+        guard let length = Int(exactly: size), length <= maxBlockLenght else {
+            throw DataBlockError.bytesLengthExceedsLimit(limit: maxBlockLenght)
         }
 
         return try read(length: length)

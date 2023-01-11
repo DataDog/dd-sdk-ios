@@ -44,8 +44,8 @@ class RUMEventFileOutputTests: XCTestCase {
         writer.write(value: event2)
 
         let event1FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC())
-        let event1FileData = try temporaryDirectory.file(named: event1FileName).read()
-        var reader = DataBlockReader(data: event1FileData)
+        let event1FileStream = try temporaryDirectory.file(named: event1FileName).stream()
+        var reader = DataBlockReader(input: event1FileStream)
         let eventBlock1 = try XCTUnwrap(reader.next())
         XCTAssertEqual(eventBlock1.type, .event)
 
@@ -55,8 +55,8 @@ class RUMEventFileOutputTests: XCTestCase {
         XCTAssertEqual(try event1Matcher.model(), expectedDatamodel1)
 
         let event2FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
-        let event2FileData = try temporaryDirectory.file(named: event2FileName).read()
-        reader = DataBlockReader(data: event2FileData)
+        let event2FileStream = try temporaryDirectory.file(named: event2FileName).stream()
+        reader = DataBlockReader(input: event2FileStream)
         let eventBlock2 = try XCTUnwrap(reader.next())
         XCTAssertEqual(eventBlock2.type, .event)
 
