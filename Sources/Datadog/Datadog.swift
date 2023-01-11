@@ -323,7 +323,6 @@ public class Datadog {
         // Reset Globals:
         Global.sharedTracer = DDNoopGlobals.tracer
         Global.rum = DDNoopRUMMonitor()
-        defaultDatadogCore.integration(named: "crash-reporter", type: CrashReporter.self)?.deinitialize()
         DD.telemetry = NOPTelemetry()
 
         // Deinitialize `Datadog`:

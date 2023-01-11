@@ -56,4 +56,12 @@ internal class ActiveSpansPool {
         contextMap[activityReference.activityId] = nil
         rlock.unlock()
     }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    func destroy() {
+        rlock.lock()
+        contextMap = [:]
+        rlock.unlock()
+    }
+#endif
 }

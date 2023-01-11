@@ -247,9 +247,13 @@ internal final class DatadogCore {
         feature(RUMInstrumentation.self)?.deinitialize()
         feature(URLSessionAutoInstrumentation.self)?.deinitialize()
 
+        // Deinitialize V2 Integrations (arbitrarily for now, until we make it into `DatadogFeatureIntegration`):
+        integration(named: "crash-reporter", type: CrashReporter.self)?.deinitialize()
+
         // Deallocate all Features and their storage & upload units:
         v1Features = [:]
         v2Features = [:]
+        integrations = [:]
     }
 }
 

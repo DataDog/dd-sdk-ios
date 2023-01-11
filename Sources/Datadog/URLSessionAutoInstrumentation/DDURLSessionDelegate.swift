@@ -29,16 +29,18 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDat
     }
 
     var instrumentation: URLSessionAutoInstrumentation? {
-        core().v1.feature(URLSessionAutoInstrumentation.self)
+        core?.v1.feature(URLSessionAutoInstrumentation.self)
     }
 
     let firstPartyHosts: FirstPartyHosts
 
-    private let core: () -> DatadogCoreProtocol
+    /// The instance of the SDK core notified by this delegate.
+    /// It must be a weak reference, because `URLSessionDelegate` can last longer than this instance.
+    private weak var core: DatadogCoreProtocol?
 
     @objc
     override public init() {
-        core = { defaultDatadogCore }
+        core = defaultDatadogCore
         firstPartyHosts = .init()
         super.init()
     }
@@ -77,7 +79,7 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDat
     ///   - additionalFirstPartyHosts: additionalFirstPartyHosts: these hosts are tracked **in addition to** what was
     ///                                passed to `DatadogConfiguration.Builder` via `trackURLSession(firstPartyHosts:)`
     public init(
-        in core: @autoclosure @escaping () -> DatadogCoreProtocol,
+        in core: DatadogCoreProtocol,
         additionalFirstPartyHostsWithHeaderTypes: [String: Set<TracingHeaderType>]
     ) {
         self.core = core
