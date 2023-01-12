@@ -49,7 +49,7 @@ internal class ThirdPartyCrashReporterMock: ThirdPartyCrashReporter {
 }
 
 internal extension DDCrashReport {
-    public static func mockAny() -> DDCrashReport {
+    static func mockAny() -> DDCrashReport {
         return DDCrashReport(
             date: Date(),
             type: "any",
