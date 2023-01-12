@@ -196,4 +196,73 @@ class DDURLSessionDelegateTests: XCTestCase {
             XCTAssertNil(interceptedTaskWithCompletion.error)
         }
     }
+
+    // MARK: - Usage
+
+    func testItCanBeInitializedBeforeInitializingDefaultSDKCore() throws {
+        // Given
+        let delegate1 = DDURLSessionDelegate()
+        let delegate2 = DDURLSessionDelegate(additionalFirstPartyHosts: [])
+        let delegate3 = DDURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: [:])
+
+        // When
+        defaultDatadogCore = core
+        defer { defaultDatadogCore = NOPDatadogCore() }
+
+        // Then
+        XCTAssertNotNil(delegate1.instrumentation)
+        XCTAssertNotNil(delegate2.instrumentation)
+        XCTAssertNotNil(delegate3.instrumentation)
+    }
+
+    func testItCanBeInitializedAfterInitializingDefaultSDKCore() throws {
+        // Given
+        defaultDatadogCore = core
+        defer { defaultDatadogCore = NOPDatadogCore() }
+
+        // When
+        let delegate1 = DDURLSessionDelegate()
+        let delegate2 = DDURLSessionDelegate(additionalFirstPartyHosts: [])
+        let delegate3 = DDURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: [:])
+
+        // Then
+        XCTAssertNotNil(delegate1.instrumentation)
+        XCTAssertNotNil(delegate2.instrumentation)
+        XCTAssertNotNil(delegate3.instrumentation)
+    }
+
+    func testItOnlyKeepsInstrumentationWhileSDKCoreIsAvailableInMemory() throws {
+        let instrumentation = URLSessionAutoInstrumentation(swizzler: try URLSessionSwizzler(), interceptor: interceptor)
+
+        // Given
+        var core: DatadogCoreProxy? = DatadogCoreProxy()
+        core?.v1.register(feature: instrumentation)
+        defaultDatadogCore = core!
+
+        // When
+        let delegate1 = DDURLSessionDelegate(in: core)
+        let delegate2 = DDURLSessionDelegate(in: core, additionalFirstPartyHostsWithHeaderTypes: [:])
+        let delegate3 = DDURLSessionDelegate()
+        let delegate4 = DDURLSessionDelegate(additionalFirstPartyHosts: [])
+        let delegate5 = DDURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: [:])
+
+        // Then
+        XCTAssertNotNil(delegate1.instrumentation)
+        XCTAssertNotNil(delegate2.instrumentation)
+        XCTAssertNotNil(delegate3.instrumentation)
+        XCTAssertNotNil(delegate4.instrumentation)
+        XCTAssertNotNil(delegate5.instrumentation)
+
+        // When (deinitialize core)
+        core?.flushAndTearDown()
+        core = nil
+        defaultDatadogCore = NOPDatadogCore()
+
+        // Then
+        XCTAssertNil(delegate1.instrumentation)
+        XCTAssertNil(delegate2.instrumentation)
+        XCTAssertNil(delegate3.instrumentation)
+        XCTAssertNil(delegate4.instrumentation)
+        XCTAssertNil(delegate5.instrumentation)
+    }
 }
