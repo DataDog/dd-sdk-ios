@@ -185,9 +185,17 @@ public extension FeatureScope {
     /// The Feature scope provides the current Datadog context and event writer
     /// for the Feature to build and record events.
     ///
-    /// - Parameter block: The block to execute.
-    func eventWriteContext(_ block: @escaping (DatadogContext, Writer) throws -> Void) {
-        self.eventWriteContext(bypassConsent: false, forceNewBatch: false, block)
+    /// - Parameters:
+    ///   - bypassConsent: `true` to bypass the current core consent and write events as authorized.
+    ///                    Default is `false`, setting `true` must still respect user's consent for
+    ///                    collecting information.
+    ///   - forceNewBatch: `true` to enforce that event will be written to a separate batch than previous events.
+    ///                     Default is `false`, which means the core uses its own heuristic to split events between
+    ///                     batches. This parameter can be leveraged in Features which require a clear separation
+    ///                     of group of events for preparing their upload (a single upload is always constructed from a single batch).
+    ///   - block: The block to execute.
+    func eventWriteContext(bypassConsent: Bool = false, forceNewBatch: Bool = false, _ block: @escaping (DatadogContext, Writer) throws -> Void) {
+        self.eventWriteContext(bypassConsent: bypassConsent, forceNewBatch: forceNewBatch, block)
     }
 }
 

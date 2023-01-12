@@ -116,7 +116,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             // To avoid inconsistency, we only send the RUM error.
             DD.logger.debug("Sending crash as RUM error.")
             let rumError = createRUMError(from: crashReport, and: lastRUMViewEvent, crashDate: crashTimings.realCrashDate)
-            core.v1.scope(for: RUMFeature.self)?.eventWriteContext(bypassConsent: true, forceNewBatch: false) { _, writer in
+            core.v1.scope(for: RUMFeature.self)?.eventWriteContext(bypassConsent: true) { _, writer in
                 writer.write(value: rumError)
             }
         }
@@ -236,7 +236,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
 
         // crash reporting is considering the user consent from previous session, if an event reached
         // the message bus it means that consent was granted and we can safely bypass current consent.
-        core.v1.scope(for: RUMFeature.self)?.eventWriteContext(bypassConsent: true, forceNewBatch: false) { _, writer in
+        core.v1.scope(for: RUMFeature.self)?.eventWriteContext(bypassConsent: true) { _, writer in
             writer.write(value: rumError)
             writer.write(value: updatedRUMView)
         }

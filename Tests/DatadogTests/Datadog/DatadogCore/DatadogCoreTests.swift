@@ -100,17 +100,17 @@ class DatadogCoreTests: XCTestCase {
 
         // When
         core.set(trackingConsent: .notGranted)
-        scope.eventWriteContext(bypassConsent: true, forceNewBatch: false) { context, writer in
+        scope.eventWriteContext(bypassConsent: true) { context, writer in
             writer.write(value: FeatureMock.Event(event: "not granted"))
         }
 
         core.set(trackingConsent: .granted)
-        scope.eventWriteContext(bypassConsent: true, forceNewBatch: false) { context, writer in
+        scope.eventWriteContext(bypassConsent: true) { context, writer in
             writer.write(value: FeatureMock.Event(event: "granted"))
         }
 
         core.set(trackingConsent: .pending)
-        scope.eventWriteContext(bypassConsent: true, forceNewBatch: false) { context, writer in
+        scope.eventWriteContext(bypassConsent: true) { context, writer in
             writer.write(value: FeatureMock.Event(event: "pending"))
         }
 
@@ -156,15 +156,15 @@ class DatadogCoreTests: XCTestCase {
         let scope = try XCTUnwrap(core.scope(for: "mock"))
 
         // When
-        scope.eventWriteContext(bypassConsent: false, forceNewBatch: true) { context, writer in
+        scope.eventWriteContext(forceNewBatch: true) { context, writer in
             writer.write(value: FeatureMock.Event(event: "1"))
         }
 
-        scope.eventWriteContext(bypassConsent: false, forceNewBatch: true) { context, writer in
+        scope.eventWriteContext(forceNewBatch: true) { context, writer in
             writer.write(value: FeatureMock.Event(event: "2"))
         }
 
-        scope.eventWriteContext(bypassConsent: false, forceNewBatch: true) { context, writer in
+        scope.eventWriteContext(forceNewBatch: true) { context, writer in
             writer.write(value: FeatureMock.Event(event: "3"))
         }
 
