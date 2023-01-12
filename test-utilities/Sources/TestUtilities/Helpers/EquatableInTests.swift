@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import TestUtilities
 
 /// Utility protocol adding `Equatable` conformance to any arbitrary type.
 /// The equatability is determined based on comparing type mirrors and values.
