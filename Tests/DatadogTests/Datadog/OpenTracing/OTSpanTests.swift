@@ -167,7 +167,7 @@ class OTSpanTests: XCTestCase {
         XCTAssertEqual(
             try span.logs[0].otStack(),
             """
-            DatadogTests/OTSpanTests.swift:158
+            DatadogTests/OTSpanTests.swift:159
             Thread 0 Crashed:
             0   app                                 0x0000000102bc0d8c 0x102bb8000 + 36236
             1   UIKitCore                           0x00000001b513d9ac 0x1b4739000 + 10504620
