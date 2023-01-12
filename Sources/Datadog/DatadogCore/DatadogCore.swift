@@ -216,7 +216,9 @@ internal final class DatadogCore {
         // follow our design choices around SDK core's threading.
 
         // The flushing is repeated few times, to make sure that operations spawned from other operations
-        // on these queues are also awaited.
+        // on these queues are also awaited. Effectively, this is no different than short-time sleep() on current
+        // thread and it has the same drawbacks (including: it might become flaky). Until we find a better solution
+        // this is enough to get consistency in tests - but won't be reliable in any public "deinitialize" API.
         for _ in 0..<5 {
             // First, flush bus queue - because messages can lead to obtaining "event write context" (reading
             // context & performing write) in other Features:
