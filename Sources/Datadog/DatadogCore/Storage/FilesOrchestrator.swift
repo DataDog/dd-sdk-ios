@@ -7,6 +7,8 @@
 import Foundation
 
 internal protocol FilesOrchestratorType: AnyObject {
+    var performance: StoragePerformancePreset { get }
+
     func getWritableFile(writeSize: UInt64) throws -> WritableFile
     func getReadableFile(excludingFilesNamed excludedFileNames: Set<String>) -> ReadableFile?
     func delete(readableFile: ReadableFile)
