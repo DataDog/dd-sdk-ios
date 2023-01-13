@@ -6,73 +6,53 @@
 
 import Foundation
 
+internal struct SegmentJSONBuilderError: Error, CustomStringConvertible {
+    let description: String
+}
+
 internal struct SegmentJSONBuilder {
     let source: SRSegment.Source
 
-    /// Groups records into segments.
+    /// Turns records into segments.
+    /// It expects all `records` to reference the same RUM view (otherwise it throws an error).
     ///
-    /// It scans succeeding records and groups together ones that share the same RUM context. Each group
-    /// stands for a separate segment. To ensure it produces an optimal number of segments, the `records`
-    /// array must be ordered in a way that the same RUM context appears in continuous ranges.
-    ///
-    /// - Parameter records: records to bundle within segments
-    /// - Returns: array of serializable segments
-    func createSegmentJSONs(from records: [EnrichedRecordJSON]) -> [SegmentJSON] {
+    /// - Parameter records: records to bundle within segment
+    /// - Returns: serializable segment
+    func createSegmentJSON(from records: [EnrichedRecordJSON]) throws -> SegmentJSON {
         guard !records.isEmpty else {
-            return []
+            throw SegmentJSONBuilderError(
+                description: "Records array must not be empty."
+            )
         }
 
-        var segments: [SegmentJSON?] = []
+        // Segment state:
         var current = records[0]
-
-        // Current segment state:
-        var startIndex = 0
         var hasFullSnapshot = current.hasFullSnapshot
         var startTime = current.earliestTimestamp
         var endTime = current.latestTimestamp
 
-        // Loop through the array to find continuous ranges of records that have
-        // the same RUM context. For each range create a segment:
+        // Verify if all records share the same RUM context and record segment state:
         for index in (1..<records.count) {
             let next = records[index]
 
-            if rumContextEquals(in: current, and: next) {
-                // Continue current segment:
-                hasFullSnapshot = hasFullSnapshot || next.hasFullSnapshot
-                startTime = min(startTime, next.earliestTimestamp)
-                endTime = max(endTime, next.latestTimestamp)
-            } else {
-                // Close current segment:
-                segments.append(
-                    createSegmentJSON(
-                        records: records[startIndex..<index],
-                        hasFullSnapshot: hasFullSnapshot,
-                        startTime: startTime,
-                        endTime: endTime
-                    )
+            guard rumContextEquals(in: current, and: next) else {
+                throw SegmentJSONBuilderError(
+                    description: "All records must reference the same RUM context."
                 )
-
-                // Start next segment:
-                startIndex = index
-                hasFullSnapshot = next.hasFullSnapshot
-                startTime = next.earliestTimestamp
-                endTime = next.latestTimestamp
             }
 
+            hasFullSnapshot = hasFullSnapshot || next.hasFullSnapshot
+            startTime = min(startTime, next.earliestTimestamp)
+            endTime = max(endTime, next.latestTimestamp)
             current = next
         }
 
-        // Close the last segment:
-        segments.append(
-            createSegmentJSON(
-                records: records[startIndex..<records.count],
-                hasFullSnapshot: hasFullSnapshot,
-                startTime: startTime,
-                endTime: endTime
-            )
+        return createSegmentJSON(
+            records: records,
+            hasFullSnapshot: hasFullSnapshot,
+            startTime: startTime,
+            endTime: endTime
         )
-
-        return segments.compactMap { $0 }
     }
 
     private func rumContextEquals(in record1: EnrichedRecordJSON, and record2: EnrichedRecordJSON) -> Bool {
@@ -82,15 +62,12 @@ internal struct SegmentJSONBuilder {
     }
 
     private func createSegmentJSON(
-        records: ArraySlice<EnrichedRecordJSON>,
+        records: [EnrichedRecordJSON],
         hasFullSnapshot: Bool,
         startTime: Int64,
         endTime: Int64
-    ) -> SegmentJSON? {
-        guard let anyRecord = records.first else {
-            // Unexpected, TODO: RUMM-2410 Send error telemetry
-            return nil
-        }
+    ) -> SegmentJSON {
+        let anyRecord = records[0]
         let recordsJSONArray = records.flatMap { $0.records }
 
         return SegmentJSON(

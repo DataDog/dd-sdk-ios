@@ -55,10 +55,7 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
         self.recorder = recorder
         self.processor = processor
         self.writer = writer
-        self.requestBuilder = RequestBuilder(
-            uploader: Uploader(), // TODO: RUMM-2509 Get rid of `Uploader` when passing multiple requests per batch to `DatadogCore` is possible
-            customUploadURL: configuration.customUploadURL
-        )
+        self.requestBuilder = RequestBuilder(customUploadURL: configuration.customUploadURL)
         self.contextPublisher = SRContextPublisher(core: core)
 
         // Set initial SR context (it is configured, but not yet started):

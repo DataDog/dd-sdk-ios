@@ -10,49 +10,23 @@ import Datadog
 internal struct RequestBuilder: FeatureRequestBuilder {
     private static let newlineByte = "\n".data(using: .utf8)! // swiftlint:disable:this force_unwrapping
 
-    /// An arbitrary uploader.
-    /// TODO: RUMM-2509 Remove it when passing multiple requests per batch to `DatadogCore` is possible
-    let uploader: Uploader
     /// Custom URL for uploading data to.
     let customUploadURL: URL?
 
     func request(for events: [Data], with context: DatadogContext) throws -> URLRequest {
         let source = SRSegment.Source(rawValue: context.source) ?? .ios // TODO: RUMM-2410 Send telemetry on `?? .ios`
-        let segmentsBuilder = SegmentJSONBuilder(source: source)
+        let segmentBuilder = SegmentJSONBuilder(source: source)
 
         // If we can't decode `events: [Data]` there is no way to recover, so we throw an
         // error to let the core delete the batch:
         let records = try events.map { try EnrichedRecordJSON(jsonObjectData: $0) }
-        let segments = segmentsBuilder.createSegmentJSONs(from: records)
+        let segment = try segmentBuilder.createSegmentJSON(from: records)
 
         // If the SDK was configured with deprecated `set(*Endpoint:)` APIs we don't have `context.site`, so
         // we fallback to `.us1` - TODO: RUMM-2410 Report error with `DD.logger` in such case
         let url = customUploadURL ?? intakeURL(for: context.site ?? .us1)
 
-        // If we fail to create request for some segments do not rethrow to caller, but instead try with
-        // other segments. This is to recover from unexpected failures with maximizing the amount of data sent.
-        let requests: [URLRequest] = segments.compactMap {
-            do {
-                // Errors thrown here indicate either `JSONSerialization` trouble on encoding segment
-                // data or ZLIB compression error when compressing it:
-                return try createRequest(url: url, segment: $0, context: context)
-            } catch {
-                return nil // TODO: RUMM-2410 Report error with `DD.logger` and send `DD.telemetry`
-            }
-        }
-
-        guard let firstRequest = requests.first else {
-            throw InternalError(description: "Failed to prepare upload request for session replay segments.")
-        }
-
-        // TODO: RUMM-2509 Pass multiple requests per batch to `DatadogCore`
-        // Because it is yet not possible to return multiple requests to `DatadogCore`, we give it only
-        // the first one and send other with an arbitrary uploader managed by SR module:
-        if requests.count > 1 {
-            uploader.upload(requests: requests[1..<requests.count])
-        }
-
-        return firstRequest
+        return try createRequest(url: url, segment: segment, context: context)
     }
 
     private func intakeURL(for site: DatadogSite) -> URL {
