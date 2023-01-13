@@ -32,7 +32,7 @@ class RUMStorageBenchmarkTests: XCTestCase {
             encryption: nil
         )
 
-        self.writer = storage.writer(for: .granted)
+        self.writer = storage.writer(for: .granted, forceNewBatch: false)
         self.reader = storage.reader
 
         XCTAssertTrue(try directory.files().isEmpty)
