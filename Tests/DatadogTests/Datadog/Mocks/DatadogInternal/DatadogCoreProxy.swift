@@ -25,6 +25,10 @@ import Foundation
 ///     ```
 ///
 internal class DatadogCoreProxy: DatadogCoreProtocol {
+    /// Counts references to `DatadogCoreProxy` instances, so we can prevent memory
+    /// leaks of SDK core in `DatadogTestsObserver`.
+    static var referenceCount = 0
+
     /// The SDK core managed by this proxy.
     private let core: DatadogCore
 
@@ -43,6 +47,11 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
             contextProvider: DatadogContextProvider(context: context),
             applicationVersion: context.version
         )
+        DatadogCoreProxy.referenceCount += 1
+    }
+
+    deinit {
+        DatadogCoreProxy.referenceCount -= 1
     }
 
     var context: DatadogContext {

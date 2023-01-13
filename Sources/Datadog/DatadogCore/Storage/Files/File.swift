@@ -27,11 +27,15 @@ internal protocol ReadableFile {
     /// Name of this file.
     var name: String { get }
 
-    /// Reads the available data in this file.
-    func read() throws -> Data
+    /// Creates InputStream for reading the available data from this file.
+    func stream() throws -> InputStream
 
     /// Deletes this file.
     func delete() throws
+}
+
+private enum FileError: Error {
+    case unableToCreateInputStream
 }
 
 /// An immutable `struct` designed to provide optimized and thread safe interface for file manipulation.
@@ -90,43 +94,11 @@ internal struct File: WritableFile, ReadableFile {
         }
     }
 
-    func read() throws -> Data {
-        let fileHandle = try FileHandle(forReadingFrom: url)
-
-        // NOTE: RUMM-669
-        // https://github.com/DataDog/dd-sdk-ios/issues/214
-        // https://en.wikipedia.org/wiki/Xcode#11.x_series
-        // compiler version needs to have iOS 13.4+ as base SDK
-        #if compiler(>=5.2)
-        /**
-         Even though the `fileHandle.seekToEnd()` should be available since iOS 13.0:
-         ```
-         @available(OSX 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
-         public func readToEnd() throws -> Data?
-         ```
-         it crashes on iOS Simulators prior to iOS 13.4:
-         ```
-         Symbol not found: _$sSo12NSFileHandleC10FoundationE9readToEndAC4DataVSgyKF
-         ```
-        This is fixed in iOS 14/Xcode 12
-        */
-        if #available(iOS 13.4, tvOS 13.4, *) {
-            defer { try? fileHandle.close() }
-            return try fileHandle.readToEnd() ?? Data()
-        } else {
-            return try legacyRead(from: fileHandle)
+    func stream() throws -> InputStream {
+        guard let stream = InputStream(url: url) else {
+            throw FileError.unableToCreateInputStream
         }
-        #else
-        return try legacyRead(from: fileHandle)
-        #endif
-    }
-
-    private func legacyRead(from fileHandle: FileHandle) throws -> Data {
-        let data = fileHandle.readDataToEndOfFile()
-        try? objcExceptionHandler.rethrowToSwift {
-            fileHandle.closeFile()
-        }
-        return data
+        return stream
     }
 
     func size() throws -> UInt64 {

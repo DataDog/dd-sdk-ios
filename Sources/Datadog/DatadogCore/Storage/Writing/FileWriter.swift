@@ -51,7 +51,9 @@ internal struct FileWriter: Writer {
         return try DataBlock(
             type: .event,
             data: encrypt(data: data)
-        ).serialize()
+        ).serialize(
+            maxLenght: orchestrator.performance.maxObjectSize
+        )
     }
 
     /// Encrypts data if encryption is available.

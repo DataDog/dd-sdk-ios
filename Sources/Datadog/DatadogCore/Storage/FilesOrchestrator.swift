@@ -7,6 +7,8 @@
 import Foundation
 
 internal protocol FilesOrchestratorType: AnyObject {
+    var performance: StoragePerformancePreset { get }
+
     func getNewWritableFile(writeSize: UInt64) throws -> WritableFile
     func getWritableFile(writeSize: UInt64) throws -> WritableFile
     func getReadableFile(excludingFilesNamed excludedFileNames: Set<String>) -> ReadableFile?
@@ -18,11 +20,12 @@ internal protocol FilesOrchestratorType: AnyObject {
 /// Orchestrates files in a single directory.
 internal class FilesOrchestrator: FilesOrchestratorType {
     /// Directory where files are stored.
-    private let directory: Directory
+    let directory: Directory
     /// Date provider.
-    private let dateProvider: DateProvider
+    let dateProvider: DateProvider
     /// Performance rules for writing and reading files.
-    private let performance: StoragePerformancePreset
+    let performance: StoragePerformancePreset
+
     /// Name of the last file returned by `getWritableFile()`.
     private var lastWritableFileName: String? = nil
     /// Tracks number of times the file at `lastWritableFileURL` was returned from `getWritableFile()`.

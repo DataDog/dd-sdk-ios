@@ -32,7 +32,10 @@ internal struct MessageBusSender: CrashReportSender {
     }
 
     /// The core for sending crash report and context.
-    let core: DatadogCoreProtocol
+    ///
+    /// It must be a weak reference to avoid retain cycle (the `CrashReportSender` is held by crash reporting
+    /// integration kept by core).
+    weak var core: DatadogCoreProtocol?
 
     /// Send the crash report et context on the bus of the core.
     ///
@@ -53,14 +56,14 @@ internal struct MessageBusSender: CrashReportSender {
     }
 
     private func sendRUM(baggage: FeatureBaggage) {
-        core.send(
+        core?.send(
             message: .custom(key: MessageKeys.crash, baggage: baggage),
             else: { self.sendLog(baggage: baggage) }
         )
     }
 
     private func sendLog(baggage: FeatureBaggage) {
-        core.send(
+        core?.send(
             message: .custom(key: MessageKeys.crashLog, baggage: baggage),
             else: printError
         )

@@ -8,9 +8,7 @@ import XCTest
 @testable import Datadog
 
 class URLSessionTracingHandlerTests: XCTestCase {
-    private let core = PassthroughCoreMock(
-        messageReceiver: LogMessageReceiver.mockAny()
-    )
+    private var core: PassthroughCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
 
     private let handler = URLSessionTracingHandler(
         appStateListener: AppStateListenerMock(
@@ -23,12 +21,14 @@ class URLSessionTracingHandlerTests: XCTestCase {
     )
 
     override func setUp() {
-        Global.sharedTracer = Tracer.mockWith(core: core)
         super.setUp()
+        core = PassthroughCoreMock(messageReceiver: LogMessageReceiver.mockAny())
+        Global.sharedTracer = Tracer.mockWith(core: core)
     }
 
     override func tearDown() {
         Global.sharedTracer = DDNoopGlobals.tracer
+        core = nil
         super.tearDown()
     }
 

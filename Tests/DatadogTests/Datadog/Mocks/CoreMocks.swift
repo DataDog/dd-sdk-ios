@@ -556,9 +556,11 @@ internal class NOPFilesOrchestrator: FilesOrchestratorType {
         var name: String = .mockAny()
         func size() throws -> UInt64 { .mockAny() }
         func append(data: Data) throws {}
-        func read() throws -> Data { .mockAny() }
+        func stream() throws -> InputStream { InputStream() }
         func delete() throws { }
     }
+
+    var performance: StoragePerformancePreset { StoragePerformanceMock.noOp }
 
     func getNewWritableFile(writeSize: UInt64) throws -> WritableFile { NOPFile() }
     func getWritableFile(writeSize: UInt64) throws -> WritableFile { NOPFile() }

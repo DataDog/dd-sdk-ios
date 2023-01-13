@@ -20,7 +20,10 @@ internal final class RUMTelemetry: Telemetry {
     /// Maximium number of telemetry events allowed per user sessions.
     static let maxEventsPerSessions: Int = 100
 
-    let core: DatadogCoreProtocol
+    /// The core for sending telemetry to.
+    /// It must be a weak reference, because `RUMTelemetry` is a global object.
+    private weak var core: DatadogCoreProtocol?
+
     let dateProvider: DateProvider
     var configurationEventMapper: RUMTelemetryConfiguratoinMapper?
     let delayedDispatcher: RUMTelemetryDelayedDispatcher
@@ -186,7 +189,7 @@ internal final class RUMTelemetry: Telemetry {
 
     private func record(event id: String, operation: @escaping (DatadogContext, Writer) -> Void) {
         guard
-            let rum = core.v1.scope(for: RUMFeature.self),
+            let rum = core?.v1.scope(for: RUMFeature.self),
             sampler.sample()
         else {
             return
