@@ -117,7 +117,7 @@ public class Tracer: OTTracer {
             spanEventMapper: tracingFeature.configuration.spanEventMapper,
             tracingUUIDGenerator: tracingFeature.configuration.uuidGenerator,
             dateProvider: tracingFeature.configuration.dateProvider,
-            rumIntegration: tracerConfiguration.bundleWithRUM ? TracingWithRUMIntegration() : nil,
+            rumIntegration: tracerConfiguration.bundleWithRUM ? (tracingFeature.messageReceiver as? TracingMessageReceiver)?.rum : nil,
             loggingIntegration: TracingWithLoggingIntegration(
                 core: core,
                 tracerConfiguration: tracerConfiguration

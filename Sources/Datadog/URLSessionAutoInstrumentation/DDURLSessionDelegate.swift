@@ -29,22 +29,22 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDat
     }
 
     var instrumentation: URLSessionAutoInstrumentation? {
-        core().v1.feature(URLSessionAutoInstrumentation.self)
+        let core = self.core ?? defaultDatadogCore
+        return core.v1.feature(URLSessionAutoInstrumentation.self)
     }
 
     let firstPartyHosts: FirstPartyHosts
 
-    private let core: () -> DatadogCoreProtocol
+    /// The instance of the SDK core notified by this delegate.
+    /// It must be a weak reference, because `URLSessionDelegate` can last longer than core instance.
+    /// Any `URLSession` will retain its delegate until `.invalidateAndCancel()` is called.
+    private weak var core: DatadogCoreProtocol?
 
     @objc
     override public init() {
-        core = { defaultDatadogCore }
+        core = nil
         firstPartyHosts = .init()
         super.init()
-    }
-
-    public convenience init(in core: DatadogCoreProtocol) {
-        self.init(in: core, additionalFirstPartyHostsWithHeaderTypes: [:])
     }
 
     /// Automatically tracked hosts can be customized per instance with this initializer.
@@ -54,7 +54,10 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDat
     /// - Parameter additionalFirstPartyHostsWithHeaderTypes: these hosts are tracked **in addition to** what was
     /// passed to `DatadogConfiguration.Builder` via `trackURLSession(firstPartyHostsWithHeaderTypes:)`
     public convenience init(additionalFirstPartyHostsWithHeaderTypes: [String: Set<TracingHeaderType>]) {
-        self.init(in: defaultDatadogCore, additionalFirstPartyHostsWithHeaderTypes: additionalFirstPartyHostsWithHeaderTypes)
+        self.init(
+            in: nil,
+            additionalFirstPartyHostsWithHeaderTypes: additionalFirstPartyHostsWithHeaderTypes
+        )
     }
 
     /// Automatically tracked hosts can be customized per instance with this initializer.
@@ -65,20 +68,25 @@ open class DDURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDat
     /// passed to `DatadogConfiguration.Builder` via `trackURLSession(firstPartyHosts:)`
     @objc
     public convenience init(additionalFirstPartyHosts: Set<String>) {
-        self.init(additionalFirstPartyHostsWithHeaderTypes: additionalFirstPartyHosts.reduce(into: [:], { partialResult, host in
-            partialResult[host] = [.datadog]
-        }))
+        self.init(
+            in: nil,
+            additionalFirstPartyHostsWithHeaderTypes: additionalFirstPartyHosts.reduce(into: [:], { partialResult, host in
+                partialResult[host] = [.datadog]
+            })
+        )
     }
 
     /// Automatically tracked hosts can be customized per instance with this initializer.
     ///
+    /// **NOTE:** If `trackURLSession(firstPartyHostsWithHeaderTypes:)` is never called, automatic tracking will **not** take place.
+    ///
     /// - Parameters:
-    ///   - core: Datadog SDK core.
-    ///   - additionalFirstPartyHosts: additionalFirstPartyHosts: these hosts are tracked **in addition to** what was
+    ///   - core: Datadog SDK instance (or `nil` to use default SDK instance).
+    ///   - additionalFirstPartyHosts: these hosts are tracked **in addition to** what was
     ///                                passed to `DatadogConfiguration.Builder` via `trackURLSession(firstPartyHosts:)`
     public init(
-        in core: @autoclosure @escaping () -> DatadogCoreProtocol,
-        additionalFirstPartyHostsWithHeaderTypes: [String: Set<TracingHeaderType>]
+        in core: DatadogCoreProtocol? = nil,
+        additionalFirstPartyHostsWithHeaderTypes: [String: Set<TracingHeaderType>] = [:]
     ) {
         self.core = core
         self.firstPartyHosts = FirstPartyHosts(additionalFirstPartyHostsWithHeaderTypes)

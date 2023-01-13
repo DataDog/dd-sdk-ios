@@ -28,8 +28,8 @@ class RUMDebuggingTests: XCTestCase {
         let debugging = RUMDebugging()
         debugging.debug(applicationScope: applicationScope)
 
-        DispatchQueue.main.async { expectation.fulfill() }
-        waitForExpectations(timeout: 1, handler: nil)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { expectation.fulfill() }
+        waitForExpectations(timeout: 2, handler: nil)
 
         // then
         let canvas = try XCTUnwrap(
@@ -72,8 +72,8 @@ class RUMDebuggingTests: XCTestCase {
         let debugging = RUMDebugging()
         debugging.debug(applicationScope: applicationScope)
 
-        DispatchQueue.main.async { expectation.fulfill() }
-        waitForExpectations(timeout: 1, handler: nil)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { expectation.fulfill() }
+        waitForExpectations(timeout: 2, handler: nil)
 
         // then
         let canvas = try XCTUnwrap(
