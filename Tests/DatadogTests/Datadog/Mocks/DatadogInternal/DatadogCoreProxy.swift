@@ -44,7 +44,7 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
             performance: .mockAny(),
             httpClient: .mockAny(),
             encryption: nil,
-            contextProvider: .mockWith(context: context),
+            contextProvider: DatadogContextProvider(context: context),
             applicationVersion: context.version
         )
         DatadogCoreProxy.referenceCount += 1
@@ -133,9 +133,9 @@ private struct FeatureScopeProxy: FeatureScope {
     let proxy: FeatureScope
     let interceptor: FeatureScopeInterceptor
 
-    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void) {
+    func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void) {
         interceptor.enter()
-        proxy.eventWriteContext(bypassConsent: bypassConsent) { context, writer in
+        proxy.eventWriteContext(bypassConsent: bypassConsent, forceNewBatch: forceNewBatch) { context, writer in
             try block(context, interceptor.intercept(writer: writer))
             interceptor.leave()
         }

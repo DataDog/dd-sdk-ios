@@ -20,18 +20,18 @@ internal struct FeatureStorage {
     /// Encryption algorithm applied to persisted data.
     let encryption: DataEncryption?
 
-    func writer(for trackingConsent: TrackingConsent) -> Writer {
+    func writer(for trackingConsent: TrackingConsent, forceNewBatch: Bool) -> Writer {
         switch trackingConsent {
         case .granted:
             return AsyncWriter(
-                execute: FileWriter(orchestrator: authorizedFilesOrchestrator, encryption: encryption),
+                execute: FileWriter(orchestrator: authorizedFilesOrchestrator, encryption: encryption, forceNewFile: forceNewBatch),
                 on: queue
             )
         case .notGranted:
             return NOPWriter()
         case .pending:
             return AsyncWriter(
-                execute: FileWriter(orchestrator: unauthorizedFilesOrchestrator, encryption: encryption),
+                execute: FileWriter(orchestrator: unauthorizedFilesOrchestrator, encryption: encryption, forceNewFile: forceNewBatch),
                 on: queue
             )
         }

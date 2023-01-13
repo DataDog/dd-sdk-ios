@@ -27,4 +27,10 @@ extension File {
     func makeReadWrite() throws {
         try FileManager.default.setAttributes([.immutable: false], ofItemAtPath: url.path)
     }
+
+    /// Reads the file content and returns events data assuming that file uses TLV format.
+    func readTLVEvents() throws -> [Data] {
+        let blocks = try DataBlockReader(input: stream()).all()
+        return blocks.map { $0.data }
+    }
 }

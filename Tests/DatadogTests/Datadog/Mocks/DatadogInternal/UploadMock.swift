@@ -33,6 +33,16 @@ internal struct FeatureRequestBuilderMock: FeatureRequestBuilder {
     }
 }
 
+internal class FeatureRequestBuilderSpy: FeatureRequestBuilder {
+    /// Records parameters passed to `requet(for:with:)`
+    var requestParameters: [(events: [Data], context: DatadogContext)] = []
+
+    func request(for events: [Data], with context: DatadogContext) throws -> URLRequest {
+        requestParameters.append((events: events, context: context))
+        return .mockAny()
+    }
+}
+
 internal struct FailingRequestBuilderMock: FeatureRequestBuilder {
     let error: Error
 

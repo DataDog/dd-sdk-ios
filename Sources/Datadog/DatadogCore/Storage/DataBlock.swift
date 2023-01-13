@@ -72,24 +72,6 @@ internal final class DataBlockReader {
     /// Maximum data lenght of a block.
     private let maxBlockLenght: UInt64
 
-    /// Reads block from data input.
-    ///
-    /// At initilization, the reader will open a stream targeting the input data.
-    /// The stream will be closed when the reader instance is deallocated.
-    ///
-    /// - Parameters:
-    ///   - data: The data input
-    ///   - maxBlockLenght: Maximum data lenght of a block.
-    convenience init(
-        data: Data,
-        maxBlockLenght: UInt64 = MAX_DATA_LENGHT
-    ) {
-        self.init(
-            input: InputStream(data: data),
-            maxBlockLenght: maxBlockLenght
-        )
-    }
-
     /// Reads block from an input stream.
     ///
     /// At initilization, the reader will open the stream, it will be closed

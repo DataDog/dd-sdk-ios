@@ -30,7 +30,8 @@ class LogFileOutputTests: XCTestCase {
                     ),
                     dateProvider: fileCreationDateProvider
                 ),
-                encryption: nil
+                encryption: nil,
+                forceNewFile: false
             )
         )
 
@@ -43,22 +44,16 @@ class LogFileOutputTests: XCTestCase {
         output.write(log: log2)
 
         let log1FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC())
-        let log1FileStream = try temporaryDirectory.file(named: log1FileName).stream()
-        var reader = DataBlockReader(input: log1FileStream)
-        let logBlock1 = try XCTUnwrap(reader.next())
-        XCTAssertEqual(logBlock1.type, .event)
-
-        let log1Matcher = try LogMatcher.fromJSONObjectData(logBlock1.data)
+        let log1FileEvents = try temporaryDirectory.file(named: log1FileName).readTLVEvents()
+        XCTAssertEqual(log1FileEvents.count, 1)
+        let log1Matcher = try LogMatcher.fromJSONObjectData(log1FileEvents[0])
         log1Matcher.assertStatus(equals: "info")
         log1Matcher.assertMessage(equals: "log message 1")
 
         let log2FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
-        let log2FileStream = try temporaryDirectory.file(named: log2FileName).stream()
-        reader = DataBlockReader(input: log2FileStream)
-        let logBlock2 = try XCTUnwrap(reader.next())
-        XCTAssertEqual(logBlock2.type, .event)
-
-        let log2Matcher = try LogMatcher.fromJSONObjectData(logBlock2.data)
+        let log2FileEvents = try temporaryDirectory.file(named: log2FileName).readTLVEvents()
+        XCTAssertEqual(log2FileEvents.count, 1)
+        let log2Matcher = try LogMatcher.fromJSONObjectData(log2FileEvents[0])
         log2Matcher.assertStatus(equals: "warn")
         log2Matcher.assertMessage(equals: "log message 2")
     }

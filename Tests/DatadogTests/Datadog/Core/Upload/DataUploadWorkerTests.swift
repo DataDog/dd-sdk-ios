@@ -18,7 +18,8 @@ class DataUploadWorkerTests: XCTestCase {
     )
     lazy var writer = FileWriter(
         orchestrator: orchestrator,
-        encryption: nil
+        encryption: nil,
+        forceNewFile: false
     )
     lazy var reader = FileReader(
         orchestrator: orchestrator,

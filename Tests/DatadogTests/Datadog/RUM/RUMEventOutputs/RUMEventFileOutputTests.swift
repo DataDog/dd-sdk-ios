@@ -30,7 +30,8 @@ class RUMEventFileOutputTests: XCTestCase {
                 ),
                 dateProvider: fileCreationDateProvider
             ),
-            encryption: nil
+            encryption: nil,
+            forceNewFile: false
         )
 
         let dataModel1 = RUMDataModelMock(attribute: "foo", context: RUMEventAttributes(contextInfo: ["custom.attribute": "value"]))
@@ -45,23 +46,17 @@ class RUMEventFileOutputTests: XCTestCase {
         writer.write(value: event2)
 
         let event1FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC())
-        let event1FileStream = try temporaryDirectory.file(named: event1FileName).stream()
-        var reader = DataBlockReader(input: event1FileStream)
-        let eventBlock1 = try XCTUnwrap(reader.next())
-        XCTAssertEqual(eventBlock1.type, .event)
+        let event1FileEvents = try temporaryDirectory.file(named: event1FileName).readTLVEvents()
+        XCTAssertEqual(event1FileEvents.count, 1)
 
-        let event1Matcher = try RUMEventMatcher.fromJSONObjectData(eventBlock1.data)
-
+        let event1Matcher = try RUMEventMatcher.fromJSONObjectData(event1FileEvents[0])
         let expectedDatamodel1 = RUMDataModelMock(attribute: "foo", context: RUMEventAttributes(contextInfo: ["custom.attribute": AnyEncodable("value")]))
         XCTAssertEqual(try event1Matcher.model(), expectedDatamodel1)
 
         let event2FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
-        let event2FileStream = try temporaryDirectory.file(named: event2FileName).stream()
-        reader = DataBlockReader(input: event2FileStream)
-        let eventBlock2 = try XCTUnwrap(reader.next())
-        XCTAssertEqual(eventBlock2.type, .event)
-
-        let event2Matcher = try RUMEventMatcher.fromJSONObjectData(eventBlock2.data)
+        let event2FileEvents = try temporaryDirectory.file(named: event2FileName).readTLVEvents()
+        XCTAssertEqual(event2FileEvents.count, 1)
+        let event2Matcher = try RUMEventMatcher.fromJSONObjectData(event2FileEvents[0])
         XCTAssertEqual(try event2Matcher.model(), dataModel2)
 
         // TODO: RUMM-585 Move assertion of full-json to `RUMMonitorTests`

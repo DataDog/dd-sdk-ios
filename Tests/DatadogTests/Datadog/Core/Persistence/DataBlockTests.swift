@@ -143,3 +143,15 @@ class DataBlockTests: XCTestCase {
         }
     }
 }
+
+private extension DataBlockReader {
+    convenience init(data: Data, maxBlockLenght: UInt64? = nil) {
+        let stream = InputStream(data: data)
+
+        if let maxBlockLenght = maxBlockLenght {
+            self.init(input: stream, maxBlockLenght: maxBlockLenght)
+        } else {
+            self.init(input: stream)
+        }
+    }
+}
