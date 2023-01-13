@@ -20,8 +20,8 @@ internal enum BlockType: UInt16 {
 /// Reported errors while manipulating data blocks.
 internal enum DataBlockError: Error {
     case readOperationFailed(streamError: Error?)
-    case invalidDataType
-    case invalidByteSequence
+    case invalidDataType(got: UInt16)
+    case invalidByteSequence(expected: Int, got: Int)
     case bytesLengthExceedsLimit(limit: UInt64)
     case dataAllocationFailure
     case endOfStream
@@ -156,7 +156,7 @@ internal final class DataBlockReader {
         }
 
         guard count == length else {
-            throw DataBlockError.invalidByteSequence
+            throw DataBlockError.invalidByteSequence(expected: length, got: count)
         }
 
         return data
@@ -171,7 +171,7 @@ internal final class DataBlockReader {
         let data = try readData()
 
         guard let type = BlockType(rawValue: type) else {
-            throw DataBlockError.invalidDataType
+            throw DataBlockError.invalidDataType(got: type)
         }
 
         return DataBlock(type: type, data: data)
