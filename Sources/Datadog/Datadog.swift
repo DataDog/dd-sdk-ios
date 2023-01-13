@@ -164,12 +164,8 @@ public class Datadog {
 
     /// Clears all data that has not already been sent to Datadog servers.
     public static func clearAllData() {
-        let logging = defaultDatadogCore.v1.feature(LoggingFeature.self)
-        let tracing = defaultDatadogCore.v1.feature(TracingFeature.self)
-        let rum = defaultDatadogCore.v1.feature(RUMFeature.self)
-        logging?.storage.clearAllData()
-        tracing?.storage.clearAllData()
-        rum?.storage.clearAllData()
+        let core = defaultDatadogCore as? DatadogCore
+        core?.clearAllData()
     }
 
     // MARK: - Internal
@@ -321,26 +317,12 @@ public class Datadog {
     internal static func internalFlushAndDeinitialize() {
         assert(Datadog.isInitialized, "SDK must be first initialized.")
 
-        // Flush the context provider's work items
-        let core = defaultDatadogCore as? DatadogCore
-        core?.contextProvider.queue.sync(flags: .barrier) { }
-
-        // Tear down and deinitialize all features:
-        let logging = defaultDatadogCore.v1.feature(LoggingFeature.self)
-        let tracing = defaultDatadogCore.v1.feature(TracingFeature.self)
-        let rum = defaultDatadogCore.v1.feature(RUMFeature.self)
-        let rumInstrumentation = defaultDatadogCore.v1.feature(RUMInstrumentation.self)
-        let urlSessionInstrumentation = defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self)
-        logging?.deinitialize()
-        tracing?.deinitialize()
-        rum?.deinitialize()
-        rumInstrumentation?.deinitialize()
-        urlSessionInstrumentation?.deinitialize()
+        // Flush and tear down SDK core:
+        (defaultDatadogCore as? DatadogCore)?.flushAndTearDown()
 
         // Reset Globals:
         Global.sharedTracer = DDNoopGlobals.tracer
         Global.rum = DDNoopRUMMonitor()
-        defaultDatadogCore.integration(named: "crash-reporter", type: CrashReporter.self)?.deinitialize()
         DD.telemetry = NOPTelemetry()
 
         // Deinitialize `Datadog`:

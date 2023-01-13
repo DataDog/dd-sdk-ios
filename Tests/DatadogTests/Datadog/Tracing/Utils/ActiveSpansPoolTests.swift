@@ -32,11 +32,10 @@ class ActiveSpansPoolTests: XCTestCase {
 
     func testsSpanWithoutParentInheritsActiveSpan() throws {
         let tracer = Tracer.mockAny(in: PassthroughCoreMock())
-        let firstSpan = tracer.startSpan(operationName: .mockAny()).setActive()
+        let firstSpan = tracer.startSpan(operationName: .mockAny())
         firstSpan.setActive()
         let previousActiveSpan = tracer.activeSpan
-        let secondSpan = tracer.startSpan(operationName: .mockAny()).setActive()
-        firstSpan.setActive()
+        let secondSpan = tracer.startSpan(operationName: .mockAny())
         secondSpan.setActive()
         XCTAssertEqual(secondSpan.dd.ddContext.parentSpanID, previousActiveSpan?.dd.ddContext.spanID)
         XCTAssertEqual(secondSpan.dd.ddContext.spanID,  tracer.activeSpan?.dd.ddContext.spanID)
@@ -65,30 +64,37 @@ class ActiveSpansPoolTests: XCTestCase {
     func testActiveSpanIsKeptPerTask() throws {
         let tracer = Tracer.mockAny(in: PassthroughCoreMock())
         let oneSpan = tracer.startSpan(operationName: .mockAny()).setActive()
+        var firstSpan: OTSpan?
+        var secondSpan: OTSpan?
+
         let expectation1 = self.expectation(description: "firstSpan created")
         let expectation2 = self.expectation(description: "secondSpan created")
 
         DispatchQueue.global(qos: .default).async {
-            let firstSpan = tracer.startSpan(operationName: .mockAny()).setActive()
-            XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, firstSpan.dd.ddContext.spanID)
+            firstSpan = tracer.startSpan(operationName: .mockAny()).setActive()
+            XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, firstSpan!.dd.ddContext.spanID)
             expectation1.fulfill()
         }
 
         DispatchQueue.global(qos: .default).async {
             Thread.sleep(forTimeInterval: 0.5)
             XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, oneSpan.dd.ddContext.spanID)
-            let secondSpan = tracer.startSpan(operationName: .mockAny()).setActive()
-            XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, secondSpan.dd.ddContext.spanID)
+            secondSpan = tracer.startSpan(operationName: .mockAny()).setActive()
+            XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, secondSpan!.dd.ddContext.spanID)
             expectation2.fulfill()
         }
 
         XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, oneSpan.dd.ddContext.spanID)
         waitForExpectations(timeout: 5, handler: nil)
         oneSpan.finish()
+        firstSpan?.finish()
+        secondSpan?.finish()
     }
 
     func testsSetActiveSpanCalledMultipleTimes() throws {
         let tracer = Tracer.mockAny(in: PassthroughCoreMock())
+        defer { tracer.activeSpansPool.destroy() }
+
         let firstSpan = tracer.startSpan(operationName: .mockAny()).setActive()
         firstSpan.setActive()
 

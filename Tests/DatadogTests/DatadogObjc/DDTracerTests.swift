@@ -9,23 +9,23 @@ import XCTest
 @testable import DatadogObjc
 
 class DDTracerTests: XCTestCase {
-    private var core: DatadogCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
+    private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
-        core = DatadogCoreMock()
+        core = DatadogCoreProxy()
         defaultDatadogCore = core
     }
 
     override func tearDown() {
         defaultDatadogCore = NOPDatadogCore()
-        core.flush()
+        core.flushAndTearDown()
         core = nil
         super.tearDown()
     }
 
     func testSendingCustomizedSpans() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers()
+        let feature: TracingFeature = .mockAny()
         core.register(feature: feature)
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration()).dd!
@@ -84,7 +84,7 @@ class DDTracerTests: XCTestCase {
             XCTAssertTrue(span.tracer === objcTracer)
         }
 
-        let spanMatchers = try feature.waitAndReturnSpanMatchers(count: 5)
+        let spanMatchers = try core.waitAndReturnSpanMatchers()
 
         // assert operation name
         try spanMatchers[0...3].forEach { spanMatcher in
@@ -117,12 +117,12 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogs() throws {
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(
+        let logging: LoggingFeature = .mockWith(
             messageReceiver: LogMessageReceiver.mockAny()
         )
         core.register(feature: logging)
 
-        let tracing: TracingFeature = .mockByRecordingSpanMatchers()
+        let tracing: TracingFeature = .mockAny()
         core.register(feature: tracing)
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration())
@@ -132,7 +132,7 @@ class DDTracerTests: XCTestCase {
         objcSpan.log(["bizz": NSNumber(10.5)])
         objcSpan.log(["buzz": NSURL(string: "https://example.com/image.png")!], timestamp: nil)
 
-        let logMatchers = try logging.waitAndReturnLogMatchers(count: 3)
+        let logMatchers = try core.waitAndReturnLogMatchers()
 
         logMatchers[0].assertValue(forKey: "foo", equals: "bar")
         logMatchers[1].assertValue(forKey: "bizz", equals: 10.5)
@@ -141,12 +141,12 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromArguments() throws {
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(
+        let logging: LoggingFeature = .mockWith(
             messageReceiver: LogMessageReceiver.mockAny()
         )
         core.register(feature: logging)
 
-        let tracing: TracingFeature = .mockByRecordingSpanMatchers()
+        let tracing: TracingFeature = .mockAny()
         core.register(feature: tracing)
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration())
@@ -155,7 +155,7 @@ class DDTracerTests: XCTestCase {
         objcSpan.log(["foo": NSString(string: "bar")], timestamp: Date.mockDecember15th2019At10AMUTC())
         objcSpan.setError(kind: "Swift error", message: "Ops!", stack: nil)
 
-        let logMatchers = try logging.waitAndReturnLogMatchers(count: 2)
+        let logMatchers = try core.waitAndReturnLogMatchers()
 
         logMatchers[0].assertValue(forKey: "foo", equals: "bar")
 
@@ -168,12 +168,12 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromNSError() throws {
-        let logging: LoggingFeature = .mockByRecordingLogMatchers(
+        let logging: LoggingFeature = .mockWith(
             messageReceiver: LogMessageReceiver.mockAny()
         )
         core.register(feature: logging)
 
-        let tracing: TracingFeature = .mockByRecordingSpanMatchers()
+        let tracing: TracingFeature = .mockAny()
         core.register(feature: tracing)
 
         let objcTracer = DDTracer(configuration: DDTracerConfiguration())
@@ -187,7 +187,7 @@ class DDTracerTests: XCTestCase {
         )
         objcSpan.setError(error)
 
-        let logMatchers = try logging.waitAndReturnLogMatchers(count: 2)
+        let logMatchers = try core.waitAndReturnLogMatchers()
 
         logMatchers[0].assertValue(forKey: "foo", equals: "bar")
 
@@ -345,7 +345,7 @@ class DDTracerTests: XCTestCase {
     // MARK: - Usage errors
 
     func testsWhenTagsDictionaryContainsInvalidKeys_thenThosesTagsAreDropped() throws {
-        let feature: TracingFeature = .mockByRecordingSpanMatchers()
+        let feature: TracingFeature = .mockAny()
         core.register(feature: feature)
 
         // Given
@@ -362,7 +362,7 @@ class DDTracerTests: XCTestCase {
         objcSpan.finish()
 
         // Then
-        let spanMatchers = try feature.waitAndReturnSpanMatchers(count: 1)
+        let spanMatchers = try core.waitAndReturnSpanMatchers()
         XCTAssertEqual(spanMatchers.count, 1)
         XCTAssertNil(try? spanMatchers[0].meta.custom(keyPath: "meta.123"), "123 is not a valid tag-key, so it should be dropped")
         XCTAssertNotNil(try? spanMatchers[0].meta.custom(keyPath: "meta.valid-tag"))

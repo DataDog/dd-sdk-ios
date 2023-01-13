@@ -9,9 +9,8 @@ import XCTest
 
 class WarningsTests: XCTestCase {
     func testPrintingWarningsOnDifferentConditions() {
-        let core = DatadogCoreMock()
-        core.register(feature: LoggingFeature.mockNoOp())
-        defer { core.flush() }
+        let core = PassthroughCoreMock()
+        core.register(feature: LoggingFeature.mockAny())
 
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }

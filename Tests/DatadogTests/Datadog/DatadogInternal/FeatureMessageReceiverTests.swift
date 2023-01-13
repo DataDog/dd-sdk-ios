@@ -8,7 +8,17 @@ import XCTest
 @testable import Datadog
 
 class FeatureMessageReceiverTests: XCTestCase {
-    let core = PassthroughCoreMock()
+    private var core: PassthroughCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
+
+    override func setUp() {
+        super.setUp()
+        core = PassthroughCoreMock()
+    }
+
+    override func tearDown() {
+        core = nil
+        super.tearDown()
+    }
 
     struct TestReceiver: FeatureMessageReceiver {
         let expectation: XCTestExpectation?

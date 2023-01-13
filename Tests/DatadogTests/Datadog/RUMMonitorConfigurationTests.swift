@@ -15,7 +15,7 @@ class RUMMonitorConfigurationTests: XCTestCase {
     func testRUMMonitorConfiguration() throws {
         let expectation = expectation(description: "open feature scope")
 
-        let core = DatadogCoreMock(
+        let core = DatadogCoreProxy(
             context: .mockWith(
                 service: "service-name",
                 env: "tests",
@@ -26,9 +26,9 @@ class RUMMonitorConfigurationTests: XCTestCase {
                 carrierInfo: carrierInfo
             )
         )
-        defer { core.flush() }
+        defer { core.flushAndTearDown() }
 
-        let feature: RUMFeature = .mockByRecordingRUMEventMatchers(
+        let feature: RUMFeature = .mockWith(
             configuration: .mockWith(
                 applicationID: "rum-123",
                 sessionSampler: Sampler(samplingRate: 42.5)

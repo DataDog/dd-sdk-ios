@@ -8,20 +8,29 @@ import XCTest
 @testable import Datadog
 
 class WebViewEventReceiverTests: XCTestCase {
-    let core = PassthroughCoreMock(
-        context: .mockWith(
-            serverTimeOffset: 123,
-            featuresAttributes: [
-                "rum": [
-                    RUMContextAttributes.applicationID: "123456",
-                    RUMContextAttributes.sessionID: "e9796469-c2a1-43d6-b0f6-65c47d33cf5f"
-                ]
-            ]
-        ),
-        messageReceiver: WebViewEventReceiver.mockAny()
-    )
+    private var core: PassthroughCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
+    private let mockCommandSubscriber = RUMCommandSubscriberMock()
 
-    let mockCommandSubscriber = RUMCommandSubscriberMock()
+    override func setUp() {
+        super.setUp()
+        core = PassthroughCoreMock(
+            context: .mockWith(
+                serverTimeOffset: 123,
+                featuresAttributes: [
+                    "rum": [
+                        RUMContextAttributes.applicationID: "123456",
+                        RUMContextAttributes.sessionID: "e9796469-c2a1-43d6-b0f6-65c47d33cf5f"
+                    ]
+                ]
+            ),
+            messageReceiver: WebViewEventReceiver.mockAny()
+        )
+    }
+
+    override func tearDown() {
+        core = nil
+        super.tearDown()
+    }
 
     func testReceiveEvent() throws {
         // Given

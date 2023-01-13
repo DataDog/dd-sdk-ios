@@ -8,152 +8,118 @@ import XCTest
 @testable import Datadog
 
 class FeatureStorageTests: XCTestCase {
-    let queue = DispatchQueue(label: "feature-storage-test")
+    private let queue = DispatchQueue(label: "feature-storage-test")
+    private var storage: FeatureStorage! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
+        storage = FeatureStorage(
+            featureName: .mockAny(),
+            queue: queue,
+            directories: temporaryFeatureDirectories,
+            dateProvider: RelativeDateProvider(advancingBySeconds: 1),
+            performance: .combining(storagePerformance: .writeEachObjectToNewFileAndReadAllFiles, uploadPerformance: .veryQuick),
+            encryption: nil
+        )
         temporaryFeatureDirectories.create()
     }
 
     override func tearDown() {
         temporaryFeatureDirectories.delete()
+        storage = nil
         super.tearDown()
     }
 
-    func testWhenWritingDataAndChangingConsent_thenOnlyAuthorizedDataCanBeRead() {
-        let consentProvider = ConsentProvider(initialConsent: .mockRandom())
+    // MARK: - Behaviours on tracking consent
 
+    func testWhenWritingEventsInDifferentConsents_itOnlyReadsGrantedEvents() throws {
+        // When
+        storage.writer(for: .granted).write(value: ["event.consent": "granted"])
+        storage.writer(for: .pending).write(value: ["event.consent": "pending"])
+        storage.writer(for: .notGranted).write(value: ["event.consent": "notGranted"])
+
+        // Then
+        let batch = try XCTUnwrap(storage.reader.readNextBatch())
+        XCTAssertEqual(batch.events.map { $0.utf8String }, [#"{"event.consent":"granted"}"#])
+        storage.reader.markBatchAsRead(batch)
+
+        XCTAssertNil(storage.reader.readNextBatch(), "There must be no other batches")
+    }
+
+    func testGivenEventsWrittenInDifferentConsents_whenChangingConsentToGranted_itMakesPendingEventsReadable() throws {
         // Given
-        let storage = FeatureStorage(
-            featureName: .mockAny(),
-            queue: queue,
-            directories: temporaryFeatureDirectories,
-            dateProvider: SystemDateProvider(),
-            consentProvider: consentProvider,
-            performance: .combining(
-                storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
-                uploadPerformance: .veryQuick
-            ),
-            encryption: nil
-        )
+        storage.writer(for: .granted).write(value: ["event.consent": "granted"])
+        storage.writer(for: .pending).write(value: ["event.consent": "pending"])
+        storage.writer(for: .notGranted).write(value: ["event.consent": "notGranted"])
 
         // When
-        (0..<100).forEach { _ in
-            let currentConsent = consentProvider.currentValue
-            let nextConsent: TrackingConsent = .mockRandom(otherThan: currentConsent)
+        storage.migrateUnauthorizedData(toConsent: .granted)
 
-            // We write array because prior to iOS 13 the top-level element passed to JSON encoder must be array or object
-            let data = ["current consent: \(currentConsent), next consent: \(nextConsent)"]
-            storage.writer.write(value: data)
+        // Then
+        var batch = try XCTUnwrap(storage.reader.readNextBatch())
+        XCTAssertEqual(batch.events.map { $0.utf8String }, [#"{"event.consent":"granted"}"#])
+        storage.reader.markBatchAsRead(batch)
 
-            consentProvider.changeConsent(to: nextConsent)
+        batch = try XCTUnwrap(storage.reader.readNextBatch())
+        XCTAssertEqual(batch.events.map { $0.utf8String }, [#"{"event.consent":"pending"}"#])
+        storage.reader.markBatchAsRead(batch)
+
+        XCTAssertNil(storage.reader.readNextBatch(), "There must be no other batches")
+    }
+
+    func testGivenEventsWrittenInDifferentConsents_whenChangingConsentToNotGranted_itDeletesPendingEvents() throws {
+        // Given
+        storage.writer(for: .granted).write(value: ["event.consent": "granted"])
+        storage.writer(for: .pending).write(value: ["event.consent": "pending"])
+        storage.writer(for: .notGranted).write(value: ["event.consent": "notGranted"])
+
+        // When
+        storage.migrateUnauthorizedData(toConsent: .notGranted)
+
+        // Then
+        let batch = try XCTUnwrap(storage.reader.readNextBatch())
+        XCTAssertEqual(batch.events.map { $0.utf8String }, [#"{"event.consent":"granted"}"#])
+        storage.reader.markBatchAsRead(batch)
+
+        XCTAssertNil(storage.reader.readNextBatch(), "There must be no other batches")
+
+        storage.migrateUnauthorizedData(toConsent: .granted)
+        XCTAssertNil(storage.reader.readNextBatch(), "There must be no other batches, because pending events were deleted")
+    }
+
+    // MARK: - Data migration
+
+    private let unauthorizedDirectory = temporaryFeatureDirectories.unauthorized
+    private let authorizedDirectory = temporaryFeatureDirectories.authorized
+
+    func testDeletingPendingData() throws {
+        // Given
+        unauthorizedDirectory.createMockFiles(count: 10)
+        XCTAssertEqual(try unauthorizedDirectory.files().count, 10)
+
+        // When
+        storage.clearUnauthorizedData()
+
+        // Then
+        try queue.sync {
+            XCTAssertEqual(try unauthorizedDirectory.files().count, 0)
         }
-
-        // Then
-        let authorizedValues = readAllAuthorizedDataWritten(to: storage, limit: 100)
-            .map { $0.utf8String }
-
-        let expectedAuthorizedValues = [
-            // Data collected with `.granted` consent is allowed no matter of the next consent
-            "[\"current consent: \(TrackingConsent.granted), next consent: \(TrackingConsent.pending)\"]",
-            "[\"current consent: \(TrackingConsent.granted), next consent: \(TrackingConsent.notGranted)\"]",
-            // Data collected with `.pending` consent is allowed only if the next consent was `.granted`
-            "[\"current consent: \(TrackingConsent.pending), next consent: \(TrackingConsent.granted)\"]",
-        ]
-
-        XCTAssertEqual(
-            Set(authorizedValues),
-            Set(expectedAuthorizedValues)
-        )
     }
 
-    func testWhenArbitraryWriterIsUsedInParallelWithRegularWriter_thenAllDataIsWrittenSafely() {
+    func testDeletingAllData() throws {
         // Given
-        let storage = FeatureStorage(
-            featureName: .mockAny(),
-            queue: queue,
-            directories: temporaryFeatureDirectories,
-            dateProvider: SystemDateProvider(),
-            consentProvider: .init(initialConsent: .granted),
-            performance: .combining(
-                storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
-                uploadPerformance: .veryQuick
-            ),
-            encryption: nil
-        )
+        unauthorizedDirectory.createMockFiles(count: 10)
+        authorizedDirectory.createMockFiles(count: 10)
+        XCTAssertEqual(try unauthorizedDirectory.files().count, 10)
+        XCTAssertEqual(try authorizedDirectory.files().count, 10)
 
         // When
-        // swiftlint:disable opening_brace
-        callConcurrently(
-            closures: [
-                // We write arrays because prior to iOS 13 the top-level element passed to JSON encoder must be array or object
-                { storage.writer.write(value: ["regular write"]) },
-                { storage.arbitraryAuthorizedWriter.write(value: ["arbitrary write"]) }
-            ],
-            iterations: 25
-        )
-        // swiftlint:enable opening_brace
+        storage.clearAllData()
 
         // Then
-        let dataWritten = readAllAuthorizedDataWritten(to: storage, limit: 50)
-            .map { $0.utf8String }
-        XCTAssertEqual(dataWritten.filter { $0 == "[\"regular write\"]" }.count, 25)
-        XCTAssertEqual(dataWritten.filter { $0 == "[\"arbitrary write\"]" }.count, 25)
-    }
-
-    func testItClearsAllDataInAThreadSafeManner() {
-        let numberOfFilesWritten: Int = .mockRandom(min: 10, max: 50)
-
-        // Given
-        let storage = FeatureStorage(
-            featureName: .mockAny(),
-            queue: queue,
-            directories: temporaryFeatureDirectories,
-            dateProvider: SystemDateProvider(),
-            consentProvider: .init(initialConsent: .granted),
-            performance: .combining(
-                storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
-                uploadPerformance: .veryQuick
-            ),
-            encryption: nil
-        )
-
-        // When
-        // swiftlint:disable opening_brace
-        callConcurrently(
-            closures: [
-                // We write arrays because prior to iOS 13 the top-level element passed to JSON encoder must be array or object
-                { storage.writer.write(value: [String.mockRandom()]) },
-                { storage.clearAllData() }
-            ],
-            iterations: numberOfFilesWritten
-        )
-        // swiftlint:enable opening_brace
-
-        // Then
-        let dataWritten = readAllAuthorizedDataWritten(to: storage, limit: numberOfFilesWritten)
-            .map { $0.utf8String }
-
-        XCTAssertLessThan(dataWritten.count, numberOfFilesWritten)
-    }
-
-    // MARK: - Helpers
-
-    private func readAllAuthorizedDataWritten(
-        to storage: FeatureStorage,
-        limit: Int,
-        file: StaticString = #filePath,
-        line: UInt = #line
-    ) -> [Data] {
-        var dataAuthorizedForUpload: [Data] = []
-
-        (0..<limit).forEach { _ in
-            if let nextBatch = storage.reader.readNextBatch() {
-                dataAuthorizedForUpload.append(contentsOf: nextBatch.events)
-                storage.reader.markBatchAsRead(nextBatch)
-            }
+        try queue.sync {
+            XCTAssertEqual(try unauthorizedDirectory.files().count, 0)
+            XCTAssertEqual(try authorizedDirectory.files().count, 0)
         }
-
-        return dataAuthorizedForUpload
     }
 }

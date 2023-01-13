@@ -8,7 +8,7 @@ import XCTest
 @testable import Datadog
 
 class URLSessionSwizzlerTests: XCTestCase {
-    let core = DatadogCoreMock()
+    private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
     private let interceptor = URLSessionInterceptorMock()
 
     override func setUpWithError() throws {
@@ -19,11 +19,14 @@ class URLSessionSwizzlerTests: XCTestCase {
         )
 
         instrumentation.enable() // swizzle `URLSession`
+
+        core = DatadogCoreProxy()
         core.register(feature: instrumentation)
     }
 
     override func tearDown() {
-        core.flush()
+        core.flushAndTearDown()
+        core = nil
         super.tearDown()
     }
 

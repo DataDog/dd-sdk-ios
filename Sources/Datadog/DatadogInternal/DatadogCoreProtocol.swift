@@ -106,10 +106,10 @@ public protocol DatadogCoreProtocol: AnyObject {
     ///   - message: The message.
     ///   - fallback: The fallback closure to call when the message could not be
     ///               processed by any Features on the bus.
-    func send(message: FeatureMessage, else fallback: @escaping () -> Void)
+    func send(message: FeatureMessage, sender: DatadogCoreProtocol, else fallback: @escaping () -> Void)
 }
 
-extension DatadogCoreProtocol {
+internal extension DatadogCoreProtocol {
     /// Retrieves a Feature by its name and type.
     ///
     /// A Feature type can be specified as parameter or inferred from the return type:
@@ -143,7 +143,15 @@ extension DatadogCoreProtocol {
     /// - Parameters:
     ///   - message: The message.
     func send(message: FeatureMessage) {
-        send(message: message, else: {})
+        send(message: message, sender: self, else: {})
+    }
+
+    /// Sends a message on the bus shared by features registered in this core.
+    ///
+    /// - Parameters:
+    ///   - message: The message.
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
+        send(message: message, sender: self, else: fallback)
     }
 }
 
@@ -194,5 +202,5 @@ internal class NOPDatadogCore: DatadogCoreProtocol {
     /// no-op
     func set(feature: String, attributes: @escaping @autoclosure () -> FeatureBaggage) { }
     /// no-op
-    func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
+    func send(message: FeatureMessage, sender: DatadogCoreProtocol, else fallback: @escaping () -> Void) { }
 }

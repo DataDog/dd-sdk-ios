@@ -9,15 +9,15 @@ import XCTest
 @testable import Datadog
 
 class RUMInternalProxyTests: XCTestCase {
-    private var core: DatadogCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
+    private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
-        core = DatadogCoreMock()
+        core = DatadogCoreProxy()
     }
 
     override func tearDown() {
-        core.flush()
+        core.flushAndTearDown()
         core = nil
         super.tearDown()
     }
@@ -38,7 +38,7 @@ class RUMInternalProxyTests: XCTestCase {
 
     func testProxyAddLongTaskSendsLongTasks() throws {
         // Given
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
+        let rum: RUMFeature = .mockAny()
         core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
@@ -50,7 +50,7 @@ class RUMInternalProxyTests: XCTestCase {
         monitor.startView(viewController: mockView)
         monitor._internal.addLongTask(at: date, duration: duration)
 
-        let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 3)
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
         // Then
         let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
@@ -61,7 +61,7 @@ class RUMInternalProxyTests: XCTestCase {
 
     func testProxyRecordsPerformanceMetricsAreSent() throws {
         // Given
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
+        let rum: RUMFeature = .mockAny()
         core.register(feature: rum)
         let date: Date = .mockRandomInThePast()
 
@@ -78,7 +78,7 @@ class RUMInternalProxyTests: XCTestCase {
         monitor._internal.updatePerformanceMetric(at: date, metric: .flutterRasterTime, value: 42.0)
         monitor.stopView(viewController: mockView)
 
-        let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 3)
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
         // Then
         try rumEventMatchers.lastRUMEvent(ofType: RUMViewEvent.self)

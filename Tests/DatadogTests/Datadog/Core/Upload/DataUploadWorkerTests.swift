@@ -17,10 +17,12 @@ class DataUploadWorkerTests: XCTestCase {
         dateProvider: dateProvider
     )
     lazy var writer = FileWriter(
-        orchestrator: orchestrator
+        orchestrator: orchestrator,
+        encryption: nil
     )
     lazy var reader = FileReader(
-        orchestrator: orchestrator
+        orchestrator: orchestrator,
+        encryption: nil
     )
 
     override func setUp() {

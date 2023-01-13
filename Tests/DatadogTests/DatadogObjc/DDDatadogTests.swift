@@ -60,11 +60,11 @@ class DDDatadogTests: XCTestCase {
         )
 
         let core = defaultDatadogCore as? DatadogCore
-        XCTAssertEqual(core?.consentProvider.currentValue, initialConsent.swift)
+        XCTAssertEqual(core?.consentPublisher.consent, initialConsent.swift)
 
         DDDatadog.setTrackingConsent(consent: nextConsent.objc)
 
-        XCTAssertEqual(core?.consentProvider.currentValue, nextConsent.swift)
+        XCTAssertEqual(core?.consentPublisher.consent, nextConsent.swift)
 
         Datadog.flushAndDeinitialize()
     }

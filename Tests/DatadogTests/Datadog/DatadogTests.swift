@@ -370,11 +370,11 @@ class DatadogTests: XCTestCase {
         )
 
         let core = defaultDatadogCore as? DatadogCore
-        XCTAssertEqual(core?.consentProvider.currentValue, initialConsent)
+        XCTAssertEqual(core?.consentPublisher.consent, initialConsent)
 
         Datadog.set(trackingConsent: nextConsent)
 
-        XCTAssertEqual(core?.consentProvider.currentValue, nextConsent)
+        XCTAssertEqual(core?.consentPublisher.consent, nextConsent)
 
         Datadog.flushAndDeinitialize()
     }
@@ -535,7 +535,7 @@ class DatadogTests: XCTestCase {
         let core = defaultDatadogCore as? DatadogCore
 
         XCTAssertEqual(
-            core?.consentProvider.currentValue,
+            core?.consentPublisher.consent,
             .granted,
             "When using deprecated Datadog initialization API the consent should be set to `.granted`"
         )

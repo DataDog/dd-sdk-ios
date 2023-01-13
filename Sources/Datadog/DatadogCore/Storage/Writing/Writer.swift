@@ -12,9 +12,20 @@ public protocol Writer {
 }
 
 /// Writer performing writes asynchronously on a given queue.
-internal protocol AsyncWriter: Writer {
-    /// Queue used for asynchronous writes.
-    var queue: DispatchQueue { get }
+internal struct AsyncWriter: Writer {
+    private let writer: Writer
+    private let queue: DispatchQueue
 
-    func flushAndCancelSynchronously()
+    init(execute otherWriter: Writer, on queue: DispatchQueue) {
+        self.writer = otherWriter
+        self.queue = queue
+    }
+
+    func write<T>(value: T) where T: Encodable {
+        queue.async { writer.write(value: value) }
+    }
+}
+
+internal struct NOPWriter: Writer {
+    func write<T>(value: T) where T: Encodable {}
 }

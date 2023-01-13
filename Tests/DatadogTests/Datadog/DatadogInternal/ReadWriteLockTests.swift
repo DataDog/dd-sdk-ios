@@ -7,7 +7,7 @@
 import XCTest
 @testable import Datadog
 
-final class ConcurrencyTests: XCTestCase {
+final class ReadWriteLockTests: XCTestCase {
     @ReadWriteLock
     var value: Int = 0
 

@@ -8,26 +8,21 @@ import XCTest
 @testable import Datadog
 
 class LoggerBuilderTests: XCTestCase {
-    private lazy var core = DatadogCoreMock(
-        context: .mockWith(
-            service: "service-name",
-            env: "tests",
-            version: "1.2.3"
-        )
-    )
+    private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
-        temporaryDirectory.create()
-        let feature: LoggingFeature = .mockNoOp(
+        core = DatadogCoreProxy(context: .mockRandom())
+
+        let feature: LoggingFeature = .mockWith(
             configuration: .mockWith(applicationBundleIdentifier: "com.datadog.unit-tests")
         )
         core.register(feature: feature)
     }
 
     override func tearDown() {
-        core.flush()
-        temporaryDirectory.delete()
+        core.flushAndTearDown()
+        core = nil
         super.tearDown()
     }
 
@@ -45,7 +40,7 @@ class LoggerBuilderTests: XCTestCase {
     }
 
     func testDefaultLoggerWithRUMEnabled() throws {
-        let rum: RUMFeature = .mockNoOp()
+        let rum: RUMFeature = .mockAny()
         core.register(feature: rum)
 
         let logger1 = Logger.builder.build(in: core)
@@ -56,7 +51,7 @@ class LoggerBuilderTests: XCTestCase {
     }
 
     func testDefaultLoggerWithTracingEnabled() throws {
-        let tracing: TracingFeature = .mockNoOp()
+        let tracing: TracingFeature = .mockAny()
         core.register(feature: tracing)
 
         let logger1 = Logger.builder.build(in: core)
@@ -67,10 +62,10 @@ class LoggerBuilderTests: XCTestCase {
     }
 
     func testCustomizedLogger() throws {
-        let rum: RUMFeature = .mockNoOp()
+        let rum: RUMFeature = .mockAny()
         core.register(feature: rum)
 
-        let tracing: TracingFeature = .mockNoOp()
+        let tracing: TracingFeature = .mockAny()
         core.register(feature: tracing)
 
         let logger = Logger.builder

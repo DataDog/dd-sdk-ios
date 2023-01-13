@@ -9,14 +9,14 @@ import Foundation
 /// Reads data from files.
 internal final class FileReader: Reader {
     /// Orchestrator producing reference to readable file.
-    private let orchestrator: FilesOrchestrator
+    private let orchestrator: FilesOrchestratorType
     private let encryption: DataEncryption?
 
     /// Files marked as read.
     private var filesRead: Set<String> = []
 
     init(
-        orchestrator: FilesOrchestrator,
+        orchestrator: FilesOrchestratorType,
         encryption: DataEncryption? = nil
     ) {
         self.orchestrator = orchestrator

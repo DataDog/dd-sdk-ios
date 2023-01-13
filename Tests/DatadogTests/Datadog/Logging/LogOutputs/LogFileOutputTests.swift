@@ -29,7 +29,8 @@ class LogFileOutputTests: XCTestCase {
                         uploadPerformance: .noOp
                     ),
                     dateProvider: fileCreationDateProvider
-                )
+                ),
+                encryption: nil
             )
         )
 

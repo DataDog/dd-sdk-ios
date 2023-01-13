@@ -51,6 +51,9 @@ internal struct TracingRequestBuilder: FeatureRequestBuilder {
 }
 
 internal struct TracingMessageReceiver: FeatureMessageReceiver {
+    /// Tracks RUM context to be associated with spans.
+    let rum = TracingWithRUMIntegration()
+
     /// Process messages receives from the bus.
     ///
     /// - Parameters:
@@ -69,14 +72,7 @@ internal struct TracingMessageReceiver: FeatureMessageReceiver {
     ///
     /// - Parameter context: The updated core context.
     private func update(context: DatadogContext) -> Bool {
-        guard
-            let tracer = Global.sharedTracer as? Tracer,
-            let integration = tracer.rumIntegration
-        else {
-            return false
-        }
-
-        integration.attribues = context.featuresAttributes["rum"]?.all()
+        rum.attribues = context.featuresAttributes["rum"]?.all()
         return true
     }
 }

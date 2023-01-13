@@ -68,6 +68,7 @@ class RUMFeatureTests: XCTestCase {
             ),
             applicationVersion: randomApplicationVersion
         )
+        defer { core.flushAndTearDown() }
 
         // Given
         let featureConfiguration: RUMFeature.Configuration = .mockWith(uploadURL: randomUploadURL)
@@ -75,7 +76,6 @@ class RUMFeatureTests: XCTestCase {
             configuration: createRUMConfiguration(configuration: featureConfiguration),
             featureSpecificConfiguration: featureConfiguration
         )
-        defer { feature.flush() }
         core.register(feature: feature)
 
         // When
@@ -144,6 +144,7 @@ class RUMFeatureTests: XCTestCase {
             ),
             applicationVersion: .mockAny()
         )
+        defer { core.flushAndTearDown() }
 
         // Given
         let featureConfiguration: RUMFeature.Configuration = .mockAny()
@@ -151,7 +152,6 @@ class RUMFeatureTests: XCTestCase {
             configuration: createRUMConfiguration(configuration: featureConfiguration),
             featureSpecificConfiguration: featureConfiguration
         )
-        defer { feature.flush() }
         core.register(feature: feature)
 
         // When
@@ -199,6 +199,7 @@ class RUMFeatureTests: XCTestCase {
             contextProvider: .mockAny(),
             applicationVersion: .mockAny()
         )
+        defer { core.flushAndTearDown() }
 
         // Given
         let featureConfiguration: RUMFeature.Configuration = .mockAny()
@@ -206,13 +207,12 @@ class RUMFeatureTests: XCTestCase {
             configuration: createRUMConfiguration(configuration: featureConfiguration),
             featureSpecificConfiguration: featureConfiguration
         )
-        defer { feature.flush() }
         core.register(feature: feature)
 
-        let fileWriter = feature.storage.writer
-        fileWriter.write(value: RUMDataModelMock(attribute: "1st event"))
-        fileWriter.write(value: RUMDataModelMock(attribute: "2nd event"))
-        fileWriter.write(value: RUMDataModelMock(attribute: "3rd event"))
+        let writer = feature.storage.writer(for: .granted)
+        writer.write(value: RUMDataModelMock(attribute: "1st event"))
+        writer.write(value: RUMDataModelMock(attribute: "2nd event"))
+        writer.write(value: RUMDataModelMock(attribute: "3rd event"))
 
         let payload = try XCTUnwrap(server.waitAndReturnRequests(count: 1)[0].httpBody)
 
