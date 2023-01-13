@@ -6,13 +6,14 @@
 
 import CoreGraphics
 import UIKit
+@testable import TestUtilities
 
 extension CGFloat: AnyMockable, RandomMockable {
-    static func mockAny() -> CGFloat {
+    public static func mockAny() -> CGFloat {
         return 42
     }
 
-    static func mockRandom() -> CGFloat {
+    public static func mockRandom() -> CGFloat {
         return mockRandom(min: .leastNormalMagnitude, max: .greatestFiniteMagnitude)
     }
 
@@ -22,11 +23,11 @@ extension CGFloat: AnyMockable, RandomMockable {
 }
 
 extension CGRect: AnyMockable, RandomMockable {
-    static func mockAny() -> CGRect {
+    public static func mockAny() -> CGRect {
         return .init(x: 0, y: 0, width: 400, height: 200)
     }
 
-    static func mockRandom() -> CGRect {
+    public static func mockRandom() -> CGRect {
         return mockRandom(minWidth: 0, minHeight: 0)
     }
 
@@ -39,11 +40,11 @@ extension CGRect: AnyMockable, RandomMockable {
 }
 
 extension CGPoint: AnyMockable, RandomMockable {
-    static func mockAny() -> CGPoint {
+    public static func mockAny() -> CGPoint {
         return .init(x: 0, y: 0)
     }
 
-    static func mockRandom() -> CGPoint {
+    public static func mockRandom() -> CGPoint {
         return .init(
             x: .mockRandom(min: -1_000, max: 1_000),
             y: .mockRandom(min: -1_000, max: 1_000)
@@ -52,11 +53,11 @@ extension CGPoint: AnyMockable, RandomMockable {
 }
 
 extension CGSize: AnyMockable, RandomMockable {
-    static func mockAny() -> CGSize {
+    public static func mockAny() -> CGSize {
         return .init(width: 400, height: 200)
     }
 
-    static func mockRandom() -> CGSize {
+    public static func mockRandom() -> CGSize {
         return .mockRandom(minWidth: 0, minHeight: 0)
     }
 
@@ -69,11 +70,11 @@ extension CGSize: AnyMockable, RandomMockable {
 }
 
 extension CGColor: AnyMockable, RandomMockable {
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         return UIColor.mockAny().cgColor as! Self
     }
 
-    static func mockRandom() -> Self {
+    public static func mockRandom() -> Self {
         return UIColor.mockRandom().cgColor as! Self
     }
 }

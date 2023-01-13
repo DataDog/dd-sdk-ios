@@ -6,6 +6,7 @@
 
 import XCTest
 @testable import DatadogSessionReplay
+@testable import TestUtilities
 
 extension Diff.Add: EquatableInTests {}
 extension Diff.Update: EquatableInTests {}

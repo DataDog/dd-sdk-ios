@@ -6,6 +6,7 @@
 
 import XCTest
 @testable import DatadogSessionReplay
+@testable import TestUtilities
 
 private class NodeRecorderMock: NodeRecorder {
     var queriedViews: Set<UIView> = []

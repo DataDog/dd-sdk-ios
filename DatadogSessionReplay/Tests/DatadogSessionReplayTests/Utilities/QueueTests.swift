@@ -6,6 +6,7 @@
 
 import XCTest
 @testable import DatadogSessionReplay
+@testable import TestUtilities
 
 class QueueTests: XCTestCase {
     func testMainAsyncQueueRunsAsynchronouslyOnTheMainThread() {

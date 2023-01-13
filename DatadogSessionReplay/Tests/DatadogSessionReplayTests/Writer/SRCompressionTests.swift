@@ -9,6 +9,7 @@ import XCTest
 import Compression
 @testable import Datadog
 @testable import DatadogSessionReplay
+@testable import TestUtilities
 
 class SRCompressionTests: XCTestCase {
     func testWhenDataIsCompressed_itDecompressesToOriginalData() throws {

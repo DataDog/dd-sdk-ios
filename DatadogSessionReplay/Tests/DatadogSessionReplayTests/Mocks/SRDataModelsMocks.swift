@@ -6,15 +6,16 @@
 
 import Foundation
 @testable import DatadogSessionReplay
+@testable import TestUtilities
 
 // MARK: - Wireframe Mocks
 
 extension SRTextWireframe: AnyMockable, RandomMockable {
-    static func mockAny() -> SRTextWireframe {
+    public static func mockAny() -> SRTextWireframe {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRTextWireframe {
+    public static func mockRandom() -> SRTextWireframe {
         return .mockRandomWith(id: .mockRandom())
     }
 
@@ -65,11 +66,11 @@ extension SRTextWireframe: AnyMockable, RandomMockable {
 }
 
 extension SRTextStyle: AnyMockable, RandomMockable {
-    static func mockAny() -> SRTextStyle {
+    public static func mockAny() -> SRTextStyle {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRTextStyle {
+    public static func mockRandom() -> SRTextStyle {
         return SRTextStyle(
             color: .mockRandom(),
             family: .mockRandom(),
@@ -91,11 +92,11 @@ extension SRTextStyle: AnyMockable, RandomMockable {
 }
 
 extension SRTextPosition: AnyMockable, RandomMockable {
-    static func mockAny() -> SRTextPosition {
+    public static func mockAny() -> SRTextPosition {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRTextPosition {
+    public static func mockRandom() -> SRTextPosition {
         return SRTextPosition(
             alignment: .mockRandom(),
             padding: .mockRandom()
@@ -114,11 +115,11 @@ extension SRTextPosition: AnyMockable, RandomMockable {
 }
 
 extension SRTextPosition.Padding: AnyMockable, RandomMockable {
-    static func mockAny() -> SRTextPosition.Padding {
+    public static func mockAny() -> SRTextPosition.Padding {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRTextPosition.Padding {
+    public static func mockRandom() -> SRTextPosition.Padding {
         return SRTextPosition.Padding(
             bottom: .mockRandom(),
             left: .mockRandom(),
@@ -143,11 +144,11 @@ extension SRTextPosition.Padding: AnyMockable, RandomMockable {
 }
 
 extension SRTextPosition.Alignment: AnyMockable, RandomMockable {
-    static func mockAny() -> SRTextPosition.Alignment {
+    public static func mockAny() -> SRTextPosition.Alignment {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRTextPosition.Alignment {
+    public static func mockRandom() -> SRTextPosition.Alignment {
         return SRTextPosition.Alignment(
             horizontal: .mockRandom(),
             vertical: .mockRandom()
@@ -166,31 +167,31 @@ extension SRTextPosition.Alignment: AnyMockable, RandomMockable {
 }
 
 extension SRTextPosition.Alignment.Vertical: AnyMockable, RandomMockable {
-    static func mockAny() -> SRTextPosition.Alignment.Vertical {
+    public static func mockAny() -> SRTextPosition.Alignment.Vertical {
         return .top
     }
 
-    static func mockRandom() -> SRTextPosition.Alignment.Vertical {
+    public static func mockRandom() -> SRTextPosition.Alignment.Vertical {
         return [.top, .bottom, .center].randomElement()!
     }
 }
 
 extension SRTextPosition.Alignment.Horizontal: AnyMockable, RandomMockable {
-    static func mockAny() -> SRTextPosition.Alignment.Horizontal {
+    public static func mockAny() -> SRTextPosition.Alignment.Horizontal {
         return .left
     }
 
-    static func mockRandom() -> SRTextPosition.Alignment.Horizontal {
+    public static func mockRandom() -> SRTextPosition.Alignment.Horizontal {
         return [.left, .right, .center].randomElement()!
     }
 }
 
 extension SRShapeWireframe: AnyMockable, RandomMockable {
-    static func mockAny() -> SRShapeWireframe {
+    public static func mockAny() -> SRShapeWireframe {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRShapeWireframe {
+    public static func mockRandom() -> SRShapeWireframe {
         return .mockRandomWith(id: .mockRandom())
     }
 
@@ -231,11 +232,11 @@ extension SRShapeWireframe: AnyMockable, RandomMockable {
 }
 
 extension SRShapeStyle: AnyMockable, RandomMockable {
-    static func mockAny() -> SRShapeStyle {
+    public static func mockAny() -> SRShapeStyle {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRShapeStyle {
+    public static func mockRandom() -> SRShapeStyle {
         return SRShapeStyle(
             backgroundColor: .mockRandom(),
             cornerRadius: .mockRandom(),
@@ -257,11 +258,11 @@ extension SRShapeStyle: AnyMockable, RandomMockable {
 }
 
 extension SRShapeBorder: AnyMockable, RandomMockable {
-    static func mockAny() -> SRShapeBorder {
+    public static func mockAny() -> SRShapeBorder {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRShapeBorder {
+    public static func mockRandom() -> SRShapeBorder {
         return SRShapeBorder(
             color: .mockRandom(),
             width: .mockRandom()
@@ -280,11 +281,11 @@ extension SRShapeBorder: AnyMockable, RandomMockable {
 }
 
 extension SRContentClip: AnyMockable, RandomMockable {
-    static func mockAny() -> SRContentClip {
+    public static func mockAny() -> SRContentClip {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRContentClip {
+    public static func mockRandom() -> SRContentClip {
         return SRContentClip(
             bottom: .mockRandom(),
             left: .mockRandom(),
@@ -309,11 +310,11 @@ extension SRContentClip: AnyMockable, RandomMockable {
 }
 
 extension SRWireframe: AnyMockable, RandomMockable {
-    static func mockAny() -> SRWireframe {
+    public static func mockAny() -> SRWireframe {
         return .shapeWireframe(value: .mockAny())
     }
 
-    static func mockRandom() -> SRWireframe {
+    public static func mockRandom() -> SRWireframe {
         return mockRandomWith(id: .mockRandom())
     }
 
@@ -328,11 +329,11 @@ extension SRWireframe: AnyMockable, RandomMockable {
 // MARK: - Record Mocks
 
 extension SRRecord: AnyMockable, RandomMockable {
-    static func mockAny() -> SRRecord {
+    public static func mockAny() -> SRRecord {
         return .fullSnapshotRecord(value: .mockAny())
     }
 
-    static func mockRandom() -> SRRecord {
+    public static func mockRandom() -> SRRecord {
         return [
             .fullSnapshotRecord(value: .mockRandom()),
             .incrementalSnapshotRecord(value: .mockRandom()),
@@ -345,11 +346,11 @@ extension SRRecord: AnyMockable, RandomMockable {
 }
 
 extension SRVisualViewportRecord: AnyMockable, RandomMockable {
-    static func mockAny() -> SRVisualViewportRecord {
+    public static func mockAny() -> SRVisualViewportRecord {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRVisualViewportRecord {
+    public static func mockRandom() -> SRVisualViewportRecord {
         return SRVisualViewportRecord(
             data: .mockRandom(),
             timestamp: .mockRandom()
@@ -368,11 +369,11 @@ extension SRVisualViewportRecord: AnyMockable, RandomMockable {
 }
 
 extension SRVisualViewportRecord.Data: AnyMockable, RandomMockable {
-    static func mockAny() -> SRVisualViewportRecord.Data {
+    public static func mockAny() -> SRVisualViewportRecord.Data {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRVisualViewportRecord.Data {
+    public static func mockRandom() -> SRVisualViewportRecord.Data {
         return SRVisualViewportRecord.Data(
             height: .mockRandom(),
             offsetLeft: .mockRandom(),
@@ -406,11 +407,11 @@ extension SRVisualViewportRecord.Data: AnyMockable, RandomMockable {
 }
 
 extension SRViewEndRecord: AnyMockable, RandomMockable {
-    static func mockAny() -> SRViewEndRecord {
+    public static func mockAny() -> SRViewEndRecord {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRViewEndRecord {
+    public static func mockRandom() -> SRViewEndRecord {
         return SRViewEndRecord(
             timestamp: .mockRandom()
         )
@@ -426,11 +427,11 @@ extension SRViewEndRecord: AnyMockable, RandomMockable {
 }
 
 extension SRFocusRecord: AnyMockable, RandomMockable {
-    static func mockAny() -> SRFocusRecord {
+    public static func mockAny() -> SRFocusRecord {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRFocusRecord {
+    public static func mockRandom() -> SRFocusRecord {
         return SRFocusRecord(
             data: .mockRandom(),
             timestamp: .mockRandom()
@@ -449,11 +450,11 @@ extension SRFocusRecord: AnyMockable, RandomMockable {
 }
 
 extension SRFocusRecord.Data: AnyMockable, RandomMockable {
-    static func mockAny() -> SRFocusRecord.Data {
+    public static func mockAny() -> SRFocusRecord.Data {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRFocusRecord.Data {
+    public static func mockRandom() -> SRFocusRecord.Data {
         return SRFocusRecord.Data(
             hasFocus: .mockRandom()
         )
@@ -469,11 +470,11 @@ extension SRFocusRecord.Data: AnyMockable, RandomMockable {
 }
 
 extension SRMetaRecord: AnyMockable, RandomMockable {
-    static func mockAny() -> SRMetaRecord {
+    public static func mockAny() -> SRMetaRecord {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRMetaRecord {
+    public static func mockRandom() -> SRMetaRecord {
         return SRMetaRecord(
             data: .mockRandom(),
             timestamp: .mockRandom()
@@ -492,11 +493,11 @@ extension SRMetaRecord: AnyMockable, RandomMockable {
 }
 
 extension SRMetaRecord.Data: AnyMockable, RandomMockable {
-    static func mockAny() -> SRMetaRecord.Data {
+    public static func mockAny() -> SRMetaRecord.Data {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRMetaRecord.Data {
+    public static func mockRandom() -> SRMetaRecord.Data {
         return SRMetaRecord.Data(
             height: .mockRandom(),
             href: .mockRandom(),
@@ -518,11 +519,11 @@ extension SRMetaRecord.Data: AnyMockable, RandomMockable {
 }
 
 extension SRIncrementalSnapshotRecord: AnyMockable, RandomMockable {
-    static func mockAny() -> SRIncrementalSnapshotRecord {
+    public static func mockAny() -> SRIncrementalSnapshotRecord {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRIncrementalSnapshotRecord {
+    public static func mockRandom() -> SRIncrementalSnapshotRecord {
         return SRIncrementalSnapshotRecord(
             data: .mockRandom(),
             timestamp: .mockRandom()
@@ -541,11 +542,11 @@ extension SRIncrementalSnapshotRecord: AnyMockable, RandomMockable {
 }
 
 extension SRIncrementalSnapshotRecord.Data: AnyMockable, RandomMockable {
-    static func mockAny() -> SRIncrementalSnapshotRecord.Data {
+    public static func mockAny() -> SRIncrementalSnapshotRecord.Data {
         return .mutationData(value: .mockAny())
     }
 
-    static func mockRandom() -> SRIncrementalSnapshotRecord.Data {
+    public static func mockRandom() -> SRIncrementalSnapshotRecord.Data {
         return [
             .mutationData(value: .mockRandom()),
             .touchData(value: .mockRandom()),
@@ -556,11 +557,11 @@ extension SRIncrementalSnapshotRecord.Data: AnyMockable, RandomMockable {
 }
 
 extension SRIncrementalSnapshotRecord.Data.PointerInteractionData: AnyMockable, RandomMockable {
-    static func mockAny() -> SRIncrementalSnapshotRecord.Data.PointerInteractionData {
+    public static func mockAny() -> SRIncrementalSnapshotRecord.Data.PointerInteractionData {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRIncrementalSnapshotRecord.Data.PointerInteractionData {
+    public static func mockRandom() -> SRIncrementalSnapshotRecord.Data.PointerInteractionData {
         return SRIncrementalSnapshotRecord.Data.PointerInteractionData(
             pointerEventType: .mockRandom(),
             pointerId: .mockRandom(),
@@ -588,11 +589,11 @@ extension SRIncrementalSnapshotRecord.Data.PointerInteractionData: AnyMockable, 
 }
 
 extension SRIncrementalSnapshotRecord.Data.PointerInteractionData.PointerType: AnyMockable, RandomMockable {
-    static func mockAny() -> SRIncrementalSnapshotRecord.Data.PointerInteractionData.PointerType {
+    public static func mockAny() -> SRIncrementalSnapshotRecord.Data.PointerInteractionData.PointerType {
         return .mouse
     }
 
-    static func mockRandom() -> SRIncrementalSnapshotRecord.Data.PointerInteractionData.PointerType {
+    public static func mockRandom() -> SRIncrementalSnapshotRecord.Data.PointerInteractionData.PointerType {
         return [
             .mouse,
             .touch,
@@ -602,11 +603,11 @@ extension SRIncrementalSnapshotRecord.Data.PointerInteractionData.PointerType: A
 }
 
 extension SRIncrementalSnapshotRecord.Data.PointerInteractionData.PointerEventType: AnyMockable, RandomMockable {
-    static func mockAny() -> SRIncrementalSnapshotRecord.Data.PointerInteractionData.PointerEventType {
+    public static func mockAny() -> SRIncrementalSnapshotRecord.Data.PointerInteractionData.PointerEventType {
         return .down
     }
 
-    static func mockRandom() -> SRIncrementalSnapshotRecord.Data.PointerInteractionData.PointerEventType {
+    public static func mockRandom() -> SRIncrementalSnapshotRecord.Data.PointerInteractionData.PointerEventType {
         return [
             .down,
             .up,
@@ -616,11 +617,11 @@ extension SRIncrementalSnapshotRecord.Data.PointerInteractionData.PointerEventTy
 }
 
 extension SRIncrementalSnapshotRecord.Data.ViewportResizeData: AnyMockable, RandomMockable {
-    static func mockAny() -> SRIncrementalSnapshotRecord.Data.ViewportResizeData {
+    public static func mockAny() -> SRIncrementalSnapshotRecord.Data.ViewportResizeData {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRIncrementalSnapshotRecord.Data.ViewportResizeData {
+    public static func mockRandom() -> SRIncrementalSnapshotRecord.Data.ViewportResizeData {
         return SRIncrementalSnapshotRecord.Data.ViewportResizeData(
             height: .mockRandom(),
             width: .mockRandom()
@@ -639,11 +640,11 @@ extension SRIncrementalSnapshotRecord.Data.ViewportResizeData: AnyMockable, Rand
 }
 
 extension SRIncrementalSnapshotRecord.Data.TouchData: AnyMockable, RandomMockable {
-    static func mockAny() -> SRIncrementalSnapshotRecord.Data.TouchData {
+    public static func mockAny() -> SRIncrementalSnapshotRecord.Data.TouchData {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRIncrementalSnapshotRecord.Data.TouchData {
+    public static func mockRandom() -> SRIncrementalSnapshotRecord.Data.TouchData {
         return SRIncrementalSnapshotRecord.Data.TouchData(
             positions: .mockRandom()
         )
@@ -659,11 +660,11 @@ extension SRIncrementalSnapshotRecord.Data.TouchData: AnyMockable, RandomMockabl
 }
 
 extension SRIncrementalSnapshotRecord.Data.TouchData.Positions: AnyMockable, RandomMockable {
-    static func mockAny() -> SRIncrementalSnapshotRecord.Data.TouchData.Positions {
+    public static func mockAny() -> SRIncrementalSnapshotRecord.Data.TouchData.Positions {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRIncrementalSnapshotRecord.Data.TouchData.Positions {
+    public static func mockRandom() -> SRIncrementalSnapshotRecord.Data.TouchData.Positions {
         return SRIncrementalSnapshotRecord.Data.TouchData.Positions(
             id: .mockRandom(),
             timestamp: .mockRandom(),
@@ -688,11 +689,11 @@ extension SRIncrementalSnapshotRecord.Data.TouchData.Positions: AnyMockable, Ran
 }
 
 extension SRIncrementalSnapshotRecord.Data.MutationData: AnyMockable, RandomMockable {
-    static func mockAny() -> SRIncrementalSnapshotRecord.Data.MutationData {
+    public static func mockAny() -> SRIncrementalSnapshotRecord.Data.MutationData {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRIncrementalSnapshotRecord.Data.MutationData {
+    public static func mockRandom() -> SRIncrementalSnapshotRecord.Data.MutationData {
         return SRIncrementalSnapshotRecord.Data.MutationData(
             adds: .mockRandom(),
             removes: .mockRandom(),
@@ -714,11 +715,11 @@ extension SRIncrementalSnapshotRecord.Data.MutationData: AnyMockable, RandomMock
 }
 
 extension SRIncrementalSnapshotRecord.Data.MutationData.Updates: AnyMockable, RandomMockable {
-    static func mockAny() -> SRIncrementalSnapshotRecord.Data.MutationData.Updates {
+    public static func mockAny() -> SRIncrementalSnapshotRecord.Data.MutationData.Updates {
         return .textWireframeUpdate(value: .mockAny())
     }
 
-    static func mockRandom() -> SRIncrementalSnapshotRecord.Data.MutationData.Updates {
+    public static func mockRandom() -> SRIncrementalSnapshotRecord.Data.MutationData.Updates {
         return [
             .textWireframeUpdate(value: .mockRandom()),
             .shapeWireframeUpdate(value: .mockRandom())
@@ -727,11 +728,11 @@ extension SRIncrementalSnapshotRecord.Data.MutationData.Updates: AnyMockable, Ra
 }
 
 extension SRIncrementalSnapshotRecord.Data.MutationData.Updates.ShapeWireframeUpdate: AnyMockable, RandomMockable {
-    static func mockAny() -> SRIncrementalSnapshotRecord.Data.MutationData.Updates.ShapeWireframeUpdate {
+    public static func mockAny() -> SRIncrementalSnapshotRecord.Data.MutationData.Updates.ShapeWireframeUpdate {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRIncrementalSnapshotRecord.Data.MutationData.Updates.ShapeWireframeUpdate {
+    public static func mockRandom() -> SRIncrementalSnapshotRecord.Data.MutationData.Updates.ShapeWireframeUpdate {
         return SRIncrementalSnapshotRecord.Data.MutationData.Updates.ShapeWireframeUpdate(
             border: .mockRandom(),
             clip: .mockRandom(),
@@ -768,11 +769,11 @@ extension SRIncrementalSnapshotRecord.Data.MutationData.Updates.ShapeWireframeUp
 }
 
 extension SRIncrementalSnapshotRecord.Data.MutationData.Updates.TextWireframeUpdate: AnyMockable, RandomMockable {
-    static func mockAny() -> SRIncrementalSnapshotRecord.Data.MutationData.Updates.TextWireframeUpdate {
+    public static func mockAny() -> SRIncrementalSnapshotRecord.Data.MutationData.Updates.TextWireframeUpdate {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRIncrementalSnapshotRecord.Data.MutationData.Updates.TextWireframeUpdate {
+    public static func mockRandom() -> SRIncrementalSnapshotRecord.Data.MutationData.Updates.TextWireframeUpdate {
         return SRIncrementalSnapshotRecord.Data.MutationData.Updates.TextWireframeUpdate(
             border: .mockRandom(),
             clip: .mockRandom(),
@@ -818,11 +819,11 @@ extension SRIncrementalSnapshotRecord.Data.MutationData.Updates.TextWireframeUpd
 }
 
 extension SRIncrementalSnapshotRecord.Data.MutationData.Removes: AnyMockable, RandomMockable {
-    static func mockAny() -> SRIncrementalSnapshotRecord.Data.MutationData.Removes {
+    public static func mockAny() -> SRIncrementalSnapshotRecord.Data.MutationData.Removes {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRIncrementalSnapshotRecord.Data.MutationData.Removes {
+    public static func mockRandom() -> SRIncrementalSnapshotRecord.Data.MutationData.Removes {
         return SRIncrementalSnapshotRecord.Data.MutationData.Removes(
             id: .mockRandom()
         )
@@ -838,11 +839,11 @@ extension SRIncrementalSnapshotRecord.Data.MutationData.Removes: AnyMockable, Ra
 }
 
 extension SRIncrementalSnapshotRecord.Data.MutationData.Adds: AnyMockable, RandomMockable {
-    static func mockAny() -> SRIncrementalSnapshotRecord.Data.MutationData.Adds {
+    public static func mockAny() -> SRIncrementalSnapshotRecord.Data.MutationData.Adds {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRIncrementalSnapshotRecord.Data.MutationData.Adds {
+    public static func mockRandom() -> SRIncrementalSnapshotRecord.Data.MutationData.Adds {
         return SRIncrementalSnapshotRecord.Data.MutationData.Adds(
             previousId: .mockRandom(),
             wireframe: .mockRandom()
@@ -861,11 +862,11 @@ extension SRIncrementalSnapshotRecord.Data.MutationData.Adds: AnyMockable, Rando
 }
 
 extension SRFullSnapshotRecord: AnyMockable, RandomMockable {
-    static func mockAny() -> SRFullSnapshotRecord {
+    public static func mockAny() -> SRFullSnapshotRecord {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRFullSnapshotRecord {
+    public static func mockRandom() -> SRFullSnapshotRecord {
         return SRFullSnapshotRecord(
             data: .mockRandom(),
             timestamp: .mockRandom()
@@ -884,11 +885,11 @@ extension SRFullSnapshotRecord: AnyMockable, RandomMockable {
 }
 
 extension SRFullSnapshotRecord.Data: AnyMockable, RandomMockable {
-    static func mockAny() -> SRFullSnapshotRecord.Data {
+    public static func mockAny() -> SRFullSnapshotRecord.Data {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRFullSnapshotRecord.Data {
+    public static func mockRandom() -> SRFullSnapshotRecord.Data {
         return SRFullSnapshotRecord.Data(
             wireframes: .mockRandom()
         )
@@ -906,11 +907,11 @@ extension SRFullSnapshotRecord.Data: AnyMockable, RandomMockable {
 // MARK: - Segment mocks
 
 extension SRSegment: AnyMockable, RandomMockable {
-    static func mockAny() -> SRSegment {
+    public static func mockAny() -> SRSegment {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRSegment {
+    public static func mockRandom() -> SRSegment {
         return SRSegment(
             application: .mockRandom(),
             end: .mockRandom(),
@@ -953,11 +954,11 @@ extension SRSegment: AnyMockable, RandomMockable {
 }
 
 extension SRSegment.View: AnyMockable, RandomMockable {
-    static func mockAny() -> SRSegment.View {
+    public static func mockAny() -> SRSegment.View {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRSegment.View {
+    public static func mockRandom() -> SRSegment.View {
         return SRSegment.View(
             id: .mockRandom()
         )
@@ -973,11 +974,11 @@ extension SRSegment.View: AnyMockable, RandomMockable {
 }
 
 extension SRSegment.Source: AnyMockable, RandomMockable {
-    static func mockAny() -> SRSegment.Source {
+    public static func mockAny() -> SRSegment.Source {
         return .android
     }
 
-    static func mockRandom() -> SRSegment.Source {
+    public static func mockRandom() -> SRSegment.Source {
         return [
             .android,
             .ios,
@@ -988,11 +989,11 @@ extension SRSegment.Source: AnyMockable, RandomMockable {
 }
 
 extension SRSegment.Session: AnyMockable, RandomMockable {
-    static func mockAny() -> SRSegment.Session {
+    public static func mockAny() -> SRSegment.Session {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRSegment.Session {
+    public static func mockRandom() -> SRSegment.Session {
         return SRSegment.Session(
             id: .mockRandom()
         )
@@ -1008,11 +1009,11 @@ extension SRSegment.Session: AnyMockable, RandomMockable {
 }
 
 extension SRSegment.Application: AnyMockable, RandomMockable {
-    static func mockAny() -> SRSegment.Application {
+    public static func mockAny() -> SRSegment.Application {
         return .mockWith()
     }
 
-    static func mockRandom() -> SRSegment.Application {
+    public static func mockRandom() -> SRSegment.Application {
         return SRSegment.Application(
             id: .mockRandom()
         )

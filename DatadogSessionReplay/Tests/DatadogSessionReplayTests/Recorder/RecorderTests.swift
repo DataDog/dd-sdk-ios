@@ -6,6 +6,7 @@
 
 import XCTest
 @testable import DatadogSessionReplay
+@testable import TestUtilities
 
 private class RUMContextObserverMock: RUMContextObserver {
     private var queue: Queue?

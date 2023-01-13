@@ -6,13 +6,14 @@
 
 import Foundation
 @testable import DatadogSessionReplay
+@testable import TestUtilities
 
 extension SessionReplayConfiguration: AnyMockable, RandomMockable {
-    static func mockAny() -> SessionReplayConfiguration {
+    public static func mockAny() -> SessionReplayConfiguration {
         return .mockWith()
     }
 
-    static func mockRandom() -> SessionReplayConfiguration {
+    public static func mockRandom() -> SessionReplayConfiguration {
         return SessionReplayConfiguration(
             privacy: .mockRandom(),
             customUploadURL: .mockRandom()
@@ -31,11 +32,11 @@ extension SessionReplayConfiguration: AnyMockable, RandomMockable {
 }
 
 extension SessionReplayPrivacy: AnyMockable, RandomMockable {
-    static func mockAny() -> SessionReplayPrivacy {
+    public static func mockAny() -> SessionReplayPrivacy {
         return .allowAll
     }
 
-    static func mockRandom() -> SessionReplayPrivacy {
+    public static func mockRandom() -> SessionReplayPrivacy {
         return [
             .allowAll,
             .maskAll

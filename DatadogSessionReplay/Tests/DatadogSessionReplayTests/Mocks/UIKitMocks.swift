@@ -5,13 +5,14 @@
  */
 
 import UIKit
+@testable import TestUtilities
 
 extension UIColor: AnyMockable, RandomMockable {
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         return UIColor.green as! Self
     }
 
-    static func mockRandom() -> Self {
+    public static func mockRandom() -> Self {
         return mockRandomWith(alpha: .mockRandom(min: 0, max: 1))
     }
 
@@ -26,11 +27,11 @@ extension UIColor: AnyMockable, RandomMockable {
 }
 
 extension UIView: AnyMockable, RandomMockable {
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         return UIView(frame: .init(x: 0, y: 0, width: 200, height: 400)) as! Self
     }
 
-    static func mockRandom() -> Self {
+    public static func mockRandom() -> Self {
         let view = UIView(frame: .mockRandom())
         view.backgroundColor = .mockRandom()
         view.layer.borderColor = .mockRandom()

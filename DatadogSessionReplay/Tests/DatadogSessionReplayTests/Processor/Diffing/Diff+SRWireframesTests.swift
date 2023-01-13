@@ -5,6 +5,7 @@
  */
 
 import XCTest
+@testable import TestUtilities
 @testable import DatadogSessionReplay
 
 extension SRWireframe: EquatableInTests {}

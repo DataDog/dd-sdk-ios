@@ -7,6 +7,7 @@
 import Foundation
 import UIKit
 @testable import DatadogSessionReplay
+@testable import TestUtilities
 
 // MARK: - Equatable conformances
 
@@ -16,11 +17,11 @@ extension TouchSnapshot: EquatableInTests {}
 // MARK: - ViewTreeSnapshot Mocks
 
 extension ViewTreeSnapshot: AnyMockable, RandomMockable {
-    static func mockAny() -> ViewTreeSnapshot {
+    public static func mockAny() -> ViewTreeSnapshot {
         return mockWith()
     }
 
-    static func mockRandom() -> ViewTreeSnapshot {
+    public static func mockRandom() -> ViewTreeSnapshot {
         return ViewTreeSnapshot(
             date: .mockRandom(),
             rumContext: .mockRandom(),
@@ -43,12 +44,12 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
 
 extension ViewAttributes: AnyMockable, RandomMockable {
     /// Placeholder mock, not guaranteeing consistency of returned `ViewAttributes`.
-    static func mockAny() -> ViewAttributes {
+    public static func mockAny() -> ViewAttributes {
         return mockWith()
     }
 
     /// Random mock, not guaranteeing consistency of returned `ViewAttributes`.
-    static func mockRandom() -> ViewAttributes {
+    public static func mockRandom() -> ViewAttributes {
         return .init(
             frame: .mockRandom(),
             backgroundColor: UIColor.mockRandom().cgColor,
@@ -183,7 +184,7 @@ func mockRandomNodeSemantics() -> NodeSemantics {
 }
 
 extension Node: AnyMockable, RandomMockable {
-    static func mockAny() -> Node {
+    public static func mockAny() -> Node {
         return mockWith()
     }
 
@@ -199,7 +200,7 @@ extension Node: AnyMockable, RandomMockable {
         )
     }
 
-    static func mockRandom() -> Node {
+    public static func mockRandom() -> Node {
         return mockRandom(maxDepth: 4, maxBreadth: 4)
     }
 
@@ -225,11 +226,11 @@ extension Node: AnyMockable, RandomMockable {
 }
 
 extension ViewTreeSnapshotBuilder.Context: AnyMockable, RandomMockable {
-    static func mockAny() -> ViewTreeSnapshotBuilder.Context {
+    public static func mockAny() -> ViewTreeSnapshotBuilder.Context {
         return .mockWith()
     }
 
-    static func mockRandom() -> ViewTreeSnapshotBuilder.Context {
+    public static func mockRandom() -> ViewTreeSnapshotBuilder.Context {
         return .init(
             recorder: .mockRandom(),
             coordinateSpace: UIView.mockRandom(),
@@ -256,11 +257,11 @@ extension ViewTreeSnapshotBuilder.Context: AnyMockable, RandomMockable {
 // MARK: - TouchSnapshot Mocks
 
 extension TouchSnapshot: AnyMockable, RandomMockable {
-    static func mockAny() -> TouchSnapshot {
+    public static func mockAny() -> TouchSnapshot {
         return .mockWith()
     }
 
-    static func mockRandom() -> TouchSnapshot {
+    public static func mockRandom() -> TouchSnapshot {
         return TouchSnapshot(
             date: .mockRandom(),
             touches: .mockRandom()
@@ -279,11 +280,11 @@ extension TouchSnapshot: AnyMockable, RandomMockable {
 }
 
 extension TouchSnapshot.Touch: AnyMockable, RandomMockable {
-    static func mockAny() -> TouchSnapshot.Touch {
+    public static func mockAny() -> TouchSnapshot.Touch {
         return .mockWith()
     }
 
-    static func mockRandom() -> TouchSnapshot.Touch {
+    public static func mockRandom() -> TouchSnapshot.Touch {
         return TouchSnapshot.Touch(
             id: .mockRandom(),
             phase: [.down, .move, .up].randomElement()!,
@@ -310,11 +311,11 @@ extension TouchSnapshot.Touch: AnyMockable, RandomMockable {
 // MARK: - Recorder Mocks
 
 extension RUMContext: AnyMockable, RandomMockable {
-    static func mockAny() -> RUMContext {
+    public static func mockAny() -> RUMContext {
         return .mockWith()
     }
 
-    static func mockRandom() -> RUMContext {
+    public static func mockRandom() -> RUMContext {
         return RUMContext(
             applicationID: .mockRandom(),
             sessionID: .mockRandom(),
@@ -336,11 +337,11 @@ extension RUMContext: AnyMockable, RandomMockable {
 }
 
 extension Recorder.Context: AnyMockable, RandomMockable {
-    static func mockAny() -> Recorder.Context {
+    public static func mockAny() -> Recorder.Context {
         return .mockWith()
     }
 
-    static func mockRandom() -> Recorder.Context {
+    public static func mockRandom() -> Recorder.Context {
         return Recorder.Context(
             date: .mockRandom(),
             privacy: .mockRandom(),
@@ -362,7 +363,7 @@ extension Recorder.Context: AnyMockable, RandomMockable {
 }
 
 extension UIApplicationSwizzler: AnyMockable {
-    static func mockAny() -> UIApplicationSwizzler {
+    public static func mockAny() -> UIApplicationSwizzler {
         class HandlerMock: UIEventHandler {
             func notify_sendEvent(application: UIApplication, event: UIEvent) {}
         }

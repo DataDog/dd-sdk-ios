@@ -7,6 +7,7 @@
 import XCTest
 import UIKit
 @testable import DatadogSessionReplay
+@testable import TestUtilities
 
 class NodeIDGeneratorTests: XCTestCase {
     func testAfterIDisRetrievedFirstTime_itAlwaysReturnsTheSameIDForUIViewInstance() {

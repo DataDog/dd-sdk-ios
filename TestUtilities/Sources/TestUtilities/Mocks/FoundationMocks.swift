@@ -106,17 +106,45 @@ extension Array {
     func randomElements() -> [Element] {
         return compactMap { Bool.random() ? $0 : nil }
     }
+
+    /// Chunks the array randomly, e.g.:
+    ///
+    ///     print([1, 2, 3, 4, 5].chunkedRandomly(numberOfChunks: 3))
+    ///     // [[1], [2, 3], [4, 5]]
+    ///
+    func chunkedRandomly(numberOfChunks: Int) -> [[Element]] {
+        assert(numberOfChunks <= count, "`numberOfChunks` must be less than or equal to \(count)")
+
+        var indexes = (1..<count).shuffled()
+        var slices: [Int] = [0, count]
+        while slices.count <= numberOfChunks {
+            slices.append(indexes.removeLast())
+        }
+        slices.sort()
+
+        return zip(slices, slices.dropFirst()).map { start, end in
+            return Array(self[start..<end])
+        }
+    }
 }
 
 extension Array: AnyMockable where Element: AnyMockable {
     static func mockAny() -> [Element] {
         return (0..<10).map { _ in .mockAny() }
     }
+
+    static func mockAny(count: Int) -> [Element] {
+        return (0..<count).map { _ in .mockAny() }
+    }
 }
 
 extension Array: RandomMockable where Element: RandomMockable {
     static func mockRandom() -> [Element] {
         return (0..<10).map { _ in .mockRandom() }
+    }
+
+    static func mockRandom(count: Int) -> [Element] {
+        return (0..<count).map { _ in .mockRandom() }
     }
 }
 
@@ -144,9 +172,14 @@ extension Set: RandomMockable where Element: RandomMockable {
     }
 }
 
-extension Date: AnyMockable {
+extension Date: AnyMockable, RandomMockable {
     static func mockAny() -> Date {
         return Date(timeIntervalSinceReferenceDate: 1)
+    }
+
+    static func mockRandom() -> Date {
+        let randomTimeInterval = TimeInterval.random(in: 0..<Date().timeIntervalSince1970)
+        return Date(timeIntervalSince1970: randomTimeInterval)
     }
 
     static func mockRandomInThePast() -> Date {

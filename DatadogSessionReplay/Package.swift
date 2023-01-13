@@ -16,6 +16,7 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "Datadog", path: ".."),
+        .package(name: "TestUtilities", path: "../TestUtilities"),
     ],
     targets: [
         .target(
@@ -24,7 +25,7 @@ let package = Package(
         ),
         .testTarget(
             name: "DatadogSessionReplayTests",
-            dependencies: ["DatadogSessionReplay"]
+            dependencies: ["DatadogSessionReplay", "TestUtilities"]
         ),
     ]
 )
