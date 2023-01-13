@@ -118,7 +118,7 @@ class FileWriterTests: XCTestCase {
         blocks = try XCTUnwrap(reader.all())
         XCTAssertEqual(blocks.count, 1) // same content as before
         XCTAssertEqual(dd.logger.errorLog?.message, "Failed to write data")
-        XCTAssertEqual(dd.logger.errorLog?.error?.message, "bytesLengthExceedsLimit(limit: 23)")
+        XCTAssertEqual(dd.logger.errorLog?.error?.message, "DataBlock lenght exceeds limit of 23 bytes")
     }
 
     func testGivenErrorVerbosity_whenDataCannotBeEncoded_itPrintsError() throws {
