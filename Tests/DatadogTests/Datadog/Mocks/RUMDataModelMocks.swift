@@ -466,9 +466,3 @@ extension TelemetryConfigurationEvent: RandomMockable {
         )
     }
 }
-
-extension String {
-    static func mockAnySource() -> String {
-        return ["ios", "android", "browser", "ios", "react-native", "flutter"].randomElement()!
-    }
-}
