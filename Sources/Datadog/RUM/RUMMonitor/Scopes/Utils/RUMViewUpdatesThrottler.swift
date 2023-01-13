@@ -43,6 +43,8 @@ internal final class RUMViewUpdatesThrottler: RUMViewUpdatesThrottlerType {
 
         sample = sample || event.view.isActive == false // always accept the last event in a view
 
+        sample = sample || event.view.crash?.count ?? 0 > 0 // always accept events if the view has crashed
+
         if sample {
             lastSampledTimeSpentInNs = event.view.timeSpent
         }

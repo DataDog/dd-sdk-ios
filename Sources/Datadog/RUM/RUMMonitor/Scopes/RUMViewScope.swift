@@ -400,6 +400,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         version += 1
         attributes.merge(rumCommandAttributes: command.attributes)
 
+        let isCrash = (command as? RUMAddCurrentViewErrorCommand)?.isCrash != nil
         // RUMM-1779 Keep view active as long as we have ongoing resources
         let isActive = isActiveView || !resourceScopes.isEmpty
         // RUMM-2079 `time_spent` can't be lower than 1ns
@@ -437,7 +438,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 action: .init(count: actionsCount.toInt64),
                 cpuTicksCount: cpuInfo?.greatestDiff,
                 cpuTicksPerSecond: cpuInfo?.greatestDiff?.divideIfNotZero(by: Double(timeSpent)),
-                crash: .init(count: 0),
+                crash: isCrash ? .init(count: 1) : .init(count: 0),
                 cumulativeLayoutShift: nil,
                 customTimings: customTimings.reduce(into: [:]) { acc, element in
                     acc[sanitizeCustomTimingName(customTiming: element.key)] = element.value
