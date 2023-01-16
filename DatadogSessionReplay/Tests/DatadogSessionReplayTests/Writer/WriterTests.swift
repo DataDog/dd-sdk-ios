@@ -5,14 +5,26 @@
  */
 
 import XCTest
+import Datadog
 @testable import DatadogSessionReplay
+@testable import TestUtilities
 
 // swiftlint:disable empty_xctest_method
 class WriterTests: XCTestCase {
     func testWhenFeatureScopeIsConnected_itWritesRecordsToCore() {
-        // TODO: RUMM-2690
-        // Implementing this test requires creating mocks for `DatadogContext` (passed in `FeatureScope`),
-        // which is yet not possible as we lack separate, shared module to facilitate tests.
+        // Given
+        let core = PassthroughCoreMock()
+        let writer = Writer()
+
+        // When
+        writer.startWriting(to: core)
+
+        // Then
+        writer.write(nextRecord: EnrichedRecord(rumContext: .mockRandom(), records: .mockRandom()))
+        writer.write(nextRecord: EnrichedRecord(rumContext: .mockRandom(), records: .mockRandom()))
+        writer.write(nextRecord: EnrichedRecord(rumContext: .mockRandom(), records: .mockRandom()))
+
+        XCTAssertEqual(core.events(ofType: EnrichedRecord.self).count, 3)
     }
 
     func testWhenFeatureScopeIsNotConnected_itDoesNotWriteRecordsToCore() {

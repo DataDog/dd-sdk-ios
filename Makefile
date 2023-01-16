@@ -74,7 +74,7 @@ xcodeproj-httpservermock:
 
 xcodeproj-session-replay:
 		@echo "⚙️  Generating 'DatadogSessionReplay.xcodeproj'..."
-		@cd session-replay/ && swift package generate-xcodeproj
+		@cd DatadogSessionReplay/ && swift package generate-xcodeproj
 		@echo "OK 👌"
 
 templates:

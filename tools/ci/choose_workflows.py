@@ -40,7 +40,7 @@ def should_run_sr_unit_tests(ctx: CIContext) -> bool:
         build_env=context.build_env.DD_OVERRIDE_RUN_SR_UNIT_TESTS,
         pr_keyword='[x] Run unit tests for Session Replay',
         pr_path_prefixes=[
-            'session-replay/',
+            'DatadogSessionReplay/',
         ],
         pr_file_extensions=[]
     )

@@ -12,7 +12,6 @@ import Datadog
 // swiftlint:disable empty_xctest_method
 class RequestBuilderTests: XCTestCase {
     func testWhenCustomUploadURLIsNotSet_itCreatesRequestsToAppropriateDatadogSite() {
-        _ = DatadogContext.mockAny()
         // TODO: RUMM-2690
         // Implementing this test requires creating mocks for `DatadogContext` (passed in `FeatureRequestBuilder`),
         // which is yet not possible as we lack separate, shared module to facilitate tests.
