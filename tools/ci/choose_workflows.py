@@ -41,6 +41,7 @@ def should_run_sr_unit_tests(ctx: CIContext) -> bool:
         pr_keyword='[x] Run unit tests for Session Replay',
         pr_path_prefixes=[
             'DatadogSessionReplay/',
+            'TestUtilities/',
         ],
         pr_file_extensions=[]
     )
