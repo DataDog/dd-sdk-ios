@@ -19,9 +19,9 @@ internal enum BlockType: UInt16 {
 
 /// Reported errors while manipulating data blocks.
 internal enum DataBlockError: Error {
-    case readOperationFailed(streamError: Error?)
-    case invalidDataType
-    case invalidByteSequence
+    case readOperationFailed(streamStatus: Stream.Status, streamError: Error?)
+    case invalidDataType(got: UInt16)
+    case invalidByteSequence(expected: Int, got: Int)
     case bytesLengthExceedsLimit(limit: UInt64)
     case dataAllocationFailure
     case endOfStream
@@ -148,7 +148,10 @@ internal final class DataBlockReader {
         }
 
         if count < 0 {
-            throw DataBlockError.readOperationFailed(streamError: stream.streamError)
+            throw DataBlockError.readOperationFailed(
+                streamStatus: stream.streamStatus,
+                streamError: stream.streamError
+            )
         }
 
         if count == 0 {
@@ -156,7 +159,7 @@ internal final class DataBlockReader {
         }
 
         guard count == length else {
-            throw DataBlockError.invalidByteSequence
+            throw DataBlockError.invalidByteSequence(expected: length, got: count)
         }
 
         return data
@@ -171,7 +174,7 @@ internal final class DataBlockReader {
         let data = try readData()
 
         guard let type = BlockType(rawValue: type) else {
-            throw DataBlockError.invalidDataType
+            throw DataBlockError.invalidDataType(got: type)
         }
 
         return DataBlock(type: type, data: data)
@@ -198,5 +201,24 @@ internal final class DataBlockReader {
         }
 
         return try read(length: length)
+    }
+}
+extension DataBlockError: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .readOperationFailed(let status, let error):
+            let error = error.map { "\($0)" } ?? "(null)"
+            return "DataBlock read operation failed with stream status: \(status.rawValue), error: \(error)"
+        case .invalidDataType(let type):
+            return "Invalid DataBlock type: \(type)"
+        case .invalidByteSequence(let expected, let got):
+            return "Invalid bytes sequence in DataBlock: expected \(expected) bytes but got \(got)"
+        case .bytesLengthExceedsLimit(let limit):
+            return "DataBlock lenght exceeds limit of \(limit) bytes"
+        case .dataAllocationFailure:
+            return "Allocation failure while reading stream"
+        case .endOfStream:
+            return "Reach end of stream while reading data blocks"
+        }
     }
 }
