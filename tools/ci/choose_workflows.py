@@ -27,6 +27,7 @@ def should_run_unit_tests(ctx: CIContext) -> bool:
             'Tests/DatadogTests',
             'Tests/DatadogCrashReportingTests',
             'Datadog/Datadog.xcodeproj/',
+            'TestUtilities/',
         ],
         pr_file_extensions=[]
     )
