@@ -24,30 +24,3 @@ struct FeatureRequestBuilderMock: FeatureRequestBuilder {
         return builder.uploadRequest(with: data)
     }
 }
-
-extension DatadogContext: AnyMockable {
-    static func mockAny() -> DatadogContext {
-        .init(
-            site: .us1,
-            clientToken: .mockAny(),
-            service: .mockAny(),
-            env: .mockAny(),
-            version: .mockAny(),
-            variant: nil,
-            source: .mockAny(),
-            sdkVersion: .mockAny(),
-            ciAppOrigin: .mockAny(),
-            serverTimeOffset: .zero,
-            applicationName: .mockAny(),
-            applicationBundleIdentifier: .mockAny(),
-            sdkInitDate: .mockRandomInThePast(),
-            device: DeviceInfo(),
-            userInfo: nil,
-            launchTime: nil,
-            applicationStateHistory: .active(since: Date()),
-            networkConnectionInfo: .unknown,
-            carrierInfo: nil,
-            isLowPowerModeEnabled: false
-        )
-    }
-}
