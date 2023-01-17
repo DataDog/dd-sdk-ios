@@ -9,21 +9,6 @@ import XCTest
 
 // MARK: - Configuration Mocks
 
-extension TrackingConsent {
-    static func mockRandom() -> TrackingConsent {
-        return [.granted, .notGranted, .pending].randomElement()!
-    }
-
-    static func mockRandom(otherThan consent: TrackingConsent? = nil) -> TrackingConsent {
-        while true {
-            let randomConsent: TrackingConsent = .mockRandom()
-            if randomConsent != consent {
-                return randomConsent
-            }
-        }
-    }
-}
-
 extension Datadog.Configuration {
     static func mockAny() -> Datadog.Configuration { .mockWith() }
 
@@ -137,16 +122,6 @@ extension UploadFrequency: CaseIterable {
 
 extension BundleType: CaseIterable {
     public static var allCases: [Self] { [.iOSApp, iOSAppExtension] }
-}
-
-extension Datadog.Configuration.DatadogEndpoint: AnyMockable, RandomMockable {
-    static func mockAny() -> Datadog.Configuration.DatadogEndpoint {
-        return .us1
-    }
-
-    static func mockRandom() -> Self {
-        return [.us1, .us3, .eu1, .us1_fed].randomElement()!
-    }
 }
 
 extension Datadog.Configuration.LogsEndpoint {
@@ -526,26 +501,6 @@ extension FeatureUpload {
     }
 }
 
-class FileWriterMock: Writer {
-    /// Recorded events.
-    internal private(set) var events: [Encodable] = []
-
-    /// Adds an `Encodable` event to the events stack.
-    ///
-    /// - Parameter value: The event value to record.
-    func write<T>(value: T) where T: Encodable {
-        events.append(value)
-    }
-
-    /// Returns all events of the given type.
-    ///
-    /// - Parameter type: The event type to retrieve.
-    /// - Returns: A list of event of the give type.
-    func events<T>(ofType type: T.Type = T.self) -> [T] where T: Encodable {
-        events.compactMap { $0 as? T }
-    }
-}
-
 class NOPReader: Reader {
     func readNextBatch() -> Batch? { nil }
     func markBatchAsRead(_ batch: Batch) {}
@@ -641,24 +596,6 @@ extension AppState: AnyMockable, RandomMockable {
     }
 }
 
-extension AppStateHistory: AnyMockable {
-    static func mockAny() -> Self {
-        return mockAppInForeground(since: .mockDecember15th2019At10AMUTC())
-    }
-
-    static func mockAppInForeground(since date: Date = Date()) -> Self {
-        return .init(initialSnapshot: .init(state: .active, date: date), recentDate: date)
-    }
-
-    static func mockAppInBackground(since date: Date = Date()) -> Self {
-        return .init(initialSnapshot: .init(state: .background, date: date), recentDate: date)
-    }
-
-    static func mockRandom(since date: Date = Date()) -> Self {
-        return Bool.random() ? mockAppInForeground(since: date) : mockAppInBackground(since: date)
-    }
-}
-
 class AppStateListenerMock: AppStateListening, AnyMockable {
     let history: AppStateHistory
 
@@ -690,27 +627,6 @@ class AppStateListenerMock: AppStateListening, AnyMockable {
 
     func subscribe<Observer: AppStateHistoryObserver>(_ subscriber: Observer) where Observer.ObservedValue == AppStateHistory {}
 }
-
-extension UserInfo: AnyMockable, RandomMockable {
-    static func mockAny() -> UserInfo {
-        return mockEmpty()
-    }
-
-    static func mockEmpty() -> UserInfo {
-        return UserInfo(id: nil, name: nil, email: nil, extraInfo: [:])
-    }
-
-    static func mockRandom() -> UserInfo {
-        return .init(
-            id: .mockRandom(),
-            name: .mockRandom(),
-            email: .mockRandom(),
-            extraInfo: mockRandomAttributes()
-        )
-    }
-}
-
-extension UserInfo: EquatableInTests {}
 
 extension UserInfoProvider {
     static func mockAny() -> UserInfoProvider {
@@ -768,144 +684,9 @@ extension DataUploadStatus: RandomMockable {
     }
 }
 
-extension DeviceInfo {
-    static func mockAny() -> DeviceInfo {
-        return .mockWith()
-    }
-
-    static func mockWith(
-        name: String = .mockAny(),
-        model: String = .mockAny(),
-        osName: String = .mockAny(),
-        osVersion: String = .mockAny(),
-        architecture: String = .mockAny()
-    ) -> DeviceInfo {
-        return .init(
-            name: name,
-            model: model,
-            osName: osName,
-            osVersion: osVersion,
-            architecture: architecture
-        )
-    }
-
-    static func mockRandom() -> DeviceInfo {
-        return .init(
-            name: .mockRandom(),
-            model: .mockRandom(),
-            osName: .mockRandom(),
-            osVersion: .mockRandom(),
-            architecture: .mockRandom()
-        )
-    }
-}
-
 extension BatteryStatus.State {
     static func mockRandom(within cases: [BatteryStatus.State] = [.unknown, .unplugged, .charging, .full]) -> BatteryStatus.State {
         return cases.randomElement()!
-    }
-}
-
-extension BatteryStatus {
-    static func mockAny() -> BatteryStatus {
-        return mockWith()
-    }
-
-    static func mockWith(
-        state: State = .charging,
-        level: Float = 0.5
-    ) -> BatteryStatus {
-        return BatteryStatus(state: state, level: level)
-    }
-}
-
-extension NetworkConnectionInfo.Reachability {
-    static func mockAny() -> NetworkConnectionInfo.Reachability {
-        return .maybe
-    }
-
-    static func mockRandom(
-        within cases: [NetworkConnectionInfo.Reachability] = [.yes, .no, .maybe]
-    ) -> NetworkConnectionInfo.Reachability {
-        return cases.randomElement()!
-    }
-}
-
-extension NetworkConnectionInfo.Interface: RandomMockable {
-    static func mockRandom() -> NetworkConnectionInfo.Interface {
-        return allCases.randomElement()!
-    }
-}
-
-extension NetworkConnectionInfo: RandomMockable {
-    static func mockAny() -> NetworkConnectionInfo {
-        return mockWith()
-    }
-
-    static func mockWith(
-        reachability: NetworkConnectionInfo.Reachability = .mockAny(),
-        availableInterfaces: [NetworkConnectionInfo.Interface] = [.wifi],
-        supportsIPv4: Bool = true,
-        supportsIPv6: Bool = true,
-        isExpensive: Bool = true,
-        isConstrained: Bool = true
-    ) -> NetworkConnectionInfo {
-        return NetworkConnectionInfo(
-            reachability: reachability,
-            availableInterfaces: availableInterfaces,
-            supportsIPv4: supportsIPv4,
-            supportsIPv6: supportsIPv6,
-            isExpensive: isExpensive,
-            isConstrained: isConstrained
-        )
-    }
-
-    static func mockRandom() -> NetworkConnectionInfo {
-        return NetworkConnectionInfo(
-            reachability: .mockRandom(),
-            availableInterfaces: .mockRandom(),
-            supportsIPv4: .random(),
-            supportsIPv6: .random(),
-            isExpensive: .random(),
-            isConstrained: .random()
-        )
-    }
-}
-
-extension CarrierInfo.RadioAccessTechnology: RandomMockable {
-    static func mockAny() -> CarrierInfo.RadioAccessTechnology { .LTE }
-
-    static func mockRandom() -> CarrierInfo.RadioAccessTechnology {
-        return allCases.randomElement()!
-    }
-}
-
-extension CarrierInfo: RandomMockable {
-    static func mockAny() -> CarrierInfo {
-        return mockWith()
-    }
-
-    static func mockWith(
-        carrierName: String? = .mockAny(),
-        carrierISOCountryCode: String? = .mockAny(),
-        carrierAllowsVOIP: Bool = .mockAny(),
-        radioAccessTechnology: CarrierInfo.RadioAccessTechnology = .mockAny()
-    ) -> CarrierInfo {
-        return CarrierInfo(
-            carrierName: carrierName,
-            carrierISOCountryCode: carrierISOCountryCode,
-            carrierAllowsVOIP: carrierAllowsVOIP,
-            radioAccessTechnology: radioAccessTechnology
-        )
-    }
-
-    static func mockRandom() -> CarrierInfo {
-        return CarrierInfo(
-            carrierName: .mockRandom(),
-            carrierISOCountryCode: .mockRandom(),
-            carrierAllowsVOIP: .random(),
-            radioAccessTechnology: .mockRandom()
-        )
     }
 }
 
