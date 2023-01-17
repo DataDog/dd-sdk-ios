@@ -146,4 +146,5 @@ bump:
 		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKCrashReporting.podspec.src > DatadogSDKCrashReporting.podspec; \
 		git add . ; \
 		git commit -m "Bumped version to $$version"; \
+		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKSessionReplay.podspec.src > DatadogSDKSessionReplay.podspec; \
 		echo Bumped version to $$version
