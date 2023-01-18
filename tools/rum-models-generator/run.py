@@ -4,7 +4,7 @@
 # -----------------------------------------------------------
 # Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
 # This product includes software developed at Datadog (https://www.datadoghq.com/).
-# Copyright 2019-2020 Datadog, Inc.
+# Copyright 2019-Present Datadog, Inc.
 # -----------------------------------------------------------
 
 import os
@@ -24,7 +24,7 @@ SR_SCHEMA_PATH = '/rum-events-format/session-replay-mobile-format.json'
 # Generated file paths (relative to repository root)
 RUM_SWIFT_GENERATED_FILE_PATH = '/Sources/Datadog/RUM/DataModels/RUMDataModels.swift'
 RUM_OBJC_GENERATED_FILE_PATH = '/Sources/DatadogObjc/RUM/RUMDataModels+objc.swift'
-SR_SWIFT_GENERATED_FILE_PATH = '/session-replay/Sources/DatadogSessionReplay/Writer/Models/SRDataModels.swift'
+SR_SWIFT_GENERATED_FILE_PATH = '/DatadogSessionReplay/Sources/DatadogSessionReplay/Writer/Models/SRDataModels.swift'
 
 
 @dataclass

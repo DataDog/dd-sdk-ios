@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -47,9 +47,17 @@ class FileTests: XCTestCase {
 
     func testItReadsDataFromFile() throws {
         let file = try temporaryDirectory.createFile(named: "file")
-        try file.append(data: "Hello 👋".utf8Data)
+        let data = "Hello 👋".utf8Data
+        try file.append(data: data)
 
-        XCTAssertEqual(try file.read().utf8String, "Hello 👋")
+        let stream = try file.stream()
+        stream.open()
+        defer { stream.close() }
+
+        var bytes = [UInt8](repeating: 0, count: data.count)
+        XCTAssertEqual(stream.read(&bytes, maxLength: data.count), data.count)
+
+        XCTAssertEqual(String(bytes: bytes, encoding: .utf8), "Hello 👋")
     }
 
     func testItDeletesFile() throws {
@@ -76,16 +84,6 @@ class FileTests: XCTestCase {
         try file.delete()
 
         XCTAssertThrowsError(try file.append(data: .mock(ofSize: 5))) { error in
-            XCTAssertEqual((error as NSError).localizedDescription, "The file “file” doesn’t exist.")
-        }
-    }
-
-    func testWhenIOExceptionHappens_itThrowsWhenReading() throws {
-        let file = try temporaryDirectory.createFile(named: "file")
-        try file.append(data: .mock(ofSize: 5))
-        try file.delete()
-
-        XCTAssertThrowsError(try file.read()) { error in
             XCTAssertEqual((error as NSError).localizedDescription, "The file “file” doesn’t exist.")
         }
     }

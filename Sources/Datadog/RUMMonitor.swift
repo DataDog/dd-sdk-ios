@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import UIKit
@@ -132,8 +132,6 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     internal let core: DatadogCoreProtocol
     /// The root scope of RUM monitoring.
     internal let applicationScope: RUMApplicationScope
-    /// Current RUM context provider for integrations with Logging and Tracing.
-    internal let contextProvider: RUMCurrentContext
     /// Time provider.
     internal let dateProvider: DateProvider
     /// Attributes associated with every command.
@@ -145,19 +143,6 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     )
     /// User-targeted, debugging utility which can be toggled with `Datadog.debugRUM`.
     private(set) var debugging: RUMDebugging? = nil
-
-    /// RUM Attributes shared with other Feature registered in core.
-    internal struct Attributes {
-        /// The ID of RUM application (`String`).
-        internal static let applicationID = "application_id"
-        /// The ID of current RUM session (standard UUID `String`, lowercased).
-        /// In case the session is rejected (not sampled), RUM context is set to empty (`[:]`) in core.
-        internal static let sessionID = "session_id"
-        /// The ID of current RUM view (standard UUID `String`, lowercased).
-        internal static let viewID = "view.id"
-        /// The ID of current RUM action (standard UUID `String`, lowercased).
-        internal static let userActionID = "user_action.id"
-    }
 
     // MARK: - Initialization
 
@@ -205,10 +190,6 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         self.core = core
         self.applicationScope = RUMApplicationScope(dependencies: dependencies)
         self.dateProvider = dateProvider
-        self.contextProvider = RUMCurrentContext(
-            applicationScope: applicationScope,
-            queue: queue
-        )
 
         super.init()
 
@@ -632,10 +613,10 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 }
 
                 return [
-                    Attributes.applicationID: context.rumApplicationID,
-                    Attributes.sessionID: context.sessionID.rawValue.uuidString.lowercased(),
-                    Attributes.viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
-                    Attributes.userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased()
+                    RUMContextAttributes.applicationID: context.rumApplicationID,
+                    RUMContextAttributes.sessionID: context.sessionID.rawValue.uuidString.lowercased(),
+                    RUMContextAttributes.viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
+                    RUMContextAttributes.userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased()
                 ]
             }
         })

@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -132,10 +132,10 @@ class LogSanitizerTests: XCTestCase {
                 userAttributes: [
                     Tracer.Attributes.traceID: mockValue(),
                     Tracer.Attributes.spanID: mockValue(),
-                    RUMMonitor.Attributes.applicationID: mockValue(),
-                    RUMMonitor.Attributes.sessionID: mockValue(),
-                    RUMMonitor.Attributes.viewID: mockValue(),
-                    RUMMonitor.Attributes.userActionID: mockValue(),
+                    RUMContextAttributes.applicationID: mockValue(),
+                    RUMContextAttributes.sessionID: mockValue(),
+                    RUMContextAttributes.viewID: mockValue(),
+                    RUMContextAttributes.userActionID: mockValue(),
                     "attribute3": mockValue(),
                 ]
             )

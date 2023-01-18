@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -15,7 +15,7 @@ class RUMMonitorConfigurationTests: XCTestCase {
     func testRUMMonitorConfiguration() throws {
         let expectation = expectation(description: "open feature scope")
 
-        let core = DatadogCoreMock(
+        let core = DatadogCoreProxy(
             context: .mockWith(
                 service: "service-name",
                 env: "tests",
@@ -26,9 +26,9 @@ class RUMMonitorConfigurationTests: XCTestCase {
                 carrierInfo: carrierInfo
             )
         )
-        defer { core.flush() }
+        defer { core.flushAndTearDown() }
 
-        let feature: RUMFeature = .mockByRecordingRUMEventMatchers(
+        let feature: RUMFeature = .mockWith(
             configuration: .mockWith(
                 applicationID: "rum-123",
                 sessionSampler: Sampler(samplingRate: 42.5)

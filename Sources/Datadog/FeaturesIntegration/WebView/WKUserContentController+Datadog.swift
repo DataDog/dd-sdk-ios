@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 #if !os(tvOS)
@@ -33,17 +33,10 @@ public extension WKUserContentController {
     }
 
     private func trackDatadogEventsOrThrow(in hosts: Set<String>, sdk core: DatadogCoreProtocol) throws {
-        guard let context = core.v1.legacyContext else {
-            throw ProgrammerError(
-                description: "`Datadog.initialize()` must be called prior to `trackDatadogEvents(in:)`."
-            )
-        }
-
         addDatadogMessageHandler(
             core: core,
             allowedWebViewHosts: hosts,
-            hostsSanitizer: HostsSanitizer(),
-            context: context
+            hostsSanitizer: HostsSanitizer()
         )
     }
 
@@ -66,8 +59,7 @@ public extension WKUserContentController {
     internal func addDatadogMessageHandler(
         core: DatadogCoreProtocol,
         allowedWebViewHosts: Set<String>,
-        hostsSanitizer: HostsSanitizing,
-        context: DatadogV1Context
+        hostsSanitizer: HostsSanitizing
     ) {
         guard !isTracking else {
             DD.logger.warn("`trackDatadogEvents(in:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")
@@ -76,37 +68,10 @@ public extension WKUserContentController {
 
         let bridgeName = DatadogMessageHandler.name
 
-        let globalRUMMonitor = Global.rum as? RUMMonitor
-
-        var logEventConsumer: WebEventConsumer?
-        var rumEventConsumer: WebEventConsumer?
-
-        if core.v1.feature(LoggingFeature.self) != nil {
-            logEventConsumer = DefaultWebLogEventConsumer(
-                core: core,
-                dateCorrector: context.dateCorrector,
-                rumContextProvider: globalRUMMonitor?.contextProvider,
-                applicationVersion: context.version,
-                environment: context.env
-            )
-        }
-
-        if let rum = core.v1.feature(RUMFeature.self) {
-            rumEventConsumer = DefaultWebRUMEventConsumer(
-                core: core,
-                dateCorrector: context.dateCorrector,
-                contextProvider: globalRUMMonitor?.contextProvider,
-                rumCommandSubscriber: globalRUMMonitor,
-                dateProvider: rum.configuration.dateProvider
-            )
-        }
-
         let messageHandler = DatadogMessageHandler(
-            eventBridge: WebEventBridge(
-                logEventConsumer: logEventConsumer,
-                rumEventConsumer: rumEventConsumer
-            )
+            eventBridge: WebEventBridge(core: core)
         )
+
         add(messageHandler, name: bridgeName)
 
         // WebKit installs message handlers with the given name format below

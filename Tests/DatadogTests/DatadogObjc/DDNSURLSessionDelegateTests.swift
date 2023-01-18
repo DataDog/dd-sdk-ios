@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -30,13 +30,13 @@ class DDNSURLSessionDelegateTests: XCTestCase {
     func testInit() {
         let delegate = DDNSURLSessionDelegate()
         let url = URL(string: "foo.com")
-        XCTAssertFalse(delegate.swiftDelegate.firstPartyURLsFilter.isFirstParty(url: url))
+        XCTAssertFalse(delegate.swiftDelegate.firstPartyHosts.isFirstParty(url: url))
     }
 
     func testInitWithAdditionalFirstPartyHosts() {
-        let delegate = DDNSURLSessionDelegate(additionalFirstPartyHosts: ["foo.com"])
+        let delegate = DDNSURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: ["foo.com": [.datadog]])
         let url = URL(string: "http://foo.com")
-        XCTAssertTrue(delegate.swiftDelegate.firstPartyURLsFilter.isFirstParty(url: url))
+        XCTAssertTrue(delegate.swiftDelegate.firstPartyHosts.isFirstParty(url: url))
     }
 
     func testItForwardsCallsToSwiftDelegate() {

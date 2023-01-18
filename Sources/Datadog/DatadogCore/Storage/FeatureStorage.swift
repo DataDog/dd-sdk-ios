@@ -1,32 +1,107 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
 
 internal struct FeatureStorage {
-    /// Writes data to files. This `Writer` takes current value of the `TrackingConsent` into consideration
-    /// to decided if the data should be written to authorized or unauthorized folder.
-    let writer: AsyncWriter
-    /// Reads data from files in authorized folder.
-    let reader: SyncReader
+    /// The name of this Feature, used to distinguish storage instances in telemetry and logs.
+    let featureName: String
+    /// Queue for performing all I/O operations (writes, reads and files management).
+    let queue: DispatchQueue
+    /// Directories for managing data in this Feature.
+    let directories: FeatureDirectories
+    /// Orchestrates files collected in `.granted` consent.
+    let authorizedFilesOrchestrator: FilesOrchestratorType
+    /// Orchestrates files collected in `.pending` consent.
+    let unauthorizedFilesOrchestrator: FilesOrchestratorType
+    /// Encryption algorithm applied to persisted data.
+    let encryption: DataEncryption?
 
-    /// An arbitrary `Writer` which always writes data to authorized folder.
-    /// Should be only used by components which implement their own consideration of the `TrackingConsent` value
-    /// associated with data written (e.g. crash reporting integration which saves the consent value along with the crash report).
-    let arbitraryAuthorizedWriter: AsyncWriter
+    func writer(for trackingConsent: TrackingConsent, forceNewBatch: Bool) -> Writer {
+        switch trackingConsent {
+        case .granted:
+            return AsyncWriter(
+                execute: FileWriter(orchestrator: authorizedFilesOrchestrator, encryption: encryption, forceNewFile: forceNewBatch),
+                on: queue
+            )
+        case .notGranted:
+            return NOPWriter()
+        case .pending:
+            return AsyncWriter(
+                execute: FileWriter(orchestrator: unauthorizedFilesOrchestrator, encryption: encryption, forceNewFile: forceNewBatch),
+                on: queue
+            )
+        }
+    }
 
-    /// Orchestrates contents of both `.pending` and `.granted` directories.
-    let dataOrchestrator: DataOrchestratorType
+    var reader: Reader {
+        DataReader(
+            readWriteQueue: queue,
+            fileReader: FileReader(
+                orchestrator: authorizedFilesOrchestrator,
+                encryption: encryption
+            )
+        )
+    }
 
+    func migrateUnauthorizedData(toConsent consent: TrackingConsent) {
+        queue.async {
+            do {
+                switch consent {
+                case .notGranted:
+                    try directories.unauthorized.deleteAllFiles()
+                case .granted:
+                    try directories.unauthorized.moveAllFiles(to: directories.authorized)
+                case .pending:
+                    break
+                }
+            } catch {
+                DD.telemetry.error(
+                    "Failed to migrate unauthorized data in \(featureName) after consent change to to \(consent)",
+                    error: error
+                )
+            }
+        }
+    }
+
+    func clearUnauthorizedData() {
+        queue.async {
+            do {
+                try directories.unauthorized.deleteAllFiles()
+            } catch {
+                DD.telemetry.error("Failed clear unauthorized data in \(featureName)", error: error)
+            }
+        }
+    }
+
+    func clearAllData() {
+        queue.async {
+            do {
+                try directories.unauthorized.deleteAllFiles()
+                try directories.authorized.deleteAllFiles()
+            } catch {
+                DD.telemetry.error("Failed clear all data in \(featureName)", error: error)
+            }
+        }
+    }
+
+    func setIgnoreFilesAgeWhenReading(to value: Bool) {
+        queue.sync {
+            authorizedFilesOrchestrator.ignoreFilesAgeWhenReading = value
+            unauthorizedFilesOrchestrator.ignoreFilesAgeWhenReading = value
+        }
+    }
+}
+
+extension FeatureStorage {
     init(
         featureName: String,
         queue: DispatchQueue,
         directories: FeatureDirectories,
         dateProvider: DateProvider,
-        consentProvider: ConsentProvider,
         performance: PerformancePreset,
         encryption: DataEncryption?
     ) {
@@ -41,78 +116,13 @@ internal struct FeatureStorage {
             dateProvider: dateProvider
         )
 
-        let dataOrchestrator = DataOrchestrator(
-            queue: queue,
-            authorizedFilesOrchestrator: authorizedFilesOrchestrator,
-            unauthorizedFilesOrchestrator: unauthorizedFilesOrchestrator
-        )
-
-        let unauthorizedFileWriter = FileWriter(
-            orchestrator: unauthorizedFilesOrchestrator,
-            encryption: encryption
-        )
-
-        let authorizedFileWriter = FileWriter(
-            orchestrator: authorizedFilesOrchestrator,
-            encryption: encryption
-        )
-
-        let consentAwareDataWriter = ConsentAwareDataWriter(
-            consentProvider: consentProvider,
-            readWriteQueue: queue,
-            unauthorizedWriter: unauthorizedFileWriter,
-            authorizedWriter: authorizedFileWriter,
-            dataMigratorFactory: DataMigratorFactory(
-                directories: directories
-            )
-        )
-
-        let arbitraryDataWriter = ArbitraryDataWriter(
-            readWriteQueue: queue,
-            writer: authorizedFileWriter
-        )
-
-        let authorisedDataReader = DataReader(
-            readWriteQueue: queue,
-            fileReader: FileReader(
-                orchestrator: authorizedFilesOrchestrator,
-                encryption: encryption
-            )
-        )
-
         self.init(
-            writer: consentAwareDataWriter,
-            reader: authorisedDataReader,
-            arbitraryAuthorizedWriter: arbitraryDataWriter,
-            dataOrchestrator: dataOrchestrator
+            featureName: featureName,
+            queue: queue,
+            directories: directories,
+            authorizedFilesOrchestrator: authorizedFilesOrchestrator,
+            unauthorizedFilesOrchestrator: unauthorizedFilesOrchestrator,
+            encryption: encryption
         )
-    }
-
-    init(
-        writer: AsyncWriter,
-        reader: SyncReader,
-        arbitraryAuthorizedWriter: AsyncWriter,
-        dataOrchestrator: DataOrchestratorType
-    ) {
-        self.writer = writer
-        self.reader = reader
-        self.arbitraryAuthorizedWriter = arbitraryAuthorizedWriter
-        self.dataOrchestrator = dataOrchestrator
-    }
-
-    func clearAllData() {
-        dataOrchestrator.deleteAllData()
-    }
-
-    /// Flushes all async write operations and tears down the storage stack.
-    /// - It completes all async writes by synchronously saving data to authorized files.
-    /// - It cancels the storage by preventing all future write operations and marking all authorised files as "ready for upload".
-    ///
-    /// This method is executed synchronously. After return, the storage feature has no more
-    /// pending asynchronous write operations so all its data is ready for upload.
-    internal func flushAndTearDown() {
-        writer.flushAndCancelSynchronously()
-        arbitraryAuthorizedWriter.flushAndCancelSynchronously()
-        (dataOrchestrator as? DataOrchestrator)?.markAllFilesAsReadable()
     }
 }

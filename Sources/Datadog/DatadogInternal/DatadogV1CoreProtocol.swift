@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -19,9 +19,6 @@ extension DatadogCoreProtocol {
 /// and upload mechanism. It also provides a thread-safe scope for writing events.
 internal protocol DatadogV1CoreProtocol: DatadogCoreProtocol {
     // MARK: - V1 interface
-
-    /// The SDK context created upon core initialization or `nil` if SDK was not yet initialized.
-    var legacyContext: DatadogV1Context? { get }
 
     /// Registers a feature instance by its type description.
     ///
@@ -47,11 +44,6 @@ internal protocol DatadogV1CoreProtocol: DatadogCoreProtocol {
 
 extension NOPDatadogCore: DatadogV1CoreProtocol {
     // MARK: - V1 interface
-
-    /// Returns `nil`.
-    var legacyContext: DatadogV1Context? {
-        return nil
-    }
 
     /// no-op
     func register<T>(feature instance: T?) {}

@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -49,7 +49,6 @@ class RUMFeatureTests: XCTestCase {
             ),
             httpClient: httpClient,
             encryption: randomEncryption,
-            v1Context: .mockAny(),
             contextProvider: .mockWith(
                 context: .mockWith(
                     clientToken: randomClientToken,
@@ -69,14 +68,14 @@ class RUMFeatureTests: XCTestCase {
             ),
             applicationVersion: randomApplicationVersion
         )
+        defer { core.flushAndTearDown() }
 
         // Given
         let featureConfiguration: RUMFeature.Configuration = .mockWith(uploadURL: randomUploadURL)
         let feature: RUMFeature = try core.create(
-            configuration: createRUMConfiguration(intake: randomUploadURL),
+            configuration: createRUMConfiguration(configuration: featureConfiguration),
             featureSpecificConfiguration: featureConfiguration
         )
-        defer { feature.flush() }
         core.register(feature: feature)
 
         // When
@@ -140,20 +139,19 @@ class RUMFeatureTests: XCTestCase {
             ),
             httpClient: httpClient,
             encryption: nil,
-            v1Context: .mockWith(variant: randomVariant),
             contextProvider: .mockWith(
                 context: .mockWith(variant: randomVariant)
             ),
             applicationVersion: .mockAny()
         )
+        defer { core.flushAndTearDown() }
 
         // Given
         let featureConfiguration: RUMFeature.Configuration = .mockAny()
         let feature: RUMFeature = try core.create(
-            configuration: createRUMConfiguration(intake: featureConfiguration.uploadURL),
+            configuration: createRUMConfiguration(configuration: featureConfiguration),
             featureSpecificConfiguration: featureConfiguration
         )
-        defer { feature.flush() }
         core.register(feature: feature)
 
         // When
@@ -198,24 +196,23 @@ class RUMFeatureTests: XCTestCase {
             ),
             httpClient: httpClient,
             encryption: nil,
-            v1Context: .mockAny(),
             contextProvider: .mockAny(),
             applicationVersion: .mockAny()
         )
+        defer { core.flushAndTearDown() }
 
         // Given
         let featureConfiguration: RUMFeature.Configuration = .mockAny()
         let feature: RUMFeature = try core.create(
-            configuration: createRUMConfiguration(intake: featureConfiguration.uploadURL),
+            configuration: createRUMConfiguration(configuration: featureConfiguration),
             featureSpecificConfiguration: featureConfiguration
         )
-        defer { feature.flush() }
         core.register(feature: feature)
 
-        let fileWriter = feature.storage.writer
-        fileWriter.write(value: RUMDataModelMock(attribute: "1st event"))
-        fileWriter.write(value: RUMDataModelMock(attribute: "2nd event"))
-        fileWriter.write(value: RUMDataModelMock(attribute: "3rd event"))
+        let writer = feature.storage.writer(for: .granted, forceNewBatch: false)
+        writer.write(value: RUMDataModelMock(attribute: "1st event"))
+        writer.write(value: RUMDataModelMock(attribute: "2nd event"))
+        writer.write(value: RUMDataModelMock(attribute: "3rd event"))
 
         let payload = try XCTUnwrap(server.waitAndReturnRequests(count: 1)[0].httpBody)
 

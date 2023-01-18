@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -31,7 +31,7 @@ class DDRUMViewTests: XCTestCase {
     func testItCreatesSwiftRUMView() {
         let objcRUMView = DDRUMView(name: "name", attributes: ["foo": "bar"])
         XCTAssertEqual(objcRUMView.swiftView.name, "name")
-        XCTAssertEqual((objcRUMView.swiftView.attributes["foo"] as? DatadogObjc.AnyEncodable)?.value as? String, "bar")
+        XCTAssertEqual((objcRUMView.swiftView.attributes["foo"] as? AnyEncodable)?.value as? String, "bar")
         XCTAssertEqual(objcRUMView.name, "name")
         XCTAssertEqual(objcRUMView.attributes["foo"] as? String, "bar")
     }
@@ -77,7 +77,7 @@ class DDRUMActionTests: XCTestCase {
     func testItCreatesSwiftRUMAction() {
         let objcRUMAction = DDRUMAction(name: "name", attributes: ["foo": "bar"])
         XCTAssertEqual(objcRUMAction.swiftAction.name, "name")
-        XCTAssertEqual((objcRUMAction.swiftAction.attributes["foo"] as? DatadogObjc.AnyEncodable)?.value as? String, "bar")
+        XCTAssertEqual((objcRUMAction.swiftAction.attributes["foo"] as? AnyEncodable)?.value as? String, "bar")
         XCTAssertEqual(objcRUMAction.name, "name")
         XCTAssertEqual(objcRUMAction.attributes["foo"] as? String, "bar")
     }
@@ -130,15 +130,15 @@ class DDRUMMethodTests: XCTestCase {
 }
 
 class DDRUMMonitorTests: XCTestCase {
-    private var core: DatadogCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
+    private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
-        core = DatadogCoreMock()
+        core = DatadogCoreProxy()
     }
 
     override func tearDown() {
-        core.flush()
+        core.flushAndTearDown()
         core = nil
         super.tearDown()
     }
@@ -160,7 +160,7 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingViewEvents() throws {
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
+        let rum: RUMFeature = .mockAny()
         core.register(feature: rum)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
@@ -171,7 +171,7 @@ class DDRUMMonitorTests: XCTestCase {
         objcRUMMonitor.startView(key: "view2", name: "SecondView", attributes: ["event-attribute1": "bar1"])
         objcRUMMonitor.stopView(key: "view2", attributes: ["event-attribute2": "bar2"])
 
-        let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 5)
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
         let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self)
         XCTAssertEqual(viewEvents.count, 4)
@@ -195,7 +195,7 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingViewEventsWithTiming() throws {
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
+        let rum: RUMFeature = .mockAny()
         core.register(feature: rum)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
@@ -204,7 +204,7 @@ class DDRUMMonitorTests: XCTestCase {
         objcRUMMonitor.addTiming(name: "timing")
         objcRUMMonitor.stopView(viewController: mockView, attributes: ["event-attribute2": "foo2"])
 
-        let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 3)
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
         let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self)
         XCTAssertEqual(viewEvents.count, 3)
@@ -224,7 +224,7 @@ class DDRUMMonitorTests: XCTestCase {
             return // `URLSessionTaskMetrics` mocking doesn't work prior to iOS 13.0
         }
 
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
+        let rum: RUMFeature = .mockAny()
         core.register(feature: rum)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
@@ -250,7 +250,7 @@ class DDRUMMonitorTests: XCTestCase {
         objcRUMMonitor.startResourceLoading(resourceKey: "/resource3", httpMethod: .get, urlString: "/some/url/3", attributes: [:])
         objcRUMMonitor.stopResourceLoading(resourceKey: "/resource3", response: .mockAny(), size: 242, attributes: [:])
 
-        let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 6)
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
         let resourceEvents = rumEventMatchers.filterRUMEvents(ofType: RUMResourceEvent.self)
         XCTAssertEqual(resourceEvents.count, 3)
@@ -277,7 +277,7 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingErrorEvents() throws {
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
+        let rum: RUMFeature = .mockAny()
         core.register(feature: rum)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
@@ -299,7 +299,7 @@ class DDRUMMonitorTests: XCTestCase {
         objcRUMMonitor.addError(error: error, source: .custom, attributes: ["event-attribute1": "foo1"])
         objcRUMMonitor.addError(message: "error message", source: .source, stack: "error stack", attributes: [:])
 
-        let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 9)
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
         let errorEvents = rumEventMatchers.filterRUMEvents(ofType: RUMErrorEvent.self)
         XCTAssertEqual(errorEvents.count, 4)
@@ -340,7 +340,7 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingActionEvents() throws {
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers(
+        let rum: RUMFeature = .mockWith(
             configuration: .mockWith(
                 dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
             )
@@ -356,7 +356,7 @@ class DDRUMMonitorTests: XCTestCase {
         objcRUMMonitor.startUserAction(type: .swipe, name: "swipe action", attributes: ["event-attribute1": "foo1"])
         objcRUMMonitor.stopUserAction(type: .swipe, name: "swipe action", attributes: ["event-attribute2": "foo2"])
 
-        let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 4)
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
         let actionEvents = rumEventMatchers.filterRUMEvents(ofType: RUMActionEvent.self)
         XCTAssertEqual(actionEvents.count, 3)
@@ -378,7 +378,7 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingGlobalAttributes() throws {
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
+        let rum: RUMFeature = .mockAny()
         core.register(feature: rum)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
@@ -388,7 +388,7 @@ class DDRUMMonitorTests: XCTestCase {
 
         objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: ["event-attribute1": "foo1"])
 
-        let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 2)
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
         let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self)
         XCTAssertEqual(viewEvents.count, 1)

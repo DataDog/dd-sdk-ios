@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -262,7 +262,7 @@ extension Datadog {
         private(set) var rumEndpoint: RUMEndpoint
 
         private(set) var serviceName: String?
-        private(set) var firstPartyHosts: Set<String>?
+        private(set) var firstPartyHosts: FirstPartyHosts?
         var logEventMapper: LogEventMapper?
         private(set) var spanEventMapper: SpanEventMapper?
         private(set) var loggingSamplingRate: Float
@@ -287,7 +287,6 @@ extension Datadog {
         private(set) var additionalConfiguration: [String: Any]
         private(set) var proxyConfiguration: [AnyHashable: Any]?
         private(set) var encryption: DataEncryption?
-        private(set) var tracingHeaderTypes: Set<TracingHeaderType>
 
         /// Creates the builder for configuring the SDK to work with RUM, Logging and Tracing features.
         /// - Parameter rumApplicationID: RUM Application ID obtained on Datadog website.
@@ -363,8 +362,7 @@ extension Datadog {
                     batchSize: .medium,
                     uploadFrequency: .average,
                     additionalConfiguration: [:],
-                    proxyConfiguration: nil,
-                    tracingHeaderTypes: .init([.dd])
+                    proxyConfiguration: nil
                 )
             }
 
@@ -519,6 +517,8 @@ extension Datadog {
             /// If Tracing feature is enabled, the SDK will send tracing Span for each 1st-party request. It will also add extra HTTP headers to further propagate the trace - it means that
             /// if your backend is instrumented with Datadog agent you will see the full trace (e.g.: client → server → database) in your dashboard, thanks to Datadog Distributed Tracing.
             ///
+            /// For more control over the kind of headers used for Distributed Tracing, see `trackURLSession(firstPartyHostsWithHeaderTypes:)`.
+            ///
             /// If both RUM and Tracing features are enabled, the SDK will be sending RUM Resources for 1st- and 3rd-party requests and tracing Spans for 1st-parties.
             ///
             /// Until `trackURLSession()` is called, network requests monitoring is disabled.
@@ -528,9 +528,50 @@ extension Datadog {
             ///
             /// **NOTE 2:** The `URLSession` instrumentation will NOT work without using `DDURLSessionDelegate`.
             ///
+            /// **NOTE 3:** If used simultaneously with `trackURLSession(firstPartyHostsWithHeaderTypes:)` it will merge first party hosts provided in both.
+            ///
             /// - Parameter firstPartyHosts: empty set by default
             public func trackURLSession(firstPartyHosts: Set<String> = []) -> Builder {
-                configuration.firstPartyHosts = firstPartyHosts
+                return trackURLSession(firstPartyHostsWithHeaderTypes: firstPartyHosts.reduce(into: [:], { partialResult, host in
+                    partialResult[host] = [.datadog]
+                }))
+            }
+
+            /// The `trackURLSession(firstPartyHostsWithHeaderTypes:)` function is an alternate version of `trackURLSession(firstPartyHosts:)`
+            /// that allows for more fine-grained control over the HTTP headers used for Distributed Tracing.
+            ///
+            /// Configures network requests monitoring for Tracing and RUM features. **It must be used together with** `DDURLSessionDelegate` set as the `URLSession` delegate.
+            ///
+            /// If set, the SDK will intercept all network requests made by `URLSession` instances which use `DDURLSessionDelegate`.
+            ///
+            /// Each request will be classified as 1st- or 3rd-party based on the host comparison, i.e.:
+            /// * if `firstPartyHostsWithHeaderTypes` is `["example.com": [.datadog]]`:
+            ///     - 1st-party URL examples: https://example.com/, https://api.example.com/v2/users
+            ///     - 3rd-party URL examples: https://foo.com/
+            /// * if `firstPartyHostsWithHeaderTypes` is `["api.example.com": [.datadog]]]`:
+            ///     - 1st-party URL examples: https://api.example.com/, https://api.example.com/v2/users
+            ///     - 3rd-party URL examples: https://example.com/, https://foo.com/
+            ///
+            /// If RUM feature is enabled, the SDK will send RUM Resources for all intercepted requests.
+            ///
+            /// If Tracing feature is enabled, the SDK will send tracing Span for each 1st-party request. It will also add extra HTTP headers to further propagate the trace - it means that
+            /// if your backend is instrumented with Datadog agent you will see the full trace (e.g.: client → server → database) in your dashboard, thanks to Datadog Distributed Tracing.
+            ///
+            /// If both RUM and Tracing features are enabled, the SDK will be sending RUM Resources for 1st- and 3rd-party requests and tracing Spans for 1st-parties.
+            ///
+            /// Until `trackURLSession()` is called, network requests monitoring is disabled.
+            ///
+            /// **NOTE 1:** Enabling this option will install swizzlings on some methods of the `URLSession`. Refer to `URLSessionSwizzler.swift`
+            /// for implementation details.
+            ///
+            /// **NOTE 2:** The `URLSession` instrumentation will NOT work without using `DDURLSessionDelegate`.
+            ///
+            /// **NOTE 3:** If used simultaneously with `trackURLSession(firstPartyHosts:)` it will merge first party hosts provided in both.
+            ///
+            /// - Parameter firstPartyHostsWithHeaderTypes: Dictionary used to classify network requests as 1st-party
+            /// and determine the HTTP header types to use for Distributed Tracing. Key is a host and value is a set of tracing header types.
+            public func trackURLSession(firstPartyHostsWithHeaderTypes: [String: Set<TracingHeaderType>]) -> Builder {
+                configuration.firstPartyHosts += FirstPartyHosts(firstPartyHostsWithHeaderTypes)
                 return self
             }
 

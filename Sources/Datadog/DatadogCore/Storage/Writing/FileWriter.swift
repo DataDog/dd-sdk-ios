@@ -1,27 +1,22 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
 
-/// Writes data to files.
-internal final class FileWriter: Writer {
-    /// Orchestrator producing reference to writable file.
-    private let orchestrator: FilesOrchestrator
-    /// JSON encoder used to encode data.
-    private let jsonEncoder: JSONEncoder
-    private let encryption: DataEncryption?
+/// JSON encoder used to encode data.
+private let jsonEncoder: JSONEncoder = .default()
 
-    init(
-        orchestrator: FilesOrchestrator,
-        encryption: DataEncryption? = nil
-    ) {
-        self.orchestrator = orchestrator
-        self.jsonEncoder = .default()
-        self.encryption = encryption
-    }
+/// Writes data to files.
+internal struct FileWriter: Writer {
+    /// Orchestrator producing reference to writable file.
+    let orchestrator: FilesOrchestratorType
+    /// Algorithm to encrypt written data.
+    let encryption: DataEncryption?
+    /// If this writer should force creation of a new file for writing events.
+    let forceNewFile: Bool
 
     // MARK: - Writing data
 
@@ -29,7 +24,8 @@ internal final class FileWriter: Writer {
     func write<T: Encodable>(value: T) {
         do {
             let data = try encode(event: value)
-            let file = try orchestrator.getWritableFile(writeSize: UInt64(data.count))
+            let writeSize = UInt64(data.count)
+            let file = try forceNewFile ? orchestrator.getNewWritableFile(writeSize: writeSize) : orchestrator.getWritableFile(writeSize: writeSize)
             try file.append(data: data)
         } catch {
             DD.logger.error("Failed to write data", error: error)
@@ -55,7 +51,9 @@ internal final class FileWriter: Writer {
         return try DataBlock(
             type: .event,
             data: encrypt(data: data)
-        ).serialize()
+        ).serialize(
+            maxLenght: orchestrator.performance.maxObjectSize
+        )
     }
 
     /// Encrypts data if encryption is available.

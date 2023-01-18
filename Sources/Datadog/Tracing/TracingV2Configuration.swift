@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -51,6 +51,9 @@ internal struct TracingRequestBuilder: FeatureRequestBuilder {
 }
 
 internal struct TracingMessageReceiver: FeatureMessageReceiver {
+    /// Tracks RUM context to be associated with spans.
+    let rum = TracingWithRUMIntegration()
+
     /// Process messages receives from the bus.
     ///
     /// - Parameters:
@@ -69,14 +72,7 @@ internal struct TracingMessageReceiver: FeatureMessageReceiver {
     ///
     /// - Parameter context: The updated core context.
     private func update(context: DatadogContext) -> Bool {
-        guard
-            let tracer = Global.sharedTracer as? Tracer,
-            let integration = tracer.rumIntegration
-        else {
-            return false
-        }
-
-        integration.attribues = context.featuresAttributes["rum"]?.all()
+        rum.attribues = context.featuresAttributes["rum"]?.all()
         return true
     }
 }

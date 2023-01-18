@@ -1,10 +1,11 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
+import struct Datadog.DDAnyEncodable
 import class Datadog.Tracer
 import protocol Datadog.OTTracer
 import struct Datadog.OTReference
@@ -122,6 +123,14 @@ public class DDTracer: NSObject, DatadogObjc.OTTracer {
                 spanContext: ddspanContext.swiftSpanContext,
                 writer: objcWriter.swiftOTelHTTPHeadersWriter
             )
+        } else if let objcWriter = carrier as? DDW3CHTTPHeadersWriter, format == OT.formatTextMap {
+            guard let ddspanContext = spanContext.dd else {
+                return
+            }
+            swiftTracer.inject(
+                spanContext: ddspanContext.swiftSpanContext,
+                writer: objcWriter.swiftW3CHTTPHeadersWriter
+            )
         } else {
             let error = NSError(
                 domain: "DDTracer",
@@ -153,7 +162,7 @@ public class DDTracer: NSObject, DatadogObjc.OTTracer {
                     } else if let urlValue = tagValue as? URL {
                         return urlValue
                     } else {
-                        return AnyEncodable(tagValue)
+                        return DDAnyEncodable(tagValue)
                     }
                 }()
 

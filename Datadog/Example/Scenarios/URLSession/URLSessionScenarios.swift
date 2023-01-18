@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -162,11 +162,15 @@ class URLSessionBaseScenario: NSObject {
             delegate = DDURLSessionDelegate()
         case .directWithAdditionalFirstyPartyHosts:
             delegate = DDURLSessionDelegate(
-                additionalFirstPartyHosts: [
-                    customGETResourceURL.host!,
-                    customPOSTRequest.url!.host!,
-                    badResourceURL.host!
+                additionalFirstPartyHostsWithHeaderTypes: [
+                    customGETResourceURL.host,
+                    customPOSTRequest.url?.host,
+                    badResourceURL.host
                 ]
+                .compactMap { $0 }
+                .reduce(into: [:], { partialResult, value in
+                    partialResult[value] = [.datadog] // Prevents duplicates
+                })
             )
         case .inheritance:
             delegate = InheritedURLSessionDelegate()

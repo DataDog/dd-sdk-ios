@@ -223,6 +223,7 @@ Datadog.verbosityLevel = .debug
 ```
 {{% /tab %}}
 {{% tab "Objective-C" %}}
+```
 DDDatadog.verbosityLevel = DDSDKVerbosityLevelDebug;
 ```
 {{% /tab %}}

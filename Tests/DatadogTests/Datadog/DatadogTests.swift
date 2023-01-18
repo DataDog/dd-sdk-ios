@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -370,11 +370,11 @@ class DatadogTests: XCTestCase {
         )
 
         let core = defaultDatadogCore as? DatadogCore
-        XCTAssertEqual(core?.consentProvider.currentValue, initialConsent)
+        XCTAssertEqual(core?.consentPublisher.consent, initialConsent)
 
         Datadog.set(trackingConsent: nextConsent)
 
-        XCTAssertEqual(core?.consentProvider.currentValue, nextConsent)
+        XCTAssertEqual(core?.consentPublisher.consent, nextConsent)
 
         Datadog.flushAndDeinitialize()
     }
@@ -535,7 +535,7 @@ class DatadogTests: XCTestCase {
         let core = defaultDatadogCore as? DatadogCore
 
         XCTAssertEqual(
-            core?.consentProvider.currentValue,
+            core?.consentPublisher.consent,
             .granted,
             "When using deprecated Datadog initialization API the consent should be set to `.granted`"
         )

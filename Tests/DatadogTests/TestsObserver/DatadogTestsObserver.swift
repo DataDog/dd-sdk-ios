@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -133,6 +133,35 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             temporaryFeatureDirectories.delete()
             ```
             """
+        ),
+        .init(
+            assert: { DatadogCoreProxy.referenceCount == 0 },
+            problem: "Leaking reference to `DatadogCoreProtocol`",
+            solution: """
+            There should be no remaining reference to `DatadogCoreProtocol` upon each test completion
+            but some instances of `DatadogCoreProxy` are still alive.
+
+            Make sure the instance of `DatadogCoreProxy` is properly managed in test:
+            - it must be allocated on each test start (e.g. in `setUp()` or directly in test)
+            - it must be flushed and deinitialized before test ends with `.flushAndTearDown()`
+            - it must be deallocated before test ends (e.g. in `tearDown()`)
+
+            If all above conditions are met, this failure might indicate a memory leak in the implementation.
+            """
+        ),
+        .init(
+            assert: { PassthroughCoreMock.referenceCount == 0 },
+            problem: "Leaking reference to `DatadogCoreProtocol`",
+            solution: """
+            There should be no remaining reference to `DatadogCoreProtocol` upon each test completion
+            but some instances of `PassthroughCoreMock` are still alive.
+
+            Make sure the instance of `PassthroughCoreMock` is properly managed in test:
+            - it must be allocated on each test test start (e.g. in `setUp()` or directly in test)
+            - it must be deallocated before test ends (e.g. in `tearDown()`)
+
+            If all above conditions are met, this failure might indicate a memory leak in the implementation.
+            """
         )
     ]
 
@@ -150,7 +179,8 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             🐶✋ `DatadogTests` integrity check failure.
 
             `DatadogTestsObserver` found that `\(testCase.name)` breaks \(failedChecks.count) integrity rule(s) which
-            must be fulfilled before and after each unit test:
+            must be fulfilled before and after each unit test. Find potential root cause analysis below and try running
+            surrounding tests in isolation to pinpoint the issue:
             """
             failedChecks.forEach { check in
                 message += """

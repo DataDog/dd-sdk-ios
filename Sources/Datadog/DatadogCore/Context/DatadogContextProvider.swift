@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -44,10 +44,7 @@ internal final class DatadogContextProvider {
     }
 
     /// The queue used to synchronize the access to the `DatadogContext`.
-    ///
-    /// Concurrent queue is used for performant reads, `.barrier` must be used
-    /// to make writes exclusive.
-    private let queue = DispatchQueue(
+    internal let queue = DispatchQueue(
         label: "com.datadoghq.core-context",
         qos: .utility
     )
@@ -88,7 +85,7 @@ internal final class DatadogContextProvider {
     ///
     /// - Parameter receiver: The receiver closure.
     func publish(to receiver: @escaping ContextValueReceiver<DatadogContext>) {
-        queue.async(flags: .barrier) { self.receivers.append(receiver) }
+        queue.async { self.receivers.append(receiver) }
     }
 
     /// Reads to the `context` synchronously, by blocking the caller thread.
@@ -112,7 +109,7 @@ internal final class DatadogContextProvider {
     ///
     /// - Parameter block: The block closure called with the current context.
     func write(block: @escaping (inout DatadogContext) -> Void) {
-        queue.async(flags: .barrier) { block(&self.context) }
+        queue.async { block(&self.context) }
     }
 
     /// Subscribes a context's property to a publisher.
@@ -149,8 +146,16 @@ internal final class DatadogContextProvider {
     ///   - reader: The value reader.
     ///   - keyPath: A context's key path that supports reading from and writing to the resulting value.
     func assign<Reader>(reader: Reader, to keyPath: WritableKeyPath<DatadogContext, Reader.Value>) where Reader: ContextValueReader {
-        queue.async(flags: .barrier) {
+        queue.async {
             self.reader.append(reader: reader, receiver: keyPath)
         }
     }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    func replace(context newContext: DatadogContext) {
+        queue.async {
+            self.context = newContext
+        }
+    }
+#endif
 }

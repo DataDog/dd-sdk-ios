@@ -1,17 +1,23 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
 @testable import Datadog
 
 class URLSessionAutoInstrumentationTests: XCTestCase {
-    let core = DatadogCoreMock()
+    private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
+
+    override func setUp() {
+        super.setUp()
+        core = DatadogCoreProxy()
+    }
 
     override func tearDown() {
-        core.flush()
+        core.flushAndTearDown()
+        core = nil
         super.tearDown()
     }
 
@@ -36,7 +42,7 @@ class URLSessionAutoInstrumentationTests: XCTestCase {
 
     func testGivenURLSessionAutoInstrumentationEnabled_whenRUMMonitorIsRegistered_itSubscribesAsResourcesHandler() throws {
         // Given
-        let rum: RUMFeature = .mockNoOp()
+        let rum: RUMFeature = .mockAny()
         let instrumentation = URLSessionAutoInstrumentation(
             configuration: .mockAny(),
             dateProvider: SystemDateProvider(),

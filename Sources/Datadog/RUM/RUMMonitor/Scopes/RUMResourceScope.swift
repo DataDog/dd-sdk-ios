@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -76,7 +76,7 @@ internal class RUMResourceScope: RUMScope {
         self.resourceLoadingStartTime = startTime
         self.serverTimeOffset = serverTimeOffset
         self.resourceHTTPMethod = httpMethod
-        self.isFirstPartyResource = dependencies.firstPartyURLsFilter.isFirstParty(string: url)
+        self.isFirstPartyResource = dependencies.firstPartyHosts.isFirstParty(string: url)
         self.resourceKindBasedOnRequest = resourceKindBasedOnRequest
         self.spanContext = spanContext
         self.onResourceEventSent = onResourceEventSent

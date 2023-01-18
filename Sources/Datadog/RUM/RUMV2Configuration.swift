@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -10,11 +10,23 @@ import Foundation
 ///
 /// - Parameter intake: The RUM intake URL.
 /// - Returns: The RUM feature configuration.
-internal func createRUMConfiguration(intake: URL) -> DatadogFeatureConfiguration {
+internal func createRUMConfiguration(configuration: FeaturesConfiguration.RUM) -> DatadogFeatureConfiguration {
     return DatadogFeatureConfiguration(
         name: "rum",
-        requestBuilder: RUMRequestBuilder(intake: intake),
-        messageReceiver: RUMMessageReceiver()
+        requestBuilder: RUMRequestBuilder(intake: configuration.uploadURL),
+        messageReceiver: CombinedFeatureMessageReceiver(
+            ErrorMessageReceiver(),
+            WebViewEventReceiver(
+                dateProvider: configuration.dateProvider
+            ),
+            CrashReportReceiver(
+                applicationID: configuration.applicationID,
+                dateProvider: configuration.dateProvider,
+                sessionSampler: configuration.sessionSampler,
+                backgroundEventTrackingEnabled: configuration.backgroundEventTrackingEnabled,
+                uuidGenerator: configuration.uuidGenerator
+            )
+        )
     )
 }
 
@@ -78,54 +90,11 @@ internal enum RUMBaggageKeys {
     static let sessionState = "session-state"
 }
 
-internal struct RUMMessageReceiver: FeatureMessageReceiver {
-    /// Process messages receives from the bus.
-    ///
-    /// - Parameters:
-    ///   - message: The Feature message
-    ///   - core: The core from which the message is transmitted.
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        switch message {
-        case .error(let message, let attributes):
-            return addError(message: message, attributes: attributes)
-        case .custom(let key, let attributes) where key == "crash":
-            return crash(attributes: attributes, to: core)
-        case .event(let target, let event) where target == "rum":
-            return write(event: event, to: core)
-        default:
-            return false
-        }
-    }
-
-    private func write(event: FeatureMessage.AnyEncodable, to core: DatadogCoreProtocol) -> Bool {
-        core.v1.scope(for: RUMFeature.self)?.eventWriteContext { _, writer in
-            writer.write(value: event)
-        }
-
-        return true
-    }
-
-    private func crash(attributes: FeatureBaggage, to core: DatadogCoreProtocol) -> Bool {
-        guard let error = attributes["rum-error", type: RUMCrashEvent.self] else {
-            return false
-        }
-
-        // crash reporting is considering the user consent from previous session, if an event reached
-        // the message bus it means that consent was granted and we can safely bypass current consent.
-        core.v1.scope(for: RUMFeature.self)?.eventWriteContext(bypassConsent: true) { _, writer in
-            writer.write(value: error)
-
-            if let view = attributes["rum-view", type: RUMViewEvent.self] {
-                writer.write(value: view)
-            }
-        }
-
-        return true
-    }
-
+internal struct ErrorMessageReceiver: FeatureMessageReceiver {
     /// Adds RUM Error with given message and stack to current RUM View.
-    private func addError(message: String, attributes: FeatureBaggage) -> Bool {
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         guard
+            case let .error(message, attributes) = message,
             let monitor = Global.rum as? RUMMonitor,
             let source = attributes["source", type: RUMInternalErrorSource.self]
         else {

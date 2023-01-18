@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -44,6 +44,11 @@ import Foundation
 public struct FeatureBaggage {
     /// The attributes dictionary.
     private var attributes: [String: Any]
+
+    /// Boolean value that indicates whether the baggage is empty.
+    public var isEmpty: Bool {
+        attributes.isEmpty
+    }
 
     /// Creates an instance initialized with the given key-value pairs.
     public init(_ attributes: [String: Any?]) {

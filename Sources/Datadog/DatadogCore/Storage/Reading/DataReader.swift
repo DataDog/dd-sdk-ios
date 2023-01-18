@@ -1,13 +1,13 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
 
 /// Synchronizes the work of `FileReader` on given read/write queue.
-internal final class DataReader: SyncReader {
+internal final class DataReader: Reader {
     /// Queue used to synchronize reads and writes for the feature.
     internal let queue: DispatchQueue
     private let fileReader: Reader
