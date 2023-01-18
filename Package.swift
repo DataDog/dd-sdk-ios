@@ -65,7 +65,7 @@ let package = Package(
         .target(
             name: "DatadogSessionReplay",
             dependencies: ["Datadog"],
-            path: "session-replay/Sources"
+            path: "DatadogSessionReplay/Sources"
         ),
     ]
 )
