@@ -400,7 +400,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         version += 1
         attributes.merge(rumCommandAttributes: command.attributes)
 
-        let isCrash = (command as? RUMAddCurrentViewErrorCommand)?.isCrash != nil
+        let isCrash = (command as? RUMAddCurrentViewErrorCommand).map { $0.isCrash ?? false } ?? false
         // RUMM-1779 Keep view active as long as we have ongoing resources
         let isActive = isActiveView || !resourceScopes.isEmpty
         // RUMM-2079 `time_spent` can't be lower than 1ns
