@@ -69,7 +69,7 @@ class CrashReportReceiverTests: XCTestCase {
         // Given
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
         let crashDate: Date = currentDate.secondsAgo(.random(in: 0..<secondsIn4Hours))
-        let activeRUMView: RUMViewEvent = .mockRandom()
+        let activeRUMView: RUMViewEvent = .mockRandomWith(crashCount: 0)
 
         let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
@@ -100,13 +100,48 @@ class CrashReportReceiverTests: XCTestCase {
         XCTAssertEqual(core.events(ofType: RUMViewEvent.self).count, 1)
     }
 
+    func testGivenCrashDuringRUMSessionWithActiveViewCollectedLessThan4HoursAgoWithPreviousCrash_whenSending_itSendsNothing() throws {
+        let secondsIn4Hours: TimeInterval = 4 * 60 * 60
+
+        // Given
+        let currentDate: Date = .mockDecember15th2019At10AMUTC()
+        let crashDate: Date = currentDate.secondsAgo(.random(in: 0..<secondsIn4Hours))
+        let activeRUMView: RUMViewEvent = .mockRandomWith(crashCount: 1)
+
+        let crashReport: DDCrashReport = .mockWith(date: crashDate)
+        let crashContext: CrashContext = .mockWith(
+            trackingConsent: .granted,
+            lastRUMViewEvent: activeRUMView // means there was a RUM session and it was sampled
+        )
+
+        let receiver: CrashReportReceiver = .mockWith(
+            dateProvider: RelativeDateProvider(using: currentDate),
+            sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
+            backgroundEventTrackingEnabled: .mockRandom() // no matter BET
+        )
+
+        // When
+        XCTAssertFalse(
+            receiver.receive(message: .custom(
+                key: CrashReportReceiver.MessageKeys.crash,
+                baggage: [
+                    "report": crashReport,
+                    "context": crashContext
+                ]
+            ), from: core)
+        )
+
+        // Then
+        XCTAssertEqual(core.events.count, 0, "It must send no message")
+    }
+
     func testGivenCrashDuringRUMSessionWithActiveViewCollectedMoreThan4HoursAgo_whenSending_itSendsOnlyRUMError() throws {
         let secondsIn4Hours: TimeInterval = 4 * 60 * 60
 
         // Given
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
         let crashDate: Date = currentDate.secondsAgo(.random(in: secondsIn4Hours..<TimeInterval.greatestFiniteMagnitude))
-        let activeRUMView: RUMViewEvent = .mockRandom()
+        let activeRUMView: RUMViewEvent = .mockRandomWith(crashCount: 0)
 
         let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
@@ -314,7 +349,7 @@ class CrashReportReceiverTests: XCTestCase {
     // MARK: - Testing Uploaded Data - Crashes During RUM Session With Active View
 
     func testGivenCrashDuringRUMSessionWithActiveView_whenSendingRUMViewEvent_itIsLinkedToPreviousRUMSessionAndIncludesErrorInformation() throws {
-        let lastRUMViewEvent: RUMViewEvent = .mockRandom()
+        let lastRUMViewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0)
 
         // Given
         let crashDate: Date = .mockDecember15th2019At10AMUTC()
@@ -381,7 +416,7 @@ class CrashReportReceiverTests: XCTestCase {
     }
 
     func testGivenCrashDuringRUMSessionWithActiveView_whenSendingRUMErrorEvent_itIsLinkedToPreviousRUMSessionAndIncludesCrashInformation() throws {
-        let lastRUMViewEvent: RUMViewEvent = .mockRandom()
+        let lastRUMViewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0)
 
         // Given
         let crashDate: Date = .mockDecember15th2019At10AMUTC()

@@ -87,8 +87,14 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             realDateNow: dateProvider.now.addingTimeInterval(currentTimeCorrection)
         )
 
+        // RUMM-2516 if a cross-platform crash was reported, do not send its native version
         if let lastRUMViewEvent = context.lastRUMViewEvent {
-            sendCrashReportLinkedToLastViewInPreviousSession(report, lastRUMViewEventInPreviousSession: lastRUMViewEvent, using: adjustedCrashTimings, to: core)
+            if lastRUMViewEvent.view.crash?.count ?? 0 < 1 {
+                sendCrashReportLinkedToLastViewInPreviousSession(report, lastRUMViewEventInPreviousSession: lastRUMViewEvent, using: adjustedCrashTimings, to: core)
+            } else {
+                DD.logger.debug("There was a crash in previous session, but it is ignored due to another crash already present in the last view.")
+                return false
+            }
         } else if let lastRUMSessionState = context.lastRUMSessionState {
             sendCrashReportToPreviousSession(report, crashContext: context, lastRUMSessionStateInPreviousSession: lastRUMSessionState, using: adjustedCrashTimings, to: core)
         } else if sessionSampler.sample() { // before producing a new RUM session, we must consider sampling
