@@ -36,7 +36,7 @@ class CrashContextTests: XCTestCase {
 
         // Then
         let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
-        try AssertEncodedRepresentationsEqual(
+        DDAssertJSONEqual(
             deserializedContext.lastRUMViewEvent,
             randomRUMViewEvent
         )
@@ -53,7 +53,7 @@ class CrashContextTests: XCTestCase {
 
         // Then
         let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
-        try AssertEncodedRepresentationsEqual(
+        DDAssertJSONEqual(
             deserializedContext.lastRUMSessionState,
             randomRUMSessionState
         )
@@ -73,9 +73,10 @@ class CrashContextTests: XCTestCase {
         XCTAssertEqual(deserializedContext.userInfo?.id, randomUserInfo.id)
         XCTAssertEqual(deserializedContext.userInfo?.name, randomUserInfo.name)
         XCTAssertEqual(deserializedContext.userInfo?.email, randomUserInfo.email)
-        try AssertEncodedRepresentationsEqual(
-            dictionary1: deserializedContext.userInfo!.extraInfo,
-            dictionary2: randomUserInfo.extraInfo
+
+        DDAssertJSONEqual(
+            deserializedContext.userInfo!.extraInfo.mapValues { AnyEncodable($0) },
+            randomUserInfo.extraInfo.mapValues { AnyEncodable($0) }
         )
     }
 
@@ -119,21 +120,5 @@ class CrashContextTests: XCTestCase {
         // Then
         let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
         XCTAssertEqual(deserializedContext.lastIsAppInForeground, randomIsAppInForeground)
-    }
-
-    // MARK: - Helpers
-
-    /// Asserts that JSON representations of two `[String: Encodable]` dictionaries are equal.
-    /// This allows us testing if the information is not lost due to type erasing done in `CrashContext` serialization.
-    private func AssertEncodedRepresentationsEqual(
-        dictionary1: [String: Encodable],
-        dictionary2: [String: Encodable],
-        file: StaticString = #filePath,
-        line: UInt = #line
-    ) throws {
-        try AssertEncodedRepresentationsEqual(
-            dictionary1.mapValues { AnyEncodable($0) },
-            dictionary2.mapValues { AnyEncodable($0) }
-        )
     }
 }

@@ -7,8 +7,6 @@
 import XCTest
 @testable import Datadog
 
-extension DataUploadStatus: EquatableInTests {}
-
 class DataUploaderTests: XCTestCase {
     func testWhenUploadCompletesWithSuccess_itReturnsExpectedUploadStatus() throws {
         // Given
@@ -35,7 +33,7 @@ class DataUploaderTests: XCTestCase {
         // Then
         let expectedUploadStatus = DataUploadStatus(httpResponse: randomResponse, ddRequestID: randomRequestIDOrNil)
 
-        XCTAssertEqual(uploadStatus, expectedUploadStatus)
+        DDAssertReflectionEqual(uploadStatus, expectedUploadStatus)
         server.waitFor(requestsCompletion: 1)
     }
 
@@ -61,7 +59,7 @@ class DataUploaderTests: XCTestCase {
         // Then
         let expectedUploadStatus = DataUploadStatus(networkError: randomError)
 
-        XCTAssertEqual(uploadStatus, expectedUploadStatus)
+        DDAssertReflectionEqual(uploadStatus, expectedUploadStatus)
         server.waitFor(requestsCompletion: 1)
     }
 

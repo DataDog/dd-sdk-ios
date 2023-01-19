@@ -153,8 +153,6 @@ extension UserInfo: AnyMockable, RandomMockable {
     }
 }
 
-extension UserInfo: EquatableInTests {}
-
 extension LaunchTime: AnyMockable {
     static func mockAny() -> LaunchTime {
         .init(

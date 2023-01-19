@@ -113,7 +113,7 @@ class LogEventBuilderTests: XCTestCase {
             XCTAssertEqual(log.userInfo.id, randomUserInfo.id)
             XCTAssertEqual(log.userInfo.name, randomUserInfo.name)
             XCTAssertEqual(log.userInfo.email, randomUserInfo.email)
-            self.AssertDictionariesEqual(log.userInfo.extraInfo, randomUserInfo.extraInfo)
+            DDAssertDictionariesEqual(log.userInfo.extraInfo, randomUserInfo.extraInfo)
             XCTAssertEqual(log.networkConnectionInfo, randomNetworkInfo)
             XCTAssertEqual(log.mobileCarrierInfo, randomCarrierInfo)
             expectation.fulfill()

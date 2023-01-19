@@ -34,7 +34,7 @@ class CrashContextProviderTests: XCTestCase {
             XCTAssertEqual($0.sdkVersion, context.sdkVersion)
             XCTAssertEqual($0.source, context.source)
             XCTAssertEqual($0.trackingConsent, context.trackingConsent)
-            XCTAssertEqual($0.userInfo, context.userInfo)
+            DDAssertReflectionEqual($0.userInfo, context.userInfo)
             XCTAssertEqual($0.networkConnectionInfo, context.networkConnectionInfo)
             XCTAssertEqual($0.carrierInfo, context.carrierInfo)
             XCTAssertEqual($0.lastIsAppInForeground, context.applicationStateHistory.currentSnapshot.state.isRunningInForeground)
@@ -60,7 +60,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         crashContextProvider.onCrashContextChange = {
-            XCTAssertEqual($0.lastRUMViewEvent, viewEvent)
+            DDAssertReflectionEqual($0.lastRUMViewEvent, viewEvent)
             expectation.fulfill()
         }
 

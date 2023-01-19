@@ -78,8 +78,6 @@ extension LogLevel: AnyMockable, RandomMockable {
     }
 }
 
-extension LogEvent: EquatableInTests {}
-
 extension LogEvent: AnyMockable, RandomMockable {
     static func mockAny() -> LogEvent {
         return mockWith()

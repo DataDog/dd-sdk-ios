@@ -25,8 +25,8 @@ class RUMDataModels_objcTests: XCTestCase {
         let receivedUserInfoAttributes = try XCTUnwrap(objcView.usr?.usrInfo)
 
         // Then
-        AssertDictionariesEqual(receivedContextAttributes, expectedContextAttributes)
-        AssertDictionariesEqual(receivedUserInfoAttributes, expectedUserInfoAttributes)
+        DDAssertDictionariesEqual(receivedContextAttributes, expectedContextAttributes)
+        DDAssertDictionariesEqual(receivedUserInfoAttributes, expectedUserInfoAttributes)
     }
 
     func testGivenObjectiveCResourceEventWithAnyAttributes_whenReadingAttributes_theirTypeIsNotAltered() throws {
@@ -45,8 +45,8 @@ class RUMDataModels_objcTests: XCTestCase {
         let receivedUserInfoAttributes = try XCTUnwrap(objcResource.usr?.usrInfo)
 
         // Then
-        AssertDictionariesEqual(receivedContextAttributes, expectedContextAttributes)
-        AssertDictionariesEqual(receivedUserInfoAttributes, expectedUserInfoAttributes)
+        DDAssertDictionariesEqual(receivedContextAttributes, expectedContextAttributes)
+        DDAssertDictionariesEqual(receivedUserInfoAttributes, expectedUserInfoAttributes)
     }
 
     func testGivenObjectiveCActionEventWithAnyAttributes_whenReadingAttributes_theirTypeIsNotAltered() throws {
@@ -65,8 +65,8 @@ class RUMDataModels_objcTests: XCTestCase {
         let receivedUserInfoAttributes = try XCTUnwrap(objcAction.usr?.usrInfo)
 
         // Then
-        AssertDictionariesEqual(receivedContextAttributes, expectedContextAttributes)
-        AssertDictionariesEqual(receivedUserInfoAttributes, expectedUserInfoAttributes)
+        DDAssertDictionariesEqual(receivedContextAttributes, expectedContextAttributes)
+        DDAssertDictionariesEqual(receivedUserInfoAttributes, expectedUserInfoAttributes)
     }
 
     func testGivenObjectiveCErrorEventWithAnyAttributes_whenReadingAttributes_theirTypeIsNotAltered() throws {
@@ -85,8 +85,8 @@ class RUMDataModels_objcTests: XCTestCase {
         let receivedUserInfoAttributes = try XCTUnwrap(objcError.usr?.usrInfo)
 
         // Then
-        AssertDictionariesEqual(receivedContextAttributes, expectedContextAttributes)
-        AssertDictionariesEqual(receivedUserInfoAttributes, expectedUserInfoAttributes)
+        DDAssertDictionariesEqual(receivedContextAttributes, expectedContextAttributes)
+        DDAssertDictionariesEqual(receivedUserInfoAttributes, expectedUserInfoAttributes)
     }
 
     func testGivenObjectiveCLongTaskEventWithAnyAttributes_whenReadingAttributes_theirTypeIsNotAltered() throws {
@@ -105,7 +105,7 @@ class RUMDataModels_objcTests: XCTestCase {
         let receivedUserInfoAttributes = try XCTUnwrap(objcLongTask.usr?.usrInfo)
 
         // Then
-        AssertDictionariesEqual(receivedContextAttributes, expectedContextAttributes)
-        AssertDictionariesEqual(receivedUserInfoAttributes, expectedUserInfoAttributes)
+        DDAssertDictionariesEqual(receivedContextAttributes, expectedContextAttributes)
+        DDAssertDictionariesEqual(receivedUserInfoAttributes, expectedUserInfoAttributes)
     }
 }

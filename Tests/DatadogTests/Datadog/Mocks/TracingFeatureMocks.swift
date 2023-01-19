@@ -132,8 +132,6 @@ private func + (lhs: TracingUUID, rhs: UInt64) -> TracingUUID {
     return TracingUUID(rawValue: (UInt64(lhs.toString(.decimal)) ?? 0) + rhs)
 }
 
-extension SpanEvent: EquatableInTests {}
-
 extension SpanEvent: AnyMockable, RandomMockable {
     static func mockWith(
         traceID: TracingUUID = .mockAny(),

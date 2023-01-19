@@ -680,16 +680,16 @@ class RUMMonitorTests: XCTestCase {
             XCTAssertEqual(try event.attribute(forKeyPath: "usr.bool"), true) // swiftlint:disable:this xct_specific_matcher
         }
         try rumEventMatchers.forEachRUMEvent(ofType: RUMActionEvent.self) { action in
-            XCTAssertEqual(action.usr, expectedUserInfo)
+            DDAssertReflectionEqual(action.usr, expectedUserInfo)
         }
         try rumEventMatchers.forEachRUMEvent(ofType: RUMViewEvent.self) { view in
-            XCTAssertEqual(view.usr, expectedUserInfo)
+            DDAssertReflectionEqual(view.usr, expectedUserInfo)
         }
         try rumEventMatchers.forEachRUMEvent(ofType: RUMResourceEvent.self) { resource in
-            XCTAssertEqual(resource.usr, expectedUserInfo)
+            DDAssertReflectionEqual(resource.usr, expectedUserInfo)
         }
         try rumEventMatchers.forEachRUMEvent(ofType: RUMErrorEvent.self) { error in
-            XCTAssertEqual(error.usr, expectedUserInfo)
+            DDAssertReflectionEqual(error.usr, expectedUserInfo)
         }
     }
 
@@ -723,16 +723,16 @@ class RUMMonitorTests: XCTestCase {
             status: .connected
         )
         try rumEventMatchers.forEachRUMEvent(ofType: RUMActionEvent.self) { action in
-            XCTAssertEqual(action.connectivity, expectedConnectivityInfo)
+            DDAssertReflectionEqual(action.connectivity, expectedConnectivityInfo)
         }
         try rumEventMatchers.forEachRUMEvent(ofType: RUMViewEvent.self) { view in
-            XCTAssertEqual(view.connectivity, expectedConnectivityInfo)
+            DDAssertReflectionEqual(view.connectivity, expectedConnectivityInfo)
         }
         try rumEventMatchers.forEachRUMEvent(ofType: RUMResourceEvent.self) { resource in
-            XCTAssertEqual(resource.connectivity, expectedConnectivityInfo)
+            DDAssertReflectionEqual(resource.connectivity, expectedConnectivityInfo)
         }
         try rumEventMatchers.forEachRUMEvent(ofType: RUMErrorEvent.self) { error in
-            XCTAssertEqual(error.connectivity, expectedConnectivityInfo)
+            DDAssertReflectionEqual(error.connectivity, expectedConnectivityInfo)
         }
     }
 
@@ -1134,7 +1134,7 @@ class RUMMonitorTests: XCTestCase {
         let lastRUMViewEventSent: RUMViewEvent = try rumEventMatchers[1].model()
 
         let currentLastRUMViewEventSent = try XCTUnwrap(crashReporter.crashContextProvider.currentCrashContext?.lastRUMViewEvent)
-        try AssertEncodedRepresentationsEqual(currentLastRUMViewEventSent, lastRUMViewEventSent)
+        DDAssertJSONEqual(currentLastRUMViewEventSent, lastRUMViewEventSent)
     }
 
     // MARK: - Thread safety

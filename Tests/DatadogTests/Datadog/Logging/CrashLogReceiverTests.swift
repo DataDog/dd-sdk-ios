@@ -157,6 +157,6 @@ class CrashLogReceiverTests: XCTestCase {
             tags: nil
         )
 
-        XCTAssertEqual(expectedLog, log)
+        DDAssertReflectionEqual(expectedLog, log)
     }
 }

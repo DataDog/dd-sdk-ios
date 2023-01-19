@@ -6,17 +6,6 @@
 
 @testable import Datadog
 
-extension RUMUser: EquatableInTests {}
-extension RUMConnectivity: EquatableInTests {}
-extension RUMViewEvent: EquatableInTests {}
-extension RUMResourceEvent: EquatableInTests {}
-extension RUMActionEvent: EquatableInTests {}
-extension RUMErrorEvent: EquatableInTests {}
-extension RUMLongTaskEvent: EquatableInTests {}
-extension RUMCrashEvent: EquatableInTests {}
-extension RUMDevice: EquatableInTests {}
-extension RUMOperatingSystem: EquatableInTests {}
-
 extension RUMUser {
     static func mockRandom() -> RUMUser {
         return RUMUser(
@@ -401,9 +390,6 @@ extension RUMLongTaskEvent: RandomMockable {
             view: .init(id: .mockRandom(), name: .mockRandom(), referrer: .mockRandom(), url: .mockRandom())
         )
     }
-}
-
-extension TelemetryConfigurationEvent: EquatableInTests {
 }
 
 extension TelemetryConfigurationEvent: RandomMockable {
