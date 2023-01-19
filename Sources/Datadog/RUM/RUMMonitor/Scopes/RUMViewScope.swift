@@ -54,7 +54,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     ///
     /// The server time offset is freezed per view scope so all child event time
     /// stay relatives to the scope.
-    private let serverTimeOffset: TimeInterval
+    let serverTimeOffset: TimeInterval
 
     /// Tells if this View is the active one.
     /// `true` for every new started View.

@@ -17,7 +17,7 @@ internal struct TouchSnapshot {
         /// Phase of the touch as distinguished in session replay.
         let phase: TouchPhase
         /// A time of recording this touch
-        let date: Date
+        var date: Date
         /// The position of this touch in application window.
         let position: CGPoint
     }

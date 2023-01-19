@@ -15,6 +15,8 @@ internal struct RUMContext: Equatable {
     let sessionID: String
     /// Current RUM view ID - standard UUID string, lowecased.
     let viewID: String
+    /// Current RUM view server time offset (in seconds).
+    let serverTimeOffset: TimeInterval
 }
 
 /// An observer notifying on`RUMContext` changes.
@@ -85,12 +87,18 @@ private extension FeatureBaggage {
     var rumContext: RUMContext? {
         guard let applicationID: String = self[RUMDependency.applicationIDKey],
               let sessionID: String = self[RUMDependency.sessionIDKey],
-              let viewID: String = self[RUMDependency.viewIDKey]
+              let viewID: String = self[RUMDependency.viewIDKey],
+              let serverTimeOffset: TimeInterval = self[RUMDependency.serverTimeOffset]
         else {
             // Current RUM session is not sampled
             return nil
         }
 
-        return RUMContext(applicationID: applicationID, sessionID: sessionID, viewID: viewID)
+        return RUMContext(
+            applicationID: applicationID,
+            sessionID: sessionID,
+            viewID: viewID,
+            serverTimeOffset: serverTimeOffset
+        )
     }
 }

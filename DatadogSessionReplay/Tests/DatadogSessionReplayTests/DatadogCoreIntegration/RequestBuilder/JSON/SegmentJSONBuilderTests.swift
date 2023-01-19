@@ -73,7 +73,8 @@ class SegmentJSONBuilderTests: XCTestCase {
         let rum = RUMContext(
             applicationID: segment.application.id,
             sessionID: segment.session.id,
-            viewID: segment.view.id
+            viewID: segment.view.id,
+            serverTimeOffset: 0
         )
         return try segment.records
             // To make it more challenging for tested `SegmentJSONBuilder`, we chunk records in

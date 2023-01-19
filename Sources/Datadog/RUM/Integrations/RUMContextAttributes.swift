@@ -20,4 +20,7 @@ internal enum RUMContextAttributes {
 
     /// The ID of current RUM action (standard UUID `String`, lowercased).
     internal static let userActionID = "user_action.id"
+
+    /// Server time offset of current RUM view used for date correction.
+    internal static let serverTimeOffset = "server_time_offset"
 }

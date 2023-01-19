@@ -21,7 +21,12 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
         self.windowObserver = windowObserver
     }
 
-    func takeSnapshot() -> TouchSnapshot? {
+    func takeSnapshot(context: Recorder.Context) -> TouchSnapshot? {
+        buffer = buffer.compactMap {
+            var touch = $0
+            touch.date.addTimeInterval(context.rumContext.serverTimeOffset)
+            return touch
+        }
         guard let firstTouch = buffer.first else {
             return nil
         }
@@ -50,7 +55,7 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
                 TouchSnapshot.Touch(
                     id: idsGenerator.touchIdentifier(for: touch),
                     phase: phase,
-                    date: Date(), // TODO: RUMM-2688 Synchronize SR snapshot timestamps with current RUM time (+ NTP offset)
+                    date: Date(),
                     position: touch.location(in: window)
                 )
             )

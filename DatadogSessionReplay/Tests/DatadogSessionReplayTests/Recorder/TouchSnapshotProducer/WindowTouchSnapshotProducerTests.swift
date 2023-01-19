@@ -20,16 +20,18 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
         let touchEvent2 = UITouchEventMock(touches: (0..<10).map { _ in UITouchMock(phase: .moved) })
 
         // Given
-        let producer = WindowTouchSnapshotProducer(windowObserver: mockWindowObserver)
+        let producer = WindowTouchSnapshotProducer(
+            windowObserver: mockWindowObserver
+        )
 
         // When
-        let snapshot1 = producer.takeSnapshot()
+        let snapshot1 = producer.takeSnapshot(context: .mockAny())
         producer.notify_sendEvent(application: mockApplication, event: touchEvent1)
-        let snapshot2 = producer.takeSnapshot()
-        let snapshot3 = producer.takeSnapshot()
+        let snapshot2 = producer.takeSnapshot(context: .mockAny())
+        let snapshot3 = producer.takeSnapshot(context: .mockAny())
         producer.notify_sendEvent(application: mockApplication, event: touchEvent2)
-        let snapshot4 = producer.takeSnapshot()
-        let snapshot5 = producer.takeSnapshot()
+        let snapshot4 = producer.takeSnapshot(context: .mockAny())
+        let snapshot5 = producer.takeSnapshot(context: .mockAny())
 
         // Then
         XCTAssertNil(snapshot1, "Until next touch event is tracked, it should produce no snapshot")
@@ -47,14 +49,16 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
         let touchEvent3 = UITouchEventMock(touches: (0..<15).map { _ in UITouchMock(phase: .moved) })
 
         // Given
-        let producer = WindowTouchSnapshotProducer(windowObserver: mockWindowObserver)
+        let producer = WindowTouchSnapshotProducer(
+            windowObserver: mockWindowObserver
+        )
 
         // When
         producer.notify_sendEvent(application: mockApplication, event: touchEvent1)
         producer.notify_sendEvent(application: mockApplication, event: touchEvent2)
         producer.notify_sendEvent(application: mockApplication, event: touchEvent3)
-        let snapshot1 = producer.takeSnapshot()
-        let snapshot2 = producer.takeSnapshot()
+        let snapshot1 = producer.takeSnapshot(context: .mockAny())
+        let snapshot2 = producer.takeSnapshot(context: .mockAny())
 
         // Then
         XCTAssertNotNil(snapshot1, "After touch event is tracked, it should produce a snapshot")
@@ -68,7 +72,9 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
         let touch3 = UITouchMock()
 
         // Given
-        let producer = WindowTouchSnapshotProducer(windowObserver: mockWindowObserver)
+        let producer = WindowTouchSnapshotProducer(
+            windowObserver: mockWindowObserver
+        )
 
         // When
         touch1.phase = .began
@@ -91,7 +97,7 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
         producer.notify_sendEvent(application: mockApplication, event: UITouchEventMock(touches: [touch3]))
 
         // Then
-        let snapshot = try XCTUnwrap(producer.takeSnapshot())
+        let snapshot = try XCTUnwrap(producer.takeSnapshot(context: .mockAny()))
         XCTAssertEqual(snapshot.touches.count, 9, "It should capture 9 touch informations")
         XCTAssertEqual(Set(snapshot.touches.map { $0.id }).count, 3, "There should be 3 distinct touch identifiers among touch information")
     }

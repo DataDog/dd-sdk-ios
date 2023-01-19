@@ -10,5 +10,5 @@ import Foundation
 internal protocol TouchSnapshotProducer {
     /// Produces the snapshot of (touch) interactions that happened since last call to `takeSnapshot()`.
     /// - Returns: the snapshot or `nil` if no new touch information is available
-    func takeSnapshot() -> TouchSnapshot?
+    func takeSnapshot(context: Recorder.Context) -> TouchSnapshot?
 }

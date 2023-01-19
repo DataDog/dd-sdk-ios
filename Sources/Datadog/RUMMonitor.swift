@@ -616,7 +616,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     RUMContextAttributes.applicationID: context.rumApplicationID,
                     RUMContextAttributes.sessionID: context.sessionID.rawValue.uuidString.lowercased(),
                     RUMContextAttributes.viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
-                    RUMContextAttributes.userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased()
+                    RUMContextAttributes.userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased(),
+                    RUMContextAttributes.serverTimeOffset: self.applicationScope.sessionScope?.viewScopes.last?.serverTimeOffset
                 ]
             }
         })

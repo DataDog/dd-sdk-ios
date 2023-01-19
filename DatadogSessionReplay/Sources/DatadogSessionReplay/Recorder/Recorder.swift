@@ -142,7 +142,7 @@ internal class Recorder: Recording {
                 // There is nothing visible yet (i.e. the key window is not yet ready).
                 return
             }
-            let touchSnapshot = touchSnapshotProducer.takeSnapshot()
+            let touchSnapshot = touchSnapshotProducer.takeSnapshot(context: recorderContext)
             snapshotProcessor.process(viewTreeSnapshot: viewTreeSnapshot, touchSnapshot: touchSnapshot)
         } catch {
             print("Failed to capture the snapshot: \(error)") // TODO: RUMM-2410 Use `DD.logger` and / or `DD.telemetry`

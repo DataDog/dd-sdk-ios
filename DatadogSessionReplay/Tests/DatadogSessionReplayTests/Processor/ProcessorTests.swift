@@ -23,7 +23,7 @@ class ProcessorTests: XCTestCase {
 
     func testWhenProcessingFirstViewTreeSnapshot_itWritesRecordsThatIndicateStartOfASegment() throws {
         let time = Date()
-        let rum: RUMContext = .mockRandom()
+        let rum: RUMContext = .mockWith(serverTimeOffset: 0)
 
         // Given
         let processor = Processor(queue: NoQueue(), writer: writer)
@@ -51,7 +51,7 @@ class ProcessorTests: XCTestCase {
 
     func testWhenRUMContextDoesNotChangeInSucceedingViewTreeSnapshots_itWritesRecordsThatContinueCurrentSegment() {
         let time = Date()
-        let rum: RUMContext = .mockRandom()
+        let rum: RUMContext = .mockWith(serverTimeOffset: 0)
 
         // Given
         let processor = Processor(queue: NoQueue(), writer: writer)
@@ -177,7 +177,7 @@ class ProcessorTests: XCTestCase {
         let earliestTouchTime = Date()
         let snapshotTime = earliestTouchTime.addingTimeInterval(5)
         let numberOfTouches = 10
-        let rum: RUMContext = .mockRandom()
+        let rum: RUMContext = .mockWith(serverTimeOffset: 0)
 
         // Given
         let processor = Processor(queue: NoQueue(), writer: writer)

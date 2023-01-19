@@ -44,4 +44,9 @@ internal struct RUMDependency {
 
     /// The key referencing a `Bool` value that indicates if replay is being recorded.
     static let hasReplay = "has_replay"
+
+    /// The key referencing server time offset of current RUM view used for date correction.
+    ///
+    /// SR expects non-optional value of `TimeInterval`.
+    static let serverTimeOffset = "server_time_offset"
 }
