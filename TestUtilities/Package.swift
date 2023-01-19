@@ -14,7 +14,7 @@ let package = Package(
             targets: ["TestUtilities"]),
     ],
     dependencies: [
-        .package(name: "Datadog", path: ".."),
+        .package(name: "Datadog", path: "../DDPatchForSR"), // needs patch because the main `Package.swift` defines conflicting `DatadogSessionReplay` module
     ],
     targets: [
         .target(
