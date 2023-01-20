@@ -36,7 +36,7 @@ class CrashReporterTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
         XCTAssertEqual(sender.sentCrashReport, crashReport, "It should send the crash report retrieved from the `plugin`")
         let sentCrashContext = try XCTUnwrap(sender.sentCrashContext, "It should send the crash context")
-        AssertDictionariesEqual(
+        DDAssertDictionariesEqual(
             try sentCrashContext.data.toJSONObject(),
             try crashContext.data.toJSONObject(),
             "It should send the crash context retrieved from the `plugin`"
@@ -120,7 +120,7 @@ class CrashReporterTests: XCTestCase {
         try withExtendedLifetime(crashReporter) {
             // Then
             waitForExpectations(timeout: 0.5, handler: nil)
-            AssertDictionariesEqual(
+            DDAssertDictionariesEqual(
                 try plugin.injectedContextData!.toJSONObject(),
                 try initialCrashContext.data.toJSONObject()
             )
@@ -148,7 +148,7 @@ class CrashReporterTests: XCTestCase {
 
             // Then
             waitForExpectations(timeout: 2, handler: nil)
-            AssertDictionariesEqual(
+            DDAssertDictionariesEqual(
                 try plugin.injectedContextData!.toJSONObject(),
                 try updatedCrashContext.data.toJSONObject()
             )

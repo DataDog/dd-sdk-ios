@@ -51,13 +51,13 @@ class RUMEventFileOutputTests: XCTestCase {
 
         let event1Matcher = try RUMEventMatcher.fromJSONObjectData(event1FileEvents[0])
         let expectedDatamodel1 = RUMDataModelMock(attribute: "foo", context: RUMEventAttributes(contextInfo: ["custom.attribute": AnyEncodable("value")]))
-        XCTAssertEqual(try event1Matcher.model(), expectedDatamodel1)
+        DDAssertReflectionEqual(try event1Matcher.model(), expectedDatamodel1)
 
         let event2FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
         let event2FileEvents = try temporaryDirectory.file(named: event2FileName).readTLVEvents()
         XCTAssertEqual(event2FileEvents.count, 1)
         let event2Matcher = try RUMEventMatcher.fromJSONObjectData(event2FileEvents[0])
-        XCTAssertEqual(try event2Matcher.model(), dataModel2)
+        DDAssertReflectionEqual(try event2Matcher.model(), dataModel2)
 
         // TODO: RUMM-585 Move assertion of full-json to `RUMMonitorTests`
         // same as we do for `LoggerTests` and `TracerTests`

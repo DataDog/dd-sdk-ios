@@ -141,29 +141,6 @@ extension URLSessionTask.State {
     }
 }
 
-extension URLSessionTask {
-    func dump() -> String {
-        func indent(string: String, by prefix: String) -> String {
-            return string
-                .split(separator: "\n")
-                .map { prefix + $0 }
-                .joined(separator: "\n")
-        }
-
-        return """
-        URLSessionTask:
-        - taskIdentifier: '\(self.taskIdentifier)'
-        - taskDescription: '\(self.taskDescription ?? "<nil>")'
-        - debugDescription: '\(self.debugDescription)'
-        - state: '\(self.state.dump())'
-        - originalRequest:
-        \(indent(string: self.originalRequest?.dump() ?? "<nil>", by: "   "))
-        - currentRequest:
-        \(indent(string: self.currentRequest?.dump() ?? "<nil>", by: "   "))
-        """
-    }
-}
-
 /// Combines two arrays together, e.g. `["a", "b"].combined(with: [1, 2, 3])` gives
 /// `[("a", 1), ("a", 2), ("a", 3), ("b", 1), ("b", 2), ("b", 3)]`.
 extension Array {

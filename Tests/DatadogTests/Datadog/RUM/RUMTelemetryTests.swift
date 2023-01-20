@@ -339,7 +339,7 @@ class RUMTelemetryTests: XCTestCase {
         eventMatchers = try core.waitAndReturnRUMEventMatchers()
         events = try eventMatchers.compactMap(TelemetryConfigurationEvent.self)
         XCTAssertEqual(events.count, 1)
-        XCTAssertEqual(events[0], modifiedEvent)
+        DDAssertReflectionEqual(events[0], modifiedEvent)
     }
 
     // MARK: - Thread safety

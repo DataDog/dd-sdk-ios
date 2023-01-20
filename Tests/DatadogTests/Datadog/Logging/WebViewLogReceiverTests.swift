@@ -32,7 +32,7 @@ class WebViewLogReceiverTests: XCTestCase {
             "test": value
         ]
 
-        try AssertEncodedRepresentationsEqual(received, AnyEncodable(expected))
+        DDAssertJSONEqual(received, AnyEncodable(expected))
     }
 
     // MARK: - Web-view log
@@ -85,7 +85,7 @@ class WebViewLogReceiverTests: XCTestCase {
         )
 
         let received: AnyEncodable = try XCTUnwrap(core.events().first, "It should send event")
-        try AssertEncodedRepresentationsEqual(received, AnyEncodable(expectedWebLogEvent))
+        DDAssertJSONEqual(received, AnyEncodable(expectedWebLogEvent))
     }
 
     func testWhenContextIsUnavailable_itPassesWebviewEventAsIs() throws {
@@ -120,6 +120,6 @@ class WebViewLogReceiverTests: XCTestCase {
         )
 
         let received: AnyEncodable = try XCTUnwrap(core.events().first, "It should send event")
-        try AssertEncodedRepresentationsEqual(received, AnyEncodable(expectedWebLogEvent))
+        DDAssertJSONEqual(received, AnyEncodable(expectedWebLogEvent))
     }
 }

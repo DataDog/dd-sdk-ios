@@ -7,8 +7,6 @@
 import XCTest
 @testable import Datadog
 
-extension ResourceMetrics: EquatableInTests {}
-
 class URLSessionRUMResourcesHandlerTests: XCTestCase {
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
     private let traceSamplingRate: Double = .mockRandom(min: 0, max: 1)
@@ -98,7 +96,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceMetricsCommand.resourceKey, taskInterception.identifier.uuidString)
         XCTAssertEqual(resourceMetricsCommand.time, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(resourceMetricsCommand.attributes.count, 0)
-        XCTAssertEqual(resourceMetricsCommand.metrics, taskInterception.metrics)
+        DDAssertReflectionEqual(resourceMetricsCommand.metrics, taskInterception.metrics)
 
         let resourceStopCommand = try XCTUnwrap(commandsReceived[1] as? RUMStopResourceCommand)
         XCTAssertEqual(resourceStopCommand.resourceKey, taskInterception.identifier.uuidString)
@@ -136,7 +134,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceMetricsCommand.resourceKey, taskInterception.identifier.uuidString)
         XCTAssertEqual(resourceMetricsCommand.time, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(resourceMetricsCommand.attributes.count, 0)
-        XCTAssertEqual(resourceMetricsCommand.metrics, taskInterception.metrics)
+        DDAssertReflectionEqual(resourceMetricsCommand.metrics, taskInterception.metrics)
 
         let resourceStopCommand = try XCTUnwrap(commandsReceived[1] as? RUMStopResourceWithErrorCommand)
         XCTAssertEqual(resourceStopCommand.resourceKey, taskInterception.identifier.uuidString)
@@ -185,7 +183,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        AssertDictionariesEqual(stopResourceCommand!.attributes, mockAttributes)
+        DDAssertDictionariesEqual(stopResourceCommand!.attributes, mockAttributes)
     }
 
     func testGivenTaskInterceptionWithError_whenInterceptionCompletes_itAsksForCustomRUMAttributes() throws {
@@ -220,6 +218,6 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        AssertDictionariesEqual(stopResourceWithErrorCommand!.attributes, mockAttributes)
+        DDAssertDictionariesEqual(stopResourceWithErrorCommand!.attributes, mockAttributes)
     }
 }

@@ -86,8 +86,6 @@ class CrashReportSenderMock: CrashReportSender {
     var didSendCrashReport: (() -> Void)?
 }
 
-extension CrashContext: EquatableInTests {}
-
 extension CrashContext {
     static func mockAny() -> CrashContext {
         return mockWith()
@@ -148,11 +146,6 @@ extension CrashContext {
 
     var data: Data { try! JSONEncoder.default().encode(self) }
 }
-
-extension DDCrashReport: EquatableInTests {}
-extension DDCrashReport.Thread: EquatableInTests {}
-extension DDCrashReport.BinaryImage: EquatableInTests {}
-extension DDCrashReport.Meta: EquatableInTests {}
 
 internal extension DDCrashReport {
     static func mockAny() -> DDCrashReport {

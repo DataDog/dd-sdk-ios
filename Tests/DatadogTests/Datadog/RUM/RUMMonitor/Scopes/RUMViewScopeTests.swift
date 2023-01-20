@@ -1890,7 +1890,7 @@ class RUMViewScopeTests: XCTestCase {
 
         // Then
         let rumViewSent = try XCTUnwrap(core.events(ofType: RUMViewEvent.self).last, "It should send view event")
-        XCTAssertEqual(viewEvent, rumViewSent, "It must inject sent event to crash context")
+        DDAssertReflectionEqual(viewEvent, rumViewSent, "It must inject sent event to crash context")
     }
 
     // MARK: Cross-platform crashes

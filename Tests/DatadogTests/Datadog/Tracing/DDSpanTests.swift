@@ -51,8 +51,8 @@ class DDSpanTests: XCTestCase {
 
         let logs: [LogEvent] = core.events()
         XCTAssertEqual(logs.count, 2, "It should send 2 logs")
-        AssertDictionariesEqual(logs[0].attributes.userAttributes, log1Fields)
-        AssertDictionariesEqual(logs[1].attributes.userAttributes, log2Fields)
+        DDAssertDictionariesEqual(logs[0].attributes.userAttributes, log1Fields)
+        DDAssertDictionariesEqual(logs[1].attributes.userAttributes, log2Fields)
     }
 
     // MARK: - Customizing SpanEvents

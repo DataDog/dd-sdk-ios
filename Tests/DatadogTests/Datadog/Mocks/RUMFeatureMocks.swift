@@ -104,7 +104,7 @@ extension RUMTelemetry {
 
 // MARK: - RUMDataModel Mocks
 
-struct RUMDataModelMock: RUMDataModel, RUMSanitizableEvent, EquatableInTests {
+struct RUMDataModelMock: RUMDataModel, RUMSanitizableEvent {
     let attribute: String
     var usr: RUMUser?
     var context: RUMEventAttributes?
