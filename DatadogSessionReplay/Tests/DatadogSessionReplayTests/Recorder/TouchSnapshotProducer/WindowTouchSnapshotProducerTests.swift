@@ -101,4 +101,20 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
         XCTAssertEqual(snapshot.touches.count, 9, "It should capture 9 touch informations")
         XCTAssertEqual(Set(snapshot.touches.map { $0.id }).count, 3, "There should be 3 distinct touch identifiers among touch information")
     }
+
+    func testItAppliesServerTimeOffsetIsToSnapshot() {
+        // Given
+        let touchEvent1 = UITouchEventMock(touches: (0..<2).map { _ in UITouchMock(phase: .moved) })
+        let producer = WindowTouchSnapshotProducer(
+            windowObserver: mockWindowObserver
+        )
+
+        // When
+        producer.notify_sendEvent(application: mockApplication, event: touchEvent1)
+        let snapshot1 = producer.takeSnapshot(context: .mockWith(rumContext: .mockWith(serverTimeOffset: 1000)))
+
+
+        // Then
+        XCTAssertGreaterThan(snapshot1!.date, Date())
+    }
 }

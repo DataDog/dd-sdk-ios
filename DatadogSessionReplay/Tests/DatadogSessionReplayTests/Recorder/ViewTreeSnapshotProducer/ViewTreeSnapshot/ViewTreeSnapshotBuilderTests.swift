@@ -295,4 +295,18 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
             )
         }
     }
+
+    func testItAppliesServerTimeOffsetIsToSnapshot() {
+        // Given
+        let now = Date()
+        let view = UIView(frame: .mockRandom())
+
+        // When
+        let recorder = NodeRecorderMock(resultForView: { _ in nil })
+        let builder = ViewTreeSnapshotBuilder(nodeRecorders: [recorder])
+        let snapshot = builder.createSnapshot(of: view, with: .mockWith(date: now, rumContext: .mockWith(serverTimeOffset: 1000)))
+
+        // Then
+        XCTAssertGreaterThan(snapshot.date, now)
+    }
 }
