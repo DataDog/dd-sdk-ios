@@ -105,7 +105,6 @@ class RUMContextReceiverTests: XCTestCase {
         XCTAssertEqual(rumContexts[1].sessionID, "session-id-2")
         XCTAssertEqual(rumContexts[1].viewID, "view-id-2")
         XCTAssertEqual(rumContexts[1].serverTimeOffset, 345)
-
     }
 
     func testWhenMessageDoesntContainRUMBaggage_itCallsFallback() {
