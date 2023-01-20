@@ -8,8 +8,6 @@ import XCTest
 @testable import TestUtilities
 @testable import DatadogSessionReplay
 
-extension SRWireframe: EquatableInTests {}
-
 class DiffSRWireframes: XCTestCase {
     // MARK: - Diffable Conformance
 
@@ -24,10 +22,8 @@ class DiffSRWireframes: XCTestCase {
     }
 
     func testIsDifferentThan() {
-        let wireframeA: SRWireframe = .mockRandom()
-        var wireframeB: SRWireframe = .mockRandom()
-        while wireframeA == wireframeB { wireframeB = .mockRandom() }
-
+        let wireframeA: SRWireframe = .mockRandomWith(id: 0)
+        let wireframeB: SRWireframe = .mockRandomWith(id: 1)
         XCTAssertTrue(wireframeA.isDifferent(than: wireframeB))
     }
 
@@ -43,7 +39,7 @@ class DiffSRWireframes: XCTestCase {
 
         // Then
         let result = try XCTUnwrap(originalWireframe.merge(mutation: mutations), "Failed to merge mutations")
-        XCTAssertEqual(result, otherWireframe)
+        DDAssertReflectionEqual(result, otherWireframe)
     }
 
     func testsWhenMergingMutationsToTheOriginalTextWireframe_itShouldProduceTheOtherOne() throws {
@@ -56,7 +52,7 @@ class DiffSRWireframes: XCTestCase {
 
         // Then
         let result = try XCTUnwrap(originalWireframe.merge(mutation: mutations), "Failed to merge mutations")
-        XCTAssertEqual(result, otherWireframe)
+        DDAssertReflectionEqual(result, otherWireframe)
     }
 
     func testWhenComputingMutationsForWireframesWithDifferentID_itThrows() throws {

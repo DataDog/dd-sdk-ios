@@ -8,10 +8,6 @@ import XCTest
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 
-extension Diff.Add: EquatableInTests {}
-extension Diff.Update: EquatableInTests {}
-extension Diff.Remove: EquatableInTests {}
-
 internal struct Mock: Diffable, Equatable {
     let id: DiffableID
     var data: String = ""
@@ -33,9 +29,9 @@ class DiffTests: XCTestCase {
         let diff = try computeDiff(oldArray: sequenceA, newArray: sequenceB)
 
         // Then
-        XCTAssertEqual(diff.adds, [])
-        XCTAssertEqual(diff.updates, [])
-        XCTAssertEqual(diff.removes, [])
+        DDAssertReflectionEqual(diff.adds, [])
+        DDAssertReflectionEqual(diff.updates, [])
+        DDAssertReflectionEqual(diff.removes, [])
         XCTAssertTrue(diff.isEmpty)
     }
 
@@ -48,9 +44,9 @@ class DiffTests: XCTestCase {
         let diff = try computeDiff(oldArray: sequenceA, newArray: sequenceB)
 
         // Then
-        XCTAssertEqual(diff.adds, [])
-        XCTAssertEqual(diff.updates, [])
-        XCTAssertEqual(diff.removes, [])
+        DDAssertReflectionEqual(diff.adds, [])
+        DDAssertReflectionEqual(diff.updates, [])
+        DDAssertReflectionEqual(diff.removes, [])
         XCTAssertTrue(diff.isEmpty)
     }
 
@@ -63,7 +59,7 @@ class DiffTests: XCTestCase {
         let diff = try computeDiff(oldArray: sequenceA, newArray: sequenceB)
 
         // Then
-        XCTAssertEqual(
+        DDAssertReflectionEqual(
             diff.adds,
             [
                 .init(previousID: nil, new: Mock(id: 1)),
@@ -71,8 +67,8 @@ class DiffTests: XCTestCase {
                 .init(previousID: 2, new: Mock(id: 3))
             ]
         )
-        XCTAssertEqual(diff.updates, [])
-        XCTAssertEqual(diff.removes, [])
+        DDAssertReflectionEqual(diff.updates, [])
+        DDAssertReflectionEqual(diff.removes, [])
         XCTAssertFalse(diff.isEmpty)
     }
 
@@ -85,9 +81,9 @@ class DiffTests: XCTestCase {
         let diff = try computeDiff(oldArray: sequenceA, newArray: sequenceB)
 
         // Then
-        XCTAssertEqual(diff.adds, [])
-        XCTAssertEqual(diff.updates, [])
-        XCTAssertEqual(diff.removes, [.init(id: 1), .init(id: 2), .init(id: 3)])
+        DDAssertReflectionEqual(diff.adds, [])
+        DDAssertReflectionEqual(diff.updates, [])
+        DDAssertReflectionEqual(diff.removes, [.init(id: 1), .init(id: 2), .init(id: 3)])
         XCTAssertFalse(diff.isEmpty)
     }
 
@@ -126,10 +122,10 @@ class DiffTests: XCTestCase {
 
         // Then
         XCTAssertEqual(diff.adds.count, 2)
-        XCTAssertEqual(diff.adds[0], Diff.Add(previousID: 3, new: Mock(id: 4)))
-        XCTAssertEqual(diff.adds[1], Diff.Add(previousID: 4, new: Mock(id: 5)))
-        XCTAssertEqual(diff.updates, [])
-        XCTAssertEqual(diff.removes, [])
+        DDAssertReflectionEqual(diff.adds[0], Diff.Add(previousID: 3, new: Mock(id: 4)))
+        DDAssertReflectionEqual(diff.adds[1], Diff.Add(previousID: 4, new: Mock(id: 5)))
+        DDAssertReflectionEqual(diff.updates, [])
+        DDAssertReflectionEqual(diff.removes, [])
     }
 
     func testAddingElementsAtTheBeginning() throws {
@@ -142,10 +138,10 @@ class DiffTests: XCTestCase {
 
         // Then
         XCTAssertEqual(diff.adds.count, 2)
-        XCTAssertEqual(diff.adds[0], Diff.Add(previousID: nil, new: Mock(id: 4)))
-        XCTAssertEqual(diff.adds[1], Diff.Add(previousID: 4, new: Mock(id: 5)))
-        XCTAssertEqual(diff.updates, [])
-        XCTAssertEqual(diff.removes, [])
+        DDAssertReflectionEqual(diff.adds[0], Diff.Add(previousID: nil, new: Mock(id: 4)))
+        DDAssertReflectionEqual(diff.adds[1], Diff.Add(previousID: 4, new: Mock(id: 5)))
+        DDAssertReflectionEqual(diff.updates, [])
+        DDAssertReflectionEqual(diff.removes, [])
     }
 
     func testAddingElementsInTheMiddle() throws {
@@ -158,10 +154,10 @@ class DiffTests: XCTestCase {
 
         // Then
         XCTAssertEqual(diff.adds.count, 2)
-        XCTAssertEqual(diff.adds[0], Diff.Add(previousID: 1, new: Mock(id: 4)))
-        XCTAssertEqual(diff.adds[1], Diff.Add(previousID: 2, new: Mock(id: 5)))
-        XCTAssertEqual(diff.updates, [])
-        XCTAssertEqual(diff.removes, [])
+        DDAssertReflectionEqual(diff.adds[0], Diff.Add(previousID: 1, new: Mock(id: 4)))
+        DDAssertReflectionEqual(diff.adds[1], Diff.Add(previousID: 2, new: Mock(id: 5)))
+        DDAssertReflectionEqual(diff.updates, [])
+        DDAssertReflectionEqual(diff.removes, [])
     }
 
     // MARK: - Test Removals
@@ -175,8 +171,8 @@ class DiffTests: XCTestCase {
         let diff = try computeDiff(oldArray: sequenceA, newArray: sequenceB)
 
         // Then
-        XCTAssertEqual(diff.adds, [])
-        XCTAssertEqual(diff.updates, [])
+        DDAssertReflectionEqual(diff.adds, [])
+        DDAssertReflectionEqual(diff.updates, [])
         XCTAssertEqual(Set(diff.removes.map { $0.id }), [2, 3])
     }
 
@@ -189,8 +185,8 @@ class DiffTests: XCTestCase {
         let diff = try computeDiff(oldArray: sequenceA, newArray: sequenceB)
 
         // Then
-        XCTAssertEqual(diff.adds, [])
-        XCTAssertEqual(diff.updates, [])
+        DDAssertReflectionEqual(diff.adds, [])
+        DDAssertReflectionEqual(diff.updates, [])
         XCTAssertEqual(Set(diff.removes.map { $0.id }), [1, 2])
     }
 
@@ -203,8 +199,8 @@ class DiffTests: XCTestCase {
         let diff = try computeDiff(oldArray: sequenceA, newArray: sequenceB)
 
         // Then
-        XCTAssertEqual(diff.adds, [])
-        XCTAssertEqual(diff.updates, [])
+        DDAssertReflectionEqual(diff.adds, [])
+        DDAssertReflectionEqual(diff.updates, [])
         XCTAssertEqual(Set(diff.removes.map { $0.id }), [2, 3])
     }
 
@@ -220,9 +216,9 @@ class DiffTests: XCTestCase {
 
         // Then
         XCTAssertEqual(diff.adds.count, 2)
-        XCTAssertEqual(diff.adds[0], Diff.Add(previousID: nil, new: Mock(id: 2)))
-        XCTAssertEqual(diff.adds[1], Diff.Add(previousID: 2, new: Mock(id: 1)))
-        XCTAssertEqual(diff.updates, [])
+        DDAssertReflectionEqual(diff.adds[0], Diff.Add(previousID: nil, new: Mock(id: 2)))
+        DDAssertReflectionEqual(diff.adds[1], Diff.Add(previousID: 2, new: Mock(id: 1)))
+        DDAssertReflectionEqual(diff.updates, [])
         XCTAssertEqual(Set(diff.removes.map { $0.id }), [2, 1])
     }
 
@@ -236,9 +232,9 @@ class DiffTests: XCTestCase {
 
         // Then
         XCTAssertEqual(diff.adds.count, 2)
-        XCTAssertEqual(diff.adds[0], Diff.Add(previousID: 1, new: Mock(id: 3)))
-        XCTAssertEqual(diff.adds[1], Diff.Add(previousID: 3, new: Mock(id: 2)))
-        XCTAssertEqual(diff.updates, [])
+        DDAssertReflectionEqual(diff.adds[0], Diff.Add(previousID: 1, new: Mock(id: 3)))
+        DDAssertReflectionEqual(diff.adds[1], Diff.Add(previousID: 3, new: Mock(id: 2)))
+        DDAssertReflectionEqual(diff.updates, [])
         XCTAssertEqual(Set(diff.removes.map { $0.id }), [3, 2])
     }
 
@@ -252,9 +248,9 @@ class DiffTests: XCTestCase {
 
         // Then
         XCTAssertEqual(diff.adds.count, 2)
-        XCTAssertEqual(diff.adds[0], Diff.Add(previousID: 1, new: Mock(id: 3)))
-        XCTAssertEqual(diff.adds[1], Diff.Add(previousID: 3, new: Mock(id: 2)))
-        XCTAssertEqual(diff.updates, [])
+        DDAssertReflectionEqual(diff.adds[0], Diff.Add(previousID: 1, new: Mock(id: 3)))
+        DDAssertReflectionEqual(diff.adds[1], Diff.Add(previousID: 3, new: Mock(id: 2)))
+        DDAssertReflectionEqual(diff.updates, [])
         XCTAssertEqual(Set(diff.removes.map { $0.id }), [3, 2])
     }
 
@@ -268,10 +264,10 @@ class DiffTests: XCTestCase {
 
         // Then
         XCTAssertEqual(diff.adds.count, 3)
-        XCTAssertEqual(diff.adds[0], Diff.Add(previousID: nil, new: Mock(id: 2)))
-        XCTAssertEqual(diff.adds[1], Diff.Add(previousID: 2, new: Mock(id: 3)))
-        XCTAssertEqual(diff.adds[2], Diff.Add(previousID: 3, new: Mock(id: 1)))
-        XCTAssertEqual(diff.updates, [])
+        DDAssertReflectionEqual(diff.adds[0], Diff.Add(previousID: nil, new: Mock(id: 2)))
+        DDAssertReflectionEqual(diff.adds[1], Diff.Add(previousID: 2, new: Mock(id: 3)))
+        DDAssertReflectionEqual(diff.adds[2], Diff.Add(previousID: 3, new: Mock(id: 1)))
+        DDAssertReflectionEqual(diff.updates, [])
         XCTAssertEqual(Set(diff.removes.map { $0.id }), [2, 3, 1])
     }
 
@@ -286,9 +282,9 @@ class DiffTests: XCTestCase {
         let diff = try computeDiff(oldArray: sequenceA, newArray: sequenceB)
 
         // Then
-        XCTAssertEqual(diff.adds, [])
-        XCTAssertEqual(diff.updates, [.init(from: sequenceA[0], to: sequenceB[0])])
-        XCTAssertEqual(diff.removes, [])
+        DDAssertReflectionEqual(diff.adds, [])
+        DDAssertReflectionEqual(diff.updates, [.init(from: sequenceA[0], to: sequenceB[0])])
+        DDAssertReflectionEqual(diff.removes, [])
     }
 
     func testUpdatingElementsAtTheEnd() throws {
@@ -300,9 +296,9 @@ class DiffTests: XCTestCase {
         let diff = try computeDiff(oldArray: sequenceA, newArray: sequenceB)
 
         // Then
-        XCTAssertEqual(diff.adds, [])
-        XCTAssertEqual(diff.updates, [.init(from: sequenceA[2], to: sequenceB[2])])
-        XCTAssertEqual(diff.removes, [])
+        DDAssertReflectionEqual(diff.adds, [])
+        DDAssertReflectionEqual(diff.updates, [.init(from: sequenceA[2], to: sequenceB[2])])
+        DDAssertReflectionEqual(diff.removes, [])
     }
 
     func testUpdatingElementsInTheMiddle() throws {
@@ -314,9 +310,9 @@ class DiffTests: XCTestCase {
         let diff = try computeDiff(oldArray: sequenceA, newArray: sequenceB)
 
         // Then
-        XCTAssertEqual(diff.adds, [])
-        XCTAssertEqual(diff.updates, [.init(from: sequenceA[1], to: sequenceB[1])])
-        XCTAssertEqual(diff.removes, [])
+        DDAssertReflectionEqual(diff.adds, [])
+        DDAssertReflectionEqual(diff.updates, [.init(from: sequenceA[1], to: sequenceB[1])])
+        DDAssertReflectionEqual(diff.removes, [])
     }
 
     func testUpdatingAllElements() throws {
@@ -328,8 +324,8 @@ class DiffTests: XCTestCase {
         let diff = try computeDiff(oldArray: sequenceA, newArray: sequenceB)
 
         // Then
-        XCTAssertEqual(diff.adds, [])
-        XCTAssertEqual(
+        DDAssertReflectionEqual(diff.adds, [])
+        DDAssertReflectionEqual(
             diff.updates,
             [
                 .init(from: sequenceA[0], to: sequenceB[0]),
@@ -337,7 +333,7 @@ class DiffTests: XCTestCase {
                 .init(from: sequenceA[2], to: sequenceB[2]),
             ]
         )
-        XCTAssertEqual(diff.removes, [])
+        DDAssertReflectionEqual(diff.removes, [])
     }
 
     func testUpdatesAreIgnoredWhenElementChangesItsPosition() throws {
@@ -349,14 +345,14 @@ class DiffTests: XCTestCase {
         let diff = try computeDiff(oldArray: sequenceA, newArray: sequenceB)
 
         // Then
-        XCTAssertEqual(
+        DDAssertReflectionEqual(
             diff.adds,
             [
                 .init(previousID: nil, new: Mock(id: 2)),
                 .init(previousID: 2, new: Mock(id: 1, data: "bar")),
             ]
         )
-        XCTAssertEqual(diff.updates, [])
+        DDAssertReflectionEqual(diff.updates, [])
         XCTAssertEqual(Set(diff.removes.map { $0.id }), [2, 1])
     }
 }

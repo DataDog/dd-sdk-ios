@@ -46,9 +46,9 @@ class RecorderTests: XCTestCase {
         recorder.start()
 
         // Then
-        XCTAssertEqual(processor.processedSnapshots.count, numberOfSnapshots, "Processor should receive \(numberOfSnapshots) snapshots")
-        XCTAssertEqual(processor.processedSnapshots.map { $0.viewTreeSnapshot }, mockViewTreeSnapshots)
-        XCTAssertEqual(processor.processedSnapshots.map { $0.touchSnapshot }, mockTouchSnapshots)
+        DDAssertReflectionEqual(processor.processedSnapshots.count, numberOfSnapshots, "Processor should receive \(numberOfSnapshots) snapshots")
+        DDAssertReflectionEqual(processor.processedSnapshots.map { $0.viewTreeSnapshot }, mockViewTreeSnapshots)
+        DDAssertReflectionEqual(processor.processedSnapshots.map { $0.touchSnapshot }, mockTouchSnapshots)
     }
 
     func testGivenNoRUMContextAvailable_whenStarted_itDoesNotCaptureAnySnapshots() {

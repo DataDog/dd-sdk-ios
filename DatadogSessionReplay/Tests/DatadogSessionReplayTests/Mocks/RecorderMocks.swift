@@ -9,11 +9,6 @@ import UIKit
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 
-// MARK: - Equatable conformances
-
-extension ViewTreeSnapshot: EquatableInTests {}
-extension TouchSnapshot: EquatableInTests {}
-
 // MARK: - ViewTreeSnapshot Mocks
 
 extension ViewTreeSnapshot: AnyMockable, RandomMockable {
