@@ -41,3 +41,12 @@ import Foundation
         self.stringValue = stringValue
     }
 }
+
+extension DynamicCodingKey: ExpressibleByStringLiteral {
+    /// Creates an instance initialized to the given string value.
+    ///
+    /// - Parameter value: The value of the new instance.
+    init(stringLiteral value: String) {
+        self.init(value)
+    }
+}

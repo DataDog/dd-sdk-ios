@@ -7,103 +7,40 @@
 import XCTest
 @testable import Datadog
 
-class AnyCoderTests: XCTestCase {
-    struct Object: Codable {
+private struct CodableObject: Codable, Equatable {
+    let id: UUID
+    let date: Date
+    let url: URL
+    let string: String
+    let null: String?
+    let integer: Int
+    let float: Float
+    let nested: Nested
+    let empty: Empty
+    let array: [Nested]
+
+    struct Empty: Codable, Equatable { }
+
+    struct Nested: Codable, Equatable {
         let id: UUID
-        let date: Date
-        let url: URL
-        let title: String
-        let null: String?
-        let int: Int?
-        let bool: Bool?
-        let nested: Nested
-        let empty: Empty
-        let array: [AnyCodable?]?
-
-        struct Nested: Codable {
-            let id: UUID
-            let title: String
-        }
+        let string: String
     }
+}
 
-    struct Empty: Codable { }
-
-    let id: UUID = .mockAny()
-
-    lazy var dictionary: [String: Any?] = [
-        "id": id,
-        "date": Date.mockAny(),
-        "url": URL(string: "https://test.com/object/1")!,
-        "title": "Response",
-        "int": UInt64(12_345),
-        "bool": true,
-        "nested": [
-            "id": id,
-            "title": "Nested",
-        ],
-        "empty": [:],
-        "array": [
-            1,
-            "2",
-            3.4,
-            ["five": 5],
-            nil
-        ]
-    ]
-
-    func testObjectDecoding() throws {
-        let decoder = AnyDecoder()
-        let object = try decoder.decode(Object.self, from: dictionary)
-
-        XCTAssertEqual(object.id, id)
-        XCTAssertEqual(object.date, .mockAny())
-        XCTAssertEqual(object.title, "Response")
-        XCTAssertEqual(object.url, URL(string: "https://test.com/object/1"))
-        XCTAssertNotNil(object.nested)
-        XCTAssertEqual(object.nested.id, id)
-        XCTAssertEqual(object.int, 12_345)
-        XCTAssertNil(object.null)
-        XCTAssertTrue(object.bool ?? false)
-        XCTAssertNotNil(object.array)
-        XCTAssertEqual(object.array?.underestimatedCount, 5)
-        XCTAssertEqual(object.array?[0], AnyCodable(1))
-    }
-
-    func testObjectEncoding() throws {
+class AnyCoderTests: XCTestCase {
+    func testEncodingDecoding() throws {
         let encoder = AnyEncoder()
-        let object = Object(
-            id: id,
-            date: .mockAny(),
-            url: URL(string: "https://test.com/object/1")!,
-            title: "Response",
-            null: nil,
-            int: 12_345,
-            bool: true,
-            nested: .init(id: id, title: "Nested"),
-            empty: Empty(),
-            array: [
-                AnyCodable(1),
-                AnyCodable("2"),
-                AnyCodable(3.4),
-                AnyCodable(["five": 5]),
-                AnyCodable(nil as Any?)
-            ]
-        )
+        let decoder = AnyDecoder()
 
-        let dict = try XCTUnwrap(encoder.encode(object) as? [String: Any?])
+        // Given
+        let expected: CodableObject = .mockRandom()
 
-        XCTAssertEqual(dict["id"] as? UUID, id)
-        XCTAssertEqual(dict["date"] as? Date, .mockAny())
-        XCTAssertEqual(dict["title"] as? String, "Response")
-        XCTAssertEqual(dict["url"] as? URL, URL(string: "https://test.com/object/1"))
-        XCTAssertEqual(dict["int"] as? Int, 12_345)
-        XCTAssertNil(dict["null"] as Any?)
-        XCTAssertTrue(dict["bool"] as? Bool ?? false)
-        let nested = try XCTUnwrap(dict["nested"] as? [String: Any?])
-        XCTAssertEqual(nested["id"] as? UUID, id)
-        XCTAssertEqual(nested["title"] as? String, "Nested")
-        let array = try XCTUnwrap(dict["array"] as? [Any?])
-        XCTAssertEqual(array.count, 5)
+        // When
+        let any = try encoder.encode(expected)
+        let actual: CodableObject = try decoder.decode(from: any)
+
+        // Then
+        XCTAssertEqual(actual, expected)
     }
 
     func testSingleValueEncoding() throws {
@@ -168,6 +105,11 @@ class AnyCoderTests: XCTestCase {
                 try container2.encode(UInt64(1))
                 try container2.encode(Float(1.1))
                 try container2.encode(Double(1.1))
+                var container3 = container2.nestedUnkeyedContainer()
+                try container3.encode("str")
+                var container4 = container2.nestedContainer(keyedBy: DynamicCodingKey.self)
+                try container4.encode("str", forKey: "str")
+                XCTAssertEqual(container2.count, 17)
             }
         }
 
@@ -187,6 +129,8 @@ class AnyCoderTests: XCTestCase {
         XCTAssertTrue(array[12] is UInt64)
         XCTAssertTrue(array[13] is Float)
         XCTAssertTrue(array[14] is Double)
+        XCTAssertTrue(array[15] is [String])
+        XCTAssertTrue(array[16] is [String: String])
     }
 
     func testUnkeyedDecoding() throws {
@@ -197,27 +141,36 @@ class AnyCoderTests: XCTestCase {
             true,
             "str",
             1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-            1.1, 1.1
+            1.1, 1.1,
+            ["str"],
+            ["str": "str"],
         ]
 
         struct Foo: Decodable {
             init(from decoder: Decoder) throws {
-                var container = try decoder.unkeyedContainer()
-                XCTAssertTrue(try container.decodeNil())
-                XCTAssertTrue(try container.decode(Bool.self))
-                XCTAssertEqual(try container.decode(String.self), "str")
-                XCTAssertEqual(try container.decode(Int.self), 1)
-                XCTAssertEqual(try container.decode(Int8.self), 1)
-                XCTAssertEqual(try container.decode(Int16.self), 1)
-                XCTAssertEqual(try container.decode(Int32.self), 1)
-                XCTAssertEqual(try container.decode(Int64.self), 1)
-                XCTAssertEqual(try container.decode(UInt.self), 1)
-                XCTAssertEqual(try container.decode(UInt8.self), 1)
-                XCTAssertEqual(try container.decode(UInt16.self), 1)
-                XCTAssertEqual(try container.decode(UInt32.self), 1)
-                XCTAssertEqual(try container.decode(UInt64.self), 1)
-                XCTAssertEqual(try container.decode(Float.self), 1.1)
-                XCTAssertEqual(try container.decode(Double.self), 1.1)
+                XCTAssertThrowsError(try decoder.container(keyedBy: DynamicCodingKey.self))
+                var container1 = try decoder.unkeyedContainer()
+                XCTAssertEqual(container1.count, 17)
+                XCTAssertTrue(try container1.decodeNil())
+                XCTAssertTrue(try container1.decode(Bool.self))
+                XCTAssertEqual(try container1.decode(String.self), "str")
+                XCTAssertEqual(try container1.decode(Int.self), 1)
+                XCTAssertEqual(try container1.decode(Int8.self), 1)
+                XCTAssertEqual(try container1.decode(Int16.self), 1)
+                XCTAssertEqual(try container1.decode(Int32.self), 1)
+                XCTAssertEqual(try container1.decode(Int64.self), 1)
+                XCTAssertEqual(try container1.decode(UInt.self), 1)
+                XCTAssertEqual(try container1.decode(UInt8.self), 1)
+                XCTAssertEqual(try container1.decode(UInt16.self), 1)
+                XCTAssertEqual(try container1.decode(UInt32.self), 1)
+                XCTAssertEqual(try container1.decode(UInt64.self), 1)
+                XCTAssertEqual(try container1.decode(Float.self), 1.1)
+                XCTAssertEqual(try container1.decode(Double.self), 1.1)
+                var container2 = try container1.nestedUnkeyedContainer()
+                XCTAssertEqual(try container2.decode(String.self), "str")
+                let container3 = try container1.nestedContainer(keyedBy: DynamicCodingKey.self)
+                XCTAssertEqual(try container3.decode(String.self, forKey: "str"), "str")
+                XCTAssertThrowsError(try container1.decodeNil())
             }
         }
 
@@ -230,22 +183,26 @@ class AnyCoderTests: XCTestCase {
         struct Foo: Encodable {
             func encode(to encoder: Encoder) throws {
                 var container1 = encoder.container(keyedBy: DynamicCodingKey.self)
-                try container1.encodeNil(forKey: .init("null"))
-                try container1.encode(true, forKey: .init("bool"))
-                try container1.encode("str", forKey: .init("string"))
-                try container1.encode(Int(1), forKey: .init("int"))
-                try container1.encode(Int8(1), forKey: .init("int8"))
-                try container1.encode(Int16(1), forKey: .init("int16"))
-                try container1.encode(Int32(1), forKey: .init("int32"))
-                try container1.encode(Int64(1), forKey: .init("int64"))
+                try container1.encodeNil(forKey: "null")
+                try container1.encode(true, forKey: "bool")
+                try container1.encode("str", forKey: "string")
+                try container1.encode(Int(1), forKey: "int")
+                try container1.encode(Int8(1), forKey: "int8")
+                try container1.encode(Int16(1), forKey: "int16")
+                try container1.encode(Int32(1), forKey: "int32")
+                try container1.encode(Int64(1), forKey: "int64")
                 var container2 = encoder.container(keyedBy: DynamicCodingKey.self)
-                try container2.encode(UInt(1), forKey: .init("uint"))
-                try container2.encode(UInt8(1), forKey: .init("uint8"))
-                try container2.encode(UInt16(1), forKey: .init("uint16"))
-                try container2.encode(UInt32(1), forKey: .init("uint32"))
-                try container2.encode(UInt64(1), forKey: .init("uint64"))
-                try container2.encode(Float(1.1), forKey: .init("float"))
-                try container2.encode(Double(1.1), forKey: .init("double"))
+                try container2.encode(UInt(1), forKey: "uint")
+                try container2.encode(UInt8(1), forKey: "uint8")
+                try container2.encode(UInt16(1), forKey: "uint16")
+                try container2.encode(UInt32(1), forKey: "uint32")
+                try container2.encode(UInt64(1), forKey: "uint64")
+                try container2.encode(Float(1.1), forKey: "float")
+                try container2.encode(Double(1.1), forKey: "double")
+                var container3 = container2.nestedUnkeyedContainer(forKey: "array")
+                try container3.encode("str")
+                var container4 = container2.nestedContainer(keyedBy: DynamicCodingKey.self, forKey: "nested")
+                try container4.encode("str", forKey: "str")
             }
         }
 
@@ -265,6 +222,8 @@ class AnyCoderTests: XCTestCase {
         XCTAssertTrue(dictionary["uint64"] is UInt64)
         XCTAssertTrue(dictionary["float"] is Float)
         XCTAssertTrue(dictionary["double"] is Double)
+        XCTAssertTrue(dictionary["array"] is [String])
+        XCTAssertTrue(dictionary["nested"] is [String: String])
     }
 
     func testKeyedDecoding() throws {
@@ -275,30 +234,62 @@ class AnyCoderTests: XCTestCase {
             "bool": true,
             "string": "str",
             "integer": 1,
-            "floating": 1.1
+            "floating": 1.1,
+            "array": ["str"],
+            "nested": ["str": "str"],
         ]
 
         struct Foo: Decodable {
             init(from decoder: Decoder) throws {
-                let container = try decoder.container(keyedBy: DynamicCodingKey.self)
-                XCTAssertTrue(try container.decodeNil(forKey: .init("null")))
-                XCTAssertTrue(try container.decode(Bool.self, forKey: .init("bool")))
-                XCTAssertEqual(try container.decode(String.self, forKey: .init("string")), "str")
-                XCTAssertEqual(try container.decode(Int.self, forKey: .init("integer")), 1)
-                XCTAssertEqual(try container.decode(Int8.self, forKey: .init("integer")), 1)
-                XCTAssertEqual(try container.decode(Int16.self, forKey: .init("integer")), 1)
-                XCTAssertEqual(try container.decode(Int32.self, forKey: .init("integer")), 1)
-                XCTAssertEqual(try container.decode(Int64.self, forKey: .init("integer")), 1)
-                XCTAssertEqual(try container.decode(UInt.self, forKey: .init("integer")), 1)
-                XCTAssertEqual(try container.decode(UInt8.self, forKey: .init("integer")), 1)
-                XCTAssertEqual(try container.decode(UInt16.self, forKey: .init("integer")), 1)
-                XCTAssertEqual(try container.decode(UInt32.self, forKey: .init("integer")), 1)
-                XCTAssertEqual(try container.decode(UInt64.self, forKey: .init("integer")), 1)
-                XCTAssertEqual(try container.decode(Float.self, forKey: .init("floating")), 1.1)
-                XCTAssertEqual(try container.decode(Double.self, forKey: .init("floating")), 1.1)
+                XCTAssertThrowsError(try decoder.unkeyedContainer())
+                let container1 = try decoder.container(keyedBy: DynamicCodingKey.self)
+                XCTAssertEqual(container1.allKeys.count, 7)
+                XCTAssertTrue(try container1.decodeNil(forKey: "null"))
+                XCTAssertTrue(try container1.decode(Bool.self, forKey: "bool"))
+                XCTAssertEqual(try container1.decode(String.self, forKey: "string"), "str")
+                XCTAssertEqual(try container1.decode(Int.self, forKey: "integer"), 1)
+                XCTAssertEqual(try container1.decode(Int8.self, forKey: "integer"), 1)
+                XCTAssertEqual(try container1.decode(Int16.self, forKey: "integer"), 1)
+                XCTAssertEqual(try container1.decode(Int32.self, forKey: "integer"), 1)
+                XCTAssertEqual(try container1.decode(Int64.self, forKey: "integer"), 1)
+                XCTAssertEqual(try container1.decode(UInt.self, forKey: "integer"), 1)
+                XCTAssertEqual(try container1.decode(UInt8.self, forKey: "integer"), 1)
+                XCTAssertEqual(try container1.decode(UInt16.self, forKey: "integer"), 1)
+                XCTAssertEqual(try container1.decode(UInt32.self, forKey: "integer"), 1)
+                XCTAssertEqual(try container1.decode(UInt64.self, forKey: "integer"), 1)
+                XCTAssertEqual(try container1.decode(Float.self, forKey: "floating"), 1.1)
+                XCTAssertEqual(try container1.decode(Double.self, forKey: "floating"), 1.1)
+                var container2 = try container1.nestedUnkeyedContainer(forKey: "array")
+                XCTAssertEqual(try container2.decode(String.self), "str")
+                let container3 = try container1.nestedContainer(keyedBy: DynamicCodingKey.self, forKey: "nested")
+                XCTAssertEqual(try container3.decode(String.self, forKey: "str"), "str")
+                XCTAssertThrowsError(try container1.decodeNil(forKey: "unkown"))
             }
         }
 
         XCTAssertNoThrow(try decoder.decode(Foo.self, from: dictionary))
+    }
+}
+
+extension CodableObject: RandomMockable {
+    static func mockRandom() -> Self {
+        .init(
+            id: .mockRandom(),
+            date: .mockRandom(),
+            url: .mockRandom(),
+            string: .mockRandom(),
+            null: nil,
+            integer: .mockRandom(),
+            float: .mockRandom(),
+            nested: .mockRandom(),
+            empty: .init(),
+            array: .mockRandom()
+        )
+    }
+}
+
+extension CodableObject.Nested: RandomMockable {
+    fileprivate static func mockRandom() -> Self {
+        .init(id: .mockRandom(), string: .mockRandom())
     }
 }
