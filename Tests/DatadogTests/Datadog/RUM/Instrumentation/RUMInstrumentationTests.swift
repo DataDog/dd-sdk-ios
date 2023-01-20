@@ -1,27 +1,29 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
 @testable import Datadog
 
 class RUMInstrumentationTests: XCTestCase {
-    let core = DatadogCoreMock()
+    private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
+        core = DatadogCoreProxy()
     }
 
     override func tearDown() {
-        core.flush()
+        core.flushAndTearDown()
+        core = nil
         super.tearDown()
     }
 
     func testGivenRUMViewsAutoInstrumentationEnabled_whenRUMMonitorIsRegistered_itSubscribesAsViewsHandler() throws {
         // Given
-        let rum: RUMFeature = .mockNoOp()
+        let rum: RUMFeature = .mockAny()
 
         let instrumentation = RUMInstrumentation(
             configuration: .init(
@@ -45,7 +47,7 @@ class RUMInstrumentationTests: XCTestCase {
 
     func testGivenRUMUserActionsAutoInstrumentationEnabled_whenRUMMonitorIsRegistered_itSubscribesAsUserActionsHandler() throws {
         // Given
-        let rum: RUMFeature = .mockNoOp()
+        let rum: RUMFeature = .mockAny()
 
         let instrumentation = RUMInstrumentation(
             configuration: .init(
@@ -69,7 +71,7 @@ class RUMInstrumentationTests: XCTestCase {
 
     func testGivenRUMLongTasksAutoInstrumentationEnabled_whenRUMMonitorIsRegistered_itSubscribesAsLongTaskObserver() throws {
         // Given
-        let rum: RUMFeature = .mockNoOp()
+        let rum: RUMFeature = .mockAny()
         let instrumentation = RUMInstrumentation(
             configuration: .init(
                 uiKitRUMViewsPredicate: nil,
@@ -93,7 +95,7 @@ class RUMInstrumentationTests: XCTestCase {
     /// Sanity check for not-allowed configuration.
     func testWhenAllRUMAutoInstrumentationsDisabled_itDoesNotCreateInstrumentationComponents() throws {
         // Given
-        let rum: RUMFeature = .mockNoOp()
+        let rum: RUMFeature = .mockAny()
 
         /// This configuration is not allowed by `FeaturesConfiguration` logic. We test it for sanity.
         let notAllowedConfiguration = FeaturesConfiguration.RUM.Instrumentation(

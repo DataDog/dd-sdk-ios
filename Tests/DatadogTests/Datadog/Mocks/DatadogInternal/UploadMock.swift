@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -30,6 +30,16 @@ internal struct FeatureRequestBuilderMock: FeatureRequestBuilder {
         let builder = URLRequestBuilder(url: url, queryItems: queryItems, headers: headers)
         let data = format.format(events)
         return builder.uploadRequest(with: data)
+    }
+}
+
+internal class FeatureRequestBuilderSpy: FeatureRequestBuilder {
+    /// Records parameters passed to `requet(for:with:)`
+    var requestParameters: [(events: [Data], context: DatadogContext)] = []
+
+    func request(for events: [Data], with context: DatadogContext) throws -> URLRequest {
+        requestParameters.append((events: events, context: context))
+        return .mockAny()
     }
 }
 

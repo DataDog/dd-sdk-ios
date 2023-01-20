@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -28,8 +28,8 @@ class RUMDebuggingTests: XCTestCase {
         let debugging = RUMDebugging()
         debugging.debug(applicationScope: applicationScope)
 
-        DispatchQueue.main.async { expectation.fulfill() }
-        waitForExpectations(timeout: 1, handler: nil)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { expectation.fulfill() }
+        waitForExpectations(timeout: 2, handler: nil)
 
         // then
         let canvas = try XCTUnwrap(
@@ -72,8 +72,8 @@ class RUMDebuggingTests: XCTestCase {
         let debugging = RUMDebugging()
         debugging.debug(applicationScope: applicationScope)
 
-        DispatchQueue.main.async { expectation.fulfill() }
-        waitForExpectations(timeout: 1, handler: nil)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { expectation.fulfill() }
+        waitForExpectations(timeout: 2, handler: nil)
 
         // then
         let canvas = try XCTUnwrap(

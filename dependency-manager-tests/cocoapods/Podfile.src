@@ -7,10 +7,12 @@ abstract_target 'Common' do
   target 'App Dynamic iOS' do
     platform :ios, '13.0'
     use_frameworks!
+    pod 'DatadogSDKSessionReplay', :git => 'GIT_REMOTE', :GIT_REFERENCE
   end
 
   target 'App Static iOS' do
     platform :ios, '13.0'
+    pod 'DatadogSDKSessionReplay', :git => 'GIT_REMOTE', :GIT_REFERENCE
 
     target 'App Static iOS Tests' do
       inherit! :search_paths

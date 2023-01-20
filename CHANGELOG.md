@@ -1,8 +1,13 @@
 # Unreleased
 
-- [IMPROVEMENT] Add a method for sending error attributes on logs as strings.
+- [BUGFIX] Fix 'Could not allocate memory' after corrupted TLV. See [#1089][] (Thanks [@cltnschlosser][])
+
+# 1.14.0 / 20-12-2022
+
+- [IMPROVEMENT] Add a method for sending error attributes on logs as strings. See [#1051][].
 - [IMPROVEMENT] Add manual Open Telemetry b3 headers injection. See [#1057][]
 - [IMPROVEMENT] Add automatic Open Telemetry b3 headers injection. See [#1061][]
+- [IMPROVEMENT] Add manual and automatic W3C traceparent header injection. See [#1071][]
 
 # 1.13.0 / 08-11-2022
 
@@ -416,8 +421,11 @@
 [#1031]: https://github.com/DataDog/dd-sdk-ios/issues/1031
 [#1043]: https://github.com/DataDog/dd-sdk-ios/issues/1043
 [#1045]: https://github.com/DataDog/dd-sdk-ios/pull/1045
+[#1051]: https://github.com/DataDog/dd-sdk-ios/pull/1051
 [#1057]: https://github.com/DataDog/dd-sdk-ios/pull/1057
 [#1061]: https://github.com/DataDog/dd-sdk-ios/pull/1061
+[#1071]: https://github.com/DataDog/dd-sdk-ios/pull/1071
+[#1089]: https://github.com/DataDog/dd-sdk-ios/pull/1089
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
@@ -444,3 +452,4 @@
 [@sdejesusf]: https://github.com/sdejesusF
 [@avdlee]: https://github.com/AvdLee
 [@dfed]: https://github.com/dfed
+[@cltnschlosser]: https://github.com/cltnschlosser

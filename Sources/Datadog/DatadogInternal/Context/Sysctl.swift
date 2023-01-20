@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  *
  * This file includes software created by Matt Gallagher on 2016/02/03 and modified by Datadog.
  * Copyright © 2016 Matt Gallagher ( https://www.cocoawithlove.com ).

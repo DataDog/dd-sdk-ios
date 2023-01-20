@@ -1,16 +1,24 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
 @testable import Datadog
 
 class TracingWithLoggingIntegrationTests: XCTestCase {
-    private let core = PassthroughCoreMock(
-        messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
-    )
+    private var core: PassthroughCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
+
+    override func setUp() {
+        super.setUp()
+        core = PassthroughCoreMock(messageReceiver: LogMessageReceiver.mockAny())
+    }
+
+    override func tearDown() {
+        core = nil
+        super.tearDown()
+    }
 
     func testSendingLogWithOTMessageField() throws {
         core.expectation = expectation(description: "Send log")

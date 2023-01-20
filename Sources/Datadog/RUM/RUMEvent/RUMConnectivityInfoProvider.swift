@@ -1,25 +1,10 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
-
-/// Reduces the values from shared `NetworkConnectionInfoProvider` and `CarrierInfoProvider` to `RUMConnectivity` format.
-internal struct RUMConnectivityInfoProvider {
-    /// Shared network connection info provider.
-    let networkConnectionInfoProvider: NetworkConnectionInfoProviderType
-    /// Shared mobile carrier info provider.
-    let carrierInfoProvider: CarrierInfoProviderType
-
-    var current: RUMConnectivity? {
-        return RUMConnectivity(
-            networkInfo: networkConnectionInfoProvider.current,
-            carrierInfo: carrierInfoProvider.current
-        )
-    }
-}
 
 extension RUMConnectivity {
     init?(context: DatadogContext) {

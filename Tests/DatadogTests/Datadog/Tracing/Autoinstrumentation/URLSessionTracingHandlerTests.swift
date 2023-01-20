@@ -1,16 +1,14 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
 @testable import Datadog
 
 class URLSessionTracingHandlerTests: XCTestCase {
-    private let core = PassthroughCoreMock(
-        messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
-    )
+    private var core: PassthroughCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
 
     private let handler = URLSessionTracingHandler(
         appStateListener: AppStateListenerMock(
@@ -23,12 +21,14 @@ class URLSessionTracingHandlerTests: XCTestCase {
     )
 
     override func setUp() {
-        Global.sharedTracer = Tracer.mockWith(core: core)
         super.setUp()
+        core = PassthroughCoreMock(messageReceiver: LogMessageReceiver.mockAny())
+        Global.sharedTracer = Tracer.mockWith(core: core)
     }
 
     override func tearDown() {
         Global.sharedTracer = DDNoopGlobals.tracer
+        core = nil
         super.tearDown()
     }
 

@@ -1,7 +1,7 @@
 /*
 * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
 * This product includes software developed at Datadog (https://www.datadoghq.com/).
-* Copyright 2019-2020 Datadog, Inc.
+* Copyright 2019-Present Datadog, Inc.
 */
 
 import XCTest
@@ -60,11 +60,11 @@ class DDDatadogTests: XCTestCase {
         )
 
         let core = defaultDatadogCore as? DatadogCore
-        XCTAssertEqual(core?.consentProvider.currentValue, initialConsent.swift)
+        XCTAssertEqual(core?.consentPublisher.consent, initialConsent.swift)
 
         DDDatadog.setTrackingConsent(consent: nextConsent.objc)
 
-        XCTAssertEqual(core?.consentProvider.currentValue, nextConsent.swift)
+        XCTAssertEqual(core?.consentPublisher.consent, nextConsent.swift)
 
         Datadog.flushAndDeinitialize()
     }
@@ -94,7 +94,7 @@ class DDDatadogTests: XCTestCase {
         XCTAssertEqual(userInfo.value.id, "id")
         XCTAssertEqual(userInfo.value.name, "name")
         XCTAssertEqual(userInfo.value.email, "email")
-        let extraInfo = try XCTUnwrap(userInfo.value.extraInfo as? [String: DatadogObjc.AnyEncodable])
+        let extraInfo = try XCTUnwrap(userInfo.value.extraInfo as? [String: AnyEncodable])
         XCTAssertEqual(extraInfo["attribute-int"]?.value as? Int, 42)
         XCTAssertEqual(extraInfo["attribute-double"]?.value as? Double, 42.5)
         XCTAssertEqual(extraInfo["attribute-string"]?.value as? String, "string value")

@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -28,14 +28,6 @@ internal final class RemoteLogger: LoggerProtocol {
     internal let core: DatadogCoreProtocol
     /// Configuration specific to this logger.
     internal let configuration: Configuration
-
-    /// Logger-specific attributes (must be accesset through `queue`).
-    private var unsafeAttributes: [String: Encodable] = [:]
-    /// Logger-specific tags (must be accesset through `queue`).
-    private var unsafeTags: Set<String> = []
-    /// Queue for ensuring thread-safety of tags and attributes mutation.
-    private let queue: DispatchQueue
-
     /// Date provider for logs.
     private let dateProvider: DateProvider
     /// Integration with RUM. It is used to correlate Logs with RUM events by injecting RUM context to `LogEvent`.
@@ -44,6 +36,12 @@ internal final class RemoteLogger: LoggerProtocol {
     /// Integration with Tracing. It is used to correlate Logs with Spans by injecting `Span` context to `LogEvent`.
     /// Can be `false` if the integration is disabled for this logger.
     internal let activeSpanIntegration: Bool
+    /// Logger-specific attributes.
+    @ReadWriteLock
+    private var attributes: [String: Encodable] = [:]
+    /// Logger-specific tags.
+    @ReadWriteLock
+    private var tags: Set<String> = []
 
     init(
         core: DatadogCoreProtocol,
@@ -55,11 +53,6 @@ internal final class RemoteLogger: LoggerProtocol {
         self.core = core
         self.configuration = configuration
         self.dateProvider = dateProvider
-        self.queue = DispatchQueue(
-            label: "com.datadoghq.logger-\(configuration.loggerName)",
-            target: .global(qos: .userInteractive)
-        )
-
         self.rumContextIntegration = rumContextIntegration
         self.activeSpanIntegration = activeSpanIntegration
     }
@@ -67,29 +60,29 @@ internal final class RemoteLogger: LoggerProtocol {
     // MARK: - Attributes
 
     func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
-        queue.async { self.unsafeAttributes[key] = value }
+        _attributes.mutate { $0[key] = value }
     }
 
     func removeAttribute(forKey key: AttributeKey) {
-        queue.async { self.unsafeAttributes.removeValue(forKey: key) }
+        _attributes.mutate { $0.removeValue(forKey: key) }
     }
 
     // MARK: - Tags
 
     func addTag(withKey key: String, value: String) {
-        queue.async { self.unsafeTags.insert("\(key):\(value)") }
+        _tags.mutate { $0.insert("\(key):\(value)") }
     }
 
     func removeTag(withKey key: String) {
-        queue.async { self.unsafeTags = self.unsafeTags.filter { !$0.hasPrefix("\(key):") } }
+        _tags.mutate { $0 = $0.filter { !$0.hasPrefix("\(key):") } }
     }
 
     func add(tag: String) {
-        queue.async { self.unsafeTags.insert(tag) }
+        _tags.mutate { $0.insert(tag) }
     }
 
     func remove(tag: String) {
-        queue.async { self.unsafeTags.remove(tag) }
+        _tags.mutate { $0.remove(tag) }
     }
 
     // MARK: - Logging
@@ -121,61 +114,61 @@ internal final class RemoteLogger: LoggerProtocol {
         let date = dateProvider.now
         let threadName = Thread.current.dd.name
 
+        // capture current tags and attributes before opening the write event context
+        let tags = self.tags
+        let userAttributes = self.attributes
+            .merging(attributes ?? [:]) { $1 } // prefer message attributes
+
         // SDK context must be requested on the user thread to ensure that it provides values
         // that are up-to-date for the caller.
         self.core.v1.scope(for: LoggingFeature.self)?.eventWriteContext { context, writer in
-            self.queue.async {
-                let userAttributes = self.unsafeAttributes.merging(attributes ?? [:]) { $1 } // prefer message attributes
-                var internalAttributes: [String: Encodable] = [:]
-                let userTags = self.unsafeTags
+            var internalAttributes: [String: Encodable] = [:]
+            let contextAttributes = context.featuresAttributes
 
-                let contextAttributes = context.featuresAttributes
+            if self.rumContextIntegration, let attributes = contextAttributes["rum"] {
+                internalAttributes.merge(attributes.all()) { $1 }
+            }
 
-                if self.rumContextIntegration, let attributes = contextAttributes["rum"] {
-                    internalAttributes.merge(attributes.all()) { $1 }
+            if self.activeSpanIntegration, let attributes = contextAttributes["tracing"] {
+                internalAttributes.merge(attributes.all()) { $1 }
+            }
+
+            let builder = LogEventBuilder(
+                service: self.configuration.service ?? context.service,
+                loggerName: self.configuration.loggerName,
+                sendNetworkInfo: self.configuration.sendNetworkInfo,
+                eventMapper: self.configuration.eventMapper
+            )
+
+            builder.createLogEvent(
+                date: date,
+                level: level,
+                message: message,
+                error: error,
+                attributes: .init(
+                    userAttributes: userAttributes,
+                    internalAttributes: internalAttributes
+                ),
+                tags: tags,
+                context: context,
+                threadName: threadName
+            ) { log in
+                writer.write(value: log)
+
+                guard log.status == .error || log.status == .critical else {
+                    return
                 }
 
-                if self.activeSpanIntegration, let attributes = contextAttributes["tracing"] {
-                    internalAttributes.merge(attributes.all()) { $1 }
-                }
-
-                let builder = LogEventBuilder(
-                    service: self.configuration.service ?? context.service,
-                    loggerName: self.configuration.loggerName,
-                    sendNetworkInfo: self.configuration.sendNetworkInfo,
-                    eventMapper: self.configuration.eventMapper
-                )
-
-                builder.createLogEvent(
-                    date: date,
-                    level: level,
-                    message: message,
-                    error: error,
-                    attributes: .init(
-                        userAttributes: userAttributes,
-                        internalAttributes: internalAttributes
-                    ),
-                    tags: userTags,
-                    context: context,
-                    threadName: threadName
-                ) { log in
-                    writer.write(value: log)
-
-                    guard log.status == .error || log.status == .critical else {
-                        return
-                    }
-
-                    self.core.send(
-                        message: .error(
-                            message: log.error?.message ?? log.message,
-                            baggage: [
-                                "type": log.error?.kind,
-                                "stack": log.error?.stack,
-                                "source": "logger"
-                            ]
-                        )
+                self.core.send(
+                    message: .error(
+                        message: log.error?.message ?? log.message,
+                        baggage: [
+                            "type": log.error?.kind,
+                            "stack": log.error?.stack,
+                            "source": "logger"
+                        ]
                     )
-                }
+                )
             }
         }
     }

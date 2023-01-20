@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -220,19 +220,19 @@ internal struct LogEventEncoder {
         // 1. user info attributes
         try log.userInfo.extraInfo.forEach {
             let key = DynamicCodingKey("usr.\($0)")
-            try attributesContainer.encode(CodableValue($1), forKey: key)
+            try attributesContainer.encode(AnyEncodable($1), forKey: key)
         }
 
         // 2. user attributes
         let encodableUserAttributes = Dictionary(
-            uniqueKeysWithValues: log.attributes.userAttributes.map { name, value in (name, CodableValue(value)) }
+            uniqueKeysWithValues: log.attributes.userAttributes.map { name, value in (name, AnyEncodable(value)) }
         )
         try encodableUserAttributes.forEach { try attributesContainer.encode($0.value, forKey: DynamicCodingKey($0.key)) }
 
         // 3. internal attributes
         if let internalAttributes = log.attributes.internalAttributes {
             let encodableInternalAttributes = Dictionary(
-                uniqueKeysWithValues: internalAttributes.map { name, value in (name, CodableValue(value)) }
+                uniqueKeysWithValues: internalAttributes.map { name, value in (name, AnyEncodable(value)) }
             )
             try encodableInternalAttributes.forEach { try attributesContainer.encode($0.value, forKey: DynamicCodingKey($0.key)) }
         }

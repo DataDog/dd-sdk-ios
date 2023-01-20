@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -45,7 +45,7 @@ internal struct UserInfo: Codable {
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
         try extraInfo.forEach {
             let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(CodableValue($1), forKey: key)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
         }
     }
 
@@ -61,7 +61,7 @@ internal struct UserInfo: Codable {
         self.extraInfo = try dynamicContainer.allKeys
             .filter { CodingKeys(stringValue: $0.stringValue) == nil }
             .reduce(into: [:]) {
-                $0[$1.stringValue] = try dynamicContainer.decode(CodableValue.self, forKey: $1)
+                $0[$1.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $1)
             }
     }
 }

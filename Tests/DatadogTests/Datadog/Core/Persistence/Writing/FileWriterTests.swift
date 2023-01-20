@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -18,13 +18,15 @@ class FileWriterTests: XCTestCase {
         super.tearDown()
     }
 
-    func testItWritesDataToSingleFile() throws {
+    func testItWritesDataToSingleFileInTLVFormat() throws {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
-            )
+            ),
+            encryption: nil,
+            forceNewFile: false
         )
 
         writer.write(value: ["key1": "value1"])
@@ -32,9 +34,9 @@ class FileWriterTests: XCTestCase {
         writer.write(value: ["key3": "value3"])
 
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
-        let data = try temporaryDirectory.files()[0].read()
+        let stream = try temporaryDirectory.files()[0].stream()
 
-        let reader = DataBlockReader(data: data)
+        let reader = DataBlockReader(input: stream)
         var block = try reader.next()
         XCTAssertEqual(block?.type, .event)
         XCTAssertEqual(block?.data, #"{"key1":"value1"}"#.utf8Data)
@@ -44,6 +46,40 @@ class FileWriterTests: XCTestCase {
         block = try reader.next()
         XCTAssertEqual(block?.type, .event)
         XCTAssertEqual(block?.data, #"{"key3":"value3"}"#.utf8Data)
+    }
+
+    func testWhenForceNewBatchIsSet_itWritesDataToSeparateFilesInTLVFormat() throws {
+        let writer = FileWriter(
+            orchestrator: FilesOrchestrator(
+                directory: temporaryDirectory,
+                performance: PerformancePreset.mockAny(),
+                dateProvider: RelativeDateProvider(advancingBySeconds: 1)
+            ),
+            encryption: nil,
+            forceNewFile: true
+        )
+
+        writer.write(value: ["key1": "value1"])
+        writer.write(value: ["key2": "value2"])
+        writer.write(value: ["key3": "value3"])
+
+        XCTAssertEqual(try temporaryDirectory.files().count, 3)
+
+        let dataBlocks = try temporaryDirectory.files()
+            .sorted { $0.name < $1.name } // read files in their creation order
+            .map { try DataBlockReader(input: $0.stream()).all() }
+
+        XCTAssertEqual(dataBlocks[0].count, 1)
+        XCTAssertEqual(dataBlocks[0][0].type, .event)
+        XCTAssertEqual(dataBlocks[0][0].data, #"{"key1":"value1"}"#.utf8Data)
+
+        XCTAssertEqual(dataBlocks[1].count, 1)
+        XCTAssertEqual(dataBlocks[1][0].type, .event)
+        XCTAssertEqual(dataBlocks[1][0].data, #"{"key2":"value2"}"#.utf8Data)
+
+        XCTAssertEqual(dataBlocks[2].count, 1)
+        XCTAssertEqual(dataBlocks[2][0].type, .event)
+        XCTAssertEqual(dataBlocks[2][0].data, #"{"key3":"value3"}"#.utf8Data)
     }
 
     func testGivenErrorVerbosity_whenIndividualDataExceedsMaxWriteSize_itDropsDataAndPrintsError() throws {
@@ -63,24 +99,26 @@ class FileWriterTests: XCTestCase {
                     maxObjectSize: 23 // 23 bytes is enough for TLV with {"key1":"value1"} JSON
                 ),
                 dateProvider: SystemDateProvider()
-            )
+            ),
+            encryption: nil,
+            forceNewFile: false
         )
 
         writer.write(value: ["key1": "value1"]) // will be written
 
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
-        var reader = try DataBlockReader(data: temporaryDirectory.files()[0].read())
+        var reader = try DataBlockReader(input: temporaryDirectory.files()[0].stream())
         var blocks = try XCTUnwrap(reader.all())
         XCTAssertEqual(blocks.count, 1)
         XCTAssertEqual(blocks[0].data, #"{"key1":"value1"}"#.utf8Data)
 
         writer.write(value: ["key2": "value3 that makes it exceed 23 bytes"]) // will be dropped
 
-        reader = try DataBlockReader(data: temporaryDirectory.files()[0].read())
+        reader = try DataBlockReader(input: temporaryDirectory.files()[0].stream())
         blocks = try XCTUnwrap(reader.all())
         XCTAssertEqual(blocks.count, 1) // same content as before
         XCTAssertEqual(dd.logger.errorLog?.message, "Failed to write data")
-        XCTAssertEqual(dd.logger.errorLog?.error?.message, "data exceeds the maximum size of 23 bytes.")
+        XCTAssertEqual(dd.logger.errorLog?.error?.message, "DataBlock lenght exceeds limit of 23 bytes")
     }
 
     func testGivenErrorVerbosity_whenDataCannotBeEncoded_itPrintsError() throws {
@@ -92,7 +130,9 @@ class FileWriterTests: XCTestCase {
                 directory: temporaryDirectory,
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
-            )
+            ),
+            encryption: nil,
+            forceNewFile: false
         )
 
         writer.write(value: FailingEncodableMock(errorMessage: "failed to encode `FailingEncodable`."))
@@ -110,7 +150,9 @@ class FileWriterTests: XCTestCase {
                 directory: temporaryDirectory,
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
-            )
+            ),
+            encryption: nil,
+            forceNewFile: false
         )
 
         writer.write(value: ["ok"]) // will create the file
@@ -137,7 +179,9 @@ class FileWriterTests: XCTestCase {
                     maxObjectSize: .max
                 ),
                 dateProvider: SystemDateProvider()
-            )
+            ),
+            encryption: nil,
+            forceNewFile: false
         )
 
         let ioInterruptionQueue = DispatchQueue(label: "com.datadohq.file-writer-random-io")
@@ -161,8 +205,8 @@ class FileWriterTests: XCTestCase {
 
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
 
-        let data = try temporaryDirectory.files()[0].read()
-        let blocks = try DataBlockReader(data: data).all()
+        let stream = try temporaryDirectory.files()[0].stream()
+        let blocks = try DataBlockReader(input: stream).all()
 
         // Assert that data written is not malformed
         let jsonDecoder = JSONDecoder()
@@ -183,7 +227,8 @@ class FileWriterTests: XCTestCase {
             ),
             encryption: DataEncryptionMock(
                 encrypt: { _ in "foo".utf8Data }
-            )
+            ),
+            forceNewFile: false
         )
 
         // When
@@ -193,9 +238,9 @@ class FileWriterTests: XCTestCase {
 
         // Then
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
-        let data = try temporaryDirectory.files()[0].read()
+        let stream = try temporaryDirectory.files()[0].stream()
 
-        let reader = DataBlockReader(data: data)
+        let reader = DataBlockReader(input: stream)
         var block = try reader.next()
         XCTAssertEqual(block?.type, .event)
         XCTAssertEqual(block?.data, "foo".utf8Data)

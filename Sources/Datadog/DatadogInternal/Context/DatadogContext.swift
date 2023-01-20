@@ -1,10 +1,14 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
+
+/// Datadog site that SDK sends data to.
+/// See: https://docs.datadoghq.com/getting_started/site/
+public typealias DatadogSite = Datadog.Configuration.DatadogEndpoint
 
 public struct DatadogContext {
     // MARK: - Datadog Specific

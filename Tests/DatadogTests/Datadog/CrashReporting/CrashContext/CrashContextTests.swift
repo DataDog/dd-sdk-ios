@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -132,8 +132,8 @@ class CrashContextTests: XCTestCase {
         line: UInt = #line
     ) throws {
         try AssertEncodedRepresentationsEqual(
-            dictionary1.mapValues { CodableValue($0) },
-            dictionary2.mapValues { CodableValue($0) }
+            dictionary1.mapValues { AnyEncodable($0) },
+            dictionary2.mapValues { AnyEncodable($0) }
         )
     }
 }

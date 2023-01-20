@@ -1,34 +1,13 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
 @testable import Datadog
 
 // MARK: - Configuration Mocks
-
-extension TrackingConsent {
-    static func mockRandom() -> TrackingConsent {
-        return [.granted, .notGranted, .pending].randomElement()!
-    }
-
-    static func mockRandom(otherThan consent: TrackingConsent? = nil) -> TrackingConsent {
-        while true {
-            let randomConsent: TrackingConsent = .mockRandom()
-            if randomConsent != consent {
-                return randomConsent
-            }
-        }
-    }
-}
-
-extension ConsentProvider {
-    static func mockAny() -> ConsentProvider {
-        return ConsentProvider(initialConsent: .mockRandom())
-    }
-}
 
 extension Datadog.Configuration {
     static func mockAny() -> Datadog.Configuration { .mockWith() }
@@ -49,7 +28,7 @@ extension Datadog.Configuration {
         tracesEndpoint: TracesEndpoint = .us1,
         rumEndpoint: RUMEndpoint = .us1,
         serviceName: String? = .mockAny(),
-        firstPartyHosts: Set<String>? = nil,
+        firstPartyHosts: FirstPartyHosts? = nil,
         loggingSamplingRate: Float = 100.0,
         tracingSamplingRate: Float = 100.0,
         rumSessionsSamplingRate: Float = 100.0,
@@ -65,8 +44,7 @@ extension Datadog.Configuration {
         uploadFrequency: UploadFrequency = .average,
         additionalConfiguration: [String: Any] = [:],
         proxyConfiguration: [AnyHashable: Any]? = nil,
-        internalMonitoringClientToken: String? = nil,
-        tracingHeaderTypes: Set<TracingHeaderType> = .init(arrayLiteral: .dd)
+        internalMonitoringClientToken: String? = nil
     ) -> Datadog.Configuration {
         return Datadog.Configuration(
             rumApplicationID: rumApplicationID,
@@ -99,8 +77,7 @@ extension Datadog.Configuration {
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
             additionalConfiguration: additionalConfiguration,
-            proxyConfiguration: proxyConfiguration,
-            tracingHeaderTypes: tracingHeaderTypes
+            proxyConfiguration: proxyConfiguration
         )
     }
 }
@@ -145,16 +122,6 @@ extension UploadFrequency: CaseIterable {
 
 extension BundleType: CaseIterable {
     public static var allCases: [Self] { [.iOSApp, iOSAppExtension] }
-}
-
-extension Datadog.Configuration.DatadogEndpoint: AnyMockable, RandomMockable {
-    static func mockAny() -> Datadog.Configuration.DatadogEndpoint {
-        return .us1
-    }
-
-    static func mockRandom() -> Self {
-        return [.us1, .us3, .eu1, .us1_fed].randomElement()!
-    }
 }
 
 extension Datadog.Configuration.LogsEndpoint {
@@ -295,7 +262,7 @@ extension FeaturesConfiguration.RUM {
         backgroundEventTrackingEnabled: Bool = false,
         frustrationTrackingEnabled: Bool = true,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener(),
-        firstPartyHosts: Set<String> = [],
+        firstPartyHosts: FirstPartyHosts = .init(),
         vitalsFrequency: TimeInterval? = 0.5,
         dateProvider: DateProvider = SystemDateProvider()
     ) -> Self {
@@ -339,13 +306,12 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
     static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
-        userDefinedFirstPartyHosts: Set<String> = [],
+        userDefinedFirstPartyHosts: FirstPartyHosts = .init(),
         sdkInternalURLs: Set<String> = [],
         rumAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         instrumentTracing: Bool = true,
         instrumentRUM: Bool = true,
-        tracingSampler: Sampler = .mockKeepAll(),
-        tracingHeaderTypes: Set<TracingHeaderType> = .init(arrayLiteral: .dd)
+        tracingSampler: Sampler = .mockKeepAll()
     ) -> Self {
         return .init(
             userDefinedFirstPartyHosts: userDefinedFirstPartyHosts,
@@ -353,8 +319,7 @@ extension FeaturesConfiguration.URLSessionAutoInstrumentation {
             rumAttributesProvider: rumAttributesProvider,
             instrumentTracing: instrumentTracing,
             instrumentRUM: instrumentRUM,
-            tracingSampler: tracingSampler,
-            tracingHeaderTypes: tracingHeaderTypes
+            tracingSampler: tracingSampler
         )
     }
 }
@@ -481,9 +446,23 @@ struct UploadPerformanceMock: UploadPerformancePreset {
     )
 }
 
-extension PerformancePreset {
+extension BundleType: AnyMockable, RandomMockable {
+    static func mockAny() -> BundleType {
+        return .iOSApp
+    }
+
+    static func mockRandom() -> BundleType {
+        return [.iOSApp, .iOSAppExtension].randomElement()!
+    }
+}
+
+extension PerformancePreset: AnyMockable, RandomMockable {
     static func mockAny() -> Self {
         PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp)
+    }
+
+    static func mockRandom() -> PerformancePreset {
+        PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .mockRandom(), bundleType: .mockRandom())
     }
 
     static func combining(storagePerformance storage: StoragePerformanceMock, uploadPerformance upload: UploadPerformanceMock) -> Self {
@@ -506,10 +485,12 @@ extension PerformancePreset {
 extension FeatureStorage {
     static func mockNoOp() -> FeatureStorage {
         return FeatureStorage(
-            writer: NoOpFileWriter(),
-            reader: NoOpFileReader(),
-            arbitraryAuthorizedWriter: NoOpFileWriter(),
-            dataOrchestrator: NoOpDataOrchestrator()
+            featureName: .mockAny(),
+            queue: DispatchQueue(label: "nop"),
+            directories: temporaryFeatureDirectories,
+            authorizedFilesOrchestrator: NOPFilesOrchestrator(),
+            unauthorizedFilesOrchestrator: NOPFilesOrchestrator(),
+            encryption: nil
         )
     }
 }
@@ -520,111 +501,28 @@ extension FeatureUpload {
     }
 }
 
-class FileWriterMock: Writer {
-    /// Recorded events.
-    internal private(set) var events: [Encodable] = []
-
-    /// Adds an `Encodable` event to the events stack.
-    ///
-    /// - Parameter value: The event value to record.
-    func write<T>(value: T) where T: Encodable {
-        events.append(value)
-    }
-
-    /// Returns all events of the given type.
-    ///
-    /// - Parameter type: The event type to retrieve.
-    /// - Returns: A list of event of the give type.
-    func events<T>(ofType type: T.Type = T.self) -> [T] where T: Encodable {
-        events.compactMap { $0 as? T }
-    }
-}
-
-struct NoOpDataOrchestrator: DataOrchestratorType {
-    func deleteAllData() {}
-}
-
-class NoOpFileWriter: AsyncWriter {
-    var queue: DispatchQueue { DispatchQueue(label: .mockRandom()) }
-    func write<T>(value: T) where T: Encodable {}
-    func flushAndCancelSynchronously() {}
-}
-
-class NoOpFileReader: SyncReader {
-    var queue: DispatchQueue { DispatchQueue(label: .mockRandom()) }
-    func readNextBatch() -> Batch? { return nil }
+class NOPReader: Reader {
+    func readNextBatch() -> Batch? { nil }
     func markBatchAsRead(_ batch: Batch) {}
-    func markAllFilesAsReadable() {}
 }
 
-/// `AsyncWriter` stub which records events in-memory and allows reading their data back.
-internal class InMemoryWriter: AsyncWriter {
-    let queue = DispatchQueue(label: "com.datadoghq.InMemoryWriter-\(UUID().uuidString)")
-
-    private let encoder: JSONEncoder = .default()
-    private var events: [Data] = []
-
-    func write<T>(value: T) where T: Encodable {
-        queue.async {
-            do {
-                let eventData = try self.encoder.encode(value)
-                self.events.append(eventData)
-                self.waitAndReturnEventsDataExpectation?.fulfill()
-            } catch {
-                assertionFailure("Failed to encode event: \(value)")
-            }
-        }
+internal class NOPFilesOrchestrator: FilesOrchestratorType {
+    struct NOPFile: WritableFile, ReadableFile {
+        var name: String = .mockAny()
+        func size() throws -> UInt64 { .mockAny() }
+        func append(data: Data) throws {}
+        func stream() throws -> InputStream { InputStream() }
+        func delete() throws { }
     }
 
-    func flushAndCancelSynchronously() {
-        queue.sync {}
-    }
+    var performance: StoragePerformancePreset { StoragePerformanceMock.noOp }
 
-    // MARK: - Retrieving Recorded Data
+    func getNewWritableFile(writeSize: UInt64) throws -> WritableFile { NOPFile() }
+    func getWritableFile(writeSize: UInt64) throws -> WritableFile { NOPFile() }
+    func getReadableFile(excludingFilesNamed excludedFileNames: Set<String>) -> ReadableFile? { NOPFile() }
+    func delete(readableFile: ReadableFile) { }
 
-    private var waitAndReturnEventsDataExpectation: XCTestExpectation?
-
-    /// Waits until given number of events is written and returns data for these events.
-    /// Passing no `timeout` will result with picking the recommended timeout for unit tests.
-    func waitAndReturnEventsData(count: UInt, timeout: TimeInterval? = nil, file: StaticString = #file, line: UInt = #line) -> [Data] {
-        precondition(waitAndReturnEventsDataExpectation == nil, "The `InMemoryWriter` is already waiting on `waitAndReturnEventsData`.")
-
-        let expectation = XCTestExpectation(description: "Record \(count) events.")
-        if count > 0 {
-            expectation.expectedFulfillmentCount = Int(count)
-        } else {
-            expectation.isInverted = true
-        }
-
-        queue.sync {
-            self.waitAndReturnEventsDataExpectation = expectation
-            self.events.forEach { _ in expectation.fulfill() } // fulfill already recorded events
-        }
-
-        let recommendedTimeout = Double(max(1, count)) * 1 // 1s for each event
-        let timeout = timeout ?? recommendedTimeout
-        let result = XCTWaiter().wait(for: [expectation], timeout: timeout)
-
-        switch result {
-        case .completed:
-            break
-        case .incorrectOrder, .interrupted:
-            fatalError("Can't happen.")
-        case .timedOut:
-            XCTFail("Exceeded timeout of \(timeout)s with recording \(events.count) out of \(count) expected events.", file: file, line: line)
-            return queue.sync { events }
-        case .invertedFulfillment:
-            XCTFail("\(events.count) batches were read, but not expected.", file: file, line: line)
-            return queue.sync { events }
-        @unknown default:
-            fatalError()
-        }
-
-        return queue.sync {
-            waitAndReturnEventsDataExpectation = nil
-            return events
-        }
-    }
+    var ignoreFilesAgeWhenReading = false
 }
 
 extension DataFormat {
@@ -684,15 +582,6 @@ class RelativeDateProvider: DateProvider {
     }
 }
 
-/// `DateCorrector` mock, correcting dates by adding predefined offset.
-class DateCorrectorMock: DateCorrector {
-    var offset: TimeInterval
-
-    init(offset: TimeInterval = 0) {
-        self.offset = offset
-    }
-}
-
 extension AppState: AnyMockable, RandomMockable {
     static func mockAny() -> AppState {
         return .active
@@ -704,24 +593,6 @@ extension AppState: AnyMockable, RandomMockable {
 
     static func mockRandom(runningInForeground: Bool) -> AppState {
         return runningInForeground ? [.active, .inactive].randomElement()! : .background
-    }
-}
-
-extension AppStateHistory: AnyMockable {
-    static func mockAny() -> Self {
-        return mockAppInForeground(since: .mockDecember15th2019At10AMUTC())
-    }
-
-    static func mockAppInForeground(since date: Date = Date()) -> Self {
-        return .init(initialSnapshot: .init(state: .active, date: date), recentDate: date)
-    }
-
-    static func mockAppInBackground(since date: Date = Date()) -> Self {
-        return .init(initialSnapshot: .init(state: .background, date: date), recentDate: date)
-    }
-
-    static func mockRandom(since date: Date = Date()) -> Self {
-        return Bool.random() ? mockAppInForeground(since: date) : mockAppInBackground(since: date)
     }
 }
 
@@ -757,27 +628,6 @@ class AppStateListenerMock: AppStateListening, AnyMockable {
     func subscribe<Observer: AppStateHistoryObserver>(_ subscriber: Observer) where Observer.ObservedValue == AppStateHistory {}
 }
 
-extension UserInfo: AnyMockable, RandomMockable {
-    static func mockAny() -> UserInfo {
-        return mockEmpty()
-    }
-
-    static func mockEmpty() -> UserInfo {
-        return UserInfo(id: nil, name: nil, email: nil, extraInfo: [:])
-    }
-
-    static func mockRandom() -> UserInfo {
-        return .init(
-            id: .mockRandom(),
-            name: .mockRandom(),
-            email: .mockRandom(),
-            extraInfo: mockRandomAttributes()
-        )
-    }
-}
-
-extension UserInfo: EquatableInTests {}
-
 extension UserInfoProvider {
     static func mockAny() -> UserInfoProvider {
         return mockWith()
@@ -792,7 +642,7 @@ extension UserInfoProvider {
 
 extension HTTPClient {
     static func mockAny() -> HTTPClient {
-        return HTTPClient(session: URLSession())
+        return HTTPClient(session: .mockAny())
     }
 }
 
@@ -834,228 +684,9 @@ extension DataUploadStatus: RandomMockable {
     }
 }
 
-extension DeviceInfo {
-    static func mockAny() -> DeviceInfo {
-        return .mockWith()
-    }
-
-    static func mockWith(
-        name: String = .mockAny(),
-        model: String = .mockAny(),
-        osName: String = .mockAny(),
-        osVersion: String = .mockAny(),
-        architecture: String = .mockAny()
-    ) -> DeviceInfo {
-        return .init(
-            name: name,
-            model: model,
-            osName: osName,
-            osVersion: osVersion,
-            architecture: architecture
-        )
-    }
-
-    static func mockRandom() -> DeviceInfo {
-        return .init(
-            name: .mockRandom(),
-            model: .mockRandom(),
-            osName: .mockRandom(),
-            osVersion: .mockRandom(),
-            architecture: .mockRandom()
-        )
-    }
-}
-
 extension BatteryStatus.State {
     static func mockRandom(within cases: [BatteryStatus.State] = [.unknown, .unplugged, .charging, .full]) -> BatteryStatus.State {
         return cases.randomElement()!
-    }
-}
-
-extension BatteryStatus {
-    static func mockAny() -> BatteryStatus {
-        return mockWith()
-    }
-
-    static func mockWith(
-        state: State = .charging,
-        level: Float = 0.5
-    ) -> BatteryStatus {
-        return BatteryStatus(state: state, level: level)
-    }
-}
-
-extension NetworkConnectionInfo.Reachability {
-    static func mockAny() -> NetworkConnectionInfo.Reachability {
-        return .maybe
-    }
-
-    static func mockRandom(
-        within cases: [NetworkConnectionInfo.Reachability] = [.yes, .no, .maybe]
-    ) -> NetworkConnectionInfo.Reachability {
-        return cases.randomElement()!
-    }
-}
-
-extension NetworkConnectionInfo.Interface: RandomMockable {
-    static func mockRandom() -> NetworkConnectionInfo.Interface {
-        return allCases.randomElement()!
-    }
-}
-
-extension NetworkConnectionInfo: RandomMockable {
-    static func mockAny() -> NetworkConnectionInfo {
-        return mockWith()
-    }
-
-    static func mockWith(
-        reachability: NetworkConnectionInfo.Reachability = .mockAny(),
-        availableInterfaces: [NetworkConnectionInfo.Interface] = [.wifi],
-        supportsIPv4: Bool = true,
-        supportsIPv6: Bool = true,
-        isExpensive: Bool = true,
-        isConstrained: Bool = true
-    ) -> NetworkConnectionInfo {
-        return NetworkConnectionInfo(
-            reachability: reachability,
-            availableInterfaces: availableInterfaces,
-            supportsIPv4: supportsIPv4,
-            supportsIPv6: supportsIPv6,
-            isExpensive: isExpensive,
-            isConstrained: isConstrained
-        )
-    }
-
-    static func mockRandom() -> NetworkConnectionInfo {
-        return NetworkConnectionInfo(
-            reachability: .mockRandom(),
-            availableInterfaces: .mockRandom(),
-            supportsIPv4: .random(),
-            supportsIPv6: .random(),
-            isExpensive: .random(),
-            isConstrained: .random()
-        )
-    }
-}
-
-class NetworkConnectionInfoProviderMock: NetworkConnectionInfoProviderType, WrappedNetworkConnectionInfoProvider {
-    private let queue = DispatchQueue(label: "com.datadoghq.NetworkConnectionInfoProviderMock")
-    private var _current: NetworkConnectionInfo?
-
-    init(networkConnectionInfo: NetworkConnectionInfo?) {
-        _current = networkConnectionInfo
-    }
-
-    func set(current: NetworkConnectionInfo?) {
-        queue.async { self._current = current }
-    }
-
-    // MARK: - NetworkConnectionInfoProviderType
-
-    var current: NetworkConnectionInfo? {
-        queue.sync { _current }
-    }
-
-    func subscribe<Observer: NetworkConnectionInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == NetworkConnectionInfo? {
-    }
-
-    // MARK: - Mocking
-
-    static func mockAny() -> NetworkConnectionInfoProviderMock {
-        return mockWith()
-    }
-
-    static func mockWith(
-        networkConnectionInfo: NetworkConnectionInfo? = .mockAny()
-    ) -> NetworkConnectionInfoProviderMock {
-        return NetworkConnectionInfoProviderMock(networkConnectionInfo: networkConnectionInfo)
-    }
-}
-
-extension CarrierInfo.RadioAccessTechnology: RandomMockable {
-    static func mockAny() -> CarrierInfo.RadioAccessTechnology { .LTE }
-
-    static func mockRandom() -> CarrierInfo.RadioAccessTechnology {
-        return allCases.randomElement()!
-    }
-}
-
-extension CarrierInfo: RandomMockable {
-    static func mockAny() -> CarrierInfo {
-        return mockWith()
-    }
-
-    static func mockWith(
-        carrierName: String? = .mockAny(),
-        carrierISOCountryCode: String? = .mockAny(),
-        carrierAllowsVOIP: Bool = .mockAny(),
-        radioAccessTechnology: CarrierInfo.RadioAccessTechnology = .mockAny()
-    ) -> CarrierInfo {
-        return CarrierInfo(
-            carrierName: carrierName,
-            carrierISOCountryCode: carrierISOCountryCode,
-            carrierAllowsVOIP: carrierAllowsVOIP,
-            radioAccessTechnology: radioAccessTechnology
-        )
-    }
-
-    static func mockRandom() -> CarrierInfo {
-        return CarrierInfo(
-            carrierName: .mockRandom(),
-            carrierISOCountryCode: .mockRandom(),
-            carrierAllowsVOIP: .random(),
-            radioAccessTechnology: .mockRandom()
-        )
-    }
-}
-
-class CarrierInfoProviderMock: CarrierInfoProviderType {
-    private let queue = DispatchQueue(label: "com.datadoghq.CarrierInfoProviderMock")
-    private var _current: CarrierInfo?
-
-    init(carrierInfo: CarrierInfo?) {
-        _current = carrierInfo
-    }
-
-    func set(current: CarrierInfo?) {
-        queue.async { self._current = current }
-    }
-
-    // MARK: - CarrierInfoProviderType
-
-    var current: CarrierInfo? {
-        queue.sync { _current }
-    }
-
-    func subscribe<Observer: CarrierInfoObserver>(_ subscriber: Observer) where Observer.ObservedValue == CarrierInfo? {
-    }
-
-    // MARK: - Mocking
-
-    static func mockAny() -> CarrierInfoProviderMock {
-        return mockWith()
-    }
-
-    static func mockWith(
-        carrierInfo: CarrierInfo = .mockAny()
-    ) -> CarrierInfoProviderMock {
-        return CarrierInfoProviderMock(carrierInfo: carrierInfo)
-    }
-}
-
-extension AppVersionProvider: AnyMockable {
-    static func mockAny() -> AppVersionProvider {
-        return AppVersionProvider(configuration: .mockAny())
-    }
-
-    static func mockWith(version: String) -> AppVersionProvider {
-        return AppVersionProvider(configuration: .mockWith(applicationVersion: version))
-    }
-}
-
-extension CodableValue {
-    static func mockAny() -> CodableValue {
-        return CodableValue(String.mockAny())
     }
 }
 
@@ -1121,6 +752,14 @@ class MockHostsSanitizer: HostsSanitizing {
     func sanitized(hosts: Set<String>, warningMessage: String) -> Set<String> {
         sanitizations.append((hosts: hosts, warningMessage: warningMessage))
         return hosts
+    }
+
+    func sanitized(
+        hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>],
+        warningMessage: String
+    ) -> [String: Set<TracingHeaderType>] {
+        sanitizations.append((hosts: Set(hostsWithTracingHeaderTypes.keys), warningMessage: warningMessage))
+        return hostsWithTracingHeaderTypes
     }
 }
 

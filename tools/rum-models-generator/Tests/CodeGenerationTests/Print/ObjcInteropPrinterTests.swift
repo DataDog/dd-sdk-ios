@@ -1,7 +1,7 @@
 /*
 * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
 * This product includes software developed at Datadog (https://www.datadoghq.com/).
-* Copyright 2019-2020 Datadog, Inc.
+* Copyright 2019-Present Datadog, Inc.
 */
 
 import XCTest
@@ -1037,7 +1037,7 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         @objc
         public class DDFooBar: NSObject {
-            internal let swiftModel: Foo.Bar
+            internal var swiftModel: Foo.Bar
             internal var root: DDFooBar { self }
 
             internal init(swiftModel: Foo.Bar) {
@@ -1051,7 +1051,7 @@ final class ObjcInteropPrinterTests: XCTestCase {
 
         @objc
         public class DDFooBizz: NSObject {
-            internal let swiftModel: Foo.Bizz
+            internal var swiftModel: Foo.Bizz
             internal var root: DDFooBizz { self }
 
             internal init(swiftModel: Foo.Bizz) {

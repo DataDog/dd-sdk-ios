@@ -1,4 +1,4 @@
-// swift-tools-version:5.2
+// swift-tools-version: 5.5
 
 import PackageDescription
 
@@ -65,7 +65,7 @@ let package = Package(
         .target(
             name: "DatadogSessionReplay",
             dependencies: ["Datadog"],
-            path: "session-replay/Sources"
+            path: "DatadogSessionReplay/Sources"
         ),
     ]
 )

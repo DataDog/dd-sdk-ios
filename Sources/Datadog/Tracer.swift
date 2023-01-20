@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -117,7 +117,7 @@ public class Tracer: OTTracer {
             spanEventMapper: tracingFeature.configuration.spanEventMapper,
             tracingUUIDGenerator: tracingFeature.configuration.uuidGenerator,
             dateProvider: tracingFeature.configuration.dateProvider,
-            rumIntegration: tracerConfiguration.bundleWithRUM ? TracingWithRUMIntegration() : nil,
+            rumIntegration: tracerConfiguration.bundleWithRUM ? (tracingFeature.messageReceiver as? TracingMessageReceiver)?.rum : nil,
             loggingIntegration: TracingWithLoggingIntegration(
                 core: core,
                 tracerConfiguration: tracerConfiguration

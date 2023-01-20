@@ -1,14 +1,14 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
 @testable import Datadog
 
 class URLSessionSwizzlerTests: XCTestCase {
-    let core = DatadogCoreMock()
+    private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
     private let interceptor = URLSessionInterceptorMock()
 
     override func setUpWithError() throws {
@@ -19,11 +19,14 @@ class URLSessionSwizzlerTests: XCTestCase {
         )
 
         instrumentation.enable() // swizzle `URLSession`
+
+        core = DatadogCoreProxy()
         core.register(feature: instrumentation)
     }
 
     override func tearDown() {
-        core.flush()
+        core.flushAndTearDown()
+        core = nil
         super.tearDown()
     }
 

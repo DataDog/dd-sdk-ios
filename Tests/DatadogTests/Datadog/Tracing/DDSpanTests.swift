@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -29,7 +29,7 @@ class DDSpanTests: XCTestCase {
 
     func testWhenLoggingSpanEvent_itWritesLogToLogOutput() throws {
         let core = PassthroughCoreMock(
-            messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
+            messageReceiver: LogMessageReceiver.mockAny()
         )
 
         core.expectation = expectation(description: "write span event")

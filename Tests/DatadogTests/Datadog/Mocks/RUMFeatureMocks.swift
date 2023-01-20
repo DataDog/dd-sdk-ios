@@ -1,60 +1,72 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 @testable import Datadog
 import XCTest
 
 extension RUMFeature {
-    /// Mocks feature instance which performs no writes and no uploads.
-    static func mockNoOp(configuration: FeaturesConfiguration.RUM = .mockAny()) -> RUMFeature {
+    /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
+    static func mockAny() -> RUMFeature { .mockWith() }
+
+    /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
+    static func mockWith(
+        configuration: FeaturesConfiguration.RUM = .mockAny(),
+        messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+    ) -> RUMFeature {
         return RUMFeature(
             storage: .mockNoOp(),
-            upload: .mockNoOp(),
-            configuration: configuration,
-            messageReceiver: NOPFeatureMessageReceiver()
-        )
-    }
-
-    /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
-    /// Use `RUMFeature.waitAndReturnRUMEventMatchers()` to inspect and assert recorded `RUMEvents`.
-    static func mockByRecordingRUMEventMatchers(
-        configuration: FeaturesConfiguration.RUM = .mockAny(),
-        messageReceiver: FeatureMessageReceiver = RUMMessageReceiver()
-    ) -> RUMFeature {
-        // Mock storage with `InMemoryWriter`, used later for retrieving recorded events back:
-        let interceptedStorage = FeatureStorage(
-            writer: InMemoryWriter(),
-            reader: NoOpFileReader(),
-            arbitraryAuthorizedWriter: NoOpFileWriter(),
-            dataOrchestrator: NoOpDataOrchestrator()
-        )
-        return RUMFeature(
-            storage: interceptedStorage,
             upload: .mockNoOp(),
             configuration: configuration,
             messageReceiver: messageReceiver
         )
     }
+}
 
-    // MARK: - Expecting RUMEvent Data
+extension DatadogCoreProxy {
+    func waitAndReturnRUMEventMatchers(file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
+        return try waitAndReturnEventsData(of: RUMFeature.self)
+            .map { data in try RUMEventMatcher.fromJSONObjectData(data) }
+    }
+}
 
-    func waitAndReturnRUMEventMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
-        guard let inMemoryWriter = storage.writer as? InMemoryWriter else {
-            preconditionFailure("Retrieving matchers requires that feature is mocked with `.mockByRecordingRUMEventMatchers()`")
-        }
-        return try inMemoryWriter.waitAndReturnEventsData(count: count, file: file, line: line)
-            .map { eventData in try RUMEventMatcher.fromJSONObjectData(eventData) }
+extension WebViewEventReceiver: AnyMockable {
+    static func mockAny() -> Self {
+        .mockWith()
     }
 
-    // swiftlint:disable:next function_default_parameter_at_end
-    static func waitAndReturnRUMEventMatchers(in core: DatadogCoreProtocol = defaultDatadogCore, count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
-        guard let rum = core.v1.feature(RUMFeature.self) else {
-            preconditionFailure("RUMFeature is not registered in core")
-        }
-        return try rum.waitAndReturnRUMEventMatchers(count: count, file: file, line: line)
+    static func mockWith(
+        dateProvider: DateProvider = SystemDateProvider(),
+        commandSubscriber: RUMCommandSubscriber = GlobalRUMCommandSubscriber()
+    ) -> Self {
+        .init(
+            dateProvider: dateProvider,
+            commandSubscriber: commandSubscriber
+        )
+    }
+}
+
+extension CrashReportReceiver: AnyMockable {
+    static func mockAny() -> Self {
+        .mockWith()
+    }
+
+    static func mockWith(
+        applicationID: String = .mockAny(),
+        dateProvider: DateProvider = SystemDateProvider(),
+        sessionSampler: Sampler = .mockKeepAll(),
+        backgroundEventTrackingEnabled: Bool = true,
+        uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
+    ) -> Self {
+        .init(
+            applicationID: applicationID,
+            dateProvider: dateProvider,
+            sessionSampler: sessionSampler,
+            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
+            uuidGenerator: uuidGenerator
+        )
     }
 }
 
@@ -649,7 +661,7 @@ extension RUMScopeDependencies {
         sessionSampler: Sampler = .mockKeepAll(),
         backgroundEventTrackingEnabled: Bool = .mockAny(),
         frustrationTrackingEnabled: Bool = true,
-        firstPartyURLsFilter: FirstPartyURLsFilter = FirstPartyURLsFilter(hosts: []),
+        firstPartyHosts: FirstPartyHosts = .init([:]),
         eventBuilder: RUMEventBuilder = RUMEventBuilder(eventsMapper: .mockNoOp()),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         ciTest: RUMCITest? = nil,
@@ -663,7 +675,7 @@ extension RUMScopeDependencies {
             sessionSampler: sessionSampler,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
             frustrationTrackingEnabled: frustrationTrackingEnabled,
-            firstPartyURLsFilter: firstPartyURLsFilter,
+            firstPartyHosts: firstPartyHosts,
             eventBuilder: eventBuilder,
             rumUUIDGenerator: rumUUIDGenerator,
             ciTest: ciTest,
@@ -679,7 +691,7 @@ extension RUMScopeDependencies {
         sessionSampler: Sampler? = nil,
         backgroundEventTrackingEnabled: Bool? = nil,
         frustrationTrackingEnabled: Bool? = nil,
-        firstPartyUrls: Set<String>? = nil,
+        firstPartyHosts: FirstPartyHosts? = nil,
         eventBuilder: RUMEventBuilder? = nil,
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
         ciTest: RUMCITest? = nil,
@@ -693,7 +705,7 @@ extension RUMScopeDependencies {
             sessionSampler: sessionSampler ?? self.sessionSampler,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled ?? self.backgroundEventTrackingEnabled,
             frustrationTrackingEnabled: frustrationTrackingEnabled ?? self.frustrationTrackingEnabled,
-            firstPartyURLsFilter: firstPartyUrls.map { .init(hosts: $0) } ?? self.firstPartyURLsFilter,
+            firstPartyHosts: firstPartyHosts ?? self.firstPartyHosts,
             eventBuilder: eventBuilder ?? self.eventBuilder,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
             ciTest: ciTest ?? self.ciTest,

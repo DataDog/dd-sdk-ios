@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import XCTest
@@ -9,15 +9,15 @@ import XCTest
 
 // swiftlint:disable multiline_arguments_brackets
 class LoggerTests: XCTestCase {
-    private var core: DatadogCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
+    private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
-        core = DatadogCoreMock()
+        core = DatadogCoreProxy()
     }
 
     override func tearDown() {
-        core.flush()
+        core.flushAndTearDown()
         core = nil
         super.tearDown()
     }
@@ -33,17 +33,18 @@ class LoggerTests: XCTestCase {
             device: .mockWith(architecture: "testArch")
         )
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(
+        let feature: LoggingFeature = .mockWith(
             configuration: .mockWith(
                 dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
-                applicationBundleIdentifier: "com.datadoghq.ios-sdk")
+                applicationBundleIdentifier: "com.datadoghq.ios-sdk"
+            )
         )
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
         logger.debug("message")
 
-        let logMatcher = try feature.waitAndReturnLogMatchers(count: 1)[0]
+        let logMatcher = try core.waitAndReturnLogMatchers()[0]
         try logMatcher.assertItFullyMatches(jsonString: """
         {
           "status" : "debug",
@@ -67,7 +68,7 @@ class LoggerTests: XCTestCase {
     func testSendingLogWithCustomizedLogger() throws {
         core.context = .mockAny()
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        let feature: LoggingFeature = .mockAny()
         core.register(feature: feature)
 
         let logger = Logger.builder
@@ -77,7 +78,7 @@ class LoggerTests: XCTestCase {
             .build(in: core)
         logger.debug("message")
 
-        let logMatcher = try feature.waitAndReturnLogMatchers(count: 1)[0]
+        let logMatcher = try core.waitAndReturnLogMatchers()[0]
 
         logMatcher.assertServiceName(equals: "custom-service-name")
         logMatcher.assertLoggerName(equals: "custom-logger-name")
@@ -98,7 +99,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending Customized Logs
 
     func testSendingLogsWithDifferentDates() throws {
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(
+        let feature: LoggingFeature = .mockWith(
             configuration: .mockWith(
                 dateProvider: RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC(), advancingBySeconds: 1)
             )
@@ -110,7 +111,7 @@ class LoggerTests: XCTestCase {
         logger.info("message 2")
         logger.info("message 3")
 
-        let logMatchers = try feature.waitAndReturnLogMatchers(count: 3)
+        let logMatchers = try core.waitAndReturnLogMatchers()
         logMatchers[0].assertDate(matches: { $0 == Date.mockDecember15th2019At10AMUTC() })
         logMatchers[1].assertDate(matches: { $0 == Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1) })
         logMatchers[2].assertDate(matches: { $0 == Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 2) })
@@ -119,7 +120,7 @@ class LoggerTests: XCTestCase {
     func testSendingLogsWithDifferentLevels() throws {
         core.context = .mockAny()
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        let feature: LoggingFeature = .mockAny()
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
@@ -130,7 +131,7 @@ class LoggerTests: XCTestCase {
         logger.error("message")
         logger.critical("message")
 
-        let logMatchers = try feature.waitAndReturnLogMatchers(count: 6)
+        let logMatchers = try core.waitAndReturnLogMatchers()
         logMatchers[0].assertStatus(equals: "debug")
         logMatchers[1].assertStatus(equals: "info")
         logMatchers[2].assertStatus(equals: "notice")
@@ -142,7 +143,7 @@ class LoggerTests: XCTestCase {
     func testSendingLogsAboveCertainLevel() throws {
         core.context = .mockAny()
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        let feature: LoggingFeature = .mockAny()
         core.register(feature: feature)
 
         let logger = Logger.builder
@@ -156,7 +157,7 @@ class LoggerTests: XCTestCase {
         logger.error("message")
         logger.critical("message")
 
-        let logMatchers = try feature.waitAndReturnLogMatchers(count: 3)
+        let logMatchers = try core.waitAndReturnLogMatchers()
         logMatchers[0].assertStatus(equals: "warn")
         logMatchers[1].assertStatus(equals: "error")
         logMatchers[2].assertStatus(equals: "critical")
@@ -167,7 +168,7 @@ class LoggerTests: XCTestCase {
     func testLoggingError() throws {
         core.context = .mockAny()
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        let feature: LoggingFeature = .mockAny()
         core.register(feature: feature)
 
         struct TestError: Error {
@@ -183,7 +184,7 @@ class LoggerTests: XCTestCase {
         logger.error("message", error: error)
         logger.critical("message", error: error)
 
-        let logMatchers = try feature.waitAndReturnLogMatchers(count: 6)
+        let logMatchers = try core.waitAndReturnLogMatchers()
         for matcher in logMatchers {
             matcher.assertValue(forKeyPath: "error.stack", equals: "TestError(description: \"Test description\")")
             matcher.assertValue(forKeyPath: "error.message", equals: "TestError(description: \"Test description\")")
@@ -194,7 +195,7 @@ class LoggerTests: XCTestCase {
     func testLoggingErrorStrings() throws {
         core.context = .mockAny()
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        let feature: LoggingFeature = .mockAny()
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
@@ -209,7 +210,7 @@ class LoggerTests: XCTestCase {
                    attributes: nil
         )
 
-        let logMatchers = try feature.waitAndReturnLogMatchers(count: 1)
+        let logMatchers = try core.waitAndReturnLogMatchers()
         let logMatcher = logMatchers.first
         XCTAssertNotNil(logMatcher)
         if let logMatcher = logMatcher {
@@ -223,7 +224,7 @@ class LoggerTests: XCTestCase {
 
     func testSamplingEnabled() {
         core.context = .mockAny()
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(configuration: .mockWith(remoteLoggingSampler: Sampler(samplingRate: 100)))
+        let feature: LoggingFeature = .mockWith(configuration: .mockWith(remoteLoggingSampler: Sampler(samplingRate: 100)))
         core.register(feature: feature)
 
         let logger = Logger.builder
@@ -236,12 +237,12 @@ class LoggerTests: XCTestCase {
         logger.error(.mockAny())
         logger.critical(.mockAny())
 
-        XCTAssertEqual(try feature.waitAndReturnLogMatchers(count: 6).count, 6)
+        XCTAssertEqual(try core.waitAndReturnLogMatchers().count, 6)
     }
 
     func testSamplingDisabled() {
         core.context = .mockAny()
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(configuration: .mockWith(remoteLoggingSampler: Sampler(samplingRate: 0)))
+        let feature: LoggingFeature = .mockWith(configuration: .mockWith(remoteLoggingSampler: Sampler(samplingRate: 0)))
         core.register(feature: feature)
 
         let logger = Logger.builder
@@ -254,7 +255,7 @@ class LoggerTests: XCTestCase {
         logger.error(.mockAny())
         logger.critical(.mockAny())
 
-        XCTAssertEqual(try feature.waitAndReturnLogMatchers(count: 0).count, 0)
+        XCTAssertEqual(try core.waitAndReturnLogMatchers().count, 0)
     }
 
     // MARK: - Sending user info
@@ -264,7 +265,7 @@ class LoggerTests: XCTestCase {
             userInfo: .empty
         )
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        let feature: LoggingFeature = .mockAny()
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
@@ -289,7 +290,7 @@ class LoggerTests: XCTestCase {
         core.context.userInfo = .empty
         logger.debug("message with no user info")
 
-        let logMatchers = try feature.waitAndReturnLogMatchers(count: 4)
+        let logMatchers = try core.waitAndReturnLogMatchers()
         logMatchers[0].assertUserInfo(equals: nil)
 
         logMatchers[1].assertUserInfo(equals: (id: "abc-123", name: "Foo", email: nil))
@@ -315,7 +316,7 @@ class LoggerTests: XCTestCase {
             carrierInfo: nil
         )
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        let feature: LoggingFeature = .mockAny()
         core.register(feature: feature)
 
         let logger = Logger.builder
@@ -337,7 +338,7 @@ class LoggerTests: XCTestCase {
 
         logger.debug("message")
 
-        let logMatchers = try feature.waitAndReturnLogMatchers(count: 2)
+        let logMatchers = try core.waitAndReturnLogMatchers()
         logMatchers[0].assertValue(forKeyPath: "network.client.sim_carrier.name", equals: "Carrier")
         logMatchers[0].assertValue(forKeyPath: "network.client.sim_carrier.iso_country", equals: "US")
         logMatchers[0].assertValue(forKeyPath: "network.client.sim_carrier.technology", equals: "LTE")
@@ -352,7 +353,7 @@ class LoggerTests: XCTestCase {
             networkConnectionInfo: nil
         )
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        let feature: LoggingFeature = .mockAny()
         core.register(feature: feature)
 
         let logger = Logger.builder
@@ -383,7 +384,7 @@ class LoggerTests: XCTestCase {
 
         logger.debug("message")
 
-        let logMatchers = try feature.waitAndReturnLogMatchers(count: 2)
+        let logMatchers = try core.waitAndReturnLogMatchers()
         logMatchers[0].assertValue(forKeyPath: "network.client.reachability", equals: "yes")
         logMatchers[0].assertValue(forKeyPath: "network.client.available_interfaces", equals: ["wifi", "cellular"])
         logMatchers[0].assertValue(forKeyPath: "network.client.is_constrained", equals: false)
@@ -404,7 +405,7 @@ class LoggerTests: XCTestCase {
     func testSendingLoggerAttributesOfDifferentEncodableValues() throws {
         core.context = .mockAny()
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        let feature: LoggingFeature = .mockAny()
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
@@ -450,7 +451,7 @@ class LoggerTests: XCTestCase {
 
         logger.info("message")
 
-        let logMatcher = try feature.waitAndReturnLogMatchers(count: 1)[0]
+        let logMatcher = try core.waitAndReturnLogMatchers()[0]
         logMatcher.assertValue(forKey: "string", equals: "hello")
         logMatcher.assertValue(forKey: "bool", equals: true)
         logMatcher.assertValue(forKey: "int", equals: 10)
@@ -470,7 +471,7 @@ class LoggerTests: XCTestCase {
     func testSendingMessageAttributes() throws {
         core.context = .mockAny()
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        let feature: LoggingFeature = .mockAny()
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
@@ -490,7 +491,7 @@ class LoggerTests: XCTestCase {
         // send message
         logger.info("info message 3")
 
-        let logMatchers = try feature.waitAndReturnLogMatchers(count: 3)
+        let logMatchers = try core.waitAndReturnLogMatchers()
         logMatchers[0].assertValue(forKey: "attribute", equals: "logger's value")
         logMatchers[1].assertValue(forKey: "attribute", equals: "message's value")
         logMatchers[2].assertNoValue(forKey: "attribute")
@@ -504,7 +505,7 @@ class LoggerTests: XCTestCase {
             version: "1.2.3"
         )
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        let feature: LoggingFeature = .mockAny()
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)
@@ -530,7 +531,7 @@ class LoggerTests: XCTestCase {
         // send message
         logger.info("info message 3")
 
-        let logMatchers = try feature.waitAndReturnLogMatchers(count: 3)
+        let logMatchers = try core.waitAndReturnLogMatchers()
         logMatchers[0].assertTags(equal: ["tag1", "env:tests", "version:1.2.3"])
         logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd", "env:tests", "version:1.2.3"])
         logMatchers[2].assertTags(equal: ["env:tests", "version:1.2.3"])
@@ -541,10 +542,10 @@ class LoggerTests: XCTestCase {
     func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingLog_itContainsCurrentRUMContext() throws {
         core.context = .mockAny()
 
-        let logging: LoggingFeature = .mockByRecordingLogMatchers()
+        let logging: LoggingFeature = .mockAny()
         core.register(feature: logging)
 
-        let rum: RUMFeature = .mockNoOp()
+        let rum: RUMFeature = .mockAny()
         core.register(feature: rum)
 
         // given
@@ -558,30 +559,30 @@ class LoggerTests: XCTestCase {
         logger.info("info message")
 
         // then
-        let logMatcher = try logging.waitAndReturnLogMatchers(count: 1)[0]
+        let logMatcher = try core.waitAndReturnLogMatchers()[0]
         logMatcher.assertValue(
-            forKeyPath: RUMMonitor.Attributes.applicationID,
+            forKeyPath: RUMContextAttributes.applicationID,
             equals: rum.configuration.applicationID
         )
         logMatcher.assertValue(
-            forKeyPath: RUMMonitor.Attributes.sessionID,
+            forKeyPath: RUMContextAttributes.sessionID,
             isTypeOf: String.self
         )
         logMatcher.assertValue(
-            forKeyPath: RUMMonitor.Attributes.viewID,
+            forKeyPath: RUMContextAttributes.viewID,
             isTypeOf: String.self
         )
         logMatcher.assertValue(
-            forKeyPath: RUMMonitor.Attributes.userActionID,
+            forKeyPath: RUMContextAttributes.userActionID,
             isTypeOf: String.self
         )
     }
 
     func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorForCurrentView() throws {
-        let logging: LoggingFeature = .mockNoOp()
+        let logging: LoggingFeature = .mockAny()
         core.register(feature: logging)
 
-        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
+        let rum: RUMFeature = .mockWith(messageReceiver: ErrorMessageReceiver())
         core.register(feature: rum)
 
         // given
@@ -606,8 +607,7 @@ class LoggerTests: XCTestCase {
         logger.critical("critical message")
 
         // then
-        // [RUMView, RUMAction, RUMError, RUMView, RUMError, RUMView] events sent:
-        let rumEventMatchers = try rum.waitAndReturnRUMEventMatchers(count: 6)
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         let rumErrorMatcher1 = rumEventMatchers.first { $0.model(isTypeOf: RUMErrorEvent.self) }
         let rumErrorMatcher2 = rumEventMatchers.last { $0.model(isTypeOf: RUMErrorEvent.self) }
         try XCTUnwrap(rumErrorMatcher1).model(ofType: RUMErrorEvent.self) { rumModel in
@@ -627,10 +627,10 @@ class LoggerTests: XCTestCase {
     func testGivenBundlingWithTraceEnabledAndTracerRegistered_whenSendingLog_itContainsActiveSpanAttributes() throws {
         core.context = .mockAny()
 
-        let logging: LoggingFeature = .mockByRecordingLogMatchers()
+        let logging: LoggingFeature = .mockAny()
         core.register(feature: logging)
 
-        let tracing: TracingFeature = .mockNoOp()
+        let tracing: TracingFeature = .mockAny()
         core.register(feature: tracing)
 
         // given
@@ -645,7 +645,7 @@ class LoggerTests: XCTestCase {
         logger.info("info message 2")
 
         // then
-        let logMatchers = try logging.waitAndReturnLogMatchers(count: 2)
+        let logMatchers = try core.waitAndReturnLogMatchers()
         logMatchers[0].assertValue(
             forKeyPath: "dd.trace_id",
             equals: span.context.dd.traceID.toString(.decimal)
@@ -670,7 +670,7 @@ class LoggerTests: XCTestCase {
         )
 
         // When
-        let feature: LoggingFeature = .mockByRecordingLogMatchers(
+        let feature: LoggingFeature = .mockWith(
             configuration: .mockWith(dateProvider: RelativeDateProvider(using: deviceTime))
         )
         core.register(feature: feature)
@@ -679,7 +679,7 @@ class LoggerTests: XCTestCase {
         logger.debug("message")
 
         // Then
-        let logMatchers = try feature.waitAndReturnLogMatchers(count: 1)
+        let logMatchers = try core.waitAndReturnLogMatchers()
         logMatchers[0].assertDate { logDate in
             logDate == deviceTime.addingTimeInterval(serverTimeOffset)
         }
@@ -688,7 +688,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
-        let feature: LoggingFeature = .mockNoOp()
+        let feature: LoggingFeature = .mockAny()
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)

@@ -1,7 +1,7 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
@@ -56,4 +56,17 @@ internal class ActiveSpansPool {
         contextMap[activityReference.activityId] = nil
         rlock.unlock()
     }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    /// This explicit way of destroying `ActiveSpansPool` was added after noticing RUMM-2904. It is there to keep test coverage
+    /// for a scenario of incorret use of `span.setActive()` API. Until RUMM-2904 is fixed, `destroy()` is necessary to not
+    /// leak the `core` object memory in tests. It should be removed after fixing the problem.
+    ///
+    /// TODO: RUMM-2904 Calling `span.setActive()` multiple times introduces retain cycle and leaks `DatadogCore` object
+    func destroy() {
+        rlock.lock()
+        contextMap = [:]
+        rlock.unlock()
+    }
+#endif
 }

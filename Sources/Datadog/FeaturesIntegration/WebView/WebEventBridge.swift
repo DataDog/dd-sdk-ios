@@ -1,16 +1,10 @@
 /*
  * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-2020 Datadog, Inc.
+ * Copyright 2019-Present Datadog, Inc.
  */
 
 import Foundation
-
-internal typealias JSON = [String: Any]
-
-internal protocol WebEventConsumer {
-    func consume(event: JSON) throws
-}
 
 internal enum WebEventError: Error, Equatable {
     case dataSerialization(message: String)
@@ -24,32 +18,39 @@ internal class WebEventBridge {
         static let eventTypeKey = "eventType"
         static let eventKey = "event"
         static let eventTypeLog = "log"
+        static let browserLog = "browser-log"
+        static let browserEvent = "browser-rum-event"
     }
 
-    private let logEventConsumer: WebEventConsumer?
-    private let rumEventConsumer: WebEventConsumer?
+    private let core: DatadogCoreProtocol
 
-    init(logEventConsumer: WebEventConsumer?, rumEventConsumer: WebEventConsumer?) {
-        self.logEventConsumer = logEventConsumer
-        self.rumEventConsumer = rumEventConsumer
+    init(core: DatadogCoreProtocol) {
+        self.core = core
     }
 
     func consume(_ anyMessage: Any) throws {
         guard let message = anyMessage as? String else {
             throw WebEventError.invalidMessage(description: String(describing: anyMessage))
         }
+
         let eventJSON = try parse(message)
-        guard let eventType = eventJSON[Constants.eventTypeKey] as? String else {
+
+        guard let type = eventJSON[Constants.eventTypeKey] as? String else {
             throw WebEventError.missingKey(key: Constants.eventTypeKey)
         }
-        guard let wrappedEvent = eventJSON[Constants.eventKey] as? JSON else {
+
+        guard let event = eventJSON[Constants.eventKey] as? JSON else {
             throw WebEventError.missingKey(key: Constants.eventKey)
         }
 
-        if eventType == Constants.eventTypeLog {
-            try logEventConsumer?.consume(event: wrappedEvent)
+        if type == Constants.eventTypeLog {
+            core.send(message: .custom(key: Constants.browserLog, baggage: .init(event)), else: {
+                DD.logger.warn("A WebView log is lost because Logging is disabled in the SDK")
+            })
         } else {
-            try rumEventConsumer?.consume(event: wrappedEvent)
+            core.send(message: .custom(key: Constants.browserEvent, baggage: .init(event)), else: {
+                DD.logger.warn("A WebView RUM event is lost because RUM is disabled in the SDK")
+            })
         }
     }
 
