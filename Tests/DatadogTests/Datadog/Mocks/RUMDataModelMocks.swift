@@ -111,7 +111,7 @@ extension RUMViewEvent: RandomMockable {
     static func mockRandomWith(
         viewIsActive: Bool? = .random(),
         viewTimeSpent: Int64 = .mockRandom(),
-        crashCount: Int64 = .mockRandom()
+        crashCount: Int64? = nil
     ) -> RUMViewEvent {
         return RUMViewEvent(
             dd: .init(
@@ -141,7 +141,7 @@ extension RUMViewEvent: RandomMockable {
                 action: .init(count: .mockRandom()),
                 cpuTicksCount: .mockRandom(),
                 cpuTicksPerSecond: .mockRandom(),
-                crash: .init(count: crashCount),
+                crash: crashCount.map { .init(count: $0) },
                 cumulativeLayoutShift: .mockRandom(),
                 customTimings: .mockAny(),
                 domComplete: .mockRandom(),
