@@ -9,6 +9,12 @@ import UIKit
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 
+// MARK: - Equatable conformances
+
+extension ViewTreeSnapshot: EquatableInTests {}
+extension TouchSnapshot: EquatableInTests {}
+extension Node: EquatableInTests {}
+
 // MARK: - ViewTreeSnapshot Mocks
 
 extension ViewTreeSnapshot: AnyMockable, RandomMockable {
@@ -178,6 +184,14 @@ func mockRandomNodeSemantics() -> NodeSemantics {
     return all.randomElement()!
 }
 
+struct ShapeWireframesBuilderMock: NodeWireframesBuilder {
+    let wireframeRect: CGRect
+
+    func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+        return [builder.createShapeWireframe(id: .mockAny(), frame: wireframeRect)]
+    }
+}
+
 extension Node: AnyMockable, RandomMockable {
     public static func mockAny() -> Node {
         return mockWith()
@@ -216,6 +230,18 @@ extension Node: AnyMockable, RandomMockable {
             viewAttributes: .mockRandom(),
             semantics: mockRandomNodeSemantics(),
             children: depth <= 0 ? [] : (0..<breadth).map { _ in mockRandom(depth: depth - 1, breadth: breadth) }
+        )
+    }
+}
+
+extension SpecificElement {
+    static func mockAny() -> SpecificElement {
+        SpecificElement(wireframesBuilder: NOPWireframesBuilderMock(), recordSubtree: .mockRandom())
+    }
+    static func mock(wireframeRect: CGRect, recordSubtree: Bool = .mockRandom()) -> SpecificElement {
+        SpecificElement(
+            wireframesBuilder: ShapeWireframesBuilderMock(wireframeRect: wireframeRect),
+            recordSubtree: recordSubtree
         )
     }
 }
