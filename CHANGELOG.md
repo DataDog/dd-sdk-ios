@@ -1,5 +1,7 @@
 # Unreleased
 
+# 1.15.0 / 23-01-2023
+
 - [BUGFIX] Fix 'Could not allocate memory' after corrupted TLV. See [#1089][] (Thanks [@cltnschlosser][])
 
 # 1.14.0 / 20-12-2022
