@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal struct UserInfo: Codable {
+internal struct UserInfo: Codable, DictionaryEncodable {
     /// User ID, if any.
     internal let id: String?
     /// Name representing the user, if any.
