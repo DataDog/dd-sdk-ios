@@ -18,8 +18,10 @@ class WebViewEventReceiverTests: XCTestCase {
                 serverTimeOffset: 123,
                 featuresAttributes: [
                     "rum": [
-                        RUMContextAttributes.applicationID: "123456",
-                        RUMContextAttributes.sessionID: "e9796469-c2a1-43d6-b0f6-65c47d33cf5f"
+                        "ids": [
+                            RUMContextAttributes.IDs.applicationID: "123456",
+                            RUMContextAttributes.IDs.sessionID: "e9796469-c2a1-43d6-b0f6-65c47d33cf5f"
+                        ]
                     ]
                 ]
             ),

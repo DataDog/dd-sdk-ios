@@ -149,8 +149,10 @@ class WKUserContentController_DatadogTests: XCTestCase {
                 applicationBundleIdentifier: "com.datadoghq.ios-sdk",
                 featuresAttributes: [
                     "rum": [
-                        RUMContextAttributes.sessionID: UUID.nullUUID.uuidString.lowercased(),
-                        RUMContextAttributes.applicationID: String.mockAny()
+                        "ids": [
+                            RUMContextAttributes.IDs.sessionID: UUID.nullUUID.uuidString.lowercased(),
+                            RUMContextAttributes.IDs.applicationID: String.mockAny()
+                        ]
                     ]
                 ]
             )

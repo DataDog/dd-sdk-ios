@@ -613,10 +613,12 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 }
 
                 return [
-                    RUMContextAttributes.applicationID: context.rumApplicationID,
-                    RUMContextAttributes.sessionID: context.sessionID.rawValue.uuidString.lowercased(),
-                    RUMContextAttributes.viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
-                    RUMContextAttributes.userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased(),
+                    RUMContextAttributes.ids: [
+                        RUMContextAttributes.IDs.applicationID: context.rumApplicationID,
+                        RUMContextAttributes.IDs.sessionID: context.sessionID.rawValue.uuidString.lowercased(),
+                        RUMContextAttributes.IDs.viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
+                        RUMContextAttributes.IDs.userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased(),
+                    ],
                     RUMContextAttributes.serverTimeOffset: self.applicationScope.sessionScope?.viewScopes.last?.serverTimeOffset
                 ]
             }

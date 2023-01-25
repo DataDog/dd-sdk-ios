@@ -85,10 +85,10 @@ private extension DatadogContext {
 
 private extension FeatureBaggage {
     var rumContext: RUMContext? {
-        guard let applicationID: String = self[RUMDependency.applicationIDKey],
-              let sessionID: String = self[RUMDependency.sessionIDKey],
-              let viewID: String = self[RUMDependency.viewIDKey],
-              let serverTimeOffset: TimeInterval = self[RUMDependency.serverTimeOffset]
+        guard let applicationID: String = self[RUMDependency.ids, type: [String: String].self]?[RUMDependency.IDs.applicationIDKey],
+              let sessionID: String = self[RUMDependency.ids, type: [String: String].self]?[RUMDependency.IDs.sessionIDKey],
+              let viewID: String = self[RUMDependency.ids, type: [String: String].self]?[RUMDependency.IDs.viewIDKey],
+              let serverTimeOffset: TimeInterval = self[RUMDependency.serverTimeOffsetKey]
         else {
             // Current RUM session is not sampled
             return nil

@@ -16,10 +16,12 @@ class RUMContextReceiverTests: XCTestCase {
         // Given
         let context = DatadogContext.mockWith(featuresAttributes: [
             RUMDependency.rumBaggageKey: [
-                RUMDependency.applicationIDKey: "app-id",
-                RUMDependency.sessionIDKey: "session-id",
-                RUMDependency.viewIDKey: "view-id",
-                RUMDependency.serverTimeOffset: TimeInterval(123)
+                RUMDependency.ids: [
+                    RUMDependency.IDs.applicationIDKey: "app-id",
+                    RUMDependency.IDs.sessionIDKey: "session-id",
+                    RUMDependency.IDs.viewIDKey: "view-id"
+                ],
+                RUMDependency.serverTimeOffsetKey: TimeInterval(123)
             ]
         ])
         let message = FeatureMessage.context(context)
@@ -65,19 +67,23 @@ class RUMContextReceiverTests: XCTestCase {
         // Given
         let context1 = DatadogContext.mockWith(featuresAttributes: [
             RUMDependency.rumBaggageKey: [
-                RUMDependency.applicationIDKey: "app-id-1",
-                RUMDependency.sessionIDKey: "session-id-1",
-                RUMDependency.viewIDKey: "view-id-1",
-                RUMDependency.serverTimeOffset: TimeInterval(123)
+                RUMDependency.ids: [
+                    RUMDependency.IDs.applicationIDKey: "app-id-1",
+                    RUMDependency.IDs.sessionIDKey: "session-id-1",
+                    RUMDependency.IDs.viewIDKey: "view-id-1"
+                ],
+                RUMDependency.serverTimeOffsetKey: TimeInterval(123)
             ]
         ])
         let message1 = FeatureMessage.context(context1)
         let context2 = DatadogContext.mockWith(featuresAttributes: [
             RUMDependency.rumBaggageKey: [
-                RUMDependency.applicationIDKey: "app-id-2",
-                RUMDependency.sessionIDKey: "session-id-2",
-                RUMDependency.viewIDKey: "view-id-2",
-                RUMDependency.serverTimeOffset: TimeInterval(345)
+                RUMDependency.ids: [
+                    RUMDependency.IDs.applicationIDKey: "app-id-2",
+                    RUMDependency.IDs.sessionIDKey: "session-id-2",
+                    RUMDependency.IDs.viewIDKey: "view-id-2"
+                ],
+                RUMDependency.serverTimeOffsetKey: TimeInterval(345)
             ]
         ])
         let message2 = FeatureMessage.context(context2)
@@ -126,10 +132,12 @@ class RUMContextReceiverTests: XCTestCase {
         // Given
         let context = DatadogContext.mockWith(featuresAttributes: [
             RUMDependency.rumBaggageKey: [
-                RUMDependency.applicationIDKey: "app-id",
-                RUMDependency.sessionIDKey: "session-id",
-                RUMDependency.viewIDKey: "view-id",
-                RUMDependency.serverTimeOffset: TimeInterval(123)
+                RUMDependency.ids: [
+                    RUMDependency.IDs.applicationIDKey: "app-id",
+                    RUMDependency.IDs.sessionIDKey: "session-id",
+                    RUMDependency.IDs.viewIDKey: "view-id"
+                ],
+                RUMDependency.serverTimeOffsetKey: TimeInterval(123)
             ]
         ])
         let message = FeatureMessage.context(context)

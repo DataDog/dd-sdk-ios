@@ -8,30 +8,40 @@ import Foundation
 
 /// Defines dependency between Session Replay (SR) and RUM modules.
 /// It aims at centralizing documentation of contracts between both products.
-internal struct RUMDependency {
+internal enum RUMDependency {
     // MARK: Contract from RUM to SR:
 
     /// The key for referencing RUM baggage (RUM context) in `DatadogContext.featuresAttributes`.
     ///
     /// SR expects:
     /// - empty baggage (`[:]`) if current RUM session is not sampled,
-    /// - baggage with `applicationIDKey`, `sessionIDKey` and `viewIDKey` keys if RUM session is sampled.
+    /// - baggage with `ids` and `serverTimeOffsetKey` keys if RUM session is sampled.
     static let rumBaggageKey = "rum"
 
-    /// The key for referencing RUM application ID inside RUM baggage.
+    /// The key for referencing RUM baggage (RUM context) ids in `DatadogContext.featuresAttributes`.
     ///
-    /// SR expects non-optional value holding lowercased, standard UUID `String`.
-    static let applicationIDKey = "application_id"
+    /// SR expects:
+    /// - `nil` if current RUM session is not sampled,
+    /// - baggage with `applicationIDKey`, `sessionIDKey` and `viewIDKey` keys if RUM session is sampled.
+    static let ids = "ids"
 
-    /// The key for referencing RUM session ID inside RUM baggage.
-    ///
-    /// SR expects non-optional value holding lowercased, standard UUID `String`.
-    static let sessionIDKey = "session_id"
+    internal enum IDs {
+        /// The key for referencing RUM application ID inside RUM baggage.
+        ///
+        /// SR expects non-optional value holding lowercased, standard UUID `String`.
+        static let applicationIDKey = "application_id"
 
-    /// The key for referencing RUM view ID inside RUM baggage.
-    ///
-    /// SR expects non-optional value holding lowercased, standard UUID `String`.
-    static let viewIDKey = "view.id"
+        /// The key for referencing RUM session ID inside RUM baggage.
+        ///
+        /// SR expects non-optional value holding lowercased, standard UUID `String`.
+        static let sessionIDKey = "session_id"
+
+        /// The key for referencing RUM view ID inside RUM baggage.
+        ///
+        /// SR expects non-optional value holding lowercased, standard UUID `String`.
+        static let viewIDKey = "view.id"
+    }
+
 
     // MARK: Contract from SR to RUM (mirror of `SessionReplayDependency` in RUM):
 
@@ -48,5 +58,5 @@ internal struct RUMDependency {
     /// The key referencing server time offset of current RUM view used for date correction.
     ///
     /// SR expects non-optional value of `TimeInterval`.
-    static let serverTimeOffset = "server_time_offset"
+    static let serverTimeOffsetKey = "server_time_offset"
 }
