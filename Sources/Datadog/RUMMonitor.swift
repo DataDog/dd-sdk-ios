@@ -66,10 +66,26 @@ internal typealias RUMErrorSourceType = RUMErrorEvent.Error.SourceType
 
 internal extension RUMErrorSourceType {
     static func extract(from attributes: inout [AttributeKey: AttributeValue]) -> Self {
-        return (attributes.removeValue(forKey: CrossPlatformAttributes.errorSourceType) as? String)
+        return (attributes.removeValue(forKey: CrossPlatformAttributes.errorSourceType))
+            .flatMap({
+                $0.decoded()
+            })
             .flatMap {
                 return RUMErrorEvent.Error.SourceType(rawValue: $0)
             } ?? .ios
+    }
+}
+
+internal extension AttributeValue {
+    func decoded<T>() -> T? {
+        switch self {
+        case let codable as DDAnyCodable:
+            return codable.value as? T
+        case let val as T:
+            return val
+        default:
+            return nil
+        }
     }
 }
 

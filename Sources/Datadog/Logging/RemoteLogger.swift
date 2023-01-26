@@ -167,7 +167,8 @@ internal final class RemoteLogger: LoggerProtocol {
                         baggage: [
                             "type": log.error?.kind,
                             "stack": log.error?.stack,
-                            "source": "logger"
+                            "source": "logger",
+                            "attributes": userAttributes
                         ]
                     )
                 )

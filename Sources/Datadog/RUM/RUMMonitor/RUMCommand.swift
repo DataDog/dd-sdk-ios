@@ -101,7 +101,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
         self.stack = stack
 
         self.errorSourceType = RUMErrorSourceType.extract(from: &self.attributes)
-        self.isCrash = self.attributes.removeValue(forKey: CrossPlatformAttributes.errorIsCrash) as? Bool
+        self.isCrash = self.attributes.removeValue(forKey: CrossPlatformAttributes.errorIsCrash)?.decoded()
     }
 
     init(

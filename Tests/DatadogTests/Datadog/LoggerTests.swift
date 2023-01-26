@@ -622,6 +622,150 @@ class LoggerTests: XCTestCase {
         }
     }
 
+    func testWhenSendingErrorOrCriticalLogsWithAttributes_itCreatesRUMErrorForCurrentViewWithAttributes() throws {
+        let logging: LoggingFeature = .mockAny()
+        core.register(feature: logging)
+
+        let rum: RUMFeature = .mockWith(messageReceiver: ErrorMessageReceiver())
+        core.register(feature: rum)
+
+        // given
+        let logger = Logger.builder.build(in: core)
+        Global.rum = RUMMonitor(
+            core: core,
+            dependencies: RUMScopeDependencies(
+                core: core,
+                rumFeature: rum
+            ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
+            dateProvider: SystemDateProvider()
+        )
+        Global.rum.startView(viewController: mockView)
+        defer { Global.rum = DDNoopRUMMonitor() }
+
+        // when
+        let attributeValueA: String = .mockRandom()
+        logger.error("error message", attributes: [
+            "any_attribute_a": attributeValueA
+        ])
+        let attributeValueB: String = .mockRandom()
+        logger.critical("critical message", attributes: [
+            "any_attribute_b": attributeValueB
+        ])
+
+        // then
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+        let rumErrorMatcher1 = rumEventMatchers.first { $0.model(isTypeOf: RUMErrorEvent.self) }
+        let rumErrorMatcher2 = rumEventMatchers.last { $0.model(isTypeOf: RUMErrorEvent.self) }
+        try XCTUnwrap(rumErrorMatcher1).model(ofType: RUMErrorEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.error.message, "error message")
+            XCTAssertEqual(rumModel.error.source, .logger)
+            XCTAssertNil(rumModel.error.stack)
+            let attributeValue = (rumModel.context?.contextInfo["any_attribute_a"] as? DDAnyCodable)?.value as? String
+            XCTAssertEqual(attributeValue, attributeValueA)
+        }
+        try XCTUnwrap(rumErrorMatcher2).model(ofType: RUMErrorEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.error.message, "critical message")
+            XCTAssertEqual(rumModel.error.source, .logger)
+            XCTAssertNil(rumModel.error.stack)
+            let attributeValue = (rumModel.context?.contextInfo["any_attribute_b"] as? DDAnyCodable)?.value as? String
+            XCTAssertEqual(attributeValue, attributeValueB)
+        }
+    }
+
+    func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorWithProperSourceType() throws {
+        let logging: LoggingFeature = .mockAny()
+        core.register(feature: logging)
+
+        let rum: RUMFeature = .mockWith(messageReceiver: ErrorMessageReceiver())
+        core.register(feature: rum)
+
+        // given
+        let logger = Logger.builder.build(in: core)
+        Global.rum = RUMMonitor(
+            core: core,
+            dependencies: RUMScopeDependencies(
+                core: core,
+                rumFeature: rum
+            ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
+            dateProvider: SystemDateProvider()
+        )
+        Global.rum.startView(viewController: mockView)
+        defer { Global.rum = DDNoopRUMMonitor() }
+
+        // when
+        logger.error("error message", attributes: [
+            "_dd.error.source_type": "flutter"
+        ])
+        logger.critical("critical message", attributes: [
+            "_dd.error.source_type": "react-native"
+        ])
+
+        // then
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+        let rumErrorMatcher1 = rumEventMatchers.first { $0.model(isTypeOf: RUMErrorEvent.self) }
+        let rumErrorMatcher2 = rumEventMatchers.last { $0.model(isTypeOf: RUMErrorEvent.self) }
+        try XCTUnwrap(rumErrorMatcher1).model(ofType: RUMErrorEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.error.message, "error message")
+            XCTAssertEqual(rumModel.error.source, .logger)
+            XCTAssertNil(rumModel.error.stack)
+            XCTAssertEqual(rumModel.error.sourceType, .flutter)
+        }
+        try XCTUnwrap(rumErrorMatcher2).model(ofType: RUMErrorEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.error.message, "critical message")
+            XCTAssertEqual(rumModel.error.source, .logger)
+            XCTAssertNil(rumModel.error.stack)
+            XCTAssertEqual(rumModel.error.sourceType, .reactNative)
+        }
+    }
+
+    func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorWithProperIsCrash() throws {
+        let logging: LoggingFeature = .mockAny()
+        core.register(feature: logging)
+
+        let rum: RUMFeature = .mockWith(messageReceiver: ErrorMessageReceiver())
+        core.register(feature: rum)
+
+        // given
+        let logger = Logger.builder.build(in: core)
+        Global.rum = RUMMonitor(
+            core: core,
+            dependencies: RUMScopeDependencies(
+                core: core,
+                rumFeature: rum
+            ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
+            dateProvider: SystemDateProvider()
+        )
+        Global.rum.startView(viewController: mockView)
+        defer { Global.rum = DDNoopRUMMonitor() }
+
+        // when
+        logger.error("error message", attributes: [
+            "_dd.error.is_crash": false
+        ])
+        logger.critical("critical message", attributes: [
+            "_dd.error.is_crash": true
+        ])
+
+        // then
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+        let rumErrorMatcher1 = rumEventMatchers.first { $0.model(isTypeOf: RUMErrorEvent.self) }
+        let rumErrorMatcher2 = rumEventMatchers.last { $0.model(isTypeOf: RUMErrorEvent.self) }
+        try XCTUnwrap(rumErrorMatcher1).model(ofType: RUMErrorEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.error.message, "error message")
+            XCTAssertEqual(rumModel.error.source, .logger)
+            XCTAssertNil(rumModel.error.stack)
+            // swiftlint:disable:next xct_specific_matcher
+            XCTAssertEqual(rumModel.error.isCrash, false)
+        }
+        try XCTUnwrap(rumErrorMatcher2).model(ofType: RUMErrorEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.error.message, "critical message")
+            XCTAssertEqual(rumModel.error.source, .logger)
+            XCTAssertNil(rumModel.error.stack)
+            // swiftlint:disable:next xct_specific_matcher
+            XCTAssertEqual(rumModel.error.isCrash, true)
+        }
+    }
+
     // MARK: - Integration With Active Span
 
     func testGivenBundlingWithTraceEnabledAndTracerRegistered_whenSendingLog_itContainsActiveSpanAttributes() throws {
