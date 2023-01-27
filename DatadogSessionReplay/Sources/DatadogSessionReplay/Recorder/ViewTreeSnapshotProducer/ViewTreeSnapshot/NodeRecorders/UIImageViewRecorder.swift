@@ -7,6 +7,7 @@
 import UIKit
 
 internal struct UIImageViewRecorder: NodeRecorder {
+    let imageDataProvider = ImageDataProvider()
     func semantics(
         of view: UIView,
         with attributes: ViewAttributes,
@@ -35,51 +36,66 @@ internal struct UIImageViewRecorder: NodeRecorder {
             attributes: attributes,
             contentFrame: contentFrame,
             clipsToBounds: imageView.clipsToBounds,
-            base64: imageView.image?.lazyBase64String
+            base64: imageDataProvider.lazyBase64String(imageView: imageView)
         )
         return SpecificElement(wireframesBuilder: builder, recordSubtree: true)
     }
 }
 
-fileprivate var associatedBase64StringKey: Int = 1
-fileprivate var associatedDataLoadingStatusKey: Int = 2
+extension UIView {
 
-extension UIImage {
-    enum DataLoadingStatus: String {
-        case loading, loaded, ignored
+    // Using a function since `var image` might conflict with an existing variable
+    // (like on `UIImageView`)
+    func asImage() -> UIImage {
+        let renderer = UIGraphicsImageRenderer(bounds: bounds)
+        return renderer.image { rendererContext in
+            layer.render(in: rendererContext.cgContext)
+        }
+    }
+}
+
+class ImageDataProvider {
+    enum DataLoadingStatus: Hashable {
+        case loading, loaded(_ base64: String), ignored
     }
 
-    var dataLoadingStaus: DataLoadingStatus? {
-        set { objc_setAssociatedObject(self, &associatedDataLoadingStatusKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
-        get { objc_getAssociatedObject(self, &associatedDataLoadingStatusKey) as? DataLoadingStatus }
-    }
+    var base64s = [String: DataLoadingStatus]()
 
-    private var base64String: String? {
-        set { objc_setAssociatedObject(self, &associatedBase64StringKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
-        get { objc_getAssociatedObject(self, &associatedBase64StringKey) as? String }
-    }
+    var emptyImageData = "R0lGODlhAQABAIAAAP7//wAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="
 
-    var lazyBase64String: String? {
+    func lazyBase64String(imageView: UIImageView) -> String? {
+        guard let image = imageView.image else {
+            return emptyImageData
+        }
+        let tintColor = imageView.tintColor
+        let hash = "\(image.hash)-\(String(describing: tintColor?.hash))"
+        let dataLoadingStaus = base64s[hash]
         switch dataLoadingStaus {
-        case .loaded:
+        case .loaded(let base64String):
             return base64String
         case .none:
-            dataLoadingStaus = .loading
+            base64s[hash] = .loading
+
             DispatchQueue.global(qos: .background).async { [weak self] in
-                let data = self?.pngData()
+                print("🏞️💾Size of Memory Cache \(Double(MemoryLayout.size(ofValue: self?.base64s))/1024) KB")
+                let data: Data?
+                if let tintColor = tintColor, #available(iOS 13.0, *) {
+                    data = image.withTintColor(tintColor).pngData()
+                } else {
+                    data = image.pngData()
+                }
                 let sizeKB = Double(data?.count ?? 0) / 1024.0
-                if sizeKB < 128.0 { // Max image size of 128KB
+                if let base64String = data?.base64EncodedString(), sizeKB < 128.0 { // Max image size of 128KB
                     print("🏞️✅ Loaded. Size: \(sizeKB) KB")
-                    self?.base64String = data?.base64EncodedString()
-                    self?.dataLoadingStaus = .loaded
+                    self?.base64s[hash] = .loaded(base64String)
                 } else {
                     print("🏞️❌ Ignored. Size: \(sizeKB) KB")
-                    self?.dataLoadingStaus = .ignored
+                    self?.base64s[hash] = .ignored
                 }
             }
             return nil
         case .ignored:
-            return ""
+            return emptyImageData
         case .loading:
             return nil
         }
