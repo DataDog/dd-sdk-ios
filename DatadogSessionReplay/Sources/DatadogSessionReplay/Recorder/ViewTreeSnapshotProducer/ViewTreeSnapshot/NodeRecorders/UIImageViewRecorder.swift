@@ -76,14 +76,15 @@ class ImageDataProvider {
         case .none:
             base64s[hash] = .loading
 
-            DispatchQueue.global(qos: .background).async { [weak self] in
+            DispatchQueue.main.async { [weak self] in
                 print("🏞️💾Size of Memory Cache \(Double(MemoryLayout.size(ofValue: self?.base64s))/1024) KB")
                 let data: Data?
-                if let tintColor = tintColor, #available(iOS 13.0, *) {
-                    data = image.withTintColor(tintColor).pngData()
-                } else {
-                    data = image.pngData()
-                }
+                data = imageView.asImage().jpegData(compressionQuality: 0.5)
+//                if let tintColor = tintColor, #available(iOS 13.0, *) {
+//                    data = image.withTintColor(tintColor).pngData()
+//                } else {
+//                    data = image.pngData()
+//                }
                 let sizeKB = Double(data?.count ?? 0) / 1024.0
                 if let base64String = data?.base64EncodedString(), sizeKB < 128.0 { // Max image size of 128KB
                     print("🏞️✅ Loaded. Size: \(sizeKB) KB")
