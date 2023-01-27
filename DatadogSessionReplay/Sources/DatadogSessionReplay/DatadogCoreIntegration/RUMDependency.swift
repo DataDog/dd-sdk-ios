@@ -42,7 +42,6 @@ internal enum RUMDependency {
         static let viewIDKey = "view.id"
     }
 
-
     // MARK: Contract from SR to RUM (mirror of `SessionReplayDependency` in RUM):
 
     /// The key referencing SR baggage in `DatadogContext.featuresAttributes`.
