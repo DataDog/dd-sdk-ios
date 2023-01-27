@@ -747,23 +747,20 @@ class LoggerTests: XCTestCase {
         ])
 
         // then
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
-        let rumErrorMatcher1 = rumEventMatchers.first { $0.model(isTypeOf: RUMErrorEvent.self) }
-        let rumErrorMatcher2 = rumEventMatchers.last { $0.model(isTypeOf: RUMErrorEvent.self) }
-        try XCTUnwrap(rumErrorMatcher1).model(ofType: RUMErrorEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.error.message, "error message")
-            XCTAssertEqual(rumModel.error.source, .logger)
-            XCTAssertNil(rumModel.error.stack)
-            // swiftlint:disable:next xct_specific_matcher
-            XCTAssertEqual(rumModel.error.isCrash, false)
-        }
-        try XCTUnwrap(rumErrorMatcher2).model(ofType: RUMErrorEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.error.message, "critical message")
-            XCTAssertEqual(rumModel.error.source, .logger)
-            XCTAssertNil(rumModel.error.stack)
-            // swiftlint:disable:next xct_specific_matcher
-            XCTAssertEqual(rumModel.error.isCrash, true)
-        }
+        let errorEvents = core.waitAndReturnEvents(of: RUMFeature.self, ofType: RUMErrorEvent.self)
+        let error1 = try XCTUnwrap(errorEvents.first)
+        XCTAssertEqual(error1.error.message, "error message")
+        XCTAssertEqual(error1.error.source, .logger)
+        XCTAssertNil(error1.error.stack)
+        // swiftlint:disable:next xct_specific_matcher
+        XCTAssertEqual(error1.error.isCrash, false)
+
+        let error2 = try XCTUnwrap(errorEvents.last)
+        XCTAssertEqual(error2.error.message, "critical message")
+        XCTAssertEqual(error2.error.source, .logger)
+        XCTAssertNil(error2.error.stack)
+        // swiftlint:disable:next xct_specific_matcher
+        XCTAssertEqual(error2.error.isCrash, true)
     }
 
     // MARK: - Integration With Active Span
