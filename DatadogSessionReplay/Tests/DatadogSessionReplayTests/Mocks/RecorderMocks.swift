@@ -142,7 +142,7 @@ extension ViewAttributes: AnyMockable, RandomMockable {
                 { backgroundColor = UIColor.mockRandomWith(alpha: .mockRandom(min: 0.1, max: 1)).cgColor }
             ])
         case .opaque:
-            // visibile:
+            // opaque:
             isHidden = false
             alpha = 1
             frame = .mockRandom(minWidth: 10, minHeight: 10)
