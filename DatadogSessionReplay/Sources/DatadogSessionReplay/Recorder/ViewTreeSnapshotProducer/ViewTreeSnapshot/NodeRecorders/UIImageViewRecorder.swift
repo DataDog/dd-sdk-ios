@@ -34,9 +34,55 @@ internal struct UIImageViewRecorder: NodeRecorder {
             imageWireframeID: ids.1,
             attributes: attributes,
             contentFrame: contentFrame,
-            clipsToBounds: imageView.clipsToBounds
+            clipsToBounds: imageView.clipsToBounds,
+            base64: imageView.image?.lazyBase64String
         )
         return SpecificElement(wireframesBuilder: builder, recordSubtree: true)
+    }
+}
+
+fileprivate var associatedBase64StringKey: Int = 1
+fileprivate var associatedDataLoadingStatusKey: Int = 2
+
+extension UIImage {
+    enum DataLoadingStatus: String {
+        case loading, loaded, ignored
+    }
+
+    var dataLoadingStaus: DataLoadingStatus? {
+        set { objc_setAssociatedObject(self, &associatedDataLoadingStatusKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
+        get { objc_getAssociatedObject(self, &associatedDataLoadingStatusKey) as? DataLoadingStatus }
+    }
+
+    private var base64String: String? {
+        set { objc_setAssociatedObject(self, &associatedBase64StringKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
+        get { objc_getAssociatedObject(self, &associatedBase64StringKey) as? String }
+    }
+
+    var lazyBase64String: String? {
+        switch dataLoadingStaus {
+        case .loaded:
+            return base64String
+        case .none:
+            dataLoadingStaus = .loading
+            DispatchQueue.global(qos: .background).async { [weak self] in
+                let data = self?.pngData()
+                let sizeKB = Double(data?.count ?? 0) / 1024.0
+                if sizeKB < 128.0 { // Max image size of 128KB
+                    print("🏞️✅ Loaded. Size: \(sizeKB) KB")
+                    self?.base64String = data?.base64EncodedString()
+                    self?.dataLoadingStaus = .loaded
+                } else {
+                    print("🏞️❌ Ignored. Size: \(sizeKB) KB")
+                    self?.dataLoadingStaus = .ignored
+                }
+            }
+            return nil
+        case .ignored:
+            return ""
+        case .loading:
+            return nil
+        }
     }
 }
 
@@ -59,6 +105,8 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
     let contentFrame: CGRect?
 
     let clipsToBounds: Bool
+
+    let base64: String?
 
     private var clip: SRContentClip? {
         guard let contentFrame = contentFrame else {
@@ -97,11 +145,11 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
         ]
         if let contentFrame = contentFrame {
             wireframes.append(
-                builder.createShapeWireframe(
+                builder.createImageWireframe(
+                    base64: base64,
                     id: imageWireframeID,
                     frame: contentFrame,
-                    clip: clipsToBounds ? clip : nil,
-                    backgroundColor: Defaults.placeholderColor
+                    clip: clipsToBounds ? clip : nil
                 )
             )
         }

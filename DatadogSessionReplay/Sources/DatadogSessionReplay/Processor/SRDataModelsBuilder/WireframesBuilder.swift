@@ -54,6 +54,33 @@ internal class WireframesBuilder {
         return .shapeWireframe(value: wireframe)
     }
 
+    func createImageWireframe(
+        base64: String?,
+        id: WireframeID,
+        mimeType: String = "png",
+        frame: CGRect,
+        clip: SRContentClip? = nil,
+        borderColor: CGColor? = nil,
+        borderWidth: CGFloat? = nil,
+        backgroundColor: CGColor? = nil,
+        cornerRadius: CGFloat? = nil,
+        opacity: CGFloat? = nil
+    ) -> SRWireframe {
+        let wireframe = SRImageWireframe(
+            base64: base64,
+            border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
+            clip: clip,
+            height: Int64(withNoOverflow: frame.height),
+            id: id,
+            mimeType: mimeType,
+            shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
+            width: Int64(withNoOverflow: frame.width),
+            x: Int64(withNoOverflow: frame.minX),
+            y: Int64(withNoOverflow: frame.minY)
+        )
+        return .imageWireframe(value: wireframe)
+    }
+
     func createTextWireframe(
         id: WireframeID,
         frame: CGRect,
