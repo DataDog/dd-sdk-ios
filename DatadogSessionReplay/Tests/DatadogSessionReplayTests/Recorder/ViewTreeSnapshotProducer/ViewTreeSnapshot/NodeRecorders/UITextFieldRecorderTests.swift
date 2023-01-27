@@ -47,7 +47,7 @@ class UITextFieldRecorderTests: XCTestCase {
                 self.textField.placeholder = .mockRandom()
             },
         ])
-        viewAttributes = .mock(fixture: .visibleWithSomeAppearance)
+        viewAttributes = .mock(fixture: .visible())
         textField.layoutSubviews() // force layout (so TF creates its sub-tree)
 
         // Then
@@ -66,7 +66,7 @@ class UITextFieldRecorderTests: XCTestCase {
         textField.text = .mockRandom()
 
         // When
-        viewAttributes = .mock(fixture: .visibleWithSomeAppearance)
+        viewAttributes = .mock(fixture: .visible())
         let semantics1 = try XCTUnwrap(recorder.semantics(of: textField, with: viewAttributes, in: .mockWith(recorder: .mockWith(privacy: .maskAll))))
         let semantics2 = try XCTUnwrap(recorder.semantics(of: textField, with: viewAttributes, in: .mockWith(recorder: .mockWith(privacy: .allowAll))))
 

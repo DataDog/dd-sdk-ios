@@ -26,7 +26,7 @@ class UIViewRecorderTests: XCTestCase {
 
     func testWhenViewIsVisible() throws {
         // When
-        viewAttributes = .mock(fixture: .visibleWithSomeAppearance)
+        viewAttributes = .mock(fixture: .visible())
 
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))

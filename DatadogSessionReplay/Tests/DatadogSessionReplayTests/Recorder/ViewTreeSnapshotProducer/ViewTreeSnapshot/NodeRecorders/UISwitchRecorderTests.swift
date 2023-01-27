@@ -33,7 +33,7 @@ class UISwitchRecorderTests: XCTestCase {
         `switch`.tintColor = .mockRandom()
 
         // When
-        viewAttributes = .mock(fixture: .visibleWithSomeAppearance)
+        viewAttributes = .mock(fixture: .visible())
 
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: `switch`, with: viewAttributes, in: .mockAny()) as? SpecificElement)

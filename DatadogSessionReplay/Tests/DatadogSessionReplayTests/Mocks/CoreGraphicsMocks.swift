@@ -31,10 +31,15 @@ extension CGRect: AnyMockable, RandomMockable {
         return mockRandom(minWidth: 0, minHeight: 0)
     }
 
-    static func mockRandom(minWidth: CGFloat = 0, minHeight: CGFloat = 0) -> CGRect {
+    static func mockRandom(
+        minWidth: CGFloat = 0,
+        maxWidth: CGFloat? = nil,
+        minHeight: CGFloat = 0,
+        maxHeight: CGFloat? = nil
+    ) -> CGRect {
         return .init(
             origin: .mockRandom(),
-            size: .mockRandom(minWidth: minWidth, minHeight: minHeight)
+            size: .mockRandom(minWidth: minWidth, maxWidth: maxWidth, minHeight: minHeight, maxHeight: maxHeight)
         )
     }
 }
@@ -61,10 +66,15 @@ extension CGSize: AnyMockable, RandomMockable {
         return .mockRandom(minWidth: 0, minHeight: 0)
     }
 
-    static func mockRandom(minWidth: CGFloat = 0, minHeight: CGFloat = 0) -> CGSize {
+    static func mockRandom(
+        minWidth: CGFloat = 0,
+        maxWidth: CGFloat? = nil,
+        minHeight: CGFloat = 0,
+        maxHeight: CGFloat? = nil
+    ) -> CGSize {
         return .init(
-            width: .mockRandom(min: minWidth, max: minWidth + 1_000),
-            height: .mockRandom(min: minHeight, max: minHeight + 1_000)
+            width: .mockRandom(min: minWidth, max: maxWidth ?? (minWidth + 1_000)),
+            height: .mockRandom(min: minHeight, max: maxHeight ?? (minHeight + 1_000))
         )
     }
 }

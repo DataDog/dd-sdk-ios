@@ -9,12 +9,6 @@ import UIKit
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 
-// MARK: - Equatable conformances
-
-extension ViewTreeSnapshot: EquatableInTests {}
-extension TouchSnapshot: EquatableInTests {}
-extension Node: EquatableInTests {}
-
 // MARK: - ViewTreeSnapshot Mocks
 
 extension ViewTreeSnapshot: AnyMockable, RandomMockable {
@@ -88,12 +82,25 @@ extension ViewAttributes: AnyMockable, RandomMockable {
 
     /// A fixture for mocking consistent state in `ViewAttributes`.
     enum Fixture: CaseIterable {
+        static var allCases: [DatadogSessionReplay.ViewAttributes.Fixture] = [
+            .invisible,
+            .visible(.noAppearance),
+            .visible(.someAppearance),
+            .opaque
+        ]
+
+        enum Apperance: CaseIterable {
+            // Some appearance.
+            case someAppearance
+            // No appearance (e.g. all colors are fully transparent).
+            case noAppearance
+        }
         /// A view that is not visible.
         case invisible
-        /// A view that is visible, but has no appearance (e.g. all colors are fully transparent).
-        case visibleWithNoAppearance
-        /// A view that is visible and has some appearance.
-        case visibleWithSomeAppearance
+        /// A view that is visible.
+        case visible(_ apperance: Apperance = .someAppearance)
+        /// A view that is opaque.
+        case opaque
     }
 
     /// Partial mock, guaranteeing consistency of returned `ViewAttributes`.
@@ -111,7 +118,7 @@ extension ViewAttributes: AnyMockable, RandomMockable {
             isHidden = true
             alpha = 0
             frame = .zero
-        case .visibleWithNoAppearance:
+        case .visible(.noAppearance):
             // visible:
             isHidden = false
             alpha = .mockRandom(min: 0.1, max: 1)
@@ -121,10 +128,23 @@ extension ViewAttributes: AnyMockable, RandomMockable {
                 { layerBorderWidth = 0 },
                 { backgroundColor = UIColor.mockRandomWith(alpha: 0).cgColor }
             ])
-        case .visibleWithSomeAppearance:
+        case .visible(.someAppearance):
             // visibile:
             isHidden = false
             alpha = .mockRandom(min: 0.1, max: 1)
+            frame = .mockRandom(minWidth: 10, minHeight: 10)
+            // some appearance:
+            oneOrMoreOf([
+                {
+                    layerBorderWidth = .mockRandom(min: 1, max: 5)
+                    layerBorderColor = UIColor.mockRandomWith(alpha: .mockRandom(min: 0.1, max: 1)).cgColor
+                },
+                { backgroundColor = UIColor.mockRandomWith(alpha: .mockRandom(min: 0.1, max: 1)).cgColor }
+            ])
+        case .opaque:
+            // visibile:
+            isHidden = false
+            alpha = 1
             frame = .mockRandom(minWidth: 10, minHeight: 10)
             // some appearance:
             oneOrMoreOf([
@@ -152,10 +172,12 @@ extension ViewAttributes: AnyMockable, RandomMockable {
         switch fixture {
         case .invisible:
             assert(!mock.isVisible)
-        case .visibleWithNoAppearance:
+        case .visible(.noAppearance):
             assert(mock.isVisible && !mock.hasAnyAppearance)
-        case .visibleWithSomeAppearance:
+        case .visible(.someAppearance):
             assert(mock.isVisible && mock.hasAnyAppearance)
+        case .opaque:
+            assert(mock.isVisible && mock.hasAnyAppearance && mock.alpha == 1)
         }
 
         return mock

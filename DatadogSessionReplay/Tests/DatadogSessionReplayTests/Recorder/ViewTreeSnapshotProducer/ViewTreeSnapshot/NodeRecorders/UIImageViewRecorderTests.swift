@@ -18,7 +18,7 @@ class UIImageViewRecorderTests: XCTestCase {
     func testWhenImageViewHasNoImageAndNoAppearance() throws {
         // When
         imageView.image = nil
-        viewAttributes = .mock(fixture: .visibleWithNoAppearance)
+        viewAttributes = .mock(fixture: .visible(.noAppearance))
 
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: .mockAny()))
@@ -29,7 +29,7 @@ class UIImageViewRecorderTests: XCTestCase {
     func testWhenImageViewHasNoImageAndSomeAppearance() throws {
         // When
         imageView.image = nil
-        viewAttributes = .mock(fixture: .visibleWithSomeAppearance)
+        viewAttributes = .mock(fixture: .visible())
 
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: .mockAny()))
@@ -43,7 +43,7 @@ class UIImageViewRecorderTests: XCTestCase {
     func testWhenImageViewHasImageAndSomeAppearance() throws {
         // When
         imageView.image = UIImage()
-        viewAttributes = .mock(fixture: .visibleWithSomeAppearance)
+        viewAttributes = .mock(fixture: .visible())
 
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: .mockAny()))
@@ -59,15 +59,15 @@ class UIImageViewRecorderTests: XCTestCase {
         oneOf([
             {
                 self.imageView.image = UIImage()
-                self.viewAttributes = .mock(fixture: .visibleWithSomeAppearance)
+                self.viewAttributes = .mock(fixture: .visible())
             },
             {
                 self.imageView.image = nil
-                self.viewAttributes = .mock(fixture: .visibleWithSomeAppearance)
+                self.viewAttributes = .mock(fixture: .visible())
             },
             {
                 self.imageView.image = UIImage()
-                self.viewAttributes = .mock(fixture: .visibleWithNoAppearance)
+                self.viewAttributes = .mock(fixture: .visible(.noAppearance))
             },
         ])
 

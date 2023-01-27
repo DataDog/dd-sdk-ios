@@ -36,7 +36,7 @@ class UITextViewRecorderTests: XCTestCase {
 
         // When
         textView.text = randomText
-        viewAttributes = .mock(fixture: .visibleWithSomeAppearance)
+        viewAttributes = .mock(fixture: .visible())
 
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: textView, with: viewAttributes, in: .mockAny()) as? SpecificElement)
@@ -53,7 +53,7 @@ class UITextViewRecorderTests: XCTestCase {
         textView.text = .mockRandom()
 
         // When
-        viewAttributes = .mock(fixture: .visibleWithSomeAppearance)
+        viewAttributes = .mock(fixture: .visible())
         let semantics1 = try XCTUnwrap(recorder.semantics(of: textView, with: viewAttributes, in: .mockWith(recorder: .mockWith(privacy: .maskAll))))
         let semantics2 = try XCTUnwrap(recorder.semantics(of: textView, with: viewAttributes, in: .mockWith(recorder: .mockWith(privacy: .allowAll))))
 

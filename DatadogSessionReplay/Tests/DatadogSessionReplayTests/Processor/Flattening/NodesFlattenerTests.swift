@@ -10,11 +10,27 @@ import Datadog
 @testable import TestUtilities
 
 class NodesFlattenerTests: XCTestCase {
+    /*
+          R
+         / \
+        I1  V1
+    */
     func testFlattenNodes_withInvisibleNode() {
         // Given
-        let invisibleNode = Node.mockWith(semantics: InvisibleElement.constant)
-        let visibleNode = Node.mockWith(semantics: SpecificElement.mockAny())
-        let rootNode = Node.mockWith(children: [invisibleNode, visibleNode])
+        let smallFrame: CGRect = .mockRandom(minWidth: 1, maxWidth: 10, minHeight: 1, maxHeight: 10)
+        let bigFrame: CGRect = .mockRandom(minWidth: 11, maxWidth: 100, minHeight: 11, maxHeight: 100)
+        let invisibleNode = Node.mockWith(
+            viewAttributes: .mock(fixture: .invisible)
+        )
+        let visibleNode = Node.mockWith(
+            viewAttributes: .mock(fixture: .visible()),
+            semantics: SpecificElement.mock(wireframeRect: smallFrame)
+        )
+        let rootNode = Node.mockWith(
+            viewAttributes: .mock(fixture: .visible()),
+            semantics: SpecificElement.mock(wireframeRect: bigFrame),
+            children: [invisibleNode, visibleNode]
+        )
         let snapshot = ViewTreeSnapshot.mockWith(root: rootNode)
         let flattener = NodesFlattener()
 
@@ -22,18 +38,23 @@ class NodesFlattenerTests: XCTestCase {
         let flattenedNodes = flattener.flattenNodes(in: snapshot)
 
         // Then
-        XCTAssertEqual(flattenedNodes, [visibleNode])
+        DDAssertReflectionEqual(flattenedNodes, [rootNode, visibleNode])
     }
 
+    /*
+        V
+        |
+        V1
+    */
     func testFlattenNodes_withVisibleNodeThatCoversAnotherNode() {
         // Given
-        let frame = CGRect.mockAny()
+        let frame = CGRect.mockRandom(minWidth: 1, minHeight: 1)
         let coveringNode = Node.mockWith(
-            viewAttributes: .mock(fixture: .visibleWithSomeAppearance),
+            viewAttributes: .mock(fixture: .opaque),
             semantics: SpecificElement.mock(wireframeRect: frame)
         )
         let coveredNode = Node.mockWith(
-            viewAttributes: .mock(fixture: .visibleWithSomeAppearance),
+            viewAttributes: .mockRandom(),
             semantics: SpecificElement.mock(wireframeRect: frame),
             children: [coveringNode]
         )
@@ -44,16 +65,36 @@ class NodesFlattenerTests: XCTestCase {
         let flattenedNodes = flattener.flattenNodes(in: snapshot)
 
         // Then
-        XCTAssertEqual(flattenedNodes.count, 2)
-        XCTAssertEqual(flattenedNodes, [coveredNode, coveringNode])
+        DDAssertReflectionEqual(flattenedNodes.count, 1)
+        DDAssertReflectionEqual(flattenedNodes, [coveringNode])
     }
 
+    /*
+          R
+         / \
+        I1  V2
+       /
+      V1
+    */
     func testFlattenNodes_withMixedVisibleAndInvisibleNodes() {
         // Given
-        let visibleNode2 = Node.mockWith(semantics: SpecificElement.mockAny())
-        let invisibleNode1 = Node.mockWith(semantics: InvisibleElement.constant, children: [visibleNode2])
-        let visibleNode1 = Node.mockWith(semantics: SpecificElement.mockAny())
-        let rootNode = Node.mockWith(children: [invisibleNode1, visibleNode1])
+        let frame1: CGRect = .mockRandom(minWidth: 1, maxWidth: 10, minHeight: 1, maxHeight: 10)
+        let frame2: CGRect = .mockRandom(minWidth: 11, maxWidth: 100, minHeight: 11, maxHeight: 100)
+        let rootFrame: CGRect = .mockRandom(minWidth: 101, maxWidth: 1_000, minHeight: 101, maxHeight: 1_000)
+        let visibleNode1 = Node.mockWith(
+            viewAttributes: .mock(fixture: .visible()),
+            semantics: SpecificElement.mock(wireframeRect: frame1)
+        )
+        let invisibleNode1 = Node.mockWith(viewAttributes: .mock(fixture: .invisible), children: [visibleNode1])
+        let visibleNode2 = Node.mockWith(
+            viewAttributes: .mock(fixture: .visible()),
+            semantics: SpecificElement.mock(wireframeRect: frame2)
+        )
+        let rootNode = Node.mockWith(
+            viewAttributes: .mock(fixture: .visible()),
+            semantics: SpecificElement.mock(wireframeRect: rootFrame),
+            children: [invisibleNode1, visibleNode2]
+        )
 
         let snapshot = ViewTreeSnapshot.mockWith(root: rootNode)
         let flattener = NodesFlattener()
@@ -62,26 +103,34 @@ class NodesFlattenerTests: XCTestCase {
         let flattenedNodes = flattener.flattenNodes(in: snapshot)
 
         // Then
-        XCTAssertEqual(flattenedNodes[0], visibleNode1)
+        DDAssertReflectionEqual(flattenedNodes, [rootNode, visibleNode1, visibleNode2])
     }
 
+    /*
+          R
+        / | \
+       V1 V2 V3
+    */
     func testFlattenNodes_withMultipleVisibleNodesThatAreCoveredByAnotherNode() {
         // Given
-        let frame = CGRect.mockAny()
+        // set rects
+        let frame = CGRect.mockRandom()
         let coveringNode = Node.mockWith(
-            viewAttributes: .mock(fixture: .visibleWithSomeAppearance),
+            viewAttributes: .mock(fixture: .opaque),
             semantics: SpecificElement.mock(wireframeRect: frame)
         )
         let coveredNode1 = Node.mockWith(
-            viewAttributes: .mock(fixture: .visibleWithSomeAppearance),
-            semantics: SpecificElement.mock(wireframeRect: frame)
+            viewAttributes: .mockRandom(),
+            semantics: SpecificElement.mock(wireframeRect: frame),
+            children: [coveringNode]
         )
         let coveredNode2 = Node.mockWith(
-            viewAttributes: .mock(fixture: .visibleWithSomeAppearance),
-            semantics: SpecificElement.mock(wireframeRect: frame)
+            viewAttributes: .mockRandom(),
+            semantics: SpecificElement.mock(wireframeRect: frame),
+            children: [coveringNode]
         )
         let rootNode = Node.mockWith(
-            children: [coveringNode, coveredNode1, coveredNode2]
+            children: [coveredNode1, coveredNode2, coveringNode]
         )
         let snapshot = ViewTreeSnapshot.mockWith(root: rootNode)
         let flattener = NodesFlattener()
@@ -90,29 +139,34 @@ class NodesFlattenerTests: XCTestCase {
         let flattenedNodes = flattener.flattenNodes(in: snapshot)
 
         // Then
-        XCTAssertEqual(flattenedNodes.count, 3)
-        XCTAssertEqual(flattenedNodes, [coveringNode, coveredNode1, coveredNode2])
+        DDAssertReflectionEqual(flattenedNodes, [coveringNode])
     }
 
+    /*
+          R
+         / \
+        I   V
+    */
     func testFlattenNodes_withNodesWithSameFrameAndDifferentAppearances() {
-       // Given
-       let frame = CGRect.mockAny()
-       let visibleNode = Node.mockWith(
-           viewAttributes: .mock(fixture: .visibleWithSomeAppearance),
-           semantics: SpecificElement.mock(wireframeRect: frame)
-       )
-       let invisibleNode = Node.mockWith(
-           viewAttributes: .mock(fixture: .visibleWithNoAppearance),
-           semantics: SpecificElement.mock(wireframeRect: frame)
-       )
-       let rootNode = Node.mockWith(children: [invisibleNode, visibleNode])
-       let snapshot = ViewTreeSnapshot.mockWith(root: rootNode)
-       let flattener = NodesFlattener()
+        // Given
+        let smallFrame: CGRect = .mockRandom(minWidth: 1, maxWidth: 10, minHeight: 1, maxHeight: 10)
+        let bigFrame: CGRect = .mockRandom(minWidth: 11, maxWidth: 100, minHeight: 11, maxHeight: 100)
+        let visibleNode1 = Node.mockWith(
+            viewAttributes: .mock(fixture: .visible()),
+            semantics: SpecificElement.mock(wireframeRect: smallFrame)
+        )
+        let visibleNode2 = Node.mockWith(
+            viewAttributes: .mock(fixture: .visible()),
+            semantics: SpecificElement.mock(wireframeRect: bigFrame)
+        )
+        let rootNode = Node.mockWith(children: [visibleNode1, visibleNode2])
+        let snapshot = ViewTreeSnapshot.mockWith(root: rootNode)
+        let flattener = NodesFlattener()
 
-       // When
-       let flattenedNodes = flattener.flattenNodes(in: snapshot)
+        // When
+        let flattenedNodes = flattener.flattenNodes(in: snapshot)
 
-       // Then
-       XCTAssertEqual(flattenedNodes, [invisibleNode, visibleNode])
+        // Then
+        DDAssertReflectionEqual(flattenedNodes, [visibleNode1, visibleNode2])
    }
 }
