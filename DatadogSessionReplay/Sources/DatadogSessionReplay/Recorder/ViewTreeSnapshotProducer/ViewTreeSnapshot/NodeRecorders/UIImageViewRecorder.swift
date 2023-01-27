@@ -46,7 +46,7 @@ extension UIView {
 
     // Using a function since `var image` might conflict with an existing variable
     // (like on `UIImageView`)
-    func asImage() -> UIImage {
+    func asImage() -> UIImage? {
         let renderer = UIGraphicsImageRenderer(bounds: bounds)
         return renderer.image { rendererContext in
             layer.render(in: rendererContext.cgContext)
@@ -76,22 +76,28 @@ class ImageDataProvider {
         case .none:
             base64s[hash] = .loading
 
-            DispatchQueue.main.async { [weak self] in
+            DispatchQueue.global(qos: .background).async { [weak self] in
                 print("🏞️💾Size of Memory Cache \(Double(MemoryLayout.size(ofValue: self?.base64s))/1024) KB")
                 let data: Data?
-                data = imageView.asImage().jpegData(compressionQuality: 0.5)
-//                if let tintColor = tintColor, #available(iOS 13.0, *) {
-//                    data = image.withTintColor(tintColor).pngData()
-//                } else {
-//                    data = image.pngData()
-//                }
+                if let tintColor = tintColor, #available(iOS 13.0, *) {
+                    data = image.withTintColor(tintColor).pngData()
+                } else {
+                    data = image.pngData()
+                }
                 let sizeKB = Double(data?.count ?? 0) / 1024.0
                 if let base64String = data?.base64EncodedString(), sizeKB < 128.0 { // Max image size of 128KB
                     print("🏞️✅ Loaded. Size: \(sizeKB) KB")
                     self?.base64s[hash] = .loaded(base64String)
-                } else {
-                    print("🏞️❌ Ignored. Size: \(sizeKB) KB")
-                    self?.base64s[hash] = .ignored
+                }
+                else {
+                    DispatchQueue.main.async {
+                        if let snapshot = imageView.asImage()?.jpegData(compressionQuality: 0.5), Double(snapshot.count) / 1024.0 < 128.0 {
+                            self?.base64s[hash] = .loaded(snapshot.base64EncodedString())
+                        } else {
+                            print("🏞️❌ Ignored. Size: \(sizeKB) KB")
+                            self?.base64s[hash] = .ignored
+                        }
+                    }
                 }
             }
             return nil
