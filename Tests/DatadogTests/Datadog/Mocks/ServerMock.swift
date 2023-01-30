@@ -7,6 +7,7 @@
 import Foundation
 import Compression
 import XCTest
+import DatadogInternal
 @testable import Datadog
 
 /// An utility header, added to each request by the `ServerMock` and removed while intercepting through `ServerMockProtocol`.

@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Feature-agnostic SDK configuration.
 internal typealias CoreConfiguration = FeaturesConfiguration.Common
@@ -504,7 +505,7 @@ extension DatadogContextProvider {
         serverDateProvider: ServerDateProvider
     ) {
         let context = DatadogContext(
-            site: configuration.site,
+            site: configuration.site ?? .us1,
             clientToken: configuration.clientToken,
             service: configuration.serviceName,
             env: configuration.environment,

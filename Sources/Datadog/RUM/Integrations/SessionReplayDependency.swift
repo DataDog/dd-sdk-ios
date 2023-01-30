@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Defines dependency between RUM and Session Replay (SR) modules.
 /// It aims at centralizing documentation of contracts between both product

@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Creates and owns componetns enabling RUM feature.
 /// Bundles dependencies for other RUM-related components created later at runtime  (i.e. `RUMMonitor`).

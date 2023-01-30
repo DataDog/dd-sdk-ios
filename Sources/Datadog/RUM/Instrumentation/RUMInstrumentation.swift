@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// RUM Auto Instrumentation feature.
 internal final class RUMInstrumentation: RUMCommandPublisher {

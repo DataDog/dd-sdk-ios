@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 extension Datadog {
     internal struct Constants {
@@ -46,72 +47,6 @@ extension Datadog {
             case rare
             /// Don't provide mobile vitals.
             case never
-        }
-
-        public enum DatadogEndpoint: String {
-            /// US based servers.
-            /// Sends data to [app.datadoghq.com](https://app.datadoghq.com/).
-            case us1
-            /// US based servers.
-            /// Sends data to [app.datadoghq.com](https://us3.datadoghq.com/).
-            case us3
-            /// US based servers.
-            /// Sends data to [app.datadoghq.com](https://us5.datadoghq.com/).
-            case us5
-            /// Europe based servers.
-            /// Sends data to [app.datadoghq.eu](https://app.datadoghq.eu/).
-            case eu1
-            /// Asia based servers.
-            /// Sends data to [ap1.datadoghq.com](https://ap1.datadoghq.com/).
-            case ap1
-            /// US based servers, FedRAMP compatible.
-            /// Sends data to [app.ddog-gov.com](https://app.ddog-gov.com/).
-            case us1_fed
-            /// US based servers.
-            /// Sends data to [app.datadoghq.com](https://app.datadoghq.com/).
-            @available(*, deprecated, message: "Renamed to us1")
-            public static let us: DatadogEndpoint = .us1
-            /// Europe based servers.
-            /// Sends data to [app.datadoghq.eu](https://app.datadoghq.eu/).
-            @available(*, deprecated, message: "Renamed to eu1")
-            public static let eu: DatadogEndpoint = .eu1
-            /// Gov servers.
-            /// Sends data to [app.ddog-gov.com](https://app.ddog-gov.com/).
-            @available(*, deprecated, message: "Renamed to us1_fed")
-            public static let gov: DatadogEndpoint = .us1_fed
-
-            internal var logsEndpoint: LogsEndpoint {
-                switch self {
-                case .us1: return .us1
-                case .us3: return .us3
-                case .us5: return .us5
-                case .eu1: return .eu1
-                case .ap1: return .ap1
-                case .us1_fed: return .us1_fed
-                }
-            }
-
-            internal var tracesEndpoint: TracesEndpoint {
-                switch self {
-                case .us1: return .us1
-                case .us3: return .us3
-                case .us5: return .us5
-                case .eu1: return .eu1
-                case .ap1: return .ap1
-                case .us1_fed: return .us1_fed
-                }
-            }
-
-            internal var rumEndpoint: RUMEndpoint {
-                switch self {
-                case .us1: return .us1
-                case .us3: return .us3
-                case .us5: return .us5
-                case .eu1: return .eu1
-                case .ap1: return .ap1
-                case .us1_fed: return .us1_fed
-                }
-            }
         }
 
         /// Determines the server for uploading logs.
@@ -263,13 +198,13 @@ extension Datadog {
         private(set) var serverDateProvider: ServerDateProvider?
         private(set) var crashReportingPlugin: DDCrashReportingPluginType?
 
-        /// If `DatadogEndpoint` is set, it will override `logsEndpoint`, `tracesEndpoint` and `rumEndpoint` values.
-        private(set) var datadogEndpoint: DatadogEndpoint?
-        /// If `customLogsEndpoint` is set, it will override logs endpoint value configured with `logsEndpoint` and `DatadogEndpoint`.
+        /// If `DatadogSite` is set, it will override `logsEndpoint`, `tracesEndpoint` and `rumEndpoint` values.
+        private(set) var datadogEndpoint: DatadogSite?
+        /// If `customLogsEndpoint` is set, it will override logs endpoint value configured with `logsEndpoint` and `DatadogSite`.
         private(set) var customLogsEndpoint: URL?
-        /// If `customTracesEndpoint` is set, it will override traces endpoint value configured with `tracesEndpoint` and `DatadogEndpoint`.
+        /// If `customTracesEndpoint` is set, it will override traces endpoint value configured with `tracesEndpoint` and `DatadogSite`.
         private(set) var customTracesEndpoint: URL?
-        /// If `customRUMEndpoint` is set, it will override rum endpoint value configured with `rumEndpoint` and `DatadogEndpoint`.
+        /// If `customRUMEndpoint` is set, it will override rum endpoint value configured with `rumEndpoint` and `DatadogSite`.
         private(set) var customRUMEndpoint: URL?
 
         /// Deprecated value
@@ -392,7 +327,7 @@ extension Datadog {
             /// * `set(rumEndpoint:)`
             ///
             /// - Parameter endpoint: server endpoint (default value is `.us`)
-            public func set(endpoint: DatadogEndpoint) -> Builder {
+            public func set(endpoint: DatadogSite) -> Builder {
                 configuration.datadogEndpoint = endpoint
                 return self
             }
@@ -901,6 +836,38 @@ extension Datadog {
             public func build() -> Configuration {
                 return configuration
             }
+        }
+    }
+}
+
+extension DatadogSite {
+    internal var logsEndpoint: Datadog.Configuration.LogsEndpoint {
+        switch self {
+        case .us1: return .us1
+        case .us3: return .us3
+        case .us5: return .us5
+        case .eu1: return .eu1
+        case .us1_fed: return .us1_fed
+        }
+    }
+
+    internal var tracesEndpoint: Datadog.Configuration.TracesEndpoint {
+        switch self {
+        case .us1: return .us1
+        case .us3: return .us3
+        case .us5: return .us5
+        case .eu1: return .eu1
+        case .us1_fed: return .us1_fed
+        }
+    }
+
+    internal var rumEndpoint: Datadog.Configuration.RUMEndpoint {
+        switch self {
+        case .us1: return .us1
+        case .us3: return .us3
+        case .us5: return .us5
+        case .eu1: return .eu1
+        case .us1_fed: return .us1_fed
         }
     }
 }

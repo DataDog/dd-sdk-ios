@@ -5,13 +5,14 @@
  */
 
 import Foundation
+import DatadogInternal
 import Datadog
 
 @objc
 public class DDEndpoint: NSObject {
-    internal let sdkEndpoint: Datadog.Configuration.DatadogEndpoint
+    internal let sdkEndpoint: DatadogSite
 
-    internal init(sdkEndpoint: Datadog.Configuration.DatadogEndpoint) {
+    internal init(sdkEndpoint: DatadogSite) {
         self.sdkEndpoint = sdkEndpoint
     }
 

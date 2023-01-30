@@ -5,6 +5,7 @@
  */
 
 import TestUtilities
+import DatadogInternal
 @testable import Datadog
 
 extension CrashReporter {

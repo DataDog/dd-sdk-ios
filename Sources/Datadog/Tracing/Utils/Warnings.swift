@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Returns `true` if the warning was raised. `false` otherwise.
 internal func warn(if condition: @autoclosure () -> Bool, message: String) -> Bool {

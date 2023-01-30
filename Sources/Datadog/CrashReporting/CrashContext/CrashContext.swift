@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Describes current Datadog SDK context, so the app state information can be attached to
 /// the crash report and retrieved back when the application is started again.

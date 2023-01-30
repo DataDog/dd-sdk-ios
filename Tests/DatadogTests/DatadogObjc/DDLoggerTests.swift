@@ -5,6 +5,7 @@
 */
 
 import XCTest
+import DatadogInternal
 @testable import Datadog
 @testable import DatadogObjc
 

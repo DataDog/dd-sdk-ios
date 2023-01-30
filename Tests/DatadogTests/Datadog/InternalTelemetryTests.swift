@@ -5,8 +5,9 @@
  */
 
 import Foundation
-
 import XCTest
+import TestUtilities
+import DatadogInternal
 @testable import Datadog
 
 class InternalTelemetryTests: XCTestCase {

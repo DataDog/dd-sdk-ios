@@ -9,6 +9,7 @@ import XCTest
 import CoreTelephony
 #endif
 
+import DatadogInternal
 import TestUtilities
 @testable import Datadog
 

@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 import Datadog
 
 /// A draft interface for SR Feature initialization.

@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Log levels ordered by their severity, with `.debug` being the least severe and
 /// `.critical` being the most severe.

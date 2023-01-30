@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 internal protocol RUMScope: AnyObject {
     /// Processes given command. Returns:

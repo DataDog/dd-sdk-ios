@@ -7,6 +7,7 @@
 import XCTest
 import UIKit
 import TestUtilities
+import DatadogInternal
 @testable import Datadog
 
 class RUMViewScopeTests: XCTestCase {

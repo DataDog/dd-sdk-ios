@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Provides thread-safe access to Datadog Context.
 ///

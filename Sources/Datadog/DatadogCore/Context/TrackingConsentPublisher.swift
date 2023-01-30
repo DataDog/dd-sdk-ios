@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Publishes the user consent to receiver.
 internal final class TrackingConsentPublisher: ContextValuePublisher {

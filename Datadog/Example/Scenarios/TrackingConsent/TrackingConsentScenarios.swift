@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 import Datadog
 
 internal class TrackingConsentBaseScenario {

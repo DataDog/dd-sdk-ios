@@ -5,6 +5,8 @@
  */
 
 import Foundation
+import TestUtilities
+import DatadogInternal
 import Datadog
 
 internal struct DatadogFeatureMock: DatadogFeature {

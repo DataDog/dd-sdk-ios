@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 internal typealias URLSessionRUMAttributesProvider = (URLRequest, URLResponse?, Data?, Error?) -> [AttributeKey: AttributeValue]?
 

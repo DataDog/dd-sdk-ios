@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// `LogOutput` writing logs to file.
 internal struct LogFileOutput: LogOutput {

@@ -7,6 +7,7 @@
 import XCTest
 import TestUtilities
 
+import DatadogInternal
 @testable import Datadog
 
 class ErrorMessageReceiverTests: XCTestCase {
@@ -99,7 +100,7 @@ class ErrorMessageReceiverTests: XCTestCase {
         XCTAssertEqual(event.error.type, "type-test")
         XCTAssertEqual(event.error.stack, "stack-test")
         XCTAssertEqual(event.error.source, .logger)
-        let attributeValue = (event.context?.contextInfo["any-key"] as? DDAnyCodable)?.value as? String
+        let attributeValue = (event.context?.contextInfo["any-key"] as? AnyCodable)?.value as? String
         XCTAssertEqual(attributeValue, mockAttribute)
     }
 }

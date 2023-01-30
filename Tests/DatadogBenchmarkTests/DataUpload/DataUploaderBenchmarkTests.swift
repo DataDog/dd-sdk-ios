@@ -6,6 +6,7 @@
 
 import XCTest
 import HTTPServerMock
+import DatadogInternal
 @testable import Datadog
 
 @available(iOS 13.0, *)

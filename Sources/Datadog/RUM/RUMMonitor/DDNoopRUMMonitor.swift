@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import DatadogInternal
 
 /// The no-op variant of `DDRUMMonitor`.
 internal class DDNoopRUMMonitor: DDRUMMonitor {

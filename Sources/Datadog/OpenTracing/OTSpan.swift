@@ -1,4 +1,5 @@
 import Foundation
+import DatadogInternal
 
 /// Represents information related to an event with a timespan
 public protocol OTSpan {

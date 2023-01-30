@@ -6,6 +6,7 @@
 
 #if canImport(SwiftUI)
 import SwiftUI
+import DatadogInternal
 
 /// `SwiftUI.ViewModifier` for RUM which invoke `startView` and `stopView` from the
 /// global RUM Monitor when the modified view appears and disappears.

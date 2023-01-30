@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 internal protocol FilesOrchestratorType: AnyObject {
     var performance: StoragePerformancePreset { get }
