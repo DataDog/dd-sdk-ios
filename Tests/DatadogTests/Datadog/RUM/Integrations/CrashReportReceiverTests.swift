@@ -412,7 +412,7 @@ class CrashReportReceiverTests: XCTestCase {
         )
         XCTAssertEqual(sendRUMViewEvent.view.name, lastRUMViewEvent.view.name)
         XCTAssertEqual(sendRUMViewEvent.view.url, lastRUMViewEvent.view.url)
-        XCTAssertEqual(sendRUMViewEvent.view.error.count, lastRUMViewEvent.view.error.count)
+        XCTAssertEqual(sendRUMViewEvent.view.error.count, lastRUMViewEvent.view.error.count + 1)
         XCTAssertEqual(sendRUMViewEvent.view.resource.count, lastRUMViewEvent.view.resource.count)
         XCTAssertEqual(sendRUMViewEvent.view.action.count, lastRUMViewEvent.view.action.count)
         XCTAssertEqual(
@@ -616,7 +616,7 @@ class CrashReportReceiverTests: XCTestCase {
             XCTAssertTrue(sentRUMView.view.isActive == false, "The view must be marked inactive")
             XCTAssertEqual(sentRUMView.view.name, expectedViewName)
             XCTAssertEqual(sentRUMView.view.url, expectedViewURL)
-            XCTAssertEqual(sentRUMView.view.error.count, 0)
+            XCTAssertEqual(sentRUMView.view.error.count, 1, "The view must increase number of errors by 1")
             XCTAssertEqual(sentRUMView.view.resource.count, 0)
             XCTAssertEqual(sentRUMView.view.action.count, 0)
             XCTAssertEqual(sentRUMView.source, .init(rawValue: randomSource))
@@ -759,7 +759,7 @@ class CrashReportReceiverTests: XCTestCase {
             XCTAssertTrue(sentRUMView.view.isActive == false, "The view must be marked inactive")
             XCTAssertEqual(sentRUMView.view.name, expectedViewName)
             XCTAssertEqual(sentRUMView.view.url, expectedViewURL)
-            XCTAssertEqual(sentRUMView.view.error.count, 0)
+            XCTAssertEqual(sentRUMView.view.error.count, 1, "The view must increase number of errors by 1")
             XCTAssertEqual(sentRUMView.view.resource.count, 0)
             XCTAssertEqual(sentRUMView.view.action.count, 0)
             XCTAssertEqual(
