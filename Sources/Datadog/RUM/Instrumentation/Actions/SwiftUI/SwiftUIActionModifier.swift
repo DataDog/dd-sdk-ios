@@ -20,7 +20,7 @@ internal struct RUMTapActionModifier: SwiftUI.ViewModifier {
     let name: String
 
     /// Custom attributes to attach to the Action.
-    let attributes: [AttributeKey: AttributeValue]
+    let attributes: [String: Encodable]
 
     func body(content: Content) -> some View {
         content.simultaneousGesture(
@@ -43,7 +43,7 @@ public extension SwiftUI.View {
     /// - Returns: This view after applying a `ViewModifier` for monitoring the view.
     func trackRUMTapAction(
         name: String,
-        attributes: [AttributeKey: AttributeValue] = [:],
+        attributes: [String: Encodable] = [:],
         count: Int = 1
     ) -> some View {
         return modifier(RUMTapActionModifier(count: count, name: name, attributes: attributes))

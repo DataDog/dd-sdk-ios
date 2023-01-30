@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// An observer for `UserInfo` value.
 internal typealias UserInfoObserver = ValueObserver

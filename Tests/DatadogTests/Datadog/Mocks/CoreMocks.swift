@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+import DatadogInternal
 @testable import Datadog
 
 // MARK: - Configuration Mocks
@@ -21,7 +22,7 @@ extension Datadog.Configuration {
         tracingEnabled: Bool = false,
         rumEnabled: Bool = false,
         crashReportingPlugin: DDCrashReportingPluginType? = nil,
-        datadogEndpoint: DatadogEndpoint? = nil,
+        datadogEndpoint: DatadogSite? = nil,
         customLogsEndpoint: URL? = nil,
         customTracesEndpoint: URL? = nil,
         customRUMEndpoint: URL? = nil,
@@ -583,20 +584,6 @@ class RelativeDateProvider: DateProvider {
     }
 }
 
-extension AppState: AnyMockable, RandomMockable {
-    public static func mockAny() -> AppState {
-        return .active
-    }
-
-    public static func mockRandom() -> AppState {
-        return [.active, .inactive, .background].randomElement()!
-    }
-
-    static func mockRandom(runningInForeground: Bool) -> AppState {
-        return runningInForeground ? [.active, .inactive].randomElement()! : .background
-    }
-}
-
 class AppStateListenerMock: AppStateListening, AnyMockable {
     let history: AppStateHistory
 
@@ -782,115 +769,5 @@ class PrintFunctionMock {
 
     func reset() {
         printedMessages = []
-    }
-}
-
-class CoreLoggerMock: CoreLogger {
-    private let queue = DispatchQueue(label: "core-logger-mock")
-    private(set) var recordedLogs: [(level: CoreLoggerLevel, message: String, error: Error?)] = []
-
-    // MARK: - CoreLogger
-
-    func log(_ level: CoreLoggerLevel, message: @autoclosure () -> String, error: Error?) {
-        let newLog = (level, message(), error)
-        queue.async { self.recordedLogs.append(newLog) }
-    }
-
-    func reset() {
-        queue.async { self.recordedLogs = [] }
-    }
-
-    // MARK: - Matching
-
-    typealias RecordedLog = (message: String, error: DDError?)
-
-    private func recordedLogs(ofLevel level: CoreLoggerLevel) -> [RecordedLog] {
-        return queue.sync {
-            recordedLogs
-                .filter({ $0.level == level })
-                .map { ($0.message, $0.error.map({ DDError(error: $0) })) }
-        }
-    }
-
-    var debugLogs: [RecordedLog] { recordedLogs(ofLevel: .debug) }
-    var warnLogs: [RecordedLog] { recordedLogs(ofLevel: .warn) }
-    var errorLogs: [RecordedLog] { recordedLogs(ofLevel: .error) }
-    var criticalLogs: [RecordedLog] { recordedLogs(ofLevel: .critical) }
-
-    var debugLog: RecordedLog? { debugLogs.last }
-    var warnLog: RecordedLog? { warnLogs.last }
-    var errorLog: RecordedLog? { errorLogs.last }
-    var criticalLog: RecordedLog? { criticalLogs.last }
-}
-
-/// `Telemtry` recording received telemetry.
-class TelemetryMock: Telemetry, CustomStringConvertible {
-    private(set) var debugs: [String] = []
-    private(set) var errors: [(message: String, kind: String?, stack: String?)] = []
-    private(set) var configurations: [FeaturesConfiguration] = []
-    private(set) var description: String = "Telemetry logs:"
-
-    func debug(id: String, message: String) {
-        debugs.append(message)
-        description.append("\n- [debug] \(message)")
-    }
-
-    func error(id: String, message: String, kind: String?, stack: String?) {
-        errors.append((message: message, kind: kind, stack: stack))
-        description.append("\n - [error] \(message), kind: \(kind ?? "nil"), stack: \(stack ?? "nil")")
-    }
-
-    func configuration(configuration: FeaturesConfiguration) {
-        configurations.append(configuration)
-        description.append("\n - [configuration] \(configuration)")
-    }
-}
-
-extension DD {
-    /// Syntactic sugar for patching the `dd` bundle by replacing `logger`.
-    ///
-    /// ```
-    /// let dd = DD.mockWith(logger: CoreLoggerMock())
-    /// defer { dd.reset() }
-    /// ```
-    static func mockWith<CL: CoreLogger>(logger: CL) -> DDMock<CL, TelemetryMock> {
-        let mock = DDMock(
-            oldLogger: DD.logger,
-            oldTelemetry: DD.telemetry,
-            logger: logger,
-            telemetry: TelemetryMock()
-        )
-        DD.logger = logger
-        return mock
-    }
-
-    /// Syntactic sugar for patching the `dd` bundle by replacing `telemetry`.
-    ///
-    /// ```
-    /// let dd = DD.mockWith(telemetry: TelemetryMock())
-    /// defer { dd.reset() }
-    /// ```
-    static func mockWith<TM: Telemetry>(telemetry: TM) -> DDMock<CoreLoggerMock, TM> {
-        let mock = DDMock(
-            oldLogger: DD.logger,
-            oldTelemetry: DD.telemetry,
-            logger: CoreLoggerMock(),
-            telemetry: telemetry
-        )
-        DD.telemetry = telemetry
-        return mock
-    }
-}
-
-struct DDMock<CL: CoreLogger, TM: Telemetry> {
-    let oldLogger: CoreLogger
-    let oldTelemetry: Telemetry
-
-    let logger: CL
-    let telemetry: TM
-
-    func reset() {
-        DD.logger = oldLogger
-        DD.telemetry = oldTelemetry
     }
 }

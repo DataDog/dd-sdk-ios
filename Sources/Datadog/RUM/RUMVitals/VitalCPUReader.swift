@@ -6,6 +6,7 @@
 
 import Foundation
 import UIKit.UIApplication
+import DatadogInternal
 
 /// A class reading the CPU ticks of the processor.
 internal class VitalCPUReader: SamplingBasedVitalReader {

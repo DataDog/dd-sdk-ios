@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 internal protocol HostsSanitizing {
     func sanitized(hosts: Set<String>, warningMessage: String) -> Set<String>

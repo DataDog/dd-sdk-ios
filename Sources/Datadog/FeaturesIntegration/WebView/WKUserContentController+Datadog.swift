@@ -8,6 +8,7 @@
 
 import Foundation
 import WebKit
+import DatadogInternal
 
 public extension WKUserContentController {
     private static let jsCodePrefix = "/* DatadogEventBridge */"

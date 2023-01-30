@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 private enum HTTPResponseStatusCode: Int {
     /// The request has been accepted for processing.

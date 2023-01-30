@@ -6,6 +6,7 @@
 
 import UIKit
 import Datadog
+import DatadogInternal
 import DatadogCrashReporting
 
 protocol AppConfiguration {

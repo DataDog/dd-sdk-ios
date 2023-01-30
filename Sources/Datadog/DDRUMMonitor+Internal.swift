@@ -5,8 +5,9 @@
  */
 
 import Foundation
+import DatadogInternal
 
-extension DDRUMMonitor: DatadogInternal {}
+extension DDRUMMonitor: DatadogInternalInterface {}
 
 /// This class exposes internal methods that are used by other Datadog modules and cross platform
 /// frameworks. It is not meant for public use.

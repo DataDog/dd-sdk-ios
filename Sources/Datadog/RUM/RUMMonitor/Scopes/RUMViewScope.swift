@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 internal class RUMViewScope: RUMScope, RUMContextProvider {
     struct Constants {

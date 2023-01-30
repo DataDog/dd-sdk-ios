@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Provides the current RUM context tags for produced `Spans`.
 internal final class TracingWithRUMIntegration {

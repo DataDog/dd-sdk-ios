@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// An interface for forwarding `URLSessionDelegate` calls to `DDURLSessionDelegate`.
 /// The implementation must ensure that required methods are called on the `ddURLSessionDelegate`.

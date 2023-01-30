@@ -5,13 +5,13 @@
  */
 
 import Foundation
-import Datadog
+import DatadogInternal
 
 extension DatadogContext: AnyMockable {
     public static func mockAny() -> DatadogContext { mockWith() }
 
     public static func mockWith(
-        site: DatadogSite? = .mockAny(),
+        site: DatadogSite = .mockAny(),
         clientToken: String = .mockAny(),
         service: String = .mockAny(),
         env: String = .mockAny(),
@@ -91,8 +91,8 @@ extension DatadogContext: AnyMockable {
     }
 }
 
-extension Datadog.Configuration.DatadogEndpoint: AnyMockable, RandomMockable {
-    public static func mockAny() -> Datadog.Configuration.DatadogEndpoint {
+extension DatadogSite: AnyMockable, RandomMockable {
+    public static func mockAny() -> Self {
         return .us1
     }
 
@@ -159,6 +159,20 @@ extension LaunchTime: AnyMockable {
             launchDate: .mockAny(),
             isActivePrewarm: .mockAny()
         )
+    }
+}
+
+extension AppState: AnyMockable, RandomMockable {
+    public static func mockAny() -> AppState {
+        return .active
+    }
+
+    public static func mockRandom() -> AppState {
+        return [.active, .inactive, .background].randomElement()!
+    }
+
+    public static func mockRandom(runningInForeground: Bool) -> AppState {
+        return runningInForeground ? [.active, .inactive].randomElement()! : .background
     }
 }
 

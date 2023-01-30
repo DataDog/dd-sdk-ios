@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// `URLSession` Auto Instrumentation feature.
 internal final class URLSessionAutoInstrumentation: RUMCommandPublisher {

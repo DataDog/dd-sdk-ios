@@ -5,6 +5,8 @@
  */
 
 import XCTest
+import TestUtilities
+import DatadogInternal
 @testable import Datadog
 
 class FeaturesConfigurationTests: XCTestCase {
@@ -183,7 +185,7 @@ class FeaturesConfigurationTests: XCTestCase {
         let randomTracesEndpoint: Datadog.Configuration.TracesEndpoint = .mockRandom()
         let randomRUMEndpoint: Datadog.Configuration.RUMEndpoint = .mockRandom()
 
-        func configuration(datadogEndpoint: Datadog.Configuration.DatadogEndpoint?) throws -> FeaturesConfiguration {
+        func configuration(datadogEndpoint: DatadogSite?) throws -> FeaturesConfiguration {
             try createConfiguration(
                 datadogEndpoint: datadogEndpoint,
                 logsEndpoint: randomLogsEndpoint,
@@ -192,7 +194,7 @@ class FeaturesConfigurationTests: XCTestCase {
             )
         }
 
-        typealias DeprecatedEndpoints = Deprecated<Datadog.Configuration.DatadogEndpoint>
+        typealias DeprecatedEndpoints = Deprecated<DatadogSite>
 
         XCTAssertEqual(
             try configuration(datadogEndpoint: .us1).logging?.uploadURL.absoluteString,
@@ -296,17 +298,17 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(
             try configuration(datadogEndpoint: nil).logging?.uploadURL.absoluteString,
             randomLogsEndpoint.url,
-            "When `DatadogEndpoint` is not set, it should default to `LogsEndpoint` value."
+            "When `DatadogSite` is not set, it should default to `LogsEndpoint` value."
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: nil).tracing?.uploadURL.absoluteString,
             randomTracesEndpoint.url,
-            "When `DatadogEndpoint` is not set, it should default to `TracesEndpoint` value."
+            "When `DatadogSite` is not set, it should default to `TracesEndpoint` value."
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: nil).rum?.uploadURL.absoluteString,
             randomRUMEndpoint.url,
-            "When `DatadogEndpoint` is not set, it should default to `RUMEndpoint` value."
+            "When `DatadogSite` is not set, it should default to `RUMEndpoint` value."
         )
     }
 
@@ -337,7 +339,7 @@ class FeaturesConfigurationTests: XCTestCase {
     }
 
     func testCustomLogsEndpoint() throws {
-        let randomDatadogEndpoint: Datadog.Configuration.DatadogEndpoint = .mockRandom()
+        let randomDatadogEndpoint: DatadogSite = .mockRandom()
         let randomCustomEndpoint: URL = .mockRandom()
 
         let configuration = try createConfiguration(
@@ -348,7 +350,7 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(
             configuration.logging?.uploadURL,
             randomCustomEndpoint,
-            "When custom endpoint is set it should override `DatadogEndpoint`"
+            "When custom endpoint is set it should override `DatadogSite`"
         )
     }
 
@@ -362,7 +364,7 @@ class FeaturesConfigurationTests: XCTestCase {
     }
 
     func testCustomTracesEndpoint() throws {
-        let randomDatadogEndpoint: Datadog.Configuration.DatadogEndpoint = .mockRandom()
+        let randomDatadogEndpoint: DatadogSite = .mockRandom()
         let randomCustomEndpoint: URL = .mockRandom()
 
         let configuration = try createConfiguration(
@@ -373,7 +375,7 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(
             configuration.tracing?.uploadURL,
             randomCustomEndpoint,
-            "When custom endpoint is set it should override `DatadogEndpoint`"
+            "When custom endpoint is set it should override `DatadogSite`"
         )
     }
 
@@ -387,7 +389,7 @@ class FeaturesConfigurationTests: XCTestCase {
     }
 
     func testCustomRUMEndpoint() throws {
-        let randomDatadogEndpoint: Datadog.Configuration.DatadogEndpoint = .mockRandom()
+        let randomDatadogEndpoint: DatadogSite = .mockRandom()
         let randomCustomEndpoint: URL = .mockRandom()
 
         let configuration = try createConfiguration(
@@ -398,7 +400,7 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(
             configuration.rum?.uploadURL,
             randomCustomEndpoint,
-            "When custom endpoint is set it should override `DatadogEndpoint`"
+            "When custom endpoint is set it should override `DatadogSite`"
         )
     }
 
@@ -563,7 +565,7 @@ class FeaturesConfigurationTests: XCTestCase {
     // MARK: - URLSession Auto Instrumentation Configuration Tests
 
     func testURLSessionAutoInstrumentationConfiguration() throws {
-        let randomDatadogEndpoint: Datadog.Configuration.DatadogEndpoint = .mockRandom()
+        let randomDatadogEndpoint: DatadogSite = .mockRandom()
         let randomCustomLogsEndpoint: URL? = Bool.random() ? .mockRandom() : nil
         let randomCustomTracesEndpoint: URL? = Bool.random() ? .mockRandom() : nil
         let randomCustomRUMEndpoint: URL? = Bool.random() ? .mockRandom() : nil
@@ -801,7 +803,7 @@ class FeaturesConfigurationTests: XCTestCase {
 
     private func createConfiguration(
         clientToken: String = "abc",
-        datadogEndpoint: Datadog.Configuration.DatadogEndpoint? = nil,
+        datadogEndpoint: DatadogSite? = nil,
         customLogsEndpoint: URL? = nil,
         customTracesEndpoint: URL? = nil,
         customRUMEndpoint: URL? = nil,
@@ -838,7 +840,7 @@ private protocol DeprecatedDatadogEndpoints {
     static var eu: Self { get }
     static var gov: Self { get }
 }
-extension Datadog.Configuration.DatadogEndpoint: DeprecatedDatadogEndpoints {}
+extension DatadogSite: DeprecatedDatadogEndpoints {}
 
 /// An assistant shim to access `Datadog.Configuration.DatadogEndpoint` deprecated APIs with no warning.
 private struct Deprecated<T: DeprecatedDatadogEndpoints> {

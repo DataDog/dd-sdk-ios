@@ -49,6 +49,7 @@ let package = Package(
         .target(
             name: "Datadog",
             dependencies: [
+                .target(name: "DatadogInternal"),
                 "_Datadog_Private",
             ],
             swiftSettings: [.define("SPM_BUILD")]
@@ -56,7 +57,7 @@ let package = Package(
         .target(
             name: "DatadogObjc",
             dependencies: [
-                "Datadog",
+                .target(name: "Datadog"),
             ]
         ),
         .target(
@@ -65,9 +66,31 @@ let package = Package(
         .target(
             name: "DatadogCrashReporting",
             dependencies: [
-                "Datadog",
+                .target(name: "Datadog"),
                 .product(name: "CrashReporter", package: "PLCrashReporter"),
             ]
+        ),
+
+        .target(
+            name: "DatadogInternal",
+            path: "DatadogInternal/Sources"
+        ),
+        .testTarget(
+            name: "DatadogInternalTests",
+            dependencies: [
+                .target(name: "DatadogInternal"),
+                "TestUtilities"
+            ],
+            path: "DatadogInternal/Tests"
+        ),
+
+        .target(
+            name: "TestUtilities",
+            dependencies: [
+                .target(name: "Datadog"),
+            ],
+            path: "TestUtilities",
+            sources: ["Mocks", "Helpers"]
         )
     ]
 )

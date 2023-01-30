@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Creates and owns componetns enabling tracing feature.
 /// Bundles dependencies for other tracing-related components created later at runtime  (i.e. `Tracer`).

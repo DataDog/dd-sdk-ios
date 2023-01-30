@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 internal struct FeatureUpload {
     /// Uploads data to server.

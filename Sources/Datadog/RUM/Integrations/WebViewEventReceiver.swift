@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 internal typealias JSON = [String: Any]
 

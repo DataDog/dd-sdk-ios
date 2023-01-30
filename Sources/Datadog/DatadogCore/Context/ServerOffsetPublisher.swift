@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// List of Datadog NTP pools.
 public let DatadogNTPServers = [

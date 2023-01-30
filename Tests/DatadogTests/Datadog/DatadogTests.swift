@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import DatadogInternal
 import TestUtilities
 @testable import Datadog
 
@@ -88,21 +89,6 @@ class DatadogTests: XCTestCase {
             printFunction.printedMessage,
             "🔥 Datadog SDK usage error: SDK is already initialized."
         )
-
-        Datadog.flushAndDeinitialize()
-    }
-
-    func testGivenValidConfiguration_initializationCallsTelemetry() {
-        let dd = DD.mockWith(telemetry: TelemetryMock())
-        defer { dd.reset() }
-
-        Datadog.initialize(
-            appContext: .mockAny(),
-            trackingConsent: .mockRandom(),
-            configuration: defaultBuilder.build()
-        )
-
-        XCTAssertEqual(dd.telemetry.configurations.count, 1)
 
         Datadog.flushAndDeinitialize()
     }

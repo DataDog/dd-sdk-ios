@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// `Logger` printing logs to console.
 internal final class ConsoleLogger: LoggerProtocol {

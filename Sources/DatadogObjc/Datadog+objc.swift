@@ -6,6 +6,7 @@
 
 import Foundation
 import Datadog
+import DatadogInternal
 
 @objc
 public class DDTrackingConsent: NSObject {

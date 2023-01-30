@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 internal typealias RUMViewEventMapper = (RUMViewEvent) -> RUMViewEvent
 internal typealias RUMErrorEventMapper = (RUMErrorEvent) -> RUMErrorEvent?

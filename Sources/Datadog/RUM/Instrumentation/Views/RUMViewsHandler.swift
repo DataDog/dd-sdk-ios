@@ -6,6 +6,7 @@
 
 import Foundation
 import UIKit
+import DatadogInternal
 
 internal final class RUMViewsHandler {
     /// RUM representation of a View.

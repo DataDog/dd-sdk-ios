@@ -5,6 +5,8 @@
  */
 
 import XCTest
+import TestUtilities
+import DatadogInternal
 @testable import Datadog
 
 class DirectoriesTests: XCTestCase {

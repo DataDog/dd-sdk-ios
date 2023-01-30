@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import DatadogInternal
 
 /// A description of the RUM View returned from the `UIKitRUMViewsPredicate`.
 public struct RUMView {

@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import DatadogInternal
 
 /// A class enabling Datadog RUM features.
 ///

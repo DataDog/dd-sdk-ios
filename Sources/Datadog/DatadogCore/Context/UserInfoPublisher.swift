@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Publishes the current `UserInfo` value to receiver.
 internal final class UserInfoPublisher: ContextValuePublisher {

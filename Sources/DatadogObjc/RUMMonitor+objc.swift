@@ -6,7 +6,7 @@
 
 import Foundation
 import UIKit
-import struct Datadog.DDAnyEncodable
+import DatadogInternal
 import class Datadog.DDRUMMonitor
 import class Datadog.RUMMonitor
 import enum Datadog.RUMErrorSource
@@ -414,7 +414,7 @@ public class DDRUMMonitor: NSObject {
         forKey key: String,
         value: Any
     ) {
-        swiftRUMMonitor.addAttribute(forKey: key, value: DDAnyEncodable(value))
+        swiftRUMMonitor.addAttribute(forKey: key, value: AnyEncodable(value))
     }
 
     @objc

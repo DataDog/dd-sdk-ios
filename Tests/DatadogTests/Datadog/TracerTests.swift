@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+import DatadogInternal
 @testable import Datadog
 
 // swiftlint:disable multiline_arguments_brackets

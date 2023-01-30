@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Reads data from files.
 internal final class FileReader: Reader {

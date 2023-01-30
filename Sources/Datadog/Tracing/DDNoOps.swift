@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 internal struct DDNoopGlobals {
     static let tracer = DDNoopTracer()

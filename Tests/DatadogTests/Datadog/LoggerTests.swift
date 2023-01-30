@@ -5,6 +5,8 @@
  */
 
 import XCTest
+import TestUtilities
+import DatadogInternal
 @testable import Datadog
 
 // swiftlint:disable multiline_arguments_brackets
@@ -660,14 +662,14 @@ class LoggerTests: XCTestCase {
             XCTAssertEqual(rumModel.error.message, "error message")
             XCTAssertEqual(rumModel.error.source, .logger)
             XCTAssertNil(rumModel.error.stack)
-            let attributeValue = (rumModel.context?.contextInfo["any_attribute_a"] as? DDAnyCodable)?.value as? String
+            let attributeValue = (rumModel.context?.contextInfo["any_attribute_a"] as? AnyCodable)?.value as? String
             XCTAssertEqual(attributeValue, attributeValueA)
         }
         try XCTUnwrap(rumErrorMatcher2).model(ofType: RUMErrorEvent.self) { rumModel in
             XCTAssertEqual(rumModel.error.message, "critical message")
             XCTAssertEqual(rumModel.error.source, .logger)
             XCTAssertNil(rumModel.error.stack)
-            let attributeValue = (rumModel.context?.contextInfo["any_attribute_b"] as? DDAnyCodable)?.value as? String
+            let attributeValue = (rumModel.context?.contextInfo["any_attribute_b"] as? AnyCodable)?.value as? String
             XCTAssertEqual(attributeValue, attributeValueB)
         }
     }

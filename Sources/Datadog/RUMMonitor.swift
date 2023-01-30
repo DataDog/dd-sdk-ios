@@ -6,6 +6,7 @@
 
 import UIKit
 import Foundation
+import DatadogInternal
 
 internal extension RUMMethod {
     init(httpMethod: String?) {
@@ -79,7 +80,7 @@ internal extension RUMErrorSourceType {
 internal extension AttributeValue {
     func decoded<T>() -> T? {
         switch self {
-        case let codable as DDAnyCodable:
+        case let codable as AnyCodable:
             return codable.value as? T
         case let val as T:
             return val

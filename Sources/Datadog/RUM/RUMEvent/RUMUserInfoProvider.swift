@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Maps the value from shared `UserInfoProvider` to `RUMUSR` format.
 internal struct RUMUserInfoProvider {

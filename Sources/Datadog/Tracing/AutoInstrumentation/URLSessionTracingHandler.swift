@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 internal class URLSessionTracingHandler: URLSessionInterceptionHandler {
     /// Listening to app state changes and use it to report `foreground_duration`
@@ -96,5 +97,16 @@ internal class URLSessionTracingHandler: URLSessionInterceptionHandler {
         span.setTag(key: DDTags.isBackground, value: didStartInBackground || doesEndInBackground)
 
         span.finish(at: resourceMetrics.fetch.end)
+    }
+}
+
+private extension HTTPURLResponse {
+    func asClientError() -> Error? {
+        // 4xx Client Errors
+        guard statusCode >= 400 && statusCode < 500 else {
+            return nil
+        }
+        let message = "\(statusCode) " + HTTPURLResponse.localizedString(forStatusCode: statusCode)
+        return NSError(domain: "HTTPURLResponse", code: statusCode, userInfo: [NSLocalizedDescriptionKey: message])
     }
 }

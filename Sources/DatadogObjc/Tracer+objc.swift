@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import struct Datadog.DDAnyEncodable
+import DatadogInternal
 import class Datadog.Tracer
 import protocol Datadog.OTTracer
 import struct Datadog.OTReference
@@ -162,7 +162,7 @@ public class DDTracer: NSObject, DatadogObjc.OTTracer {
                     } else if let urlValue = tagValue as? URL {
                         return urlValue
                     } else {
-                        return DDAnyEncodable(tagValue)
+                        return AnyEncodable(tagValue)
                     }
                 }()
 

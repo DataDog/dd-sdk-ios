@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 internal typealias RUMSessionListener = (String, Bool) -> Void
 

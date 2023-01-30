@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// `SpanEnvelope` allows encoding multiple spans sharing the same `traceID` to a single payload.
 internal struct SpanEventsEnvelope: Encodable {
