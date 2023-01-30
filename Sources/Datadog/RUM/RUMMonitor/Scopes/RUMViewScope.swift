@@ -26,7 +26,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private unowned let parent: RUMContextProvider
     private let dependencies: RUMScopeDependencies
     /// If this is the very first view created in the current app process.
-    private let isInitialView: Bool
+    private var shouldSendApplicationStart: Bool
 
     /// The value holding stable identity of this RUM View.
     let identity: RUMViewIdentity
@@ -92,7 +92,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private var viewPerformanceMetrics: [PerformanceMetric: VitalInfo] = [:]
 
     init(
-        isInitialView: Bool,
+        shouldSendApplicationLaunch: Bool,
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
         identity: RUMViewIdentifiable,
@@ -105,7 +105,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     ) {
         self.parent = parent
         self.dependencies = dependencies
-        self.isInitialView = isInitialView
+        self.shouldSendApplicationStart = shouldSendApplicationLaunch
         self.identity = identity.asRUMViewIdentity()
         self.attributes = attributes
         self.customTimings = customTimings
@@ -146,12 +146,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         // Propagate to User Action scope
         userActionScope = userActionScope?.scope(byPropagating: command, context: context, writer: writer)
 
-        // Send "application start" action if this is the very first view tracked in the app
-        let hasSentNoViewUpdatesYet = version == 0
-        if isInitialView, hasSentNoViewUpdatesYet {
-            sendApplicationStartAction(context: context, writer: writer)
-        }
-
         // Apply side effects
         switch command {
         // View commands
@@ -166,6 +160,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         case let command as RUMStartViewCommand where !identity.equals(command.identity):
             isActiveView = false
             needsViewUpdate = true // sanity update (in case if the user forgets to end this View)
+
+            // When stopping the initial view for the first time, send the application start
+            // event as the view's full duration
+            if shouldSendApplicationStart {
+                let duration = command.time.timeIntervalSince(viewStartTime)
+                sendApplicationStartAction(context: context, writer: writer, duration: duration)
+                shouldSendApplicationStart = false
+            }
         case let command as RUMStopViewCommand where identity.equals(command.identity):
             isActiveView = false
             needsViewUpdate = true
@@ -319,29 +321,15 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     // MARK: - Sending RUM Events
 
-    private func sendApplicationStartAction(context: DatadogContext, writer: Writer) {
+    private func sendApplicationStartAction(context: DatadogContext, writer: Writer, duration: TimeInterval) {
         actionsCount += 1
 
         var attributes = self.attributes
-        var loadingTime: Int64?
 
         if context.launchTime?.isActivePrewarm == true {
             // Set `active_pre_warm` attribute to true in case
             // of pre-warmed app.
             attributes[Constants.activePrewarm] = true
-        } else if let launchTime = context.launchTime?.launchTime {
-            // Report Application Launch Time only if not pre-warmed
-            loadingTime = launchTime.toInt64Nanoseconds
-        } else if let launchDate = context.launchTime?.launchDate {
-            // The launchTime can be `nil` if the application is not yet
-            // active (UIApplicationDidBecomeActiveNotification). That is
-            // the case when instrumenting a SwiftUI application that start
-            // a RUM view on `SwiftUI.View/onAppear`.
-            //
-            // In that case, we consider the time between the application
-            // launch and the first view start as the application loading
-            // time.
-            loadingTime = viewStartTime.timeIntervalSince(launchDate).toInt64Nanoseconds
         }
 
         let actionEvent = RUMActionEvent(
@@ -355,7 +343,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 error: .init(count: 0),
                 frustration: nil,
                 id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
-                loadingTime: loadingTime,
+                loadingTime: duration.toInt64Nanoseconds,
                 longTask: .init(count: 0),
                 resource: .init(count: 0),
                 target: nil,

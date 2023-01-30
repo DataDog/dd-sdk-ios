@@ -68,6 +68,12 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             dependencies: dependencies,
             isReplayBeingRecorded: context.srBaggage?.isReplayBeingRecorded
         )
+
+        if context.applicationStateHistory.currentSnapshot.state != .background {
+            // Immediately start the ApplicationLaunchView for the new session
+            initialSession.startApplicationLaunchView(context: context)
+        }
+        
         sessionScope = initialSession
         sessionScopeDidUpdate(initialSession)
     }

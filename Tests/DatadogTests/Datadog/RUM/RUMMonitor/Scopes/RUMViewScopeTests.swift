@@ -31,7 +31,7 @@ class RUMViewScopeTests: XCTestCase {
         let sessionScope: RUMSessionScope = .mockWith(parent: applicationScope)
 
         let scope = RUMViewScope(
-            isInitialView: .mockRandom(),
+            shouldSendApplicationLaunch: .mockRandom(),
             parent: sessionScope,
             dependencies: .mockAny(),
             identity: mockView,
@@ -58,7 +58,7 @@ class RUMViewScopeTests: XCTestCase {
         let sessionScope: RUMSessionScope = .mockWith(parent: applicationScope)
 
         let scope = RUMViewScope(
-            isInitialView: .mockRandom(),
+            shouldSendApplicationLaunch: .mockRandom(),
             parent: sessionScope,
             dependencies: .mockAny(),
             identity: mockView,
@@ -98,7 +98,7 @@ class RUMViewScopeTests: XCTestCase {
         context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
 
         let scope = RUMViewScope(
-            isInitialView: true,
+            shouldSendApplicationLaunch: true,
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -145,7 +145,7 @@ class RUMViewScopeTests: XCTestCase {
         let customContext: DatadogContext = .mockWith(source: source)
 
         let scope = RUMViewScope(
-            isInitialView: true,
+            shouldSendApplicationLaunch: true,
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -180,7 +180,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         let scope: RUMViewScope = .mockWith(
-            isInitialView: true,
+            shouldSendApplicationLaunch: true,
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -209,7 +209,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         let scope: RUMViewScope = .mockWith(
-            isInitialView: true,
+            shouldSendApplicationLaunch: true,
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView
@@ -237,7 +237,7 @@ class RUMViewScopeTests: XCTestCase {
 
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
-            isInitialView: true,
+            shouldSendApplicationLaunch: true,
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -286,7 +286,7 @@ class RUMViewScopeTests: XCTestCase {
         let customContext: DatadogContext = .mockWith(source: source)
 
         let scope = RUMViewScope(
-            isInitialView: true,
+            shouldSendApplicationLaunch: true,
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -310,9 +310,9 @@ class RUMViewScopeTests: XCTestCase {
 
     func testWhenViewIsStarted_itSendsViewUpdateEvent() throws {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
-        let isInitialView: Bool = .mockRandom()
+        let shouldSendApplicationLaunch: Bool = .mockRandom()
         let scope = RUMViewScope(
-            isInitialView: isInitialView,
+            shouldSendApplicationLaunch: shouldSendApplicationLaunch,
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -343,7 +343,7 @@ class RUMViewScopeTests: XCTestCase {
         let viewIsActive = try XCTUnwrap(event.view.isActive)
         XCTAssertTrue(viewIsActive)
         XCTAssertEqual(event.view.timeSpent, 1) // Minimum `time_spent of 1 nanosecond
-        XCTAssertEqual(event.view.action.count, isInitialView ? 1 : 0, "It must track application start action only if this is an initial view")
+        XCTAssertEqual(event.view.action.count, shouldSendApplicationLaunch ? 1 : 0, "It must track application start action only if this is an initial view")
         XCTAssertEqual(event.view.error.count, 0)
         XCTAssertEqual(event.view.resource.count, 0)
         XCTAssertEqual(event.dd.documentVersion, 1)
@@ -356,9 +356,9 @@ class RUMViewScopeTests: XCTestCase {
 
     func testWhenViewIsStopped_itSendsViewUpdateEvent_andEndsTheScope() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
-        let isInitialView: Bool = .mockRandom()
+        let shouldSendApplicationLaunch: Bool = .mockRandom()
         let scope = RUMViewScope(
-            isInitialView: isInitialView,
+            shouldSendApplicationLaunch: shouldSendApplicationLaunch,
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -408,7 +408,7 @@ class RUMViewScopeTests: XCTestCase {
         let viewIsActive = try XCTUnwrap(event.view.isActive)
         XCTAssertFalse(viewIsActive)
         XCTAssertEqual(event.view.timeSpent, TimeInterval(2).toInt64Nanoseconds)
-        XCTAssertEqual(event.view.action.count, isInitialView ? 1 : 0, "It must track application start action only if this is an initial view")
+        XCTAssertEqual(event.view.action.count, shouldSendApplicationLaunch ? 1 : 0, "It must track application start action only if this is an initial view")
         XCTAssertEqual(event.view.error.count, 0)
         XCTAssertEqual(event.view.resource.count, 0)
         XCTAssertEqual(event.dd.documentVersion, 2)
@@ -424,7 +424,7 @@ class RUMViewScopeTests: XCTestCase {
         let view2 = createMockView(viewControllerClassName: "SecondViewController")
         var currentTime = Date()
         let scope = RUMViewScope(
-            isInitialView: .mockRandom(),
+            shouldSendApplicationLaunch: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
             identity: view1,
@@ -469,7 +469,7 @@ class RUMViewScopeTests: XCTestCase {
     func testWhenTheViewIsStartedAnotherTime_itEndsTheScope() throws {
         var currentTime = Date()
         let scope = RUMViewScope(
-            isInitialView: .mockRandom(),
+            shouldSendApplicationLaunch: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -514,7 +514,7 @@ class RUMViewScopeTests: XCTestCase {
     func testGivenMultipleViewScopes_whenSendingViewEvent_eachScopeUsesUniqueViewID() throws {
         func createScope(uri: String, name: String) -> RUMViewScope {
             RUMViewScope(
-                isInitialView: false,
+                shouldSendApplicationLaunch: false,
                 parent: parent,
                 dependencies: .mockAny(),
                 identity: mockView,
@@ -560,7 +560,7 @@ class RUMViewScopeTests: XCTestCase {
 
     func testItManagesResourceScopesLifecycle() throws {
         let scope = RUMViewScope(
-            isInitialView: .mockRandom(),
+            shouldSendApplicationLaunch: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -627,7 +627,7 @@ class RUMViewScopeTests: XCTestCase {
 
     func testGivenViewWithPendingResources_whenItGetsStopped_itDoesNotFinishUntilResourcesComplete() throws {
         let scope = RUMViewScope(
-            isInitialView: .mockRandom(),
+            shouldSendApplicationLaunch: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -704,7 +704,7 @@ class RUMViewScopeTests: XCTestCase {
 
     func testItManagesContinuousUserActionScopeLifecycle() throws {
         let scope = RUMViewScope(
-            isInitialView: false,
+            shouldSendApplicationLaunch: false,
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -787,7 +787,7 @@ class RUMViewScopeTests: XCTestCase {
     func testItManagesDiscreteUserActionScopeLifecycle() throws {
         var currentTime = Date()
         let scope = RUMViewScope(
-            isInitialView: false,
+            shouldSendApplicationLaunch: false,
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -865,7 +865,7 @@ class RUMViewScopeTests: XCTestCase {
     func testGivenViewWithPendingAction_whenCustomActionIsAdded_itSendsItInstantly() throws {
         var currentTime = Date()
         let scope = RUMViewScope(
-            isInitialView: false,
+            shouldSendApplicationLaunch: false,
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -917,7 +917,7 @@ class RUMViewScopeTests: XCTestCase {
     func testGivenViewWithNoPendingAction_whenCustomActionIsAdded_itSendsItInstantly() throws {
         var currentTime = Date()
         let scope = RUMViewScope(
-            isInitialView: false,
+            shouldSendApplicationLaunch: false,
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -964,7 +964,7 @@ class RUMViewScopeTests: XCTestCase {
         // Given
         var currentTime = Date()
         let scope = RUMViewScope(
-            isInitialView: false,
+            shouldSendApplicationLaunch: false,
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -1027,7 +1027,7 @@ class RUMViewScopeTests: XCTestCase {
 
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
-            isInitialView: .mockRandom(),
+            shouldSendApplicationLaunch: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -1094,7 +1094,7 @@ class RUMViewScopeTests: XCTestCase {
         let customContext: DatadogContext = .mockWith(source: source)
 
         let scope = RUMViewScope(
-            isInitialView: .mockRandom(),
+            shouldSendApplicationLaunch: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -1184,7 +1184,7 @@ class RUMViewScopeTests: XCTestCase {
 
     func testWhenResourceIsFinishedWithError_itSendsViewUpdateEvent() throws {
         let scope = RUMViewScope(
-            isInitialView: .mockRandom(),
+            shouldSendApplicationLaunch: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -1235,7 +1235,7 @@ class RUMViewScopeTests: XCTestCase {
         let startViewDate: Date = .mockDecember15th2019At10AMUTC()
 
         let scope = RUMViewScope(
-            isInitialView: .mockRandom(),
+            shouldSendApplicationLaunch: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -1298,7 +1298,7 @@ class RUMViewScopeTests: XCTestCase {
         let customContext: DatadogContext = .mockWith(source: source)
 
         let scope = RUMViewScope(
-            isInitialView: .mockRandom(),
+            shouldSendApplicationLaunch: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -1338,7 +1338,7 @@ class RUMViewScopeTests: XCTestCase {
     func testGivenActiveView_whenCustomTimingIsRegistered_itSendsViewUpdateEvent() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
-            isInitialView: .mockRandom(),
+            shouldSendApplicationLaunch: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -1400,7 +1400,7 @@ class RUMViewScopeTests: XCTestCase {
     func testGivenInactiveView_whenCustomTimingIsRegistered_itDoesNotSendViewUpdateEvent() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
-            isInitialView: .mockRandom(),
+            shouldSendApplicationLaunch: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -1446,7 +1446,7 @@ class RUMViewScopeTests: XCTestCase {
     func testGivenActiveView_whenCustomTimingIsRegistered_itSanitizesCustomTiming() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
-            isInitialView: .mockRandom(),
+            shouldSendApplicationLaunch: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -1511,7 +1511,7 @@ class RUMViewScopeTests: XCTestCase {
 
         // Given
         let scope = RUMViewScope(
-            isInitialView: false,
+            shouldSendApplicationLaunch: false,
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
@@ -1627,7 +1627,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         let scope = RUMViewScope(
-            isInitialView: true,
+            shouldSendApplicationLaunch: true,
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
@@ -1732,7 +1732,7 @@ class RUMViewScopeTests: XCTestCase {
 
         // Given
         let scope = RUMViewScope(
-            isInitialView: true,
+            shouldSendApplicationLaunch: true,
             parent: parent,
             dependencies: dependencies,
             identity: mockView,
@@ -1865,7 +1865,7 @@ class RUMViewScopeTests: XCTestCase {
 
         // Given
         let scope = RUMViewScope(
-            isInitialView: .mockRandom(),
+            shouldSendApplicationLaunch: .mockRandom(),
             parent: parent,
             dependencies: .mockWith(core: core),
             identity: mockView,

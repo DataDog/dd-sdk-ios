@@ -222,12 +222,6 @@ internal class RUMSessionMatcher {
                     )
                 }
 
-                if index == 0 && !viewIsActive {
-                    throw RUMSessionConsistencyException(
-                        description: "A `RUMSessionMatcher.ViewVisit` can't have a first event with an inactive `View`."
-                    )
-                }
-
                 if viewIsInactive {
                     throw RUMSessionConsistencyException(
                         description: "A `RUMSessionMatcher.ViewVisit` can't have an event after the `View` was marked as inactive."

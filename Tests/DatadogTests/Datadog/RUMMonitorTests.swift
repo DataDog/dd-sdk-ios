@@ -99,11 +99,12 @@ class RUMMonitorTests: XCTestCase {
         verifyGlobalAttributes(in: rumEventMatchers)
 
         let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
-        XCTAssertEqual(session.viewVisits.count, 2)
-        XCTAssertEqual(session.viewVisits[0].name, "View1")
-        XCTAssertEqual(session.viewVisits[0].path, "view1-key")
-        XCTAssertEqual(session.viewVisits[1].name, "View2")
-        XCTAssertEqual(session.viewVisits[1].path, "view2-key")
+        XCTAssertEqual(session.viewVisits.count, 3)
+        XCTAssertEqual(session.viewVisits[0].name, "ApplicationLaunch")
+        XCTAssertEqual(session.viewVisits[1].name, "View1")
+        XCTAssertEqual(session.viewVisits[1].path, "view1-key")
+        XCTAssertEqual(session.viewVisits[2].name, "View2")
+        XCTAssertEqual(session.viewVisits[2].path, "view2-key")
     }
 
     func testStartingView_thenLoadingImageResourceWithRequest() throws {
@@ -931,11 +932,126 @@ class RUMMonitorTests: XCTestCase {
 
     // MARK: - Tracking App Launch Events
 
-    func testWhenCollectingEventsBeforeStartingFirstView_itTracksThemWithinApplicationLaunchView() throws {
-        let sdkInitDate: Date = .mockDecember15th2019At10AMUTC()
+    func testWhenInitializing_itStartsApplicationLaunchView_withLaunchTime() throws {
+        // Given
+        let launchDate: Date = .mockDecember15th2019At10AMUTC()
+        let sdkInitDate = launchDate.addingTimeInterval(10)
 
         core.context = .mockWith(
-            sdkInitDate: sdkInitDate
+            sdkInitDate: sdkInitDate,
+            launchTime: LaunchTime(
+                launchTime: nil,
+                launchDate: launchDate,
+                isActivePrewarm: false
+            )
+        )
+
+        // When
+        let rum: RUMFeature = .mockWith(
+            configuration: .mockWith(
+                dateProvider: RelativeDateProvider(
+                    startingFrom: sdkInitDate.addingTimeInterval(10),
+                    advancingBySeconds: 1
+                )
+            )
+        )
+        core.register(feature: rum)
+
+        let monitor = try createTestableRUMMonitor()
+        monitor.startView(viewController: mockView)
+
+        // Then
+        let viewEvents = core.waitAndReturnEvents(of: RUMFeature.self, ofType: RUMViewEvent.self)
+        let view = try XCTUnwrap(viewEvents.first)
+
+        XCTAssertEqual(view.view.name, "ApplicationLaunch")
+        XCTAssertEqual(view.date, launchDate.timeIntervalSince1970.toInt64Milliseconds)
+    }
+
+    func testWhenInitializingWithActivePrewarm_itStartsApplicationLaunchView_withSdkInitDate() throws {
+        // Given
+        let launchDate: Date = .mockDecember15th2019At10AMUTC()
+        let sdkInitDate = launchDate.addingTimeInterval(10)
+
+        core.context = .mockWith(
+            sdkInitDate: sdkInitDate,
+            launchTime: LaunchTime(
+                launchTime: nil,
+                launchDate: launchDate,
+                isActivePrewarm: true
+            )
+        )
+
+        // When
+        let rum: RUMFeature = .mockWith(
+            configuration: .mockWith(
+                dateProvider: RelativeDateProvider(
+                    startingFrom: sdkInitDate.addingTimeInterval(10),
+                    advancingBySeconds: 1
+                )
+            )
+        )
+        core.register(feature: rum)
+
+        let monitor = try createTestableRUMMonitor()
+        monitor.startView(viewController: mockView)
+
+        // Then
+        let viewEvents = core.waitAndReturnEvents(of: RUMFeature.self, ofType: RUMViewEvent.self)
+        let view = try XCTUnwrap(viewEvents.first)
+
+        XCTAssertEqual(view.view.name, "ApplicationLaunch")
+        XCTAssertEqual(view.date, sdkInitDate.timeIntervalSince1970.toInt64Milliseconds)
+    }
+
+    func testWhenAppLaunches_itSendsAnApplicaitonStartEventForTheWholeApplicaitonLaunchView() throws {
+        // Given
+        let launchDate: Date = .mockDecember15th2019At10AMUTC()
+        let sdkInitDate = launchDate.addingTimeInterval(10)
+
+        core.context = .mockWith(
+            sdkInitDate: sdkInitDate,
+            launchTime: LaunchTime(
+                launchTime: nil,
+                launchDate: launchDate,
+                isActivePrewarm: false
+            )
+        )
+
+        // When
+        let rum: RUMFeature = .mockWith(
+            configuration: .mockWith(
+                dateProvider: RelativeDateProvider(
+                    startingFrom: sdkInitDate.addingTimeInterval(10),
+                    advancingBySeconds: 1
+                )
+            )
+        )
+        core.register(feature: rum)
+
+        let monitor = try createTestableRUMMonitor()
+        monitor.startView(viewController: mockView)
+
+        // Then
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+
+        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
+        XCTAssertEqual(session.viewVisits[0].actionEvents[0].action.type, .applicationStart)
+        XCTAssertEqual(session.viewVisits[0].actionEvents[0].action.loadingTime, TimeInterval(20).toInt64Nanoseconds)
+    }
+
+    func testWhenCollectingEventsBeforeStartingFirstView_itTracksThemWithinApplicationLaunchView() throws {
+        // Given
+        let launchDate: Date = .mockDecember15th2019At10AMUTC()
+        let sdkInitDate = launchDate.addingTimeInterval(10)
+
+        core.context = .mockWith(
+            sdkInitDate: sdkInitDate,
+            launchTime: LaunchTime(
+                launchTime: nil,
+                launchDate: launchDate,
+                isActivePrewarm: false
+            )
         )
 
         // Given
@@ -967,12 +1083,13 @@ class RUMMonitorTests: XCTestCase {
 
         let appLaunchView = session.viewVisits[0]
         let sdkInitDateInMilliseconds = sdkInitDate.timeIntervalSince1970.toInt64Milliseconds
+        let launchDateInMilliseconds = launchDate.timeIntervalSince1970.toInt64Milliseconds
 
         XCTAssertEqual(appLaunchView.name, "ApplicationLaunch", "It should track 'ApplicationLaunch' view")
-        XCTAssertEqual(appLaunchView.viewEvents.first?.date, sdkInitDateInMilliseconds, "'ApplicationLaunch' view should start at SDK init")
+        XCTAssertEqual(appLaunchView.viewEvents.first?.date, launchDateInMilliseconds, "'ApplicationLaunch' view should start at launch date")
         XCTAssertEqual(appLaunchView.actionEvents.count, 2, "'ApplicationLaunch' should track 2 actions")
         XCTAssertEqual(appLaunchView.actionEvents[0].action.type, .applicationStart, "'ApplicationLaunch' should track 'application start' action")
-        XCTAssertEqual(appLaunchView.actionEvents[0].date, sdkInitDateInMilliseconds, "'application start' action should be tracked at SDK init")
+        XCTAssertEqual(appLaunchView.actionEvents[0].date, launchDateInMilliseconds, "'application start' action should be tracked at launch date")
         XCTAssertEqual(appLaunchView.actionEvents[1].action.target?.name, "A1", "'ApplicationLaunch' should track 'A1' action")
         XCTAssertGreaterThan(appLaunchView.actionEvents[1].date, sdkInitDateInMilliseconds, "'A1' action should be tracked after SDK init")
         XCTAssertEqual(appLaunchView.errorEvents.count, 1, "'ApplicationLaunch' should track 1 error")
@@ -984,6 +1101,51 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(userView.name, "FirstView", "It should track user view")
         XCTAssertEqual(userView.actionEvents.count, 1, "User view should track 1 action")
         XCTAssertEqual(userView.actionEvents[0].action.target?.name, "A2", "User view should track 'A2' action")
+    }
+
+    func testWhenAppLaunchesInBackground_itDoesNotStartApplicationLaunchView() throws {
+        // Given
+        let launchDate: Date = .mockDecember15th2019At10AMUTC()
+        let sdkInitDate = launchDate.addingTimeInterval(10)
+
+        core.context = .mockWith(
+            sdkInitDate: sdkInitDate,
+            launchTime: LaunchTime(
+                launchTime: nil,
+                launchDate: launchDate,
+                isActivePrewarm: false
+            ),
+            applicationStateHistory: AppStateHistory(
+                initialSnapshot: AppStateHistory.Snapshot(state: .background, date: sdkInitDate),
+                recentDate: sdkInitDate
+            )
+        )
+
+        // When
+        let rum: RUMFeature = .mockWith(
+            configuration: .mockWith(
+                backgroundEventTrackingEnabled: true,
+                dateProvider: RelativeDateProvider(
+                    startingFrom: sdkInitDate.addingTimeInterval(10),
+                    advancingBySeconds: 1
+                )
+            )
+        )
+        core.register(feature: rum)
+
+        let monitor = try createTestableRUMMonitor()
+        monitor.startResourceLoading(resourceKey: "R1", url: URL(string: "https://foo.com/R1")!)
+        monitor.stopResourceLoading(resourceKey: "R1", statusCode: 200, kind: .native)
+
+        monitor.startView(viewController: mockView)
+
+        // Then
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+
+        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
+        XCTAssertEqual(session.viewVisits[0].name, "Background")
+        XCTAssertEqual(session.viewVisits[0].resourceEvents.count, 1)
+        XCTAssertEqual(session.viewVisits[0].actionEvents.count, 0)
     }
 
     // MARK: - Data Scrubbing
@@ -1353,7 +1515,8 @@ class RUMMonitorTests: XCTestCase {
     }
 
     private func verifyGlobalAttributes(in matchers: [RUMEventMatcher]) {
-        for matcher in matchers {
+        // ApplicaitonLaunch does not have attributes set yet.
+        for matcher in matchers.filter({ (try? $0.attribute(forKeyPath: "view.name")) != "ApplicationLaunch" }) {
             expectedAttributes.forEach { attrKey, attrValue in
                 XCTAssertEqual(try? matcher.attribute(forKeyPath: attrKey), attrValue)
             }

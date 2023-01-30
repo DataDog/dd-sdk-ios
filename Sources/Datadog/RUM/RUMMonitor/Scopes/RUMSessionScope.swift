@@ -102,7 +102,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 return nil // if the underlying identifiable (`UIVIewController`) no longer exists, skip transferring its scope
             }
             return RUMViewScope(
-                isInitialView: false,
+                shouldSendApplicationLaunch: false,
                 parent: self,
                 dependencies: dependencies,
                 identity: expiredViewIdentifiable,
@@ -151,7 +151,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
             switch handlingRule {
             case .handleInApplicationLaunchView where command.canStartApplicationLaunchView:
-                startApplicationLaunchView(on: command, context: context)
+                // Now that we start the ApplicationLaunchView on creation of the initial session, this shouln't
+                // happen. Send telemetry if it does and start the event anyay.
+                DD.telemetry.error("Creating an ApplicationLaunchView when one should have existed already.")
+                startApplicationLaunchView(context: context)
             case .handleInBackgroundView where command.canStartBackgroundView:
                 startBackgroundView(on: command, context: context)
             default:
@@ -189,11 +192,33 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     // MARK: - RUMCommands Processing
 
-    private func startView(on command: RUMStartViewCommand, context: DatadogContext) {
-        let isStartingInitialView = isInitialSession && !state.hasTrackedAnyView
+    internal func startApplicationLaunchView(context: DatadogContext) {
+        var startTime = sessionStartTime
+        if context.launchTime?.isActivePrewarm == false,
+           let processStartTime = context.launchTime?.launchDate {
+            startTime = processStartTime
+        }
+        
         viewScopes.append(
             RUMViewScope(
-                isInitialView: isStartingInitialView,
+                shouldSendApplicationLaunch: true,
+                parent: self,
+                dependencies: dependencies,
+                identity: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
+                path: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
+                name: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName,
+                attributes: [:],
+                customTimings: [:],
+                startTime: startTime,
+                serverTimeOffset: context.serverTimeOffset
+            )
+        )
+    }
+
+    private func startView(on command: RUMStartViewCommand, context: DatadogContext) {
+        viewScopes.append(
+            RUMViewScope(
+                shouldSendApplicationLaunch: false,
                 parent: self,
                 dependencies: dependencies,
                 identity: command.identity,
@@ -207,28 +232,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         )
     }
 
-    private func startApplicationLaunchView(on command: RUMCommand, context: DatadogContext) {
-        viewScopes.append(
-            RUMViewScope(
-                isInitialView: true,
-                parent: self,
-                dependencies: dependencies,
-                identity: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
-                path: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
-                name: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName,
-                attributes: command.attributes,
-                customTimings: [:],
-                startTime: sessionStartTime,
-                serverTimeOffset: context.serverTimeOffset
-            )
-        )
-    }
-
     private func startBackgroundView(on command: RUMCommand, context: DatadogContext) {
-        let isStartingInitialView = isInitialSession && !state.hasTrackedAnyView
         viewScopes.append(
             RUMViewScope(
-                isInitialView: isStartingInitialView,
+                shouldSendApplicationLaunch: false,
                 parent: self,
                 dependencies: dependencies,
                 identity: RUMOffViewEventsHandlingRule.Constants.backgroundViewURL,
