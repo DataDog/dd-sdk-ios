@@ -166,7 +166,6 @@ class RUMViewScopeTests: XCTestCase {
 
     func testWhenViewIsStarted_itSendsViewUpdateEvent() throws {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
-        let shouldSendApplicationLaunch: Bool = .mockRandom()
         let scope = RUMViewScope(
             shouldSendApplicationLaunch: false,
             parent: parent,

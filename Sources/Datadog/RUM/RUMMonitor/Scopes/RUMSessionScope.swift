@@ -150,11 +150,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             )
 
             switch handlingRule {
-            case .handleInApplicationLaunchView where command.canStartApplicationLaunchView:
-                // Now that we start the ApplicationLaunchView on creation of the initial session, this shouln't
-                // happen. Send telemetry if it does and start the event anyay.
-                DD.telemetry.error("Creating an ApplicationLaunchView when one should have existed already.")
-                startApplicationLaunchView(context: context)
             case .handleInBackgroundView where command.canStartBackgroundView:
                 startBackgroundView(on: command, context: context)
             default:
