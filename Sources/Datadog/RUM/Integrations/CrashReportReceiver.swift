@@ -399,7 +399,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 domComplete: original.view.domComplete,
                 domContentLoaded: original.view.domContentLoaded,
                 domInteractive: original.view.domInteractive,
-                error: original.view.error,
+                error: .init(count: original.view.error.count + 1),
                 firstByte: nil,
                 firstContentfulPaint: original.view.firstContentfulPaint,
                 firstInputDelay: original.view.firstInputDelay,
