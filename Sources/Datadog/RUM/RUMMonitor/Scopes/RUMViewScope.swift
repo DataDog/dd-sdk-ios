@@ -146,6 +146,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         // Propagate to User Action scope
         userActionScope = userActionScope?.scope(byPropagating: command, context: context, writer: writer)
 
+        // Send view update action if this is the very first view tracked in the app
+        let hasSentNoViewUpdatesYet = version == 0
+        if shouldSendApplicationStart, hasSentNoViewUpdatesYet {
+            needsViewUpdate = true
+        }
+
         // Apply side effects
         switch command {
         // View commands
@@ -324,12 +330,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private func sendApplicationStartAction(context: DatadogContext, writer: Writer, duration: TimeInterval) {
         actionsCount += 1
 
+        var loadingTime: TimeInterval? = duration
         var attributes = self.attributes
 
         if context.launchTime?.isActivePrewarm == true {
             // Set `active_pre_warm` attribute to true in case
             // of pre-warmed app.
             attributes[Constants.activePrewarm] = true
+            loadingTime = nil
         }
 
         let actionEvent = RUMActionEvent(
@@ -343,7 +351,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 error: .init(count: 0),
                 frustration: nil,
                 id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
-                loadingTime: duration.toInt64Nanoseconds,
+                loadingTime: loadingTime?.toInt64Nanoseconds,
                 longTask: .init(count: 0),
                 resource: .init(count: 0),
                 target: nil,

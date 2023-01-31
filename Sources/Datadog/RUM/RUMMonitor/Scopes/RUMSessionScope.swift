@@ -198,7 +198,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
            let processStartTime = context.launchTime?.launchDate {
             startTime = processStartTime
         }
-        
+
         viewScopes.append(
             RUMViewScope(
                 shouldSendApplicationLaunch: true,

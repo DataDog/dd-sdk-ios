@@ -73,7 +73,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             // Immediately start the ApplicationLaunchView for the new session
             initialSession.startApplicationLaunchView(context: context)
         }
-        
+
         sessionScope = initialSession
         sessionScopeDidUpdate(initialSession)
     }

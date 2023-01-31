@@ -246,12 +246,17 @@ class RUMSessionScopeTests: XCTestCase {
 
     // MARK: - Application Launch Events Tracking
 
-    func testGivenAppInForegroundAndInitialSessionWithNoViewTrackedBefore_whenCommandCanStartApplicationLaunchView_itCreatesAppLaunchScope() {
+    func testGivenAppInForegroundAndInitialSessionWithNoViewTrackedBefore_itCreatesAppLaunchScope() {
         // Given
         let sessionStartTime = Date()
 
         var context = self.context
         context.applicationStateHistory = .mockAppInForeground(since: sessionStartTime) // app in foreground
+        context.launchTime = LaunchTime(
+            launchTime: nil,
+            launchDate: sessionStartTime,
+            isActivePrewarm: false
+        )
 
         let scope: RUMSessionScope = .mockWith(
             isInitialSession: true, // initial session
@@ -339,6 +344,11 @@ class RUMSessionScopeTests: XCTestCase {
 
         var context = self.context
         context.applicationStateHistory = .mockAppInForeground(since: sessionStartTime) // app in foreground
+        context.launchTime = LaunchTime(
+            launchTime: nil,
+            launchDate: sessionStartTime,
+            isActivePrewarm: false
+        )
 
         let scope: RUMSessionScope = .mockWith(
             isInitialSession: true, // initial session

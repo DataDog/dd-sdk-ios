@@ -124,7 +124,8 @@ class RUMApplicationScopeTests: XCTestCase {
             writer: writer
         )
 
-        XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).count, 2)
+        // ApplicationLaunch also sends a view event
+        XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).count, 3)
     }
 
     func testWhenSamplingRateIs0_noEventsAreSent() {

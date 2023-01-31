@@ -26,9 +26,17 @@ extension RUMFeature {
 }
 
 extension DatadogCoreProxy {
-    func waitAndReturnRUMEventMatchers(file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
-        return try waitAndReturnEventsData(of: RUMFeature.self)
+    func waitAndReturnRUMEventMatchers(removeApplicationLaunch: Bool = true,
+                                       file: StaticString = #file,
+                                       line: UInt = #line) throws -> [RUMEventMatcher] {
+        var matchers = try waitAndReturnEventsData(of: RUMFeature.self)
             .map { data in try RUMEventMatcher.fromJSONObjectData(data) }
+        if removeApplicationLaunch {
+            matchers = matchers.filter({ matcher in
+                (try? matcher.attribute(forKeyPath: "view.name")) != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
+            })
+        }
+        return matchers
     }
 }
 

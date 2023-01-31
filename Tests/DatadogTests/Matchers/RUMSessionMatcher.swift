@@ -74,6 +74,8 @@ internal class RUMSessionMatcher {
         fileprivate(set) var longTaskEvents: [RUMLongTaskEvent] = []
     }
 
+    let applicationLaunchView: ViewVisit?
+
     /// An array of view visits tracked during this RUM Session.
     /// Each `ViewVisit` is determined by unique `view.id` and groups all RUM events linked to that `view.id`.
     let viewVisits: [ViewVisit]
@@ -199,7 +201,7 @@ internal class RUMSessionMatcher {
         }
 
         // Sort visits by time
-        let visitsEventOrderedByTime = visits.sorted { firstVisit, secondVisit in
+        var visitsEventOrderedByTime = visits.sorted { firstVisit, secondVisit in
             let firstVisitTime = firstVisit.viewEvents[0].date
             let secondVisitTime = secondVisit.viewEvents[0].date
             return firstVisitTime < secondVisitTime
@@ -231,6 +233,14 @@ internal class RUMSessionMatcher {
             }
         }
 
+        if let applicationLaunchIndex = visitsEventOrderedByTime.firstIndex(
+            where: { $0.name == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName }
+        ) {
+            self.applicationLaunchView = visitsEventOrderedByTime[applicationLaunchIndex]
+            visitsEventOrderedByTime.remove(at: applicationLaunchIndex)
+        } else {
+            self.applicationLaunchView = nil
+        }
         self.viewVisits = visitsEventOrderedByTime
     }
 }
