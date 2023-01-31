@@ -3,6 +3,7 @@
 # 1.15.0 / 23-01-2023
 
 - [BUGFIX] Fix 'Could not allocate memory' after corrupted TLV. See [#1089][] (Thanks [@cltnschlosser][])
+- [BUGFIX] Fix error count on the view update event following a crash. See [#1145][] 
 
 # 1.14.0 / 20-12-2022
 
@@ -428,6 +429,7 @@
 [#1061]: https://github.com/DataDog/dd-sdk-ios/pull/1061
 [#1071]: https://github.com/DataDog/dd-sdk-ios/pull/1071
 [#1089]: https://github.com/DataDog/dd-sdk-ios/pull/1089
+[#1145]: https://github.com/DataDog/dd-sdk-ios/pull/1145
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
