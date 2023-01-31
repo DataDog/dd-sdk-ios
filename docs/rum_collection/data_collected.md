@@ -32,6 +32,12 @@ The following diagram illustrates the RUM event hierarchy:
 
 {{< img src="real_user_monitoring/data_collected/event-hierarchy.png" alt="RUM Event hierarchy" style="width:50%;border:none" >}}
 
+## Application Launch
+
+During initialization the RUM iOS SDK creates a view called "ApplicationLaunch". This view's start time is set to the start of the iOS process, and can be used to track your applicaiton launch time, and will include any logs, actions, and resources made before your first call to `startView`. This view will also have an action, `applicaiton_start`, that spans the entire length of the view, and its duration can be used to time to first view.
+
+In cases where iOS decides to [prewarm your application][4], the ApplicationLaunch view will instead start when the RUM iOS SDK is initialized, and the `application_start` event will not have a duration.
+
 ## Default attributes
 
 RUM collects common attributes for all events and attributes specific to each event by default listed below. You can also choose to enrich your user session data with [additional events][1] to default events specific to your application monitoring and business analytics needs.
@@ -231,3 +237,4 @@ Before data is uploaded to Datadog, it is stored in cleartext in the cache direc
 [1]: https://docs.datadoghq.com/real_user_monitoring/ios/advanced_configuration/#enrich-user-sessions
 [2]: https://docs.datadoghq.com/real_user_monitoring/ios/advanced_configuration/#track-user-sessions
 [3]: https://support.apple.com/guide/security/security-of-runtime-process-sec15bfe098e/web
+[4]: https://developer.apple.com/documentation/uikit/app_and_environment/responding_to_the_launch_of_your_app/about_the_app_launch_sequence
