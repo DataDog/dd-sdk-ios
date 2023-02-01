@@ -28,12 +28,11 @@ class LoggingStorageBenchmarkTests: XCTestCase {
                 authorized: directory
             ),
             dateProvider: SystemDateProvider(),
-            consentProvider: ConsentProvider(initialConsent: .granted),
             performance: .benchmarksPreset,
             encryption: nil
         )
 
-        self.writer = storage.writer
+        self.writer = storage.writer(for: .granted, forceNewBatch: false)
         self.reader = storage.reader
 
         XCTAssertTrue(try directory.files().isEmpty)

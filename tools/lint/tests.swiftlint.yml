@@ -82,7 +82,8 @@ custom_rules:
 
 included:
   - ../../Tests
-  - ../../session-replay/Tests
+  - ../../TestUtilities/Sources
+  - ../../DatadogSessionReplay/Tests
   - ../../Datadog/E2ETests
   - ../../Datadog/E2EInstrumentationTests
   - ../../instrumented-tests/http-server-mock/Tests

@@ -24,6 +24,7 @@ internal final class DatadogCore {
     /// The storage r/w GDC queue.
     let readWriteQueue = DispatchQueue(
         label: "com.datadoghq.ios-sdk-read-write",
+        autoreleaseFrequency: .workItem,
         target: .global(qos: .utility)
     )
 
@@ -36,8 +37,6 @@ internal final class DatadogCore {
     /// The system date provider.
     let dateProvider: DateProvider
 
-    /// The user consent provider.
-    let consentProvider: ConsentProvider
     /// The user consent publisher.
     let consentPublisher: TrackingConsentPublisher
 
@@ -65,7 +64,8 @@ internal final class DatadogCore {
     private var messageBus: [String: FeatureMessageReceiver] = [:]
 
     /// Registry for Features.
-    private var features: [String: (
+    @ReadWriteLock
+    private var v2Features: [String: (
         feature: DatadogFeature,
         storage: FeatureStorage,
         upload: FeatureUpload
@@ -76,9 +76,6 @@ internal final class DatadogCore {
 
     /// Registry for v1 features.
     private var v1Features: [String: Any] = [:]
-
-    /// The SDK Context for V1.
-    internal private(set) var v1Context: DatadogV1Context
 
     /// The core context provider.
     internal let contextProvider: DatadogContextProvider
@@ -93,7 +90,6 @@ internal final class DatadogCore {
     ///   - performance: The core SDK performance presets.
     ///   - httpClient: The HTTP Client for uploads.
     ///   - encryption: The on-disk data encryption.
-    ///   - v1Context: The v1 context.
     ///   - contextProvider: The core context provider.
     ///   - applicationVersion: The application version.
     init(
@@ -104,7 +100,6 @@ internal final class DatadogCore {
     	performance: PerformancePreset,
     	httpClient: HTTPClient,
     	encryption: DataEncryption?,
-        v1Context: DatadogV1Context,
         contextProvider: DatadogContextProvider,
         applicationVersion: String
     ) {
@@ -114,10 +109,8 @@ internal final class DatadogCore {
         self.performance = performance
         self.httpClient = httpClient
         self.encryption = encryption
-        self.v1Context = v1Context
         self.contextProvider = contextProvider
         self.applicationVersionPublisher = ApplicationVersionPublisher(version: applicationVersion)
-        self.consentProvider = ConsentProvider(initialConsent: initialConsent)
         self.consentPublisher = TrackingConsentPublisher(consent: initialConsent)
 
         self.contextProvider.subscribe(\.userInfo, to: userInfoPublisher)
@@ -171,8 +164,15 @@ internal final class DatadogCore {
     /// 
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     func set(trackingConsent: TrackingConsent) {
-        consentProvider.changeConsent(to: trackingConsent)
-        consentPublisher.consent = trackingConsent
+        if trackingConsent != consentPublisher.consent {
+            allStorages.forEach { $0.migrateUnauthorizedData(toConsent: trackingConsent) }
+            consentPublisher.consent = trackingConsent
+        }
+    }
+
+    /// Clears all data that has not already yet been uploaded Datadog servers.
+    func clearAllData() {
+        allStorages.forEach { $0.clearAllData() }
     }
 
     /// Adds a message receiver to the bus.
@@ -187,6 +187,80 @@ internal final class DatadogCore {
         contextProvider.read { context in
             self.messageBusQueue.async { messageReceiver.receive(message: .context(context), from: self) }
         }
+    }
+
+    /// A list of storage units of currently registered Features.
+    private var allStorages: [FeatureStorage] {
+        let v1Storages = v1Features.values.compactMap { $0 as? V1Feature }.map { $0.storage }
+        let v2Storages = v2Features.values.map { $0.storage }
+        return v1Storages + v2Storages
+    }
+
+    /// A list of upload units of currently registered Features.
+    private var allUploads: [FeatureUpload] {
+        let v1Uploads = [
+            feature(LoggingFeature.self)?.upload,
+            feature(TracingFeature.self)?.upload,
+            feature(RUMFeature.self)?.upload,
+        ].compactMap { $0 }
+        let v2Uploads = v2Features.values.map { $0.upload }
+        return v1Uploads + v2Uploads
+    }
+
+    /// Flushes asynchronous operations related to events write, context and message bus propagation in this instance of the SDK
+    /// with **blocking the caller thread** till their completion.
+    ///
+    /// Upon return, it is safe to assume that all events are stored. No assumption on their upload should be made - to force events upload
+    /// use `flushAndTearDown()` instead.
+    func flush() {
+        // The order of flushing below must be considered cautiously and
+        // follow our design choices around SDK core's threading.
+
+        // The flushing is repeated few times, to make sure that operations spawned from other operations
+        // on these queues are also awaited. Effectively, this is no different than short-time sleep() on current
+        // thread and it has the same drawbacks (including: it might become flaky). Until we find a better solution
+        // this is enough to get consistency in tests - but won't be reliable in any public "deinitialize" API.
+        for _ in 0..<5 {
+            // First, flush bus queue - because messages can lead to obtaining "event write context" (reading
+            // context & performing write) in other Features:
+            messageBusQueue.sync { }
+
+            // Next, flush context queue - because it indicates the entry point to "event write context" and
+            // actual writes dispatched from it:
+            contextProvider.queue.sync { }
+
+            // Last, flush read-write queue - it always comes last, no matter if the write operation is dispatched
+            // from "event write context" started on user thread OR if it happens upon receiving an "event" message
+            // in other Feature:
+            readWriteQueue.sync { }
+        }
+    }
+
+    /// Awaits completion of all asynchronous operations, forces uploads (without retrying) and deinitializes
+    /// this instance of the SDK. It **blocks the caller thread**.
+    ///
+    /// Upon return, it is safe to assume that all events were stored and got uploaded. The SDK was deinitialised so this instance of core is missfunctional.
+    func flushAndTearDown() {
+        flush()
+
+        // At this point we can assume that all write operations completed and resulted with writing events to
+        // storage. We now temporarily authorize storage for making all files readable ("uploadable") and perform
+        // arbitrary uploads (without retrying on failure).
+        allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: true) }
+        allUploads.forEach { $0.flushAndTearDown() }
+        allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: false) }
+
+        // Deinitialize arbitrary V1 Features:
+        feature(RUMInstrumentation.self)?.deinitialize()
+        feature(URLSessionAutoInstrumentation.self)?.deinitialize()
+
+        // Deinitialize V2 Integrations (arbitrarily for now, until we make it into `DatadogFeatureIntegration`):
+        integration(named: "crash-reporter", type: CrashReporter.self)?.deinitialize()
+
+        // Deallocate all Features and their storage & upload units:
+        v1Features = [:]
+        v2Features = [:]
+        integrations = [:]
     }
 }
 
@@ -208,7 +282,6 @@ extension DatadogCore: DatadogCoreProtocol {
             queue: readWriteQueue,
             directories: featureDirectories,
             dateProvider: dateProvider,
-            consentProvider: consentProvider,
             performance: performance,
             encryption: encryption
         )
@@ -222,11 +295,15 @@ extension DatadogCore: DatadogCoreProtocol {
             performance: performance
         )
 
-        features[feature.name] = (
+        v2Features[feature.name] = (
             feature: feature,
             storage: storage,
             upload: upload
         )
+
+        // If there is any persisted data recorded with `.pending` consent,
+        // it should be deleted on Feature startup:
+        storage.clearUnauthorizedData()
 
         add(messageReceiver: feature.messageReceiver, forKey: feature.name)
     }
@@ -243,7 +320,7 @@ extension DatadogCore: DatadogCoreProtocol {
     ///   - type: The Feature instance type.
     /// - Returns: The Feature if any.
     /* public */ func feature<T>(named name: String, type: T.Type = T.self) -> T? where T: DatadogFeature {
-        features[name]?.feature as? T
+        v2Features[name]?.feature as? T
     }
 
     /// Registers a Feature Integration instance.
@@ -275,7 +352,7 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 
     /* public */ func scope(for feature: String) -> FeatureScope? {
-        guard let storage = features[feature]?.storage else {
+        guard let storage = v2Features[feature]?.storage else {
             return nil
         }
 
@@ -289,10 +366,10 @@ extension DatadogCore: DatadogCoreProtocol {
         contextProvider.write { $0.featuresAttributes[feature] = attributes() }
     }
 
-    /* public */ func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
+    /* public */ func send(message: FeatureMessage, sender: DatadogCoreProtocol, else fallback: @escaping () -> Void) {
         messageBusQueue.async {
             let receivers = self.messageBus.values.filter {
-                $0.receive(message: message, from: self)
+                $0.receive(message: message, from: sender)
             }
 
             if receivers.isEmpty {
@@ -332,10 +409,6 @@ extension DatadogCore: DatadogV1CoreProtocol {
         )
     }
 
-    var legacyContext: DatadogV1Context? {
-        return v1Context
-    }
-
     /// Creates V1 Feature using its V2 configuration.
     ///
     /// `DatadogCore` uses its core `configuration` to inject feature-agnostic parts of V1 setup.
@@ -356,7 +429,6 @@ extension DatadogCore: DatadogV1CoreProtocol {
             queue: readWriteQueue,
             directories: featureDirectories,
             dateProvider: dateProvider,
-            consentProvider: consentProvider,
             performance: performance,
             encryption: encryption
         )
@@ -369,6 +441,10 @@ extension DatadogCore: DatadogV1CoreProtocol {
             httpClient: httpClient,
             performance: performance
         )
+
+        // If there is any persisted data recorded with `.pending` consent,
+        // it should be deleted on Feature startup:
+        storage.clearUnauthorizedData()
 
         return Feature(
             storage: storage,
@@ -391,57 +467,27 @@ internal protocol V1Feature {
     var messageReceiver: FeatureMessageReceiver { get }
 }
 
-/// This Scope complies with `V1FeatureScope` to provide context and writer to
-/// v1 Features.
-///
-/// The execution block is currently running in `sync`, this will change once the
-/// context is provided on it's own queue.
 internal struct DatadogCoreFeatureScope: FeatureScope {
     let contextProvider: DatadogContextProvider
     let storage: FeatureStorage
 
-    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void) {
+    func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void) {
+        // On user thread: request SDK context.
         contextProvider.read { context in
+            // On context thread: request writer for current tracking consent.
+            let writer = storage.writer(
+                for: bypassConsent ? .granted : context.trackingConsent,
+                forceNewBatch: forceNewBatch
+            )
+
+            // Still on context thread: send `Writer` to EWC caller. The writer implements `AsyncWriter`, so
+            // the implementation of `writer.write(value:)` will run asynchronously without blocking the context thread.
             do {
-                let writer = bypassConsent ? storage.arbitraryAuthorizedWriter : storage.writer
                 try block(context, writer)
             } catch {
                 DD.telemetry.error("Failed to execute feature scope", error: error)
             }
         }
-    }
-}
-
-extension DatadogV1Context {
-    /// Create V1 context with the given congiguration and provider.
-    ///
-    /// - Parameters:
-    ///   - configuration: The configuration.
-    ///   - device: The device description.
-    ///   - dateCorrector: The server date corrector.
-    ///   - networkConnectionInfoProvider: The network info provider.
-    ///   - carrierInfoProvider: The carrier info provider.
-    ///   - userInfoProvider: The user info provider.
-    init(
-        configuration: CoreConfiguration,
-        device: DeviceInfo,
-        dateCorrector: DateCorrector,
-        networkConnectionInfoProvider: NetworkConnectionInfoProviderType,
-        carrierInfoProvider: CarrierInfoProviderType,
-        userInfoProvider: UserInfoProvider
-    ) {
-        self.service = configuration.serviceName
-        self.env = configuration.environment
-        self.version = configuration.applicationVersion
-        self.source = configuration.source
-        self.variant = configuration.variant
-        self.sdkVersion = configuration.sdkVersion
-
-        self.device = device
-        self.dateCorrector = dateCorrector
-        self.networkConnectionInfoProvider = networkConnectionInfoProvider
-        self.carrierInfoProvider = carrierInfoProvider
-        self.userInfoProvider = userInfoProvider
     }
 }
 

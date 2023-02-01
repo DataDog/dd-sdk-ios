@@ -7,8 +7,6 @@
 import XCTest
 @testable import Datadog
 
-extension FeaturesConfiguration.Common: EquatableInTests {}
-
 class FeaturesConfigurationTests: XCTestCase {
     // MARK: - Common Configuration
 

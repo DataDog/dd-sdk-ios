@@ -11,10 +11,6 @@ extension RUMDevice {
         self.init(device: context.device)
     }
 
-    init(context: DatadogV1Context) {
-        self.init(device: context.device)
-    }
-
     init(device: DeviceInfo) {
         self.init(
             architecture: device.architecture,

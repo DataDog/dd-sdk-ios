@@ -13,13 +13,13 @@ extension CrashReporter {
             crashReportingPlugin: DDCrashReportingPluginType = NoopCrashReportingPlugin()
     ) -> CrashReporter {
         return .mockWith(
-            loggingOrRUMIntegration: CrashReportingWithRUMIntegration.mockWith(core: core),
+            integration: MessageBusSender(core: core),
             crashReportingPlugin: crashReportingPlugin
         )
     }
 
     static func mockWith(
-        loggingOrRUMIntegration: CrashReportingIntegration,
+        integration: CrashReportSender,
         crashReportingPlugin: DDCrashReportingPluginType = NoopCrashReportingPlugin(),
         crashContextProvider: CrashContextProviderType = CrashContextProviderMock(),
         messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
@@ -27,7 +27,7 @@ extension CrashReporter {
         .init(
             crashReportingPlugin: crashReportingPlugin,
             crashContextProvider: crashContextProvider,
-            loggingOrRUMIntegration: loggingOrRUMIntegration,
+            sender: integration,
             messageReceiver: messageReceiver
         )
     }
@@ -73,7 +73,7 @@ internal class CrashContextProviderMock: CrashContextProviderType {
     }
 }
 
-class CrashReportingIntegrationMock: CrashReportingIntegration {
+class CrashReportSenderMock: CrashReportSender {
     var sentCrashReport: DDCrashReport?
     var sentCrashContext: CrashContext?
 
@@ -85,8 +85,6 @@ class CrashReportingIntegrationMock: CrashReportingIntegration {
 
     var didSendCrashReport: (() -> Void)?
 }
-
-extension CrashContext: EquatableInTests {}
 
 extension CrashContext {
     static func mockAny() -> CrashContext {
@@ -146,13 +144,8 @@ extension CrashContext {
         )
     }
 
-    var data: Data { try! JSONEncoder().encode(self) }
+    var data: Data { try! JSONEncoder.default().encode(self) }
 }
-
-extension DDCrashReport: EquatableInTests {}
-extension DDCrashReport.Thread: EquatableInTests {}
-extension DDCrashReport.BinaryImage: EquatableInTests {}
-extension DDCrashReport.Meta: EquatableInTests {}
 
 internal extension DDCrashReport {
     static func mockAny() -> DDCrashReport {
@@ -204,26 +197,6 @@ internal extension DDCrashReport.Meta {
             codeType: nil,
             exceptionType: nil,
             exceptionCodes: nil
-        )
-    }
-}
-
-internal extension CrashReportingWithRUMIntegration {
-    static func mockWith(
-        core: DatadogCoreProtocol,
-        applicationID: String = .mockAny(),
-        dateProvider: DateProvider = SystemDateProvider(),
-        sessionSampler: Sampler = .mockKeepAll(),
-        backgroundEventTrackingEnabled: Bool = true,
-        uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
-    ) -> Self {
-        .init(
-            core: core,
-            applicationID: applicationID,
-            dateProvider: dateProvider,
-            sessionSampler: sessionSampler,
-            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
-            uuidGenerator: uuidGenerator
         )
     }
 }

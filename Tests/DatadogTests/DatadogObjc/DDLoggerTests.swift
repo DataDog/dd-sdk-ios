@@ -11,23 +11,23 @@ import XCTest
 // swiftlint:disable multiline_arguments_brackets
 // swiftlint:disable compiler_protocol_init
 class DDLoggerTests: XCTestCase {
-    private var core: DatadogCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
+    private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
-        core = DatadogCoreMock()
+        core = DatadogCoreProxy()
         defaultDatadogCore = core
     }
 
     override func tearDown() {
         defaultDatadogCore = NOPDatadogCore()
-        core.flush()
+        core.flushAndTearDown()
         core = nil
         super.tearDown()
     }
 
     func testSendingLogsWithDifferentLevels() throws {
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        let feature: LoggingFeature = .mockAny()
         defaultDatadogCore.v1.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
@@ -39,7 +39,7 @@ class DDLoggerTests: XCTestCase {
         objcLogger.error("message")
         objcLogger.critical("message")
 
-        let logMatchers = try feature.waitAndReturnLogMatchers(count: 6)
+        let logMatchers = try core.waitAndReturnLogMatchers()
         logMatchers[0].assertStatus(equals: "debug")
         logMatchers[1].assertStatus(equals: "info")
         logMatchers[2].assertStatus(equals: "notice")
@@ -49,7 +49,7 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSendingNSError() throws {
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        let feature: LoggingFeature = .mockAny()
         defaultDatadogCore.v1.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
@@ -63,7 +63,7 @@ class DDLoggerTests: XCTestCase {
         objcLogger.error("message", error: error, attributes: [:])
         objcLogger.critical("message", error: error, attributes: [:])
 
-        let logMatchers = try feature.waitAndReturnLogMatchers(count: 6)
+        let logMatchers = try core.waitAndReturnLogMatchers()
         for matcher in logMatchers {
             matcher.assertValue(
                 forKeyPath: "error.stack",
@@ -81,7 +81,7 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSendingMessageAttributes() throws {
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        let feature: LoggingFeature = .mockAny()
         defaultDatadogCore.v1.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
@@ -93,7 +93,7 @@ class DDLoggerTests: XCTestCase {
         objcLogger.error("message", attributes: ["foo": "bar"])
         objcLogger.critical("message", attributes: ["foo": "bar"])
 
-        let logMatchers = try feature.waitAndReturnLogMatchers(count: 6)
+        let logMatchers = try core.waitAndReturnLogMatchers()
         logMatchers[0].assertStatus(equals: "debug")
         logMatchers[1].assertStatus(equals: "info")
         logMatchers[2].assertStatus(equals: "notice")
@@ -106,7 +106,7 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSendingLoggerAttributes() throws {
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        let feature: LoggingFeature = .mockAny()
         defaultDatadogCore.v1.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
@@ -130,7 +130,7 @@ class DDLoggerTests: XCTestCase {
         )
         objcLogger.info("message")
 
-        let logMatcher = try LoggingFeature.waitAndReturnLogMatchers(count: 1)[0]
+        let logMatcher = try core.waitAndReturnLogMatchers()[0]
         logMatcher.assertValue(forKey: "nsstring", equals: "hello")
         logMatcher.assertValue(forKey: "nsbool", equals: true)
         logMatcher.assertValue(forKey: "nsint", equals: 10)
@@ -148,7 +148,7 @@ class DDLoggerTests: XCTestCase {
             version: "1.2.3"
         )
 
-        let feature: LoggingFeature = .mockByRecordingLogMatchers()
+        let feature: LoggingFeature = .mockAny()
         defaultDatadogCore.v1.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
@@ -167,7 +167,7 @@ class DDLoggerTests: XCTestCase {
 
         objcLogger.info(.mockAny())
 
-        let logMatcher = try feature.waitAndReturnLogMatchers(count: 1)[0]
+        let logMatcher = try core.waitAndReturnLogMatchers()[0]
         logMatcher.assertValue(forKeyPath: "foo", equals: "bar")
         logMatcher.assertNoValue(forKey: "bizz")
         logMatcher.assertTags(equal: ["foo:bar", "foobar", "env:test", "version:1.2.3"])

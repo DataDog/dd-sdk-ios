@@ -47,9 +47,17 @@ class FileTests: XCTestCase {
 
     func testItReadsDataFromFile() throws {
         let file = try temporaryDirectory.createFile(named: "file")
-        try file.append(data: "Hello 👋".utf8Data)
+        let data = "Hello 👋".utf8Data
+        try file.append(data: data)
 
-        XCTAssertEqual(try file.read().utf8String, "Hello 👋")
+        let stream = try file.stream()
+        stream.open()
+        defer { stream.close() }
+
+        var bytes = [UInt8](repeating: 0, count: data.count)
+        XCTAssertEqual(stream.read(&bytes, maxLength: data.count), data.count)
+
+        XCTAssertEqual(String(bytes: bytes, encoding: .utf8), "Hello 👋")
     }
 
     func testItDeletesFile() throws {
@@ -76,16 +84,6 @@ class FileTests: XCTestCase {
         try file.delete()
 
         XCTAssertThrowsError(try file.append(data: .mock(ofSize: 5))) { error in
-            XCTAssertEqual((error as NSError).localizedDescription, "The file “file” doesn’t exist.")
-        }
-    }
-
-    func testWhenIOExceptionHappens_itThrowsWhenReading() throws {
-        let file = try temporaryDirectory.createFile(named: "file")
-        try file.append(data: .mock(ofSize: 5))
-        try file.delete()
-
-        XCTAssertThrowsError(try file.read()) { error in
             XCTAssertEqual((error as NSError).localizedDescription, "The file “file” doesn’t exist.")
         }
     }

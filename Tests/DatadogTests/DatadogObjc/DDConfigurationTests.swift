@@ -28,6 +28,16 @@ extension Datadog.Configuration.TracesEndpoint: Equatable {
     }
 }
 
+extension Datadog.Configuration.RUMEndpoint: Equatable {
+    public static func == (_ lhs: Datadog.Configuration.RUMEndpoint, _ rhs: Datadog.Configuration.RUMEndpoint) -> Bool {
+        switch (lhs, rhs) {
+        case (.us, .us), (.eu, .eu), (.gov, .gov), (.us1, .us1), (.us3, .us3), (.us5, .us5), (.eu1, .eu1), (.us1_fed, .us1_fed): return true
+        case let (.custom(lhsURL), .custom(rhsURL)): return lhsURL == rhsURL
+        default: return false
+        }
+    }
+}
+
 /// This tests verify that objc-compatible `DatadogObjc` wrapper properly interacts with`Datadog` public API (swift).
 class DDConfigurationTests: XCTestCase {
     func testDefaultBuilderForwardsInitializationToSwift() throws {
@@ -254,27 +264,27 @@ class DDConfigurationTests: XCTestCase {
         let swiftLongTaskEvent: RUMLongTaskEvent = .mockRandom()
 
         objcBuilder.setRUMViewEventMapper { objcViewEvent in
-            XCTAssertEqual(objcViewEvent.swiftModel, swiftViewEvent)
+            DDAssertReflectionEqual(objcViewEvent.swiftModel, swiftViewEvent)
             objcViewEvent.view.url = "redacted view.url"
             return objcViewEvent
         }
 
         objcBuilder.setRUMResourceEventMapper { objcResourceEvent in
-            XCTAssertEqual(objcResourceEvent.swiftModel, swiftResourceEvent)
+            DDAssertReflectionEqual(objcResourceEvent.swiftModel, swiftResourceEvent)
             objcResourceEvent.view.url = "redacted view.url"
             objcResourceEvent.resource.url = "redacted resource.url"
             return objcResourceEvent
         }
 
         objcBuilder.setRUMActionEventMapper { objcActionEvent in
-            XCTAssertEqual(objcActionEvent.swiftModel, swiftActionEvent)
+            DDAssertReflectionEqual(objcActionEvent.swiftModel, swiftActionEvent)
             objcActionEvent.view.url = "redacted view.url"
             objcActionEvent.action.target?.name = "redacted action.target.name"
             return objcActionEvent
         }
 
         objcBuilder.setRUMErrorEventMapper { objcErrorEvent in
-            XCTAssertEqual(objcErrorEvent.swiftModel, swiftErrorEvent)
+            DDAssertReflectionEqual(objcErrorEvent.swiftModel, swiftErrorEvent)
             objcErrorEvent.view.url = "redacted view.url"
             objcErrorEvent.error.message = "redacted error.message"
             objcErrorEvent.error.resource?.url = "redacted error.resource.url"
@@ -282,7 +292,7 @@ class DDConfigurationTests: XCTestCase {
         }
 
         objcBuilder.setRUMLongTaskEventMapper { objcLongTaskEvent in
-            XCTAssertEqual(objcLongTaskEvent.swiftModel, swiftLongTaskEvent)
+            DDAssertReflectionEqual(objcLongTaskEvent.swiftModel, swiftLongTaskEvent)
             objcLongTaskEvent.view.url = "redacted view.url"
             return objcLongTaskEvent
         }

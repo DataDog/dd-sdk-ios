@@ -8,9 +8,17 @@ import XCTest
 @testable import Datadog
 
 class TracingWithLoggingIntegrationTests: XCTestCase {
-    private let core = PassthroughCoreMock(
-        messageReceiver: LoggingMessageReceiver(logEventMapper: nil)
-    )
+    private var core: PassthroughCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
+
+    override func setUp() {
+        super.setUp()
+        core = PassthroughCoreMock(messageReceiver: LogMessageReceiver.mockAny())
+    }
+
+    override func tearDown() {
+        core = nil
+        super.tearDown()
+    }
 
     func testSendingLogWithOTMessageField() throws {
         core.expectation = expectation(description: "Send log")

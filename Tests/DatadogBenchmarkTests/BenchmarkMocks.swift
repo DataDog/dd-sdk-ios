@@ -6,10 +6,6 @@
 
 @testable import Datadog
 
-private struct DateCorrectorMock: DateCorrector {
-    let offset: TimeInterval = 0
-}
-
 extension PerformancePreset {
     static let benchmarksPreset = PerformancePreset(batchSize: .small, uploadFrequency: .frequent, bundleType: .iOSApp)
 }
@@ -26,32 +22,5 @@ struct FeatureRequestBuilderMock: FeatureRequestBuilder {
 
         let data = dataFormat.format(events)
         return builder.uploadRequest(with: data)
-    }
-}
-
-extension DatadogContext: AnyMockable {
-    static func mockAny() -> DatadogContext {
-        .init(
-            site: .us1,
-            clientToken: .mockAny(),
-            service: .mockAny(),
-            env: .mockAny(),
-            version: .mockAny(),
-            variant: nil,
-            source: .mockAny(),
-            sdkVersion: .mockAny(),
-            ciAppOrigin: .mockAny(),
-            serverTimeOffset: .zero,
-            applicationName: .mockAny(),
-            applicationBundleIdentifier: .mockAny(),
-            sdkInitDate: .mockRandomInThePast(),
-            device: DeviceInfo(),
-            userInfo: nil,
-            launchTime: nil,
-            applicationStateHistory: .active(since: Date()),
-            networkConnectionInfo: .unknown,
-            carrierInfo: nil,
-            isLowPowerModeEnabled: false
-        )
     }
 }

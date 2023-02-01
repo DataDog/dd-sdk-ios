@@ -96,13 +96,62 @@ class DataBlockTests: XCTestCase {
         XCTAssertEqual(block?.data, Data([0xFF, 0xFF]))
     }
 
-    func testDataBlockReader_readsLargeBytesBlock() throws {
-        let data = Data([0x00, 0x00, 0x80, 0x96, 0x98, 0x00]) + Data.mockRepeating(byte: 0xFF, times: 10_000_000) // 10MB
-        let reader = DataBlockReader(data: data)
+    func testDataBlockReader_readsBytesUnderLengthLimit() throws {
+        let data = Data([0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0xFF, 0xFF])
+        let reader = DataBlockReader(data: data, maxBlockLenght: 2)
 
         let block = try reader.next()
         XCTAssertEqual(block?.type, .event)
         XCTAssertEqual(block?.data.first, 0xFF)
-        XCTAssertEqual(block?.data.count, 10_000_000)
+        XCTAssertEqual(block?.data.count, 2)
+    }
+
+    func testDataBlockReader_skipsExceedingBytesLengthLimit() throws {
+        let data = Data([0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0xFF, 0xFF])
+        let reader = DataBlockReader(data: data, maxBlockLenght: 1)
+
+        do {
+            _ = try reader.next()
+            XCTFail("Expected error to be thrown")
+        } catch DataBlockError.bytesLengthExceedsLimit(let limit) where limit == 1 {
+            // Expected
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func testDataBlockReader_whenIOErrorHappens_itThrowsWhenReading() throws {
+        temporaryDirectory.create()
+        defer { temporaryDirectory.delete() }
+
+        let file = try temporaryDirectory.createFile(named: "file")
+        try file.delete()
+
+        let stream = try file.stream()
+        let reader = DataBlockReader(input: stream)
+
+        do {
+            _ = try reader.next()
+            XCTFail("Expected error to be thrown")
+        } catch DataBlockError.readOperationFailed(_, let error) {
+            XCTAssertEqual(
+                (error as? NSError)?.localizedDescription,
+                "The operation couldn’t be completed. No such file or directory"
+            )
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+}
+
+private extension DataBlockReader {
+    convenience init(data: Data, maxBlockLenght: UInt64? = nil) {
+        let stream = InputStream(data: data)
+
+        if let maxBlockLenght = maxBlockLenght {
+            self.init(input: stream, maxBlockLenght: maxBlockLenght)
+        } else {
+            self.init(input: stream)
+        }
     }
 }

@@ -8,53 +8,65 @@
 import XCTest
 
 extension RUMFeature {
-    /// Mocks feature instance which performs no writes and no uploads.
-    static func mockNoOp(configuration: FeaturesConfiguration.RUM = .mockAny()) -> RUMFeature {
+    /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
+    static func mockAny() -> RUMFeature { .mockWith() }
+
+    /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
+    static func mockWith(
+        configuration: FeaturesConfiguration.RUM = .mockAny(),
+        messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+    ) -> RUMFeature {
         return RUMFeature(
             storage: .mockNoOp(),
-            upload: .mockNoOp(),
-            configuration: configuration,
-            messageReceiver: NOPFeatureMessageReceiver()
-        )
-    }
-
-    /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
-    /// Use `RUMFeature.waitAndReturnRUMEventMatchers()` to inspect and assert recorded `RUMEvents`.
-    static func mockByRecordingRUMEventMatchers(
-        configuration: FeaturesConfiguration.RUM = .mockAny(),
-        messageReceiver: FeatureMessageReceiver = RUMMessageReceiver()
-    ) -> RUMFeature {
-        // Mock storage with `InMemoryWriter`, used later for retrieving recorded events back:
-        let interceptedStorage = FeatureStorage(
-            writer: InMemoryWriter(),
-            reader: NoOpFileReader(),
-            arbitraryAuthorizedWriter: NoOpFileWriter(),
-            dataOrchestrator: NoOpDataOrchestrator()
-        )
-        return RUMFeature(
-            storage: interceptedStorage,
             upload: .mockNoOp(),
             configuration: configuration,
             messageReceiver: messageReceiver
         )
     }
+}
 
-    // MARK: - Expecting RUMEvent Data
+extension DatadogCoreProxy {
+    func waitAndReturnRUMEventMatchers(file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
+        return try waitAndReturnEventsData(of: RUMFeature.self)
+            .map { data in try RUMEventMatcher.fromJSONObjectData(data) }
+    }
+}
 
-    func waitAndReturnRUMEventMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
-        guard let inMemoryWriter = storage.writer as? InMemoryWriter else {
-            preconditionFailure("Retrieving matchers requires that feature is mocked with `.mockByRecordingRUMEventMatchers()`")
-        }
-        return try inMemoryWriter.waitAndReturnEventsData(count: count, file: file, line: line)
-            .map { eventData in try RUMEventMatcher.fromJSONObjectData(eventData) }
+extension WebViewEventReceiver: AnyMockable {
+    static func mockAny() -> Self {
+        .mockWith()
     }
 
-    // swiftlint:disable:next function_default_parameter_at_end
-    static func waitAndReturnRUMEventMatchers(in core: DatadogCoreProtocol = defaultDatadogCore, count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
-        guard let rum = core.v1.feature(RUMFeature.self) else {
-            preconditionFailure("RUMFeature is not registered in core")
-        }
-        return try rum.waitAndReturnRUMEventMatchers(count: count, file: file, line: line)
+    static func mockWith(
+        dateProvider: DateProvider = SystemDateProvider(),
+        commandSubscriber: RUMCommandSubscriber = GlobalRUMCommandSubscriber()
+    ) -> Self {
+        .init(
+            dateProvider: dateProvider,
+            commandSubscriber: commandSubscriber
+        )
+    }
+}
+
+extension CrashReportReceiver: AnyMockable {
+    static func mockAny() -> Self {
+        .mockWith()
+    }
+
+    static func mockWith(
+        applicationID: String = .mockAny(),
+        dateProvider: DateProvider = SystemDateProvider(),
+        sessionSampler: Sampler = .mockKeepAll(),
+        backgroundEventTrackingEnabled: Bool = true,
+        uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
+    ) -> Self {
+        .init(
+            applicationID: applicationID,
+            dateProvider: dateProvider,
+            sessionSampler: sessionSampler,
+            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
+            uuidGenerator: uuidGenerator
+        )
     }
 }
 
@@ -92,7 +104,7 @@ extension RUMTelemetry {
 
 // MARK: - RUMDataModel Mocks
 
-struct RUMDataModelMock: RUMDataModel, RUMSanitizableEvent, EquatableInTests {
+struct RUMDataModelMock: RUMDataModel, RUMSanitizableEvent {
     let attribute: String
     var usr: RUMUser?
     var context: RUMEventAttributes?

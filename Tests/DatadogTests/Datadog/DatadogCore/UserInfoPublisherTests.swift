@@ -10,7 +10,7 @@ import XCTest
 class UserInfoPublisherTests: XCTestCase {
     func testEmptyInitialValue() throws {
         let publisher = UserInfoPublisher()
-        XCTAssertEqual(publisher.initialValue, .empty)
+        DDAssertReflectionEqual(publisher.initialValue, .empty)
     }
 
     func testPublishUserInfo() throws {
@@ -23,7 +23,7 @@ class UserInfoPublisherTests: XCTestCase {
         // When
         publisher.publish {
             // Then
-            XCTAssertEqual($0, userInfo)
+            DDAssertReflectionEqual($0, userInfo)
             expectation.fulfill()
         }
 

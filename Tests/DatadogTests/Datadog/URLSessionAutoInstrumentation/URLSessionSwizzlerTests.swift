@@ -8,7 +8,7 @@ import XCTest
 @testable import Datadog
 
 class URLSessionSwizzlerTests: XCTestCase {
-    let core = DatadogCoreMock()
+    private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
     private let interceptor = URLSessionInterceptorMock()
 
     override func setUpWithError() throws {
@@ -19,11 +19,14 @@ class URLSessionSwizzlerTests: XCTestCase {
         )
 
         instrumentation.enable() // swizzle `URLSession`
+
+        core = DatadogCoreProxy()
         core.register(feature: instrumentation)
     }
 
     override func tearDown() {
-        core.flush()
+        core.flushAndTearDown()
+        core = nil
         super.tearDown()
     }
 
@@ -304,14 +307,14 @@ class URLSessionSwizzlerTests: XCTestCase {
             let taskDescription = originalTask.taskDescription!
 
             let interceptedTask = try interceptor.interceptedTask(by: taskDescription).unwrapOrThrow()
-            AssertURLSessionTasksIdentical(interceptedTask, originalTask)
+            XCTAssertIdentical(interceptedTask, originalTask)
 
             let interceptedTaskWithData = try interceptor.interceptedTaskWithData(by: taskDescription).unwrapOrThrow()
-            AssertURLSessionTasksIdentical(interceptedTaskWithData.task, originalTask)
+            XCTAssertIdentical(interceptedTaskWithData.task, originalTask)
             XCTAssertEqual(interceptedTaskWithData.data, expectedData)
 
             let interceptedTaskWithCompletion = try interceptor.interceptedTaskWithCompletion(by: taskDescription).unwrapOrThrow()
-            AssertURLSessionTasksIdentical(interceptedTaskWithCompletion.task, originalTask)
+            XCTAssertIdentical(interceptedTaskWithCompletion.task, originalTask)
             XCTAssertNil(interceptedTaskWithCompletion.error)
         }
     }
@@ -373,13 +376,13 @@ class URLSessionSwizzlerTests: XCTestCase {
             let taskDescription = originalTask.taskDescription!
 
             let interceptedTask = try interceptor.interceptedTask(by: taskDescription).unwrapOrThrow()
-            AssertURLSessionTasksIdentical(interceptedTask, originalTask)
+            XCTAssertIdentical(interceptedTask, originalTask)
 
             let interceptedTaskWithData = interceptor.interceptedTaskWithData(by: taskDescription)
             XCTAssertNil(interceptedTaskWithData, "Data should not be recorded for \(originalTask) (\(taskDescription)")
 
             let interceptedTaskWithCompletion = try interceptor.interceptedTaskWithCompletion(by: taskDescription).unwrapOrThrow()
-            AssertURLSessionTasksIdentical(interceptedTaskWithCompletion.task, originalTask)
+            XCTAssertIdentical(interceptedTaskWithCompletion.task, originalTask)
             XCTAssertEqual((interceptedTaskWithCompletion.error! as NSError).localizedDescription, "some error")
         }
     }

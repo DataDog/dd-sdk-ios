@@ -1890,6 +1890,52 @@ class RUMViewScopeTests: XCTestCase {
 
         // Then
         let rumViewSent = try XCTUnwrap(core.events(ofType: RUMViewEvent.self).last, "It should send view event")
-        XCTAssertEqual(viewEvent, rumViewSent, "It must inject sent event to crash context")
+        DDAssertReflectionEqual(viewEvent, rumViewSent, "It must inject sent event to crash context")
+    }
+
+    // MARK: Cross-platform crashes
+
+    func testGivenScopeWithViewUpdatesThrottler_whenReceivingCrossPlatformCrash_thenItSendsViewUpdateWithUpdatedCrashCount() throws {
+        let commands: [(Date) -> RUMCommand] = [
+            // receive resource:
+            { date in RUMStartResourceCommand.mockWith(resourceKey: "resource", time: date) }, { date in RUMStopResourceCommand.mockWith(resourceKey: "resource", time: date) },
+            // receive error:
+            { date in RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: date, attributes: [CrossPlatformAttributes.errorIsCrash: true]) }
+        ]
+        let timeIntervalBetweenCommands = 1.0
+        let simulationDuration = timeIntervalBetweenCommands * Double(commands.count)
+        let samplingDuration = simulationDuration * 0.5 // at least half view updates should be skipped
+
+        // Given
+        let throttler = RUMViewUpdatesThrottler(viewUpdateThreshold: samplingDuration)
+        let sampledWriter = FileWriterMock()
+        let sampledScope: RUMViewScope = .mockWith(
+            parent: parent,
+            dependencies: .mockWith(
+                viewUpdatesThrottlerFactory: { throttler }
+            )
+        )
+
+        // When
+        func send(commands: [(Date) -> RUMCommand], to scope: RUMViewScope, writer: Writer) {
+            var currentTime = scope.viewStartTime
+            commands.forEach { command in
+                currentTime.addTimeInterval(timeIntervalBetweenCommands)
+                _ = scope.process(
+                    command: command(currentTime),
+                    context: context,
+                    writer: writer
+                )
+            }
+        }
+
+        send(commands: commands, to: sampledScope, writer: sampledWriter)
+
+        // Then
+        let viewUpdatesInSampledScope = sampledWriter.events(ofType: RUMViewEvent.self)
+        XCTAssertEqual(viewUpdatesInSampledScope.count, 2, "It should send the first event and the error")
+
+        let actualLastUpdate = try XCTUnwrap(viewUpdatesInSampledScope.last)
+        XCTAssertEqual(actualLastUpdate.view.crash?.count, 1, "It should contain a crash")
     }
 }

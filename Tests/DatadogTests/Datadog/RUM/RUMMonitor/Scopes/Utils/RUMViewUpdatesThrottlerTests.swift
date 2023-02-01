@@ -22,11 +22,13 @@ class RUMViewUpdatesThrottlerTests: XCTestCase {
     func testItRejectsNextEventWhenItArrivesEarlierThanThreshold() {
         let firstEvent: RUMViewEvent = .mockRandomWith(
             viewIsActive: true, // not a final event
-            viewTimeSpent: 0
+            viewTimeSpent: 0,
+            crashCount: 0
         )
         let nextEvent: RUMViewEvent = .mockRandomWith(
             viewIsActive: true, // not a final event
-            viewTimeSpent: randomViewUpdateThreshold.toInt64Nanoseconds - 1
+            viewTimeSpent: randomViewUpdateThreshold.toInt64Nanoseconds - 1,
+            crashCount: 0
         )
 
         XCTAssertTrue(throttler.accept(event: firstEvent), "It should always accepts first event")
@@ -36,11 +38,13 @@ class RUMViewUpdatesThrottlerTests: XCTestCase {
     func testItAcceptsNextEventWhenItArrivesLaterThanThreshold() {
         let firstEvent: RUMViewEvent = .mockRandomWith(
             viewIsActive: true, // not a final event
-            viewTimeSpent: 0
+            viewTimeSpent: 0,
+            crashCount: 0
         )
         let nextEvent: RUMViewEvent = .mockRandomWith(
             viewIsActive: true, // not a final event
-            viewTimeSpent: randomViewUpdateThreshold.toInt64Nanoseconds + 1
+            viewTimeSpent: randomViewUpdateThreshold.toInt64Nanoseconds + 1,
+            crashCount: 0
         )
 
         XCTAssertTrue(throttler.accept(event: firstEvent), "It should always accepts first event")

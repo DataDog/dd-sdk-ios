@@ -6,17 +6,6 @@
 
 @testable import Datadog
 
-extension RUMUser: EquatableInTests {}
-extension RUMConnectivity: EquatableInTests {}
-extension RUMViewEvent: EquatableInTests {}
-extension RUMResourceEvent: EquatableInTests {}
-extension RUMActionEvent: EquatableInTests {}
-extension RUMErrorEvent: EquatableInTests {}
-extension RUMLongTaskEvent: EquatableInTests {}
-extension RUMCrashEvent: EquatableInTests {}
-extension RUMDevice: EquatableInTests {}
-extension RUMOperatingSystem: EquatableInTests {}
-
 extension RUMUser {
     static func mockRandom() -> RUMUser {
         return RUMUser(
@@ -110,7 +99,8 @@ extension RUMViewEvent: RandomMockable {
     /// Produces random `RUMViewEvent` with setting given fields to certain values.
     static func mockRandomWith(
         viewIsActive: Bool? = .random(),
-        viewTimeSpent: Int64 = .mockRandom()
+        viewTimeSpent: Int64 = .mockRandom(),
+        crashCount: Int64? = nil
     ) -> RUMViewEvent {
         return RUMViewEvent(
             dd: .init(
@@ -140,7 +130,7 @@ extension RUMViewEvent: RandomMockable {
                 action: .init(count: .mockRandom()),
                 cpuTicksCount: .mockRandom(),
                 cpuTicksPerSecond: .mockRandom(),
-                crash: .init(count: .mockRandom()),
+                crash: crashCount.map { .init(count: $0) },
                 cumulativeLayoutShift: .mockRandom(),
                 customTimings: .mockAny(),
                 domComplete: .mockRandom(),
@@ -402,9 +392,6 @@ extension RUMLongTaskEvent: RandomMockable {
     }
 }
 
-extension TelemetryConfigurationEvent: EquatableInTests {
-}
-
 extension TelemetryConfigurationEvent: RandomMockable {
     static func mockRandom() -> TelemetryConfigurationEvent {
         return TelemetryConfigurationEvent(
@@ -464,11 +451,5 @@ extension TelemetryConfigurationEvent: RandomMockable {
             version: .mockAny(),
             view: .init(id: .mockRandom())
         )
-    }
-}
-
-extension String {
-    static func mockAnySource() -> String {
-        return ["ios", "android", "browser", "ios", "react-native", "flutter"].randomElement()!
     }
 }

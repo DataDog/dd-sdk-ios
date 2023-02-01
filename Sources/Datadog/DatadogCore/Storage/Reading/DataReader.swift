@@ -7,7 +7,7 @@
 import Foundation
 
 /// Synchronizes the work of `FileReader` on given read/write queue.
-internal final class DataReader: SyncReader {
+internal final class DataReader: Reader {
     /// Queue used to synchronize reads and writes for the feature.
     internal let queue: DispatchQueue
     private let fileReader: Reader

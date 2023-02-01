@@ -89,7 +89,7 @@ custom_rules:
 
 included:
   - ../../Sources
-  - ../../session-replay/Sources
+  - ../../DatadogSessionReplay/Sources
   - ../../Datadog/E2E
   - ../../instrumented-tests/http-server-mock/Sources
   - ../../tools/api-surface/Sources

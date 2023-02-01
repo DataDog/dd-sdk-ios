@@ -6,6 +6,10 @@
 
 import Foundation
 
+/// Datadog site that SDK sends data to.
+/// See: https://docs.datadoghq.com/getting_started/site/
+public typealias DatadogSite = Datadog.Configuration.DatadogEndpoint
+
 public struct DatadogContext {
     // MARK: - Datadog Specific
 

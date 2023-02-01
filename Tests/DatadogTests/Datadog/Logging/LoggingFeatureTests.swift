@@ -47,7 +47,6 @@ class LoggingFeatureTests: XCTestCase {
             ),
             httpClient: httpClient,
             encryption: randomEncryption,
-            v1Context: .mockAny(),
             contextProvider: .mockWith(
                 context: .mockWith(
                     clientToken: randomClientToken,
@@ -65,14 +64,18 @@ class LoggingFeatureTests: XCTestCase {
             ),
             applicationVersion: randomApplicationVersion
         )
+        defer { core.flushAndTearDown() }
 
         // Given
         let featureConfiguration: LoggingFeature.Configuration = .mockWith(uploadURL: randomUploadURL)
         let feature: LoggingFeature = try core.create(
-            configuration: createLoggingConfiguration(intake: randomUploadURL, logEventMapper: nil),
+            configuration: createLoggingConfiguration(
+                intake: randomUploadURL,
+                dateProvider: SystemDateProvider(),
+                logEventMapper: nil
+            ),
             featureSpecificConfiguration: featureConfiguration
         )
-        defer { feature.flush() }
         core.register(feature: feature)
 
         // When
@@ -129,18 +132,21 @@ class LoggingFeatureTests: XCTestCase {
             ),
             httpClient: httpClient,
             encryption: nil,
-            v1Context: .mockAny(),
             contextProvider: .mockAny(),
             applicationVersion: .mockAny()
         )
+        defer { core.flushAndTearDown() }
 
         // Given
         let featureConfiguration: LoggingFeature.Configuration = .mockAny()
         let feature: LoggingFeature = try core.create(
-            configuration: createLoggingConfiguration(intake: featureConfiguration.uploadURL, logEventMapper: nil),
+            configuration: createLoggingConfiguration(
+                intake: featureConfiguration.uploadURL,
+                dateProvider: SystemDateProvider(),
+                logEventMapper: nil
+            ),
             featureSpecificConfiguration: featureConfiguration
         )
-        defer { feature.flush() }
         core.register(feature: feature)
 
         let logger = Logger.builder.build(in: core)

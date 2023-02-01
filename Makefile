@@ -1,7 +1,7 @@
 all: dependencies xcodeproj-httpservermock templates
 
 # The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
-DD_SDK_SWIFT_TESTING_VERSION = 2.1.3
+DD_SDK_SWIFT_TESTING_VERSION = 2.2.0
 
 define DD_SDK_TESTING_XCCONFIG_CI
 FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
@@ -9,8 +9,7 @@ LD_RUNPATH_SEARCH_PATHS[sdk=iphonesimulator*]=$$(inherited) $$(SRCROOT)/../instr
 FRAMEWORK_SEARCH_PATHS[sdk=appletvsimulator*]=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/tvos-arm64_x86_64-simulator/\n
 LD_RUNPATH_SEARCH_PATHS[sdk=appletvsimulator*]=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/tvos-arm64_x86_64-simulator/\n
 OTHER_LDFLAGS[sdk=iphonesimulator*]=$$(inherited) -framework DatadogSDKTesting\n
-// Temporarily disabled - causes "Touching Example\ tvOS.app" exit code: 65 on CI
-// OTHER_LDFLAGS[sdk=appletvsimulator*]=$$(inherited) -framework DatadogSDKTesting\n
+OTHER_LDFLAGS[sdk=appletvsimulator*]=$$(inherited) -framework DatadogSDKTesting\n
 DD_TEST_RUNNER=1\n
 DD_SDK_SWIFT_TESTING_SERVICE=dd-sdk-ios\n
 DD_SDK_SWIFT_TESTING_APIKEY=${DD_SDK_SWIFT_TESTING_APIKEY}\n
@@ -75,7 +74,7 @@ xcodeproj-httpservermock:
 
 xcodeproj-session-replay:
 		@echo "⚙️  Generating 'DatadogSessionReplay.xcodeproj'..."
-		@cd session-replay/ && swift package generate-xcodeproj
+		@cd DatadogSessionReplay/ && swift package generate-xcodeproj
 		@echo "OK 👌"
 
 templates:
@@ -145,6 +144,7 @@ bump:
 		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKObjc.podspec.src > DatadogSDKObjc.podspec; \
 		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKAlamofireExtension.podspec.src > DatadogSDKAlamofireExtension.podspec; \
 		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKCrashReporting.podspec.src > DatadogSDKCrashReporting.podspec; \
+		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKSessionReplay.podspec.src > DatadogSDKSessionReplay.podspec; \
 		git add . ; \
 		git commit -m "Bumped version to $$version"; \
 		echo Bumped version to $$version

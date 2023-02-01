@@ -47,7 +47,6 @@ class TracingFeatureTests: XCTestCase {
             ),
             httpClient: httpClient,
             encryption: randomEncryption,
-            v1Context: .mockAny(),
             contextProvider: .mockWith(
                 context: .mockWith(
                     clientToken: randomClientToken,
@@ -65,6 +64,7 @@ class TracingFeatureTests: XCTestCase {
             ),
             applicationVersion: randomApplicationVersion
         )
+        defer { core.flushAndTearDown() }
 
         // Given
         let featureConfiguration: TracingFeature.Configuration = .mockWith(uploadURL: randomUploadURL)
@@ -73,7 +73,6 @@ class TracingFeatureTests: XCTestCase {
             configuration: createTracingConfiguration(intake: featureConfiguration.uploadURL),
             featureSpecificConfiguration: featureConfiguration
         )
-        defer { feature.flush() }
         core.register(feature: feature)
 
         // When
@@ -131,17 +130,16 @@ class TracingFeatureTests: XCTestCase {
             ),
             httpClient: httpClient,
             encryption: nil,
-            v1Context: .mockAny(),
             contextProvider: .mockAny(),
             applicationVersion: .mockAny()
         )
+        defer { core.flushAndTearDown() }
 
         let featureConfiguration: TracingFeature.Configuration = .mockAny()
         let feature: TracingFeature = try core.create(
             configuration: createTracingConfiguration(intake: featureConfiguration.uploadURL),
             featureSpecificConfiguration: featureConfiguration
         )
-        defer { feature.flush() }
         core.register(feature: feature)
 
         let tracer = Tracer.initialize(configuration: .init(), in: core).dd

@@ -164,12 +164,8 @@ public class Datadog {
 
     /// Clears all data that has not already been sent to Datadog servers.
     public static func clearAllData() {
-        let logging = defaultDatadogCore.v1.feature(LoggingFeature.self)
-        let tracing = defaultDatadogCore.v1.feature(TracingFeature.self)
-        let rum = defaultDatadogCore.v1.feature(RUMFeature.self)
-        logging?.storage.clearAllData()
-        tracing?.storage.clearAllData()
-        rum?.storage.clearAllData()
+        let core = defaultDatadogCore as? DatadogCore
+        core?.clearAllData()
     }
 
     // MARK: - Internal
@@ -188,9 +184,6 @@ public class Datadog {
 
         let userInfoProvider = UserInfoProvider()
         let serverDateProvider = configuration.common.serverDateProvider ?? DatadogNTPDateProvider()
-        let dateCorrector = ServerDateCorrector(serverDateProvider: serverDateProvider)
-        let networkConnectionInfoProvider = NetworkConnectionInfoProvider()
-        let carrierInfoProvider = CarrierInfoProvider()
         let appStateListener = AppStateListener(dateProvider: configuration.common.dateProvider)
 
         // Set default `DatadogCore`:
@@ -202,14 +195,6 @@ public class Datadog {
             performance: configuration.common.performance,
             httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
             encryption: configuration.common.encryption,
-            v1Context: DatadogV1Context(
-                configuration: configuration.common,
-                device: .init(),
-                dateCorrector: dateCorrector,
-                networkConnectionInfoProvider: networkConnectionInfoProvider,
-                carrierInfoProvider: carrierInfoProvider,
-                userInfoProvider: userInfoProvider
-            ),
             contextProvider: DatadogContextProvider(
                 configuration: configuration.common,
                 device: .init(),
@@ -236,7 +221,7 @@ public class Datadog {
             )
 
             rum = try core.create(
-                configuration: createRUMConfiguration(intake: rumConfiguration.uploadURL),
+                configuration: createRUMConfiguration(configuration: rumConfiguration),
                 featureSpecificConfiguration: rumConfiguration
             )
 
@@ -256,6 +241,7 @@ public class Datadog {
             logging = try core.create(
                 configuration: createLoggingConfiguration(
                     intake: loggingConfiguration.uploadURL,
+                    dateProvider: loggingConfiguration.dateProvider,
                     logEventMapper: loggingConfiguration.logEventMapper
                 ),
                 featureSpecificConfiguration: loggingConfiguration
@@ -331,26 +317,12 @@ public class Datadog {
     internal static func internalFlushAndDeinitialize() {
         assert(Datadog.isInitialized, "SDK must be first initialized.")
 
-        // Flush the context provider's work items
-        let core = defaultDatadogCore as? DatadogCore
-        core?.contextProvider.queue.sync(flags: .barrier) { }
-
-        // Tear down and deinitialize all features:
-        let logging = defaultDatadogCore.v1.feature(LoggingFeature.self)
-        let tracing = defaultDatadogCore.v1.feature(TracingFeature.self)
-        let rum = defaultDatadogCore.v1.feature(RUMFeature.self)
-        let rumInstrumentation = defaultDatadogCore.v1.feature(RUMInstrumentation.self)
-        let urlSessionInstrumentation = defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self)
-        logging?.deinitialize()
-        tracing?.deinitialize()
-        rum?.deinitialize()
-        rumInstrumentation?.deinitialize()
-        urlSessionInstrumentation?.deinitialize()
+        // Flush and tear down SDK core:
+        (defaultDatadogCore as? DatadogCore)?.flushAndTearDown()
 
         // Reset Globals:
         Global.sharedTracer = DDNoopGlobals.tracer
         Global.rum = DDNoopRUMMonitor()
-        defaultDatadogCore.integration(named: "crash-reporter", type: CrashReporter.self)?.deinitialize()
         DD.telemetry = NOPTelemetry()
 
         // Deinitialize `Datadog`:

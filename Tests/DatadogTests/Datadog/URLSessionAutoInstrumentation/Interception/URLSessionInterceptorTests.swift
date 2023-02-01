@@ -8,7 +8,7 @@ import XCTest
 @testable import Datadog
 
 class URLSessionInterceptorTests: XCTestCase {
-    private var core: DatadogCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
+    private var core: PassthroughCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
 
     private let handler = URLSessionInterceptionHandlerMock()
     /// Mock request made to a first party URL.
@@ -22,12 +22,11 @@ class URLSessionInterceptorTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        core = DatadogCoreMock()
-        core.register(feature: TracingFeature.mockByRecordingSpanMatchers())
+        core = PassthroughCoreMock()
+        core.register(feature: TracingFeature.mockWith())
     }
 
     override func tearDown() {
-        core.flush()
         core = nil
         super.tearDown()
     }
@@ -55,7 +54,7 @@ class URLSessionInterceptorTests: XCTestCase {
             "Tracing headers should be injected when only Tracing instrumentation is enabled."
         )
         XCTAssertNil(
-            interceptor.additionalHeadersForFirstPartyRequests,
+            interceptor.datadogOriginHeader,
             "Just the tracing headers should be injected when only Tracing instrumentation is enabled."
         )
     }
@@ -79,7 +78,7 @@ class URLSessionInterceptorTests: XCTestCase {
             "Tracing headers should not be injected when only RUM instrumentation is enabled."
         )
         XCTAssertNil(
-            interceptor.additionalHeadersForFirstPartyRequests,
+            interceptor.datadogOriginHeader,
             "No additional headers should be injected when only RUM instrumentation is enabled."
         )
     }
@@ -103,9 +102,14 @@ class URLSessionInterceptorTests: XCTestCase {
             "Tracing headers should be injected when both Tracing and RUM instrumentations are enabled."
         )
         XCTAssertEqual(
-            interceptor.additionalHeadersForFirstPartyRequests,
-            [TracingHTTPHeaders.ddOrigin.field: TracingHTTPHeaders.ddOrigin.value],
-            "Additional `x-datadog-origin: rum` header should be injected when both Tracing and RUM instrumentations are enabled."
+            interceptor.datadogOriginHeader?.field,
+            TracingHTTPHeaders.ddOrigin.field,
+            "Additional `x-datadog-origin` header field should be injected when both Tracing and RUM instrumentations are enabled."
+        )
+        XCTAssertEqual(
+            interceptor.datadogOriginHeader?.value,
+            TracingHTTPHeaders.ddOrigin.value,
+            "Additional `rum` header value should be injected when both Tracing and RUM instrumentations are enabled."
         )
     }
 

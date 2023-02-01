@@ -7,54 +7,27 @@
 @testable import Datadog
 
 extension TracingFeature {
-    /// Mocks feature instance which performs no writes and no uploads.
-    static func mockNoOp(configuration: FeaturesConfiguration.Tracing = .mockAny()) -> TracingFeature {
-        return TracingFeature(
-            storage: .mockNoOp(),
-            upload: .mockNoOp(),
-            configuration: configuration,
-            messageReceiver: NOPFeatureMessageReceiver()
-        )
-    }
+    /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
+    static func mockAny() -> TracingFeature { .mockWith() }
 
-    /// Mocks the feature instance which performs uploads to mocked `DataUploadWorker`.
-    /// Use `TracingFeature.waitAndReturnSpanMatchers()` to inspect and assert recorded `Spans`.
-    static func mockByRecordingSpanMatchers(
+    /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
+    static func mockWith(
         configuration: FeaturesConfiguration.Tracing = .mockAny(),
         messageReceiver: FeatureMessageReceiver = TracingMessageReceiver()
     ) -> TracingFeature {
-        // Mock storage with `InMemoryWriter`, used later for retrieving recorded events back:
-        let interceptedStorage = FeatureStorage(
-            writer: InMemoryWriter(),
-            reader: NoOpFileReader(),
-            arbitraryAuthorizedWriter: NoOpFileWriter(),
-            dataOrchestrator: NoOpDataOrchestrator()
-        )
         return TracingFeature(
-            storage: interceptedStorage,
+            storage: .mockNoOp(),
             upload: .mockNoOp(),
             configuration: configuration,
             messageReceiver: messageReceiver
         )
     }
+}
 
-    // MARK: - Expecting Spans Data
-
-    func waitAndReturnSpanMatchers(count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [SpanMatcher] {
-        guard let inMemoryWriter = storage.writer as? InMemoryWriter else {
-            preconditionFailure("Retrieving matchers requires that feature is mocked with `.mockByRecordingSpanMatchers()`")
-        }
-        return try inMemoryWriter.waitAndReturnEventsData(count: count, file: file, line: line)
+extension DatadogCoreProxy {
+    func waitAndReturnSpanMatchers(file: StaticString = #file, line: UInt = #line) throws -> [SpanMatcher] {
+        return try waitAndReturnEventsData(of: TracingFeature.self)
             .map { eventData in try SpanMatcher.fromJSONObjectData(eventData) }
-    }
-
-    // swiftlint:disable:next function_default_parameter_at_end
-    static func waitAndReturnSpanMatchers(in core: DatadogCoreProtocol = defaultDatadogCore, count: UInt, file: StaticString = #file, line: UInt = #line) throws -> [SpanMatcher] {
-        guard let tracing = core.v1.feature(TracingFeature.self) else {
-            preconditionFailure("TracingFeature is not registered in core")
-        }
-
-        return try tracing.waitAndReturnSpanMatchers(count: count, file: file, line: line)
     }
 }
 
@@ -158,8 +131,6 @@ class RelativeTracingUUIDGenerator: TracingUUIDGenerator {
 private func + (lhs: TracingUUID, rhs: UInt64) -> TracingUUID {
     return TracingUUID(rawValue: (UInt64(lhs.toString(.decimal)) ?? 0) + rhs)
 }
-
-extension SpanEvent: EquatableInTests {}
 
 extension SpanEvent: AnyMockable, RandomMockable {
     static func mockWith(

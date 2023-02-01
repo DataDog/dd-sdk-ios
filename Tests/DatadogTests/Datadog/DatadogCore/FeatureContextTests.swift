@@ -18,7 +18,6 @@ class FeatureContextTests: XCTestCase {
             performance: .mockAny(),
             httpClient: .mockAny(),
             encryption: nil,
-            v1Context: .mockAny(),
             contextProvider: .mockAny(),
             applicationVersion: .mockAny()
         )
@@ -32,6 +31,6 @@ class FeatureContextTests: XCTestCase {
         // Then
         let context = core.contextProvider.read()
         let testAttributes = try XCTUnwrap(context.featuresAttributes["test"])
-        AssertDictionariesEqual(testAttributes.all(), attributes.all())
+        DDAssertDictionariesEqual(testAttributes.all(), attributes.all())
     }
 }

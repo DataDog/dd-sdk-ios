@@ -40,9 +40,4 @@ internal final class TracingFeature: V1FeatureInitializable, V1Feature {
         self.upload = upload
         self.messageReceiver = messageReceiver
     }
-
-    internal func deinitialize() {
-        storage.flushAndTearDown()
-        upload.flushAndTearDown()
-    }
 }
