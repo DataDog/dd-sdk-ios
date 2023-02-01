@@ -18,6 +18,11 @@ public struct RUMView {
     /// Additional attributes to associate with the RUM View.
     public var attributes: [AttributeKey: AttributeValue]
 
+    /// Whether this view is modal, but should not be tracked with startView and stopView
+    /// When this is true, the view previous to this one will be stopped, but this one will not be
+    /// started. When this view is dismissed, the previous view will be started.
+    public var isUntrackedModal: Bool
+
     /// Initializes the RUM View description.
     /// - Parameters:
     ///   - path: the RUM View path, appearing as `PATH` in RUM Explorer.
@@ -27,16 +32,19 @@ public struct RUMView {
         self.name = path
         self.path = path
         self.attributes = attributes
+        self.isUntrackedModal = false
     }
 
     /// Initializes the RUM View description.
     /// - Parameters:
     ///   - name: the RUM View name, appearing as `VIEW NAME` in RUM Explorer.
     ///   - attributes: additional attributes to associate with the RUM View.
-    public init(name: String, attributes: [AttributeKey: AttributeValue] = [:]) {
+    ///   - isUntrackedModal: true if this view is modal, but should not call startView / stopView.
+    public init(name: String, attributes: [AttributeKey: AttributeValue] = [:], isUntrackedModal: Bool = false) {
         self.name = name
         self.path = nil // the "VIEW URL" will default to view controller class name
         self.attributes = attributes
+        self.isUntrackedModal = isUntrackedModal
     }
 }
 
