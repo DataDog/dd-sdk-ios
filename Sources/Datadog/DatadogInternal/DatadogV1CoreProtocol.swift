@@ -17,7 +17,7 @@ extension DatadogCoreProtocol {
 
 /// A Datadog Core holds a set of features and is responsible of managing their storage
 /// and upload mechanism. It also provides a thread-safe scope for writing events.
-internal protocol DatadogV1CoreProtocol: DatadogCoreProtocol {
+public protocol DatadogV1CoreProtocol: DatadogCoreProtocol {
     // MARK: - V1 interface
 
     /// Registers a feature instance by its type description.

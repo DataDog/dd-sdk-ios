@@ -10,10 +10,10 @@ import Foundation
 /// Hence we can't test encoding `Encodable` values directly and we need to wrap it inside this `EncodingContainer` container.
 ///
 /// Reference: https://bugs.swift.org/browse/SR-6163
-struct EncodingContainer<Value: Encodable>: Encodable {
-    let value: Value
+public struct EncodingContainer<Value: Encodable>: Encodable {
+    public let value: Value
 
-    init(_ value: Value) {
+    public init(_ value: Value) {
         self.value = value
     }
 }

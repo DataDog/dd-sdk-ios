@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import TestUtilities
 @testable import Datadog
 
 extension TracingFeature {
@@ -173,9 +174,9 @@ extension SpanEvent: AnyMockable, RandomMockable {
         )
     }
 
-    static func mockAny() -> SpanEvent { .mockWith() }
+    public static func mockAny() -> SpanEvent { .mockWith() }
 
-    static func mockRandom() -> SpanEvent {
+    public static func mockRandom() -> SpanEvent {
         return SpanEvent(
             traceID: .init(rawValue: .mockRandom()),
             spanID: .init(rawValue: .mockRandom()),
@@ -213,9 +214,9 @@ extension SpanEvent.UserInfo: AnyMockable, RandomMockable {
         )
     }
 
-    static func mockAny() -> SpanEvent.UserInfo { .mockWith() }
+    public static func mockAny() -> SpanEvent.UserInfo { .mockWith() }
 
-    static func mockRandom() -> SpanEvent.UserInfo {
+    public static func mockRandom() -> SpanEvent.UserInfo {
         return SpanEvent.UserInfo(
             id: .mockRandom(),
             name: .mockRandom(),
@@ -271,7 +272,7 @@ extension SpanEventBuilder {
 }
 
 extension TracingWithLoggingIntegration.Configuration: AnyMockable {
-    static func mockAny() -> TracingWithLoggingIntegration.Configuration {
+    public static func mockAny() -> TracingWithLoggingIntegration.Configuration {
         .init(
             service: .mockAny(),
             loggerName: .mockAny(),

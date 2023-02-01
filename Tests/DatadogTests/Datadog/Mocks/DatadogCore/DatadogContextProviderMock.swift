@@ -5,11 +5,11 @@
  */
 
 import Foundation
-
+import TestUtilities
 @testable import Datadog
 
 extension DatadogContextProvider: AnyMockable {
-    static func mockAny() -> Self { .mockWith() }
+    public static func mockAny() -> Self { .mockWith() }
 
     static func mockWith(context: DatadogContext = .mockAny()) -> Self {
         .init(context: context)

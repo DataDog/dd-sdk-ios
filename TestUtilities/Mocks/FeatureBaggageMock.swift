@@ -9,11 +9,11 @@ import Foundation
 @testable import Datadog
 
 extension FeatureBaggage: AnyMockable, RandomMockable {
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         .init([String: String].mockAny())
     }
 
-    static func mockRandom() -> Self {
+    public static func mockRandom() -> Self {
         .init([String: String].mockRandom())
     }
 }

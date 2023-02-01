@@ -9,6 +9,7 @@ import XCTest
 import CoreTelephony
 #endif
 
+import TestUtilities
 @testable import Datadog
 
 /// This suite tests if `CrashContextProvider` gets updated by different SDK components, each updating

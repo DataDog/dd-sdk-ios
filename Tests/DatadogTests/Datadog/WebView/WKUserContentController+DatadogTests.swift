@@ -8,7 +8,7 @@
 
 import XCTest
 import WebKit
-
+import TestUtilities
 @testable import Datadog
 
 final class DDUserContentController: WKUserContentController {

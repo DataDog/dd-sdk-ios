@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import TestUtilities
 import Datadog
 
 class RUMGlobalE2ETests: E2ETests {
