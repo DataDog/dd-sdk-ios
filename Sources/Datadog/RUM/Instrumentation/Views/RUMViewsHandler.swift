@@ -106,9 +106,7 @@ internal final class RUMViewsHandler {
 
         // Stop the last appearing view of the stack
         if let current = stack.last {
-            if !current.isUntrackedModal {
-                stop(view: current)
-            }
+            stop(view: current)
         }
 
         if !view.isUntrackedModal {
@@ -130,15 +128,11 @@ internal final class RUMViewsHandler {
 
         // Stop and remove the visible view from the stack
         let view = stack.removeLast()
-        if !view.isUntrackedModal {
-            stop(view: view)
-        }
+        stop(view: view)
 
         // Restart the previous view if any.
         if let current = stack.last {
-            if !current.isUntrackedModal {
-                start(view: current)
-            }
+            start(view: current)
         }
     }
 
@@ -150,6 +144,10 @@ internal final class RUMViewsHandler {
                 Make sure `Global.rum = RUMMonitor.initialize()` is called before any view appears.
                 """
             )
+        }
+
+        guard !view.isUntrackedModal else {
+            return
         }
 
         guard let identity = view.identity.identifiable else {
@@ -169,6 +167,10 @@ internal final class RUMViewsHandler {
 
     private func stop(view: View) {
         guard let identity = view.identity.identifiable else {
+            return
+        }
+
+        guard !view.isUntrackedModal else {
             return
         }
 
@@ -212,18 +214,16 @@ extension RUMViewsHandler: UIViewControllerHandler {
                     attributes: rumView.attributes
                 )
             )
-        } else if #available(iOS 13, *) {
-            if viewController.isModalInPresentation {
-                add(
-                    view: .init(
-                        identity: viewController.asRUMViewIdentity(),
-                        name: "RUMUntrackedModal",
-                        path: nil,
-                        isUntrackedModal: true,
-                        attributes: [:]
-                    )
+        } else if #available(iOS 13, *), viewController.isModalInPresentation {
+            add(
+                view: .init(
+                    identity: viewController.asRUMViewIdentity(),
+                    name: "RUMUntrackedModal",
+                    path: nil,
+                    isUntrackedModal: true,
+                    attributes: [:]
                 )
-            }
+            )
         }
     }
 
