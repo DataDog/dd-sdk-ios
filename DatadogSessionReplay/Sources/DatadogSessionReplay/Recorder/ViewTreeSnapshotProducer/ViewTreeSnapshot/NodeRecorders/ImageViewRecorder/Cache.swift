@@ -34,7 +34,6 @@ final class Cache<Key: Hashable, Value> {
         }
 
         guard dateProvider() < entry.expirationDate else {
-            // Discard values that have expired
             removeValue(forKey: key)
             return nil
         }
@@ -44,57 +43,6 @@ final class Cache<Key: Hashable, Value> {
 
     func removeValue(forKey key: Key) {
         wrapped.removeObject(forKey: WrappedKey(key))
-    }
-}
-
-extension Cache: Codable where Key: Codable, Value: Codable {
-    convenience init(from decoder: Decoder) throws {
-        self.init()
-
-        let container = try decoder.singleValueContainer()
-        let entries = try container.decode([Entry].self)
-        entries.forEach(insert)
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try container.encode(keyTracker.keys.compactMap(entry))
-    }
-
-    func saveToDisk(
-        withName name: String,
-        using fileManager: FileManager = .default
-    ) throws {
-        let folderURLs = fileManager.urls(
-            for: .cachesDirectory,
-            in: .userDomainMask
-        )
-
-        let fileURL = folderURLs[0].appendingPathComponent(name + ".cache")
-        let data = try JSONEncoder().encode(self)
-        try data.write(to: fileURL)
-    }
-}
-
-extension Cache.Entry: Codable where Key: Codable, Value: Codable {}
-
-private extension Cache {
-    func entry(forKey key: Key) -> Entry? {
-        guard let entry = wrapped.object(forKey: WrappedKey(key)) else {
-            return nil
-        }
-
-        guard dateProvider() < entry.expirationDate else {
-            removeValue(forKey: key)
-            return nil
-        }
-
-        return entry
-    }
-
-    func insert(_ entry: Entry) {
-        wrapped.setObject(entry, forKey: WrappedKey(entry.key))
-        keyTracker.keys.insert(entry.key)
     }
 }
 

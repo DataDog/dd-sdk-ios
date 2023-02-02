@@ -36,7 +36,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
             attributes: attributes,
             contentFrame: contentFrame,
             clipsToBounds: imageView.clipsToBounds,
-            base64: imageDataProvider.lazyBase64String(of: imageView)
+            base64: imageDataProvider.contentBase64String(of: imageView)
         )
         return SpecificElement(wireframesBuilder: builder, recordSubtree: true)
     }

@@ -9,24 +9,29 @@ import UIKit
 extension UIImage {
     func compressToTargetSize(_ targetSize: Int) -> Data? {
         var compressionQuality: CGFloat = 1.0
-        var imageData = jpegData(compressionQuality: compressionQuality)!
+        guard var imageData = pngData() else {
+            return nil
+        }
+        guard imageData.count >= targetSize else {
+            return imageData
+        }
         var image = self
         while imageData.count > targetSize {
-            compressionQuality -= 0.2
+            compressionQuality -= 0.1
             imageData = image.jpegData(compressionQuality: compressionQuality)!
 
             if imageData.count > targetSize {
-                let newSize = CGSize(width: image.size.width * 0.8, height: image.size.height * 0.8)
-                image = image.resizedImage(to: newSize)
+                image = image.scaledImage(by: 0.9)
             }
         }
-        return imageData
+        return imageData 
     }
 
-    func resizedImage(to size: CGSize) -> UIImage {
-        let renderer = UIGraphicsImageRenderer(size: size)
+    func scaledImage(by percentage: CGFloat) -> UIImage {
+        let newSize = CGSize(width: size.width * percentage, height: size.height * percentage)
+        let renderer = UIGraphicsImageRenderer(size: newSize)
         return renderer.image { (context) in
-            draw(in: CGRect(origin: .zero, size: size))
+            draw(in: CGRect(origin: .zero, size: newSize))
         }
     }
 }
