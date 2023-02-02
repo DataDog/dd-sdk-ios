@@ -571,9 +571,9 @@ extension RUMAddLongTaskCommand: AnyMockable, RandomMockable {
 }
 
 extension RUMAddFeatureFlagEvaluationCommand: AnyMockable, RandomMockable {
-    static func mockAny() -> RUMAddFeatureFlagEvaluationCommand { mockWith() }
+    public static func mockAny() -> RUMAddFeatureFlagEvaluationCommand { mockWith() }
 
-    static func mockRandom() -> RUMAddFeatureFlagEvaluationCommand {
+    public static func mockRandom() -> RUMAddFeatureFlagEvaluationCommand {
         return mockWith(
             time: .mockRandomInThePast(),
             name: .mockRandom(),

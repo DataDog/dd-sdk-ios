@@ -864,7 +864,7 @@ class RUMMonitorTests: XCTestCase {
         let flagValue: Bool = .mockRandom()
         monitor.addFeatureFlagEvaluation(name: flagName, value: flagValue)
 
-        let rumEventMatchers = try core.waitAndReturnEvents(of: RUMFeature.self, ofType: RUMViewEvent.self)
+        let rumEventMatchers = core.waitAndReturnEvents(of: RUMFeature.self, ofType: RUMViewEvent.self)
         let lastViewUpdate = try XCTUnwrap(rumEventMatchers.last)
         let flags = try XCTUnwrap(lastViewUpdate.featureFlags)
         XCTAssertEqual(flags.featureFlagsInfo[flagName] as? Bool, flagValue)
@@ -892,7 +892,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.addError(message: .mockAny())
 
         // Then
-        let rumErrorEvents = try core.waitAndReturnEvents(of: RUMFeature.self, ofType: RUMErrorEvent.self)
+        let rumErrorEvents = core.waitAndReturnEvents(of: RUMFeature.self, ofType: RUMErrorEvent.self)
         let lastError = try XCTUnwrap(rumErrorEvents.last)
         let flags = try XCTUnwrap(lastError.featureFlags)
         XCTAssertEqual(flags.featureFlagsInfo[flagName] as? Bool, flagValue)
@@ -919,7 +919,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.startView(viewController: mockSecondView)
 
         // Then
-        let rumEventMatchers = try core.waitAndReturnEvents(of: RUMFeature.self, ofType: RUMViewEvent.self)
+        let rumEventMatchers = core.waitAndReturnEvents(of: RUMFeature.self, ofType: RUMViewEvent.self)
         let lastViewUpdate = try XCTUnwrap(rumEventMatchers.last)
         let flags = try XCTUnwrap(lastViewUpdate.featureFlags)
         XCTAssertEqual(flags.featureFlagsInfo.count, 0)

@@ -12,6 +12,9 @@ internal class SendRUMFixture2ViewController: UIViewController {
 
         rumMonitor.startView(viewController: self, name: "SendRUMFixture2View")
 
+        rumMonitor.addFeatureFlagEvaluation(name: "mock_flag_a", value: false)
+        rumMonitor.addFeatureFlagEvaluation(name: "mock_flag_b", value: "mock_value")
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
             rumMonitor.addError(message: "Simulated view error", source: .source)
         }
