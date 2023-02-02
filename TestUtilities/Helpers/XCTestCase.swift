@@ -10,7 +10,7 @@ import XCTest
 extension XCTestCase {
     /// Calls given closures concurrently from multiple threads.
     /// Each closure is called only once.
-    func callConcurrently(
+    public func callConcurrently(
         _ closure1: @escaping () -> Void,
         _ closure2: @escaping () -> Void,
         _ closure3: (() -> Void)? = nil,
@@ -26,7 +26,7 @@ extension XCTestCase {
 
     /// Calls given closures concurrently from multiple threads.
     /// Each closure will be called the number of times given by `iterations` count.
-    func callConcurrently(closures: [() -> Void], iterations: Int = 1) {
+    public func callConcurrently(closures: [() -> Void], iterations: Int = 1) {
         var moreClosures: [() -> Void] = []
         (0..<iterations).forEach { _ in moreClosures.append(contentsOf: closures) }
         let randomizedClosures = moreClosures.shuffled()
@@ -38,7 +38,7 @@ extension XCTestCase {
 
     /// Waits until given `condition` returns `true` and then fulfills the `expectation`.
     /// It executes `condition()` block on the main thread, in every run loop.
-    func wait(until condition: @escaping () -> Bool, andThenFulfill expectation: XCTestExpectation) {
+    public func wait(until condition: @escaping () -> Bool, andThenFulfill expectation: XCTestExpectation) {
         if condition() {
             expectation.fulfill()
         } else {

@@ -30,6 +30,8 @@ public protocol FeatureMessageReceiver {
 }
 
 public struct NOPFeatureMessageReceiver: FeatureMessageReceiver {
+    public init() { }
+
     /// no-op: returns `false`
     public func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         return false

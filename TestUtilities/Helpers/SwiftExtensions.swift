@@ -15,7 +15,7 @@ import XCTest
 extension Optional {
     struct UnwrappingException: Error {}
 
-    func unwrapOrThrow(file: StaticString = #file, line: UInt = #line) throws -> Wrapped {
+    public func unwrapOrThrow(file: StaticString = #file, line: UInt = #line) throws -> Wrapped {
         switch self {
         case .some(let unwrappedValue):
             return unwrappedValue
@@ -27,15 +27,15 @@ extension Optional {
 }
 
 extension Date {
-    func secondsAgo(_ seconds: TimeInterval) -> Date {
+    public func secondsAgo(_ seconds: TimeInterval) -> Date {
         return addingTimeInterval(-seconds)
     }
 }
 
 extension String {
-    var utf8Data: Data { data(using: .utf8)! }
+    public var utf8Data: Data { data(using: .utf8)! }
 
-    func removingPrefix(_ prefix: String) -> String {
+    public func removingPrefix(_ prefix: String) -> String {
         if self.hasPrefix(prefix) {
             return String(self.dropFirst(prefix.count))
         } else {
@@ -43,23 +43,23 @@ extension String {
         }
     }
 
-    func randomcased() -> String {
+    public func randomcased() -> String {
         return Bool.random() ? self.lowercased() : self.uppercased()
     }
 
-    static let uuidRegex = "^[0-9A-Fa-f]{8}(-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}$"
+    public static let uuidRegex = "^[0-9A-Fa-f]{8}(-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}$"
 
-    func matches(regex: String) -> Bool {
+    public func matches(regex: String) -> Bool {
         range(of: regex, options: .regularExpression, range: nil, locale: nil) != nil
     }
 }
 
 extension Data {
-    var utf8String: String { String(data: self, encoding: .utf8)! }
+    public var utf8String: String { String(data: self, encoding: .utf8)! }
 }
 
 extension InputStream {
-    func readAllBytes(expectedSize: Int) -> Data {
+    public func readAllBytes(expectedSize: Int) -> Data {
         var data = Data()
 
         open()
@@ -87,13 +87,13 @@ extension InputStream {
 }
 
 extension URLRequest {
-    func removing(httpHeaderField: String) -> URLRequest {
+    public func removing(httpHeaderField: String) -> URLRequest {
         var request = self
         request.setValue(nil, forHTTPHeaderField: httpHeaderField)
         return request
     }
 
-    func dump() -> String {
+    public func dump() -> String {
         var headersDump: String = ""
         var bodyDump: String = ""
 
@@ -130,7 +130,7 @@ extension URLRequest {
 }
 
 extension URLSessionTask.State {
-    func dump() -> String {
+    public func dump() -> String {
         switch self {
         case .running: return "running"
         case .suspended: return "suspended"
@@ -144,7 +144,7 @@ extension URLSessionTask.State {
 /// Combines two arrays together, e.g. `["a", "b"].combined(with: [1, 2, 3])` gives
 /// `[("a", 1), ("a", 2), ("a", 3), ("b", 1), ("b", 2), ("b", 3)]`.
 extension Array {
-    func combined<B>(with other: [B]) -> [(Element, B)] {
+    public func combined<B>(with other: [B]) -> [(Element, B)] {
         return self.flatMap { a in other.map { b in (a, b) } }
     }
 }

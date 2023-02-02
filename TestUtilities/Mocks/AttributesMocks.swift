@@ -7,7 +7,7 @@
 import Foundation
 
 /// Creates randomized `[String: Codable]` attributes
-func mockRandomAttributes() -> [String: Codable] {
+public func mockRandomAttributes() -> [String: Codable] {
     struct Foo: Codable {
         var bar: String = .mockRandom()
         var bizz = Bizz()

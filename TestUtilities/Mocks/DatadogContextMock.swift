@@ -5,13 +5,12 @@
  */
 
 import Foundation
-
-@testable import Datadog
+import Datadog
 
 extension DatadogContext: AnyMockable {
-    static func mockAny() -> DatadogContext { mockWith() }
+    public static func mockAny() -> DatadogContext { mockWith() }
 
-    static func mockWith(
+    public static func mockWith(
         site: DatadogSite? = .mockAny(),
         clientToken: String = .mockAny(),
         service: String = .mockAny(),
@@ -63,7 +62,7 @@ extension DatadogContext: AnyMockable {
         )
     }
 
-    static func mockRandom() -> DatadogContext {
+    public static func mockRandom() -> DatadogContext {
         .init(
             site: .mockRandom(),
             clientToken: .mockRandom(),
@@ -93,21 +92,21 @@ extension DatadogContext: AnyMockable {
 }
 
 extension Datadog.Configuration.DatadogEndpoint: AnyMockable, RandomMockable {
-    static func mockAny() -> Datadog.Configuration.DatadogEndpoint {
+    public static func mockAny() -> Datadog.Configuration.DatadogEndpoint {
         return .us1
     }
 
-    static func mockRandom() -> Self {
+    public static func mockRandom() -> Self {
         return [.us1, .us3, .eu1, .us1_fed].randomElement()!
     }
 }
 
 extension DeviceInfo {
-    static func mockAny() -> DeviceInfo {
+    public static func mockAny() -> DeviceInfo {
         return .mockWith()
     }
 
-    static func mockWith(
+    public static func mockWith(
         name: String = .mockAny(),
         model: String = .mockAny(),
         osName: String = .mockAny(),
@@ -123,7 +122,7 @@ extension DeviceInfo {
         )
     }
 
-    static func mockRandom() -> DeviceInfo {
+    public static func mockRandom() -> DeviceInfo {
         return .init(
             name: .mockRandom(),
             model: .mockRandom(),
@@ -135,15 +134,15 @@ extension DeviceInfo {
 }
 
 extension UserInfo: AnyMockable, RandomMockable {
-    static func mockAny() -> UserInfo {
+    public static func mockAny() -> UserInfo {
         return mockEmpty()
     }
 
-    static func mockEmpty() -> UserInfo {
+    public static func mockEmpty() -> UserInfo {
         return UserInfo(id: nil, name: nil, email: nil, extraInfo: [:])
     }
 
-    static func mockRandom() -> UserInfo {
+    public static func mockRandom() -> UserInfo {
         return .init(
             id: .mockRandom(),
             name: .mockRandom(),
@@ -154,7 +153,7 @@ extension UserInfo: AnyMockable, RandomMockable {
 }
 
 extension LaunchTime: AnyMockable {
-    static func mockAny() -> LaunchTime {
+    public static func mockAny() -> LaunchTime {
         .init(
             launchTime: .mockAny(),
             launchDate: .mockAny(),
@@ -164,29 +163,29 @@ extension LaunchTime: AnyMockable {
 }
 
 extension AppStateHistory: AnyMockable {
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         return mockAppInForeground(since: .mockDecember15th2019At10AMUTC())
     }
 
-    static func mockAppInForeground(since date: Date = Date()) -> Self {
+    public static func mockAppInForeground(since date: Date = Date()) -> Self {
         return .init(initialSnapshot: .init(state: .active, date: date), recentDate: date)
     }
 
-    static func mockAppInBackground(since date: Date = Date()) -> Self {
+    public static func mockAppInBackground(since date: Date = Date()) -> Self {
         return .init(initialSnapshot: .init(state: .background, date: date), recentDate: date)
     }
 
-    static func mockRandom(since date: Date = Date()) -> Self {
+    public static func mockRandom(since date: Date = Date()) -> Self {
         return Bool.random() ? mockAppInForeground(since: date) : mockAppInBackground(since: date)
     }
 }
 
 extension NetworkConnectionInfo: RandomMockable {
-    static func mockAny() -> NetworkConnectionInfo {
+    public static func mockAny() -> NetworkConnectionInfo {
         return mockWith()
     }
 
-    static func mockWith(
+    public static func mockWith(
         reachability: NetworkConnectionInfo.Reachability = .mockAny(),
         availableInterfaces: [NetworkConnectionInfo.Interface] = [.wifi],
         supportsIPv4: Bool = true,
@@ -204,7 +203,7 @@ extension NetworkConnectionInfo: RandomMockable {
         )
     }
 
-    static func mockRandom() -> NetworkConnectionInfo {
+    public static func mockRandom() -> NetworkConnectionInfo {
         return NetworkConnectionInfo(
             reachability: .mockRandom(),
             availableInterfaces: .mockRandom(),
@@ -217,17 +216,17 @@ extension NetworkConnectionInfo: RandomMockable {
 }
 
 extension NetworkConnectionInfo.Interface: RandomMockable {
-    static func mockRandom() -> NetworkConnectionInfo.Interface {
+    public static func mockRandom() -> NetworkConnectionInfo.Interface {
         return allCases.randomElement()!
     }
 }
 
 extension CarrierInfo: RandomMockable {
-    static func mockAny() -> CarrierInfo {
+    public static func mockAny() -> CarrierInfo {
         return mockWith()
     }
 
-    static func mockWith(
+    public static func mockWith(
         carrierName: String? = .mockAny(),
         carrierISOCountryCode: String? = .mockAny(),
         carrierAllowsVOIP: Bool = .mockAny(),
@@ -241,7 +240,7 @@ extension CarrierInfo: RandomMockable {
         )
     }
 
-    static func mockRandom() -> CarrierInfo {
+    public static func mockRandom() -> CarrierInfo {
         return CarrierInfo(
             carrierName: .mockRandom(),
             carrierISOCountryCode: .mockRandom(),
@@ -252,19 +251,19 @@ extension CarrierInfo: RandomMockable {
 }
 
 extension CarrierInfo.RadioAccessTechnology: RandomMockable {
-    static func mockAny() -> CarrierInfo.RadioAccessTechnology { .LTE }
+    public static func mockAny() -> CarrierInfo.RadioAccessTechnology { .LTE }
 
-    static func mockRandom() -> CarrierInfo.RadioAccessTechnology {
+    public static func mockRandom() -> CarrierInfo.RadioAccessTechnology {
         return allCases.randomElement()!
     }
 }
 
 extension BatteryStatus {
-    static func mockAny() -> BatteryStatus {
+    public static func mockAny() -> BatteryStatus {
         return mockWith()
     }
 
-    static func mockWith(
+    public static func mockWith(
         state: State = .charging,
         level: Float = 0.5
     ) -> BatteryStatus {
@@ -273,11 +272,11 @@ extension BatteryStatus {
 }
 
 extension TrackingConsent {
-    static func mockRandom() -> TrackingConsent {
+    public static func mockRandom() -> TrackingConsent {
         return [.granted, .notGranted, .pending].randomElement()!
     }
 
-    static func mockRandom(otherThan consent: TrackingConsent? = nil) -> TrackingConsent {
+    public static func mockRandom(otherThan consent: TrackingConsent? = nil) -> TrackingConsent {
         while true {
             let randomConsent: TrackingConsent = .mockRandom()
             if randomConsent != consent {
@@ -288,17 +287,17 @@ extension TrackingConsent {
 }
 
 extension String {
-    static func mockAnySource() -> String {
+    public static func mockAnySource() -> String {
         return ["ios", "android", "browser", "ios", "react-native", "flutter"].randomElement()!
     }
 }
 
 extension NetworkConnectionInfo.Reachability {
-    static func mockAny() -> NetworkConnectionInfo.Reachability {
+    public static func mockAny() -> NetworkConnectionInfo.Reachability {
         return .maybe
     }
 
-    static func mockRandom(
+    public static func mockRandom(
         within cases: [NetworkConnectionInfo.Reachability] = [.yes, .no, .maybe]
     ) -> NetworkConnectionInfo.Reachability {
         return cases.randomElement()!

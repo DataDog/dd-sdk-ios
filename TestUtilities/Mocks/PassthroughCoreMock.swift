@@ -6,41 +6,40 @@
 
 import Foundation
 import XCTest
-
-@testable import Datadog
+import Datadog
 
 /// Passthrough core mocks feature-scope allowing recording events in **sync**.
 ///
 /// The `DatadogCoreProtocol` implementation does not require any feature registration,
 /// it will always provide a `FeatureScope` with the current context and a `writer` that will
 /// store all events in the `events` property.
-internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
+public final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     /// Counts references to `PassthroughCoreMock` instances, so we can prevent memory
     /// leaks of SDK core in `DatadogTestsObserver`.
-    static var referenceCount = 0
+    public static var referenceCount = 0
 
     /// Current context that will be passed to feature-scopes.
     @ReadWriteLock
-    var context: DatadogContext {
+    public var context: DatadogContext {
         didSet { send(message: .context(context)) }
     }
 
-    internal let writer = FileWriterMock()
+    let writer = FileWriterMock()
 
     /// The message receiver.
     private let messageReceiver: FeatureMessageReceiver
 
     /// Test expectation that will be fullfilled when the `eventWriteContext` closure
     /// is executed.
-    internal var expectation: XCTestExpectation?
+    public var expectation: XCTestExpectation?
 
     /// Test expectation that will be fullfilled when the `eventWriteContext` closure
     /// is executed with `bypassConsent` parameter set to `true`.
-    internal var bypassConsentExpectation: XCTestExpectation?
+    public var bypassConsentExpectation: XCTestExpectation?
 
     /// Test expectation that will be fullfilled when the `eventWriteContext` closure
     /// is executed with `forceNewBatch` parameter set to `true`.
-    internal var forceNewBatchExpectation: XCTestExpectation?
+    public var forceNewBatchExpectation: XCTestExpectation?
 
     /// Creates a Passthrough core mock.
     ///
@@ -53,7 +52,7 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     ///   - forceNewBatchExpectation: The test exepection to fullfill when `eventWriteContext`
     ///                  is invoked with `forceNewBatch` parameter set to `true`.
 
-    init(
+    public init(
         context: DatadogContext = .mockAny(),
         expectation: XCTestExpectation? = nil,
         bypassConsentExpectation: XCTestExpectation? = nil,
@@ -76,33 +75,33 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     }
 
     /// no-op
-    func register(feature: DatadogFeature) throws { }
+    public func register(feature: DatadogFeature) throws { }
     /// no-op
-    func feature<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature { nil }
+    public func feature<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature { nil }
     /// no-op
-    func register(integration: DatadogFeatureIntegration) throws { }
+    public func register(integration: DatadogFeatureIntegration) throws { }
     /// no-op
-    func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeatureIntegration { nil }
+    public func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeatureIntegration { nil }
     /// no-op
-    func register<T>(feature instance: T?) { }
+    public func register<T>(feature instance: T?) { }
     /// Returns `nil`
-    func feature<T>(_ type: T.Type) -> T? { nil }
+    public func feature<T>(_ type: T.Type) -> T? { nil }
 
     /// Always returns a feature-scope.
-    func scope<T>(for featureType: T.Type) -> FeatureScope? {
+    public func scope<T>(for featureType: T.Type) -> FeatureScope? {
         self
     }
 
     /// Always returns a feature-scope.
-    func scope(for feature: String) -> FeatureScope? {
+    public func scope(for feature: String) -> FeatureScope? {
         self
     }
 
-    func set(feature: String, attributes: @escaping () -> FeatureBaggage) {
+    public func set(feature: String, attributes: @escaping () -> FeatureBaggage) {
         context.featuresAttributes[feature] = attributes()
     }
 
-    func send(message: FeatureMessage, sender: DatadogCoreProtocol, else fallback: () -> Void) {
+    public func send(message: FeatureMessage, sender: DatadogCoreProtocol, else fallback: () -> Void) {
         if !messageReceiver.receive(message: message, from: sender) {
             fallback()
         }
@@ -111,7 +110,7 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     /// Execute `block` with the current context and a `writer` to record events.
     ///
     /// - Parameter block: The block to execute.
-    func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: (DatadogContext, Writer) throws -> Void) {
+    public func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: (DatadogContext, Writer) throws -> Void) {
         XCTAssertNoThrow(try block(context, writer), "Encountered an error when executing `eventWriteContext`")
         expectation?.fulfill()
 
@@ -128,13 +127,13 @@ internal final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     ///
     /// Invoking the `writer` from the `eventWriteContext` will add
     /// events to this stack.
-    var events: [Encodable] { writer.events }
+    public var events: [Encodable] { writer.events }
 
     /// Returns all events of the given type.
     ///
     /// - Parameter type: The event type to retrieve.
     /// - Returns: A list of event of the give type.
-    func events<T>(ofType type: T.Type = T.self) -> [T] where T: Encodable {
+    public func events<T>(ofType type: T.Type = T.self) -> [T] where T: Encodable {
         writer.events(ofType: type)
     }
 }

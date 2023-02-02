@@ -5,7 +5,7 @@
  */
 
 import XCTest
-
+import TestUtilities
 @testable import Datadog
 
 class LogMessageReceiverTests: XCTestCase {
