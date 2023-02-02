@@ -214,7 +214,7 @@ extension RUMViewsHandler: UIViewControllerHandler {
                     attributes: rumView.attributes
                 )
             )
-        } else if #available(iOS 13, *), viewController.isModalInPresentation {
+        } else if #available(iOS 13, tvOS 13, *), viewController.isModalInPresentation {
             add(
                 view: .init(
                     identity: viewController.asRUMViewIdentity(),

@@ -74,7 +74,6 @@ final class RUMModalViewsAutoInstrumentationScenario: TestScenario {
     private class Predicate: UIKitRUMViewsPredicate {
         func rumView(for viewController: UIViewController) -> RUMView? {
             if let viewName = viewController.accessibilityLabel {
-                print(viewName)
                 return .init(name: viewName)
             } else {
                 return nil
@@ -99,8 +98,8 @@ final class RUMUntrackedModalViewsAutoInstrumentationScenario: TestScenario {
         func rumView(for viewController: UIViewController) -> RUMView? {
             if let viewName = viewController.accessibilityLabel {
                 if viewController.modalPresentationStyle == .fullScreen {
-                    if #available(iOS 13, *) {
-                        // Untracked on iOS 13 via isModalInPresentation
+                    if #available(iOS 13, tvOS 13, *) {
+                        // Untracked on iOS/tvOS 13+ via isModalInPresentation
                         return nil
                     } else {
                         return .init(name: viewName, isUntrackedModal: true)

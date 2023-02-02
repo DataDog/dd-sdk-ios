@@ -311,7 +311,7 @@ class RUMViewsHandlerTests: XCTestCase {
     }
 
     func testGiveniOS13AppearedView_whenTransitioningToModal_viewDoesStop() throws {
-        if #available(iOS 13, *) {
+        if #available(iOS 13, tvOS 13, *) {
             class Predicate: UIKitRUMViewsPredicate {
                 let untrackedModal: UIViewController
 
@@ -349,7 +349,7 @@ class RUMViewsHandlerTests: XCTestCase {
     }
 
     func testGiveniOS13Modal_whenTransitioningToAppearedView_viewDoesStart() throws {
-        if #available(iOS 13, *) {
+        if #available(iOS 13, tvOS 13, *) {
             class Predicate: UIKitRUMViewsPredicate {
                 let untrackedModal: UIViewController
 
