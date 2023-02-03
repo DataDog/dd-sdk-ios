@@ -8,15 +8,31 @@ import Foundation
 import Datadog
 
 /// The RUM context received from `DatadogCore`.
-internal struct RUMContext: Equatable {
-    /// Current RUM application ID - standard UUID string, lowecased.
-    let applicationID: String
-    /// Current RUM session ID - standard UUID string, lowecased.
-    let sessionID: String
-    /// Current RUM view ID - standard UUID string, lowecased.
-    let viewID: String
-    /// Current RUM view server time offset (in seconds).
-    let serverTimeOffset: TimeInterval
+internal struct RUMContext: Decodable, Equatable {
+    internal struct IDs: Decodable, Equatable {
+        enum CodingKeys: String, CodingKey {
+            case applicationID = "application_id"
+            case sessionID = "session_id"
+            case viewID = "view.id"
+        }
+        /// Current RUM application ID - standard UUID string, lowecased.
+        let applicationID: String
+        /// Current RUM session ID - standard UUID string, lowecased.
+        let sessionID: String
+        /// Current RUM view ID - standard UUID string, lowecased.
+        let viewID: String
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case ids = "ids"
+        case viewServerTimeOffset = "server_time_offset"
+    }
+
+    /// Wrapper for all RUM related IDs
+    let ids: IDs
+
+    /// Current view related server time offset
+    let viewServerTimeOffset: TimeInterval?
 }
 
 /// An observer notifying on`RUMContext` changes.
@@ -84,21 +100,12 @@ private extension DatadogContext {
 }
 
 private extension FeatureBaggage {
-    var rumContext: RUMContext? {
-        guard let applicationID: String = self[RUMDependency.ids, type: [String: String].self]?[RUMDependency.IDs.applicationIDKey],
-              let sessionID: String = self[RUMDependency.ids, type: [String: String].self]?[RUMDependency.IDs.sessionIDKey],
-              let viewID: String = self[RUMDependency.ids, type: [String: String].self]?[RUMDependency.IDs.viewIDKey],
-              let serverTimeOffset: TimeInterval = self[RUMDependency.serverTimeOffsetKey]
-        else {
-            // Current RUM session is not sampled
-            return nil
-        }
+    var rumContext: RUMContext? { try? unwrap() }
+}
 
-        return RUMContext(
-            applicationID: applicationID,
-            sessionID: sessionID,
-            viewID: viewID,
-            serverTimeOffset: serverTimeOffset
-        )
+extension FeatureBaggage {
+    func unwrap<T>() throws -> T where T: Decodable {
+        let decoder = AnyDecoder()
+        return try decoder.decode(from: attributes)
     }
 }

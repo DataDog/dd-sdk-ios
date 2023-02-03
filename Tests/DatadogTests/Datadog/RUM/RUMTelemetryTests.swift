@@ -363,7 +363,7 @@ class RUMTelemetryTests: XCTestCase {
                 { telemetry.configuration(configuration: .mockAny()) },
                 {
                     self.core.set(feature: "rum", attributes: {[
-                        "ids": [
+                        RUMContextAttributes.ids: [
                             RUMContextAttributes.IDs.applicationID: String.mockRandom(),
                             RUMContextAttributes.IDs.sessionID: String.mockRandom(),
                             RUMContextAttributes.IDs.viewID: String.mockRandom(),

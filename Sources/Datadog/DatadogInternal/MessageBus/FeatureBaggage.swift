@@ -44,7 +44,7 @@ import Foundation
 @dynamicMemberLookup
 public struct FeatureBaggage {
     /// The attributes dictionary.
-    private(set) var attributes: [String: Any]
+    public private(set) var attributes: [String: Any]
 
     /// A Boolean value indicating whether the baggage is empty.
     public var isEmpty: Bool {

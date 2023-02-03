@@ -37,10 +37,10 @@ class RUMContextReceiverTests: XCTestCase {
         })
 
         // Then
-        XCTAssertEqual(rumContext?.applicationID, "app-id")
-        XCTAssertEqual(rumContext?.sessionID, "session-id")
-        XCTAssertEqual(rumContext?.viewID, "view-id")
-        XCTAssertEqual(rumContext?.serverTimeOffset, 123)
+        XCTAssertEqual(rumContext?.ids.applicationID, "app-id")
+        XCTAssertEqual(rumContext?.ids.sessionID, "session-id")
+        XCTAssertEqual(rumContext?.ids.viewID, "view-id")
+        XCTAssertEqual(rumContext?.viewServerTimeOffset, 123)
     }
 
     func testWhenMessageContainsEmptyRUMBaggage_itNotifiesNoRUMContext() {
@@ -103,14 +103,14 @@ class RUMContextReceiverTests: XCTestCase {
 
         // Then
         XCTAssertEqual(rumContexts.count, 2)
-        XCTAssertEqual(rumContexts[0].applicationID, "app-id-1")
-        XCTAssertEqual(rumContexts[0].sessionID, "session-id-1")
-        XCTAssertEqual(rumContexts[0].viewID, "view-id-1")
-        XCTAssertEqual(rumContexts[0].serverTimeOffset, 123)
-        XCTAssertEqual(rumContexts[1].applicationID, "app-id-2")
-        XCTAssertEqual(rumContexts[1].sessionID, "session-id-2")
-        XCTAssertEqual(rumContexts[1].viewID, "view-id-2")
-        XCTAssertEqual(rumContexts[1].serverTimeOffset, 345)
+        XCTAssertEqual(rumContexts[0].ids.applicationID, "app-id-1")
+        XCTAssertEqual(rumContexts[0].ids.sessionID, "session-id-1")
+        XCTAssertEqual(rumContexts[0].ids.viewID, "view-id-1")
+        XCTAssertEqual(rumContexts[0].viewServerTimeOffset, 123)
+        XCTAssertEqual(rumContexts[1].ids.applicationID, "app-id-2")
+        XCTAssertEqual(rumContexts[1].ids.sessionID, "session-id-2")
+        XCTAssertEqual(rumContexts[1].ids.viewID, "view-id-2")
+        XCTAssertEqual(rumContexts[1].viewServerTimeOffset, 345)
     }
 
     func testWhenMessageDoesntContainRUMBaggage_itCallsFallback() {
@@ -126,40 +126,5 @@ class RUMContextReceiverTests: XCTestCase {
 
         // Then
         XCTAssertTrue(fallbackCalled)
-    }
-
-    func testWhenSucceedingMessagesContainEqualRUMBaggages_itDoesNotNotifyRUMContextChange() {
-        // Given
-        let context = DatadogContext.mockWith(featuresAttributes: [
-            RUMDependency.rumBaggageKey: [
-                RUMDependency.ids: [
-                    RUMDependency.IDs.applicationIDKey: "app-id",
-                    RUMDependency.IDs.sessionIDKey: "session-id",
-                    RUMDependency.IDs.viewIDKey: "view-id"
-                ],
-                RUMDependency.serverTimeOffsetKey: TimeInterval(123)
-            ]
-        ])
-        let message = FeatureMessage.context(context)
-        let core = PassthroughCoreMock(messageReceiver: receiver)
-
-        // When
-        var rumContexts = [RUMContext]()
-        receiver.observe(on: NoQueue()) { context in
-            context.flatMap { rumContexts.append($0) }
-        }
-        core.send(message: message, sender: core, else: {
-            XCTFail("Fallback shouldn't be called")
-        })
-        core.send(message: message, sender: core, else: {
-            XCTFail("Fallback shouldn't be called")
-        })
-
-        // Then
-        XCTAssertEqual(rumContexts.count, 1)
-        XCTAssertEqual(rumContexts[0].applicationID, "app-id")
-        XCTAssertEqual(rumContexts[0].sessionID, "session-id")
-        XCTAssertEqual(rumContexts[0].viewID, "view-id")
-        XCTAssertEqual(rumContexts[0].serverTimeOffset, 123)
     }
 }

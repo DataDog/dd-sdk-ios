@@ -312,10 +312,12 @@ extension RUMContext: AnyMockable, RandomMockable {
 
     public static func mockRandom() -> RUMContext {
         return RUMContext(
-            applicationID: .mockRandom(),
-            sessionID: .mockRandom(),
-            viewID: .mockRandom(),
-            serverTimeOffset: .mockRandom()
+            ids: .init(
+                applicationID: .mockRandom(),
+                sessionID: .mockRandom(),
+                viewID: .mockRandom()
+            ),
+            viewServerTimeOffset: .mockRandom()
         )
     }
 
@@ -326,10 +328,12 @@ extension RUMContext: AnyMockable, RandomMockable {
         serverTimeOffset: TimeInterval = .mockAny()
     ) -> RUMContext {
         return RUMContext(
-            applicationID: applicationID,
-            sessionID: sessionID,
-            viewID: viewID,
-            serverTimeOffset: serverTimeOffset
+            ids: .init(
+                applicationID: applicationID,
+                sessionID: sessionID,
+                viewID: viewID
+            ),
+            viewServerTimeOffset: serverTimeOffset
         )
     }
 }

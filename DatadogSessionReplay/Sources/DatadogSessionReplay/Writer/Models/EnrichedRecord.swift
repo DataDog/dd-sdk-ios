@@ -43,9 +43,9 @@ internal struct EnrichedRecord: Encodable {
 
     init(rumContext: RUMContext, records: [SRRecord]) {
         self.records = records
-        self.applicationID = rumContext.applicationID
-        self.sessionID = rumContext.sessionID
-        self.viewID = rumContext.viewID
+        self.applicationID = rumContext.ids.applicationID
+        self.sessionID = rumContext.ids.sessionID
+        self.viewID = rumContext.ids.viewID
 
         var hasFullSnapshot = false
         var earliestTimestamp: Int64 = .max

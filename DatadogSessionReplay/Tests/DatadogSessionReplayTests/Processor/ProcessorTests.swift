@@ -37,9 +37,9 @@ class ProcessorTests: XCTestCase {
         XCTAssertEqual(writer.records.count, 1)
 
         let enrichedRecord = try XCTUnwrap(writer.records.first)
-        XCTAssertEqual(enrichedRecord.applicationID, rum.applicationID)
-        XCTAssertEqual(enrichedRecord.sessionID, rum.sessionID)
-        XCTAssertEqual(enrichedRecord.viewID, rum.viewID)
+        XCTAssertEqual(enrichedRecord.applicationID, rum.ids.applicationID)
+        XCTAssertEqual(enrichedRecord.sessionID, rum.ids.sessionID)
+        XCTAssertEqual(enrichedRecord.viewID, rum.ids.viewID)
         XCTAssertEqual(enrichedRecord.earliestTimestamp, time.timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(enrichedRecord.latestTimestamp, time.timeIntervalSince1970.toInt64Milliseconds)
 
@@ -82,9 +82,9 @@ class ProcessorTests: XCTestCase {
         XCTAssertTrue(enrichedRecords[2].records[0].isIncrementalSnapshotRecord)
 
         enrichedRecords.enumerated().forEach { index, enrichedRecord in
-            XCTAssertEqual(enrichedRecord.applicationID, rum.applicationID)
-            XCTAssertEqual(enrichedRecord.sessionID, rum.sessionID)
-            XCTAssertEqual(enrichedRecord.viewID, rum.viewID)
+            XCTAssertEqual(enrichedRecord.applicationID, rum.ids.applicationID)
+            XCTAssertEqual(enrichedRecord.sessionID, rum.ids.sessionID)
+            XCTAssertEqual(enrichedRecord.viewID, rum.ids.viewID)
 
             let expectedTime = time.addingTimeInterval(TimeInterval(index))
             XCTAssertEqual(enrichedRecord.earliestTimestamp, expectedTime.timeIntervalSince1970.toInt64Milliseconds)
@@ -165,9 +165,9 @@ class ProcessorTests: XCTestCase {
         XCTAssertTrue(enrichedRecords[3].records[0].isIncrementalSnapshotRecord)
 
         zip(enrichedRecords, [rum1, rum1, rum2, rum2]).forEach { enrichedRecord, expectedRUM in
-            XCTAssertEqual(enrichedRecord.applicationID, expectedRUM.applicationID)
-            XCTAssertEqual(enrichedRecord.sessionID, expectedRUM.sessionID)
-            XCTAssertEqual(enrichedRecord.viewID, expectedRUM.viewID)
+            XCTAssertEqual(enrichedRecord.applicationID, expectedRUM.ids.applicationID)
+            XCTAssertEqual(enrichedRecord.sessionID, expectedRUM.ids.sessionID)
+            XCTAssertEqual(enrichedRecord.viewID, expectedRUM.ids.viewID)
         }
     }
 
@@ -190,9 +190,9 @@ class ProcessorTests: XCTestCase {
         XCTAssertEqual(writer.records.count, 1)
 
         let enrichedRecord = try XCTUnwrap(writer.records.first)
-        XCTAssertEqual(enrichedRecord.applicationID, rum.applicationID)
-        XCTAssertEqual(enrichedRecord.sessionID, rum.sessionID)
-        XCTAssertEqual(enrichedRecord.viewID, rum.viewID)
+        XCTAssertEqual(enrichedRecord.applicationID, rum.ids.applicationID)
+        XCTAssertEqual(enrichedRecord.sessionID, rum.ids.sessionID)
+        XCTAssertEqual(enrichedRecord.viewID, rum.ids.viewID)
         XCTAssertEqual(enrichedRecord.earliestTimestamp, earliestTouchTime.timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(enrichedRecord.latestTimestamp, snapshotTime.timeIntervalSince1970.toInt64Milliseconds)
 

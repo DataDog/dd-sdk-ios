@@ -71,10 +71,12 @@ class SegmentJSONBuilderTests: XCTestCase {
 
     private func generateEnrichedRecordJSONs(for segment: SRSegment) throws -> [EnrichedRecordJSON] {
         let rum = RUMContext(
-            applicationID: segment.application.id,
-            sessionID: segment.session.id,
-            viewID: segment.view.id,
-            serverTimeOffset: 0
+            ids: .init(
+                applicationID: segment.application.id,
+                sessionID: segment.session.id,
+                viewID: segment.view.id
+            ),
+            viewServerTimeOffset: 0
         )
         return try segment.records
             // To make it more challenging for tested `SegmentJSONBuilder`, we chunk records in

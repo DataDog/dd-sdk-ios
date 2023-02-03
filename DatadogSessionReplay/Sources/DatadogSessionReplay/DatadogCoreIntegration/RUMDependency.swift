@@ -18,6 +18,11 @@ internal enum RUMDependency {
     /// - baggage with `ids` and `serverTimeOffsetKey` keys if RUM session is sampled.
     static let rumBaggageKey = "rum"
 
+    /// The key referencing server time offset of current RUM view used for date correction.
+    ///
+    /// SR expects non-optional value of `TimeInterval`.
+    static let serverTimeOffsetKey = "server_time_offset"
+
     /// The key for referencing RUM baggage (RUM context) ids in `DatadogContext.featuresAttributes`.
     ///
     /// SR expects:
@@ -53,9 +58,4 @@ internal enum RUMDependency {
 
     /// The key referencing a `Bool` value that indicates if replay is being recorded.
     static let hasReplay = "has_replay"
-
-    /// The key referencing server time offset of current RUM view used for date correction.
-    ///
-    /// SR expects non-optional value of `TimeInterval`.
-    static let serverTimeOffsetKey = "server_time_offset"
 }
