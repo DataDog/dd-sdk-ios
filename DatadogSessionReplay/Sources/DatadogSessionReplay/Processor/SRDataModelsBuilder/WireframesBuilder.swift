@@ -82,11 +82,20 @@ internal class WireframesBuilder {
             )
         }
 
+        var fontSize = Int64(withNoOverflow: font?.pointSize ?? Fallback.fontSize)
+        if let boundingBox = textFrame?.size {
+            let area = boundingBox.width * boundingBox.height
+            let calculatedFontSize = Int64(sqrt(area / CGFloat(text.count)))
+            if calculatedFontSize < fontSize {
+                fontSize = calculatedFontSize
+            }
+        }
+
         // TODO: RUMM-2452 Better recognize the font:
         let textStyle = SRTextStyle(
             color: textColor.flatMap { hexString(from: $0) } ?? Fallback.color,
             family: Fallback.fontFamily,
-            size: Int64(withNoOverflow: font?.pointSize ?? Fallback.fontSize)
+            size: fontSize
         )
 
         let wireframe = SRTextWireframe(
