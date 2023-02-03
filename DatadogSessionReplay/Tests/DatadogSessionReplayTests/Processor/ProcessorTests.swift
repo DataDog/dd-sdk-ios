@@ -224,8 +224,8 @@ class ProcessorTests: XCTestCase {
     }
 
     private func generateSimpleViewTree() -> UIView {
-        let root = UIView.mock(withFixture: .visibleWithNoAppearance)
-        let child = UIView.mock(withFixture: .visibleWithNoAppearance)
+        let root = UIView.mock(withFixture: .visible(.noAppearance))
+        let child = UIView.mock(withFixture: .visible(.noAppearance))
         root.addSubview(child)
         return root
     }

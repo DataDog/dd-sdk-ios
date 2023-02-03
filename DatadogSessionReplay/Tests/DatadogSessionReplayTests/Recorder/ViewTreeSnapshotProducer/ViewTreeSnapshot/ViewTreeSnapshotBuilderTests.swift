@@ -196,11 +196,11 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         // Given
         let builder = ViewTreeSnapshotBuilder()
 
-        let view = UIView.mock(withFixture: .visibleWithNoAppearance)
-        let label = UILabel.mock(withFixture: .visibleWithNoAppearance)
-        let imageView = UIImageView.mock(withFixture: .visibleWithNoAppearance)
-        let textField = UITextField.mock(withFixture: .visibleWithNoAppearance)
-        let `switch` = UISwitch.mock(withFixture: .visibleWithNoAppearance)
+        let view = UIView.mock(withFixture: .visible(.noAppearance))
+        let label = UILabel.mock(withFixture: .visible(.noAppearance))
+        let imageView = UIImageView.mock(withFixture: .visible(.noAppearance))
+        let textField = UITextField.mock(withFixture: .visible(.noAppearance))
+        let `switch` = UISwitch.mock(withFixture: .visible(.noAppearance))
 
         // When
         let viewSnapshot = builder.createSnapshot(of: view, with: .mockRandom())
@@ -253,7 +253,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
     func testItRecordsBaseViewWithSomeAppearance() {
         // Given
         let builder = ViewTreeSnapshotBuilder()
-        let view = UIView.mock(withFixture: .visibleWithSomeAppearance)
+        let view = UIView.mock(withFixture: .visible())
 
         // When
         let snapshot = builder.createSnapshot(of: view, with: .mockRandom())
@@ -273,12 +273,12 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         // Given
         let builder = ViewTreeSnapshotBuilder()
         let views: [UIView] = [
-            UILabel.mock(withFixture: .visibleWithSomeAppearance),
-            UIImageView.mock(withFixture: .visibleWithSomeAppearance),
-            UITextField.mock(withFixture: .visibleWithSomeAppearance),
-            UISwitch.mock(withFixture: .visibleWithSomeAppearance),
-            UITabBar.mock(withFixture: .visibleWithSomeAppearance),
-            UINavigationBar.mock(withFixture: .visibleWithSomeAppearance),
+            UILabel.mock(withFixture: .visible()),
+            UIImageView.mock(withFixture: .visible()),
+            UITextField.mock(withFixture: .visible()),
+            UISwitch.mock(withFixture: .visible()),
+            UITabBar.mock(withFixture: .visible()),
+            UINavigationBar.mock(withFixture: .visible()),
         ]
 
         // When
