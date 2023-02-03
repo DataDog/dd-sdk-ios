@@ -6,19 +6,19 @@
 
 ### Log Collection
 
-See the dedicated [Datadog iOS Log Collection](https://docs.datadoghq.com/logs/log_collection/ios/?tab=us) documentation to learn how to send logs from your iOS application to Datadog.
+See the dedicated [Datadog iOS Log Collection](https://docs.datadoghq.com/logs/log_collection/ios) documentation to learn how to send logs from your iOS application to Datadog.
 
 ![Datadog iOS Log Collection](docs/images/logging.png)
 
 ### Trace Collection
 
-See [Datadog iOS Trace Collection](https://docs.datadoghq.com/tracing/setup_overview/setup/ios/?tab=us) documentation to try it out.
+See [Datadog iOS Trace Collection](https://docs.datadoghq.com/tracing/setup_overview/setup/ios) documentation to try it out.
 
 ![Datadog iOS Log Collection](docs/images/tracing.png)
 
 ### RUM Events Collection
 
-See [Datadog iOS RUM Collection](https://docs.datadoghq.com/real_user_monitoring/ios/?tab=us) documentation to try it out.
+See [Datadog iOS RUM Collection](https://docs.datadoghq.com/real_user_monitoring/ios) documentation to try it out.
 
 ![Datadog iOS RUM Collection](docs/images/rum.png)
 
