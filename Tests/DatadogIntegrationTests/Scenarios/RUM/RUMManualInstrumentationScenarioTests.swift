@@ -89,6 +89,8 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         XCTAssertEqual(view1.errorEvents[0].error.resource?.url, "https://foo.com/resource/2")
         XCTAssertEqual(view1.errorEvents[0].error.resource?.method, .get)
         XCTAssertEqual(view1.errorEvents[0].error.resource?.statusCode, 400)
+        let featureFlags = try XCTUnwrap(view1.viewEvents.last?.featureFlags)
+        XCTAssertEqual(featureFlags.featureFlagsInfo.count, 0)
         RUMSessionMatcher.assertViewWasEventuallyInactive(view1)
 
         let contentReadyTiming = try XCTUnwrap(view1.viewEventMatchers.last?.timing(named: "content-ready"))
@@ -105,8 +107,14 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         XCTAssertEqual(view2.viewEvents.last?.view.action.count, 0)
         XCTAssertEqual(view2.viewEvents.last?.view.resource.count, 0)
         XCTAssertEqual(view2.viewEvents.last?.view.error.count, 1)
+        let viewFeatureFlags = try XCTUnwrap(view2.viewEvents.last?.featureFlags)
+        XCTAssertEqual((viewFeatureFlags.featureFlagsInfo["mock_flag_a"] as? DDAnyCodable)?.value as? Bool, false)
+        XCTAssertEqual((viewFeatureFlags.featureFlagsInfo["mock_flag_b"] as? DDAnyCodable)?.value as? String, "mock_value")
         XCTAssertEqual(view2.errorEvents[0].error.message, "Simulated view error")
         XCTAssertEqual(view2.errorEvents[0].error.source, .source)
+        let errorFeatureFlags = try XCTUnwrap(view2.errorEvents[0].featureFlags)
+        XCTAssertEqual((errorFeatureFlags.featureFlagsInfo["mock_flag_a"] as? DDAnyCodable)?.value as? Bool, false)
+        XCTAssertEqual((errorFeatureFlags.featureFlagsInfo["mock_flag_b"] as? DDAnyCodable)?.value as? String, "mock_value")
         RUMSessionMatcher.assertViewWasEventuallyInactive(view2)
 
         let view3 = session.viewVisits[2]

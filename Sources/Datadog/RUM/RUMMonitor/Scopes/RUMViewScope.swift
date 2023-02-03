@@ -35,6 +35,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// View custom timings, keyed by name. The value of timing is given in nanoseconds.
     private(set) var customTimings: [String: Int64] = [:]
 
+    /// Feature flags evaluated for the view
+    private(set) var featureFlags: [String: Encodable] = [:]
+
     /// This View's UUID.
     let viewUUID: RUMUUID
     /// The path of this View, used as the `VIEW URL` in RUM Explorer.
@@ -200,6 +203,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         case let command as RUMAddLongTaskCommand where isActiveView:
             sendLongTaskEvent(on: command, context: context, writer: writer)
+
+        case let command as RUMAddFeatureFlagEvaluationCommand where isActiveView:
+            addFeatureFlagEvaluation(on: command)
+            needsViewUpdate = true
 
         case let command as RUMUpdatePerformanceMetric where isActiveView:
             updatePerformanceMetric(on: command)
@@ -423,6 +430,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context),
             display: nil,
+            featureFlags: .init(featureFlagsInfo: featureFlags),
             os: .init(context: context),
             service: context.service,
             session: .init(
@@ -529,6 +537,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 stack: command.stack,
                 type: command.type
             ),
+            featureFlags: .init(featureFlagsInfo: featureFlags),
             os: .init(context: context),
             service: context.service,
             session: .init(
@@ -622,6 +631,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
 
         return sanitized
+    }
+
+    private func addFeatureFlagEvaluation(on command: RUMAddFeatureFlagEvaluationCommand) {
+        featureFlags[command.name] = command.value
     }
 
     private func updatePerformanceMetric(on command: RUMUpdatePerformanceMetric) {

@@ -570,6 +570,30 @@ extension RUMAddLongTaskCommand: AnyMockable, RandomMockable {
     }
 }
 
+extension RUMAddFeatureFlagEvaluationCommand: AnyMockable, RandomMockable {
+    public static func mockAny() -> RUMAddFeatureFlagEvaluationCommand { mockWith() }
+
+    public static func mockRandom() -> RUMAddFeatureFlagEvaluationCommand {
+        return mockWith(
+            time: .mockRandomInThePast(),
+            name: .mockRandom(),
+            value: String.mockRandom()
+        )
+    }
+
+    static func mockWith(
+        time: Date = .mockAny(),
+        name: String = .mockAny(),
+        value: Encodable = String.mockAny()
+    ) -> RUMAddFeatureFlagEvaluationCommand {
+        return RUMAddFeatureFlagEvaluationCommand(
+            time: time,
+            name: name,
+            value: value
+        )
+    }
+}
+
 // MARK: - RUMCommand Property Mocks
 
 extension RUMInternalErrorSource: RandomMockable {

@@ -577,6 +577,16 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         )
     }
 
+    override public func addFeatureFlagEvaluation(name: String, value: Encodable) {
+        process(
+            command: RUMAddFeatureFlagEvaluationCommand(
+                time: dateProvider.now,
+                name: name,
+                value: value
+            )
+        )
+    }
+
     // MARK: - Attributes
 
     override public func addAttribute(forKey key: AttributeKey, value: AttributeValue) {

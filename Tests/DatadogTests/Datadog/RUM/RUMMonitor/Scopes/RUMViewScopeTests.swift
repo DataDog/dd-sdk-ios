@@ -1503,6 +1503,159 @@ class RUMViewScopeTests: XCTestCase {
         )
     }
 
+    // MARK: - Feature Flags
+
+    func testGivenActiveView_whenFeatureFlagEvaluated_itAddsTheFeatureFlag() throws {
+        // Given
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: mockView,
+            path: .mockAny(),
+            name: .mockAny(),
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(identity: mockView),
+                context: context,
+                writer: writer
+            )
+        )
+        let featureFlagCommand = RUMAddFeatureFlagEvaluationCommand.mockRandom()
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: featureFlagCommand,
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
+
+        XCTAssertEqual(events.count, 2)
+        let initialFlags = try XCTUnwrap(events[0].featureFlags)
+        XCTAssertEqual(initialFlags.featureFlagsInfo.count, 0)
+        let featureFlags = try XCTUnwrap(events[1].featureFlags)
+        XCTAssertEqual(featureFlags.featureFlagsInfo.count, 1)
+        XCTAssertEqual(featureFlags.featureFlagsInfo[featureFlagCommand.name] as! String, featureFlagCommand.value as! String)
+    }
+
+    func testGivenActiveView_whenFeatureFlagReEvaluated_itModifiesTheFeatureFlag() throws {
+        // Given
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: mockView,
+            path: .mockAny(),
+            name: .mockAny(),
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(identity: mockView),
+                context: context,
+                writer: writer
+            )
+        )
+        let flagName: String = .mockRandom()
+        let flagFinalValue: String = .mockRandom()
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddFeatureFlagEvaluationCommand.mockWith(
+                    name: flagName
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddFeatureFlagEvaluationCommand.mockWith(
+                    name: flagName,
+                    value: flagFinalValue
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
+
+        XCTAssertEqual(events.count, 3)
+        let featureFlags = try XCTUnwrap(events[2].featureFlags)
+        XCTAssertEqual(featureFlags.featureFlagsInfo.count, 1)
+        XCTAssertEqual(featureFlags.featureFlagsInfo[flagName] as! String, flagFinalValue)
+    }
+
+    func testGivenActiveViewWithFeatureFlag_itSendsThoseFlagsWithErrors() throws {
+        // Given
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: mockView,
+            path: .mockAny(),
+            name: .mockAny(),
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(identity: mockView),
+                context: context,
+                writer: writer
+            )
+        )
+        let mockFeatureFlagCommand: RUMAddFeatureFlagEvaluationCommand = .mockRandom()
+        XCTAssertTrue(
+            scope.process(
+                command: mockFeatureFlagCommand,
+                context: context,
+                writer: writer
+            )
+        )
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockAny(),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let events = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self))
+
+        XCTAssertEqual(events.count, 1)
+        let featureFlags = try XCTUnwrap(events[0].featureFlags)
+        XCTAssertEqual(featureFlags.featureFlagsInfo.count, 1)
+        XCTAssertEqual(
+            featureFlags.featureFlagsInfo[mockFeatureFlagCommand.name] as! String,
+            mockFeatureFlagCommand.value as! String
+        )
+    }
+
     // MARK: - Dates Correction
 
     func testGivenViewStartedWithServerTimeDifference_whenDifferentEventsAreSend_itAppliesTheSameCorrectionToAll() throws {

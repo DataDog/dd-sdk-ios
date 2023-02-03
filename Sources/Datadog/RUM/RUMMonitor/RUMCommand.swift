@@ -310,6 +310,24 @@ internal struct RUMAddUserActionCommand: RUMUserActionCommand {
     let name: String
 }
 
+/// Adds that a feature flag has been evaluated to the view
+internal struct RUMAddFeatureFlagEvaluationCommand: RUMCommand {
+    var time: Date
+    var attributes: [AttributeKey: AttributeValue]
+    let canStartBackgroundView = true // yes, we don't want to miss evaluation of flags that may affect background tasks
+    let canStartApplicationLaunchView = true // yes, we don't want to miss evaluation of feature flags during application launch
+    let isUserInteraction = false
+    let name: String
+    let value: Encodable
+
+    init(time: Date, name: String, value: Encodable) {
+        self.time = time
+        self.attributes = [:]
+        self.name = name
+        self.value = value
+    }
+}
+
 // MARK: - RUM Long Task related commands
 
 internal struct RUMAddLongTaskCommand: RUMCommand {
