@@ -101,4 +101,76 @@ class RUMModalViewsScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertEqual(visits[8].name, "Screen")
         XCTAssertEqual(visits[8].path, "Example.RUMMVSViewController")
     }
+
+    func testRUMUntrackedModalViewsScenario() throws {
+        // Server session recording RUM events send to `HTTPServerMock`.
+        let rumServerSession = server.obtainUniqueRecordingSession()
+
+        let app = ExampleApplication()
+        app.launchWith(
+            testScenarioClassName: "RUMUntrackedModalViewsAutoInstrumentationScenario",
+            serverConfiguration: HTTPServerMockConfiguration(
+                rumEndpoint: rumServerSession.recordingURL
+            )
+        ) // start on "Screen"
+
+        app.tapButton(titled: "Present modally from code") // go to modal "Modal"
+        app.tapButton(titled: "Dismiss by self.dismiss()") // dismiss to "Screen"
+
+        app.tapButton(titled: "Present modally - .fullScreen") // go to modal "Modal"
+        app.tapButton(titled: "Dismiss by parent.dismiss()") // dismiss to "Screen"
+
+        app.tapButton(titled: "Present modally - .pageSheet") // go to modal "Modal"
+        app.swipeToPullModalDown() // interactive dismiss to "Screen"
+
+        app.tapButton(titled: "Present modally - .pageSheet") // go to modal "Modal"
+        app.swipeToPullModalDownButThenCancel() // interactive and cancelled dismiss, stay on "Modal"
+        app.tapButton(titled: "Dismiss by self.dismiss()") // dismiss to "Screen"
+
+        try app.endRUMSession()
+
+        // Get RUM Sessions with expected number of View visits
+        let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
+            try RUMSessionMatcher.singleSession(from: requests)?.hasEnded() ?? false
+        }
+
+        assertRUM(requests: recordedRUMRequests)
+
+        let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
+        sendCIAppLog(session)
+
+        let visits = session.viewVisits
+        XCTAssertEqual(visits[0].name, "Screen")
+        XCTAssertEqual(visits[0].path, "Example.RUMMVSViewController")
+        XCTAssertEqual(visits[0].actionEvents[0].action.type, .applicationStart)
+        XCTAssertGreaterThan(visits[0].actionEvents[0].action.loadingTime!, 0)
+        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[0]) // go to modal "Modal"
+
+        XCTAssertEqual(visits[1].name, "Modal")
+        XCTAssertEqual(visits[1].path, "Example.RUMMVSModalViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[1]) // dismiss to "Screen"
+
+        XCTAssertEqual(visits[2].name, "Screen")
+        XCTAssertEqual(visits[2].path, "Example.RUMMVSViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[2]) // go to modal "Modal", which is untracked
+
+        XCTAssertEqual(visits[3].name, "Screen")    // Screen restarts properly
+        XCTAssertEqual(visits[3].path, "Example.RUMMVSViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[4]) // go to modal "Modal"
+
+        XCTAssertEqual(visits[4].name, "Modal")
+        XCTAssertEqual(visits[4].path, "Example.RUMMVSModalViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[5]) // interactive and cancelled dismiss, stay on "Modal"
+
+        XCTAssertEqual(visits[5].name, "Screen")
+        XCTAssertEqual(visits[5].path, "Example.RUMMVSViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[6]) // interactive and cancelled dismiss, stay on "Modal"
+
+        XCTAssertEqual(visits[6].name, "Modal")
+        XCTAssertEqual(visits[6].path, "Example.RUMMVSModalViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[7]) // dismiss to "Screen"
+
+        XCTAssertEqual(visits[7].name, "Screen")
+        XCTAssertEqual(visits[7].path, "Example.RUMMVSViewController")
+    }
 }

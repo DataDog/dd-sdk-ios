@@ -89,6 +89,37 @@ final class RUMModalViewsAutoInstrumentationScenario: TestScenario {
     }
 }
 
+/// Scenario based on `UINavigationController` hierarchy, which presents different VCs modally.
+/// Tracks view controllers as RUM Views.
+final class RUMUntrackedModalViewsAutoInstrumentationScenario: TestScenario {
+    static var storyboardName: String = "RUMModalViewsAutoInstrumentationScenario"
+
+    private class Predicate: UIKitRUMViewsPredicate {
+        func rumView(for viewController: UIViewController) -> RUMView? {
+            if let viewName = viewController.accessibilityLabel {
+                if viewController.modalPresentationStyle == .fullScreen {
+                    if #available(iOS 13, tvOS 13, *) {
+                        // Untracked on iOS/tvOS 13+ via isModalInPresentation
+                        return nil
+                    } else {
+                        return .init(name: viewName, isUntrackedModal: true)
+                    }
+                }
+                return .init(name: viewName)
+            } else {
+                return nil
+            }
+        }
+    }
+
+    func configureSDK(builder: Datadog.Configuration.Builder) {
+        _ = builder
+            .trackUIKitRUMViews(using: Predicate())
+            .enableLogging(false)
+            .enableTracing(false)
+    }
+}
+
 /// Scenario which interacts with various interactive elements laid between different view controllers,
 /// including `UITableViewController` and `UICollectionViewController`. Tapped views
 /// and controls are tracked as RUM Actions.
