@@ -360,21 +360,28 @@ extension RUMContext: AnyMockable, RandomMockable {
 
     public static func mockRandom() -> RUMContext {
         return RUMContext(
-            applicationID: .mockRandom(),
-            sessionID: .mockRandom(),
-            viewID: .mockRandom()
+            ids: .init(
+                applicationID: .mockRandom(),
+                sessionID: .mockRandom(),
+                viewID: .mockRandom()
+            ),
+            viewServerTimeOffset: .mockRandom()
         )
     }
 
     static func mockWith(
         applicationID: String = .mockAny(),
         sessionID: String = .mockAny(),
-        viewID: String = .mockAny()
+        viewID: String = .mockAny(),
+        serverTimeOffset: TimeInterval = .mockAny()
     ) -> RUMContext {
         return RUMContext(
-            applicationID: applicationID,
-            sessionID: sessionID,
-            viewID: viewID
+            ids: .init(
+                applicationID: applicationID,
+                sessionID: sessionID,
+                viewID: viewID
+            ),
+            viewServerTimeOffset: serverTimeOffset
         )
     }
 }

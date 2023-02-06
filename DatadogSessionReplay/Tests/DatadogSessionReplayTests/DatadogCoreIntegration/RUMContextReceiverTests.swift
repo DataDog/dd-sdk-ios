@@ -5,34 +5,134 @@
  */
 
 import XCTest
+import Datadog
 @testable import DatadogSessionReplay
+@testable import TestUtilities
 
-// swiftlint:disable empty_xctest_method
 class RUMContextReceiverTests: XCTestCase {
     private let receiver = RUMContextReceiver()
 
     func testWhenMessageContainsNonEmptyRUMBaggage_itNotifiesRUMContext() {
-        // TODO: RUMM-2690
-        // Implementing this test requires creating partial mocks for `FeatureMessage` and `DatadogContext`,
-        // which is yet not possible as we lack separate, shared module to facilitate tests.
+        // Given
+        let context = DatadogContext.mockWith(featuresAttributes: [
+            RUMDependency.rumBaggageKey: [
+                RUMDependency.ids: [
+                    RUMDependency.IDs.applicationIDKey: "app-id",
+                    RUMDependency.IDs.sessionIDKey: "session-id",
+                    RUMDependency.IDs.viewIDKey: "view-id"
+                ],
+                RUMDependency.serverTimeOffsetKey: TimeInterval(123)
+            ]
+        ])
+        let message = FeatureMessage.context(context)
+        let core = PassthroughCoreMock(messageReceiver: receiver)
+
+        // When
+        var rumContext: RUMContext?
+        receiver.observe(on: NoQueue()) { context in
+            rumContext = context
+        }
+        core.send(message: message, sender: core, else: {
+            XCTFail("Fallback shouldn't be called")
+        })
+
+        // Then
+        XCTAssertEqual(rumContext?.ids.applicationID, "app-id")
+        XCTAssertEqual(rumContext?.ids.sessionID, "session-id")
+        XCTAssertEqual(rumContext?.ids.viewID, "view-id")
+        XCTAssertEqual(rumContext?.viewServerTimeOffset, 123)
     }
 
     func testWhenMessageContainsEmptyRUMBaggage_itNotifiesNoRUMContext() {
-        // TODO: RUMM-2690
-        // Implementing this test requires creating partial mocks for `FeatureMessage` and `DatadogContext`,
-        // which is yet not possible as we lack separate, shared module to facilitate tests.
+        let context = DatadogContext.mockWith(featuresAttributes: [
+            RUMDependency.rumBaggageKey: [:]
+        ])
+        let message = FeatureMessage.context(context)
+        let core = PassthroughCoreMock(messageReceiver: receiver)
+
+        // When
+        var rumContext: RUMContext?
+        receiver.observe(on: NoQueue()) { context in
+            rumContext = context
+        }
+        core.send(message: message, sender: core, else: {
+            XCTFail("Fallback shouldn't be called")
+        })
+
+        // Then
+        XCTAssertNil(rumContext)
     }
 
     func testWhenSucceedingMessagesContainDifferentRUMBaggages_itNotifiesRUMContextChange() {
-        // TODO: RUMM-2690
-        // Implementing this test requires creating partial mocks for `FeatureMessage` and `DatadogContext`,
-        // which is yet not possible as we lack separate, shared module to facilitate tests.
+        // Given
+        let context1 = DatadogContext.mockWith(featuresAttributes: [
+            RUMDependency.rumBaggageKey: [
+                RUMDependency.ids: [
+                    RUMDependency.IDs.applicationIDKey: "app-id-1",
+                    RUMDependency.IDs.sessionIDKey: "session-id-1",
+                    RUMDependency.IDs.viewIDKey: "view-id-1"
+                ],
+                RUMDependency.serverTimeOffsetKey: TimeInterval(123)
+            ]
+        ])
+        let message1 = FeatureMessage.context(context1)
+        let context2 = DatadogContext.mockWith(featuresAttributes: [
+            RUMDependency.rumBaggageKey: [
+                RUMDependency.ids: [
+                    RUMDependency.IDs.applicationIDKey: "app-id-2",
+                    RUMDependency.IDs.sessionIDKey: "session-id-2",
+                    RUMDependency.IDs.viewIDKey: "view-id-2"
+                ],
+                RUMDependency.serverTimeOffsetKey: TimeInterval(345)
+            ]
+        ])
+        let message2 = FeatureMessage.context(context2)
+        let core = PassthroughCoreMock(messageReceiver: receiver)
+
+        // When
+        var rumContexts = [RUMContext]()
+        receiver.observe(on: NoQueue()) { context in
+            context.flatMap { rumContexts.append($0) }
+        }
+        core.send(message: message1, sender: core, else: {
+            XCTFail("Fallback shouldn't be called")
+        })
+        core.send(message: message2, sender: core, else: {
+            XCTFail("Fallback shouldn't be called")
+        })
+
+        // Then
+        XCTAssertEqual(rumContexts.count, 2)
+        XCTAssertEqual(rumContexts[0].ids.applicationID, "app-id-1")
+        XCTAssertEqual(rumContexts[0].ids.sessionID, "session-id-1")
+        XCTAssertEqual(rumContexts[0].ids.viewID, "view-id-1")
+        XCTAssertEqual(rumContexts[0].viewServerTimeOffset, 123)
+        XCTAssertEqual(rumContexts[1].ids.applicationID, "app-id-2")
+        XCTAssertEqual(rumContexts[1].ids.sessionID, "session-id-2")
+        XCTAssertEqual(rumContexts[1].ids.viewID, "view-id-2")
+        XCTAssertEqual(rumContexts[1].viewServerTimeOffset, 345)
     }
 
-    func testWhenSucceedingMessagesContainEqualRUMBaggages_itDoesNotNotifyRUMContextChange() {
-        // TODO: RUMM-2690
-        // Implementing this test requires creating partial mocks for `FeatureMessage` and `DatadogContext`,
-        // which is yet not possible as we lack separate, shared module to facilitate tests.
+    func testWhenMessageDoesntContainRUMBaggage_itCallsFallback() {
+        let context = DatadogContext.mockAny()
+        let message = FeatureMessage.context(context)
+        let core = PassthroughCoreMock(messageReceiver: receiver)
+
+        // When
+        var fallbackCalled = false
+        core.send(message: message, sender: core, else: {
+            fallbackCalled = true
+        })
+
+        // Then
+        XCTAssertTrue(fallbackCalled)
     }
 }
-// swiftlint:enable empty_xctest_method
+
+fileprivate extension RUMDependency {
+    enum IDs {
+        static let applicationIDKey = "application_id"
+        static let sessionIDKey = "session_id"
+        static let viewIDKey = "view.id"
+    }
+}

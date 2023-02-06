@@ -204,7 +204,7 @@ public class Tracer: OTTracer {
             combinedTags.merge(userTags) { $1 }
         }
 
-        if let rumTags = rumIntegration?.attribues {
+        if let rumTags = rumIntegration?.attributes {
             combinedTags.merge(rumTags) { $1 }
         }
 

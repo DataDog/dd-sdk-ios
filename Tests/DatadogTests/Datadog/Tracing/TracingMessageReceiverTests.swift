@@ -11,20 +11,20 @@ import XCTest
 class TracingMessageReceiverTests: XCTestCase {
     func testItReceivesRUMContext() throws {
         let core = DatadogCoreProxy(
-            context: .mockWith(featuresAttributes: ["rum": ["key": "value1"]])
+            context: .mockWith(featuresAttributes: ["rum": ["ids": ["key": "value1"]]])
         )
         defer { core.flushAndTearDown() }
 
         // Given
         let receiver = TracingMessageReceiver()
         try core.register(feature: DatadogFeatureMock(messageReceiver: receiver))
-        XCTAssertNil(receiver.rum.attribues, "RUM context should be nil until it is set by RUM")
+        XCTAssertNil(receiver.rum.attributes, "RUM context should be nil until it is set by RUM")
 
         // When
-        core.set(feature: "rum", attributes: { ["key": "value2"] })
+        core.set(feature: "rum", attributes: { ["ids": ["key": "value2"]] })
 
         // Then
         core.flush()
-        XCTAssertEqual(receiver.rum.attribues as? [String: String], ["key": "value2"])
+        XCTAssertEqual(receiver.rum.attributes as? [String: String], ["key": "value2"])
     }
 }

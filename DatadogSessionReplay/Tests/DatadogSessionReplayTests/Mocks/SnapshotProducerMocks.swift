@@ -42,7 +42,7 @@ internal class TouchSnapshotProducerMock: TouchSnapshotProducer {
         self.succeedingSnapshots = succeedingSnapshots
     }
 
-    func takeSnapshot() -> TouchSnapshot? {
+    func takeSnapshot(context: Recorder.Context) -> TouchSnapshot? {
         return succeedingSnapshots.isEmpty ? nil : succeedingSnapshots.removeFirst()
     }
 }

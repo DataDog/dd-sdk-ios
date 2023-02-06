@@ -48,7 +48,7 @@ internal struct ViewTreeSnapshotBuilder {
             textObfuscator: textObfuscator
         )
         let viewTreeSnapshot = ViewTreeSnapshot(
-            date: recorderContext.date,
+            date: recorderContext.date.addingTimeInterval(recorderContext.rumContext.viewServerTimeOffset ?? 0),
             rumContext: recorderContext.rumContext,
             root: createNode(for: rootView, in: builderContext)
         )
