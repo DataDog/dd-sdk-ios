@@ -17,7 +17,7 @@ internal typealias RUMTelemetryDelayedDispatcher = (@escaping () -> Void) -> Voi
 /// Events are reported up to 100 per sessions with a sampling mechanism that is
 /// configured at initialisation. Duplicates are discared.
 internal final class RUMTelemetry: Telemetry {
-    /// Maximium number of telemetry events allowed per user sessions.
+    /// Maximum number of telemetry events allowed per user sessions.
     static let maxEventsPerSessions: Int = 100
 
     /// The core for sending telemetry to.
@@ -28,6 +28,7 @@ internal final class RUMTelemetry: Telemetry {
     var configurationEventMapper: RUMTelemetryConfiguratoinMapper?
     let delayedDispatcher: RUMTelemetryDelayedDispatcher
     let sampler: Sampler
+    var configurationExtraSampler = Sampler(samplingRate: 0.2)
 
     /// Keeps track of current session
     @ReadWriteLock
@@ -48,7 +49,8 @@ internal final class RUMTelemetry: Telemetry {
         dateProvider: DateProvider,
         configurationEventMapper: RUMTelemetryConfiguratoinMapper?,
         delayedDispatcher: RUMTelemetryDelayedDispatcher?,
-        sampler: Sampler
+        sampler: Sampler,
+        configurationExtraSampler: Sampler = Sampler(samplingRate: 0.2) // Extra sample of 20% for configuration events
     ) {
         self.core = core
         self.dateProvider = dateProvider
@@ -60,6 +62,7 @@ internal final class RUMTelemetry: Telemetry {
             }
         }
         self.sampler = sampler
+        self.configurationExtraSampler = configurationExtraSampler
     }
 
     /// Sends a `TelemetryDebugEvent` event.
@@ -154,6 +157,10 @@ internal final class RUMTelemetry: Telemetry {
     ///   - configuration: The current configuration
     func configuration(configuration: FeaturesConfiguration) {
         let date = dateProvider.now
+
+        if !configurationExtraSampler.sample() {
+            return
+        }
 
         self.delayedDispatcher {
             self.record(event: "_dd.configuration") { context, writer in
