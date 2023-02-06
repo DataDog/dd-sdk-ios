@@ -128,3 +128,11 @@ class RUMContextReceiverTests: XCTestCase {
         XCTAssertTrue(fallbackCalled)
     }
 }
+
+fileprivate extension RUMDependency {
+    enum IDs {
+        static let applicationIDKey = "application_id"
+        static let sessionIDKey = "session_id"
+        static let viewIDKey = "view.id"
+    }
+}

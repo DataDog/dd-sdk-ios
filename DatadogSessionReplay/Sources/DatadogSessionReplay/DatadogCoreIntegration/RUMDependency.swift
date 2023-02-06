@@ -27,25 +27,8 @@ internal enum RUMDependency {
     ///
     /// SR expects:
     /// - `nil` if current RUM session is not sampled,
-    /// - baggage with `applicationIDKey`, `sessionIDKey` and `viewIDKey` keys if RUM session is sampled.
+    /// - baggage with `application_id`, `session_id` and `view.id` keys if RUM session is sampled.
     static let ids = "ids"
-
-    internal enum IDs {
-        /// The key for referencing RUM application ID inside RUM baggage.
-        ///
-        /// SR expects non-optional value holding lowercased, standard UUID `String`.
-        static let applicationIDKey = "application_id"
-
-        /// The key for referencing RUM session ID inside RUM baggage.
-        ///
-        /// SR expects non-optional value holding lowercased, standard UUID `String`.
-        static let sessionIDKey = "session_id"
-
-        /// The key for referencing RUM view ID inside RUM baggage.
-        ///
-        /// SR expects non-optional value holding lowercased, standard UUID `String`.
-        static let viewIDKey = "view.id"
-    }
 
     // MARK: Contract from SR to RUM (mirror of `SessionReplayDependency` in RUM):
 
