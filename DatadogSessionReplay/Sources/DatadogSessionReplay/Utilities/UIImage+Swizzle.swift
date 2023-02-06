@@ -60,6 +60,15 @@ extension UIImage {
             isSwizzledSelectorClassMethod: true
         )
 
+        swizzle(
+            originalClass: self,
+            originalSelector: #selector(UIImage.init(named:in:compatibleWith:)),
+            isOriginalSelectorClassMethod: true,
+            swizzledClass: self,
+            swizzledSelector: #selector(UIImage.image(named:in:compatibleWith:)),
+            isSwizzledSelectorClassMethod: true
+        )
+
         if #available(iOS 13.0, *) {
             swizzle(
                 originalClass: self,
@@ -80,6 +89,19 @@ extension UIImage {
     ) -> UIImage? {
         let image = self.image(named: name)
         image?.name = name
+
+        return image
+    }
+
+    @objc
+    fileprivate class func image(
+        named name: String,
+        in bundle: Bundle?,
+        compatibleWith traitCollection: UITraitCollection?
+    ) -> UIImage? {
+        let image = self.image(named: name, in: bundle, compatibleWith: traitCollection)
+        image?.name = name
+        image?.bundle = bundle
 
         return image
     }

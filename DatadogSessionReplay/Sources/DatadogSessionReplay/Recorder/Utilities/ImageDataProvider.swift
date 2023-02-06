@@ -42,8 +42,8 @@ internal class ImageDataProvider {
         }
 
         let tintColor = imageView.tintColor
-        if let tintColorHash = tintColor?.hash {
-            identifier += "\(tintColorHash)"
+        if let tintColor = tintColor {
+            identifier += "\(hexStringFromColor(color: tintColor))"
         }
 
         let dataLoadingStaus = cache[identifier]
@@ -78,6 +78,17 @@ internal class ImageDataProvider {
             return nil
         }
     }
+
+    private func hexStringFromColor(color: UIColor) -> String {
+        let components = color.cgColor.components
+        let r: CGFloat = components?[0] ?? 0.0
+        let g: CGFloat = components?[1] ?? 0.0
+        let b: CGFloat = components?[2] ?? 0.0
+
+        let hexString = String.init(format: "#%02lX%02lX%02lX", lroundf(Float(r * 255)), lroundf(Float(g * 255)), lroundf(Float(b * 255)))
+        print(hexString)
+        return hexString
+     }
 }
 
 extension CGSize: Comparable {
