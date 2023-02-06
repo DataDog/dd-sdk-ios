@@ -7,21 +7,31 @@
 import Foundation
 import UIKit
 
-class ImageDataProvider {
+internal class ImageDataProvider {
     enum DataLoadingStatus: Encodable {
         case loading, loaded(_ base64: String), ignored
     }
 
-    private var cache = Cache<String, DataLoadingStatus>()
+    private var cache: Cache<String, DataLoadingStatus>
+    private var queue: Queue
+    private let maxBytesSize: Int
+    private let maxDimensions: CGSize
 
-    private let maxBytesSize = 64_000
-    private let maxSize = CGSize(width: 120, height: 120)
-
-    private var emptyImageData = "R0lGODlhAQABAIAAAP7//wAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="
+    internal init(
+        cache: Cache<String, DataLoadingStatus> = .init(),
+        queue: Queue = BackgroundAsyncQueue(named: "com.datadoghq.session-replay.image-data-provider"),
+        maxBytesSize: Int = 64_000,
+        maxDimensions: CGSize = CGSize(width: 120, height: 120)
+    ) {
+        self.cache = cache
+        self.queue = queue
+        self.maxBytesSize = maxBytesSize
+        self.maxDimensions = maxDimensions
+    }
 
     func contentBase64String(of imageView: UIImageView) -> String? {
         guard var image = imageView.image else {
-            return emptyImageData
+            return ""
         }
 
         var identifier: String
@@ -33,7 +43,7 @@ class ImageDataProvider {
 
         let tintColor = imageView.tintColor
         if let tintColorHash = tintColor?.hash {
-            identifier += "-\(tintColorHash)"
+            identifier += "\(tintColorHash)"
         }
 
         let dataLoadingStaus = cache[identifier]
@@ -43,7 +53,7 @@ class ImageDataProvider {
         case .none:
             cache[identifier] = .loading
 
-            DispatchQueue.global(qos: .background).async { [unowned self] in
+            queue.run { [unowned self] in
                 if image.name != nil {
                     if let compressed = image.compressToTargetSize(maxBytesSize) {
                         cache[identifier] = .loaded(compressed.base64EncodedString())
@@ -54,17 +64,16 @@ class ImageDataProvider {
                     if let tintColor = tintColor, #available(iOS 13.0, *) {
                         image = image.withTintColor(tintColor)
                     }
-                    if let imageData = image.pngData(), image.size <= maxSize && imageData.count <= maxBytesSize {
+                    if let imageData = image.pngData(), image.size <= maxDimensions && imageData.count <= maxBytesSize {
                         cache[identifier] = .loaded(imageData.base64EncodedString())
-                    }
-                    else {
+                    } else {
                         cache[identifier] = .ignored
                     }
                 }
             }
             return nil
         case .ignored:
-            return emptyImageData
+            return ""
         case .loading:
             return nil
         }

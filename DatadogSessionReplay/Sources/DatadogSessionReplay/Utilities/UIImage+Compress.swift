@@ -6,7 +6,7 @@
 
 import UIKit
 
-extension UIImage {
+internal extension UIImage {
     func compressToTargetSize(_ targetSize: Int) -> Data? {
         var compressionQuality: CGFloat = 1.0
         guard var imageData = pngData() else {
@@ -18,19 +18,19 @@ extension UIImage {
         var image = self
         while imageData.count > targetSize {
             compressionQuality -= 0.1
-            imageData = image.jpegData(compressionQuality: compressionQuality)!
+            imageData = image.jpegData(compressionQuality: compressionQuality) ?? Data()
 
             if imageData.count > targetSize {
                 image = image.scaledImage(by: 0.9)
             }
         }
-        return imageData 
+        return imageData
     }
 
     func scaledImage(by percentage: CGFloat) -> UIImage {
         let newSize = CGSize(width: size.width * percentage, height: size.height * percentage)
         let renderer = UIGraphicsImageRenderer(size: newSize)
-        return renderer.image { (context) in
+        return renderer.image { context in
             draw(in: CGRect(origin: .zero, size: newSize))
         }
     }

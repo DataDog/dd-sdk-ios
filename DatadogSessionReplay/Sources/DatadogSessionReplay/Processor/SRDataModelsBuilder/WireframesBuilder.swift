@@ -57,8 +57,8 @@ internal class WireframesBuilder {
     func createImageWireframe(
         base64: String?,
         id: WireframeID,
-        mimeType: String = "png",
         frame: CGRect,
+        mimeType: String = "png",
         clip: SRContentClip? = nil,
         borderColor: CGColor? = nil,
         borderWidth: CGFloat? = nil,
@@ -72,6 +72,7 @@ internal class WireframesBuilder {
             clip: clip,
             height: Int64(withNoOverflow: frame.height),
             id: id,
+            isEmpty: base64?.isEmpty == true ? true : nil,
             mimeType: mimeType,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
             width: Int64(withNoOverflow: frame.width),

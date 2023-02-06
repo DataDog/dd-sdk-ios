@@ -188,56 +188,6 @@ internal struct SRShapeWireframe: Codable, Hashable {
     }
 }
 
-/// Schema of all properties of a ImageWireframe.
-internal struct SRImageWireframe: Codable, Hashable {
-    /// base64 representation of the image. Not required as the ImageWireframe can be initialised without any base64
-    internal var base64: String?
-
-    /// The border properties of this wireframe. The default value is null (no-border).
-    internal let border: SRShapeBorder?
-
-    /// Schema of clipping information for a Wireframe.
-    internal let clip: SRContentClip?
-
-    /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
-    internal let height: Int64
-
-    /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
-    internal let id: Int64
-
-    /// MIME type of the image file
-    internal var mimeType: String?
-
-    /// The style of this wireframe.
-    internal let shapeStyle: SRShapeStyle?
-
-    /// The type of the wireframe.
-    internal let type: String = "image"
-
-    /// The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
-    internal let width: Int64
-
-    /// The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
-    internal let x: Int64
-
-    /// The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
-    internal let y: Int64
-
-    enum CodingKeys: String, CodingKey {
-        case base64 = "base64"
-        case border = "border"
-        case clip = "clip"
-        case height = "height"
-        case id = "id"
-        case mimeType = "mimeType"
-        case shapeStyle = "shapeStyle"
-        case type = "type"
-        case width = "width"
-        case x = "x"
-        case y = "y"
-    }
-}
-
 /// Schema of all properties of a TextPosition.
 internal struct SRTextPosition: Codable, Hashable {
     internal let alignment: Alignment?
@@ -363,6 +313,60 @@ internal struct SRTextWireframe: Codable, Hashable {
         case text = "text"
         case textPosition = "textPosition"
         case textStyle = "textStyle"
+        case type = "type"
+        case width = "width"
+        case x = "x"
+        case y = "y"
+    }
+}
+
+/// Schema of all properties of a ImageWireframe.
+internal struct SRImageWireframe: Codable, Hashable {
+    /// base64 representation of the image. Not required as the ImageWireframe can be initialised without any base64
+    internal var base64: String?
+
+    /// The border properties of this wireframe. The default value is null (no-border).
+    internal let border: SRShapeBorder?
+
+    /// Schema of clipping information for a Wireframe.
+    internal let clip: SRContentClip?
+
+    /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
+    internal let height: Int64
+
+    /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
+    internal let id: Int64
+
+    /// Flag describing an image wireframe that should render an empty state placeholder
+    internal var isEmpty: Bool?
+
+    /// MIME type of the image file
+    internal var mimeType: String?
+
+    /// The style of this wireframe.
+    internal let shapeStyle: SRShapeStyle?
+
+    /// The type of the wireframe.
+    internal let type: String = "image"
+
+    /// The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
+    internal let width: Int64
+
+    /// The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+    internal let x: Int64
+
+    /// The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+    internal let y: Int64
+
+    enum CodingKeys: String, CodingKey {
+        case base64 = "base64"
+        case border = "border"
+        case clip = "clip"
+        case height = "height"
+        case id = "id"
+        case isEmpty = "isEmpty"
+        case mimeType = "mimeType"
+        case shapeStyle = "shapeStyle"
         case type = "type"
         case width = "width"
         case x = "x"
@@ -721,6 +725,9 @@ internal struct SRIncrementalSnapshotRecord: Codable {
                     /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
                     internal let id: Int64
 
+                    /// Flag describing an image wireframe that should render an empty state placeholder
+                    internal var isEmpty: Bool?
+
                     /// MIME type of the image file
                     internal var mimeType: String?
 
@@ -745,6 +752,7 @@ internal struct SRIncrementalSnapshotRecord: Codable {
                         case clip = "clip"
                         case height = "height"
                         case id = "id"
+                        case isEmpty = "isEmpty"
                         case mimeType = "mimeType"
                         case shapeStyle = "shapeStyle"
                         case type = "type"
@@ -1044,4 +1052,4 @@ internal enum SRRecord: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/5f43b0c6aae39c74d2aa9f2813340fcbeb50bec3
+// Generated from https://github.com/DataDog/rum-events-format/tree/fe14f7b1f8bf0acfee6362ff81a335acaa96df64

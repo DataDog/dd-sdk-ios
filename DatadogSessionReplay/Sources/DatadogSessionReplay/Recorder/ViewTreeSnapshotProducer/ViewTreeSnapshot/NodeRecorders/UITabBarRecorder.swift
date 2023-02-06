@@ -36,7 +36,7 @@ internal struct UITabBarRecorder: NodeRecorder {
         if #available(iOS 13.0, *) {
             switch UITraitCollection.current.userInterfaceStyle {
             case .light:
-                return UIColor(red: 247/255, green: 247/255, blue: 247/255, alpha: 1).cgColor
+                return UIColor(red: 247 / 255, green: 247 / 255, blue: 247 / 255, alpha: 1).cgColor
             case .dark:
                 return UIColor.black.cgColor
             default:
