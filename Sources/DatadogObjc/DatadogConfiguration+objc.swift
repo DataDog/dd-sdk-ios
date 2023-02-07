@@ -30,6 +30,9 @@ public class DDEndpoint: NSObject {
     public static func eu1() -> DDEndpoint { .init(sdkEndpoint: .eu1) }
 
     @objc
+    public static func ap1() -> DDEndpoint { .init(sdkEndpoint: .ap1) }
+
+    @objc
     public static func us1_fed() -> DDEndpoint { .init(sdkEndpoint: .us1_fed) }
 
     @objc
@@ -59,7 +62,13 @@ public class DDLogsEndpoint: NSObject {
     public static func us3() -> DDLogsEndpoint { .init(sdkEndpoint: .us3) }
 
     @objc
+    public static func us5() -> DDLogsEndpoint { .init(sdkEndpoint: .us5) }
+
+    @objc
     public static func eu1() -> DDLogsEndpoint { .init(sdkEndpoint: .eu1) }
+
+    @objc
+    public static func ap1() -> DDLogsEndpoint { .init(sdkEndpoint: .ap1) }
 
     @objc
     public static func us1_fed() -> DDLogsEndpoint { .init(sdkEndpoint: .us1_fed) }
@@ -94,7 +103,13 @@ public class DDTracesEndpoint: NSObject {
     public static func us3() -> DDTracesEndpoint { .init(sdkEndpoint: .us3) }
 
     @objc
+    public static func us5() -> DDTracesEndpoint { .init(sdkEndpoint: .us5) }
+
+    @objc
     public static func eu1() -> DDTracesEndpoint { .init(sdkEndpoint: .eu1) }
+
+    @objc
+    public static func ap1() -> DDTracesEndpoint { .init(sdkEndpoint: .ap1) }
 
     @objc
     public static func us1_fed() -> DDTracesEndpoint { .init(sdkEndpoint: .us1_fed) }

@@ -40,6 +40,8 @@ internal struct RequestBuilder: FeatureRequestBuilder {
             return URL(string: "https://session-replay.browser-intake-us5-datadoghq.com/api/v2/replay")!
         case .eu1:
             return URL(string: "https://session-replay.browser-intake-datadoghq.eu/api/v2/replay")!
+        case .ap1:
+            return URL(string: "https://session-replay.browser-intake-datadoghq.eu/api/v2/replay")!
         case .us1_fed:
             return URL(string: "https://session-replay.browser-intake-ddog-gov.com/api/v2/replay")!
         }

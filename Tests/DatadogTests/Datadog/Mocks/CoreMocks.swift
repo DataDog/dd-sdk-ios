@@ -127,19 +127,19 @@ extension BundleType: CaseIterable {
 
 extension Datadog.Configuration.LogsEndpoint {
     static func mockRandom() -> Self {
-        return [.us1, .us3, .eu1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
+        return [.us1, .us3, .us5, .eu1, .ap1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
     }
 }
 
 extension Datadog.Configuration.TracesEndpoint {
     static func mockRandom() -> Self {
-        return [.us1, .us3, .eu1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
+        return [.us1, .us3, .us5, .eu1, .ap1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
     }
 }
 
 extension Datadog.Configuration.RUMEndpoint {
     static func mockRandom() -> Self {
-        return [.us1, .us3, .eu1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
+        return [.us1, .us3, .us5, .eu1, .ap1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
     }
 }
 
