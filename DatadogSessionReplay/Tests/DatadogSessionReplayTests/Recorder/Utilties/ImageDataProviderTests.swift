@@ -35,7 +35,7 @@ class ImageDataProviderTests: XCTestCase {
         let sut = ImageDataProvider(
             queue: NoQueue()
         )
-        
+
         let image = UIImage(systemName: "apple.logo")
 
         XCTAssertNil(sut.contentBase64String(of: UIImageView(image: image)))
@@ -47,7 +47,6 @@ class ImageDataProviderTests: XCTestCase {
         let sut = ImageDataProvider(
             queue: NoQueue()
         )
-
 
         let image = UIImage(named: "dd_logo_v_rgb", in: Bundle.module, compatibleWith: nil)
 
@@ -78,7 +77,6 @@ class ImageDataProviderTests: XCTestCase {
 
 #if XCODE_BUILD
 extension Foundation.Bundle {
-
     /// Returns resource bundle as a `Bundle`.
     /// Requires Xcode copy phase to locate files into `ExecutableName.bundle`;
     /// or `ExecutableNameTests.bundle` for test resources
