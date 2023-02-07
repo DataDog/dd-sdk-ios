@@ -41,6 +41,10 @@ let package = Package(
             name: "DatadogCrashReporting",
             targets: ["DatadogCrashReporting"]
         ),
+        .library(
+            name: "DatadogSessionReplay",
+            targets: ["DatadogSessionReplay"]
+        ),
     ],
     dependencies: [
         .package(name: "PLCrashReporter", url: "https://github.com/microsoft/plcrashreporter.git", from: "1.11.0"),
@@ -82,6 +86,21 @@ let package = Package(
                 "TestUtilities"
             ],
             path: "DatadogInternal/Tests"
+        ),
+
+        .target(
+            name: "DatadogSessionReplay",
+            dependencies: ["Datadog"],
+            path: "DatadogSessionReplay/Sources"
+        ),
+
+        .testTarget(
+            name: "DatadogSessionReplayTests",
+            dependencies: [
+                .target(name: "DatadogSessionReplay"),
+                "TestUtilities"
+            ],
+            path: "DatadogSessionReplay/Tests"
         ),
 
         .target(
