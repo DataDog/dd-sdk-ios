@@ -266,6 +266,22 @@ class RUMTelemetryTests: XCTestCase {
         XCTAssertEqual(events.count, 0)
     }
 
+    func testSampledTelemetry_rejectAllConfiguration() throws {
+        // Given
+        let telemetry: RUMTelemetry = .mockWith(core: core, sampler: .mockKeepAll(), configurationExtraSampler: .mockRejectAll())
+
+        // When
+        // sends 10 telemetry events
+        for _ in 0..<10 {
+            telemetry.configuration(configuration: .mockAny())
+        }
+
+        // Then
+        let eventMatchers = try core.waitAndReturnRUMEventMatchers()
+        let events = try eventMatchers.compactMap(TelemetryDebugEvent.self)
+        XCTAssertEqual(events.count, 0)
+    }
+
     func testSendTelemetry_resetAfterSessionExpire() throws {
         // Given
         let telemetry: RUMTelemetry = .mockAny(in: core)
@@ -304,7 +320,8 @@ class RUMTelemetryTests: XCTestCase {
         let telemetry: RUMTelemetry = .mockWith(
             core: core,
             delayedDispatcher: { block in delayedDispatch = block },
-            sampler: .mockKeepAll()
+            sampler: .mockKeepAll(),
+            configurationExtraSampler: .mockKeepAll()
         )
 
         // When

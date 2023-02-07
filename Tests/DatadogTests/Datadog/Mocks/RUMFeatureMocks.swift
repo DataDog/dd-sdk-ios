@@ -91,14 +91,16 @@ extension RUMTelemetry {
         dateProvider: DateProvider = SystemDateProvider(),
         configurationEventMapper: RUMTelemetryConfiguratoinMapper? = nil,
         delayedDispatcher: RUMTelemetryDelayedDispatcher? = nil,
-        sampler: Sampler = .init(samplingRate: 100)
+        sampler: Sampler = .init(samplingRate: 100),
+        configurationExtraSampler: Sampler = .init(samplingRate: 100)
     ) -> Self {
         .init(
             in: core,
             dateProvider: dateProvider,
             configurationEventMapper: configurationEventMapper,
             delayedDispatcher: delayedDispatcher,
-            sampler: sampler
+            sampler: sampler,
+            configurationExtraSampler: configurationExtraSampler
         )
     }
 }
