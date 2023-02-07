@@ -6,7 +6,6 @@
 
 import Foundation
 import DatadogInternal
-import Datadog
 
 public class FileWriterMock: Writer {
     public init() { }

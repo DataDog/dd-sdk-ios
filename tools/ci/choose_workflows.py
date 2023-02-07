@@ -57,7 +57,7 @@ def should_run_integration_tests(ctx: CIContext) -> bool:
         pr_keyword='[x] Run integration tests',
         pr_path_prefixes=[
             'Datadog/Example/',
-            'Tests/DatadogIntegrationTests/',
+            'IntegrationTests/IntegrationTests/',
             'Tests/DatadogBenchmarkTests/',
         ],
         pr_file_extensions=[]

@@ -6,14 +6,15 @@
 
 import UIKit
 import Datadog
+import DatadogCrashReporting
 
 @_exported import enum DatadogInternal.TrackingConsent
+
+let serviceName = "ios-sdk-example-app"
 
 var logger: Logger!
 var tracer: OTTracer { Global.sharedTracer }
 var rumMonitor: DDRUMMonitor { Global.rum }
-
-var appConfiguration: AppConfiguration!
 
 @UIApplicationMain
 class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
@@ -22,17 +23,42 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         if Environment.isRunningUnitTests() {
             return false
-        } else if Environment.isRunningUITests() {
-            appConfiguration = UITestsAppConfiguration()
-        } else {
-            appConfiguration = ExampleAppConfiguration()
         }
+
+        var configuration = Datadog.Configuration
+            .builderUsing(
+                rumApplicationID: Environment.readRUMApplicationID(),
+                clientToken: Environment.readClientToken(),
+                environment: "tests"
+            )
+            .set(serviceName: serviceName)
+            .set(batchSize: .small)
+            .set(uploadFrequency: .frequent)
+            .set(sampleTelemetry: 100)
+
+        if let customLogsURL = Environment.readCustomLogsURL() {
+            configuration = configuration.set(customLogsEndpoint: customLogsURL)
+        }
+        if let customTraceURL = Environment.readCustomTraceURL() {
+            configuration = configuration.set(customTracesEndpoint: customTraceURL)
+        }
+        if let customRUMURL = Environment.readCustomRUMURL() {
+            configuration = configuration.set(customRUMEndpoint: customRUMURL)
+        }
+
+        // Enable all features so they can be tested with debug menu
+        configuration = configuration
+            .enableLogging(true)
+            .enableTracing(true)
+            .enableRUM(true)
+            .enableCrashReporting(using: DDCrashReportingPlugin())
+            .trackBackgroundEvents()
 
         // Initialize Datadog SDK
         Datadog.initialize(
             appContext: .init(),
-            trackingConsent: appConfiguration.initialTrackingConsent,
-            configuration: appConfiguration.sdkConfiguration()
+            trackingConsent: .granted,
+            configuration: configuration.build()
         )
 
         // Set user information
@@ -70,9 +96,10 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         Datadog.debugRUM = true
 
         // Launch initial screen depending on the launch configuration
-        if let storyboard = appConfiguration.initialStoryboard() {
-            launch(storyboard: storyboard)
-        }
+        #if os(iOS)
+        let storyboard = UIStoryboard(name: "Main iOS", bundle: nil)
+        launch(storyboard: storyboard)
+        #endif
 
         #if !os(tvOS)
         // Instantiate location monitor if the Example app is run in interactive mode. This will
@@ -86,9 +113,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-        if appConfiguration is ExampleAppConfiguration {
-            installConsoleOutputInterceptor()
-        }
+        installConsoleOutputInterceptor()
         return true
     }
 
@@ -99,10 +124,4 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         }
         window?.rootViewController = storyboard.instantiateInitialViewController()!
     }
-}
-
-/// Bridges Swift objects to Objective-C.
-@objcMembers
-class SwiftGlobals: NSObject {
-    class func currentTestScenario() -> Any? { appConfiguration.testScenario }
 }

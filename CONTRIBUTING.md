@@ -50,7 +50,7 @@ The workspace for SDK development and integration (tests, benchmarks, example ap
 
 #### Tests
 
-`DatadogTests` (unit tests), `DatadogIntegrationTests` (integration tests), and `DatadogBenchmarkTests` (benchmarks) source files
+`DatadogTests` (unit tests), `IntegrationTests`, and `DatadogBenchmarkTests` (benchmarks) source files
 
 #### Lint
 

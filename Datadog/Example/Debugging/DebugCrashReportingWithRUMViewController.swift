@@ -12,8 +12,7 @@ class DebugCrashReportingWithRUMViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        rumServiceNameTextField.text = (appConfiguration as? ExampleAppConfiguration)?.serviceName
-
+        rumServiceNameTextField.text = serviceName
         viewNameTextField.placeholder = viewName
     }
 
