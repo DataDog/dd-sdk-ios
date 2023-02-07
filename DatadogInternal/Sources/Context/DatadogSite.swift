@@ -19,6 +19,9 @@ public enum DatadogSite: String {
     /// Europe based servers.
     /// Sends data to [app.datadoghq.eu](https://app.datadoghq.eu/).
     case eu1
+    /// Asia based servers.
+    /// Sends data to [ap1.datadoghq.com](https://ap1.datadoghq.com/).
+    case ap1
     /// US based servers, FedRAMP compatible.
     /// Sends data to [app.ddog-gov.com](https://app.ddog-gov.com/).
     case us1_fed

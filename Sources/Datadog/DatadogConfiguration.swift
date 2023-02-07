@@ -847,6 +847,7 @@ extension DatadogSite {
         case .us3: return .us3
         case .us5: return .us5
         case .eu1: return .eu1
+        case .ap1: return .ap1
         case .us1_fed: return .us1_fed
         }
     }
@@ -857,6 +858,7 @@ extension DatadogSite {
         case .us3: return .us3
         case .us5: return .us5
         case .eu1: return .eu1
+        case .ap1: return .ap1
         case .us1_fed: return .us1_fed
         }
     }
@@ -867,6 +869,7 @@ extension DatadogSite {
         case .us3: return .us3
         case .us5: return .us5
         case .eu1: return .eu1
+        case .ap1: return .ap1
         case .us1_fed: return .us1_fed
         }
     }
