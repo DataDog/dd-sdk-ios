@@ -284,6 +284,9 @@ You can use the following methods in `Datadog.Configuration.Builder` when creati
 `setRUMErrorEventMapper(_ mapper: @escaping (RUMErrorEvent) -> RUMErrorEvent?)`
 : Sets the data scrubbing callback for errors. This can be used to modify or drop error events before they are sent to Datadog. For more information, see [Modify or drop RUM events](#modify-or-drop-rum-events).
 
+`setRUMLongTaskEventMapper(_ mapper: @escaping (RUMLongTaskEvent) -> RUMLongTaskEvent?)`
+: Sets the data scrubbing callback for long tasks. This can be used to modify or drop long task events before they are sent to Datadog. For more information, see [Modify or drop RUM events](#modify-or-drop-rum-events).
+
 `setRUMResourceAttributesProvider(_ provider: @escaping (URLRequest, URLResponse?, Data?, Error?) -> [AttributeKey: AttributeValue]?)`
 : Sets a closure to provide custom attributes for intercepted resources. The `provider` closure is called for each resource collected by the RUM iOS SDK. This closure is called with task information and may return custom resource attributes or `nil` if no attributes should be attached.
 
@@ -565,6 +568,9 @@ Datadog.Configuration
     .setRUMActionEventMapper { actionEvent in
         return actionEvent
     }
+    .setRUMLongTaskEventMapper { longTaskEvent in
+        return longTaskEvent
+    }
     .build()
 ```
 {{% /tab %}}
@@ -588,6 +594,10 @@ DDConfigurationBuilder *builder = [DDConfiguration builderWithRumApplicationID:@
 
 [builder setRUMActionEventMapper:^DDRUMActionEvent * _Nullable(DDRUMActionEvent * _Nonnull actionEvent) {
     return actionEvent;
+}];
+
+[builder setRUMLongTaskEventMapper:^DDRUMLongTaskEvent * _Nullable(DDRUMLongTaskEvent * _Nonnull longTaskEvent) {
+    return longTaskEvent;
 }];
 
 [builder build];
