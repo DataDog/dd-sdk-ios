@@ -1,5 +1,7 @@
 # Unreleased
 
+- [IMPROVEMENT] Always create an ApplicationLaunch view on session initialization. See [#1160][]
+
 # 1.15.0 / 23-01-2023
 
 - [BUGFIX] Fix 'Could not allocate memory' after corrupted TLV. See [#1089][] (Thanks [@cltnschlosser][])
@@ -430,6 +432,7 @@
 [#1071]: https://github.com/DataDog/dd-sdk-ios/pull/1071
 [#1089]: https://github.com/DataDog/dd-sdk-ios/pull/1089
 [#1145]: https://github.com/DataDog/dd-sdk-ios/pull/1145
+[#1160]: https://github.com/DataDog/dd-sdk-ios/pull/1160
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
