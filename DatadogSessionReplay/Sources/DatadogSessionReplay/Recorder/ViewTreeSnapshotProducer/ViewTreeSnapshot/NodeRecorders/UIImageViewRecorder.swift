@@ -7,6 +7,9 @@
 import UIKit
 
 internal struct UIImageViewRecorder: NodeRecorder {
+    
+    private let imageDataProvider = ImageDataProvider()
+
     func semantics(
         of view: UIView,
         with attributes: ViewAttributes,
@@ -35,7 +38,8 @@ internal struct UIImageViewRecorder: NodeRecorder {
             attributes: attributes,
             contentFrame: contentFrame,
             clipsToBounds: imageView.clipsToBounds,
-            image: imageView.image
+            image: imageView.image,
+            imageDataProvider: imageDataProvider
         )
         return SpecificElement(wireframesBuilder: builder, recordSubtree: true)
     }
@@ -57,6 +61,8 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
     let clipsToBounds: Bool
 
     let image: UIImage?
+
+    let imageDataProvider: ImageDataProvider
 
     private var clip: SRContentClip? {
         guard let contentFrame = contentFrame else {
@@ -80,8 +86,6 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
         }
         return attributes.frame.intersection(contentFrame)
     }
-
-    private let imageDataProvider = ImageDataProvider()
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         var wireframes = [
