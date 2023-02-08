@@ -7,7 +7,6 @@
 import UIKit
 
 internal struct UIImageViewRecorder: NodeRecorder {
-    let imageDataProvider = ImageDataProvider()
     func semantics(
         of view: UIView,
         with attributes: ViewAttributes,
@@ -36,18 +35,13 @@ internal struct UIImageViewRecorder: NodeRecorder {
             attributes: attributes,
             contentFrame: contentFrame,
             clipsToBounds: imageView.clipsToBounds,
-            base64: imageDataProvider.contentBase64String(of: imageView)
+            image: imageView.image
         )
         return SpecificElement(wireframesBuilder: builder, recordSubtree: true)
     }
 }
 
 internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
-    struct Defaults {
-        /// Until we suppport images in SR V.x., this color is used as placeholder in SR V.0.:
-        static let placeholderColor: CGColor = UIColor.systemGray.cgColor
-    }
-
     let wireframeID: WireframeID
 
     var wireframeRect: CGRect {
@@ -62,7 +56,7 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
 
     let clipsToBounds: Bool
 
-    let base64: String?
+    let image: UIImage?
 
     private var clip: SRContentClip? {
         guard let contentFrame = contentFrame else {
@@ -87,6 +81,8 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
         return attributes.frame.intersection(contentFrame)
     }
 
+    private let imageDataProvider = ImageDataProvider()
+
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         var wireframes = [
             builder.createShapeWireframe(
@@ -102,7 +98,7 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
         if let contentFrame = contentFrame {
             wireframes.append(
                 builder.createImageWireframe(
-                    base64: base64,
+                    base64: imageDataProvider.contentBase64String(of: image),
                     id: imageWireframeID,
                     frame: contentFrame,
                     clip: clipsToBounds ? clip : nil

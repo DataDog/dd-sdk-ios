@@ -17,8 +17,6 @@ public struct SessionReplay {
         in datadogInstance: DatadogCoreProtocol = defaultDatadogCore
     ) -> SessionReplayController {
         do {
-            UIImage.swizzleInitializersIfNeeded() // temporary - should be done only for certain configurations
-
             let feature = try SessionReplayFeature(
                 core: datadogInstance,
                 configuration: configuration

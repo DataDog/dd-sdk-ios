@@ -28,9 +28,6 @@ let package = Package(
             dependencies: [
                 .target(name: "DatadogSessionReplay"),
                 "TestUtilities"
-            ],
-            resources: [
-                .copy("Media.xcassets")
             ]
         )
     ]

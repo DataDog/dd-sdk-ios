@@ -67,7 +67,7 @@ class ImageDataProviderTests: XCTestCase {
 
         XCTAssertNil(sut.contentBase64String(of: UIImageView(image: image)))
         let imageData = try XCTUnwrap(sut.contentBase64String(of: UIImageView(image: image)))
-        if case let .loaded(cachedData) = cache["dd_logo_v_rgb#007AFF"] {
+        if case let .loaded(cachedData) = cache["dd_logo_v_rgb#007AFFFF"] {
             XCTAssertEqual(imageData, cachedData)
         } else {
             XCTFail("Cache doesn't exist")
