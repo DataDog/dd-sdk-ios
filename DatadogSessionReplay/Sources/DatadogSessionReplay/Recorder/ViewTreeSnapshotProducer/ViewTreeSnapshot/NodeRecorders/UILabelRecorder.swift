@@ -32,6 +32,7 @@ internal struct UILabelRecorder: NodeRecorder {
             text: label.text ?? "",
             textColor: label.textColor?.cgColor,
             font: label.font,
+            fontScalingEnabled: label.adjustsFontSizeToFitWidth,
             textObfuscator: context.recorder.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator,
             wireframeRect: textFrame
         )
@@ -49,6 +50,8 @@ internal struct UILabelWireframesBuilder: NodeWireframesBuilder {
     let textColor: CGColor?
     /// The font used by the label.
     let font: UIFont?
+    /// Flag that determines if font should be scaled
+    let fontScalingEnabled: Bool
     /// Text obfuscator for masking text.
     let textObfuscator: TextObfuscating
 
@@ -63,6 +66,7 @@ internal struct UILabelWireframesBuilder: NodeWireframesBuilder {
                 textFrame: wireframeRect,
                 textColor: textColor,
                 font: font,
+                fontScalingEnabled: fontScalingEnabled,
                 borderColor: attributes.layerBorderColor,
                 borderWidth: attributes.layerBorderWidth,
                 backgroundColor: attributes.backgroundColor,

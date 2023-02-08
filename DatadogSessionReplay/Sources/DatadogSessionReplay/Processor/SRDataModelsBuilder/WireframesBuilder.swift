@@ -62,6 +62,7 @@ internal class WireframesBuilder {
         clip: SRContentClip? = nil,
         textColor: CGColor? = nil,
         font: UIFont? = nil,
+        fontScalingEnabled: Bool = false,
         borderColor: CGColor? = nil,
         borderWidth: CGFloat? = nil,
         backgroundColor: CGColor? = nil,
@@ -83,7 +84,7 @@ internal class WireframesBuilder {
         }
 
         var fontSize = Int64(withNoOverflow: font?.pointSize ?? Fallback.fontSize)
-        if let boundingBox = textFrame?.size, text.count > 0 {
+        if let boundingBox = textFrame?.size, text.count > 0, fontScalingEnabled {
             // Calculates the approximate font size for available text area √(frameArea / numberOfCharacters)
             let area = boundingBox.width * boundingBox.height
             let calculatedFontSize = Int64(sqrt(area / CGFloat(text.count)))
