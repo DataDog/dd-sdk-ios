@@ -7,7 +7,6 @@
 import UIKit
 
 internal struct UIImageViewRecorder: NodeRecorder {
-    
     private let imageDataProvider = ImageDataProvider()
 
     func semantics(
