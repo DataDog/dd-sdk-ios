@@ -9,69 +9,56 @@ import XCTest
 
 class ImageDataProviderTests: XCTestCase {
     func test_returnsEmptyString_WhenContentIsEmpty() {
-        let sut = ImageDataProvider(
-            queue: NoQueue()
-        )
-
-        let imageString = sut.contentBase64String(of: UIImageView())
+        let sut = ImageDataProvider()
+        let imageString = sut.contentBase64String(of: UIImage())
 
         XCTAssertEqual(imageString, "")
     }
 
     func test_returnsValidString_WhenContentIsValid() throws {
-        let sut = ImageDataProvider(
-            queue: NoQueue()
-        )
+        let sut = ImageDataProvider()
         let base64 = "R0lGODlhAQABAIAAAP7//wAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="
         let image = UIImage(data: Data(base64Encoded: base64)!)
 
-        XCTAssertNil(sut.contentBase64String(of: UIImageView(image: image)))
-        let imageData = try XCTUnwrap(sut.contentBase64String(of: UIImageView(image: image)))
+        let imageData = try XCTUnwrap(sut.contentBase64String(of: image))
         XCTAssertGreaterThan(imageData.count, 0)
     }
 
     @available(iOS 13.0, *)
     func test_returnsValidString_forSFSymbolIcon() throws {
-        let sut = ImageDataProvider(
-            queue: NoQueue()
-        )
-
+        let sut = ImageDataProvider()
         let image = UIImage(systemName: "apple.logo")
 
-        XCTAssertNil(sut.contentBase64String(of: UIImageView(image: image)))
-        let imageData = try XCTUnwrap(sut.contentBase64String(of: UIImageView(image: image)))
+        let imageData = try XCTUnwrap(sut.contentBase64String(of: image))
         XCTAssertGreaterThan(imageData.count, 0)
     }
 
     func test_returnsValidString_forAssetImage() throws {
-        let sut = ImageDataProvider(
-            queue: NoQueue()
-        )
-
+        let sut = ImageDataProvider()
         let image = UIImage(named: "dd_logo_v_rgb", in: Bundle.module, compatibleWith: nil)
 
-        XCTAssertNil(sut.contentBase64String(of: UIImageView(image: image)))
-        let imageData = try XCTUnwrap(sut.contentBase64String(of: UIImageView(image: image)))
+        let imageData = try XCTUnwrap(sut.contentBase64String(of: image))
         XCTAssertGreaterThan(imageData.count, 0)
     }
 
-    func test_utilisesCorrectCacheKey_whenImagesAreSwizzled() throws {
-        UIImage.swizzleInitializersIfNeeded()
-        let cache = Cache<String, ImageDataProvider.DataLoadingStatus>()
+    func test_ignoresAboveDimensions() throws {
         let sut = ImageDataProvider(
-            cache: cache,
-            queue: NoQueue()
+            maxBytesSize: 1
         )
-
         let image = UIImage(named: "dd_logo_v_rgb", in: Bundle.module, compatibleWith: nil)
 
-        XCTAssertNil(sut.contentBase64String(of: UIImageView(image: image)))
-        let imageData = try XCTUnwrap(sut.contentBase64String(of: UIImageView(image: image)))
-        if case let .loaded(cachedData) = cache["dd_logo_v_rgb#007AFFFF"] {
-            XCTAssertEqual(imageData, cachedData)
-        } else {
-            XCTFail("Cache doesn't exist")
-        }
+        let imageData = try XCTUnwrap(sut.contentBase64String(of: image))
+        XCTAssertEqual(imageData.count, 0)
+    }
+
+    func test_ignoresAboveSize() throws {
+        let sut = ImageDataProvider(
+            maxDimensions: CGSize(width: 1, height: 1)
+        )
+        let image = UIImage(named: "dd_logo_v_rgb", in: Bundle.module, compatibleWith: nil)
+
+        let imageData = try XCTUnwrap(sut.contentBase64String(of: image))
+        XCTAssertEqual(imageData.count, 0)
     }
 }
 

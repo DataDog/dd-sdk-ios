@@ -41,7 +41,7 @@ class CacheTests: XCTestCase {
     }
 
     func test_countLimit() {
-        let cache = Cache<String, Int>(maximumEntryCount: 2)
+        let cache = Cache<String, Int>(maximumEntryCount: 1)
 
         cache.insert(1, forKey: "one")
         cache.insert(2, forKey: "two")

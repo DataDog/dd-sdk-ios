@@ -6,7 +6,6 @@
 
 import Foundation
 import Datadog
-import UIKit
 
 /// A draft interface for SR Feature initialization.
 /// TODO: RUMM-2268 Design convenient public API
