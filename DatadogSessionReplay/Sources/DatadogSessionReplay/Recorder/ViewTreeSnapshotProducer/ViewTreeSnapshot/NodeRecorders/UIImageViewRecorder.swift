@@ -38,6 +38,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
             contentFrame: contentFrame,
             clipsToBounds: imageView.clipsToBounds,
             image: imageView.image,
+            imageTintColor: imageView.tintColor,
             imageDataProvider: imageDataProvider
         )
         return SpecificElement(wireframesBuilder: builder, recordSubtree: true)
@@ -60,6 +61,8 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
     let clipsToBounds: Bool
 
     let image: UIImage?
+
+    let imageTintColor: UIColor?
 
     let imageDataProvider: ImageDataProvider
 
@@ -101,7 +104,10 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
         if let contentFrame = contentFrame {
             wireframes.append(
                 builder.createImageWireframe(
-                    base64: imageDataProvider.contentBase64String(of: image),
+                    base64: imageDataProvider.contentBase64String(
+                        of: image,
+                        tintColor: imageTintColor
+                    ),
                     id: imageWireframeID,
                     frame: contentFrame,
                     clip: clipsToBounds ? clip : nil

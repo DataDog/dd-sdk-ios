@@ -27,8 +27,17 @@ internal class ImageDataProvider {
         self.maxDimensions = maxDimensions
     }
 
-    func contentBase64String(of image: UIImage?) -> String? {
-        guard let image = image, let imageData = image.pngData() else {
+    func contentBase64String(
+        of image: UIImage?,
+        tintColor: UIColor? = nil
+    ) -> String? {
+        guard var image = image else {
+            return ""
+        }
+        if #available(iOS 13.0, *), let tintColor = tintColor {
+            image = image.withTintColor(tintColor)
+        }
+        guard let imageData = image.pngData() else {
             return ""
         }
 
