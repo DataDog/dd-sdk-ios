@@ -6,6 +6,7 @@
 
 import Foundation
 import XCTest
+@testable import Datadog
 
 /// Provides set of assertions for single `RUMDataModel` JSON object and collection of `[RUMDataModel]`.
 /// Note: this file is individually referenced by integration tests target, so no dependency on other source files should be introduced except `RUMDataModel` implementations
@@ -121,6 +122,12 @@ extension RUMEventMatcher: CustomStringConvertible {
 }
 
 extension Array where Element == RUMEventMatcher {
+    func filterApplicationLaunchView() -> [RUMEventMatcher] {
+        return filter {
+            (try? $0.attribute(forKeyPath: "view.url")) != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
+        }
+    }
+
     func filterRUMEvents<DM: Decodable>(ofType type: DM.Type, where predicate: ((DM) -> Bool)? = nil) -> [Element] {
         return filter { matcher in matcher.model(isTypeOf: type) }
             .filter { matcher in predicate?(try! matcher.model()) ?? true }

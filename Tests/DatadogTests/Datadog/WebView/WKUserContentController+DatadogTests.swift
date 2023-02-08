@@ -205,7 +205,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
         messageHandler?.userContentController(controller, didReceive: webRUMMessage)
 
         messageHandler?.queue.sync {}
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers().filterApplicationLaunchView()
         try rumEventMatchers[0].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.application.id, "abc")
             XCTAssertEqual(rumModel.view.id, "64308fd4-83f9-48cb-b3e1-1e91f6721230")

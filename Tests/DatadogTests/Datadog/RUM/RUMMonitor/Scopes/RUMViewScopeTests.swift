@@ -85,60 +85,6 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(scope.userActionScope?.actionUUID))
     }
 
-    func testWhenInitialViewReceivesAnyCommand_itSendsApplicationStartAction() throws {
-        // Given
-        let currentTime: Date = .mockDecember15th2019At10AMUTC()
-        var context = self.context
-        context.launchTime = .init(
-            launchTime: 2,
-            launchDate: .distantPast,
-            isActivePrewarm: false
-        )
-
-        let hasReplay: Bool = .mockRandom()
-        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
-
-        let scope = RUMViewScope(
-            isInitialView: true,
-            parent: parent,
-            dependencies: .mockAny(),
-            identity: mockView,
-            path: "UIViewController",
-            name: "ViewName",
-            attributes: [:],
-            customTimings: [:],
-            startTime: currentTime,
-            serverTimeOffset: .zero
-        )
-
-        // When
-        _ = scope.process(
-            command: RUMCommandMock(time: currentTime),
-            context: context,
-            writer: writer
-        )
-
-        // Then
-        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
-        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
-        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
-        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
-        XCTAssertEqual(event.session.type, .user)
-        XCTAssertEqual(event.session.hasReplay, hasReplay)
-        XCTAssertValidRumUUID(event.view.id)
-        XCTAssertEqual(event.view.url, "UIViewController")
-        XCTAssertEqual(event.view.name, "ViewName")
-        XCTAssertValidRumUUID(event.action.id)
-        XCTAssertEqual(event.action.type, .applicationStart)
-        XCTAssertEqual(event.action.loadingTime, 2_000_000_000) // 2e+9 ns
-        XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
-        XCTAssertEqual(event.source, .ios)
-        XCTAssertEqual(event.service, "test-service")
-        XCTAssertEqual(event.device?.name, "device-name")
-        XCTAssertEqual(event.os?.name, "device-os")
-        XCTAssertNil(event.context?.contextInfo[RUMViewScope.Constants.activePrewarm])
-    }
-
     func testWhenConfigurationSourceIsSet_applicationStartUsesTheConfigurationSource() throws {
         // Given
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
@@ -157,13 +103,7 @@ class RUMViewScopeTests: XCTestCase {
             startTime: currentTime,
             serverTimeOffset: .zero
         )
-
-        // When
-        _ = scope.process(
-            command: RUMCommandMock(time: currentTime),
-            context: customContext,
-            writer: writer
-        )
+        scope.sendApplicationStartAction(context: customContext, writer: writer)
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
@@ -189,11 +129,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // When
-        _ = scope.process(
-            command: RUMCommandMock(),
-            context: context,
-            writer: writer
-        )
+        scope.sendApplicationStartAction(context: context, writer: writer)
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
@@ -217,11 +153,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // When
-        _ = scope.process(
-            command: RUMCommandMock(),
-            context: context,
-            writer: writer
-        )
+        scope.sendApplicationStartAction(context: context, writer: writer)
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
@@ -249,6 +181,7 @@ class RUMViewScopeTests: XCTestCase {
             startTime: currentTime,
             serverTimeOffset: .zero
         )
+        scope.sendApplicationStartAction(context: context, writer: writer)
 
         _ = scope.process(
             command: RUMCommandMock(time: currentTime),
@@ -344,7 +277,7 @@ class RUMViewScopeTests: XCTestCase {
         let viewIsActive = try XCTUnwrap(event.view.isActive)
         XCTAssertTrue(viewIsActive)
         XCTAssertEqual(event.view.timeSpent, 1) // Minimum `time_spent of 1 nanosecond
-        XCTAssertEqual(event.view.action.count, isInitialView ? 1 : 0, "It must track application start action only if this is an initial view")
+        XCTAssertEqual(event.view.action.count, 0)
         XCTAssertEqual(event.view.error.count, 0)
         XCTAssertEqual(event.view.resource.count, 0)
         XCTAssertEqual(event.dd.documentVersion, 1)
@@ -409,7 +342,7 @@ class RUMViewScopeTests: XCTestCase {
         let viewIsActive = try XCTUnwrap(event.view.isActive)
         XCTAssertFalse(viewIsActive)
         XCTAssertEqual(event.view.timeSpent, TimeInterval(2).toInt64Nanoseconds)
-        XCTAssertEqual(event.view.action.count, isInitialView ? 1 : 0, "It must track application start action only if this is an initial view")
+        XCTAssertEqual(event.view.action.count, 0)
         XCTAssertEqual(event.view.error.count, 0)
         XCTAssertEqual(event.view.resource.count, 0)
         XCTAssertEqual(event.dd.documentVersion, 2)
@@ -1867,7 +1800,7 @@ class RUMViewScopeTests: XCTestCase {
 
         // Then
         XCTAssertEqual(event.view.resource.count, 1, "After dropping 1 Resource event (out of 2), View should record 1 Resource")
-        XCTAssertEqual(event.view.action.count, 1, "After dropping a User Action event, View should record only ApplicationStart Action")
+        XCTAssertEqual(event.view.action.count, 0, "After dropping a User Action event, View should record no actions")
         XCTAssertEqual(event.view.error.count, 0, "After dropping an Error event, View should record 0 Errors")
         XCTAssertEqual(event.dd.documentVersion, 3, "After starting the application, stopping the view, starting/stopping one resource out of 2, discarding a user action and an error, the View scope should have sent 3 View events.")
     }

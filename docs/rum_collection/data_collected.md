@@ -32,6 +32,14 @@ The following diagram illustrates the RUM event hierarchy:
 
 {{< img src="real_user_monitoring/data_collected/event-hierarchy.png" alt="RUM Event hierarchy" style="width:50%;border:none" >}}
 
+## Application launch
+
+During initialization, the RUM iOS SDK creates a view called "ApplicationLaunch". This view's start time matches the start of the iOS process, and can be used to track your application launch time.
+
+The ApplicationLaunch view includes any logs, actions, and resources created before your first call to `startView`. Use the duration of this view to determine time to first view. This view has an action, `application_start`, with a duration equal to the amount of time from process start until the call to `applicationDidBecomeActive`.
+
+In cases where iOS decides to [prewarm your application][4], the ApplicationLaunch view instead starts when the RUM iOS SDK is initialized, and the `application_start` event does not have a duration.
+
 ## Default attributes
 
 RUM collects common attributes for all events and attributes specific to each event by default listed below. You can also choose to enrich your user session data with [additional events][1] to default events specific to your application monitoring and business analytics needs.

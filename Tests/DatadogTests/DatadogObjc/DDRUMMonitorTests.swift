@@ -174,7 +174,9 @@ class DDRUMMonitorTests: XCTestCase {
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
-        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self)
+        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self) { event in
+            return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
+        }
         XCTAssertEqual(viewEvents.count, 4)
 
         let event1: RUMViewEvent = try viewEvents[0].model()
@@ -207,7 +209,9 @@ class DDRUMMonitorTests: XCTestCase {
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
-        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self)
+        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self) { event in
+            return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
+        }
         XCTAssertEqual(viewEvents.count, 3)
 
         let event1: RUMViewEvent = try viewEvents[0].model()
@@ -391,7 +395,9 @@ class DDRUMMonitorTests: XCTestCase {
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
-        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self)
+        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self) { event in
+            return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
+        }
         XCTAssertEqual(viewEvents.count, 1)
 
         XCTAssertEqual(try viewEvents[0].attribute(forKeyPath: "context.global-attribute1"), "foo1")

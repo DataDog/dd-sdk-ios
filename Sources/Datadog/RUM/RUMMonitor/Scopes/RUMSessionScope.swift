@@ -150,8 +150,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             )
 
             switch handlingRule {
-            case .handleInApplicationLaunchView where command.canStartApplicationLaunchView:
-                startApplicationLaunchView(on: command, context: context)
             case .handleInBackgroundView where command.canStartBackgroundView:
                 startBackgroundView(on: command, context: context)
             default:
@@ -207,21 +205,30 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         )
     }
 
-    private func startApplicationLaunchView(on command: RUMCommand, context: DatadogContext) {
-        viewScopes.append(
-            RUMViewScope(
-                isInitialView: true,
-                parent: self,
-                dependencies: dependencies,
-                identity: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
-                path: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
-                name: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName,
-                attributes: command.attributes,
-                customTimings: [:],
-                startTime: sessionStartTime,
-                serverTimeOffset: context.serverTimeOffset
-            )
+    internal func startApplicationLaunchView(context: DatadogContext, writer: Writer) {
+        var startTime = sessionStartTime
+        if context.launchTime?.isActivePrewarm == false,
+           let processStartTime = context.launchTime?.launchDate {
+            startTime = processStartTime
+        }
+
+        let scope = RUMViewScope(
+            isInitialView: true,
+            parent: self,
+            dependencies: dependencies,
+            identity: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
+            path: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
+            name: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName,
+            attributes: [:],
+            customTimings: [:],
+            startTime: startTime,
+            serverTimeOffset: context.serverTimeOffset
         )
+
+        viewScopes.append(
+            scope
+        )
+        scope.sendApplicationStartAction(context: context, writer: writer)
     }
 
     private func startBackgroundView(on command: RUMCommand, context: DatadogContext) {

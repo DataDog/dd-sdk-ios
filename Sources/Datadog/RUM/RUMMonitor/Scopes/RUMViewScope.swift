@@ -149,10 +149,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         // Propagate to User Action scope
         userActionScope = userActionScope?.scope(byPropagating: command, context: context, writer: writer)
 
-        // Send "application start" action if this is the very first view tracked in the app
         let hasSentNoViewUpdatesYet = version == 0
         if isInitialView, hasSentNoViewUpdatesYet {
-            sendApplicationStartAction(context: context, writer: writer)
+            needsViewUpdate = true
         }
 
         // Apply side effects
@@ -326,7 +325,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     // MARK: - Sending RUM Events
 
-    private func sendApplicationStartAction(context: DatadogContext, writer: Writer) {
+    internal func sendApplicationStartAction(context: DatadogContext, writer: Writer) {
         actionsCount += 1
 
         var attributes = self.attributes
