@@ -83,7 +83,8 @@ internal class WireframesBuilder {
         }
 
         var fontSize = Int64(withNoOverflow: font?.pointSize ?? Fallback.fontSize)
-        if let boundingBox = textFrame?.size {
+        if let boundingBox = textFrame?.size, text.count > 0 {
+            // Calculates the approximate font size for available text area √(frameArea / numberOfCharacters)
             let area = boundingBox.width * boundingBox.height
             let calculatedFontSize = Int64(sqrt(area / CGFloat(text.count)))
             if calculatedFontSize < fontSize {
