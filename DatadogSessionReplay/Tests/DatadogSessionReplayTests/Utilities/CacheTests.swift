@@ -9,25 +9,45 @@ import XCTest
 @testable import TestUtilities
 
 class CacheTests: XCTestCase {
-
-    func test() {
+    func test_insertAndValueForKey() {
         let cache = Cache<String, Int>()
-
-        let key = "key1"
-        let value = 1
-        cache.insert(value, forKey: key)
-
-        XCTAssertEqual(cache.value(forKey: key), value)
+        cache.insert(1, forKey: "one")
+        XCTAssertEqual(cache.value(forKey: "one"), 1)
     }
 
-    func test2() {
-        let cache = Cache<String, Int>( 
-            entryLifetime: 0
-        )
+    func test_removeValueForKey() {
+        let cache = Cache<String, Int>()
+        cache.insert(1, forKey: "one")
+        cache.removeValue(forKey: "one")
+        XCTAssertNil(cache.value(forKey: "one"))
+    }
 
-        let key = "key1"
-        cache.insert(1, forKey: key)
+    func test_subscript() {
+        let cache = Cache<String, Int>()
+        cache["one"] = 1
+        XCTAssertEqual(cache["one"], 1)
 
-        XCTAssertNil(cache.value(forKey: key))
+        cache["one"] = nil
+        XCTAssertNil(cache["one"])
+    }
+
+    func test_expiration() {
+        let cache = Cache<String, Int>(dateProvider: {
+            return Date(timeIntervalSinceReferenceDate: 0)
+        }, entryLifetime: 0)
+
+        cache.insert(1, forKey: "one")
+        XCTAssertNil(cache.value(forKey: "one"))
+    }
+
+    func test_countLimit() {
+        let cache = Cache<String, Int>(maximumEntryCount: 2)
+
+        cache.insert(1, forKey: "one")
+        cache.insert(2, forKey: "two")
+        cache.insert(3, forKey: "three")
+        XCTAssertNil(cache.value(forKey: "one"))
+        XCTAssertNil(cache.value(forKey: "two"))
+        XCTAssertEqual(cache.value(forKey: "three"), 3)
     }
 }
