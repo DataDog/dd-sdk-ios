@@ -88,5 +88,6 @@ mkdir -p "$XCFRAMEWORK_OUTPUT"
 cp -r "Carthage/Build/CrashReporter.xcframework" "$XCFRAMEWORK_OUTPUT"
 
 bundle Datadog
+bundle DatadogInternal
 bundle DatadogObjc
 bundle DatadogCrashReporting

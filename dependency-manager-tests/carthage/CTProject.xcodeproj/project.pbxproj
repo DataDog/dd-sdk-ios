@@ -18,6 +18,8 @@
 		9E9D5E8D25F90FC6002F12A0 /* Datadog.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9E9D5E8725F90FC6002F12A0 /* Datadog.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9EF87B8C26B04E1F00998076 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 615D9E652604B5AB006DC6D1 /* CrashReporter.xcframework */; };
 		9EF87B8D26B04E1F00998076 /* CrashReporter.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 615D9E652604B5AB006DC6D1 /* CrashReporter.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D240FC8C2995183D00D9F099 /* DatadogInternal.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D240FC8B2995183D00D9F099 /* DatadogInternal.xcframework */; };
+		D240FC8D2995351C00D9F099 /* DatadogInternal.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D240FC8B2995183D00D9F099 /* DatadogInternal.xcframework */; };
 		D24C2F7627CCDDAA001365B0 /* DatadogCrashReporting.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 615D9E6A2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework */; };
 		D290BA1B27CD09740019936D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3641C243752A500C4D4E6 /* ViewController.swift */; };
 		D290BA1C27CD09740019936D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C36418243752A500C4D4E6 /* AppDelegate.swift */; };
@@ -112,6 +114,7 @@
 		9E9D5E8525F90FC6002F12A0 /* Kronos.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Kronos.xcframework; path = Carthage/Build/Kronos.xcframework; sourceTree = "<group>"; };
 		9E9D5E8625F90FC6002F12A0 /* DatadogObjc.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DatadogObjc.xcframework; path = Carthage/Build/DatadogObjc.xcframework; sourceTree = "<group>"; };
 		9E9D5E8725F90FC6002F12A0 /* Datadog.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Datadog.xcframework; path = Carthage/Build/Datadog.xcframework; sourceTree = "<group>"; };
+		D240FC8B2995183D00D9F099 /* DatadogInternal.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DatadogInternal.xcframework; path = Carthage/Build/DatadogInternal.xcframework; sourceTree = "<group>"; };
 		D290BA2D27CD09740019936D /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D290BA3927CD09A20019936D /* App tvOS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "App tvOS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D290BA4527CD09C70019936D /* App tvOS UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "App tvOS UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -122,6 +125,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D240FC8C2995183D00D9F099 /* DatadogInternal.xcframework in Frameworks */,
 				9EF87B8C26B04E1F00998076 /* CrashReporter.xcframework in Frameworks */,
 				D24C2F7627CCDDAA001365B0 /* DatadogCrashReporting.xcframework in Frameworks */,
 				9E9D5E8C25F90FC6002F12A0 /* Datadog.xcframework in Frameworks */,
@@ -147,6 +151,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D240FC8D2995351C00D9F099 /* DatadogInternal.xcframework in Frameworks */,
 				D290BA1F27CD09740019936D /* CrashReporter.xcframework in Frameworks */,
 				D290BA2027CD09740019936D /* DatadogCrashReporting.xcframework in Frameworks */,
 				D290BA2127CD09740019936D /* Datadog.xcframework in Frameworks */,
@@ -238,6 +243,7 @@
 		61C364492437547A00C4D4E6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D240FC8B2995183D00D9F099 /* DatadogInternal.xcframework */,
 				615D9E6A2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework */,
 				615D9E652604B5AB006DC6D1 /* CrashReporter.xcframework */,
 				9E9D5E8725F90FC6002F12A0 /* Datadog.xcframework */,
