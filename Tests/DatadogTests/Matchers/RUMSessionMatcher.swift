@@ -233,7 +233,7 @@ internal class RUMSessionMatcher {
         }
 
         if let applicationLaunchIndex = visitsEventOrderedByTime.firstIndex(
-            where: { $0.name == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName }
+            where: { $0.name == "ApplicationLaunch" }
         ) {
             self.applicationLaunchView = visitsEventOrderedByTime[applicationLaunchIndex]
             visitsEventOrderedByTime.remove(at: applicationLaunchIndex)
