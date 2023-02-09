@@ -52,6 +52,7 @@ internal struct UITextFieldRecorder: NodeRecorder {
             // Is it correct to assume `textField.textColor` for placeholder text?
             textColor: textField.textColor?.cgColor,
             font: textField.font,
+            fontScalingEnabled: textField.adjustsFontSizeToFitWidth,
             editor: editorProperties,
             textObfuscator: context.recorder.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator,
             wireframeRect: textFrame
@@ -70,6 +71,8 @@ internal struct UITextFieldWireframesBuilder: NodeWireframesBuilder {
     let textColor: CGColor?
     /// The font used by the text field.
     let font: UIFont?
+    /// Flag that determines if font should be scaled
+    let fontScalingEnabled: Bool
     /// Properties of the editor field (which is a nested subview in `UITextField`).
     let editor: EditorFieldProperties?
     /// Text obfuscator for masking text.
@@ -97,6 +100,7 @@ internal struct UITextFieldWireframesBuilder: NodeWireframesBuilder {
                 textFrame: wireframeRect,
                 textColor: textColor,
                 font: font,
+                fontScalingEnabled: fontScalingEnabled,
                 borderColor: editor?.layerBorderColor ?? attributes.layerBorderColor,
                 borderWidth: editor?.layerBorderWidth ?? attributes.layerBorderWidth,
                 backgroundColor: editor?.backgroundColor ?? attributes.backgroundColor,

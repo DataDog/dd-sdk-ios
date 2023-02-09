@@ -62,6 +62,7 @@ internal class WireframesBuilder {
         clip: SRContentClip? = nil,
         textColor: CGColor? = nil,
         font: UIFont? = nil,
+        fontScalingEnabled: Bool = false,
         borderColor: CGColor? = nil,
         borderWidth: CGFloat? = nil,
         backgroundColor: CGColor? = nil,
@@ -82,11 +83,21 @@ internal class WireframesBuilder {
             )
         }
 
+        var fontSize = Int64(withNoOverflow: font?.pointSize ?? Fallback.fontSize)
+        if let boundingBox = textFrame?.size, text.count > 0, fontScalingEnabled {
+            // Calculates the approximate font size for available text area √(frameArea / numberOfCharacters)
+            let area = boundingBox.width * boundingBox.height
+            let calculatedFontSize = Int64(sqrt(area / CGFloat(text.count)))
+            if calculatedFontSize < fontSize {
+                fontSize = calculatedFontSize
+            }
+        }
+
         // TODO: RUMM-2452 Better recognize the font:
         let textStyle = SRTextStyle(
             color: textColor.flatMap { hexString(from: $0) } ?? Fallback.color,
             family: Fallback.fontFamily,
-            size: Int64(withNoOverflow: font?.pointSize ?? Fallback.fontSize)
+            size: fontSize
         )
 
         let wireframe = SRTextWireframe(
