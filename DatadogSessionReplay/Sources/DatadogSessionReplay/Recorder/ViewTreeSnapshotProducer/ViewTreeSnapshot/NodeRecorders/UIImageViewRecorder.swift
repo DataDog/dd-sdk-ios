@@ -7,6 +7,8 @@
 import UIKit
 
 internal struct UIImageViewRecorder: NodeRecorder {
+    private let imageDataProvider = ImageDataProvider()
+
     func semantics(
         of view: UIView,
         with attributes: ViewAttributes,
@@ -34,18 +36,16 @@ internal struct UIImageViewRecorder: NodeRecorder {
             imageWireframeID: ids.1,
             attributes: attributes,
             contentFrame: contentFrame,
-            clipsToBounds: imageView.clipsToBounds
+            clipsToBounds: imageView.clipsToBounds,
+            image: imageView.image,
+            imageTintColor: imageView.tintColor,
+            imageDataProvider: imageDataProvider
         )
         return SpecificElement(wireframesBuilder: builder, recordSubtree: true)
     }
 }
 
 internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
-    struct Defaults {
-        /// Until we suppport images in SR V.x., this color is used as placeholder in SR V.0.:
-        static let placeholderColor: CGColor = UIColor.systemGray.cgColor
-    }
-
     let wireframeID: WireframeID
 
     var wireframeRect: CGRect {
@@ -59,6 +59,12 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
     let contentFrame: CGRect?
 
     let clipsToBounds: Bool
+
+    let image: UIImage?
+
+    let imageTintColor: UIColor?
+
+    let imageDataProvider: ImageDataProvider
 
     private var clip: SRContentClip? {
         guard let contentFrame = contentFrame else {
@@ -97,11 +103,14 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
         ]
         if let contentFrame = contentFrame {
             wireframes.append(
-                builder.createShapeWireframe(
+                builder.createImageWireframe(
+                    base64: imageDataProvider.contentBase64String(
+                        of: image,
+                        tintColor: imageTintColor
+                    ),
                     id: imageWireframeID,
                     frame: contentFrame,
-                    clip: clipsToBounds ? clip : nil,
-                    backgroundColor: Defaults.placeholderColor
+                    clip: clipsToBounds ? clip : nil
                 )
             )
         }

@@ -13,7 +13,9 @@ extension SRWireframe: Diffable {
         switch self {
         case .shapeWireframe(let wireframe):
             return wireframe.id
-        case.textWireframe(let wireframe):
+        case .imageWireframe(let wireframe):
+            return wireframe.id
+        case .textWireframe(let wireframe):
             return wireframe.id
         }
     }
@@ -23,6 +25,8 @@ extension SRWireframe: Diffable {
         case let (.shapeWireframe(this), .shapeWireframe(other)):
             return this.hashValue != other.hashValue
         case let (.textWireframe(this), .textWireframe(other)):
+            return this.hashValue != other.hashValue
+        case let (.imageWireframe(this), .imageWireframe(other)):
             return this.hashValue != other.hashValue
         default:
             return true
@@ -56,7 +60,9 @@ extension SRWireframe: MutableWireframe {
         switch self {
         case .shapeWireframe(let this):
             return try this.mutations(from: otherWireframe)
-        case.textWireframe(let this):
+        case .imageWireframe(let this):
+            return try this.mutations(from: otherWireframe)
+        case .textWireframe(let this):
             return try this.mutations(from: otherWireframe)
         }
     }
@@ -77,6 +83,32 @@ extension SRShapeWireframe: MutableWireframe {
                 clip: use(clip, ifDifferentThan: other.clip),
                 height: use(height, ifDifferentThan: other.height),
                 id: id,
+                shapeStyle: use(shapeStyle, ifDifferentThan: other.shapeStyle),
+                width: use(width, ifDifferentThan: other.width),
+                x: use(x, ifDifferentThan: other.x),
+                y: use(y, ifDifferentThan: other.y)
+            )
+        )
+    }
+}
+
+extension SRImageWireframe: MutableWireframe {
+    func mutations(from otherWireframe: SRWireframe) throws -> WireframeMutation {
+        guard case .imageWireframe(let other) = otherWireframe else {
+            throw WireframeMutationError.typeMismatch
+        }
+        guard other.id == id else {
+            throw WireframeMutationError.idMismatch
+        }
+
+        return .imageWireframeUpdate(
+            value: .init(
+                base64: use(base64, ifDifferentThan: other.base64),
+                border: use(border, ifDifferentThan: other.border),
+                clip: use(clip, ifDifferentThan: other.clip),
+                height: use(height, ifDifferentThan: other.height),
+                id: id,
+                mimeType: use(mimeType, ifDifferentThan: other.mimeType),
                 shapeStyle: use(shapeStyle, ifDifferentThan: other.shapeStyle),
                 width: use(width, ifDifferentThan: other.width),
                 x: use(x, ifDifferentThan: other.x),
