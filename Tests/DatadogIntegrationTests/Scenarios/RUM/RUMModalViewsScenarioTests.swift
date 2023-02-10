@@ -63,11 +63,13 @@ class RUMModalViewsScenarioTests: IntegrationTests, RUMCommonAsserts {
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
         sendCIAppLog(session)
 
+        let launchView = try XCTUnwrap(session.applicationLaunchView)
+        XCTAssertEqual(launchView.actionEvents[0].action.type, .applicationStart)
+        XCTAssertGreaterThan(visits[0].actionEvents[0].action.loadingTime!, 0)
+
         let visits = session.viewVisits
         XCTAssertEqual(visits[0].name, "Screen")
         XCTAssertEqual(visits[0].path, "Example.RUMMVSViewController")
-        XCTAssertEqual(visits[0].actionEvents[0].action.type, .applicationStart)
-        XCTAssertGreaterThan(visits[0].actionEvents[0].action.loadingTime!, 0)
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[0]) // go to modal "Modal"
 
         XCTAssertEqual(visits[1].name, "Modal")
