@@ -88,18 +88,12 @@ import typealias CommonCrypto.CC_LONG
 
 fileprivate extension Data {
     var md5: String {
-        let length = Int(CC_MD5_DIGEST_LENGTH)
-        var digestData = Data(count: length)
-
-        _ = digestData.withUnsafeMutableBytes { digestBytes -> UInt8 in
-            withUnsafeBytes { messageBytes -> UInt8 in
-                if let messageBytesBaseAddress = messageBytes.baseAddress, let digestBytesBlindMemory = digestBytes.bindMemory(to: UInt8.self).baseAddress {
-                    let messageLength = CC_LONG(count)
-                    CC_MD5(messageBytesBaseAddress, messageLength, digestBytesBlindMemory)
-                }
-                return 0
+        var result = [UInt8](repeating: 0, count: Int(CC_MD5_DIGEST_LENGTH))
+        _ = withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
+            result.withUnsafeMutableBytes { resultBytes in
+                CC_MD5(bytes.baseAddress, CC_LONG(count), resultBytes.baseAddress)
             }
         }
-        return digestData.map { String(format: "%02hhx", $0) }.joined()
+        return Data(result).map { String(format: "%02hhx", $0) }.joined()
     }
 }

@@ -41,7 +41,7 @@ class ImageDataProviderTests: XCTestCase {
         XCTAssertGreaterThan(imageData.count, 0)
     }
 
-    func test_ignoresAboveDimensions() throws {
+    func test_ignoresAboveSize() throws {
         let sut = ImageDataProvider(
             maxBytesSize: 1
         )
@@ -51,7 +51,7 @@ class ImageDataProviderTests: XCTestCase {
         XCTAssertEqual(imageData.count, 0)
     }
 
-    func test_ignoresAboveSize() throws {
+    func test_ignoresAboveDimensions() throws {
         let sut = ImageDataProvider(
             maxDimensions: CGSize(width: 1, height: 1)
         )
