@@ -5,9 +5,9 @@
  */
 
 import XCTest
+import TestUtilities
 import Datadog
 @testable import DatadogSessionReplay
-@testable import TestUtilities
 
 class RUMContextReceiverTests: XCTestCase {
     private let receiver = RUMContextReceiver()
