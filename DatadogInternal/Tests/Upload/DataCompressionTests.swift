@@ -5,8 +5,9 @@
  */
 
 import XCTest
-import DatadogInternal
-@testable import Datadog
+import TestUtilities
+
+@testable import DatadogInternal
 
 class DataCompressionTests: XCTestCase {
     let encoder = JSONEncoder()
@@ -44,7 +45,7 @@ class DataCompressionTests: XCTestCase {
 
             // When
             let compressed = try XCTUnwrap(Deflate.compress(data))
-            let decompressed = Deflate.decompress(compressed)
+            let decompressed = zlib.decompress(compressed)
 
             // Then
             XCTAssertEqual(decompressed, data)
@@ -58,7 +59,7 @@ class DataCompressionTests: XCTestCase {
 
             // When
             let compressed = try XCTUnwrap(Deflate.encode(data))
-            let decompressed = Deflate.decode(compressed)
+            let decompressed = zlib.decode(compressed)
 
             // Then
             XCTAssertEqual(decompressed, data)

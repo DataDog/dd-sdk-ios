@@ -16,7 +16,7 @@ import zlib
 /// - https://zlib.net/
 /// - https://datatracker.ietf.org/doc/html/rfc1950
 /// - https://datatracker.ietf.org/doc/html/rfc1951
-public struct Deflate {
+internal struct Deflate {
     /// Compresses the data into `ZLIB` data format.
     ///
     /// The `Compression` library implements the zlib encoder at level 5 only. This compression level
@@ -27,7 +27,7 @@ public struct Deflate {
     ///
     /// - Parameter data: Source data to deflate
     /// - Returns:  The compressed data format.
-    public static func encode(_ data: Data) -> Data? {
+    static func encode(_ data: Data) -> Data? {
         // 2 bytes header - defines the compression mode
         //
         // +---+---+
@@ -69,7 +69,7 @@ public struct Deflate {
     /// - Parameter data: Source data to deflate
     /// - Returns:  The compressed data. If the compressed data size is bigger than the source size,
     ///             or an error occurs, `nil` is returned.
-    public static func compress(_ data: Data) -> Data? {
+    static func compress(_ data: Data) -> Data? {
         return data.withUnsafeBytes {
             guard let ptr = $0.bindMemory(to: UInt8.self).baseAddress else {
                 return nil
@@ -96,7 +96,7 @@ public struct Deflate {
     ///
     /// - Parameter data: Data to compute the checksum.
     /// - Returns: The Adler-32 checksum.
-    public static func adler32(_ data: Data) -> Data? {
+    static func adler32(_ data: Data) -> Data? {
         let adler: uLong? = data.withUnsafeBytes {
             guard let ptr = $0.bindMemory(to: Bytef.self).baseAddress else {
                 return nil
