@@ -54,10 +54,10 @@ internal struct ViewAttributes: Equatable {
     /// Original view's `.backgorundColor`.
     let backgroundColor: CGColor?
 
-    /// Original view's `layer.backgorundColor`.
+    /// Original view's `layer.borderColor`.
     let layerBorderColor: CGColor?
 
-    /// Original view's `layer.backgorundColor`.
+    /// Original view's `layer.borderWidth`.
     let layerBorderWidth: CGFloat
 
     /// Original view's `layer.cornerRadius`.

@@ -249,7 +249,18 @@ workflows:
         - is_clean_build: 'no'
         - generate_code_coverage_files: 'yes'
         - project_path: DatadogSessionReplay/Package.swift
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogSessionReplay-tests.html"
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogSessionReplay-unit-tests.html"
+    - xcode-test:
+        title: Run snapshot tests for Session Replay - iOS Simulator
+        run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
+        inputs:
+        - scheme: SRExample
+        - destination: platform=iOS Simulator,name=iPhone 14,OS=16.2
+        - should_build_before_test: 'no'
+        - is_clean_build: 'no'
+        - generate_code_coverage_files: 'yes'
+        - project_path: DatadogSessionReplay/SRExample/SRExample.xcworkspace
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogSessionReplay-snapshot-tests.html"
 
   run_integration_tests:
     description: |-

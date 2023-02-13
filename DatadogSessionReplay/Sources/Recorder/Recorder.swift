@@ -53,7 +53,8 @@ internal class Recorder: Recording {
     convenience init(
         configuration: SessionReplayConfiguration,
         rumContextObserver: RUMContextObserver,
-        processor: Processing
+        processor: Processing,
+        scheduler: Scheduler = MainThreadScheduler(interval: 0.1)
     ) throws {
         let windowObserver = KeyWindowObserver()
         let viewTreeSnapshotProducer = WindowViewTreeSnapshotProducer(
@@ -68,7 +69,7 @@ internal class Recorder: Recording {
             configuration: configuration,
             rumContextObserver: rumContextObserver,
             uiApplicationSwizzler: try UIApplicationSwizzler(handler: touchSnapshotProducer),
-            scheduler: MainThreadScheduler(interval: 0.1),
+            scheduler: scheduler,
             viewTreeSnapshotProducer: viewTreeSnapshotProducer,
             touchSnapshotProducer: touchSnapshotProducer,
             snapshotProcessor: processor
