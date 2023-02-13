@@ -101,7 +101,7 @@ public struct DatadogContext {
     public var featuresAttributes: [String: FeatureBaggage] = [:]
 
     public init(
-        site: DatadogSite,
+        site: DatadogSite?,
         clientToken: String,
         service: String,
         env: String,

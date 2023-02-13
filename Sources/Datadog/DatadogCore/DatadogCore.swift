@@ -505,7 +505,7 @@ extension DatadogContextProvider {
         serverDateProvider: ServerDateProvider
     ) {
         let context = DatadogContext(
-            site: configuration.site ?? .us1,
+            site: configuration.site,
             clientToken: configuration.clientToken,
             service: configuration.serviceName,
             env: configuration.environment,
