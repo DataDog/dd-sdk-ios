@@ -46,6 +46,19 @@ internal func compare(
     file: StaticString = #filePath,
     line: UInt = #line
 ) throws {
+    let simulatorModel = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"]
+    let osVersion = UIDevice.current.systemVersion
+
+    guard simulatorModel == "iPhone14,7", osVersion == "16.2" else {
+        XCTFail(
+            "Snapshots must be compared on iPhone 14 Simulator (iPhone14,7) + iOS 16.2. " +
+            "Running on \(simulatorModel ?? "unknown") + iOS \(osVersion) instead.",
+            file: file,
+            line: line
+        )
+        return
+    }
+
     if record {
         let directoryURL = referenceImage.url.deletingLastPathComponent()
         try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
