@@ -577,6 +577,16 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         )
     }
 
+    override public func addFeatureFlagEvaluation(name: String, value: Encodable) {
+        process(
+            command: RUMAddFeatureFlagEvaluationCommand(
+                time: dateProvider.now,
+                name: name,
+                value: value
+            )
+        )
+    }
+
     // MARK: - Attributes
 
     override public func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
@@ -629,10 +639,13 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 }
 
                 return [
-                    RUMContextAttributes.applicationID: context.rumApplicationID,
-                    RUMContextAttributes.sessionID: context.sessionID.rawValue.uuidString.lowercased(),
-                    RUMContextAttributes.viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
-                    RUMContextAttributes.userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased()
+                    RUMContextAttributes.ids: [
+                        RUMContextAttributes.IDs.applicationID: context.rumApplicationID,
+                        RUMContextAttributes.IDs.sessionID: context.sessionID.rawValue.uuidString.lowercased(),
+                        RUMContextAttributes.IDs.viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
+                        RUMContextAttributes.IDs.userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased(),
+                    ],
+                    RUMContextAttributes.serverTimeOffset: self.applicationScope.sessionScope?.viewScopes.last?.serverTimeOffset
                 ]
             }
         })

@@ -125,7 +125,7 @@ internal final class RemoteLogger: LoggerProtocol {
             var internalAttributes: [String: Encodable] = [:]
             let contextAttributes = context.featuresAttributes
 
-            if self.rumContextIntegration, let attributes = contextAttributes["rum"] {
+            if self.rumContextIntegration, let attributes: [String: String] = contextAttributes["rum"]?.ids {
                 let attributes = attributes.compactMapValues(AnyEncodable.init)
                 internalAttributes.merge(attributes) { $1 }
             }

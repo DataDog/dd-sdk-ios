@@ -285,8 +285,8 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
                 event[dateKey] = correctedTimestamp
             }
 
-            if let baggage = context.featuresAttributes["rum"] {
-                event.merge(baggage.attributes) { $1 }
+            if let baggage: [String: String?] = context.featuresAttributes["rum"]?.ids {
+                event.merge(baggage as [String: Any]) { $1 }
             }
 
             writer.write(value: AnyEncodable(event))

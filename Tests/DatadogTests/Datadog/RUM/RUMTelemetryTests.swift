@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import Datadog
 
 class RUMTelemetryTests: XCTestCase {
@@ -89,10 +90,12 @@ class RUMTelemetryTests: XCTestCase {
         let actionId: String = .mockRandom()
 
         core.set(feature: "rum", attributes: {[
-            RUMContextAttributes.applicationID: applicationId,
-            RUMContextAttributes.sessionID: sessionId,
-            RUMContextAttributes.viewID: viewId,
-            RUMContextAttributes.userActionID: actionId
+            "ids": [
+                RUMContextAttributes.IDs.applicationID: applicationId,
+                RUMContextAttributes.IDs.sessionID: sessionId,
+                RUMContextAttributes.IDs.viewID: viewId,
+                RUMContextAttributes.IDs.userActionID: actionId
+            ]
         ]})
 
         // When
@@ -118,10 +121,12 @@ class RUMTelemetryTests: XCTestCase {
         let actionId: String = .mockRandom()
 
         core.set(feature: "rum", attributes: {[
-            RUMContextAttributes.applicationID: applicationId,
-            RUMContextAttributes.sessionID: sessionId,
-            RUMContextAttributes.viewID: viewId,
-            RUMContextAttributes.userActionID: actionId
+            "ids": [
+                RUMContextAttributes.IDs.applicationID: applicationId,
+                RUMContextAttributes.IDs.sessionID: sessionId,
+                RUMContextAttributes.IDs.viewID: viewId,
+                RUMContextAttributes.IDs.userActionID: actionId
+            ]
         ]})
 
         // When
@@ -261,22 +266,42 @@ class RUMTelemetryTests: XCTestCase {
         XCTAssertEqual(events.count, 0)
     }
 
+    func testSampledTelemetry_rejectAllConfiguration() throws {
+        // Given
+        let telemetry: RUMTelemetry = .mockWith(core: core, sampler: .mockKeepAll(), configurationExtraSampler: .mockRejectAll())
+
+        // When
+        // sends 10 telemetry events
+        for _ in 0..<10 {
+            telemetry.configuration(configuration: .mockAny())
+        }
+
+        // Then
+        let eventMatchers = try core.waitAndReturnRUMEventMatchers()
+        let events = try eventMatchers.compactMap(TelemetryDebugEvent.self)
+        XCTAssertEqual(events.count, 0)
+    }
+
     func testSendTelemetry_resetAfterSessionExpire() throws {
         // Given
         let telemetry: RUMTelemetry = .mockAny(in: core)
         let applicationId: String = .mockRandom()
 
         core.set(feature: "rum", attributes: {[
-            RUMContextAttributes.applicationID: applicationId,
-            RUMContextAttributes.sessionID: String.mockRandom()
+            "ids": [
+                RUMContextAttributes.IDs.applicationID: applicationId,
+                RUMContextAttributes.IDs.sessionID: String.mockRandom()
+            ]
         ]})
 
         // When
         telemetry.debug(id: "0", message: "telemetry debug")
 
         core.set(feature: "rum", attributes: {[
-            RUMContextAttributes.applicationID: applicationId,
-            RUMContextAttributes.sessionID: String.mockRandom() // new session
+            "ids": [
+                RUMContextAttributes.IDs.applicationID: applicationId,
+                RUMContextAttributes.IDs.sessionID: String.mockRandom() // new session
+            ]
         ]})
 
         telemetry.debug(id: "0", message: "telemetry debug")
@@ -295,7 +320,8 @@ class RUMTelemetryTests: XCTestCase {
         let telemetry: RUMTelemetry = .mockWith(
             core: core,
             delayedDispatcher: { block in delayedDispatch = block },
-            sampler: .mockKeepAll()
+            sampler: .mockKeepAll(),
+            configurationExtraSampler: .mockKeepAll()
         )
 
         // When
@@ -355,10 +381,12 @@ class RUMTelemetryTests: XCTestCase {
                 { telemetry.configuration(configuration: .mockAny()) },
                 {
                     self.core.set(feature: "rum", attributes: {[
-                        RUMContextAttributes.applicationID: String.mockRandom(),
-                        RUMContextAttributes.sessionID: String.mockRandom(),
-                        RUMContextAttributes.viewID: String.mockRandom(),
-                        RUMContextAttributes.userActionID: String.mockRandom()
+                        RUMContextAttributes.ids: [
+                            RUMContextAttributes.IDs.applicationID: String.mockRandom(),
+                            RUMContextAttributes.IDs.sessionID: String.mockRandom(),
+                            RUMContextAttributes.IDs.viewID: String.mockRandom(),
+                            RUMContextAttributes.IDs.userActionID: String.mockRandom()
+                        ]
                     ]})
                 }
             ],

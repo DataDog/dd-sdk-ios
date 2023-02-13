@@ -271,6 +271,16 @@ public class DDRUMMonitor {
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {}
 
+    /// Adds the result of evaluating a feature flag to the view
+    /// Feature flag evaluations are local to the active view and are cleared when the view is stopped
+    /// - Parameters:
+    ///   - name: the name of the feature flag
+    ///   - value: the result of the evaluation
+    public func addFeatureFlagEvaluation(
+        name: String,
+        value: Encodable
+    ) {}
+
     // MARK: - Attributes
 
     /// Adds a custom attribute to all future events sent by the RUM monitor.

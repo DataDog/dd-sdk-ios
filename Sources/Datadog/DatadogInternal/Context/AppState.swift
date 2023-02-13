@@ -7,7 +7,7 @@
 import Foundation
 
 /// Application state.
-internal enum AppState: Codable, DictionaryEncodable {
+public enum AppState: Codable, DictionaryEncodable {
     /// The app is running in the foreground and currently receiving events.
     case active
     /// The app is running in the foreground but is not receiving events.
@@ -17,7 +17,7 @@ internal enum AppState: Codable, DictionaryEncodable {
     case background
 
     /// If the app is running in the foreground - no matter if receiving events or not (i.e. being interrupted because of transitioning from background).
-    var isRunningInForeground: Bool {
+    public var isRunningInForeground: Bool {
         switch self {
         case .active, .inactive:
             return true
@@ -28,30 +28,35 @@ internal enum AppState: Codable, DictionaryEncodable {
 }
 
 /// A data structure to represent recorded app states in a given period of time
-internal struct AppStateHistory: Codable, Equatable, DictionaryEncodable {
+public struct AppStateHistory: Codable, Equatable, DictionaryEncodable {
     /// Snapshot of the app state at `date`
-    struct Snapshot: Codable, Equatable {
+    public struct Snapshot: Codable, Equatable {
         /// The app state at this `date`.
-        let state: AppState
+        public let state: AppState
         /// Date of recording this snapshot.
-        let date: Date
+        public let date: Date
+
+        public init(state: AppState, date: Date) {
+            self.state = state
+            self.date = date
+        }
     }
 
-    private(set) var initialSnapshot: Snapshot
-    private(set) var snapshots: [Snapshot]
+    public private(set) var initialSnapshot: Snapshot
+    public private(set) var snapshots: [Snapshot]
 
     /// Date of last the update to `AppStateHistory`.
-    private(set) var recentDate: Date
+    public private(set) var recentDate: Date
 
     /// The most recent app state `Snapshot`.
-    var currentSnapshot: Snapshot {
+    public var currentSnapshot: Snapshot {
         return Snapshot(
             state: (snapshots.last ?? initialSnapshot).state,
             date: recentDate
         )
     }
 
-    init(
+    public init(
         initialSnapshot: Snapshot,
         recentDate: Date,
         snapshots: [Snapshot] = []
@@ -61,7 +66,7 @@ internal struct AppStateHistory: Codable, Equatable, DictionaryEncodable {
         self.recentDate = recentDate
     }
 
-    init(
+    public init(
         initialState: AppState,
         date: Date,
         snapshots: [Snapshot] = []

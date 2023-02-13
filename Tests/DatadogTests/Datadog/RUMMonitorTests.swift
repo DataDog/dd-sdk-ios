@@ -6,6 +6,7 @@
 
 import XCTest
 import UIKit
+import TestUtilities
 @testable import Datadog
 
 class RUMMonitorTests: XCTestCase {
@@ -839,6 +840,89 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(try lastViewUpdate.timing(named: "timing1"), 1_000_000_000)
         XCTAssertEqual(try lastViewUpdate.timing(named: "timing2"), 2_000_000_000)
         XCTAssertEqual(try lastViewUpdate.timing(named: "timing3_.@$-______"), 3_000_000_000)
+    }
+
+    // MARK: - Feature Flags
+
+    func testStartingView_thenAddingFeatureFlags() throws {
+        // Given
+        let rum: RUMFeature = .mockWith(
+            configuration: .mockWith(
+                dateProvider: RelativeDateProvider(
+                    startingFrom: Date(),
+                    advancingBySeconds: 1
+                )
+            )
+        )
+        core.register(feature: rum)
+
+        let monitor = try createTestableRUMMonitor()
+        monitor.startView(viewController: mockView)
+
+        // When
+        let flagName: String = .mockRandom()
+        let flagValue: Bool = .mockRandom()
+        monitor.addFeatureFlagEvaluation(name: flagName, value: flagValue)
+
+        let rumEventMatchers = core.waitAndReturnEvents(of: RUMFeature.self, ofType: RUMViewEvent.self)
+        let lastViewUpdate = try XCTUnwrap(rumEventMatchers.last)
+        let flags = try XCTUnwrap(lastViewUpdate.featureFlags)
+        XCTAssertEqual(flags.featureFlagsInfo[flagName] as? Bool, flagValue)
+    }
+
+    func testGivenActiveViewWithFlags_thenAddingError_sendsFlags() throws {
+        // Given
+        let rum: RUMFeature = .mockWith(
+            configuration: .mockWith(
+                dateProvider: RelativeDateProvider(
+                    startingFrom: Date(),
+                    advancingBySeconds: 1
+                )
+            )
+        )
+        core.register(feature: rum)
+
+        let monitor = try createTestableRUMMonitor()
+        monitor.startView(viewController: mockView)
+        let flagName: String = .mockRandom()
+        let flagValue: Bool = .mockRandom()
+        monitor.addFeatureFlagEvaluation(name: flagName, value: flagValue)
+
+        // When
+        monitor.addError(message: .mockAny())
+
+        // Then
+        let rumErrorEvents = core.waitAndReturnEvents(of: RUMFeature.self, ofType: RUMErrorEvent.self)
+        let lastError = try XCTUnwrap(rumErrorEvents.last)
+        let flags = try XCTUnwrap(lastError.featureFlags)
+        XCTAssertEqual(flags.featureFlagsInfo[flagName] as? Bool, flagValue)
+    }
+
+    func testGivenAnActiveViewWithFlags_startingANewView_resetsFlags() throws {
+        // Given
+        let rum: RUMFeature = .mockWith(
+            configuration: .mockWith(
+                dateProvider: RelativeDateProvider(
+                    startingFrom: Date(),
+                    advancingBySeconds: 1
+                )
+            )
+        )
+        core.register(feature: rum)
+
+        let monitor = try createTestableRUMMonitor()
+        monitor.startView(viewController: mockView)
+        monitor.addFeatureFlagEvaluation(name: .mockAny(), value: String.mockAny())
+
+        // When
+        let mockSecondView = createMockViewInWindow()
+        monitor.startView(viewController: mockSecondView)
+
+        // Then
+        let rumEventMatchers = core.waitAndReturnEvents(of: RUMFeature.self, ofType: RUMViewEvent.self)
+        let lastViewUpdate = try XCTUnwrap(rumEventMatchers.last)
+        let flags = try XCTUnwrap(lastViewUpdate.featureFlags)
+        XCTAssertEqual(flags.featureFlagsInfo.count, 0)
     }
 
     // MARK: - RUM New Session
