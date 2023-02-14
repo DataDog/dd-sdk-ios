@@ -77,6 +77,11 @@ xcodeproj-session-replay:
 		@cd DatadogSessionReplay/ && swift package generate-xcodeproj
 		@echo "OK 👌"
 
+prepare-integration-tests:
+		@echo "⚙️  Prepare Integration Tests ..."
+		@cd IntegrationTests/ && pod install
+		@echo "OK 👌"
+
 templates:
 		@echo "⚙️  Installing Xcode templates..."
 		./tools/xcode-templates/install-xcode-templates.sh
