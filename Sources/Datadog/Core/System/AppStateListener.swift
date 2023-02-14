@@ -6,6 +6,7 @@
 
 import Foundation
 import UIKit
+import DatadogInternal
 
 /// An observer of `AppStateHistory` value.
 internal typealias AppStateHistoryObserver = ValueObserver

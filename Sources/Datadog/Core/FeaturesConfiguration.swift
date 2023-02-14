@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Describes the configuration of all features.
 ///
@@ -300,6 +301,41 @@ extension FeaturesConfiguration {
         self.rum = rum
         self.urlSessionAutoInstrumentation = urlSessionAutoInstrumentation
         self.crashReporting = crashReporting
+    }
+}
+
+extension DatadogSite {
+    internal var logsEndpoint: Datadog.Configuration.LogsEndpoint {
+        switch self {
+        case .us1: return .us1
+        case .us3: return .us3
+        case .us5: return .us5
+        case .eu1: return .eu1
+        case .ap1: return .ap1
+        case .us1_fed: return .us1_fed
+        }
+    }
+
+    internal var tracesEndpoint: Datadog.Configuration.TracesEndpoint {
+        switch self {
+        case .us1: return .us1
+        case .us3: return .us3
+        case .us5: return .us5
+        case .eu1: return .eu1
+        case .ap1: return .ap1
+        case .us1_fed: return .us1_fed
+        }
+    }
+
+    internal var rumEndpoint: Datadog.Configuration.RUMEndpoint {
+        switch self {
+        case .us1: return .us1
+        case .us3: return .us3
+        case .us5: return .us5
+        case .eu1: return .eu1
+        case .ap1: return .ap1
+        case .us1_fed: return .us1_fed
+        }
     }
 }
 

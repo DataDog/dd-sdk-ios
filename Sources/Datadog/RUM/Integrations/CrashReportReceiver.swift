@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Receiver to consume crash reports as RUM events.
 internal struct CrashReportReceiver: FeatureMessageReceiver {

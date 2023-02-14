@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import DatadogInternal
 
 /// A description of the RUM Action returned from the `UIKitRUMUserActionsPredicate`.
 public struct RUMAction {

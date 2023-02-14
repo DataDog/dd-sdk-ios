@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import DatadogInternal
 @testable import Datadog
 
 extension PerformancePreset {

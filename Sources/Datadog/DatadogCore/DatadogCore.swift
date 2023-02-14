@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Feature-agnostic SDK configuration.
 internal typealias CoreConfiguration = FeaturesConfiguration.Common

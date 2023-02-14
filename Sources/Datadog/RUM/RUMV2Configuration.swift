@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Creates RUM Feature Configuration.
 ///

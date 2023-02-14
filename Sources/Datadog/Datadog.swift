@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Datadog SDK configuration object.
 public class Datadog {
@@ -211,8 +212,10 @@ public class Datadog {
         var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
         var rumInstrumentation: RUMInstrumentation?
 
+        var telemetry: RUMTelemetry?
+
         if let rumConfiguration = configuration.rum {
-            DD.telemetry = RUMTelemetry(
+            telemetry = RUMTelemetry(
                 in: core,
                 dateProvider: rumConfiguration.dateProvider,
                 configurationEventMapper: nil,
@@ -286,10 +289,18 @@ public class Datadog {
 
         deleteV1Folders(in: core)
 
-        DD.telemetry.configuration(configuration: configuration)
+        DD.logger = InternalLogger(
+            dateProvider: SystemDateProvider(),
+            timeZone: .current,
+            printFunction: consolePrint,
+            verbosityLevel: { Datadog.verbosityLevel?.toCoreLogLevel }
+        )
+
+        telemetry?.configuration(configuration: configuration)
+        DD.telemetry = telemetry ?? NOPTelemetry()
     }
 
-    internal init() {
+    public init() {
     }
 
     private static func deleteV1Folders(in core: DatadogCore) {

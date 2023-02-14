@@ -7,6 +7,7 @@
 #if os(iOS)
 
 import XCTest
+import TestUtilities
 @testable import Datadog
 
 final class BatteryStatusPublisherTests: XCTestCase {

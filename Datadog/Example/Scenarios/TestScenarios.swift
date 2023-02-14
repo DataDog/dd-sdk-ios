@@ -5,6 +5,7 @@
  */
 
 import Datadog
+import DatadogInternal
 
 protocol TestScenario: AnyObject {
     /// The name of the storyboard containing this scenario.

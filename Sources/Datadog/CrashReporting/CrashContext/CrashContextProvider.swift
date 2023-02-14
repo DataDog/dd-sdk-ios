@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// An interface for writing and reading  the `CrashContext`
 internal protocol CrashContextProviderType: AnyObject {

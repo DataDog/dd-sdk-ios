@@ -7,6 +7,8 @@
 import UIKit
 import Datadog
 
+@_exported import enum DatadogInternal.TrackingConsent
+
 var logger: Logger!
 var tracer: OTTracer { Global.sharedTracer }
 var rumMonitor: DDRUMMonitor { Global.rum }

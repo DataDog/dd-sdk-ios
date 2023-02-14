@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Command processed through the tree of `RUMScopes`.
 internal protocol RUMCommand {

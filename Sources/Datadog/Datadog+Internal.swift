@@ -5,9 +5,10 @@
  */
 
 import Foundation
+import DatadogInternal
 
-extension Datadog: DatadogInternal {}
-extension Datadog.Configuration.Builder: DatadogInternal {}
+extension Datadog: DatadogInternalInterface {}
+extension Datadog.Configuration.Builder: DatadogInternalInterface {}
 
 /// This extension exposes internal methods that are used by other Datadog modules and cross platform
 /// frameworks. It is not meant for public use.

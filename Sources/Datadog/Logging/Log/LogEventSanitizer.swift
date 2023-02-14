@@ -5,10 +5,11 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Sanitizes `Log` representation received from the user, so it can match Datadog log constraints.
 internal struct LogEventSanitizer {
-    struct Constraints {
+    public struct Constraints {
         /// Attribute names reserved for Datadog.
         /// If any of those is used by the user, the attribute will be ignored.
         static let reservedAttributeNames: Set<String> = [

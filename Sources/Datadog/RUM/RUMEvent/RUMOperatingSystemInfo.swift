@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 extension RUMOperatingSystem {
     init(context: DatadogContext) {

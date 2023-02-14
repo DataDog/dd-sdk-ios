@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// JSON encoder used to encode data.
 private let jsonEncoder: JSONEncoder = .default()

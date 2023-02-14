@@ -6,6 +6,7 @@
 
 import HTTPServerMock
 import XCTest
+import DatadogInternal
 
 private class RUMFixture1Screen: XCUIApplication {
     func tapDownloadResourceButton() {
@@ -108,13 +109,13 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         XCTAssertEqual(view2.viewEvents.last?.view.resource.count, 0)
         XCTAssertEqual(view2.viewEvents.last?.view.error.count, 1)
         let viewFeatureFlags = try XCTUnwrap(view2.viewEvents.last?.featureFlags)
-        XCTAssertEqual((viewFeatureFlags.featureFlagsInfo["mock_flag_a"] as? DDAnyCodable)?.value as? Bool, false)
-        XCTAssertEqual((viewFeatureFlags.featureFlagsInfo["mock_flag_b"] as? DDAnyCodable)?.value as? String, "mock_value")
+        XCTAssertEqual((viewFeatureFlags.featureFlagsInfo["mock_flag_a"] as? AnyCodable)?.value as? Bool, false)
+        XCTAssertEqual((viewFeatureFlags.featureFlagsInfo["mock_flag_b"] as? AnyCodable)?.value as? String, "mock_value")
         XCTAssertEqual(view2.errorEvents[0].error.message, "Simulated view error")
         XCTAssertEqual(view2.errorEvents[0].error.source, .source)
         let errorFeatureFlags = try XCTUnwrap(view2.errorEvents[0].featureFlags)
-        XCTAssertEqual((errorFeatureFlags.featureFlagsInfo["mock_flag_a"] as? DDAnyCodable)?.value as? Bool, false)
-        XCTAssertEqual((errorFeatureFlags.featureFlagsInfo["mock_flag_b"] as? DDAnyCodable)?.value as? String, "mock_value")
+        XCTAssertEqual((errorFeatureFlags.featureFlagsInfo["mock_flag_a"] as? AnyCodable)?.value as? Bool, false)
+        XCTAssertEqual((errorFeatureFlags.featureFlagsInfo["mock_flag_b"] as? AnyCodable)?.value as? String, "mock_value")
         RUMSessionMatcher.assertViewWasEventuallyInactive(view2)
 
         let view3 = session.viewVisits[2]

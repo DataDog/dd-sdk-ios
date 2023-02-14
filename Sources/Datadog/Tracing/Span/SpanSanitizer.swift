@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Sanitizes `SpanEvent` representation received from the user, so it can match Datadog APM constraints.
 internal struct SpanSanitizer {

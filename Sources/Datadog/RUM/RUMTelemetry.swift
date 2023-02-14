@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 internal typealias RUMTelemetryConfiguratoinMapper = (TelemetryConfigurationEvent) -> TelemetryConfigurationEvent
 internal typealias RUMTelemetryDelayedDispatcher = (@escaping () -> Void) -> Void

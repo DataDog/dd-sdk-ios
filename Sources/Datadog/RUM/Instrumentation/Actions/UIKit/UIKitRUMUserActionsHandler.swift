@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import DatadogInternal
 
 internal protocol UIEventHandler: RUMCommandPublisher {
     func notify_sendEvent(application: UIApplication, event: UIEvent)

@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 import Datadog
 
 internal struct RequestBuilder: FeatureRequestBuilder {
@@ -51,7 +52,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
     private func createRequest(url: URL, segment: SegmentJSON, context: DatadogContext) throws -> URLRequest {
         var multipart = MultipartFormData(boundary: UUID())
 
-        let builder = DDURLRequestBuilder(
+        let builder = URLRequestBuilder(
             url: url,
             queryItems: [],
             headers: [

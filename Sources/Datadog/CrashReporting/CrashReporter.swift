@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /* public */ internal class CrashReporter: DatadogFeatureIntegration {
     /* public */ let name = "crash-reporter"

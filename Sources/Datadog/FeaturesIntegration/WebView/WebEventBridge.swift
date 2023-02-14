@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 internal enum WebEventError: Error, Equatable {
     case dataSerialization(message: String)

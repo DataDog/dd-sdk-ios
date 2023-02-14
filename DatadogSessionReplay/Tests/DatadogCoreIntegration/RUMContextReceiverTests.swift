@@ -6,7 +6,8 @@
 
 import XCTest
 import TestUtilities
-import Datadog
+import DatadogInternal
+
 @testable import DatadogSessionReplay
 
 class RUMContextReceiverTests: XCTestCase {

@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Creates and owns components enabling logging feature.
 /// Bundles dependencies for other logging-related components created later at runtime  (i.e. `Logger`).
