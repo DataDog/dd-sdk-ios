@@ -138,7 +138,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             return true // discard all events in this session
         }
 
-        if let startViewCommand = command as? RUMStartViewCommand {
+        if let startApplicationCommand = command as? RUMApplicationStartCommand {
+            startApplicationLaunchView(on: startApplicationCommand, context: context, writer: writer)
+        } else if let startViewCommand = command as? RUMStartViewCommand {
             // Start view scope explicitly on receiving "start view" command
             startView(on: startViewCommand, context: context)
         } else if !hasActiveView {
@@ -205,7 +207,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         )
     }
 
-    internal func startApplicationLaunchView(context: DatadogContext, writer: Writer) {
+    private func startApplicationLaunchView(on command: RUMApplicationStartCommand, context: DatadogContext, writer: Writer) {
         var startTime = sessionStartTime
         if context.launchTime?.isActivePrewarm == false,
            let processStartTime = context.launchTime?.launchDate {
@@ -219,7 +221,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             identity: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
             path: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
             name: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName,
-            attributes: [:],
+            attributes: command.attributes,
             customTimings: [:],
             startTime: startTime,
             serverTimeOffset: context.serverTimeOffset
@@ -228,7 +230,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         viewScopes.append(
             scope
         )
-        scope.sendApplicationStartAction(context: context, writer: writer)
     }
 
     private func startBackgroundView(on command: RUMCommand, context: DatadogContext) {

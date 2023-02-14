@@ -103,7 +103,13 @@ class RUMViewScopeTests: XCTestCase {
             startTime: currentTime,
             serverTimeOffset: .zero
         )
-        scope.sendApplicationStartAction(context: customContext, writer: writer)
+
+        // When
+        scope.process(
+            command: RUMApplicationStartCommand(time: currentTime, attributes: [:]),
+            context: customContext,
+            writer: writer
+        )
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
@@ -129,7 +135,11 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // When
-        scope.sendApplicationStartAction(context: context, writer: writer)
+        scope.process(
+            command: RUMApplicationStartCommand(time: date, attributes: [:]),
+            context: context,
+            writer: writer
+        )
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
@@ -139,6 +149,7 @@ class RUMViewScopeTests: XCTestCase {
     func testWhenActivePrewarm_itSendsApplicationStartAction_withoutLoadingTime() throws {
         // Given
         var context = self.context
+        let date = Date()
         context.launchTime = .init(
             launchTime: 2,
             launchDate: .distantPast,
@@ -153,7 +164,11 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // When
-        scope.sendApplicationStartAction(context: context, writer: writer)
+        scope.process(
+            command: RUMApplicationStartCommand(time: date, attributes: [:]),
+            context: context,
+            writer: writer
+        )
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
@@ -181,7 +196,11 @@ class RUMViewScopeTests: XCTestCase {
             startTime: currentTime,
             serverTimeOffset: .zero
         )
-        scope.sendApplicationStartAction(context: context, writer: writer)
+        scope.process(
+            command: RUMApplicationStartCommand(time: currentTime, attributes: [:]),
+            context: context,
+            writer: writer
+        )
 
         _ = scope.process(
             command: RUMCommandMock(time: currentTime),

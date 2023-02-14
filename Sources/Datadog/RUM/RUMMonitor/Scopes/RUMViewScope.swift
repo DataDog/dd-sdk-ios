@@ -156,6 +156,21 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         // Apply side effects
         switch command {
+        // Application Launch
+        case is RUMApplicationStartCommand:
+            sendApplicationStartAction(context: context, writer: writer)
+            if !isInitialView || viewPath != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL {
+                DD.telemetry.error(
+                    id: "application-start-error",
+                    message: "An RUMApplciationStartCommand got sent to something other than the ApplicaitonLaunch view.",
+                    kind: nil,
+                    stack: nil
+                )
+            }
+            // Application Launch also serves as a StartView command for this view
+            didReceiveStartCommand = true
+            needsViewUpdate = true
+
         // View commands
         case let command as RUMStartViewCommand where identity.equals(command.identity):
             if didReceiveStartCommand {
@@ -325,7 +340,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     // MARK: - Sending RUM Events
 
-    internal func sendApplicationStartAction(context: DatadogContext, writer: Writer) {
+    private func sendApplicationStartAction(context: DatadogContext, writer: Writer) {
         actionsCount += 1
 
         var attributes = self.attributes
@@ -345,9 +360,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             // a RUM view on `SwiftUI.View/onAppear`.
             //
             // In that case, we consider the time between the application
-            // launch and the first view start as the application loading
+            // launch and the sdkInitialization as the application loading
             // time.
-            loadingTime = viewStartTime.timeIntervalSince(launchDate).toInt64Nanoseconds
+            loadingTime = context.sdkInitDate.timeIntervalSince(launchDate).toInt64Nanoseconds
         }
 
         let actionEvent = RUMActionEvent(

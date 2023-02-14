@@ -342,19 +342,25 @@ class RUMMonitorTests: XCTestCase {
         try rumEventMatchers[0].model(ofType: RUMActionEvent.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .applicationStart)
         }
+        // Start ApplicationLaunch view
         try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 0)
         }
+        // Stop ApplicationLaunch view
         try rumEventMatchers[2].model(ofType: RUMViewEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.view.action.count, 1)
+            XCTAssertEqual(rumModel.view.resource.count, 0)
+        }
+        try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 0)
             XCTAssertEqual(rumModel.view.resource.count, 0)
         }
-        try rumEventMatchers[3].model(ofType: RUMActionEvent.self) { rumModel in
+        try rumEventMatchers[4].model(ofType: RUMActionEvent.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .tap)
             XCTAssertEqual(rumModel.action.target?.name, actionName)
         }
-        try rumEventMatchers[4].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[5].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 0)
         }

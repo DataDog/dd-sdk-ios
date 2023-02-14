@@ -6,7 +6,6 @@
 
 import Foundation
 import XCTest
-import Datadog
 
 /// Provides set of assertions for single `RUMDataModel` JSON object and collection of `[RUMDataModel]`.
 /// Note: this file is individually referenced by integration tests target, so no dependency on other source files should be introduced except `RUMDataModel` implementations
