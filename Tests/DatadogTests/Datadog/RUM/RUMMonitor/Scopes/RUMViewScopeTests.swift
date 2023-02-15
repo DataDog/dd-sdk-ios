@@ -105,7 +105,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // When
-        scope.process(
+        _ = scope.process(
             command: RUMApplicationStartCommand(time: currentTime, attributes: [:]),
             context: customContext,
             writer: writer
@@ -135,7 +135,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // When
-        scope.process(
+        _ = scope.process(
             command: RUMApplicationStartCommand(time: date, attributes: [:]),
             context: context,
             writer: writer
@@ -164,7 +164,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // When
-        scope.process(
+        _ = scope.process(
             command: RUMApplicationStartCommand(time: date, attributes: [:]),
             context: context,
             writer: writer
@@ -196,7 +196,7 @@ class RUMViewScopeTests: XCTestCase {
             startTime: currentTime,
             serverTimeOffset: .zero
         )
-        scope.process(
+        _ = scope.process(
             command: RUMApplicationStartCommand(time: currentTime, attributes: [:]),
             context: context,
             writer: writer
