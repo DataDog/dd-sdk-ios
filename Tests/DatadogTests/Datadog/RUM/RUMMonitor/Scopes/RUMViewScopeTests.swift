@@ -96,8 +96,8 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
-            path: "UIViewController",
-            name: "ViewName",
+            path: "com/datadog/application-launch/view",
+            name: "ApplicationLaunch",
             attributes: [:],
             customTimings: [:],
             startTime: currentTime,
@@ -119,7 +119,7 @@ class RUMViewScopeTests: XCTestCase {
     func testWhenNoLoadingTime_itSendsApplicationStartAction_basedOnLoadingDate() throws {
         // Given
         var context = self.context
-        let date = Date()
+        let date = context.sdkInitDate
         context.launchTime = .init(
             launchTime: nil,
             launchDate: date.addingTimeInterval(-2),
@@ -131,12 +131,14 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: .mockAny(),
             identity: mockView,
+            path: "com/datadog/application-launch/view",
+            name: "ApplicationLaunch",
             startTime: date
         )
 
         // When
         _ = scope.process(
-            command: RUMApplicationStartCommand(time: date, attributes: [:]),
+            command: RUMApplicationStartCommand(time: date.addingTimeInterval(1), attributes: [:]),
             context: context,
             writer: writer
         )
@@ -160,7 +162,9 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: true,
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockView
+            identity: mockView,
+            path: "com/datadog/application-launch/view",
+            name: "ApplicationLaunch"
         )
 
         // When
@@ -197,12 +201,6 @@ class RUMViewScopeTests: XCTestCase {
             serverTimeOffset: .zero
         )
         _ = scope.process(
-            command: RUMApplicationStartCommand(time: currentTime, attributes: [:]),
-            context: context,
-            writer: writer
-        )
-
-        _ = scope.process(
             command: RUMCommandMock(time: currentTime),
             context: context,
             writer: writer
@@ -220,7 +218,7 @@ class RUMViewScopeTests: XCTestCase {
         let viewIsActive = try XCTUnwrap(event.view.isActive)
         XCTAssertTrue(viewIsActive)
         XCTAssertEqual(event.view.timeSpent, 1) // Minimum `time_spent of 1 nanosecond
-        XCTAssertEqual(event.view.action.count, 1, "The initial view update must have come with `application_start` action sent.")
+        XCTAssertEqual(event.view.action.count, 0)
         XCTAssertEqual(event.view.error.count, 0)
         XCTAssertEqual(event.view.resource.count, 0)
         XCTAssertEqual(event.dd.documentVersion, 1)
