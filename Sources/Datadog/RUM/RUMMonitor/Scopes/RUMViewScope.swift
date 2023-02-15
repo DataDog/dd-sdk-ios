@@ -162,7 +162,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             if !isInitialView || viewPath != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL {
                 DD.telemetry.error(
                     id: "application-start-error",
-                    message: "An RUMApplciationStartCommand got sent to something other than the ApplicaitonLaunch view.",
+                    message: "An RUMApplicationStartCommand got sent to something other than the ApplicationLaunch view.",
                     kind: nil,
                     stack: nil
                 )
