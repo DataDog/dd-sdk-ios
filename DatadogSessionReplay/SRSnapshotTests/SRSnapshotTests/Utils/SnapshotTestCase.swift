@@ -6,7 +6,7 @@
 
 import XCTest
 @testable import DatadogSessionReplay
-@testable import SRExample
+@testable import SRHost
 
 internal class SnapshotTestCase: XCTestCase {
     private var app: AppDelegate { UIApplication.shared.delegate as! AppDelegate }

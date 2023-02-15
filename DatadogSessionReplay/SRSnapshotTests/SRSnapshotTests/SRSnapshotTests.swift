@@ -5,7 +5,7 @@
  */
 
 import XCTest
-@testable import SRExample
+@testable import SRHost
 
 final class SRSnapshotTests: SnapshotTestCase {
     private let snapshotsFolderName = "_snapshots_"

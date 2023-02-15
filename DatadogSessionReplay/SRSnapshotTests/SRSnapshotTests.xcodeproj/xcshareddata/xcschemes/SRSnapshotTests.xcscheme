@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "61B3BC462993BE2E0032C78A"
-               BuildableName = "SRExample.app"
-               BlueprintName = "SRExample"
-               ReferencedContainer = "container:SRExample.xcodeproj">
+               BuildableName = "SRHost.app"
+               BlueprintName = "SRHost"
+               ReferencedContainer = "container:SRSnapshotTests.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -35,7 +35,7 @@
                BlueprintIdentifier = "61B3BC612993BEAF0032C78A"
                BuildableName = "SRSnapshotTests.xctest"
                BlueprintName = "SRSnapshotTests"
-               ReferencedContainer = "container:SRExample.xcodeproj">
+               ReferencedContainer = "container:SRSnapshotTests.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "61B3BC462993BE2E0032C78A"
-            BuildableName = "SRExample.app"
-            BlueprintName = "SRExample"
-            ReferencedContainer = "container:SRExample.xcodeproj">
+            BuildableName = "SRHost.app"
+            BlueprintName = "SRHost"
+            ReferencedContainer = "container:SRSnapshotTests.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "61B3BC462993BE2E0032C78A"
-            BuildableName = "SRExample.app"
-            BlueprintName = "SRExample"
-            ReferencedContainer = "container:SRExample.xcodeproj">
+            BuildableName = "SRHost.app"
+            BlueprintName = "SRHost"
+            ReferencedContainer = "container:SRSnapshotTests.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
