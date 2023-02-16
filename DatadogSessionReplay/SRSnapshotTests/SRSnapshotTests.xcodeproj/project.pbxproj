@@ -22,6 +22,7 @@
 		61E7DFB7299A57A9001D7A3A /* MenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E7DFB6299A57A9001D7A3A /* MenuViewController.swift */; };
 		61E7DFB9299A5A3E001D7A3A /* Basic.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61E7DFB8299A5A3E001D7A3A /* Basic.storyboard */; };
 		61E7DFBB299A5C9D001D7A3A /* BasicViewControllers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E7DFBA299A5C9D001D7A3A /* BasicViewControllers.swift */; };
+		61EC1A37299CFD7E00224FB6 /* TestUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = 61EC1A36299CFD7E00224FB6 /* TestUtilities */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -67,6 +68,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				619C49B229952108006B66A6 /* Framer in Frameworks */,
+				61EC1A37299CFD7E00224FB6 /* TestUtilities in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -182,6 +184,7 @@
 			name = SRSnapshotTests;
 			packageProductDependencies = (
 				619C49B129952108006B66A6 /* Framer */,
+				61EC1A36299CFD7E00224FB6 /* TestUtilities */,
 			);
 			productName = SRSnapshotTests;
 			productReference = 61B3BC622993BEAF0032C78A /* SRSnapshotTests.xctest */;
@@ -557,6 +560,10 @@
 		61B3BC6C2993C06D0032C78A /* DatadogSessionReplay */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DatadogSessionReplay;
+		};
+		61EC1A36299CFD7E00224FB6 /* TestUtilities */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TestUtilities;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

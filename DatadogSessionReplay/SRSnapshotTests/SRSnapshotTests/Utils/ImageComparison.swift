@@ -6,8 +6,9 @@
 
 import UIKit
 import XCTest
+import TestUtilities
 
-internal struct ReferenceImage {
+internal struct ImageLocation {
     let url: URL
 
     private init(path: String, file: StaticString = #filePath) {
@@ -19,60 +20,74 @@ internal struct ReferenceImage {
     /// Creates reference image in folder with given name.
     /// The folder will be placed next to current file.
     /// The image will be named by the name of current test and suffixed with `imageFileSuffix`.
-    static func inFolder(
+    static func folder(
         named folderName: String,
-        imageFileSuffix: String = "",
+        fileNameSuffix: String = "",
         file: StaticString = #filePath,
         function: StaticString = #function
-    ) -> ReferenceImage {
-        return ReferenceImage(path: "\(folderName)/\(function)\(imageFileSuffix).png", file: file)
+    ) -> ImageLocation {
+        return ImageLocation(path: "\(folderName)/\(function)\(fileNameSuffix).png", file: file)
     }
 }
 
-/// Compares image against reference file OR updates reference file with image data (if `record == true`).
-///
-/// It raises `XCTest` assertion failure if image is different than reference.
-///
-/// - Parameters:
-///   - image: the image to compare OR record
-///   - referenceImage: the reference file to compare against
-///   - record: if `true`, then reference file will be created / overwritten with `image` data
-///   - file: `#filePath` for eventual `XCTest` assertion failure
-///   - line: `#line` for eventual `XCTest` assertion failure
-internal func compare(
-    image: UIImage,
-    referenceImage: ReferenceImage,
+/// Compares `newImage` against the snapshot saved in `snapshotLocation` OR updates stored snapshot image data (if `record == true`).
+internal func DDAssertSnapshotTest(
+    newImage: UIImage,
+    snapshotLocation: ImageLocation,
     record: Bool,
     file: StaticString = #filePath,
     line: UInt = #line
-) throws {
-    let simulatorModel = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"]
-    let osVersion = UIDevice.current.systemVersion
-
-    guard simulatorModel == "iPhone14,7", osVersion == "16.2" else {
-        XCTFail(
-            "Snapshots must be compared on iPhone 14 Simulator (iPhone14,7) + iOS 16.2. " +
-            "Running on \(simulatorModel ?? "unknown") + iOS \(osVersion) instead.",
-            file: file,
-            line: line
-        )
-        return
-    }
+) {
+    DDAssertSimulatorDevice("iPhone14,7", "16.2", file: file, line: line)
 
     if record {
-        let directoryURL = referenceImage.url.deletingLastPathComponent()
-        try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
-        let data = try XCTUnwrap(image.pngData(), "Failed to create `pngData()` for `image`", file: file, line: line)
-        try data.write(to: referenceImage.url)
+        DDSaveSnapshot(image: newImage, into: snapshotLocation, file: file, line: line)
     } else {
-        let oldImageData = try Data(contentsOf: referenceImage.url)
-        let oldImage = try XCTUnwrap(UIImage(data: oldImageData), "Failed to read reference image", file: file, line: line)
+        DDAssertSnapshotEquals(snapshotLocation: snapshotLocation, image: newImage, file: file, line: line)
+    }
+}
+
+/// Asserts that tests are executed on given iOS Simulator.
+private func DDAssertSimulatorDevice(_ expectedModel: String, _ expectedOSVersion: String, file: StaticString = #filePath, line: UInt = #line) {
+    _DDEvaluateAssertion(message: "Snapshots must be compared on \(expectedModel) Simulator with iOS \(expectedModel)", file: file, line: line) {
+        guard let actualModel = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] else {
+            throw DDAssertError.expectedFailure("Not running in Simulator")
+        }
+        guard actualModel == expectedModel else {
+            throw DDAssertError.expectedFailure("Running in \(actualModel) Simulator")
+        }
+        let actualOSVersion = UIDevice.current.systemVersion
+        guard actualOSVersion == expectedOSVersion else {
+            throw DDAssertError.expectedFailure("Running on iOS \(actualOSVersion)")
+        }
+    }
+}
+
+/// Writes image PNG data into given location.
+private func DDSaveSnapshot(image: UIImage, into location: ImageLocation, file: StaticString = #filePath, line: UInt = #line) {
+    _DDEvaluateAssertion(message: "Failed to write recorded image into \(location.url)", file: file, line: line) {
+        guard let data = image.pngData() else {
+            throw DDAssertError.expectedFailure("Failed to create PNG data for `image`")
+        }
+        let directoryURL = location.url.deletingLastPathComponent()
+        try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+        try data.write(to: location.url)
+    }
+}
+
+/// Compares image against the snapshot saved in given location.
+private func DDAssertSnapshotEquals(snapshotLocation: ImageLocation, image: UIImage, file: StaticString = #filePath, line: UInt = #line) {
+    _DDEvaluateAssertion(message: "Image is visibly different than snapshot", file: file, line: line) {
+        let oldImageData = try Data(contentsOf: snapshotLocation.url)
+        guard let oldImage = UIImage(data: oldImageData) else {
+            throw DDAssertError.expectedFailure("Failed to create `UIImage()` from snapshot data")
+        }
 
         // Check if both images are identical (precission: 1) or their difference is not
         // noticable for the human eye (perceptualPrecision: 0.98).
         // Ref.: http://zschuessler.github.io/DeltaE/learn/#toc-defining-delta-e
         if let difference = compare(oldImage, image, precision: 1, perceptualPrecision: 0.98) {
-            XCTFail("\(difference) (in file: \(referenceImage.url)", file: file, line: line)
+            throw DDAssertError.expectedFailure(difference)
         }
     }
 }
@@ -96,7 +111,7 @@ private let imageContextColorSpace = CGColorSpace(name: CGColorSpace.sRGB)
 private let imageContextBitsPerComponent = 8
 private let imageContextBytesPerPixel = 4
 
-func compare(_ old: UIImage, _ new: UIImage, precision: Float, perceptualPrecision: Float) -> String? {
+internal func compare(_ old: UIImage, _ new: UIImage, precision: Float, perceptualPrecision: Float) -> String? {
     guard let oldCgImage = old.cgImage else {
         return "Reference image could not be loaded."
     }
