@@ -145,7 +145,7 @@ class RUMViewScopeTests: XCTestCase {
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
-        XCTAssertEqual(event.action.loadingTime, 2_000_000_000) // 2e+9 ns
+        XCTAssertEqual(event.action.loadingTime, 3_000_000_000) // 2e+9 ns
     }
 
     func testWhenActivePrewarm_itSendsApplicationStartAction_withoutLoadingTime() throws {
