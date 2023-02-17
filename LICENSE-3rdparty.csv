@@ -7,3 +7,5 @@ import,AnyCodable,MIT,Copyright 2018 Read Evaluate Press LLC
 import (tools),https://github.com/jpsim/SourceKitten,MIT,Copyright (c) 2014 JP Simard
 import (tools),https://github.com/apple/swift-argument-parser,Apache-2.0,(c) 2020 Apple Inc. and the Swift project authors
 import (tools),https://github.com/krzysztofzablocki/Difference.git,MIT,Copyright (c) 2017 Krzysztof Zablocki
+import (tools),https://github.com/pointfreeco/swift-snapshot-testing,MIT,Copyright (c) 2019 Point-Free, Inc.
+import (tools),https://github.com/ncreated/Framing,MIT,Copyright (c) 2016 Maciek Grzybowski

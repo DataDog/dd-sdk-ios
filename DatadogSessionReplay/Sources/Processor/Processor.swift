@@ -46,6 +46,12 @@ internal class Processor: Processing {
     /// Wireframes from last "full snapshot" or "incremental snapshot" record.
     private var lastWireframes: [SRWireframe]? = nil
 
+    #if DEBUG
+    /// Interception callback for snapshot tests.
+    /// Only available in Debug configuration, solely made for testing purpose.
+    var interceptWireframes: (([SRWireframe]) -> Void)? = nil
+    #endif
+
     init(queue: Queue, writer: Writing) {
         self.queue = queue
         self.writer = writer
@@ -62,6 +68,10 @@ internal class Processor: Processing {
         let wireframes: [SRWireframe] = flattenedNodes
             .compactMap { node in node.semantics.wireframesBuilder }
             .flatMap { nodeBuilder in nodeBuilder.buildWireframes(with: wireframesBuilder) }
+
+        #if DEBUG
+        interceptWireframes?(wireframes)
+        #endif
 
         var records: [SRRecord] = []
         // Create records for describing UI:
