@@ -11,10 +11,6 @@ import UIKit
 /// It is used to mark `UIViews` which correspond to single wireframe in the replay.
 internal typealias NodeID = Int64
 
-/// Pair of unique IDs of a single view in view-tree hierarchy.
-/// It is used to mark `UIViews` which correspond to two wireframes in the replay.
-internal typealias NodeID2 = (NodeID, NodeID)
-
 /// Manages `NodeIDs` for `UIView` instances.
 ///
 /// Each `UIView` can be assigned one or more unique IDs. All IDs are linked to `UIView` lifespans, so querying
@@ -46,17 +42,17 @@ internal final class NodeIDGenerator {
         }
     }
 
-    /// Returns two `NodeIDs` for given instance of `UIView`.
+    /// Returns multiple `NodeIDs` for given instance of `UIView`.
+    /// - Parameter size: the number of IDs
     /// - Parameter view: the `UIView` object
-    /// - Returns: `NodeIDs` of queried instance
-    func nodeID2(for view: UIView) -> NodeID2 {
-        if let currentID2 = view.nodeID2 {
-            return currentID2
+    /// - Returns: an array with given number of `NodeID` values
+    func nodeIDs(_ size: Int, for view: UIView) -> [NodeID] {
+        if let currentIDs = view.nodeIDs, currentIDs.count == size {
+            return currentIDs
         } else {
-            let id1 = getNextID()
-            let id2 = getNextID()
-            view.nodeID2 = (id1, id2)
-            return (id1, id2)
+            let ids = (0..<size).map { _ in getNextID() }
+            view.nodeIDs = ids
+            return ids
         }
     }
 
@@ -70,7 +66,7 @@ internal final class NodeIDGenerator {
 // MARK: - UIView tagging
 
 fileprivate var associatedNodeIDKey: UInt8 = 1
-fileprivate var associatedNodeID2Key: UInt8 = 2
+fileprivate var associatedNodeIDsKey: UInt8 = 2
 
 private extension UIView {
     var nodeID: NodeID? {
@@ -78,8 +74,8 @@ private extension UIView {
         get { objc_getAssociatedObject(self, &associatedNodeIDKey) as? NodeID }
     }
 
-    var nodeID2: NodeID2? {
-        set { objc_setAssociatedObject(self, &associatedNodeID2Key, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
-        get { objc_getAssociatedObject(self, &associatedNodeID2Key) as? (NodeID, NodeID) }
+    var nodeIDs: [NodeID]? {
+        set { objc_setAssociatedObject(self, &associatedNodeIDsKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
+        get { objc_getAssociatedObject(self, &associatedNodeIDsKey) as? [NodeID] }
     }
 }

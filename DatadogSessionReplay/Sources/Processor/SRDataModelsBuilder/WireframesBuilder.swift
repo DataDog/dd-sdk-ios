@@ -170,3 +170,20 @@ internal class WireframesBuilder {
         )
     }
 }
+
+// MARK: - Convenience
+
+internal extension WireframesBuilder {
+    func createShapeWireframe(id: WireframeID, frame: CGRect, attributes: ViewAttributes) -> SRWireframe {
+        return createShapeWireframe(
+            id: id,
+            frame: frame,
+            clip: nil,
+            borderColor: attributes.layerBorderColor,
+            borderWidth: attributes.layerBorderWidth,
+            backgroundColor: attributes.backgroundColor,
+            cornerRadius: attributes.layerCornerRadius,
+            opacity: attributes.alpha
+        )
+    }
+}

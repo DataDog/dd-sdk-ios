@@ -103,6 +103,7 @@ extension ViewTreeSnapshotBuilder {
                 UITextFieldRecorder(),
                 UITextViewRecorder(),
                 UISwitchRecorder(),
+                UISliderRecorder(),
                 UINavigationBarRecorder(),
                 UITabBarRecorder(),
             ]
