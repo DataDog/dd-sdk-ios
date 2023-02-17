@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		616C37DA299F6913005E0472 /* InputElements.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 616C37D9299F6913005E0472 /* InputElements.storyboard */; };
 		619C49B229952108006B66A6 /* Framer in Frameworks */ = {isa = PBXBuildFile; productRef = 619C49B129952108006B66A6 /* Framer */; };
 		619C49B429952E12006B66A6 /* SnapshotTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619C49B329952E12006B66A6 /* SnapshotTestCase.swift */; };
 		619C49B72995512A006B66A6 /* ImageComparison.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619C49B62995512A006B66A6 /* ImageComparison.swift */; };
@@ -36,6 +37,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		616C37D9299F6913005E0472 /* InputElements.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = InputElements.storyboard; sourceTree = "<group>"; };
 		619C49B329952E12006B66A6 /* SnapshotTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotTestCase.swift; sourceTree = "<group>"; };
 		619C49B62995512A006B66A6 /* ImageComparison.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageComparison.swift; sourceTree = "<group>"; };
 		619C49B8299551F5006B66A6 /* _snapshots_ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = _snapshots_; sourceTree = "<group>"; };
@@ -141,6 +143,7 @@
 				61B634EA299A5DB3002BEABE /* Fixtures.swift */,
 				61E7DFB8299A5A3E001D7A3A /* Basic.storyboard */,
 				61E7DFBA299A5C9D001D7A3A /* BasicViewControllers.swift */,
+				616C37D9299F6913005E0472 /* InputElements.storyboard */,
 			);
 			path = Fixtures;
 			sourceTree = "<group>";
@@ -236,6 +239,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				616C37DA299F6913005E0472 /* InputElements.storyboard in Resources */,
 				61B3BC572993BE2F0032C78A /* LaunchScreen.storyboard in Resources */,
 				61E7DFB9299A5A3E001D7A3A /* Basic.storyboard in Resources */,
 				61B3BC522993BE2E0032C78A /* Main.storyboard in Resources */,

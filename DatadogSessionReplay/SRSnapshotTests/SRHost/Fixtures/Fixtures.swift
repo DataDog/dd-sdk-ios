@@ -9,6 +9,7 @@ import UIKit
 internal enum Fixture: CaseIterable {
     case basicShapes
     case basicTexts
+    case sliders
 
     var menuItemTitle: String {
         switch self {
@@ -16,6 +17,8 @@ internal enum Fixture: CaseIterable {
             return "Basic Shapes"
         case .basicTexts:
             return "Basic Texts"
+        case .sliders:
+            return "Sliders"
         }
     }
 
@@ -25,10 +28,13 @@ internal enum Fixture: CaseIterable {
             return UIStoryboard.basic.instantiateViewController(withIdentifier: "Shapes")
         case .basicTexts:
             return UIStoryboard.basic.instantiateViewController(withIdentifier: "Texts")
+        case .sliders:
+            return UIStoryboard.inputElements.instantiateViewController(withIdentifier: "Sliders")
         }
     }
 }
 
 internal extension UIStoryboard {
     static var basic: UIStoryboard { UIStoryboard(name: "Basic", bundle: nil) }
+    static var inputElements: UIStoryboard { UIStoryboard(name: "InputElements", bundle: nil) }
 }
