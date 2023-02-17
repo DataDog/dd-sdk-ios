@@ -16,11 +16,11 @@ internal struct UISwitchRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
-        let (backgroundWireframeID, thumbWireframeID) = context.ids.nodeID2(for: `switch`)
+        let ids = context.ids.nodeIDs(2, for: `switch`)
 
         let builder = UISwitchWireframesBuilder(
-            backgroundWireframeID: backgroundWireframeID,
-            thumbWireframeID: thumbWireframeID,
+            backgroundWireframeID: ids[0],
+            thumbWireframeID: ids[1],
             attributes: attributes,
             isOn: `switch`.isOn,
             thumbTintColor: `switch`.thumbTintColor?.cgColor,

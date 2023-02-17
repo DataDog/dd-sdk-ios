@@ -31,15 +31,7 @@ internal struct UIViewWireframesBuilder: NodeWireframesBuilder {
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         return [
-            builder.createShapeWireframe(
-                id: wireframeID,
-                frame: wireframeRect,
-                borderColor: attributes.layerBorderColor,
-                borderWidth: attributes.layerBorderWidth,
-                backgroundColor: attributes.backgroundColor,
-                cornerRadius: attributes.layerCornerRadius,
-                opacity: attributes.alpha
-            )
+            builder.createShapeWireframe(id: wireframeID, frame: wireframeRect, attributes: attributes)
         ]
     }
 }
