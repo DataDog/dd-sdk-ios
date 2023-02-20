@@ -48,9 +48,7 @@ function archive {
         -destination "$2" \
         -archivePath "$3" \
         SKIP_INSTALL=NO \
-        BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
         ONLY_ACTIVE_ARCH=NO \
-        SKIP_INSTALL=NO \
     | xcpretty
 }
 
@@ -79,7 +77,14 @@ function bundle {
     fi
 
     echo "▸ Create $PRODUCT.xcframework"
-    xcodebuild -create-xcframework ${xcoptions[@]} -output "$XCFRAMEWORK_OUTPUT/$PRODUCT.xcframework"
+
+    # Datadog class conflicts with module name and Swift emits invalid module interface
+    # cf. https://github.com/apple/swift/issues/56573
+    #
+    # Therefore, we cannot provide ABI stability and Library Evolution can't be enabled with
+    # 'BUILD_LIBRARY_FOR_DISTRIBUTION=YES' option, we have to supply '-allow-internal-distribution'
+    # instead.
+    xcodebuild -create-xcframework -allow-internal-distribution ${xcoptions[@]} -output "$XCFRAMEWORK_OUTPUT/$PRODUCT.xcframework"
 }
 
 rm -rf $OUTPUT
