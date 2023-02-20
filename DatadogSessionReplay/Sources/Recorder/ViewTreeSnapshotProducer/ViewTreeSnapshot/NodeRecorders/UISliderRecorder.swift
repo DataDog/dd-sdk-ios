@@ -36,13 +36,6 @@ internal struct UISliderRecorder: NodeRecorder {
 }
 
 internal struct UISliderWireframesBuilder: NodeWireframesBuilder {
-    struct SystemDefaults {
-        static let thumbTintColor = UIColor.white.cgColor
-        static let thumbBorderColor = UIColor.lightGray.cgColor
-        static let minTrackColor = UIColor.systemBlue.cgColor
-        static let maxTrackColor = UIColor.lightGray.cgColor
-    }
-
     var wireframeRect: CGRect
     let attributes: ViewAttributes
 
@@ -73,9 +66,9 @@ internal struct UISliderWireframesBuilder: NodeWireframesBuilder {
         let thumb = builder.createShapeWireframe(
             id: thumbWireframeID,
             frame: thumbFrame,
-            borderColor: isEnabled ? SystemDefaults.thumbBorderColor : SystemDefaults.thumbBorderColor.copy(alpha: 0.5),
+            borderColor: isEnabled ? SystemColors.secondarySystemFill : SystemColors.tertiarySystemFill,
             borderWidth: 1,
-            backgroundColor: thumbTintColor ?? SystemDefaults.thumbTintColor,
+            backgroundColor: isEnabled ? (thumbTintColor ?? UIColor.white.cgColor) : SystemColors.tertiarySystemBackground,
             cornerRadius: radius,
             opacity: attributes.alpha
         )
@@ -90,7 +83,7 @@ internal struct UISliderWireframesBuilder: NodeWireframesBuilder {
             frame: leftTrackFrame,
             borderColor: nil,
             borderWidth: nil,
-            backgroundColor: minTrackTintColor ?? SystemDefaults.minTrackColor,
+            backgroundColor: minTrackTintColor ?? SystemColors.tintColor,
             cornerRadius: 0,
             opacity: isEnabled ? attributes.alpha : 0.5
         )
@@ -105,7 +98,7 @@ internal struct UISliderWireframesBuilder: NodeWireframesBuilder {
             frame: rightTrackFrame,
             borderColor: nil,
             borderWidth: nil,
-            backgroundColor: maxTrackTintColor ?? SystemDefaults.maxTrackColor,
+            backgroundColor: maxTrackTintColor ?? SystemColors.tertiarySystemFill,
             cornerRadius: 0,
             opacity: isEnabled ? attributes.alpha : 0.5
         )

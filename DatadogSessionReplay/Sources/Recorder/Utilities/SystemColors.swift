@@ -43,6 +43,15 @@ internal enum SystemColors {
         }
     }
 
+    static var tintColor: CGColor {
+        if #available(iOS 15.0, *) {
+            return UIColor.tintColor.cgColor
+        } else {
+            // Fallback to iOS 16.2 light mode color:
+            return UIColor(red: 0 / 255, green: 122 / 255, blue: 255 / 255, alpha: 1).cgColor
+        }
+    }
+
     static var label: CGColor {
         if #available(iOS 13.0, *) {
             return UIColor.label.cgColor
