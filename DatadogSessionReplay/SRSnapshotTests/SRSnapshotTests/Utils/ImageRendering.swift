@@ -62,7 +62,7 @@ private extension SRTextWireframe {
             width: CGFloat(width),
             height: CGFloat(height),
             style: frameStyle(border: border, style: shapeStyle),
-            content: frameContent(text: text, textStyle: textStyle)
+            content: frameContent(text: text, textStyle: textStyle, textPosition: textPosition)
         )
     }
 }
@@ -103,7 +103,7 @@ private func frameStyle(border: SRShapeBorder?, style: SRShapeStyle?) -> Bluepri
     return fs
 }
 
-private func frameContent(text: String, textStyle: SRTextStyle?) -> BlueprintFrameContent {
+private func frameContent(text: String, textStyle: SRTextStyle?, textPosition: SRTextPosition?) -> BlueprintFrameContent {
     var fc = BlueprintFrameContent(
         text: text,
         textColor: .clear,
@@ -113,6 +113,21 @@ private func frameContent(text: String, textStyle: SRTextStyle?) -> BlueprintFra
     if let textStyle = textStyle {
         fc.textColor = UIColor(hexString: textStyle.color)
         fc.font = .systemFont(ofSize: CGFloat(textStyle.size))
+    }
+
+    if let textPosition = textPosition {
+        switch textPosition.alignment?.horizontal {
+        case .left?:    fc.horizontalAlignment = .leading
+        case .center?:  fc.horizontalAlignment = .center
+        case .right?:   fc.horizontalAlignment = .trailing
+        default:        break
+        }
+        switch textPosition.alignment?.vertical {
+        case .top?:     fc.verticalAlignment = .leading
+        case .center?:  fc.verticalAlignment = .center
+        case .bottom?:  fc.verticalAlignment = .trailing
+        default:        break
+        }
     }
 
     return fc

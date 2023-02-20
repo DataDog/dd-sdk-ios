@@ -549,7 +549,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ncreated/Framing";
 			requirement = {
-				branch = framer;
+				branch = "ship-framer";
 				kind = branch;
 			};
 		};
