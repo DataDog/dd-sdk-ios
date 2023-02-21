@@ -149,14 +149,25 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         // Propagate to User Action scope
         userActionScope = userActionScope?.scope(byPropagating: command, context: context, writer: writer)
 
-        // Send "application start" action if this is the very first view tracked in the app
         let hasSentNoViewUpdatesYet = version == 0
         if isInitialView, hasSentNoViewUpdatesYet {
-            sendApplicationStartAction(context: context, writer: writer)
+            needsViewUpdate = true
         }
 
         // Apply side effects
         switch command {
+        // Application Launch
+        case let command as RUMApplicationStartCommand:
+            sendApplicationStartAction(on: command, context: context, writer: writer)
+            if !isInitialView || viewPath != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL {
+                DD.telemetry.error(
+                    "A RUMApplicationStartCommand got sent to a View other than the ApplicationLaunch view."
+                )
+            }
+            // Application Launch also serves as a StartView command for this view
+            didReceiveStartCommand = true
+            needsViewUpdate = true
+
         // View commands
         case let command as RUMStartViewCommand where identity.equals(command.identity):
             if didReceiveStartCommand {
@@ -326,7 +337,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     // MARK: - Sending RUM Events
 
-    private func sendApplicationStartAction(context: DatadogContext, writer: Writer) {
+    private func sendApplicationStartAction(on command: RUMApplicationStartCommand, context: DatadogContext, writer: Writer) {
         actionsCount += 1
 
         var attributes = self.attributes
@@ -346,9 +357,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             // a RUM view on `SwiftUI.View/onAppear`.
             //
             // In that case, we consider the time between the application
-            // launch and the first view start as the application loading
+            // launch and the sdkInitialization as the application loading
             // time.
-            loadingTime = viewStartTime.timeIntervalSince(launchDate).toInt64Nanoseconds
+            loadingTime = command.time.timeIntervalSince(launchDate).toInt64Nanoseconds
         }
 
         let actionEvent = RUMActionEvent(

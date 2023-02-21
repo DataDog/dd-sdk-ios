@@ -138,7 +138,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             return true // discard all events in this session
         }
 
-        if let startViewCommand = command as? RUMStartViewCommand {
+        if let startApplicationCommand = command as? RUMApplicationStartCommand {
+            startApplicationLaunchView(on: startApplicationCommand, context: context, writer: writer)
+        } else if let startViewCommand = command as? RUMStartViewCommand {
             // Start view scope explicitly on receiving "start view" command
             startView(on: startViewCommand, context: context)
         } else if !hasActiveView {
@@ -150,8 +152,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             )
 
             switch handlingRule {
-            case .handleInApplicationLaunchView where command.canStartApplicationLaunchView:
-                startApplicationLaunchView(on: command, context: context)
             case .handleInBackgroundView where command.canStartBackgroundView:
                 startBackgroundView(on: command, context: context)
             default:
@@ -207,20 +207,28 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         )
     }
 
-    private func startApplicationLaunchView(on command: RUMCommand, context: DatadogContext) {
+    private func startApplicationLaunchView(on command: RUMApplicationStartCommand, context: DatadogContext, writer: Writer) {
+        var startTime = sessionStartTime
+        if context.launchTime?.isActivePrewarm == false,
+           let processStartTime = context.launchTime?.launchDate {
+            startTime = processStartTime
+        }
+
+        let scope = RUMViewScope(
+            isInitialView: true,
+            parent: self,
+            dependencies: dependencies,
+            identity: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
+            path: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
+            name: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName,
+            attributes: command.attributes,
+            customTimings: [:],
+            startTime: startTime,
+            serverTimeOffset: context.serverTimeOffset
+        )
+
         viewScopes.append(
-            RUMViewScope(
-                isInitialView: true,
-                parent: self,
-                dependencies: dependencies,
-                identity: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
-                path: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
-                name: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName,
-                attributes: command.attributes,
-                customTimings: [:],
-                startTime: sessionStartTime,
-                serverTimeOffset: context.serverTimeOffset
-            )
+            scope
         )
     }
 
