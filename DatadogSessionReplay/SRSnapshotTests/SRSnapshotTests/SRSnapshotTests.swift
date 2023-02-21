@@ -52,4 +52,22 @@ final class SRSnapshotTests: SnapshotTestCase {
             record: recordingMode
         )
     }
+
+    func testSegments() throws {
+        show(fixture: .segments)
+
+        var image = try takeSnapshot(configuration: .init(privacy: .allowAll))
+        DDAssertSnapshotTest(
+            newImage: image,
+            snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-allowAll-privacy"),
+            record: recordingMode
+        )
+
+        image = try takeSnapshot(configuration: .init(privacy: .maskAll))
+        DDAssertSnapshotTest(
+            newImage: image,
+            snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-maskAll-privacy"),
+            record: recordingMode
+        )
+    }
 }

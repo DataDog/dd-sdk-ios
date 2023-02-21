@@ -10,6 +10,7 @@ internal enum Fixture: CaseIterable {
     case basicShapes
     case basicTexts
     case sliders
+    case segments
 
     var menuItemTitle: String {
         switch self {
@@ -19,6 +20,8 @@ internal enum Fixture: CaseIterable {
             return "Basic Texts"
         case .sliders:
             return "Sliders"
+        case .segments:
+            return "Segments"
         }
     }
 
@@ -30,6 +33,9 @@ internal enum Fixture: CaseIterable {
             return UIStoryboard.basic.instantiateViewController(withIdentifier: "Texts")
         case .sliders:
             return UIStoryboard.inputElements.instantiateViewController(withIdentifier: "Sliders")
+        case .segments:
+            return UIStoryboard.inputElements.instantiateViewController(withIdentifier: "Segments")
+
         }
     }
 }
