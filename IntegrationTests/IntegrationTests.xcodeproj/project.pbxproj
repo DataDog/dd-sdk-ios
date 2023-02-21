@@ -38,7 +38,6 @@
 		61441C4024617013003D8BB8 /* IntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C3B24617013003D8BB8 /* IntegrationTests.swift */; };
 		61441C4124617013003D8BB8 /* LoggingScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C3C24617013003D8BB8 /* LoggingScenarioTests.swift */; };
 		61441C44246174CE003D8BB8 /* HTTPServerMock in Frameworks */ = {isa = PBXBuildFile; productRef = 61441C43246174CE003D8BB8 /* HTTPServerMock */; };
-		61441C952461A649003D8BB8 /* ConsoleOutputInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C902461A648003D8BB8 /* ConsoleOutputInterceptor.swift */; };
 		61441C962461A649003D8BB8 /* UIButton+Disabling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C912461A648003D8BB8 /* UIButton+Disabling.swift */; };
 		61441C972461A649003D8BB8 /* UIViewController+KeyboardControlling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C922461A648003D8BB8 /* UIViewController+KeyboardControlling.swift */; };
 		61441C9D2461A796003D8BB8 /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C9C2461A796003D8BB8 /* AppConfiguration.swift */; };
@@ -157,7 +156,6 @@
 		61441C2A24616F1D003D8BB8 /* IntegrationScenarios.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IntegrationScenarios.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		61441C3B24617013003D8BB8 /* IntegrationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntegrationTests.swift; sourceTree = "<group>"; };
 		61441C3C24617013003D8BB8 /* LoggingScenarioTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggingScenarioTests.swift; sourceTree = "<group>"; };
-		61441C902461A648003D8BB8 /* ConsoleOutputInterceptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConsoleOutputInterceptor.swift; sourceTree = "<group>"; };
 		61441C912461A648003D8BB8 /* UIButton+Disabling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIButton+Disabling.swift"; sourceTree = "<group>"; };
 		61441C922461A648003D8BB8 /* UIViewController+KeyboardControlling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIViewController+KeyboardControlling.swift"; sourceTree = "<group>"; };
 		61441C9C2461A796003D8BB8 /* AppConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
@@ -462,7 +460,6 @@
 		61441C8F2461A648003D8BB8 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				61441C902461A648003D8BB8 /* ConsoleOutputInterceptor.swift */,
 				61441C912461A648003D8BB8 /* UIButton+Disabling.swift */,
 				61441C922461A648003D8BB8 /* UIViewController+KeyboardControlling.swift */,
 				6111544725C9A88B007C84C9 /* PersistenceHelper.swift */,
@@ -878,7 +875,6 @@
 				611EA14225810E1900BC0E56 /* TSHomeViewController.swift in Sources */,
 				612D8F6F25AEE6A7000E2E09 /* RUMScrubbingViewController.swift in Sources */,
 				61163C37252DDD60007DD5BF /* RUMMVSViewController.swift in Sources */,
-				61441C952461A649003D8BB8 /* ConsoleOutputInterceptor.swift in Sources */,
 				61D50C5A2580EFF3006038A3 /* URLSessionScenarios.swift in Sources */,
 				614CADCE250FCA0200B93D2D /* TestScenarios.swift in Sources */,
 				6111542525C992F8007C84C9 /* CrashReportingScenarios.swift in Sources */,
