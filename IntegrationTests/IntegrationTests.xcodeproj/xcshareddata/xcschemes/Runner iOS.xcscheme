@@ -82,6 +82,17 @@
                </Test>
             </SkippedTests>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D215A8D029A4E01F00124404"
+               BuildableName = "IntegrationUnits.xctest"
+               BlueprintName = "IntegrationUnits"
+               ReferencedContainer = "container:IntegrationTests.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

@@ -6,9 +6,12 @@ target 'Runner iOS' do
     pod 'DatadogSDKCrashReporting', :path => '..'
     pod 'DatadogSDKSessionReplay', :path => '..'
 
-    target 'IntegrationScenarios' do
+    target 'IntegrationUnits' do
         pod 'DatadogInternal', :path => '..'
         pod 'TestUtilities', :path => '..'
+    end
+
+    target 'IntegrationScenarios' do
     end
 end
 
