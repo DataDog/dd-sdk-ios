@@ -11,7 +11,7 @@ import Framer
 /// Renders application window into image.
 internal func renderImage(for window: UIWindow) -> UIImage {
     let renderer = UIGraphicsImageRenderer(bounds: window.bounds)
-    return renderer.image { window.layer.render(in: $0.cgContext) }
+    return renderer.image { _ in window.drawHierarchy(in: window.bounds, afterScreenUpdates: true) }
 }
 
 /// Renders wireframes into image.
