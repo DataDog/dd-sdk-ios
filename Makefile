@@ -50,6 +50,7 @@ export DD_SDK_DATADOG_XCCONFIG_CI
 # Do not call 'brew update' and instead let Bitrise use its own brew bottle mirror.
 dependencies:
 		@echo "⚙️  Installing dependencies..."
+		@bundle install
 		@brew list swiftlint &>/dev/null || brew install swiftlint
 		@brew upgrade carthage
 		@carthage bootstrap --platform iOS,tvOS --use-xcframeworks
@@ -140,11 +141,7 @@ e2e-monitors-generate:
 bump:
 		@read -p "Enter version number: " version;  \
 		echo "// GENERATED FILE: Do not edit directly\n\ninternal let __sdkVersion = \"$$version\"" > Sources/Datadog/Versioning.swift; \
-		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDK.podspec.src > DatadogSDK.podspec; \
-		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKObjc.podspec.src > DatadogSDKObjc.podspec; \
-		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKAlamofireExtension.podspec.src > DatadogSDKAlamofireExtension.podspec; \
-		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKCrashReporting.podspec.src > DatadogSDKCrashReporting.podspec; \
-		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKSessionReplay.podspec.src > DatadogSDKSessionReplay.podspec; \
+		./scripts/podspec_bump_version.rb $$version; \
 		git add . ; \
 		git commit -m "Bumped version to $$version"; \
 		echo Bumped version to $$version
