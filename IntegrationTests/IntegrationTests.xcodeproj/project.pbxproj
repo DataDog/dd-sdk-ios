@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		1BF467D307888D99A296D958 /* libPods-Runner iOS-IntegrationScenarios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E93021D28790F380B3C63C4B /* libPods-Runner iOS-IntegrationScenarios.a */; };
-		61020C2A2757AD91005EEAEA /* BackgroundLocationMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61020C292757AD91005EEAEA /* BackgroundLocationMonitor.swift */; };
 		61098D2B27FEE3F00021237A /* MessagePortChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61098D2A27FEE3F00021237A /* MessagePortChannel.swift */; };
 		61098D2D27FEE4130021237A /* MessagePortChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61098D2A27FEE3F00021237A /* MessagePortChannel.swift */; };
 		61098D2F27FF16A20021237A /* RUMSessionEndView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61098D2E27FF16A20021237A /* RUMSessionEndView.swift */; };
@@ -128,7 +127,6 @@
 		1BEBA949C1D3B47541B73E76 /* Pods-Runner iOS.integration.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner iOS.integration.xcconfig"; path = "Target Support Files/Pods-Runner iOS/Pods-Runner iOS.integration.xcconfig"; sourceTree = "<group>"; };
 		4EA131351F31A6F6914EA836 /* Pods-Runner iOS-IntegrationScenarios.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner iOS-IntegrationScenarios.debug.xcconfig"; path = "Target Support Files/Pods-Runner iOS-IntegrationScenarios/Pods-Runner iOS-IntegrationScenarios.debug.xcconfig"; sourceTree = "<group>"; };
 		5CBCD72B9911706B47601F5D /* Pods-Runner iOS-IntegrationScenarios.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner iOS-IntegrationScenarios.release.xcconfig"; path = "Target Support Files/Pods-Runner iOS-IntegrationScenarios/Pods-Runner iOS-IntegrationScenarios.release.xcconfig"; sourceTree = "<group>"; };
-		61020C292757AD91005EEAEA /* BackgroundLocationMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundLocationMonitor.swift; sourceTree = "<group>"; };
 		61098D2A27FEE3F00021237A /* MessagePortChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagePortChannel.swift; sourceTree = "<group>"; };
 		61098D2E27FF16A20021237A /* RUMSessionEndView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSessionEndView.swift; sourceTree = "<group>"; };
 		6111542425C992F8007C84C9 /* CrashReportingScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingScenarios.swift; sourceTree = "<group>"; };
@@ -439,7 +437,6 @@
 				61441C0424616DE9003D8BB8 /* ExampleAppDelegate.swift */,
 				61441C9C2461A796003D8BB8 /* AppConfiguration.swift */,
 				614CADD62510BAC000B93D2D /* Environment.swift */,
-				61020C292757AD91005EEAEA /* BackgroundLocationMonitor.swift */,
 				6133702F250F829000236D58 /* Scenarios */,
 				61441C8F2461A648003D8BB8 /* Utils */,
 				D2A401D029925A2D00B230A3 /* Info.plist */,
@@ -880,7 +877,6 @@
 				6164AE89252B4ECA000D78C4 /* SendThirdPartyRequestsViewController.swift in Sources */,
 				611EA14225810E1900BC0E56 /* TSHomeViewController.swift in Sources */,
 				612D8F6F25AEE6A7000E2E09 /* RUMScrubbingViewController.swift in Sources */,
-				61020C2A2757AD91005EEAEA /* BackgroundLocationMonitor.swift in Sources */,
 				61163C37252DDD60007DD5BF /* RUMMVSViewController.swift in Sources */,
 				61441C952461A649003D8BB8 /* ConsoleOutputInterceptor.swift in Sources */,
 				61D50C5A2580EFF3006038A3 /* URLSessionScenarios.swift in Sources */,
