@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// The `W3CHTTPHeadersWriter` should be used to inject trace propagation headers to
 /// the network requests send to the backend instrumented with W3C trace context.

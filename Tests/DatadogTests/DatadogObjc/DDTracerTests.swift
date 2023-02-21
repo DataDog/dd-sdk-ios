@@ -6,6 +6,8 @@
 
 import XCTest
 import DatadogInternal
+
+@testable import DatadogLogs
 @testable import Datadog
 @testable import DatadogObjc
 
@@ -118,10 +120,10 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogs() throws {
-        let logging: LoggingFeature = .mockWith(
+        let logging: DatadogLogsFeature = .mockWith(
             messageReceiver: LogMessageReceiver.mockAny()
         )
-        core.register(feature: logging)
+        try core.register(feature: logging)
 
         let tracing: TracingFeature = .mockAny()
         core.register(feature: tracing)
@@ -142,10 +144,10 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromArguments() throws {
-        let logging: LoggingFeature = .mockWith(
+        let logging: DatadogLogsFeature = .mockWith(
             messageReceiver: LogMessageReceiver.mockAny()
         )
-        core.register(feature: logging)
+        try core.register(feature: logging)
 
         let tracing: TracingFeature = .mockAny()
         core.register(feature: tracing)
@@ -169,10 +171,10 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromNSError() throws {
-        let logging: LoggingFeature = .mockWith(
+        let logging: DatadogLogsFeature = .mockWith(
             messageReceiver: LogMessageReceiver.mockAny()
         )
-        core.register(feature: logging)
+        try core.register(feature: logging)
 
         let tracing: TracingFeature = .mockAny()
         core.register(feature: tracing)

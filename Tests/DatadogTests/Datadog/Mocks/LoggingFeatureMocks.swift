@@ -6,35 +6,43 @@
 
 import TestUtilities
 import DatadogInternal
+
+@testable import DatadogLogs
 @testable import Datadog
-
-extension LoggingFeature {
-    /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
-    static func mockAny() -> LoggingFeature { .mockWith() }
-
-    /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
-    static func mockWith(
-        configuration: FeaturesConfiguration.Logging = .mockAny(),
-        messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
-    ) -> LoggingFeature {
-        return LoggingFeature(
-            storage: .mockNoOp(),
-            upload: .mockNoOp(),
-            configuration: configuration,
-            messageReceiver: messageReceiver
-        )
-    }
-}
 
 extension DatadogCoreProxy {
     func waitAndReturnLogMatchers(file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
-        return try waitAndReturnEventsData(of: LoggingFeature.self)
+        return try waitAndReturnEventsData(ofFeature: DatadogLogsFeatureName)
             .map { data in try LogMatcher.fromJSONObjectData(data) }
     }
 }
 
+extension DatadogLogsFeature {
+    /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
+    static func mockAny() -> Self { .mockWith() }
+
+    /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
+    static func mockWith(
+        applicationBundleIdentifier: String = .mockAny(),
+        logEventMapper: LogEventMapper? = nil,
+        sampler: Sampler = .mockKeepAll(),
+        requestBuilder: FeatureRequestBuilder = RequestBuilder(intake: .mockAny()),
+        messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver(),
+        dateProvider: DateProvider = SystemDateProvider()
+    ) -> Self {
+        return .init(
+            applicationBundleIdentifier: applicationBundleIdentifier,
+            logEventMapper: logEventMapper,
+            sampler: sampler,
+            requestBuilder: requestBuilder,
+            messageReceiver: messageReceiver,
+            dateProvider: dateProvider
+        )
+    }
+}
+
 extension LogMessageReceiver: AnyMockable {
-   public static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         .mockWith()
     }
 

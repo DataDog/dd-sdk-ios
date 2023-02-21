@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 import DatadogInternal
 @testable import Datadog
 
@@ -123,14 +124,14 @@ class InternalLoggerTests: XCTestCase {
     }
 
     func testItEvaluatesMessageOnlyWhenItWillBePrinted() {
-        var verbosityLevel: LogLevel? = nil
+        var verbosityLevel: CoreLoggerLevel? = nil
 
         // Given
         let logger = InternalLogger(
             dateProvider: SystemDateProvider(),
             timeZone: .UTC,
             printFunction: mock.print(message:),
-            verbosityLevel: { verbosityLevel?.toCoreLogLevel }
+            verbosityLevel: { verbosityLevel }
         )
 
         // When

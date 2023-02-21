@@ -6,14 +6,12 @@
 
 import Foundation
 import DatadogInternal
-import class Datadog.Logger
+import DatadogLogs
 
 @objc
 public enum DDSDKVerbosityLevel: Int {
     case none
     case debug
-    case info
-    case notice
     case warn
     case error
     case critical
@@ -161,15 +159,15 @@ public class DDLogger: NSObject {
 
     @objc
     public static func builder() -> DDLoggerBuilder {
-        return DDLoggerBuilder(sdkBuilder: Logger.builder)
+        return DDLoggerBuilder(sdkBuilder: DatadogLogger.builder)
     }
 }
 
 @objc
 public class DDLoggerBuilder: NSObject {
-    internal let sdkBuilder: Logger.Builder
+    internal let sdkBuilder: DatadogLogs.Builder
 
-    internal init(sdkBuilder: Logger.Builder) {
+    internal init(sdkBuilder: DatadogLogs.Builder) {
         self.sdkBuilder = sdkBuilder
     }
 

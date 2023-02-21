@@ -7,6 +7,8 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
+
+@testable import DatadogLogs
 @testable import Datadog
 @testable import DatadogObjc
 
@@ -45,7 +47,7 @@ class DDDatadogTests: XCTestCase {
         urlSessionInstrumentation?.swizzler.unswizzle()
         Datadog.flushAndDeinitialize()
 
-        XCTAssertNil(defaultDatadogCore.v1.feature(LoggingFeature.self))
+        XCTAssertNil(defaultDatadogCore.feature(named: DatadogLogsFeatureName, type: DatadogLogsFeature.self))
         XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
     }
 
@@ -112,11 +114,11 @@ class DDDatadogTests: XCTestCase {
 
     // MARK: - Changing SDK verbosity level
 
-    private let swiftVerbosityLevels: [LogLevel?] = [
-        .debug, .info, .notice, .warn, .error, .critical, nil
+    private let swiftVerbosityLevels: [CoreLoggerLevel?] = [
+        .debug, .warn, .error, .critical, nil
     ]
     private let objcVerbosityLevels: [DDSDKVerbosityLevel] = [
-        .debug, .info, .notice, .warn, .error, .critical, .none
+        .debug, .warn, .error, .critical, .none
     ]
 
     func testItForwardsSettingVerbosityLevelToSwift() {

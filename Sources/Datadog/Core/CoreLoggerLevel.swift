@@ -6,6 +6,7 @@
 
 import Foundation
 import DatadogInternal
+import DatadogLogs
 
 extension CoreLoggerLevel {
     /// For compatibility with V1's `Datadog.verbosityLevel`.

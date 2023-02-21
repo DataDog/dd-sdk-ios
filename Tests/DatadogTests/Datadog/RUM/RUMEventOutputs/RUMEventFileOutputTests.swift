@@ -10,13 +10,15 @@ import DatadogInternal
 @testable import Datadog
 
 class RUMEventFileOutputTests: XCTestCase {
+    lazy var directory = Directory(url: temporaryDirectory)
+
     override func setUp() {
         super.setUp()
-        temporaryDirectory.create()
+        CreateTemporaryDirectory()
     }
 
     override func tearDown() {
-        temporaryDirectory.delete()
+        DeleteTemporaryDirectory()
         super.tearDown()
     }
 
@@ -25,7 +27,7 @@ class RUMEventFileOutputTests: XCTestCase {
         let builder = RUMEventBuilder(eventsMapper: .mockNoOp())
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
-                directory: temporaryDirectory,
+                directory: directory,
                 performance: PerformancePreset.combining(
                     storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
                     uploadPerformance: .noOp
@@ -48,7 +50,7 @@ class RUMEventFileOutputTests: XCTestCase {
         writer.write(value: event2)
 
         let event1FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC())
-        let event1FileEvents = try temporaryDirectory.file(named: event1FileName).readTLVEvents()
+        let event1FileEvents = try directory.file(named: event1FileName).readTLVEvents()
         XCTAssertEqual(event1FileEvents.count, 1)
 
         let event1Matcher = try RUMEventMatcher.fromJSONObjectData(event1FileEvents[0])
@@ -56,7 +58,7 @@ class RUMEventFileOutputTests: XCTestCase {
         DDAssertReflectionEqual(try event1Matcher.model(), expectedDatamodel1)
 
         let event2FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
-        let event2FileEvents = try temporaryDirectory.file(named: event2FileName).readTLVEvents()
+        let event2FileEvents = try directory.file(named: event2FileName).readTLVEvents()
         XCTAssertEqual(event2FileEvents.count, 1)
         let event2Matcher = try RUMEventMatcher.fromJSONObjectData(event2FileEvents[0])
         DDAssertReflectionEqual(try event2Matcher.model(), dataModel2)

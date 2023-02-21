@@ -6,6 +6,7 @@
 
 import Foundation
 import DatadogInternal
+import DatadogLogs
 
 extension Datadog {
     internal struct Constants {

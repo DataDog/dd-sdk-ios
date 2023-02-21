@@ -11,6 +11,7 @@ import WebKit
 import TestUtilities
 import DatadogInternal
 
+@testable import DatadogLogs
 @testable import Datadog
 
 final class DDUserContentController: WKUserContentController {
@@ -161,10 +162,10 @@ class WKUserContentController_DatadogTests: XCTestCase {
         )
         defer { core.flushAndTearDown() }
 
-        let logging: LoggingFeature = .mockWith(
+        let logging: DatadogLogsFeature = .mockWith(
             messageReceiver: WebViewLogReceiver()
         )
-        core.register(feature: logging)
+        try core.register(feature: logging)
 
         let rum: RUMFeature = .mockWith(
             messageReceiver: WebViewEventReceiver.mockAny()

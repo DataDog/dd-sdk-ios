@@ -5,8 +5,10 @@
  */
 
 import XCTest
-import DatadogInternal
 import TestUtilities
+import DatadogInternal
+
+@testable import DatadogLogs
 @testable import Datadog
 
 class MessageBusTests: XCTestCase {
@@ -43,13 +45,13 @@ class MessageBusTests: XCTestCase {
             }
         }
 
-        let logging: LoggingFeature = try core.create(
-            configuration: .init(
-                name: "logs",
-                requestBuilder: FeatureRequestBuilderMock(),
-                messageReceiver: receiver
-            ),
-            featureSpecificConfiguration: .mockAny()
+        let logging = DatadogLogsFeature(
+            applicationBundleIdentifier: .mockAny(),
+            logEventMapper: nil,
+            sampler: .mockKeepAll(),
+            requestBuilder: FeatureRequestBuilderMock(),
+            messageReceiver: receiver,
+            dateProvider: SystemDateProvider()
         )
 
         let rum: RUMFeature = try core.create(
@@ -61,7 +63,7 @@ class MessageBusTests: XCTestCase {
             featureSpecificConfiguration: .mockAny()
         )
 
-        core.register(feature: logging)
+        try core.register(feature: logging)
         core.register(feature: rum)
 
         // When

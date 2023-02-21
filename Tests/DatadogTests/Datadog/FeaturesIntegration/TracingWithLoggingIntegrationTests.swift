@@ -7,6 +7,8 @@
 import XCTest
 import DatadogInternal
 import TestUtilities
+
+@testable import DatadogLogs
 @testable import Datadog
 
 class TracingWithLoggingIntegrationTests: XCTestCase {

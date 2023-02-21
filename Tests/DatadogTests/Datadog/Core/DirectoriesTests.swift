@@ -10,13 +10,15 @@ import DatadogInternal
 @testable import Datadog
 
 class DirectoriesTests: XCTestCase {
+    lazy var directory = Directory(url: temporaryDirectory)
+
     override func setUp() {
         super.setUp()
-        temporaryDirectory.create()
+        CreateTemporaryDirectory()
     }
 
     override func tearDown() {
-        temporaryDirectory.delete()
+        DeleteTemporaryDirectory()
         super.tearDown()
     }
 
@@ -42,7 +44,7 @@ class DirectoriesTests: XCTestCase {
         // When
         let coreDirectories = try fixtures.map { clientToken, site, _ in
             try CoreDirectory(
-                in: temporaryDirectory,
+                in: directory,
                 from: .mockWith(site: site, clientToken: clientToken)
             )
         }
@@ -73,7 +75,7 @@ class DirectoriesTests: XCTestCase {
 
         // When
         let coreDirectories = try sdkConfigurations.map { sdkConfiguration in
-            try CoreDirectory(in: temporaryDirectory, from: sdkConfiguration)
+            try CoreDirectory(in: directory, from: sdkConfiguration)
         }
         defer { coreDirectories.forEach { $0.delete() } }
 

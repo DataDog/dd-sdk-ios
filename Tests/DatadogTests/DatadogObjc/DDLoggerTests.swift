@@ -6,6 +6,8 @@
 
 import XCTest
 import DatadogInternal
+
+@testable import DatadogLogs
 @testable import Datadog
 @testable import DatadogObjc
 
@@ -28,8 +30,8 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSendingLogsWithDifferentLevels() throws {
-        let feature: LoggingFeature = .mockAny()
-        defaultDatadogCore.v1.register(feature: feature)
+        let feature: DatadogLogsFeature = .mockAny()
+        try defaultDatadogCore.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
 
@@ -50,8 +52,8 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSendingNSError() throws {
-        let feature: LoggingFeature = .mockAny()
-        defaultDatadogCore.v1.register(feature: feature)
+        let feature: DatadogLogsFeature = .mockAny()
+        try defaultDatadogCore.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
 
@@ -82,8 +84,8 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSendingMessageAttributes() throws {
-        let feature: LoggingFeature = .mockAny()
-        defaultDatadogCore.v1.register(feature: feature)
+        let feature: DatadogLogsFeature = .mockAny()
+        try defaultDatadogCore.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
 
@@ -107,8 +109,8 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSendingLoggerAttributes() throws {
-        let feature: LoggingFeature = .mockAny()
-        defaultDatadogCore.v1.register(feature: feature)
+        let feature: DatadogLogsFeature = .mockAny()
+        try defaultDatadogCore.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
 
@@ -149,8 +151,8 @@ class DDLoggerTests: XCTestCase {
             version: "1.2.3"
         )
 
-        let feature: LoggingFeature = .mockAny()
-        defaultDatadogCore.v1.register(feature: feature)
+        let feature: DatadogLogsFeature = .mockAny()
+        try defaultDatadogCore.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
 

@@ -6,6 +6,7 @@
 
 import Foundation
 import DatadogInternal
+import DatadogLogs
 
 /// Describes the configuration of all features.
 ///

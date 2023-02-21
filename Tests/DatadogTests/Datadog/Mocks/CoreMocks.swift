@@ -7,6 +7,8 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
+
+@testable import DatadogLogs
 @testable import Datadog
 
 // MARK: - Configuration Mocks
@@ -81,24 +83,6 @@ extension Datadog.Configuration {
             additionalConfiguration: additionalConfiguration,
             proxyConfiguration: proxyConfiguration
         )
-    }
-}
-
-extension Sampler: AnyMockable, RandomMockable {
-    public static func mockAny() -> Sampler {
-        return .init(samplingRate: 50)
-    }
-
-    public static func mockRandom() -> Sampler {
-        return .init(samplingRate: .random(in: (0.0...100.0)))
-    }
-
-    static func mockKeepAll() -> Sampler {
-        return .init(samplingRate: 100)
-    }
-
-    static func mockRejectAll() -> Sampler {
-        return .init(samplingRate: 0)
     }
 }
 
@@ -545,45 +529,6 @@ extension DataFormat {
     }
 }
 
-/// `DateProvider` mock returning consecutive dates in custom intervals, starting from given reference date.
-class RelativeDateProvider: DateProvider {
-    private(set) var date: Date
-    internal let timeInterval: TimeInterval
-    private let queue = DispatchQueue(label: "queue-RelativeDateProvider-\(UUID().uuidString)")
-
-    private init(date: Date, timeInterval: TimeInterval) {
-        self.date = date
-        self.timeInterval = timeInterval
-    }
-
-    convenience init(using date: Date = Date()) {
-        self.init(date: date, timeInterval: 0)
-    }
-
-    convenience init(startingFrom referenceDate: Date = Date(), advancingBySeconds timeInterval: TimeInterval = 0) {
-        self.init(date: referenceDate, timeInterval: timeInterval)
-    }
-
-    /// Returns current date and advances next date by `timeInterval`.
-    var now: Date {
-        defer {
-            queue.async {
-                self.date.addTimeInterval(self.timeInterval)
-            }
-        }
-        return queue.sync {
-            return date
-        }
-    }
-
-    /// Pushes time forward by given number of seconds.
-    func advance(bySeconds seconds: TimeInterval) {
-        queue.async {
-            self.date = self.date.addingTimeInterval(seconds)
-        }
-    }
-}
-
 class AppStateListenerMock: AppStateListening, AnyMockable {
     let history: AppStateHistory
 
@@ -717,24 +662,6 @@ internal class ValueObserverMock<Value>: ValueObserver {
     }
 }
 
-extension DDError: AnyMockable, RandomMockable {
-    public static func mockAny() -> DDError {
-        return DDError(
-            type: .mockAny(),
-            message: .mockAny(),
-            stack: .mockAny()
-        )
-    }
-
-    public static func mockRandom() -> DDError {
-        return DDError(
-            type: .mockRandom(),
-            message: .mockRandom(),
-            stack: .mockRandom()
-        )
-    }
-}
-
 class MockHostsSanitizer: HostsSanitizing {
     private(set) var sanitizations = [(hosts: Set<String>, warningMessage: String)]()
     func sanitized(hosts: Set<String>, warningMessage: String) -> Set<String> {
@@ -748,26 +675,5 @@ class MockHostsSanitizer: HostsSanitizing {
     ) -> [String: Set<TracingHeaderType>] {
         sanitizations.append((hosts: Set(hostsWithTracingHeaderTypes.keys), warningMessage: warningMessage))
         return hostsWithTracingHeaderTypes
-    }
-}
-
-// MARK: - Global Dependencies Mocks
-
-/// Mock which can be used to intercept messages printed by `developerLogger` or
-/// `userLogger` by overwriting `Datadog.consolePrint` function:
-///
-///     let printFunction = PrintFunctionMock()
-///     consolePrint = printFunction.print
-///
-class PrintFunctionMock {
-    private(set) var printedMessages: [String] = []
-    var printedMessage: String? { printedMessages.last }
-
-    func print(message: String) {
-        printedMessages.append(message)
-    }
-
-    func reset() {
-        printedMessages = []
     }
 }
