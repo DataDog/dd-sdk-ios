@@ -94,6 +94,10 @@ test-carthage:
 test-cocoapods:
 		@cd dependency-manager-tests/cocoapods && $(MAKE)
 
+# Tests if current branch ships valid a XCFrameworks project.
+test-xcframeworks:
+		@cd dependency-manager-tests/xcframeworks && $(MAKE)
+
 # Generate RUM data models from rum-events-format JSON Schemas
 rum-models-generate:
 		@echo "⚙️  Generating RUM models..."
