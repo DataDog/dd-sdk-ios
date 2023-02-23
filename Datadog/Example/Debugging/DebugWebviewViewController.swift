@@ -16,8 +16,7 @@ class DebugWebviewViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        rumServiceNameTextField.text = (appConfiguration as? ExampleAppConfiguration)?.serviceName
-
+        rumServiceNameTextField.text = serviceName
         webviewURLTextField.placeholder = webviewURL
     }
 

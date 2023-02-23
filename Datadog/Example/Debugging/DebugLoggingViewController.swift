@@ -35,7 +35,7 @@ class DebugLoggingViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        logServiceNameTextField.text = (appConfiguration as? ExampleAppConfiguration)?.serviceName
+        logServiceNameTextField.text = serviceName
         hideKeyboardWhenTapOutside()
         startDisplayingDebugInfo(in: consoleTextView)
     }

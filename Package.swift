@@ -79,7 +79,7 @@ let package = Package(
             name: "DatadogInternalTests",
             dependencies: [
                 .target(name: "DatadogInternal"),
-                "TestUtilities"
+                .target(name: "TestUtilities"),
             ],
             path: "DatadogInternal/Tests"
         ),

@@ -1,4 +1,4 @@
-// swift-tools-version: 5.5
+// swift-tools-version: 5.7
 
 import PackageDescription
 
@@ -21,14 +21,16 @@ let package = Package(
     targets: [
         .target(
             name: "DatadogSessionReplay",
-            dependencies: ["Datadog"],
+            dependencies: [
+                .product(name: "Datadog", package: "Datadog"),
+            ],
             path: "Sources"
         ),
         .testTarget(
             name: "DatadogSessionReplayTests",
             dependencies: [
                 .target(name: "DatadogSessionReplay"),
-                "TestUtilities"
+                .product(name: "TestUtilities", package: "TestUtilities")
             ],
             path: "Tests"
         )

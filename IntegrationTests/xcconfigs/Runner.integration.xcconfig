@@ -1,0 +1,5 @@
+// Add common settings from Base.xcconfig
+#include "Base.xcconfig"
+
+// Add CocoaPods xcconfig
+#include "Pods/Target Support Files/Pods-Runner iOS/Pods-Runner iOS.integration.xcconfig"
