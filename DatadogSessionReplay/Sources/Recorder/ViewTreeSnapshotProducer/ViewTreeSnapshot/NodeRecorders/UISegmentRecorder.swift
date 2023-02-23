@@ -7,7 +7,7 @@
 import UIKit
 
 internal struct UISegmentRecorder: NodeRecorder {
-    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeSnapshotBuilder.Context) -> NodeSemantics? {
+    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let segment = view as? UISegmentedControl else {
             return nil
         }

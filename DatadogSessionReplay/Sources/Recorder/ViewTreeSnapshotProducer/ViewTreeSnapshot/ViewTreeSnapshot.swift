@@ -20,15 +20,17 @@ internal struct ViewTreeSnapshot {
     let date: Date
     /// The RUM context from the moment of taking this snapshot.
     let rumContext: RUMContext
+    /// The size of a viewport in this snapshot.
+    let viewportSize: CGSize
     /// The node indicating the root view of this snapshot.
-    let root: Node
+    let nodes: [Node]
 }
 
-/// An individual node in `ViewTreeSnapshot`. It abstracts an individual view or part of views hierarchy.
+/// An individual node in `ViewTreeSnapshot`. A `Node` describes a single view - similar: an array of nodes describes
+/// view and its subtree (in depth-first order).
 ///
-/// The `Node` can describe a view by nesting nodes for each of its subviews OR it can abstract the view along with its childs
-/// by merging their information into single node. This stands for the key difference between the hierarchy of native views and
-/// hierarchy of nodes - typically there is significantly less nodes than number of native views they describe.
+/// Typically, to describe certain view-tree we need significantly less nodes than number of views, because some views
+/// are meaningless for session replay (e.g. hidden views or containers with no appearance).
 ///
 /// **Note:** The purpose of this structure is to be lightweight and create minimal overhead when the view-tree
 /// is captured on the main thread (the `Recorder` constantly creates `Nodes` for views residing in the hierarchy).
@@ -38,9 +40,6 @@ internal struct Node {
 
     /// The semantics of this node.
     let semantics: NodeSemantics
-
-    /// Nodes created for subviews of this node's `UIView`.
-    let children: [Node]
 }
 
 /// Attributes of the `UIView` that the node was created for.

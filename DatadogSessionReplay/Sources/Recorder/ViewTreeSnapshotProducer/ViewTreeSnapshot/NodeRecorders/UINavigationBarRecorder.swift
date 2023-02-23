@@ -7,7 +7,7 @@
 import UIKit
 
 internal struct UINavigationBarRecorder: NodeRecorder {
-    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeSnapshotBuilder.Context) -> NodeSemantics? {
+    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let navigationBar = view as? UINavigationBar else {
             return nil
         }
@@ -22,7 +22,7 @@ internal struct UINavigationBarRecorder: NodeRecorder {
         return SpecificElement(wireframesBuilder: builder, recordSubtree: true)
     }
 
-    private func inferOccupiedFrame(of navigationBar: UINavigationBar, in context: ViewTreeSnapshotBuilder.Context) -> CGRect {
+    private func inferOccupiedFrame(of navigationBar: UINavigationBar, in context: ViewTreeRecordingContext) -> CGRect {
         // TODO: RUMM-2791 Enhance appearance of `UITabBar` and `UINavigationBar` in SR
         var occupiedFrame = navigationBar.frame
         for subview in navigationBar.subviews {
