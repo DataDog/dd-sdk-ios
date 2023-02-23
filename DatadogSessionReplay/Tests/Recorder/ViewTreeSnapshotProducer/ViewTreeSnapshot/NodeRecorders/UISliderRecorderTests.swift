@@ -35,7 +35,7 @@ class UISliderRecorderTests: XCTestCase {
 
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: slider, with: viewAttributes, in: .mockAny()) as? SpecificElement)
-        XCTAssertFalse(semantics.recordSubtree, "Slider's subtree should not be recorded")
+        DDAssertReflectionEqual(semantics.subtreeStrategy, .ignore, "Slider's subtree should not be recorded")
 
         let builder = try XCTUnwrap(semantics.wireframesBuilder as? UISliderWireframesBuilder)
         XCTAssertEqual(builder.attributes, viewAttributes)

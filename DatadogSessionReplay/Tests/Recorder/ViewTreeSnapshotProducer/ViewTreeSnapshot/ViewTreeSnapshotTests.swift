@@ -141,7 +141,7 @@ class NodeSemanticsTests: XCTestCase {
         let unknownElement = UnknownElement.constant
         let invisibleElement = InvisibleElement.constant
         let ambiguousElement = AmbiguousElement(wireframesBuilder: nil)
-        let specificElement = SpecificElement(wireframesBuilder: nil, recordSubtree: .mockAny())
+        let specificElement = SpecificElement(wireframesBuilder: nil, subtreeStrategy: .mockAny())
 
         XCTAssertGreaterThan(
             specificElement.importance,
@@ -163,21 +163,24 @@ class NodeSemanticsTests: XCTestCase {
         XCTAssertEqual(specificElement.importance, .max)
     }
 
-    func testRecordSubtree() {
-        XCTAssertTrue(
-            UnknownElement.constant.recordSubtree,
+    func testSubtreeStrategy() {
+        DDAssertReflectionEqual(
+            UnknownElement.constant.subtreeStrategy,
+            .record,
             "Subtree should be recorded for 'unknown' elements as a fallback"
         )
-        XCTAssertFalse(
-            InvisibleElement.constant.recordSubtree,
+        DDAssertReflectionEqual(
+            InvisibleElement.constant.subtreeStrategy,
+            .ignore,
             "Subtree should not be recorded for 'invisible' elements as nothing in it will be visible anyway"
         )
-        XCTAssertTrue(
-            AmbiguousElement(wireframesBuilder: nil).recordSubtree,
+        DDAssertReflectionEqual(
+            AmbiguousElement(wireframesBuilder: nil).subtreeStrategy,
+            .record,
             "Subtree should be recorded for 'ambiguous' elements as it may contain other elements"
         )
 
-        let random: Bool = .mockRandom()
-        XCTAssertEqual(SpecificElement(wireframesBuilder: nil, recordSubtree: random).recordSubtree, random)
+        let random: NodeSubtreeStrategy = .mockRandom()
+        DDAssertReflectionEqual(SpecificElement(wireframesBuilder: nil, subtreeStrategy: random).subtreeStrategy, random)
     }
 }

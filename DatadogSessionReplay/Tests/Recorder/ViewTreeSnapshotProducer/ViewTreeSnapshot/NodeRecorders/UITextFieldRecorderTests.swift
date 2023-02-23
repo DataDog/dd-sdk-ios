@@ -52,7 +52,7 @@ class UITextFieldRecorderTests: XCTestCase {
 
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: textField, with: viewAttributes, in: .mockAny()) as? SpecificElement)
-        XCTAssertFalse(semantics.recordSubtree, "TextField's subtree should not be recorded")
+        DDAssertReflectionEqual(semantics.subtreeStrategy, .ignore, "TextField's subtree should not be recorded")
 
         let builder = try XCTUnwrap(semantics.wireframesBuilder as? UITextFieldWireframesBuilder)
         XCTAssertEqual(builder.text, randomText)

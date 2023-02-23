@@ -18,7 +18,7 @@ internal struct UITabBarRecorder: NodeRecorder {
             attributes: attributes,
             color: inferColor(of: tabBar)
         )
-        return SpecificElement(wireframesBuilder: builder, recordSubtree: true)
+        return SpecificElement(wireframesBuilder: builder, subtreeStrategy: .record)
     }
 
     private func inferOccupiedFrame(of tabBar: UITabBar, in context: ViewTreeRecordingContext) -> CGRect {

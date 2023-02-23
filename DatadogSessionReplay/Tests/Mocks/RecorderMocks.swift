@@ -195,6 +195,21 @@ struct NOPWireframesBuilderMock: NodeWireframesBuilder {
     }
 }
 
+extension NodeSubtreeStrategy: AnyMockable, RandomMockable {
+    public static func mockAny() -> NodeSubtreeStrategy {
+        return .ignore
+    }
+
+    public static func mockRandom() -> NodeSubtreeStrategy {
+        let all: [NodeSubtreeStrategy] = [
+            .record,
+            .replace(subtreeNodes: [.mockAny()]),
+            .ignore,
+        ]
+        return all.randomElement()!
+    }
+}
+
 func mockAnyNodeSemantics() -> NodeSemantics {
     return InvisibleElement.constant
 }
@@ -204,7 +219,7 @@ func mockRandomNodeSemantics() -> NodeSemantics {
         UnknownElement.constant,
         InvisibleElement.constant,
         AmbiguousElement(wireframesBuilder: NOPWireframesBuilderMock()),
-        SpecificElement(wireframesBuilder: NOPWireframesBuilderMock(), recordSubtree: .mockRandom()),
+        SpecificElement(wireframesBuilder: NOPWireframesBuilderMock(), subtreeStrategy: .mockRandom()),
     ]
     return all.randomElement()!
 }
@@ -242,12 +257,15 @@ extension Node: AnyMockable, RandomMockable {
 
 extension SpecificElement {
     static func mockAny() -> SpecificElement {
-        SpecificElement(wireframesBuilder: NOPWireframesBuilderMock(), recordSubtree: .mockRandom())
+        SpecificElement(wireframesBuilder: NOPWireframesBuilderMock(), subtreeStrategy: .mockRandom())
     }
-    static func mock(wireframeRect: CGRect, recordSubtree: Bool = .mockRandom()) -> SpecificElement {
+    static func mock(
+        wireframeRect: CGRect,
+        subtreeStrategy: NodeSubtreeStrategy = .mockRandom()
+    ) -> SpecificElement {
         SpecificElement(
             wireframesBuilder: ShapeWireframesBuilderMock(wireframeRect: wireframeRect),
-            recordSubtree: recordSubtree
+            subtreeStrategy: subtreeStrategy
         )
     }
 }

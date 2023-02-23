@@ -23,7 +23,7 @@ internal struct UITextViewRecorder: NodeRecorder {
             textObfuscator: context.recorder.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator,
             contentRect: CGRect(origin: textView.contentOffset, size: textView.contentSize)
         )
-        return SpecificElement(wireframesBuilder: builder, recordSubtree: true)
+        return SpecificElement(wireframesBuilder: builder, subtreeStrategy: .record)
     }
 }
 

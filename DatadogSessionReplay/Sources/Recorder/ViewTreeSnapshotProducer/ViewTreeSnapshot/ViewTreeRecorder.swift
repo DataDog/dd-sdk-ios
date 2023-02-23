@@ -38,10 +38,15 @@ internal struct ViewTreeRecorder {
         let node = node(for: view, in: context)
         nodes.append(node)
 
-        if node.semantics.recordSubtree {
+        switch node.semantics.subtreeStrategy {
+        case .record:
             for subview in view.subviews {
                 recordRecursively(nodes: &nodes, view: subview, context: context)
             }
+        case .replace(let subtreeNodes):
+            nodes.append(contentsOf: subtreeNodes)
+        case .ignore:
+            break
         }
     }
 

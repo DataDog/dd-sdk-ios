@@ -34,13 +34,13 @@ class ViewTreeRecorderTests: XCTestCase {
         XCTAssertEqual(recorders[2].queriedViews, [rootView, childView, grandchildView])
     }
 
-    func testItQueriesNodeRecordersInOrderUntilOneFindsBestSemantics() {
+    func testItQueriesNodeRecordersInUntilOneFindsBestSemantics() {
         // Given
         let view = UIView(frame: .mockRandom())
 
         let unknownElement = UnknownElement.constant
         let ambiguousElement = AmbiguousElement(wireframesBuilder: NOPWireframesBuilderMock())
-        let specificElement = SpecificElement(wireframesBuilder: NOPWireframesBuilderMock(), recordSubtree: .mockRandom())
+        let specificElement = SpecificElement(wireframesBuilder: NOPWireframesBuilderMock(), subtreeStrategy: .mockRandom())
 
         // When
         let recorders: [NodeRecorderMock] = [
@@ -66,35 +66,61 @@ class ViewTreeRecorderTests: XCTestCase {
     func testItQueriesViewTreeRecursivelyAndReturnsNodesInDFSOrder() {
         struct MockSemantics: NodeSemantics {
             static var importance: Int = .mockAny()
-            var recordSubtree: Bool
+            var subtreeStrategy: NodeSubtreeStrategy
             let wireframesBuilder: NodeWireframesBuilder? = nil
             let debugName: String
         }
 
         // Given
-        let rootView = UIView(frame: .mockRandom(minWidth: 1, minHeight: 1))
-        let ambiguousChild = UIView(frame: .mockRandom(minWidth: 1, minHeight: 1))
-        let specificChild1 = UILabel(frame: .mockRandom(minWidth: 1, minHeight: 1))
-        let specificChild2 = UILabel(frame: .mockRandom(minWidth: 1, minHeight: 1))
-        let childOfAmbiguousElement = UIView(frame: .mockAny())
-        let childOfSpecificElement1 = UIView(frame: .mockAny())
-        let childOfSpecificElement2 = UIView(frame: .mockAny())
 
-        ambiguousChild.addSubview(childOfAmbiguousElement)
-        specificChild1.addSubview(childOfSpecificElement1)
-        specificChild2.addSubview(childOfSpecificElement2)
-        rootView.addSubview(ambiguousChild)
-        rootView.addSubview(specificChild1)
-        rootView.addSubview(specificChild2)
+        /*
+                rootView
+                /   |   \
+               /    |    \
+               a    b     c
+              / \        / \
+             aa ab      ca cb
+             /  / \
+          aaa aba abb
+        */
+
+        let rootView = UIView.mockAny()
+        let (a, b, c) = (UIView.mockAny(), UIView.mockAny(), UIView.mockAny())
+        let (aa, aaa, ab, aba, abb) = (UIView.mockAny(), UIView.mockAny(), UIView.mockAny(), UIView.mockAny(), UIView.mockAny())
+        let (ca, cb) = (UIView.mockAny(), UIView.mockAny())
+
+        rootView.addSubview(a)
+        rootView.addSubview(b)
+        rootView.addSubview(c)
+        a.addSubview(aa)
+        aa.addSubview(aaa)
+        a.addSubview(ab)
+        ab.addSubview(aba)
+        ab.addSubview(abb)
+        c.addSubview(ca)
+        c.addSubview(cb)
 
         let semanticsByView: [UIView: NodeSemantics] = [
-            rootView: MockSemantics(recordSubtree: true, debugName: "rootView"),
-            ambiguousChild: MockSemantics(recordSubtree: true, debugName: "ambiguousChild"),
-            specificChild1: MockSemantics(recordSubtree: true, debugName: "specificChild1"),
-            specificChild2: MockSemantics(recordSubtree: false, debugName: "specificChild2"),
-            childOfAmbiguousElement: MockSemantics(recordSubtree: true, debugName: "childOfAmbiguousElement"),
-            childOfSpecificElement1: MockSemantics(recordSubtree: true, debugName: "childOfSpecificElement1"),
-            childOfSpecificElement2: MockSemantics(recordSubtree: false, debugName: "childOfSpecificElement2"),
+            rootView: MockSemantics(subtreeStrategy: .record, debugName: "rootView"),
+            a: MockSemantics(subtreeStrategy: .record, debugName: "a"),
+            b: MockSemantics(subtreeStrategy: .record, debugName: "b"),
+            c: MockSemantics(subtreeStrategy: .ignore, debugName: "c"), // The subtree of `c` should be ignored
+            aa: MockSemantics(
+                // The subtree of `aa` (`aaa`) should be replaced with 3 virtual nodes:
+                subtreeStrategy: .replace(
+                    subtreeNodes: [
+                        .mockWith(semantics: MockSemantics(subtreeStrategy: .record, debugName: "aav1")),
+                        .mockWith(semantics: MockSemantics(subtreeStrategy: .record, debugName: "aav2")),
+                        .mockWith(semantics: MockSemantics(subtreeStrategy: .record, debugName: "aav3")),
+                    ]
+                ),
+                debugName: "aa"
+            ),
+            ab: MockSemantics(subtreeStrategy: .record, debugName: "ab"),
+            aba: MockSemantics(subtreeStrategy: .record, debugName: "aba"),
+            abb: MockSemantics(subtreeStrategy: .record, debugName: "abb"),
+            ca: MockSemantics(subtreeStrategy: .record, debugName: "ca"),
+            cb: MockSemantics(subtreeStrategy: .record, debugName: "cb"),
         ]
 
         // When
@@ -103,26 +129,16 @@ class ViewTreeRecorderTests: XCTestCase {
         let nodes = recorder.recordNodes(for: rootView, in: .mockRandom())
 
         // Then
-        let expectedNodes = ["rootView", "ambiguousChild", "childOfAmbiguousElement", "specificChild1", "childOfSpecificElement1", "specificChild2"]
+        let expectedNodes = ["rootView", "a", "aa", "aav1", "aav2", "aav3", "ab", "aba", "abb", "b", "c"]
         let actualNodes = nodes.compactMap { ($0.semantics as? MockSemantics)?.debugName }
-        XCTAssertEqual(expectedNodes, actualNodes)
+        XCTAssertEqual(expectedNodes, actualNodes, "Nodes must be recorded in DFS order")
 
-        XCTAssertTrue(nodeRecorder.queriedViews.contains(rootView))
-        XCTAssertTrue(nodeRecorder.queriedViews.contains(ambiguousChild))
-        XCTAssertTrue(nodeRecorder.queriedViews.contains(specificChild1))
-        XCTAssertTrue(nodeRecorder.queriedViews.contains(specificChild2))
-        XCTAssertTrue(
-            nodeRecorder.queriedViews.contains(childOfAmbiguousElement),
-            "It should query `childOfAmbiguousElement`, because the parent has 'recordSubtree: true' semantics"
-        )
-        XCTAssertTrue(
-            nodeRecorder.queriedViews.contains(childOfSpecificElement1),
-            "It should query `childOfSpecificElement1`, because the parent has 'specific' semantics with `recordSubtree: true`"
-        )
-        XCTAssertFalse(
-            nodeRecorder.queriedViews.contains(childOfSpecificElement2),
-            "It should NOT query `childOfSpecificElement1`, because the parent has 'specific' semantics with `recordSubtree: false`"
-        )
+        let expectedQueriedViews: [UIView] = [rootView, a, b, c, aa, ab, aba, abb]
+        XCTAssertEqual(nodeRecorder.queriedViews.count, expectedQueriedViews.count)
+        expectedQueriedViews.forEach { XCTAssertTrue(nodeRecorder.queriedViews.contains($0)) }
+
+        let expectedSkippedViews: [UIView] = [aaa, ca, cb]
+        expectedSkippedViews.forEach { XCTAssertFalse(nodeRecorder.queriedViews.contains($0)) }
     }
 
     // MARK: - Recording Certain Node Semantics

@@ -22,7 +22,7 @@ internal struct ViewTreeSnapshot {
     let rumContext: RUMContext
     /// The size of a viewport in this snapshot.
     let viewportSize: CGSize
-    /// The node indicating the root view of this snapshot.
+    /// An array of nodes recorded for this snapshot - sequenced in DFS order.
     let nodes: [Node]
 }
 
@@ -137,8 +137,8 @@ internal protocol NodeSemantics {
     /// the same view. In that case, the semantics with higher `importance` takes precedence.
     static var importance: Int { get }
 
-    /// Whether the `Recorder` should continue with traversing the subtree of this node.
-    var recordSubtree: Bool { get }
+    /// Defines the strategy which `Recorder` should apply to subtree of this node.
+    var subtreeStrategy: NodeSubtreeStrategy { get }
 
     /// A type defining how to build SR wireframes for the UI element this semantic was recorded for.
     var wireframesBuilder: NodeWireframesBuilder? { get }
@@ -152,12 +152,30 @@ extension NodeSemantics {
     var importance: Int { Self.importance }
 }
 
+/// Strategies for handling node's subtree by `Recorder`.
+internal enum NodeSubtreeStrategy {
+    /// Continue traversing subtree of this node to record nested nodes automatically.
+    ///
+    /// This strategy is particularly useful for semantics that do not make assumption on node's content (e.g. this strategy can be
+    /// practical choice for `UITabBar` node to let the recorder automatically capture any labels, images or shapes that are displayed in it).
+    case record
+    /// Do not traverse subtree of this node and instead replace it (the subtree) with provided nodes.
+    ///
+    /// This strategy is useful for semantics that only partially describe certain elements and perform curated traversal of their subtree (e.g. it can be
+    /// used for `UIPickerView` where we only traverse subtree to look for specific elements, like the text of the selected row).
+    case replace(subtreeNodes: [Node])
+    /// Do not enter the subtree of this node.
+    ///
+    /// This strategy should be used for semantics that fully describe certain elements (e.g. it doesn't make sense to traverse the subtree of `UISwitch`).
+    case ignore
+}
+
 /// Semantics of an UI element that is of unknown kind. Receiving this semantics in `Processor` could indicate an error
 /// in view-tree traversal performed in `Recorder` (e.g. working on assumption that is not met).
 internal struct UnknownElement: NodeSemantics {
     static let importance: Int = .min
     let wireframesBuilder: NodeWireframesBuilder? = nil
-    let recordSubtree = true
+    let subtreeStrategy: NodeSubtreeStrategy = .record
 
     /// Use `UnknownElement.constant` instead.
     private init () {}
@@ -172,7 +190,7 @@ internal struct UnknownElement: NodeSemantics {
 internal struct InvisibleElement: NodeSemantics {
     static let importance: Int = 0
     let wireframesBuilder: NodeWireframesBuilder? = nil
-    let recordSubtree = false // no point of recording children if the parent is invisible
+    let subtreeStrategy: NodeSubtreeStrategy = .ignore
 
     /// Use `InvisibleElement.constant` instead.
     private init () {}
@@ -188,16 +206,14 @@ internal struct InvisibleElement: NodeSemantics {
 internal struct AmbiguousElement: NodeSemantics {
     static let importance: Int = 0
     let wireframesBuilder: NodeWireframesBuilder?
-    let recordSubtree = true
+    let subtreeStrategy: NodeSubtreeStrategy = .record
 }
 
 /// A semantics of an UI element that is one of `UIView` subclasses. This semantics mean that we know its full identity along with set of
 /// subclass-specific attributes that will be used to render it in SR (e.g. all base `UIView` attributes plus the text in `UILabel` or the
 /// "on" / "off" state of `UISwitch` control).
-///
-/// Depending on `recordSubtree`, the view-tree traversal algorithm will skip or continue visiting the subtree of views with this semantics.
 internal struct SpecificElement: NodeSemantics {
     static let importance: Int = .max
     let wireframesBuilder: NodeWireframesBuilder?
-    let recordSubtree: Bool
+    let subtreeStrategy: NodeSubtreeStrategy
 }
