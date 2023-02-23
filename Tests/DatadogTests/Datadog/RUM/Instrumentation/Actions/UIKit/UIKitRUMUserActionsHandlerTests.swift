@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import Datadog
 
 class UIKitRUMUserActionsHandlerTests: XCTestCase {
@@ -248,7 +249,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         // Then
         let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
         XCTAssertEqual(command?.name, "foobar")
-        AssertDictionariesEqual(command!.attributes, mockAttributes)
+        DDAssertDictionariesEqual(command!.attributes, mockAttributes)
     }
 
     func testGivenUserActionPredicateReturnsNil_itDoesntSendTapAction() {
@@ -406,7 +407,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         // Then
         let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
         XCTAssertEqual(command?.name, "foobar")
-        AssertDictionariesEqual(command!.attributes, mockAttributes)
+        DDAssertDictionariesEqual(command!.attributes, mockAttributes)
     }
 
     func testGivenUserActionPredicateReturnsNil_itDoesntSendClickAction() {

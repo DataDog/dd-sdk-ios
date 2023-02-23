@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import Datadog
 
 class URLSessionTracingHandlerTests: XCTestCase {
@@ -157,17 +158,21 @@ class URLSessionTracingHandlerTests: XCTestCase {
         XCTAssertEqual(log.status, .error)
         XCTAssertEqual(log.message, "network error")
         XCTAssertEqual(
-            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.traceID] as? String,
-            span.traceID.toString(.decimal)
+            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.traceID] as? AnyCodable,
+            AnyCodable(span.traceID.toString(.decimal))
         )
         XCTAssertEqual(
-            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.spanID] as? String,
-            span.spanID.toString(.decimal)
+            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.traceID] as? AnyCodable,
+            AnyCodable(span.traceID.toString(.decimal))
+        )
+        XCTAssertEqual(
+            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.spanID] as? AnyCodable,
+            AnyCodable(span.spanID.toString(.decimal))
         )
         XCTAssertEqual(log.error?.kind, "domain - 123")
         XCTAssertEqual(log.attributes.internalAttributes?.count, 2)
-        XCTAssertEqual(
-            log.attributes.userAttributes[OTLogFields.event] as? String,
+        DDAssertJSONEqual(
+            AnyEncodable(log.attributes.userAttributes[OTLogFields.event]),
             "error"
         )
         XCTAssertEqual(
@@ -220,18 +225,18 @@ class URLSessionTracingHandlerTests: XCTestCase {
         let log: LogEvent = try XCTUnwrap(core.events().last, "It should send error log")
         XCTAssertEqual(log.status, .error)
         XCTAssertEqual(log.message, "404 not found")
-        XCTAssertEqual(
-            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.traceID] as? String,
+        DDAssertJSONEqual(
+            AnyEncodable(log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.traceID]),
             span.traceID.toString(.decimal)
         )
-        XCTAssertEqual(
-            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.spanID] as? String,
+        DDAssertJSONEqual(
+            AnyEncodable(log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.spanID]),
             span.spanID.toString(.decimal)
         )
         XCTAssertEqual(log.error?.kind, "HTTPURLResponse - 404")
         XCTAssertEqual(log.attributes.internalAttributes?.count, 2)
-        XCTAssertEqual(
-            log.attributes.userAttributes[OTLogFields.event] as? String,
+        DDAssertJSONEqual(
+            AnyEncodable(log.attributes.userAttributes[OTLogFields.event]),
             "error"
         )
         XCTAssertEqual(

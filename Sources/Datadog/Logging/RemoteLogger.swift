@@ -125,12 +125,14 @@ internal final class RemoteLogger: LoggerProtocol {
             var internalAttributes: [String: Encodable] = [:]
             let contextAttributes = context.featuresAttributes
 
-            if self.rumContextIntegration, let attributes = contextAttributes["rum"] {
-                internalAttributes.merge(attributes.all()) { $1 }
+            if self.rumContextIntegration, let attributes: [String: String] = contextAttributes["rum"]?.ids {
+                let attributes = attributes.compactMapValues(AnyEncodable.init)
+                internalAttributes.merge(attributes) { $1 }
             }
 
             if self.activeSpanIntegration, let attributes = contextAttributes["tracing"] {
-                internalAttributes.merge(attributes.all()) { $1 }
+                let attributes = attributes.compactMapValues(AnyEncodable.init)
+                internalAttributes.merge(attributes) { $1 }
             }
 
             let builder = LogEventBuilder(
@@ -165,7 +167,8 @@ internal final class RemoteLogger: LoggerProtocol {
                         baggage: [
                             "type": log.error?.kind,
                             "stack": log.error?.stack,
-                            "source": "logger"
+                            "source": "logger",
+                            "attributes": userAttributes
                         ]
                     )
                 )

@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import Datadog
 
 // MARK: - Configuration Mocks
@@ -83,11 +84,11 @@ extension Datadog.Configuration {
 }
 
 extension Sampler: AnyMockable, RandomMockable {
-    static func mockAny() -> Sampler {
+    public static func mockAny() -> Sampler {
         return .init(samplingRate: 50)
     }
 
-    static func mockRandom() -> Sampler {
+    public static func mockRandom() -> Sampler {
         return .init(samplingRate: .random(in: (0.0...100.0)))
     }
 
@@ -126,19 +127,19 @@ extension BundleType: CaseIterable {
 
 extension Datadog.Configuration.LogsEndpoint {
     static func mockRandom() -> Self {
-        return [.us1, .us3, .eu1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
+        return [.us1, .us3, .us5, .eu1, .ap1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
     }
 }
 
 extension Datadog.Configuration.TracesEndpoint {
     static func mockRandom() -> Self {
-        return [.us1, .us3, .eu1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
+        return [.us1, .us3, .us5, .eu1, .ap1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
     }
 }
 
 extension Datadog.Configuration.RUMEndpoint {
     static func mockRandom() -> Self {
-        return [.us1, .us3, .eu1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
+        return [.us1, .us3, .us5, .eu1, .ap1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
     }
 }
 
@@ -447,21 +448,21 @@ struct UploadPerformanceMock: UploadPerformancePreset {
 }
 
 extension BundleType: AnyMockable, RandomMockable {
-    static func mockAny() -> BundleType {
+    public static func mockAny() -> BundleType {
         return .iOSApp
     }
 
-    static func mockRandom() -> BundleType {
+    public static func mockRandom() -> BundleType {
         return [.iOSApp, .iOSAppExtension].randomElement()!
     }
 }
 
 extension PerformancePreset: AnyMockable, RandomMockable {
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp)
     }
 
-    static func mockRandom() -> PerformancePreset {
+    public static func mockRandom() -> Self {
         PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .mockRandom(), bundleType: .mockRandom())
     }
 
@@ -583,11 +584,11 @@ class RelativeDateProvider: DateProvider {
 }
 
 extension AppState: AnyMockable, RandomMockable {
-    static func mockAny() -> AppState {
+    public static func mockAny() -> AppState {
         return .active
     }
 
-    static func mockRandom() -> AppState {
+    public static func mockRandom() -> AppState {
         return [.active, .inactive, .background].randomElement()!
     }
 
@@ -663,7 +664,7 @@ struct DataUploaderMock: DataUploaderType {
 }
 
 extension DataUploadStatus: RandomMockable {
-    static func mockRandom() -> DataUploadStatus {
+    public static func mockRandom() -> DataUploadStatus {
         return DataUploadStatus(
             needsRetry: .random(),
             userDebugDescription: .mockRandom(),
@@ -691,13 +692,13 @@ extension BatteryStatus.State {
 }
 
 extension ValuePublisher: AnyMockable where Value: AnyMockable {
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         return .init(initialValue: .mockAny())
     }
 }
 
 extension ValuePublisher: RandomMockable where Value: RandomMockable {
-    static func mockRandom() -> Self {
+    public static func mockRandom() -> Self {
         return .init(initialValue: .mockRandom())
     }
 }
@@ -730,7 +731,7 @@ internal class ValueObserverMock<Value>: ValueObserver {
 }
 
 extension DDError: AnyMockable, RandomMockable {
-    static func mockAny() -> DDError {
+    public static func mockAny() -> DDError {
         return DDError(
             type: .mockAny(),
             message: .mockAny(),
@@ -738,7 +739,7 @@ extension DDError: AnyMockable, RandomMockable {
         )
     }
 
-    static func mockRandom() -> DDError {
+    public static func mockRandom() -> DDError {
         return DDError(
             type: .mockRandom(),
             message: .mockRandom(),

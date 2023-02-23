@@ -91,7 +91,7 @@ internal struct TracingWithLoggingIntegration {
                     "message": message,
                     "level": level,
                     "error": extractedError,
-                    "userAttributes": userAttributes,
+                    "userAttributes": AnyEncodable(userAttributes),
                     "internalAttributes": internalAttributes,
                     "sendNetworkInfo": configuration.sendNetworkInfo
                 ]

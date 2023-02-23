@@ -9,6 +9,7 @@ import XCTest
 import CoreTelephony
 #endif
 
+import TestUtilities
 @testable import Datadog
 
 /// This suite tests if `CrashContextProvider` gets updated by different SDK components, each updating
@@ -34,7 +35,7 @@ class CrashContextProviderTests: XCTestCase {
             XCTAssertEqual($0.sdkVersion, context.sdkVersion)
             XCTAssertEqual($0.source, context.source)
             XCTAssertEqual($0.trackingConsent, context.trackingConsent)
-            XCTAssertEqual($0.userInfo, context.userInfo)
+            DDAssertReflectionEqual($0.userInfo, context.userInfo)
             XCTAssertEqual($0.networkConnectionInfo, context.networkConnectionInfo)
             XCTAssertEqual($0.carrierInfo, context.carrierInfo)
             XCTAssertEqual($0.lastIsAppInForeground, context.applicationStateHistory.currentSnapshot.state.isRunningInForeground)
@@ -56,11 +57,11 @@ class CrashContextProviderTests: XCTestCase {
         let crashContextProvider = CrashContextProvider()
         let core = PassthroughCoreMock(messageReceiver: crashContextProvider)
 
-        let viewEvent: RUMViewEvent = .mockRandom()
+        let viewEvent = AnyCodable(mockRandomAttributes())
 
         // When
         crashContextProvider.onCrashContextChange = {
-            XCTAssertEqual($0.lastRUMViewEvent, viewEvent)
+            DDAssertJSONEqual($0.lastRUMViewEvent, viewEvent)
             expectation.fulfill()
         }
 
@@ -78,7 +79,7 @@ class CrashContextProviderTests: XCTestCase {
         let crashContextProvider = CrashContextProvider()
         let core = PassthroughCoreMock(messageReceiver: crashContextProvider)
 
-        var viewEvent: RUMViewEvent? = .mockRandom()
+        var viewEvent: AnyCodable? = AnyCodable(mockRandomAttributes())
 
         // When
         crashContextProvider.onCrashContextChange = {
@@ -103,11 +104,11 @@ class CrashContextProviderTests: XCTestCase {
         let crashContextProvider = CrashContextProvider()
         let core = PassthroughCoreMock(messageReceiver: crashContextProvider)
 
-        let sessionState: RUMSessionState = .mockRandom()
+        let sessionState: AnyCodable? = AnyCodable(mockRandomAttributes())
 
         // When
         crashContextProvider.onCrashContextChange = {
-            XCTAssertEqual($0.lastRUMSessionState, sessionState)
+            DDAssertJSONEqual($0.lastRUMSessionState, sessionState)
             expectation.fulfill()
         }
 

@@ -94,6 +94,10 @@ test-carthage:
 test-cocoapods:
 		@cd dependency-manager-tests/cocoapods && $(MAKE)
 
+# Tests if current branch ships valid a XCFrameworks project.
+test-xcframeworks:
+		@cd dependency-manager-tests/xcframeworks && $(MAKE)
+
 # Generate RUM data models from rum-events-format JSON Schemas
 rum-models-generate:
 		@echo "⚙️  Generating RUM models..."
@@ -144,7 +148,7 @@ bump:
 		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKObjc.podspec.src > DatadogSDKObjc.podspec; \
 		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKAlamofireExtension.podspec.src > DatadogSDKAlamofireExtension.podspec; \
 		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKCrashReporting.podspec.src > DatadogSDKCrashReporting.podspec; \
+		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKSessionReplay.podspec.src > DatadogSDKSessionReplay.podspec; \
 		git add . ; \
 		git commit -m "Bumped version to $$version"; \
-		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKSessionReplay.podspec.src > DatadogSDKSessionReplay.podspec; \
 		echo Bumped version to $$version

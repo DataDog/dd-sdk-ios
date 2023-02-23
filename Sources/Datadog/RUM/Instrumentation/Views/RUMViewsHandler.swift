@@ -19,6 +19,9 @@ internal final class RUMViewsHandler {
         /// View path used for RUM Explorer.
         let path: String?
 
+        /// Whether the view is modal, but untracked (should not send start / stop commands)
+        let isUntrackedModal: Bool
+
         /// Custom attributes to attach to the View.
         let attributes: [AttributeKey: AttributeValue]
     }
@@ -106,8 +109,11 @@ internal final class RUMViewsHandler {
             stop(view: current)
         }
 
-        // Start the new appearing view
-        start(view: view)
+        if !view.isUntrackedModal {
+            // Start the new appearing view
+            start(view: view)
+        }
+
         // Add/Move the appearing view to the top
         stack.removeAll(where: { $0.identity.equals(view.identity) })
         stack.append(view)
@@ -140,6 +146,10 @@ internal final class RUMViewsHandler {
             )
         }
 
+        guard !view.isUntrackedModal else {
+            return
+        }
+
         guard let identity = view.identity.identifiable else {
             return
         }
@@ -157,6 +167,10 @@ internal final class RUMViewsHandler {
 
     private func stop(view: View) {
         guard let identity = view.identity.identifiable else {
+            return
+        }
+
+        guard !view.isUntrackedModal else {
             return
         }
 
@@ -196,7 +210,18 @@ extension RUMViewsHandler: UIViewControllerHandler {
                     identity: viewController.asRUMViewIdentity(),
                     name: rumView.name,
                     path: rumView.path,
+                    isUntrackedModal: rumView.isUntrackedModal,
                     attributes: rumView.attributes
+                )
+            )
+        } else if #available(iOS 13, tvOS 13, *), viewController.isModalInPresentation {
+            add(
+                view: .init(
+                    identity: viewController.asRUMViewIdentity(),
+                    name: "RUMUntrackedModal",
+                    path: nil,
+                    isUntrackedModal: true,
+                    attributes: [:]
                 )
             )
         }
@@ -220,6 +245,7 @@ extension RUMViewsHandler: SwiftUIViewHandler {
                 identity: identity.asRUMViewIdentity(),
                 name: name,
                 path: path,
+                isUntrackedModal: false,
                 attributes: attributes
             )
         )

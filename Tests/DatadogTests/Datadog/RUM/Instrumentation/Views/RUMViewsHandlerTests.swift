@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import Datadog
 
 class RUMViewsHandlerTests: XCTestCase {
@@ -237,6 +238,160 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertEqual(predicate.numberOfCalls, 2)
     }
 
+    func testGivenAppearedView_whenTransitioningToUntrackedModal_viewDoesStop() throws {
+        class Predicate: UIKitRUMViewsPredicate {
+            let untrackedModal: UIViewController
+
+            init(untrackedModal: UIViewController) {
+                self.untrackedModal = untrackedModal
+            }
+
+            func rumView(for viewController: UIViewController) -> RUMView? {
+                let isUntrackedModal = viewController == untrackedModal
+
+                return .init(name: .mockRandom(), isUntrackedModal: isUntrackedModal)
+            }
+        }
+        // Given
+        let someView = createMockViewInWindow()
+        let untrackedModal = createMockViewInWindow()
+
+        let predicate = Predicate(untrackedModal: untrackedModal)
+        let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate)
+        handler.publish(to: commandSubscriber)
+
+        // When
+        handler.notify_viewDidAppear(viewController: someView, animated: .mockAny())
+        handler.notify_viewDidAppear(viewController: untrackedModal, animated: .mockAny())
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
+
+        let startCommand = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
+        let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
+
+        XCTAssertTrue(startCommand.identity.equals(someView))
+        XCTAssertTrue(stopCommand.identity.equals(someView))
+    }
+
+    func testGivenUntrackedModal_whenTransitioningToAppearedView_viewDoesStart() throws {
+        class Predicate: UIKitRUMViewsPredicate {
+            let untrackedModal: UIViewController
+
+            init(untrackedModal: UIViewController) {
+                self.untrackedModal = untrackedModal
+            }
+
+            func rumView(for viewController: UIViewController) -> RUMView? {
+                let isUntrackedModal = viewController == untrackedModal
+
+                return .init(name: .mockRandom(), isUntrackedModal: isUntrackedModal)
+            }
+        }
+        // Given
+        let someView = createMockViewInWindow()
+        let untrackedModal = createMockViewInWindow()
+
+        let predicate = Predicate(untrackedModal: untrackedModal)
+        let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate)
+        handler.publish(to: commandSubscriber)
+
+        // When
+        handler.notify_viewDidAppear(viewController: someView, animated: .mockAny())
+        handler.notify_viewDidAppear(viewController: untrackedModal, animated: .mockAny())
+        handler.notify_viewDidAppear(viewController: someView, animated: .mockAny())
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+
+        let startCommand = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
+        let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
+        let startCommand2 = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
+
+        XCTAssertTrue(startCommand.identity.equals(someView))
+        XCTAssertTrue(stopCommand.identity.equals(someView))
+        XCTAssertTrue(startCommand2.identity.equals(someView))
+    }
+
+    func testGiveniOS13AppearedView_whenTransitioningToModal_viewDoesStop() throws {
+        if #available(iOS 13, tvOS 13, *) {
+            class Predicate: UIKitRUMViewsPredicate {
+                let untrackedModal: UIViewController
+
+                init(untrackedModal: UIViewController) {
+                    self.untrackedModal = untrackedModal
+                }
+
+                func rumView(for viewController: UIViewController) -> RUMView? {
+                    let isUntrackedModal = viewController == untrackedModal
+
+                    return .init(name: .mockRandom(), isUntrackedModal: isUntrackedModal)
+                }
+            }
+            // Given
+            let someView = createMockViewInWindow()
+            let untrackedModal = createMockViewInWindow()
+            untrackedModal.isModalInPresentation = true
+
+            let predicate = Predicate(untrackedModal: untrackedModal)
+            let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate)
+            handler.publish(to: commandSubscriber)
+
+            // When
+            handler.notify_viewDidAppear(viewController: someView, animated: .mockAny())
+            handler.notify_viewDidAppear(viewController: untrackedModal, animated: .mockAny())
+
+            XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
+
+            let startCommand = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
+            let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
+
+            XCTAssertTrue(startCommand.identity.equals(someView))
+            XCTAssertTrue(stopCommand.identity.equals(someView))
+        }
+    }
+
+    func testGiveniOS13Modal_whenTransitioningToAppearedView_viewDoesStart() throws {
+        if #available(iOS 13, tvOS 13, *) {
+            class Predicate: UIKitRUMViewsPredicate {
+                let untrackedModal: UIViewController
+
+                init(untrackedModal: UIViewController) {
+                    self.untrackedModal = untrackedModal
+                }
+
+                func rumView(for viewController: UIViewController) -> RUMView? {
+                    if viewController == untrackedModal {
+                        return nil
+                    }
+
+                    return .init(name: .mockRandom())
+                }
+            }
+            // Given
+            let someView = createMockViewInWindow()
+            let untrackedModal = createMockViewInWindow()
+            untrackedModal.isModalInPresentation = true
+
+            let predicate = Predicate(untrackedModal: untrackedModal)
+            let handler = RUMViewsHandler(dateProvider: dateProvider, predicate: predicate)
+            handler.publish(to: commandSubscriber)
+
+            // When
+            handler.notify_viewDidAppear(viewController: someView, animated: .mockAny())
+            handler.notify_viewDidAppear(viewController: untrackedModal, animated: .mockAny())
+            handler.notify_viewDidAppear(viewController: someView, animated: .mockAny())
+
+            XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+
+            let startCommand = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
+            let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
+            let startCommand2 = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
+
+            XCTAssertTrue(startCommand.identity.equals(someView))
+            XCTAssertTrue(stopCommand.identity.equals(someView))
+            XCTAssertTrue(startCommand2.identity.equals(someView))
+        }
+    }
+
     // MARK: - Handling SwiftUI `.onAppear`
 
     func testWhenOnAppear_itStartsRUMView() throws {
@@ -262,7 +417,7 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertTrue(command.identity.equals(viewIdentity))
         XCTAssertEqual(command.name, viewName)
         XCTAssertEqual(command.path, viewPath)
-        AssertDictionariesEqual(command.attributes, viewAttributes)
+        DDAssertDictionariesEqual(command.attributes, viewAttributes)
     }
 
     func testWhenOnAppear_itStopsPreviousRUMView() throws {
@@ -300,11 +455,11 @@ class RUMViewsHandlerTests: XCTestCase {
         let startCommand2 = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
 
         XCTAssertTrue(startCommand1.identity.equals(view1Identity))
-        AssertDictionariesEqual(startCommand1.attributes, view1Attributes)
+        DDAssertDictionariesEqual(startCommand1.attributes, view1Attributes)
         XCTAssertTrue(stopCommand.identity.equals(view1Identity))
         XCTAssertEqual(stopCommand.attributes.count, 0)
         XCTAssertTrue(startCommand2.identity.equals(view2Identity))
-        AssertDictionariesEqual(startCommand2.attributes, view2Attributes)
+        DDAssertDictionariesEqual(startCommand2.attributes, view2Attributes)
     }
 
     func testWhenOnAppear_itDoesNotStartTheSameRUMViewTwice() throws {
@@ -371,7 +526,7 @@ class RUMViewsHandlerTests: XCTestCase {
         let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
 
         XCTAssertTrue(startCommand.identity.equals(viewIdentity))
-        AssertDictionariesEqual(startCommand.attributes, viewAttributes)
+        DDAssertDictionariesEqual(startCommand.attributes, viewAttributes)
         XCTAssertTrue(stopCommand.identity.equals(viewIdentity))
         XCTAssertEqual(stopCommand.attributes.count, 0)
     }
@@ -413,10 +568,10 @@ class RUMViewsHandlerTests: XCTestCase {
         let startCommand2 = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
 
         XCTAssertTrue(startCommand1.identity.equals(view1Identity))
-        AssertDictionariesEqual(startCommand1.attributes, view1Attributes)
+        DDAssertDictionariesEqual(startCommand1.attributes, view1Attributes)
         XCTAssertTrue(stopCommand1.identity.equals(view1Identity))
         XCTAssertTrue(startCommand2.identity.equals(view2Identity))
-        AssertDictionariesEqual(startCommand2.attributes, view2Attributes)
+        DDAssertDictionariesEqual(startCommand2.attributes, view2Attributes)
     }
 
     func testGiven2AppearedView_whenTheLastDisappears_itRestartsThePreviousRUMView() throws {
@@ -458,13 +613,13 @@ class RUMViewsHandlerTests: XCTestCase {
         let startCommand3 = try XCTUnwrap(commandSubscriber.receivedCommands[4] as? RUMStartViewCommand)
 
         XCTAssertTrue(startCommand1.identity.equals(view1Identity))
-        AssertDictionariesEqual(startCommand1.attributes, view1Attributes)
+        DDAssertDictionariesEqual(startCommand1.attributes, view1Attributes)
         XCTAssertTrue(stopCommand1.identity.equals(view1Identity))
         XCTAssertTrue(startCommand2.identity.equals(view2Identity))
-        AssertDictionariesEqual(startCommand2.attributes, view2Attributes)
+        DDAssertDictionariesEqual(startCommand2.attributes, view2Attributes)
         XCTAssertTrue(stopCommand2.identity.equals(view2Identity))
         XCTAssertTrue(startCommand3.identity.equals(view1Identity))
-        AssertDictionariesEqual(startCommand1.attributes, view1Attributes)
+        DDAssertDictionariesEqual(startCommand1.attributes, view1Attributes)
     }
 
     // MARK: - Handling Application Activity
@@ -499,7 +654,7 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertTrue(startCommand.identity.equals(viewIdentity))
         XCTAssertEqual(startCommand.path, viewPath)
         XCTAssertEqual(startCommand.name, viewName)
-        AssertDictionariesEqual(startCommand.attributes, viewAttributes)
+        DDAssertDictionariesEqual(startCommand.attributes, viewAttributes)
         XCTAssertEqual(startCommand.time, .mockDecember15th2019At10AMUTC() + 1)
     }
 

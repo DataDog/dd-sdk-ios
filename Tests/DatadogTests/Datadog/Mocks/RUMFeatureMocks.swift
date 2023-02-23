@@ -4,8 +4,9 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-@testable import Datadog
 import XCTest
+import TestUtilities
+@testable import Datadog
 
 extension RUMFeature {
     /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
@@ -33,7 +34,7 @@ extension DatadogCoreProxy {
 }
 
 extension WebViewEventReceiver: AnyMockable {
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         .mockWith()
     }
 
@@ -49,7 +50,7 @@ extension WebViewEventReceiver: AnyMockable {
 }
 
 extension CrashReportReceiver: AnyMockable {
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         .mockWith()
     }
 
@@ -90,21 +91,23 @@ extension RUMTelemetry {
         dateProvider: DateProvider = SystemDateProvider(),
         configurationEventMapper: RUMTelemetryConfiguratoinMapper? = nil,
         delayedDispatcher: RUMTelemetryDelayedDispatcher? = nil,
-        sampler: Sampler = .init(samplingRate: 100)
+        sampler: Sampler = .init(samplingRate: 100),
+        configurationExtraSampler: Sampler = .init(samplingRate: 100)
     ) -> Self {
         .init(
             in: core,
             dateProvider: dateProvider,
             configurationEventMapper: configurationEventMapper,
             delayedDispatcher: delayedDispatcher,
-            sampler: sampler
+            sampler: sampler,
+            configurationExtraSampler: configurationExtraSampler
         )
     }
 }
 
 // MARK: - RUMDataModel Mocks
 
-struct RUMDataModelMock: RUMDataModel, RUMSanitizableEvent, EquatableInTests {
+struct RUMDataModelMock: RUMDataModel, RUMSanitizableEvent {
     let attribute: String
     var usr: RUMUser?
     var context: RUMEventAttributes?
@@ -179,9 +182,9 @@ extension RUMCommand {
 }
 
 extension RUMStartViewCommand: AnyMockable, RandomMockable {
-    static func mockAny() -> RUMStartViewCommand { mockWith() }
+    public static func mockAny() -> RUMStartViewCommand { mockWith() }
 
-    static func mockRandom() -> RUMStartViewCommand {
+    public static func mockRandom() -> RUMStartViewCommand {
         return .mockWith(
             time: .mockRandomInThePast(),
             attributes: mockRandomAttributes(),
@@ -209,9 +212,9 @@ extension RUMStartViewCommand: AnyMockable, RandomMockable {
 }
 
 extension RUMStopViewCommand: AnyMockable, RandomMockable {
-    static func mockAny() -> RUMStopViewCommand { mockWith() }
+    public static func mockAny() -> RUMStopViewCommand { mockWith() }
 
-    static func mockRandom() -> RUMStopViewCommand {
+    public static func mockRandom() -> RUMStopViewCommand {
         return .mockWith(
             time: .mockRandomInThePast(),
             attributes: mockRandomAttributes(),
@@ -231,9 +234,9 @@ extension RUMStopViewCommand: AnyMockable, RandomMockable {
 }
 
 extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
-    static func mockAny() -> RUMAddCurrentViewErrorCommand { .mockWithErrorObject() }
+    public static func mockAny() -> RUMAddCurrentViewErrorCommand { .mockWithErrorObject() }
 
-    static func mockRandom() -> RUMAddCurrentViewErrorCommand {
+    public static func mockRandom() -> RUMAddCurrentViewErrorCommand {
         if Bool.random() {
             return .mockWithErrorObject(
                 time: .mockRandomInThePast(),
@@ -279,9 +282,9 @@ extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
 }
 
 extension RUMAddViewTimingCommand: AnyMockable, RandomMockable {
-    static func mockAny() -> RUMAddViewTimingCommand { .mockWith() }
+    public static func mockAny() -> RUMAddViewTimingCommand { .mockWith() }
 
-    static func mockRandom() -> RUMAddViewTimingCommand {
+    public static func mockRandom() -> RUMAddViewTimingCommand {
         return .mockWith(
             time: .mockRandomInThePast(),
             attributes: mockRandomAttributes(),
@@ -301,11 +304,11 @@ extension RUMAddViewTimingCommand: AnyMockable, RandomMockable {
 }
 
 extension RUMSpanContext: AnyMockable, RandomMockable {
-    static func mockAny() -> RUMSpanContext {
+    public static func mockAny() -> RUMSpanContext {
         return .mockWith()
     }
 
-    static func mockRandom() -> RUMSpanContext {
+    public static func mockRandom() -> RUMSpanContext {
         return RUMSpanContext(
             traceID: .mockRandom(),
             spanID: .mockRandom(),
@@ -327,9 +330,9 @@ extension RUMSpanContext: AnyMockable, RandomMockable {
 }
 
 extension RUMStartResourceCommand: AnyMockable, RandomMockable {
-    static func mockAny() -> RUMStartResourceCommand { mockWith() }
+    public static func mockAny() -> RUMStartResourceCommand { mockWith() }
 
-    static func mockRandom() -> RUMStartResourceCommand {
+    public static func mockRandom() -> RUMStartResourceCommand {
         return .mockWith(
             resourceKey: .mockRandom(),
             time: .mockRandomInThePast(),
@@ -365,9 +368,9 @@ extension RUMStartResourceCommand: AnyMockable, RandomMockable {
 }
 
 extension RUMAddResourceMetricsCommand: AnyMockable, RandomMockable {
-    static func mockAny() -> RUMAddResourceMetricsCommand { mockWith() }
+    public static func mockAny() -> RUMAddResourceMetricsCommand { mockWith() }
 
-    static func mockRandom() -> RUMAddResourceMetricsCommand {
+    public static func mockRandom() -> RUMAddResourceMetricsCommand {
         return mockWith(
             resourceKey: .mockRandom(),
             time: .mockRandomInThePast(),
@@ -392,9 +395,9 @@ extension RUMAddResourceMetricsCommand: AnyMockable, RandomMockable {
 }
 
 extension RUMStopResourceCommand: AnyMockable, RandomMockable {
-    static func mockAny() -> RUMStopResourceCommand { mockWith() }
+    public static func mockAny() -> RUMStopResourceCommand { mockWith() }
 
-    static func mockRandom() -> RUMStopResourceCommand {
+    public static func mockRandom() -> RUMStopResourceCommand {
         return mockWith(
             resourceKey: .mockRandom(),
             time: .mockRandomInThePast(),
@@ -420,9 +423,9 @@ extension RUMStopResourceCommand: AnyMockable, RandomMockable {
 }
 
 extension RUMStopResourceWithErrorCommand: AnyMockable, RandomMockable {
-    static func mockAny() -> RUMStopResourceWithErrorCommand { mockWithErrorMessage() }
+    public static func mockAny() -> RUMStopResourceWithErrorCommand { mockWithErrorMessage() }
 
-    static func mockRandom() -> RUMStopResourceWithErrorCommand {
+    public static func mockRandom() -> RUMStopResourceWithErrorCommand {
         if Bool.random() {
             return mockWithErrorObject(
                 resourceKey: .mockRandom(),
@@ -474,9 +477,9 @@ extension RUMStopResourceWithErrorCommand: AnyMockable, RandomMockable {
 }
 
 extension RUMStartUserActionCommand: AnyMockable, RandomMockable {
-    static func mockAny() -> RUMStartUserActionCommand { mockWith() }
+    public static func mockAny() -> RUMStartUserActionCommand { mockWith() }
 
-    static func mockRandom() -> RUMStartUserActionCommand {
+    public static func mockRandom() -> RUMStartUserActionCommand {
         return mockWith(
             time: .mockRandomInThePast(),
             attributes: mockRandomAttributes(),
@@ -498,9 +501,9 @@ extension RUMStartUserActionCommand: AnyMockable, RandomMockable {
 }
 
 extension RUMStopUserActionCommand: AnyMockable, RandomMockable {
-    static func mockAny() -> RUMStopUserActionCommand { mockWith() }
+    public static func mockAny() -> RUMStopUserActionCommand { mockWith() }
 
-    static func mockRandom() -> RUMStopUserActionCommand {
+    public static func mockRandom() -> RUMStopUserActionCommand {
         return mockWith(
             time: .mockRandomInThePast(),
             attributes: mockRandomAttributes(),
@@ -522,9 +525,9 @@ extension RUMStopUserActionCommand: AnyMockable, RandomMockable {
 }
 
 extension RUMAddUserActionCommand: AnyMockable, RandomMockable {
-    static func mockAny() -> RUMAddUserActionCommand { mockWith() }
+    public static func mockAny() -> RUMAddUserActionCommand { mockWith() }
 
-    static func mockRandom() -> RUMAddUserActionCommand {
+    public static func mockRandom() -> RUMAddUserActionCommand {
         return mockWith(
             time: .mockRandomInThePast(),
             attributes: mockRandomAttributes(),
@@ -546,9 +549,9 @@ extension RUMAddUserActionCommand: AnyMockable, RandomMockable {
 }
 
 extension RUMAddLongTaskCommand: AnyMockable, RandomMockable {
-    static func mockAny() -> RUMAddLongTaskCommand { mockWith() }
+    public static func mockAny() -> RUMAddLongTaskCommand { mockWith() }
 
-    static func mockRandom() -> RUMAddLongTaskCommand {
+    public static func mockRandom() -> RUMAddLongTaskCommand {
         return mockWith(
             time: .mockRandomInThePast(),
             attributes: mockRandomAttributes(),
@@ -569,10 +572,34 @@ extension RUMAddLongTaskCommand: AnyMockable, RandomMockable {
     }
 }
 
+extension RUMAddFeatureFlagEvaluationCommand: AnyMockable, RandomMockable {
+    public static func mockAny() -> RUMAddFeatureFlagEvaluationCommand { mockWith() }
+
+    public static func mockRandom() -> RUMAddFeatureFlagEvaluationCommand {
+        return mockWith(
+            time: .mockRandomInThePast(),
+            name: .mockRandom(),
+            value: String.mockRandom()
+        )
+    }
+
+    static func mockWith(
+        time: Date = .mockAny(),
+        name: String = .mockAny(),
+        value: Encodable = String.mockAny()
+    ) -> RUMAddFeatureFlagEvaluationCommand {
+        return RUMAddFeatureFlagEvaluationCommand(
+            time: time,
+            name: name,
+            value: value
+        )
+    }
+}
+
 // MARK: - RUMCommand Property Mocks
 
 extension RUMInternalErrorSource: RandomMockable {
-    static func mockRandom() -> RUMInternalErrorSource {
+    public static func mockRandom() -> RUMInternalErrorSource {
         return [.custom, .source, .network, .webview, .logger, .console].randomElement()!
     }
 }
@@ -580,13 +607,13 @@ extension RUMInternalErrorSource: RandomMockable {
 // MARK: - RUMContext Mocks
 
 extension RUMUUID {
-    static func mockRandom() -> RUMUUID {
+    public static func mockRandom() -> RUMUUID {
         return RUMUUID(rawValue: UUID())
     }
 }
 
 extension RUMContext {
-    static func mockAny() -> RUMContext {
+    public static func mockAny() -> RUMContext {
         return mockWith()
     }
 
@@ -610,11 +637,11 @@ extension RUMContext {
 }
 
 extension RUMSessionState: AnyMockable, RandomMockable {
-    static func mockAny() -> RUMSessionState {
+    public static func mockAny() -> RUMSessionState {
         return mockWith()
     }
 
-    static func mockRandom() -> RUMSessionState {
+    public static func mockRandom() -> RUMSessionState {
         return .init(
             sessionUUID: .mockRandom(),
             isInitialSession: .mockRandom(),

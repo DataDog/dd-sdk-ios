@@ -37,7 +37,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
         if sessionScope == nil {
-            startInitialSession(context: context)
+            startInitialSession(on: command, context: context, writer: writer)
         }
 
         if let currentSession = sessionScope {
@@ -60,7 +60,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         _ = refreshedSession.process(command: command, context: context, writer: writer)
     }
 
-    private func startInitialSession(context: DatadogContext) {
+    private func startInitialSession(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         let initialSession = RUMSessionScope(
             isInitialSession: true,
             parent: self,
@@ -68,8 +68,20 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             dependencies: dependencies,
             isReplayBeingRecorded: context.srBaggage?.isReplayBeingRecorded
         )
+
         sessionScope = initialSession
         sessionScopeDidUpdate(initialSession)
+        if context.applicationStateHistory.currentSnapshot.state != .background {
+            // Immediately start the ApplicationLaunchView for the new session
+            _ = sessionScope?.process(
+                command: RUMApplicationStartCommand(
+                    time: command.time,
+                    attributes: command.attributes
+                ),
+                context: context,
+                writer: writer
+            )
+        }
     }
 
     private func sessionScopeDidUpdate(_ sessionScope: RUMSessionScope) {

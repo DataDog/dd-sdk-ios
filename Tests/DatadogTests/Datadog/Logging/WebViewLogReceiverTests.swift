@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import Datadog
 
 class WebViewLogReceiverTests: XCTestCase {
@@ -32,7 +33,7 @@ class WebViewLogReceiverTests: XCTestCase {
             "test": value
         ]
 
-        try AssertEncodedRepresentationsEqual(received, AnyEncodable(expected))
+        DDAssertJSONEqual(received, AnyEncodable(expected))
     }
 
     // MARK: - Web-view log
@@ -49,8 +50,10 @@ class WebViewLogReceiverTests: XCTestCase {
                 serverTimeOffset: 123,
                 featuresAttributes: [
                     "rum": [
-                        RUMContextAttributes.applicationID: "123456",
-                        RUMContextAttributes.sessionID: mockSessionID.uuidString.lowercased()
+                        "ids": [
+                            RUMContextAttributes.IDs.applicationID: "123456",
+                            RUMContextAttributes.IDs.sessionID: mockSessionID.uuidString.lowercased()
+                        ]
                     ]
                 ]
             ),
@@ -85,7 +88,7 @@ class WebViewLogReceiverTests: XCTestCase {
         )
 
         let received: AnyEncodable = try XCTUnwrap(core.events().first, "It should send event")
-        try AssertEncodedRepresentationsEqual(received, AnyEncodable(expectedWebLogEvent))
+        DDAssertJSONEqual(received, AnyEncodable(expectedWebLogEvent))
     }
 
     func testWhenContextIsUnavailable_itPassesWebviewEventAsIs() throws {
@@ -120,6 +123,6 @@ class WebViewLogReceiverTests: XCTestCase {
         )
 
         let received: AnyEncodable = try XCTUnwrap(core.events().first, "It should send event")
-        try AssertEncodedRepresentationsEqual(received, AnyEncodable(expectedWebLogEvent))
+        DDAssertJSONEqual(received, AnyEncodable(expectedWebLogEvent))
     }
 }

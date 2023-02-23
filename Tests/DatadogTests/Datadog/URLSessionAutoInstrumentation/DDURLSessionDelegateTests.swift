@@ -125,7 +125,7 @@ class DDURLSessionDelegateTests: XCTestCase {
             let taskDescription = originalTask.taskDescription!
 
             let interceptedTaskWithMetrics = try interceptor.interceptedTaskWithMetrics(by: taskDescription).unwrapOrThrow()
-            AssertURLSessionTasksIdentical(interceptedTaskWithMetrics.task, originalTask)
+            XCTAssertIdentical(interceptedTaskWithMetrics.task, originalTask)
             XCTAssertGreaterThan(interceptedTaskWithMetrics.metrics.taskInterval.start, dateBeforeAnyRequests)
             XCTAssertLessThan(interceptedTaskWithMetrics.metrics.taskInterval.end, dateAfterAllRequests)
 
@@ -133,7 +133,7 @@ class DDURLSessionDelegateTests: XCTestCase {
             XCTAssertNil(interceptedTaskWithData, "Data should not be recorded for \(originalTask) (\(taskDescription)")
 
             let interceptedTaskWithCompletion = try interceptor.interceptedTaskWithCompletion(by: taskDescription).unwrapOrThrow()
-            AssertURLSessionTasksIdentical(interceptedTaskWithCompletion.task, originalTask)
+            XCTAssertIdentical(interceptedTaskWithCompletion.task, originalTask)
             XCTAssertEqual((interceptedTaskWithCompletion.error! as NSError).localizedDescription, "some error")
         }
     }
@@ -183,16 +183,16 @@ class DDURLSessionDelegateTests: XCTestCase {
             let taskDescription = originalTask.taskDescription!
 
             let interceptedTaskWithMetrics = try interceptor.interceptedTaskWithMetrics(by: taskDescription).unwrapOrThrow()
-            AssertURLSessionTasksIdentical(interceptedTaskWithMetrics.task, originalTask)
+            XCTAssertIdentical(interceptedTaskWithMetrics.task, originalTask)
             XCTAssertGreaterThan(interceptedTaskWithMetrics.metrics.taskInterval.start, dateBeforeAnyRequests)
             XCTAssertLessThan(interceptedTaskWithMetrics.metrics.taskInterval.end, dateAfterAllRequests)
 
             let interceptedTaskWithData = try interceptor.interceptedTaskWithData(by: taskDescription).unwrapOrThrow()
-            AssertURLSessionTasksIdentical(interceptedTaskWithData.task, originalTask)
+            XCTAssertIdentical(interceptedTaskWithData.task, originalTask)
             XCTAssertEqual(interceptedTaskWithData.data, randomData)
 
             let interceptedTaskWithCompletion = try interceptor.interceptedTaskWithCompletion(by: taskDescription).unwrapOrThrow()
-            AssertURLSessionTasksIdentical(interceptedTaskWithCompletion.task, originalTask)
+            XCTAssertIdentical(interceptedTaskWithCompletion.task, originalTask)
             XCTAssertNil(interceptedTaskWithCompletion.error)
         }
     }

@@ -55,6 +55,9 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
         sendCIAppLog(session)
 
+        let launchView = try XCTUnwrap(session.applicationLaunchView)
+        XCTAssertEqual(launchView.actionEvents[0].action.type, .applicationStart)
+
         let view1 = session.viewVisits[0]
         XCTAssertEqual(view1.name, "SendRUMFixture1View")
         XCTAssertEqual(view1.path, "Example.SendRUMFixture1ViewController")
@@ -67,13 +70,12 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
                 "Expected architecture to start with 'x86_64', 'i486' or 'arm'. Got \(architecture)"
             )
         }
-        XCTAssertEqual(view1.viewEvents.last?.view.action.count, 2)
+        XCTAssertEqual(view1.viewEvents.last?.view.action.count, 1)
         XCTAssertEqual(view1.viewEvents.last?.view.resource.count, 1)
         XCTAssertEqual(view1.viewEvents.last?.view.error.count, 1)
-        XCTAssertEqual(view1.actionEvents[0].action.type, .applicationStart)
-        XCTAssertEqual(view1.actionEvents[1].action.type, .tap)
-        XCTAssertEqual(view1.actionEvents[1].action.resource?.count, 1, "Action should track one successful Resource")
-        XCTAssertEqual(view1.actionEvents[1].action.error?.count, 1, "Action should track second Resource failure as Error")
+        XCTAssertEqual(view1.actionEvents[0].action.type, .tap)
+        XCTAssertEqual(view1.actionEvents[0].action.resource?.count, 1, "Action should track one successful Resource")
+        XCTAssertEqual(view1.actionEvents[0].action.error?.count, 1, "Action should track second Resource failure as Error")
         XCTAssertEqual(view1.resourceEvents[0].resource.url, "https://foo.com/resource/1")
         XCTAssertEqual(view1.resourceEvents[0].resource.statusCode, 200)
         XCTAssertEqual(view1.resourceEvents[0].resource.type, .image)
@@ -89,6 +91,8 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         XCTAssertEqual(view1.errorEvents[0].error.resource?.url, "https://foo.com/resource/2")
         XCTAssertEqual(view1.errorEvents[0].error.resource?.method, .get)
         XCTAssertEqual(view1.errorEvents[0].error.resource?.statusCode, 400)
+        let featureFlags = try XCTUnwrap(view1.viewEvents.last?.featureFlags)
+        XCTAssertEqual(featureFlags.featureFlagsInfo.count, 0)
         RUMSessionMatcher.assertViewWasEventuallyInactive(view1)
 
         let contentReadyTiming = try XCTUnwrap(view1.viewEventMatchers.last?.timing(named: "content-ready"))
@@ -105,8 +109,14 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         XCTAssertEqual(view2.viewEvents.last?.view.action.count, 0)
         XCTAssertEqual(view2.viewEvents.last?.view.resource.count, 0)
         XCTAssertEqual(view2.viewEvents.last?.view.error.count, 1)
+        let viewFeatureFlags = try XCTUnwrap(view2.viewEvents.last?.featureFlags)
+        XCTAssertEqual((viewFeatureFlags.featureFlagsInfo["mock_flag_a"] as? DDAnyCodable)?.value as? Bool, false)
+        XCTAssertEqual((viewFeatureFlags.featureFlagsInfo["mock_flag_b"] as? DDAnyCodable)?.value as? String, "mock_value")
         XCTAssertEqual(view2.errorEvents[0].error.message, "Simulated view error")
         XCTAssertEqual(view2.errorEvents[0].error.source, .source)
+        let errorFeatureFlags = try XCTUnwrap(view2.errorEvents[0].featureFlags)
+        XCTAssertEqual((errorFeatureFlags.featureFlagsInfo["mock_flag_a"] as? DDAnyCodable)?.value as? Bool, false)
+        XCTAssertEqual((errorFeatureFlags.featureFlagsInfo["mock_flag_b"] as? DDAnyCodable)?.value as? String, "mock_value")
         RUMSessionMatcher.assertViewWasEventuallyInactive(view2)
 
         let view3 = session.viewVisits[2]

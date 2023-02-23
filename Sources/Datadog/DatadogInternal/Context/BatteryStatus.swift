@@ -7,8 +7,8 @@
 import Foundation
 
 /// Describe the battery state for mobile devices.
-internal struct BatteryStatus: Codable, Equatable {
-    enum State: Codable {
+public struct BatteryStatus: Codable, Equatable, DictionaryEncodable {
+    public enum State: Codable {
         case unknown
         case unplugged
         case charging
@@ -16,8 +16,13 @@ internal struct BatteryStatus: Codable, Equatable {
     }
 
     /// The charging state of the battery.
-    let state: State
+    public let state: State
 
     /// The battery power level, range between 0 and 1.
-    let level: Float
+    public let level: Float
+
+    public init(state: State, level: Float) {
+        self.state = state
+        self.level = level
+    }
 }

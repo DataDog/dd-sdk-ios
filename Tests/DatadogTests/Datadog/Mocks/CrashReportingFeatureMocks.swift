@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import TestUtilities
 @testable import Datadog
 
 extension CrashReporter {
@@ -86,8 +87,6 @@ class CrashReportSenderMock: CrashReportSender {
     var didSendCrashReport: (() -> Void)?
 }
 
-extension CrashContext: EquatableInTests {}
-
 extension CrashContext {
     static func mockAny() -> CrashContext {
         return mockWith()
@@ -105,8 +104,8 @@ extension CrashContext {
         userInfo: UserInfo? = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo? = .mockAny(),
         carrierInfo: CarrierInfo? = .mockAny(),
-        lastRUMViewEvent: RUMViewEvent? = nil,
-        lastRUMSessionState: RUMSessionState? = .mockAny(),
+        lastRUMViewEvent: AnyCodable? = nil,
+        lastRUMSessionState: AnyCodable? = nil,
         lastIsAppInForeground: Bool = .mockAny()
     ) -> Self {
         .init(
@@ -140,19 +139,14 @@ extension CrashContext {
             userInfo: .mockRandom(),
             networkConnectionInfo: .mockRandom(),
             carrierInfo: .mockRandom(),
-            lastRUMViewEvent: nil,
-            lastRUMSessionState: .mockRandom(),
+            lastRUMViewEvent: AnyCodable(mockRandomAttributes()),
+            lastRUMSessionState: AnyCodable(mockRandomAttributes()),
             lastIsAppInForeground: .mockRandom()
         )
     }
 
     var data: Data { try! JSONEncoder.default().encode(self) }
 }
-
-extension DDCrashReport: EquatableInTests {}
-extension DDCrashReport.Thread: EquatableInTests {}
-extension DDCrashReport.BinaryImage: EquatableInTests {}
-extension DDCrashReport.Meta: EquatableInTests {}
 
 internal extension DDCrashReport {
     static func mockAny() -> DDCrashReport {
