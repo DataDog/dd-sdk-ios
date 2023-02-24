@@ -22,6 +22,6 @@ Pod::Spec.new do |s|
   s.static_framework = true
 
   s.source_files = "Sources/DatadogCrashReporting/**/*.swift"
-  s.dependency 'DatadogSDK', '1.15.0'
+  s.dependency 'DatadogSDK', s.version.to_s
   s.dependency 'PLCrashReporter', '~> 1.11.0'
 end
