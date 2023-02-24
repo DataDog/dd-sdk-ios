@@ -31,6 +31,7 @@ internal struct UILabelRecorder: NodeRecorder {
             attributes: attributes,
             text: label.text ?? "",
             textColor: label.textColor?.cgColor,
+            textAlignment: nil,
             font: label.font,
             fontScalingEnabled: label.adjustsFontSizeToFitWidth,
             textObfuscator: context.recorder.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator,
@@ -48,6 +49,8 @@ internal struct UILabelWireframesBuilder: NodeWireframesBuilder {
     let text: String
     /// The color of the text.
     let textColor: CGColor?
+    /// The alignment of the text.
+    var textAlignment: SRTextPosition.Alignment?
     /// The font used by the label.
     let font: UIFont?
     /// Flag that determines if font should be scaled
@@ -64,6 +67,7 @@ internal struct UILabelWireframesBuilder: NodeWireframesBuilder {
                 frame: attributes.frame,
                 text: textObfuscator.mask(text: text),
                 textFrame: wireframeRect,
+                textAlignment: textAlignment,
                 textColor: textColor,
                 font: font,
                 fontScalingEnabled: fontScalingEnabled,

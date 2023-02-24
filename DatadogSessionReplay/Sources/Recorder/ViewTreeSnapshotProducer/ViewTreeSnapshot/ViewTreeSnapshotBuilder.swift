@@ -64,4 +64,5 @@ internal let defaultNodeRecorders: [NodeRecorder] = [
     UISegmentRecorder(),
     UINavigationBarRecorder(),
     UITabBarRecorder(),
+    UIPickerViewRecorder(),
 ]

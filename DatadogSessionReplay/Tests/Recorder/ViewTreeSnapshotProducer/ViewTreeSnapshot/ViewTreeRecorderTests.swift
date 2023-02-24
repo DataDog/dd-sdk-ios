@@ -8,6 +8,13 @@ import XCTest
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 
+private struct MockSemantics: NodeSemantics {
+    static var importance: Int = .mockAny()
+    var subtreeStrategy: NodeSubtreeStrategy
+    var wireframesBuilder: NodeWireframesBuilder? = nil
+    let debugName: String
+}
+
 class ViewTreeRecorderTests: XCTestCase {
     // MARK: - Querying Node Recorders
 
@@ -34,7 +41,7 @@ class ViewTreeRecorderTests: XCTestCase {
         XCTAssertEqual(recorders[2].queriedViews, [rootView, childView, grandchildView])
     }
 
-    func testItQueriesNodeRecordersInUntilOneFindsBestSemantics() {
+    func testItQueriesNodeRecordersUntilOneFindsBestSemantics() {
         // Given
         let view = UIView(frame: .mockRandom())
 
@@ -64,13 +71,6 @@ class ViewTreeRecorderTests: XCTestCase {
     // MARK: - Recording Nodes Recursively
 
     func testItQueriesViewTreeRecursivelyAndReturnsNodesInDFSOrder() {
-        struct MockSemantics: NodeSemantics {
-            static var importance: Int = .mockAny()
-            var subtreeStrategy: NodeSubtreeStrategy
-            let wireframesBuilder: NodeWireframesBuilder? = nil
-            let debugName: String
-        }
-
         // Given
 
         /*
@@ -143,6 +143,30 @@ class ViewTreeRecorderTests: XCTestCase {
 
     // MARK: - Recording Certain Node Semantics
 
+    func testWhenChildNodeSemanticsIsFound_itCanBeOverwrittenByParent() {
+        // Given
+        let view = UIView.mockAny()
+        let semantics = MockSemantics(subtreeStrategy: .record, debugName: "original")
+        let recorder = ViewTreeRecorder(
+            nodeRecorders: [
+                NodeRecorderMock(resultForView: { _ in semantics })
+            ]
+        )
+
+        // When
+        var context: ViewTreeRecordingContext = .mockRandom()
+        context.semanticsOverride = { currentSemantis, currentView, viewAttributes in
+            XCTAssertEqual((currentSemantis as? MockSemantics)?.debugName, "original")
+            XCTAssertTrue(currentView === view)
+            return MockSemantics(subtreeStrategy: .record, debugName: "overwritten")
+        }
+        let nodes = recorder.recordNodes(for: view, in: context)
+
+        // Then
+        XCTAssertEqual(nodes.count, 1)
+        XCTAssertEqual((nodes[0].semantics as? MockSemantics)?.debugName, "overwritten")
+    }
+
     func testItRecordsInvisibleViews() {
         // Given
         let recorder = ViewTreeRecorder(nodeRecorders: defaultNodeRecorders)
@@ -183,11 +207,19 @@ class ViewTreeRecorderTests: XCTestCase {
         let viewNodes = recorder.recordNodes(for: view, in: .mockRandom())
         XCTAssertEqual(viewNodes.count, 1)
         XCTAssertTrue(
-            viewNodes[0].semantics is AmbiguousElement,
+            viewNodes[0].semantics is InvisibleElement,
             """
-            Bare `UIView` with no appearance should record `AmbiguousElement` semantics as we don't know
+            Bare `UIView` with no appearance should record `InvisibleElement` semantics as we don't know
             if this view is specialised with appearance coming from its superclass.
             Got \(type(of: viewNodes[0].semantics)) instead.
+            """
+        )
+        DDAssertReflectionEqual(
+            viewNodes[0].semantics.subtreeStrategy,
+            .record,
+            """
+            For bare `UIView` with no appearance it should still record its sub-tree hierarchy as it might
+            contain other visible elements.
             """
         )
 

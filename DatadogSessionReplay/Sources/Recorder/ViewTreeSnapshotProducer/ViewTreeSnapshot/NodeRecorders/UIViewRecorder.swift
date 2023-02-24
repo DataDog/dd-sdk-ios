@@ -12,6 +12,12 @@ internal struct UIViewRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
+        guard attributes.hasAnyAppearance else {
+            // The view has no appearance, but it may contain subviews that bring visual elements, so
+            // we use `InvisibleElement` semantics (to drop it) with `.record` strategy for its subview.
+            return InvisibleElement(subtreeStrategy: .record)
+        }
+
         let builder = UIViewWireframesBuilder(
             wireframeID: context.ids.nodeID(for: view),
             attributes: attributes,
