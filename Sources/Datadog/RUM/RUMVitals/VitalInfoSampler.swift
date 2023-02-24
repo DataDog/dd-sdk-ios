@@ -63,7 +63,6 @@ internal final class VitalInfoSampler {
         self.refreshRateReader.register(self.refreshRatePublisher)
         self.maximumRefreshRate = maximumRefreshRate
 
-        takeSample()
         let timer = Timer(
             timeInterval: frequency,
             repeats: true
