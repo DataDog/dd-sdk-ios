@@ -56,7 +56,7 @@ class RUMInternalProxyTests: XCTestCase {
         // Then
         let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
         let longTask = session.viewVisits[0].longTaskEvents.first
-        XCTAssertEqual(longTask?.date, (date - duration).timeIntervalSince1970.toInt64Nanoseconds)
+        XCTAssertEqual(longTask?.date, (date - duration).timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(longTask?.longTask.duration, duration.toInt64Nanoseconds)
     }
 
