@@ -44,30 +44,30 @@ extension TimeInterval {
         self = Double(milliseconds) / 1_000
     }
 
-    /// `TimeInterval` represented in milliseconds (capped to `UInt64.max`).
+    /// `TimeInterval` represented in milliseconds (capped to `.min` or `.max` respectively to its sign).
     public var toMilliseconds: UInt64 {
         let milliseconds = self * 1_000
-        return (try? UInt64(withReportingOverflow: milliseconds)) ?? .max
+        return UInt64(withNoOverflow: milliseconds)
     }
 
-    /// `TimeInterval` represented in milliseconds (capped to `Int64.max`).
+    /// `TimeInterval` represented in milliseconds (capped to `.min` or `.max` respectively to its sign).
     public var toInt64Milliseconds: Int64 {
         let miliseconds = self * 1_000
-        return (try? Int64(withReportingOverflow: miliseconds)) ?? .max
+        return Int64(withNoOverflow: miliseconds)
     }
 
-    /// `TimeInterval` represented in nanoseconds (capped to `UInt64.max`).
+    /// `TimeInterval` represented in nanoseconds (capped to `.min` or `.max` respectively to its sign).
     /// Note: as `TimeInterval` yields sub-millisecond precision the nanoseconds precission will be lost.
     public var toNanoseconds: UInt64 {
         let nanoseconds = self * 1_000_000_000
-        return (try? UInt64(withReportingOverflow: nanoseconds)) ?? .max
+        return UInt64(withNoOverflow: nanoseconds)
     }
 
-    /// `TimeInterval` represented in nanoseconds (capped to `Int64.max`).
+    /// `TimeInterval` represented in nanoseconds (capped to `.min` or `.max` respectively to its sign).
     /// Note: as `TimeInterval` yields sub-millisecond precision the nanoseconds precission will be lost.
     public var toInt64Nanoseconds: Int64 {
         let nanoseconds = self * 1_000_000_000
-        return (try? Int64(withReportingOverflow: nanoseconds)) ?? .max
+        return Int64(withNoOverflow: nanoseconds)
     }
 }
 
@@ -91,6 +91,20 @@ extension FixedWidthInteger {
             throw FixedWidthIntegerError<T>.overflow(overflowingValue: floatingPoint)
         }
         self = converted
+    }
+
+    /// Converts floating point value to fixed width integer with preventing overflow (and crash).
+    /// In case of overflow, the value is converted to `.min` or `.max` respectively to its sign.
+    /// - Parameter floatingPoint: the value to convert
+    public init<T: BinaryFloatingPoint>(withNoOverflow floatingPoint: T) {
+        if let converted = Self(exactly: floatingPoint.rounded()) {
+            self = converted
+        } else { // overflow occured
+            switch floatingPoint.sign {
+            case .minus: self = .min
+            case .plus: self = .max
+            }
+        }
     }
 }
 
