@@ -40,7 +40,7 @@ class RUMStorageBenchmarkTests: XCTestCase {
     }
 
     override func tearDown() {
-        self.directory.delete()
+        try? FileManager.default.removeItem(at: directory.url)
         queue = nil
         directory = nil
         writer = nil
