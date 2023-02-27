@@ -35,7 +35,7 @@ class UISegmentRecorderTests: XCTestCase {
 
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: segment, with: viewAttributes, in: .mockAny()) as? SpecificElement)
-        XCTAssertFalse(semantics.recordSubtree, "Segment's subtree should not be recorded")
+        DDAssertReflectionEqual(semantics.subtreeStrategy, .ignore, "Segment's subtree should not be recorded")
 
         let builder = try XCTUnwrap(semantics.wireframesBuilder as? UISegmentWireframesBuilder)
         XCTAssertEqual(builder.attributes, viewAttributes)

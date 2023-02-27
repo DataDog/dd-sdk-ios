@@ -7,7 +7,7 @@
 import UIKit
 
 internal struct UILabelRecorder: NodeRecorder {
-    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeSnapshotBuilder.Context) -> NodeSemantics? {
+    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let label = view as? UILabel else {
             return nil
         }
@@ -36,7 +36,7 @@ internal struct UILabelRecorder: NodeRecorder {
             textObfuscator: context.recorder.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator,
             wireframeRect: textFrame
         )
-        return SpecificElement(wireframesBuilder: builder, recordSubtree: false)
+        return SpecificElement(wireframesBuilder: builder, subtreeStrategy: .ignore)
     }
 }
 

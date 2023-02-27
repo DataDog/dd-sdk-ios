@@ -6,6 +6,7 @@
 
 import XCTest
 @testable import DatadogSessionReplay
+import TestUtilities
 
 class UINavigationBarRecorderTests: XCTestCase {
     private let recorder = UINavigationBarRecorder()
@@ -19,7 +20,7 @@ class UINavigationBarRecorderTests: XCTestCase {
         let semantics = try XCTUnwrap(recorder.semantics(of: navigationBar, with: viewAttributes, in: .mockAny()) as? SpecificElement)
 
         // Then
-        XCTAssertTrue(semantics.recordSubtree, "Navigation Bar's subtree should be recorded")
+        DDAssertReflectionEqual(semantics.subtreeStrategy, .record, "Image view's subtree should be recorded")
     }
 
     func testWhenViewIsNotOfExpectedType() {

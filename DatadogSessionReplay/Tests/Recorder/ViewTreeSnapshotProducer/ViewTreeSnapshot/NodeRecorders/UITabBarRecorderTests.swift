@@ -6,6 +6,7 @@
 
 import XCTest
 @testable import DatadogSessionReplay
+import TestUtilities
 
 class UITabBarRecorderTests: XCTestCase {
     private let recorder = UITabBarRecorder()
@@ -19,7 +20,7 @@ class UITabBarRecorderTests: XCTestCase {
         let semantics = try XCTUnwrap(recorder.semantics(of: tabBar, with: viewAttributes, in: .mockAny()) as? SpecificElement)
 
         // Then
-        XCTAssertTrue(semantics.recordSubtree, "Tab Bar's subtree should be recorded")
+        DDAssertReflectionEqual(semantics.subtreeStrategy, .record, "TabBar's subtree should not be recorded")
     }
 
     func testWhenViewIsNotOfExpectedType() {

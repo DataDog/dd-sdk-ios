@@ -28,10 +28,9 @@ class NodesFlattenerTests: XCTestCase {
         )
         let rootNode = Node.mockWith(
             viewAttributes: .mock(fixture: .visible()),
-            semantics: SpecificElement.mock(wireframeRect: bigFrame),
-            children: [invisibleNode, visibleNode]
+            semantics: SpecificElement.mock(wireframeRect: bigFrame)
         )
-        let snapshot = ViewTreeSnapshot.mockWith(root: rootNode)
+        let snapshot = ViewTreeSnapshot.mockWith(nodes: [rootNode, invisibleNode, visibleNode])
         let flattener = NodesFlattener()
 
         // When
@@ -55,10 +54,9 @@ class NodesFlattenerTests: XCTestCase {
         )
         let coveredNode = Node.mockWith(
             viewAttributes: .mockRandom(),
-            semantics: SpecificElement.mock(wireframeRect: frame),
-            children: [coveringNode]
+            semantics: SpecificElement.mock(wireframeRect: frame)
         )
-        let snapshot = ViewTreeSnapshot.mockWith(root: coveredNode)
+        let snapshot = ViewTreeSnapshot.mockWith(nodes: [coveredNode, coveringNode])
         let flattener = NodesFlattener()
 
         // When
@@ -85,18 +83,17 @@ class NodesFlattenerTests: XCTestCase {
             viewAttributes: .mock(fixture: .visible()),
             semantics: SpecificElement.mock(wireframeRect: frame1)
         )
-        let invisibleNode1 = Node.mockWith(viewAttributes: .mock(fixture: .invisible), children: [visibleNode1])
+        let invisibleNode1 = Node.mockWith(viewAttributes: .mock(fixture: .invisible))
         let visibleNode2 = Node.mockWith(
             viewAttributes: .mock(fixture: .visible()),
             semantics: SpecificElement.mock(wireframeRect: frame2)
         )
         let rootNode = Node.mockWith(
             viewAttributes: .mock(fixture: .visible()),
-            semantics: SpecificElement.mock(wireframeRect: rootFrame),
-            children: [invisibleNode1, visibleNode2]
+            semantics: SpecificElement.mock(wireframeRect: rootFrame)
         )
 
-        let snapshot = ViewTreeSnapshot.mockWith(root: rootNode)
+        let snapshot = ViewTreeSnapshot.mockWith(nodes: [rootNode, invisibleNode1, visibleNode1, visibleNode2])
         let flattener = NodesFlattener()
 
         // When
@@ -108,8 +105,10 @@ class NodesFlattenerTests: XCTestCase {
 
     /*
           R
-        / | \
-       V1 V2 V3
+        /   \
+      CN1  CN2
+       |    |
+       CN   CN
     */
     func testFlattenNodes_withMultipleVisibleNodesThatAreCoveredByAnotherNode() {
         // Given
@@ -121,18 +120,14 @@ class NodesFlattenerTests: XCTestCase {
         )
         let coveredNode1 = Node.mockWith(
             viewAttributes: .mockRandom(),
-            semantics: SpecificElement.mock(wireframeRect: frame),
-            children: [coveringNode]
+            semantics: SpecificElement.mock(wireframeRect: frame)
         )
         let coveredNode2 = Node.mockWith(
             viewAttributes: .mockRandom(),
-            semantics: SpecificElement.mock(wireframeRect: frame),
-            children: [coveringNode]
+            semantics: SpecificElement.mock(wireframeRect: frame)
         )
-        let rootNode = Node.mockWith(
-            children: [coveredNode1, coveredNode2, coveringNode]
-        )
-        let snapshot = ViewTreeSnapshot.mockWith(root: rootNode)
+        let rootNode = Node.mockAny()
+        let snapshot = ViewTreeSnapshot.mockWith(nodes: [rootNode, coveredNode1, coveringNode, coveredNode2, coveringNode])
         let flattener = NodesFlattener()
 
         // When
@@ -145,7 +140,7 @@ class NodesFlattenerTests: XCTestCase {
     /*
           R
          / \
-        I   V
+        V1  V2
     */
     func testFlattenNodes_withNodesWithSameFrameAndDifferentAppearances() {
         // Given
@@ -159,8 +154,8 @@ class NodesFlattenerTests: XCTestCase {
             viewAttributes: .mock(fixture: .visible()),
             semantics: SpecificElement.mock(wireframeRect: bigFrame)
         )
-        let rootNode = Node.mockWith(children: [visibleNode1, visibleNode2])
-        let snapshot = ViewTreeSnapshot.mockWith(root: rootNode)
+        let rootNode = Node.mockAny()
+        let snapshot = ViewTreeSnapshot.mockWith(nodes: [rootNode, visibleNode1, visibleNode2])
         let flattener = NodesFlattener()
 
         // When

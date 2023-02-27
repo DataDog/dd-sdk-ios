@@ -12,7 +12,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
     func semantics(
         of view: UIView,
         with attributes: ViewAttributes,
-        in context: ViewTreeSnapshotBuilder.Context
+        in context: ViewTreeRecordingContext
     ) -> NodeSemantics? {
         guard let imageView = view as? UIImageView else {
             return nil
@@ -41,7 +41,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
             imageTintColor: imageView.tintColor,
             imageDataProvider: imageDataProvider
         )
-        return SpecificElement(wireframesBuilder: builder, recordSubtree: true)
+        return SpecificElement(wireframesBuilder: builder, subtreeStrategy: .record)
     }
 }
 

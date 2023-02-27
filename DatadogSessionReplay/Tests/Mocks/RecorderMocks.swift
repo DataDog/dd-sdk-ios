@@ -20,19 +20,22 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
         return ViewTreeSnapshot(
             date: .mockRandom(),
             rumContext: .mockRandom(),
-            root: .mockRandom()
+            viewportSize: .mockRandom(),
+            nodes: .mockRandom(count: .random(in: (5..<50)))
         )
     }
 
     static func mockWith(
         date: Date = .mockAny(),
-        rumContext: RUMContext = .mockRandom(),
-        root: Node = .mockAny()
+        rumContext: RUMContext = .mockAny(),
+        viewportSize: CGSize = .mockAny(),
+        nodes: [Node] = .mockAny()
     ) -> ViewTreeSnapshot {
         return ViewTreeSnapshot(
             date: date,
             rumContext: rumContext,
-            root: root
+            viewportSize: viewportSize,
+            nodes: nodes
         )
     }
 }
@@ -192,6 +195,21 @@ struct NOPWireframesBuilderMock: NodeWireframesBuilder {
     }
 }
 
+extension NodeSubtreeStrategy: AnyMockable, RandomMockable {
+    public static func mockAny() -> NodeSubtreeStrategy {
+        return .ignore
+    }
+
+    public static func mockRandom() -> NodeSubtreeStrategy {
+        let all: [NodeSubtreeStrategy] = [
+            .record,
+            .replace(subtreeNodes: [.mockAny()]),
+            .ignore,
+        ]
+        return all.randomElement()!
+    }
+}
+
 func mockAnyNodeSemantics() -> NodeSemantics {
     return InvisibleElement.constant
 }
@@ -201,7 +219,7 @@ func mockRandomNodeSemantics() -> NodeSemantics {
         UnknownElement.constant,
         InvisibleElement.constant,
         AmbiguousElement(wireframesBuilder: NOPWireframesBuilderMock()),
-        SpecificElement(wireframesBuilder: NOPWireframesBuilderMock(), recordSubtree: .mockRandom()),
+        SpecificElement(wireframesBuilder: NOPWireframesBuilderMock(), subtreeStrategy: .mockRandom()),
     ]
     return all.randomElement()!
 }
@@ -221,59 +239,43 @@ extension Node: AnyMockable, RandomMockable {
 
     static func mockWith(
         viewAttributes: ViewAttributes = .mockAny(),
-        semantics: NodeSemantics = InvisibleElement.constant,
-        children: [Node] = []
+        semantics: NodeSemantics = InvisibleElement.constant
     ) -> Node {
         return .init(
             viewAttributes: viewAttributes,
-            semantics: semantics,
-            children: children
+            semantics: semantics
         )
     }
 
     public static func mockRandom() -> Node {
-        return mockRandom(maxDepth: 4, maxBreadth: 4)
-    }
-
-    static func mockRandom(maxDepth: Int, maxBreadth: Int) -> Node {
-        mockRandom(
-            depth: .random(in: 0..<maxDepth),
-            breadth: .random(in: 0..<maxBreadth)
-        )
-    }
-
-    /// Generates random node.
-    /// - Parameters:
-    ///   - depth: number of levels of nested nodes
-    ///   - breadth: number of child nodes in each nested node (except the last level determined by `depth` which has no childs)
-    /// - Returns: randomized node
-    static func mockRandom(depth: Int, breadth: Int) -> Node {
-        return mockWith(
+        return .init(
             viewAttributes: .mockRandom(),
-            semantics: mockRandomNodeSemantics(),
-            children: depth <= 0 ? [] : (0..<breadth).map { _ in mockRandom(depth: depth - 1, breadth: breadth) }
+            semantics: mockRandomNodeSemantics()
         )
     }
 }
 
 extension SpecificElement {
     static func mockAny() -> SpecificElement {
-        SpecificElement(wireframesBuilder: NOPWireframesBuilderMock(), recordSubtree: .mockRandom())
+        SpecificElement(wireframesBuilder: NOPWireframesBuilderMock(), subtreeStrategy: .mockRandom())
     }
-    static func mock(wireframeRect: CGRect, recordSubtree: Bool = .mockRandom()) -> SpecificElement {
+    static func mock(
+        wireframeRect: CGRect,
+        subtreeStrategy: NodeSubtreeStrategy = .mockRandom()
+    ) -> SpecificElement {
         SpecificElement(
             wireframesBuilder: ShapeWireframesBuilderMock(wireframeRect: wireframeRect),
-            recordSubtree: recordSubtree
+            subtreeStrategy: subtreeStrategy
         )
     }
 }
 
-extension ViewTreeSnapshotBuilder.Context: AnyMockable, RandomMockable {
-    public static func mockAny() -> ViewTreeSnapshotBuilder.Context {
+extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
+    public static func mockAny() -> ViewTreeRecordingContext {
         return .mockWith()
     }
 
-    public static func mockRandom() -> ViewTreeSnapshotBuilder.Context {
+    public static func mockRandom() -> ViewTreeRecordingContext {
         return .init(
             recorder: .mockRandom(),
             coordinateSpace: UIView.mockRandom(),
@@ -287,13 +289,29 @@ extension ViewTreeSnapshotBuilder.Context: AnyMockable, RandomMockable {
         coordinateSpace: UICoordinateSpace = UIView.mockAny(),
         ids: NodeIDGenerator = NodeIDGenerator(),
         textObfuscator: TextObfuscator = TextObfuscator()
-    ) -> ViewTreeSnapshotBuilder.Context {
+    ) -> ViewTreeRecordingContext {
         return .init(
             recorder: recorder,
             coordinateSpace: coordinateSpace,
             ids: ids,
             textObfuscator: textObfuscator
         )
+    }
+}
+
+class NodeRecorderMock: NodeRecorder {
+    var queriedViews: Set<UIView> = []
+    var queryContexts: [ViewTreeRecordingContext] = []
+    var resultForView: (UIView) -> NodeSemantics?
+
+    init(resultForView: @escaping (UIView) -> NodeSemantics?) {
+        self.resultForView = resultForView
+    }
+
+    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
+        queriedViews.insert(view)
+        queryContexts.append(context)
+        return resultForView(view)
     }
 }
 

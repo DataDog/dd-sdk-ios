@@ -7,7 +7,7 @@
 import UIKit
 
 internal struct UISwitchRecorder: NodeRecorder {
-    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeSnapshotBuilder.Context) -> NodeSemantics? {
+    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let `switch` = view as? UISwitch else {
             return nil
         }
@@ -28,7 +28,7 @@ internal struct UISwitchRecorder: NodeRecorder {
             offTintColor: `switch`.tintColor?.cgColor,
             wireframeRect: attributes.frame
         )
-        return SpecificElement(wireframesBuilder: builder, recordSubtree: false)
+        return SpecificElement(wireframesBuilder: builder, subtreeStrategy: .ignore)
     }
 }
 
