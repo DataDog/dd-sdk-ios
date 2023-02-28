@@ -1124,7 +1124,7 @@ class TracerTests: XCTestCase {
         defer { dd.reset() }
 
         // given
-        XCTAssertNil(core.feature(named: DatadogLogsFeatureName, type: DatadogLogsFeature.self))
+        XCTAssertNil(core.feature(named: logsFeatureName, type: DatadogLogsFeature.self))
         core.register(feature: TracingFeature.mockAny())
 
         // when

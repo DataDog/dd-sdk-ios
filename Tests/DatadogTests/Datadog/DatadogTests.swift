@@ -118,7 +118,7 @@ class DatadogTests: XCTestCase {
 
         verify(configuration: defaultBuilder.build()) {
             // verify features:
-            XCTAssertNotNil(defaultDatadogCore.feature(named: DatadogLogsFeatureName, type: DatadogLogsFeature.self))
+            XCTAssertNotNil(defaultDatadogCore.feature(named: logsFeatureName, type: DatadogLogsFeature.self))
             XCTAssertNil(defaultDatadogCore.v1.feature(RUMFeature.self), "When using `defaultBuilder` RUM feature should be disabled by default")
             XCTAssertNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
             XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
@@ -128,7 +128,7 @@ class DatadogTests: XCTestCase {
         }
         verify(configuration: rumBuilder.build()) {
             // verify features:
-            XCTAssertNotNil(defaultDatadogCore.feature(named: DatadogLogsFeatureName, type: DatadogLogsFeature.self))
+            XCTAssertNotNil(defaultDatadogCore.feature(named: logsFeatureName, type: DatadogLogsFeature.self))
             XCTAssertNotNil(defaultDatadogCore.v1.feature(RUMFeature.self), "When using `rumBuilder` RUM feature should be enabled by default")
             XCTAssertNotNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
             XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
@@ -139,7 +139,7 @@ class DatadogTests: XCTestCase {
 
         verify(configuration: defaultBuilder.enableLogging(false).build()) {
             // verify features:
-            XCTAssertNil(defaultDatadogCore.feature(named: DatadogLogsFeatureName, type: DatadogLogsFeature.self))
+            XCTAssertNil(defaultDatadogCore.feature(named: logsFeatureName, type: DatadogLogsFeature.self))
             XCTAssertNil(defaultDatadogCore.v1.feature(RUMFeature.self), "When using `defaultBuilder` RUM feature should be disabled by default")
             XCTAssertNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
             XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
@@ -149,7 +149,7 @@ class DatadogTests: XCTestCase {
         }
         verify(configuration: rumBuilder.enableLogging(false).build()) {
             // verify features:
-            XCTAssertNil(defaultDatadogCore.feature(named: DatadogLogsFeatureName, type: DatadogLogsFeature.self))
+            XCTAssertNil(defaultDatadogCore.feature(named: logsFeatureName, type: DatadogLogsFeature.self))
             XCTAssertNotNil(defaultDatadogCore.v1.feature(TracingFeature.self))
             XCTAssertNotNil(defaultDatadogCore.v1.feature(RUMFeature.self), "When using `rumBuilder` RUM feature should be enabled by default")
             XCTAssertNotNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
@@ -161,7 +161,7 @@ class DatadogTests: XCTestCase {
 
         verify(configuration: defaultBuilder.enableTracing(false).build()) {
             // verify features:
-            XCTAssertNotNil(defaultDatadogCore.feature(named: DatadogLogsFeatureName, type: DatadogLogsFeature.self))
+            XCTAssertNotNil(defaultDatadogCore.feature(named: logsFeatureName, type: DatadogLogsFeature.self))
             XCTAssertNil(defaultDatadogCore.v1.feature(TracingFeature.self))
             XCTAssertNil(defaultDatadogCore.v1.feature(RUMFeature.self), "When using `defaultBuilder` RUM feature should be disabled by default")
             XCTAssertNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
@@ -171,7 +171,7 @@ class DatadogTests: XCTestCase {
         }
         verify(configuration: rumBuilder.enableTracing(false).build()) {
             // verify features:
-            XCTAssertNotNil(defaultDatadogCore.feature(named: DatadogLogsFeatureName, type: DatadogLogsFeature.self))
+            XCTAssertNotNil(defaultDatadogCore.feature(named: logsFeatureName, type: DatadogLogsFeature.self))
             XCTAssertNil(defaultDatadogCore.v1.feature(TracingFeature.self))
             XCTAssertNotNil(defaultDatadogCore.v1.feature(RUMFeature.self), "When using `rumBuilder` RUM feature should be enabled by default")
             XCTAssertNotNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
@@ -182,7 +182,7 @@ class DatadogTests: XCTestCase {
 
         verify(configuration: defaultBuilder.enableRUM(true).build()) {
             // verify features:
-            XCTAssertNotNil(defaultDatadogCore.feature(named: DatadogLogsFeatureName, type: DatadogLogsFeature.self))
+            XCTAssertNotNil(defaultDatadogCore.feature(named: logsFeatureName, type: DatadogLogsFeature.self))
             XCTAssertNil(defaultDatadogCore.v1.feature(RUMFeature.self), "When using `defaultBuilder` RUM feature cannot be enabled")
             XCTAssertNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
             XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
@@ -192,7 +192,7 @@ class DatadogTests: XCTestCase {
         }
         verify(configuration: rumBuilder.enableRUM(false).build()) {
             // verify features:
-            XCTAssertNotNil(defaultDatadogCore.feature(named: DatadogLogsFeatureName, type: DatadogLogsFeature.self))
+            XCTAssertNotNil(defaultDatadogCore.feature(named: logsFeatureName, type: DatadogLogsFeature.self))
             XCTAssertNil(defaultDatadogCore.v1.feature(RUMFeature.self))
             XCTAssertNil(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
             XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
