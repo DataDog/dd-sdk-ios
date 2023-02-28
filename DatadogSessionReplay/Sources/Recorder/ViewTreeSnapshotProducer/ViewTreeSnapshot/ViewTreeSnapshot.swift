@@ -141,7 +141,7 @@ internal protocol NodeSemantics {
     var subtreeStrategy: NodeSubtreeStrategy { get }
 
     /// A type defining how to build SR wireframes for the UI element this semantic was recorded for.
-    var wireframesBuilder: NodeWireframesBuilder? { get }
+    var wireframesBuilder: NodeWireframesBuilder? { set get }
 }
 
 extension NodeSemantics {
@@ -174,7 +174,7 @@ internal enum NodeSubtreeStrategy {
 /// in view-tree traversal performed in `Recorder` (e.g. working on assumption that is not met).
 internal struct UnknownElement: NodeSemantics {
     static let importance: Int = .min
-    let wireframesBuilder: NodeWireframesBuilder? = nil
+    var wireframesBuilder: NodeWireframesBuilder? = nil
     let subtreeStrategy: NodeSubtreeStrategy = .record
 
     /// Use `UnknownElement.constant` instead.
@@ -189,13 +189,19 @@ internal struct UnknownElement: NodeSemantics {
 /// Nodes with this semantics can be safely ignored in `Recorder` or in `Processor`.
 internal struct InvisibleElement: NodeSemantics {
     static let importance: Int = 0
-    let wireframesBuilder: NodeWireframesBuilder? = nil
-    let subtreeStrategy: NodeSubtreeStrategy = .ignore
+    var wireframesBuilder: NodeWireframesBuilder? = nil
+    let subtreeStrategy: NodeSubtreeStrategy
 
     /// Use `InvisibleElement.constant` instead.
-    private init () {}
+    private init () {
+        self.subtreeStrategy = .ignore
+    }
 
-    /// A constant value of `InvisibleElement` semantics.
+    init(subtreeStrategy: NodeSubtreeStrategy) {
+        self.subtreeStrategy = subtreeStrategy
+    }
+
+    /// A constant value of `InvisibleElement` semantics with `subtreeStrategy: .ignore`.
     static let constant = InvisibleElement()
 }
 
@@ -205,7 +211,7 @@ internal struct InvisibleElement: NodeSemantics {
 /// The view-tree traversal algorithm will continue visiting the subtree of given `UIView` if it has `AmbiguousElement` semantics.
 internal struct AmbiguousElement: NodeSemantics {
     static let importance: Int = 0
-    let wireframesBuilder: NodeWireframesBuilder?
+    var wireframesBuilder: NodeWireframesBuilder?
     let subtreeStrategy: NodeSubtreeStrategy = .record
 }
 
@@ -214,6 +220,6 @@ internal struct AmbiguousElement: NodeSemantics {
 /// "on" / "off" state of `UISwitch` control).
 internal struct SpecificElement: NodeSemantics {
     static let importance: Int = .max
-    let wireframesBuilder: NodeWireframesBuilder?
+    var wireframesBuilder: NodeWireframesBuilder?
     let subtreeStrategy: NodeSubtreeStrategy
 }

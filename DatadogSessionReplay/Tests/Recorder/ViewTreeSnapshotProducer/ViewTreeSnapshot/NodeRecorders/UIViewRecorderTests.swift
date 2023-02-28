@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import DatadogSessionReplay
 
 class UIViewRecorderTests: XCTestCase {
@@ -34,5 +35,16 @@ class UIViewRecorderTests: XCTestCase {
 
         let builder = try XCTUnwrap(semantics.wireframesBuilder as? UIViewWireframesBuilder)
         XCTAssertEqual(builder.attributes, viewAttributes)
+    }
+
+    func testWhenViewIsVisibleButHasNoAppearance() throws {
+        // When
+        viewAttributes = .mock(fixture: .visible(.noAppearance))
+
+        // Then
+        let semantics = try XCTUnwrap(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
+        XCTAssertTrue(semantics is InvisibleElement)
+        XCTAssertNil(semantics.wireframesBuilder)
+        DDAssertReflectionEqual(semantics.subtreeStrategy, .record)
     }
 }

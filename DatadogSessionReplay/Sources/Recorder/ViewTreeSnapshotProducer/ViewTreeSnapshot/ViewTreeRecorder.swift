@@ -7,6 +7,8 @@
 import UIKit
 
 /// The context of recording subtree hierarchy.
+///
+/// Some fields are mutable, so `NodeRecorders` can specialise it for their subtree traversal.
 internal struct ViewTreeRecordingContext {
     /// The context of the Recorder.
     let recorder: Recorder.Context
@@ -15,7 +17,14 @@ internal struct ViewTreeRecordingContext {
     /// Generates stable IDs for traversed views.
     let ids: NodeIDGenerator
     /// Masks text in recorded nodes.
-    let textObfuscator: TextObfuscator
+    /// Can be overwriten in by `NodeRecorder` if their subtree recording requires different masking.
+    var textObfuscator: TextObfuscating
+    /// Allows `NodeRecorders` to modify semantics of nodes in their subtree.
+    /// It gets called each time when a new semantic is found.
+    ///
+    /// The closure takes: current semantics, the `UIView` object and its `ViewAttributes`.
+    /// The closure implementation should return new semantics for that element.
+    var semanticsOverride: ((NodeSemantics, UIView, ViewAttributes) -> NodeSemantics)? = nil
 }
 
 internal struct ViewTreeRecorder {
@@ -65,6 +74,10 @@ internal struct ViewTreeRecorder {
 
             if nextSemantics.importance >= semantics.importance {
                 semantics = nextSemantics
+
+                if let semanticsOverride = context.semanticsOverride {
+                    semantics = semanticsOverride(semantics, view, attributes)
+                }
 
                 if nextSemantics.importance == .max {
                     // We know the current semantics is best we can get, so skip querying other `nodeRecorders`:
