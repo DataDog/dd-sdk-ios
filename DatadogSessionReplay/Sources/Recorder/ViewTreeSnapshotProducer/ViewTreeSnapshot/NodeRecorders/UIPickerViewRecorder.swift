@@ -22,8 +22,8 @@ internal struct UIPickerViewRecorder: NodeRecorder {
     /// whole options with fixed "xxx" string. This elevates the level of privacy, because selected option can not be inferred
     /// by counting number of characters.
     private struct PickerOptionTextObfuscator: TextObfuscating {
-        private static let xxx = "xxx"
-        func mask(text: String) -> String { Self.xxx }
+        private static let maskedString = "xxx"
+        func mask(text: String) -> String { Self.maskedString }
     }
     /// A sub-tree recorder for capturing shapes nested in picker's view hierarchy.
     /// It is used to capture the background of selected option.
