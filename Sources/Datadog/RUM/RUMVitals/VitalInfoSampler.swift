@@ -63,6 +63,11 @@ internal final class VitalInfoSampler {
         self.refreshRateReader.register(self.refreshRatePublisher)
         self.maximumRefreshRate = maximumRefreshRate
 
+        // Take initial sample
+        RunLoop.main.perform { [weak self] in
+            self?.takeSample()
+        }
+        // Schedule reoccuring samples
         let timer = Timer(
             timeInterval: frequency,
             repeats: true
