@@ -88,7 +88,7 @@ internal struct CrossPlatformAttributes {
     static let variant: String = "_dd.variant"
 
     /// The sampling rate for configuration telemetry events. Mostly used to enable or disable telemetry events when running test scenarios
-    /// Expects `Double` value between `0.0` and `1.0`.
+    /// Expects `Double` value between `0.0` and `100.0`.
     static let telemetryConfigurationSampleRate = "_dd.telemetry.configuration_sample_rate"
 
     /// Event timestamp passed from CP SDK. Used for all RUM events issued by cross platform SDK.
