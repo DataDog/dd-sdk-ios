@@ -42,6 +42,31 @@ class VitalInfoSamplerTests: XCTestCase {
         }
     }
 
+    func testItDoesInitialSample() {
+        let mockCPUReader = SamplingBasedVitalReaderMock()
+        let mockMemoryReader = SamplingBasedVitalReaderMock()
+
+        let sampler = VitalInfoSampler(
+            cpuReader: mockCPUReader,
+            memoryReader: mockMemoryReader,
+            refreshRateReader: ContinuousVitalReaderMock(),
+            frequency: 0.5
+        )
+
+        mockCPUReader.vitalData = 123.0
+        mockMemoryReader.vitalData = 321.0
+
+        let samplingExpectation = expectation(description: "sampling expectation")
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
+            samplingExpectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 1.0) { _ in
+            XCTAssertEqual(sampler.cpu.sampleCount, 1)
+            XCTAssertEqual(sampler.memory.sampleCount, 1)
+        }
+    }
+
     func testItDoesSamplePeriodicallyWithLowFrequency() {
         let mockCPUReader = SamplingBasedVitalReaderMock()
         let mockMemoryReader = SamplingBasedVitalReaderMock()
@@ -62,8 +87,9 @@ class VitalInfoSamplerTests: XCTestCase {
         }
 
         waitForExpectations(timeout: 1.0) { _ in
-            XCTAssertEqual(sampler.cpu.sampleCount, 1)
-            XCTAssertEqual(sampler.memory.sampleCount, 1)
+            // 2 samples, initial sample and one periodic sample
+            XCTAssertEqual(sampler.cpu.sampleCount, 2)
+            XCTAssertEqual(sampler.memory.sampleCount, 2)
         }
     }
 
