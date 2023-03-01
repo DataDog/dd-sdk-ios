@@ -200,7 +200,6 @@ internal final class DatadogCore {
     /// A list of upload units of currently registered Features.
     private var allUploads: [FeatureUpload] {
         let v1Uploads = [
-            feature(TracingFeature.self)?.upload,
             feature(RUMFeature.self)?.upload,
         ].compactMap { $0 }
         let v2Uploads = stores.values.map { $0.upload }

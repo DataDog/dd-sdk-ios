@@ -28,11 +28,11 @@ internal class URLSessionTracingHandler: URLSessionInterceptionHandler {
         if !interception.isFirstPartyRequest {
             return // `Span` should be only send for 1st party requests
         }
-        guard let tracer = Global.sharedTracer as? Tracer else {
+        guard let tracer = Global.sharedTracer as? DatadogTracer else {
             DD.logger.warn(
                 """
                 `URLSession` request was completed, but no `Tracer` is registered on `Global.sharedTracer`. Tracing auto instrumentation will not work.
-                Make sure `Global.sharedTracer = Tracer.initialize()` is called before any network request is send.
+                Make sure `Global.sharedTracer = DatadogTracer.initialize()` is called before any network request is send.
                 """
             )
             return
@@ -67,7 +67,7 @@ internal class URLSessionTracingHandler: URLSessionInterceptionHandler {
             var urlComponent = URLComponents(url: requestUrl, resolvingAgainstBaseURL: true)
             urlComponent?.query = nil
             let resourceUrl = urlComponent?.url?.absoluteString ?? "unknown_url"
-            span.setTag(key: DDTags.resource, value: resourceUrl)
+            span.setTag(key: DatadogSpanTag.resource, value: resourceUrl)
         }
         let method = interception.request.httpMethod ?? "unknown_method"
         span.setTag(key: OTTags.httpUrl, value: url)
@@ -83,18 +83,18 @@ internal class URLSessionTracingHandler: URLSessionInterceptionHandler {
             if let error = httpResponse.asClientError() {
                 span.setError(error, file: "", line: 0)
                 if httpStatusCode == 404 {
-                    span.setTag(key: DDTags.resource, value: "404")
+                    span.setTag(key: DatadogSpanTag.resource, value: "404")
                 }
             }
         }
         let appStateHistory = appStateListener.history.take(
             between: resourceMetrics.fetch.start...resourceMetrics.fetch.end
         )
-        span.setTag(key: DDTags.foregroundDuration, value: appStateHistory.foregroundDuration.toNanoseconds)
+        span.setTag(key: DatadogSpanTag.foregroundDuration, value: appStateHistory.foregroundDuration.toNanoseconds)
 
         let didStartInBackground = appStateHistory.initialSnapshot.state == .background
         let doesEndInBackground = appStateHistory.currentSnapshot.state == .background
-        span.setTag(key: DDTags.isBackground, value: didStartInBackground || doesEndInBackground)
+        span.setTag(key: DatadogSpanTag.isBackground, value: didStartInBackground || doesEndInBackground)
 
         span.finish(at: resourceMetrics.fetch.end)
     }

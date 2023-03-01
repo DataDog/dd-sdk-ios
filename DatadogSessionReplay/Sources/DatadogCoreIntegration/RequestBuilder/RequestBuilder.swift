@@ -25,7 +25,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
 
         // If the SDK was configured with deprecated `set(*Endpoint:)` APIs we don't have `context.site`, so
         // we fallback to `.us1` - TODO: RUMM-2410 Report error with `DD.logger` in such case
-        let url = customUploadURL ?? intakeURL(for: context.site ?? .us1)
+        let url = customUploadURL ?? intakeURL(for: context.site)
 
         return try createRequest(url: url, segment: segment, context: context)
     }

@@ -97,7 +97,6 @@
     [builder enableCrashReportingUsing:[DDCrashReportingPlugin new]];
     [builder setWithEndpoint:[DDEndpoint us]];
     [builder setWithCustomLogsEndpoint:[NSURL new]];
-    [builder setWithCustomTracesEndpoint:[NSURL new]];
     [builder setWithCustomRUMEndpoint:[NSURL new]];
     [builder trackURLSessionWithFirstPartyHosts:[NSSet setWithArray:@[]]];
     [builder setWithTracingSamplingRate:75];

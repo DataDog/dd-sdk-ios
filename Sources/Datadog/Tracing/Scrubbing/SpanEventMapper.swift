@@ -8,4 +8,4 @@ import Foundation
 
 /// Data scrubbing interface.
 /// It takes `SpanEvent` and returns modified `SpanEvent`.
-internal typealias SpanEventMapper = (SpanEvent) -> SpanEvent
+public typealias SpanEventMapper = (SpanEvent) -> SpanEvent

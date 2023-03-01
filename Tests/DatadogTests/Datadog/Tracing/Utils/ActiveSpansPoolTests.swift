@@ -11,7 +11,7 @@ import DatadogInternal
 
 class ActiveSpansPoolTests: XCTestCase {
     func testsWhenSpanIsStartedIsAssignedToActiveSpan() throws {
-        let tracer = Tracer.mockAny(in: PassthroughCoreMock())
+        let tracer = DatadogTracer.mockAny(in: PassthroughCoreMock())
         let previousSpan = tracer.activeSpan
         XCTAssertNil(previousSpan)
 
@@ -22,7 +22,7 @@ class ActiveSpansPoolTests: XCTestCase {
     }
 
     func testsWhenSpanIsFinishedIsRemovedFromActiveSpan() throws {
-        let tracer = Tracer.mockAny(in: PassthroughCoreMock())
+        let tracer = DatadogTracer.mockAny(in: PassthroughCoreMock())
         XCTAssertNil(tracer.activeSpan)
 
         let oneSpan = tracer.startSpan(operationName: .mockAny()).setActive()
@@ -33,7 +33,7 @@ class ActiveSpansPoolTests: XCTestCase {
     }
 
     func testsSpanWithoutParentInheritsActiveSpan() throws {
-        let tracer = Tracer.mockAny(in: PassthroughCoreMock())
+        let tracer = DatadogTracer.mockAny(in: PassthroughCoreMock())
         let firstSpan = tracer.startSpan(operationName: .mockAny())
         firstSpan.setActive()
         let previousActiveSpan = tracer.activeSpan
@@ -50,7 +50,7 @@ class ActiveSpansPoolTests: XCTestCase {
     }
 
     func testsSpanWithParentDoesntInheritActiveSpan() throws {
-        let tracer = Tracer.mockAny(in: PassthroughCoreMock())
+        let tracer = DatadogTracer.mockAny(in: PassthroughCoreMock())
         let oneSpan = tracer.startSpan(operationName: .mockAny())
         let otherSpan = tracer.startSpan(operationName: .mockAny()).setActive()
 
@@ -64,7 +64,7 @@ class ActiveSpansPoolTests: XCTestCase {
     }
 
     func testActiveSpanIsKeptPerTask() throws {
-        let tracer = Tracer.mockAny(in: PassthroughCoreMock())
+        let tracer = DatadogTracer.mockAny(in: PassthroughCoreMock())
         let oneSpan = tracer.startSpan(operationName: .mockAny()).setActive()
         var firstSpan: OTSpan?
         var secondSpan: OTSpan?
@@ -94,7 +94,7 @@ class ActiveSpansPoolTests: XCTestCase {
     }
 
     func testsSetActiveSpanCalledMultipleTimes() throws {
-        let tracer = Tracer.mockAny(in: PassthroughCoreMock())
+        let tracer = DatadogTracer.mockAny(in: PassthroughCoreMock())
         defer { tracer.activeSpansPool.destroy() }
 
         let firstSpan = tracer.startSpan(operationName: .mockAny()).setActive()

@@ -44,7 +44,7 @@ internal extension CoreDirectory {
     ///   directory created for this instance of the SDK.
     init(in osDirectory: Directory, from configuration: CoreConfiguration) throws {
         let clientToken = configuration.clientToken
-        let site = configuration.site?.rawValue ?? ""
+        let site = configuration.site.rawValue
 
         let sdkInstanceUUID = sha256("\(clientToken)\(site)")
         let path = "com.datadoghq/v2/\(sdkInstanceUUID)"

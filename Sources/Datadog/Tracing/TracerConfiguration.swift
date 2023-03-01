@@ -6,9 +6,12 @@
 
 import Foundation
 
-extension Tracer {
+extension DatadogTracer {
     /// Datadog Tracer configuration.
     public struct Configuration {
+        /// The custom intake endpoint.
+        public var customIntakeURL: URL? = nil
+
         /// The service name that will appear in traces (if not provided or `nil`, the SDK default `serviceName` will be used).
         public var serviceName: String?
 
@@ -37,12 +40,14 @@ extension Tracer {
             serviceName: String? = nil,
             sendNetworkInfo: Bool = false,
             bundleWithRUM: Bool = true,
-            globalTags: [String: Encodable]? = nil
+            globalTags: [String: Encodable]? = nil,
+            customIntakeURL: URL? = nil
         ) {
             self.serviceName = serviceName
             self.sendNetworkInfo = sendNetworkInfo
             self.bundleWithRUM = bundleWithRUM
             self.globalTags = globalTags
+            self.customIntakeURL = customIntakeURL
         }
     }
 }
