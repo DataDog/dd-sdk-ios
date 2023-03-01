@@ -34,7 +34,7 @@ public struct DatadogFeatureConfiguration {
 /// can collect and upload data.
 public protocol DatadogFeature {
     /// The feature name.
-    var name: String { get }
+    static var name: String { get }
 
     /// The message bus receiver.
     ///

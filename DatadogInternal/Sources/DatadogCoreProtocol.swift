@@ -23,7 +23,7 @@ public protocol DatadogCoreProtocol: AnyObject {
     /// A Feature can also communicate to other Features by sending messages on the message bus managed by core.
     ///
     /// - Parameter feature: The Feature instance - it will be retained and held by core.
-    func register(feature: DatadogFeature) throws
+    func register<T>(feature: T) throws where T: DatadogFeature
 
     /// Retrieves previously registered Feature by its name and type.
     ///
@@ -36,7 +36,7 @@ public protocol DatadogCoreProtocol: AnyObject {
     ///   - name: The Feature's name.
     ///   - type: The Feature instance type.
     /// - Returns: The Feature if any.
-    func feature<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature
+    func get<T>(feature type: T.Type) -> T? where T: DatadogFeature
 
     /// Retrieves a Feature Scope by its name.
     ///
@@ -87,20 +87,6 @@ public protocol DatadogCoreProtocol: AnyObject {
 }
 
 extension DatadogCoreProtocol {
-    /// Retrieves a Feature by its name and type.
-    ///
-    /// A Feature type can be specified as parameter or inferred from the return type:
-    ///
-    ///     let feature = core.feature(named: "foo", type: Foo.self)
-    ///     let feature: Foo? = core.feature(named: "foo")
-    ///
-    /// - Parameters:
-    ///   - name: The Feature's name.
-    /// - Returns: The Feature if any.
-    public func feature<T>(named name: String) -> T? where T: DatadogFeature {
-        feature(named: name, type: T.self)
-    }
-
     /// Sends a message on the bus shared by features registered in this core.
     ///
     /// - Parameters:
@@ -166,9 +152,9 @@ public extension FeatureScope {
 public class NOPDatadogCore: DatadogCoreProtocol {
     public init() { }
     /// no-op
-    public func register(feature: DatadogFeature) throws { }
+    public func register<T>(feature: T) throws where T: DatadogFeature { }
     /// no-op
-    public func feature<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature { nil }
+    public func get<T>(feature type: T.Type) -> T? where T: DatadogFeature { nil }
     /// no-op
     public func scope(for feature: String) -> FeatureScope? { nil }
     /// no-op

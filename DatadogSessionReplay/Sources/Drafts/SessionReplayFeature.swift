@@ -17,7 +17,7 @@ import Datadog
 internal class SessionReplayFeature: DatadogProduct, SessionReplayController {
     // MARK: - DatadogFeature
 
-    let name: String = "session-replay"
+    static let name: String = "session-replay"
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver
 

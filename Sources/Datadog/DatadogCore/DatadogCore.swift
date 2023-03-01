@@ -255,7 +255,7 @@ internal final class DatadogCore {
         feature(URLSessionAutoInstrumentation.self)?.deinitialize()
 
         // Deinitialize V2 Integrations (arbitrarily for now, until we make it into `DatadogFeatureIntegration`):
-        feature(named: "crash-reporter", type: CrashReporter.self)?.deinitialize()
+        get(feature: CrashReporter.self)?.deinitialize()
 
         // Deallocate all Features and their storage & upload units:
         v1Features = [:]
@@ -274,12 +274,12 @@ extension DatadogCore: DatadogCoreProtocol {
     /// A Feature can also communicate to other Features by sending message on the bus that is managed by the core.
     ///
     /// - Parameter feature: The Feature instance.
-    /* public */ func register(feature: DatadogFeature) throws {
-        let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: feature.name)
+    /* public */ func register<T>(feature: T) throws where T: DatadogFeature {
+        let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: T.name)
 
         if let product = feature as? DatadogProduct {
             let storage = FeatureStorage(
-                featureName: feature.name,
+                featureName: T.name,
                 queue: readWriteQueue,
                 directories: featureDirectories,
                 dateProvider: dateProvider,
@@ -288,7 +288,7 @@ extension DatadogCore: DatadogCoreProtocol {
             )
 
             let upload = FeatureUpload(
-                featureName: feature.name,
+                featureName: T.name,
                 contextProvider: contextProvider,
                 fileReader: storage.reader,
                 requestBuilder: product.requestBuilder,
@@ -296,7 +296,7 @@ extension DatadogCore: DatadogCoreProtocol {
                 performance: performance
             )
 
-            stores[feature.name] = (
+            stores[T.name] = (
                 storage: storage,
                 upload: upload
             )
@@ -306,8 +306,8 @@ extension DatadogCore: DatadogCoreProtocol {
             storage.clearUnauthorizedData()
         }
 
-        features[feature.name] = feature
-        add(messageReceiver: feature.messageReceiver, forKey: feature.name)
+        features[T.name] = feature
+        add(messageReceiver: feature.messageReceiver, forKey: T.name)
     }
 
     /// Retrieves a Feature by its name and type.
@@ -321,8 +321,8 @@ extension DatadogCore: DatadogCoreProtocol {
     ///   - name: The Feature's name.
     ///   - type: The Feature instance type.
     /// - Returns: The Feature if any.
-    /* public */ func feature<T>(named name: String, type: T.Type = T.self) -> T? where T: DatadogFeature {
-        features[name] as? T
+    /* public */ func get<T>(feature type: T.Type = T.self) -> T? where T: DatadogFeature {
+        features[T.name] as? T
     }
 
     /* public */ func scope(for feature: String) -> FeatureScope? {
