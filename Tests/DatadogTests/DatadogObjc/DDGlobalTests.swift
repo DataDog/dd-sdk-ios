@@ -32,8 +32,7 @@ class DDGlobalTests: XCTestCase {
     }
 
     func testWhenTracerIsSet_itSetsSwiftImplementation() {
-        let tracing: TracingFeature = .mockAny()
-        defaultDatadogCore.v1.register(feature: tracing)
+        DatadogTracer.initialize()
 
         let previousGlobal = (
             objc: DatadogObjc.DDGlobal.sharedTracer,
@@ -45,10 +44,11 @@ class DDGlobalTests: XCTestCase {
         }
 
         // When
-        DatadogObjc.DDGlobal.sharedTracer = DatadogObjc.DDTracer(configuration: DDTracerConfiguration())
+        DatadogObjc.DDTracer.initialize()
+        DatadogObjc.DDGlobal.sharedTracer = DatadogObjc.DDTracer.shared
 
         // Then
-        XCTAssertTrue(Global.sharedTracer is Tracer)
+        XCTAssertTrue(Global.sharedTracer is DatadogTracer)
     }
 
     // MARK: - Test Global RUMMonitor

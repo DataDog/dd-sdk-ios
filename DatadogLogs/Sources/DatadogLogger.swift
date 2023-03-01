@@ -66,18 +66,18 @@ public class DatadogLogger: Logger {
 
     public static func initialise(
         in core: DatadogCoreProtocol = defaultDatadogCore,
-        uploadURL: URL,
+        intake: DatadogLogsIntake = .datadog,
         applicationBundleIdentifier: String,
         eventMapper: LogEventMapper? = nil,
         dateProvider: DateProvider = SystemDateProvider(),
         sampler: Sampler
     ) throws {
         let feature = DatadogLogsFeature(
-            uploadURL: uploadURL,
             logEventMapper: eventMapper,
             dateProvider: dateProvider,
             applicationBundleIdentifier: applicationBundleIdentifier,
-            remoteLoggingSampler: sampler
+            remoteLoggingSampler: sampler,
+            intake: intake
         )
         try core.register(feature: feature)
     }

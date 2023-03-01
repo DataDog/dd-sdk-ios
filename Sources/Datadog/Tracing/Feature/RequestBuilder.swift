@@ -7,30 +7,18 @@
 import Foundation
 import DatadogInternal
 
-/// Creates Tracing Feature Configuration.
-///
-/// - Parameter intake: The Tracing intake URL.
-/// - Returns: The Tracing feature configuration.
-internal func createTracingConfiguration(intake: URL) -> DatadogFeatureConfiguration {
-    return DatadogFeatureConfiguration(
-        name: "tracing",
-        requestBuilder: TracingRequestBuilder(intake: intake),
-        messageReceiver: TracingMessageReceiver()
-    )
-}
-
 /// The Tracing URL Request Builder for formatting and configuring the `URLRequest`
 /// to upload traces data.
 internal struct TracingRequestBuilder: FeatureRequestBuilder {
     /// The tracing intake.
-    let intake: URL
+    let intake: DatadogTracer.Configuration.Intake
 
     /// The tracing request body format.
     let format = DataFormat(prefix: "", suffix: "", separator: "\n")
 
     func request(for events: [Data], with context: DatadogContext) -> URLRequest {
         let builder = URLRequestBuilder(
-            url: intake,
+            url: url(with: context),
             queryItems: [],
             headers: [
                 .contentTypeHeader(contentType: .textPlainUTF8),
@@ -49,34 +37,13 @@ internal struct TracingRequestBuilder: FeatureRequestBuilder {
         let data = format.format(events)
         return builder.uploadRequest(with: data)
     }
-}
 
-internal struct TracingMessageReceiver: FeatureMessageReceiver {
-    /// Tracks RUM context to be associated with spans.
-    let rum = TracingWithRUMIntegration()
-
-    /// Process messages receives from the bus.
-    ///
-    /// - Parameters:
-    ///   - message: The Feature message
-    ///   - core: The core from which the message is transmitted.
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        switch message {
-        case .context(let context):
-            return update(context: context)
-        default:
-            return false
+    func url(with context: DatadogContext) -> URL {
+        switch intake {
+        case .datadog:
+            return context.site.endpoint.appendingPathComponent("api/v2/spans")
+        case .custom(let url):
+            return url
         }
-    }
-
-    /// Updates RUM attributes of the `Global.sharedTracer` if available.
-    ///
-    /// - Parameter context: The updated core context.
-    private func update(context: DatadogContext) -> Bool {
-        if let attributes: [String: String] = context.featuresAttributes["rum"]?.ids {
-            rum.attributes = attributes
-            return true
-        }
-        return false
     }
 }

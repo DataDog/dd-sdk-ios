@@ -54,9 +54,6 @@ class DatadogLogsBuilderTests: XCTestCase {
     }
 
     func testDefaultLoggerWithTracingEnabled() throws {
-        let tracing: TracingFeature = .mockAny()
-        core.register(feature: tracing)
-
         let logger1 = DatadogLogger.builder.build(in: core)
         XCTAssertTrue(try XCTUnwrap(logger1.logger as? RemoteLogger).activeSpanIntegration)
 
@@ -65,12 +62,6 @@ class DatadogLogsBuilderTests: XCTestCase {
     }
 
     func testCustomizedLogger() throws {
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
-
-        let tracing: TracingFeature = .mockAny()
-        core.register(feature: tracing)
-
         let logger = DatadogLogger.builder
             .set(serviceName: "custom-service-name")
             .set(loggerName: "custom-logger-name")

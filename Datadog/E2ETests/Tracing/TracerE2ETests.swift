@@ -11,7 +11,7 @@ class TracerE2ETests: E2ETests {
 
     override func setUp() {
         super.setUp()
-        tracer = Tracer.initialize(configuration: .init())
+        tracer = DatadogTracer.initialize(configuration: .init())
     }
 
     override func tearDown() {

@@ -42,9 +42,9 @@ internal struct SpanTagsReducer {
 
             if isErrorEvent || errorKind != nil {
                 extractedIsError = true
-                mutableSpanTags[DDTags.errorMessage] = fields[OTLogFields.message] as? String
-                mutableSpanTags[DDTags.errorType] = errorKind
-                mutableSpanTags[DDTags.errorStack] = fields[OTLogFields.stack] as? String
+                mutableSpanTags[DatadogSpanTag.errorMessage] = fields[OTLogFields.message] as? String
+                mutableSpanTags[DatadogSpanTag.errorType] = errorKind
+                mutableSpanTags[DatadogSpanTag.errorStack] = fields[OTLogFields.stack] as? String
                 break // ignore next logs
             }
         }
@@ -55,7 +55,7 @@ internal struct SpanTagsReducer {
         }
 
         // extract resource name from `mutableSpanTags`
-        if let resourceName = mutableSpanTags.removeValue(forKey: DDTags.resource) as? String {
+        if let resourceName = mutableSpanTags.removeValue(forKey: DatadogSpanTag.resource) as? String {
             extractedResourceName = resourceName
         }
 

@@ -14,8 +14,6 @@ class TracerConfigurationTests: XCTestCase {
     override func setUp() {
         super.setUp()
         core = DatadogCoreProxy(context: .mockRandom())
-        let feature: TracingFeature = .mockAny()
-        core.register(feature: feature)
     }
 
     override func tearDown() {
@@ -25,7 +23,8 @@ class TracerConfigurationTests: XCTestCase {
     }
 
     func testDefaultTracer() throws {
-        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
+        DatadogTracer.initialize(in: core)
+        let tracer = DatadogTracer.shared(in: core).dd
 
         XCTAssertNotNil(tracer.core)
         XCTAssertNil(tracer.configuration.serviceName)
@@ -36,23 +35,22 @@ class TracerConfigurationTests: XCTestCase {
     func testDefaultTracerWithRUMEnabled() {
         let rum: RUMFeature = .mockAny()
         core.register(feature: rum)
-
-        let tracer1 = Tracer.initialize(configuration: .init(), in: core).dd
-        XCTAssertNotNil(tracer1.rumIntegration)
-
-        let tracer2 = Tracer.initialize(configuration: .init(bundleWithRUM: false), in: core).dd
-        XCTAssertNil(tracer2.rumIntegration)
+        DatadogTracer.initialize(configuration: .init(bundleWithRUM: false), in: core)
+        let tracer = DatadogTracer.shared(in: core).dd
+        XCTAssertNil(tracer.rumIntegration)
     }
 
     func testCustomizedTracer() throws {
-        let tracer = Tracer.initialize(
+        DatadogTracer.initialize(
             configuration: .init(
                 serviceName: "custom-service-name",
                 sendNetworkInfo: true,
                 bundleWithRUM: false
             ),
             in: core
-        ).dd
+        )
+
+        let tracer = DatadogTracer.shared(in: core).dd
 
         XCTAssertNotNil(tracer.core)
         XCTAssertEqual(tracer.configuration.serviceName, "custom-service-name")

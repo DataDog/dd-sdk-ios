@@ -265,7 +265,7 @@ private extension FeaturesConfiguration {
             useLocalEncryption: self.common.encryption != nil,
             useProxy: self.common.proxyConfiguration != nil,
             useSecureSessionCookie: nil,
-            useTracing: self.tracing != nil,
+            useTracing: self.tracingEnabled,
             viewTrackingStrategy: nil
         )
     }

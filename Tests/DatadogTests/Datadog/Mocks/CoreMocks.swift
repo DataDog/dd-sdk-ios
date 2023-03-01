@@ -24,13 +24,10 @@ extension Datadog.Configuration {
         tracingEnabled: Bool = false,
         rumEnabled: Bool = false,
         crashReportingPlugin: DDCrashReportingPluginType? = nil,
-        datadogEndpoint: DatadogSite? = nil,
+        datadogEndpoint: DatadogSite = .us1,
         customLogsEndpoint: URL? = nil,
         customTracesEndpoint: URL? = nil,
         customRUMEndpoint: URL? = nil,
-        logsEndpoint: LogsEndpoint = .us1,
-        tracesEndpoint: TracesEndpoint = .us1,
-        rumEndpoint: RUMEndpoint = .us1,
         serviceName: String? = .mockAny(),
         firstPartyHosts: FirstPartyHosts? = nil,
         loggingSamplingRate: Float = 100.0,
@@ -62,9 +59,6 @@ extension Datadog.Configuration {
             customLogsEndpoint: customLogsEndpoint,
             customTracesEndpoint: customTracesEndpoint,
             customRUMEndpoint: customRUMEndpoint,
-            logsEndpoint: logsEndpoint,
-            tracesEndpoint: tracesEndpoint,
-            rumEndpoint: rumEndpoint,
             serviceName: serviceName,
             firstPartyHosts: firstPartyHosts,
             loggingSamplingRate: loggingSamplingRate,
@@ -110,18 +104,6 @@ extension BundleType: CaseIterable {
     public static var allCases: [Self] { [.iOSApp, iOSAppExtension] }
 }
 
-extension Datadog.Configuration.LogsEndpoint {
-    static func mockRandom() -> Self {
-        return [.us1, .us3, .us5, .eu1, .ap1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
-    }
-}
-
-extension Datadog.Configuration.TracesEndpoint {
-    static func mockRandom() -> Self {
-        return [.us1, .us3, .us5, .eu1, .ap1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
-    }
-}
-
 extension Datadog.Configuration.RUMEndpoint {
     static func mockRandom() -> Self {
         return [.us1, .us3, .us5, .eu1, .ap1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
@@ -134,18 +116,18 @@ extension FeaturesConfiguration {
     static func mockWith(
         common: Common = .mockAny(),
         logging: Logging? = .mockAny(),
-        tracing: Tracing? = .mockAny(),
         rum: RUM? = .mockAny(),
         crashReporting: CrashReporting = .mockAny(),
-        urlSessionAutoInstrumentation: URLSessionAutoInstrumentation? = .mockAny()
+        urlSessionAutoInstrumentation: URLSessionAutoInstrumentation? = .mockAny(),
+        tracingEnabled: Bool = .mockAny()
     ) -> Self {
         return .init(
             common: common,
             logging: logging,
-            tracing: tracing,
             rum: rum,
             urlSessionAutoInstrumentation: urlSessionAutoInstrumentation,
-            crashReporting: crashReporting
+            crashReporting: crashReporting,
+            tracingEnabled: tracingEnabled
         )
     }
 }
@@ -154,7 +136,7 @@ extension FeaturesConfiguration.Common {
     static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
-        site: DatadogSite? = .mockAny(),
+        site: DatadogSite = .mockAny(),
         clientToken: String = .mockAny(),
         applicationName: String = .mockAny(),
         applicationVersion: String = .mockAny(),
@@ -196,36 +178,18 @@ extension FeaturesConfiguration.Logging {
     static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
-        uploadURL: URL = .mockAny(),
+        customURL: URL? = .mockAny(),
         logEventMapper: LogEventMapper? = nil,
         dateProvider: DateProvider = SystemDateProvider(),
         applicationBundleIdentifier: String = .mockAny(),
         remoteLoggingSampler: Sampler = Sampler(samplingRate: 100.0)
     ) -> Self {
         return .init(
-            uploadURL: uploadURL,
+            customURL: customURL,
             logEventMapper: logEventMapper,
             dateProvider: dateProvider,
             applicationBundleIdentifier: applicationBundleIdentifier,
             remoteLoggingSampler: remoteLoggingSampler
-        )
-    }
-}
-
-extension FeaturesConfiguration.Tracing {
-    static func mockAny() -> Self { mockWith() }
-
-    static func mockWith(
-        uploadURL: URL = .mockAny(),
-        uuidGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
-        spanEventMapper: SpanEventMapper? = nil,
-        dateProvider: DateProvider = SystemDateProvider()
-    ) -> Self {
-        return .init(
-            uploadURL: uploadURL,
-            uuidGenerator: uuidGenerator,
-            spanEventMapper: spanEventMapper,
-            dateProvider: dateProvider
         )
     }
 }

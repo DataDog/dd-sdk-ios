@@ -9,7 +9,7 @@ import DatadogInternal
 
 /// Datadog - specific span `tags` to be used with `tracer.startSpan(operationName:references:tags:startTime:)`
 /// and `span.setTag(key:value:)`.
-public struct DDTags {
+public enum DatadogSpanTag {
     /// A Datadog-specific span tag, which sets the value appearing in the "RESOURCE" column
     /// in traces explorer on [app.datadoghq.com](https://app.datadoghq.com/)
     /// Can be used to customize the resource names grouped under the same operation name.
@@ -43,10 +43,8 @@ public struct DDTags {
 ///     // instantiate Datadog tracer
 ///     tracer = DDTracer.initialize(...)
 ///
-public typealias DDTracer = Tracer
-
-public class Tracer: OTTracer {
-    internal let core: DatadogCoreProtocol
+public class DatadogTracer: OTTracer {
+    internal weak var core: DatadogCoreProtocol?
 
     /// The Tracer configuration
     internal let configuration: Configuration
@@ -77,56 +75,55 @@ public class Tracer: OTTracer {
     /// Initializes the Datadog Tracer.
     /// - Parameters:
     ///   - configuration: the tracer configuration obtained using `Tracer.Configuration()`.
-    public static func initialize(configuration: Configuration, in core: DatadogCoreProtocol = defaultDatadogCore) -> OTTracer {
+    public static func initialize(
+        configuration: Configuration = .init(),
+        spanEventMapper: SpanEventMapper? = nil,
+        dateProvider: DateProvider = SystemDateProvider(),
+        in core: DatadogCoreProtocol = defaultDatadogCore
+    ) {
         do {
             if core is NOPDatadogCore {
                 throw ProgrammerError(
-                    description: "`Datadog.initialize()` must be called prior to `Tracer.initialize()`."
+                    description: "`Datadog.initialize()` must be called prior to `DatadogTracer.initialize()`."
                 )
             }
-            if Global.sharedTracer is Tracer {
-                throw ProgrammerError(
-                    description: """
-                    The `Tracer` instance was already created. Use existing `Global.sharedTracer` instead of initializing the `Tracer` another time.
-                    """
-                )
-            }
-            guard let tracingFeature = core.v1.feature(TracingFeature.self) else {
-                throw ProgrammerError(
-                    description: "`Tracer.initialize(configuration:)` produces a non-functional tracer, as the tracing feature is disabled."
-                )
-            }
-            return DDTracer(
+
+            let feature = DatadogTraceFeature(
                 core: core,
-                tracingFeature: tracingFeature,
-                tracerConfiguration: configuration
+                uuidGenerator: DefaultTracingUUIDGenerator(),
+                spanEventMapper: spanEventMapper,
+                dateProvider: dateProvider,
+                configuration: configuration
             )
+
+            try core.register(feature: feature)
+        } catch {
+            consolePrint("\(error)")
+        }
+    }
+
+    public static func shared(in core: DatadogCoreProtocol = defaultDatadogCore) -> OTTracer {
+        do {
+            if core is NOPDatadogCore {
+                throw ProgrammerError(
+                    description: "`Datadog.initialize()` must be called prior to `DatadogTracer.initialize()`."
+                )
+            }
+
+            guard let feature = core.get(feature: DatadogTraceFeature.self) else {
+                throw ProgrammerError(
+                    description: "`DatadogTracer.initialize()` must be called prior to `DatadogTracer.shared()`."
+                )
+            }
+
+            return feature.tracer
         } catch {
             consolePrint("\(error)")
             return DDNoopTracer()
         }
     }
 
-    internal convenience init(
-        core: DatadogCoreProtocol,
-        tracingFeature: TracingFeature,
-        tracerConfiguration: Configuration
-    ) {
-        self.init(
-            core: core,
-            configuration: tracerConfiguration,
-            spanEventMapper: tracingFeature.configuration.spanEventMapper,
-            tracingUUIDGenerator: tracingFeature.configuration.uuidGenerator,
-            dateProvider: tracingFeature.configuration.dateProvider,
-            rumIntegration: tracerConfiguration.bundleWithRUM ? (tracingFeature.messageReceiver as? TracingMessageReceiver)?.rum : nil,
-            loggingIntegration: TracingWithLoggingIntegration(
-                core: core,
-                tracerConfiguration: tracerConfiguration
-            )
-        )
-    }
-
-    internal init(
+    internal required init(
         core: DatadogCoreProtocol,
         configuration: Configuration,
         spanEventMapper: SpanEventMapper?,
@@ -232,7 +229,7 @@ public class Tracer: OTTracer {
     private func updateCoreAttributes() {
         let context = activeSpan?.context as? DDSpanContext
 
-        core.set(feature: "tracing", attributes: {[
+        core?.set(feature: DatadogTraceFeature.name, attributes: {[
             Attributes.traceID: context.map { $0.traceID.toString(.decimal) },
             Attributes.spanID: context.map { $0.spanID.toString(.decimal) }
         ]})

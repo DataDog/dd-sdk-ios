@@ -12,7 +12,7 @@ public struct DatadogContext {
     /// [Datadog Site](https://docs.datadoghq.com/getting_started/site/) for data uploads. It can be `nil` in V1
     /// if the SDK is configured using deprecated APIs:
     /// `set(logsEndpoint:)`, `set(tracesEndpoint:)` and `set(rumEndpoint:)`.
-    public let site: DatadogSite?
+    public let site: DatadogSite
 
     /// The client token allowing for data uploads to [Datadog Site](https://docs.datadoghq.com/getting_started/site/).
     public let clientToken: String
@@ -101,7 +101,7 @@ public struct DatadogContext {
     public var featuresAttributes: [String: FeatureBaggage] = [:]
 
     public init(
-        site: DatadogSite?,
+        site: DatadogSite,
         clientToken: String,
         service: String,
         env: String,

@@ -13,7 +13,7 @@ import _Datadog_Private
 
 internal class DDSpan: OTSpan {
     /// The `Tracer` which created this span.
-    private let ddTracer: Tracer
+    private let ddTracer: DatadogTracer
     /// Span context.
     internal let ddContext: DDSpanContext
     /// Span creation date
@@ -35,7 +35,7 @@ internal class DDSpan: OTSpan {
     private var activityReference: ActivityReference?
 
     init(
-        tracer: Tracer,
+        tracer: DatadogTracer,
         context: DDSpanContext,
         operationName: String,
         startTime: Date,
@@ -132,7 +132,7 @@ internal class DDSpan: OTSpan {
 
     /// Sends span event for given `DDSpan`.
     private func sendSpan(finishTime: Date) {
-        guard let tracing = ddTracer.core.v1.scope(for: TracingFeature.self) else {
+        guard let scope = ddTracer.core?.scope(for: DatadogTraceFeature.name) else {
             return
         }
 
@@ -141,7 +141,7 @@ internal class DDSpan: OTSpan {
         // Baggage items must be accessed outside the `tracer.queue` as it uses that queue for internal sync.
         let baggageItems = ddContext.baggageItems.all
 
-        tracing.eventWriteContext { context, writer in
+        scope.eventWriteContext { context, writer in
             // This queue adds performance optimisation by reading all `unsafe*` values in one block and performing
             // the `builder.createSpan()` off the main thread. This is important as the span creation includes
             // attributes encoding to JSON string values (for tags and extra user info). It captures `self` strongly

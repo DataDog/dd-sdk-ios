@@ -47,88 +47,6 @@ public class DDEndpoint: NSObject {
 }
 
 @objc
-public class DDLogsEndpoint: NSObject {
-    internal let sdkEndpoint: Datadog.Configuration.LogsEndpoint
-
-    internal init(sdkEndpoint: Datadog.Configuration.LogsEndpoint) {
-        self.sdkEndpoint = sdkEndpoint
-    }
-
-    // MARK: - Public
-
-    @objc
-    public static func us1() -> DDLogsEndpoint { .init(sdkEndpoint: .us1) }
-
-    @objc
-    public static func us3() -> DDLogsEndpoint { .init(sdkEndpoint: .us3) }
-
-    @objc
-    public static func us5() -> DDLogsEndpoint { .init(sdkEndpoint: .us5) }
-
-    @objc
-    public static func eu1() -> DDLogsEndpoint { .init(sdkEndpoint: .eu1) }
-
-    @objc
-    public static func ap1() -> DDLogsEndpoint { .init(sdkEndpoint: .ap1) }
-
-    @objc
-    public static func us1_fed() -> DDLogsEndpoint { .init(sdkEndpoint: .us1_fed) }
-
-    @objc
-    public static func eu() -> DDLogsEndpoint { .init(sdkEndpoint: .eu) }
-
-    @objc
-    public static func us() -> DDLogsEndpoint { .init(sdkEndpoint: .us) }
-
-    @objc
-    public static func gov() -> DDLogsEndpoint { .init(sdkEndpoint: .gov) }
-
-    @objc
-    public static func custom(url: String) -> DDLogsEndpoint { .init(sdkEndpoint: .custom(url: url)) }
-}
-
-@objc
-public class DDTracesEndpoint: NSObject {
-    internal let sdkEndpoint: Datadog.Configuration.TracesEndpoint
-
-    internal init(sdkEndpoint: Datadog.Configuration.TracesEndpoint) {
-        self.sdkEndpoint = sdkEndpoint
-    }
-
-    // MARK: - Public
-
-    @objc
-    public static func us1() -> DDTracesEndpoint { .init(sdkEndpoint: .us1) }
-
-    @objc
-    public static func us3() -> DDTracesEndpoint { .init(sdkEndpoint: .us3) }
-
-    @objc
-    public static func us5() -> DDTracesEndpoint { .init(sdkEndpoint: .us5) }
-
-    @objc
-    public static func eu1() -> DDTracesEndpoint { .init(sdkEndpoint: .eu1) }
-
-    @objc
-    public static func ap1() -> DDTracesEndpoint { .init(sdkEndpoint: .ap1) }
-
-    @objc
-    public static func us1_fed() -> DDTracesEndpoint { .init(sdkEndpoint: .us1_fed) }
-
-    @objc
-    public static func eu() -> DDTracesEndpoint { .init(sdkEndpoint: .eu) }
-
-    @objc
-    public static func us() -> DDTracesEndpoint { .init(sdkEndpoint: .us) }
-
-    @objc
-    public static func gov() -> DDTracesEndpoint { .init(sdkEndpoint: .gov) }
-
-    @objc
-    public static func custom(url: String) -> DDTracesEndpoint { .init(sdkEndpoint: .custom(url: url)) }
-}
-
-@objc
 public enum DDBatchSize: Int {
     case small
     case medium
@@ -325,18 +243,6 @@ public class DDConfigurationBuilder: NSObject {
     @objc
     public func set(serverDateProvider: DDServerDateProvider) {
         _ = sdkBuilder.set(serverDateProvider: DDServerDateProviderBridge(objcProvider: serverDateProvider))
-    }
-
-    @available(*, deprecated, message: "This option is replaced by `set(endpoint:)`. Refer to the new API comment for details.")
-    @objc
-    public func set(logsEndpoint: DDLogsEndpoint) {
-        _ = sdkBuilder.set(logsEndpoint: logsEndpoint.sdkEndpoint)
-    }
-
-    @available(*, deprecated, message: "This option is replaced by `set(endpoint:)`. Refer to the new API comment for details.")
-    @objc
-    public func set(tracesEndpoint: DDTracesEndpoint) {
-        _ = sdkBuilder.set(tracesEndpoint: tracesEndpoint.sdkEndpoint)
     }
 
     @available(*, deprecated, message: "This option is replaced by `trackURLSession(firstPartyHosts:)`. Refer to the new API comment for important details.")

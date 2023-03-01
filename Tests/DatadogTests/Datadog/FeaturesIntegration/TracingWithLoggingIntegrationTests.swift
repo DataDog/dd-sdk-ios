@@ -55,8 +55,8 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         DDAssertJSONEqual(
             AnyEncodable(log.attributes.internalAttributes),
             AnyEncodable([
-                Tracer.Attributes.spanID: "2",
-                Tracer.Attributes.traceID: "1"
+                DatadogTracer.Attributes.spanID: "2",
+                DatadogTracer.Attributes.traceID: "1"
             ])
         )
     }
@@ -129,8 +129,8 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         DDAssertJSONEqual(
             AnyEncodable(log.attributes.internalAttributes),
             AnyEncodable([
-                Tracer.Attributes.spanID: "2",
-                Tracer.Attributes.traceID: "1"
+                DatadogTracer.Attributes.spanID: "2",
+                DatadogTracer.Attributes.traceID: "1"
             ])
         )
     }

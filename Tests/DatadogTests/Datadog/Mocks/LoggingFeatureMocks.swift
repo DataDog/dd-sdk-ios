@@ -26,7 +26,7 @@ extension DatadogLogsFeature {
         applicationBundleIdentifier: String = .mockAny(),
         logEventMapper: LogEventMapper? = nil,
         sampler: Sampler = .mockKeepAll(),
-        requestBuilder: FeatureRequestBuilder = RequestBuilder(intake: .mockAny()),
+        requestBuilder: FeatureRequestBuilder = RequestBuilder(intake: .datadog),
         messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver(),
         dateProvider: DateProvider = SystemDateProvider()
     ) -> Self {

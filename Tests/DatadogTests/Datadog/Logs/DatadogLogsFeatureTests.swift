@@ -72,11 +72,11 @@ class DatadogLogsFeatureTests: XCTestCase {
 
         // Given
         let feature = DatadogLogsFeature(
-            uploadURL: randomUploadURL,
             logEventMapper: nil,
             dateProvider: SystemDateProvider(),
             applicationBundleIdentifier: randomApplicationName,
-            remoteLoggingSampler: .mockKeepAll()
+            remoteLoggingSampler: .mockKeepAll(),
+            intake: .custom(randomUploadURL)
         )
         try core.register(feature: feature)
 
@@ -141,11 +141,11 @@ class DatadogLogsFeatureTests: XCTestCase {
 
         // Given
         let feature = DatadogLogsFeature(
-            uploadURL: .mockAny(),
             logEventMapper: nil,
             dateProvider: SystemDateProvider(),
             applicationBundleIdentifier: .mockAny(),
-            remoteLoggingSampler: .mockKeepAll()
+            remoteLoggingSampler: .mockKeepAll(),
+            intake: .custom(.mockAny())
         )
         try core.register(feature: feature)
 

@@ -11,14 +11,14 @@ import DatadogInternal
 /// to upload logs data.
 internal struct RequestBuilder: FeatureRequestBuilder {
     /// The logs intake.
-    let intake: URL
+    let intake: DatadogLogsIntake
 
     /// The logs request body format.
     let format = DataFormat(prefix: "[", suffix: "]", separator: ",")
 
     func request(for events: [Data], with context: DatadogContext) -> URLRequest {
         let builder = URLRequestBuilder(
-            url: intake,
+            url: intake.url(with: context),
             queryItems: [
                 .ddsource(source: context.source)
             ],

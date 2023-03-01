@@ -24,17 +24,17 @@ internal struct DatadogLogsFeature: DatadogRemoteFeature {
     let dateProvider: DateProvider
 
     init(
-        uploadURL: URL,
         logEventMapper: LogEventMapper?,
         dateProvider: DateProvider,
         applicationBundleIdentifier: String,
-        remoteLoggingSampler: Sampler
+        remoteLoggingSampler: Sampler,
+        intake: DatadogLogsIntake = .datadog
     ) {
         self.init(
             applicationBundleIdentifier: applicationBundleIdentifier,
             logEventMapper: logEventMapper,
             sampler: remoteLoggingSampler,
-            requestBuilder: RequestBuilder(intake: uploadURL),
+            requestBuilder: RequestBuilder(intake: intake),
             messageReceiver: CombinedFeatureMessageReceiver(
                 LogMessageReceiver(logEventMapper: logEventMapper),
                 CrashLogReceiver(dateProvider: dateProvider),

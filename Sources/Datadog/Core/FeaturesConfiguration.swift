@@ -16,7 +16,7 @@ internal struct FeaturesConfiguration {
     struct Common {
         /// [Datadog Site](https://docs.datadoghq.com/getting_started/site/) for data uploads. It can be `nil` in V1
         /// if the SDK is configured using deprecated APIs: `set(logsEndpoint:)`, `set(tracesEndpoint:)` and `set(rumEndpoint:)`.
-        let site: DatadogSite?
+        let site: DatadogSite
         let clientToken: String
         let applicationName: String
         let applicationVersion: String
@@ -35,18 +35,11 @@ internal struct FeaturesConfiguration {
     }
 
     struct Logging {
-        let uploadURL: URL
+        let customURL: URL?
         let logEventMapper: LogEventMapper?
         let dateProvider: DateProvider
         let applicationBundleIdentifier: String
         let remoteLoggingSampler: Sampler
-    }
-
-    struct Tracing {
-        let uploadURL: URL
-        let uuidGenerator: TracingUUIDGenerator
-        let spanEventMapper: SpanEventMapper?
-        let dateProvider: DateProvider
     }
 
     struct RUM {
@@ -104,14 +97,14 @@ internal struct FeaturesConfiguration {
     let common: Common
     /// Logging feature configuration or `nil` if the feature is disabled.
     let logging: Logging?
-    /// Tracing feature configuration or `nil` if the feature is disabled.
-    let tracing: Tracing?
     /// RUM feature configuration or `nil` if the feature is disabled.
     let rum: RUM?
     /// `URLSession` auto instrumentation configuration, `nil` if not enabled.
     let urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
     /// Crash Reporting feature configuration or `nil` if the feature was not enabled.
     let crashReporting: CrashReporting?
+    /// Tracing feature enabled.
+    let tracingEnabled: Bool
 }
 
 extension FeaturesConfiguration {
@@ -124,36 +117,16 @@ extension FeaturesConfiguration {
     /// Prints a warning if configuration is inconsistent, i.e. RUM is enabled, but RUM Application ID was not specified.
     init(configuration: Datadog.Configuration, appContext: AppContext) throws {
         var logging: Logging?
-        var tracing: Tracing?
         var rum: RUM?
         var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
         var crashReporting: CrashReporting?
 
-        var logsEndpoint = configuration.logsEndpoint
-        var tracesEndpoint = configuration.tracesEndpoint
-        var rumEndpoint = configuration.rumEndpoint
+        tracingEnabled = configuration.tracingEnabled
 
-        if let datadogEndpoint = configuration.datadogEndpoint {
-            // If `.set(endpoint:)` API was used, it should override the values
-            // set by deprecated `.set(<feature>Endpoint:)` APIs.
-            logsEndpoint = datadogEndpoint.logsEndpoint
-            tracesEndpoint = datadogEndpoint.tracesEndpoint
-            rumEndpoint = datadogEndpoint.rumEndpoint
-        }
-
-        if let customLogsEndpoint = configuration.customLogsEndpoint {
-            // If `.set(customLogsEndpoint:)` API was used, it should override logs endpoint
-            logsEndpoint = .custom(url: customLogsEndpoint.absoluteString)
-        }
-
-        if let customTracesEndpoint = configuration.customTracesEndpoint {
-            // If `.set(customTracesEndpoint:)` API was used, it should override traces endpoint
-            tracesEndpoint = .custom(url: customTracesEndpoint.absoluteString)
-        }
-
+        var rumEndpoint = configuration.datadogEndpoint.rumEndpoint.url
         if let customRUMEndpoint = configuration.customRUMEndpoint {
             // If `.set(customRUMEndpoint:)` API was used, it should override RUM endpoint
-            rumEndpoint = .custom(url: customRUMEndpoint.absoluteString)
+            rumEndpoint = customRUMEndpoint.absoluteString
         }
 
         let source = (configuration.additionalConfiguration[CrossPlatformAttributes.ddsource] as? String) ?? Datadog.Constants.ddsource
@@ -194,20 +167,11 @@ extension FeaturesConfiguration {
 
         if configuration.loggingEnabled {
             logging = Logging(
-                uploadURL: try ifValid(endpointURLString: logsEndpoint.url),
+                customURL: configuration.customLogsEndpoint,
                 logEventMapper: configuration.logEventMapper,
                 dateProvider: dateProvider,
                 applicationBundleIdentifier: common.applicationBundleIdentifier,
                 remoteLoggingSampler: Sampler(samplingRate: debugOverride ? 100 : configuration.loggingSamplingRate)
-            )
-        }
-
-        if configuration.tracingEnabled {
-            tracing = Tracing(
-                uploadURL: try ifValid(endpointURLString: tracesEndpoint.url),
-                uuidGenerator: DefaultTracingUUIDGenerator(),
-                spanEventMapper: configuration.spanEventMapper,
-                dateProvider: dateProvider
             )
         }
 
@@ -220,7 +184,7 @@ extension FeaturesConfiguration {
 
             if let rumApplicationID = configuration.rumApplicationID {
                 rum = RUM(
-                    uploadURL: try ifValid(endpointURLString: rumEndpoint.url),
+                    uploadURL: try ifValid(endpointURLString: rumEndpoint),
                     applicationID: rumApplicationID,
                     sessionSampler: Sampler(samplingRate: debugOverride ? 100.0 : configuration.rumSessionsSamplingRate),
                     telemetrySampler: Sampler(samplingRate: configuration.rumTelemetrySamplingRate),
@@ -254,9 +218,8 @@ extension FeaturesConfiguration {
                 urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
                     userDefinedFirstPartyHosts: firstPartyHosts,
                     sdkInternalURLs: [
-                        logsEndpoint.url,
-                        tracesEndpoint.url,
-                        rumEndpoint.url
+                        common.site.endpoint.absoluteString,
+                        rumEndpoint
                     ],
                     rumAttributesProvider: configuration.rumResourceAttributesProvider,
                     instrumentTracing: configuration.tracingEnabled,
@@ -298,7 +261,6 @@ extension FeaturesConfiguration {
 
         self.common = common
         self.logging = logging
-        self.tracing = tracing
         self.rum = rum
         self.urlSessionAutoInstrumentation = urlSessionAutoInstrumentation
         self.crashReporting = crashReporting
@@ -306,28 +268,6 @@ extension FeaturesConfiguration {
 }
 
 extension DatadogSite {
-    internal var logsEndpoint: Datadog.Configuration.LogsEndpoint {
-        switch self {
-        case .us1: return .us1
-        case .us3: return .us3
-        case .us5: return .us5
-        case .eu1: return .eu1
-        case .ap1: return .ap1
-        case .us1_fed: return .us1_fed
-        }
-    }
-
-    internal var tracesEndpoint: Datadog.Configuration.TracesEndpoint {
-        switch self {
-        case .us1: return .us1
-        case .us3: return .us3
-        case .us5: return .us5
-        case .eu1: return .eu1
-        case .ap1: return .ap1
-        case .us1_fed: return .us1_fed
-        }
-    }
-
     internal var rumEndpoint: Datadog.Configuration.RUMEndpoint {
         switch self {
         case .us1: return .us1

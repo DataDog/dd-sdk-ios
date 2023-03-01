@@ -32,17 +32,13 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertTrue(configuration.loggingEnabled)
             XCTAssertTrue(configuration.tracingEnabled)
             XCTAssertNil(configuration.crashReportingPlugin)
-            XCTAssertNil(configuration.datadogEndpoint)
+            XCTAssertEqual(configuration.datadogEndpoint, .us1)
             XCTAssertNil(configuration.customLogsEndpoint)
             XCTAssertNil(configuration.customTracesEndpoint)
             XCTAssertNil(configuration.customRUMEndpoint)
-            XCTAssertEqual(configuration.logsEndpoint, .us1)
-            XCTAssertEqual(configuration.tracesEndpoint, .us1)
-            XCTAssertEqual(configuration.rumEndpoint, .us1)
             XCTAssertNil(configuration.serviceName)
             XCTAssertNil(configuration.firstPartyHosts)
             XCTAssertNil(configuration.logEventMapper)
-            XCTAssertNil(configuration.spanEventMapper)
             XCTAssertEqual(configuration.loggingSamplingRate, 100.0)
             XCTAssertEqual(configuration.tracingSamplingRate, 20.0)
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 100.0)
@@ -69,7 +65,6 @@ class DatadogConfigurationBuilderTests: XCTestCase {
 
     func testCustomizedBuilder() {
         let mockLogEvent: LogEvent = .mockAny()
-        let mockSpanEvent: SpanEvent = .mockAny()
         let mockRUMViewEvent: RUMViewEvent = .mockRandom()
         let mockRUMErrorEvent: RUMErrorEvent = .mockRandom()
         let mockRUMResourceEvent: RUMResourceEvent = .mockRandom()
@@ -91,7 +86,6 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .set(rumSessionsSamplingRate: 42.5)
                 .onRUMSessionStart { _, _ in }
                 .setLogEventMapper { _ in mockLogEvent }
-                .setSpanEventMapper { _ in mockSpanEvent }
                 .set(loggingSamplingRate: 66)
                 .set(tracingSamplingRate: 75)
                 .trackURLSession(firstPartyHosts: ["example.com"])
@@ -162,7 +156,6 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertTrue(configuration.rumUIKitViewsPredicate is UIKitRUMViewsPredicateMock)
             XCTAssertTrue(configuration.rumUIKitUserActionsPredicate is UIKitRUMUserActionsPredicateMock)
             XCTAssertEqual(configuration.rumLongTaskDurationThreshold, 100.0)
-            DDAssertReflectionEqual(configuration.spanEventMapper?(.mockRandom()), mockSpanEvent)
             DDAssertReflectionEqual(configuration.rumViewEventMapper?(.mockRandom()), mockRUMViewEvent)
             DDAssertReflectionEqual(configuration.rumResourceEventMapper?(.mockRandom()), mockRUMResourceEvent)
             DDAssertReflectionEqual(configuration.rumActionEventMapper?(.mockRandom()), mockRUMActionEvent)
@@ -198,17 +191,11 @@ class DatadogConfigurationBuilderTests: XCTestCase {
     func testDeprecatedAPIs() {
         let builder = Datadog.Configuration.builderUsing(clientToken: "abc-123", environment: "tests")
         _ = (builder as ConfigurationBuilderDeprecatedAPIs).set(tracedHosts: ["example.com"])
-        _ = (builder as ConfigurationBuilderDeprecatedAPIs).set(logsEndpoint: .eu1)
-        _ = (builder as ConfigurationBuilderDeprecatedAPIs).set(tracesEndpoint: .eu1)
-        _ = (builder as ConfigurationBuilderDeprecatedAPIs).set(rumEndpoint: .eu1)
         _ = (builder as ConfigurationBuilderDeprecatedAPIs).trackUIKitActions(true)
 
         let configuration = builder.build()
 
         XCTAssertEqual(configuration.firstPartyHosts, .init(["example.com": [.datadog]]))
-        XCTAssertEqual(configuration.logsEndpoint, .eu1)
-        XCTAssertEqual(configuration.tracesEndpoint, .eu1)
-        XCTAssertEqual(configuration.rumEndpoint, .eu1)
         XCTAssertTrue(configuration.rumUIKitUserActionsPredicate is DefaultUIKitRUMUserActionsPredicate)
     }
 }
@@ -216,9 +203,6 @@ class DatadogConfigurationBuilderTests: XCTestCase {
 /// An assistant protocol to shim the deprecated APIs and call them with no compiler warning.
 private protocol ConfigurationBuilderDeprecatedAPIs {
     func set(tracedHosts: Set<String>) -> Datadog.Configuration.Builder
-    func set(logsEndpoint: Datadog.Configuration.LogsEndpoint) -> Datadog.Configuration.Builder
-    func set(tracesEndpoint: Datadog.Configuration.TracesEndpoint) -> Datadog.Configuration.Builder
-    func set(rumEndpoint: Datadog.Configuration.RUMEndpoint) -> Datadog.Configuration.Builder
     func trackUIKitActions(_ enabled: Bool) -> Datadog.Configuration.Builder
 }
 extension Datadog.Configuration.Builder: ConfigurationBuilderDeprecatedAPIs {}

@@ -775,16 +775,16 @@ class LoggerTests: XCTestCase {
         let logging: DatadogLogsFeature = .mockAny()
         try core.register(feature: logging)
 
-        let tracing: TracingFeature = .mockAny()
-        core.register(feature: tracing)
+        DatadogTracer.initialize(in: core)
 
         // given
         let logger = DatadogLogger.builder.build(in: core)
-        Global.sharedTracer = Tracer.initialize(configuration: .init(), in: core)
-        defer { Global.sharedTracer = DDNoopGlobals.tracer }
+
+        DatadogTracer.initialize(in: core)
+        let tracer = DatadogTracer.shared(in: core)
 
         // when
-        let span = Global.sharedTracer.startSpan(operationName: "span").setActive()
+        let span = tracer.startSpan(operationName: "span").setActive()
         logger.info("info message 1")
         span.finish()
         logger.info("info message 2")

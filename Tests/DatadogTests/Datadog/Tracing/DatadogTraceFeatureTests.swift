@@ -8,7 +8,7 @@ import XCTest
 import DatadogInternal
 @testable import Datadog
 
-class TracingFeatureTests: XCTestCase {
+class DatadogTraceFeatureTests: XCTestCase {
     override func setUp() {
         super.setUp()
         temporaryCoreDirectory.create()
@@ -67,17 +67,15 @@ class TracingFeatureTests: XCTestCase {
         )
         defer { core.flushAndTearDown() }
 
-        // Given
-        let featureConfiguration: TracingFeature.Configuration = .mockWith(uploadURL: randomUploadURL)
-
-        let feature: TracingFeature = try core.create(
-            configuration: createTracingConfiguration(intake: featureConfiguration.uploadURL),
-            featureSpecificConfiguration: featureConfiguration
+        DatadogTracer.initialize(
+            configuration: .init(intake: .custom(randomUploadURL)),
+            in: core
         )
-        core.register(feature: feature)
+
+        // Given
+        let tracer = DatadogTracer.shared(in: core).dd
 
         // When
-        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
         let span = tracer.startSpan(operationName: .mockAny())
         span.finish()
 
@@ -136,14 +134,8 @@ class TracingFeatureTests: XCTestCase {
         )
         defer { core.flushAndTearDown() }
 
-        let featureConfiguration: TracingFeature.Configuration = .mockAny()
-        let feature: TracingFeature = try core.create(
-            configuration: createTracingConfiguration(intake: featureConfiguration.uploadURL),
-            featureSpecificConfiguration: featureConfiguration
-        )
-        core.register(feature: feature)
-
-        let tracer = Tracer.initialize(configuration: .init(), in: core).dd
+        DatadogTracer.initialize(in: core)
+        let tracer = DatadogTracer.shared(in: core).dd
 
         tracer.startSpan(operationName: "operation 1").finish()
         tracer.startSpan(operationName: "operation 2").finish()

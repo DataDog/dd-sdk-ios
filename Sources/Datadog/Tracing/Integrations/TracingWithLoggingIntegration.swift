@@ -31,13 +31,13 @@ internal struct TracingWithLoggingIntegration {
     }
 
     /// `DatadogCore` instance managing this integration.
-    let core: DatadogCoreProtocol
+    weak var core: DatadogCoreProtocol?
     /// Builds log events.
     let configuration: Configuration
 
     init(
         core: DatadogCoreProtocol,
-        tracerConfiguration: Tracer.Configuration
+        tracerConfiguration: DatadogTracer.Configuration
     ) {
         self.init(
             core: core,
@@ -55,6 +55,10 @@ internal struct TracingWithLoggingIntegration {
     }
 
     func writeLog(withSpanContext spanContext: DDSpanContext, fields: [String: Encodable], date: Date, else fallback: @escaping () -> Void) {
+        guard let core = core else {
+            return
+        }
+
         var userAttributes = fields
 
         // get the log message and optional error kind

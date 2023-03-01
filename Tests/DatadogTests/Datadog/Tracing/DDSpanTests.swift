@@ -19,7 +19,7 @@ class DDSpanTests: XCTestCase {
         let core = PassthroughCoreMock(expectation: writeSpansExpectation)
 
         // Given
-        let tracer: Tracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(core: core)
         let span: DDSpan = .mockWith(tracer: tracer)
 
         // When
@@ -40,7 +40,7 @@ class DDSpanTests: XCTestCase {
         core.expectation?.expectedFulfillmentCount = 2
 
         // Given
-        let tracer: Tracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(core: core)
         let span: DDSpan = .mockWith(tracer: tracer)
 
         // When
@@ -74,7 +74,7 @@ class DDSpanTests: XCTestCase {
 
         // Given
         let defaultOperationName: String = .mockRandom()
-        let tracer: Tracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(core: core)
         let defaultSpan: DDSpan = .mockWith(tracer: tracer, operationName: defaultOperationName)
         let customizedSpan: DDSpan = .mockWith(tracer: tracer, operationName: defaultOperationName)
 
@@ -100,7 +100,7 @@ class DDSpanTests: XCTestCase {
 
         // Given
         let defaultTags: [String: String] = .mockRandom()
-        let tracer: Tracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(core: core)
         let defaultSpan: DDSpan = .mockWith(tracer: tracer, tags: defaultTags)
         let customizedSpan: DDSpan = .mockWith(tracer: tracer, tags: defaultTags)
 
@@ -148,7 +148,7 @@ class DDSpanTests: XCTestCase {
         let core = PassthroughCoreMock(expectation: writeSpansExpectation)
 
         // Given
-        let tracer: Tracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(core: core)
         let span: DDSpan = .mockWith(tracer: tracer)
 
         // When

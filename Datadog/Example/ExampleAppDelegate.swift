@@ -81,11 +81,13 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         #endif
 
         // Register Tracer
-        Global.sharedTracer = Tracer.initialize(
-            configuration: Tracer.Configuration(
+        DatadogTracer.initialize(
+            configuration: DatadogTracer.Configuration(
                 sendNetworkInfo: true
             )
         )
+
+        Global.sharedTracer = DatadogTracer.shared()
 
         // Register RUMMonitor
         Global.rum = RUMMonitor.initialize()
