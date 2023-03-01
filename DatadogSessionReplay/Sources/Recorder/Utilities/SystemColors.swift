@@ -60,4 +60,8 @@ internal enum SystemColors {
             return UIColor(red: 0 / 255, green: 0 / 255, blue: 0 / 255, alpha: 1).cgColor
         }
     }
+
+    static var systemGreen: CGColor {
+        return UIColor.systemGreen.cgColor
+    }
 }
