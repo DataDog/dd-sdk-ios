@@ -9,10 +9,10 @@ import TestUtilities
 import DatadogInternal
 import Datadog
 
-internal struct DatadogFeatureMock: DatadogFeature {
+internal struct DatadogProductMock: DatadogProduct {
     static let featureName = "mock"
 
-    var name: String = DatadogFeatureMock.featureName
+    var name: String = DatadogProductMock.featureName
     var requestBuilder: FeatureRequestBuilder = FeatureRequestBuilderMock()
     var messageReceiver: FeatureMessageReceiver = FeatureMessageReceiverMock()
 }

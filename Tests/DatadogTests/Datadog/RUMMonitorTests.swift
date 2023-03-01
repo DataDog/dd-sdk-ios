@@ -1208,7 +1208,7 @@ class RUMMonitorTests: XCTestCase {
             )
         )
 
-        try core.register(integration: crashReporter)
+        try core.register(feature: crashReporter)
 
         // When
         let monitor = try createTestableRUMMonitor()

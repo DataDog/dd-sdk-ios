@@ -70,14 +70,6 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
         return core.feature(named: name, type: type)
     }
 
-    func register(integration: DatadogFeatureIntegration) throws {
-        try core.register(integration: integration)
-    }
-
-    func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeatureIntegration {
-        return core.integration(named: name, type: type)
-    }
-
     func scope(for feature: String) -> FeatureScope? {
         return core.scope(for: feature).map { scope in
             FeatureScopeProxy(proxy: scope, interceptor: featureScopeInterceptors[feature]!)

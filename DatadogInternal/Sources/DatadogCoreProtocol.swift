@@ -38,29 +38,6 @@ public protocol DatadogCoreProtocol: AnyObject {
     /// - Returns: The Feature if any.
     func feature<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature
 
-    /// Registers a Feature Integration instance.
-    ///
-    /// A Feature Integration collects and transfers data to a local Datadog Feature. An Integration will not store nor upload,
-    /// it will collect data for other Features to consume.
-    ///
-    /// An Integration can commicate to Features via dependency or a communication channel such as the message-bus.
-    ///
-    /// - Parameter integration: The Feature Integration instance.
-    func register(integration: DatadogFeatureIntegration) throws
-
-    /// Retrieves a Feature Integration by its name and type.
-    ///
-    /// A Feature Integration type can be specified as parameter or inferred from the return type:
-    ///
-    ///     let integration = core.integration(named: "foo", type: Foo.self)
-    ///     let integration: Foo? = core.integration(named: "foo")
-    ///
-    /// - Parameters:
-    ///   - name: The Feature Integration's name.
-    ///   - type: The Feature Integration instance type.
-    /// - Returns: The Feature Integration if any.
-    func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeatureIntegration
-
     /// Retrieves a Feature Scope by its name.
     ///
     /// Feature Scope collects data to Datadog Product (e.g. Logs, RUM, ...). Upon registration, the Feature retrieves
@@ -122,20 +99,6 @@ extension DatadogCoreProtocol {
     /// - Returns: The Feature if any.
     public func feature<T>(named name: String) -> T? where T: DatadogFeature {
         feature(named: name, type: T.self)
-    }
-
-    /// Retrieves a Feature Integration by its name and type.
-    ///
-    /// A Feature Integration type can be specified as parameter or inferred from the return type:
-    ///
-    ///     let integration = core.integration(named: "foo", type: Foo.self)
-    ///     let integration: Foo? = core.integration(named: "foo")
-    ///
-    /// - Parameters:
-    ///   - name: The Feature Integration's name.
-    /// - Returns: The Feature Integration if any.
-    public func integration<T>(named name: String) -> T? where T: DatadogFeatureIntegration {
-        integration(named: name, type: T.self)
     }
 
     /// Sends a message on the bus shared by features registered in this core.
@@ -206,10 +169,6 @@ public class NOPDatadogCore: DatadogCoreProtocol {
     public func register(feature: DatadogFeature) throws { }
     /// no-op
     public func feature<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature { nil }
-    /// no-op
-    public func register(integration: DatadogFeatureIntegration) throws { }
-    /// no-op
-    public func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeatureIntegration { nil }
     /// no-op
     public func scope(for feature: String) -> FeatureScope? { nil }
     /// no-op

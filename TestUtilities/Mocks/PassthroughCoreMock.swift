@@ -79,10 +79,6 @@ public final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     /// no-op
     public func feature<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature { nil }
     /// no-op
-    public func register(integration: DatadogFeatureIntegration) throws { }
-    /// no-op
-    public func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeatureIntegration { nil }
-    /// no-op
     public func register<T>(feature instance: T?) { }
     /// Returns `nil`
     public func feature<T>(_ type: T.Type) -> T? { nil }

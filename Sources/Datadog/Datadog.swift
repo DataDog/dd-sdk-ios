@@ -281,7 +281,7 @@ public class Datadog {
             let configuration = configuration.crashReporting,
             let reporter = CrashReporter(core: core, configuration: configuration)
         {
-            try core.register(integration: reporter)
+            try core.register(feature: reporter)
             reporter.sendCrashReportIfFound()
         }
 

@@ -66,14 +66,14 @@ internal final class DatadogCore {
 
     /// Registry for Features.
     @ReadWriteLock
-    private var v2Features: [String: (
-        feature: DatadogFeature,
+    private var stores: [String: (
         storage: FeatureStorage,
         upload: FeatureUpload
     )] = [:]
 
-    /// Registry for Feature Integrations.
-    private var integrations: [String: DatadogFeatureIntegration] = [:]
+    /// Registry for Features.
+    @ReadWriteLock
+    private var features: [String: DatadogFeature] = [:]
 
     /// Registry for v1 features.
     private var v1Features: [String: Any] = [:]
@@ -193,7 +193,7 @@ internal final class DatadogCore {
     /// A list of storage units of currently registered Features.
     private var allStorages: [FeatureStorage] {
         let v1Storages = v1Features.values.compactMap { $0 as? V1Feature }.map { $0.storage }
-        let v2Storages = v2Features.values.map { $0.storage }
+        let v2Storages = stores.values.map { $0.storage }
         return v1Storages + v2Storages
     }
 
@@ -203,7 +203,7 @@ internal final class DatadogCore {
             feature(TracingFeature.self)?.upload,
             feature(RUMFeature.self)?.upload,
         ].compactMap { $0 }
-        let v2Uploads = v2Features.values.map { $0.upload }
+        let v2Uploads = stores.values.map { $0.upload }
         return v1Uploads + v2Uploads
     }
 
@@ -255,12 +255,12 @@ internal final class DatadogCore {
         feature(URLSessionAutoInstrumentation.self)?.deinitialize()
 
         // Deinitialize V2 Integrations (arbitrarily for now, until we make it into `DatadogFeatureIntegration`):
-        integration(named: "crash-reporter", type: CrashReporter.self)?.deinitialize()
+        feature(named: "crash-reporter", type: CrashReporter.self)?.deinitialize()
 
         // Deallocate all Features and their storage & upload units:
         v1Features = [:]
-        v2Features = [:]
-        integrations = [:]
+        stores = [:]
+        features = [:]
     }
 }
 
@@ -277,34 +277,36 @@ extension DatadogCore: DatadogCoreProtocol {
     /* public */ func register(feature: DatadogFeature) throws {
         let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: feature.name)
 
-        let storage = FeatureStorage(
-            featureName: feature.name,
-            queue: readWriteQueue,
-            directories: featureDirectories,
-            dateProvider: dateProvider,
-            performance: performance,
-            encryption: encryption
-        )
+        if let product = feature as? DatadogProduct {
+            let storage = FeatureStorage(
+                featureName: feature.name,
+                queue: readWriteQueue,
+                directories: featureDirectories,
+                dateProvider: dateProvider,
+                performance: performance,
+                encryption: encryption
+            )
 
-        let upload = FeatureUpload(
-            featureName: feature.name,
-            contextProvider: contextProvider,
-            fileReader: storage.reader,
-            requestBuilder: feature.requestBuilder,
-            httpClient: httpClient,
-            performance: performance
-        )
+            let upload = FeatureUpload(
+                featureName: feature.name,
+                contextProvider: contextProvider,
+                fileReader: storage.reader,
+                requestBuilder: product.requestBuilder,
+                httpClient: httpClient,
+                performance: performance
+            )
 
-        v2Features[feature.name] = (
-            feature: feature,
-            storage: storage,
-            upload: upload
-        )
+            stores[feature.name] = (
+                storage: storage,
+                upload: upload
+            )
 
-        // If there is any persisted data recorded with `.pending` consent,
-        // it should be deleted on Feature startup:
-        storage.clearUnauthorizedData()
+            // If there is any persisted data recorded with `.pending` consent,
+            // it should be deleted on Feature startup:
+            storage.clearUnauthorizedData()
+        }
 
+        features[feature.name] = feature
         add(messageReceiver: feature.messageReceiver, forKey: feature.name)
     }
 
@@ -320,39 +322,11 @@ extension DatadogCore: DatadogCoreProtocol {
     ///   - type: The Feature instance type.
     /// - Returns: The Feature if any.
     /* public */ func feature<T>(named name: String, type: T.Type = T.self) -> T? where T: DatadogFeature {
-        v2Features[name]?.feature as? T
-    }
-
-    /// Registers a Feature Integration instance.
-    ///
-    /// A Feature Integration collect and transfer data to a local Datadog Feature. An Integration will not store nor upload,
-    /// it will collect data for other Features to consume.
-    ///
-    /// An Integration can commicate to Features via dependency or a communication channel such as the message-bus.
-    ///
-    /// - Parameter integration: The Feature Integration instance.
-    /* public */ func register(integration: DatadogFeatureIntegration) throws {
-        integrations[integration.name] = integration
-        add(messageReceiver: integration.messageReceiver, forKey: integration.name)
-    }
-
-    /// Retrieves a Feature Integration by its name and type.
-    ///
-    /// A Feature Integration type can be specified as parameter or inferred from the return type:
-    ///
-    ///     let integration = core.integration(named: "foo", type: Foo.self)
-    ///     let integration: Foo? = core.integration(named: "foo")
-    ///
-    /// - Parameters:
-    ///   - name: The Feature Integration's name.
-    ///   - type: The Feature Integration instance type.
-    /// - Returns: The Feature Integration if any.
-    /* public */ func integration<T>(named name: String, type: T.Type = T.self) -> T? where T: DatadogFeatureIntegration {
-        integrations[name] as? T
+        features[name] as? T
     }
 
     /* public */ func scope(for feature: String) -> FeatureScope? {
-        guard let storage = v2Features[feature]?.storage else {
+        guard let storage = stores[feature]?.storage else {
             return nil
         }
 
