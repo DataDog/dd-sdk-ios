@@ -212,13 +212,19 @@ public class Datadog {
         var rumInstrumentation: RUMInstrumentation?
 
         if let rumConfiguration = configuration.rum {
-            DD.telemetry = RUMTelemetry(
+            let rumTelemetry = RUMTelemetry(
                 in: core,
                 dateProvider: rumConfiguration.dateProvider,
                 configurationEventMapper: nil,
                 delayedDispatcher: nil,
                 sampler: rumConfiguration.telemetrySampler
             )
+
+            if let configurationSampler = configuration.rum?.configurationTelemetrySampler {
+                rumTelemetry.configurationExtraSampler = configurationSampler
+            }
+
+            DD.telemetry = rumTelemetry
 
             rum = try core.create(
                 configuration: createRUMConfiguration(configuration: rumConfiguration),
