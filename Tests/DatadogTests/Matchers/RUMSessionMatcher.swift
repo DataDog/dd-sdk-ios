@@ -87,8 +87,8 @@ internal class RUMSessionMatcher {
     private init(sessionEventMatchers: [RUMEventMatcher]) throws {
         // Sort events so they follow increasing time order
         let sessionEventOrderedByTime = try sessionEventMatchers.sorted { firstEvent, secondEvent in
-            let firstEventTime: UInt64 = try firstEvent.jsonMatcher.value(forKeyPath: "date")
-            let secondEventTime: UInt64 = try secondEvent.jsonMatcher.value(forKeyPath: "date")
+            let firstEventTime: Int64 = try firstEvent.jsonMatcher.value(forKeyPath: "date")
+            let secondEventTime: Int64 = try secondEvent.jsonMatcher.value(forKeyPath: "date")
             return firstEventTime < secondEventTime
         }
 

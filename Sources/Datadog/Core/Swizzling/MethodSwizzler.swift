@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 internal class MethodSwizzler<TypedIMP, TypedBlockIMP> {
     struct FoundMethod: Hashable {

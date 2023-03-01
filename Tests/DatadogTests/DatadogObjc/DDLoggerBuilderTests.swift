@@ -5,12 +5,13 @@
  */
 
 import XCTest
+@testable import DatadogLogs
 @testable import Datadog
 @testable import DatadogObjc
 
 class DDLoggerBuilderTests: XCTestCase {
     func testItForwardsConfigurationToSwift() {
-        let swiftBuilder = Logger.builder
+        let swiftBuilder = DatadogLogger.builder
         let objcBuilder = DDLoggerBuilder(sdkBuilder: swiftBuilder)
         objcBuilder.set(loggerName: "logger-name")
         objcBuilder.set(serviceName: "service-name")

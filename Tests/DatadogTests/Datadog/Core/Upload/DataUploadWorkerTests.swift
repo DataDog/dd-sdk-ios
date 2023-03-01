@@ -5,8 +5,8 @@
  */
 
 import XCTest
-import DatadogInternal
 import TestUtilities
+import DatadogInternal
 @testable import Datadog
 
 class DataUploadWorkerTests: XCTestCase {
@@ -14,7 +14,7 @@ class DataUploadWorkerTests: XCTestCase {
 
     lazy var dateProvider = RelativeDateProvider(advancingBySeconds: 1)
     lazy var orchestrator = FilesOrchestrator(
-        directory: temporaryDirectory,
+        directory: .init(url: temporaryDirectory),
         performance: StoragePerformanceMock.writeEachObjectToNewFileAndReadAllFiles,
         dateProvider: dateProvider
     )
@@ -30,11 +30,11 @@ class DataUploadWorkerTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        temporaryDirectory.create()
+        CreateTemporaryDirectory()
     }
 
     override func tearDown() {
-        temporaryDirectory.delete()
+        DeleteTemporaryDirectory()
         super.tearDown()
     }
 
@@ -71,7 +71,7 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k3":"v3"}]"#.utf8Data })
 
         worker.cancelSynchronously()
-        XCTAssertEqual(try temporaryDirectory.files().count, 0)
+        XCTAssertEqual(try orchestrator.directory.files().count, 0)
     }
 
     func testGivenDataToUpload_whenUploadFinishesAndDoesNotNeedToBeRetried_thenDataIsDeleted() {
@@ -82,7 +82,7 @@ class DataUploadWorkerTests: XCTestCase {
 
         // Given
         writer.write(value: ["key": "value"])
-        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+        XCTAssertEqual(try orchestrator.directory.files().count, 1)
 
         // When
         let worker = DataUploadWorker(
@@ -99,7 +99,7 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(try temporaryDirectory.files().count, 0, "When upload finishes with `needsRetry: false`, data should be deleted")
+        XCTAssertEqual(try orchestrator.directory.files().count, 0, "When upload finishes with `needsRetry: false`, data should be deleted")
     }
 
     func testGivenDataToUpload_whenUploadFailsToBeInitiated_thenDataIsDeleted() {
@@ -113,7 +113,7 @@ class DataUploadWorkerTests: XCTestCase {
 
         // Given
         writer.write(value: ["key": "value"])
-        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+        XCTAssertEqual(try orchestrator.directory.files().count, 1)
 
         // When
         let worker = DataUploadWorker(
@@ -130,7 +130,7 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(try temporaryDirectory.files().count, 0, "When upload fails to be initiated, data should be deleted")
+        XCTAssertEqual(try orchestrator.directory.files().count, 0, "When upload fails to be initiated, data should be deleted")
     }
 
     func testGivenDataToUpload_whenUploadFinishesAndNeedsToBeRetried_thenDataIsPreserved() {
@@ -141,7 +141,7 @@ class DataUploadWorkerTests: XCTestCase {
 
         // Given
         writer.write(value: ["key": "value"])
-        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+        XCTAssertEqual(try orchestrator.directory.files().count, 1)
 
         // When
         let worker = DataUploadWorker(
@@ -158,7 +158,7 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(try temporaryDirectory.files().count, 1, "When upload finishes with `needsRetry: true`, data should be preserved")
+        XCTAssertEqual(try orchestrator.directory.files().count, 1, "When upload finishes with `needsRetry: true`, data should be preserved")
     }
 
     // MARK: - Upload Interval Changes
@@ -174,7 +174,7 @@ class DataUploadWorkerTests: XCTestCase {
         }
 
         // When
-        XCTAssertEqual(try temporaryDirectory.files().count, 0)
+        XCTAssertEqual(try orchestrator.directory.files().count, 0)
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let httpClient = HTTPClient(session: server.getInterceptedURLSession())
@@ -520,7 +520,7 @@ class DataUploadWorkerTests: XCTestCase {
         worker.flushSynchronously()
 
         // Then
-        XCTAssertEqual(try temporaryDirectory.files().count, 0)
+        XCTAssertEqual(try orchestrator.directory.files().count, 0)
 
         let recordedRequests = server.waitAndReturnRequests(count: 3)
         XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k1":"v1"}]"#.utf8Data })

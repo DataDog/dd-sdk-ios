@@ -12,7 +12,6 @@ import DatadogInternal
 class WarningsTests: XCTestCase {
     func testPrintingWarningsOnDifferentConditions() {
         let core = PassthroughCoreMock()
-        core.register(feature: LoggingFeature.mockAny())
 
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }

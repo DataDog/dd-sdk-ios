@@ -5,6 +5,9 @@
  */
 
 import XCTest
+import TestUtilities
+import DatadogInternal
+
 @testable import Datadog
 
 class DirectoryTests: XCTestCase {
@@ -46,9 +49,9 @@ class DirectoryTests: XCTestCase {
     }
 
     func testItReturnsSubdirectoryAtPathWhenItExists() throws {
-        let directory = temporaryDirectory
-        directory.create()
-        defer { directory.delete() }
+        let directory = Directory(url: temporaryDirectory)
+        CreateTemporaryDirectory()
+        defer { DeleteTemporaryDirectory() }
 
         let uniqueName = uniqueSubdirectoryName()
         let expectedDirectory = try directory.createSubdirectory(path: uniqueName)
@@ -58,9 +61,9 @@ class DirectoryTests: XCTestCase {
     }
 
     func testItThrowsWhenAskedForSubdirectoryWhichDoesNotExist() throws {
-        let directory = temporaryDirectory
-        directory.create()
-        defer { directory.delete() }
+        let directory = Directory(url: temporaryDirectory)
+        CreateTemporaryDirectory()
+        defer { DeleteTemporaryDirectory() }
 
         XCTAssertThrowsError(try directory.subdirectory(path: "abc")) { error in
             XCTAssertTrue(error is InternalError, "It should throw as directory at given path doesn't exist")

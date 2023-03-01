@@ -4,14 +4,17 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import XCTest
+import TestUtilities
+
 @testable import Datadog
 
 /// `CoreDirectory` pointing to subfolders in `/var/folders/`.
 /// This location does not exist by default and should be created and deleted by calling `.create()` and `.delete()` in each test,
 /// which guarantees clear state before and after test.
 let temporaryCoreDirectory = CoreDirectory(
-    osDirectory: obtainUniqueTemporaryDirectory(),
-    coreDirectory: obtainUniqueTemporaryDirectory()
+    osDirectory: .init(url: obtainUniqueTemporaryDirectory()),
+    coreDirectory: .init(url: obtainUniqueTemporaryDirectory())
 )
 
 extension CoreDirectory {
@@ -34,8 +37,8 @@ extension CoreDirectory {
 /// Those subfolders do not exist by default and should be created and deleted by calling `.create()` and `.delete()` in each test,
 /// which guarantees clear state before and after test.
 let temporaryFeatureDirectories = FeatureDirectories(
-    unauthorized: obtainUniqueTemporaryDirectory(),
-    authorized: obtainUniqueTemporaryDirectory()
+    unauthorized: .init(url: obtainUniqueTemporaryDirectory()),
+    authorized: .init(url: obtainUniqueTemporaryDirectory())
 )
 
 extension FeatureDirectories {
@@ -49,5 +52,44 @@ extension FeatureDirectories {
     func delete() {
         authorized.delete()
         unauthorized.delete()
+    }
+}
+
+/// Extends `Directory` with set of utilities for convenient work with files in tests.
+/// Provides handy methods to create / delete files and directories.
+extension Directory {
+    /// Creates empty directory with given attributes .
+    @discardableResult
+    func create(attributes: [FileAttributeKey: Any]? = nil, file: StaticString = #file, line: UInt = #line) -> Self {
+        do {
+            try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: attributes)
+            let initialFilesCount = try files().count
+            XCTAssert(initialFilesCount == 0, "🔥 `TestsDirectory` is not empty: \(url)", file: file, line: line)
+        } catch {
+            XCTFail("🔥 Failed to create `TestsDirectory`: \(error)", file: file, line: line)
+        }
+        return self
+    }
+
+    /// Deletes entire directory with its content.
+    func delete(file: StaticString = #file, line: UInt = #line) {
+        if FileManager.default.fileExists(atPath: url.path) {
+            do {
+                try FileManager.default.removeItem(at: url)
+            } catch {
+                XCTFail("🔥 Failed to delete `TestsDirectory`: \(error)", file: file, line: line)
+            }
+        }
+    }
+
+    /// Checks if directory exists.
+    func exists() -> Bool {
+        return FileManager.default.fileExists(atPath: url.path)
+    }
+
+    func createMockFiles(count: Int, prefix: String = "file") {
+        (0..<count).forEach { index in
+            _ = try! createFile(named: "\(prefix)\(index)")
+        }
     }
 }

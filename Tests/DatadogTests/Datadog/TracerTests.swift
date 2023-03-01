@@ -7,6 +7,8 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
+
+@testable import DatadogLogs
 @testable import Datadog
 
 // swiftlint:disable multiline_arguments_brackets
@@ -551,10 +553,10 @@ class TracerTests: XCTestCase {
     // MARK: - Integration With Logging Feature
 
     func testSendingSpanLogs() throws {
-        let logging: LoggingFeature = .mockWith(
+        let logging: DatadogLogsFeature = .mockWith(
             messageReceiver: LogMessageReceiver.mockAny()
         )
-        core.register(feature: logging)
+        try core.register(feature: logging)
 
         let tracing: TracingFeature = .mockAny()
         core.register(feature: tracing)
@@ -586,10 +588,10 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromArguments() throws {
-        let logging: LoggingFeature = .mockWith(
+        let logging: DatadogLogsFeature = .mockWith(
             messageReceiver: LogMessageReceiver.mockAny()
         )
-        core.register(feature: logging)
+        try core.register(feature: logging)
 
         let tracing: TracingFeature = .mockAny()
         core.register(feature: tracing)
@@ -613,10 +615,10 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromNSError() throws {
-        let logging: LoggingFeature = .mockWith(
+        let logging: DatadogLogsFeature = .mockWith(
             messageReceiver: LogMessageReceiver.mockAny()
         )
-        core.register(feature: logging)
+        try core.register(feature: logging)
 
         let tracing: TracingFeature = .mockAny()
         core.register(feature: tracing)
@@ -646,10 +648,10 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromSwiftError() throws {
-        let logging: LoggingFeature = .mockWith(
+        let logging: DatadogLogsFeature = .mockWith(
             messageReceiver: LogMessageReceiver.mockAny()
         )
-        core.register(feature: logging)
+        try core.register(feature: logging)
 
         let tracing: TracingFeature = .mockAny()
         core.register(feature: tracing)
@@ -1122,7 +1124,7 @@ class TracerTests: XCTestCase {
         defer { dd.reset() }
 
         // given
-        XCTAssertNil(core.feature(LoggingFeature.self))
+        XCTAssertNil(core.feature(named: logsFeatureName, type: DatadogLogsFeature.self))
         core.register(feature: TracingFeature.mockAny())
 
         // when

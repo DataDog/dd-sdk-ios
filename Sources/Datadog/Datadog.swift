@@ -6,6 +6,7 @@
 
 import Foundation
 import DatadogInternal
+import DatadogLogs
 
 /// Datadog SDK configuration object.
 public class Datadog {
@@ -104,7 +105,7 @@ public class Datadog {
     /// Verbosity level of Datadog SDK. Can be used for debugging purposes.
     /// If set, internal events occuring inside SDK will be printed to debugger console if their level is equal or greater than `verbosityLevel`.
     /// Default is `nil`.
-    public static var verbosityLevel: LogLevel? = nil
+    public static var verbosityLevel: CoreLoggerLevel? = nil
 
     /// Utility setting to inspect the active RUM View.
     /// If set, a debugging outline will be displayed on top of the application, describing the name of the active RUM View.
@@ -205,7 +206,6 @@ public class Datadog {
         )
 
         // First, initialize features:
-        var logging: LoggingFeature?
         var tracing: TracingFeature?
         var rum: RUMFeature?
 
@@ -241,16 +241,14 @@ public class Datadog {
         }
 
         if let loggingConfiguration = configuration.logging {
-            logging = try core.create(
-                configuration: createLoggingConfiguration(
-                    intake: loggingConfiguration.uploadURL,
-                    dateProvider: loggingConfiguration.dateProvider,
-                    logEventMapper: loggingConfiguration.logEventMapper
-                ),
-                featureSpecificConfiguration: loggingConfiguration
+            try DatadogLogger.initialise(
+                in: core,
+                uploadURL: loggingConfiguration.uploadURL,
+                applicationBundleIdentifier: loggingConfiguration.applicationBundleIdentifier,
+                eventMapper: loggingConfiguration.logEventMapper,
+                dateProvider: loggingConfiguration.dateProvider,
+                sampler: loggingConfiguration.remoteLoggingSampler
             )
-
-            core.register(feature: logging)
         }
 
         if let tracingConfiguration = configuration.tracing {
@@ -293,7 +291,7 @@ public class Datadog {
             dateProvider: SystemDateProvider(),
             timeZone: .current,
             printFunction: consolePrint,
-            verbosityLevel: { Datadog.verbosityLevel?.toCoreLogLevel }
+            verbosityLevel: { Datadog.verbosityLevel }
         )
 
         telemetry?.configuration(configuration: configuration)
@@ -343,20 +341,3 @@ public class Datadog {
 
 /// Convenience typealias.
 internal typealias AppContext = Datadog.AppContext
-
-/// An exception thrown due to programmer error when calling SDK public API.
-/// It makes the SDK non-functional and print the error to developer in debugger console..
-/// When thrown, check if configuration passed to `Datadog.initialize(...)` is correct
-/// and if you do not call any other SDK methods before it returns.
-internal struct ProgrammerError: Error, CustomStringConvertible {
-    init(description: String) { self.description = "🔥 Datadog SDK usage error: \(description)" }
-    let description: String
-}
-
-/// An exception thrown internally by SDK.
-/// It is always handled by SDK (keeps it functional) and never passed to the user until `Datadog.verbosity` is set (then it might be printed in debugger console).
-/// `InternalError` might be thrown due to programmer error (API misuse) or SDK internal inconsistency or external issues (e.g.  I/O errors). The SDK
-/// should always recover from that failures.
-internal struct InternalError: Error, CustomStringConvertible {
-    let description: String
-}

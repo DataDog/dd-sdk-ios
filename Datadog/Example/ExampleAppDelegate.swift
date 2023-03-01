@@ -6,6 +6,7 @@
 
 import UIKit
 import Datadog
+import DatadogLogs
 import DatadogCrashReporting
 
 @_exported import enum DatadogInternal.TrackingConsent
@@ -65,7 +66,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         Datadog.setUserInfo(id: "abcd-1234", name: "foo", email: "foo@example.com", extraInfo: ["key-extraUserInfo": "value-extraUserInfo"])
 
         // Create Logger
-        logger = Logger.builder
+        logger = DatadogLogger.builder
             .set(loggerName: "logger-name")
             .sendNetworkInfo(true)
             .printLogsToConsole(true, usingFormat: .shortWith(prefix: "[iOS App] "))

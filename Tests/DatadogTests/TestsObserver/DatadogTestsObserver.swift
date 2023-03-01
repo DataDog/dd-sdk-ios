@@ -102,11 +102,11 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             """
         ),
         .init(
-            assert: { !temporaryDirectory.exists() },
+            assert: { !FileManager.default.fileExists(atPath: temporaryDirectory.path) },
             problem: "`temporaryDirectory` must not exist.",
             solution: """
-            Make sure `temporaryDirectory.delete()` is called consistently
-            with `temporaryDirectory.create()`.
+            Make sure `DeleteTemporaryDirectory()` is called consistently
+            with `CreateTemporaryDirectory()`.
             """
         ),
         .init(

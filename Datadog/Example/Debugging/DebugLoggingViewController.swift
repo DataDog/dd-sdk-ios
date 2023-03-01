@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import DatadogLogs
 import Datadog
 
 class DebugLoggingViewController: UIViewController {
@@ -84,13 +85,13 @@ class DebugLoggingViewController: UIViewController {
     // MARK: - Stress testing
 
     var queues: [DispatchQueue] = []
-    var loggers: [Logger] = []
+    var loggers: [DatadogLogger] = []
 
     @IBAction func didTapStressTest(_ sender: Any) {
         stressTestButton.disableFor(seconds: 10)
 
         loggers = (0..<5).map { index in
-            return Logger.builder.set(loggerName: "stress-logger-\(index)")
+            return DatadogLogger.builder.set(loggerName: "stress-logger-\(index)")
                 .sendNetworkInfo(true)
                 .build()
         }
@@ -105,7 +106,7 @@ class DebugLoggingViewController: UIViewController {
         }
     }
 
-    private func keepSendingLogs(on queue: DispatchQueue, using logger: Logger, every timeInterval: TimeInterval, until endDate: Date) {
+    private func keepSendingLogs(on queue: DispatchQueue, using logger: DatadogLogger, every timeInterval: TimeInterval, until endDate: Date) {
         if Date() < endDate {
             queue.asyncAfter(deadline: .now() + timeInterval) { [weak self] in
                 logger.debug(self?.randomLogMessage() ?? "")

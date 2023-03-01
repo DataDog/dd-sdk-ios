@@ -197,11 +197,17 @@ extension DatadogCoreProxy {
     ///
     /// - Parameter feature: The Feature to retrieve events from
     /// - Returns: A list of serialized events.
-    func waitAndReturnEventsData<F>(of feature: F.Type) -> [Data] where F: V1Feature {
+    func waitAndReturnEventsData(ofFeature name: String) -> [Data] {
         flush()
-
-        let key = String(describing: F.self)
-        let interceptor = self.featureScopeInterceptors[key]!
+        let interceptor = self.featureScopeInterceptors[name]!
         return interceptor.waitAndReturnEvents().map { $0.data }
+    }
+
+    /// Returns serialized events of given Feature.
+    ///
+    /// - Parameter feature: The Feature to retrieve events from
+    /// - Returns: A list of serialized events.
+    func waitAndReturnEventsData<F>(of feature: F.Type) -> [Data] where F: V1Feature {
+        return waitAndReturnEventsData(ofFeature: String(describing: F.self))
     }
 }
