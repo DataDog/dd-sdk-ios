@@ -456,7 +456,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             view: .init(
                 action: .init(count: actionsCount.toInt64),
                 cpuTicksCount: cpuInfo?.greatestDiff,
-                cpuTicksPerSecond: cpuInfo?.greatestDiff?.divideIfNotZero(by: Double(timeSpent)),
+                cpuTicksPerSecond: timeSpent > 1.0 ? cpuInfo?.greatestDiff?.divideIfNotZero(by: Double(timeSpent)) : nil,
                 crash: isCrash ? .init(count: 1) : .init(count: 0),
                 cumulativeLayoutShift: nil,
                 customTimings: customTimings.reduce(into: [:]) { acc, element in
