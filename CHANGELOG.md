@@ -1,6 +1,9 @@
 # Unreleased
 
+# 1.16.0 / 02-03-2023
 - [IMPROVEMENT] Always create an ApplicationLaunch view on session initialization. See [#1160][]
+- [BUGFIX] Remove the data race caused by sampling on the RUM thread. See [#1177][] (Thanks [@cltnschlosser][])
+- [BUGFIX] Add ability to adjust configuration telemetry sampling rate. See [#1188][]
 
 # 1.15.0 / 23-01-2023
 
@@ -433,6 +436,8 @@
 [#1089]: https://github.com/DataDog/dd-sdk-ios/pull/1089
 [#1145]: https://github.com/DataDog/dd-sdk-ios/pull/1145
 [#1160]: https://github.com/DataDog/dd-sdk-ios/pull/1160
+[#1177]: https://github.com/DataDog/dd-sdk-ios/pull/1177
+[#1188]: https://github.com/DataDog/dd-sdk-ios/pull/1188
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
