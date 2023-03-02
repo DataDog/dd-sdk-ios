@@ -2,7 +2,7 @@
 
 # 1.16.0 / 02-03-2023
 - [IMPROVEMENT] Always create an ApplicationLaunch view on session initialization. See [#1160][]
-- [BUGFIX] Remove data race caused by doing sample on rum thread. See [#1177][] (Thanks [@cltnschlosser][])
+- [BUGFIX] Remove the data race caused by sampling on the RUM thread. See [#1177][] (Thanks [@cltnschlosser][])
 
 # 1.15.0 / 23-01-2023
 
