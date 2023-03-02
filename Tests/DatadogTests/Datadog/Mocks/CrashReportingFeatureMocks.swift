@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import TestUtilities
 @testable import Datadog
 
 extension CrashReporter {
@@ -103,8 +104,8 @@ extension CrashContext {
         userInfo: UserInfo? = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo? = .mockAny(),
         carrierInfo: CarrierInfo? = .mockAny(),
-        lastRUMViewEvent: RUMViewEvent? = nil,
-        lastRUMSessionState: RUMSessionState? = .mockAny(),
+        lastRUMViewEvent: AnyCodable? = nil,
+        lastRUMSessionState: AnyCodable? = nil,
         lastIsAppInForeground: Bool = .mockAny()
     ) -> Self {
         .init(
@@ -138,8 +139,8 @@ extension CrashContext {
             userInfo: .mockRandom(),
             networkConnectionInfo: .mockRandom(),
             carrierInfo: .mockRandom(),
-            lastRUMViewEvent: nil,
-            lastRUMSessionState: .mockRandom(),
+            lastRUMViewEvent: AnyCodable(mockRandomAttributes()),
+            lastRUMSessionState: AnyCodable(mockRandomAttributes()),
             lastIsAppInForeground: .mockRandom()
         )
     }

@@ -8,8 +8,8 @@ import Foundation
 
 /// Crash Report format supported by Datadog SDK.
 @objc
-public class DDCrashReport: NSObject {
-    public struct Thread: Encodable {
+public class DDCrashReport: NSObject, Codable {
+    public struct Thread: Codable {
         /// The name of the thread, e.g. `"Thread 0"`
         internal let name: String
         /// Unsymbolicated stack trace of the crash.
@@ -41,7 +41,7 @@ public class DDCrashReport: NSObject {
         }
     }
 
-    public struct BinaryImage: Encodable {
+    public struct BinaryImage: Codable {
         internal let libraryName: String
         internal let uuid: String
         internal let architecture: String
@@ -79,7 +79,7 @@ public class DDCrashReport: NSObject {
 
     /// Meta information about the process.
     /// Ref.: https://developer.apple.com/documentation/xcode/examining-the-fields-in-a-crash-report
-    public struct Meta: Encodable {
+    public struct Meta: Codable {
         /// A client-generated 16-byte UUID of the incident.
         internal let incidentIdentifier: String?
         /// The name of the crashed process.

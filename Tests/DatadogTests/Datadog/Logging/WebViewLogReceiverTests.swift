@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import Datadog
 
 class WebViewLogReceiverTests: XCTestCase {
@@ -49,8 +50,10 @@ class WebViewLogReceiverTests: XCTestCase {
                 serverTimeOffset: 123,
                 featuresAttributes: [
                     "rum": [
-                        RUMContextAttributes.applicationID: "123456",
-                        RUMContextAttributes.sessionID: mockSessionID.uuidString.lowercased()
+                        "ids": [
+                            RUMContextAttributes.IDs.applicationID: "123456",
+                            RUMContextAttributes.IDs.sessionID: mockSessionID.uuidString.lowercased()
+                        ]
                     ]
                 ]
             ),

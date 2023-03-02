@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import Datadog
 
 class CrashReporterTests: XCTestCase {
@@ -159,12 +160,14 @@ class CrashReporterTests: XCTestCase {
         let expectation = self.expectation(description: "`plugin` checks the crash report")
         // Given
         let core = PassthroughCoreMock()
+        let lastRUMViewEvent = Bool.random() ?
+            AnyCodable(mockRandomAttributes()) : nil
 
         let crashReport: DDCrashReport = .mockWith(
             date: .mockDecember15th2019At10AMUTC(),
             context: CrashContext.mockWith(
                 trackingConsent: [.pending, .notGranted].randomElement()!,
-                lastRUMViewEvent: Bool.random() ? .mockRandom() : nil // no matter if in RUM session or not
+                lastRUMViewEvent: lastRUMViewEvent // no matter if in RUM session or not
             ).data
         )
 

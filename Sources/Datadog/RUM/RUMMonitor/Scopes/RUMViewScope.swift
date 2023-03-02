@@ -35,6 +35,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// View custom timings, keyed by name. The value of timing is given in nanoseconds.
     private(set) var customTimings: [String: Int64] = [:]
 
+    /// Feature flags evaluated for the view
+    private(set) var featureFlags: [String: Encodable] = [:]
+
     /// This View's UUID.
     let viewUUID: RUMUUID
     /// The path of this View, used as the `VIEW URL` in RUM Explorer.
@@ -54,7 +57,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     ///
     /// The server time offset is freezed per view scope so all child event time
     /// stay relatives to the scope.
-    private let serverTimeOffset: TimeInterval
+    let serverTimeOffset: TimeInterval
 
     /// Tells if this View is the active one.
     /// `true` for every new started View.
@@ -146,14 +149,25 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         // Propagate to User Action scope
         userActionScope = userActionScope?.scope(byPropagating: command, context: context, writer: writer)
 
-        // Send "application start" action if this is the very first view tracked in the app
         let hasSentNoViewUpdatesYet = version == 0
         if isInitialView, hasSentNoViewUpdatesYet {
-            sendApplicationStartAction(context: context, writer: writer)
+            needsViewUpdate = true
         }
 
         // Apply side effects
         switch command {
+        // Application Launch
+        case let command as RUMApplicationStartCommand:
+            sendApplicationStartAction(on: command, context: context, writer: writer)
+            if !isInitialView || viewPath != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL {
+                DD.telemetry.error(
+                    "A RUMApplicationStartCommand got sent to a View other than the ApplicationLaunch view."
+                )
+            }
+            // Application Launch also serves as a StartView command for this view
+            didReceiveStartCommand = true
+            needsViewUpdate = true
+
         // View commands
         case let command as RUMStartViewCommand where identity.equals(command.identity):
             if didReceiveStartCommand {
@@ -200,6 +214,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         case let command as RUMAddLongTaskCommand where isActiveView:
             sendLongTaskEvent(on: command, context: context, writer: writer)
+
+        case let command as RUMAddFeatureFlagEvaluationCommand where isActiveView:
+            addFeatureFlagEvaluation(on: command)
+            needsViewUpdate = true
 
         case let command as RUMUpdatePerformanceMetric where isActiveView:
             updatePerformanceMetric(on: command)
@@ -319,7 +337,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     // MARK: - Sending RUM Events
 
-    private func sendApplicationStartAction(context: DatadogContext, writer: Writer) {
+    private func sendApplicationStartAction(on command: RUMApplicationStartCommand, context: DatadogContext, writer: Writer) {
         actionsCount += 1
 
         var attributes = self.attributes
@@ -339,9 +357,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             // a RUM view on `SwiftUI.View/onAppear`.
             //
             // In that case, we consider the time between the application
-            // launch and the first view start as the application loading
+            // launch and the sdkInitialization as the application loading
             // time.
-            loadingTime = viewStartTime.timeIntervalSince(launchDate).toInt64Nanoseconds
+            loadingTime = command.time.timeIntervalSince(launchDate).toInt64Nanoseconds
         }
 
         let actionEvent = RUMActionEvent(
@@ -423,6 +441,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context),
             display: nil,
+            featureFlags: .init(featureFlagsInfo: featureFlags),
             os: .init(context: context),
             service: context.service,
             session: .init(
@@ -437,7 +456,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             view: .init(
                 action: .init(count: actionsCount.toInt64),
                 cpuTicksCount: cpuInfo?.greatestDiff,
-                cpuTicksPerSecond: cpuInfo?.greatestDiff?.divideIfNotZero(by: Double(timeSpent)),
+                cpuTicksPerSecond: timeSpent > 1.0 ? cpuInfo?.greatestDiff?.divideIfNotZero(by: Double(timeSpent)) : nil,
                 crash: isCrash ? .init(count: 1) : .init(count: 0),
                 cumulativeLayoutShift: nil,
                 customTimings: customTimings.reduce(into: [:]) { acc, element in
@@ -529,6 +548,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 stack: command.stack,
                 type: command.type
             ),
+            featureFlags: .init(featureFlagsInfo: featureFlags),
             os: .init(context: context),
             service: context.service,
             session: .init(
@@ -622,6 +642,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
 
         return sanitized
+    }
+
+    private func addFeatureFlagEvaluation(on command: RUMAddFeatureFlagEvaluationCommand) {
+        featureFlags[command.name] = command.value
     }
 
     private func updatePerformanceMetric(on command: RUMUpdatePerformanceMetric) {

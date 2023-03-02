@@ -12,5 +12,5 @@ internal final class TracingWithRUMIntegration {
     ///
     /// These attributes are synchronized using a read-write lock.
     @ReadWriteLock
-    var attribues: [String: Encodable]?
+    var attributes: [String: Encodable]?
 }

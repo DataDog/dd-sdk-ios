@@ -184,6 +184,10 @@ internal class DDNoopRUMMonitor: DDRUMMonitor {
         warn()
     }
 
+    override func addFeatureFlagEvaluation(name: String, value: Encodable) {
+        warn()
+    }
+
     override func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
         warn()
     }

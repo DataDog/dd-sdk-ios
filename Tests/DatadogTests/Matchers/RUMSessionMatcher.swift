@@ -75,7 +75,8 @@ internal class RUMSessionMatcher {
     }
 
     /// An array of view visits tracked during this RUM Session.
-    /// Each `ViewVisit` is determined by unique `view.id` and groups all RUM events linked to that `view.id`.
+    /// Each `ViewVisit` is determined by unique `view.id` and groups all RUM events linked to that `view.id`.'
+    let applicationLaunchView: ViewVisit?
     let viewVisits: [ViewVisit]
 
     let viewEventMatchers: [RUMEventMatcher]
@@ -199,7 +200,7 @@ internal class RUMSessionMatcher {
         }
 
         // Sort visits by time
-        let visitsEventOrderedByTime = visits.sorted { firstVisit, secondVisit in
+        var visitsEventOrderedByTime = visits.sorted { firstVisit, secondVisit in
             let firstVisitTime = firstVisit.viewEvents[0].date
             let secondVisitTime = secondVisit.viewEvents[0].date
             return firstVisitTime < secondVisitTime
@@ -222,12 +223,6 @@ internal class RUMSessionMatcher {
                     )
                 }
 
-                if index == 0 && !viewIsActive {
-                    throw RUMSessionConsistencyException(
-                        description: "A `RUMSessionMatcher.ViewVisit` can't have a first event with an inactive `View`."
-                    )
-                }
-
                 if viewIsInactive {
                     throw RUMSessionConsistencyException(
                         description: "A `RUMSessionMatcher.ViewVisit` can't have an event after the `View` was marked as inactive."
@@ -235,6 +230,15 @@ internal class RUMSessionMatcher {
                 }
                 viewIsInactive = !viewIsActive
             }
+        }
+
+        if let applicationLaunchIndex = visitsEventOrderedByTime.firstIndex(
+            where: { $0.name == "ApplicationLaunch" }
+        ) {
+            self.applicationLaunchView = visitsEventOrderedByTime[applicationLaunchIndex]
+            visitsEventOrderedByTime.remove(at: applicationLaunchIndex)
+        } else {
+            self.applicationLaunchView = nil
         }
 
         self.viewVisits = visitsEventOrderedByTime

@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "dd_logo_v_rgb.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

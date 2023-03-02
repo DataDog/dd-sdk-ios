@@ -7,28 +7,28 @@
 import Foundation
 
 /// Describes current device information.
-public struct DeviceInfo: Codable, Equatable {
+public struct DeviceInfo: Codable, Equatable, DictionaryEncodable {
     // MARK: - Info
 
     /// Device manufacturer name. Always'Apple'
-    let brand: String
+    public let brand: String
 
     /// Device marketing name, e.g. "iPhone", "iPad", "iPod touch".
-    let name: String
+    public let name: String
 
     /// Device model name, e.g. "iPhone10,1", "iPhone13,2".
-    let model: String
+    public let model: String
 
     /// The name of operating system, e.g. "iOS", "iPadOS", "tvOS".
-    let osName: String
+    public let osName: String
 
     /// The version of the operating system, e.g. "15.4.1".
-    let osVersion: String
+    public let osVersion: String
 
     /// The architecture of the device
-    let architecture: String
+    public let architecture: String
 
-    init(
+    public init(
         name: String,
         model: String,
         osName: String,

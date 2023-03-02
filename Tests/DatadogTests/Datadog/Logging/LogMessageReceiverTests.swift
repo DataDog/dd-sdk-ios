@@ -5,7 +5,7 @@
  */
 
 import XCTest
-
+import TestUtilities
 @testable import Datadog
 
 class LogMessageReceiverTests: XCTestCase {
@@ -111,12 +111,12 @@ class LogMessageReceiverTests: XCTestCase {
         XCTAssertEqual(log.message, "message-test")
         XCTAssertEqual(log.status, .info)
         XCTAssertEqual(log.error?.message, "abc")
-        XCTAssertEqual(
-            log.attributes.userAttributes as? [String: String],
+        DDAssertJSONEqual(
+            AnyEncodable(log.attributes.userAttributes),
             ["user": "attribute"]
         )
-        XCTAssertEqual(
-            log.attributes.internalAttributes as? [String: String],
+        DDAssertJSONEqual(
+            AnyEncodable(log.attributes.internalAttributes),
             ["internal": "attribute"]
         )
         XCTAssertNotNil(log.networkConnectionInfo)
