@@ -28,7 +28,7 @@ internal final class RUMTelemetry: Telemetry {
     var configurationEventMapper: RUMTelemetryConfiguratoinMapper?
     let delayedDispatcher: RUMTelemetryDelayedDispatcher
     let sampler: Sampler
-    var configurationExtraSampler = Sampler(samplingRate: 0.2)
+    var configurationExtraSampler = Sampler(samplingRate: 20.0)
 
     /// Keeps track of current session
     @ReadWriteLock
@@ -50,7 +50,7 @@ internal final class RUMTelemetry: Telemetry {
         configurationEventMapper: RUMTelemetryConfiguratoinMapper?,
         delayedDispatcher: RUMTelemetryDelayedDispatcher?,
         sampler: Sampler,
-        configurationExtraSampler: Sampler = Sampler(samplingRate: 0.2) // Extra sample of 20% for configuration events
+        configurationExtraSampler: Sampler = Sampler(samplingRate: 20.0) // Extra sample of 20% for configuration events
     ) {
         self.core = core
         self.dateProvider = dateProvider
