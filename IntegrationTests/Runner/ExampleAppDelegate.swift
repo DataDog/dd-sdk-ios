@@ -24,6 +24,8 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             return false
         }
 
+        let serverMockConfiguration = Environment.serverMockConfiguration()
+
         appConfiguration = UITestsAppConfiguration()
 
         // Initialize Datadog SDK
@@ -51,12 +53,24 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         logger.addTag(withKey: "build_configuration", value: "release")
         #endif
 
-        // Register Tracer
-        DatadogTracer.initialize(
-            configuration: .init(
-                sendNetworkInfo: true
+        // If `HTTPServerMock` endpoint is set for Tracing, enable the feature and send data to mock server
+        if let tracesEndpoint = serverMockConfiguration?.tracesEndpoint {
+            // Register Tracer
+            DatadogTracer.initialize(
+                configuration: .init(
+                    sendNetworkInfo: true,
+                    intake: .custom(tracesEndpoint)
+                ),
+                spanEventMapper: {
+                    var span = $0
+                    if span.tags[OTTags.httpUrl] != nil {
+                        span.tags[OTTags.httpUrl] = "redacted"
+                    }
+                    return span
+                }
             )
-        )
+        }
+        
         Global.sharedTracer = DatadogTracer.shared()
 
         // Register RUMMonitor

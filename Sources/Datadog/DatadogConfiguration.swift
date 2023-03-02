@@ -111,8 +111,6 @@ extension Datadog {
         private(set) var datadogEndpoint: DatadogSite
         /// If `customLogsEndpoint` is set, it will override logs endpoint value configured with `logsEndpoint` and `DatadogSite`.
         private(set) var customLogsEndpoint: URL?
-        /// If `customTracesEndpoint` is set, it will override traces endpoint value configured with `tracesEndpoint` and `DatadogSite`.
-        private(set) var customTracesEndpoint: URL?
         /// If `customRUMEndpoint` is set, it will override rum endpoint value configured with `rumEndpoint` and `DatadogSite`.
         private(set) var customRUMEndpoint: URL?
 
@@ -190,7 +188,6 @@ extension Datadog {
                     // so we know the clear user's intent to override deprecated values.
                     datadogEndpoint: .us1,
                     customLogsEndpoint: nil,
-                    customTracesEndpoint: nil,
                     customRUMEndpoint: nil,
                     serviceName: nil,
                     firstPartyHosts: nil,
@@ -234,14 +231,6 @@ extension Datadog {
             /// - Parameter endpoint: server endpoint (not set by default)
             public func set(customLogsEndpoint: URL) -> Builder {
                 configuration.customLogsEndpoint = customLogsEndpoint
-                return self
-            }
-
-            /// Sets the custom server endpoint where Spans are sent.
-            ///
-            /// - Parameter customTracesEndpoint: server endpoint (not set by default)
-            public func set(customTracesEndpoint: URL) -> Builder {
-                configuration.customTracesEndpoint = customTracesEndpoint
                 return self
             }
 

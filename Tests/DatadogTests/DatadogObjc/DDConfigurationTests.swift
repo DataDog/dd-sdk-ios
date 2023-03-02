@@ -115,10 +115,6 @@ class DDConfigurationTests: XCTestCase {
         objcBuilder.set(customLogsEndpoint: customLogsEndpoint)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.customLogsEndpoint, customLogsEndpoint)
 
-        let customTracesEndpoint = URL(string: "https://api.example.com/v1/traces")!
-        objcBuilder.set(customTracesEndpoint: customTracesEndpoint)
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.customTracesEndpoint, customTracesEndpoint)
-
         let customRUMEndpoint = URL(string: "https://api.example.com/v1/rum")!
         objcBuilder.set(customRUMEndpoint: customRUMEndpoint)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.customRUMEndpoint, customRUMEndpoint)

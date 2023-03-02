@@ -34,7 +34,6 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertNil(configuration.crashReportingPlugin)
             XCTAssertEqual(configuration.datadogEndpoint, .us1)
             XCTAssertNil(configuration.customLogsEndpoint)
-            XCTAssertNil(configuration.customTracesEndpoint)
             XCTAssertNil(configuration.customRUMEndpoint)
             XCTAssertNil(configuration.serviceName)
             XCTAssertNil(configuration.firstPartyHosts)
@@ -81,7 +80,6 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 .enableCrashReporting(using: mockCrashReportingPlugin)
                 .set(endpoint: .eu1)
                 .set(customLogsEndpoint: URL(string: "https://api.custom.logs/")!)
-                .set(customTracesEndpoint: URL(string: "https://api.custom.traces/")!)
                 .set(customRUMEndpoint: URL(string: "https://api.custom.rum/")!)
                 .set(rumSessionsSamplingRate: 42.5)
                 .onRUMSessionStart { _, _ in }
@@ -145,7 +143,6 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertTrue(configuration.crashReportingPlugin === mockCrashReportingPlugin)
             XCTAssertEqual(configuration.datadogEndpoint, .eu1)
             XCTAssertEqual(configuration.customLogsEndpoint, URL(string: "https://api.custom.logs/")!)
-            XCTAssertEqual(configuration.customTracesEndpoint, URL(string: "https://api.custom.traces/")!)
             XCTAssertEqual(configuration.customRUMEndpoint, URL(string: "https://api.custom.rum/")!)
             XCTAssertEqual(configuration.firstPartyHosts, .init(["example.com": [.datadog], "example2.com": [.b3]]))
             XCTAssertEqual(configuration.loggingSamplingRate, 66)

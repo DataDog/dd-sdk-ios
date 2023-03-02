@@ -222,11 +222,6 @@ public class DDConfigurationBuilder: NSObject {
     }
 
     @objc
-    public func set(customTracesEndpoint: URL) {
-        _ = sdkBuilder.set(customTracesEndpoint: customTracesEndpoint)
-    }
-
-    @objc
     public func set(customRUMEndpoint: URL) {
         _ = sdkBuilder.set(customRUMEndpoint: customRUMEndpoint)
     }

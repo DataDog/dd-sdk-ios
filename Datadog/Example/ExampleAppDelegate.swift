@@ -40,9 +40,6 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         if let customLogsURL = Environment.readCustomLogsURL() {
             configuration = configuration.set(customLogsEndpoint: customLogsURL)
         }
-        if let customTraceURL = Environment.readCustomTraceURL() {
-            configuration = configuration.set(customTracesEndpoint: customTraceURL)
-        }
         if let customRUMURL = Environment.readCustomRUMURL() {
             configuration = configuration.set(customRUMEndpoint: customRUMURL)
         }
@@ -81,9 +78,16 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         #endif
 
         // Register Tracer
+        var traceIntake: DatadogTracer.Configuration.Intake = .datadog
+
+        if let customTraceURL = Environment.readCustomTraceURL() {
+            traceIntake = .custom(customTraceURL)
+        }
+
         DatadogTracer.initialize(
             configuration: DatadogTracer.Configuration(
-                sendNetworkInfo: true
+                sendNetworkInfo: true,
+                intake: traceIntake
             )
         )
 

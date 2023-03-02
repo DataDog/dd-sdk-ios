@@ -642,7 +642,6 @@ class FeaturesConfigurationTests: XCTestCase {
         clientToken: String = "abc",
         datadogEndpoint: DatadogSite = .us1,
         customLogsEndpoint: URL? = nil,
-        customTracesEndpoint: URL? = nil,
         customRUMEndpoint: URL? = nil,
         proxyConfiguration: [AnyHashable: Any]? = nil
     ) throws -> FeaturesConfiguration {
@@ -654,7 +653,6 @@ class FeaturesConfigurationTests: XCTestCase {
                 rumEnabled: true,
                 datadogEndpoint: datadogEndpoint,
                 customLogsEndpoint: customLogsEndpoint,
-                customTracesEndpoint: customTracesEndpoint,
                 customRUMEndpoint: customRUMEndpoint,
                 proxyConfiguration: proxyConfiguration
             ),
