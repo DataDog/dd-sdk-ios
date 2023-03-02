@@ -40,6 +40,17 @@ class CacheTests: XCTestCase {
         XCTAssertNil(cache.value(forKey: "one"))
     }
 
+    func test_bytesLimit() {
+        let cache = Cache<String, Int>(dateProvider: {
+            return Date(timeIntervalSinceReferenceDate: 0)
+        }, totalBytesLimit: 1)
+
+        cache.insert(1, forKey: "one", size: 1)
+        cache.insert(1, forKey: "two", size: 1)
+        XCTAssertNil(cache.value(forKey: "one"))
+        XCTAssertNotNil(cache.value(forKey: "two"))
+    }
+
     func test_countLimit() {
         let cache = Cache<String, Int>(maximumEntryCount: 1)
 

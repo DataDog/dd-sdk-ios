@@ -31,38 +31,30 @@ internal class ImageDataProvider {
         of image: UIImage?,
         tintColor: UIColor? = nil
     ) -> String? {
-        guard var image = image else {
-            return ""
-        }
-        if #available(iOS 13.0, *), let tintColor = tintColor {
-            image = image.withTintColor(tintColor)
-        }
-        guard let imageData = image.pngData() else {
-            return ""
-        }
-
-        var identifier: String
-        if let md5 = image.md5 {
-            identifier = md5
-        } else {
-            let md5 = imageData.md5
-            image.md5 = md5
-            identifier = md5
-        }
-
-        let dataLoadingStaus = cache[identifier]
-        switch dataLoadingStaus {
-        case .none:
-            if let imageData = image.pngData(), image.size <= maxDimensions && imageData.count <= maxBytesSize {
-                cache[identifier] = .loaded(imageData.base64EncodedString())
-            } else {
-                cache[identifier] = .ignored
+        autoreleasepool {
+            guard var image = image else {
+                return ""
             }
-            return contentBase64String(of: image)
-        case .loaded(let base64String):
-            return base64String
-        case .ignored:
-            return ""
+            if #available(iOS 13.0, *), let tintColor = tintColor {
+                image = image.withTintColor(tintColor)
+            }
+
+            let identifier = "\(image.hash)\(String(describing: tintColor?.hash))"
+            let dataLoadingStaus = cache[identifier]
+            switch dataLoadingStaus {
+            case .none:
+                if let imageData = image.pngData(), image.size <= maxDimensions && imageData.count <= maxBytesSize {
+                    let base64EncodedImage = imageData.base64EncodedString()
+                    cache[identifier, base64EncodedImage.count] = .loaded(base64EncodedImage)
+                } else {
+                    cache[identifier] = .ignored
+                }
+                return contentBase64String(of: image)
+            case .loaded(let base64String):
+                return base64String
+            case .ignored:
+                return ""
+            }
         }
     }
 }
@@ -70,30 +62,5 @@ internal class ImageDataProvider {
 fileprivate extension CGSize {
     static func <= (lhs: CGSize, rhs: CGSize) -> Bool {
         return lhs.width <= rhs.width && lhs.height <= rhs.height
-    }
-}
-
-fileprivate var imageMd5Key: UInt8 = 1
-
-fileprivate extension UIImage {
-    var md5: String? {
-        set { objc_setAssociatedObject(self, &imageMd5Key, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN) }
-        get { objc_getAssociatedObject(self, &imageMd5Key) as? String }
-    }
-}
-
-import var CommonCrypto.CC_MD5_DIGEST_LENGTH
-import func CommonCrypto.CC_MD5
-import typealias CommonCrypto.CC_LONG
-
-fileprivate extension Data {
-    var md5: String {
-        var result = [UInt8](repeating: 0, count: Int(CC_MD5_DIGEST_LENGTH))
-        _ = withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
-            result.withUnsafeMutableBytes { resultBytes in
-                CC_MD5(bytes.baseAddress, CC_LONG(count), resultBytes.baseAddress)
-            }
-        }
-        return Data(result).map { String(format: "%02hhx", $0) }.joined()
     }
 }
