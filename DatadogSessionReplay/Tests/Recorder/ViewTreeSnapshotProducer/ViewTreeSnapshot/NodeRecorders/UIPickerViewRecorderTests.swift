@@ -19,21 +19,6 @@ class UIPickerViewRecorderTests: XCTestCase {
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: picker, with: viewAttributes, in: .mockAny()))
         XCTAssertTrue(semantics is InvisibleElement)
-        XCTAssertNil(semantics.wireframesBuilder)
-    }
-
-    func testWhenPickerIsVisibleButHasNoAppearance() throws {
-        // When
-        viewAttributes = .mock(fixture: .visible(.noAppearance))
-
-        // Then
-        let semantics = try XCTUnwrap(recorder.semantics(of: picker, with: viewAttributes, in: .mockAny()) as? InvisibleElement)
-        XCTAssertNil(semantics.wireframesBuilder)
-        guard case .replace(let nodes) = semantics.subtreeStrategy else {
-            XCTFail("Expected `.replace()` subtreeStrategy, got \(semantics.subtreeStrategy)")
-            return
-        }
-        XCTAssertFalse(nodes.isEmpty)
     }
 
     func testWhenPickerIsVisibleAndHasSomeAppearance() throws {
@@ -41,13 +26,21 @@ class UIPickerViewRecorderTests: XCTestCase {
         viewAttributes = .mock(fixture: .visible(.someAppearance))
 
         // Then
-        let semantics = try XCTUnwrap(recorder.semantics(of: picker, with: viewAttributes, in: .mockAny()) as? SpecificElement)
-        XCTAssertNotNil(semantics.wireframesBuilder)
-        guard case .replace(let nodes) = semantics.subtreeStrategy else {
-            XCTFail("Expected `.replace()` subtreeStrategy, got \(semantics.subtreeStrategy)")
-            return
-        }
-        XCTAssertFalse(nodes.isEmpty)
+        let semantics = try XCTUnwrap(recorder.semantics(of: picker, with: viewAttributes, in: .mockAny()))
+        XCTAssertTrue(semantics is SpecificElement)
+        XCTAssertEqual(semantics.subtreeStrategy, .ignore)
+        XCTAssertTrue(semantics.nodes.first?.wireframesBuilder is UIPickerViewWireframesBuilder)
+    }
+
+    func testWhenPickerIsVisibleAndHasNoAppearance() throws {
+        // When
+        viewAttributes = .mock(fixture: .visible(.noAppearance))
+
+        // Then
+        let semantics = try XCTUnwrap(recorder.semantics(of: picker, with: viewAttributes, in: .mockAny()))
+        XCTAssertTrue(semantics is SpecificElement)
+        XCTAssertEqual(semantics.subtreeStrategy, .ignore)
+        XCTAssertFalse(semantics.nodes.first?.wireframesBuilder is UIPickerViewWireframesBuilder)
     }
 
     func testWhenViewIsNotOfExpectedType() {

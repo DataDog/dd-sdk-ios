@@ -6,10 +6,16 @@
 
 import UIKit
 
-internal struct UIViewRecorder: NodeRecorder {
+internal class UIViewRecorder: NodeRecorder {
+    /// An option for ignoring certain views by this recorder.
+    var dropPredicate: (UIView, ViewAttributes) -> Bool = { _, _ in false }
+
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard attributes.isVisible else {
             return InvisibleElement.constant
+        }
+        if dropPredicate(view, attributes) {
+            return nil
         }
 
         guard attributes.hasAnyAppearance else {
@@ -23,8 +29,8 @@ internal struct UIViewRecorder: NodeRecorder {
             attributes: attributes,
             wireframeRect: attributes.frame
         )
-
-        return AmbiguousElement(wireframesBuilder: builder)
+        let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
+        return AmbiguousElement(nodes: [node])
     }
 }
 

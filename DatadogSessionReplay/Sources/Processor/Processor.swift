@@ -66,7 +66,7 @@ internal class Processor: Processing {
     private func processSync(viewTreeSnapshot: ViewTreeSnapshot, touchSnapshot: TouchSnapshot?) {
         let flattenedNodes = nodesFlattener.flattenNodes(in: viewTreeSnapshot)
         let wireframes: [SRWireframe] = flattenedNodes
-            .compactMap { node in node.semantics.wireframesBuilder }
+            .map { node in node.wireframesBuilder }
             .flatMap { nodeBuilder in nodeBuilder.buildWireframes(with: wireframesBuilder) }
 
         #if DEBUG

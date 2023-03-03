@@ -6,9 +6,17 @@
 
 import UIKit
 
-internal struct UILabelRecorder: NodeRecorder {
+internal class UILabelRecorder: NodeRecorder {
+    /// An option for ignoring certain views by this recorder.
+    var dropPredicate: (UILabel, ViewAttributes) -> Bool = { _, _ in false }
+    /// An option for customizing wireframes builder created by this recorder.
+    var builderOverride: (UILabelWireframesBuilder) -> UILabelWireframesBuilder = { $0 }
+
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let label = view as? UILabel else {
+            return nil
+        }
+        if dropPredicate(label, attributes) {
             return nil
         }
 
@@ -37,7 +45,8 @@ internal struct UILabelRecorder: NodeRecorder {
             textObfuscator: context.recorder.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator,
             wireframeRect: textFrame
         )
-        return SpecificElement(wireframesBuilder: builder, subtreeStrategy: .ignore)
+        let node = Node(viewAttributes: attributes, wireframesBuilder: builderOverride(builder))
+        return SpecificElement(subtreeStrategy: .ignore, nodes: [node])
     }
 }
 

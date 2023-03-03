@@ -33,7 +33,8 @@ internal struct UISwitchRecorder: NodeRecorder {
             onTintColor: `switch`.onTintColor?.cgColor,
             offTintColor: `switch`.tintColor?.cgColor
         )
-        return SpecificElement(wireframesBuilder: builder, subtreeStrategy: .ignore)
+        let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
+        return SpecificElement(subtreeStrategy: .ignore, nodes: [node])
     }
 }
 

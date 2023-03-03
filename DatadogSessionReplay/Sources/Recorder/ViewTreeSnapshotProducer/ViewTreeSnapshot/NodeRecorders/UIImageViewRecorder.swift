@@ -41,7 +41,8 @@ internal struct UIImageViewRecorder: NodeRecorder {
             imageTintColor: imageView.tintColor,
             imageDataProvider: imageDataProvider
         )
-        return SpecificElement(wireframesBuilder: builder, subtreeStrategy: .record)
+        let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
+        return SpecificElement(subtreeStrategy: .record, nodes: [node])
     }
 }
 

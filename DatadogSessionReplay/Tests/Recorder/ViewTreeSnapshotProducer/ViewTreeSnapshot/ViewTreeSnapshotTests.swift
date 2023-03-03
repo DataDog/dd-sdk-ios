@@ -140,8 +140,8 @@ class NodeSemanticsTests: XCTestCase {
     func testImportance() {
         let unknownElement = UnknownElement.constant
         let invisibleElement = InvisibleElement.constant
-        let ambiguousElement = AmbiguousElement(wireframesBuilder: nil)
-        let specificElement = SpecificElement(wireframesBuilder: nil, subtreeStrategy: .mockAny())
+        let ambiguousElement = AmbiguousElement(nodes: [])
+        let specificElement = SpecificElement(subtreeStrategy: .mockAny(), nodes: [])
 
         XCTAssertGreaterThan(
             specificElement.importance,
@@ -174,13 +174,5 @@ class NodeSemanticsTests: XCTestCase {
             .ignore,
             "Subtree should not be recorded for 'invisible' elements as nothing in it will be visible anyway"
         )
-        DDAssertReflectionEqual(
-            AmbiguousElement(wireframesBuilder: nil).subtreeStrategy,
-            .record,
-            "Subtree should be recorded for 'ambiguous' elements as it may contain other elements"
-        )
-
-        let random: NodeSubtreeStrategy = .mockRandom()
-        DDAssertReflectionEqual(SpecificElement(wireframesBuilder: nil, subtreeStrategy: random).subtreeStrategy, random)
     }
 }

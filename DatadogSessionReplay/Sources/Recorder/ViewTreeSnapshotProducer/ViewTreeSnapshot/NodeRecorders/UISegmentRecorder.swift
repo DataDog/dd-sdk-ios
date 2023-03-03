@@ -34,7 +34,8 @@ internal struct UISegmentRecorder: NodeRecorder {
                 }
             }()
         )
-        return SpecificElement(wireframesBuilder: builder, subtreeStrategy: .ignore)
+        let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
+        return SpecificElement(subtreeStrategy: .ignore, nodes: [node])
     }
 }
 
