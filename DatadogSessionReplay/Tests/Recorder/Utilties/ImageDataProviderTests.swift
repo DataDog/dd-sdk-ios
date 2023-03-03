@@ -60,6 +60,24 @@ class ImageDataProviderTests: XCTestCase {
         let imageData = try XCTUnwrap(sut.contentBase64String(of: image))
         XCTAssertEqual(imageData.count, 0)
     }
+
+    func test_imageIdentifierConsistency() {
+        var ids = Set<String>()
+        for _ in 0..<100 {
+            if let imageIdentifier = UIImage(named: "dd_logo_v_rgb", in: Bundle.module, compatibleWith: nil)?.srIdentifier {
+                ids.insert(imageIdentifier)
+            }
+        }
+        XCTAssertEqual(ids.count, 1)
+    }
+
+    func test_colorIdentifierConsistency() {
+        var ids = Set<String>()
+        for _ in 0..<100 {
+            ids.insert( UIColor.red.srIdentifier)
+        }
+        XCTAssertEqual(ids.count, 1)
+    }
 }
 
 #if XCODE_BUILD

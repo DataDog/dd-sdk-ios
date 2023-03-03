@@ -39,7 +39,10 @@ internal class ImageDataProvider {
                 image = image.withTintColor(tintColor)
             }
 
-            let identifier = "\(image.hash)\(String(describing: tintColor?.hash))"
+            var identifier = image.srIdentifier
+            if let tintColorIdentifier = tintColor?.srIdentifier {
+                identifier += tintColorIdentifier
+            }
             let dataLoadingStaus = cache[identifier]
             switch dataLoadingStaus {
             case .none:
@@ -62,5 +65,17 @@ internal class ImageDataProvider {
 fileprivate extension CGSize {
     static func <= (lhs: CGSize, rhs: CGSize) -> Bool {
         return lhs.width <= rhs.width && lhs.height <= rhs.height
+    }
+}
+
+extension UIImage {
+    var srIdentifier: String {
+        return "\(hash)"
+    }
+}
+
+extension UIColor {
+    var srIdentifier: String {
+        return "\(hash)"
     }
 }
