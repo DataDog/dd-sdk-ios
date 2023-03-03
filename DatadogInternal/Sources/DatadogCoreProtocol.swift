@@ -16,11 +16,11 @@ public var defaultDatadogCore: DatadogCoreProtocol = NOPDatadogCore()
 public protocol DatadogCoreProtocol: AnyObject {
     /// Registers a Feature instance.
     ///
-    /// Feature collects and transfers data to a Datadog Product (e.g. Logs, RUM, ...). Upon registration, the Feature can
-    /// retrieve a `FeatureScope` interface for writing events to the core. The core will store and upload events efficiently
-    /// according to the performance presets defined on initialization.
-    ///
-    /// A Feature can also communicate to other Features by sending messages on the message bus managed by core.
+    /// Feature can interact with the core and other Feature through the message bus. Some specific Features
+    /// complying to `DatadogRemoteFeature` can collects and transfers data to a Datadog Product
+    /// (e.g. Logs, RUM, ...). Upon registration, a Remote Feature can retrieve a `FeatureScope` interface
+    /// for writing events to the core. The core will store and upload events efficiently according to the performance
+    /// presets defined on initialization.
     ///
     /// - Parameter feature: The Feature instance - it will be retained and held by core.
     func register<T>(feature: T) throws where T: DatadogFeature

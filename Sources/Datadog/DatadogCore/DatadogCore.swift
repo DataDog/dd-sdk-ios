@@ -277,7 +277,7 @@ extension DatadogCore: DatadogCoreProtocol {
     /* public */ func register<T>(feature: T) throws where T: DatadogFeature {
         let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: T.name)
 
-        if let product = feature as? DatadogProduct {
+        if let product = feature as? DatadogRemoteFeature {
             let storage = FeatureStorage(
                 featureName: T.name,
                 queue: readWriteQueue,

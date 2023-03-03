@@ -28,10 +28,7 @@ public struct DatadogFeatureConfiguration {
     }
 }
 
-/// A Datadog Feature that can interact with the core through the message-bus
-///
-/// A Feature **cannot** open a scope to write events, only a `DatadogProduct`
-/// can collect and upload data.
+/// A Datadog Feature that can interact with the core through the message-bus.
 public protocol DatadogFeature {
     /// The feature name.
     static var name: String { get }
@@ -44,9 +41,14 @@ public protocol DatadogFeature {
 }
 
 
-/// A Datadog Product that can store and upload data to its relative product
-/// on the Datadog platform.
-public protocol DatadogProduct: DatadogFeature {
-    /// The URL request builder for uploading data in this Feature.
+/// A Datadog Feature with remote data store.
+public protocol DatadogRemoteFeature: DatadogFeature {
+    /// The URL request builder for uploading data.
+    ///
+    /// The `FeatureRequestBuilder` defines an interface for building a single `URLRequest`
+    /// for a list of data events and the current core context.
+    ///
+    /// A Feature should use this interface for creating requests that needs be sent to its Datadog Intake.
+    /// The request will be transported by `DatadogCore`.
     var requestBuilder: FeatureRequestBuilder { get }
 }

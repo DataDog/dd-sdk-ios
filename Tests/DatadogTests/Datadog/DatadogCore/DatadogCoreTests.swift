@@ -9,7 +9,7 @@ import TestUtilities
 import DatadogInternal
 @testable import Datadog
 
-private struct FeatureMock: DatadogProduct {
+private struct FeatureMock: DatadogRemoteFeature {
     static let name: String = "mock"
 
     struct Event: Encodable {
