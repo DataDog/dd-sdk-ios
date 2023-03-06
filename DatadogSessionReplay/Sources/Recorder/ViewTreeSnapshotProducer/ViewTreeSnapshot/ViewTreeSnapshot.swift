@@ -37,9 +37,8 @@ internal struct ViewTreeSnapshot {
 internal struct Node {
     /// Attributes of the `UIView` that this node was created for.
     let viewAttributes: ViewAttributes
-
-    /// The semantics of this node.
-    let semantics: NodeSemantics
+    /// A type defining how to build SR wireframes for the UI element described by this node.
+    let wireframesBuilder: NodeWireframesBuilder
 }
 
 /// Attributes of the `UIView` that the node was created for.
@@ -111,11 +110,15 @@ extension ViewAttributes {
     }
 }
 
-/// A type denoting semantics of given UI element in Session Replay.
+/// A type defining semantics of portion of view-tree hierarchy (one or more `Nodes`).
 ///
-/// The `NodeSemantics` is attached to each node produced by `Recorder`. During tree traversal,
-/// views are queried in available node recorders. Each `NodeRecorder` inspects the view object and
-/// tries to infer its identity (a `NodeSemantics`).
+/// It is leveraged during view-tree traversal in `Recorder`:
+/// - for each view, a sequence of `NodeRecorders` is queried to find best semantics of the view and its subtree;
+/// - if multiple `NodeRecorders` find few semantics, the one with higher `.importance` is used;
+/// - each `NodeRecorder` can construct `semantic.nodes` according to its own routines, in particular:
+///     - it can create virtual nodes that define custom wireframes;
+///     - it can use other node recorders to tarverse the subtree of certain view and find `semantic.nodes` with custom rules;
+///     - it can return `semantic.nodes` and ask parent recorder to traverse the rest of subtree following global rules (`subtreeStrategy: .record`).
 ///
 /// There are two `NodeSemantics` that describe the identity of UI element:
 /// - `AmbiguousElement` - element is of `UIView` class and we only know its base attributes (the real identity could be ambiguous);
@@ -127,9 +130,6 @@ extension ViewAttributes {
 /// be safely ignored in `Recorder` or `Processor` (e.g. a `UILabel` with no text, no border and fully transparent color).
 /// - `UnknownElement` - the element is of unknown kind, which could indicate an error during view tree traversal (e.g. working on
 /// assumption that is not met).
-///
-/// Both `AmbiguousElement` and `SpecificElement` provide an implementation of `NodeWireframesBuilder` which describes
-/// how to construct SR wireframes for UI elements they refer to. No builder is provided for `InvisibleElement` and `UnknownElement`.
 internal protocol NodeSemantics {
     /// The severity of this semantic.
     ///
@@ -139,9 +139,8 @@ internal protocol NodeSemantics {
 
     /// Defines the strategy which `Recorder` should apply to subtree of this node.
     var subtreeStrategy: NodeSubtreeStrategy { get }
-
-    /// A type defining how to build SR wireframes for the UI element this semantic was recorded for.
-    var wireframesBuilder: NodeWireframesBuilder? { set get }
+    /// Nodes that share this semantics.
+    var nodes: [Node] { get }
 }
 
 extension NodeSemantics {
@@ -159,11 +158,6 @@ internal enum NodeSubtreeStrategy {
     /// This strategy is particularly useful for semantics that do not make assumption on node's content (e.g. this strategy can be
     /// practical choice for `UITabBar` node to let the recorder automatically capture any labels, images or shapes that are displayed in it).
     case record
-    /// Do not traverse subtree of this node and instead replace it (the subtree) with provided nodes.
-    ///
-    /// This strategy is useful for semantics that only partially describe certain elements and perform curated traversal of their subtree (e.g. it can be
-    /// used for `UIPickerView` where we only traverse subtree to look for specific elements, like the text of the selected row).
-    case replace(subtreeNodes: [Node])
     /// Do not enter the subtree of this node.
     ///
     /// This strategy should be used for semantics that fully describe certain elements (e.g. it doesn't make sense to traverse the subtree of `UISwitch`).
@@ -174,8 +168,8 @@ internal enum NodeSubtreeStrategy {
 /// in view-tree traversal performed in `Recorder` (e.g. working on assumption that is not met).
 internal struct UnknownElement: NodeSemantics {
     static let importance: Int = .min
-    var wireframesBuilder: NodeWireframesBuilder? = nil
     let subtreeStrategy: NodeSubtreeStrategy = .record
+    let nodes: [Node] = []
 
     /// Use `UnknownElement.constant` instead.
     private init () {}
@@ -189,8 +183,8 @@ internal struct UnknownElement: NodeSemantics {
 /// Nodes with this semantics can be safely ignored in `Recorder` or in `Processor`.
 internal struct InvisibleElement: NodeSemantics {
     static let importance: Int = 0
-    var wireframesBuilder: NodeWireframesBuilder? = nil
     let subtreeStrategy: NodeSubtreeStrategy
+    let nodes: [Node] = []
 
     /// Use `InvisibleElement.constant` instead.
     private init () {
@@ -211,8 +205,8 @@ internal struct InvisibleElement: NodeSemantics {
 /// The view-tree traversal algorithm will continue visiting the subtree of given `UIView` if it has `AmbiguousElement` semantics.
 internal struct AmbiguousElement: NodeSemantics {
     static let importance: Int = 0
-    var wireframesBuilder: NodeWireframesBuilder?
     let subtreeStrategy: NodeSubtreeStrategy = .record
+    let nodes: [Node]
 }
 
 /// A semantics of an UI element that is one of `UIView` subclasses. This semantics mean that we know its full identity along with set of
@@ -220,6 +214,6 @@ internal struct AmbiguousElement: NodeSemantics {
 /// "on" / "off" state of `UISwitch` control).
 internal struct SpecificElement: NodeSemantics {
     static let importance: Int = .max
-    var wireframesBuilder: NodeWireframesBuilder?
     let subtreeStrategy: NodeSubtreeStrategy
+    let nodes: [Node]
 }

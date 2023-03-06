@@ -19,23 +19,20 @@ internal struct NodesFlattener {
         var flattened: [Node] = []
 
         for nextNode in snapshot.nodes {
-            // Skip invisible nodes:
-            if !(nextNode.semantics is InvisibleElement) {
-                // When accepting nodes, remove ones that are covered by another opaque node:
-                flattened = flattened.compactMap { previousNode in
-                    let previousFrame = previousNode.semantics.wireframesBuilder?.wireframeRect ?? .zero
-                    let nextFrame = nextNode.semantics.wireframesBuilder?.wireframeRect ?? .zero
+            // When accepting nodes, remove ones that are covered by another opaque node:
+            flattened = flattened.compactMap { previousNode in
+                let previousFrame = previousNode.wireframesBuilder.wireframeRect
+                let nextFrame = nextNode.wireframesBuilder.wireframeRect
 
-                    // Drop previous node when:
-                    let dropPreviousNode = nextFrame.contains(previousFrame) // its rect is fully covered by the next node
-                        && nextNode.viewAttributes.hasAnyAppearance // and the next node brings something visual
-                        && !nextNode.viewAttributes.isTranslucent // and the next node is opaque
+                // Drop previous node when:
+                let dropPreviousNode = nextFrame.contains(previousFrame) // its rect is fully covered by the next node
+                    && nextNode.viewAttributes.hasAnyAppearance // and the next node brings something visual
+                    && !nextNode.viewAttributes.isTranslucent // and the next node is opaque
 
-                    return dropPreviousNode ? nil : previousNode
-                }
-
-                flattened.append(nextNode)
+                return dropPreviousNode ? nil : previousNode
             }
+
+            flattened.append(nextNode)
         }
 
         return flattened

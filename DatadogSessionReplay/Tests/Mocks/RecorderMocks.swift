@@ -201,11 +201,7 @@ extension NodeSubtreeStrategy: AnyMockable, RandomMockable {
     }
 
     public static func mockRandom() -> NodeSubtreeStrategy {
-        let all: [NodeSubtreeStrategy] = [
-            .record,
-            .replace(subtreeNodes: [.mockAny()]),
-            .ignore,
-        ]
+        let all: [NodeSubtreeStrategy] = [.record, .ignore]
         return all.randomElement()!
     }
 }
@@ -218,8 +214,8 @@ func mockRandomNodeSemantics() -> NodeSemantics {
     let all: [NodeSemantics] = [
         UnknownElement.constant,
         InvisibleElement.constant,
-        AmbiguousElement(wireframesBuilder: NOPWireframesBuilderMock()),
-        SpecificElement(wireframesBuilder: NOPWireframesBuilderMock(), subtreeStrategy: .mockRandom()),
+        AmbiguousElement(nodes: .mockRandom(count: .mockRandom(min: 1, max: 5))),
+        SpecificElement(subtreeStrategy: .mockRandom(), nodes: .mockRandom(count: .mockRandom(min: 1, max: 5))),
     ]
     return all.randomElement()!
 }
@@ -239,33 +235,34 @@ extension Node: AnyMockable, RandomMockable {
 
     static func mockWith(
         viewAttributes: ViewAttributes = .mockAny(),
-        semantics: NodeSemantics = InvisibleElement.constant
+        wireframesBuilder: NodeWireframesBuilder = NOPWireframesBuilderMock()
     ) -> Node {
         return .init(
             viewAttributes: viewAttributes,
-            semantics: semantics
+            wireframesBuilder: wireframesBuilder
         )
     }
 
     public static func mockRandom() -> Node {
         return .init(
             viewAttributes: .mockRandom(),
-            semantics: mockRandomNodeSemantics()
+            wireframesBuilder: NOPWireframesBuilderMock()
         )
     }
 }
 
 extension SpecificElement {
     static func mockAny() -> SpecificElement {
-        SpecificElement(wireframesBuilder: NOPWireframesBuilderMock(), subtreeStrategy: .mockRandom())
+        SpecificElement(subtreeStrategy: .mockRandom(), nodes: [])
     }
-    static func mock(
-        wireframeRect: CGRect,
-        subtreeStrategy: NodeSubtreeStrategy = .mockRandom()
+
+    static func mockWith(
+        subtreeStrategy: NodeSubtreeStrategy = .mockAny(),
+        nodes: [Node] = .mockAny()
     ) -> SpecificElement {
         SpecificElement(
-            wireframesBuilder: ShapeWireframesBuilderMock(wireframeRect: wireframeRect),
-            subtreeStrategy: subtreeStrategy
+            subtreeStrategy: subtreeStrategy,
+            nodes: nodes
         )
     }
 }

@@ -74,8 +74,11 @@ private extension SRImageWireframe {
             y: CGFloat(y),
             width: CGFloat(width),
             height: CGFloat(height),
-            style: frameStyle(border: border, style: shapeStyle),
-            content: .init(text: "IMG", textColor: .black, font: .systemFont(ofSize: 8))
+            style: .init(lineWidth: 1, lineColor: .black, fillColor: .red),
+            annotation: .init(
+                text: "IMG \(width) x \(height)",
+                style: .init(size: .small, position: .top, alignment: .trailing)
+            )
         )
     }
 }

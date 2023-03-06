@@ -5,7 +5,6 @@
  */
 
 import XCTest
-@testable import TestUtilities
 @testable import DatadogSessionReplay
 
 class UISliderRecorderTests: XCTestCase {
@@ -20,7 +19,6 @@ class UISliderRecorderTests: XCTestCase {
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: slider, with: viewAttributes, in: .mockAny()))
         XCTAssertTrue(semantics is InvisibleElement)
-        XCTAssertNil(semantics.wireframesBuilder)
     }
 
     func testWhenSliderIsVisible() throws {
@@ -35,9 +33,9 @@ class UISliderRecorderTests: XCTestCase {
 
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: slider, with: viewAttributes, in: .mockAny()) as? SpecificElement)
-        DDAssertReflectionEqual(semantics.subtreeStrategy, .ignore, "Slider's subtree should not be recorded")
+        XCTAssertEqual(semantics.subtreeStrategy, .ignore, "Slider's subtree should not be recorded")
 
-        let builder = try XCTUnwrap(semantics.wireframesBuilder as? UISliderWireframesBuilder)
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UISliderWireframesBuilder)
         XCTAssertEqual(builder.attributes, viewAttributes)
         XCTAssertEqual(builder.isEnabled, slider.isEnabled)
         XCTAssertEqual(builder.thumbTintColor, slider.thumbTintColor?.cgColor)

@@ -49,3 +49,15 @@ class TestObfuscatorTests: XCTestCase {
         XCTAssertEqual(obfuscator.mask(text: "foo 🇮🇹 bar"), "xxx xx xxx")
     }
 }
+
+class InputTextObfuscatorTests: XCTestCase {
+    let obfuscator = InputTextObfuscator()
+
+    func testWhenObfuscatingItAlwaysReplacesTextItWithConstantMask() {
+        let expectedMask = "xxx"
+
+        XCTAssertEqual(obfuscator.mask(text: .mockRandom(among: .alphanumericsAndWhitespace)), expectedMask)
+        XCTAssertEqual(obfuscator.mask(text: .mockRandom(among: .allUnicodes)), expectedMask)
+        XCTAssertEqual(obfuscator.mask(text: .mockRandom(among: .alphanumerics)), expectedMask)
+    }
+}

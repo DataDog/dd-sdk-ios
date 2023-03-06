@@ -5,7 +5,6 @@
  */
 
 import XCTest
-@testable import TestUtilities
 @testable import DatadogSessionReplay
 
 class UISwitchRecorderTests: XCTestCase {
@@ -22,7 +21,6 @@ class UISwitchRecorderTests: XCTestCase {
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: `switch`, with: viewAttributes, in: .mockAny()))
         XCTAssertTrue(semantics is InvisibleElement)
-        XCTAssertNil(semantics.wireframesBuilder)
     }
 
     func testWhenSwitchIsVisible() throws {
@@ -36,10 +34,11 @@ class UISwitchRecorderTests: XCTestCase {
         viewAttributes = .mock(fixture: .visible())
 
         // Then
-        let semantics = try XCTUnwrap(recorder.semantics(of: `switch`, with: viewAttributes, in: .mockAny()) as? SpecificElement)
-        DDAssertReflectionEqual(semantics.subtreeStrategy, .ignore, "Switch's subtree should not be recorded")
+        let semantics = try XCTUnwrap(recorder.semantics(of: `switch`, with: viewAttributes, in: .mockAny()))
+        XCTAssertTrue(semantics is SpecificElement)
+        XCTAssertEqual(semantics.subtreeStrategy, .ignore, "Switch's subtree should not be recorded")
 
-        let builder = try XCTUnwrap(semantics.wireframesBuilder as? UISwitchWireframesBuilder)
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UISwitchWireframesBuilder)
         XCTAssertEqual(builder.attributes, viewAttributes)
         XCTAssertEqual(builder.isOn, `switch`.isOn)
         XCTAssertEqual(builder.thumbTintColor, `switch`.thumbTintColor?.cgColor)
