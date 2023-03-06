@@ -61,21 +61,13 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
         }
     }
 
-    func register(feature: DatadogFeature) throws {
-        featureScopeInterceptors[feature.name] = FeatureScopeInterceptor()
+    func register<T>(feature: T) throws where T: DatadogFeature {
+        featureScopeInterceptors[T.name] = FeatureScopeInterceptor()
         try core.register(feature: feature)
     }
 
-    func feature<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature {
-        return core.feature(named: name, type: type)
-    }
-
-    func register(integration: DatadogFeatureIntegration) throws {
-        try core.register(integration: integration)
-    }
-
-    func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeatureIntegration {
-        return core.integration(named: name, type: type)
+    func get<T>(feature type: T.Type) -> T? where T: DatadogFeature {
+        return core.get(feature: type)
     }
 
     func scope(for feature: String) -> FeatureScope? {

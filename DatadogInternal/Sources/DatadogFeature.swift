@@ -28,27 +28,27 @@ public struct DatadogFeatureConfiguration {
     }
 }
 
+/// A Datadog Feature that can interact with the core through the message-bus.
 public protocol DatadogFeature {
     /// The feature name.
-    var name: String { get }
-
-    /// The URL request builder for uploading data in this Feature.
-    var requestBuilder: FeatureRequestBuilder { get }
-
-    /// The message bus receiver.
-    ///
-    /// The `FeatureMessageReceiver` defines an interface for Feature to receive any message
-    /// from a bus that is shared between all Features registered in the core.
-    var messageReceiver: FeatureMessageReceiver { get }
-}
-
-public protocol DatadogFeatureIntegration {
-    /// The feature name.
-    var name: String { get }
+    static var name: String { get }
 
     /// The message bus receiver.
     ///
     /// The `FeatureMessageReceiver` defines an interface for Feature to receive any message
     /// from a bus that is shared between Features registered in a core.
     var messageReceiver: FeatureMessageReceiver { get }
+}
+
+
+/// A Datadog Feature with remote data store.
+public protocol DatadogRemoteFeature: DatadogFeature {
+    /// The URL request builder for uploading data.
+    ///
+    /// The `FeatureRequestBuilder` defines an interface for building a single `URLRequest`
+    /// for a list of data events and the current core context.
+    ///
+    /// A Feature should use this interface for creating requests that needs be sent to its Datadog Intake.
+    /// The request will be transported by `DatadogCore`.
+    var requestBuilder: FeatureRequestBuilder { get }
 }

@@ -9,12 +9,13 @@ import TestUtilities
 import DatadogInternal
 @testable import Datadog
 
-private struct FeatureMock: DatadogFeature {
+private struct FeatureMock: DatadogRemoteFeature {
+    static let name: String = "mock"
+
     struct Event: Encodable {
         let event: String
     }
 
-    var name: String
     var requestBuilder: FeatureRequestBuilder = FeatureRequestBuilderMock()
     var messageReceiver: FeatureMessageReceiver = FeatureMessageReceiverMock()
 }
@@ -48,8 +49,8 @@ class DatadogCoreTests: XCTestCase {
         defer { core.flushAndTearDown() }
 
         let requestBuilderSpy = FeatureRequestBuilderSpy()
-        try core.register(feature: FeatureMock(name: "mock", requestBuilder: requestBuilderSpy))
-        let scope = try XCTUnwrap(core.scope(for: "mock"))
+        try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy))
+        let scope = try XCTUnwrap(core.scope(for: FeatureMock.name))
 
         // When
         core.set(trackingConsent: .notGranted)
@@ -97,8 +98,8 @@ class DatadogCoreTests: XCTestCase {
         defer { core.flushAndTearDown() }
 
         let requestBuilderSpy = FeatureRequestBuilderSpy()
-        try core.register(feature: FeatureMock(name: "mock", requestBuilder: requestBuilderSpy))
-        let scope = try XCTUnwrap(core.scope(for: "mock"))
+        try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy))
+        let scope = try XCTUnwrap(core.scope(for: FeatureMock.name))
 
         // When
         core.set(trackingConsent: .notGranted)
@@ -154,7 +155,7 @@ class DatadogCoreTests: XCTestCase {
         defer { core.flushAndTearDown() }
 
         let requestBuilderSpy = FeatureRequestBuilderSpy()
-        try core.register(feature: FeatureMock(name: "mock", requestBuilder: requestBuilderSpy))
+        try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy))
         let scope = try XCTUnwrap(core.scope(for: "mock"))
 
         // When

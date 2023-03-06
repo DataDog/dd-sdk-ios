@@ -12,7 +12,7 @@ import DatadogInternal
 
 extension DatadogCoreProxy {
     func waitAndReturnLogMatchers(file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
-        return try waitAndReturnEventsData(ofFeature: logsFeatureName)
+        return try waitAndReturnEventsData(ofFeature: DatadogLogsFeature.name)
             .map { data in try LogMatcher.fromJSONObjectData(data) }
     }
 }

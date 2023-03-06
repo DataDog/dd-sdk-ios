@@ -74,19 +74,15 @@ public final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
         PassthroughCoreMock.referenceCount -= 1
     }
 
+
     /// no-op
-    public func register(feature: DatadogFeature) throws { }
+    public func register<T>(feature: T) throws where T: DatadogFeature { }
     /// no-op
-    public func feature<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature { nil }
-    /// no-op
-    public func register(integration: DatadogFeatureIntegration) throws { }
-    /// no-op
-    public func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeatureIntegration { nil }
+    public func get<T>(feature type: T.Type) -> T? where T: DatadogFeature { nil }
     /// no-op
     public func register<T>(feature instance: T?) { }
-    /// Returns `nil`
+    /// no-op
     public func feature<T>(_ type: T.Type) -> T? { nil }
-
     /// Always returns a feature-scope.
     public func scope<T>(for featureType: T.Type) -> FeatureScope? {
         self

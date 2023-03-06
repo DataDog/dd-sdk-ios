@@ -7,10 +7,8 @@
 import Foundation
 import DatadogInternal
 
-internal let logsFeatureName = "logging"
-
-internal struct DatadogLogsFeature: DatadogFeature {
-    let name = logsFeatureName
+internal struct DatadogLogsFeature: DatadogRemoteFeature {
+    static let name = "logging"
 
     let requestBuilder: FeatureRequestBuilder
 

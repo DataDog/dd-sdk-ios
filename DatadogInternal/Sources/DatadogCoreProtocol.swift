@@ -16,14 +16,14 @@ public var defaultDatadogCore: DatadogCoreProtocol = NOPDatadogCore()
 public protocol DatadogCoreProtocol: AnyObject {
     /// Registers a Feature instance.
     ///
-    /// Feature collects and transfers data to a Datadog Product (e.g. Logs, RUM, ...). Upon registration, the Feature can
-    /// retrieve a `FeatureScope` interface for writing events to the core. The core will store and upload events efficiently
-    /// according to the performance presets defined on initialization.
-    ///
-    /// A Feature can also communicate to other Features by sending messages on the message bus managed by core.
+    /// Feature can interact with the core and other Feature through the message bus. Some specific Features
+    /// complying to `DatadogRemoteFeature` can collect and transfer data to a Datadog Product
+    /// (e.g. Logs, RUM, ...). Upon registration, a Remote Feature can retrieve a `FeatureScope` interface
+    /// for writing events to the core. The core will store and upload events efficiently according to the performance
+    /// presets defined on initialization.
     ///
     /// - Parameter feature: The Feature instance - it will be retained and held by core.
-    func register(feature: DatadogFeature) throws
+    func register<T>(feature: T) throws where T: DatadogFeature
 
     /// Retrieves previously registered Feature by its name and type.
     ///
@@ -36,30 +36,7 @@ public protocol DatadogCoreProtocol: AnyObject {
     ///   - name: The Feature's name.
     ///   - type: The Feature instance type.
     /// - Returns: The Feature if any.
-    func feature<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature
-
-    /// Registers a Feature Integration instance.
-    ///
-    /// A Feature Integration collects and transfers data to a local Datadog Feature. An Integration will not store nor upload,
-    /// it will collect data for other Features to consume.
-    ///
-    /// An Integration can commicate to Features via dependency or a communication channel such as the message-bus.
-    ///
-    /// - Parameter integration: The Feature Integration instance.
-    func register(integration: DatadogFeatureIntegration) throws
-
-    /// Retrieves a Feature Integration by its name and type.
-    ///
-    /// A Feature Integration type can be specified as parameter or inferred from the return type:
-    ///
-    ///     let integration = core.integration(named: "foo", type: Foo.self)
-    ///     let integration: Foo? = core.integration(named: "foo")
-    ///
-    /// - Parameters:
-    ///   - name: The Feature Integration's name.
-    ///   - type: The Feature Integration instance type.
-    /// - Returns: The Feature Integration if any.
-    func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeatureIntegration
+    func get<T>(feature type: T.Type) -> T? where T: DatadogFeature
 
     /// Retrieves a Feature Scope by its name.
     ///
@@ -110,34 +87,6 @@ public protocol DatadogCoreProtocol: AnyObject {
 }
 
 extension DatadogCoreProtocol {
-    /// Retrieves a Feature by its name and type.
-    ///
-    /// A Feature type can be specified as parameter or inferred from the return type:
-    ///
-    ///     let feature = core.feature(named: "foo", type: Foo.self)
-    ///     let feature: Foo? = core.feature(named: "foo")
-    ///
-    /// - Parameters:
-    ///   - name: The Feature's name.
-    /// - Returns: The Feature if any.
-    public func feature<T>(named name: String) -> T? where T: DatadogFeature {
-        feature(named: name, type: T.self)
-    }
-
-    /// Retrieves a Feature Integration by its name and type.
-    ///
-    /// A Feature Integration type can be specified as parameter or inferred from the return type:
-    ///
-    ///     let integration = core.integration(named: "foo", type: Foo.self)
-    ///     let integration: Foo? = core.integration(named: "foo")
-    ///
-    /// - Parameters:
-    ///   - name: The Feature Integration's name.
-    /// - Returns: The Feature Integration if any.
-    public func integration<T>(named name: String) -> T? where T: DatadogFeatureIntegration {
-        integration(named: name, type: T.self)
-    }
-
     /// Sends a message on the bus shared by features registered in this core.
     ///
     /// - Parameters:
@@ -203,13 +152,9 @@ public extension FeatureScope {
 public class NOPDatadogCore: DatadogCoreProtocol {
     public init() { }
     /// no-op
-    public func register(feature: DatadogFeature) throws { }
+    public func register<T>(feature: T) throws where T: DatadogFeature { }
     /// no-op
-    public func feature<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature { nil }
-    /// no-op
-    public func register(integration: DatadogFeatureIntegration) throws { }
-    /// no-op
-    public func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeatureIntegration { nil }
+    public func get<T>(feature type: T.Type) -> T? where T: DatadogFeature { nil }
     /// no-op
     public func scope(for feature: String) -> FeatureScope? { nil }
     /// no-op

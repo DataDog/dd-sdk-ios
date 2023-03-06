@@ -885,7 +885,7 @@ class LoggerTests: XCTestCase {
 
         // given
         core.context = .mockAny()
-        XCTAssertNil(core.feature(named: logsFeatureName, type: DatadogLogsFeature.self))
+        XCTAssertNil(core.get(feature: DatadogLogsFeature.self))
 
         // when
         let logger = DatadogLogger.builder.build(in: core)

@@ -47,7 +47,7 @@ class DDDatadogTests: XCTestCase {
         urlSessionInstrumentation?.swizzler.unswizzle()
         Datadog.flushAndDeinitialize()
 
-        XCTAssertNil(defaultDatadogCore.feature(named: logsFeatureName, type: DatadogLogsFeature.self))
+        XCTAssertNil(defaultDatadogCore.get(feature: DatadogLogsFeature.self))
         XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
     }
 
