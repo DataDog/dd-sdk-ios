@@ -89,7 +89,7 @@ public struct CrossPlatformAttributes {
 
     /// The sampling rate for configuration telemetry events. Mostly used to enable or disable telemetry events when running test scenarios
     /// Expects `Double` value between `0.0` and `100.0`.
-    static let telemetryConfigurationSampleRate = "_dd.telemetry.configuration_sample_rate"
+    public static let telemetryConfigurationSampleRate = "_dd.telemetry.configuration_sample_rate"
 
     /// Event timestamp passed from CP SDK. Used for all RUM events issued by cross platform SDK.
     /// It should replace event time obtained from `DateProvider` to ensure that events are not skewed due to time difference in native and cross-platform SDKs.
