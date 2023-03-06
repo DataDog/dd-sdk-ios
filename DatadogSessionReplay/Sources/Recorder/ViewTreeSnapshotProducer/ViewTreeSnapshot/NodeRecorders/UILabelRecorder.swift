@@ -6,9 +6,17 @@
 
 import UIKit
 
-internal struct UILabelRecorder: NodeRecorder {
-    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeSnapshotBuilder.Context) -> NodeSemantics? {
+internal class UILabelRecorder: NodeRecorder {
+    /// An option for ignoring certain views by this recorder.
+    var dropPredicate: (UILabel, ViewAttributes) -> Bool = { _, _ in false }
+    /// An option for customizing wireframes builder created by this recorder.
+    var builderOverride: (UILabelWireframesBuilder) -> UILabelWireframesBuilder = { $0 }
+
+    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let label = view as? UILabel else {
+            return nil
+        }
+        if dropPredicate(label, attributes) {
             return nil
         }
 
@@ -31,12 +39,14 @@ internal struct UILabelRecorder: NodeRecorder {
             attributes: attributes,
             text: label.text ?? "",
             textColor: label.textColor?.cgColor,
+            textAlignment: nil,
             font: label.font,
             fontScalingEnabled: label.adjustsFontSizeToFitWidth,
             textObfuscator: context.recorder.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator,
             wireframeRect: textFrame
         )
-        return SpecificElement(wireframesBuilder: builder, recordSubtree: false)
+        let node = Node(viewAttributes: attributes, wireframesBuilder: builderOverride(builder))
+        return SpecificElement(subtreeStrategy: .ignore, nodes: [node])
     }
 }
 
@@ -48,6 +58,8 @@ internal struct UILabelWireframesBuilder: NodeWireframesBuilder {
     let text: String
     /// The color of the text.
     let textColor: CGColor?
+    /// The alignment of the text.
+    var textAlignment: SRTextPosition.Alignment?
     /// The font used by the label.
     let font: UIFont?
     /// Flag that determines if font should be scaled
@@ -64,6 +76,7 @@ internal struct UILabelWireframesBuilder: NodeWireframesBuilder {
                 frame: attributes.frame,
                 text: textObfuscator.mask(text: text),
                 textFrame: wireframeRect,
+                textAlignment: textAlignment,
                 textColor: textColor,
                 font: font,
                 fontScalingEnabled: fontScalingEnabled,

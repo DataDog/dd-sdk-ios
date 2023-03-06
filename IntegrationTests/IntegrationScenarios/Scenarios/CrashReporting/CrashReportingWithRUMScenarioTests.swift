@@ -54,7 +54,7 @@ class CrashReportingWithRUMScenarioTests: IntegrationTests, RUMCommonAsserts {
         let sessions = try RUMSessionMatcher.sessions(maxCount: 2, from: recordedRequests)
             .sorted { session1, session2 in
                 // Sort sessions by their "application_start" action date
-                return session1.viewVisits[0].actionEvents[0].date < session2.viewVisits[0].actionEvents[0].date
+                return session1.applicationLaunchView!.actionEvents[0].date < session2.applicationLaunchView!.actionEvents[0].date
             }
         let crashedSession = try XCTUnwrap(sessions.first)
 

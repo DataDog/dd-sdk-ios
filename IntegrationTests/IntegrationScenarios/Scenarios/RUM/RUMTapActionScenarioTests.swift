@@ -118,11 +118,13 @@ class RUMTapActionScenarioTests: IntegrationTests, RUMCommonAsserts {
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
         sendCIAppLog(session)
 
+        let applicationLaunchView = try XCTUnwrap(session.applicationLaunchView)
+        XCTAssertEqual(applicationLaunchView.actionEvents[0].action.type, .applicationStart)
+        XCTAssertGreaterThan(applicationLaunchView.actionEvents[0].action.loadingTime!, 0)
+
         XCTAssertEqual(session.viewVisits[0].name, "MenuView")
         XCTAssertEqual(session.viewVisits[0].path, "Runner.RUMTASScreen1ViewController")
-        XCTAssertEqual(session.viewVisits[0].actionEvents.count, 3)
-        XCTAssertEqual(session.viewVisits[0].actionEvents[0].action.type, .applicationStart)
-        XCTAssertGreaterThan(session.viewVisits[0].actionEvents[0].action.loadingTime!, 0)
+        XCTAssertEqual(session.viewVisits[0].actionEvents.count, 2)
         XCTAssertEqual(session.viewVisits[0].actionEvents[1].action.target?.name, "UIButton")
         XCTAssertEqual(session.viewVisits[0].actionEvents[2].action.target?.name, "UIButton(Show UITableView)")
 

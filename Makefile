@@ -1,7 +1,7 @@
 all: dependencies xcodeproj-httpservermock templates
 
 # The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
-DD_SDK_SWIFT_TESTING_VERSION = 2.2.0
+DD_SDK_SWIFT_TESTING_VERSION = 2.2.3
 
 define DD_SDK_TESTING_XCCONFIG_CI
 FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
@@ -99,6 +99,10 @@ test-carthage:
 # Tests if current branch ships a valid Cocoapods project.
 test-cocoapods:
 		@cd dependency-manager-tests/cocoapods && $(MAKE)
+
+# Tests if current branch ships valid a XCFrameworks project.
+test-xcframeworks:
+		@cd dependency-manager-tests/xcframeworks && $(MAKE)
 
 # Generate RUM data models from rum-events-format JSON Schemas
 rum-models-generate:

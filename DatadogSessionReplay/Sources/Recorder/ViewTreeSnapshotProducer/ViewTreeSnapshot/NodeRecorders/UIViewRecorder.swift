@@ -6,10 +6,22 @@
 
 import UIKit
 
-internal struct UIViewRecorder: NodeRecorder {
-    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeSnapshotBuilder.Context) -> NodeSemantics? {
+internal class UIViewRecorder: NodeRecorder {
+    /// An option for ignoring certain views by this recorder.
+    var dropPredicate: (UIView, ViewAttributes) -> Bool = { _, _ in false }
+
+    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard attributes.isVisible else {
             return InvisibleElement.constant
+        }
+        if dropPredicate(view, attributes) {
+            return nil
+        }
+
+        guard attributes.hasAnyAppearance else {
+            // The view has no appearance, but it may contain subviews that bring visual elements, so
+            // we use `InvisibleElement` semantics (to drop it) with `.record` strategy for its subview.
+            return InvisibleElement(subtreeStrategy: .record)
         }
 
         let builder = UIViewWireframesBuilder(
@@ -17,8 +29,8 @@ internal struct UIViewRecorder: NodeRecorder {
             attributes: attributes,
             wireframeRect: attributes.frame
         )
-
-        return AmbiguousElement(wireframesBuilder: builder)
+        let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
+        return AmbiguousElement(nodes: [node])
     }
 }
 
@@ -31,15 +43,7 @@ internal struct UIViewWireframesBuilder: NodeWireframesBuilder {
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         return [
-            builder.createShapeWireframe(
-                id: wireframeID,
-                frame: wireframeRect,
-                borderColor: attributes.layerBorderColor,
-                borderWidth: attributes.layerBorderWidth,
-                backgroundColor: attributes.backgroundColor,
-                cornerRadius: attributes.layerCornerRadius,
-                opacity: attributes.alpha
-            )
+            builder.createShapeWireframe(id: wireframeID, frame: wireframeRect, attributes: attributes)
         ]
     }
 }

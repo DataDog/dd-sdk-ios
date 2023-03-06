@@ -1,0 +1,2 @@
+# TODO: RUMM-3061 Remove this gitignore after implementing sustainable solution for storing large files
+*.png

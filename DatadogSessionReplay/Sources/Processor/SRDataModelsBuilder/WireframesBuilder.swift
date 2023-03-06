@@ -87,6 +87,7 @@ internal class WireframesBuilder {
         frame: CGRect,
         text: String,
         textFrame: CGRect? = nil,
+        textAlignment: SRTextPosition.Alignment? = nil,
         clip: SRContentClip? = nil,
         textColor: CGColor? = nil,
         font: UIFont? = nil,
@@ -101,7 +102,7 @@ internal class WireframesBuilder {
 
         if let textFrame = textFrame {
             textPosition = .init(
-                alignment: nil, // TODO: RUMM-2452 Improve text rendering
+                alignment: textAlignment,
                 padding: .init(
                     bottom: Int64(withNoOverflow: frame.maxY - textFrame.maxY),
                     left: Int64(withNoOverflow: textFrame.minX - frame.minX),
@@ -167,6 +168,23 @@ internal class WireframesBuilder {
             backgroundColor: hexString(from: backgroundColor) ?? Fallback.color,
             cornerRadius: cornerRadius.map { Double($0) },
             opacity: opacity.map { Double($0) }
+        )
+    }
+}
+
+// MARK: - Convenience
+
+internal extension WireframesBuilder {
+    func createShapeWireframe(id: WireframeID, frame: CGRect, attributes: ViewAttributes) -> SRWireframe {
+        return createShapeWireframe(
+            id: id,
+            frame: frame,
+            clip: nil,
+            borderColor: attributes.layerBorderColor,
+            borderWidth: attributes.layerBorderWidth,
+            backgroundColor: attributes.backgroundColor,
+            cornerRadius: attributes.layerCornerRadius,
+            opacity: attributes.alpha
         )
     }
 }

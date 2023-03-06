@@ -75,12 +75,14 @@ class RUMSwiftUIScenarioTests: IntegrationTests, RUMCommonAsserts {
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: requests))
         sendCIAppLog(session)
 
+        let applicationLaunchView = try XCTUnwrap(session.applicationLaunchView)
+        XCTAssertEqual(applicationLaunchView.actionEvents[0].action.type, .applicationStart)
+        XCTAssertGreaterThan(applicationLaunchView.actionEvents[0].action.loadingTime!, 0)
+
         let visits = session.viewVisits
         XCTAssertEqual(visits[0].name, "SwiftUI View 1")
         XCTAssertTrue(visits[0].path.matches(regex: "SwiftUI View 1\\/[0-9]*"))
-        XCTAssertEqual(visits[0].actionEvents[0].action.type, .applicationStart)
-        XCTAssertGreaterThan(visits[0].actionEvents[0].action.loadingTime!, 0)
-        XCTAssertEqual(visits[0].actionEvents[1].action.target?.name, "Tap Push to Next View")
+        XCTAssertEqual(visits[0].actionEvents[0].action.target?.name, "Tap Push to Next View")
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[0]) // go to "Screen 2"
 
         XCTAssertEqual(visits[1].name, "SwiftUI View 2")
