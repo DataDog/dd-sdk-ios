@@ -5,11 +5,19 @@
  */
 
 import XCTest
-import DatadogInternal
+@testable import DatadogInternal
 
 class FeatureBaggageTests: XCTestCase {
     private enum EnumAttribute: String, Codable {
         case test
+    }
+
+    struct SomeEncodable: Encodable {
+        var string: String
+    }
+
+    struct SomeDecodable: Decodable {
+        var string: String
     }
 
     let attributes: FeatureBaggage = [
@@ -45,5 +53,39 @@ class FeatureBaggageTests: XCTestCase {
 
         attributes.int = 2
         XCTAssertEqual(attributes.int, 2)
+    }
+
+    func testSetDecodable() {
+        let value = SomeEncodable(string: "test")
+        let baggage = FeatureBaggage(["key": value])
+
+        var decodable: SomeDecodable? = baggage["key"]
+        XCTAssertEqual(decodable?.string, "test")
+
+        decodable = baggage.key
+        XCTAssertEqual(decodable?.string, "test")
+    }
+
+    func testDecodableBaggage() {
+        let baggage = FeatureBaggage([
+            "key": ["string": "test" as Any]
+        ])
+
+        var decodable: SomeDecodable? = baggage["key"]
+        XCTAssertEqual(decodable?.string, "test")
+
+        decodable = baggage.key
+        XCTAssertEqual(decodable?.string, "test")
+    }
+
+    func testAnyBaggage() {
+        let value = SomeEncodable(string: "test")
+        let baggage = FeatureBaggage(["key": value])
+
+        var decodable: [String: Any]? = baggage["key"]
+        XCTAssertEqual(decodable?["string"] as? String, "test")
+
+        decodable = baggage.key
+        XCTAssertEqual(decodable?["string"] as? String, "test")
     }
 }

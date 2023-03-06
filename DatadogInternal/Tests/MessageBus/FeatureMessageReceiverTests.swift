@@ -7,7 +7,6 @@
 import XCTest
 import DatadogInternal
 import TestUtilities
-@testable import Datadog
 
 class FeatureMessageReceiverTests: XCTestCase {
     private var core: PassthroughCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional

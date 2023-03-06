@@ -55,15 +55,61 @@ public struct FeatureBaggage {
     public init(_ attributes: [String: Any]) {
         let encoder = AnyEncoder()
         self.attributes = attributes
-            .compactMapValues { try? encoder.encode(AnyEncodable($0)) }
+            .compactMapValues {
+                if $0 is Encodable {
+                    return try? encoder.encode(AnyEncodable($0))
+                }
+
+                return $0
+            }
     }
 
-    public func value<T>(forKey key: String, type: T.Type = T.self) throws -> T? where T: Decodable {
+    /// Returns the value stored in the baggage for the given key.
+    ///
+    /// - Parameters:
+    ///   - key: The key to find in the dictionary.
+    ///   - type: The expected value type.
+    /// - Returns: The value associated with `key` if `key` is in the attributes.
+    ///   `nil` otherwise.
+    public func value<T>(forKey key: String, type: T.Type = T.self) -> T? {
+        attributes[key] as? T
+    }
+
+    /// Decodes the value stored in the baggage for the given key.
+    ///
+    /// - Parameters:
+    ///   - key: The key to find in the dictionary.
+    ///   - type: The expected value type.
+    /// - Returns: The value associated with `key` if `key` is in the attributes.
+    ///   `nil` otherwise.
+    public func decodeValue<T>(forKey key: String, type: T.Type = T.self) throws -> T? where T: Decodable {
         let decoder = AnyDecoder()
         return try decoder.decode(from: attributes[key])
     }
 
     /// Updates the value stored in the baggage for the given key, or adds a
+    /// new key-value pair if the key does not exist.
+    ///
+    /// Use this method instead of key-based subscribing when you need to know
+    /// whether the baggage was successfully updated.
+    ///
+    ///     var baggage = ["Heliotrope": 296, "Coral": 16, "Aquamarine": 156]
+    ///     baggage.updateValue(18, forKey: "Coral")
+    ///
+    /// If the given key is not present in the dictionary, this method adds the
+    /// key-value pair.
+    ///
+    /// - Parameters:
+    ///   - value: The new value to add to the dictionary.
+    ///   - key: The key to associate with `value`. If `key` already exists in
+    ///     the dictionary, `value` replaces the existing associated value. If
+    ///     `key` isn't already a key of the dictionary, the `(key, value)` pair
+    ///     is added.
+    public mutating func updateValue(_ value: Any?, forKey key: String) {
+        attributes[key] = value
+    }
+
+    /// Encodes and updates the value stored in the baggage for the given key, or adds a
     /// new key-value pair if the key does not exist.
     ///
     /// Use this method instead of key-based subscribing when you need to know
@@ -86,7 +132,7 @@ public struct FeatureBaggage {
     ///     the dictionary, `value` replaces the existing associated value. If
     ///     `key` isn't already a key of the dictionary, the `(key, value)` pair
     ///     is added.
-    public mutating func updateValue<T>(_ value: T, forKey key: String) throws where T: Encodable {
+    public mutating func encodeValue<T>(_ value: T, forKey key: String) throws where T: Encodable {
         let encoder = AnyEncoder()
         attributes[key] = try encoder.encode(value)
     }
@@ -130,7 +176,54 @@ public struct FeatureBaggage {
     /// - Returns: The value associated with `key` if `key` is in the attributes.
     ///   `nil` otherwise.
     public subscript<T>(key: String, type t: T.Type = T.self) -> T? where T: Decodable {
-        try? value(forKey: key, type: t)
+        try? decodeValue(forKey: key, type: t)
+    }
+
+    /// Accesses the value associated with the given key for reading and writing
+    /// an attribute.
+    ///
+    /// This *key-based* subscript returns the value for the given key if the key
+    /// with a value of type `T` is found in the attributes, or `nil` otherwise.
+    ///
+    /// The following example creates a new `FeatureMessageAttributes` and
+    /// prints the value of a key found in the attributes object (`"coral"`).
+    ///
+    ///     var hues: FeatureMessageAttributes = [
+    ///         "heliotrope": 296,
+    ///         "coral": 16,
+    ///         "aquamarine": 156
+    ///     ]
+    ///     print(hues["coral", type: Int.self])
+    ///     // Prints "Optional(16)"
+    ///     print(hues["coral", type: String.self])
+    ///     // Prints "null"
+    ///
+    /// When you assign a value for a key and that key already exists, the
+    /// attribute object overwrites the existing value. If the attribute object doesn't
+    /// contain the key, the key and value are added as a new key-value pair.
+    ///
+    /// Here, the value for the key `"coral"` is updated from `16` to `18` and a
+    /// new key-value pair is added for the key `"cerise"`.
+    ///
+    ///     hues["coral"] = 18
+    ///     print(hues["coral", type: Int.self])
+    ///     // Prints "Optional(18)"
+    ///
+    ///     hues["cerise"] = "ok"
+    ///     print(hues["cerise", type: String.self])
+    ///     // Prints "Optional("ok")"
+    ///
+    /// If you assign `nil` as the value for the given key, the attribute object
+    /// removes that key and its associated value.
+    ///
+    /// - Parameters:
+    ///   - key: The key to find in the dictionary.
+    ///   - type: The expected value type.
+    /// - Returns: The value associated with `key` if `key` is in the attributes.
+    ///   `nil` otherwise.
+    public subscript<T>(key: String, type t: T.Type = T.self) -> T? {
+        get { value(forKey: key, type: t) }
+        set { updateValue(newValue, forKey: key) }
     }
 
     /// Accesses the value associated with the given key for reading and writing
@@ -176,8 +269,8 @@ public struct FeatureBaggage {
     /// - Returns: The value associated with `key` if `key` is in the attributes.
     ///   `nil` otherwise.
     public subscript<T>(key: String, type t: T.Type = T.self) -> T? where T: Codable {
-        get { try? value(forKey: key, type: t) }
-        set { try? updateValue(newValue, forKey: key) }
+        get { try? decodeValue(forKey: key, type: t) }
+        set { try? encodeValue(newValue, forKey: key) }
     }
 
     /// Accesses the value associated with the given key for reading an attribute type.
@@ -205,7 +298,52 @@ public struct FeatureBaggage {
     /// - Returns: The value associated with `key` if `key` is in the attributes.
     ///   `nil` otherwise.
     public subscript<T>(dynamicMember key: String) -> T? where T: Decodable {
-        try? value(forKey: key, type: T.self)
+        try? decodeValue(forKey: key, type: T.self)
+    }
+
+    /// Accesses the value associated with the given key for reading and writing
+    /// an attribute type.
+    ///
+    /// This *dynamic-member-based* subscript returns the value for the given key if the key
+    /// with a value of type `T` is found in the attributes, or `nil`otherwise.
+    ///
+    /// The following example creates a new `FeatureMessageAttributes` and
+    /// prints the value of a key found in the attributes object (`"coral"`) and a key not
+    /// found in the dictionary (`"cerise"`).
+    ///
+    ///     var hues: FeatureMessageAttributes = [
+    ///         "heliotrope": 296,
+    ///         "coral": 16,
+    ///         "aquamarine": 156
+    ///     ]
+    ///     let coral: Int? = hues.coral
+    ///     print(coral as? Int)
+    ///     // Prints "16"
+    ///     let cerise: Int? = hues.cerise
+    ///     print(cerise)
+    ///     // Prints "null"
+    ///
+    /// When you assign a value for a key and that key already exists, the
+    /// attribute object overwrites the existing value. If the attribute object doesn't
+    /// contain the key, the key and value are added as a new key-value pair.
+    ///
+    /// If you assign `nil` as the value for the given key, the attribute object
+    /// removes that key and its associated value.
+    ///
+    /// In the following example, the key-value pair for the key `"aquamarine"`
+    /// is removed from the attribute object by assigning `nil` to the
+    /// dynamic-member-based subscript.
+    ///
+    ///     hues.aquamarine = nil
+    ///     print(hues)
+    ///     // Prints "["coral": 18, "heliotrope": 296, "cerise": 330]"
+    ///
+    /// - Parameter key: The key to find in the dictionary.
+    /// - Returns: The value associated with `key` if `key` is in the attributes.
+    ///   `nil` otherwise.
+    public subscript<T>(dynamicMember key: String) -> T? {
+        get { value(forKey: key, type: T.self) }
+        set { updateValue(newValue, forKey: key) }
     }
 
     /// Accesses the value associated with the given key for reading and writing
@@ -249,8 +387,8 @@ public struct FeatureBaggage {
     /// - Returns: The value associated with `key` if `key` is in the attributes.
     ///   `nil` otherwise.
     public subscript<T>(dynamicMember key: String) -> T? where T: Codable {
-        get { try? value(forKey: key, type: T.self) }
-        set { try? updateValue(newValue, forKey: key) }
+        get { try? decodeValue(forKey: key, type: T.self) }
+        set { try? encodeValue(newValue, forKey: key) }
     }
 }
 
