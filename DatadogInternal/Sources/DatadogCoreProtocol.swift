@@ -17,7 +17,7 @@ public protocol DatadogCoreProtocol: AnyObject {
     /// Registers a Feature instance.
     ///
     /// Feature can interact with the core and other Feature through the message bus. Some specific Features
-    /// complying to `DatadogRemoteFeature` can collects and transfers data to a Datadog Product
+    /// complying to `DatadogRemoteFeature` can collect and transfer data to a Datadog Product
     /// (e.g. Logs, RUM, ...). Upon registration, a Remote Feature can retrieve a `FeatureScope` interface
     /// for writing events to the core. The core will store and upload events efficiently according to the performance
     /// presets defined on initialization.
