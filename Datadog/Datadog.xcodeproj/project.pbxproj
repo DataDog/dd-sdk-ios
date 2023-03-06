@@ -4041,11 +4041,11 @@
 			isa = PBXGroup;
 			children = (
 				D23039C4298D5235001A1FA3 /* AnyEncoder.swift */,
-				D23039C5298D5235001A1FA3 /* AnyDecodable.swift */,
 				D23039C6298D5235001A1FA3 /* AnyDecoder.swift */,
 				D23039C7298D5235001A1FA3 /* DynamicCodingKey.swift */,
 				D23039C8298D5235001A1FA3 /* AnyCodable.swift */,
 				D23039C9298D5235001A1FA3 /* AnyEncodable.swift */,
+				D23039C5298D5235001A1FA3 /* AnyDecodable.swift */,
 			);
 			path = Codable;
 			sourceTree = "<group>";
@@ -4290,6 +4290,7 @@
 		D2A783D829A530DC003B03BB /* MessageBus */ = {
 			isa = PBXGroup;
 			children = (
+				D2DA239F298D58F300C6C7E6 /* FeatureBaggageTests.swift */,
 				D2DA23A0298D58F400C6C7E6 /* FeatureMessageReceiverTests.swift */,
 			);
 			path = MessageBus;
@@ -4353,7 +4354,6 @@
 			children = (
 				D2DA239D298D58F300C6C7E6 /* AppStateHistoryTests.swift */,
 				D2DA239E298D58F300C6C7E6 /* DeviceInfoTests.swift */,
-				D2DA239F298D58F300C6C7E6 /* FeatureBaggageTests.swift */,
 			);
 			path = Context;
 			sourceTree = "<group>";

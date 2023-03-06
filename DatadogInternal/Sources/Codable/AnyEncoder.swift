@@ -665,7 +665,7 @@ private class _AnyEncoder: Encoder {
 ///
 /// Making an `Encodable` as shared allow to bypass encoding when the type is
 /// known by multiple parties.
-internal protocol DictionaryEncodable: Encodable { }
+public protocol DictionaryEncodable { }
 
 extension URL: DictionaryEncodable { }
 extension Date: DictionaryEncodable { }
