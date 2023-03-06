@@ -62,6 +62,7 @@ internal let defaultNodeRecorders: [NodeRecorder] = [
     UISwitchRecorder(),
     UISliderRecorder(),
     UISegmentRecorder(),
+    UIStepperRecorder(),
     UINavigationBarRecorder(),
     UITabBarRecorder(),
     UIPickerViewRecorder(),
