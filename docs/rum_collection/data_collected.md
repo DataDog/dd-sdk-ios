@@ -83,7 +83,9 @@ The following OS-related attributes are attached automatically to all events col
 
 ### Geo-location
 
-The following attributes are related to the geo-location of IP addresses:
+The below attributes are related to the geo-location of IP addresses.
+
+**Note:** If you want to stop collecting geo-location attributes, change the setting in your [application details][6].
 
 | Fullname                           | Type   | Description                                                                                                                               |
 |------------------------------------|--------|-------------------------------------------------------------------------------------------------------------------------------------------|
@@ -241,3 +243,4 @@ Before data is uploaded to Datadog, it is stored in cleartext in the cache direc
 [3]: https://support.apple.com/guide/security/security-of-runtime-process-sec15bfe098e/web
 [4]: https://developer.apple.com/documentation/uikit/app_and_environment/responding_to_the_launch_of_your_app/about_the_app_launch_sequence
 [5]: https://docs.datadoghq.com/data_security/real_user_monitoring/#ip-address
+[6]: https://docs.datadoghq.com/data_security/real_user_monitoring/#geolocation
