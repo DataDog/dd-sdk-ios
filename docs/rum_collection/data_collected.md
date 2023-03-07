@@ -131,7 +131,7 @@ You can enable [tracking user info][2] globally to collect and apply user attrib
 | `session.initial_view.name` | string | Name of the initial view of the session.                                    |
 | `session.last_view.url`      | string | URL of the last view of the session.                                        |
 | `session.last_view.name`     | string | Name of the last view of the session.                                       |
-| `session.ip`                 | string | IP address of the session extracted from the TCP connection of the intake. |
+| `session.ip`                 | string | IP address of the session extracted from the TCP connection of the intake. If you want to stop collecting this attribute, change the setting in your [application details][5]. |
 | `session.useragent`          | string | System user agent info to interpret device info.                            |
 
 
@@ -240,3 +240,4 @@ Before data is uploaded to Datadog, it is stored in cleartext in the cache direc
 [2]: https://docs.datadoghq.com/real_user_monitoring/ios/advanced_configuration/#track-user-sessions
 [3]: https://support.apple.com/guide/security/security-of-runtime-process-sec15bfe098e/web
 [4]: https://developer.apple.com/documentation/uikit/app_and_environment/responding_to_the_launch_of_your_app/about_the_app_launch_sequence
+[5]: https://docs.datadoghq.com/data_security/real_user_monitoring/#ip-address
