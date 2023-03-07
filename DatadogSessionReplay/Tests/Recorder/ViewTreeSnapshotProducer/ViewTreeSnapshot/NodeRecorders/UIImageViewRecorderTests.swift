@@ -6,6 +6,7 @@
 
 import XCTest
 @testable import DatadogSessionReplay
+import TestUtilities
 
 // swiftlint:disable opening_brace
 class UIImageViewRecorderTests: XCTestCase {
@@ -23,21 +24,19 @@ class UIImageViewRecorderTests: XCTestCase {
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: .mockAny()))
         XCTAssertTrue(semantics is InvisibleElement)
-        XCTAssertFalse(semantics.recordSubtree, "Image view's subtree should not be recorded")
+        XCTAssertEqual(semantics.subtreeStrategy, .ignore)
     }
 
-    func testWhenImageViewHasNoImageAndSomeAppearance() throws {
+    func testWhenImageViewHasNoImageAndHasSomeAppearance() throws {
         // When
         imageView.image = nil
-        viewAttributes = .mock(fixture: .visible())
+        viewAttributes = .mock(fixture: .visible(.someAppearance))
 
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: .mockAny()))
         XCTAssertTrue(semantics is SpecificElement)
-        XCTAssertTrue(semantics.recordSubtree, "Image view's subtree should be recorded")
-
-        let builder = try XCTUnwrap(semantics.wireframesBuilder as? UIImageViewWireframesBuilder)
-        XCTAssertEqual(builder.buildWireframes(with: WireframesBuilder()).count, 1)
+        XCTAssertEqual(semantics.subtreeStrategy, .record, "Image view's subtree should be recorded")
+        XCTAssertTrue(semantics.nodes.first?.wireframesBuilder is UIImageViewWireframesBuilder)
     }
 
     func testWhenImageViewHasImageAndSomeAppearance() throws {
@@ -48,35 +47,8 @@ class UIImageViewRecorderTests: XCTestCase {
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: .mockAny()))
         XCTAssertTrue(semantics is SpecificElement)
-        XCTAssertTrue(semantics.recordSubtree, "Image view's subtree should be recorded")
-
-        let builder = try XCTUnwrap(semantics.wireframesBuilder as? UIImageViewWireframesBuilder)
-        XCTAssertEqual(builder.buildWireframes(with: WireframesBuilder()).count, 2)
-    }
-
-    func testWhenImageViewHasImageOrAppearance() throws {
-        // When
-        oneOf([
-            {
-                self.imageView.image = UIImage()
-                self.viewAttributes = .mock(fixture: .visible())
-            },
-            {
-                self.imageView.image = nil
-                self.viewAttributes = .mock(fixture: .visible())
-            },
-            {
-                self.imageView.image = UIImage()
-                self.viewAttributes = .mock(fixture: .visible(.noAppearance))
-            },
-        ])
-
-        // Then
-        let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: .mockAny()) as? SpecificElement)
-
-        let builder = try XCTUnwrap(semantics.wireframesBuilder as? UIImageViewWireframesBuilder)
-        XCTAssertEqual(builder.attributes, viewAttributes)
-        XCTAssertEqual(builder.wireframeRect, viewAttributes.frame)
+        XCTAssertEqual(semantics.subtreeStrategy, .record, "Image view's subtree should be recorded")
+        XCTAssertTrue(semantics.nodes.first?.wireframesBuilder is UIImageViewWireframesBuilder)
     }
 
     func testWhenViewIsNotOfExpectedType() {

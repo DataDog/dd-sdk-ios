@@ -60,11 +60,13 @@ class RUMNavigationControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
         sendCIAppLog(session)
 
+        let applicationLaunchView = try XCTUnwrap(session.applicationLaunchView)
+        XCTAssertEqual(applicationLaunchView.actionEvents[0].action.type, .applicationStart)
+        XCTAssertGreaterThan(applicationLaunchView.actionEvents[0].action.loadingTime!, 0)
+
         let visits = session.viewVisits
         XCTAssertEqual(visits[0].name, "Screen1")
         XCTAssertEqual(visits[0].path, "UIViewController")
-        XCTAssertEqual(visits[0].actionEvents[0].action.type, .applicationStart)
-        XCTAssertGreaterThan(visits[0].actionEvents[0].action.loadingTime!, 0)
         RUMSessionMatcher.assertViewWasEventuallyInactive(visits[0]) // go to "Screen2"
 
         XCTAssertEqual(session.viewVisits[1].name, "Screen2")

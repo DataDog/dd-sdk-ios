@@ -19,7 +19,7 @@ class UINavigationBarRecorderTests: XCTestCase {
         let semantics = try XCTUnwrap(recorder.semantics(of: navigationBar, with: viewAttributes, in: .mockAny()) as? SpecificElement)
 
         // Then
-        XCTAssertTrue(semantics.recordSubtree, "Navigation Bar's subtree should be recorded")
+        XCTAssertEqual(semantics.subtreeStrategy, .record)
     }
 
     func testWhenViewIsNotOfExpectedType() {

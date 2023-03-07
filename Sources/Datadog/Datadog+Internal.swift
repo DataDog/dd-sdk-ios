@@ -22,6 +22,9 @@ extension Datadog.Configuration.Builder: DatadogInternalInterface {}
 extension DatadogExtension where ExtendedType: Datadog {
     /// Internal telemetry proxy.
     public static var telemetry: _TelemetryProxy { .init() }
+    public static var webEventBridge: _WebEventBridgeProxy {
+        .init(core: defaultDatadogCore)
+    }
 
     /// Changes the `version` used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
     public static func set(customVersion: String) {
@@ -47,6 +50,18 @@ public struct _TelemetryProxy {
     /// See Telementry.error
     public func error(id: String, message: String, kind: String?, stack: String?) {
         DD.telemetry.error(id: id, message: message, kind: kind, stack: stack)
+    }
+}
+
+public struct _WebEventBridgeProxy {
+    let bridge: WebEventBridge
+
+    init(core: DatadogCoreProtocol) {
+        bridge = .init(core: core)
+    }
+
+    public func send(_ anyMessage: Any) throws {
+        try bridge.consume(anyMessage)
     }
 }
 

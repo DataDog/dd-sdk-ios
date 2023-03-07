@@ -43,7 +43,7 @@ class WebViewScenarioTest: IntegrationTests, RUMCommonAsserts {
         nativeView.viewEvents.forEach { nativeViewEvent in
             XCTAssertEqual(nativeViewEvent.source, .ios)
         }
-        XCTAssertEqual(nativeView.actionEvents.count, 2, "It should track 2 native actions")
+        XCTAssertEqual(nativeView.actionEvents.count, 1, "It should track 1 native actions")
 
         // Check Browser SDK events:
         let expectedBrowserServiceName = "shopist-web-ui"

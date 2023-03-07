@@ -7,7 +7,19 @@
 import UIKit
 
 internal struct UITextFieldRecorder: NodeRecorder {
-    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeSnapshotBuilder.Context) -> NodeSemantics? {
+    /// `UIViewRecorder` for recording appearance of the text field.
+    private let backgroundViewRecorder: UIViewRecorder
+    /// `UIImageViewRecorder` for recording icons that are displayed in text field.
+    private let iconsRecorder: UIImageViewRecorder
+    private let subtreeRecorder: ViewTreeRecorder
+
+    init() {
+        self.backgroundViewRecorder = UIViewRecorder()
+        self.iconsRecorder = UIImageViewRecorder()
+        self.subtreeRecorder = ViewTreeRecorder(nodeRecorders: [backgroundViewRecorder, iconsRecorder])
+    }
+
+    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let textField = view as? UITextField else {
             return nil
         }
@@ -16,104 +28,109 @@ internal struct UITextFieldRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
-        // TODO: RUMM-2459
-        // Explore other (better) ways of infering text field appearance:
+        // For our "approximation", we render text field's text on top of other TF's appearance.
+        // Here we record both kind of nodes separately and order them respectively in returned semantics:
+        let appearanceNodes = recordAppearance(in: textField, textFieldAttributes: attributes, using: context)
+        if let textNode = recordText(in: textField, attributes: attributes, using: context) {
+            return SpecificElement(subtreeStrategy: .ignore, nodes: appearanceNodes + [textNode])
+        } else {
+            return SpecificElement(subtreeStrategy: .ignore, nodes: appearanceNodes)
+        }
+    }
 
-        var editorProperties: UITextFieldWireframesBuilder.EditorFieldProperties? = nil
-        // Lookup the actual editor field's view in `textField` hierarchy to infer its appearance.
-        // Perhaps this can be do better by infering it from `UITextField` object in RUMM-2459:
-        dfsVisitSubviews(of: textField) { subview in
-            if subview.bounds == textField.bounds {
-                editorProperties = .init(
-                    backgroundColor: subview.backgroundColor?.cgColor,
-                    layerBorderColor: subview.layer.borderColor,
-                    layerBorderWidth: subview.layer.borderWidth,
-                    layerCornerRadius: subview.layer.cornerRadius
-                )
-            }
+    /// Records `UIView` and `UIImageViewRecorder` nodes that define text field's appearance.
+    private func recordAppearance(in textField: UITextField, textFieldAttributes: ViewAttributes, using context: ViewTreeRecordingContext) -> [Node] {
+        backgroundViewRecorder.dropPredicate = { _, viewAttributes in
+            // We consider view to define text field's appearance if it has the same
+            // size as text field:
+            let hasSameSize = textFieldAttributes.frame == viewAttributes.frame
+            let isBackground = hasSameSize && viewAttributes.hasAnyAppearance
+            return !isBackground
         }
 
-        let text: String = {
-            guard let textFieldText = textField.text, !textFieldText.isEmpty else {
-                return textField.placeholder ?? ""
-            }
-            return textFieldText
-        }()
+        return subtreeRecorder.recordNodes(for: textField, in: context)
+    }
 
-        // TODO: RUMM-2459
-        // Enhance text fields rendering by calculating the actual frame of the text:
+    /// Creates node that represents TF's text.
+    /// We cannot use general view-tree traversal solution to find nested labels (`UITextField's` subtree doesn't look that way). Instead, we read
+    /// text information and create arbitrary node with appropriate wireframes builder configuration.
+    private func recordText(in textField: UITextField, attributes: ViewAttributes, using context: ViewTreeRecordingContext) -> Node? {
+        let text: String
+        let isPlaceholder: Bool
+
+        if let fieldText = textField.text, !fieldText.isEmpty {
+            text = fieldText
+            isPlaceholder = false
+        } else if let fieldPlaceholder = textField.placeholder {
+            text = fieldPlaceholder
+            isPlaceholder = true
+        } else {
+            return nil
+        }
+
         let textFrame = attributes.frame
+            .insetBy(dx: 5, dy: 5) // 5 points padding
 
         let builder = UITextFieldWireframesBuilder(
-            wireframeID: context.ids.nodeID(for: textField),
+            wireframeRect: textFrame,
             attributes: attributes,
+            wireframeID: context.ids.nodeID(for: textField),
             text: text,
-            // TODO: RUMM-2459
-            // Is it correct to assume `textField.textColor` for placeholder text?
             textColor: textField.textColor?.cgColor,
+            textAlignment: textField.textAlignment,
+            isPlaceholderText: isPlaceholder,
             font: textField.font,
             fontScalingEnabled: textField.adjustsFontSizeToFitWidth,
-            editor: editorProperties,
-            textObfuscator: context.recorder.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator,
-            wireframeRect: textFrame
+            textObfuscator: textObfuscator(for: textField, in: context)
         )
-        return SpecificElement(wireframesBuilder: builder, recordSubtree: false)
+        return Node(viewAttributes: attributes, wireframesBuilder: builder)
+    }
+
+    private func textObfuscator(for textField: UITextField, in context: ViewTreeRecordingContext) -> TextObfuscating {
+        if textField.isSecureTextEntry || textField.textContentType == .emailAddress || textField.textContentType == .telephoneNumber {
+            return InputTextObfuscator()
+        }
+
+        return context.recorder.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator // default one
     }
 }
 
 internal struct UITextFieldWireframesBuilder: NodeWireframesBuilder {
-    let wireframeID: WireframeID
-    /// Attributes of the base `UIView`.
+    let wireframeRect: CGRect
     let attributes: ViewAttributes
-    /// The text inside text field.
+
+    let wireframeID: WireframeID
+
     let text: String
-    /// The color of the text.
     let textColor: CGColor?
-    /// The font used by the text field.
+    let textAlignment: NSTextAlignment
+    let isPlaceholderText: Bool
     let font: UIFont?
-    /// Flag that determines if font should be scaled
     let fontScalingEnabled: Bool
-    /// Properties of the editor field (which is a nested subview in `UITextField`).
-    let editor: EditorFieldProperties?
-    /// Text obfuscator for masking text.
     let textObfuscator: TextObfuscating
 
-    let wireframeRect: CGRect
-
-    struct EditorFieldProperties {
-        /// Editor view's `.backgorundColor`.
-        var backgroundColor: CGColor? = nil
-        /// Editor view's `layer.backgorundColor`.
-        var layerBorderColor: CGColor? = nil
-        /// Editor view's `layer.backgorundColor`.
-        var layerBorderWidth: CGFloat = 0
-        /// Editor view's `layer.cornerRadius`.
-        var layerCornerRadius: CGFloat = 0
-    }
-
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+        let horizontalAlignment: SRTextPosition.Alignment.Horizontal? = {
+            switch textAlignment {
+            case .left:     return .left
+            case .center:   return .center
+            case .right:    return .right
+            default:        return nil
+            }
+        }()
+
         return [
             builder.createTextWireframe(
                 id: wireframeID,
-                frame: attributes.frame,
+                frame: wireframeRect,
                 text: textObfuscator.mask(text: text),
                 textFrame: wireframeRect,
-                textColor: textColor,
+                textAlignment: .init(horizontal: horizontalAlignment, vertical: .center),
+                textColor: isPlaceholderText ? SystemColors.placeholderText : textColor,
                 font: font,
                 fontScalingEnabled: fontScalingEnabled,
-                borderColor: editor?.layerBorderColor ?? attributes.layerBorderColor,
-                borderWidth: editor?.layerBorderWidth ?? attributes.layerBorderWidth,
-                backgroundColor: editor?.backgroundColor ?? attributes.backgroundColor,
-                cornerRadius: editor?.layerCornerRadius ?? attributes.layerCornerRadius,
                 opacity: attributes.alpha
             )
         ]
-    }
-}
-
-private func dfsVisitSubviews(of view: UIView, visit: (UIView) -> Void) {
-    view.subviews.forEach { subview in
-        visit(subview)
-        dfsVisitSubviews(of: subview, visit: visit)
     }
 }

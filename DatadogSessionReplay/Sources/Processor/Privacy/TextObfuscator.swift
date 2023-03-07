@@ -13,7 +13,7 @@ internal protocol TextObfuscating {
     func mask(text: String) -> String
 }
 
-/// Text obfuscator which replaces all readable characters with `"x"`.
+/// Text obfuscator which replaces all readable characters with space-preserving `"x"` characters.
 internal struct TextObfuscator: TextObfuscating {
     /// The character to mask text with.
     let maskCharacter: UnicodeScalar = "x"
@@ -37,6 +37,17 @@ internal struct TextObfuscator: TextObfuscating {
 
         return masked
     }
+}
+
+/// Text obfuscator which replaces the whole text with fixed-width `"xxx"` mask value.
+///
+/// It should be used **by default** for input elements that bring sensitive information (such as passwords).
+/// It shuold be used for input elements that can't safely use space-preserving masking (such as date pickers, where selection can be still
+/// inferred by counting the number of x-es in the mask).
+internal struct InputTextObfuscator: TextObfuscating {
+    private static let maskedString = "xxx"
+
+    func mask(text: String) -> String { Self.maskedString }
 }
 
 /// Text obfuscator which only returns the original text.

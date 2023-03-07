@@ -117,7 +117,6 @@
 		61C36436243752A600C4D4E6 /* App iOS UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "App iOS UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		61C3643A243752A600C4D4E6 /* AppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUITests.swift; sourceTree = "<group>"; };
 		61C3643C243752A600C4D4E6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9E9D5E8525F90FC6002F12A0 /* Kronos.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Kronos.xcframework; path = Carthage/Build/Kronos.xcframework; sourceTree = "<group>"; };
 		9E9D5E8625F90FC6002F12A0 /* DatadogObjc.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DatadogObjc.xcframework; path = Carthage/Build/DatadogObjc.xcframework; sourceTree = "<group>"; };
 		9E9D5E8725F90FC6002F12A0 /* Datadog.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Datadog.xcframework; path = Carthage/Build/Datadog.xcframework; sourceTree = "<group>"; };
 		D240FC8B2995183D00D9F099 /* DatadogInternal.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DatadogInternal.xcframework; path = Carthage/Build/DatadogInternal.xcframework; sourceTree = "<group>"; };
@@ -258,7 +257,6 @@
 				615D9E652604B5AB006DC6D1 /* CrashReporter.xcframework */,
 				9E9D5E8725F90FC6002F12A0 /* Datadog.xcframework */,
 				9E9D5E8625F90FC6002F12A0 /* DatadogObjc.xcframework */,
-				9E9D5E8525F90FC6002F12A0 /* Kronos.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";

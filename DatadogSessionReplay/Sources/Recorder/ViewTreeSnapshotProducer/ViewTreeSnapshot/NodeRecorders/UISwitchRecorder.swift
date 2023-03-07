@@ -7,7 +7,7 @@
 import UIKit
 
 internal struct UISwitchRecorder: NodeRecorder {
-    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeSnapshotBuilder.Context) -> NodeSemantics? {
+    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let `switch` = view as? UISwitch else {
             return nil
         }
@@ -16,78 +16,77 @@ internal struct UISwitchRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
-        let (backgroundWireframeID, thumbWireframeID) = context.ids.nodeID2(for: `switch`)
+        // The actual frame of the switch. It might be different than `view.frame` if displayed in stack view:
+        let switchFrame = CGRect(origin: attributes.frame.origin, size: view.intrinsicContentSize)
+        let ids = context.ids.nodeIDs(3, for: `switch`)
 
         let builder = UISwitchWireframesBuilder(
-            backgroundWireframeID: backgroundWireframeID,
-            thumbWireframeID: thumbWireframeID,
+            wireframeRect: switchFrame,
             attributes: attributes,
+            backgroundWireframeID: ids[0],
+            trackWireframeID: ids[1],
+            thumbWireframeID: ids[2],
+            isEnabled: `switch`.isEnabled,
+            isDarkMode: `switch`.usesDarkMode,
             isOn: `switch`.isOn,
             thumbTintColor: `switch`.thumbTintColor?.cgColor,
             onTintColor: `switch`.onTintColor?.cgColor,
-            offTintColor: `switch`.tintColor?.cgColor,
-            wireframeRect: attributes.frame
+            offTintColor: `switch`.tintColor?.cgColor
         )
-        return SpecificElement(wireframesBuilder: builder, recordSubtree: false)
+        let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
+        return SpecificElement(subtreeStrategy: .ignore, nodes: [node])
     }
 }
 
 internal struct UISwitchWireframesBuilder: NodeWireframesBuilder {
-    struct SystemDefaults {
-        /// Default color of the thumb.
-        static let thumbTintColor: CGColor = UIColor.white.cgColor
-        /// Default color of the background in "on" state.
-        static let onTintColor: CGColor = UIColor.systemGreen.cgColor
-        /// Default color of the background in "off" state.
-        static let offTintColor: CGColor = UIColor.lightGray.cgColor
-    }
+    let wireframeRect: CGRect
+    let attributes: ViewAttributes
 
     let backgroundWireframeID: WireframeID
+    let trackWireframeID: WireframeID
     let thumbWireframeID: WireframeID
-    /// Attributes of the base `UIView`.
-    let attributes: ViewAttributes
-    /// If the switch is "on" or "off".
+    let isEnabled: Bool
+    let isDarkMode: Bool
     let isOn: Bool
-    /// The custom color of the thumb.
     let thumbTintColor: CGColor?
-    /// The custom color of the background in "on" state.
     let onTintColor: CGColor?
-    /// The custom color of the background in "off" state.
     let offTintColor: CGColor?
 
-    let wireframeRect: CGRect
-
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
-        let radius = attributes.frame.height * 0.5
-        let backgroundColor = isOn ? (onTintColor ?? SystemDefaults.onTintColor) : (offTintColor ?? SystemDefaults.offTintColor)
+        let radius = wireframeRect.height * 0.5
 
-        let background = builder.createShapeWireframe(
-            id: backgroundWireframeID,
+        // Create track wireframe:
+        let trackColor = isOn ? (onTintColor ?? SystemColors.systemGreen) : (offTintColor ?? SystemColors.tertiarySystemFill)
+        let track = builder.createShapeWireframe(
+            id: trackWireframeID,
             frame: wireframeRect,
             borderColor: nil,
             borderWidth: nil,
-            backgroundColor: backgroundColor,
+            backgroundColor: trackColor,
             cornerRadius: radius,
-            opacity: attributes.alpha
+            opacity: isEnabled ? attributes.alpha : 0.5
         )
 
-        let thumbFrame = CGRect(
-            x: wireframeRect.minX + (isOn ? radius : 0.0),
-            y: wireframeRect.minY,
-            width: radius * 2,
-            height: attributes.frame.height
-        )
-
+        // Create thumb wireframe:
+        let thumbContainer = wireframeRect.insetBy(dx: 2, dy: 2)
+        let thumbFrame = CGRect(origin: .zero, size: .init(width: thumbContainer.height, height: thumbContainer.height))
+            .putInside(thumbContainer, horizontalAlignment: isOn ? .right : .left, verticalAlignment: .middle)
         let thumb = builder.createShapeWireframe(
             id: thumbWireframeID,
             frame: thumbFrame,
-            borderColor: nil,
-            borderWidth: nil,
-            backgroundColor: thumbTintColor ?? SystemDefaults.thumbTintColor,
-            cornerRadius: radius,
-            opacity: attributes.alpha
+            borderColor: SystemColors.secondarySystemFill,
+            borderWidth: 1,
+            backgroundColor: thumbTintColor ?? ((isDarkMode && !isEnabled) ? UIColor.gray.cgColor : UIColor.white.cgColor),
+            cornerRadius: radius
         )
 
-        return [background, thumb]
+        // Create background wireframe if the underlying `UIView` has any appearance:
+        if attributes.hasAnyAppearance {
+            let background = builder.createShapeWireframe(id: backgroundWireframeID, frame: attributes.frame, attributes: attributes)
+
+            return [background, track, thumb]
+        } else {
+            return [track, thumb]
+        }
     }
 }

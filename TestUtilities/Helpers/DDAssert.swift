@@ -10,7 +10,8 @@
 import Foundation
 import XCTest
 
-private enum DDAssertError: Error {
+public enum DDAssertError: Error {
+    /// An error indicating a known failure that happened in evaluated `expression()` block.
     case expectedFailure(String, keyPath: [String] = [])
 }
 
@@ -33,7 +34,7 @@ private enum DDAssertError: Error {
 ///   this function.
 ///   - expression: A closure to evaluate. The expression must throw an error
 ///   if the evaluation fails
-private func _DDEvaluateAssertion(message: @autoclosure () -> String, file: StaticString, line: UInt, expression: () throws -> Void) {
+public func _DDEvaluateAssertion(message: @autoclosure () -> String, file: StaticString, line: UInt, expression: () throws -> Void) {
     do {
         try expression()
     } catch DDAssertError.expectedFailure(let details, let keyPath) {

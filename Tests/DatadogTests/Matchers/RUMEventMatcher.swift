@@ -121,6 +121,12 @@ extension RUMEventMatcher: CustomStringConvertible {
 }
 
 extension Array where Element == RUMEventMatcher {
+    func filterApplicationLaunchView() -> [RUMEventMatcher] {
+        return filter {
+            (try? $0.attribute(forKeyPath: "view.url")) != "com/datadog/application-launch/view"
+        }
+    }
+
     func filterRUMEvents<DM: Decodable>(ofType type: DM.Type, where predicate: ((DM) -> Bool)? = nil) -> [Element] {
         return filter { matcher in matcher.model(isTypeOf: type) }
             .filter { matcher in predicate?(try! matcher.model()) ?? true }

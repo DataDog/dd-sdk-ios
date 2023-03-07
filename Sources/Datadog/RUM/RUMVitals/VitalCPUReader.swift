@@ -12,8 +12,8 @@ import DatadogInternal
 internal class VitalCPUReader: SamplingBasedVitalReader {
     /// host_cpu_load_info_count is 4 (tested in iOS 14.4)
     private static let host_cpu_load_info_count = MemoryLayout<host_cpu_load_info>.stride / MemoryLayout<integer_t>.stride
-    private var totalInactiveTicks: natural_t = 0
-    private var utilizedTicksWhenResigningActive: natural_t? = nil
+    private var totalInactiveTicks: UInt64 = 0
+    private var utilizedTicksWhenResigningActive: UInt64? = nil
 
     init(notificationCenter: NotificationCenter = .default) {
         notificationCenter.addObserver(self, selector: #selector(appWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
@@ -45,7 +45,7 @@ internal class VitalCPUReader: SamplingBasedVitalReader {
         }
     }
 
-    private func readUtilizedTicks() -> natural_t? {
+    private func readUtilizedTicks() -> UInt64? {
         // it must be set to host_cpu_load_info_count_size >= host_cpu_load_info_count
         // implementation: https://github.com/opensource-apple/xnu/blob/master/osfmk/kern/host.c#L425
         var host_cpu_load_info_count_size = mach_msg_type_number_t(Self.host_cpu_load_info_count)
@@ -83,6 +83,6 @@ internal class VitalCPUReader: SamplingBasedVitalReader {
          therefore even at the worst-case, precision isn't lost during this conversion below.
          */
         let userTicks = cpuLoadInfo.cpu_ticks.0
-        return userTicks
+        return UInt64(userTicks)
     }
 }

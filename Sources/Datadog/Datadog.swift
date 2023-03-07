@@ -223,6 +223,10 @@ public class Datadog {
                 sampler: rumConfiguration.telemetrySampler
             )
 
+            if let configurationSampler = configuration.rum?.configurationTelemetrySampler {
+                telemetry?.configurationExtraSampler = configurationSampler
+            }
+
             rum = try core.create(
                 configuration: createRUMConfiguration(configuration: rumConfiguration),
                 featureSpecificConfiguration: rumConfiguration

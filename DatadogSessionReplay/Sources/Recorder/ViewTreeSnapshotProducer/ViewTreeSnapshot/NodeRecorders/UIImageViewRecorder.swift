@@ -12,7 +12,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
     func semantics(
         of view: UIView,
         with attributes: ViewAttributes,
-        in context: ViewTreeSnapshotBuilder.Context
+        in context: ViewTreeRecordingContext
     ) -> NodeSemantics? {
         guard let imageView = view as? UIImageView else {
             return nil
@@ -21,7 +21,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
-        let ids = context.ids.nodeID2(for: imageView)
+        let ids = context.ids.nodeIDs(2, for: imageView)
         let contentFrame: CGRect?
         if let image = imageView.image {
             contentFrame = attributes.frame.contentFrame(
@@ -32,8 +32,8 @@ internal struct UIImageViewRecorder: NodeRecorder {
             contentFrame = nil
         }
         let builder = UIImageViewWireframesBuilder(
-            wireframeID: ids.0,
-            imageWireframeID: ids.1,
+            wireframeID: ids[0],
+            imageWireframeID: ids[1],
             attributes: attributes,
             contentFrame: contentFrame,
             clipsToBounds: imageView.clipsToBounds,
@@ -41,7 +41,8 @@ internal struct UIImageViewRecorder: NodeRecorder {
             imageTintColor: imageView.tintColor,
             imageDataProvider: imageDataProvider
         )
-        return SpecificElement(wireframesBuilder: builder, recordSubtree: true)
+        let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
+        return SpecificElement(subtreeStrategy: .record, nodes: [node])
     }
 }
 

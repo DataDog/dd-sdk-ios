@@ -50,7 +50,6 @@ function archive {
         SKIP_INSTALL=NO \
         BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
         ONLY_ACTIVE_ARCH=NO \
-        SKIP_INSTALL=NO \
     | xcpretty
 }
 
@@ -79,7 +78,12 @@ function bundle {
     fi
 
     echo "▸ Create $PRODUCT.xcframework"
-    xcodebuild -create-xcframework ${xcoptions[@]} -output "$XCFRAMEWORK_OUTPUT/$PRODUCT.xcframework"
+
+    # Datadog class conflicts with module name and Swift emits invalid module interface
+    # cf. https://github.com/apple/swift/issues/56573
+    #
+    # Therefore, we cannot provide ABI stability and we have to supply '-allow-internal-distribution'.
+    xcodebuild -create-xcframework -allow-internal-distribution ${xcoptions[@]} -output "$XCFRAMEWORK_OUTPUT/$PRODUCT.xcframework"
 }
 
 rm -rf $OUTPUT
@@ -89,5 +93,6 @@ cp -r "Carthage/Build/CrashReporter.xcframework" "$XCFRAMEWORK_OUTPUT"
 
 bundle Datadog
 bundle DatadogInternal
+bundle DatadogLogs
 bundle DatadogObjc
 bundle DatadogCrashReporting

@@ -4772,6 +4772,11 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.batchUploadFrequency as NSNumber?
     }
 
+    @objc public var dartVersion: String? {
+        set { root.swiftModel.telemetry.configuration.dartVersion = newValue }
+        get { root.swiftModel.telemetry.configuration.dartVersion }
+    }
+
     @objc public var defaultPrivacyLevel: String? {
         set { root.swiftModel.telemetry.configuration.defaultPrivacyLevel = newValue }
         get { root.swiftModel.telemetry.configuration.defaultPrivacyLevel }
@@ -4803,8 +4808,22 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.premiumSampleRate as NSNumber?
     }
 
+    @objc public var reactNativeVersion: String? {
+        set { root.swiftModel.telemetry.configuration.reactNativeVersion = newValue }
+        get { root.swiftModel.telemetry.configuration.reactNativeVersion }
+    }
+
+    @objc public var reactVersion: String? {
+        set { root.swiftModel.telemetry.configuration.reactVersion = newValue }
+        get { root.swiftModel.telemetry.configuration.reactVersion }
+    }
+
     @objc public var replaySampleRate: NSNumber? {
         root.swiftModel.telemetry.configuration.replaySampleRate as NSNumber?
+    }
+
+    @objc public var selectedTracingPropagators: [Int]? {
+        root.swiftModel.telemetry.configuration.selectedTracingPropagators?.map { DDTelemetryConfigurationEventTelemetryConfigurationSelectedTracingPropagators(swift: $0).rawValue }
     }
 
     @objc public var sessionReplaySampleRate: NSNumber? {
@@ -4896,6 +4915,11 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.trackSessionAcrossSubdomains as NSNumber?
     }
 
+    @objc public var trackUserInteractions: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.trackUserInteractions = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.trackUserInteractions as NSNumber? }
+    }
+
     @objc public var trackViewsManually: NSNumber? {
         set { root.swiftModel.telemetry.configuration.trackViewsManually = newValue?.boolValue }
         get { root.swiftModel.telemetry.configuration.trackViewsManually as NSNumber? }
@@ -4903,6 +4927,10 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
 
     @objc public var useAllowedTracingOrigins: NSNumber? {
         root.swiftModel.telemetry.configuration.useAllowedTracingOrigins as NSNumber?
+    }
+
+    @objc public var useAllowedTracingUrls: NSNumber? {
+        root.swiftModel.telemetry.configuration.useAllowedTracingUrls as NSNumber?
     }
 
     @objc public var useBeforeSend: NSNumber? {
@@ -4991,6 +5019,35 @@ public class DDTelemetryConfigurationEventTelemetryConfigurationForwardReports: 
 }
 
 @objc
+public enum DDTelemetryConfigurationEventTelemetryConfigurationSelectedTracingPropagators: Int {
+    internal init(swift: TelemetryConfigurationEvent.Telemetry.Configuration.SelectedTracingPropagators?) {
+        switch swift {
+        case nil: self = .none
+        case .datadog?: self = .datadog
+        case .b3?: self = .b3
+        case .b3multi?: self = .b3multi
+        case .tracecontext?: self = .tracecontext
+        }
+    }
+
+    internal var toSwift: TelemetryConfigurationEvent.Telemetry.Configuration.SelectedTracingPropagators? {
+        switch self {
+        case .none: return nil
+        case .datadog: return .datadog
+        case .b3: return .b3
+        case .b3multi: return .b3multi
+        case .tracecontext: return .tracecontext
+        }
+    }
+
+    case none
+    case datadog
+    case b3
+    case b3multi
+    case tracecontext
+}
+
+@objc
 public enum DDTelemetryConfigurationEventTelemetryConfigurationViewTrackingStrategy: Int {
     internal init(swift: TelemetryConfigurationEvent.Telemetry.Configuration.ViewTrackingStrategy?) {
         switch swift {
@@ -5034,4 +5091,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/083edbb0f9fec392224820bd05c6336ce6d62c30
+// Generated from https://github.com/DataDog/rum-events-format/tree/581880e6d9e9bb51f6c81ecd87bae2923865a2a5
