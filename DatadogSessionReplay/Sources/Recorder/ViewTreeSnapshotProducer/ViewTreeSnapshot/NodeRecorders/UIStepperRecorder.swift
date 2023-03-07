@@ -22,7 +22,9 @@ internal struct UIStepperRecorder: NodeRecorder {
         let builder = UIStepperWireframesBuilder(
             wireframeRect: stepperFrame,
             cornerRadius: stepper.subviews.first?.layer.cornerRadius ?? 0,
-            ids: ids
+            ids: ids,
+            isMinusEnabled: stepper.value > stepper.minimumValue,
+            isPlusEnabled: stepper.value < stepper.maximumValue
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
         return SpecificElement(subtreeStrategy: .ignore, nodes: [node])
@@ -30,9 +32,11 @@ internal struct UIStepperRecorder: NodeRecorder {
 }
 
 internal struct UIStepperWireframesBuilder: NodeWireframesBuilder {
-    var wireframeRect: CGRect
-    var cornerRadius: CGFloat
-    var ids: [Int64]
+    let wireframeRect: CGRect
+    let cornerRadius: CGFloat
+    let ids: [Int64]
+    let isMinusEnabled: Bool
+    let isPlusEnabled: Bool
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         let background = builder.createShapeWireframe(
@@ -40,7 +44,7 @@ internal struct UIStepperWireframesBuilder: NodeWireframesBuilder {
             frame: wireframeRect,
             borderColor: nil,
             borderWidth: nil,
-            backgroundColor: SystemColors.tertiarySystemBackground,
+            backgroundColor: SystemColors.tertiarySystemFill,
             cornerRadius: cornerRadius
         )
         let divider = builder.createShapeWireframe(
@@ -53,19 +57,19 @@ internal struct UIStepperWireframesBuilder: NodeWireframesBuilder {
         )
         let stepButtonFontSize = CGFloat(30)
         let stepButtonSize = CGSize(width: stepButtonFontSize, height: stepButtonFontSize)
-        let stepButtonLeftOffset = wireframeRect.width / 2 - stepButtonSize.width / 2
+        let stepButtonLeftOffset = wireframeRect.width / 4 - stepButtonSize.width / 4
         let minus = builder.createTextWireframe(
             id: ids[2],
             frame: CGRect(
                 origin: CGPoint(
-                    x: wireframeRect.origin.x + stepButtonLeftOffset,
+                    x: wireframeRect.origin.x + stepButtonLeftOffset - 3,
                     y: wireframeRect.origin.y
                 ),
                 size: stepButtonSize
             ),
-            text: "-",
-            textColor: SystemColors.label,
-            font: .systemFont(ofSize: stepButtonFontSize)
+            text: "—",
+            textColor: isMinusEnabled ? SystemColors.label : SystemColors.placeholderText,
+            font: .systemFont(ofSize: 30)
         )
         let plus = builder.createTextWireframe(
             id: ids[3],
@@ -77,7 +81,7 @@ internal struct UIStepperWireframesBuilder: NodeWireframesBuilder {
                 size: stepButtonSize
             ),
             text: "+",
-            textColor: SystemColors.label,
+            textColor: isPlusEnabled ? SystemColors.label : SystemColors.placeholderText,
             font: .systemFont(ofSize: stepButtonFontSize)
         )
         return [background, divider, minus, plus]
