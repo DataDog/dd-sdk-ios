@@ -175,13 +175,11 @@ public class Tracer: OTTracer {
     }
 
     public func extract(reader: OTFormatReader) -> OTSpanContext? {
-        // TODO: RUMM-385 - make `HTTPHeadersReader` available in public API
-        if let reader = reader as? TracePropagationHeadersExtractor {
-            reader.use(baggageItemQueue: queue)
-            return reader.extract()
-        } else {
+        guard let reader = reader as? TracePropagationHeadersExtractor else {
             return nil
         }
+
+        return reader.extract()
     }
 
     public var activeSpan: OTSpan? {
@@ -195,7 +193,7 @@ public class Tracer: OTTracer {
             traceID: parentSpanContext?.traceID ?? tracingUUIDGenerator.generateUnique(),
             spanID: tracingUUIDGenerator.generateUnique(),
             parentSpanID: parentSpanContext?.spanID,
-            baggageItems: BaggageItems(targetQueue: queue, parentSpanItems: parentSpanContext?.baggageItems)
+            baggageItems: BaggageItems(parent: parentSpanContext?.baggageItems)
         )
     }
 

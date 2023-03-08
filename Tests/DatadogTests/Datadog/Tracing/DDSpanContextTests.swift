@@ -8,10 +8,8 @@ import XCTest
 @testable import Datadog
 
 class DDSpanContextTests: XCTestCase {
-    private let queue = DispatchQueue(label: "com.datadoghq.\(#file)")
-
     func testIteratingOverBaggageItems() {
-        let baggageItems = BaggageItems(targetQueue: queue, parentSpanItems: nil)
+        let baggageItems = BaggageItems(parent: nil)
         baggageItems.set(key: "k1", value: "v1")
         baggageItems.set(key: "k2", value: "v2")
         baggageItems.set(key: "k3", value: "v3")
@@ -38,8 +36,8 @@ class DDSpanContextTests: XCTestCase {
     }
 
     func testChildItemsOverwriteTheParentItems() {
-        let parentBaggageItems = BaggageItems(targetQueue: queue, parentSpanItems: nil)
-        let childBaggageItems = BaggageItems(targetQueue: queue, parentSpanItems: parentBaggageItems)
+        let parentBaggageItems = BaggageItems(parent: nil)
+        let childBaggageItems = BaggageItems(parent: parentBaggageItems)
 
         parentBaggageItems.set(key: "foo", value: "a")
         XCTAssertEqual(parentBaggageItems.all["foo"], "a")
@@ -51,8 +49,8 @@ class DDSpanContextTests: XCTestCase {
     }
 
     func testChildItemsGetParentItems() {
-        let parentBaggageItems = BaggageItems(targetQueue: queue, parentSpanItems: nil)
-        let childBaggageItems = BaggageItems(targetQueue: queue, parentSpanItems: parentBaggageItems)
+        let parentBaggageItems = BaggageItems(parent: nil)
+        let childBaggageItems = BaggageItems(parent: parentBaggageItems)
 
         parentBaggageItems.set(key: "foo", value: "a")
         childBaggageItems.set(key: "bar", value: "b")
