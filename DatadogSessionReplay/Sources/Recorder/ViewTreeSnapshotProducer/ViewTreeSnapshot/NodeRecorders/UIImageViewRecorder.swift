@@ -7,6 +7,7 @@
 import UIKit
 
 internal struct UIImageViewRecorder: NodeRecorder {
+
     private let imageDataProvider = ImageDataProvider()
 
     func semantics(
@@ -31,6 +32,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
         } else {
             contentFrame = nil
         }
+
         let builder = UIImageViewWireframesBuilder(
             wireframeID: ids[0],
             imageWireframeID: ids[1],
@@ -38,7 +40,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
             contentFrame: contentFrame,
             clipsToBounds: imageView.clipsToBounds,
             image: imageView.image,
-            imageTintColor: imageView.tintColor,
+            imageMainThreadDescription: imageView.image?.description,
             imageDataProvider: imageDataProvider
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
@@ -63,7 +65,7 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
 
     let image: UIImage?
 
-    let imageTintColor: UIColor?
+    let imageMainThreadDescription: String?
 
     let imageDataProvider: ImageDataProvider
 
@@ -102,13 +104,15 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
                 opacity: attributes.alpha
             )
         ]
+        var base64: String = ""
+        if #available(iOS 13.0, *), image?.isSymbolImage == true || imageMainThreadDescription?.isBundled == true {
+            base64 = imageDataProvider.contentBase64String(of: image)
+        }
+
         if let contentFrame = contentFrame {
             wireframes.append(
                 builder.createImageWireframe(
-                    base64: imageDataProvider.contentBase64String(
-                        of: image,
-                        tintColor: imageTintColor
-                    ),
+                    base64: base64,
                     id: imageWireframeID,
                     frame: contentFrame,
                     clip: clipsToBounds ? clip : nil
@@ -116,5 +120,11 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
             )
         }
         return wireframes
+    }
+}
+
+fileprivate extension String {
+    var isBundled: Bool {
+        return contains("named(")
     }
 }
