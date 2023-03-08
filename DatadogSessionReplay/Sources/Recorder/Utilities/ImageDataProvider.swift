@@ -12,16 +12,13 @@ internal class ImageDataProvider {
     private var cache: Cache<String, String>
 
     private let maxBytesSize: Int
-    private let maxDimensions: CGSize
 
     internal init(
         cache: Cache<String, String> = .init(),
-        maxBytesSize: Int = 10_000,
-        maxDimensions: CGSize = CGSize(width: 40, height: 40)
+        maxBytesSize: Int = 10_000
     ) {
         self.cache = cache
         self.maxBytesSize = maxBytesSize
-        self.maxDimensions = maxDimensions
     }
 
     func contentBase64String(

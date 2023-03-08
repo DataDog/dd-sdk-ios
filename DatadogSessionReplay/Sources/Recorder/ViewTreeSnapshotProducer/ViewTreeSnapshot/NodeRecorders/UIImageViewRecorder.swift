@@ -7,8 +7,27 @@
 import UIKit
 
 internal struct UIImageViewRecorder: NodeRecorder {
+    private let imageDataProvider: ImageDataProvider
+    private let tintColorProvider: (UIImageView) -> UIColor?
+    private let shouldRecordImagePredicate: (UIImageView) -> Bool
 
-    private let imageDataProvider = ImageDataProvider()
+    internal init(
+        imageDataProvider: ImageDataProvider = ImageDataProvider(),
+        tintColorProvider: @escaping (UIImageView) -> UIColor? = { _ in
+            return nil
+        },
+        shouldRecordImagePredicate: @escaping (UIImageView) -> Bool = { imageView in
+            if #available(iOS 13.0, *) {
+                return imageView.image?.isSymbolImage == true || imageView.image?.description.isBundled == true
+            } else {
+                return false
+            }
+        }
+    ) {
+        self.imageDataProvider = imageDataProvider
+        self.tintColorProvider = tintColorProvider
+        self.shouldRecordImagePredicate = shouldRecordImagePredicate
+    }
 
     func semantics(
         of view: UIView,
@@ -32,7 +51,6 @@ internal struct UIImageViewRecorder: NodeRecorder {
         } else {
             contentFrame = nil
         }
-
         let builder = UIImageViewWireframesBuilder(
             wireframeID: ids[0],
             imageWireframeID: ids[1],
@@ -40,8 +58,9 @@ internal struct UIImageViewRecorder: NodeRecorder {
             contentFrame: contentFrame,
             clipsToBounds: imageView.clipsToBounds,
             image: imageView.image,
-            imageMainThreadDescription: imageView.image?.description,
-            imageDataProvider: imageDataProvider
+            imageDataProvider: imageDataProvider,
+            tintColor: tintColorProvider(imageView),
+            shouldRecordImage: shouldRecordImagePredicate(imageView)
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
         return SpecificElement(subtreeStrategy: .record, nodes: [node])
@@ -65,9 +84,11 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
 
     let image: UIImage?
 
-    let imageMainThreadDescription: String?
-
     let imageDataProvider: ImageDataProvider
+
+    let tintColor: UIColor?
+
+    let shouldRecordImage: Bool
 
     private var clip: SRContentClip? {
         guard let contentFrame = contentFrame else {
@@ -105,8 +126,11 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
             )
         ]
         var base64: String = ""
-        if #available(iOS 13.0, *), image?.isSymbolImage == true || imageMainThreadDescription?.isBundled == true {
-            base64 = imageDataProvider.contentBase64String(of: image)
+        if shouldRecordImage {
+            base64 = imageDataProvider.contentBase64String(
+                of: image,
+                tintColor: tintColor
+            )
         }
 
         if let contentFrame = contentFrame {
