@@ -47,56 +47,43 @@ internal struct UIStepperWireframesBuilder: NodeWireframesBuilder {
             backgroundColor: SystemColors.tertiarySystemFill,
             cornerRadius: cornerRadius
         )
+        let verticalMargin: CGFloat = 6
         let divider = builder.createShapeWireframe(
             id: ids[1],
             frame: CGRect(
-                origin: CGPoint(x: wireframeRect.origin.x + wireframeRect.size.width / 2, y: wireframeRect.origin.y + 6),
-                size: CGSize(width: 1, height: 20)
-            ),
+                origin: CGPoint(x: 0, y: verticalMargin),
+                size: CGSize(width: 1, height: wireframeRect.size.height - 2 * verticalMargin)
+            ).putInside(wireframeRect, horizontalAlignment: .center, verticalAlignment: .middle),
             backgroundColor: SystemColors.placeholderText
         )
 
-
-        let horizontalElementSize = CGSize(width: 15, height: 1.5)
-        let verticalElementSize = CGSize(width: 1.5, height: 15)
-        let horizontalLeftOffset: CGFloat = wireframeRect.size.width / 4 - horizontalElementSize.width / 2
-        let verticalLeftOffset: CGFloat = horizontalLeftOffset + horizontalElementSize.width / 2 - verticalElementSize.width / 2
-
+        let horizontalElementRect = CGRect(origin: .zero, size: CGSize(width: 14, height: 2))
+        let verticalElementRect = CGRect(origin: .zero, size: CGSize(width: 2, height: 14))
+        let leftButtonFrame = CGRect(
+            origin: wireframeRect.origin,
+            size: CGSize(width: wireframeRect.size.width / 2, height: wireframeRect.size.height)
+        )
+        let rightButtonFrame = CGRect(
+            origin: CGPoint(x: wireframeRect.origin.x + wireframeRect.size.width / 2, y: wireframeRect.origin.y),
+            size: CGSize(width: wireframeRect.size.width / 2, height: wireframeRect.size.height)
+        )
         let minus = builder.createShapeWireframe(
             id: ids[2],
-            frame: CGRect(
-                origin: CGPoint(
-                    x: wireframeRect.origin.x + horizontalLeftOffset,
-                    y: wireframeRect.origin.y + wireframeRect.height / 2 - horizontalElementSize.height
-                ),
-                size: horizontalElementSize
-            ),
+            frame: horizontalElementRect.putInside(leftButtonFrame, horizontalAlignment: .center, verticalAlignment: .middle),
             backgroundColor: isMinusEnabled ? SystemColors.label : SystemColors.placeholderText,
-            cornerRadius: horizontalElementSize.height
+            cornerRadius: horizontalElementRect.size.height
         )
         let plusHorizontal = builder.createShapeWireframe(
             id: ids[3],
-            frame: CGRect(
-                origin: CGPoint(
-                    x: wireframeRect.origin.x + wireframeRect.width / 2 + horizontalLeftOffset - 0.5,
-                    y: wireframeRect.origin.y + wireframeRect.height / 2 - horizontalElementSize.height
-                ),
-                size: horizontalElementSize
-            ),
+            frame: horizontalElementRect.putInside(rightButtonFrame, horizontalAlignment: .center, verticalAlignment: .middle),
             backgroundColor: isPlusEnabled ? SystemColors.label : SystemColors.placeholderText,
-            cornerRadius: horizontalElementSize.height
+            cornerRadius: horizontalElementRect.size.height
         )
         let plusVertical = builder.createShapeWireframe(
             id: ids[4],
-            frame: CGRect(
-                origin: CGPoint(
-                    x: wireframeRect.origin.x + wireframeRect.width / 2 + verticalLeftOffset,
-                    y: wireframeRect.origin.y + wireframeRect.height / 2 - verticalElementSize.height / 2 + 0.5
-                ),
-                size: verticalElementSize
-            ),
+            frame: verticalElementRect.putInside(rightButtonFrame, horizontalAlignment: .center, verticalAlignment: .middle),
             backgroundColor: isPlusEnabled ? SystemColors.label : SystemColors.placeholderText,
-            cornerRadius: verticalElementSize.width
+            cornerRadius: verticalElementRect.size.width
         )
         return [background, divider, minus, plusHorizontal, plusVertical]
     }
