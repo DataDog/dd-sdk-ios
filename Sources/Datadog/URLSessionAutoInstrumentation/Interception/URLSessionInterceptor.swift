@@ -245,7 +245,7 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
         let tracingHeaderTypes = firstPartyHosts.tracingHeaderTypes(for: newRequest.url)
 
         tracingHeaderTypes.union(additionalFirstPartyHostsTracingHeaderTypes).forEach {
-            let writer: TracePropagationHeadersProvider & OTFormatWriter
+            let writer: TracePropagationHeadersWriter
             switch $0 {
             case .datadog:
                 writer = HTTPHeadersWriter(sampler: tracingSampler)
@@ -265,9 +265,14 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
             case .tracecontext:
                 writer = W3CHTTPHeadersWriter(sampler: tracingSampler)
             }
-            tracer.inject(spanContext: spanContext, writer: writer)
 
-            writer.tracePropagationHTTPHeaders.forEach { field, value in
+            writer.write(
+                traceID: spanContext.traceID,
+                spanID: spanContext.spanID,
+                parentSpanID: spanContext.parentSpanID
+            )
+
+            writer.propagationHTTPHeaderFields.forEach { field, value in
                 newRequest.setValue(value, forHTTPHeaderField: field)
             }
         }

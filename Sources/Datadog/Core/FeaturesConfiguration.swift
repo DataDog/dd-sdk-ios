@@ -44,7 +44,7 @@ internal struct FeaturesConfiguration {
 
     struct Tracing {
         let uploadURL: URL
-        let uuidGenerator: TracingUUIDGenerator
+        let uuidGenerator: TraceIDGenerator
         let spanEventMapper: SpanEventMapper?
         let dateProvider: DateProvider
     }
@@ -206,7 +206,7 @@ extension FeaturesConfiguration {
         if configuration.tracingEnabled {
             tracing = Tracing(
                 uploadURL: try ifValid(endpointURLString: tracesEndpoint.url),
-                uuidGenerator: DefaultTracingUUIDGenerator(),
+                uuidGenerator: DefaultTraceIDGenerator(),
                 spanEventMapper: configuration.spanEventMapper,
                 dateProvider: dateProvider
             )

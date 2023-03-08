@@ -9,11 +9,11 @@ import DatadogInternal
 
 internal struct DDSpanContext: OTSpanContext {
     /// This span's trace ID.
-    let traceID: TracingUUID
+    let traceID: TraceID
     /// This span ID.
-    let spanID: TracingUUID
+    let spanID: SpanID
     /// The ID of the parent span or `nil` if this span is the root span.
-    let parentSpanID: TracingUUID?
+    let parentSpanID: SpanID?
     /// The baggage items of this span.
     let baggageItems: BaggageItems
 

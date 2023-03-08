@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import class Datadog.OTelHTTPHeadersWriter
+import class DatadogInternal.OTelHTTPHeadersWriter
 
 @objc
 public enum DDInjectEncoding: Int {
@@ -28,8 +28,8 @@ private extension OTelHTTPHeadersWriter.InjectEncoding {
 public class DDOTelHTTPHeadersWriter: NSObject {
     let swiftOTelHTTPHeadersWriter: OTelHTTPHeadersWriter
 
-    @objc public var tracePropagationHTTPHeaders: [String: String] {
-        swiftOTelHTTPHeadersWriter.tracePropagationHTTPHeaders
+    @objc public var propagationHTTPHeaderFields: [String: String] {
+        swiftOTelHTTPHeadersWriter.propagationHTTPHeaderFields
     }
 
     @objc

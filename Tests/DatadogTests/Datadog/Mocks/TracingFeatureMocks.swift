@@ -41,9 +41,9 @@ extension DDSpanContext {
     }
 
     static func mockWith(
-        traceID: TracingUUID = .mockAny(),
-        spanID: TracingUUID = .mockAny(),
-        parentSpanID: TracingUUID? = .mockAny(),
+        traceID: TraceID = .mockAny(),
+        spanID: TraceID = .mockAny(),
+        parentSpanID: TraceID? = .mockAny(),
         baggageItems: BaggageItems = .mockAny()
     ) -> DDSpanContext {
         return DDSpanContext(
@@ -99,43 +99,11 @@ extension DDSpan {
     }
 }
 
-extension TracingUUID {
-    static func mockAny() -> TracingUUID {
-        return TracingUUID(rawValue: .mockAny())
-    }
-
-    static func mock(_ rawValue: UInt64) -> TracingUUID {
-        return TracingUUID(rawValue: rawValue)
-    }
-}
-
-class RelativeTracingUUIDGenerator: TracingUUIDGenerator {
-    private(set) var uuid: TracingUUID
-    internal let count: UInt64
-    private let queue = DispatchQueue(label: "queue-RelativeTracingUUIDGenerator-\(UUID().uuidString)")
-
-    init(startingFrom uuid: TracingUUID, advancingByCount count: UInt64 = 1) {
-        self.uuid = uuid
-        self.count = count
-    }
-
-    func generateUnique() -> TracingUUID {
-        return queue.sync {
-            defer { uuid = uuid + count }
-            return uuid
-        }
-    }
-}
-
-private func + (lhs: TracingUUID, rhs: UInt64) -> TracingUUID {
-    return TracingUUID(rawValue: (UInt64(lhs.toString(.decimal)) ?? 0) + rhs)
-}
-
 extension SpanEvent: AnyMockable, RandomMockable {
     static func mockWith(
-        traceID: TracingUUID = .mockAny(),
-        spanID: TracingUUID = .mockAny(),
-        parentID: TracingUUID? = .mockAny(),
+        traceID: TraceID = .mockAny(),
+        spanID: TraceID = .mockAny(),
+        parentID: TraceID? = .mockAny(),
         operationName: String = .mockAny(),
         serviceName: String = .mockAny(),
         resource: String = .mockAny(),
@@ -235,7 +203,7 @@ extension Tracer {
         core: DatadogCoreProtocol,
         configuration: Configuration = .init(),
         spanEventMapper: SpanEventMapper? = nil,
-        tracingUUIDGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
+        tracingUUIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
         dateProvider: DateProvider = SystemDateProvider(),
         rumIntegration: TracingWithRUMIntegration? = nil
     ) -> Tracer {

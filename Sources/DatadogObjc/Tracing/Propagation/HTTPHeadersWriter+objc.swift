@@ -5,14 +5,14 @@
  */
 
 import Foundation
-import class Datadog.HTTPHeadersWriter
+import class DatadogInternal.HTTPHeadersWriter
 
 @objc
 public class DDHTTPHeadersWriter: NSObject {
     let swiftHTTPHeadersWriter: HTTPHeadersWriter
 
-    @objc public var tracePropagationHTTPHeaders: [String: String] {
-        swiftHTTPHeadersWriter.tracePropagationHTTPHeaders
+    @objc public var propagationHTTPHeaderFields: [String: String] {
+        swiftHTTPHeadersWriter.propagationHTTPHeaderFields
     }
 
     @objc

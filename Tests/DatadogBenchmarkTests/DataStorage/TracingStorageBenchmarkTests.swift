@@ -82,10 +82,10 @@ class TracingStorageBenchmarkTests: XCTestCase {
     // MARK: - Helpers
 
     private func createRandomizedSpan() -> SpanEvent {
-        let tracingUUIDGenerator = DefaultTracingUUIDGenerator()
+        let tracingUUIDGenerator = DefaultTraceIDGenerator()
         return SpanEvent(
-            traceID: tracingUUIDGenerator.generateUnique(),
-            spanID: tracingUUIDGenerator.generateUnique(),
+            traceID: tracingUUIDGenerator.generate(),
+            spanID: tracingUUIDGenerator.generate(),
             parentID: nil,
             operationName: "span \(Int.random(in: 0..<100))",
             serviceName: "service-name",

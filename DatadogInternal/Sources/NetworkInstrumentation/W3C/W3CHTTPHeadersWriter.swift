@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import DatadogInternal
 
 /// The `W3CHTTPHeadersWriter` should be used to inject trace propagation headers to
 /// the network requests send to the backend instrumented with W3C trace context.
@@ -19,24 +18,24 @@ import DatadogInternal
 ///     let span = Global.sharedTracer.startSpan("network request")
 ///     writer.inject(spanContext: span.context)
 ///
-///     writer.tracePropagationHTTPHeaders.forEach { (field, value) in
+///     writer.propagationHTTPHeaderFields.forEach { (field, value) in
 ///         request.setValue(value, forHTTPHeaderField: field)
 ///     }
 ///
 ///     // call span.finish() when the request completes
 ///
 ///
-public class W3CHTTPHeadersWriter: OTHTTPHeadersWriter, TracePropagationHeadersProvider {
+public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     /// A dictionary with HTTP Headers required to propagate the trace started in the mobile app
     /// to the backend instrumented with W3C trace context.
     ///
     /// Usage:
     ///
-    ///     writer.tracePropagationHTTPHeaders.forEach { (field, value) in
+    ///     writer.propagationHTTPHeaderFields.forEach { (field, value) in
     ///         request.setValue(value, forHTTPHeaderField: field)
     ///     }
     ///
-    public private(set) var tracePropagationHTTPHeaders: [String: String] = [:]
+    public private(set) var propagationHTTPHeaderFields: [String: String] = [:]
 
     /// The tracing sampler.
     ///
@@ -48,9 +47,7 @@ public class W3CHTTPHeadersWriter: OTHTTPHeadersWriter, TracePropagationHeadersP
     /// to network request.
     ///
     /// - Parameter samplingRate: Tracing sampling rate. 20% by default.
-    public init(
-        samplingRate: Float = 20
-    ) {
+    public init(samplingRate: Float = 20) {
         self.sampler = Sampler(samplingRate: samplingRate)
     }
 
@@ -58,26 +55,18 @@ public class W3CHTTPHeadersWriter: OTHTTPHeadersWriter, TracePropagationHeadersP
     /// to network request.
     ///
     /// - Parameter sampler: Tracing sampler responsible for randomizing the sample.
-    internal init(
-        sampler: Sampler
-    ) {
+    public init(sampler: Sampler) {
         self.sampler = sampler
     }
 
-    public func inject(spanContext: OTSpanContext) {
-        guard let spanContext = spanContext.dd else {
-            return
-        }
-
-        let samplingPriority = sampler.sample()
-
+    public func write(traceID: TraceID, spanID: SpanID, parentSpanID: SpanID?) {
         typealias Constants = W3CHTTPHeaders.Constants
 
-        tracePropagationHTTPHeaders[W3CHTTPHeaders.traceparent] = [
+        propagationHTTPHeaderFields[W3CHTTPHeaders.traceparent] = [
             Constants.version,
-            spanContext.traceID.toString(.hexadecimal32Chars),
-            spanContext.spanID.toString(.hexadecimal16Chars),
-            samplingPriority ? Constants.sampledValue : Constants.unsampledValue
+            String(traceID, representation: .hexadecimal32Chars),
+            String(spanID, representation: .hexadecimal16Chars),
+            sampler.sample() ? Constants.sampledValue : Constants.unsampledValue
         ]
         .joined(separator: Constants.separator)
     }

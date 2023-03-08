@@ -5,37 +5,37 @@
  */
 
 import XCTest
-@testable import Datadog
+import DatadogInternal
 
 class OTelHTTPHeadersReaderTests: XCTestCase {
     func testOTelHTTPHeadersReaderreadsSingleHeader() {
         let oTelHTTPHeadersReader = OTelHTTPHeadersReader(httpHeaderFields: ["b3": "4d2-929-1-162e"])
 
-        let spanContext = oTelHTTPHeadersReader.extract()?.dd
+        let ids = oTelHTTPHeadersReader.read()
 
-        XCTAssertEqual(spanContext?.traceID, TracingUUID(rawValue: 1_234))
-        XCTAssertEqual(spanContext?.spanID, TracingUUID(rawValue: 2_345))
-        XCTAssertEqual(spanContext?.parentSpanID, TracingUUID(rawValue: 5_678))
+        XCTAssertEqual(ids?.traceID, 1_234)
+        XCTAssertEqual(ids?.spanID, 2_345)
+        XCTAssertEqual(ids?.parentSpanID, 5_678)
     }
 
     func testOTelHTTPHeadersReaderreadsSingleHeaderWithSampling() {
         let oTelHTTPHeadersReader = OTelHTTPHeadersReader(httpHeaderFields: ["b3": "0"])
 
-        let spanContext = oTelHTTPHeadersReader.extract()?.dd
+        let ids = oTelHTTPHeadersReader.read()
 
-        XCTAssertNil(spanContext?.traceID)
-        XCTAssertNil(spanContext?.spanID)
-        XCTAssertNil(spanContext?.parentSpanID)
+        XCTAssertNil(ids?.traceID)
+        XCTAssertNil(ids?.spanID)
+        XCTAssertNil(ids?.parentSpanID)
     }
 
     func testOTelHTTPHeadersReaderreadsSingleHeaderWithoutOptionalValues() {
         let oTelHTTPHeadersReader = OTelHTTPHeadersReader(httpHeaderFields: ["b3": "4d2-929"])
 
-        let spanContext = oTelHTTPHeadersReader.extract()?.dd
+        let ids = oTelHTTPHeadersReader.read()
 
-        XCTAssertEqual(spanContext?.traceID, TracingUUID(rawValue: 1_234))
-        XCTAssertEqual(spanContext?.spanID, TracingUUID(rawValue: 2_345))
-        XCTAssertNil(spanContext?.parentSpanID)
+        XCTAssertEqual(ids?.traceID, 1_234)
+        XCTAssertEqual(ids?.spanID, 2_345)
+        XCTAssertNil(ids?.parentSpanID)
     }
 
     func testOTelHTTPHeadersReaderreadsMultipleHeader() {
@@ -46,11 +46,11 @@ class OTelHTTPHeadersReaderTests: XCTestCase {
             "X-B3-ParentSpanId": "162e"
         ])
 
-        let spanContext = oTelHTTPHeadersReader.extract()?.dd
+        let ids = oTelHTTPHeadersReader.read()
 
-        XCTAssertEqual(spanContext?.traceID, TracingUUID(rawValue: 1_234))
-        XCTAssertEqual(spanContext?.spanID, TracingUUID(rawValue: 2_345))
-        XCTAssertEqual(spanContext?.parentSpanID, TracingUUID(rawValue: 5_678))
+        XCTAssertEqual(ids?.traceID, 1_234)
+        XCTAssertEqual(ids?.spanID, 2_345)
+        XCTAssertEqual(ids?.parentSpanID, 5_678)
     }
 
     func testOTelHTTPHeadersReaderreadsMultipleHeaderWithSampling() {
@@ -58,11 +58,11 @@ class OTelHTTPHeadersReaderTests: XCTestCase {
             "X-B3-Sampled": "0"
         ])
 
-        let spanContext = oTelHTTPHeadersReader.extract()?.dd
+        let ids = oTelHTTPHeadersReader.read()
 
-        XCTAssertNil(spanContext?.traceID)
-        XCTAssertNil(spanContext?.spanID)
-        XCTAssertNil(spanContext?.parentSpanID)
+        XCTAssertNil(ids?.traceID)
+        XCTAssertNil(ids?.spanID)
+        XCTAssertNil(ids?.parentSpanID)
     }
 
     func testOTelHTTPHeadersReaderreadsMultipleHeaderWithoutOptionalValues() {
@@ -71,10 +71,10 @@ class OTelHTTPHeadersReaderTests: XCTestCase {
             "X-B3-SpanId": "929"
         ])
 
-        let spanContext = oTelHTTPHeadersReader.extract()?.dd
+        let ids = oTelHTTPHeadersReader.read()
 
-        XCTAssertEqual(spanContext?.traceID, TracingUUID(rawValue: 1_234))
-        XCTAssertEqual(spanContext?.spanID, TracingUUID(rawValue: 2_345))
-        XCTAssertNil(spanContext?.parentSpanID)
+        XCTAssertEqual(ids?.traceID, 1_234)
+        XCTAssertEqual(ids?.spanID, 2_345)
+        XCTAssertNil(ids?.parentSpanID)
     }
 }

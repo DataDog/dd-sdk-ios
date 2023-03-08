@@ -5,79 +5,68 @@
  */
 
 import XCTest
-import DatadogInternal
-@testable import Datadog
+@testable import DatadogInternal
 
 class OTelHTTPHeadersWriterTests: XCTestCase {
     func testOTelHTTPHeadersWriterwritesSingleHeader() {
         let sampler: Sampler = .mockKeepAll()
-        let context: OTSpanContext = DDSpanContext.mockWith(
-            traceID: .mock(1_234),
-            spanID: .mock(2_345),
-            parentSpanID: .mock(5_678),
-            baggageItems: .mockAny()
-        )
         let oTelHTTPHeadersWriter = OTelHTTPHeadersWriter(
             sampler: sampler,
             injectEncoding: .single
         )
-        oTelHTTPHeadersWriter.inject(spanContext: context)
 
-        let headers = oTelHTTPHeadersWriter.tracePropagationHTTPHeaders
+        oTelHTTPHeadersWriter.write(
+            traceID: 1_234,
+            spanID: 2_345,
+            parentSpanID: 5_678
+        )
+
+        let headers = oTelHTTPHeadersWriter.propagationHTTPHeaderFields
         XCTAssertEqual(headers[OTelHTTPHeaders.Single.b3Field], "000000000000000000000000000004d2-0000000000000929-1-000000000000162e")
     }
 
     func testOTelHTTPHeadersWriterwritesSingleHeaderWithSampling() {
         let sampler: Sampler = .mockRejectAll()
-        let context: OTSpanContext = DDSpanContext.mockWith(
-            traceID: .mock(1_234),
-            spanID: .mock(2_345),
-            parentSpanID: .mock(5_678),
-            baggageItems: .mockAny()
-        )
         let oTelHTTPHeadersWriter = OTelHTTPHeadersWriter(
             sampler: sampler,
             injectEncoding: .single
         )
-        oTelHTTPHeadersWriter.inject(spanContext: context)
 
-        let headers = oTelHTTPHeadersWriter.tracePropagationHTTPHeaders
+        oTelHTTPHeadersWriter.write(
+            traceID: 1_234,
+            spanID: 2_345,
+            parentSpanID: 5_678
+        )
+
+        let headers = oTelHTTPHeadersWriter.propagationHTTPHeaderFields
         XCTAssertEqual(headers[OTelHTTPHeaders.Single.b3Field], "0")
     }
 
     func testOTelHTTPHeadersWriterwritesSingleHeaderWithoutOptionalValues() {
         let sampler: Sampler = .mockKeepAll()
-        let context: OTSpanContext = DDSpanContext.mockWith(
-            traceID: .mock(1_234),
-            spanID: .mock(2_345),
-            parentSpanID: nil,
-            baggageItems: .mockAny()
-        )
         let oTelHTTPHeadersWriter = OTelHTTPHeadersWriter(
             sampler: sampler,
             injectEncoding: .single
         )
-        oTelHTTPHeadersWriter.inject(spanContext: context)
+        oTelHTTPHeadersWriter.write(traceID: 1_234, spanID: 2_345)
 
-        let headers = oTelHTTPHeadersWriter.tracePropagationHTTPHeaders
+        let headers = oTelHTTPHeadersWriter.propagationHTTPHeaderFields
         XCTAssertEqual(headers[OTelHTTPHeaders.Single.b3Field], "000000000000000000000000000004d2-0000000000000929-1")
     }
 
     func testOTelHTTPHeadersWriterwritesMultipleHeader() {
         let sampler: Sampler = .mockKeepAll()
-        let context: OTSpanContext = DDSpanContext.mockWith(
-            traceID: .mock(1_234),
-            spanID: .mock(2_345),
-            parentSpanID: .mock(5_678),
-            baggageItems: .mockAny()
-        )
         let oTelHTTPHeadersWriter = OTelHTTPHeadersWriter(
             sampler: sampler,
             injectEncoding: .multiple
         )
-        oTelHTTPHeadersWriter.inject(spanContext: context)
+        oTelHTTPHeadersWriter.write(
+            traceID: 1_234,
+            spanID: 2_345,
+            parentSpanID: 5_678
+        )
 
-        let headers = oTelHTTPHeadersWriter.tracePropagationHTTPHeaders
+        let headers = oTelHTTPHeadersWriter.propagationHTTPHeaderFields
         XCTAssertEqual(headers[OTelHTTPHeaders.Multiple.traceIDField], "000000000000000000000000000004d2")
         XCTAssertEqual(headers[OTelHTTPHeaders.Multiple.spanIDField], "0000000000000929")
         XCTAssertEqual(headers[OTelHTTPHeaders.Multiple.sampledField], "1")
@@ -86,19 +75,17 @@ class OTelHTTPHeadersWriterTests: XCTestCase {
 
     func testOTelHTTPHeadersWriterwritesMultipleHeaderWithSampling() {
         let sampler: Sampler = .mockRejectAll()
-        let context: OTSpanContext = DDSpanContext.mockWith(
-            traceID: .mock(1_234),
-            spanID: .mock(2_345),
-            parentSpanID: .mock(5_678),
-            baggageItems: .mockAny()
-        )
         let oTelHTTPHeadersWriter = OTelHTTPHeadersWriter(
             sampler: sampler,
             injectEncoding: .multiple
         )
-        oTelHTTPHeadersWriter.inject(spanContext: context)
+        oTelHTTPHeadersWriter.write(
+            traceID: 1_234,
+            spanID: 2_345,
+            parentSpanID: 5_678
+        )
 
-        let headers = oTelHTTPHeadersWriter.tracePropagationHTTPHeaders
+        let headers = oTelHTTPHeadersWriter.propagationHTTPHeaderFields
         XCTAssertNil(headers[OTelHTTPHeaders.Multiple.traceIDField])
         XCTAssertNil(headers[OTelHTTPHeaders.Multiple.spanIDField])
         XCTAssertEqual(headers[OTelHTTPHeaders.Multiple.sampledField], "0")
@@ -107,19 +94,13 @@ class OTelHTTPHeadersWriterTests: XCTestCase {
 
     func testOTelHTTPHeadersWriterwritesMultipleHeaderWithoutOptionalValues() {
         let sampler: Sampler = .mockKeepAll()
-        let context: OTSpanContext = DDSpanContext.mockWith(
-            traceID: .mock(1_234),
-            spanID: .mock(2_345),
-            parentSpanID: nil,
-            baggageItems: .mockAny()
-        )
         let oTelHTTPHeadersWriter = OTelHTTPHeadersWriter(
             sampler: sampler,
             injectEncoding: .multiple
         )
-        oTelHTTPHeadersWriter.inject(spanContext: context)
+        oTelHTTPHeadersWriter.write(traceID: 1_234, spanID: 2_345)
 
-        let headers = oTelHTTPHeadersWriter.tracePropagationHTTPHeaders
+        let headers = oTelHTTPHeadersWriter.propagationHTTPHeaderFields
         XCTAssertEqual(headers[OTelHTTPHeaders.Multiple.traceIDField], "000000000000000000000000000004d2")
         XCTAssertEqual(headers[OTelHTTPHeaders.Multiple.spanIDField], "0000000000000929")
         XCTAssertEqual(headers[OTelHTTPHeaders.Multiple.sampledField], "1")
