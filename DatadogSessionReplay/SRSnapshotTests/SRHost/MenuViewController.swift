@@ -17,9 +17,17 @@ internal class MenuViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell()
-        var content = cell.defaultContentConfiguration()
-        content.text = Fixture.allCases[indexPath.item].menuItemTitle
-        cell.contentConfiguration = content
+
+        if #available(iOS 14.0, *) {
+            var content = cell.defaultContentConfiguration()
+            content.text = Fixture.allCases[indexPath.item].menuItemTitle
+            cell.contentConfiguration = content
+        } else {
+            let label = UILabel(frame: .init(x: 10, y: 0, width: tableView.bounds.width, height: 44))
+            label.text = Fixture.allCases[indexPath.item].menuItemTitle
+            cell.addSubview(label)
+        }
+
         return cell
     }
 
