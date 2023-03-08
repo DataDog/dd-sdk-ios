@@ -126,7 +126,7 @@ final class SRSnapshotTests: SnapshotTestCase {
     }
 
     func testSteppers() throws {
-        show(fixture: .switches)
+        show(fixture: .steppers)
 
         var image = try takeSnapshot(configuration: .init(privacy: .allowAll))
         DDAssertSnapshotTest(

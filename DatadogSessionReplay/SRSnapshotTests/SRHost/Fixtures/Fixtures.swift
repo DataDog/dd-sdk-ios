@@ -53,7 +53,7 @@ internal enum Fixture: CaseIterable {
             return UIStoryboard.inputElements.instantiateViewController(withIdentifier: "Switches")
         case .textFields:
             return UIStoryboard.inputElements.instantiateViewController(withIdentifier: "TextFields")
-        case .textFields:
+        case .steppers:
             return UIStoryboard.inputElements.instantiateViewController(withIdentifier: "Steppers")
         }
     }

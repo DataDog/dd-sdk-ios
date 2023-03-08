@@ -17,7 +17,7 @@ internal struct UIStepperRecorder: NodeRecorder {
         }
 
         let stepperFrame = CGRect(origin: attributes.frame.origin, size: stepper.intrinsicContentSize)
-        let ids = context.ids.nodeIDs(4, for: stepper)
+        let ids = context.ids.nodeIDs(5, for: stepper)
 
         let builder = UIStepperWireframesBuilder(
             wireframeRect: stepperFrame,
@@ -50,40 +50,54 @@ internal struct UIStepperWireframesBuilder: NodeWireframesBuilder {
         let divider = builder.createShapeWireframe(
             id: ids[1],
             frame: CGRect(
-                origin: CGPoint(x: wireframeRect.origin.x + 46.5, y: wireframeRect.origin.y + 6),
+                origin: CGPoint(x: wireframeRect.origin.x + wireframeRect.size.width / 2, y: wireframeRect.origin.y + 6),
                 size: CGSize(width: 1, height: 20)
             ),
             backgroundColor: SystemColors.placeholderText
         )
-        let stepButtonFontSize = CGFloat(30)
-        let stepButtonSize = CGSize(width: stepButtonFontSize, height: stepButtonFontSize)
-        let stepButtonLeftOffset = wireframeRect.width / 4 - stepButtonSize.width / 4
-        let minus = builder.createTextWireframe(
+
+
+        let horizontalElementSize = CGSize(width: 15, height: 1.5)
+        let verticalElementSize = CGSize(width: 1.5, height: 15)
+        let horizontalLeftOffset: CGFloat = wireframeRect.size.width / 4 - horizontalElementSize.width / 2
+        let verticalLeftOffset: CGFloat = horizontalLeftOffset + horizontalElementSize.width / 2 - verticalElementSize.width / 2
+
+        let minus = builder.createShapeWireframe(
             id: ids[2],
             frame: CGRect(
                 origin: CGPoint(
-                    x: wireframeRect.origin.x + stepButtonLeftOffset - 3,
-                    y: wireframeRect.origin.y
+                    x: wireframeRect.origin.x + horizontalLeftOffset,
+                    y: wireframeRect.origin.y + wireframeRect.height / 2 - horizontalElementSize.height
                 ),
-                size: stepButtonSize
+                size: horizontalElementSize
             ),
-            text: "—",
-            textColor: isMinusEnabled ? SystemColors.label : SystemColors.placeholderText,
-            font: .systemFont(ofSize: 30)
+            backgroundColor: isMinusEnabled ? SystemColors.label : SystemColors.placeholderText,
+            cornerRadius: horizontalElementSize.height
         )
-        let plus = builder.createTextWireframe(
+        let plusHorizontal = builder.createShapeWireframe(
             id: ids[3],
             frame: CGRect(
                 origin: CGPoint(
-                    x: wireframeRect.origin.x + wireframeRect.width / 2 + stepButtonLeftOffset,
-                    y: wireframeRect.origin.y
+                    x: wireframeRect.origin.x + wireframeRect.width / 2 + horizontalLeftOffset - 0.5,
+                    y: wireframeRect.origin.y + wireframeRect.height / 2 - horizontalElementSize.height
                 ),
-                size: stepButtonSize
+                size: horizontalElementSize
             ),
-            text: "+",
-            textColor: isPlusEnabled ? SystemColors.label : SystemColors.placeholderText,
-            font: .systemFont(ofSize: stepButtonFontSize)
+            backgroundColor: isPlusEnabled ? SystemColors.label : SystemColors.placeholderText,
+            cornerRadius: horizontalElementSize.height
         )
-        return [background, divider, minus, plus]
+        let plusVertical = builder.createShapeWireframe(
+            id: ids[4],
+            frame: CGRect(
+                origin: CGPoint(
+                    x: wireframeRect.origin.x + wireframeRect.width / 2 + verticalLeftOffset,
+                    y: wireframeRect.origin.y + wireframeRect.height / 2 - verticalElementSize.height / 2 + 0.5
+                ),
+                size: verticalElementSize
+            ),
+            backgroundColor: isPlusEnabled ? SystemColors.label : SystemColors.placeholderText,
+            cornerRadius: verticalElementSize.width
+        )
+        return [background, divider, minus, plusHorizontal, plusVertical]
     }
 }
