@@ -11,7 +11,6 @@ internal struct UIStepperRecorder: NodeRecorder {
         guard let stepper = view as? UIStepper else {
             return nil
         }
-        
         guard attributes.isVisible else {
             return InvisibleElement.constant
         }
