@@ -10,7 +10,6 @@ import XCTest
 class OTelHTTPHeadersReaderTests: XCTestCase {
     func testOTelHTTPHeadersReaderreadsSingleHeader() {
         let oTelHTTPHeadersReader = OTelHTTPHeadersReader(httpHeaderFields: ["b3": "4d2-929-1-162e"])
-        oTelHTTPHeadersReader.use(baggageItemQueue: .main)
 
         let spanContext = oTelHTTPHeadersReader.extract()?.dd
 
@@ -21,7 +20,6 @@ class OTelHTTPHeadersReaderTests: XCTestCase {
 
     func testOTelHTTPHeadersReaderreadsSingleHeaderWithSampling() {
         let oTelHTTPHeadersReader = OTelHTTPHeadersReader(httpHeaderFields: ["b3": "0"])
-        oTelHTTPHeadersReader.use(baggageItemQueue: .main)
 
         let spanContext = oTelHTTPHeadersReader.extract()?.dd
 
@@ -32,7 +30,6 @@ class OTelHTTPHeadersReaderTests: XCTestCase {
 
     func testOTelHTTPHeadersReaderreadsSingleHeaderWithoutOptionalValues() {
         let oTelHTTPHeadersReader = OTelHTTPHeadersReader(httpHeaderFields: ["b3": "4d2-929"])
-        oTelHTTPHeadersReader.use(baggageItemQueue: .main)
 
         let spanContext = oTelHTTPHeadersReader.extract()?.dd
 
@@ -48,7 +45,6 @@ class OTelHTTPHeadersReaderTests: XCTestCase {
             "X-B3-Sampled": "1",
             "X-B3-ParentSpanId": "162e"
         ])
-        oTelHTTPHeadersReader.use(baggageItemQueue: .main)
 
         let spanContext = oTelHTTPHeadersReader.extract()?.dd
 
@@ -61,7 +57,6 @@ class OTelHTTPHeadersReaderTests: XCTestCase {
         let oTelHTTPHeadersReader = OTelHTTPHeadersReader(httpHeaderFields: [
             "X-B3-Sampled": "0"
         ])
-        oTelHTTPHeadersReader.use(baggageItemQueue: .main)
 
         let spanContext = oTelHTTPHeadersReader.extract()?.dd
 
@@ -75,7 +70,6 @@ class OTelHTTPHeadersReaderTests: XCTestCase {
             "X-B3-TraceId": "4d2",
             "X-B3-SpanId": "929"
         ])
-        oTelHTTPHeadersReader.use(baggageItemQueue: .main)
 
         let spanContext = oTelHTTPHeadersReader.extract()?.dd
 

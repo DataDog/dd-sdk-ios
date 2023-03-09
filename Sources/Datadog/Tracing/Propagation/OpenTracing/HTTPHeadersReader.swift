@@ -8,19 +8,13 @@ import Foundation
 
 internal class HTTPHeadersReader: OTHTTPHeadersReader, TracePropagationHeadersExtractor {
     private let httpHeaderFields: [String: String]
-    private var baggageItemQueue: DispatchQueue?
 
     init(httpHeaderFields: [String: String]) {
         self.httpHeaderFields = httpHeaderFields
     }
 
-    func use(baggageItemQueue: DispatchQueue) {
-        self.baggageItemQueue = baggageItemQueue
-    }
-
     func extract() -> OTSpanContext? {
-        guard let baggageItemQueue = baggageItemQueue,
-              let traceIDValue = httpHeaderFields[TracingHTTPHeaders.traceIDField],
+        guard let traceIDValue = httpHeaderFields[TracingHTTPHeaders.traceIDField],
               let spanIDValue = httpHeaderFields[TracingHTTPHeaders.parentSpanIDField],
               let traceID = TracingUUID(traceIDValue, .decimal),
               let spanID = TracingUUID(spanIDValue, .decimal) else {
@@ -31,7 +25,7 @@ internal class HTTPHeadersReader: OTHTTPHeadersReader, TracePropagationHeadersEx
             traceID: traceID,
             spanID: spanID,
             parentSpanID: nil,
-            baggageItems: BaggageItems(targetQueue: baggageItemQueue, parentSpanItems: nil)
+            baggageItems: BaggageItems()
         )
     }
 }

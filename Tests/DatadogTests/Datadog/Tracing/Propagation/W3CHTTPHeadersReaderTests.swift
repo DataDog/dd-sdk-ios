@@ -10,8 +10,6 @@ import XCTest
 class W3CHTTPHeadersReaderTests: XCTestCase {
     func testW3CHTTPHeadersReaderreadsSingleHeader() {
         let w3cHTTPHeadersReader = W3CHTTPHeadersReader(httpHeaderFields: ["traceparent": "00-4d2-929-01"])
-        w3cHTTPHeadersReader.use(baggageItemQueue: .main)
-
         let spanContext = w3cHTTPHeadersReader.extract()?.dd
 
         XCTAssertEqual(spanContext?.traceID, TracingUUID(rawValue: 1_234))
@@ -21,8 +19,6 @@ class W3CHTTPHeadersReaderTests: XCTestCase {
 
     func testW3CHTTPHeadersReaderreadsSingleHeaderWithSampling() {
         let w3cHTTPHeadersReader = W3CHTTPHeadersReader(httpHeaderFields: ["traceparent": "00-0-0-00"])
-        w3cHTTPHeadersReader.use(baggageItemQueue: .main)
-
         let spanContext = w3cHTTPHeadersReader.extract()?.dd
 
         XCTAssertNil(spanContext?.traceID)

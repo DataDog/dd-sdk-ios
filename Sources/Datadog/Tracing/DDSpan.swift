@@ -81,17 +81,21 @@ internal class DDSpan: OTSpan {
     }
 
     func setBaggageItem(key: String, value: String) {
-        let isFinished = queue.sync { self.warnIfFinished("setBaggageItem(key:value:)") }
-        if !isFinished {
-            // Baggage items must be accessed outside the `tracer.queue` as it uses that queue for internal sync.
+        queue.sync {
+            if self.warnIfFinished("setBaggageItem(key:value:)") {
+                return
+            }
             ddContext.baggageItems.set(key: key, value: value)
         }
     }
 
     func baggageItem(withKey key: String) -> String? {
-        let isFinished = queue.sync { self.warnIfFinished("baggageItem(withKey:)") }
-        // Baggage items must be accessed outside the `tracer.queue` as it uses that queue for internal sync.
-        return !isFinished ? ddContext.baggageItems.get(key: key) : nil
+        queue.sync {
+            if self.warnIfFinished("baggageItem(withKey:)") {
+                return nil
+            }
+            return ddContext.baggageItems.get(key: key)
+        }
     }
 
     @discardableResult
