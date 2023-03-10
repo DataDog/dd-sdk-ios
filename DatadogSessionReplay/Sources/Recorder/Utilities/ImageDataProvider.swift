@@ -7,7 +7,18 @@
 import Foundation
 import UIKit
 
-internal class ImageDataProvider {
+internal protocol ImageDataProviding {
+    func contentBase64String(
+        of image: UIImage?
+    ) -> String
+
+    func contentBase64String(
+        of image: UIImage?,
+        tintColor: UIColor?
+    ) -> String
+}
+
+internal class ImageDataProvider: ImageDataProviding {
     private var cache: Cache<String, String>
 
     private let maxBytesSize: Int
@@ -22,7 +33,7 @@ internal class ImageDataProvider {
 
     func contentBase64String(
         of image: UIImage?,
-        tintColor: UIColor? = nil
+        tintColor: UIColor?
     ) -> String {
         autoreleasepool {
             guard var image = image else {
@@ -44,6 +55,10 @@ internal class ImageDataProvider {
                 return base64EncodedImage
             }
         }
+    }
+
+    func contentBase64String(of image: UIImage?) -> String {
+        contentBase64String(of: image, tintColor: nil)
     }
 }
 

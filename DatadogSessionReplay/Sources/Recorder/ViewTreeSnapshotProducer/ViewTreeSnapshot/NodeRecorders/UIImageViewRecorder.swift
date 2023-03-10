@@ -84,7 +84,7 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
 
     let image: UIImage?
 
-    let imageDataProvider: ImageDataProvider
+    let imageDataProvider: ImageDataProviding
 
     let tintColor: UIColor?
 
