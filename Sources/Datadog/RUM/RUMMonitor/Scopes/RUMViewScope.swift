@@ -168,6 +168,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             didReceiveStartCommand = true
             needsViewUpdate = true
 
+        // Session stop
+        case let _ as RUMStopSessionCommand:
+            isActiveView = false
+            needsViewUpdate = true
+
         // View commands
         case let command as RUMStartViewCommand where identity.equals(command.identity):
             if didReceiveStartCommand {

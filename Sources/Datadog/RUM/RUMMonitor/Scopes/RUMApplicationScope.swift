@@ -9,6 +9,10 @@ import Foundation
 internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     // MARK: - Child Scopes
 
+    // Whether the applciation is already active. Set to true
+    // when the first session starts.
+    private(set) var appplicationActive: Bool = false
+
     /// Session scope. It gets created with the first event.
     /// Might be re-created later according to session duration constraints.
     private(set) var sessionScope: RUMSessionScope?
@@ -22,6 +26,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         self.context = RUMContext(
             rumApplicationID: dependencies.rumApplicationID,
             sessionID: .nullUUID,
+            isSessionActive: false,
             activeViewID: nil,
             activeViewPath: nil,
             activeViewName: nil,

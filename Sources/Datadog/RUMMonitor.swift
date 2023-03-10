@@ -601,6 +601,12 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         }
     }
 
+    // MARK: - Session
+
+    override public func stopSession() {
+        process(command: RUMStopSessionCommand(time: dateProvider.now))
+    }
+
     // MARK: - Internal
 
     func enableRUMDebugging(_ enabled: Bool) {

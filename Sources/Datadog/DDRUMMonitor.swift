@@ -296,6 +296,13 @@ public class DDRUMMonitor {
     /// - Parameter key: key for the attribute that will be removed.
     public func removeAttribute(forKey key: AttributeKey) {}
 
+    // MARK: - Session
+
+    /// Stops the current session.
+    /// A new session will start in response to a call to `startView` or `addUserAction`.
+    /// If the session is started because of a call to `addUserAction`, the last know view is restarted in the new session.
+    public func stopSession() {}
+
     // MARK: - Internal
 
     internal init() {}

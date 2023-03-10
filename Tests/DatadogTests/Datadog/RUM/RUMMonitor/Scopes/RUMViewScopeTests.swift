@@ -1606,6 +1606,29 @@ class RUMViewScopeTests: XCTestCase {
         )
     }
 
+    // MARK: - Stopped Session
+
+    func testGivenSession_whenSessionStopped_itSendsViewUpdateWithStopped() {
+        let initialDeviceTime: Date = .mockDecember15th2019At10AMUTC()
+        let initialServerTimeOffset: TimeInterval = 120 // 2 minutes
+        var currentDeviceTime = initialDeviceTime
+
+
+        // Given
+        let scope = RUMViewScope(
+            isInitialView: false,
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: mockView,
+            path: .mockAny(),
+            name: .mockAny(),
+            attributes: [:],
+            customTimings: [:],
+            startTime: initialDeviceTime,
+            serverTimeOffset: initialServerTimeOffset
+        )
+    }
+
     // MARK: - Dates Correction
 
     func testGivenViewStartedWithServerTimeDifference_whenDifferentEventsAreSend_itAppliesTheSameCorrectionToAll() throws {

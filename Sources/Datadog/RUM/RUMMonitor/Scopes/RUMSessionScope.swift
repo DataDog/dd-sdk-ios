@@ -49,6 +49,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     let sessionUUID: RUMUUID
     /// If events from this session should be sampled (send to Datadog).
     let isSampled: Bool
+    /// If the session is currently active. Set to false on a StopSession command
+    var isActive: Bool
     /// If this is the very first session created in the current app process (`false` for session created upon expiration of a previous one).
     let isInitialSession: Bool
     /// The start time of this Session, measured in device date. In initial session this is the time of SDK init.
@@ -71,6 +73,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.sessionStartTime = startTime
         self.lastInteractionTime = startTime
         self.backgroundEventTrackingEnabled = dependencies.backgroundEventTrackingEnabled
+        self.isActive = true
         self.state = RUMSessionState(
             sessionUUID: sessionUUID.rawValue,
             isInitialSession: isInitialSession,
@@ -121,6 +124,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     var context: RUMContext {
         var context = parent.context
         context.sessionID = sessionUUID
+        context.isSessionActive = isActive
         return context
     }
 
@@ -135,35 +139,45 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
 
         if !isSampled {
-            return true // discard all events in this session
+            // Make sure sessions end even if they are sampled
+            if command is RUMStopSessionCommand {
+                isActive = false
+            }
+
+            return isActive // discard all events in this session
         }
 
-        if let startApplicationCommand = command as? RUMApplicationStartCommand {
-            startApplicationLaunchView(on: startApplicationCommand, context: context, writer: writer)
-        } else if let startViewCommand = command as? RUMStartViewCommand {
-            // Start view scope explicitly on receiving "start view" command
-            startView(on: startViewCommand, context: context)
-        } else if !hasActiveView {
-            // Otherwise, if there is no active view scope, consider starting artificial scope for handling this command
-            let handlingRule = RUMOffViewEventsHandlingRule(
-                sessionState: state,
-                isAppInForeground: context.applicationStateHistory.currentSnapshot.state.isRunningInForeground,
-                isBETEnabled: backgroundEventTrackingEnabled
-            )
+        var deactivating = false
+        if isActive {
+            if command is RUMStopSessionCommand {
+                deactivating = true
+            } else if let startApplicationCommand = command as? RUMApplicationStartCommand {
+                startApplicationLaunchView(on: startApplicationCommand, context: context, writer: writer)
+            } else if let startViewCommand = command as? RUMStartViewCommand {
+                // Start view scope explicitly on receiving "start view" command
+                startView(on: startViewCommand, context: context)
+            } else if !hasActiveView {
+                // Otherwise, if there is no active view scope, consider starting artificial scope for handling this command
+                let handlingRule = RUMOffViewEventsHandlingRule(
+                    sessionState: state,
+                    isAppInForeground: context.applicationStateHistory.currentSnapshot.state.isRunningInForeground,
+                    isBETEnabled: backgroundEventTrackingEnabled
+                )
 
-            switch handlingRule {
-            case .handleInBackgroundView where command.canStartBackgroundView:
-                startBackgroundView(on: command, context: context)
-            default:
-                if !(command is RUMKeepSessionAliveCommand) { // it is expected to receive 'keep alive' while no active view (when tracking WebView events)
-                    // As no view scope will handle this command, warn the user on dropping it.
-                    DD.logger.warn(
+                switch handlingRule {
+                case .handleInBackgroundView where command.canStartBackgroundView:
+                    startBackgroundView(on: command, context: context)
+                default:
+                    if !(command is RUMKeepSessionAliveCommand) { // it is expected to receive 'keep alive' while no active view (when tracking WebView events)
+                        // As no view scope will handle this command, warn the user on dropping it.
+                        DD.logger.warn(
                         """
                         \(String(describing: command)) was detected, but no view is active. To track views automatically, try calling the
                         DatadogConfiguration.Builder.trackUIKitRUMViews() method. You can also track views manually using
                         the RumMonitor.startView() and RumMonitor.stopView() methods.
                         """
-                    )
+                        )
+                    }
                 }
             }
         }
@@ -171,15 +185,20 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         // Propagate command
         viewScopes = viewScopes.scopes(byPropagating: command, context: context, writer: writer)
 
-        if !hasActiveView {
-            // If there is no active view, update `CrashContext` accordingly, so eventual crash
+        if isActive && !hasActiveView {
+            // If this session is active and there is no active view, update `CrashContext` accordingly, so eventual crash
             // won't be associated to an inactive view and instead we will consider starting background view to track it.
+            // We also want to send this as a session is being stopped.
             // It means that with Background Events Tracking disabled, eventual off-view crashes will be dropped
             // similar to how we drop other events.
             dependencies.core.send(message: .custom(key: "rum", baggage: [RUMBaggageKeys.viewReset: true]))
         }
 
-        return true
+        if deactivating {
+            isActive = false
+        }
+
+        return isActive || !viewScopes.isEmpty
     }
 
     /// If there is an active view.
