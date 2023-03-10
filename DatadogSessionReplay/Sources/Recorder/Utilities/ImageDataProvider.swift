@@ -8,7 +8,6 @@ import Foundation
 import UIKit
 
 internal class ImageDataProvider {
-
     private var cache: Cache<String, String>
 
     private let maxBytesSize: Int
@@ -40,7 +39,7 @@ internal class ImageDataProvider {
             if let base64EncodedImage = cache[identifier] {
                 return base64EncodedImage
             } else {
-                let base64EncodedImage = image.compressToTargetSize(maxBytesSize).base64EncodedString()
+                let base64EncodedImage = image.pngData()?.base64EncodedString() ?? ""
                 cache[identifier, base64EncodedImage.count] = base64EncodedImage
                 return base64EncodedImage
             }
@@ -57,36 +56,6 @@ fileprivate extension CGSize {
 extension UIImage {
     var srIdentifier: String {
         return "\(hash)"
-    }
-}
-
-fileprivate extension UIImage {
-    func compressToTargetSize(_ targetSize: Int) -> Data {
-        var compressionQuality: CGFloat = 1.0
-        guard var imageData = pngData() else {
-            return Data()
-        }
-        guard imageData.count >= targetSize else {
-            return imageData
-        }
-        var image = self
-        while imageData.count > targetSize {
-            compressionQuality -= 0.1
-            imageData = image.jpegData(compressionQuality: compressionQuality) ?? Data()
-
-            if imageData.count > targetSize {
-                image = image.scaledImage(by: 0.9)
-            }
-        }
-        return imageData
-    }
-
-    func scaledImage(by percentage: CGFloat) -> UIImage {
-        let newSize = CGSize(width: size.width * percentage, height: size.height * percentage)
-        let renderer = UIGraphicsImageRenderer(size: newSize)
-        return renderer.image { context in
-            draw(in: CGRect(origin: .zero, size: newSize))
-        }
     }
 }
 
