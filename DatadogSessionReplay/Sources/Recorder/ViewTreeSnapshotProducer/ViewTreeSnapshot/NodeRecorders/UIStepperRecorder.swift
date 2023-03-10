@@ -21,7 +21,11 @@ internal struct UIStepperRecorder: NodeRecorder {
         let builder = UIStepperWireframesBuilder(
             wireframeRect: stepperFrame,
             cornerRadius: stepper.subviews.first?.layer.cornerRadius ?? 0,
-            ids: ids,
+            backgroundWireframeID: ids[0],
+            dividerWireframeID: ids[1],
+            minusWireframeID: ids[2],
+            plusHorizontalWireframeID: ids[3],
+            plusVerticalWireframeID: ids[4],
             isMinusEnabled: stepper.value > stepper.minimumValue,
             isPlusEnabled: stepper.value < stepper.maximumValue
         )
@@ -33,13 +37,17 @@ internal struct UIStepperRecorder: NodeRecorder {
 internal struct UIStepperWireframesBuilder: NodeWireframesBuilder {
     let wireframeRect: CGRect
     let cornerRadius: CGFloat
-    let ids: [Int64]
+    let backgroundWireframeID: WireframeID
+    let dividerWireframeID: WireframeID
+    let minusWireframeID: WireframeID
+    let plusHorizontalWireframeID: WireframeID
+    let plusVerticalWireframeID: WireframeID
     let isMinusEnabled: Bool
     let isPlusEnabled: Bool
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         let background = builder.createShapeWireframe(
-            id: ids[0],
+            id: backgroundWireframeID,
             frame: wireframeRect,
             borderColor: nil,
             borderWidth: nil,
@@ -48,7 +56,7 @@ internal struct UIStepperWireframesBuilder: NodeWireframesBuilder {
         )
         let verticalMargin: CGFloat = 6
         let divider = builder.createShapeWireframe(
-            id: ids[1],
+            id: dividerWireframeID,
             frame: CGRect(
                 origin: CGPoint(x: 0, y: verticalMargin),
                 size: CGSize(width: 1, height: wireframeRect.size.height - 2 * verticalMargin)
@@ -58,28 +66,21 @@ internal struct UIStepperWireframesBuilder: NodeWireframesBuilder {
 
         let horizontalElementRect = CGRect(origin: .zero, size: CGSize(width: 14, height: 2))
         let verticalElementRect = CGRect(origin: .zero, size: CGSize(width: 2, height: 14))
-        let leftButtonFrame = CGRect(
-            origin: wireframeRect.origin,
-            size: CGSize(width: wireframeRect.size.width / 2, height: wireframeRect.size.height)
-        )
-        let rightButtonFrame = CGRect(
-            origin: CGPoint(x: wireframeRect.origin.x + wireframeRect.size.width / 2, y: wireframeRect.origin.y),
-            size: CGSize(width: wireframeRect.size.width / 2, height: wireframeRect.size.height)
-        )
+        let (leftButtonFrame, rightButtonFrame) = wireframeRect.divided(atDistance: wireframeRect.size.width / 2, from: .minXEdge)
         let minus = builder.createShapeWireframe(
-            id: ids[2],
+            id: minusWireframeID,
             frame: horizontalElementRect.putInside(leftButtonFrame, horizontalAlignment: .center, verticalAlignment: .middle),
             backgroundColor: isMinusEnabled ? SystemColors.label : SystemColors.placeholderText,
             cornerRadius: horizontalElementRect.size.height
         )
         let plusHorizontal = builder.createShapeWireframe(
-            id: ids[3],
+            id: plusHorizontalWireframeID,
             frame: horizontalElementRect.putInside(rightButtonFrame, horizontalAlignment: .center, verticalAlignment: .middle),
             backgroundColor: isPlusEnabled ? SystemColors.label : SystemColors.placeholderText,
             cornerRadius: horizontalElementRect.size.height
         )
         let plusVertical = builder.createShapeWireframe(
-            id: ids[4],
+            id: plusVerticalWireframeID,
             frame: verticalElementRect.putInside(rightButtonFrame, horizontalAlignment: .center, verticalAlignment: .middle),
             backgroundColor: isPlusEnabled ? SystemColors.label : SystemColors.placeholderText,
             cornerRadius: verticalElementRect.size.width
