@@ -19,6 +19,8 @@ internal struct ViewTreeRecordingContext {
     /// Masks text in recorded nodes.
     /// Can be overwriten in by `NodeRecorder` if their subtree recording requires different masking.
     var textObfuscator: TextObfuscating
+    /// Provides base64 image data with a built in caching mechanism.
+    let imageDataProvider: ImageDataProviding
 }
 
 internal struct ViewTreeRecorder {

@@ -17,6 +17,8 @@ internal struct ViewTreeSnapshotBuilder {
     let idsGenerator: NodeIDGenerator
     /// Masks text in recorded nodes.
     let textObfuscator: TextObfuscator
+    /// Provides base64 image data with a built in caching mechanism.
+    let imageDataProvider: ImageDataProvider
 
     /// Builds the `ViewTreeSnapshot` for given root view.
     ///
@@ -30,7 +32,8 @@ internal struct ViewTreeSnapshotBuilder {
             recorder: recorderContext,
             coordinateSpace: rootView,
             ids: idsGenerator,
-            textObfuscator: textObfuscator
+            textObfuscator: textObfuscator,
+            imageDataProvider: imageDataProvider
         )
         let snapshot = ViewTreeSnapshot(
             date: recorderContext.date.addingTimeInterval(recorderContext.rumContext.viewServerTimeOffset ?? 0),
@@ -47,7 +50,8 @@ extension ViewTreeSnapshotBuilder {
         self.init(
             viewTreeRecorder: ViewTreeRecorder(nodeRecorders: defaultNodeRecorders),
             idsGenerator: NodeIDGenerator(),
-            textObfuscator: TextObfuscator()
+            textObfuscator: TextObfuscator(),
+            imageDataProvider: ImageDataProvider()
         )
     }
 }

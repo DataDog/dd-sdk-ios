@@ -18,7 +18,8 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         let builder = ViewTreeSnapshotBuilder(
             viewTreeRecorder: ViewTreeRecorder(nodeRecorders: [nodeRecorder]),
             idsGenerator: NodeIDGenerator(),
-            textObfuscator: TextObfuscator()
+            textObfuscator: TextObfuscator(),
+            imageDataProvider: ImageDataProvider()
         )
 
         // When
@@ -41,7 +42,8 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         let builder = ViewTreeSnapshotBuilder(
             viewTreeRecorder: ViewTreeRecorder(nodeRecorders: [nodeRecorder]),
             idsGenerator: NodeIDGenerator(),
-            textObfuscator: TextObfuscator()
+            textObfuscator: TextObfuscator(),
+            imageDataProvider: MockImageDataProvider()
         )
 
         // When

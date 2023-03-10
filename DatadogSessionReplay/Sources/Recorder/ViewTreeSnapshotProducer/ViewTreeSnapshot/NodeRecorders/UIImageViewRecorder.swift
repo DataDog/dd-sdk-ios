@@ -7,12 +7,10 @@
 import UIKit
 
 internal struct UIImageViewRecorder: NodeRecorder {
-    private let imageDataProvider: ImageDataProvider
     private let tintColorProvider: (UIImageView) -> UIColor?
     private let shouldRecordImagePredicate: (UIImageView) -> Bool
 
     internal init(
-        imageDataProvider: ImageDataProvider = ImageDataProvider(),
         tintColorProvider: @escaping (UIImageView) -> UIColor? = { _ in
             return nil
         },
@@ -24,7 +22,6 @@ internal struct UIImageViewRecorder: NodeRecorder {
             }
         }
     ) {
-        self.imageDataProvider = imageDataProvider
         self.tintColorProvider = tintColorProvider
         self.shouldRecordImagePredicate = shouldRecordImagePredicate
     }
@@ -58,7 +55,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
             contentFrame: contentFrame,
             clipsToBounds: imageView.clipsToBounds,
             image: imageView.image,
-            imageDataProvider: imageDataProvider,
+            imageDataProvider: context.imageDataProvider,
             tintColor: tintColorProvider(imageView),
             shouldRecordImage: shouldRecordImagePredicate(imageView)
         )

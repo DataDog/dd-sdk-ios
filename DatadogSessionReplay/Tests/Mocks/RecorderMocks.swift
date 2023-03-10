@@ -277,7 +277,8 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
             recorder: .mockRandom(),
             coordinateSpace: UIView.mockRandom(),
             ids: NodeIDGenerator(),
-            textObfuscator: TextObfuscator()
+            textObfuscator: TextObfuscator(),
+            imageDataProvider: MockImageDataProvider()
         )
     }
 
@@ -285,13 +286,15 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
         recorder: Recorder.Context = .mockAny(),
         coordinateSpace: UICoordinateSpace = UIView.mockAny(),
         ids: NodeIDGenerator = NodeIDGenerator(),
-        textObfuscator: TextObfuscator = TextObfuscator()
+        textObfuscator: TextObfuscator = TextObfuscator(),
+        imageDataProvider: ImageDataProviding = MockImageDataProvider()
     ) -> ViewTreeRecordingContext {
         return .init(
             recorder: recorder,
             coordinateSpace: coordinateSpace,
             ids: ids,
-            textObfuscator: textObfuscator
+            textObfuscator: textObfuscator,
+            imageDataProvider: imageDataProvider
         )
     }
 }
