@@ -51,7 +51,7 @@ class TestObfuscatorTests: XCTestCase {
 }
 
 class InputTextObfuscatorTests: XCTestCase {
-    let obfuscator = InputTextObfuscator()
+    let obfuscator = SensitiveTextObfuscator()
 
     func testWhenObfuscatingItAlwaysReplacesTextItWithConstantMask() {
         let expectedMask = "xxx"

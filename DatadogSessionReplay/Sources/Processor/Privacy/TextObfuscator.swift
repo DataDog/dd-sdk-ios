@@ -44,7 +44,7 @@ internal struct TextObfuscator: TextObfuscating {
 /// It should be used **by default** for input elements that bring sensitive information (such as passwords).
 /// It shuold be used for input elements that can't safely use space-preserving masking (such as date pickers, where selection can be still
 /// inferred by counting the number of x-es in the mask).
-internal struct InputTextObfuscator: TextObfuscating {
+internal struct SensitiveTextObfuscator: TextObfuscating {
     private static let maskedString = "xxx"
 
     func mask(text: String) -> String { Self.maskedString }

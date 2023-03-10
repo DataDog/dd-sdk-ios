@@ -6,7 +6,10 @@
 
 import UIKit
 
-internal struct UIImageViewRecorder: NodeRecorder {
+internal class UIImageViewRecorder: NodeRecorder {
+    /// An option for overriding default semantics from parent recorder.
+    var semanticsOverride: (UIImageView, ViewAttributes) -> NodeSemantics? = { _, _ in nil }
+
     private let imageDataProvider = ImageDataProvider()
 
     func semantics(
@@ -16,6 +19,9 @@ internal struct UIImageViewRecorder: NodeRecorder {
     ) -> NodeSemantics? {
         guard let imageView = view as? UIImageView else {
             return nil
+        }
+        if let semantics = semanticsOverride(imageView, attributes) {
+            return semantics
         }
         guard attributes.hasAnyAppearance || imageView.image != nil else {
             return InvisibleElement.constant

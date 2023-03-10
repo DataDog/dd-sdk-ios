@@ -15,8 +15,10 @@ internal struct ViewTreeSnapshotBuilder {
     let viewTreeRecorder: ViewTreeRecorder
     /// Generates stable IDs for traversed views.
     let idsGenerator: NodeIDGenerator
-    /// Masks text in recorded nodes.
-    let textObfuscator: TextObfuscator
+    /// Text obfuscator applied to all non-sensitive texts. No-op if privacy mode is disabled.
+    let textObfuscator = TextObfuscator()
+    /// Text obfuscator applied to all sensitive texts.
+    let sensitiveTextObfuscator = SensitiveTextObfuscator()
 
     /// Builds the `ViewTreeSnapshot` for given root view.
     ///
@@ -30,7 +32,19 @@ internal struct ViewTreeSnapshotBuilder {
             recorder: recorderContext,
             coordinateSpace: rootView,
             ids: idsGenerator,
-            textObfuscator: textObfuscator
+            textObfuscator: {
+                switch recorderContext.privacy {
+                case .maskAll:  return textObfuscator
+                case .allowAll: return nopTextObfuscator
+                }
+            }(),
+            selectionTextObfuscator: {
+                switch recorderContext.privacy {
+                case .maskAll:  return sensitiveTextObfuscator
+                case .allowAll: return nopTextObfuscator
+                }
+            }(),
+            sensitiveTextObfuscator: sensitiveTextObfuscator
         )
         let snapshot = ViewTreeSnapshot(
             date: recorderContext.date.addingTimeInterval(recorderContext.rumContext.viewServerTimeOffset ?? 0),
@@ -45,25 +59,36 @@ internal struct ViewTreeSnapshotBuilder {
 extension ViewTreeSnapshotBuilder {
     init() {
         self.init(
-            viewTreeRecorder: ViewTreeRecorder(nodeRecorders: defaultNodeRecorders),
-            idsGenerator: NodeIDGenerator(),
-            textObfuscator: TextObfuscator()
+            viewTreeRecorder: ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders()),
+            idsGenerator: NodeIDGenerator()
         )
     }
 }
 
 /// An arrays of default node recorders executed for the root view-tree hierarchy.
-internal let defaultNodeRecorders: [NodeRecorder] = [
-    UIViewRecorder(),
-    UILabelRecorder(),
-    UIImageViewRecorder(),
-    UITextFieldRecorder(),
-    UITextViewRecorder(),
-    UISwitchRecorder(),
-    UISliderRecorder(),
-    UISegmentRecorder(),
-    UIStepperRecorder(),
-    UINavigationBarRecorder(),
-    UITabBarRecorder(),
-    UIPickerViewRecorder(),
-]
+internal func createDefaultNodeRecorders() -> [NodeRecorder] {
+    let imageViewRecorder = UIImageViewRecorder()
+    imageViewRecorder.semanticsOverride = { imageView, _ in
+        let className = "\(type(of: imageView))"
+        // This gets effective on iOS 15.0+ which is the earliest version that displays some elements in popover views.
+        // Here we explicitly ignore the "shadow" effect applied to popover.
+        let isSystemShadow = className == "_UICutoutShadowView"
+        return isSystemShadow ? IgnoredElement(subtreeStrategy: .ignore) : nil
+    }
+
+    return [
+        UIViewRecorder(),
+        UILabelRecorder(),
+        imageViewRecorder,
+        UITextFieldRecorder(),
+        UITextViewRecorder(),
+        UISwitchRecorder(),
+        UISliderRecorder(),
+        UISegmentRecorder(),
+        UIStepperRecorder(),
+        UINavigationBarRecorder(),
+        UITabBarRecorder(),
+        UIPickerViewRecorder(),
+        UIDatePickerRecorder(),
+    ]
+}
