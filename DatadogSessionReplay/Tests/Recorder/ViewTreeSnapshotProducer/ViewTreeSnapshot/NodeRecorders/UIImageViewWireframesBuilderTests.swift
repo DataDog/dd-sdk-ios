@@ -8,16 +8,11 @@ import XCTest
 @testable import DatadogSessionReplay
 
 class UIImageViewWireframesBuilderTests: XCTestCase {
-    var wireframesBuilder: WireframesBuilder!
+    var wireframesBuilder: WireframesBuilder = .init()
 
     override func setUp() {
         super.setUp()
         wireframesBuilder = WireframesBuilder()
-    }
-
-    override func tearDown() {
-        wireframesBuilder = nil
-        super.tearDown()
     }
 
     func test_BuildCorrectWireframes_fromValidData() {
