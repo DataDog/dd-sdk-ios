@@ -19,8 +19,12 @@ internal struct UIImageViewRecorder: NodeRecorder {
     }
 
     internal init(
-        tintColorProvider: @escaping (UIImageView) -> UIColor? = { _ in
-            return nil
+        tintColorProvider: @escaping (UIImageView) -> UIColor? = { imageView in
+            if #available(iOS 13.0, *) {
+                return imageView.image?.isSymbolImage == true ? imageView.tintColor : nil
+            } else {
+                return nil
+            }
         },
         shouldRecordImagePredicate: @escaping (UIImageView) -> Bool = { imageView in
             if #available(iOS 13.0, *) {
