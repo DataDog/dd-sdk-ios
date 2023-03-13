@@ -17,7 +17,7 @@ import Foundation
 ///     core.register(urlSessionInterceptor: interceptor)
 ///
 /// Registering multiple interceptor will aggregate instrumentation.
-internal struct NetworkInstrumentationFeature: DatadogFeature {
+internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// The Feature name: "trace-propagation".
     static let name = "network-instrumentation"
 
@@ -26,6 +26,14 @@ internal struct NetworkInstrumentationFeature: DatadogFeature {
 
     /// The list of registered propagators.
     var interceptors: [DatadogURLSessionInterceptor] = []
+
+    init() throws {
+        try URLSessionSwizzler.bind()
+    }
+
+    deinit {
+        URLSessionSwizzler.unbind()
+    }
 }
 
 extension NetworkInstrumentationFeature: DatadogURLSessionInterceptor {
@@ -55,12 +63,8 @@ extension DatadogCoreProtocol {
     ///
     /// - Parameter urlSessionInterceptor: The `URLSession` interceptor to register.
     public func register(urlSessionInterceptor: DatadogURLSessionInterceptor) throws {
-        var feature = get(feature: NetworkInstrumentationFeature.self) ?? .init()
+        let feature = try get(feature: NetworkInstrumentationFeature.self) ?? .init()
         feature.interceptors.append(urlSessionInterceptor)
         try register(feature: feature)
-    }
-
-    public var urlSessionInterceptor: DatadogURLSessionInterceptor {
-        return get(feature: NetworkInstrumentationFeature.self) ?? NOPDatadogURLSessionInterceptor()
     }
 }

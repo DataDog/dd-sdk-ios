@@ -5,9 +5,8 @@
  */
 
 import Foundation
-import DatadogInternal
 
-internal protocol HostsSanitizing {
+public protocol HostsSanitizing {
     func sanitized(hosts: Set<String>, warningMessage: String) -> Set<String>
     func sanitized(
         hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>],
@@ -15,10 +14,12 @@ internal protocol HostsSanitizing {
     ) -> [String: Set<TracingHeaderType>]
 }
 
-internal struct HostsSanitizer: HostsSanitizing {
+public struct HostsSanitizer: HostsSanitizing {
     private let urlRegex = #"^(http|https)://(.*)"#
     private let hostRegex = #"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)+([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$"#
     private let ipRegex = #"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"#
+
+    public init() { }
 
     private func sanitize(host: String, warningMessage: String) -> (String?, String?) {
         if host.range(of: urlRegex, options: .regularExpression) != nil {
@@ -57,7 +58,7 @@ internal struct HostsSanitizer: HostsSanitizing {
         }
     }
 
-    func sanitized(hosts: Set<String>, warningMessage: String) -> Set<String> {
+    public func sanitized(hosts: Set<String>, warningMessage: String) -> Set<String> {
         var warnings: [String] = []
 
         let array: [String] = hosts.compactMap { host in
@@ -73,7 +74,7 @@ internal struct HostsSanitizer: HostsSanitizing {
         return Set(array)
     }
 
-    func sanitized(
+    public func sanitized(
         hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>],
         warningMessage: String
     ) -> [String: Set<TracingHeaderType>] {

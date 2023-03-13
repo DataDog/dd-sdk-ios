@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 internal protocol StoragePerformancePreset {
     /// Maximum size of a single file (in bytes).

@@ -404,36 +404,6 @@ struct StoragePerformanceMock: StoragePerformancePreset {
     )
 }
 
-struct UploadPerformanceMock: UploadPerformancePreset {
-    let initialUploadDelay: TimeInterval
-    let minUploadDelay: TimeInterval
-    let maxUploadDelay: TimeInterval
-    let uploadDelayChangeRate: Double
-
-    static let noOp = UploadPerformanceMock(
-        initialUploadDelay: .distantFuture,
-        minUploadDelay: .distantFuture,
-        maxUploadDelay: .distantFuture,
-        uploadDelayChangeRate: 0
-    )
-
-    /// Optimized for performing very fast uploads in unit tests.
-    static let veryQuick = UploadPerformanceMock(
-        initialUploadDelay: 0.05,
-        minUploadDelay: 0.05,
-        maxUploadDelay: 0.05,
-        uploadDelayChangeRate: 0
-    )
-
-    /// Optimized for performing very fast first upload and then changing to unrealistically long intervals.
-    static let veryQuickInitialUpload = UploadPerformanceMock(
-        initialUploadDelay: 0.05,
-        minUploadDelay: 60,
-        maxUploadDelay: 60,
-        uploadDelayChangeRate: 60 / 0.05
-    )
-}
-
 extension BundleType: AnyMockable, RandomMockable {
     public static func mockAny() -> BundleType {
         return .iOSApp

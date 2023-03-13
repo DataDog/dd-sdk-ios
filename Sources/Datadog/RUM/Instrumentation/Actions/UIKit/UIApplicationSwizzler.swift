@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import DatadogInternal
 
 internal class UIApplicationSwizzler {
     let sendEvent: SendEvent
@@ -35,6 +36,7 @@ internal class UIApplicationSwizzler {
         init(handler: UIEventHandler) throws {
             self.method = try Self.findMethod(with: Self.selector, in: UIApplication.self)
             self.handler = handler
+            super.init()
         }
 
         func swizzle() {

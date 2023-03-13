@@ -6,28 +6,20 @@
 
 import XCTest
 import TestUtilities
-import DatadogInternal
-@testable import Datadog
+@testable import DatadogInternal
 
-class DDURLSessionDelegateTests: XCTestCase {
-    private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
+class DatadogURLSessionDelegateTests: XCTestCase {
+    private var core: SingleFeatureCoreMock<NetworkInstrumentationFeature>! // swiftlint:disable:this implicitly_unwrapped_optional
     private let interceptor = URLSessionInterceptorMock()
 
     override func setUpWithError() throws {
-        try super.setUpWithError()
-        let instrumentation = URLSessionAutoInstrumentation(
-            swizzler: try URLSessionSwizzler(),
-            interceptor: interceptor
-        )
+        super.setUp()
 
-        instrumentation.enable() // swizzle `URLSession`
-
-        core = DatadogCoreProxy()
-        core.register(feature: instrumentation)
+        core = SingleFeatureCoreMock()
+        try core.register(urlSessionInterceptor: interceptor)
     }
 
     override func tearDown() {
-        core.flushAndTearDown()
         core = nil
         super.tearDown()
     }
@@ -45,7 +37,7 @@ class DDURLSessionDelegateTests: XCTestCase {
         interceptor.onTaskMetricsCollected = { _, _ in notifyTaskMetricsCollected.fulfill() }
 
         // Given
-        let delegate = DDURLSessionDelegate(in: core)
+        let delegate = DatadogURLSessionDelegate(in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -68,7 +60,7 @@ class DDURLSessionDelegateTests: XCTestCase {
         interceptor.onTaskMetricsCollected = { _, _ in notifyTaskMetricsCollected.fulfill() }
 
         // Given
-        let delegate = DDURLSessionDelegate(in: core)
+        let delegate = DatadogURLSessionDelegate(in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -100,7 +92,7 @@ class DDURLSessionDelegateTests: XCTestCase {
         let dateBeforeAnyRequests = Date()
 
         // Given
-        let delegate = DDURLSessionDelegate(in: core)
+        let delegate = DatadogURLSessionDelegate(in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -158,7 +150,7 @@ class DDURLSessionDelegateTests: XCTestCase {
         let dateBeforeAnyRequests = Date()
 
         // Given
-        let delegate = DDURLSessionDelegate(in: core)
+        let delegate = DatadogURLSessionDelegate(in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -203,18 +195,14 @@ class DDURLSessionDelegateTests: XCTestCase {
 
     func testItCanBeInitializedBeforeInitializingDefaultSDKCore() throws {
         // Given
-        let delegate1 = DDURLSessionDelegate()
-        let delegate2 = DDURLSessionDelegate(additionalFirstPartyHosts: [])
-        let delegate3 = DDURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: [:])
+        let delegate = DatadogURLSessionDelegate()
 
         // When
         defaultDatadogCore = core
         defer { defaultDatadogCore = NOPDatadogCore() }
 
         // Then
-        XCTAssertNotNil(delegate1.instrumentation)
-        XCTAssertNotNil(delegate2.instrumentation)
-        XCTAssertNotNil(delegate3.instrumentation)
+        XCTAssertNotNil(delegate.interceptor)
     }
 
     func testItCanBeInitializedAfterInitializingDefaultSDKCore() throws {
@@ -223,48 +211,25 @@ class DDURLSessionDelegateTests: XCTestCase {
         defer { defaultDatadogCore = NOPDatadogCore() }
 
         // When
-        let delegate1 = DDURLSessionDelegate()
-        let delegate2 = DDURLSessionDelegate(additionalFirstPartyHosts: [])
-        let delegate3 = DDURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: [:])
+        let delegate = DatadogURLSessionDelegate()
 
         // Then
-        XCTAssertNotNil(delegate1.instrumentation)
-        XCTAssertNotNil(delegate2.instrumentation)
-        XCTAssertNotNil(delegate3.instrumentation)
+        XCTAssertNotNil(delegate.interceptor)
     }
 
     func testItOnlyKeepsInstrumentationWhileSDKCoreIsAvailableInMemory() throws {
-        let instrumentation = URLSessionAutoInstrumentation(swizzler: try URLSessionSwizzler(), interceptor: interceptor)
-
         // Given
-        var core: DatadogCoreProxy? = DatadogCoreProxy()
-        core?.v1.register(feature: instrumentation)
-        defaultDatadogCore = core!
+        var core: DatadogCoreProtocol? = SingleFeatureCoreMock<NetworkInstrumentationFeature>()
+        try core?.register(urlSessionInterceptor: interceptor)
 
         // When
-        let delegate1 = DDURLSessionDelegate(in: core)
-        let delegate2 = DDURLSessionDelegate(in: core, additionalFirstPartyHostsWithHeaderTypes: [:])
-        let delegate3 = DDURLSessionDelegate()
-        let delegate4 = DDURLSessionDelegate(additionalFirstPartyHosts: [])
-        let delegate5 = DDURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: [:])
-
+        let delegate = DatadogURLSessionDelegate(in: core)
         // Then
-        XCTAssertNotNil(delegate1.instrumentation)
-        XCTAssertNotNil(delegate2.instrumentation)
-        XCTAssertNotNil(delegate3.instrumentation)
-        XCTAssertNotNil(delegate4.instrumentation)
-        XCTAssertNotNil(delegate5.instrumentation)
+        XCTAssertNotNil(delegate.interceptor)
 
         // When (deinitialize core)
-        core?.flushAndTearDown()
         core = nil
-        defaultDatadogCore = NOPDatadogCore()
-
         // Then
-        XCTAssertNil(delegate1.instrumentation)
-        XCTAssertNil(delegate2.instrumentation)
-        XCTAssertNil(delegate3.instrumentation)
-        XCTAssertNil(delegate4.instrumentation)
-        XCTAssertNil(delegate5.instrumentation)
+        XCTAssertNil(delegate.interceptor)
     }
 }

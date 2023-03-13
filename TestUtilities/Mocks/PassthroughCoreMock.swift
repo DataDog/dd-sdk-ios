@@ -74,7 +74,6 @@ public final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
         PassthroughCoreMock.referenceCount -= 1
     }
 
-
     /// no-op
     public func register<T>(feature: T) throws where T: DatadogFeature { }
     /// no-op
