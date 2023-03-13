@@ -17,7 +17,7 @@ import Foundation
 ///     let span = Global.sharedTracer.startSpan("network request")
 ///     writer.inject(spanContext: span.context)
 ///
-///     writer.propagationHTTPHeaderFields.forEach { (field, value) in
+///     writer.traceHeaderFields.forEach { (field, value) in
 ///         request.setValue(value, forHTTPHeaderField: field)
 ///     }
 ///
@@ -30,11 +30,11 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
     ///
     /// Usage:
     ///
-    ///     writer.propagationHTTPHeaderFields.forEach { (field, value) in
+    ///     writer.traceHeaderFields.forEach { (field, value) in
     ///         request.setValue(value, forHTTPHeaderField: field)
     ///     }
     ///
-    public private(set) var propagationHTTPHeaderFields: [String: String] = [:]
+    public private(set) var traceHeaderFields: [String: String] = [:]
 
     /// The tracing sampler.
     ///
@@ -61,13 +61,13 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
     public func write(traceID: TraceID, spanID: SpanID, parentSpanID: SpanID?) {
         let samplingPriority = sampler.sample()
 
-        propagationHTTPHeaderFields = [
+        traceHeaderFields = [
             TracingHTTPHeaders.samplingPriorityField: samplingPriority ? "1" : "0"
         ]
 
         if samplingPriority {
-            propagationHTTPHeaderFields[TracingHTTPHeaders.traceIDField] = String(traceID)
-            propagationHTTPHeaderFields[TracingHTTPHeaders.parentSpanIDField] = String(spanID)
+            traceHeaderFields[TracingHTTPHeaders.traceIDField] = String(traceID)
+            traceHeaderFields[TracingHTTPHeaders.parentSpanIDField] = String(spanID)
         }
     }
 }

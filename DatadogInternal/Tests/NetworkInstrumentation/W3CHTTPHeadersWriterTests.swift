@@ -15,7 +15,7 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
         )
         w3cHTTPHeadersWriter.write(traceID: 1_234, spanID: 2_345)
 
-        let headers = w3cHTTPHeadersWriter.propagationHTTPHeaderFields
+        let headers = w3cHTTPHeadersWriter.traceHeaderFields
         XCTAssertEqual(headers[W3CHTTPHeaders.traceparent], "00-000000000000000000000000000004d2-0000000000000929-01")
     }
 
@@ -26,7 +26,7 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
         )
         w3cHTTPHeadersWriter.write(traceID: 1_234, spanID: 2_345, parentSpanID: 5_678)
 
-        let headers = w3cHTTPHeadersWriter.propagationHTTPHeaderFields
+        let headers = w3cHTTPHeadersWriter.traceHeaderFields
         XCTAssertEqual(headers[W3CHTTPHeaders.traceparent], "00-000000000000000000000000000004d2-0000000000000929-00")
     }
 }

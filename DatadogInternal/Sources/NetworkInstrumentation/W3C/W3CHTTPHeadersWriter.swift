@@ -18,7 +18,7 @@ import Foundation
 ///     let span = Global.sharedTracer.startSpan("network request")
 ///     writer.inject(spanContext: span.context)
 ///
-///     writer.propagationHTTPHeaderFields.forEach { (field, value) in
+///     writer.traceHeaderFields.forEach { (field, value) in
 ///         request.setValue(value, forHTTPHeaderField: field)
 ///     }
 ///
@@ -31,11 +31,11 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     ///
     /// Usage:
     ///
-    ///     writer.propagationHTTPHeaderFields.forEach { (field, value) in
+    ///     writer.traceHeaderFields.forEach { (field, value) in
     ///         request.setValue(value, forHTTPHeaderField: field)
     ///     }
     ///
-    public private(set) var propagationHTTPHeaderFields: [String: String] = [:]
+    public private(set) var traceHeaderFields: [String: String] = [:]
 
     /// The tracing sampler.
     ///
@@ -62,7 +62,7 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     public func write(traceID: TraceID, spanID: SpanID, parentSpanID: SpanID?) {
         typealias Constants = W3CHTTPHeaders.Constants
 
-        propagationHTTPHeaderFields[W3CHTTPHeaders.traceparent] = [
+        traceHeaderFields[W3CHTTPHeaders.traceparent] = [
             Constants.version,
             String(traceID, representation: .hexadecimal32Chars),
             String(spanID, representation: .hexadecimal16Chars),

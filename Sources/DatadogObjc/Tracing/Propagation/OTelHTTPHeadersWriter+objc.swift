@@ -28,8 +28,8 @@ private extension OTelHTTPHeadersWriter.InjectEncoding {
 public class DDOTelHTTPHeadersWriter: NSObject {
     let swiftOTelHTTPHeadersWriter: OTelHTTPHeadersWriter
 
-    @objc public var propagationHTTPHeaderFields: [String: String] {
-        swiftOTelHTTPHeadersWriter.propagationHTTPHeaderFields
+    @objc public var traceHeaderFields: [String: String] {
+        swiftOTelHTTPHeadersWriter.traceHeaderFields
     }
 
     @objc

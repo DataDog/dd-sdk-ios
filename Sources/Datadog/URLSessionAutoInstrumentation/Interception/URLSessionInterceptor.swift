@@ -272,7 +272,7 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
                 parentSpanID: spanContext.parentSpanID
             )
 
-            writer.propagationHTTPHeaderFields.forEach { field, value in
+            writer.traceHeaderFields.forEach { field, value in
                 newRequest.setValue(value, forHTTPHeaderField: field)
             }
         }

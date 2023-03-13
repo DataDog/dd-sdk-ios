@@ -11,8 +11,8 @@ import class DatadogInternal.HTTPHeadersWriter
 public class DDHTTPHeadersWriter: NSObject {
     let swiftHTTPHeadersWriter: HTTPHeadersWriter
 
-    @objc public var propagationHTTPHeaderFields: [String: String] {
-        swiftHTTPHeadersWriter.propagationHTTPHeaderFields
+    @objc public var traceHeaderFields: [String: String] {
+        swiftHTTPHeadersWriter.traceHeaderFields
     }
 
     @objc

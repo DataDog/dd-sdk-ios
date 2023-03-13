@@ -18,7 +18,7 @@ import Foundation
 ///     let span = Global.sharedTracer.startSpan("network request")
 ///     writer.inject(spanContext: span.context)
 ///
-///     writer.propagationHTTPHeaderFields.forEach { (field, value) in
+///     writer.traceHeaderFields.forEach { (field, value) in
 ///         request.setValue(value, forHTTPHeaderField: field)
 ///     }
 ///
@@ -44,11 +44,11 @@ public class OTelHTTPHeadersWriter: TracePropagationHeadersWriter {
     ///
     /// Usage:
     ///
-    ///     writer.propagationHTTPHeaderFields.forEach { (field, value) in
+    ///     writer.traceHeaderFields.forEach { (field, value) in
     ///         request.setValue(value, forHTTPHeaderField: field)
     ///     }
     ///
-    public private(set) var propagationHTTPHeaderFields: [String: String] = [:]
+    public private(set) var traceHeaderFields: [String: String] = [:]
 
     /// The tracing sampler.
     ///
@@ -92,18 +92,18 @@ public class OTelHTTPHeadersWriter: TracePropagationHeadersWriter {
 
         switch injectEncoding {
         case .multiple:
-            propagationHTTPHeaderFields = [
+            traceHeaderFields = [
                 OTelHTTPHeaders.Multiple.sampledField: samplingPriority ? Constants.sampledValue : Constants.unsampledValue
             ]
 
             if samplingPriority {
-                propagationHTTPHeaderFields[OTelHTTPHeaders.Multiple.traceIDField] = String(traceID, representation: .hexadecimal32Chars)
-                propagationHTTPHeaderFields[OTelHTTPHeaders.Multiple.spanIDField] = String(spanID, representation: .hexadecimal16Chars)
-                propagationHTTPHeaderFields[OTelHTTPHeaders.Multiple.parentSpanIDField] = parentSpanID.map { String($0, representation: .hexadecimal16Chars) }
+                traceHeaderFields[OTelHTTPHeaders.Multiple.traceIDField] = String(traceID, representation: .hexadecimal32Chars)
+                traceHeaderFields[OTelHTTPHeaders.Multiple.spanIDField] = String(spanID, representation: .hexadecimal16Chars)
+                traceHeaderFields[OTelHTTPHeaders.Multiple.parentSpanIDField] = parentSpanID.map { String($0, representation: .hexadecimal16Chars) }
             }
         case .single:
             if samplingPriority {
-                propagationHTTPHeaderFields[OTelHTTPHeaders.Single.b3Field] = [
+                traceHeaderFields[OTelHTTPHeaders.Single.b3Field] = [
                     String(traceID, representation: .hexadecimal32Chars),
                     String(spanID, representation: .hexadecimal16Chars),
                     samplingPriority ? Constants.sampledValue : Constants.unsampledValue,
@@ -112,7 +112,7 @@ public class OTelHTTPHeadersWriter: TracePropagationHeadersWriter {
                 .compactMap { $0 }
                 .joined(separator: Constants.b3Separator)
             } else {
-                propagationHTTPHeaderFields[OTelHTTPHeaders.Single.b3Field] = Constants.unsampledValue
+                traceHeaderFields[OTelHTTPHeaders.Single.b3Field] = Constants.unsampledValue
             }
         }
     }

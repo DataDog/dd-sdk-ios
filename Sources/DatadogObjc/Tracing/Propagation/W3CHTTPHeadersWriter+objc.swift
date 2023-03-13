@@ -11,8 +11,8 @@ import class DatadogInternal.W3CHTTPHeadersWriter
 public class DDW3CHTTPHeadersWriter: NSObject {
     let swiftW3CHTTPHeadersWriter: W3CHTTPHeadersWriter
 
-    @objc public var propagationHTTPHeaderFields: [String: String] {
-        swiftW3CHTTPHeadersWriter.propagationHTTPHeaderFields
+    @objc public var traceHeaderFields: [String: String] {
+        swiftW3CHTTPHeadersWriter.traceHeaderFields
     }
 
     @objc

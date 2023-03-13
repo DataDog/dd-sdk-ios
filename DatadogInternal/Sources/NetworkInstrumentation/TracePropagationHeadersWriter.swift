@@ -8,7 +8,7 @@ import Foundation
 
 /// Write interface for a custom carrier
 public protocol TracePropagationHeadersWriter {
-    var propagationHTTPHeaderFields: [String: String] { get }
+    var traceHeaderFields: [String: String] { get }
 
     /// Inject a span context into the custom carrier
     ///

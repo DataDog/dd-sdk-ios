@@ -714,7 +714,7 @@ class TracerTests: XCTestCase {
         let spanContext2 = DDSpanContext(traceID: 3, spanID: 4, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
         let httpHeadersWriter = HTTPHeadersWriter(sampler: .mockKeepAll())
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, [:])
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, [:])
 
         // When
         tracer.inject(spanContext: spanContext1, writer: httpHeadersWriter)
@@ -725,7 +725,7 @@ class TracerTests: XCTestCase {
             "x-datadog-parent-id": "2",
             "x-datadog-sampling-priority": "1",
         ]
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, expectedHTTPHeaders1)
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders1)
 
         // When
         tracer.inject(spanContext: spanContext2, writer: httpHeadersWriter)
@@ -736,7 +736,7 @@ class TracerTests: XCTestCase {
             "x-datadog-parent-id": "4",
             "x-datadog-sampling-priority": "1",
         ]
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, expectedHTTPHeaders2)
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders2)
     }
 
     func testItInjectsSpanContextWithOTelHTTPHeadersWriter_usingMultipleHeaders() {
@@ -746,7 +746,7 @@ class TracerTests: XCTestCase {
         let spanContext3 = DDSpanContext(traceID: 77, spanID: 88, parentSpanID: nil, baggageItems: .mockAny())
 
         let httpHeadersWriter = OTelHTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .multiple)
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, [:])
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, [:])
 
         // When
         tracer.inject(spanContext: spanContext1, writer: httpHeadersWriter)
@@ -758,7 +758,7 @@ class TracerTests: XCTestCase {
             "X-B3-Sampled": "1",
             "X-B3-ParentSpanId": "0000000000000003"
         ]
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, expectedHTTPHeaders1)
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders1)
 
         // When
         tracer.inject(spanContext: spanContext2, writer: httpHeadersWriter)
@@ -770,7 +770,7 @@ class TracerTests: XCTestCase {
             "X-B3-Sampled": "1",
             "X-B3-ParentSpanId": "0000000000000006"
         ]
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, expectedHTTPHeaders2)
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders2)
 
         // When
         tracer.inject(spanContext: spanContext3, writer: httpHeadersWriter)
@@ -781,7 +781,7 @@ class TracerTests: XCTestCase {
             "X-B3-SpanId": "0000000000000058",
             "X-B3-Sampled": "1"
         ]
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, expectedHTTPHeaders3)
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders3)
     }
 
     func testItInjectsSpanContextWithOTelHTTPHeadersWriter_usingSingleHeader() {
@@ -791,7 +791,7 @@ class TracerTests: XCTestCase {
         let spanContext3 = DDSpanContext(traceID: 77, spanID: 88, parentSpanID: nil, baggageItems: .mockAny())
 
         let httpHeadersWriter = OTelHTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .single)
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, [:])
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, [:])
 
         // When
         tracer.inject(spanContext: spanContext1, writer: httpHeadersWriter)
@@ -800,7 +800,7 @@ class TracerTests: XCTestCase {
         let expectedHTTPHeaders1 = [
             "b3": "00000000000000000000000000000001-0000000000000002-1-0000000000000003"
         ]
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, expectedHTTPHeaders1)
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders1)
 
         // When
         tracer.inject(spanContext: spanContext2, writer: httpHeadersWriter)
@@ -809,7 +809,7 @@ class TracerTests: XCTestCase {
         let expectedHTTPHeaders2 = [
             "b3": "00000000000000000000000000000004-0000000000000005-1-0000000000000006"
         ]
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, expectedHTTPHeaders2)
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders2)
 
         // When
         tracer.inject(spanContext: spanContext3, writer: httpHeadersWriter)
@@ -818,7 +818,7 @@ class TracerTests: XCTestCase {
         let expectedHTTPHeaders3 = [
             "b3": "0000000000000000000000000000004d-0000000000000058-1"
         ]
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, expectedHTTPHeaders3)
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders3)
     }
 
     func testItInjectsRejectedSpanContextWithOTelHTTPHeadersWriter_usingSingleHeader() {
@@ -826,7 +826,7 @@ class TracerTests: XCTestCase {
         let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
         let httpHeadersWriter = OTelHTTPHeadersWriter(sampler: .mockRejectAll())
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, [:])
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, [:])
 
         // When
         tracer.inject(spanContext: spanContext, writer: httpHeadersWriter)
@@ -835,7 +835,7 @@ class TracerTests: XCTestCase {
         let expectedHTTPHeaders = [
             "b3": "0"
         ]
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, expectedHTTPHeaders)
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders)
     }
 
     func testItInjectsRejectedSpanContextWithOTelHTTPHeadersWriter_usingMultipleHeader() {
@@ -843,7 +843,7 @@ class TracerTests: XCTestCase {
         let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
         let httpHeadersWriter = OTelHTTPHeadersWriter(sampler: .mockRejectAll(), injectEncoding: .multiple)
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, [:])
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, [:])
 
         // When
         tracer.inject(spanContext: spanContext, writer: httpHeadersWriter)
@@ -852,7 +852,7 @@ class TracerTests: XCTestCase {
         let expectedHTTPHeaders = [
             "X-B3-Sampled": "0"
         ]
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, expectedHTTPHeaders)
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders)
     }
 
     func testItInjectsSpanContextWithW3CHTTPHeadersWriter() {
@@ -862,7 +862,7 @@ class TracerTests: XCTestCase {
         let spanContext3 = DDSpanContext(traceID: 77, spanID: 88, parentSpanID: nil, baggageItems: .mockAny())
 
         let httpHeadersWriter = W3CHTTPHeadersWriter(sampler: .mockKeepAll())
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, [:])
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, [:])
 
         // When
         tracer.inject(spanContext: spanContext1, writer: httpHeadersWriter)
@@ -871,7 +871,7 @@ class TracerTests: XCTestCase {
         let expectedHTTPHeaders1 = [
             "traceparent": "00-00000000000000000000000000000001-0000000000000002-01"
         ]
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, expectedHTTPHeaders1)
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders1)
 
         // When
         tracer.inject(spanContext: spanContext2, writer: httpHeadersWriter)
@@ -880,7 +880,7 @@ class TracerTests: XCTestCase {
         let expectedHTTPHeaders2 = [
             "traceparent": "00-00000000000000000000000000000004-0000000000000005-01"
         ]
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, expectedHTTPHeaders2)
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders2)
 
         // When
         tracer.inject(spanContext: spanContext3, writer: httpHeadersWriter)
@@ -889,7 +889,7 @@ class TracerTests: XCTestCase {
         let expectedHTTPHeaders3 = [
             "traceparent": "00-0000000000000000000000000000004d-0000000000000058-01"
         ]
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, expectedHTTPHeaders3)
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders3)
     }
 
     func testItInjectsRejectedSpanContextWithW3CHTTPHeadersWriter() {
@@ -897,7 +897,7 @@ class TracerTests: XCTestCase {
         let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
         let httpHeadersWriter = W3CHTTPHeadersWriter(sampler: .mockRejectAll())
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, [:])
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, [:])
 
         // When
         tracer.inject(spanContext: spanContext, writer: httpHeadersWriter)
@@ -906,7 +906,7 @@ class TracerTests: XCTestCase {
         let expectedHTTPHeaders = [
             "traceparent": "00-00000000000000000000000000000001-0000000000000002-00"
         ]
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, expectedHTTPHeaders)
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders)
     }
 
     func testItInjectsRejectedSpanContextWithHTTPHeadersWriter() {
@@ -914,7 +914,7 @@ class TracerTests: XCTestCase {
         let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
         let httpHeadersWriter = HTTPHeadersWriter(sampler: .mockRejectAll())
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, [:])
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, [:])
 
         // When
         tracer.inject(spanContext: spanContext, writer: httpHeadersWriter)
@@ -923,7 +923,7 @@ class TracerTests: XCTestCase {
         let expectedHTTPHeaders = [
             "x-datadog-sampling-priority": "0",
         ]
-        XCTAssertEqual(httpHeadersWriter.propagationHTTPHeaderFields, expectedHTTPHeaders)
+        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders)
     }
 
     func testItExtractsSpanContextWithHTTPHeadersReader() {
@@ -934,7 +934,7 @@ class TracerTests: XCTestCase {
         tracer.inject(spanContext: injectedSpanContext, writer: httpHeadersWriter)
 
         let httpHeadersReader = HTTPHeadersReader(
-            httpHeaderFields: httpHeadersWriter.propagationHTTPHeaderFields
+            httpHeaderFields: httpHeadersWriter.traceHeaderFields
         )
         let extractedSpanContext = tracer.extract(reader: httpHeadersReader)
 
@@ -951,7 +951,7 @@ class TracerTests: XCTestCase {
         tracer.inject(spanContext: injectedSpanContext, writer: httpHeadersWriter)
 
         let httpHeadersReader = OTelHTTPHeadersReader(
-            httpHeaderFields: httpHeadersWriter.propagationHTTPHeaderFields
+            httpHeaderFields: httpHeadersWriter.traceHeaderFields
         )
         let extractedSpanContext = tracer.extract(reader: httpHeadersReader)
 
@@ -968,7 +968,7 @@ class TracerTests: XCTestCase {
         tracer.inject(spanContext: injectedSpanContext, writer: httpHeadersWriter)
 
         let httpHeadersReader = OTelHTTPHeadersReader(
-            httpHeaderFields: httpHeadersWriter.propagationHTTPHeaderFields
+            httpHeaderFields: httpHeadersWriter.traceHeaderFields
         )
         let extractedSpanContext = tracer.extract(reader: httpHeadersReader)
 
@@ -985,7 +985,7 @@ class TracerTests: XCTestCase {
         tracer.inject(spanContext: injectedSpanContext, writer: httpHeadersWriter)
 
         let httpHeadersReader = W3CHTTPHeadersReader(
-            httpHeaderFields: httpHeadersWriter.propagationHTTPHeaderFields
+            httpHeaderFields: httpHeadersWriter.traceHeaderFields
         )
         let extractedSpanContext = tracer.extract(reader: httpHeadersReader)
 

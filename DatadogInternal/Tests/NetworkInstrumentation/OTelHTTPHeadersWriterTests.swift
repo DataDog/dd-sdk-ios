@@ -21,7 +21,7 @@ class OTelHTTPHeadersWriterTests: XCTestCase {
             parentSpanID: 5_678
         )
 
-        let headers = oTelHTTPHeadersWriter.propagationHTTPHeaderFields
+        let headers = oTelHTTPHeadersWriter.traceHeaderFields
         XCTAssertEqual(headers[OTelHTTPHeaders.Single.b3Field], "000000000000000000000000000004d2-0000000000000929-1-000000000000162e")
     }
 
@@ -38,7 +38,7 @@ class OTelHTTPHeadersWriterTests: XCTestCase {
             parentSpanID: 5_678
         )
 
-        let headers = oTelHTTPHeadersWriter.propagationHTTPHeaderFields
+        let headers = oTelHTTPHeadersWriter.traceHeaderFields
         XCTAssertEqual(headers[OTelHTTPHeaders.Single.b3Field], "0")
     }
 
@@ -50,7 +50,7 @@ class OTelHTTPHeadersWriterTests: XCTestCase {
         )
         oTelHTTPHeadersWriter.write(traceID: 1_234, spanID: 2_345)
 
-        let headers = oTelHTTPHeadersWriter.propagationHTTPHeaderFields
+        let headers = oTelHTTPHeadersWriter.traceHeaderFields
         XCTAssertEqual(headers[OTelHTTPHeaders.Single.b3Field], "000000000000000000000000000004d2-0000000000000929-1")
     }
 
@@ -66,7 +66,7 @@ class OTelHTTPHeadersWriterTests: XCTestCase {
             parentSpanID: 5_678
         )
 
-        let headers = oTelHTTPHeadersWriter.propagationHTTPHeaderFields
+        let headers = oTelHTTPHeadersWriter.traceHeaderFields
         XCTAssertEqual(headers[OTelHTTPHeaders.Multiple.traceIDField], "000000000000000000000000000004d2")
         XCTAssertEqual(headers[OTelHTTPHeaders.Multiple.spanIDField], "0000000000000929")
         XCTAssertEqual(headers[OTelHTTPHeaders.Multiple.sampledField], "1")
@@ -85,7 +85,7 @@ class OTelHTTPHeadersWriterTests: XCTestCase {
             parentSpanID: 5_678
         )
 
-        let headers = oTelHTTPHeadersWriter.propagationHTTPHeaderFields
+        let headers = oTelHTTPHeadersWriter.traceHeaderFields
         XCTAssertNil(headers[OTelHTTPHeaders.Multiple.traceIDField])
         XCTAssertNil(headers[OTelHTTPHeaders.Multiple.spanIDField])
         XCTAssertEqual(headers[OTelHTTPHeaders.Multiple.sampledField], "0")
@@ -100,7 +100,7 @@ class OTelHTTPHeadersWriterTests: XCTestCase {
         )
         oTelHTTPHeadersWriter.write(traceID: 1_234, spanID: 2_345)
 
-        let headers = oTelHTTPHeadersWriter.propagationHTTPHeaderFields
+        let headers = oTelHTTPHeadersWriter.traceHeaderFields
         XCTAssertEqual(headers[OTelHTTPHeaders.Multiple.traceIDField], "000000000000000000000000000004d2")
         XCTAssertEqual(headers[OTelHTTPHeaders.Multiple.spanIDField], "0000000000000929")
         XCTAssertEqual(headers[OTelHTTPHeaders.Multiple.sampledField], "1")
