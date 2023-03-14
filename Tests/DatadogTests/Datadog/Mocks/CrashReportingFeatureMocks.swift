@@ -87,6 +87,24 @@ class CrashReportSenderMock: CrashReportSender {
     var didSendCrashReport: (() -> Void)?
 }
 
+class CrashMessageReceiverMock: FeatureMessageReceiver {
+    var rumBaggage: FeatureBaggage = [:]
+    var logsBaggage: FeatureBaggage = [:]
+
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        switch message {
+        case .custom(let key, let attributes) where key == "crash-log":
+            logsBaggage = attributes
+            return true
+        case .custom(let key, let attributes) where key == "crash":
+            rumBaggage = attributes
+            return true
+        default:
+            return false
+        }
+    }
+}
+
 extension CrashContext {
     static func mockAny() -> CrashContext {
         return mockWith()

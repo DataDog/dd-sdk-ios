@@ -12,7 +12,7 @@ class CrashReporterTests: XCTestCase {
     // MARK: - Sending Crash Report
 
     func testWhenPendingCrashReportIsFound_itIsSentAndPurged() throws {
-        let expectation = self.expectation(description: "`LoggingOrRUMsender` sends the crash report")
+        let expectation = self.expectation(description: "`CrashReportSender` sends the crash report")
         let crashContext: CrashContext = .mockRandom()
         let crashReport: DDCrashReport = .mockRandomWith(context: crashContext)
         let plugin = CrashReportingPluginMock()
@@ -46,6 +46,47 @@ class CrashReporterTests: XCTestCase {
         XCTAssertTrue(plugin.hasPurgedCrashReport == true, "It should ask to purge the crash report")
     }
 
+    func testWhenPendingCrashReportIsFound_itIsSentBothToRumAndLogs() throws {
+        let expectation = self.expectation(description: "`CrashReportSender` sends the crash report to both features")
+        let crashContext: CrashContext = .mockRandom()
+        let crashReport: DDCrashReport = .mockRandomWith(context: crashContext)
+        let crashMessageReceiver = CrashMessageReceiverMock()
+
+        let core = PassthroughCoreMock(messageReceiver: crashMessageReceiver)
+
+        let plugin = CrashReportingPluginMock()
+
+        // Given
+        plugin.pendingCrashReport = crashReport
+        plugin.injectedContextData = crashContext.data
+
+        // When
+        let crashReporter = CrashReporter(
+            crashReportingPlugin: plugin,
+            crashContextProvider: CrashContextProviderMock(),
+            sender: MessageBusSender(core: core),
+            messageReceiver: NOPFeatureMessageReceiver()
+        )
+
+        //Then
+        plugin.didReadPendingCrashReport = { expectation.fulfill() }
+        crashReporter.sendCrashReportIfFound()
+
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let sentRumBaggage = crashMessageReceiver.rumBaggage
+        let sentLogBaggage = crashMessageReceiver.logsBaggage
+
+        XCTAssert(!sentRumBaggage.isEmpty, "RUM baggage must not be empty")
+        XCTAssert(!sentLogBaggage.isEmpty, "Log baggage must not be empty")
+
+        DDAssertDictionariesEqual(
+            sentRumBaggage.attributes,
+            sentLogBaggage.attributes,
+            "RUM and logs baggage should be equal"
+        )
+    }
+
     func testWhenPendingCrashReportIsNotFound_itDoesNothing() {
         let expectation = self.expectation(description: "`plugin` checks the crash report")
         let plugin = CrashReportingPluginMock()
@@ -74,7 +115,7 @@ class CrashReporterTests: XCTestCase {
     }
 
     func testWhenPendingCrashReportIsFoundButItHasUnavailableCrashContext_itPurgesTheCrashReportWithNoSending() {
-        let expectation = self.expectation(description: "`LoggingOrRUMsender` does not send the crash report")
+        let expectation = self.expectation(description: "`CrashReportSender` does not send the crash report")
         expectation.isInverted = true
         let plugin = CrashReportingPluginMock()
 
@@ -260,13 +301,16 @@ class CrashReporterTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
-        XCTAssertEqual(
-            dd.logger.errorLog?.message,
-            """
-            In order to use Crash Reporting, RUM or Logging feature must be enabled.
-            Make sure `.enableRUM(true)` or `.enableLogging(true)` are configured
-            when initializing Datadog SDK.
-            """
-        )
+        let logs = dd.logger.warnLogs
+
+        XCTAssert(logs.contains(where: { $0.message == """
+            Logging Feature is not enabled. Will not send crash as Log Error.
+            Make sure `.enableLogging(true)`when initializing Datadog SDK.
+            """ }))
+
+        XCTAssert(logs.contains(where: { $0.message == """
+            RUM Feature is not enabled. Will not send crash as RUM Error.
+            Make sure `.enableRUM(true)`when initializing Datadog SDK.
+            """ }))
     }
 }

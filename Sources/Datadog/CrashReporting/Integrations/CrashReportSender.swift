@@ -6,7 +6,7 @@
 
 /// An object for sending crash reports.
 internal protocol CrashReportSender {
-    /// Send the crash report et context to integrations.
+    /// Send the crash report and context to integrations.
     ///
     /// - Parameters:
     ///   - report: The crash report.
@@ -53,30 +53,40 @@ internal struct MessageBusSender: CrashReportSender {
                 "context": context
             ]
         )
+
+        sendLog(
+            baggage: [
+                "report": report,
+                "context": context
+            ]
+        )
     }
 
     private func sendRUM(baggage: FeatureBaggage) {
         core?.send(
             message: .custom(key: MessageKeys.crash, baggage: baggage),
-            else: { self.sendLog(baggage: baggage) }
+            else: {
+                DD.logger.warn(
+            """
+            RUM Feature is not enabled. Will not send crash as RUM Error.
+            Make sure `.enableRUM(true)`when initializing Datadog SDK.
+            """
+            )
+            }
         )
     }
 
     private func sendLog(baggage: FeatureBaggage) {
         core?.send(
             message: .custom(key: MessageKeys.crashLog, baggage: baggage),
-            else: printError
-        )
-    }
-
-    private func printError() {
-        // This case is not reachable in higher abstraction but we add sanity warning.
-        DD.logger.error(
+            else: {
+                DD.logger.warn(
             """
-            In order to use Crash Reporting, RUM or Logging feature must be enabled.
-            Make sure `.enableRUM(true)` or `.enableLogging(true)` are configured
-            when initializing Datadog SDK.
+            Logging Feature is not enabled. Will not send crash as Log Error.
+            Make sure `.enableLogging(true)`when initializing Datadog SDK.
             """
-        )
+            )
+            }
+            )
     }
 }
