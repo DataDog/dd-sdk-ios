@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import DatadogInternal
 
 internal class UIViewControllerSwizzler {
     let viewDidAppear: ViewDidAppear

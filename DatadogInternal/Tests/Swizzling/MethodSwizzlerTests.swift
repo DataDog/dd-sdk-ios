@@ -5,8 +5,7 @@
  */
 
 import XCTest
-import DatadogInternal
-@testable import Datadog
+@testable import DatadogInternal
 
 @objc
 private class EmptySubclass: BaseClass { }

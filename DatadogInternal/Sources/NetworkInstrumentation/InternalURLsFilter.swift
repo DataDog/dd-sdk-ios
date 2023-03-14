@@ -7,15 +7,15 @@
 import Foundation
 
 /// Filters `URLs` which match the first party hosts given by the user.
-internal struct InternalURLsFilter {
+public struct InternalURLsFilter {
     private let internalURLPrefixes: Set<String>
 
-    init(urls: Set<String>) {
+    public init(urls: Set<String>) {
         self.internalURLPrefixes = urls
     }
 
     /// Returns `true` if given `URL` is an internal `URL` used by the SDK; `false` otherwise.
-    func isInternal(url: URL?) -> Bool {
+    public func isInternal(url: URL?) -> Bool {
         guard let absoluteString = url?.absoluteString else {
             return false
         }

@@ -5,7 +5,7 @@
  */
 
 import XCTest
-@testable import Datadog
+@testable import DatadogInternal
 
 class FirstPartyHostsTests: XCTestCase {
     let hostsDictionary: [String: Set<TracingHeaderType>] = [

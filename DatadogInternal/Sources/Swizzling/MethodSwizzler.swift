@@ -5,10 +5,9 @@
  */
 
 import Foundation
-import DatadogInternal
 
-internal class MethodSwizzler<TypedIMP, TypedBlockIMP> {
-    struct FoundMethod: Hashable {
+open class MethodSwizzler<TypedIMP, TypedBlockIMP> {
+    public struct FoundMethod: Hashable {
         let method: Method
         let klass: AnyClass
 
@@ -17,13 +16,13 @@ internal class MethodSwizzler<TypedIMP, TypedBlockIMP> {
             self.klass = klass
         }
 
-        static func == (lhs: FoundMethod, rhs: FoundMethod) -> Bool {
+        public static func == (lhs: FoundMethod, rhs: FoundMethod) -> Bool {
             let methodParity = (lhs.method == rhs.method)
             let classParity = (NSStringFromClass(lhs.klass) == NSStringFromClass(rhs.klass))
             return methodParity && classParity
         }
 
-        func hash(into hasher: inout Hasher) {
+        public func hash(into hasher: inout Hasher) {
             let methodName = NSStringFromSelector(method_getName(method))
             let klassName = NSStringFromClass(klass)
             let identifier = "\(methodName)|||\(klassName)"
@@ -36,7 +35,7 @@ internal class MethodSwizzler<TypedIMP, TypedBlockIMP> {
         return Array(implementationCache.keys)
     }
 
-    static func findMethod(with selector: Selector, in klass: AnyClass) throws -> FoundMethod {
+    public static func findMethod(with selector: Selector, in klass: AnyClass) throws -> FoundMethod {
         /// NOTE: RUMM-452 as we never add/remove methods/classes at runtime,
         /// search operation doesn't have to wrapped in sync {...} although it's visible in the interface
         var headKlass: AnyClass? = klass
@@ -49,6 +48,8 @@ internal class MethodSwizzler<TypedIMP, TypedBlockIMP> {
         throw InternalError(description: "\(NSStringFromSelector(selector)) is not found in \(NSStringFromClass(klass))")
     }
 
+    public init() { }
+
     func originalImplementation(of found: FoundMethod) -> TypedIMP {
         return sync {
             let originalImp: IMP = implementationCache[found] ?? method_getImplementation(found.method)
@@ -56,7 +57,7 @@ internal class MethodSwizzler<TypedIMP, TypedBlockIMP> {
         }
     }
 
-    func swizzle(
+    public func swizzle(
         _ foundMethod: FoundMethod,
         impProvider: (TypedIMP) -> TypedBlockIMP
     ) {
@@ -75,7 +76,7 @@ internal class MethodSwizzler<TypedIMP, TypedBlockIMP> {
     }
 
     /// Removes swizzling and resets the method to its original implementation.
-    internal func unswizzle() {
+    public func unswizzle() {
         for foundMethod in swizzledMethods {
             let originalTypedIMP = originalImplementation(of: foundMethod)
             let originalIMP: IMP = unsafeBitCast(originalTypedIMP, to: IMP.self)
