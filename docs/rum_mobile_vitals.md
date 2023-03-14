@@ -4,7 +4,7 @@ Real User Monitoring offers Mobile Vitals, a set of metrics inspired by [MetricK
 
 Mobile Vitals appear on your your application's **Performance Overview** page when you navigate to **UX Monitoring > Performance Monitoring** and click your application. From the mobile performance dashboard for your application, click on a graph in **Mobile Vitals** to apply a filter by version or examine filtered sessions. 
 
-{{< img src="real_user_monitoring/ios/ios-mobile-vitals-new.png" alt="Mobile Vitals in the Performance Tab" style="width:70%;">}}
+{{< img src="real_user_monitoring/ios/ios-mobile-vitals-new.png" alt="Mobile Vitals in the Performance Tab" style="width:100%;">}}
 
 Understand your application's overall health and performance with the line graphs displaying metrics across various application versions. To filter on application version or see specific sessions and views, click on a graph. 
 
