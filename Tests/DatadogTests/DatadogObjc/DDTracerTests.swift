@@ -216,7 +216,7 @@ class DDTracerTests: XCTestCase {
             "x-datadog-parent-id": "2",
             "x-datadog-sampling-priority": "1",
         ]
-        XCTAssertEqual(objcWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
+        XCTAssertEqual(objcWriter.traceHeaderFields, expectedHTTPHeaders)
     }
 
     func testInjectingRejectedSpanContextToValidCarrierAndFormat() throws {
@@ -231,7 +231,7 @@ class DDTracerTests: XCTestCase {
         let expectedHTTPHeaders = [
             "x-datadog-sampling-priority": "0",
         ]
-        XCTAssertEqual(objcWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
+        XCTAssertEqual(objcWriter.traceHeaderFields, expectedHTTPHeaders)
     }
 
     func testInjectingSpanContextToInvalidCarrierOrFormat() throws {
@@ -263,7 +263,7 @@ class DDTracerTests: XCTestCase {
         let expectedHTTPHeaders = [
             "b3": "00000000000000000000000000000001-0000000000000002-1-0000000000000000"
         ]
-        XCTAssertEqual(objcWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
+        XCTAssertEqual(objcWriter.traceHeaderFields, expectedHTTPHeaders)
     }
 
     func testInjectingRejectedSpanContextToValidCarrierAndFormatForOTel() throws {
@@ -278,7 +278,7 @@ class DDTracerTests: XCTestCase {
         let expectedHTTPHeaders = [
             "b3": "0",
         ]
-        XCTAssertEqual(objcWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
+        XCTAssertEqual(objcWriter.traceHeaderFields, expectedHTTPHeaders)
     }
 
     func testInjectingSpanContextToInvalidCarrierOrFormatForOTel() throws {
@@ -310,7 +310,7 @@ class DDTracerTests: XCTestCase {
         let expectedHTTPHeaders = [
             "traceparent": "00-00000000000000000000000000000001-0000000000000002-01"
         ]
-        XCTAssertEqual(objcWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
+        XCTAssertEqual(objcWriter.traceHeaderFields, expectedHTTPHeaders)
     }
 
     func testInjectingRejectedSpanContextToValidCarrierAndFormatForW3C() throws {
@@ -325,7 +325,7 @@ class DDTracerTests: XCTestCase {
         let expectedHTTPHeaders = [
             "traceparent": "00-00000000000000000000000000000001-0000000000000002-00"
         ]
-        XCTAssertEqual(objcWriter.tracePropagationHTTPHeaders, expectedHTTPHeaders)
+        XCTAssertEqual(objcWriter.traceHeaderFields, expectedHTTPHeaders)
     }
 
     func testInjectingSpanContextToInvalidCarrierOrFormatForW3C() throws {

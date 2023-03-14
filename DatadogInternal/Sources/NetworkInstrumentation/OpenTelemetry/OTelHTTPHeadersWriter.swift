@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import DatadogInternal
 
 /// The `OTelHTTPHeadersWriter` should be used to inject trace propagation headers to
 /// the network requests send to the backend instrumented with Open Telemetry.
@@ -19,14 +18,14 @@ import DatadogInternal
 ///     let span = Global.sharedTracer.startSpan("network request")
 ///     writer.inject(spanContext: span.context)
 ///
-///     writer.tracePropagationHTTPHeaders.forEach { (field, value) in
+///     writer.traceHeaderFields.forEach { (field, value) in
 ///         request.setValue(value, forHTTPHeaderField: field)
 ///     }
 ///
 ///     // call span.finish() when the request completes
 ///
 ///
-public class OTelHTTPHeadersWriter: OTHTTPHeadersWriter, TracePropagationHeadersProvider {
+public class OTelHTTPHeadersWriter: TracePropagationHeadersWriter {
     /// Open Telemetry header encoding.
     ///
     /// There are two encodings of B3:
@@ -45,11 +44,11 @@ public class OTelHTTPHeadersWriter: OTHTTPHeadersWriter, TracePropagationHeaders
     ///
     /// Usage:
     ///
-    ///     writer.tracePropagationHTTPHeaders.forEach { (field, value) in
+    ///     writer.traceHeaderFields.forEach { (field, value) in
     ///         request.setValue(value, forHTTPHeaderField: field)
     ///     }
     ///
-    public private(set) var tracePropagationHTTPHeaders: [String: String] = [:]
+    public private(set) var traceHeaderFields: [String: String] = [:]
 
     /// The tracing sampler.
     ///
@@ -78,7 +77,7 @@ public class OTelHTTPHeadersWriter: OTHTTPHeadersWriter, TracePropagationHeaders
     ///
     /// - Parameter sampler: Tracing sampler responsible for randomizing the sample.
     /// - Parameter injectEncoding: Determines the type of telemetry header type used by the writer.
-    internal init(
+    public init(
         sampler: Sampler,
         injectEncoding: InjectEncoding = .single
     ) {
@@ -86,38 +85,34 @@ public class OTelHTTPHeadersWriter: OTHTTPHeadersWriter, TracePropagationHeaders
         self.injectEncoding = injectEncoding
     }
 
-    public func inject(spanContext: OTSpanContext) {
-        guard let spanContext = spanContext.dd else {
-            return
-        }
-
+    public func write(traceID: TraceID, spanID: SpanID, parentSpanID: SpanID?) {
         let samplingPriority = sampler.sample()
 
         typealias Constants = OTelHTTPHeaders.Constants
 
         switch injectEncoding {
         case .multiple:
-            tracePropagationHTTPHeaders = [
+            traceHeaderFields = [
                 OTelHTTPHeaders.Multiple.sampledField: samplingPriority ? Constants.sampledValue : Constants.unsampledValue
             ]
 
             if samplingPriority {
-                tracePropagationHTTPHeaders[OTelHTTPHeaders.Multiple.traceIDField] = spanContext.traceID.toString(.hexadecimal32Chars)
-                tracePropagationHTTPHeaders[OTelHTTPHeaders.Multiple.spanIDField] = spanContext.spanID.toString(.hexadecimal16Chars)
-                tracePropagationHTTPHeaders[OTelHTTPHeaders.Multiple.parentSpanIDField] = spanContext.parentSpanID?.toString(.hexadecimal16Chars)
+                traceHeaderFields[OTelHTTPHeaders.Multiple.traceIDField] = String(traceID, representation: .hexadecimal32Chars)
+                traceHeaderFields[OTelHTTPHeaders.Multiple.spanIDField] = String(spanID, representation: .hexadecimal16Chars)
+                traceHeaderFields[OTelHTTPHeaders.Multiple.parentSpanIDField] = parentSpanID.map { String($0, representation: .hexadecimal16Chars) }
             }
         case .single:
             if samplingPriority {
-                tracePropagationHTTPHeaders[OTelHTTPHeaders.Single.b3Field] = [
-                    spanContext.traceID.toString(.hexadecimal32Chars),
-                    spanContext.spanID.toString(.hexadecimal16Chars),
-                    Constants.sampledValue,
-                    spanContext.parentSpanID?.toString(.hexadecimal16Chars)
+                traceHeaderFields[OTelHTTPHeaders.Single.b3Field] = [
+                    String(traceID, representation: .hexadecimal32Chars),
+                    String(spanID, representation: .hexadecimal16Chars),
+                    samplingPriority ? Constants.sampledValue : Constants.unsampledValue,
+                    parentSpanID.map { String($0, representation: .hexadecimal16Chars) }
                 ]
                 .compactMap { $0 }
                 .joined(separator: Constants.b3Separator)
             } else {
-                tracePropagationHTTPHeaders[OTelHTTPHeaders.Single.b3Field] = Constants.unsampledValue
+                traceHeaderFields[OTelHTTPHeaders.Single.b3Field] = Constants.unsampledValue
             }
         }
     }

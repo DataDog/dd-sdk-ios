@@ -33,11 +33,11 @@ internal struct SpanEventsEnvelope: Encodable {
 /// Individual span event sent do Datadog.
 public struct SpanEvent: Encodable {
     /// The id of the trace this span belongs to.
-    internal let traceID: TracingUUID
+    internal let traceID: TraceID
     /// The unique id of this span.
-    internal let spanID: TracingUUID
+    internal let spanID: SpanID
     /// The id this span's parent or `nil` if this is the root span.
-    internal let parentID: TracingUUID?
+    internal let parentID: SpanID?
     /// The operation name set for this span.
     public var operationName: String
     /// The service name configured for tracer.
@@ -149,11 +149,11 @@ internal struct SpanEventEncoder {
 
     func encode(_ span: SpanEvent, to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: StaticCodingKeys.self)
-        try container.encode(span.traceID.toString(.hexadecimal), forKey: .traceID)
-        try container.encode(span.spanID.toString(.hexadecimal), forKey: .spanID)
+        try container.encode(String(span.traceID, representation: .hexadecimal), forKey: .traceID)
+        try container.encode(String(span.spanID, representation: .hexadecimal), forKey: .spanID)
 
-        let parentSpanID = span.parentID ?? TracingUUID(rawValue: 0) // 0 is a reserved ID for a root span (ref: DDTracer.java#L600)
-        try container.encode(parentSpanID.toString(.hexadecimal), forKey: .parentID)
+        let parentSpanID = span.parentID ?? TraceID(rawValue: 0) // 0 is a reserved ID for a root span (ref: DDTracer.java#L600)
+        try container.encode(String(parentSpanID, representation: .hexadecimal), forKey: .parentID)
 
         try container.encode(span.operationName, forKey: .operationName)
         try container.encode(span.serviceName, forKey: .serviceName)

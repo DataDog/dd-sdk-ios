@@ -5,24 +5,24 @@
  */
 
 import XCTest
-@testable import Datadog
+import DatadogInternal
 
 class W3CHTTPHeadersReaderTests: XCTestCase {
     func testW3CHTTPHeadersReaderreadsSingleHeader() {
         let w3cHTTPHeadersReader = W3CHTTPHeadersReader(httpHeaderFields: ["traceparent": "00-4d2-929-01"])
-        let spanContext = w3cHTTPHeadersReader.extract()?.dd
+        let ids = w3cHTTPHeadersReader.read()
 
-        XCTAssertEqual(spanContext?.traceID, TracingUUID(rawValue: 1_234))
-        XCTAssertEqual(spanContext?.spanID, TracingUUID(rawValue: 2_345))
-        XCTAssertNil(spanContext?.parentSpanID)
+        XCTAssertEqual(ids?.traceID, TraceID(rawValue: 1_234))
+        XCTAssertEqual(ids?.spanID, TraceID(rawValue: 2_345))
+        XCTAssertNil(ids?.parentSpanID)
     }
 
     func testW3CHTTPHeadersReaderreadsSingleHeaderWithSampling() {
         let w3cHTTPHeadersReader = W3CHTTPHeadersReader(httpHeaderFields: ["traceparent": "00-0-0-00"])
-        let spanContext = w3cHTTPHeadersReader.extract()?.dd
+        let ids = w3cHTTPHeadersReader.read()
 
-        XCTAssertNil(spanContext?.traceID)
-        XCTAssertNil(spanContext?.spanID)
-        XCTAssertNil(spanContext?.parentSpanID)
+        XCTAssertNil(ids?.traceID)
+        XCTAssertNil(ids?.spanID)
+        XCTAssertNil(ids?.parentSpanID)
     }
 }

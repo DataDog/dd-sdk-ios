@@ -6,26 +6,26 @@
 
 import Foundation
 
-internal class HTTPHeadersReader: OTHTTPHeadersReader, TracePropagationHeadersExtractor {
+public class HTTPHeadersReader: TracePropagationHeadersReader {
     private let httpHeaderFields: [String: String]
 
-    init(httpHeaderFields: [String: String]) {
+    public init(httpHeaderFields: [String: String]) {
         self.httpHeaderFields = httpHeaderFields
     }
 
-    func extract() -> OTSpanContext? {
+    public func read() -> (traceID: TraceID, spanID: SpanID, parentSpanID: SpanID?)? {
         guard let traceIDValue = httpHeaderFields[TracingHTTPHeaders.traceIDField],
               let spanIDValue = httpHeaderFields[TracingHTTPHeaders.parentSpanIDField],
-              let traceID = TracingUUID(traceIDValue, .decimal),
-              let spanID = TracingUUID(spanIDValue, .decimal) else {
+              let traceID = TraceID(traceIDValue),
+              let spanID = TraceID(spanIDValue)
+        else {
             return nil
         }
 
-        return DDSpanContext(
+        return (
             traceID: traceID,
             spanID: spanID,
-            parentSpanID: nil,
-            baggageItems: BaggageItems()
+            parentSpanID: nil
         )
     }
 }

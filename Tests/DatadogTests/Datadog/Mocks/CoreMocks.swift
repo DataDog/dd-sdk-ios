@@ -217,7 +217,7 @@ extension FeaturesConfiguration.Tracing {
 
     static func mockWith(
         uploadURL: URL = .mockAny(),
-        uuidGenerator: TracingUUIDGenerator = DefaultTracingUUIDGenerator(),
+        uuidGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
         spanEventMapper: SpanEventMapper? = nil,
         dateProvider: DateProvider = SystemDateProvider()
     ) -> Self {

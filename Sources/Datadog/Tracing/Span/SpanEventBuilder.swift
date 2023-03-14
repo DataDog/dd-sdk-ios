@@ -20,9 +20,9 @@ internal struct SpanEventBuilder {
 
     func createSpanEvent(
         context: DatadogContext,
-        traceID: TracingUUID,
-        spanID: TracingUUID,
-        parentSpanID: TracingUUID?,
+        traceID: TraceID,
+        spanID: SpanID,
+        parentSpanID: SpanID?,
         operationName: String,
         startTime: Date,
         finishTime: Date,

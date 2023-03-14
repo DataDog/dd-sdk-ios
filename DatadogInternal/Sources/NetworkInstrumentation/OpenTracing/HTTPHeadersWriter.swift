@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import DatadogInternal
 
 /// The `HTTPHeadersWriter` should be used to inject trace propagation headers to
 /// the network requests send to the backend instrumented with Datadog APM.
@@ -18,24 +17,24 @@ import DatadogInternal
 ///     let span = Global.sharedTracer.startSpan("network request")
 ///     writer.inject(spanContext: span.context)
 ///
-///     writer.tracePropagationHTTPHeaders.forEach { (field, value) in
+///     writer.traceHeaderFields.forEach { (field, value) in
 ///         request.setValue(value, forHTTPHeaderField: field)
 ///     }
 ///
 ///     // call span.finish() when the request completes
 ///
 ///
-public class HTTPHeadersWriter: OTHTTPHeadersWriter, TracePropagationHeadersProvider {
+public class HTTPHeadersWriter: TracePropagationHeadersWriter {
     /// A dictionary with HTTP Headers required to propagate the trace started in the mobile app
     /// to the backend instrumented with Datadog APM.
     ///
     /// Usage:
     ///
-    ///     writer.tracePropagationHTTPHeaders.forEach { (field, value) in
+    ///     writer.traceHeaderFields.forEach { (field, value) in
     ///         request.setValue(value, forHTTPHeaderField: field)
     ///     }
     ///
-    public private(set) var tracePropagationHTTPHeaders: [String: String] = [:]
+    public private(set) var traceHeaderFields: [String: String] = [:]
 
     /// The tracing sampler.
     ///
@@ -55,24 +54,20 @@ public class HTTPHeadersWriter: OTHTTPHeadersWriter, TracePropagationHeadersProv
     /// to network request.
     ///
     /// - Parameter sampler: Tracing sampler responsible for randomizing the sample.
-    internal init(sampler: Sampler) {
+    public init(sampler: Sampler) {
         self.sampler = sampler
     }
 
-    public func inject(spanContext: OTSpanContext) {
-        guard let spanContext = spanContext.dd else {
-            return
-        }
-
+    public func write(traceID: TraceID, spanID: SpanID, parentSpanID: SpanID?) {
         let samplingPriority = sampler.sample()
 
-        tracePropagationHTTPHeaders = [
+        traceHeaderFields = [
             TracingHTTPHeaders.samplingPriorityField: samplingPriority ? "1" : "0"
         ]
 
         if samplingPriority {
-            tracePropagationHTTPHeaders[TracingHTTPHeaders.traceIDField] = spanContext.traceID.toString(.decimal)
-            tracePropagationHTTPHeaders[TracingHTTPHeaders.parentSpanIDField] = spanContext.spanID.toString(.decimal)
+            traceHeaderFields[TracingHTTPHeaders.traceIDField] = String(traceID)
+            traceHeaderFields[TracingHTTPHeaders.parentSpanIDField] = String(spanID)
         }
     }
 }

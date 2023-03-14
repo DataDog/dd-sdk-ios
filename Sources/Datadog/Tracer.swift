@@ -59,7 +59,7 @@ public class Tracer: OTTracer {
     /// Integration with Logging.
     internal let loggingIntegration: TracingWithLoggingIntegration
 
-    private let tracingUUIDGenerator: TracingUUIDGenerator
+    private let tracingUUIDGenerator: TraceIDGenerator
 
     /// Date provider for traces.
     private let dateProvider: DateProvider
@@ -130,7 +130,7 @@ public class Tracer: OTTracer {
         core: DatadogCoreProtocol,
         configuration: Configuration,
         spanEventMapper: SpanEventMapper?,
-        tracingUUIDGenerator: TracingUUIDGenerator,
+        tracingUUIDGenerator: TraceIDGenerator,
         dateProvider: DateProvider,
         rumIntegration: TracingWithRUMIntegration?,
         loggingIntegration: TracingWithLoggingIntegration
@@ -175,10 +175,6 @@ public class Tracer: OTTracer {
     }
 
     public func extract(reader: OTFormatReader) -> OTSpanContext? {
-        guard let reader = reader as? TracePropagationHeadersExtractor else {
-            return nil
-        }
-
         return reader.extract()
     }
 
@@ -190,8 +186,8 @@ public class Tracer: OTTracer {
 
     internal func createSpanContext(parentSpanContext: DDSpanContext? = nil) -> DDSpanContext {
         return DDSpanContext(
-            traceID: parentSpanContext?.traceID ?? tracingUUIDGenerator.generateUnique(),
-            spanID: tracingUUIDGenerator.generateUnique(),
+            traceID: parentSpanContext?.traceID ?? tracingUUIDGenerator.generate(),
+            spanID: tracingUUIDGenerator.generate(),
             parentSpanID: parentSpanContext?.spanID,
             baggageItems: BaggageItems(parent: parentSpanContext?.baggageItems)
         )
@@ -231,8 +227,8 @@ public class Tracer: OTTracer {
         let context = activeSpan?.context as? DDSpanContext
 
         core.set(feature: "tracing", attributes: {[
-            Attributes.traceID: context.map { $0.traceID.toString(.decimal) },
-            Attributes.spanID: context.map { $0.spanID.toString(.decimal) }
+            Attributes.traceID: context.map { String($0.traceID) },
+            Attributes.spanID: context.map { String($0.spanID) }
         ]})
     }
 }

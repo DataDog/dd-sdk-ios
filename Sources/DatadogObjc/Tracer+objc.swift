@@ -9,7 +9,6 @@ import DatadogInternal
 import class Datadog.Tracer
 import protocol Datadog.OTTracer
 import struct Datadog.OTReference
-import class Datadog.HTTPHeadersWriter
 
 @objc
 public class DDTracer: NSObject, DatadogObjc.OTTracer {
