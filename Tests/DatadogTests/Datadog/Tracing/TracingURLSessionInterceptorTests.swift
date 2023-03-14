@@ -6,42 +6,117 @@
 
 import XCTest
 import TestUtilities
-import DatadogInternal
 
+@testable import DatadogInternal
 @testable import DatadogLogs
 @testable import Datadog
 
-class URLSessionTracingHandlerTests: XCTestCase {
-    private var core: PassthroughCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
-
-    private let handler = URLSessionTracingHandler(
-        appStateListener: AppStateListenerMock(
-            history: .init(
-                initialSnapshot: .init(state: .active, date: .mockDecember15th2019At10AMUTC()),
-                recentDate: .mockDecember15th2019At10AMUTC() + 10
-            )
-        ),
-        tracingSampler: .mockKeepAll()
-    )
+class TracingURLSessionInterceptorTests: XCTestCase {
+    // swiftlint:disable implicitly_unwrapped_optional
+    var core: PassthroughCoreMock!
+    var tracer: DatadogTracer!
+    var interceptor: TracingURLSessionHandler!
+    // swiftlint:enable implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
-        core = PassthroughCoreMock(messageReceiver: LogMessageReceiver.mockAny())
-        Global.sharedTracer = DatadogTracer.mockWith(core: core)
+        let receiver = ContextMessageReceiver(bundleWithRUM: true)
+        core = PassthroughCoreMock(messageReceiver: CombinedFeatureMessageReceiver([
+            LogMessageReceiver.mockAny(),
+            receiver
+        ]))
+
+        tracer = .mockWith(
+            core: core,
+            tracingUUIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0)
+        )
+
+        interceptor = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: receiver,
+            tracingSampler: .mockKeepAll(),
+            firstPartyHosts: .init([
+                "www.example.com": [.datadog]
+            ])
+        )
     }
 
     override func tearDown() {
-        Global.sharedTracer = DDNoopGlobals.tracer
         core = nil
         super.tearDown()
+    }
+
+    func testGivenFirstPartyInterception_withSampledTrace_itInjectTraceHeaders() throws {
+        // Given
+        let interceptor = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(bundleWithRUM: true),
+            tracingSampler: .mockKeepAll(),
+            firstPartyHosts: .init()
+        )
+
+        // When
+        let request = interceptor.modify(
+            request: .mockWith(url: "https://www.example.com"),
+            headerTypes: [
+                .datadog,
+                .b3,
+                .b3multi,
+                .tracecontext
+            ]
+        )
+
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.traceIDField), "00000000000000000000000000000001")
+        XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.spanIDField), "0000000000000001")
+        XCTAssertNil(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.parentSpanIDField))
+        XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.sampledField), "1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Single.b3Field), "00000000000000000000000000000001-0000000000000001-1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-00000000000000000000000000000001-0000000000000001-01")
+    }
+
+    func testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectTraceHeaders() throws {
+        // Given
+        let interceptor = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(bundleWithRUM: true),
+            tracingSampler: .mockRejectAll(),
+            firstPartyHosts: .init()
+        )
+
+        // When
+        let request = interceptor.modify(
+            request: .mockWith(url: "https://www.example.com"),
+            headerTypes: [
+                .datadog,
+                .b3,
+                .b3multi,
+                .tracecontext
+            ]
+        )
+
+        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField))
+        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField))
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "0")
+        XCTAssertNil(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.traceIDField))
+        XCTAssertNil(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.spanIDField))
+        XCTAssertNil(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.parentSpanIDField))
+        XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.sampledField), "0")
+        XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Single.b3Field), "0")
+        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-00000000000000000000000000000001-0000000000000001-00")
     }
 
     func testGivenFirstPartyInterceptionWithSpanContext_whenInterceptionCompletes_itUsesInjectedSpanContext() throws {
         core.expectation = expectation(description: "Send span")
 
         // Given
-        let interception = TaskInterception(request: .mockAny(), isFirstParty: true)
-        interception.register(completion: .mockAny())
+        let interception = URLSessionTaskInterception(
+            request: .mockAny(),
+            isFirstParty: true
+        )
+        interception.register(response: .mockAny(), error: nil)
         interception.register(
             metrics: .mockWith(
                 fetch: .init(
@@ -50,12 +125,10 @@ class URLSessionTracingHandlerTests: XCTestCase {
                 )
             )
         )
-        interception.register(
-            spanContext: .mockWith(traceID: 100, spanID: 200, parentSpanID: nil)
-        )
+        interception.register(traceID: 100, spanID: 200, parentSpanID: nil)
 
         // When
-        handler.notify_taskInterceptionCompleted(interception: interception)
+        interceptor.interceptionDidComplete(interception: interception)
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -78,8 +151,8 @@ class URLSessionTracingHandlerTests: XCTestCase {
 
         // Given
         let request: URLRequest = .mockWith(httpMethod: "POST")
-        let interception = TaskInterception(request: request, isFirstParty: true)
-        interception.register(completion: .mockWith(response: .mockResponseWith(statusCode: 200), error: nil))
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: true)
+        interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
         interception.register(
             metrics: .mockWith(
                 fetch: .init(
@@ -90,7 +163,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         )
 
         // When
-        handler.notify_taskInterceptionCompleted(interception: interception)
+        interceptor.interceptionDidComplete(interception: interception)
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -116,7 +189,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
 
         // Given
         let request: URLRequest = .mockWith(
-            url: "https://www.example.com",
+            url: "http://www.example.com",
             queryParams: [
                 URLQueryItem(name: "foo", value: "42"),
                 URLQueryItem(name: "lang", value: "en")
@@ -124,8 +197,8 @@ class URLSessionTracingHandlerTests: XCTestCase {
             httpMethod: "GET"
         )
         let error = NSError(domain: "domain", code: 123, userInfo: [NSLocalizedDescriptionKey: "network error"])
-        let interception = TaskInterception(request: request, isFirstParty: true)
-        interception.register(completion: .mockWith(response: nil, error: error))
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: true)
+        interception.register(response: nil, error: error)
         interception.register(
             metrics: .mockWith(
                 fetch: .init(
@@ -136,7 +209,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         )
 
         // When
-        handler.notify_taskInterceptionCompleted(interception: interception)
+        interceptor.interceptionDidComplete(interception: interception)
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -144,7 +217,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         let envelope: SpanEventsEnvelope? = core.events().last
         let span = try XCTUnwrap(envelope?.spans.first)
         XCTAssertEqual(span.operationName, "urlsession.request")
-        XCTAssertEqual(span.resource, "https://www.example.com")
+        XCTAssertEqual(span.resource, "http://www.example.com")
         XCTAssertEqual(span.duration, 30)
         XCTAssertTrue(span.isError)
         XCTAssertEqual(span.tags[OTTags.httpUrl], request.url!.absoluteString)
@@ -191,8 +264,8 @@ class URLSessionTracingHandlerTests: XCTestCase {
 
         // Given
         let request: URLRequest = .mockWith(httpMethod: "GET")
-        let interception = TaskInterception(request: request, isFirstParty: true)
-        interception.register(completion: .mockWith(response: .mockResponseWith(statusCode: 404), error: nil))
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: true)
+        interception.register(response: .mockResponseWith(statusCode: 404), error: nil)
         interception.register(
             metrics: .mockWith(
                 fetch: .init(
@@ -203,7 +276,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         )
 
         // When
-        handler.notify_taskInterceptionCompleted(interception: interception)
+        interceptor.interceptionDidComplete(interception: interception)
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -254,11 +327,11 @@ class URLSessionTracingHandlerTests: XCTestCase {
         core.expectation?.isInverted = true
 
         // Given
-        let incompleteInterception = TaskInterception(request: .mockAny(), isFirstParty: true)
+        let incompleteInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true)
         // `incompleteInterception` has no metrics and no completion
 
         // When
-        handler.notify_taskInterceptionCompleted(interception: incompleteInterception)
+        interceptor.interceptionDidComplete(interception: incompleteInterception)
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -270,8 +343,8 @@ class URLSessionTracingHandlerTests: XCTestCase {
         core.expectation?.isInverted = true
 
         // Given
-        let interception = TaskInterception(request: .mockAny(), isFirstParty: false)
-        interception.register(completion: .mockAny())
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: false)
+        interception.register(response: .mockAny(), error: nil)
         interception.register(
             metrics: .mockWith(
                 fetch: .init(
@@ -282,7 +355,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         )
 
         // When
-        handler.notify_taskInterceptionCompleted(interception: interception)
+        interceptor.interceptionDidComplete(interception: interception)
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -293,8 +366,8 @@ class URLSessionTracingHandlerTests: XCTestCase {
         core.expectation = expectation(description: "Send span")
 
         // Given
-        let interception = TaskInterception(request: .mockAny(), isFirstParty: true)
-        interception.register(completion: .mockAny())
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true)
+        interception.register(response: .mockAny(), error: nil)
         interception.register(
             metrics: .mockWith(
                 fetch: .init(
@@ -305,7 +378,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         )
 
         // When
-        handler.notify_taskInterceptionCompleted(interception: interception)
+        interceptor.interceptionDidComplete(interception: interception)
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -320,13 +393,19 @@ class URLSessionTracingHandlerTests: XCTestCase {
         core.expectation?.isInverted = true
 
         // Given
-        let handler = URLSessionTracingHandler(
-            appStateListener: AppStateListenerMock.mockAppInForeground(),
-            tracingSampler: .mockRejectAll()
-       )
+        let receiver = ContextMessageReceiver(bundleWithRUM: true)
 
-        let interception = TaskInterception(request: .mockAny(), isFirstParty: true)
-        interception.register(completion: .mockAny())
+        let interceptor = TracingURLSessionHandler(
+            tracer: .mockWith(core: core),
+            contextReceiver: receiver,
+            tracingSampler: .mockKeepAll(),
+            firstPartyHosts: .init()
+        )
+
+        core.context.applicationStateHistory = .mockAppInForeground()
+
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true)
+        interception.register(response: .mockAny(), error: nil)
         interception.register(
             metrics: .mockWith(
                 fetch: .init(
@@ -337,7 +416,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
         )
 
         // When
-        handler.notify_taskInterceptionCompleted(interception: interception)
+        interceptor.interceptionDidComplete(interception: interception)
 
         // Then
         waitForExpectations(timeout: 0.5)

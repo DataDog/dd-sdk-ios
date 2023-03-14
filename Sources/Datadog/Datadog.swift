@@ -186,7 +186,6 @@ public class Datadog {
 
         let userInfoProvider = UserInfoProvider()
         let serverDateProvider = configuration.common.serverDateProvider ?? DatadogNTPDateProvider()
-        let appStateListener = AppStateListener(dateProvider: configuration.common.dateProvider)
 
         // Set default `DatadogCore`:
         let core = DatadogCore(
@@ -257,8 +256,7 @@ public class Datadog {
         if let urlSessionAutoInstrumentationConfiguration = configuration.urlSessionAutoInstrumentation {
             urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
                 configuration: urlSessionAutoInstrumentationConfiguration,
-                dateProvider: configuration.common.dateProvider,
-                appStateListener: appStateListener
+                dateProvider: configuration.common.dateProvider
             )
 
             core.register(feature: urlSessionAutoInstrumentation)

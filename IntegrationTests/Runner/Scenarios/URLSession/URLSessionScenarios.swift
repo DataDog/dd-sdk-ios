@@ -144,6 +144,37 @@ class URLSessionBaseScenario: NSObject {
         }
     }
 
+    func configureFeatures() {
+        let serverMockConfiguration = Environment.serverMockConfiguration()
+
+        let firstPartyHosts: Set<String>
+        switch instrumentationMethod {
+        case .directWithAdditionalFirstyPartyHosts:
+            firstPartyHosts = []
+        case .directWithGlobalFirstPartyHosts, .inheritance, .composition:
+            firstPartyHosts = [customGETResourceURL.host!, customPOSTRequest.url!.host!, badResourceURL.host!]
+        }
+
+        // Register Tracer
+        DatadogTracer.initialize(
+            configuration: .init(
+                sendNetworkInfo: true,
+                customIntakeURL: serverMockConfiguration?.tracesEndpoint,
+                spanEventMapper: {
+                    var span = $0
+                    if span.tags[OTTags.httpUrl] != nil {
+                        span.tags[OTTags.httpUrl] = "redacted"
+                    }
+                    return span
+                }
+            ),
+            distributedTracingConfiguration: .init(
+                firstPartyHosts: firstPartyHosts,
+                tracingSamplingRate: 100
+            )
+        )
+    }
+
     private var session: URLSession!
 
     @objc

@@ -154,7 +154,7 @@ internal class DDSpan: OTSpan {
                 let builder = SpanEventBuilder(
                     serviceName: configuration.serviceName,
                     sendNetworkInfo: configuration.sendNetworkInfo,
-                    eventsMapper: self.ddTracer.spanEventMapper
+                    eventsMapper: self.ddTracer.configuration.spanEventMapper
                 )
 
                 return builder.createSpanEvent(

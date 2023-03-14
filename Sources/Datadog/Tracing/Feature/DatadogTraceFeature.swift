@@ -17,34 +17,6 @@ internal struct DatadogTraceFeature: DatadogRemoteFeature {
     let tracer: DatadogTracer
 
     init(
-        core: DatadogCoreProtocol,
-        uuidGenerator: TraceIDGenerator,
-        spanEventMapper: SpanEventMapper?,
-        dateProvider: DateProvider,
-        configuration: DatadogTracer.Configuration
-    ) {
-        let receiver = TracingMessageReceiver()
-        self.init(
-            tracer: .init(
-                core: core,
-                configuration: configuration,
-                spanEventMapper: spanEventMapper,
-                tracingUUIDGenerator: uuidGenerator,
-                dateProvider: dateProvider,
-                rumIntegration: configuration.bundleWithRUM ? receiver.rum : nil,
-                loggingIntegration: TracingWithLoggingIntegration(
-                    core: core,
-                    tracerConfiguration: configuration
-                )
-            ),
-            requestBuilder: TracingRequestBuilder(
-                customIntakeURL: configuration.customIntakeURL
-            ),
-            messageReceiver: receiver
-        )
-    }
-
-    init(
         tracer: DatadogTracer,
         requestBuilder: FeatureRequestBuilder,
         messageReceiver: FeatureMessageReceiver

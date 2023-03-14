@@ -15,6 +15,13 @@ internal protocol URLSessionInterceptionHandler {
     func notify_taskInterceptionCompleted(interception: TaskInterception)
 }
 
+internal struct NOPURLSessionInterceptionHandler: URLSessionInterceptionHandler {
+    /// no-op
+    func notify_taskInterceptionStarted(interception: TaskInterception) { }
+    /// no-op
+    func notify_taskInterceptionCompleted(interception: TaskInterception) { }
+}
+
 /// An interface for processing `URLSession` task interceptions.
 internal protocol URLSessionInterceptorType: AnyObject {
     func modify(request: URLRequest, session: URLSession?) -> URLRequest
@@ -53,8 +60,7 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
 
     convenience init(
         configuration: FeaturesConfiguration.URLSessionAutoInstrumentation,
-        dateProvider: DateProvider,
-        appStateListener: AppStateListening
+        dateProvider: DateProvider
     ) {
         let handler: URLSessionInterceptionHandler
 
@@ -65,10 +71,7 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
                 rumAttributesProvider: configuration.rumAttributesProvider
             )
         } else {
-            handler = URLSessionTracingHandler(
-                appStateListener: appStateListener,
-                tracingSampler: configuration.tracingSampler
-            )
+            handler = NOPURLSessionInterceptionHandler()
         }
 
         self.init(configuration: configuration, handler: handler)

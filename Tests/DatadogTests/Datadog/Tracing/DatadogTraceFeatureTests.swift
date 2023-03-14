@@ -69,8 +69,8 @@ class DatadogTraceFeatureTests: XCTestCase {
         defer { core.flushAndTearDown() }
 
         DatadogTracer.initialize(
-            configuration: .init(customIntakeURL: randomUploadURL),
-            in: core
+            in: core,
+            configuration: .init(customIntakeURL: randomUploadURL)
         )
 
         // Given
