@@ -26,12 +26,14 @@ internal class Recorder: Recording {
         let date: Date
         /// The content recording policy from the moment of requesting snapshot.
         let privacy: SessionReplayPrivacy
+        let accessibilityOptions: SessionReplayAccessibilityOptions
         /// The RUM context from the moment of requesting snapshot.
         let rumContext: RUMContext
     }
 
     /// Swizzles `UIApplication` for recording touch events.
     private let uiApplicationSwizzler: UIApplicationSwizzler
+    private let accessibilitySwizzler: UIAccessibilitySwizzler
 
     /// Schedules view tree captures.
     private let scheduler: Scheduler
@@ -39,6 +41,7 @@ internal class Recorder: Recording {
     private let viewTreeSnapshotProducer: ViewTreeSnapshotProducer
     /// Captures touch snapshot.
     private let touchSnapshotProducer: TouchSnapshotProducer
+    private let accessibilitySnapshotProducer: AccessibilitySnapshotProducer
     /// Turns view tree snapshots into data models that will be uploaded to SR BE.
     private let snapshotProcessor: Processing
 
@@ -49,6 +52,7 @@ internal class Recorder: Recording {
     private var currentRUMContext: RUMContext?
     /// Current content recording policy for creating snapshots.
     private var currentPrivacy: SessionReplayPrivacy
+    private var currentAccessibilityOptions: SessionReplayAccessibilityOptions
 
     convenience init(
         configuration: SessionReplayConfiguration,
@@ -57,11 +61,16 @@ internal class Recorder: Recording {
         scheduler: Scheduler = MainThreadScheduler(interval: 0.1)
     ) throws {
         let windowObserver = KeyWindowObserver()
+        let viewTreeSnapshotBuilder = ViewTreeSnapshotBuilder()
         let viewTreeSnapshotProducer = WindowViewTreeSnapshotProducer(
             windowObserver: windowObserver,
-            snapshotBuilder: ViewTreeSnapshotBuilder()
+            snapshotBuilder: viewTreeSnapshotBuilder
         )
         let touchSnapshotProducer = WindowTouchSnapshotProducer(
+            windowObserver: windowObserver
+        )
+        let accessibilitySnapshotProducer = AccessibilitySnapshotProducer(
+            idsGenerator: viewTreeSnapshotBuilder.accessibilityIDsGenerator,
             windowObserver: windowObserver
         )
 
@@ -69,9 +78,11 @@ internal class Recorder: Recording {
             configuration: configuration,
             rumContextObserver: rumContextObserver,
             uiApplicationSwizzler: try UIApplicationSwizzler(handler: touchSnapshotProducer),
+            accessibilitySwizzler: try UIAccessibilitySwizzler(),
             scheduler: scheduler,
             viewTreeSnapshotProducer: viewTreeSnapshotProducer,
             touchSnapshotProducer: touchSnapshotProducer,
+            accessibilitySnapshotProducer: accessibilitySnapshotProducer,
             snapshotProcessor: processor
         )
     }
@@ -80,18 +91,23 @@ internal class Recorder: Recording {
         configuration: SessionReplayConfiguration,
         rumContextObserver: RUMContextObserver,
         uiApplicationSwizzler: UIApplicationSwizzler,
+        accessibilitySwizzler: UIAccessibilitySwizzler,
         scheduler: Scheduler,
         viewTreeSnapshotProducer: ViewTreeSnapshotProducer,
         touchSnapshotProducer: TouchSnapshotProducer,
+        accessibilitySnapshotProducer: AccessibilitySnapshotProducer,
         snapshotProcessor: Processing
     ) {
         self.uiApplicationSwizzler = uiApplicationSwizzler
+        self.accessibilitySwizzler = accessibilitySwizzler
         self.scheduler = scheduler
         self.viewTreeSnapshotProducer = viewTreeSnapshotProducer
         self.touchSnapshotProducer = touchSnapshotProducer
         self.snapshotProcessor = snapshotProcessor
+        self.accessibilitySnapshotProducer = accessibilitySnapshotProducer
         self.rumContextObserver = rumContextObserver
         self.currentPrivacy = configuration.privacy
+        self.currentAccessibilityOptions = configuration.accessibilityOptions
 
         scheduler.schedule { [weak self] in
             self?.captureNextRecord()
@@ -102,10 +118,12 @@ internal class Recorder: Recording {
         }
 
         uiApplicationSwizzler.swizzle()
+        accessibilitySwizzler.swizzle()
     }
 
     deinit {
         uiApplicationSwizzler.unswizzle()
+        accessibilitySwizzler.unswizzle()
     }
 
     // MARK: - Recording
@@ -136,6 +154,7 @@ internal class Recorder: Recording {
             let recorderContext = Context(
                 date: Date(), // TODO: RUMM-2688 Synchronize SR snapshot timestamps with current RUM time (+ NTP offset)
                 privacy: currentPrivacy,
+                accessibilityOptions: currentAccessibilityOptions,
                 rumContext: rumContext
             )
 
@@ -144,7 +163,12 @@ internal class Recorder: Recording {
                 return
             }
             let touchSnapshot = touchSnapshotProducer.takeSnapshot(context: recorderContext)
-            snapshotProcessor.process(viewTreeSnapshot: viewTreeSnapshot, touchSnapshot: touchSnapshot)
+            let accessibilitySnapshot = accessibilitySnapshotProducer.takeSnapshot(context: recorderContext)
+            snapshotProcessor.process(
+                viewTreeSnapshot: viewTreeSnapshot,
+                touchSnapshot: touchSnapshot,
+                accessibilitySnapshot: accessibilitySnapshot
+            )
         } catch {
             print("Failed to capture the snapshot: \(error)") // TODO: RUMM-2410 Use `DD.logger` and / or `DD.telemetry`
         }

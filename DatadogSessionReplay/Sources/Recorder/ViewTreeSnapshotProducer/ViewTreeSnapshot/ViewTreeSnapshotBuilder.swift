@@ -15,6 +15,10 @@ internal struct ViewTreeSnapshotBuilder {
     let viewTreeRecorder: ViewTreeRecorder
     /// Generates stable IDs for traversed views.
     let idsGenerator: NodeIDGenerator
+
+    let accessibilityTreeRecorder: ViewTreeRecorder
+    let accessibilityIDsGenerator: NodeIDGenerator
+
     /// Text obfuscator applied to all non-sensitive texts. No-op if privacy mode is disabled.
     let textObfuscator = TextObfuscator()
     /// Text obfuscator applied to all sensitive texts.
@@ -32,6 +36,7 @@ internal struct ViewTreeSnapshotBuilder {
             recorder: recorderContext,
             coordinateSpace: rootView,
             ids: idsGenerator,
+            accessibilityIDs: accessibilityIDsGenerator,
             textObfuscator: {
                 switch recorderContext.privacy {
                 case .maskAll:  return textObfuscator
@@ -46,11 +51,20 @@ internal struct ViewTreeSnapshotBuilder {
             }(),
             sensitiveTextObfuscator: sensitiveTextObfuscator
         )
+        let viewTreeNodes = viewTreeRecorder.recordNodes(for: rootView, in: context)
+        let accessibilityNodes = {
+            if recorderContext.accessibilityOptions.contains(.captureAccessibilityElements) {
+                return accessibilityTreeRecorder.recordNodes(for: rootView, in: context)
+            } else {
+                return []
+            }
+        }()
         let snapshot = ViewTreeSnapshot(
             date: recorderContext.date.addingTimeInterval(recorderContext.rumContext.viewServerTimeOffset ?? 0),
             rumContext: recorderContext.rumContext,
             viewportSize: rootView.bounds.size,
-            nodes: viewTreeRecorder.recordNodes(for: rootView, in: context)
+            nodes: viewTreeNodes,
+            accessibilityNodes: accessibilityNodes
         )
         return snapshot
     }
@@ -60,7 +74,13 @@ extension ViewTreeSnapshotBuilder {
     init() {
         self.init(
             viewTreeRecorder: ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders()),
-            idsGenerator: NodeIDGenerator()
+            idsGenerator: NodeIDGenerator(currentID: 0, maxID: 10_024),
+            accessibilityTreeRecorder: ViewTreeRecorder(
+                nodeRecorders: [
+                    AccessibilityElementRecorder()
+                ]
+            ),
+            accessibilityIDsGenerator: NodeIDGenerator(currentID: 10_024, maxID: 20_024)
         )
     }
 }

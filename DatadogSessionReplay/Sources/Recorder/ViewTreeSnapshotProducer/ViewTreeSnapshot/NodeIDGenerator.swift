@@ -18,26 +18,36 @@ internal typealias NodeID = Int64
 ///
 /// **Note**: All `NodeIDGenerator` APIs must be called on the main thread.
 internal final class NodeIDGenerator {
+    static var uniqueCounter: UInt8 = 0
+
     /// Upper limit for generated IDs.
     /// After `currentID` reaches this limit, it will start from `0`.
     private let maxID: NodeID
     /// Tracks next `NodeID` to assign.
     private var currentID: NodeID
 
+    fileprivate var associatedNodeIDKey: UInt8
+    fileprivate var associatedNodeIDsKey: UInt8
+
     init(currentID: NodeID = 0, maxID: NodeID = .max) {
         self.currentID = currentID
         self.maxID = maxID
+
+        NodeIDGenerator.uniqueCounter += 1
+        self.associatedNodeIDKey = NodeIDGenerator.uniqueCounter
+        NodeIDGenerator.uniqueCounter += 1
+        self.associatedNodeIDsKey = NodeIDGenerator.uniqueCounter
     }
 
     /// Returns single `NodeID` for given instance of `UIView`.
     /// - Parameter view: the `UIView` object
     /// - Returns: the `NodeID` of queried instance
-    func nodeID(for view: UIView) -> NodeID {
-        if let currentID = view.nodeID {
+    func nodeID(for view: NSObject) -> NodeID {
+        if let currentID = view.getNodeID(&associatedNodeIDKey) {
             return currentID
         } else {
             let id = getNextID()
-            view.nodeID = id
+            view.setNodeID(id, &associatedNodeIDKey)
             return id
         }
     }
@@ -46,17 +56,17 @@ internal final class NodeIDGenerator {
     /// - Parameter size: the number of IDs
     /// - Parameter view: the `UIView` object
     /// - Returns: an array with given number of `NodeID` values
-    func nodeIDs(_ size: Int, for view: UIView) -> [NodeID] {
-        if let currentIDs = view.nodeIDs, currentIDs.count == size {
+    func nodeIDs(_ size: Int, for view: NSObject) -> [NodeID] {
+        if let currentIDs = view.getNodeIDs(&associatedNodeIDsKey), currentIDs.count == size {
             return currentIDs
         } else {
             let ids = (0..<size).map { _ in getNextID() }
-            view.nodeIDs = ids
+            view.setNodeIDs(ids, &associatedNodeIDsKey)
             return ids
         }
     }
 
-    private func getNextID() -> NodeID {
+    func getNextID() -> NodeID {
         let nextID = currentID
         currentID = currentID < maxID ? (currentID + 1) : 0
         return nextID
@@ -68,14 +78,23 @@ internal final class NodeIDGenerator {
 fileprivate var associatedNodeIDKey: UInt8 = 1
 fileprivate var associatedNodeIDsKey: UInt8 = 2
 
-private extension UIView {
-    var nodeID: NodeID? {
-        set { objc_setAssociatedObject(self, &associatedNodeIDKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
-        get { objc_getAssociatedObject(self, &associatedNodeIDKey) as? NodeID }
+fileprivate var associatedNodeAccessibilityIDKey: UInt8 = 3
+fileprivate var associatedNodeAccessibilityIDsKey: UInt8 = 4
+
+private extension NSObject {
+    func setNodeID(_ newValue: NodeID?, _ key: UnsafeRawPointer) {
+        objc_setAssociatedObject(self, key, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
     }
 
-    var nodeIDs: [NodeID]? {
-        set { objc_setAssociatedObject(self, &associatedNodeIDsKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
-        get { objc_getAssociatedObject(self, &associatedNodeIDsKey) as? [NodeID] }
+    func getNodeID(_ key: UnsafeRawPointer) -> NodeID? {
+        objc_getAssociatedObject(self, key) as? NodeID
+    }
+
+    func setNodeIDs(_ newValue: [NodeID]?, _ key: UnsafeRawPointer) {
+        objc_setAssociatedObject(self, key, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+    }
+
+    func getNodeIDs(_ key: UnsafeRawPointer) -> [NodeID]? {
+        objc_getAssociatedObject(self, key) as? [NodeID]
     }
 }

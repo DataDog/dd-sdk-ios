@@ -28,7 +28,7 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
     // MARK: - Main Components
 
     private let recorder: Recording
-    private let processor: Processing
+    internal let processor: Processing
     private let writer: Writing
 
     // MARK: - Initialization

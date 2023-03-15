@@ -15,7 +15,7 @@ internal protocol Processing {
     /// Accepts next view-tree and touch snapshots.
     /// - Parameter viewTreeSnapshot: the snapshot of a next view tree
     /// - Parameter touchSnapshot: the snapshot of next touch interactions (or `nil` if no interactions happened)
-    func process(viewTreeSnapshot: ViewTreeSnapshot, touchSnapshot: TouchSnapshot?)
+    func process(viewTreeSnapshot: ViewTreeSnapshot, touchSnapshot: TouchSnapshot?, accessibilitySnapshot: AccessibilitySnapshot?)
 }
 
 /// The brain of the Session Replay.
@@ -50,6 +50,9 @@ internal class Processor: Processing {
     /// Interception callback for snapshot tests.
     /// Only available in Debug configuration, solely made for testing purpose.
     var interceptWireframes: (([SRWireframe]) -> Void)? = nil
+
+    var interceptAccessibilityWireframes: (([SRWireframe]) -> Void)? = nil
+    var interceptAccessibilityFocusWireframes: (([SRWireframe]) -> Void)? = nil
     #endif
 
     init(queue: Queue, writer: Writing) {
@@ -59,18 +62,41 @@ internal class Processor: Processing {
 
     // MARK: - Processing
 
-    func process(viewTreeSnapshot: ViewTreeSnapshot, touchSnapshot: TouchSnapshot?) {
-        queue.run { self.processSync(viewTreeSnapshot: viewTreeSnapshot, touchSnapshot: touchSnapshot) }
+    func process(viewTreeSnapshot: ViewTreeSnapshot, touchSnapshot: TouchSnapshot?, accessibilitySnapshot: AccessibilitySnapshot?) {
+        queue.run { self.processSync(viewTreeSnapshot: viewTreeSnapshot, touchSnapshot: touchSnapshot, accessibilitySnapshot: accessibilitySnapshot) }
     }
 
-    private func processSync(viewTreeSnapshot: ViewTreeSnapshot, touchSnapshot: TouchSnapshot?) {
+    private func processSync(viewTreeSnapshot: ViewTreeSnapshot, touchSnapshot: TouchSnapshot?, accessibilitySnapshot: AccessibilitySnapshot?) {
         let flattenedNodes = nodesFlattener.flattenNodes(in: viewTreeSnapshot)
-        let wireframes: [SRWireframe] = flattenedNodes
+        var wireframes: [SRWireframe] = flattenedNodes
             .map { node in node.wireframesBuilder }
             .flatMap { nodeBuilder in nodeBuilder.buildWireframes(with: wireframesBuilder) }
 
+        if let accessibilitySnapshot = accessibilitySnapshot {
+            let voiceOverWireframes = accessibilitySnapshot.voiceOverWireframes
+                .flatMap { builder in builder.buildWireframes(with: wireframesBuilder) }
+            let notificationWireframes = accessibilitySnapshot.notificationWireframes
+                .flatMap { builder in builder.buildWireframes(with: wireframesBuilder) }
+
+            let accessibilityWireframes = voiceOverWireframes + notificationWireframes
+
+            #if DEBUG
+            interceptAccessibilityFocusWireframes?(accessibilityWireframes)
+            #endif
+
+            wireframes += accessibilityWireframes
+        }
+
+        let accessibilityTreeWireframes: [SRWireframe] = viewTreeSnapshot
+            .accessibilityNodes
+            .map { node in node.wireframesBuilder }
+            .flatMap { accessibilityNodeBuilder in accessibilityNodeBuilder.buildWireframes(with: wireframesBuilder) }
+
+        wireframes += accessibilityTreeWireframes
+
         #if DEBUG
         interceptWireframes?(wireframes)
+        interceptAccessibilityWireframes?(accessibilityTreeWireframes)
         #endif
 
         var records: [SRRecord] = []

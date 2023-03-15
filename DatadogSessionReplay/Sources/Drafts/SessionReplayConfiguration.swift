@@ -12,6 +12,8 @@ public struct SessionReplayConfiguration {
     /// Defaults to `.maskAll`.
     public var privacy: SessionReplayPrivacy
 
+    public var accessibilityOptions: SessionReplayAccessibilityOptions
+
     /// Defines a custom URL for uploading data to.
     ///
     /// Defaults to `nil` which makes the Session Replay upload data to Datadog Site configured in
@@ -20,9 +22,11 @@ public struct SessionReplayConfiguration {
 
     public init(
         privacy: SessionReplayPrivacy = .maskAll,
+        accessibilityOptions: SessionReplayAccessibilityOptions = [],
         customUploadURL: URL? = nil
     ) {
         self.privacy = privacy
+        self.accessibilityOptions = accessibilityOptions
         self.customUploadURL = customUploadURL
     }
 }
@@ -41,4 +45,16 @@ public enum SessionReplayPrivacy {
     ///
     /// This is the default content policy.
     case maskAll
+}
+
+public struct SessionReplayAccessibilityOptions: OptionSet {
+    public static let trackVoiceOverFocus           = SessionReplayAccessibilityOptions(rawValue: 1 << 0)
+    public static let captureAccessibilityElements  = SessionReplayAccessibilityOptions(rawValue: 1 << 1)
+    public static let notifyAccessibilitySettings   = SessionReplayAccessibilityOptions(rawValue: 1 << 2)
+
+    public let rawValue: Int
+
+    public init(rawValue: Int) {
+        self.rawValue = rawValue
+    }
 }

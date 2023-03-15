@@ -24,6 +24,7 @@ internal struct ViewTreeSnapshot {
     let viewportSize: CGSize
     /// An array of nodes recorded for this snapshot - sequenced in DFS order.
     let nodes: [Node]
+    let accessibilityNodes: [Node]
 }
 
 /// An individual node in `ViewTreeSnapshot`. A `Node` describes a single view - similar: an array of nodes describes

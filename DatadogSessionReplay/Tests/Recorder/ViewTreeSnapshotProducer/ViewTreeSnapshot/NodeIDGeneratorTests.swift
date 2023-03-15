@@ -71,4 +71,28 @@ class NodeIDGeneratorTests: XCTestCase {
         // Then
         XCTAssertEqual(Set(ids1).intersection(Set(ids2)), [])
     }
+
+    func testParallelGenerators() {
+        // Given
+        let view1: UIView = .mockRandom()
+        let view2: UIView = .mockRandom()
+
+        // When
+        let generator1 = NodeIDGenerator(currentID: 0, maxID: .max / 2)
+        let generator2 = NodeIDGenerator(currentID: (.max / 2) + 1, maxID: .max)
+        let id1 = generator1.nodeID(for: view1)
+        let ids1 = generator1.nodeIDs(n, for: view2)
+        let id2 = generator2.nodeID(for: view1)
+        let ids2 = generator2.nodeIDs(n, for: view2)
+
+        // Then
+        XCTAssertEqual(id1, generator1.nodeID(for: view1))
+        XCTAssertEqual(ids1, generator1.nodeIDs(n, for: view2))
+
+        XCTAssertEqual(id2, generator2.nodeID(for: view1))
+        XCTAssertEqual(ids2, generator2.nodeIDs(n, for: view2))
+
+        XCTAssertNotEqual(id1, id2)
+        XCTAssertNotEqual(ids1, ids2)
+    }
 }
