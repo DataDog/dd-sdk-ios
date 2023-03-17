@@ -35,7 +35,7 @@ internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler, RUM
 
     // MARK: - URLSessionInterceptionHandler
 
-    func notify_taskInterceptionStarted(interception: TaskInterception) {
+    func notify_taskInterceptionStarted(interception: URLSessionTaskInterception) {
         let url = interception.request.url?.absoluteString ?? "unknown_url"
 
         subscriber?.process(
@@ -46,7 +46,7 @@ internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler, RUM
                 url: url,
                 httpMethod: RUMMethod(httpMethod: interception.request.httpMethod),
                 kind: RUMResourceType(request: interception.request),
-                spanContext: interception.spanContext.map {
+                spanContext: interception.trace.map {
                     .init(
                         traceID: String($0.traceID),
                         spanID: String($0.spanID),
@@ -57,7 +57,7 @@ internal class URLSessionRUMResourcesHandler: URLSessionInterceptionHandler, RUM
         )
     }
 
-    func notify_taskInterceptionCompleted(interception: TaskInterception) {
+    func notify_taskInterceptionCompleted(interception: URLSessionTaskInterception) {
         if subscriber == nil {
             DD.logger.warn(
                 """

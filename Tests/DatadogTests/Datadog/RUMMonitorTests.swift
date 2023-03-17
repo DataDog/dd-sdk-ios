@@ -1445,7 +1445,7 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertTrue(Global.rum is DDNoopRUMMonitor)
 
         // Then
-        resourcesHandler.notify_taskInterceptionCompleted(interception: TaskInterception(request: .mockAny(), isFirstParty: .mockAny()))
+        resourcesHandler.notify_taskInterceptionCompleted(interception: URLSessionTaskInterception(request: .mockAny(), isFirstParty: .mockAny()))
         XCTAssertEqual(
             dd.logger.warnLog?.message,
             """

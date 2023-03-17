@@ -32,8 +32,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         var request = URLRequest(url: .mockRandom())
         request.httpMethod = ["GET", "POST", "PUT", "DELETE"].randomElement()!
-        let taskInterception = TaskInterception(request: request, isFirstParty: .random())
-        XCTAssertNil(taskInterception.spanContext)
+        let taskInterception = URLSessionTaskInterception(request: request, isFirstParty: .random())
+        XCTAssertNil(taskInterception.trace)
 
         // When
         handler.notify_taskInterceptionStarted(interception: taskInterception)
@@ -55,9 +55,9 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         commandSubscriber.onCommandReceived = { _ in receiveCommand.fulfill() }
 
         // Given
-        let taskInterception = TaskInterception(request: .mockAny(), isFirstParty: .random())
-        taskInterception.register(spanContext: .mockWith(traceID: 1, spanID: 2))
-        XCTAssertNotNil(taskInterception.spanContext)
+        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random())
+        taskInterception.register(traceID: 1, spanID: 2, parentSpanID: nil)
+        XCTAssertNotNil(taskInterception.trace)
 
         // When
         handler.notify_taskInterceptionStarted(interception: taskInterception)
@@ -82,11 +82,11 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // Given
-        let taskInterception = TaskInterception(request: .mockAny(), isFirstParty: .random())
+        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random())
         let resourceMetrics: ResourceMetrics = .mockAny()
-        let resourceCompletion: ResourceCompletion = .mockWith(response: .mockResponseWith(statusCode: 200), error: nil)
         taskInterception.register(metrics: resourceMetrics)
-        taskInterception.register(completion: resourceCompletion)
+        let response: HTTPURLResponse = .mockResponseWith(statusCode: 200)
+        taskInterception.register(response: response, error: nil)
 
         // When
         handler.notify_taskInterceptionCompleted(interception: taskInterception)
@@ -104,7 +104,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceStopCommand.resourceKey, taskInterception.identifier.uuidString)
         XCTAssertEqual(resourceStopCommand.time, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(resourceStopCommand.attributes.count, 0)
-        XCTAssertEqual(resourceStopCommand.kind, RUMResourceType(response: resourceCompletion.httpResponse!))
+        XCTAssertEqual(resourceStopCommand.kind, RUMResourceType(response: response))
         XCTAssertEqual(resourceStopCommand.httpStatusCode, 200)
         XCTAssertEqual(resourceStopCommand.size, taskInterception.metrics?.responseSize)
     }
@@ -119,12 +119,11 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // Given
-        let taskInterception = TaskInterception(request: .mockAny(), isFirstParty: .random())
+        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random())
         let taskError = NSError(domain: "domain", code: 123, userInfo: [NSLocalizedDescriptionKey: "network error"])
         let resourceMetrics: ResourceMetrics = .mockAny()
-        let resourceCompletion: ResourceCompletion = .mockWith(response: nil, error: taskError)
         taskInterception.register(metrics: resourceMetrics)
-        taskInterception.register(completion: resourceCompletion)
+        taskInterception.register(response: nil, error: taskError)
 
         // When
         handler.notify_taskInterceptionCompleted(interception: taskInterception)
@@ -176,10 +175,10 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // When
-        let taskInterception = TaskInterception(request: mockRequest, isFirstParty: .random())
+        let taskInterception = URLSessionTaskInterception(request: mockRequest, isFirstParty: .random())
         taskInterception.register(nextData: mockData)
         taskInterception.register(metrics: .mockAny())
-        taskInterception.register(completion: .mockWith(response: mockResponse, error: nil))
+        taskInterception.register(response: mockResponse, error: nil)
         handler.notify_taskInterceptionCompleted(interception: taskInterception)
 
         // Then
@@ -212,9 +211,9 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // When
-        let taskInterception = TaskInterception(request: mockRequest, isFirstParty: .random())
+        let taskInterception = URLSessionTaskInterception(request: mockRequest, isFirstParty: .random())
         taskInterception.register(metrics: .mockAny())
-        taskInterception.register(completion: .mockWith(response: nil, error: mockError))
+        taskInterception.register(response: nil, error: mockError)
         handler.notify_taskInterceptionCompleted(interception: taskInterception)
 
         // Then
